@@ -37,6 +37,12 @@ export default function Home() {
           Generate sample Canadian lottery number sets for fun. Refresh the page for a new set of picks.
         </p>
 
+        <form action="/api/checkout" method="POST" style={{ marginTop: '2rem' }}>
+          <button type="submit" style={{ padding: '0.9rem 1.4rem', border: 0, borderRadius: 999, background: '#0f766e', color: 'white', fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}>
+            Buy lucky picks
+          </button>
+        </form>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
           {games.map((game) => (
             <article key={game.name} style={{ padding: '1.5rem', borderRadius: 20, background: 'white', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.12)' }}>
