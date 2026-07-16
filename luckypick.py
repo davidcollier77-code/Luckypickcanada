@@ -5,8 +5,8 @@ luckypick.py
 Small runnable script to generate random Canadian lottery numbers.
 
 Usage:
-  python3 luckypick.py           # default: lotto-649
-  python3 luckypick.py --game lotto-max
+  python3 luckypick.py           # default: six pick
+  python3 luckypick.py --game seven-pick
   python3 luckypick.py --count 5 --max 40
 
 This file was added to provide a minimal runnable example for the repository.
@@ -17,8 +17,8 @@ import random
 import sys
 
 GAMES = {
-    "lotto-649": {"count": 6, "max": 49},
-    "lotto-max": {"count": 7, "max": 50},
+    "six-pick": {"count": 6, "max": 49},
+    "seven-pick": {"count": 7, "max": 50},
 }
 
 
@@ -28,8 +28,8 @@ def generate_numbers(count: int, max_num: int):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Generate random lottery numbers (Canada).")
-    parser.add_argument("--game", choices=list(GAMES.keys()), default="lotto-649",
-                        help="Choose a preset game (default: lotto-649)")
+    parser.add_argument("--game", choices=list(GAMES.keys()), default="six-pick",
+                        help="Choose a preset game (default: six-pick)")
     parser.add_argument("--count", type=int, help="Number of picks (overrides preset)")
     parser.add_argument("--max", type=int, help="Maximum number (overrides preset)")
     parser.add_argument("--sets", type=int, default=1, help="How many sets to generate")
