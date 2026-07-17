@@ -24,6 +24,51 @@ const checkoutButtonStyle = {
   cursor: 'pointer',
 };
 
+const logoCardStyle = {
+  flex: '0 0 auto',
+  borderRadius: 18,
+  background: 'white',
+  boxShadow: '0 14px 34px rgba(0, 0, 0, 0.24)',
+};
+
+function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8fafc', tagline }) {
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+      <img
+        src="/logo.svg"
+        alt="Lucky Pick Canada maple clover logo"
+        width={size}
+        height={size}
+        style={{ ...logoCardStyle, width: size, height: size }}
+      />
+      <div>
+        <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, color: textColor }}>
+          {label}
+        </p>
+        {tagline ? <p style={{ margin: '0.25rem 0 0', color: 'rgba(248, 250, 252, 0.78)' }}>{tagline}</p> : null}
+      </div>
+    </div>
+  );
+}
+
+function SectionKicker({ children }) {
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+      <img
+        src="/logo.svg"
+        alt=""
+        aria-hidden="true"
+        width="36"
+        height="36"
+        style={{ ...logoCardStyle, width: 36, height: 36, borderRadius: 10, boxShadow: '0 8px 20px rgba(15, 118, 110, 0.16)' }}
+      />
+      <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, color: '#0f766e' }}>
+        {children}
+      </p>
+    </div>
+  );
+}
+
 function generateNumbers(count, max) {
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
 
@@ -76,11 +121,8 @@ export default async function Home({ searchParams }) {
     }}>
       <LuckyRevealPopup reveal={purchasedReveal} />
       <section style={{ maxWidth: 900, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <img src="/logo.svg" alt="Lucky Pick Canada logo" width="120" height="120" style={{ width: 120, height: 120, borderRadius: 24, background: 'white', boxShadow: '0 18px 45px rgba(0, 0, 0, 0.28)' }} />
-          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#5eead4' }}>
-            Lucky Pick Canada
-          </p>
+        <div style={{ marginBottom: '1rem' }}>
+          <BrandLogo size={76} textColor="#5eead4" tagline="Maple clover luck, made in Canada" />
         </div>
         <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', lineHeight: 1, margin: '1rem 0' }}>
           6 Pick and 7 Pick lucky numbers
@@ -202,9 +244,7 @@ export default async function Home({ searchParams }) {
         </div>
 
         <section id="lucky-stories" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
-          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>
-            Lucky Stories
-          </p>
+          <SectionKicker>Lucky Stories</SectionKicker>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
             Share your stories of luck and happiness
           </h2>
@@ -258,9 +298,7 @@ export default async function Home({ searchParams }) {
         </section>
 
         <section id="little-luck-map" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
-          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>
-            Little Luck Map
-          </p>
+          <SectionKicker>Little Luck Map</SectionKicker>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
             See where little luck is being shared
           </h2>
@@ -335,9 +373,7 @@ export default async function Home({ searchParams }) {
         </section>
 
         <section id="suggestion-box" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
-          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>
-            Suggestion Box
-          </p>
+          <SectionKicker>Suggestion Box</SectionKicker>
           <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
             Help make Lucky Pick Canada better
           </h2>
@@ -370,6 +406,13 @@ export default async function Home({ searchParams }) {
             <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
           </form>
         </section>
+
+        <footer style={{ marginTop: '2rem', padding: '1.25rem 0 0', borderTop: '1px solid rgba(255, 255, 255, 0.18)' }}>
+          <BrandLogo size={44} textColor="#f8fafc" />
+          <p style={{ margin: '0.75rem 0 0', color: 'rgba(248, 250, 252, 0.72)', lineHeight: 1.5 }}>
+            Lucky Pick Canada is your home for maple clover lucky picks, gifts, stories, and a little shared luck across Canada.
+          </p>
+        </footer>
       </section>
     </main>
   );
