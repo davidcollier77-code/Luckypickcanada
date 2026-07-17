@@ -1,3 +1,5 @@
+import { getLuckMap, provinces } from './luck-map';
+
 export const dynamic = 'force-dynamic';
 
 const games = [
@@ -35,7 +37,14 @@ function pickOne(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-export default function Home() {
+export default async function Home({ searchParams }) {
+  const params = await searchParams;
+  const { provinceCounts, recentShares, totalShares, isConfigured } = await getLuckMap();
+  const mapError = params?.mapError;
+  const shared = params?.shared === '1';
+  const checkoutSessionId = params?.session_id || '';
+  const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
+
   return (
     <main style={{
       minHeight: '100vh',
@@ -54,6 +63,9 @@ export default function Home() {
         <p style={{ fontSize: '1.25rem', maxWidth: 680, lineHeight: 1.6 }}>
           Get a $1 lucky pick with unique numbers, a slow reveal with stars and Aurora, plus your lucky color and day of the week.
         </p>
+        <p style={{ maxWidth: 680, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255, 255, 255, 0.24)' }}>
+          Disclaimer: Lucky Pick Canada is not affiliated with, endorsed by, or connected to any lottery organization. Picks are for fun and entertainment only.
+        </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
@@ -68,6 +80,7 @@ export default function Home() {
             </ul>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
             <button type="submit" style={checkoutButtonStyle}>Buy lucky pick for $1.00</button>
+            <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Little Luck Map.</p>
           </form>
 
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
@@ -123,6 +136,76 @@ export default function Home() {
             );
           })}
         </div>
+
+        <section id="little-luck-map" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
+          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>
+            Little Luck Map
+          </p>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
+            See where little luck is being shared
+          </h2>
+          <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
+            Purchase the $1 Lucky Pick, then add your first name and province or territory so the Canada map lights up with each place luck is shared.
+          </p>
+
+          {shared ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Thanks for sharing a little luck.</p> : null}
+          {mapError ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontWeight: 700 }}>{mapError}</p> : null}
+          {!isConfigured ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fef3c7', color: '#92400e', fontWeight: 700 }}>The map is ready, but the database needs to be available before entries can be saved.</p> : null}
+
+          {canShareOnMap ? (
+            <form action="/api/luck-map" method="POST" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'end', marginTop: '1.5rem' }}>
+              <input type="hidden" name="checkoutSessionId" value={checkoutSessionId} />
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Your name
+                <input name="name" type="text" minLength="2" maxLength="40" placeholder="David" required style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Province or territory
+                <select name="province" required defaultValue="" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }}>
+                  <option value="" disabled>Choose one</option>
+                  {provinces.map((province) => (
+                    <option key={province.code} value={province.code}>{province.name}</option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit" style={checkoutButtonStyle}>Share little luck</button>
+            </form>
+          ) : (
+            <form action="/api/checkout" method="POST" style={{ marginTop: '1.5rem' }}>
+              <input type="hidden" name="checkoutType" value="lucky_pick" />
+              <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to join the map</button>
+            </form>
+          )}
+
+          <div aria-label="Canada Little Luck Map" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>
+            {provinces.map((province) => {
+              const count = provinceCounts[province.code] || 0;
+
+              return (
+                <div key={province.code} style={{ padding: '1rem', minHeight: 78, borderRadius: 18, background: count ? 'linear-gradient(135deg, #99f6e4, #fef3c7)' : '#e2e8f0', border: count ? '2px solid #0f766e' : '2px solid #cbd5e1' }}>
+                  <strong style={{ display: 'block', fontSize: '1.25rem' }}>{province.code}</strong>
+                  <span>{province.name}</span><br />
+                  <span style={{ fontWeight: 700 }}>{count} {count === 1 ? 'share' : 'shares'}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <h3 style={{ marginBottom: '0.5rem' }}>Recent little luck shares: {totalShares}</h3>
+            {recentShares.length ? (
+              <ul style={{ display: 'grid', gap: '0.5rem', paddingLeft: '1.25rem' }}>
+                {recentShares.map((share) => (
+                  <li key={`${share.display_name}-${share.province}-${share.created_at}`}>
+                    <strong>{share.display_name}</strong> shared luck from {share.province}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No shares yet. Be the first to put little luck on the map.</p>
+            )}
+          </div>
+        </section>
       </section>
     </main>
   );

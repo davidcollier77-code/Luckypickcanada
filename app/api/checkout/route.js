@@ -77,7 +77,12 @@ export async function POST(request) {
           quantity: 1,
         },
       ],
-      success_url: `${origin}/?payment=success`,
+      metadata: {
+        checkoutType,
+      },
+      success_url: checkoutType === 'lucky_pick'
+        ? `${origin}/?payment=success&map=1&session_id={CHECKOUT_SESSION_ID}#little-luck-map`
+        : `${origin}/?payment=success`,
       cancel_url: `${origin}/?payment=cancelled`,
     });
 
