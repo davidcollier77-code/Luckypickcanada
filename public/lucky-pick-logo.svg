@@ -1,0 +1,53 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Lucky Pick Canada logo</title>
+  <desc id="desc">A four leaf clover with a red maple leaf in the center and golden lucky stars.</desc>
+  <rect width="512" height="512" rx="112" fill="url(#night)"/>
+  <circle cx="256" cy="256" r="190" fill="url(#glow)" opacity="0.68"/>
+
+  <g transform="translate(256 258)">
+    <path d="M0 126 C12 92 18 54 10 10" stroke="#14532D" stroke-width="24" stroke-linecap="round"/>
+    <path d="M-15 12 C-80 -50 -171 -4 -150 75 C-84 94 -34 65 -15 12Z" fill="url(#leafGreen)" stroke="#BBF7D0" stroke-width="8"/>
+    <path d="M15 12 C80 -50 171 -4 150 75 C84 94 34 65 15 12Z" fill="url(#leafGreen)" stroke="#BBF7D0" stroke-width="8"/>
+    <path d="M-12 -8 C-73 -82 -29 -170 52 -151 C72 -84 48 -32 -12 -8Z" fill="url(#leafGreen2)" stroke="#BBF7D0" stroke-width="8"/>
+    <path d="M12 -8 C73 -82 29 -170 -52 -151 C-72 -84 -48 -32 12 -8Z" fill="url(#leafGreen2)" stroke="#BBF7D0" stroke-width="8"/>
+  </g>
+
+  <g transform="translate(256 245) scale(0.86)">
+    <path d="M0 -112 L22 -58 L72 -76 L49 -23 L104 -10 L52 13 L82 63 L24 50 L0 108 L-24 50 L-82 63 L-52 13 L-104 -10 L-49 -23 L-72 -76 L-22 -58 Z" fill="url(#maple)" stroke="#FEE2E2" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M0 105 L0 145" stroke="#7F1D1D" stroke-width="13" stroke-linecap="round"/>
+  </g>
+
+  <g fill="#FDE68A" opacity="0.95">
+    <path d="M113 124 L121 143 L141 151 L121 159 L113 178 L105 159 L85 151 L105 143 Z"/>
+    <path d="M394 122 L400 137 L415 143 L400 149 L394 164 L388 149 L373 143 L388 137 Z"/>
+    <path d="M401 355 L409 374 L429 382 L409 390 L401 409 L393 390 L373 382 L393 374 Z"/>
+  </g>
+
+  <defs>
+    <linearGradient id="night" x1="61" y1="40" x2="454" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#031826"/>
+      <stop offset="0.55" stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#164E63"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(256 207) rotate(90) scale(196)">
+      <stop stop-color="#5EEAD4" stop-opacity="0.85"/>
+      <stop offset="0.55" stop-color="#22C55E" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#22C55E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="leafGreen" x1="-169" y1="-17" x2="161" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#86EFAC"/>
+      <stop offset="0.55" stop-color="#22C55E"/>
+      <stop offset="1" stop-color="#15803D"/>
+    </linearGradient>
+    <linearGradient id="leafGreen2" x1="-60" y1="-174" x2="71" y2="24" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#BBF7D0"/>
+      <stop offset="0.55" stop-color="#22C55E"/>
+      <stop offset="1" stop-color="#166534"/>
+    </linearGradient>
+    <linearGradient id="maple" x1="0" y1="-112" x2="0" y2="108" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F87171"/>
+      <stop offset="0.5" stop-color="#DC2626"/>
+      <stop offset="1" stop-color="#991B1B"/>
+    </linearGradient>
+  </defs>
+</svg>
