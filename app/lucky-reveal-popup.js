@@ -108,25 +108,21 @@ export default function LuckyRevealPopup({ reveal }) {
             <SlowWords startDelay={0.4}>Your lucky reveal is here</SlowWords>
           </h2>
           <p style={{ maxWidth: 560, lineHeight: 1.7, fontSize: '1.08rem' }}>
-            <SlowWords startDelay={1.15}>Auroras and stars are revealing your 6 Pick, 7 Pick, lucky color, and lucky day of the week.</SlowWords>
+            <SlowWords startDelay={1.15}>Auroras and stars are revealing your randomly generated lucky pick, lucky color, and lucky day of the week.</SlowWords>
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginTop: '1.4rem' }}>
-            {reveal.games.map((game, gameIndex) => (
-              <article key={game.name} style={{ padding: '1rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '0.75rem' }}>
-                  <SlowWords startDelay={1.9 + gameIndex * 0.55}>{game.name}</SlowWords>
-                </h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
-                  {game.numbers.map((number, numberIndex) => (
-                    <span key={number} style={{ display: 'inline-grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', background: '#fef3c7', color: '#0f172a', fontWeight: 900, boxShadow: '0 0 22px rgba(250, 204, 21, 0.65)', opacity: 0, transform: 'translateY(14px)', animation: 'lucky-word-rise 0.78s ease forwards', animationDelay: `${2.35 + gameIndex * 0.7 + numberIndex * 0.16}s` }}>
-                      {number}
-                    </span>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
+          <article style={{ padding: '1rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255, 255, 255, 0.2)', marginTop: '1.4rem' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '0.75rem' }}>
+              <SlowWords startDelay={1.9}>{reveal.game.name}</SlowWords>
+            </h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+              {reveal.game.numbers.map((number, numberIndex) => (
+                <span key={number} style={{ display: 'inline-grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', background: '#fef3c7', color: '#0f172a', fontWeight: 900, boxShadow: '0 0 22px rgba(250, 204, 21, 0.65)', opacity: 0, transform: 'translateY(14px)', animation: 'lucky-word-rise 0.78s ease forwards', animationDelay: `${2.35 + numberIndex * 0.22}s` }}>
+                  {number}
+                </span>
+              ))}
+            </div>
+          </article>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
             <div style={{ padding: '1rem', borderRadius: 18, background: 'rgba(153, 246, 228, 0.16)', border: '1px solid rgba(153, 246, 228, 0.34)' }}>

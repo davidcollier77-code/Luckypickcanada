@@ -52,12 +52,13 @@ export default async function Home({ searchParams }) {
   const storyShared = params?.storyShared === '1';
   const checkoutSessionId = params?.session_id || '';
   const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
+  const selectedGame = params?.pick === '7' ? games[1] : games[0];
   const purchasedReveal = canShareOnMap
     ? {
-        games: games.map((game) => ({
-          name: game.name,
-          numbers: generateNumbers(game.count, game.max),
-        })),
+        game: {
+          name: selectedGame.name,
+          numbers: generateNumbers(selectedGame.count, selectedGame.max),
+        },
         luckyColor: pickOne(luckyColors),
         luckyDay: pickOne(luckyDays),
       }
@@ -91,11 +92,20 @@ export default async function Home({ searchParams }) {
             <input type="hidden" name="checkoutType" value="lucky_pick" />
             <h2 style={{ marginTop: 0 }}>Lucky pick</h2>
             <p style={{ lineHeight: 1.5 }}>Choose either a 6 Pick or 7 Pick result with no duplicate numbers.</p>
+            <div style={{ display: 'grid', gap: '0.6rem', margin: '1rem 0' }}>
+              <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
+                <input type="radio" name="luckyPickGame" value="6" defaultChecked />
+                6 Pick: 1 to 49
+              </label>
+              <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
+                <input type="radio" name="luckyPickGame" value="7" />
+                7 Pick: 1 to 50
+              </label>
+            </div>
             <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.6 }}>
-              <li>6 Pick: 1 to 49</li>
-              <li>7 Pick: 1 to 50</li>
-              <li>Slow reveal with stars and Aurora</li>
+              <li>Randomly generated lucky pick</li>
               <li>Lucky color and lucky day included</li>
+              <li>Slow reveal with stars and Aurora</li>
             </ul>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
             <button type="submit" style={checkoutButtonStyle}>Buy lucky pick for $1.00</button>
@@ -249,8 +259,15 @@ export default async function Home({ searchParams }) {
               <button type="submit" style={checkoutButtonStyle}>Share little luck</button>
             </form>
           ) : (
-            <form action="/api/checkout" method="POST" style={{ marginTop: '1.5rem' }}>
+            <form action="/api/checkout" method="POST" style={{ display: 'grid', gap: '0.75rem', marginTop: '1.5rem', maxWidth: 360 }}>
               <input type="hidden" name="checkoutType" value="lucky_pick" />
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Pick type
+                <select name="luckyPickGame" defaultValue="6" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }}>
+                  <option value="6">6 Pick</option>
+                  <option value="7">7 Pick</option>
+                </select>
+              </label>
               <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to join the map</button>
             </form>
           )}

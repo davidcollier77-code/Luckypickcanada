@@ -39,6 +39,7 @@ export async function POST(request) {
   try {
     const formData = await request.formData();
     const checkoutType = formData.get('checkoutType');
+    const luckyPickGame = formData.get('luckyPickGame') === '7' ? '7' : '6';
     const origin = new URL(request.url).origin;
     const stripe = new Stripe(secretKey);
 
@@ -79,9 +80,10 @@ export async function POST(request) {
       ],
       metadata: {
         checkoutType,
+        luckyPickGame: checkoutType === 'lucky_pick' ? luckyPickGame : '',
       },
       success_url: checkoutType === 'lucky_pick'
-        ? `${origin}/?payment=success&map=1&session_id={CHECKOUT_SESSION_ID}#little-luck-map`
+        ? `${origin}/?payment=success&map=1&pick=${luckyPickGame}&session_id={CHECKOUT_SESSION_ID}#little-luck-map`
         : `${origin}/?payment=success`,
       cancel_url: `${origin}/?payment=cancelled`,
     });
