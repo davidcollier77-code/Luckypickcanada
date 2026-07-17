@@ -39,6 +39,39 @@ function pickOne(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function LogoMark() {
+  return (
+    <svg
+      aria-label="Lucky Pick Canada maple clover logo"
+      role="img"
+      viewBox="0 0 120 120"
+      style={{ width: 92, height: 92, flex: '0 0 auto', filter: 'drop-shadow(0 12px 22px rgba(0, 0, 0, 0.22))' }}
+    >
+      <defs>
+        <linearGradient id="maple-clover-red" x1="20" x2="100" y1="12" y2="108" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#ef4444" />
+          <stop offset="1" stopColor="#991b1b" />
+        </linearGradient>
+        <linearGradient id="maple-clover-green" x1="38" x2="82" y1="34" y2="86" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#86efac" />
+          <stop offset="1" stopColor="#15803d" />
+        </linearGradient>
+      </defs>
+      <circle cx="60" cy="60" r="56" fill="rgba(255,255,255,0.96)" />
+      <path
+        d="M60 9 L70 33 L94 20 L86 46 L111 53 L87 64 L96 91 L69 82 L60 111 L51 82 L24 91 L33 64 L9 53 L34 46 L26 20 L50 33 Z"
+        fill="url(#maple-clover-red)"
+      />
+      <path d="M60 62 C42 45 48 28 60 37 C72 28 78 45 60 62 Z" fill="url(#maple-clover-green)" />
+      <path d="M58 64 C41 82 24 75 34 62 C24 50 41 43 58 64 Z" fill="url(#maple-clover-green)" />
+      <path d="M62 64 C79 43 96 50 86 62 C96 75 79 82 62 64 Z" fill="url(#maple-clover-green)" />
+      <path d="M60 67 C76 84 70 100 60 91 C50 100 44 84 60 67 Z" fill="url(#maple-clover-green)" />
+      <path d="M60 61 C58 73 55 83 49 93" fill="none" stroke="#064e3b" strokeWidth="4" strokeLinecap="round" />
+      <circle cx="60" cy="63" r="5" fill="#fef3c7" />
+    </svg>
+  );
+}
+
 export default async function Home({ searchParams }) {
   const params = await searchParams;
   const [luckMap, luckyStories] = await Promise.all([getLuckMap(), getLuckyStories()]);
@@ -76,12 +109,17 @@ export default async function Home({ searchParams }) {
     }}>
       <LuckyRevealPopup reveal={purchasedReveal} />
       <section style={{ maxWidth: 900, margin: '0 auto' }}>
-        <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#5eead4' }}>
-          Lucky Pick Canada
-        </p>
-        <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', lineHeight: 1, margin: '1rem 0' }}>
-          6 Pick and 7 Pick lucky numbers
-        </h1>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <LogoMark />
+          <div>
+            <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#5eead4' }}>
+              Lucky Pick Canada
+            </p>
+            <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', lineHeight: 1, margin: '0.5rem 0 1rem' }}>
+              6 Pick and 7 Pick lucky numbers
+            </h1>
+          </div>
+        </div>
         <p style={{ fontSize: '1.25rem', maxWidth: 680, lineHeight: 1.6 }}>
           Get a $1 lucky pick with unique numbers, a slow reveal with stars and Aurora, plus your lucky color and day of the week.
         </p>
