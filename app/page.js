@@ -1,4 +1,5 @@
 import { getLuckMap, provinces } from './luck-map';
+import LuckyRevealPopup from './lucky-reveal-popup';
 import { getLuckyStories } from './lucky-stories';
 
 export const dynamic = 'force-dynamic';
@@ -51,6 +52,16 @@ export default async function Home({ searchParams }) {
   const storyShared = params?.storyShared === '1';
   const checkoutSessionId = params?.session_id || '';
   const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
+  const purchasedReveal = canShareOnMap
+    ? {
+        games: games.map((game) => ({
+          name: game.name,
+          numbers: generateNumbers(game.count, game.max),
+        })),
+        luckyColor: pickOne(luckyColors),
+        luckyDay: pickOne(luckyDays),
+      }
+    : null;
 
   return (
     <main style={{
@@ -60,6 +71,7 @@ export default async function Home({ searchParams }) {
       color: '#f8fafc',
       fontFamily: 'Arial, Helvetica, sans-serif',
     }}>
+      <LuckyRevealPopup reveal={purchasedReveal} />
       <section style={{ maxWidth: 900, margin: '0 auto' }}>
         <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#5eead4' }}>
           Lucky Pick Canada
