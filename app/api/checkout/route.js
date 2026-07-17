@@ -3,14 +3,14 @@ import Stripe from 'stripe';
 export const runtime = 'nodejs';
 
 const checkoutOptions = {
-  colored_pick: {
-    name: 'Colored lucky pick',
-    description: 'A colorful Lucky Pick Canada number set.',
+  lucky_pick: {
+    name: 'Lucky Pick Canada',
+    description: 'A 6 Pick or 7 Pick result with no duplicate numbers, slow reveal with stars and Aurora, lucky color, and lucky day of the week.',
     unitAmount: 100,
   },
-  extra_pick_pack: {
-    name: 'Lucky pick pack',
-    description: 'An extra Lucky Pick Canada package.',
+  gift_package: {
+    name: 'Lucky Pick Canada gift package',
+    description: 'A Lucky Pick Canada gift package.',
     unitAmount: 499,
   },
 };
