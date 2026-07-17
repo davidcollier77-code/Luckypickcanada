@@ -12,5 +12,11 @@
     "react": "latest",
     "react-dom": "latest",
     "stripe": "latest"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
   }
 }
