@@ -1,4 +1,5 @@
 import { getLuckMap, provinces } from './luck-map';
+import LuckyRevealPopup from './lucky-reveal-popup';
 import { getLuckyStories } from './lucky-stories';
 
 export const dynamic = 'force-dynamic';
@@ -46,11 +47,24 @@ export default async function Home({ searchParams }) {
   const mapError = params?.mapError;
   const suggestionError = params?.suggestionError;
   const storyError = params?.storyError;
+  const giftError = params?.giftError;
+  const giftSent = params?.giftSent === '1';
   const shared = params?.shared === '1';
   const suggested = params?.suggested === '1';
   const storyShared = params?.storyShared === '1';
   const checkoutSessionId = params?.session_id || '';
   const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
+  const selectedGame = params?.pick === '7' ? games[1] : games[0];
+  const purchasedReveal = canShareOnMap
+    ? {
+        game: {
+          name: selectedGame.name,
+          numbers: generateNumbers(selectedGame.count, selectedGame.max),
+        },
+        luckyColor: pickOne(luckyColors),
+        luckyDay: pickOne(luckyDays),
+      }
+    : null;
 
   return (
     <main style={{
@@ -60,6 +74,7 @@ export default async function Home({ searchParams }) {
       color: '#f8fafc',
       fontFamily: 'Arial, Helvetica, sans-serif',
     }}>
+      <LuckyRevealPopup reveal={purchasedReveal} />
       <section style={{ maxWidth: 900, margin: '0 auto' }}>
         <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#5eead4' }}>
           Lucky Pick Canada
@@ -79,11 +94,20 @@ export default async function Home({ searchParams }) {
             <input type="hidden" name="checkoutType" value="lucky_pick" />
             <h2 style={{ marginTop: 0 }}>Lucky pick</h2>
             <p style={{ lineHeight: 1.5 }}>Choose either a 6 Pick or 7 Pick result with no duplicate numbers.</p>
+            <div style={{ display: 'grid', gap: '0.6rem', margin: '1rem 0' }}>
+              <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
+                <input type="radio" name="luckyPickGame" value="6" defaultChecked />
+                6 Pick: 1 to 49
+              </label>
+              <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
+                <input type="radio" name="luckyPickGame" value="7" />
+                7 Pick: 1 to 50
+              </label>
+            </div>
             <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.6 }}>
-              <li>6 Pick: 1 to 49</li>
-              <li>7 Pick: 1 to 50</li>
-              <li>Slow reveal with stars and Aurora</li>
+              <li>Randomly generated lucky pick</li>
               <li>Lucky color and lucky day included</li>
+              <li>Slow reveal with stars and Aurora</li>
             </ul>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
             <button type="submit" style={checkoutButtonStyle}>Buy lucky pick for $1.00</button>
@@ -92,10 +116,37 @@ export default async function Home({ searchParams }) {
 
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
             <input type="hidden" name="checkoutType" value="gift_package" />
-            <h2 style={{ marginTop: 0 }}>Gift packages</h2>
-            <p style={{ lineHeight: 1.5 }}>Send Lucky Pick as a gift package.</p>
+            <h2 style={{ marginTop: 0 }}>Gift a lucky pick</h2>
+            <p style={{ lineHeight: 1.5 }}>Send the same lucky reveal by email with your personal greeting.</p>
+            {giftSent ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Your lucky pick gift was sent.</p> : null}
+            {giftError ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontWeight: 700 }}>{giftError}</p> : null}
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Recipient name
+                <input name="recipientName" type="text" maxLength="80" placeholder="Friend's name" required style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Recipient email
+                <input name="recipientEmail" type="email" maxLength="120" placeholder="friend@example.com" required style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Your name (optional)
+                <input name="senderName" type="text" maxLength="80" placeholder="From David" style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Pick type
+                <select name="luckyPickGame" defaultValue="6" style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }}>
+                  <option value="6">6 Pick</option>
+                  <option value="7">7 Pick</option>
+                </select>
+              </label>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Personal greeting
+                <textarea name="giftMessage" maxLength="500" rows={4} placeholder="Wishing you a lucky day." style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem', resize: 'vertical' }} />
+              </label>
+            </div>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$4.99 CAD</p>
-            <button type="submit" style={checkoutButtonStyle}>Buy gift package for $4.99</button>
+            <button type="submit" style={checkoutButtonStyle}>Send gift for $4.99</button>
           </form>
 
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
@@ -237,8 +288,15 @@ export default async function Home({ searchParams }) {
               <button type="submit" style={checkoutButtonStyle}>Share little luck</button>
             </form>
           ) : (
-            <form action="/api/checkout" method="POST" style={{ marginTop: '1.5rem' }}>
+            <form action="/api/checkout" method="POST" style={{ display: 'grid', gap: '0.75rem', marginTop: '1.5rem', maxWidth: 360 }}>
               <input type="hidden" name="checkoutType" value="lucky_pick" />
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Pick type
+                <select name="luckyPickGame" defaultValue="6" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }}>
+                  <option value="6">6 Pick</option>
+                  <option value="7">7 Pick</option>
+                </select>
+              </label>
               <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to join the map</button>
             </form>
           )}
