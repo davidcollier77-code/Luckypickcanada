@@ -42,6 +42,8 @@ export default async function Home({ searchParams }) {
   const { provinceCounts, recentShares, totalShares, isConfigured } = await getLuckMap();
   const mapError = params?.mapError;
   const shared = params?.shared === '1';
+  const checkoutSessionId = params?.session_id || '';
+  const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
 
   return (
     <main style={{
@@ -75,6 +77,7 @@ export default async function Home({ searchParams }) {
             </ul>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
             <button type="submit" style={checkoutButtonStyle}>Buy lucky pick for $1.00</button>
+            <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Little Luck Map.</p>
           </form>
 
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
@@ -139,29 +142,37 @@ export default async function Home({ searchParams }) {
             See where little luck is being shared
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Add your first name and province or territory, and the Canada map lights up with each place luck is shared.
+            Purchase the $1 Lucky Pick, then add your first name and province or territory so the Canada map lights up with each place luck is shared.
           </p>
 
           {shared ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Thanks for sharing a little luck.</p> : null}
           {mapError ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontWeight: 700 }}>{mapError}</p> : null}
           {!isConfigured ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fef3c7', color: '#92400e', fontWeight: 700 }}>The map is ready, but the database needs to be available before entries can be saved.</p> : null}
 
-          <form action="/api/luck-map" method="POST" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'end', marginTop: '1.5rem' }}>
-            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-              Your name
-              <input name="name" type="text" minLength="2" maxLength="40" placeholder="David" required style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
-            </label>
-            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-              Province or territory
-              <select name="province" required defaultValue="" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }}>
-                <option value="" disabled>Choose one</option>
-                {provinces.map((province) => (
-                  <option key={province.code} value={province.code}>{province.name}</option>
-                ))}
-              </select>
-            </label>
-            <button type="submit" style={checkoutButtonStyle}>Share little luck</button>
-          </form>
+          {canShareOnMap ? (
+            <form action="/api/luck-map" method="POST" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'end', marginTop: '1.5rem' }}>
+              <input type="hidden" name="checkoutSessionId" value={checkoutSessionId} />
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Your name
+                <input name="name" type="text" minLength="2" maxLength="40" placeholder="David" required style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Province or territory
+                <select name="province" required defaultValue="" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }}>
+                  <option value="" disabled>Choose one</option>
+                  {provinces.map((province) => (
+                    <option key={province.code} value={province.code}>{province.name}</option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit" style={checkoutButtonStyle}>Share little luck</button>
+            </form>
+          ) : (
+            <form action="/api/checkout" method="POST" style={{ marginTop: '1.5rem' }}>
+              <input type="hidden" name="checkoutType" value="lucky_pick" />
+              <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to join the map</button>
+            </form>
+          )}
 
           <div aria-label="Canada Little Luck Map" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>
             {provinces.map((province) => {

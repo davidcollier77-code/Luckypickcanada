@@ -1,3 +1,4 @@
+import Stripe from 'stripe';
 import postgres from 'postgres';
 
 export const provinces = [
@@ -19,6 +20,19 @@ export const provinces = [
 const provinceCodes = new Set(provinces.map((province) => province.code));
 
 let sql;
+let stripe;
+
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return null;
+  }
+
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+
+  return stripe;
+}
 
 function getSql() {
   if (!process.env.POSTGRES_URL) {
@@ -60,16 +74,57 @@ async function ensureLuckSharesTable(database) {
       id bigserial primary key,
       display_name text not null,
       province text not null,
+      checkout_session_id text unique,
       created_at timestamptz not null default now()
     )
   `;
+
+  await database`
+    alter table luck_shares
+    add column if not exists checkout_session_id text unique
+  `;
 }
 
-export async function createLuckShare({ name, province }) {
+async function verifyPaidLuckyPickSession(checkoutSessionId) {
+  const stripeClient = getStripe();
+
+  if (!stripeClient) {
+    return { error: 'Stripe is not configured. Complete the $1 Lucky Pick checkout first.' };
+  }
+
+  if (!checkoutSessionId) {
+    return { error: 'Purchase the $1 Lucky Pick before adding yourself to the map.' };
+  }
+
+  try {
+    const session = await stripeClient.checkout.sessions.retrieve(String(checkoutSessionId));
+
+    if (session.payment_status !== 'paid') {
+      return { error: 'Complete the $1 Lucky Pick payment before adding yourself to the map.' };
+    }
+
+    if (session.metadata?.checkoutType !== 'lucky_pick' || session.amount_total !== 100 || session.currency !== 'cad') {
+      return { error: 'Only the $1 Lucky Pick purchase unlocks the map.' };
+    }
+
+    return { checkoutSessionId: session.id };
+  } catch (error) {
+    console.error('Little Luck Map payment verification failed', error);
+    return { error: 'Unable to verify the $1 Lucky Pick purchase.' };
+  }
+}
+
+export async function createLuckShare({ name, province, checkoutSessionId }) {
   const validated = validateLuckShare({ name, province });
 
   if (validated.error) {
     return validated;
+  }
+
+  const payment = await verifyPaidLuckyPickSession(checkoutSessionId);
+
+  if (payment.error) {
+    return payment;
   }
 
   const database = getSql();
@@ -78,11 +133,16 @@ export async function createLuckShare({ name, province }) {
     return { error: 'The Little Luck Map database is not configured yet.' };
   }
 
-  await ensureLuckSharesTable(database);
-  await database`
-    insert into luck_shares (display_name, province)
-    values (${validated.name}, ${validated.province})
-  `;
+  try {
+    await ensureLuckSharesTable(database);
+    await database`
+      insert into luck_shares (display_name, province, checkout_session_id)
+      values (${validated.name}, ${validated.province}, ${payment.checkoutSessionId})
+    `;
+  } catch (error) {
+    console.error('Little Luck Map failed', error);
+    return { error: 'Unable to add this purchase to the map.' };
+  }
 
   return { ok: true };
 }
