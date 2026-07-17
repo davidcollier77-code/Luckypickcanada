@@ -71,6 +71,14 @@ export default function Home() {
           </form>
 
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
+            <input type="hidden" name="checkoutType" value="gift_package" />
+            <h2 style={{ marginTop: 0 }}>Gift packages</h2>
+            <p style={{ lineHeight: 1.5 }}>Send Lucky Pick as a gift package.</p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$4.99 CAD</p>
+            <button type="submit" style={checkoutButtonStyle}>Buy gift package for $4.99</button>
+          </form>
+
+          <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
             <input type="hidden" name="checkoutType" value="tip" />
             <h2 style={{ marginTop: 0 }}>Tip jar</h2>
             <label htmlFor="tipAmount" style={{ display: 'block', lineHeight: 1.5, marginBottom: '0.75rem' }}>

@@ -8,6 +8,11 @@ const checkoutOptions = {
     description: 'A 6 Pick or 7 Pick result with no duplicate numbers, slow reveal with stars and Aurora, lucky color, and lucky day of the week.',
     unitAmount: 100,
   },
+  gift_package: {
+    name: 'Lucky Pick Canada gift package',
+    description: 'A Lucky Pick Canada gift package.',
+    unitAmount: 499,
+  },
 };
 
 function dollarsToCents(amount) {
