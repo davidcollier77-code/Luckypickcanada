@@ -6,6 +6,18 @@ const games = [
   { name: 'Set for Life', count: 8, max: 47 },
 ];
 
+const checkoutButtonStyle = {
+  width: '100%',
+  padding: '0.9rem 1.4rem',
+  border: 0,
+  borderRadius: 999,
+  background: '#0f766e',
+  color: 'white',
+  fontSize: '1rem',
+  fontWeight: 700,
+  cursor: 'pointer',
+};
+
 function generateNumbers(count, max) {
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
 
@@ -37,11 +49,42 @@ export default function Home() {
           Generate sample Canadian lottery number sets for fun. Refresh the page for a new set of picks.
         </p>
 
-        <form action="/api/checkout" method="POST" style={{ marginTop: '2rem' }}>
-          <button type="submit" style={{ padding: '0.9rem 1.4rem', border: 0, borderRadius: 999, background: '#0f766e', color: 'white', fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}>
-            Buy lucky picks
-          </button>
-        </form>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
+          <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'white', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.12)' }}>
+            <input type="hidden" name="checkoutType" value="colored_pick" />
+            <h2 style={{ marginTop: 0 }}>Colored pick</h2>
+            <p style={{ lineHeight: 1.5 }}>Get the colorful lucky pick set.</p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
+            <button type="submit" style={checkoutButtonStyle}>Buy for $1.00</button>
+          </form>
+
+          <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'white', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.12)' }}>
+            <input type="hidden" name="checkoutType" value="extra_pick_pack" />
+            <h2 style={{ marginTop: 0 }}>Lucky pick pack</h2>
+            <p style={{ lineHeight: 1.5 }}>Grab the extra lucky pick option.</p>
+            <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$4.99 CAD</p>
+            <button type="submit" style={checkoutButtonStyle}>Buy for $4.99</button>
+          </form>
+
+          <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'white', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.12)' }}>
+            <input type="hidden" name="checkoutType" value="tip" />
+            <h2 style={{ marginTop: 0 }}>Tip jar</h2>
+            <label htmlFor="tipAmount" style={{ display: 'block', lineHeight: 1.5, marginBottom: '0.75rem' }}>
+              Enter any amount you want to tip.
+            </label>
+            <input
+              id="tipAmount"
+              name="tipAmount"
+              type="number"
+              min="0.50"
+              step="0.01"
+              placeholder="5.00"
+              required
+              style={{ width: '100%', boxSizing: 'border-box', padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem', marginBottom: '1rem' }}
+            />
+            <button type="submit" style={checkoutButtonStyle}>Leave a tip</button>
+          </form>
+        </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
           {games.map((game) => (

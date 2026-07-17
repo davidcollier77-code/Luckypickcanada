@@ -2,26 +2,78 @@ import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
 
+const checkoutOptions = {
+  colored_pick: {
+    name: 'Colored lucky pick',
+    description: 'A colorful Lucky Pick Canada number set.',
+    unitAmount: 100,
+  },
+  extra_pick_pack: {
+    name: 'Lucky pick pack',
+    description: 'An extra Lucky Pick Canada package.',
+    unitAmount: 499,
+  },
+};
+
+function dollarsToCents(amount) {
+  const normalizedAmount = String(amount || '').trim();
+
+  if (!/^\d+(\.\d{1,2})?$/.test(normalizedAmount)) {
+    return null;
+  }
+
+  const [dollars, cents = ''] = normalizedAmount.split('.');
+  return Number(dollars) * 100 + Number(cents.padEnd(2, '0'));
+}
+
 export async function POST(request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
-  const priceId = process.env.STRIPE_PRICE_ID;
 
-  if (!secretKey || !priceId) {
+  if (!secretKey) {
     return Response.json(
-      { error: 'Stripe is not configured. Set STRIPE_SECRET_KEY and STRIPE_PRICE_ID.' },
+      { error: 'Stripe is not configured. Set STRIPE_SECRET_KEY.' },
       { status: 500 },
     );
   }
 
   try {
-    const stripe = new Stripe(secretKey);
+    const formData = await request.formData();
+    const checkoutType = formData.get('checkoutType');
     const origin = new URL(request.url).origin;
+    const stripe = new Stripe(secretKey);
+
+    let checkoutOption = checkoutOptions[checkoutType];
+
+    if (checkoutType === 'tip') {
+      const tipAmount = dollarsToCents(formData.get('tipAmount'));
+
+      if (!tipAmount || tipAmount < 50) {
+        return Response.json({ error: 'Enter a tip amount of at least $0.50.' }, { status: 400 });
+      }
+
+      checkoutOption = {
+        name: 'Lucky Pick Canada tip jar',
+        description: 'Thanks for supporting Lucky Pick Canada.',
+        unitAmount: tipAmount,
+      };
+    }
+
+    if (!checkoutOption) {
+      return Response.json({ error: 'Choose a valid checkout option.' }, { status: 400 });
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [
         {
-          price: priceId,
+          price_data: {
+            currency: 'cad',
+            product_data: {
+              name: checkoutOption.name,
+              description: checkoutOption.description,
+            },
+            unit_amount: checkoutOption.unitAmount,
+          },
           quantity: 1,
         },
       ],
