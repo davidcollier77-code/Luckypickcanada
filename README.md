@@ -52,4 +52,4 @@ Set this Vercel environment variable before using the payment buttons:
 
 - `STRIPE_SECRET_KEY`: your Stripe secret key
 
-The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions for the $1.00 colored pick, $4.99 lucky pick pack, and a custom tip jar amount.
+The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions for the $1.00 Lucky Pick and a custom tip jar amount. Lucky Pick includes either 6 unique numbers from 1 to 49 or 7 unique numbers from 1 to 50, plus a slow reveal with stars and Aurora, a lucky color, and a lucky day of the week.
