@@ -1,5 +1,7 @@
 import postgres from 'postgres';
 
+const DEFAULT_SUGGESTIONS_TO_EMAIL = 'davidcollier77@gmail.com';
+
 let sql;
 
 function getSql() {
@@ -19,6 +21,15 @@ function cleanText(value, maxLength) {
     .trim()
     .replace(/\s+/g, ' ')
     .slice(0, maxLength);
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function validateSuggestion({ name, email, message }) {
@@ -53,6 +64,75 @@ async function ensureSuggestionsTable(database) {
   `;
 }
 
+async function saveSuggestion(database, suggestion) {
+  if (!database) {
+    return { ok: false, skipped: true };
+  }
+
+  await ensureSuggestionsTable(database);
+  await database`
+    insert into suggestions (display_name, email, message)
+    values (${suggestion.name}, ${suggestion.email}, ${suggestion.message})
+  `;
+
+  return { ok: true };
+}
+
+function buildSuggestionEmail({ name, email, message }) {
+  const displayName = name || 'Anonymous visitor';
+  const replyTo = email || 'Not provided';
+
+  return `
+    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#102033;">
+      <h1 style="margin:0 0 16px;color:#0f766e;">New Lucky Pick Canada suggestion</h1>
+      <p><strong>Name:</strong> ${escapeHtml(displayName)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(replyTo)}</p>
+      <div style="margin-top:18px;padding:16px;border-radius:14px;background:#f0fdfa;border:1px solid #99f6e4;">
+        ${escapeHtml(message).replaceAll('\n', '<br />')}
+      </div>
+    </div>
+  `;
+}
+
+async function emailSuggestion(suggestion) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.SUGGESTIONS_FROM_EMAIL || process.env.GIFT_FROM_EMAIL;
+  const toEmail = process.env.SUGGESTIONS_TO_EMAIL || DEFAULT_SUGGESTIONS_TO_EMAIL;
+
+  if (!resendApiKey || !fromEmail || !toEmail) {
+    return { ok: false, skipped: true };
+  }
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: toEmail,
+      reply_to: suggestion.email || undefined,
+      subject: 'New Lucky Pick Canada suggestion',
+      html: buildSuggestionEmail(suggestion),
+      text: [
+        'New Lucky Pick Canada suggestion',
+        `Name: ${suggestion.name || 'Anonymous visitor'}`,
+        `Email: ${suggestion.email || 'Not provided'}`,
+        '',
+        suggestion.message,
+      ].join('\n'),
+    }),
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(details || 'Resend email request failed');
+  }
+
+  return { ok: true };
+}
+
 export async function createSuggestion({ name, email, message, website }) {
   if (website) {
     return { ok: true };
@@ -64,21 +144,25 @@ export async function createSuggestion({ name, email, message, website }) {
     return validated;
   }
 
-  const database = getSql();
+  const results = await Promise.allSettled([
+    saveSuggestion(getSql(), validated),
+    emailSuggestion(validated),
+  ]);
 
-  if (!database) {
-    return { error: 'The suggestion box database is not configured yet.' };
+  const [saveResult, emailResult] = results;
+  const saved = saveResult.status === 'fulfilled' && saveResult.value.ok;
+  const emailed = emailResult.status === 'fulfilled' && emailResult.value.ok;
+
+  if (saveResult.status === 'rejected') {
+    console.error('Suggestion box save failed', saveResult.reason);
   }
 
-  try {
-    await ensureSuggestionsTable(database);
-    await database`
-      insert into suggestions (display_name, email, message)
-      values (${validated.name}, ${validated.email}, ${validated.message})
-    `;
-  } catch (error) {
-    console.error('Suggestion box failed', error);
-    return { error: 'Unable to save this suggestion right now.' };
+  if (emailResult.status === 'rejected') {
+    console.error('Suggestion box email failed', emailResult.reason);
+  }
+
+  if (!saved && !emailed) {
+    return { error: 'The suggestion box needs either POSTGRES_URL or Resend email settings before it can receive suggestions.' };
   }
 
   return { ok: true };
