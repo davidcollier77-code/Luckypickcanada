@@ -47,6 +47,8 @@ export default async function Home({ searchParams }) {
   const mapError = params?.mapError;
   const suggestionError = params?.suggestionError;
   const storyError = params?.storyError;
+  const giftError = params?.giftError;
+  const giftSent = params?.giftSent === '1';
   const shared = params?.shared === '1';
   const suggested = params?.suggested === '1';
   const storyShared = params?.storyShared === '1';
@@ -114,10 +116,37 @@ export default async function Home({ searchParams }) {
 
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
             <input type="hidden" name="checkoutType" value="gift_package" />
-            <h2 style={{ marginTop: 0 }}>Gift packages</h2>
-            <p style={{ lineHeight: 1.5 }}>Send Lucky Pick as a gift package.</p>
+            <h2 style={{ marginTop: 0 }}>Gift a lucky pick</h2>
+            <p style={{ lineHeight: 1.5 }}>Send the same lucky reveal by email with your personal greeting.</p>
+            {giftSent ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Your lucky pick gift was sent.</p> : null}
+            {giftError ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontWeight: 700 }}>{giftError}</p> : null}
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Recipient name
+                <input name="recipientName" type="text" maxLength="80" placeholder="Friend's name" required style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Recipient email
+                <input name="recipientEmail" type="email" maxLength="120" placeholder="friend@example.com" required style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Your name (optional)
+                <input name="senderName" type="text" maxLength="80" placeholder="From David" style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Pick type
+                <select name="luckyPickGame" defaultValue="6" style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }}>
+                  <option value="6">6 Pick</option>
+                  <option value="7">7 Pick</option>
+                </select>
+              </label>
+              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
+                Personal greeting
+                <textarea name="giftMessage" maxLength="500" rows={4} placeholder="Wishing you a lucky day." style={{ padding: '0.75rem 0.9rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem', resize: 'vertical' }} />
+              </label>
+            </div>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$4.99 CAD</p>
-            <button type="submit" style={checkoutButtonStyle}>Buy gift package for $4.99</button>
+            <button type="submit" style={checkoutButtonStyle}>Send gift for $4.99</button>
           </form>
 
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
