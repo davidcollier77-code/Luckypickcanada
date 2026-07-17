@@ -56,3 +56,5 @@ Set these Vercel environment variables before using the payment buttons and Litt
 The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions for the $1.00 Lucky Pick, $4.99 gift packages, and a custom tip jar amount. Lucky Pick includes either 6 unique numbers from 1 to 49 or 7 unique numbers from 1 to 50, plus a slow reveal with stars and Aurora, a lucky color, and a lucky day of the week.
 
 After completing the $1.00 Lucky Pick checkout, visitors can add their name and province or territory to the Little Luck Map. Submissions are verified against the paid Stripe Checkout Session, saved in the `luck_shares` database table, and shown as province counts plus recent shares.
+
+Disclaimer: Lucky Pick Canada is not affiliated with, endorsed by, or connected to any lottery organization. Picks are for fun and entertainment only.
