@@ -1,4 +1,5 @@
 import { getLuckMap, provinces } from './luck-map';
+import { getLuckyStories } from './lucky-stories';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,11 +40,15 @@ function pickOne(items) {
 
 export default async function Home({ searchParams }) {
   const params = await searchParams;
-  const { provinceCounts, recentShares, totalShares, isConfigured } = await getLuckMap();
+  const [luckMap, luckyStories] = await Promise.all([getLuckMap(), getLuckyStories()]);
+  const { provinceCounts, recentShares, totalShares, isConfigured } = luckMap;
+  const { recentStories, isConfigured: areStoriesConfigured } = luckyStories;
   const mapError = params?.mapError;
   const suggestionError = params?.suggestionError;
+  const storyError = params?.storyError;
   const shared = params?.shared === '1';
   const suggested = params?.suggested === '1';
+  const storyShared = params?.storyShared === '1';
   const checkoutSessionId = params?.session_id || '';
   const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
 
@@ -141,6 +146,62 @@ export default async function Home({ searchParams }) {
             );
           })}
         </div>
+
+        <section id="lucky-stories" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
+          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>
+            Lucky Stories
+          </p>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
+            Share your stories of luck and happiness
+          </h2>
+          <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
+            Lucky Pick Canada is more than lucky number reveals and gifts. It’s a place to share where you found luck, what it meant, and how a little happiness showed up in your life.
+          </p>
+
+          {storyShared ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Thanks for sharing your lucky story.</p> : null}
+          {storyError ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontWeight: 700 }}>{storyError}</p> : null}
+          {!areStoriesConfigured ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fef3c7', color: '#92400e', fontWeight: 700 }}>Lucky Stories is ready, but the database needs to be available before stories can be saved.</p> : null}
+
+          <form action="/api/lucky-stories" method="POST" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Your name
+                <input name="name" type="text" minLength="2" maxLength="40" placeholder="David" required style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Where did it happen? (optional)
+                <input name="location" type="text" maxLength="80" placeholder="Ontario, Canada" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+            </div>
+            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+              Your lucky story
+              <textarea name="story" minLength="20" maxLength="1500" rows={6} placeholder="Tell us where you found luck or happiness." required style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem', resize: 'vertical' }} />
+            </label>
+            <label aria-hidden="true" style={{ display: 'none' }}>
+              Website
+              <input name="website" type="text" tabIndex={-1} autoComplete="off" />
+            </label>
+            <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Share your story</button>
+          </form>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <h3 style={{ marginBottom: '0.5rem' }}>Recent lucky stories</h3>
+            {recentStories.length ? (
+              <div style={{ display: 'grid', gap: '0.75rem' }}>
+                {recentStories.map((entry) => (
+                  <article key={`${entry.display_name}-${entry.created_at}`} style={{ padding: '1rem', borderRadius: 18, background: '#f8fafc', border: '1px solid #cbd5e1' }}>
+                    <p style={{ marginTop: 0, lineHeight: 1.6 }}>{entry.story}</p>
+                    <p style={{ marginBottom: 0, fontWeight: 700 }}>
+                      — {entry.display_name}{entry.location ? `, ${entry.location}` : ''}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p>No lucky stories yet. Be the first to share where luck found you.</p>
+            )}
+          </div>
+        </section>
 
         <section id="little-luck-map" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
           <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>
