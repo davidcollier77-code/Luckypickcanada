@@ -41,7 +41,9 @@ export default async function Home({ searchParams }) {
   const params = await searchParams;
   const { provinceCounts, recentShares, totalShares, isConfigured } = await getLuckMap();
   const mapError = params?.mapError;
+  const suggestionError = params?.suggestionError;
   const shared = params?.shared === '1';
+  const suggested = params?.suggested === '1';
   const checkoutSessionId = params?.session_id || '';
   const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
 
@@ -205,6 +207,43 @@ export default async function Home({ searchParams }) {
               <p>No shares yet. Be the first to put little luck on the map.</p>
             )}
           </div>
+        </section>
+
+        <section id="suggestion-box" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
+          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>
+            Suggestion Box
+          </p>
+          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
+            Help make Lucky Pick Canada better
+          </h2>
+          <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
+            Share an idea for a new feature, a smoother checkout, a better gift package, or anything that would make the site more fun to use.
+          </p>
+
+          {suggested ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Thanks for the suggestion. I’ll review it soon.</p> : null}
+          {suggestionError ? <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontWeight: 700 }}>{suggestionError}</p> : null}
+
+          <form action="/api/suggestions" method="POST" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Name (optional)
+                <input name="name" type="text" maxLength="40" placeholder="David" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+                Email (optional)
+                <input name="email" type="email" maxLength="120" placeholder="you@example.com" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} />
+              </label>
+            </div>
+            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
+              Your suggestion
+              <textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem', resize: 'vertical' }} />
+            </label>
+            <label aria-hidden="true" style={{ display: 'none' }}>
+              Website
+              <input name="website" type="text" tabIndex={-1} autoComplete="off" />
+            </label>
+            <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
+          </form>
         </section>
       </section>
     </main>
