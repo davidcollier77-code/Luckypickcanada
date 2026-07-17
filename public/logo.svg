@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Lucky Pick Canada maple clover logo</title>
+  <desc id="desc">A red Canadian maple leaf with a green four-leaf clover in front.</desc>
+  <defs>
+    <radialGradient id="leafGradient" cx="50%" cy="38%" r="62%">
+      <stop offset="0" stop-color="#ff3b30"/>
+      <stop offset="0.42" stop-color="#e30613"/>
+      <stop offset="1" stop-color="#8f0008"/>
+    </radialGradient>
+    <radialGradient id="cloverGradient" cx="38%" cy="30%" r="70%">
+      <stop offset="0" stop-color="#9be64a"/>
+      <stop offset="0.48" stop-color="#35b51f"/>
+      <stop offset="1" stop-color="#087312"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="#fff"/>
+  <g filter="url(#softShadow)">
+    <path fill="url(#leafGradient)" stroke="#720008" stroke-width="8" stroke-linejoin="round" d="M512 24l72 189 61-73 18 148 105-88-29 158 158-45-93 134 157 23-137 88 137 90-168 19 81 144-172-54 6 164-127-111-69 190-69-190-127 111 6-164-172 54 81-144-168-19 137-90-137-88 157-23-93-134 158 45-29-158 105 88 18-148 61 73L512 24z"/>
+    <path fill="none" stroke="#ff756f" stroke-width="5" stroke-linecap="round" opacity="0.7" d="M512 78v842M512 518L291 330M512 518l221-188M512 688L249 757M512 688l263 69"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <path fill="url(#cloverGradient)" stroke="#076b12" stroke-width="8" d="M514 548c-69-127-2-225 91-204 79 18 91 98 36 166 87-37 164 2 163 79-1 94-102 126-207 50 35 103-12 189-91 190-81 1-124-88-84-190-106 75-207 42-207-51 0-77 78-115 164-78-55-68-43-148 37-166 92-21 160 77 98 204z"/>
+    <path fill="none" stroke="#baf27a" stroke-width="5" stroke-linecap="round" opacity="0.72" d="M512 548c-44-68-87-113-119-144M512 548c50-72 91-115 126-146M512 548c-77 13-145 27-204 50M512 548c79 14 148 31 207 54M512 548c-18 80-24 149-20 211"/>
+    <path fill="none" stroke="#0a7115" stroke-width="18" stroke-linecap="round" d="M505 622c-7 92-21 175-80 250"/>
+    <path fill="none" stroke="#44bf25" stroke-width="8" stroke-linecap="round" d="M503 626c-10 81-25 151-65 210"/>
+  </g>
+</svg>

@@ -76,9 +76,12 @@ export default async function Home({ searchParams }) {
     }}>
       <LuckyRevealPopup reveal={purchasedReveal} />
       <section style={{ maxWidth: 900, margin: '0 auto' }}>
-        <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#5eead4' }}>
-          Lucky Pick Canada
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <img src="/logo.svg" alt="Lucky Pick Canada logo" width="120" height="120" style={{ width: 120, height: 120, borderRadius: 24, background: 'white', boxShadow: '0 18px 45px rgba(0, 0, 0, 0.28)' }} />
+          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#5eead4' }}>
+            Lucky Pick Canada
+          </p>
+        </div>
         <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', lineHeight: 1, margin: '1rem 0' }}>
           6 Pick and 7 Pick lucky numbers
         </h1>
