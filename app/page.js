@@ -109,6 +109,9 @@ export default async function Home({ searchParams }) {
               required
               style={{ width: '100%', boxSizing: 'border-box', padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem', marginBottom: '1rem' }}
             />
+            <p style={{ lineHeight: 1.5, marginTop: 0 }}>
+              Your tip helps keep Lucky Pick Canada running and supports new ideas, improvements, and visitor suggestions. Thanks for your support.
+            </p>
             <button type="submit" style={checkoutButtonStyle}>Leave a tip</button>
           </form>
         </div>
