@@ -48,8 +48,11 @@ This project is licensed under the MIT License — see LICENSE for details.
 
 ## Stripe Checkout
 
-Set this Vercel environment variable before using the payment buttons:
+Set these Vercel environment variables before using the payment buttons and Little Luck Map:
 
 - `STRIPE_SECRET_KEY`: your Stripe secret key
+- `POSTGRES_URL`: database connection string used to save Little Luck Map submissions
 
 The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions for the $1.00 Lucky Pick, $4.99 gift packages, and a custom tip jar amount. Lucky Pick includes either 6 unique numbers from 1 to 49 or 7 unique numbers from 1 to 50, plus a slow reveal with stars and Aurora, a lucky color, and a lucky day of the week.
+
+Visitors can also add their name and province or territory to the Little Luck Map. Submissions are saved in the `luck_shares` database table and shown as province counts plus recent shares.
