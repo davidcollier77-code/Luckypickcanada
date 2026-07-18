@@ -1,4 +1,5 @@
 import { getLuckMap, provinces } from './luck-map';
+import LuckMeter from './luck-meter';
 import LuckyRevealPopup from './lucky-reveal-popup';
 import { getLuckyStories } from './lucky-stories';
 
@@ -133,6 +134,8 @@ export default async function Home({ searchParams }) {
         <p style={{ maxWidth: 680, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255, 255, 255, 0.24)' }}>
           Disclaimer: Lucky Pick Canada is not affiliated with, endorsed by, or connected to any lottery organization. Picks are for fun and entertainment only.
         </p>
+
+        <LuckMeter />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
           <form action="/api/checkout" method="POST" style={{ padding: '1.5rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
