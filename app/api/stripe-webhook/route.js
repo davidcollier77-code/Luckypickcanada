@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { deliverGiftEmailForSession } from '../../../lib/gift-email.js';
+import { deliverGiftEmailForSession } from '../../gift-email';
 
 export const runtime = 'nodejs';
 

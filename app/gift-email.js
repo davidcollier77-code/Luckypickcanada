@@ -1,7 +1,7 @@
 const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
 const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-function generateNumbers(count, max) {
+export function generateNumbers(count, max) {
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
 
   for (let index = numbers.length - 1; index > 0; index -= 1) {
@@ -25,7 +25,19 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-function buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyDay }) {
+export function createGiftReveal(metadata) {
+  const isSevenPick = metadata.luckyPickGame === '7';
+  const numbers = generateNumbers(isSevenPick ? 7 : 6, isSevenPick ? 50 : 49);
+
+  return {
+    gameName: isSevenPick ? '7 Pick' : '6 Pick',
+    numbers,
+    luckyColor: pickOne(luckyColors),
+    luckyDay: pickOne(luckyDays),
+  };
+}
+
+export function buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyDay }) {
   const recipientName = escapeHtml(metadata.recipientName || 'Friend');
   const senderName = escapeHtml(metadata.senderName || 'Someone');
   const giftMessage = escapeHtml(metadata.giftMessage || 'Wishing you a lucky day.');
@@ -54,6 +66,28 @@ function buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyDay }) {
       </div>
     </div>
   `;
+}
+
+export async function sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal = createGiftReveal(metadata) }) {
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: metadata.recipientEmail,
+      subject: `${metadata.senderName || 'Someone'} sent you a Lucky Pick Canada gift`,
+      html: buildGiftEmail({ metadata, ...reveal }),
+    }),
+  });
+
+  if (!response.ok) {
+    return { ok: false, details: await response.text(), reveal };
+  }
+
+  return { ok: true, details: await response.text(), reveal };
 }
 
 function validateGiftSession(session) {
@@ -90,48 +124,23 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   }
 
   const metadata = validation.metadata;
-  const isSevenPick = metadata.luckyPickGame === '7';
-  const gameName = isSevenPick ? '7 Pick' : '6 Pick';
-  const numbers = generateNumbers(isSevenPick ? 7 : 6, isSevenPick ? 50 : 49);
-  const luckyColor = pickOne(luckyColors);
-  const luckyDay = pickOne(luckyDays);
+  const reveal = createGiftReveal(metadata);
 
-  // Claim delivery by writing giftDeliveredAt BEFORE sending the email. Two
-  // delivery paths (the success-redirect GET and the checkout.session.completed
-  // webhook) fire within seconds of each other for the same session, so writing
-  // the marker only after the (multi-second) Resend call left a wide window in
-  // which both callers passed the `!giftDeliveredAt` check and each sent the
-  // recipient a duplicate email. Claiming first closes that window.
   await stripe.checkout.sessions.update(sessionId, {
     metadata: {
       ...metadata,
       giftDeliveredAt: new Date().toISOString(),
-      giftNumbers: numbers.join(','),
-      giftLuckyColor: luckyColor,
-      giftLuckyDay: luckyDay,
+      giftNumbers: reveal.numbers.join(','),
+      giftLuckyColor: reveal.luckyColor,
+      giftLuckyDay: reveal.luckyDay,
     },
   });
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: fromEmail,
-      to: metadata.recipientEmail,
-      subject: `${metadata.senderName || 'Someone'} sent you a Lucky Pick Canada gift`,
-      html: buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyDay }),
-    }),
-  });
+  const emailResult = await sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal });
 
-  if (!response.ok) {
-    const details = await response.text();
-    console.error('Gift email failed', details);
+  if (!emailResult.ok) {
+    console.error('Gift email failed', emailResult.details);
 
-    // Release the claim so the delivery can be retried on a later invocation.
-    // Stripe deletes metadata keys when they are set to an empty string.
     try {
       await stripe.checkout.sessions.update(sessionId, {
         metadata: {
@@ -149,5 +158,5 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
     return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
   }
 
-  return { ok: true, delivered: true };
+  return { ok: true, delivered: true, reveal };
 }
