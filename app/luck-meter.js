@@ -22,6 +22,10 @@ export default function LuckMeter() {
   }, []);
 
   function startMeter() {
+    if (hasStarted || isSpinning) {
+      return;
+    }
+
     if (frameRef.current) {
       cancelAnimationFrame(frameRef.current);
     }
@@ -79,15 +83,15 @@ export default function LuckMeter() {
             Start your luck meter
           </h2>
           <p style={{ margin: 0, lineHeight: 1.6, maxWidth: 560 }}>
-            Tap the button and the meter will spin up a fresh luck percentage for today.
+            Tap the button once and the meter will reveal your true luck percentage for today.
           </p>
           <button
             type="button"
             onClick={startMeter}
-            disabled={isSpinning}
-            style={{ marginTop: '1rem', padding: '0.9rem 1.4rem', border: 0, borderRadius: 999, background: isSpinning ? '#94a3b8' : '#0f766e', color: 'white', fontSize: '1rem', fontWeight: 900, cursor: isSpinning ? 'wait' : 'pointer', boxShadow: '0 14px 28px rgba(15, 118, 110, 0.24)' }}
+            disabled={isSpinning || hasStarted}
+            style={{ marginTop: '1rem', padding: '0.9rem 1.4rem', border: 0, borderRadius: 999, background: isSpinning || hasStarted ? '#94a3b8' : '#0f766e', color: 'white', fontSize: '1rem', fontWeight: 900, cursor: isSpinning ? 'wait' : hasStarted ? 'not-allowed' : 'pointer', boxShadow: '0 14px 28px rgba(15, 118, 110, 0.24)' }}
           >
-            {isSpinning ? 'Meter spinning...' : hasStarted ? 'Spin again' : 'Start Meter'}
+            {isSpinning ? 'Meter spinning...' : hasStarted ? 'Luck locked in' : 'Start Meter'}
           </button>
         </div>
 
@@ -103,7 +107,7 @@ export default function LuckMeter() {
               Luck Level Today: {hasStarted ? `${luckLevel}%` : 'Ready'}
             </p>
             <p role="status" aria-live="polite" style={{ margin: '0.35rem 0 0', color: '#99f6e4', fontWeight: 800 }}>
-              {isSpinning ? 'Spinning now...' : targetLuck === null ? 'Press Start Meter to begin' : `Landed on ${targetLuck}% today`}
+              {isSpinning ? 'Spinning now...' : targetLuck === null ? 'Press Start Meter to begin' : `Final luck: ${targetLuck}% today`}
             </p>
           </div>
         </div>
