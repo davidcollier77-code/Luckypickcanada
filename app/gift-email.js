@@ -89,3 +89,74 @@ export async function sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal 
 
   return { ok: true, details: await response.text(), reveal };
 }
+
+function validateGiftSession(session) {
+  const metadata = session.metadata || {};
+
+  if (session.payment_status !== 'paid' || metadata.checkoutType !== 'gift_package' || session.amount_total !== 499 || session.currency !== 'cad') {
+    return { ok: false, reason: 'Only a paid $4.99 gift package can send a gift email.' };
+  }
+
+  if (metadata.giftDeliveredAt) {
+    return { ok: true, alreadyDelivered: true, metadata };
+  }
+
+  if (!metadata.recipientEmail || !metadata.recipientName) {
+    return { ok: false, reason: 'The gift recipient details were missing.' };
+  }
+
+  return { ok: true, alreadyDelivered: false, metadata };
+}
+
+export async function deliverGiftEmailForSession(stripe, sessionId) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.GIFT_FROM_EMAIL;
+
+  if (!resendApiKey || !fromEmail) {
+    return { ok: false, reason: 'Gift email is ready, but email delivery needs RESEND_API_KEY and GIFT_FROM_EMAIL.' };
+  }
+
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  const validation = validateGiftSession(session);
+
+  if (!validation.ok || validation.alreadyDelivered) {
+    return validation;
+  }
+
+  const metadata = validation.metadata;
+  const reveal = createGiftReveal(metadata);
+
+  await stripe.checkout.sessions.update(sessionId, {
+    metadata: {
+      ...metadata,
+      giftDeliveredAt: new Date().toISOString(),
+      giftNumbers: reveal.numbers.join(','),
+      giftLuckyColor: reveal.luckyColor,
+      giftLuckyDay: reveal.luckyDay,
+    },
+  });
+
+  const emailResult = await sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal });
+
+  if (!emailResult.ok) {
+    console.error('Gift email failed', emailResult.details);
+
+    try {
+      await stripe.checkout.sessions.update(sessionId, {
+        metadata: {
+          ...metadata,
+          giftDeliveredAt: '',
+          giftNumbers: '',
+          giftLuckyColor: '',
+          giftLuckyDay: '',
+        },
+      });
+    } catch (releaseError) {
+      console.error('Failed to release gift delivery claim', releaseError);
+    }
+
+    return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
+  }
+
+  return { ok: true, delivered: true, reveal };
+}
