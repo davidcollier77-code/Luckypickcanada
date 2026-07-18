@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import ShareLuckyPickButton from './share-lucky-pick-button';
 
 const overlayStyle = {
   position: 'fixed',
@@ -134,6 +135,8 @@ export default function LuckyRevealPopup({ reveal }) {
               <strong style={{ fontSize: '1.35rem' }}><SlowWords startDelay={4.55}>{reveal.luckyDay}</SlowWords></strong>
             </div>
           </div>
+
+          <ShareLuckyPickButton reveal={reveal} />
 
           <button type="button" onClick={() => setIsOpen(false)} style={{ marginTop: '1.4rem', padding: '0.9rem 1.4rem', border: 0, borderRadius: 999, background: '#5eead4', color: '#042f2e', fontSize: '1rem', fontWeight: 900, cursor: 'pointer' }}>
             Add me to the Little Luck Map
