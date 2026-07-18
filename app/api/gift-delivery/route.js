@@ -15,13 +15,34 @@ function redirectHome(request, params) {
   return Response.redirect(url, 303);
 }
 
+async function findCheckoutSession(stripe, paymentId) {
+  if (!paymentId) {
+    return null;
+  }
+
+  if (paymentId.startsWith('cs_')) {
+    return stripe.checkout.sessions.retrieve(paymentId);
+  }
+
+  if (!paymentId.startsWith('pi_')) {
+    return null;
+  }
+
+  const sessions = await stripe.checkout.sessions.list({
+    payment_intent: paymentId,
+    limit: 1,
+  });
+
+  return sessions.data[0] || null;
+}
+
 export async function GET(request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.GIFT_FROM_EMAIL;
-  const sessionId = new URL(request.url).searchParams.get('session_id');
+  const paymentId = new URL(request.url).searchParams.get('session_id') || new URL(request.url).searchParams.get('payment_id');
 
-  if (!secretKey || !sessionId) {
+  if (!secretKey || !paymentId) {
     return redirectHome(request, { giftError: 'Unable to verify the gift payment.' });
   }
 
@@ -32,7 +53,12 @@ export async function GET(request) {
   const stripe = new Stripe(secretKey);
 
   try {
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await findCheckoutSession(stripe, paymentId);
+
+    if (!session) {
+      return redirectHome(request, { giftError: 'Unable to find the paid gift checkout session.' });
+    }
+
     const metadata = session.metadata || {};
 
     if (session.payment_status !== 'paid' || metadata.checkoutType !== 'gift_package' || session.amount_total !== 499 || session.currency !== 'cad') {
@@ -55,7 +81,7 @@ export async function GET(request) {
       return redirectHome(request, { giftError: 'Payment succeeded, but the gift email could not be sent right now.' });
     }
 
-    await stripe.checkout.sessions.update(sessionId, {
+    await stripe.checkout.sessions.update(session.id, {
       metadata: {
         ...metadata,
         giftDeliveredAt: new Date().toISOString(),
