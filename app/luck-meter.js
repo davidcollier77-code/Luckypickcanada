@@ -3,30 +3,45 @@
 import { useEffect, useRef, useState } from 'react';
 
 function getTodaysLuck() {
-  return Math.floor(Math.random() * 76) + 25;
+  return Math.floor(Math.random() * 101);
 }
 
 export default function LuckMeter() {
-  const [luckLevel, setLuckLevel] = useState(25);
-  const [targetLuck, setTargetLuck] = useState(87);
-  const [isSpinning, setIsSpinning] = useState(true);
+  const [luckLevel, setLuckLevel] = useState(0);
+  const [targetLuck, setTargetLuck] = useState(null);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const frameRef = useRef(null);
 
   useEffect(() => {
+    return () => {
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, []);
+
+  function startMeter() {
+    if (frameRef.current) {
+      cancelAnimationFrame(frameRef.current);
+    }
+
     const target = getTodaysLuck();
     const duration = 1800;
     const start = performance.now();
 
     setTargetLuck(target);
+    setHasStarted(true);
     setIsSpinning(true);
+    setLuckLevel(0);
 
     function tick(now) {
       const progress = Math.min((now - start) / duration, 1);
       const easedProgress = 1 - Math.pow(1 - progress, 3);
       const spin = Math.sin(progress * Math.PI * 8) * (1 - progress) * 16;
-      const nextLevel = Math.round(25 + (target - 25) * easedProgress + spin);
+      const nextLevel = Math.round(target * easedProgress + spin);
 
-      setLuckLevel(Math.max(25, Math.min(100, nextLevel)));
+      setLuckLevel(Math.max(0, Math.min(100, nextLevel)));
 
       if (progress < 1) {
         frameRef.current = requestAnimationFrame(tick);
@@ -37,15 +52,9 @@ export default function LuckMeter() {
     }
 
     frameRef.current = requestAnimationFrame(tick);
+  }
 
-    return () => {
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
-    };
-  }, []);
-
-  const needleRotation = -90 + ((luckLevel - 25) / 75) * 180;
+  const needleRotation = -90 + (luckLevel / 100) * 180;
 
   return (
     <section aria-labelledby="luck-meter-title" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 28, background: 'radial-gradient(circle at 12% 18%, rgba(250, 204, 21, 0.22), transparent 20%), radial-gradient(circle at 88% 5%, rgba(94, 234, 212, 0.34), transparent 24%), rgba(255, 255, 255, 0.94)', color: '#102033', boxShadow: '0 24px 60px rgba(15, 118, 110, 0.22)', overflow: 'hidden' }}>
@@ -67,11 +76,19 @@ export default function LuckMeter() {
             Daily Luck Meter
           </p>
           <h2 id="luck-meter-title" style={{ margin: '0.4rem 0 0.75rem', fontSize: 'clamp(1.9rem, 5vw, 3.2rem)', lineHeight: 1 }}>
-            Your luck is warming up
+            Start your luck meter
           </h2>
           <p style={{ margin: 0, lineHeight: 1.6, maxWidth: 560 }}>
-            A playful on-page spin for today’s vibe. Every visit rolls a fresh percentage from 25% to 100%.
+            Tap the button and the meter will spin up a fresh luck percentage for today.
           </p>
+          <button
+            type="button"
+            onClick={startMeter}
+            disabled={isSpinning}
+            style={{ marginTop: '1rem', padding: '0.9rem 1.4rem', border: 0, borderRadius: 999, background: isSpinning ? '#94a3b8' : '#0f766e', color: 'white', fontSize: '1rem', fontWeight: 900, cursor: isSpinning ? 'wait' : 'pointer', boxShadow: '0 14px 28px rgba(15, 118, 110, 0.24)' }}
+          >
+            {isSpinning ? 'Meter spinning...' : hasStarted ? 'Spin again' : 'Start Meter'}
+          </button>
         </div>
 
         <div style={{ display: 'grid', gap: '0.85rem' }}>
@@ -83,10 +100,10 @@ export default function LuckMeter() {
 
           <div style={{ padding: '1rem', borderRadius: 20, background: '#042f2e', color: '#f8fafc', textAlign: 'center', border: '1px solid rgba(20, 184, 166, 0.4)' }}>
             <p style={{ margin: 0, fontSize: 'clamp(1.45rem, 5vw, 2.4rem)', fontWeight: 900 }}>
-              🍀 Luck Level Today: {luckLevel}% of course.
+              Luck Level Today: {hasStarted ? `${luckLevel}%` : 'Ready'}
             </p>
             <p role="status" aria-live="polite" style={{ margin: '0.35rem 0 0', color: '#99f6e4', fontWeight: 800 }}>
-              {isSpinning ? 'Spinning now...' : `Landed on ${targetLuck}% today`}
+              {isSpinning ? 'Spinning now...' : targetLuck === null ? 'Press Start Meter to begin' : `Landed on ${targetLuck}% today`}
             </p>
           </div>
         </div>
