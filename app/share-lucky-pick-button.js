@@ -6,17 +6,18 @@ const buttonStyle = {
   padding: '0.9rem 1.25rem',
   border: 0,
   borderRadius: 999,
-  background: 'linear-gradient(135deg, #fff1a8 0%, #facc15 45%, #b7791f 100%)',
+  background: 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)',
   color: '#071225',
   fontSize: '1rem',
   fontWeight: 900,
   cursor: 'pointer',
-  boxShadow: '0 0 22px rgba(250, 204, 21, 0.34)',
+  boxShadow: '0 0 24px rgba(250, 204, 21, 0.44), 0 14px 28px rgba(183, 121, 31, 0.22)',
+  transition: 'transform 180ms ease, filter 180ms ease, box-shadow 180ms ease',
 };
 
 const secondaryButtonStyle = {
   ...buttonStyle,
-  background: 'rgba(255, 255, 255, 0.08)',
+  background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(16, 185, 129, 0.08))',
   color: '#fff7d6',
   border: '1px solid rgba(255, 235, 160, 0.28)',
 };
@@ -85,14 +86,15 @@ export default function ShareLuckyPickButton({ reveal }) {
 
   return (
     <div style={{ marginTop: '1.4rem', display: 'grid', gap: '0.75rem' }}>
+      <style>{`.share-lucky-button:hover { transform: translateY(-2px); filter: saturate(1.1); }`}</style>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-        <button type="button" onClick={shareLuckyPick} style={buttonStyle}>
+        <button type="button" onClick={shareLuckyPick} className="share-lucky-button" style={buttonStyle}>
           Share my lucky pick
         </button>
-        <button type="button" onClick={shareToFacebook} style={secondaryButtonStyle}>
+        <button type="button" onClick={shareToFacebook} className="share-lucky-button" style={secondaryButtonStyle}>
           Facebook
         </button>
-        <button type="button" onClick={copyShareText} style={secondaryButtonStyle}>
+        <button type="button" onClick={copyShareText} className="share-lucky-button" style={secondaryButtonStyle}>
           Copy for Instagram
         </button>
       </div>

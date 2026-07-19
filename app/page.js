@@ -15,35 +15,45 @@ const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satu
 
 const checkoutButtonStyle = {
   width: '100%',
-  padding: '0.9rem 1.4rem',
-  border: '1px solid rgba(255, 235, 160, 0.72)',
+  padding: '0.95rem 1.45rem',
+  border: '1px solid rgba(255, 242, 180, 0.86)',
   borderRadius: 999,
-  background: 'linear-gradient(135deg, #fff1a8 0%, #facc15 42%, #b7791f 100%)',
-  color: '#071225',
+  background: 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)',
+  color: '#06110d',
   fontSize: '1rem',
-  fontWeight: 900,
+  fontWeight: 950,
+  letterSpacing: '0.01em',
   cursor: 'pointer',
-  boxShadow: '0 0 24px rgba(250, 204, 21, 0.42), 0 14px 28px rgba(183, 121, 31, 0.24)',
-  textShadow: '0 1px 0 rgba(255, 255, 255, 0.38)',
+  boxShadow: '0 0 26px rgba(250, 204, 21, 0.52), 0 16px 34px rgba(183, 121, 31, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.62)',
+  textShadow: '0 1px 0 rgba(255, 255, 255, 0.45)',
+  transition: 'transform 180ms ease, box-shadow 180ms ease, filter 180ms ease',
 };
 
 const glassCardStyle = {
-  padding: '1.5rem',
-  borderRadius: 24,
-  background: 'linear-gradient(145deg, rgba(8, 19, 41, 0.84), rgba(14, 44, 48, 0.68))',
+  padding: 'clamp(1.25rem, 3vw, 1.75rem)',
+  borderRadius: 28,
+  background: 'linear-gradient(145deg, rgba(5, 13, 24, 0.9), rgba(8, 38, 36, 0.78) 48%, rgba(7, 18, 37, 0.86))',
   color: '#fff7d6',
-  border: '1px solid rgba(255, 235, 160, 0.2)',
-  boxShadow: '0 24px 70px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
-  backdropFilter: 'blur(14px)',
+  border: '1px solid rgba(255, 235, 160, 0.24)',
+  boxShadow: '0 26px 80px rgba(0, 0, 0, 0.44), 0 0 34px rgba(16, 185, 129, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+  backdropFilter: 'blur(18px) saturate(130%)',
+  position: 'relative',
+  overflow: 'hidden',
 };
 
 const inputStyle = {
-  padding: '0.8rem 1rem',
-  borderRadius: 12,
-  border: '1px solid rgba(255, 235, 160, 0.28)',
-  background: 'rgba(255, 255, 255, 0.92)',
+  padding: '0.85rem 1rem',
+  borderRadius: 14,
+  border: '1px solid rgba(255, 235, 160, 0.32)',
+  background: 'linear-gradient(180deg, rgba(255, 253, 239, 0.96), rgba(239, 253, 245, 0.9))',
   color: '#071225',
   fontSize: '1rem',
+  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 10px 24px rgba(0, 0, 0, 0.16)',
+};
+
+const sectionHeadingStyle = {
+  color: '#fff7d6',
+  textShadow: '0 0 24px rgba(250, 204, 21, 0.18)',
 };
 
 const successMessageStyle = { padding: '0.8rem 1rem', borderRadius: 14, background: 'rgba(16, 185, 129, 0.16)', color: '#d1fae5', border: '1px solid rgba(52, 211, 153, 0.34)', fontWeight: 700 };
@@ -140,17 +150,37 @@ export default async function Home({ searchParams }) {
     <main style={{
       minHeight: '100vh',
       padding: '4rem 1.5rem',
-      background: 'radial-gradient(circle at 18% 8%, rgba(250, 204, 21, 0.22), transparent 28%), radial-gradient(circle at 78% 18%, rgba(16, 185, 129, 0.22), transparent 30%), radial-gradient(circle at 50% 100%, rgba(185, 28, 28, 0.18), transparent 34%), linear-gradient(135deg, #020817 0%, #071225 45%, #0b1f3a 72%, #10243f 100%)',
+      background: 'radial-gradient(circle at 14% 8%, rgba(250, 204, 21, 0.22), transparent 26%), radial-gradient(circle at 86% 12%, rgba(16, 185, 129, 0.28), transparent 31%), radial-gradient(circle at 50% 100%, rgba(185, 28, 28, 0.16), transparent 34%), linear-gradient(135deg, #010403 0%, #020817 35%, #071225 60%, #021a18 100%)',
       color: '#fff7d6',
-      fontFamily: 'Arial, Helvetica, sans-serif',
+      fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      overflow: 'hidden',
+      position: 'relative',
     }}>
       <style>{`
         @keyframes magical-star-twinkle {
           0%, 100% { opacity: 0.32; transform: scale(0.86) rotate(0deg); }
           50% { opacity: 1; transform: scale(1.12) rotate(18deg); }
         }
+
+        @keyframes aurora-drift {
+          0% { transform: translate3d(-10%, -4%, 0) rotate(-9deg) scaleX(1); opacity: 0.44; }
+          50% { transform: translate3d(7%, 4%, 0) rotate(6deg) scaleX(1.08); opacity: 0.72; }
+          100% { transform: translate3d(16%, -2%, 0) rotate(-4deg) scaleX(1.02); opacity: 0.5; }
+        }
+
+        @keyframes page-fade-in {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .aurora-gold-button:hover { transform: translateY(-2px) scale(1.01); filter: saturate(1.12); box-shadow: 0 0 36px rgba(250, 204, 21, 0.64), 0 18px 40px rgba(183, 121, 31, 0.34) !important; }
+        .aurora-glass-card { transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
+        .aurora-glass-card:hover { transform: translateY(-3px); border-color: rgba(255, 235, 160, 0.4) !important; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5), 0 0 42px rgba(16, 185, 129, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important; }
+        .gold-text { background: linear-gradient(180deg, #fff8c8 0%, #facc15 44%, #b7791f 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 28px rgba(250, 204, 21, 0.2); }
       `}</style>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '6%', left: '-12%', width: '92vw', height: '19rem', borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(20, 184, 166, 0.5), rgba(250, 204, 21, 0.28), rgba(52, 211, 153, 0.34), rgba(16, 185, 129, 0))', filter: 'blur(18px)', animation: 'aurora-drift 14s ease-in-out infinite alternate' }} />
+        <div style={{ position: 'absolute', top: '18%', right: '-18%', width: '78vw', height: '15rem', borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(6, 182, 212, 0.28), rgba(52, 211, 153, 0.4), rgba(250, 204, 21, 0.2), rgba(16, 185, 129, 0))', filter: 'blur(22px)', animation: 'aurora-drift 18s ease-in-out -5s infinite alternate-reverse' }} />
         {[['✦', '9%', '12%', '0s'], ['✧', '82%', '10%', '0.7s'], ['✶', '72%', '32%', '1.3s'], ['✦', '16%', '44%', '1.8s'], ['✧', '90%', '64%', '2.4s'], ['✶', '35%', '76%', '3s']].map(([star, left, top, delay]) => (
           <span key={`${star}-${left}-${top}`} style={{ position: 'absolute', left, top, color: '#fde68a', textShadow: '0 0 16px rgba(250, 204, 21, 0.9)', animation: `magical-star-twinkle 3.4s ease-in-out ${delay} infinite` }}>
             {star}
@@ -158,16 +188,16 @@ export default async function Home({ searchParams }) {
         ))}
       </div>
       <LuckyRevealPopup reveal={purchasedReveal} />
-      <section style={{ maxWidth: 900, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <div style={{ marginBottom: '1rem' }}>
+      <section style={{ maxWidth: 1040, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
+        <div style={{ marginBottom: '1rem', padding: 'clamp(1.25rem, 4vw, 2.2rem)', borderRadius: 34, border: '1px solid rgba(255, 235, 160, 0.2)', background: 'radial-gradient(circle at 85% 12%, rgba(250, 204, 21, 0.18), transparent 28%), radial-gradient(circle at 12% 16%, rgba(16, 185, 129, 0.22), transparent 30%), linear-gradient(145deg, rgba(2, 8, 23, 0.74), rgba(4, 24, 22, 0.62))', boxShadow: '0 28px 90px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(16px)' }}>
           <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" />
+          <h1 className="gold-text" style={{ fontSize: 'clamp(2.65rem, 8vw, 5.6rem)', lineHeight: 0.95, margin: '1rem 0 0.85rem', letterSpacing: '-0.055em', maxWidth: 900 }}>
+            6 Pick and 7 Pick lucky numbers
+          </h1>
+          <p style={{ fontSize: 'clamp(1.08rem, 2.4vw, 1.35rem)', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.88)', marginBottom: 0 }}>
+            Get a $1 lucky pick with unique numbers, a slow reveal with stars and Aurora, plus your lucky color and day of the week.
+          </p>
         </div>
-        <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', lineHeight: 1, margin: '1rem 0' }}>
-          6 Pick and 7 Pick lucky numbers
-        </h1>
-        <p style={{ fontSize: '1.25rem', maxWidth: 680, lineHeight: 1.6 }}>
-          Get a $1 lucky pick with unique numbers, a slow reveal with stars and Aurora, plus your lucky color and day of the week.
-        </p>
         <p style={{ maxWidth: 680, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.24)', boxShadow: '0 0 28px rgba(250, 204, 21, 0.12)', backdropFilter: 'blur(12px)' }}>
           Disclaimer: Lucky Pick Canada is not affiliated with, endorsed by, or connected to any lottery organization. Picks are for fun and entertainment only.
         </p>
@@ -175,9 +205,9 @@ export default async function Home({ searchParams }) {
         <LuckMeter />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
-          <form action="/api/checkout" method="POST" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="lucky_pick" />
-            <h2 style={{ marginTop: 0 }}>Lucky pick</h2>
+            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Lucky pick</h2>
             <p style={{ lineHeight: 1.5 }}>Choose either a 6 Pick or 7 Pick result with no duplicate numbers.</p>
             <div style={{ display: 'grid', gap: '0.6rem', margin: '1rem 0' }}>
               <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
@@ -195,13 +225,13 @@ export default async function Home({ searchParams }) {
               <li>Slow reveal with stars and Aurora</li>
             </ul>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
-            <button type="submit" style={checkoutButtonStyle}>Buy lucky pick for $1.00</button>
+            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Buy lucky pick for $1.00</button>
             <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Little Luck Map.</p>
           </form>
 
-          <form action="/api/checkout" method="POST" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="gift_package" />
-            <h2 style={{ marginTop: 0 }}>Gift a lucky pick</h2>
+            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Gift a lucky pick</h2>
             <p style={{ lineHeight: 1.5 }}>Send the same lucky reveal by email with your personal greeting.</p>
             {giftSent ? <p style={successMessageStyle}>Your lucky pick gift was sent.</p> : null}
             {giftError ? <p style={errorMessageStyle}>{giftError}</p> : null}
@@ -231,12 +261,12 @@ export default async function Home({ searchParams }) {
               </label>
             </div>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$4.99 CAD</p>
-            <button type="submit" style={checkoutButtonStyle}>Send gift for $4.99</button>
+            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Send gift for $4.99</button>
           </form>
 
-          <form action="/api/checkout" method="POST" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="tip" />
-            <h2 style={{ marginTop: 0 }}>Tip jar</h2>
+            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Tip jar</h2>
             <label htmlFor="tipAmount" style={{ display: 'block', lineHeight: 1.5, marginBottom: '0.75rem' }}>
               Enter any amount you want to tip.
             </label>
@@ -253,7 +283,7 @@ export default async function Home({ searchParams }) {
             <p style={{ lineHeight: 1.5, marginTop: 0 }}>
               Your tip helps keep Lucky Pick Canada running and supports new ideas, improvements, and visitor suggestions. Thanks for your support.
             </p>
-            <button type="submit" style={checkoutButtonStyle}>Leave a tip</button>
+            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Leave a tip</button>
           </form>
         </div>
 
@@ -263,8 +293,8 @@ export default async function Home({ searchParams }) {
             const luckyDay = pickOne(luckyDays);
 
             return (
-              <article key={game.name} style={glassCardStyle}>
-                <h2 style={{ marginTop: 0 }}>{game.name}</h2>
+              <article key={game.name} className="aurora-glass-card" style={glassCardStyle}>
+                <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>{game.name}</h2>
                 <p>{game.description}</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {generateNumbers(game.count, game.max).map((number) => (
@@ -283,9 +313,9 @@ export default async function Home({ searchParams }) {
           })}
         </div>
 
-        <section id="lucky-stories" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+        <section id="lucky-stories" className="aurora-glass-card" style={{ ...glassCardStyle, marginTop: '2rem' }}>
           <SectionKicker>Lucky Stories</SectionKicker>
-          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
+          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
             Share your stories of luck and happiness
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
@@ -315,7 +345,7 @@ export default async function Home({ searchParams }) {
               Website
               <input name="website" type="text" tabIndex={-1} autoComplete="off" />
             </label>
-            <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Share your story</button>
+            <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Share your story</button>
           </form>
 
           <div style={{ marginTop: '1.5rem' }}>
@@ -323,7 +353,7 @@ export default async function Home({ searchParams }) {
             {recentStories.length ? (
               <div style={{ display: 'grid', gap: '0.75rem' }}>
                 {recentStories.map((entry) => (
-                  <article key={`${entry.display_name}-${entry.created_at}`} style={{ padding: '1rem', borderRadius: 18, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.2)' }}>
+                  <article key={`${entry.display_name}-${entry.created_at}`} style={{ padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(16, 185, 129, 0.08))', border: '1px solid rgba(255, 235, 160, 0.22)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)' }}>
                     <p style={{ marginTop: 0, lineHeight: 1.6 }}>{entry.story}</p>
                     <p style={{ marginBottom: 0, fontWeight: 700 }}>
                       — {entry.display_name}{entry.location ? `, ${entry.location}` : ''}
@@ -337,9 +367,9 @@ export default async function Home({ searchParams }) {
           </div>
         </section>
 
-        <section id="little-luck-map" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+        <section id="little-luck-map" className="aurora-glass-card" style={{ ...glassCardStyle, marginTop: '2rem' }}>
           <SectionKicker>Little Luck Map</SectionKicker>
-          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
+          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
             See where little luck is being shared
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
@@ -366,7 +396,7 @@ export default async function Home({ searchParams }) {
                   ))}
                 </select>
               </label>
-              <button type="submit" style={checkoutButtonStyle}>Share little luck</button>
+              <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Share little luck</button>
             </form>
           ) : (
             <form action="/api/checkout" method="POST" style={{ display: 'grid', gap: '0.75rem', marginTop: '1.5rem', maxWidth: 360 }}>
@@ -378,7 +408,7 @@ export default async function Home({ searchParams }) {
                   <option value="7">7 Pick</option>
                 </select>
               </label>
-              <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to join the map</button>
+              <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to join the map</button>
             </form>
           )}
 
@@ -387,7 +417,7 @@ export default async function Home({ searchParams }) {
               const count = provinceCounts[province.code] || 0;
 
               return (
-                <div key={province.code} style={{ padding: '1rem', minHeight: 78, borderRadius: 18, background: count ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.92), rgba(250, 204, 21, 0.88))' : 'rgba(255, 255, 255, 0.08)', border: count ? '2px solid rgba(255, 235, 160, 0.7)' : '2px solid rgba(255, 255, 255, 0.16)', boxShadow: count ? '0 0 22px rgba(16, 185, 129, 0.32)' : 'none' }}>
+                <div key={province.code} style={{ padding: '1rem', minHeight: 78, borderRadius: 18, background: count ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.94), rgba(250, 204, 21, 0.9))' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.06))', border: count ? '2px solid rgba(255, 235, 160, 0.7)' : '2px solid rgba(255, 255, 255, 0.16)', boxShadow: count ? '0 0 22px rgba(16, 185, 129, 0.32)' : 'none' }}>
                   <strong style={{ display: 'block', fontSize: '1.25rem' }}>{province.code}</strong>
                   <span>{province.name}</span><br />
                   <span style={{ fontWeight: 700 }}>{count} {count === 1 ? 'share' : 'shares'}</span>
@@ -412,9 +442,9 @@ export default async function Home({ searchParams }) {
           </div>
         </section>
 
-        <section id="suggestion-box" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+        <section id="suggestion-box" className="aurora-glass-card" style={{ ...glassCardStyle, marginTop: '2rem' }}>
           <SectionKicker>Suggestion Box</SectionKicker>
-          <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>
+          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
             Help make Lucky Pick Canada better
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
@@ -443,7 +473,7 @@ export default async function Home({ searchParams }) {
               Website
               <input name="website" type="text" tabIndex={-1} autoComplete="off" />
             </label>
-            <button type="submit" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
+            <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
           </form>
         </section>
 

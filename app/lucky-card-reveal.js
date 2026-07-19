@@ -118,7 +118,7 @@ export default function LuckyCardReveal({ luckScore }) {
   }
 
   return (
-    <section aria-labelledby="lucky-card-title" style={{ marginTop: '1.25rem', padding: '1.5rem', borderRadius: 28, background: 'radial-gradient(circle at 16% 18%, rgba(250, 204, 21, 0.3), transparent 24%), radial-gradient(circle at 84% 10%, rgba(255, 255, 255, 0.22), transparent 18%), linear-gradient(145deg, rgba(48, 27, 6, 0.92), rgba(92, 54, 8, 0.8) 48%, rgba(12, 20, 38, 0.88))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.28)', boxShadow: '0 24px 70px rgba(0, 0, 0, 0.36), 0 0 42px rgba(250, 204, 21, 0.18)', overflow: 'hidden', textAlign: 'center', position: 'relative' }}>
+    <section aria-labelledby="lucky-card-title" style={{ marginTop: '1.25rem', padding: 'clamp(1.25rem, 3vw, 1.8rem)', borderRadius: 30, background: 'radial-gradient(circle at 16% 18%, rgba(250, 204, 21, 0.32), transparent 26%), radial-gradient(circle at 84% 10%, rgba(16, 185, 129, 0.24), transparent 22%), linear-gradient(145deg, rgba(20, 11, 3, 0.94), rgba(75, 46, 8, 0.82) 42%, rgba(5, 13, 24, 0.9))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.34)', boxShadow: '0 28px 84px rgba(0, 0, 0, 0.44), 0 0 46px rgba(250, 204, 21, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.09)', overflow: 'hidden', textAlign: 'center', position: 'relative', backdropFilter: 'blur(16px)' }}>
       <style>{`
         @keyframes lucky-card-shake {
           0%, 100% { transform: rotate(0deg) translate(0, 0); }
@@ -143,6 +143,9 @@ export default function LuckyCardReveal({ luckScore }) {
           from { opacity: 0.4; transform: scale(0.96); }
           to { opacity: 1; transform: scale(1); }
         }
+
+        .lucky-card-button { transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease; }
+        .lucky-card-button:not(:disabled):hover { transform: translateY(-4px) rotate(-1deg); filter: saturate(1.08); box-shadow: 0 22px 48px rgba(0, 0, 0, 0.36), 0 0 42px rgba(250, 204, 21, 0.38) !important; }
       `}</style>
 
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
@@ -169,7 +172,7 @@ export default function LuckyCardReveal({ luckScore }) {
           onClick={revealCard}
           disabled={revealState !== 'closed'}
           aria-label={isRevealed && selectedCard ? `Revealed lucky card: ${selectedCard.name}` : 'Reveal your one special lucky card'}
-          style={{ position: 'relative', width: 210, height: 296, border: 0, borderRadius: 28, background: 'transparent', padding: 0, cursor: revealState === 'closed' ? 'pointer' : 'default', boxShadow: '0 18px 34px rgba(0, 0, 0, 0.3)', animation: isRevealing ? 'lucky-card-shake 0.72s ease-in-out' : isRevealed ? 'lucky-card-pop 0.28s ease-out' : 'lucky-card-glow 2.8s ease-in-out infinite' }}
+          className="lucky-card-button" style={{ position: 'relative', width: 210, height: 296, border: '1px solid rgba(255, 235, 160, 0.36)', borderRadius: 30, background: 'linear-gradient(145deg, rgba(255, 235, 160, 0.12), rgba(16, 185, 129, 0.08))', padding: 4, cursor: revealState === 'closed' ? 'pointer' : 'default', boxShadow: '0 20px 40px rgba(0, 0, 0, 0.36), 0 0 32px rgba(250, 204, 21, 0.18)', animation: isRevealing ? 'lucky-card-shake 0.72s ease-in-out' : isRevealed ? 'lucky-card-pop 0.28s ease-out' : 'lucky-card-glow 2.8s ease-in-out infinite' }}
         >
           <img
             key={visibleImage.src}
@@ -177,7 +180,7 @@ export default function LuckyCardReveal({ luckScore }) {
             alt={visibleImage.alt || visibleImage.name}
             width="210"
             height="296"
-            style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', borderRadius: 28 }}
+            style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', borderRadius: 26, boxShadow: 'inset 0 0 0 1px rgba(255, 235, 160, 0.18)' }}
           />
         </button>
       </div>
