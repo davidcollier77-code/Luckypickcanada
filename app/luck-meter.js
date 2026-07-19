@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import LuckyCardReveal from './lucky-card-reveal';
 
 function getTodaysLuck() {
   return Math.floor(Math.random() * 101);
@@ -61,7 +62,8 @@ export default function LuckMeter() {
   const needleRotation = -90 + (luckLevel / 100) * 180;
 
   return (
-    <section aria-labelledby="luck-meter-title" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 28, background: 'radial-gradient(circle at 12% 18%, rgba(250, 204, 21, 0.24), transparent 20%), radial-gradient(circle at 88% 5%, rgba(16, 185, 129, 0.26), transparent 24%), linear-gradient(145deg, rgba(8, 19, 41, 0.84), rgba(14, 44, 48, 0.68))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.2)', boxShadow: '0 24px 70px rgba(0, 0, 0, 0.38), 0 0 34px rgba(250, 204, 21, 0.12)', overflow: 'hidden' }}>
+    <>
+      <section aria-labelledby="luck-meter-title" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: 28, background: 'radial-gradient(circle at 12% 18%, rgba(250, 204, 21, 0.24), transparent 20%), radial-gradient(circle at 88% 5%, rgba(16, 185, 129, 0.26), transparent 24%), linear-gradient(145deg, rgba(8, 19, 41, 0.84), rgba(14, 44, 48, 0.68))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.2)', boxShadow: '0 24px 70px rgba(0, 0, 0, 0.38), 0 0 34px rgba(250, 204, 21, 0.12)', overflow: 'hidden' }}>
       <style>{`
         @keyframes lucky-meter-glow {
           0%, 100% { box-shadow: 0 0 18px rgba(94, 234, 212, 0.45); }
@@ -112,6 +114,9 @@ export default function LuckMeter() {
           </div>
         </div>
       </div>
-    </section>
+      </section>
+
+      {targetLuck !== null && !isSpinning ? <LuckyCardReveal luckScore={targetLuck} /> : null}
+    </>
   );
 }
