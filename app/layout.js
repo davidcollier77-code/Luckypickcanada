@@ -2,9 +2,9 @@ export const metadata = {
   title: 'Lucky Pick Canada',
   description: 'Sample Canadian lottery number picks.',
   icons: {
-    icon: '/logo.svg?v=brand-logo-20260719',
-    shortcut: '/logo.svg?v=brand-logo-20260719',
-    apple: '/logo.svg?v=brand-logo-20260719',
+    icon: '/logo-maple-clover-20260719.svg',
+    shortcut: '/logo-maple-clover-20260719.svg',
+    apple: '/logo-maple-clover-20260719.svg',
   },
 };
 
