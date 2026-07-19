@@ -29,6 +29,7 @@ const logoCardStyle = {
   flex: '0 0 auto',
   borderRadius: 18,
   background: 'white',
+  objectFit: 'contain',
   boxShadow: '0 14px 34px rgba(0, 0, 0, 0.24)',
 };
 
@@ -36,7 +37,7 @@ function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8faf
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
       <img
-        src="/logo.svg?v=maple-clover-20260718"
+        src="/logo.svg?v=brand-logo-20260719"
         alt="Lucky Pick Canada maple clover logo"
         width={size}
         height={size}
@@ -56,7 +57,7 @@ function SectionKicker({ children }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
       <img
-        src="/logo.svg?v=maple-clover-20260718"
+        src="/logo.svg?v=brand-logo-20260719"
         alt=""
         aria-hidden="true"
         width="36"
@@ -123,7 +124,7 @@ export default async function Home({ searchParams }) {
       <LuckyRevealPopup reveal={purchasedReveal} />
       <section style={{ maxWidth: 900, margin: '0 auto' }}>
         <div style={{ marginBottom: '1rem' }}>
-          <BrandLogo size={76} textColor="#5eead4" tagline="Maple clover luck, made in Canada" />
+          <BrandLogo size={128} textColor="#5eead4" tagline="Maple clover luck, made in Canada" />
         </div>
         <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 5rem)', lineHeight: 1, margin: '1rem 0' }}>
           6 Pick and 7 Pick lucky numbers
