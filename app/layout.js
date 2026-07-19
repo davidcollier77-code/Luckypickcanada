@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Lucky Pick Canada',
+  title: 'LuckyPickCanada – Discover Your Luck with Free Luck Meter, Lucky Picks & Gifts 🍀',
   description: 'Sample Canadian lottery number picks.',
   icons: {
     icon: '/file_00000000e8b8722f909e901d9b84325d.png',
