@@ -21,10 +21,10 @@ const dialogStyle = {
   overflow: 'auto',
   padding: 'clamp(1.25rem, 4vw, 2rem)',
   borderRadius: 28,
-  border: '1px solid rgba(255, 235, 160, 0.28)',
+  border: '1px solid rgba(255, 235, 160, 0.38)',
   color: '#fff7d6',
   background: 'radial-gradient(circle at 10% 5%, rgba(250, 204, 21, 0.3), transparent 22%), radial-gradient(circle at 82% 12%, rgba(16, 185, 129, 0.32), transparent 25%), radial-gradient(circle at 90% 88%, rgba(185, 28, 28, 0.16), transparent 24%), linear-gradient(140deg, #010403, #020817 42%, #04201d)' ,
-  boxShadow: '0 34px 100px rgba(0, 0, 0, 0.62), 0 0 52px rgba(250, 204, 21, 0.2), inset 0 1px 0 rgba(255,255,255,0.09)' ,
+  boxShadow: '0 38px 110px rgba(0, 0, 0, 0.66), 0 0 66px rgba(250, 204, 21, 0.24), 0 0 44px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.1)' ,
 };
 
 const closeButtonStyle = {
@@ -93,7 +93,7 @@ export default function LuckyRevealPopup({ reveal }) {
         `}</style>
 
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 28, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: 30, left: -90, width: 520, height: 110, borderRadius: '999px', background: 'linear-gradient(90deg, rgba(45, 212, 191, 0), rgba(16, 185, 129, 0.52), rgba(250, 204, 21, 0.38), rgba(45, 212, 191, 0))', filter: 'blur(10px)', animation: 'lucky-aurora-sweep 7s ease-in-out infinite alternate' }} />
+          <div style={{ position: 'absolute', top: 30, left: -90, width: 520, height: 110, borderRadius: '999px', background: 'linear-gradient(90deg, rgba(45, 212, 191, 0), rgba(16, 185, 129, 0.62), rgba(250, 204, 21, 0.44), rgba(45, 212, 191, 0))', filter: 'blur(10px)', animation: 'lucky-aurora-sweep 7s ease-in-out infinite alternate' }} />
           {['✦', '✧', '✶', '✷', '✦'].map((star, index) => (
             <span key={`${star}-${index}`} style={{ position: 'absolute', top: `${12 + index * 15}%`, left: `${12 + index * 17}%`, color: '#fde68a', fontSize: `${1 + index * 0.18}rem`, animation: `lucky-star-pulse ${2.1 + index * 0.35}s ease-in-out infinite` }}>
               {star}
