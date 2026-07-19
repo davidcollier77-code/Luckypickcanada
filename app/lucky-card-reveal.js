@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 const luckyCards = [
   {
@@ -41,20 +41,30 @@ const sparklePositions = [
   { star: '✦', top: '9%', left: '48%', size: '0.82rem', delay: '1.55s' },
 ];
 
-function getLuckyCard(luckScore) {
-  return luckyCards[luckScore % luckyCards.length];
+const hiddenFortuneFace = {
+  title: 'Fortune Card',
+  symbols: [],
+  accent: '#facc15',
+  message: '',
+  faceBackground: 'linear-gradient(145deg, #3b2604 0%, #854d0e 54%, #fef3c7 100%)',
+};
+
+function pickRandomLuckyCard() {
+  return luckyCards[Math.floor(Math.random() * luckyCards.length)];
 }
 
 export default function LuckyCardReveal({ luckScore }) {
   const [isRevealing, setIsRevealing] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
-  const luckyCard = useMemo(() => getLuckyCard(luckScore), [luckScore]);
+  const [selectedCard, setSelectedCard] = useState(null);
+  const cardFace = selectedCard || hiddenFortuneFace;
 
   function revealCard() {
     if (isRevealing || isRevealed) {
       return;
     }
 
+    setSelectedCard(pickRandomLuckyCard());
     setIsRevealing(true);
     window.setTimeout(() => {
       setIsRevealed(true);
@@ -128,38 +138,38 @@ export default function LuckyCardReveal({ luckScore }) {
           type="button"
           onClick={revealCard}
           disabled={isRevealed}
-          aria-label={isRevealed ? `Revealed lucky card: ${luckyCard.title}` : 'Reveal your one special lucky card'}
+          aria-label={isRevealed ? `Revealed lucky card: ${cardFace.title}` : 'Reveal your one special lucky card'}
           style={{ position: 'relative', display: 'block', width: 210, height: 296, border: 0, borderRadius: 28, background: 'transparent', padding: 0, cursor: isRevealed ? 'default' : 'pointer', transformStyle: 'preserve-3d', transition: 'transform 760ms cubic-bezier(.18,.82,.24,1)', transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)', animation: isRevealing ? 'lucky-card-shake 0.72s ease-in-out' : 'lucky-card-glow 2.8s ease-in-out infinite' }}
         >
           <span aria-hidden="true" style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', borderRadius: 28, backfaceVisibility: 'hidden', background: 'radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.7), transparent 17%), linear-gradient(135deg, #fff7d6 0%, #facc15 28%, #b7791f 58%, #fff1a8 100%)', border: '3px solid rgba(255, 247, 214, 0.86)', boxShadow: 'inset 0 0 30px rgba(255, 255, 255, 0.48), 0 18px 34px rgba(0, 0, 0, 0.3)' }}>
             <span style={{ position: 'absolute', inset: 13, borderRadius: 21, border: '2px solid rgba(92, 54, 8, 0.42)' }} />
             <span style={{ position: 'absolute', inset: 25, borderRadius: 16, border: '1px solid rgba(255, 247, 214, 0.62)' }} />
             <span style={{ position: 'absolute', top: 27, left: 0, right: 0, textTransform: 'uppercase', letterSpacing: 1.6, color: '#5c3608', fontSize: '0.74rem', fontWeight: 900 }}>LuckyPickCanada</span>
-            <span style={{ display: 'grid', placeItems: 'center', width: 104, height: 104, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 247, 214, 0.92), rgba(250, 204, 21, 0.52), transparent 72%)', fontSize: '4.7rem', textShadow: '0 0 20px rgba(255, 255, 255, 0.76)' }}>🍀</span>
-            <span style={{ position: 'absolute', bottom: 27, left: 0, right: 0, color: '#5c3608', fontSize: '0.82rem', fontWeight: 900 }}>Gold Lucky Card Deck</span>
+            <span style={{ display: 'grid', placeItems: 'center', width: 104, height: 104, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 247, 214, 0.92), rgba(250, 204, 21, 0.52), transparent 72%)', color: '#5c3608', fontSize: '4.7rem', fontWeight: 900, textShadow: '0 0 20px rgba(255, 255, 255, 0.76)' }}>?</span>
+            <span style={{ position: 'absolute', bottom: 27, left: 0, right: 0, color: '#5c3608', fontSize: '0.82rem', fontWeight: 900 }}>Gold Fortune Card Deck</span>
           </span>
 
-          <span style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateRows: 'auto 1fr auto', gap: '0.45rem', alignItems: 'center', borderRadius: 28, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: luckyCard.faceBackground, color: '#fff7d6', border: '3px solid #facc15', boxShadow: `inset 0 0 34px rgba(250, 204, 21, 0.3), 0 0 34px ${luckyCard.accent}66, 0 18px 34px rgba(0, 0, 0, 0.3)`, overflow: 'hidden', padding: '1.05rem 0.85rem' }}>
+          <span style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateRows: 'auto 1fr auto', gap: '0.45rem', alignItems: 'center', borderRadius: 28, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: cardFace.faceBackground, color: '#fff7d6', border: '3px solid #facc15', boxShadow: `inset 0 0 34px rgba(250, 204, 21, 0.3), 0 0 34px ${cardFace.accent}66, 0 18px 34px rgba(0, 0, 0, 0.3)`, overflow: 'hidden', padding: '1.05rem 0.85rem' }}>
             <span aria-hidden="true" style={{ position: 'absolute', inset: 12, borderRadius: 20, border: '1px solid rgba(255, 247, 214, 0.5)' }} />
             <span aria-hidden="true" style={{ position: 'absolute', top: -40, bottom: -40, left: 0, width: '42%', background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.36), transparent)', animation: isRevealed ? 'lucky-card-face-shimmer 1.35s ease 0.16s both' : 'none', pointerEvents: 'none' }} />
 
             <strong style={{ position: 'relative', zIndex: 1, alignSelf: 'start', textTransform: 'uppercase', letterSpacing: 1.2, fontSize: '0.78rem', color: '#fef3c7', textShadow: '0 2px 8px rgba(0, 0, 0, 0.48)' }}>
-              {luckyCard.title}
+              {cardFace.title}
             </strong>
 
             <span style={{ position: 'relative', zIndex: 1, display: 'grid', gap: '0.35rem', justifyItems: 'center' }}>
-              <span aria-hidden="true" style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-                {luckyCard.symbols.map((symbol, index) => (
-                  <span key={`${symbol.label}-${index}`} aria-label={symbol.label} title={symbol.label} style={{ display: 'inline-grid', placeItems: 'center', width: luckyCard.symbols.length > 1 ? 54 : 92, height: luckyCard.symbols.length > 1 ? 54 : 92, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 247, 214, 0.92), rgba(250, 204, 21, 0.24), transparent 72%)', fontSize: luckyCard.symbols.length > 1 ? '2.15rem' : '4.9rem', lineHeight: 1, textShadow: '0 0 18px rgba(255, 247, 214, 0.68)', opacity: isRevealed ? 1 : 0, animation: isRevealed ? `lucky-symbol-rise 0.52s ease ${0.2 + index * 0.12}s both` : 'none' }}>
+              <span style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {cardFace.symbols.map((symbol, index) => (
+                  <span key={`${symbol.label}-${index}`} aria-label={symbol.label} title={symbol.label} style={{ display: 'inline-grid', placeItems: 'center', width: cardFace.symbols.length > 1 ? 54 : 92, height: cardFace.symbols.length > 1 ? 54 : 92, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255, 247, 214, 0.92), rgba(250, 204, 21, 0.24), transparent 72%)', fontSize: cardFace.symbols.length > 1 ? '2.15rem' : '4.9rem', lineHeight: 1, textShadow: '0 0 18px rgba(255, 247, 214, 0.68)', opacity: isRevealed ? 1 : 0, animation: isRevealed ? `lucky-symbol-rise 0.52s ease ${0.2 + index * 0.12}s both` : 'none' }}>
                     {symbol.icon}
                   </span>
                 ))}
               </span>
-              <span style={{ color: luckyCard.accent, fontSize: '0.78rem', fontWeight: 900, letterSpacing: 1.4, textTransform: 'uppercase' }}>Chosen Fortune</span>
+              <span style={{ color: cardFace.accent, fontSize: '0.78rem', fontWeight: 900, letterSpacing: 1.4, textTransform: 'uppercase' }}>Chosen Fortune</span>
             </span>
 
             <span role="status" aria-live="polite" style={{ position: 'relative', zIndex: 1, alignSelf: 'end', padding: '0.75rem', borderRadius: 16, background: 'rgba(2, 6, 23, 0.42)', border: '1px solid rgba(255, 247, 214, 0.3)', color: '#fff7d6', fontSize: '0.84rem', lineHeight: 1.35, fontWeight: 800, textShadow: '0 2px 8px rgba(0, 0, 0, 0.52)' }}>
-              {luckyCard.message}
+              {cardFace.message}
             </span>
           </span>
         </button>
