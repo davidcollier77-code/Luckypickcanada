@@ -47,7 +47,7 @@ function renderLogin(error = '') {
   <body style="margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#102033;">
     <main style="min-height:100vh;display:grid;place-items:center;padding:1.5rem;">
       <form method="POST" style="width:min(100%,420px);padding:1.5rem;border-radius:22px;background:white;box-shadow:0 24px 60px rgba(0,0,0,.25);display:grid;gap:1rem;">
-        <img src="/logo.svg?v=brand-logo-20260719" alt="Lucky Pick Canada logo" width="72" height="72" style="border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.18);" />
+        <img src="/logo-maple-clover-20260719.svg" alt="Lucky Pick Canada logo" width="72" height="72" style="border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.18);" />
         <h1 style="margin:0;color:#0f766e;">Suggestion admin</h1>
         <p style="margin:0;line-height:1.5;">Enter the admin password to view visitor suggestions.</p>
         ${error ? `<p style="margin:0;padding:.75rem 1rem;border-radius:12px;background:#fee2e2;color:#991b1b;font-weight:700;">${escapeHtml(error)}</p>` : ''}
@@ -86,7 +86,7 @@ function renderSuggestions({ isConfigured, suggestions }) {
     <main style="max-width:900px;margin:0 auto;padding:2rem 1.5rem;">
       <section style="padding:1.5rem;border-radius:24px;background:white;box-shadow:0 24px 60px rgba(0,0,0,.25);">
         <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
-          <img src="/logo.svg?v=brand-logo-20260719" alt="Lucky Pick Canada logo" width="72" height="72" style="border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.18);" />
+          <img src="/logo-maple-clover-20260719.svg" alt="Lucky Pick Canada logo" width="72" height="72" style="border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.18);" />
           <div>
             <p style="margin:0;text-transform:uppercase;letter-spacing:2px;color:#0f766e;font-weight:800;">Lucky Pick Canada</p>
             <h1 style="margin:.25rem 0 0;">Visitor suggestions</h1>

@@ -37,7 +37,7 @@ function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8faf
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
       <img
-        src="/logo.svg?v=brand-logo-20260719"
+        src="/logo-maple-clover-20260719.svg"
         alt="Lucky Pick Canada maple clover logo"
         width={size}
         height={size}
@@ -57,7 +57,7 @@ function SectionKicker({ children }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
       <img
-        src="/logo.svg?v=brand-logo-20260719"
+        src="/logo-maple-clover-20260719.svg"
         alt=""
         aria-hidden="true"
         width="36"
