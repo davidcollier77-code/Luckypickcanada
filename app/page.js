@@ -27,18 +27,16 @@ const checkoutButtonStyle = {
 
 const logoCardStyle = {
   flex: '0 0 auto',
-  borderRadius: 18,
-  background: 'white',
+  display: 'block',
   objectFit: 'contain',
-  boxShadow: '0 14px 34px rgba(0, 0, 0, 0.24)',
 };
 
 function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8fafc', tagline }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
       <img
-        src="/logo-maple-clover-20260719.svg"
-        alt="Lucky Pick Canada maple clover logo"
+        src="/file_00000000e8b8722f909e901d9b84325d.png"
+        alt="Official Lucky Pick Canada logo"
         width={size}
         height={size}
         style={{ ...logoCardStyle, width: size, height: size }}
@@ -57,7 +55,7 @@ function SectionKicker({ children }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
       <img
-        src="/logo-maple-clover-20260719.svg"
+        src="/file_00000000e8b8722f909e901d9b84325d.png"
         alt=""
         aria-hidden="true"
         width="36"
