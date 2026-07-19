@@ -12,6 +12,7 @@ const games = [
 
 const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
 const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const facebookGroupUrl = 'https://www.facebook.com/share/g/1DASPZT9Cu/';
 
 const checkoutButtonStyle = {
   width: '100%',
@@ -547,6 +548,40 @@ export default async function Home({ searchParams }) {
             </label>
             <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
           </form>
+        </section>
+
+        <section id="facebook-community" className="aurora-glass-card" style={{ ...glassCardStyle, marginTop: '2rem', textAlign: 'center' }}>
+          <SectionKicker>Community</SectionKicker>
+          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.6rem auto 0.75rem', letterSpacing: '-0.035em', maxWidth: 760 }}>
+            🍀 Join the LuckyPick Canada Community
+          </h2>
+          <p style={{ lineHeight: 1.7, maxWidth: 720, margin: '0 auto 1.5rem', color: 'rgba(255, 247, 214, 0.9)', fontSize: '1.05rem' }}>
+            Share your luck, talk about your lucky picks, and connect with other Canadians who enjoy a little extra fun and positivity.
+          </p>
+
+          <a
+            href={facebookGroupUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Open the LuckyPick Canada Community Facebook group in a new tab"
+            style={{ display: 'block', borderRadius: 28, border: '1px solid rgba(255, 235, 160, 0.42)', overflow: 'hidden', boxShadow: '0 26px 70px rgba(0, 0, 0, 0.42), 0 0 42px rgba(250, 204, 21, 0.18)', background: 'linear-gradient(145deg, rgba(250, 204, 21, 0.12), rgba(16, 185, 129, 0.08))' }}
+          >
+            <img
+              src="/facebook-community-cover.png"
+              alt="Lucky Pick Canada Community Facebook group cover"
+              style={{ display: 'block', width: '100%', height: 'auto' }}
+            />
+          </a>
+
+          <a
+            href={facebookGroupUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="aurora-gold-button"
+            style={{ ...checkoutButtonStyle, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', minWidth: 260, marginTop: '1.3rem', textDecoration: 'none' }}
+          >
+            Join the Facebook Group 🍀
+          </a>
         </section>
 
         <footer style={{ marginTop: '2rem', padding: '1.25rem 0 0', borderTop: '1px solid rgba(255, 235, 160, 0.18)' }}>
