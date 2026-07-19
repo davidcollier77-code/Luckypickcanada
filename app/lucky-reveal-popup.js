@@ -10,7 +10,7 @@ const overlayStyle = {
   display: 'grid',
   placeItems: 'center',
   padding: '1rem',
-  background: 'rgba(2, 8, 23, 0.78)',
+  background: 'rgba(1, 4, 3, 0.82)',
   backdropFilter: 'blur(10px)',
 };
 
@@ -23,8 +23,8 @@ const dialogStyle = {
   borderRadius: 28,
   border: '1px solid rgba(255, 235, 160, 0.28)',
   color: '#fff7d6',
-  background: 'radial-gradient(circle at 10% 5%, rgba(250, 204, 21, 0.28), transparent 22%), radial-gradient(circle at 82% 12%, rgba(16, 185, 129, 0.26), transparent 24%), radial-gradient(circle at 90% 88%, rgba(185, 28, 28, 0.18), transparent 24%), linear-gradient(140deg, #020817, #071225 52%, #0b1f3a)',
-  boxShadow: '0 30px 90px rgba(0, 0, 0, 0.58), 0 0 42px rgba(250, 204, 21, 0.16)',
+  background: 'radial-gradient(circle at 10% 5%, rgba(250, 204, 21, 0.3), transparent 22%), radial-gradient(circle at 82% 12%, rgba(16, 185, 129, 0.32), transparent 25%), radial-gradient(circle at 90% 88%, rgba(185, 28, 28, 0.16), transparent 24%), linear-gradient(140deg, #010403, #020817 42%, #04201d)' ,
+  boxShadow: '0 34px 100px rgba(0, 0, 0, 0.62), 0 0 52px rgba(250, 204, 21, 0.2), inset 0 1px 0 rgba(255,255,255,0.09)' ,
 };
 
 const closeButtonStyle = {
@@ -112,7 +112,7 @@ export default function LuckyRevealPopup({ reveal }) {
             <SlowWords startDelay={1.15}>Auroras and stars are revealing your randomly generated lucky pick, lucky color, and lucky day of the week.</SlowWords>
           </p>
 
-          <article style={{ padding: '1rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.2)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)', marginTop: '1.4rem' }}>
+          <article style={{ padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(16, 185, 129, 0.08))', border: '1px solid rgba(255, 235, 160, 0.2)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)', marginTop: '1.4rem' }}>
             <h3 style={{ marginTop: 0, marginBottom: '0.75rem' }}>
               <SlowWords startDelay={1.9}>{reveal.game.name}</SlowWords>
             </h3>
@@ -138,7 +138,7 @@ export default function LuckyRevealPopup({ reveal }) {
 
           <ShareLuckyPickButton reveal={reveal} />
 
-          <button type="button" onClick={() => setIsOpen(false)} style={{ marginTop: '1.4rem', padding: '0.9rem 1.4rem', border: '1px solid rgba(255, 235, 160, 0.72)', borderRadius: 999, background: 'linear-gradient(135deg, #fff1a8 0%, #facc15 45%, #b7791f 100%)', color: '#071225', boxShadow: '0 0 24px rgba(250, 204, 21, 0.42)', fontSize: '1rem', fontWeight: 900, cursor: 'pointer' }}>
+          <button type="button" onClick={() => setIsOpen(false)} style={{ marginTop: '1.4rem', padding: '0.9rem 1.4rem', border: '1px solid rgba(255, 235, 160, 0.72)', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)', color: '#071225', boxShadow: '0 0 24px rgba(250, 204, 21, 0.42)', fontSize: '1rem', fontWeight: 900, cursor: 'pointer' }}>
             Add me to the Little Luck Map
           </button>
         </div>
