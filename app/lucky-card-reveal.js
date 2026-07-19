@@ -69,8 +69,47 @@ const sparklePositions = [
   { star: '✦', top: '9%', left: '48%', size: '0.82rem', delay: '1.55s' },
 ];
 
+function getRandomIndex(length) {
+  if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return values[0] % length;
+  }
+
+  return Math.floor(Math.random() * length);
+}
+
+function getLastCardIndex() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const storedIndex = Number(window.localStorage.getItem('lastLuckyCardIndex'));
+    return Number.isInteger(storedIndex) ? storedIndex : null;
+  } catch {
+    return null;
+  }
+}
+
 function pickRandomLuckyCard() {
-  return luckyCardFrontImages[Math.floor(Math.random() * luckyCardFrontImages.length)];
+  const cardCount = luckyCardFrontImages.length;
+  const lastIndex = getLastCardIndex();
+  let nextIndex = getRandomIndex(cardCount);
+
+  if (cardCount > 1 && lastIndex !== null && nextIndex === lastIndex) {
+    nextIndex = (nextIndex + 1 + getRandomIndex(cardCount - 1)) % cardCount;
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem('lastLuckyCardIndex', String(nextIndex));
+    } catch {
+      // The reveal still works if browser storage is unavailable.
+    }
+  }
+
+  return luckyCardFrontImages[nextIndex];
 }
 
 function CardBackImage() {
@@ -101,7 +140,7 @@ export default function LuckyCardReveal({ luckScore }) {
   const [isRevealing, setIsRevealing] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
-  const cardFrontImage = selectedCard || luckyCardFrontImages[0];
+  const cardFrontImage = selectedCard;
 
   function revealCard() {
     if (isRevealing || isRevealed) {
@@ -172,16 +211,18 @@ export default function LuckyCardReveal({ luckScore }) {
           type="button"
           onClick={revealCard}
           disabled={isRevealed}
-          aria-label={isRevealed ? `Revealed lucky card: ${cardFrontImage.name}` : 'Reveal your one special lucky card'}
+          aria-label={isRevealed && cardFrontImage ? `Revealed lucky card: ${cardFrontImage.name}` : 'Reveal your one special lucky card'}
           style={{ position: 'relative', display: 'block', width: 210, height: 296, border: 0, borderRadius: 28, background: 'transparent', padding: 0, cursor: isRevealed ? 'default' : 'pointer', transformStyle: 'preserve-3d', transition: 'transform 760ms cubic-bezier(.18,.82,.24,1)', transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)', animation: isRevealing ? 'lucky-card-shake 0.72s ease-in-out' : 'lucky-card-glow 2.8s ease-in-out infinite' }}
         >
           <span aria-hidden="true" style={{ position: 'absolute', inset: 0, display: 'block', borderRadius: 28, backfaceVisibility: 'hidden', boxShadow: '0 18px 34px rgba(0, 0, 0, 0.3)', overflow: 'hidden' }}>
             <CardBackImage />
           </span>
 
-          <span style={{ position: 'absolute', inset: 0, display: 'block', borderRadius: 28, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: cardFrontImage.faceBackground, boxShadow: `0 0 34px ${cardFrontImage.accent}66, 0 18px 34px rgba(0, 0, 0, 0.3)`, overflow: 'hidden' }}>
-            <CardFrontImage card={cardFrontImage} />
-          </span>
+          {cardFrontImage ? (
+            <span style={{ position: 'absolute', inset: 0, display: 'block', borderRadius: 28, backfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: cardFrontImage.faceBackground, boxShadow: `0 0 34px ${cardFrontImage.accent}66, 0 18px 34px rgba(0, 0, 0, 0.3)`, overflow: 'hidden' }}>
+              <CardFrontImage card={cardFrontImage} />
+            </span>
+          ) : null}
         </button>
       </div>
     </section>
