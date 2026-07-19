@@ -6,18 +6,19 @@ const buttonStyle = {
   padding: '0.9rem 1.25rem',
   border: 0,
   borderRadius: 999,
-  background: '#facc15',
-  color: '#0f172a',
+  background: 'linear-gradient(135deg, #fff1a8 0%, #facc15 45%, #b7791f 100%)',
+  color: '#071225',
   fontSize: '1rem',
   fontWeight: 900,
   cursor: 'pointer',
+  boxShadow: '0 0 22px rgba(250, 204, 21, 0.34)',
 };
 
 const secondaryButtonStyle = {
   ...buttonStyle,
-  background: 'rgba(255, 255, 255, 0.14)',
-  color: '#f8fafc',
-  border: '1px solid rgba(255, 255, 255, 0.28)',
+  background: 'rgba(255, 255, 255, 0.08)',
+  color: '#fff7d6',
+  border: '1px solid rgba(255, 235, 160, 0.28)',
 };
 
 function getShareUrl() {
@@ -95,10 +96,10 @@ export default function ShareLuckyPickButton({ reveal }) {
           Copy for Instagram
         </button>
       </div>
-      <p style={{ margin: 0, color: 'rgba(248, 250, 252, 0.78)', lineHeight: 1.5 }}>
+      <p style={{ margin: 0, color: 'rgba(255, 245, 203, 0.78)', lineHeight: 1.5 }}>
         Instagram web sharing is limited, so copy your pick and paste it into a post, story, or message.
       </p>
-      {status ? <p role="status" style={{ margin: 0, color: '#fde68a', fontWeight: 800 }}>{status}</p> : null}
+      {status ? <p role="status" style={{ margin: 0, color: '#facc15', fontWeight: 900 }}>{status}</p> : null}
     </div>
   );
 }

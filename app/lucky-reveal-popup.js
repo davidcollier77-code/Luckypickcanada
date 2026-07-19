@@ -10,8 +10,8 @@ const overlayStyle = {
   display: 'grid',
   placeItems: 'center',
   padding: '1rem',
-  background: 'rgba(2, 6, 23, 0.72)',
-  backdropFilter: 'blur(8px)',
+  background: 'rgba(2, 8, 23, 0.78)',
+  backdropFilter: 'blur(10px)',
 };
 
 const dialogStyle = {
@@ -21,10 +21,10 @@ const dialogStyle = {
   overflow: 'auto',
   padding: 'clamp(1.25rem, 4vw, 2rem)',
   borderRadius: 28,
-  border: '1px solid rgba(153, 246, 228, 0.42)',
-  color: '#f8fafc',
-  background: 'radial-gradient(circle at 10% 5%, rgba(250, 204, 21, 0.22), transparent 18%), radial-gradient(circle at 82% 12%, rgba(94, 234, 212, 0.32), transparent 24%), linear-gradient(140deg, #03131f, #0f172a 52%, #164e63)',
-  boxShadow: '0 30px 90px rgba(0, 0, 0, 0.48)',
+  border: '1px solid rgba(255, 235, 160, 0.28)',
+  color: '#fff7d6',
+  background: 'radial-gradient(circle at 10% 5%, rgba(250, 204, 21, 0.28), transparent 22%), radial-gradient(circle at 82% 12%, rgba(16, 185, 129, 0.26), transparent 24%), radial-gradient(circle at 90% 88%, rgba(185, 28, 28, 0.18), transparent 24%), linear-gradient(140deg, #020817, #071225 52%, #0b1f3a)',
+  boxShadow: '0 30px 90px rgba(0, 0, 0, 0.58), 0 0 42px rgba(250, 204, 21, 0.16)',
 };
 
 const closeButtonStyle = {
@@ -33,10 +33,10 @@ const closeButtonStyle = {
   right: 16,
   width: 38,
   height: 38,
-  border: '1px solid rgba(255, 255, 255, 0.3)',
+  border: '1px solid rgba(255, 235, 160, 0.34)',
   borderRadius: '50%',
-  background: 'rgba(15, 23, 42, 0.55)',
-  color: '#fff',
+  background: 'rgba(7, 18, 37, 0.72)',
+  color: '#fff7d6',
   fontSize: '1.25rem',
   cursor: 'pointer',
 };
@@ -93,7 +93,7 @@ export default function LuckyRevealPopup({ reveal }) {
         `}</style>
 
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 28, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: 30, left: -90, width: 520, height: 110, borderRadius: '999px', background: 'linear-gradient(90deg, rgba(45, 212, 191, 0), rgba(94, 234, 212, 0.55), rgba(192, 132, 252, 0.45), rgba(45, 212, 191, 0))', filter: 'blur(10px)', animation: 'lucky-aurora-sweep 7s ease-in-out infinite alternate' }} />
+          <div style={{ position: 'absolute', top: 30, left: -90, width: 520, height: 110, borderRadius: '999px', background: 'linear-gradient(90deg, rgba(45, 212, 191, 0), rgba(16, 185, 129, 0.52), rgba(250, 204, 21, 0.38), rgba(45, 212, 191, 0))', filter: 'blur(10px)', animation: 'lucky-aurora-sweep 7s ease-in-out infinite alternate' }} />
           {['✦', '✧', '✶', '✷', '✦'].map((star, index) => (
             <span key={`${star}-${index}`} style={{ position: 'absolute', top: `${12 + index * 15}%`, left: `${12 + index * 17}%`, color: '#fde68a', fontSize: `${1 + index * 0.18}rem`, animation: `lucky-star-pulse ${2.1 + index * 0.35}s ease-in-out infinite` }}>
               {star}
@@ -102,7 +102,7 @@ export default function LuckyRevealPopup({ reveal }) {
         </div>
 
         <div style={{ position: 'relative' }}>
-          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, color: '#99f6e4', fontWeight: 800 }}>
+          <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, color: '#34d399', fontWeight: 800 }}>
             <SlowWords>Payment complete</SlowWords>
           </p>
           <h2 id="lucky-reveal-title" style={{ margin: '0.6rem 0 1rem', fontSize: 'clamp(2rem, 7vw, 4rem)', lineHeight: 1 }}>
@@ -112,13 +112,13 @@ export default function LuckyRevealPopup({ reveal }) {
             <SlowWords startDelay={1.15}>Auroras and stars are revealing your randomly generated lucky pick, lucky color, and lucky day of the week.</SlowWords>
           </p>
 
-          <article style={{ padding: '1rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.12)', border: '1px solid rgba(255, 255, 255, 0.2)', marginTop: '1.4rem' }}>
+          <article style={{ padding: '1rem', borderRadius: 20, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.2)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)', marginTop: '1.4rem' }}>
             <h3 style={{ marginTop: 0, marginBottom: '0.75rem' }}>
               <SlowWords startDelay={1.9}>{reveal.game.name}</SlowWords>
             </h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
               {reveal.game.numbers.map((number, numberIndex) => (
-                <span key={number} style={{ display: 'inline-grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', background: '#fef3c7', color: '#0f172a', fontWeight: 900, boxShadow: '0 0 22px rgba(250, 204, 21, 0.65)', opacity: 0, transform: 'translateY(14px)', animation: 'lucky-word-rise 0.78s ease forwards', animationDelay: `${2.35 + numberIndex * 0.22}s` }}>
+                <span key={number} style={{ display: 'inline-grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', background: 'radial-gradient(circle at 30% 25%, #fff7d6, #facc15 48%, #b7791f 100%)', color: '#071225', fontWeight: 900, boxShadow: '0 0 24px rgba(250, 204, 21, 0.72)', opacity: 0, transform: 'translateY(14px)', animation: 'lucky-word-rise 0.78s ease forwards', animationDelay: `${2.35 + numberIndex * 0.22}s` }}>
                   {number}
                 </span>
               ))}
@@ -126,8 +126,8 @@ export default function LuckyRevealPopup({ reveal }) {
           </article>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-            <div style={{ padding: '1rem', borderRadius: 18, background: 'rgba(153, 246, 228, 0.16)', border: '1px solid rgba(153, 246, 228, 0.34)' }}>
-              <p style={{ margin: '0 0 0.35rem', color: '#99f6e4', fontWeight: 800 }}>Lucky color</p>
+            <div style={{ padding: '1rem', borderRadius: 18, background: 'rgba(16, 185, 129, 0.14)', border: '1px solid rgba(52, 211, 153, 0.34)' }}>
+              <p style={{ margin: '0 0 0.35rem', color: '#34d399', fontWeight: 800 }}>Lucky color</p>
               <strong style={{ fontSize: '1.35rem' }}><SlowWords startDelay={4.15}>{reveal.luckyColor}</SlowWords></strong>
             </div>
             <div style={{ padding: '1rem', borderRadius: 18, background: 'rgba(253, 230, 138, 0.15)', border: '1px solid rgba(253, 230, 138, 0.34)' }}>
@@ -138,7 +138,7 @@ export default function LuckyRevealPopup({ reveal }) {
 
           <ShareLuckyPickButton reveal={reveal} />
 
-          <button type="button" onClick={() => setIsOpen(false)} style={{ marginTop: '1.4rem', padding: '0.9rem 1.4rem', border: 0, borderRadius: 999, background: '#5eead4', color: '#042f2e', fontSize: '1rem', fontWeight: 900, cursor: 'pointer' }}>
+          <button type="button" onClick={() => setIsOpen(false)} style={{ marginTop: '1.4rem', padding: '0.9rem 1.4rem', border: '1px solid rgba(255, 235, 160, 0.72)', borderRadius: 999, background: 'linear-gradient(135deg, #fff1a8 0%, #facc15 45%, #b7791f 100%)', color: '#071225', boxShadow: '0 0 24px rgba(250, 204, 21, 0.42)', fontSize: '1rem', fontWeight: 900, cursor: 'pointer' }}>
             Add me to the Little Luck Map
           </button>
         </div>
