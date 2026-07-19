@@ -56,6 +56,33 @@ const sectionHeadingStyle = {
   textShadow: '0 0 24px rgba(250, 204, 21, 0.18)',
 };
 
+const premiumPillStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '0.55rem 0.9rem',
+  borderRadius: 999,
+  border: '1px solid rgba(255, 235, 160, 0.32)',
+  background: 'linear-gradient(135deg, rgba(250, 204, 21, 0.18), rgba(16, 185, 129, 0.12))',
+  color: '#fff7d6',
+  fontWeight: 900,
+  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 22px rgba(250, 204, 21, 0.12)',
+};
+
+const luckyNumberStyle = {
+  display: 'inline-grid',
+  placeItems: 'center',
+  width: 46,
+  height: 46,
+  borderRadius: '50%',
+  background: 'radial-gradient(circle at 32% 24%, #fff8c8 0%, #facc15 28%, #8a4f07 63%, #050d18 100%)',
+  color: '#fff7d6',
+  fontWeight: 950,
+  border: '1px solid rgba(255, 235, 160, 0.74)',
+  boxShadow: '0 0 0 2px rgba(2, 8, 23, 0.72), 0 0 24px rgba(250, 204, 21, 0.54), inset 0 2px 6px rgba(255, 255, 255, 0.42)',
+  textShadow: '0 2px 4px rgba(0, 0, 0, 0.56)',
+};
+
 const successMessageStyle = { padding: '0.8rem 1rem', borderRadius: 14, background: 'rgba(16, 185, 129, 0.16)', color: '#d1fae5', border: '1px solid rgba(52, 211, 153, 0.34)', fontWeight: 700 };
 const errorMessageStyle = { padding: '0.8rem 1rem', borderRadius: 14, background: 'rgba(185, 28, 28, 0.16)', color: '#fecaca', border: '1px solid rgba(239, 68, 68, 0.36)', fontWeight: 700 };
 const warningMessageStyle = { padding: '0.8rem 1rem', borderRadius: 14, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 700 };
@@ -173,14 +200,25 @@ export default async function Home({ searchParams }) {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .aurora-gold-button:hover { transform: translateY(-2px) scale(1.01); filter: saturate(1.12); box-shadow: 0 0 36px rgba(250, 204, 21, 0.64), 0 18px 40px rgba(183, 121, 31, 0.34) !important; }
+        .aurora-gold-button { position: relative; overflow: hidden; }
+        .aurora-gold-button::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.42) 42%, transparent 58%); transform: translateX(-120%); transition: transform 520ms ease; }
+        .aurora-gold-button:hover { transform: translateY(-2px) scale(1.01); filter: saturate(1.12); box-shadow: 0 0 42px rgba(250, 204, 21, 0.74), 0 20px 46px rgba(183, 121, 31, 0.36) !important; }
+        .aurora-gold-button:hover::after { transform: translateX(120%); }
         .aurora-glass-card { transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
-        .aurora-glass-card:hover { transform: translateY(-3px); border-color: rgba(255, 235, 160, 0.4) !important; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5), 0 0 42px rgba(16, 185, 129, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important; }
-        .gold-text { background: linear-gradient(180deg, #fff8c8 0%, #facc15 44%, #b7791f 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 28px rgba(250, 204, 21, 0.2); }
+        .aurora-glass-card::before { content: ''; position: absolute; inset: 1px; border-radius: inherit; background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent 30%, rgba(16,185,129,0.08) 62%, rgba(250,204,21,0.12)); pointer-events: none; }
+        .aurora-glass-card::after { content: ''; position: absolute; top: -35%; right: -30%; width: 16rem; height: 16rem; border-radius: 999px; background: radial-gradient(circle, rgba(250,204,21,0.16), transparent 66%); filter: blur(6px); pointer-events: none; }
+        .aurora-glass-card > * { position: relative; z-index: 1; }
+        .aurora-glass-card:hover { transform: translateY(-4px); border-color: rgba(255, 235, 160, 0.48) !important; box-shadow: 0 34px 96px rgba(0, 0, 0, 0.54), 0 0 50px rgba(16, 185, 129, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important; }
+        .gold-text { background: linear-gradient(180deg, #fffdf0 0%, #ffe88d 20%, #facc15 52%, #9a5f10 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 34px rgba(250, 204, 21, 0.24); }
+        .premium-phone { transform: rotate(6deg); transition: transform 260ms ease, box-shadow 260ms ease; }
+        .premium-phone:hover { transform: rotate(3deg) translateY(-4px); }
+        @media (max-width: 820px) { .premium-phone { transform: none; max-width: 340px; margin: 0 auto; } }
       `}</style>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '6%', left: '-12%', width: '92vw', height: '19rem', borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(20, 184, 166, 0.5), rgba(250, 204, 21, 0.28), rgba(52, 211, 153, 0.34), rgba(16, 185, 129, 0))', filter: 'blur(18px)', animation: 'aurora-drift 14s ease-in-out infinite alternate' }} />
-        <div style={{ position: 'absolute', top: '18%', right: '-18%', width: '78vw', height: '15rem', borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(6, 182, 212, 0.28), rgba(52, 211, 153, 0.4), rgba(250, 204, 21, 0.2), rgba(16, 185, 129, 0))', filter: 'blur(22px)', animation: 'aurora-drift 18s ease-in-out -5s infinite alternate-reverse' }} />
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.42, backgroundImage: 'radial-gradient(circle at 12% 18%, rgba(255,255,255,0.9) 0 1px, transparent 1.6px), radial-gradient(circle at 74% 12%, rgba(250,204,21,0.82) 0 1px, transparent 1.5px), radial-gradient(circle at 54% 62%, rgba(255,255,255,0.54) 0 1px, transparent 1.4px)', backgroundSize: '190px 190px, 260px 260px, 220px 220px' }} />
+        <div style={{ position: 'absolute', top: '2%', left: '-18%', width: '105vw', height: '22rem', borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(20, 184, 166, 0.58), rgba(250, 204, 21, 0.34), rgba(52, 211, 153, 0.42), rgba(16, 185, 129, 0))', filter: 'blur(16px)', animation: 'aurora-drift 14s ease-in-out infinite alternate' }} />
+        <div style={{ position: 'absolute', top: '17%', right: '-22%', width: '88vw', height: '17rem', borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(6, 182, 212, 0.34), rgba(52, 211, 153, 0.46), rgba(250, 204, 21, 0.26), rgba(16, 185, 129, 0))', filter: 'blur(20px)', animation: 'aurora-drift 18s ease-in-out -5s infinite alternate-reverse' }} />
+        <div style={{ position: 'absolute', bottom: '-14rem', left: '6%', width: '42rem', height: '42rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(250, 204, 21, 0.16), transparent 62%)', filter: 'blur(10px)' }} />
         {[['✦', '9%', '12%', '0s'], ['✧', '82%', '10%', '0.7s'], ['✶', '72%', '32%', '1.3s'], ['✦', '16%', '44%', '1.8s'], ['✧', '90%', '64%', '2.4s'], ['✶', '35%', '76%', '3s']].map(([star, left, top, delay]) => (
           <span key={`${star}-${left}-${top}`} style={{ position: 'absolute', left, top, color: '#fde68a', textShadow: '0 0 16px rgba(250, 204, 21, 0.9)', animation: `magical-star-twinkle 3.4s ease-in-out ${delay} infinite` }}>
             {star}
@@ -189,14 +227,48 @@ export default async function Home({ searchParams }) {
       </div>
       <LuckyRevealPopup reveal={purchasedReveal} />
       <section style={{ maxWidth: 1040, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
-        <div style={{ marginBottom: '1rem', padding: 'clamp(1.25rem, 4vw, 2.2rem)', borderRadius: 34, border: '1px solid rgba(255, 235, 160, 0.2)', background: 'radial-gradient(circle at 85% 12%, rgba(250, 204, 21, 0.18), transparent 28%), radial-gradient(circle at 12% 16%, rgba(16, 185, 129, 0.22), transparent 30%), linear-gradient(145deg, rgba(2, 8, 23, 0.74), rgba(4, 24, 22, 0.62))', boxShadow: '0 28px 90px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(16px)' }}>
-          <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" />
-          <h1 className="gold-text" style={{ fontSize: 'clamp(2.65rem, 8vw, 5.6rem)', lineHeight: 0.95, margin: '1rem 0 0.85rem', letterSpacing: '-0.055em', maxWidth: 900 }}>
-            6 Pick and 7 Pick lucky numbers
-          </h1>
-          <p style={{ fontSize: 'clamp(1.08rem, 2.4vw, 1.35rem)', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.88)', marginBottom: 0 }}>
-            Get a $1 lucky pick with unique numbers, a slow reveal with stars and Aurora, plus your lucky color and day of the week.
-          </p>
+        <div style={{ marginBottom: '1rem', padding: 'clamp(1.25rem, 4vw, 2.4rem)', borderRadius: 38, border: '1px solid rgba(255, 235, 160, 0.26)', background: 'radial-gradient(circle at 86% 12%, rgba(250, 204, 21, 0.22), transparent 27%), radial-gradient(circle at 12% 16%, rgba(16, 185, 129, 0.28), transparent 31%), linear-gradient(145deg, rgba(2, 8, 23, 0.8), rgba(4, 24, 22, 0.68))', boxShadow: '0 34px 110px rgba(0, 0, 0, 0.52), 0 0 52px rgba(16, 185, 129, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(18px) saturate(135%)', overflow: 'hidden', position: 'relative' }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.12), transparent 18%, transparent 72%, rgba(250,204,21,0.12)), radial-gradient(circle at 72% 76%, rgba(16,185,129,0.18), transparent 28%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.25rem, 5vw, 3rem)', alignItems: 'center' }}>
+            <div>
+              <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" />
+              <h1 className="gold-text" style={{ fontSize: 'clamp(2.75rem, 8vw, 5.9rem)', lineHeight: 0.92, margin: '1rem 0 0.85rem', letterSpacing: '-0.06em', maxWidth: 900 }}>
+                6 Pick and 7 Pick lucky numbers
+              </h1>
+              <p style={{ fontSize: 'clamp(1.08rem, 2.4vw, 1.35rem)', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.9)', marginBottom: '1rem' }}>
+                Get a $1 lucky pick with unique numbers, a slow reveal with stars and Aurora, plus your lucky color and day of the week.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+                <span style={premiumPillStyle}>Aurora reveal</span>
+                <span style={premiumPillStyle}>Gold lucky cards</span>
+                <span style={premiumPillStyle}>Just for fun</span>
+              </div>
+            </div>
+            <div className="premium-phone" aria-hidden="true" style={{ justifySelf: 'center', width: 'min(100%, 330px)', minHeight: 520, padding: '1rem', borderRadius: 42, border: '2px solid rgba(255, 235, 160, 0.58)', background: 'linear-gradient(145deg, #05070a 0%, #061611 45%, #0a0f16 100%)', boxShadow: '0 30px 70px rgba(0,0,0,0.58), 0 0 54px rgba(250,204,21,0.26), inset 0 0 0 6px rgba(255,255,255,0.035)', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', inset: 10, borderRadius: 34, background: 'radial-gradient(circle at 52% 28%, rgba(16,185,129,0.42), transparent 24%), linear-gradient(160deg, rgba(1,4,3,0.2), rgba(2,8,23,0.9)), radial-gradient(circle at 80% 88%, rgba(250,204,21,0.2), transparent 22%)' }} />
+              <div style={{ position: 'absolute', top: 70, left: -80, width: 430, height: 120, borderRadius: 999, background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.54), rgba(250,204,21,0.3), transparent)', filter: 'blur(12px)', transform: 'rotate(-14deg)' }} />
+              <div style={{ position: 'relative', display: 'grid', gap: '1rem', padding: '0.35rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#facc15', fontWeight: 950 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}><img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="" width="34" height="34" />LuckyPickCanada.ca</span>
+                  <span style={{ fontSize: '1.35rem' }}>☰</span>
+                </div>
+                <div style={{ minHeight: 190, borderRadius: 26, border: '1px solid rgba(255,235,160,0.26)', background: 'radial-gradient(circle at 50% 35%, rgba(16,185,129,0.42), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.08), rgba(2,8,23,0.42))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 18px 38px rgba(0,0,0,0.32)', display: 'grid', alignContent: 'end', padding: '1rem' }}>
+                  <p className="gold-text" style={{ margin: 0, fontSize: '2rem', lineHeight: 1, fontWeight: 950, textTransform: 'uppercase' }}>Your Lucky Pick</p>
+                  <p style={{ margin: '0.35rem 0 0', color: '#fff7d6', fontWeight: 900 }}>Just for you</p>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.42rem' }}>
+                  {[7, 14, 23, 31, 36, 42].map((number) => <span key={number} style={{ ...luckyNumberStyle, width: 38, height: 38, fontSize: '0.92rem' }}>{String(number).padStart(2, '0')}</span>)}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+                  <div style={{ padding: '0.75rem', borderRadius: 18, border: '1px solid rgba(255,235,160,0.24)', background: 'rgba(255,255,255,0.07)' }}><strong style={{ color: '#facc15' }}>Lucky Day</strong><br />Friday</div>
+                  <div style={{ padding: '0.75rem', borderRadius: 18, border: '1px solid rgba(255,235,160,0.24)', background: 'rgba(255,255,255,0.07)' }}><strong style={{ color: '#facc15' }}>Lucky Color</strong><br />Emerald</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
+                  {['Clover', 'Canada', 'Gold'].map((card) => <div key={card} style={{ minHeight: 92, borderRadius: 16, border: '1px solid rgba(255,235,160,0.42)', background: 'linear-gradient(145deg, rgba(250,204,21,0.2), rgba(16,185,129,0.12), rgba(2,8,23,0.75))', display: 'grid', placeItems: 'center', color: '#fde68a', fontWeight: 900, fontSize: '0.75rem', textAlign: 'center', boxShadow: '0 0 22px rgba(250,204,21,0.14)' }}>{card}<br />Card</div>)}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <p style={{ maxWidth: 680, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.24)', boxShadow: '0 0 28px rgba(250, 204, 21, 0.12)', backdropFilter: 'blur(12px)' }}>
           Disclaimer: Lucky Pick Canada is not affiliated with, endorsed by, or connected to any lottery organization. Picks are for fun and entertainment only.
@@ -298,7 +370,7 @@ export default async function Home({ searchParams }) {
                 <p>{game.description}</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {generateNumbers(game.count, game.max).map((number) => (
-                    <span key={number} style={{ display: 'inline-grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', background: 'radial-gradient(circle at 30% 25%, #ecfdf5, #10b981 45%, #064e3b 100%)', color: '#fff7d6', fontWeight: 900, border: '1px solid rgba(255, 235, 160, 0.4)', boxShadow: '0 0 20px rgba(16, 185, 129, 0.62), 0 0 34px rgba(250, 204, 21, 0.22)' }}>
+                    <span key={number} style={luckyNumberStyle}>
                       {number}
                     </span>
                   ))}
@@ -417,7 +489,7 @@ export default async function Home({ searchParams }) {
               const count = provinceCounts[province.code] || 0;
 
               return (
-                <div key={province.code} style={{ padding: '1rem', minHeight: 78, borderRadius: 18, background: count ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.94), rgba(250, 204, 21, 0.9))' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.06))', border: count ? '2px solid rgba(255, 235, 160, 0.7)' : '2px solid rgba(255, 255, 255, 0.16)', boxShadow: count ? '0 0 22px rgba(16, 185, 129, 0.32)' : 'none' }}>
+                <div key={province.code} style={{ padding: '1rem', minHeight: 78, borderRadius: 20, background: count ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.96), rgba(250, 204, 21, 0.92))' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.06))', border: count ? '2px solid rgba(255, 235, 160, 0.78)' : '2px solid rgba(255, 255, 255, 0.16)', boxShadow: count ? '0 0 28px rgba(16, 185, 129, 0.38), inset 0 1px 0 rgba(255,255,255,0.28)' : 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
                   <strong style={{ display: 'block', fontSize: '1.25rem' }}>{province.code}</strong>
                   <span>{province.name}</span><br />
                   <span style={{ fontWeight: 700 }}>{count} {count === 1 ? 'share' : 'shares'}</span>

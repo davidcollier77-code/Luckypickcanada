@@ -118,7 +118,7 @@ export default function LuckyCardReveal({ luckScore }) {
   }
 
   return (
-    <section aria-labelledby="lucky-card-title" style={{ marginTop: '1.25rem', padding: 'clamp(1.25rem, 3vw, 1.8rem)', borderRadius: 30, background: 'radial-gradient(circle at 16% 18%, rgba(250, 204, 21, 0.32), transparent 26%), radial-gradient(circle at 84% 10%, rgba(16, 185, 129, 0.24), transparent 22%), linear-gradient(145deg, rgba(20, 11, 3, 0.94), rgba(75, 46, 8, 0.82) 42%, rgba(5, 13, 24, 0.9))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.34)', boxShadow: '0 28px 84px rgba(0, 0, 0, 0.44), 0 0 46px rgba(250, 204, 21, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.09)', overflow: 'hidden', textAlign: 'center', position: 'relative', backdropFilter: 'blur(16px)' }}>
+    <section aria-labelledby="lucky-card-title" style={{ marginTop: '1.25rem', padding: 'clamp(1.25rem, 3vw, 1.8rem)', borderRadius: 30, background: 'radial-gradient(circle at 16% 18%, rgba(250, 204, 21, 0.38), transparent 28%), radial-gradient(circle at 84% 10%, rgba(16, 185, 129, 0.3), transparent 24%), linear-gradient(145deg, rgba(15, 8, 2, 0.96), rgba(83, 51, 8, 0.86) 42%, rgba(3, 8, 14, 0.94))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.34)', boxShadow: '0 34px 96px rgba(0, 0, 0, 0.5), 0 0 58px rgba(250, 204, 21, 0.28), 0 0 40px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1)', overflow: 'hidden', textAlign: 'center', position: 'relative', backdropFilter: 'blur(16px)' }}>
       <style>{`
         @keyframes lucky-card-shake {
           0%, 100% { transform: rotate(0deg) translate(0, 0); }
@@ -145,7 +145,8 @@ export default function LuckyCardReveal({ luckScore }) {
         }
 
         .lucky-card-button { transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease; }
-        .lucky-card-button:not(:disabled):hover { transform: translateY(-4px) rotate(-1deg); filter: saturate(1.08); box-shadow: 0 22px 48px rgba(0, 0, 0, 0.36), 0 0 42px rgba(250, 204, 21, 0.38) !important; }
+        .lucky-card-button::before { content: ''; position: absolute; inset: -12px; border-radius: 38px; background: radial-gradient(circle, rgba(250,204,21,0.24), transparent 62%); filter: blur(8px); z-index: -1; }
+        .lucky-card-button:not(:disabled):hover { transform: translateY(-5px) rotate(-1deg); filter: saturate(1.1); box-shadow: 0 26px 54px rgba(0, 0, 0, 0.42), 0 0 52px rgba(250, 204, 21, 0.46) !important; }
       `}</style>
 
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
@@ -172,7 +173,7 @@ export default function LuckyCardReveal({ luckScore }) {
           onClick={revealCard}
           disabled={revealState !== 'closed'}
           aria-label={isRevealed && selectedCard ? `Revealed lucky card: ${selectedCard.name}` : 'Reveal your one special lucky card'}
-          className="lucky-card-button" style={{ position: 'relative', width: 210, height: 296, border: '1px solid rgba(255, 235, 160, 0.36)', borderRadius: 30, background: 'linear-gradient(145deg, rgba(255, 235, 160, 0.12), rgba(16, 185, 129, 0.08))', padding: 4, cursor: revealState === 'closed' ? 'pointer' : 'default', boxShadow: '0 20px 40px rgba(0, 0, 0, 0.36), 0 0 32px rgba(250, 204, 21, 0.18)', animation: isRevealing ? 'lucky-card-shake 0.72s ease-in-out' : isRevealed ? 'lucky-card-pop 0.28s ease-out' : 'lucky-card-glow 2.8s ease-in-out infinite' }}
+          className="lucky-card-button" style={{ position: 'relative', width: 210, height: 296, border: '1px solid rgba(255, 235, 160, 0.58)', borderRadius: 30, background: 'linear-gradient(145deg, rgba(255, 235, 160, 0.12), rgba(16, 185, 129, 0.08))', padding: 6, cursor: revealState === 'closed' ? 'pointer' : 'default', boxShadow: '0 24px 50px rgba(0, 0, 0, 0.42), 0 0 38px rgba(250, 204, 21, 0.26), inset 0 1px 0 rgba(255,255,255,0.18)', animation: isRevealing ? 'lucky-card-shake 0.72s ease-in-out' : isRevealed ? 'lucky-card-pop 0.28s ease-out' : 'lucky-card-glow 2.8s ease-in-out infinite' }}
         >
           <img
             key={visibleImage.src}
