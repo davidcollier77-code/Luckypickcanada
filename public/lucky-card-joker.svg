@@ -1,1 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 592"><rect width="420" height="592" rx="44" fill="#581c87"/><rect x="18" y="18" width="384" height="556" rx="38" fill="#fff7ed" stroke="#f0abfc" stroke-width="10"/><text x="62" y="88" font-family="Georgia,serif" font-size="58" font-weight="900" fill="#be123c">J</text><path d="M125 272c29-118 141-118 170 0-31 102-139 102-170 0z" fill="#f97316" stroke="#7e22ce" stroke-width="14"/><path d="M130 238l-38-70 82 34 36-82 36 82 82-34-38 70" fill="#facc15" stroke="#92400e" stroke-width="10"/><circle cx="178" cy="273" r="13" fill="#fff7ed"/><circle cx="242" cy="273" r="13" fill="#fff7ed"/><path d="M170 326c29 25 51 25 80 0" fill="none" stroke="#fff7ed" stroke-width="13" stroke-linecap="round"/><text x="210" y="520" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" font-weight="900" fill="#7e22ce">JOKER LUCK</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 1184" role="img" aria-labelledby="title desc">
+  <title id="title">Joker Luck</title>
+  <desc id="desc">Premium high-resolution LuckyPickCanada collectible card artwork for Joker Luck.</desc>
+
+  <defs>
+    <linearGradient id="edgeGold" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff8cf"/>
+      <stop offset="0.18" stop-color="#f9d86c"/>
+      <stop offset="0.46" stop-color="#facc15"/>
+      <stop offset="0.72" stop-color="#b7791f"/>
+      <stop offset="1" stop-color="#fff1a8"/>
+    </linearGradient>
+    <linearGradient id="emeraldPanel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#063b2f"/>
+      <stop offset="0.5" stop-color="#0f766e"/>
+      <stop offset="1" stop-color="#04111d"/>
+    </linearGradient>
+    <radialGradient id="auroraGlow" cx="50%" cy="34%" r="68%">
+      <stop offset="0" stop-color="#fef9c3" stop-opacity="0.95"/>
+      <stop offset="0.32" stop-color="#facc15" stop-opacity="0.52"/>
+      <stop offset="0.64" stop-color="#10b981" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.45"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#facc15" flood-opacity="0.35"/>
+    </filter>
+    <pattern id="microStars" width="78" height="78" patternUnits="userSpaceOnUse">
+      <path d="M18 8l5 14 14 5-14 5-5 14-5-14-14-5 14-5z" fill="#fff7d6" opacity="0.16"/>
+      <circle cx="58" cy="54" r="3" fill="#fde68a" opacity="0.28"/>
+    </pattern>
+  </defs>
+
+  <rect width="840" height="1184" rx="88" fill="#020617"/>
+  <rect x="20" y="20" width="800" height="1144" rx="78" fill="url(#edgeGold)"/>
+  <rect x="42" y="42" width="756" height="1100" rx="62" fill="#061826" stroke="#fff7d6" stroke-width="4" opacity="0.96"/>
+  <rect x="58" y="58" width="724" height="1068" rx="50" fill="url(#emeraldPanel)"/>
+  <rect x="58" y="58" width="724" height="1068" rx="50" fill="url(#microStars)"/>
+  <path d="M80 170c158-76 264-84 404-28 108 43 170 37 278-27v210c-116 62-220 62-340 12-128-54-223-42-342 30z" fill="#10b981" opacity="0.20"/>
+  <ellipse cx="420" cy="474" rx="282" ry="318" fill="url(#auroraGlow)"/>
+
+  <rect x="102" y="128" width="636" height="820" rx="44" fill="#020617" stroke="#fff7d6" stroke-width="5" opacity="0.44"/>
+  <rect x="124" y="150" width="592" height="776" rx="34" fill="none" stroke="#facc15" stroke-width="4" stroke-dasharray="16 16" opacity="0.58"/>
+  <g filter="url(#softShadow)">
+    <path d="M264 300c48-92 264-92 312 0l-48 302H312z" fill="#fff7d6" stroke="#facc15" stroke-width="12"/>
+    <path d="M258 330c-42-90-8-154 70-172l46 152z" fill="#dc2626" stroke="#fff7d6" stroke-width="8"/>
+    <path d="M582 330c42-90 8-154-70-172l-46 152z" fill="#0f766e" stroke="#fff7d6" stroke-width="8"/>
+    <circle cx="326" cy="160" r="36" fill="#facc15" stroke="#fff7d6" stroke-width="8"/>
+    <circle cx="514" cy="160" r="36" fill="#facc15" stroke="#fff7d6" stroke-width="8"/>
+    <circle cx="350" cy="454" r="28" fill="#020617"/><circle cx="490" cy="454" r="28" fill="#020617"/>
+    <path d="M340 556c52 52 108 52 160 0" fill="none" stroke="#b91c1c" stroke-width="18" stroke-linecap="round"/>
+    <path d="M420 488l-24 42h48z" fill="#f97316"/>
+  </g>
+  <text x="420" y="1006" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="900" letter-spacing="2" fill="#fff7d6">JOKER LUCK</text>
+  <text x="420" y="1058" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="900" letter-spacing="5" fill="#facc15">LUCKYPICKCANADA</text>
+  <text x="106" y="112" font-family="Georgia, serif" font-size="56" font-weight="900" fill="#fff7d6">✦</text>
+  <text x="735" y="1080" font-family="Georgia, serif" font-size="56" font-weight="900" fill="#fff7d6" transform="rotate(180 735 1080)">✦</text>
+</svg>

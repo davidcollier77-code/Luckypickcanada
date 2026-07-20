@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 const cardBackImage = {
-  src: '/card-back.png',
+  src: '/lucky-card-back.svg',
   alt: 'Gold clover LuckyPickCanada card back',
 };
 
@@ -11,37 +11,37 @@ const luckyCardImages = [
   {
     title: 'Ace of Spades',
     name: 'Ace of Spades lucky card',
-    src: '/ace-spades.png',
+    src: '/lucky-card-ace-spades.svg',
     message: 'A powerful symbol of confidence, success, and taking your next lucky step.',
   },
   {
     title: 'Joker Luck',
     name: 'Joker lucky card',
-    src: '/joker.png',
+    src: '/lucky-card-joker.svg',
     message: 'Unexpected luck can appear when you least expect it.',
   },
   {
     title: 'Clover Fortune',
     name: 'Four-leaf clover lucky card',
-    src: '/lucky-clover.png',
+    src: '/lucky-card-clover.svg',
     message: 'A little extra luck is heading your way. Keep your eyes open for good moments.',
   },
   {
     title: 'Golden Horseshoe',
     name: 'Lucky horseshoe card',
-    src: '/horseshoe.png',
+    src: '/lucky-card-horseshoe.svg',
     message: 'Good fortune is circling back toward you.',
   },
   {
     title: "Rabbit's Foot",
     name: "Rabbit's foot lucky card",
-    src: '/rabbits-foot.png',
+    src: '/lucky-card-rabbit-foot.svg',
     message: 'A classic charm brings a gentle boost of luck to your path.',
   },
   {
     title: 'Lucky Fortune',
     name: 'Lucky fortune card',
-    src: '/fortune-card.png',
+    src: '/lucky-card-fortune.svg',
     message: 'Your next bright moment is closer than it feels.',
   },
 ];
@@ -173,15 +173,15 @@ export default function LuckyCardReveal({ luckScore }) {
           onClick={revealCard}
           disabled={revealState !== 'closed'}
           aria-label={isRevealed && selectedCard ? `Revealed lucky card: ${selectedCard.name}` : 'Reveal your one special lucky card'}
-          className="lucky-card-button" style={{ position: 'relative', width: 210, height: 296, border: '1px solid rgba(255, 235, 160, 0.58)', borderRadius: 30, background: 'linear-gradient(145deg, rgba(255, 235, 160, 0.12), rgba(16, 185, 129, 0.08))', padding: 6, cursor: revealState === 'closed' ? 'pointer' : 'default', boxShadow: '0 24px 50px rgba(0, 0, 0, 0.42), 0 0 38px rgba(250, 204, 21, 0.26), inset 0 1px 0 rgba(255,255,255,0.18)', animation: isRevealing ? 'lucky-card-shake 0.72s ease-in-out' : isRevealed ? 'lucky-card-pop 0.28s ease-out' : 'lucky-card-glow 2.8s ease-in-out infinite' }}
+          className="lucky-card-button" style={{ position: 'relative', width: 'min(68vw, 236px)', aspectRatio: '210 / 296', border: '1px solid rgba(255, 235, 160, 0.58)', borderRadius: 30, background: 'linear-gradient(145deg, rgba(255, 235, 160, 0.12), rgba(16, 185, 129, 0.08))', padding: 6, cursor: revealState === 'closed' ? 'pointer' : 'default', boxShadow: '0 24px 50px rgba(0, 0, 0, 0.42), 0 0 38px rgba(250, 204, 21, 0.26), inset 0 1px 0 rgba(255,255,255,0.18)', animation: isRevealing ? 'lucky-card-shake 0.72s ease-in-out' : isRevealed ? 'lucky-card-pop 0.28s ease-out' : 'lucky-card-glow 2.8s ease-in-out infinite' }}
         >
           <img
             key={visibleImage.src}
             src={visibleImage.src}
             alt={visibleImage.alt || visibleImage.name}
-            width="210"
-            height="296"
-            style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', borderRadius: 26, boxShadow: 'inset 0 0 0 1px rgba(255, 235, 160, 0.18)' }}
+            width="840"
+            height="1184"
+            style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover', borderRadius: 26, transform: 'translateZ(0)', backfaceVisibility: 'hidden', boxShadow: 'inset 0 0 0 1px rgba(255, 235, 160, 0.18)' }}
           />
         </button>
       </div>
