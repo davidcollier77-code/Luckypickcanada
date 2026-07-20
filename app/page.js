@@ -202,6 +202,21 @@ export default async function Home({ searchParams }) {
           to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes premium-section-rise {
+          from { opacity: 0; transform: translateY(18px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes maple-float {
+          0%, 100% { transform: translate3d(0, 0, 0) rotate(-8deg); opacity: 0.28; }
+          50% { transform: translate3d(10px, -12px, 0) rotate(7deg); opacity: 0.52; }
+        }
+
+        @keyframes premium-number-glow {
+          0%, 100% { filter: drop-shadow(0 0 10px rgba(250,204,21,0.38)); }
+          50% { filter: drop-shadow(0 0 22px rgba(255,247,214,0.72)); }
+        }
+
         .aurora-gold-button { position: relative; overflow: hidden; }
         .aurora-gold-button::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.42) 42%, transparent 58%); transform: translateX(-120%); transition: transform 520ms ease; }
         .aurora-gold-button:hover { transform: translateY(-2px) scale(1.01); filter: saturate(1.12); box-shadow: 0 0 42px rgba(250, 204, 21, 0.74), 0 20px 46px rgba(183, 121, 31, 0.36) !important; }
@@ -211,10 +226,14 @@ export default async function Home({ searchParams }) {
         .aurora-glass-card::after { content: ''; position: absolute; top: -35%; right: -30%; width: 16rem; height: 16rem; border-radius: 999px; background: radial-gradient(circle, rgba(250,204,21,0.16), transparent 66%); filter: blur(6px); pointer-events: none; }
         .aurora-glass-card > * { position: relative; z-index: 1; }
         .aurora-glass-card:hover { transform: translateY(-4px); border-color: rgba(255, 235, 160, 0.48) !important; box-shadow: 0 34px 96px rgba(0, 0, 0, 0.54), 0 0 50px rgba(16, 185, 129, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important; }
+        .premium-section { animation: premium-section-rise 720ms cubic-bezier(.16,.84,.28,1) both; scroll-margin-top: 1.5rem; }
+        .premium-section:nth-of-type(2n) { animation-delay: 70ms; }
         .gold-text { background: linear-gradient(180deg, #fffdf0 0%, #ffe88d 20%, #facc15 52%, #9a5f10 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 34px rgba(250, 204, 21, 0.24); }
         .premium-phone { transform: rotate(6deg); transition: transform 260ms ease, box-shadow 260ms ease; }
         .premium-phone:hover { transform: rotate(3deg) translateY(-4px); }
-        @media (max-width: 820px) { .premium-phone { transform: none; max-width: 340px; margin: 0 auto; } }
+        .premium-maple-accent { position: absolute; color: rgba(250,204,21,0.34); font-size: clamp(2rem, 7vw, 4.8rem); line-height: 1; filter: drop-shadow(0 0 20px rgba(250,204,21,0.24)); animation: maple-float 8s ease-in-out infinite; pointer-events: none; }
+        .premium-lucky-number { animation: premium-number-glow 3.2s ease-in-out infinite; }
+        @media (max-width: 820px) { .premium-phone { transform: none; max-width: 340px; margin: 0 auto; } main { padding-left: 1rem !important; padding-right: 1rem !important; } }
       `}</style>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, opacity: 0.42, backgroundImage: 'radial-gradient(circle at 12% 18%, rgba(255,255,255,0.9) 0 1px, transparent 1.6px), radial-gradient(circle at 74% 12%, rgba(250,204,21,0.82) 0 1px, transparent 1.5px), radial-gradient(circle at 54% 62%, rgba(255,255,255,0.54) 0 1px, transparent 1.4px)', backgroundSize: '190px 190px, 260px 260px, 220px 220px' }} />
@@ -229,6 +248,8 @@ export default async function Home({ searchParams }) {
       </div>
       <LuckyRevealPopup reveal={purchasedReveal} />
       <section style={{ maxWidth: 1040, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
+        <span className="premium-maple-accent" aria-hidden="true" style={{ top: 22, right: -18 }}>✦</span>
+        <span className="premium-maple-accent" aria-hidden="true" style={{ top: 370, left: -28, animationDelay: '-3s' }}>🍁</span>
         <div style={{ marginBottom: '1rem', padding: 'clamp(1.25rem, 4vw, 2.4rem)', borderRadius: 38, border: '1px solid rgba(255, 235, 160, 0.26)', background: 'radial-gradient(circle at 86% 12%, rgba(250, 204, 21, 0.22), transparent 27%), radial-gradient(circle at 12% 16%, rgba(16, 185, 129, 0.28), transparent 31%), linear-gradient(145deg, rgba(2, 8, 23, 0.8), rgba(4, 24, 22, 0.68))', boxShadow: '0 34px 110px rgba(0, 0, 0, 0.52), 0 0 52px rgba(16, 185, 129, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(18px) saturate(135%)', overflow: 'hidden', position: 'relative' }}>
           <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.12), transparent 18%, transparent 72%, rgba(250,204,21,0.12)), radial-gradient(circle at 72% 76%, rgba(16,185,129,0.18), transparent 28%)', pointerEvents: 'none' }} />
           <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.25rem, 5vw, 3rem)', alignItems: 'center' }}>
@@ -259,7 +280,7 @@ export default async function Home({ searchParams }) {
                   <p style={{ margin: '0.35rem 0 0', color: '#fff7d6', fontWeight: 900 }}>Just for you</p>
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.42rem' }}>
-                  {[7, 14, 23, 31, 36, 42].map((number) => <span key={number} style={{ ...luckyNumberStyle, width: 38, height: 38, fontSize: '0.92rem' }}>{String(number).padStart(2, '0')}</span>)}
+                  {[7, 14, 23, 31, 36, 42].map((number) => <span key={number} className="premium-lucky-number" style={{ ...luckyNumberStyle, width: 38, height: 38, fontSize: '0.92rem' }}>{String(number).padStart(2, '0')}</span>)}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
                   <div style={{ padding: '0.75rem', borderRadius: 18, border: '1px solid rgba(255,235,160,0.24)', background: 'rgba(255,255,255,0.07)' }}><strong style={{ color: '#facc15' }}>Lucky Day</strong><br />Friday</div>
@@ -291,7 +312,7 @@ export default async function Home({ searchParams }) {
         <LuckyBlackjackChallenge />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
-          <form action="/api/checkout" method="POST" className="aurora-glass-card" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="lucky_pick" />
             <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Lucky pick</h2>
             <p style={{ lineHeight: 1.5 }}>Choose either a 6 Pick or 7 Pick result with no duplicate numbers.</p>
@@ -315,7 +336,7 @@ export default async function Home({ searchParams }) {
             <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Little Luck Map.</p>
           </form>
 
-          <form action="/api/checkout" method="POST" className="aurora-glass-card" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="gift_package" />
             <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Gift a lucky pick</h2>
             <p style={{ lineHeight: 1.5 }}>Send the same lucky reveal by email with your personal greeting.</p>
@@ -350,7 +371,7 @@ export default async function Home({ searchParams }) {
             <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Send gift for $4.99</button>
           </form>
 
-          <form action="/api/checkout" method="POST" className="aurora-glass-card" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="tip" />
             <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Tip jar</h2>
             <label htmlFor="tipAmount" style={{ display: 'block', lineHeight: 1.5, marginBottom: '0.75rem' }}>
@@ -384,7 +405,7 @@ export default async function Home({ searchParams }) {
                 <p>{game.description}</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {generateNumbers(game.count, game.max).map((number) => (
-                    <span key={number} style={luckyNumberStyle}>
+                    <span key={number} className="premium-lucky-number" style={luckyNumberStyle}>
                       {number}
                     </span>
                   ))}
@@ -399,7 +420,7 @@ export default async function Home({ searchParams }) {
           })}
         </div>
 
-        <section id="lucky-stories" className="aurora-glass-card" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+        <section id="lucky-stories" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
           <SectionKicker>Lucky Stories</SectionKicker>
           <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
             Share your stories of luck and happiness
@@ -453,7 +474,7 @@ export default async function Home({ searchParams }) {
           </div>
         </section>
 
-        <section id="little-luck-map" className="aurora-glass-card" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+        <section id="little-luck-map" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
           <SectionKicker>Little Luck Map</SectionKicker>
           <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
             See where little luck is being shared
@@ -528,7 +549,7 @@ export default async function Home({ searchParams }) {
           </div>
         </section>
 
-        <section id="suggestion-box" className="aurora-glass-card" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+        <section id="suggestion-box" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
           <SectionKicker>Suggestion Box</SectionKicker>
           <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
             Help make Lucky Pick Canada better
@@ -563,7 +584,7 @@ export default async function Home({ searchParams }) {
           </form>
         </section>
 
-        <section id="facebook-community" className="aurora-glass-card" style={{ ...glassCardStyle, marginTop: '2rem', textAlign: 'center' }}>
+        <section id="facebook-community" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem', textAlign: 'center' }}>
           <SectionKicker>Community</SectionKicker>
           <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.6rem auto 0.75rem', letterSpacing: '-0.035em', maxWidth: 760 }}>
             🍀 Join the LuckyPick Canada Community
@@ -597,10 +618,14 @@ export default async function Home({ searchParams }) {
           </a>
         </section>
 
-        <footer style={{ marginTop: '2rem', padding: '1.25rem 0 0', borderTop: '1px solid rgba(255, 235, 160, 0.18)' }}>
+        <footer className="premium-section" style={{ marginTop: '2rem', padding: 'clamp(1.25rem, 4vw, 2rem)', borderRadius: 30, border: '1px solid rgba(255, 235, 160, 0.24)', background: 'linear-gradient(145deg, rgba(2, 8, 23, 0.68), rgba(4, 44, 40, 0.48))', boxShadow: '0 22px 70px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08)', backdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
+          <span aria-hidden="true" style={{ position: 'absolute', right: '1.2rem', top: '0.8rem', color: 'rgba(250,204,21,0.26)', fontSize: '3.2rem', lineHeight: 1 }}>🍁</span>
           <BrandLogo size={44} textColor="#fff7d6" />
-          <p style={{ margin: '0.75rem 0 0', color: 'rgba(255, 245, 203, 0.72)', lineHeight: 1.5 }}>
-            Lucky Pick Canada is your home for maple clover lucky picks, gifts, stories, and a little shared luck across Canada.
+          <p style={{ margin: '0.9rem 0 0', color: '#fde68a', fontWeight: 950, fontSize: 'clamp(1.08rem, 3vw, 1.45rem)', lineHeight: 1.35 }}>
+            Thank You For Your Support! Enjoy Your Luck! 🍀
+          </p>
+          <p style={{ margin: '0.75rem 0 0', color: 'rgba(255, 245, 203, 0.76)', lineHeight: 1.65, maxWidth: 860 }}>
+            LuckyPickCanada.ca provides fun personalized luck experiences for entertainment purposes only. It is not affiliated with or a replacement for any official lottery organization. Results are generated for fun and should not be considered predictions or guarantees.
           </p>
         </footer>
       </section>
