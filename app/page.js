@@ -264,8 +264,18 @@ export default async function Home({ searchParams }) {
                   <div style={{ padding: '0.75rem', borderRadius: 18, border: '1px solid rgba(255,235,160,0.24)', background: 'rgba(255,255,255,0.07)' }}><strong style={{ color: '#facc15' }}>Lucky Day</strong><br />Friday</div>
                   <div style={{ padding: '0.75rem', borderRadius: 18, border: '1px solid rgba(255,235,160,0.24)', background: 'rgba(255,255,255,0.07)' }}><strong style={{ color: '#facc15' }}>Lucky Color</strong><br />Emerald</div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
-                  {['Clover', 'Canada', 'Gold'].map((card) => <div key={card} style={{ minHeight: 92, borderRadius: 16, border: '1px solid rgba(255,235,160,0.42)', background: 'linear-gradient(145deg, rgba(250,204,21,0.2), rgba(16,185,129,0.12), rgba(2,8,23,0.75))', display: 'grid', placeItems: 'center', color: '#fde68a', fontWeight: 900, fontSize: '0.75rem', textAlign: 'center', boxShadow: '0 0 22px rgba(250,204,21,0.14)' }}>{card}<br />Card</div>)}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', perspective: 900 }}>
+                  {[
+                    { name: 'Clover', symbol: '♣', background: 'radial-gradient(circle at 50% 34%, rgba(250,204,21,0.32), transparent 26%), linear-gradient(150deg, #020a08, #064e3b 50%, #030712)' },
+                    { name: 'Canada', symbol: '✦', background: 'linear-gradient(90deg, #8f1118 0 26%, #fff7ed 26% 74%, #991b1b 74%), radial-gradient(circle at 50% 36%, rgba(250,204,21,0.32), transparent 24%)' },
+                    { name: 'Gold', symbol: '♣', background: 'linear-gradient(115deg, #6b3d07, #facc15 30%, #fff2a8 44%, #b7791f 62%, #ffe88d 84%, #5c3307)' },
+                  ].map((card) => (
+                    <div key={card.name} style={{ minHeight: 108, borderRadius: 18, border: '1px solid rgba(255,247,214,0.68)', background: card.background, display: 'grid', placeItems: 'center', alignContent: 'center', gap: '0.18rem', color: '#fff7d6', fontWeight: 950, fontSize: '0.7rem', letterSpacing: 0.4, textTransform: 'uppercase', textAlign: 'center', boxShadow: '0 16px 28px rgba(0,0,0,0.36), 0 0 24px rgba(250,204,21,0.2), inset 0 1px 0 rgba(255,255,255,0.34), inset 0 -12px 22px rgba(0,0,0,0.24)', transform: 'rotateX(6deg)', position: 'relative', overflow: 'hidden' }}>
+                      <span style={{ position: 'absolute', inset: 6, borderRadius: 13, border: '1px solid rgba(255,247,214,0.34)' }} />
+                      <span style={{ fontSize: '1.7rem', color: '#facc15', textShadow: '0 0 14px rgba(250,204,21,0.78)' }}>{card.symbol}</span>
+                      {card.name}<br />Card
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
