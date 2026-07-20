@@ -256,15 +256,23 @@ export default async function Home({ searchParams }) {
             <div>
               <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" />
               <h1 className="gold-text" style={{ fontSize: 'clamp(2.75rem, 8vw, 5.9rem)', lineHeight: 0.92, margin: '1rem 0 0.85rem', letterSpacing: '-0.06em', maxWidth: 900 }}>
-                6 Pick and 7 Pick lucky numbers
+                Discover Your Lucky Pick Today!
               </h1>
               <p style={{ fontSize: 'clamp(1.08rem, 2.4vw, 1.35rem)', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.9)', marginBottom: '1rem' }}>
-                Get a $1 lucky pick with unique numbers, a slow reveal with stars and Aurora, plus your lucky color and day of the week.
+                Everyone could use a little extra luck. Welcome to LuckyPick Canada — a fun Canadian experience designed to add a little excitement to your day.
               </p>
+              <p style={{ fontSize: '1.02rem', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.82)', margin: '0 0 1.15rem' }}>
+                No sign-up required to enjoy the free features. Tap, play, and see where your luck takes you — or unlock your own personalized Lucky Pick for just $1 CAD.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+                <a href="#luck-meter-title" className="aurora-gold-button" style={{ ...checkoutButtonStyle, width: 'auto', minWidth: 220, display: 'inline-flex', justifyContent: 'center', textDecoration: 'none' }}>Try the FREE Lucky Meter</a>
+                <a href="#lucky-pick-checkout" style={{ ...premiumPillStyle, minWidth: 250, textDecoration: 'none' }}>Get Your Personalized Lucky Pick – $1 CAD</a>
+              </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-                <span style={premiumPillStyle}>Aurora reveal</span>
-                <span style={premiumPillStyle}>Gold lucky cards</span>
-                <span style={premiumPillStyle}>Just for fun</span>
+                <span style={premiumPillStyle}>Free Lucky Meter</span>
+                <span style={premiumPillStyle}>Lucky Card Reveal</span>
+                <span style={premiumPillStyle}>Blackjack mini-game</span>
+                <span style={premiumPillStyle}>Lucky colour and day</span>
               </div>
             </div>
             <div className="premium-phone" aria-hidden="true" style={{ justifySelf: 'center', width: 'min(100%, 330px)', minHeight: 520, padding: '1rem', borderRadius: 42, border: '2px solid rgba(255, 235, 160, 0.58)', background: 'linear-gradient(145deg, #05070a 0%, #061611 45%, #0a0f16 100%)', boxShadow: '0 30px 70px rgba(0,0,0,0.58), 0 0 54px rgba(250,204,21,0.26), inset 0 0 0 6px rgba(255,255,255,0.035)', position: 'relative', overflow: 'hidden' }}>
@@ -303,19 +311,39 @@ export default async function Home({ searchParams }) {
             </div>
           </div>
         </div>
-        <p style={{ maxWidth: 680, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.24)', boxShadow: '0 0 28px rgba(250, 204, 21, 0.12)', backdropFilter: 'blur(12px)' }}>
-          Disclaimer: Lucky Pick Canada is not affiliated with, endorsed by, or connected to any lottery organization. Picks are for fun and entertainment only.
+        <p style={{ maxWidth: 760, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.24)', boxShadow: '0 0 28px rgba(250, 204, 21, 0.12)', backdropFilter: 'blur(12px)' }}>
+          Entertainment purposes only: Lucky Picks, Lucky Cards, Lucky Colours, and all other features are randomly generated for fun and enjoyment. Purchasing a personalized Lucky Pick does not increase the chances of winning any lottery, contest, or game of chance.
         </p>
 
         <LuckMeter />
 
         <LuckyBlackjackChallenge />
 
+        <section className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+          <SectionKicker>Why People Visit LuckyPick Canada</SectionKicker>
+          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
+            Start your lucky journey
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
+            {[
+              'Fun and interactive luck-themed experiences',
+              'Beautiful animations and card reveals',
+              'New lucky moments every visit',
+              'Built in Canada',
+              'Designed for entertainment and fun',
+            ].map((reason) => (
+              <div key={reason} style={{ padding: '1rem', borderRadius: 18, background: 'linear-gradient(145deg, rgba(255,255,255,0.08), rgba(16,185,129,0.08))', border: '1px solid rgba(255, 235, 160, 0.22)', fontWeight: 800 }}>
+                {reason}
+              </div>
+            ))}
+          </div>
+        </section>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
-          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
+          <form id="lucky-pick-checkout" action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="lucky_pick" />
-            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Lucky pick</h2>
-            <p style={{ lineHeight: 1.5 }}>Choose either a 6 Pick or 7 Pick result with no duplicate numbers.</p>
+            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Personalized Lucky Pick</h2>
+            <p style={{ lineHeight: 1.5 }}>Unlock your own $1 CAD Lucky Pick with either a 6 Pick or 7 Pick result and no duplicate numbers.</p>
             <div style={{ display: 'grid', gap: '0.6rem', margin: '1rem 0' }}>
               <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
                 <input type="radio" name="luckyPickGame" value="6" defaultChecked />
@@ -332,7 +360,7 @@ export default async function Home({ searchParams }) {
               <li>Slow reveal with stars and Aurora</li>
             </ul>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
-            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Buy lucky pick for $1.00</button>
+            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Get Your Personalized Lucky Pick – $1 CAD</button>
             <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Little Luck Map.</p>
           </form>
 
@@ -625,7 +653,7 @@ export default async function Home({ searchParams }) {
             Thank You For Your Support! Enjoy Your Luck! 🍀
           </p>
           <p style={{ margin: '0.75rem 0 0', color: 'rgba(255, 245, 203, 0.76)', lineHeight: 1.65, maxWidth: 860 }}>
-            LuckyPickCanada.ca provides fun personalized luck experiences for entertainment purposes only. It is not affiliated with or a replacement for any official lottery organization. Results are generated for fun and should not be considered predictions or guarantees.
+            LuckyPickCanada.ca provides fun personalized luck experiences for entertainment purposes only. Lucky Picks, Lucky Cards, Lucky Colours, and all other features are randomly generated for fun and enjoyment, and purchases do not increase the chances of winning any lottery, contest, or game of chance.
           </p>
         </footer>
       </section>
