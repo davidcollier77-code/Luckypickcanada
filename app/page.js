@@ -1,5 +1,6 @@
 import { getLuckMap, provinces } from './luck-map';
 import LuckMeter from './luck-meter';
+import LuckyBlackjackChallenge from './lucky-blackjack-challenge';
 import LuckyRevealPopup from './lucky-reveal-popup';
 import { getLuckyStories } from './lucky-stories';
 
@@ -286,6 +287,8 @@ export default async function Home({ searchParams }) {
         </p>
 
         <LuckMeter />
+
+        <LuckyBlackjackChallenge />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
           <form action="/api/checkout" method="POST" className="aurora-glass-card" style={glassCardStyle}>
