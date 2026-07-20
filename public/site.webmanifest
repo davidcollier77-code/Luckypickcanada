@@ -1,0 +1,21 @@
+{
+  "name": "LuckyPickCanada.ca",
+  "short_name": "LuckyPickCanada",
+  "icons": [
+    {
+      "src": "/favicon-48x48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "theme_color": "#b90818",
+  "background_color": "#000000",
+  "display": "standalone"
+}

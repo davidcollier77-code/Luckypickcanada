@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Canadian maple leaf favicon">
+  <defs>
+    <linearGradient id="leafRed" x1="80" y1="40" x2="432" y2="472" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff3b30"/>
+      <stop offset="0.46" stop-color="#e1111f"/>
+      <stop offset="1" stop-color="#a90816"/>
+    </linearGradient>
+    <linearGradient id="veinRed" x1="256" y1="70" x2="256" y2="502" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff786f" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#7f0611" stop-opacity="0.78"/>
+    </linearGradient>
+  </defs>
+  <path d="M 256 18 L 270 84 L 288 132 L 334 76 L 324 141 L 374 116 L 356 182 L 442 154 L 405 214 L 490 250 L 397 274 L 438 340 L 348 322 L 350 388 L 296 352 L 274 430 L 263 378 L 256 502 L 249 378 L 238 430 L 216 352 L 162 388 L 164 322 L 74 340 L 115 274 L 22 250 L 107 214 L 70 154 L 156 182 L 138 116 L 188 141 L 178 76 L 224 132 L 242 84 Z" fill="url(#leafRed)"/>
+  <path d="M256 502 L256 376" stroke="#8f0612" stroke-width="18" stroke-linecap="round"/>
+  <path d="M256 376 L256 72 M254 300 L188 140 M258 300 L324 140 M250 288 L100 222 M262 288 L412 222 M246 320 L120 336 M266 320 L392 336 M252 352 L218 426 M260 352 L294 426" fill="none" stroke="url(#veinRed)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
