@@ -27,16 +27,28 @@ const ranks = [
 
 const resultCopy = {
   win: {
-    title: '🍀 Lucky Strike!',
-    message: 'Your cards are smiling today. Your luck is shining!',
+    title: '🏆 YOU WIN!',
+    messages: [
+      'The cards were feeling lucky today! Enjoy your winning hand!',
+      'A golden hand for a lucky Canadian moment. Keep that clover energy close!',
+      'Your LuckyPickCanada streak just found the spotlight. Nicely played!',
+    ],
   },
   push: {
-    title: '⚖️ Balanced Luck!',
-    message: 'Sometimes patience brings the best surprises.',
+    title: '🤝 PUSH!',
+    messages: [
+      'Perfect balance! The cards stayed even — your luck continues!',
+      'A polished draw with premium poise. The table is keeping your luck warm!',
+      'Even cards, even brighter chances. Your next lucky hand is waiting!',
+    ],
   },
   lose: {
-    title: '💥 A Little Unlucky Today',
-    message: 'Every new day brings a fresh chance.',
+    title: '💥 BUST!',
+    messages: [
+      'The luck took a little detour this hand. Every new deal brings a fresh chance!',
+      'A quick clover reset for the table. Fresh cards can flip the fortune fast!',
+      'The hand cooled off, but the LuckyPickCanada glow is ready for the next deal!',
+    ],
   },
 };
 
@@ -104,7 +116,16 @@ function dealGame() {
     dealerHand: [deck[1], deck[3]],
     status: 'playing',
     result: null,
+    resultMessageIndex: null,
   };
+}
+
+function pickResultMessageIndex(result) {
+  return getRandomIndex(resultCopy[result].messages.length);
+}
+
+function completeGame(game, result) {
+  return { ...game, status: 'finished', result, resultMessageIndex: pickResultMessageIndex(result) };
 }
 
 function finishDealerTurn(game) {
@@ -115,8 +136,8 @@ function finishDealerTurn(game) {
     dealerHand.push(deck.shift());
   }
 
-  const finalGame = { ...game, deck, dealerHand, status: 'finished' };
-  return { ...finalGame, result: getResult(finalGame.playerHand, finalGame.dealerHand) };
+  const finalGame = { ...game, deck, dealerHand };
+  return completeGame(finalGame, getResult(finalGame.playerHand, finalGame.dealerHand));
 }
 
 function PlayingCard({ card, hidden = false, index = 0 }) {
@@ -149,6 +170,7 @@ export default function LuckyBlackjackChallenge() {
   const dealerScore = scoreHand(game.dealerHand);
   const isFinished = game.status === 'finished';
   const result = isFinished ? resultCopy[game.result] : null;
+  const luckyMessage = result ? result.messages[game.resultMessageIndex ?? 0] : null;
   const dealerVisibleScore = scoreHand([game.dealerHand[0]]);
   const statusText = useMemo(() => {
     if (isFinished) {
@@ -172,7 +194,7 @@ export default function LuckyBlackjackChallenge() {
     const nextGame = { ...game, deck: nextDeck, playerHand: nextPlayerHand };
 
     if (scoreHand(nextPlayerHand) > 21) {
-      setGame({ ...nextGame, status: 'finished', result: 'lose' });
+      setGame(completeGame(nextGame, 'lose'));
       return;
     }
 
@@ -208,6 +230,11 @@ export default function LuckyBlackjackChallenge() {
           0% { transform: translateX(-24%) rotate(-8deg); opacity: 0.34; }
           50% { transform: translateX(8%) rotate(5deg); opacity: 0.72; }
           100% { transform: translateX(22%) rotate(-3deg); opacity: 0.42; }
+        }
+
+        @keyframes blackjack-result-fade-in {
+          from { opacity: 0; transform: translateY(14px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .lucky-blackjack { margin-top: 2rem; padding: clamp(1.25rem, 4vw, 2.1rem); border-radius: 36px; color: #fff7d6; background: radial-gradient(circle at 12% 15%, rgba(250, 204, 21, 0.28), transparent 27%), radial-gradient(circle at 86% 12%, rgba(16, 185, 129, 0.32), transparent 28%), radial-gradient(circle at 50% 110%, rgba(185, 28, 28, 0.14), transparent 33%), linear-gradient(145deg, rgba(1, 14, 10, 0.98), rgba(4, 48, 35, 0.94) 44%, rgba(2, 8, 23, 0.96)); border: 1px solid rgba(255, 235, 160, 0.36); box-shadow: 0 36px 110px rgba(0,0,0,0.58), 0 0 60px rgba(16,185,129,0.2), 0 0 42px rgba(250,204,21,0.16), inset 0 1px 0 rgba(255,255,255,0.12); overflow: hidden; position: relative; backdrop-filter: blur(18px) saturate(140%); }
@@ -249,9 +276,10 @@ export default function LuckyBlackjackChallenge() {
         .blackjack-button:hover:not(:disabled) { transform: translateY(-2px); filter: saturate(1.12); }
         .blackjack-button:disabled { opacity: 0.48; cursor: not-allowed; }
         .blackjack-status { margin: 0.95rem 0 0; color: rgba(255,247,214,0.88); line-height: 1.55; font-weight: 750; }
-        .blackjack-result { margin-top: 1.1rem; padding: 1rem; border-radius: 24px; text-align: center; background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(250,204,21,0.12), rgba(16,185,129,0.1)); border: 1px solid rgba(255,235,160,0.3); box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 34px rgba(250,204,21,0.16); }
-        .blackjack-result h3 { margin: 0; font-size: clamp(1.55rem, 5vw, 2.4rem); }
-        .blackjack-result p { margin: 0.45rem auto 0; max-width: 520px; line-height: 1.55; color: rgba(255,247,214,0.92); }
+        .blackjack-result { margin-top: 1.1rem; padding: 1rem; border-radius: 24px; text-align: center; background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(250,204,21,0.16), rgba(16,185,129,0.12)); border: 1px solid rgba(255,235,160,0.36); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 0 40px rgba(250,204,21,0.2); animation: blackjack-result-fade-in 520ms cubic-bezier(.16,.84,.28,1) both; }
+        .blackjack-result h3 { margin: 0; font-size: clamp(1.8rem, 6vw, 3rem); font-weight: 1000; letter-spacing: 0.035em; color: #fff7d6; text-shadow: 0 0 24px rgba(250,204,21,0.42), 0 2px 0 rgba(0,0,0,0.22); }
+        .blackjack-lucky-message { display: inline-flex; align-items: center; justify-content: center; gap: 0.48rem; margin: 0.55rem auto 0; max-width: 620px; line-height: 1.55; color: #facc15; font-size: clamp(0.94rem, 2.6vw, 1.08rem); font-weight: 850; text-shadow: 0 0 18px rgba(250,204,21,0.24); }
+        .blackjack-lucky-icon { display: inline-grid; place-items: center; width: 1.65rem; height: 1.65rem; flex: 0 0 auto; border-radius: 999px; color: #064e3b; background: radial-gradient(circle at 30% 20%, #fff8c8, #facc15 48%, #b7791f); box-shadow: 0 0 18px rgba(250,204,21,0.42), inset 0 1px 4px rgba(255,255,255,0.6); font-size: 0.95rem; }
         .blackjack-feature-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; margin-top: 1rem; }
         .blackjack-feature-link { padding: 0.85rem; border-radius: 18px; color: #fff7d6; text-decoration: none; background: rgba(2,8,23,0.34); border: 1px solid rgba(255,235,160,0.24); font-weight: 900; text-align: center; }
         @media (max-width: 720px) { .blackjack-hero { grid-template-columns: 1fr; } .blackjack-free-badge { justify-self: start; min-width: 96px; min-height: 96px; } .blackjack-feature-links { grid-template-columns: 1fr; } .blackjack-controls { display: grid; grid-template-columns: 1fr 1fr; } .blackjack-controls .blackjack-button:last-child { grid-column: 1 / -1; } }
@@ -302,7 +330,7 @@ export default function LuckyBlackjackChallenge() {
           {result ? (
             <div className="blackjack-result">
               <h3>{result.title}</h3>
-              <p>{result.message}</p>
+              <p className="blackjack-lucky-message"><span className="blackjack-lucky-icon" aria-hidden="true">🍀</span>{luckyMessage}</p>
               <div className="blackjack-controls" style={{ justifyContent: 'center' }}>
                 <a href="#luck-meter-title" className="blackjack-button primary" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
                   Try Another Luck Experience
