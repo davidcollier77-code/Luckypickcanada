@@ -125,7 +125,13 @@ function checkDuplicateSubmission({ formName, ip, fields }) {
 }
 
 async function verifyTurnstile({ token, ip, formName }) {
+  const siteKey = process.env.TURNSTILE_SITE_KEY || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+  if (!siteKey) {
+    console.error('Turnstile site key is missing for public form spam protection', { formName });
+    return { ok: false, error: 'This form is temporarily unavailable. Please try again later.' };
+  }
 
   if (!secretKey) {
     console.error('TURNSTILE_SECRET_KEY is missing for public form spam protection', { formName });
