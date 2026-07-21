@@ -239,7 +239,7 @@ export default function LuckyCardReveal({ luckScore }) {
           type="button"
           onClick={revealCard}
           disabled={revealState !== 'closed'}
-          aria-label={isRevealed && selectedCard ? `Revealed lucky card: ${selectedCard.name}` : 'Reveal your premium lucky collectible card'}
+          aria-label={isRevealed && selectedCard ? `LuckyPickCanada lucky card reveal: ${selectedCard.name}` : 'LuckyPickCanada lucky card reveal'}
           className={`premium-card-button ${isRevealing ? 'is-revealing' : ''} ${isRevealed ? 'is-revealed' : ''} ${revealState === 'closed' ? 'is-idle' : ''}`}
           style={{ position: 'relative', width: 'min(72vw, 252px)', aspectRatio: '210 / 296', border: 0, borderRadius: 30, background: 'transparent', padding: 0, cursor: revealState === 'closed' ? 'pointer' : 'default', boxShadow: '0 28px 64px rgba(0, 0, 0, 0.52), 0 0 42px rgba(250, 204, 21, 0.28)', transformStyle: 'preserve-3d' }}
         >
