@@ -46,6 +46,7 @@ export default function TurnstileField({ siteKey }) {
   const containerRef = useRef(null);
   const widgetIdRef = useRef(null);
   const [error, setError] = useState('');
+  const [token, setToken] = useState('');
 
   useEffect(() => {
     if (!siteKey) {
@@ -53,6 +54,8 @@ export default function TurnstileField({ siteKey }) {
     }
 
     let cancelled = false;
+    setToken('');
+    setError('');
 
     loadTurnstileScript()
       .then((turnstile) => {
@@ -63,12 +66,24 @@ export default function TurnstileField({ siteKey }) {
         widgetIdRef.current = turnstile.render(containerRef.current, {
           sitekey: siteKey,
           theme: 'auto',
-          'response-field': true,
-          'response-field-name': 'cf-turnstile-response',
+          callback: (newToken) => {
+            setToken(newToken || '');
+            setError('');
+          },
+          'expired-callback': () => {
+            setToken('');
+            setError('The spam check expired. Please complete it again.');
+          },
+          'error-callback': () => {
+            setToken('');
+            setError('The spam check had a problem. Please use Troubleshoot or refresh, then try again.');
+          },
+          'response-field': false,
         });
       })
       .catch(() => {
         if (!cancelled) {
+          setToken('');
           setError('The spam check could not load. Please refresh and try again.');
         }
       });
@@ -93,10 +108,11 @@ export default function TurnstileField({ siteKey }) {
 
   return (
     <div style={{ display: 'grid', gap: '0.45rem' }}>
+      <input type="hidden" name="cf-turnstile-response" value={token} readOnly />
       <div ref={containerRef} />
       {error ? <p style={{ margin: 0, color: '#fecaca', fontWeight: 700 }}>{error}</p> : null}
       <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255, 247, 214, 0.72)', lineHeight: 1.45 }}>
-        This quick check helps keep spam out without affecting checkout or payment processing.
+        Complete this quick check before sending. It helps keep spam out without affecting checkout or payment processing.
       </p>
     </div>
   );
