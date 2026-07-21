@@ -1,3 +1,4 @@
+import Script from 'next/script';
 import { getLuckMap, provinces } from './luck-map';
 import LuckMeter from './luck-meter';
 import LuckyBlackjackChallenge from './lucky-blackjack-challenge';
@@ -191,6 +192,22 @@ function pickOne(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function TurnstileField({ siteKey }) {
+  if (!siteKey) {
+    return null;
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: '0.45rem' }}>
+      <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer strategy="afterInteractive" />
+      <div className="cf-turnstile" data-sitekey={siteKey} data-theme="auto" />
+      <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255, 247, 214, 0.72)', lineHeight: 1.45 }}>
+        This quick check helps keep spam out without affecting checkout or payment processing.
+      </p>
+    </div>
+  );
+}
+
 export default async function Home({ searchParams }) {
   const params = await searchParams;
   const [luckMap, luckyStories] = await Promise.all([getLuckMap(), getLuckyStories()]);
@@ -206,6 +223,7 @@ export default async function Home({ searchParams }) {
   const storyShared = params?.storyShared === '1';
   const checkoutSessionId = params?.session_id || '';
   const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const selectedGame = params?.pick === '7' ? games[1] : games[0];
   const purchasedReveal = canShareOnMap
     ? {
@@ -573,6 +591,7 @@ export default async function Home({ searchParams }) {
               Website
               <input name="website" type="text" tabIndex={-1} autoComplete="off" />
             </label>
+            <TurnstileField siteKey={turnstileSiteKey} />
             <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Share Your Lucky Story</button>
           </form>
 
@@ -630,6 +649,13 @@ export default async function Home({ searchParams }) {
                   ))}
                 </select>
               </label>
+              <label aria-hidden="true" style={{ display: 'none' }}>
+                Website
+                <input name="website" type="text" tabIndex={-1} autoComplete="off" />
+              </label>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <TurnstileField siteKey={turnstileSiteKey} />
+              </div>
               <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Share purchase province</button>
             </form>
           ) : (
@@ -699,6 +725,7 @@ export default async function Home({ searchParams }) {
               Website
               <input name="website" type="text" tabIndex={-1} autoComplete="off" />
             </label>
+            <TurnstileField siteKey={turnstileSiteKey} />
             <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
           </form>
         </section>
