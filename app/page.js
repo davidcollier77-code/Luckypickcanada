@@ -29,6 +29,15 @@ const visitReasons = [
   { icon: '✨', text: 'Designed for entertainment and fun' },
 ];
 
+const adFeatureCards = [
+  { icon: '☘', title: 'Personalized Lucky Picks', copy: 'Choose 6 or 7 fun numbers for just $1 CAD' },
+  { icon: '▣', title: 'Lucky Card Reveal', copy: 'Flip Clover, Canada, or Gold cards with a premium reveal' },
+  { icon: '◈', title: 'Lucky Day + Color', copy: 'Get a daily-feeling lucky detail just for entertainment' },
+  { icon: '🍁', title: 'Community of Luck', copy: 'Map shares, lucky stories, and positive moments across Canada' },
+];
+
+const heroStatChips = ['Fun', 'Personal', 'Just for You'];
+
 const checkoutButtonStyle = {
   width: '100%',
   padding: '0.95rem 1.45rem',
@@ -40,7 +49,7 @@ const checkoutButtonStyle = {
   fontWeight: 950,
   letterSpacing: '0.01em',
   cursor: 'pointer',
-  boxShadow: '0 0 26px rgba(250, 204, 21, 0.52), 0 16px 34px rgba(183, 121, 31, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.62)',
+  boxShadow: '0 0 30px rgba(250, 204, 21, 0.62), 0 18px 38px rgba(183, 121, 31, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.72), inset 0 -10px 18px rgba(122, 68, 5, 0.18)',
   textShadow: '0 1px 0 rgba(255, 255, 255, 0.45)',
   transition: 'transform 180ms ease, box-shadow 180ms ease, filter 180ms ease',
 };
@@ -51,7 +60,7 @@ const glassCardStyle = {
   background: 'linear-gradient(145deg, rgba(5, 13, 24, 0.9), rgba(8, 38, 36, 0.78) 48%, rgba(7, 18, 37, 0.86))',
   color: '#fff7d6',
   border: '1px solid rgba(255, 235, 160, 0.24)',
-  boxShadow: '0 26px 80px rgba(0, 0, 0, 0.44), 0 0 34px rgba(16, 185, 129, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+  boxShadow: '0 28px 86px rgba(0, 0, 0, 0.5), 0 0 42px rgba(16, 185, 129, 0.16), 0 0 28px rgba(250, 204, 21, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
   backdropFilter: 'blur(18px) saturate(130%)',
   position: 'relative',
   overflow: 'hidden',
@@ -222,8 +231,11 @@ export default async function Home({ searchParams }) {
       <style>{`
         html { scroll-behavior: smooth; }
         #luck-meter-title, #lucky-pick-checkout, #lucky-blackjack-challenge, #lucky-stories, #little-luck-map { scroll-margin-top: 7rem; }
-        .premium-nav-link { transition: background 180ms ease, color 180ms ease, transform 180ms ease; }
-        .premium-nav-link:hover, .premium-nav-link:focus-visible { background: rgba(250, 204, 21, 0.16); color: #fde68a; transform: translateY(-1px); outline: none; }
+        .premium-nav-link { transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
+        .premium-ad-title { text-transform: uppercase; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.52)); }
+        .ad-feature-card { transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
+        .ad-feature-card:hover { transform: translateY(-3px); border-color: rgba(255,235,160,0.52) !important; box-shadow: 0 20px 48px rgba(0,0,0,0.36), 0 0 34px rgba(250,204,21,0.16); }
+        .premium-nav-link:hover, .premium-nav-link:focus-visible { background: rgba(250, 204, 21, 0.16); color: #fde68a; transform: translateY(-1px); outline: none; box-shadow: inset 0 0 0 1px rgba(255,235,160,0.18); }
         .premium-secondary-button { transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
         .premium-secondary-button:hover, .premium-secondary-button:focus-visible { transform: translateY(-2px); border-color: rgba(255, 235, 160, 0.56) !important; box-shadow: 0 16px 34px rgba(0,0,0,0.28), 0 0 28px rgba(250,204,21,0.18); outline: none; }
         .aurora-gold-button:focus-visible, .blackjack-button:focus-visible, .luck-meter-button:focus-visible { outline: 3px solid rgba(253, 230, 138, 0.72); outline-offset: 3px; }
@@ -254,6 +266,19 @@ export default async function Home({ searchParams }) {
           to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes premium-shimmer-sweep {
+          0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+          20% { opacity: 0.55; }
+          55% { opacity: 0.55; }
+          100% { transform: translateX(130%) skewX(-18deg); opacity: 0; }
+        }
+
+        @keyframes particle-float-up {
+          0% { transform: translate3d(0, 24px, 0) scale(0.8); opacity: 0; }
+          18% { opacity: 0.75; }
+          100% { transform: translate3d(18px, -76px, 0) scale(1.12); opacity: 0; }
+        }
+
         @keyframes maple-float {
           0%, 100% { transform: translate3d(0, 0, 0) rotate(-8deg); opacity: 0.28; }
           50% { transform: translate3d(10px, -12px, 0) rotate(7deg); opacity: 0.52; }
@@ -280,6 +305,8 @@ export default async function Home({ searchParams }) {
         .premium-phone:hover { transform: rotate(3deg) translateY(-4px); }
         .premium-maple-accent { position: absolute; color: rgba(250,204,21,0.34); font-size: clamp(2rem, 7vw, 4.8rem); line-height: 1; filter: drop-shadow(0 0 20px rgba(250,204,21,0.24)); animation: maple-float 8s ease-in-out infinite; pointer-events: none; }
         .premium-lucky-number { animation: premium-number-glow 3.2s ease-in-out infinite; }
+        .premium-hero-shell::after { content: ''; position: absolute; inset: -20% auto -20% -55%; width: 42%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), rgba(250,204,21,0.24), transparent); animation: premium-shimmer-sweep 7.5s ease-in-out infinite; pointer-events: none; }
+        .floating-particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fde68a; box-shadow: 0 0 12px rgba(250,204,21,0.95), 0 0 26px rgba(16,185,129,0.45); animation: particle-float-up 6.8s ease-in-out infinite; opacity: 0; }
         @media (max-width: 820px) { .premium-phone { transform: none; max-width: 340px; margin: 0 auto; } main { padding-left: 1rem !important; padding-right: 1rem !important; } }
       `}</style>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
@@ -298,16 +325,26 @@ export default async function Home({ searchParams }) {
       <section style={{ maxWidth: 1040, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 22, right: -18 }}>✦</span>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 370, left: -28, animationDelay: '-3s' }}>🍁</span>
-        <div style={{ marginBottom: '1rem', padding: 'clamp(1.25rem, 4vw, 2.4rem)', borderRadius: 38, border: '1px solid rgba(255, 235, 160, 0.26)', background: 'radial-gradient(circle at 86% 12%, rgba(250, 204, 21, 0.22), transparent 27%), radial-gradient(circle at 12% 16%, rgba(16, 185, 129, 0.28), transparent 31%), linear-gradient(145deg, rgba(2, 8, 23, 0.8), rgba(4, 24, 22, 0.68))', boxShadow: '0 34px 110px rgba(0, 0, 0, 0.52), 0 0 52px rgba(16, 185, 129, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(18px) saturate(135%)', overflow: 'hidden', position: 'relative' }}>
-          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.12), transparent 18%, transparent 72%, rgba(250,204,21,0.12)), radial-gradient(circle at 72% 76%, rgba(16,185,129,0.18), transparent 28%)', pointerEvents: 'none' }} />
+        <div className="premium-hero-shell" style={{ marginBottom: '1rem', padding: 'clamp(1.1rem, 4vw, 2.4rem)', borderRadius: 38, border: '1px solid rgba(255, 235, 160, 0.34)', background: 'radial-gradient(circle at 88% 10%, rgba(250, 204, 21, 0.28), transparent 26%), radial-gradient(circle at 10% 12%, rgba(16, 185, 129, 0.32), transparent 32%), radial-gradient(circle at 50% 100%, rgba(153, 27, 27, 0.18), transparent 30%), linear-gradient(145deg, rgba(1, 4, 3, 0.88), rgba(4, 24, 22, 0.76) 50%, rgba(2, 8, 23, 0.88))', boxShadow: '0 36px 120px rgba(0, 0, 0, 0.6), 0 0 64px rgba(16, 185, 129, 0.2), 0 0 48px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(18px) saturate(140%)', overflow: 'hidden', position: 'relative' }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.13), transparent 18%, transparent 72%, rgba(250,204,21,0.14)), radial-gradient(circle at 72% 76%, rgba(16,185,129,0.2), transparent 28%), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 84px)', pointerEvents: 'none' }} />
+          <div aria-hidden="true">
+            {[12, 24, 38, 52, 68, 81].map((left, index) => (
+              <span key={left} className="floating-particle" style={{ left: `${left}%`, bottom: `${8 + (index % 3) * 14}%`, animationDelay: `${index * 0.75}s` }} />
+            ))}
+          </div>
           <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.25rem, 5vw, 3rem)', alignItems: 'center' }}>
             <div>
               <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" />
-              <h1 className="gold-text" style={{ fontSize: 'clamp(2.75rem, 8vw, 5.9rem)', lineHeight: 0.92, margin: '1rem 0 0.85rem', letterSpacing: '-0.06em', maxWidth: 900 }}>
-                Discover Your Lucky Pick Today!
+              <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                {heroStatChips.map((chip) => (
+                  <span key={chip} style={{ padding: '0.34rem 0.7rem', borderRadius: 999, background: 'linear-gradient(180deg, rgba(13, 89, 46, 0.92), rgba(8, 54, 35, 0.86))', color: '#fff7d6', border: '1px solid rgba(255,235,160,0.28)', boxShadow: '0 0 20px rgba(16,185,129,0.18)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 950, fontSize: '0.78rem' }}>{chip}</span>
+                ))}
+              </div>
+              <h1 className="gold-text premium-ad-title" style={{ fontSize: 'clamp(3.15rem, 10vw, 6.7rem)', lineHeight: 0.84, margin: '0.7rem 0 0.85rem', letterSpacing: '-0.07em', maxWidth: 900 }}>
+                Your Luck, Personalized!
               </h1>
               <p style={{ fontSize: 'clamp(1.08rem, 2.4vw, 1.35rem)', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.9)', marginBottom: '1rem' }}>
-                Everyone could use a little extra luck. Welcome to LuckyPick Canada — a fun Canadian experience designed to add a little excitement to your day.
+                Fun personalized lucky numbers, lucky cards, and lucky experiences for entertainment — wrapped in a premium Canadian aurora glow.
               </p>
               <p style={{ fontSize: '1.02rem', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.82)', margin: '0 0 1.15rem' }}>
                 No sign-up required to enjoy the free features. Tap, play, and see where your luck takes you — or unlock your own personalized Lucky Pick for just $1 CAD.
@@ -316,14 +353,19 @@ export default async function Home({ searchParams }) {
                 <a href="#luck-meter-title" className="aurora-gold-button" style={{ ...checkoutButtonStyle, width: 'auto', minWidth: 220, display: 'inline-flex', justifyContent: 'center', textDecoration: 'none' }}>Try the FREE Lucky Meter</a>
                 <a href="#lucky-pick-checkout" className="premium-secondary-button" style={{ ...premiumPillStyle, minWidth: 250, textDecoration: 'none' }}>Get Your Personalized Lucky Pick – $1 CAD</a>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-                <span style={premiumPillStyle}>Free Lucky Meter</span>
-                <span style={premiumPillStyle}>Lucky Card Reveal</span>
-                <span style={premiumPillStyle}>Blackjack mini-game</span>
-                <span style={premiumPillStyle}>Lucky colour and day</span>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(185px, 1fr))', gap: '0.7rem', marginTop: '1rem' }}>
+                {adFeatureCards.map((feature) => (
+                  <div key={feature.title} className="ad-feature-card" style={{ padding: '0.85rem', borderRadius: 20, border: '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.08), rgba(16,185,129,0.08), rgba(250,204,21,0.06))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}>
+                    <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <span aria-hidden="true" style={{ display: 'grid', placeItems: 'center', width: 34, height: 34, borderRadius: 10, color: '#06110d', background: 'radial-gradient(circle at 32% 24%, #fff8c8, #facc15 50%, #9a5f10 100%)', boxShadow: '0 0 18px rgba(250,204,21,0.38)' }}>{feature.icon}</span>
+                      <strong style={{ color: '#facc15', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.1 }}>{feature.title}</strong>
+                    </div>
+                    <p style={{ margin: 0, color: 'rgba(255,247,214,0.8)', lineHeight: 1.4, fontSize: '0.94rem' }}>{feature.copy}</p>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="premium-phone" aria-hidden="true" style={{ justifySelf: 'center', width: 'min(100%, 330px)', minHeight: 520, padding: '1rem', borderRadius: 42, border: '2px solid rgba(255, 235, 160, 0.58)', background: 'linear-gradient(145deg, #05070a 0%, #061611 45%, #0a0f16 100%)', boxShadow: '0 30px 70px rgba(0,0,0,0.58), 0 0 54px rgba(250,204,21,0.26), inset 0 0 0 6px rgba(255,255,255,0.035)', position: 'relative', overflow: 'hidden' }}>
+            <div className="premium-phone" aria-hidden="true" style={{ justifySelf: 'center', width: 'min(100%, 348px)', minHeight: 540, padding: '1rem', borderRadius: 44, border: '2px solid rgba(255, 235, 160, 0.68)', background: 'linear-gradient(145deg, #05070a 0%, #061611 45%, #0a0f16 100%)', boxShadow: '0 34px 78px rgba(0,0,0,0.62), 0 0 66px rgba(250,204,21,0.34), 0 0 38px rgba(16,185,129,0.18), inset 0 0 0 6px rgba(255,255,255,0.04)', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 10, borderRadius: 34, background: 'radial-gradient(circle at 52% 28%, rgba(16,185,129,0.42), transparent 24%), linear-gradient(160deg, rgba(1,4,3,0.2), rgba(2,8,23,0.9)), radial-gradient(circle at 80% 88%, rgba(250,204,21,0.2), transparent 22%)' }} />
               <div style={{ position: 'absolute', top: 70, left: -80, width: 430, height: 120, borderRadius: 999, background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.54), rgba(250,204,21,0.3), transparent)', filter: 'blur(12px)', transform: 'rotate(-14deg)' }} />
               <div style={{ position: 'relative', display: 'grid', gap: '1rem', padding: '0.35rem' }}>
