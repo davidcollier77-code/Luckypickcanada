@@ -10,6 +10,7 @@ export async function POST(request) {
     request,
     formData,
     formName: 'lucky-stories',
+    duplicateFields: [formData.get('name'), formData.get('location'), formData.get('story')],
   });
 
   const result = spamCheck.ok

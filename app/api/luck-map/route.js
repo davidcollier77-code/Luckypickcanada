@@ -10,6 +10,7 @@ export async function POST(request) {
     request,
     formData,
     formName: 'little-luck-map',
+    duplicateFields: [formData.get('name'), formData.get('province'), formData.get('checkoutSessionId')],
   });
 
   const result = spamCheck.ok
