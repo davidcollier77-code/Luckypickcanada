@@ -20,6 +20,7 @@ const navLinks = [
   { href: '#lucky-blackjack-challenge', label: 'Cards' },
   { href: '#lucky-stories', label: 'Stories' },
   { href: '#little-luck-map', label: 'Map' },
+  { href: '/where-luck-has-been-found-in-canada', label: 'Where Luck Has Been Found in Canada 🍀' },
 ];
 const visitReasons = [
   { icon: '✦', text: 'Fun and interactive luck-themed experiences' },
