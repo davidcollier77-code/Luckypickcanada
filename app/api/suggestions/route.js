@@ -10,6 +10,7 @@ export async function POST(request) {
     request,
     formData,
     formName: 'suggestion-box',
+    duplicateFields: [formData.get('name'), formData.get('email'), formData.get('message')],
   });
 
   const result = spamCheck.ok

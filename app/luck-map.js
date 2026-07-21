@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import postgres from 'postgres';
+import { sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 export const provinces = [
   { code: 'BC', name: 'British Columbia' },
@@ -46,26 +47,26 @@ function getSql() {
   return sql;
 }
 
-function cleanName(name) {
-  return String(name || '')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .slice(0, 40);
-}
-
 export function validateLuckShare({ name, province }) {
   const cleanProvince = String(province || '').toUpperCase();
-  const cleanDisplayName = cleanName(name);
+  const cleanDisplayName = validatePlainTextField({
+    value: name,
+    label: 'Name',
+    minLength: 2,
+    maxLength: 40,
+    required: true,
+    allowUrls: false,
+  });
 
-  if (!cleanDisplayName || cleanDisplayName.length < 2) {
-    return { error: 'Enter a name with at least 2 characters.' };
+  if (cleanDisplayName.error) {
+    return cleanDisplayName;
   }
 
   if (!provinceCodes.has(cleanProvince)) {
     return { error: 'Choose a Canadian province or territory.' };
   }
 
-  return { name: cleanDisplayName, province: cleanProvince };
+  return { name: sanitizeSingleLine(cleanDisplayName.value, 40), province: cleanProvince };
 }
 
 async function ensureLuckSharesTable(database) {

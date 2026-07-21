@@ -1,10 +1,14 @@
+import { createSubmissionFingerprint } from './form-security';
+
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_SUBMISSIONS_PER_WINDOW = 5;
 const SPAM_BLOCK_THRESHOLD = 3;
-const TEMP_BLOCK_MS = 30 * 60 * 1000;
+const TEMP_BLOCK_MS = 60 * 60 * 1000;
+const DUPLICATE_SUBMISSION_WINDOW_MS = 10 * 60 * 1000;
 
 const submissionBuckets = new Map();
 const spamAttempts = new Map();
+const recentSubmissions = new Map();
 
 function now() {
   return Date.now();
@@ -36,6 +40,12 @@ function pruneExpiredEntries() {
       spamAttempts.delete(ip);
     }
   }
+
+  for (const [fingerprint, expiresAt] of recentSubmissions.entries()) {
+    if (expiresAt <= currentTime) {
+      recentSubmissions.delete(fingerprint);
+    }
+  }
 }
 
 function logSpamAttempt({ formName, ip, reason }) {
@@ -47,7 +57,7 @@ function logSpamAttempt({ formName, ip, reason }) {
   });
 }
 
-function recordSpamAttempt({ formName, ip, reason }) {
+function recordSpamAttempt({ formName, ip, reason, forceBlock = false }) {
   const currentTime = now();
   const existing = spamAttempts.get(ip);
   const attempt = existing && existing.resetAt > currentTime
@@ -56,7 +66,7 @@ function recordSpamAttempt({ formName, ip, reason }) {
 
   attempt.count += 1;
 
-  if (attempt.count >= SPAM_BLOCK_THRESHOLD) {
+  if (forceBlock || attempt.count >= SPAM_BLOCK_THRESHOLD) {
     attempt.blockedUntil = currentTime + TEMP_BLOCK_MS;
   }
 
@@ -68,7 +78,7 @@ function getBlockedMessage(ip) {
   const attempt = spamAttempts.get(ip);
 
   if (attempt?.blockedUntil && attempt.blockedUntil > now()) {
-    return 'Too many spam attempts were detected. Please try again later.';
+    return 'Too many submissions were detected. Please try again in about an hour.';
   }
 
   return null;
@@ -85,10 +95,32 @@ function checkRateLimit({ formName, ip }) {
   submissionBuckets.set(ip, bucket);
 
   if (bucket.count > MAX_SUBMISSIONS_PER_WINDOW) {
-    recordSpamAttempt({ formName, ip, reason: 'rate_limit' });
-    return { ok: false, error: 'Too many submissions. Please wait a few minutes and try again.' };
+    recordSpamAttempt({ formName, ip, reason: 'rate_limit', forceBlock: true });
+    return { ok: false, error: 'Too many submissions. Please try again in about an hour.' };
   }
 
+  return { ok: true };
+}
+
+function checkDuplicateSubmission({ formName, ip, fields }) {
+  if (!fields?.length) {
+    return { ok: true };
+  }
+
+  const submissionFingerprint = createSubmissionFingerprint(fields);
+
+  if (!submissionFingerprint) {
+    return { ok: true };
+  }
+
+  const fingerprint = `${formName}:${ip}:${submissionFingerprint}`;
+
+  if (recentSubmissions.has(fingerprint)) {
+    recordSpamAttempt({ formName, ip, reason: 'duplicate_submission' });
+    return { ok: false, error: 'This looks like a duplicate submission. Please wait a few minutes before trying again.' };
+  }
+
+  recentSubmissions.set(fingerprint, now() + DUPLICATE_SUBMISSION_WINDOW_MS);
   return { ok: true };
 }
 
@@ -135,7 +167,7 @@ async function verifyTurnstile({ token, ip, formName }) {
   return { ok: true };
 }
 
-export async function validatePublicFormSubmission({ request, formData, formName }) {
+export async function validatePublicFormSubmission({ request, formData, formName, duplicateFields = [] }) {
   pruneExpiredEntries();
 
   const ip = getClientIp(request);
@@ -157,9 +189,15 @@ export async function validatePublicFormSubmission({ request, formData, formName
     return rateLimit;
   }
 
-  return verifyTurnstile({
+  const turnstile = await verifyTurnstile({
     token: formData.get('cf-turnstile-response'),
     ip,
     formName,
   });
+
+  if (!turnstile.ok) {
+    return turnstile;
+  }
+
+  return checkDuplicateSubmission({ formName, ip, fields: duplicateFields });
 }

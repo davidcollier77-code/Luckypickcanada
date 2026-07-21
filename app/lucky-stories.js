@@ -1,4 +1,5 @@
 import postgres from 'postgres';
+import { sanitizePlainText, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 let sql;
 
@@ -31,10 +32,7 @@ function getSql() {
 }
 
 function cleanText(value, maxLength) {
-  return String(value || '')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .slice(0, maxLength);
+  return sanitizePlainText(value, maxLength);
 }
 
 function normalizeLocation(value) {
@@ -88,22 +86,45 @@ function createStoryPreview(story) {
 }
 
 function validateLuckyStory({ name, location, story }) {
-  const cleanName = cleanText(name, 40);
-  const cleanLocation = cleanText(location, 80);
-  const cleanStory = cleanText(story, 1500);
+  const cleanName = validatePlainTextField({
+    value: name,
+    label: 'Name',
+    minLength: 2,
+    maxLength: 40,
+    required: true,
+    allowUrls: false,
+  });
+  const cleanLocation = validatePlainTextField({
+    value: location,
+    label: 'Location',
+    maxLength: 80,
+    allowUrls: false,
+  });
+  const cleanStory = validatePlainTextField({
+    value: story,
+    label: 'Lucky story',
+    minLength: 20,
+    maxLength: 1500,
+    required: true,
+    allowUrls: false,
+  });
 
-  if (!cleanName || cleanName.length < 2) {
-    return { error: 'Enter your name with at least 2 characters.' };
+  if (cleanName.error) {
+    return cleanName;
   }
 
-  if (!cleanStory || cleanStory.length < 20) {
-    return { error: 'Share a lucky story with at least 20 characters.' };
+  if (cleanLocation.error) {
+    return cleanLocation;
+  }
+
+  if (cleanStory.error) {
+    return cleanStory;
   }
 
   return {
-    name: cleanName,
-    location: cleanLocation || null,
-    story: cleanStory,
+    name: sanitizeSingleLine(cleanName.value, 40),
+    location: sanitizeSingleLine(cleanLocation.value, 80) || null,
+    story: cleanStory.value,
   };
 }
 

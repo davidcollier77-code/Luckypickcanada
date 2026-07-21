@@ -1,4 +1,5 @@
 import postgres from 'postgres';
+import { escapeHtml, hasHeaderInjection, isValidEmailAddress, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 const DEFAULT_SUGGESTIONS_TO_EMAIL = 'davidcollier77@gmail.com';
 
@@ -18,39 +19,39 @@ function getSql() {
   return sql;
 }
 
-function cleanText(value, maxLength) {
-  return String(value || '')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .slice(0, maxLength);
-}
-
-function escapeHtml(value) {
-  return String(value || '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
 function validateSuggestion({ name, email, message }) {
-  const cleanName = cleanText(name, 40);
-  const cleanEmail = cleanText(email, 120).toLowerCase();
-  const cleanMessage = cleanText(message, 1000);
+  const cleanName = validatePlainTextField({
+    value: name,
+    label: 'Name',
+    maxLength: 40,
+    allowUrls: false,
+  });
+  const cleanMessage = validatePlainTextField({
+    value: message,
+    label: 'Suggestion',
+    minLength: 10,
+    maxLength: 1000,
+    required: true,
+    allowUrls: false,
+  });
+  const cleanEmail = sanitizeSingleLine(email, 120).toLowerCase();
 
-  if (!cleanMessage || cleanMessage.length < 10) {
-    return { error: 'Enter a suggestion with at least 10 characters.' };
+  if (cleanName.error) {
+    return cleanName;
   }
 
-  if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+  if (cleanMessage.error) {
+    return cleanMessage;
+  }
+
+  if (email && (hasHeaderInjection(email) || !isValidEmailAddress(email))) {
     return { error: 'Enter a valid email address or leave it blank.' };
   }
 
   return {
-    name: cleanName || null,
+    name: cleanName.value || null,
     email: cleanEmail || null,
-    message: cleanMessage,
+    message: cleanMessage.value,
   };
 }
 
