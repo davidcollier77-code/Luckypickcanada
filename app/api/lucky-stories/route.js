@@ -1,17 +1,24 @@
 import { createLuckyStory } from '../../lucky-stories';
+import { validatePublicFormSubmission } from '../../spam-protection';
 
 export const runtime = 'nodejs';
 
 export async function POST(request) {
   const formData = await request.formData();
-  const result = await createLuckyStory({
-    name: formData.get('name'),
-    location: formData.get('location'),
-    story: formData.get('story'),
-    website: formData.get('website'),
+  const redirectUrl = new URL('/#lucky-stories', request.url);
+  const spamCheck = await validatePublicFormSubmission({
+    request,
+    formData,
+    formName: 'lucky-stories',
   });
 
-  const redirectUrl = new URL('/#lucky-stories', request.url);
+  const result = spamCheck.ok
+    ? await createLuckyStory({
+        name: formData.get('name'),
+        location: formData.get('location'),
+        story: formData.get('story'),
+      })
+    : { error: spamCheck.error };
 
   if (result.error) {
     redirectUrl.searchParams.set('storyError', result.error);
