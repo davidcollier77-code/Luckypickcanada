@@ -3,6 +3,7 @@ import LuckMeter from './luck-meter';
 import LuckyBlackjackChallenge from './lucky-blackjack-challenge';
 import LuckyRevealPopup from './lucky-reveal-popup';
 import { getLuckyStories } from './lucky-stories';
+import { getTurnstileSiteKey } from './turnstile-config';
 import TurnstileField from './turnstile-field';
 
 export const dynamic = 'force-dynamic';
@@ -207,7 +208,7 @@ export default async function Home({ searchParams }) {
   const storyShared = params?.storyShared === '1';
   const checkoutSessionId = params?.session_id || '';
   const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
-  const turnstileSiteKey = process.env.TURNSTILE_SITE_KEY || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const turnstileSiteKey = getTurnstileSiteKey();
   const selectedGame = params?.pick === '7' ? games[1] : games[0];
   const purchasedReveal = canShareOnMap
     ? {
