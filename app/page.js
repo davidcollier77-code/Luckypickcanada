@@ -14,6 +14,7 @@ const games = [
 const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
 const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const facebookGroupUrl = 'https://www.facebook.com/share/g/1DASPZT9Cu/';
+const luckyStoryMapUrl = '/lucky-map-of-canada';
 const navLinks = [
   { href: '#luck-meter-title', label: 'Free Lucky Meter' },
   { href: '#lucky-pick-checkout', label: '$1 Pick' },
@@ -543,7 +544,14 @@ export default async function Home({ searchParams }) {
             Lucky Pick Canada is more than lucky number reveals and gifts. It’s a place to share where you found luck, what it meant, and how a little happiness showed up in your life.
           </p>
 
-          {storyShared ? <p style={successMessageStyle}>Thanks for sharing your lucky story.</p> : null}
+          {storyShared ? (
+            <div style={{ ...successMessageStyle, display: 'grid', gap: '0.75rem', alignItems: 'start' }}>
+              <span>Your lucky story has been added. You can now view it with other lucky stories from across Canada.</span>
+              <a href={luckyStoryMapUrl} className="aurora-gold-button" style={{ ...checkoutButtonStyle, width: 'fit-content', maxWidth: '100%', textDecoration: 'none' }}>
+                View Your Story on the Lucky Story Map 🍀
+              </a>
+            </div>
+          ) : null}
           {storyError ? <p style={errorMessageStyle}>{storyError}</p> : null}
           {!areStoriesConfigured ? <p style={warningMessageStyle}>Lucky Stories is ready, but the database needs to be available before stories can be saved.</p> : null}
 
@@ -571,6 +579,9 @@ export default async function Home({ searchParams }) {
 
           <div style={{ marginTop: '1.5rem' }}>
             <h3 style={{ marginBottom: '0.5rem' }}>Recent lucky stories</h3>
+            <p style={{ marginTop: 0, lineHeight: 1.6, color: 'rgba(255, 247, 214, 0.82)' }}>
+              Here are the 2 newest lucky stories. Older stories are waiting on the Lucky Story Map.
+            </p>
             {recentStories.length ? (
               <div style={{ display: 'grid', gap: '0.75rem' }}>
                 {recentStories.map((entry) => (
@@ -585,6 +596,9 @@ export default async function Home({ searchParams }) {
             ) : (
               <p>No lucky stories yet. Be the first to share where luck found you.</p>
             )}
+            <a href={luckyStoryMapUrl} className="aurora-gold-button" style={{ ...checkoutButtonStyle, display: 'inline-flex', width: 'fit-content', maxWidth: '100%', marginTop: '1rem', textDecoration: 'none' }}>
+              View All Lucky Stories on the Lucky Story Map 🍀
+            </a>
           </div>
         </section>
 

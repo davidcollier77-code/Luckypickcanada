@@ -164,7 +164,7 @@ export async function getLuckyStories() {
       select id, display_name, location, story, created_at
       from lucky_stories
       order by created_at desc
-      limit 6
+      limit 2
     `;
 
     return { recentStories, isConfigured: true };
