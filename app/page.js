@@ -19,7 +19,7 @@ const navLinks = [
   { href: '#lucky-pick-checkout', label: '$1 Pick' },
   { href: '#lucky-blackjack-challenge', label: 'Cards' },
   { href: '#lucky-stories', label: 'Stories' },
-  { href: '#little-luck-map', label: 'Map' },
+  { href: '#little-luck-map', label: 'Lucky Picks by Province' },
   { href: '/lucky-map-of-canada', label: 'Lucky Map of Canada 🍀' },
 ];
 const visitReasons = [
@@ -34,7 +34,7 @@ const adFeatureCards = [
   { icon: '☘', title: 'Personalized Lucky Picks', copy: 'Choose 6 or 7 fun numbers for just $1 CAD' },
   { icon: '▣', title: 'Lucky Card Reveal', copy: 'Flip Clover, Canada, or Gold cards with a premium reveal' },
   { icon: '◈', title: 'Lucky Day + Color', copy: 'Get a daily-feeling lucky detail just for entertainment' },
-  { icon: '🍁', title: 'Community of Luck', copy: 'Map shares, lucky stories, and positive moments across Canada' },
+  { icon: '🍁', title: 'Community of Luck', copy: 'Lucky Stories and purchase province activity across Canada' },
 ];
 
 const heroStatChips = ['Fun', 'Personal', 'Just for You'];
@@ -589,17 +589,17 @@ export default async function Home({ searchParams }) {
         </section>
 
         <section id="little-luck-map" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
-          <SectionKicker>Little Luck Map</SectionKicker>
+          <SectionKicker>Lucky Purchases Across Canada</SectionKicker>
           <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
-            See where little luck is being shared
+            Lucky Picks by Province
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Purchase the $1 Lucky Pick, then add your first name and province or territory so the Canada map lights up with each place luck is shared.
+            Purchase the $1 Lucky Pick, then add your first name and province or territory so this province-based display shows purchase activity across Canada. Lucky Stories live on the Lucky Map of Canada page.
           </p>
 
           {shared ? <p style={successMessageStyle}>Thanks for sharing a little luck.</p> : null}
           {mapError ? <p style={errorMessageStyle}>{mapError}</p> : null}
-          {!isConfigured ? <p style={warningMessageStyle}>The map is ready, but the database needs to be available before entries can be saved.</p> : null}
+          {!isConfigured ? <p style={warningMessageStyle}>The purchase display is ready, but the database needs to be available before entries can be saved.</p> : null}
 
           {canShareOnMap ? (
             <form action="/api/luck-map" method="POST" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'end', marginTop: '1.5rem' }}>
@@ -617,7 +617,7 @@ export default async function Home({ searchParams }) {
                   ))}
                 </select>
               </label>
-              <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Share little luck</button>
+              <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Share purchase province</button>
             </form>
           ) : (
             <form action="/api/checkout" method="POST" style={{ display: 'grid', gap: '0.75rem', marginTop: '1.5rem', maxWidth: 360 }}>
@@ -629,11 +629,11 @@ export default async function Home({ searchParams }) {
                   <option value="7">7 Pick</option>
                 </select>
               </label>
-              <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to join the map</button>
+              <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to add your province</button>
             </form>
           )}
 
-          <div aria-label="Canada Little Luck Map" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>
+          <div aria-label="Lucky purchases by province" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>
             {provinces.map((province) => {
               const count = provinceCounts[province.code] || 0;
 
@@ -641,24 +641,24 @@ export default async function Home({ searchParams }) {
                 <div key={province.code} style={{ padding: '1rem', minHeight: 78, borderRadius: 20, background: count ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.96), rgba(250, 204, 21, 0.92))' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.06))', border: count ? '2px solid rgba(255, 235, 160, 0.78)' : '2px solid rgba(255, 255, 255, 0.16)', boxShadow: count ? '0 0 28px rgba(16, 185, 129, 0.38), inset 0 1px 0 rgba(255,255,255,0.28)' : 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
                   <strong style={{ display: 'block', fontSize: '1.25rem' }}>{province.code}</strong>
                   <span>{province.name}</span><br />
-                  <span style={{ fontWeight: 700 }}>{count} {count === 1 ? 'share' : 'shares'}</span>
+                  <span style={{ fontWeight: 700 }}>{count} {count === 1 ? 'purchase' : 'purchases'}</span>
                 </div>
               );
             })}
           </div>
 
           <div style={{ marginTop: '1.5rem' }}>
-            <h3 style={{ marginBottom: '0.5rem' }}>Recent little luck shares: {totalShares}</h3>
+            <h3 style={{ marginBottom: '0.5rem' }}>Recent purchase provinces: {totalShares}</h3>
             {recentShares.length ? (
               <ul style={{ display: 'grid', gap: '0.5rem', paddingLeft: '1.25rem' }}>
                 {recentShares.map((share) => (
                   <li key={`${share.display_name}-${share.province}-${share.created_at}`}>
-                    <strong>{share.display_name}</strong> shared luck from {share.province}
+                    <strong>{share.display_name}</strong> added a Lucky Pick purchase from {share.province}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p>No shares yet. Be the first to put little luck on the map.</p>
+              <p>No purchase provinces yet. Be the first to add your province after a Lucky Pick purchase.</p>
             )}
           </div>
         </section>
