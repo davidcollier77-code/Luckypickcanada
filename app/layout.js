@@ -1,7 +1,7 @@
 export const metadata = {
   metadataBase: new URL('https://luckypickcanada.ca'),
   title: 'LuckyPickCanada | Stories, Lucky Meter & Picks',
-  description: 'Discover your luck with LuckyPickCanada.ca. Try our free Luck Meter, personalized lucky picks, lucky cards, and share your lucky story. 🍀',
+  description: 'Discover your luck with LuckyPickCanada 🍀 Enjoy a fun Lucky Meter, personalized lucky picks, lucky cards, and community stories — just for fun.',
   keywords: [
     'luckypickcanada',
     'lucky stories',

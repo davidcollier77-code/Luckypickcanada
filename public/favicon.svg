@@ -1,16 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Canadian maple leaf favicon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Lucky Pick Canada maple leaf and four-leaf clover logo</title>
+  <desc id="desc">A bright red Canadian maple leaf with a green four-leaf clover centered in front.</desc>
   <defs>
-    <linearGradient id="leafRed" x1="80" y1="40" x2="432" y2="472" gradientUnits="userSpaceOnUse">
+    <radialGradient id="leafGlow" cx="50%" cy="30%" r="72%">
       <stop offset="0" stop-color="#ff3b30"/>
-      <stop offset="0.46" stop-color="#e1111f"/>
-      <stop offset="1" stop-color="#a90816"/>
+      <stop offset="0.46" stop-color="#e10613"/>
+      <stop offset="1" stop-color="#920006"/>
+    </radialGradient>
+    <linearGradient id="leafDark" x1="50%" y1="6%" x2="50%" y2="98%">
+      <stop offset="0" stop-color="#ff756b" stop-opacity="0.62"/>
+      <stop offset="0.44" stop-color="#b9000b" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#540004" stop-opacity="0.7"/>
     </linearGradient>
-    <linearGradient id="veinRed" x1="256" y1="70" x2="256" y2="502" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#ff786f" stop-opacity="0.72"/>
-      <stop offset="1" stop-color="#7f0611" stop-opacity="0.78"/>
+    <radialGradient id="cloverGlow" cx="34%" cy="23%" r="86%">
+      <stop offset="0" stop-color="#b8ff57"/>
+      <stop offset="0.42" stop-color="#48c51e"/>
+      <stop offset="1" stop-color="#087018"/>
+    </radialGradient>
+    <linearGradient id="stemGradient" x1="35%" y1="0" x2="65%" y2="100%">
+      <stop offset="0" stop-color="#7df43d"/>
+      <stop offset="1" stop-color="#0d6717"/>
     </linearGradient>
+    <pattern id="leafTexture" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M0 18c10-9 25-9 36 0M18 0c-8 10-8 25 0 36" fill="none" stroke="#ffaaa2" stroke-width="2" stroke-opacity="0.08"/>
+      <path d="M4 31c7-8 17-10 29-7" fill="none" stroke="#4a0003" stroke-width="1.5" stroke-opacity="0.08"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
   </defs>
-  <path d="M 256 18 L 270 84 L 288 132 L 334 76 L 324 141 L 374 116 L 356 182 L 442 154 L 405 214 L 490 250 L 397 274 L 438 340 L 348 322 L 350 388 L 296 352 L 274 430 L 263 378 L 256 502 L 249 378 L 238 430 L 216 352 L 162 388 L 164 322 L 74 340 L 115 274 L 22 250 L 107 214 L 70 154 L 156 182 L 138 116 L 188 141 L 178 76 L 224 132 L 242 84 Z" fill="url(#leafRed)"/>
-  <path d="M256 502 L256 376" stroke="#8f0612" stroke-width="18" stroke-linecap="round"/>
-  <path d="M256 376 L256 72 M254 300 L188 140 M258 300 L324 140 M250 288 L100 222 M262 288 L412 222 M246 320 L120 336 M266 320 L392 336 M252 352 L218 426 M260 352 L294 426" fill="none" stroke="url(#veinRed)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect width="1024" height="1024" fill="#ffffff"/>
+
+  <g filter="url(#shadow)">
+    <path id="maple-leaf" fill="url(#leafGlow)" stroke="#720006" stroke-width="9" stroke-linejoin="round" d="M512 25 570 212 636 139 654 301 812 193 769 375 980 330 823 493 942 598 756 629 807 800 610 694 512 1000 414 694 217 800 268 629 82 598 201 493 44 330 255 375 212 193 370 301 388 139 454 212 512 25Z"/>
+    <use href="#maple-leaf" fill="url(#leafDark)" opacity="0.88"/>
+    <use href="#maple-leaf" fill="url(#leafTexture)" opacity="0.72"/>
+
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M512 72v850" stroke="#ffd4cf" stroke-width="6" opacity="0.78"/>
+      <path d="M512 438 392 158M512 438 632 158M512 514 236 251M512 514 788 251M512 610 130 575M512 610 894 575M512 696 306 788M512 696 718 788" stroke="#ffc2bd" stroke-width="5" opacity="0.62"/>
+      <path d="M512 105v790M512 505 312 315M512 505 712 315M512 612 292 650M512 612 732 650" stroke="#6d0005" stroke-width="7" opacity="0.24"/>
+    </g>
+  </g>
+
+  <g filter="url(#shadow)">
+    <path fill="url(#stemGradient)" stroke="#075c11" stroke-width="9" stroke-linecap="round" d="M511 641c-9 91-44 176-104 258"/>
+    <path fill="none" stroke="#8df35b" stroke-width="6" stroke-linecap="round" d="M505 654c-16 75-48 145-94 214" opacity="0.7"/>
+
+    <path fill="url(#cloverGlow)" stroke="#075c11" stroke-width="9" stroke-linejoin="round" d="M512 510c-86-132-6-232 88-192 73 31 83 111 29 173 88-45 176-13 186 67 11 95-96 145-209 69 44 120-12 216-94 216s-138-96-94-216c-113 76-220 26-209-69 10-80 98-112 186-67-54-62-44-142 29-173 94-40 174 60 88 192Z"/>
+    <path fill="#ffffff" opacity="0.15" d="M504 447c-55-74-11-127 44-109 43 14 51 58 20 103 55-29 107-12 116 35 10 52-48 87-117 49 30 71-5 126-55 126s-85-55-55-126c-69 38-127 3-117-49 9-47 61-64 116-35-31-45-23-89 20-103 55-18 99 35 28 109Z"/>
+
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M512 520c-48-65-82-105-118-133M512 520c50-65 86-105 123-133M512 520c-80 7-139 24-188 55M512 520c82 7 142 24 193 56M512 520c-15 77-12 145 8 210" stroke="#d9ff93" stroke-width="7" opacity="0.86"/>
+      <path d="M512 520c-28 3-56 5-87 0M512 520c29 3 58 5 89 0M512 520c-2 38-1 72 5 106" stroke="#075c11" stroke-width="5" opacity="0.22"/>
+    </g>
+  </g>
 </svg>
