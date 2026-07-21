@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const provinces = [
   { code: 'BC', name: 'British Columbia', x: 10, y: 52 },
@@ -45,19 +45,100 @@ export default function LuckyMapOfCanada({ mapData }) {
   const provinceCounts = mapData?.provinceCounts || {};
   const firstStoryProvince = stories[0]?.province || 'ON';
   const [selectedProvince, setSelectedProvince] = useState(firstStoryProvince);
-  const [selectedStoryId, setSelectedStoryId] = useState(stories[0]?.id || '');
+  const [selectedStoryId, setSelectedStoryId] = useState('');
+  const [shareStatus, setShareStatus] = useState('');
   const selectedProvinceInfo = provinces.find((province) => province.code === selectedProvince) || provinces[4];
   const selectedStories = provinceStories(stories, selectedProvince);
-  const selectedStory = selectedStories.find((story) => story.id === selectedStoryId) || selectedStories[0] || null;
+  const selectedStory = selectedStoryId ? selectedStories.find((story) => story.id === selectedStoryId) || null : null;
 
   const provinceSelections = useMemo(
     () => provinces.map((province) => ({ ...province, count: provinceCounts[province.code] || 0 })),
     [provinceCounts],
   );
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const storyId = new URLSearchParams(window.location.search).get('story');
+    const linkedStory = stories.find((story) => story.id === storyId);
+
+    if (linkedStory) {
+      setSelectedProvince(linkedStory.province);
+      setSelectedStoryId(linkedStory.id);
+    }
+  }, [stories]);
+
+  function storyUrl(storyId) {
+    if (typeof window === 'undefined') return '/lucky-map-of-canada';
+
+    const url = new URL(window.location.href);
+    url.pathname = '/lucky-map-of-canada';
+    url.searchParams.set('story', storyId);
+    url.hash = 'lucky-story-map';
+    return url.toString();
+  }
+
   function selectProvince(provinceCode) {
     setSelectedProvince(provinceCode);
-    setSelectedStoryId(provinceStories(stories, provinceCode)[0]?.id || '');
+    setSelectedStoryId('');
+    setShareStatus('');
+  }
+
+  function openStory(story) {
+    setSelectedProvince(story.province);
+    setSelectedStoryId(story.id);
+    setShareStatus('');
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.pathname = '/lucky-map-of-canada';
+      url.searchParams.set('story', story.id);
+      url.hash = 'lucky-story-map';
+      window.history.replaceState(null, '', url);
+    }
+  }
+
+  function returnToMap() {
+    setSelectedStoryId('');
+    setShareStatus('');
+
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.pathname = '/lucky-map-of-canada';
+      url.searchParams.delete('story');
+      url.hash = 'lucky-story-map';
+      window.history.replaceState(null, '', url);
+    }
+  }
+
+  async function shareStory(story) {
+    const url = storyUrl(story.id);
+    const shareData = {
+      title: `Lucky story from ${story.firstName || story.provinceName}`,
+      text: story.preview || 'Explore this LuckyPickCanada community story.',
+      url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setShareStatus('Share menu opened.');
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        setShareStatus('Native sharing is unavailable, so the story link was copied.');
+        return;
+      }
+
+      window.prompt('Copy this Lucky Story link:', url);
+      setShareStatus('Copy the story link to share it.');
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        setShareStatus('Unable to open sharing. Copy the story link and share it with your own apps.');
+      }
+    }
   }
 
   return (
@@ -87,8 +168,8 @@ export default function LuckyMapOfCanada({ mapData }) {
             <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
             LuckyPickCanada.ca
           </a>
-          <a href="/#lucky-stories" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1.05rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
-            View Lucky Community Stories
+          <a href="/#share-your-luck-form" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1.05rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
+            🍀 Share Your Luck
           </a>
         </nav>
 
@@ -98,8 +179,16 @@ export default function LuckyMapOfCanada({ mapData }) {
             Where Luck Has Been Found Across Canada 🍀
           </h1>
           <p style={{ maxWidth: 760, margin: '1rem 0 0', fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.7, color: 'rgba(255, 247, 214, 0.86)' }}>
-            A living map powered by the existing Lucky Community stories. Approved stories with a province or territory in the story location automatically light up the map.
+            The Lucky Story Map is for discovering and sharing community stories. Use Share Your Luck only when you want to submit a new lucky moment.
           </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.35rem' }}>
+            <a href="#lucky-story-map" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
+              🍀 View Lucky Stories
+            </a>
+            <a href="/#share-your-luck-form" className="story-link" style={{ color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'rgba(1, 4, 3, 0.54)', border: '1px solid rgba(255,235,160,0.32)' }}>
+              🍀 Share Your Luck
+            </a>
+          </div>
           {!mapData?.isConfigured ? (
             <p style={{ margin: '1rem 0 0', padding: '0.85rem 1rem', borderRadius: 16, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 800 }}>
               The Lucky Stories database needs to be available before the map can load community stories.
@@ -120,7 +209,11 @@ export default function LuckyMapOfCanada({ mapData }) {
           ))}
         </section>
 
-        <section aria-label="LuckyPickCanada lucky stories map" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
+        <p style={{ ...cardStyle, margin: '1rem 0 0', padding: '1rem 1.15rem', lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 750 }}>
+          Explore lucky stories shared by people across Canada. Find yours on the map or share your own lucky moment.
+        </p>
+
+        <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
           <div className="map-panel" style={{ ...cardStyle, minHeight: 560, padding: '1rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'relative', zIndex: 1, maxWidth: 460, padding: '0.9rem 1rem', borderRadius: 22, background: 'rgba(2,8,23,0.58)', border: '1px solid rgba(255,235,160,0.22)', lineHeight: 1.55 }}>
               <strong style={{ color: '#fde68a' }}>Click a province or territory</strong><br />
@@ -162,26 +255,36 @@ export default function LuckyMapOfCanada({ mapData }) {
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
                 {selectedStories.map((story) => (
                   <article key={story.id} style={{ padding: '1rem', borderRadius: 22, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.09), rgba(16,185,129,0.08))' }}>
-                    <button type="button" onClick={() => setSelectedStoryId(story.id)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
+                    <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
                     <p style={{ lineHeight: 1.65 }}>{selectedStory?.id === story.id ? story.story : story.preview}</p>
-                    {selectedStory?.id !== story.id ? (
-                      <button type="button" onClick={() => setSelectedStoryId(story.id)} style={{ padding: 0, border: 0, background: 'transparent', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textAlign: 'left', textDecoration: 'underline' }}>
+                    {selectedStory?.id === story.id ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center', margin: '0.65rem 0 0.85rem' }}>
+                        <button type="button" onClick={() => shareStory(story)} className="story-link" style={{ color: '#06110d', fontWeight: 950, padding: '0.65rem 0.9rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer' }}>
+                          🍀 Share This Story
+                        </button>
+                        <button type="button" onClick={returnToMap} style={{ padding: 0, border: 0, background: 'transparent', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textDecoration: 'underline' }}>
+                          ← Back to Lucky Story Map
+                        </button>
+                        {shareStatus ? <span style={{ color: '#d1fae5', fontWeight: 800 }}>{shareStatus}</span> : null}
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textAlign: 'left', textDecoration: 'underline' }}>
                         View full lucky story
                       </button>
-                    ) : null}
+                    )}
                     <p style={{ margin: 0, fontWeight: 850 }}>
                       {story.firstName ? `— ${story.firstName}, ` : '— '}{story.provinceName}
                     </p>
                   </article>
                 ))}
-                <a href="/#lucky-stories" className="story-link" style={{ display: 'inline-flex', width: 'fit-content', color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
-                  Share or view Lucky Stories
+                <a href="/#share-your-luck-form" className="story-link" style={{ display: 'inline-flex', width: 'fit-content', color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
+                  🍀 Share Your Luck
                 </a>
               </div>
             ) : (
-              <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Stories have been shared from {selectedProvinceInfo.name} yet. Select another province or share a story from the Lucky Stories section.</p>
+              <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Stories have been shared from {selectedProvinceInfo.name} yet. Select another province or use Share Your Luck to submit a new story.</p>
             )}
           </aside>
         </section>
