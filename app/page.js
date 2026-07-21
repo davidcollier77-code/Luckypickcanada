@@ -14,6 +14,20 @@ const games = [
 const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
 const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const facebookGroupUrl = 'https://www.facebook.com/share/g/1DASPZT9Cu/';
+const navLinks = [
+  { href: '#luck-meter-title', label: 'Free Lucky Meter' },
+  { href: '#lucky-pick-checkout', label: '$1 Pick' },
+  { href: '#lucky-blackjack-challenge', label: 'Cards' },
+  { href: '#lucky-stories', label: 'Stories' },
+  { href: '#little-luck-map', label: 'Map' },
+];
+const visitReasons = [
+  { icon: '✦', text: 'Fun and interactive luck-themed experiences' },
+  { icon: '♣', text: 'Beautiful animations and card reveals' },
+  { icon: '☾', text: 'New lucky moments every visit' },
+  { icon: '🍁', text: 'Built in Canada' },
+  { icon: '✨', text: 'Designed for entertainment and fun' },
+];
 
 const checkoutButtonStyle = {
   width: '100%',
@@ -133,6 +147,26 @@ function SectionKicker({ children }) {
   );
 }
 
+function StickyNav() {
+  return (
+    <nav aria-label="Primary" style={{ position: 'sticky', top: '0.75rem', zIndex: 20, maxWidth: 1040, margin: '0 auto 1rem', padding: '0.55rem', borderRadius: 999, border: '1px solid rgba(255, 235, 160, 0.25)', background: 'linear-gradient(135deg, rgba(1, 4, 3, 0.72), rgba(4, 44, 40, 0.58))', boxShadow: '0 18px 56px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.08)', backdropFilter: 'blur(18px) saturate(135%)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
+        <a href="#top" aria-label="LuckyPickCanada.ca home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, letterSpacing: '-0.02em', padding: '0.35rem 0.55rem' }}>
+          <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
+          <span>LuckyPickCanada.ca</span>
+        </a>
+        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {navLinks.map((link) => (
+            <a key={link.href} href={link.href} className="premium-nav-link" style={{ color: '#fff7d6', textDecoration: 'none', padding: '0.55rem 0.75rem', borderRadius: 999, fontSize: '0.9rem', fontWeight: 850 }}>
+              {link.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
 function generateNumbers(count, max) {
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
 
@@ -176,16 +210,29 @@ export default async function Home({ searchParams }) {
     : null;
 
   return (
-    <main style={{
+    <main id="top" style={{
       minHeight: '100vh',
-      padding: '4rem 1.5rem',
+      padding: '1rem 1.5rem 4rem',
       background: 'radial-gradient(circle at 14% 8%, rgba(250, 204, 21, 0.22), transparent 26%), radial-gradient(circle at 86% 12%, rgba(16, 185, 129, 0.28), transparent 31%), radial-gradient(circle at 50% 100%, rgba(185, 28, 28, 0.16), transparent 34%), linear-gradient(135deg, #010403 0%, #020817 35%, #071225 60%, #021a18 100%)',
       color: '#fff7d6',
       fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      overflow: 'hidden',
+      overflowX: 'hidden',
       position: 'relative',
     }}>
       <style>{`
+        html { scroll-behavior: smooth; }
+        #luck-meter-title, #lucky-pick-checkout, #lucky-blackjack-challenge, #lucky-stories, #little-luck-map { scroll-margin-top: 7rem; }
+        .premium-nav-link { transition: background 180ms ease, color 180ms ease, transform 180ms ease; }
+        .premium-nav-link:hover, .premium-nav-link:focus-visible { background: rgba(250, 204, 21, 0.16); color: #fde68a; transform: translateY(-1px); outline: none; }
+        .premium-secondary-button { transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
+        .premium-secondary-button:hover, .premium-secondary-button:focus-visible { transform: translateY(-2px); border-color: rgba(255, 235, 160, 0.56) !important; box-shadow: 0 16px 34px rgba(0,0,0,0.28), 0 0 28px rgba(250,204,21,0.18); outline: none; }
+        .aurora-gold-button:focus-visible, .blackjack-button:focus-visible, .luck-meter-button:focus-visible { outline: 3px solid rgba(253, 230, 138, 0.72); outline-offset: 3px; }
+        .aurora-gold-button:active, .premium-secondary-button:active, .blackjack-button:active, .luck-meter-button:active { transform: translateY(1px) scale(0.99); }
+        @media (prefers-reduced-motion: reduce) {
+          html { scroll-behavior: auto; }
+          *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.001ms !important; }
+        }
+
         @keyframes magical-star-twinkle {
           0%, 100% { opacity: 0.32; transform: scale(0.86) rotate(0deg); }
           50% { opacity: 1; transform: scale(1.12) rotate(18deg); }
@@ -247,6 +294,7 @@ export default async function Home({ searchParams }) {
         ))}
       </div>
       <LuckyRevealPopup reveal={purchasedReveal} />
+      <StickyNav />
       <section style={{ maxWidth: 1040, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 22, right: -18 }}>✦</span>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 370, left: -28, animationDelay: '-3s' }}>🍁</span>
@@ -266,7 +314,7 @@ export default async function Home({ searchParams }) {
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
                 <a href="#luck-meter-title" className="aurora-gold-button" style={{ ...checkoutButtonStyle, width: 'auto', minWidth: 220, display: 'inline-flex', justifyContent: 'center', textDecoration: 'none' }}>Try the FREE Lucky Meter</a>
-                <a href="#lucky-pick-checkout" style={{ ...premiumPillStyle, minWidth: 250, textDecoration: 'none' }}>Get Your Personalized Lucky Pick – $1 CAD</a>
+                <a href="#lucky-pick-checkout" className="premium-secondary-button" style={{ ...premiumPillStyle, minWidth: 250, textDecoration: 'none' }}>Get Your Personalized Lucky Pick – $1 CAD</a>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
                 <span style={premiumPillStyle}>Free Lucky Meter</span>
@@ -325,15 +373,10 @@ export default async function Home({ searchParams }) {
             Start your lucky journey
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
-            {[
-              'Fun and interactive luck-themed experiences',
-              'Beautiful animations and card reveals',
-              'New lucky moments every visit',
-              'Built in Canada',
-              'Designed for entertainment and fun',
-            ].map((reason) => (
-              <div key={reason} style={{ padding: '1rem', borderRadius: 18, background: 'linear-gradient(145deg, rgba(255,255,255,0.08), rgba(16,185,129,0.08))', border: '1px solid rgba(255, 235, 160, 0.22)', fontWeight: 800 }}>
-                {reason}
+            {visitReasons.map((reason) => (
+              <div key={reason.text} style={{ display: 'grid', gridTemplateColumns: '2.6rem 1fr', gap: '0.85rem', alignItems: 'center', padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(255,255,255,0.08), rgba(16,185,129,0.08))', border: '1px solid rgba(255, 235, 160, 0.22)', fontWeight: 850 }}>
+                <span aria-hidden="true" style={{ display: 'grid', placeItems: 'center', width: '2.6rem', height: '2.6rem', borderRadius: '50%', color: '#06110d', background: 'radial-gradient(circle at 32% 24%, #fff8c8, #facc15 46%, #b7791f 100%)', boxShadow: '0 0 22px rgba(250,204,21,0.34)' }}>{reason.icon}</span>
+                <span>{reason.text}</span>
               </div>
             ))}
           </div>
