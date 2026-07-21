@@ -84,7 +84,7 @@ export default function LuckyMapOfCanada({ mapData }) {
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <a href="/" className="home-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.55rem 0.8rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.26)', background: 'rgba(1, 4, 3, 0.54)' }}>
-            <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada maple clover logo" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
+            <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
             LuckyPickCanada.ca
           </a>
           <a href="/#lucky-stories" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1.05rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
@@ -120,7 +120,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           ))}
         </section>
 
-        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
+        <section aria-label="LuckyPickCanada lucky stories map" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
           <div className="map-panel" style={{ ...cardStyle, minHeight: 560, padding: '1rem', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'relative', zIndex: 1, maxWidth: 460, padding: '0.9rem 1rem', borderRadius: 22, background: 'rgba(2,8,23,0.58)', border: '1px solid rgba(255,235,160,0.22)', lineHeight: 1.55 }}>
               <strong style={{ color: '#fde68a' }}>Click a province or territory</strong><br />

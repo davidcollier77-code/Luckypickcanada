@@ -125,7 +125,7 @@ function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8faf
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
       <img
         src="/file_00000000e8b8722f909e901d9b84325d.png"
-        alt="Official Lucky Pick Canada logo"
+        alt="LuckyPickCanada logo with maple leaf"
         width={size}
         height={size}
         style={{ ...logoCardStyle, width: size, height: size }}
@@ -145,8 +145,7 @@ function SectionKicker({ children }) {
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
       <img
         src="/file_00000000e8b8722f909e901d9b84325d.png"
-        alt=""
-        aria-hidden="true"
+        alt="LuckyPickCanada logo with maple leaf"
         width="36"
         height="36"
         style={{ ...logoCardStyle, width: 36, height: 36, borderRadius: 10, boxShadow: '0 0 22px rgba(250, 204, 21, 0.24)' }}
@@ -163,7 +162,7 @@ function StickyNav() {
     <nav aria-label="Primary" style={{ position: 'sticky', top: '0.75rem', zIndex: 20, maxWidth: 1040, margin: '0 auto 1rem', padding: '0.55rem', borderRadius: 999, border: '1px solid rgba(255, 235, 160, 0.25)', background: 'linear-gradient(135deg, rgba(1, 4, 3, 0.72), rgba(4, 44, 40, 0.58))', boxShadow: '0 18px 56px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.08)', backdropFilter: 'blur(18px) saturate(135%)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
         <a href="#top" aria-label="LuckyPickCanada.ca home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, letterSpacing: '-0.02em', padding: '0.35rem 0.55rem' }}>
-          <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
+          <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
           <span>LuckyPickCanada.ca</span>
         </a>
         <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -372,7 +371,7 @@ export default async function Home({ searchParams }) {
               <div style={{ position: 'absolute', top: 70, left: -80, width: 430, height: 120, borderRadius: 999, background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.54), rgba(250,204,21,0.3), transparent)', filter: 'blur(12px)', transform: 'rotate(-14deg)' }} />
               <div style={{ position: 'relative', display: 'grid', gap: '1rem', padding: '0.35rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#facc15', fontWeight: 950 }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}><img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="" width="34" height="34" />LuckyPickCanada.ca</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}><img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width="34" height="34" />LuckyPickCanada.ca</span>
                   <span style={{ fontSize: '1.35rem' }}>☰</span>
                 </div>
                 <div style={{ minHeight: 190, borderRadius: 26, border: '1px solid rgba(255,235,160,0.26)', background: 'radial-gradient(circle at 50% 35%, rgba(16,185,129,0.42), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.08), rgba(2,8,23,0.42))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 18px 38px rgba(0,0,0,0.32)', display: 'grid', alignContent: 'end', padding: '1rem' }}>
@@ -730,7 +729,7 @@ export default async function Home({ searchParams }) {
           >
             <img
               src="/facebook-community-cover.png"
-              alt="Lucky Pick Canada Community Facebook group cover"
+              alt="LuckyPickCanada Facebook community group"
               style={{ display: 'block', width: '100%', height: 'auto' }}
             />
           </a>
