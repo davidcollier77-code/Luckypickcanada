@@ -63,7 +63,7 @@ The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions fo
 
 To send a no-purchase test gift email, make a `POST` request to `/api/admin/test-gift-email` with the `x-gift-test-secret` header set to `GIFT_TEST_SECRET` and a JSON body containing `recipientEmail`. Optional fields are `recipientName`, `senderName`, `giftMessage`, and `luckyPickGame` (`6` or `7`).
 
-After completing the $1.00 Lucky Pick checkout, visitors can add their name and province or territory to the Little Luck Map. Submissions are verified against the paid Stripe Checkout Session, saved in the `luck_shares` database table, and shown as province counts plus recent shares.
+After completing the $1.00 Lucky Pick checkout, visitors can add their name and province or territory to the Lucky Purchases Across Canada display. Submissions are verified against the paid Stripe Checkout Session, saved in the `luck_shares` database table, and shown as purchase activity by province plus recent purchase provinces. Lucky Stories are handled separately by the existing Lucky Map of Canada page.
 
 Suggestions are saved in the `suggestions` database table and can be reviewed at `/admin/suggestions` with `ADMIN_PASSWORD`.
 

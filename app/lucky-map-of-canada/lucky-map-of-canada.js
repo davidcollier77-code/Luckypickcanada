@@ -50,24 +50,29 @@ export default function LuckyMapOfCanada({ mapData }) {
   const selectedStories = provinceStories(stories, selectedProvince);
   const selectedStory = selectedStories.find((story) => story.id === selectedStoryId) || selectedStories[0] || null;
 
-  const storyStats = useMemo(
-    () => provinces.map((province) => ({ ...province, count: provinceCounts[province.code] || 0 })).filter((province) => province.count > 0),
+  const provinceSelections = useMemo(
+    () => provinces.map((province) => ({ ...province, count: provinceCounts[province.code] || 0 })),
     [provinceCounts],
   );
+
+  function selectProvince(provinceCode) {
+    setSelectedProvince(provinceCode);
+    setSelectedStoryId(provinceStories(stories, provinceCode)[0]?.id || '');
+  }
 
   return (
     <main style={pageStyle}>
       <style>{`
         html { scroll-behavior: smooth; }
-        .home-link, .story-link, .province-marker { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease; }
-        .home-link:hover, .home-link:focus-visible, .story-link:hover, .story-link:focus-visible, .province-marker:hover, .province-marker:focus-visible { transform: translateY(-2px); outline: none; filter: saturate(1.12); }
-        .map-panel::before { content: ''; position: absolute; inset: 7% 8%; border-radius: 44% 56% 46% 54%; background: radial-gradient(circle at 25% 35%, rgba(16,185,129,0.22), transparent 20%), radial-gradient(circle at 72% 44%, rgba(250,204,21,0.2), transparent 22%), linear-gradient(145deg, rgba(21,128,61,0.38), rgba(15,118,110,0.18)); border: 1px solid rgba(255,235,160,0.16); filter: drop-shadow(0 0 44px rgba(16,185,129,0.2)); }
-        .map-panel::after { content: '✦'; position: absolute; right: 11%; top: 13%; color: rgba(253,230,138,0.84); animation: twinkle 2.4s ease-in-out infinite; }
-        .province-marker { position: absolute; display: grid; place-items: center; width: clamp(42px, 5vw, 62px); height: clamp(42px, 5vw, 62px); border-radius: 999px; border: 1px solid rgba(255, 242, 180, 0.82); color: #052e1c; background: radial-gradient(circle at 30% 20%, #fff8c8 0%, #facc15 30%, #22c55e 62%, #064e3b 100%); box-shadow: 0 0 32px rgba(250,204,21,0.55), 0 0 28px rgba(16,185,129,0.42), inset 0 2px 6px rgba(255,255,255,0.48); cursor: pointer; font-size: clamp(1.25rem, 2.8vw, 1.75rem); }
-        .province-marker.is-active { box-shadow: 0 0 0 5px rgba(255,248,200,0.16), 0 0 48px rgba(250,204,21,0.78), 0 0 34px rgba(52,211,153,0.62); }
+        .home-link, .story-link, .province-marker, .province-select-card { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease; }
+        .home-link:hover, .home-link:focus-visible, .story-link:hover, .story-link:focus-visible, .province-marker:hover, .province-marker:focus-visible, .province-select-card:hover, .province-select-card:focus-visible { transform: translateY(-2px); outline: none; filter: saturate(1.12); }
+        .map-panel::before { content: ''; position: absolute; inset: 8% 6% 10% 4%; border-radius: 52% 48% 42% 58% / 42% 40% 60% 58%; background: radial-gradient(circle at 18% 38%, rgba(34,197,94,0.26), transparent 16%), radial-gradient(circle at 42% 26%, rgba(250,204,21,0.2), transparent 20%), radial-gradient(circle at 69% 42%, rgba(16,185,129,0.22), transparent 22%), radial-gradient(circle at 84% 58%, rgba(250,204,21,0.18), transparent 14%), linear-gradient(145deg, rgba(21,128,61,0.42), rgba(15,118,110,0.22)); border: 1px solid rgba(255,235,160,0.18); filter: drop-shadow(0 0 44px rgba(16,185,129,0.22)); clip-path: polygon(5% 43%, 13% 24%, 25% 18%, 38% 12%, 55% 17%, 70% 13%, 86% 25%, 95% 43%, 87% 59%, 77% 62%, 70% 80%, 58% 74%, 45% 84%, 33% 72%, 20% 77%, 12% 61%); }
+        .map-panel::after { content: 'Canada story map'; position: absolute; right: 7%; top: 8%; color: rgba(253,230,138,0.84); font-weight: 950; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.75rem; }
+        .province-marker { position: absolute; display: grid; place-items: center; min-width: clamp(46px, 5vw, 68px); min-height: clamp(42px, 4.8vw, 62px); padding: 0.45rem; border-radius: 20px; border: 1px solid rgba(255, 242, 180, 0.62); color: #fff7d6; background: linear-gradient(145deg, rgba(6,78,59,0.96), rgba(16,185,129,0.78)); box-shadow: 0 0 22px rgba(16,185,129,0.24), inset 0 2px 6px rgba(255,255,255,0.16); cursor: pointer; font-size: clamp(0.9rem, 2vw, 1.2rem); font-weight: 950; z-index: 2; }
+        .province-marker.has-stories { color: #052e1c; background: radial-gradient(circle at 30% 20%, #fff8c8 0%, #facc15 35%, #22c55e 68%, #064e3b 100%); box-shadow: 0 0 32px rgba(250,204,21,0.55), 0 0 28px rgba(16,185,129,0.42), inset 0 2px 6px rgba(255,255,255,0.48); }
+        .province-marker.is-active { border-color: rgba(255,248,200,0.92); box-shadow: 0 0 0 5px rgba(255,248,200,0.16), 0 0 48px rgba(250,204,21,0.78), 0 0 34px rgba(52,211,153,0.62); }
         .province-marker .marker-count { position: absolute; right: -0.2rem; top: -0.35rem; min-width: 1.45rem; height: 1.45rem; display: grid; place-items: center; padding: 0 0.28rem; border-radius: 999px; color: #fff7d6; background: #064e3b; border: 1px solid rgba(253,230,138,0.72); font-size: 0.76rem; font-weight: 950; box-shadow: 0 0 18px rgba(250,204,21,0.42); }
-        .province-marker .marker-sparkle { position: absolute; inset: -0.45rem; border-radius: inherit; border: 1px solid rgba(253,230,138,0.52); animation: marker-pulse 1.9s ease-in-out infinite; }
-        .province-marker .marker-twinkle { position: absolute; left: -0.35rem; bottom: -0.25rem; color: #fde68a; text-shadow: 0 0 14px rgba(250,204,21,0.8); animation: twinkle 1.7s ease-in-out infinite; }
+        .province-marker .marker-sparkle { position: absolute; inset: -0.35rem; border-radius: inherit; border: 1px solid rgba(253,230,138,0.38); animation: marker-pulse 1.9s ease-in-out infinite; }
         @keyframes marker-pulse { 0%, 100% { transform: scale(0.86); opacity: 0.35; } 50% { transform: scale(1.24); opacity: 0.95; } }
         @keyframes twinkle { 0%, 100% { opacity: 0.35; transform: scale(0.82) rotate(0deg); } 50% { opacity: 1; transform: scale(1.18) rotate(18deg); } }
         @keyframes aurora-drift { from { transform: translate3d(-8%, -2%, 0) rotate(-7deg); opacity: 0.42; } to { transform: translate3d(8%, 3%, 0) rotate(6deg); opacity: 0.76; } }
@@ -115,44 +120,35 @@ export default function LuckyMapOfCanada({ mapData }) {
           ))}
         </section>
 
-        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 320px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
+        <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
           <div className="map-panel" style={{ ...cardStyle, minHeight: 560, padding: '1rem', position: 'relative', overflow: 'hidden' }}>
-            {stories.map((story, index) => {
-              const province = provinces.find((item) => item.code === story.province);
-
-              if (!province) {
-                return null;
-              }
-
+            <div style={{ position: 'relative', zIndex: 1, maxWidth: 460, padding: '0.9rem 1rem', borderRadius: 22, background: 'rgba(2,8,23,0.58)', border: '1px solid rgba(255,235,160,0.22)', lineHeight: 1.55 }}>
+              <strong style={{ color: '#fde68a' }}>Click a province or territory</strong><br />
+              Select an area on the Canada story map to see Lucky Stories shared from that part of Canada.
+            </div>
+            {provinceSelections.map((province) => {
               const provinceCount = provinceCounts[province.code] || 0;
-              const siblingIndex = provinceStories(stories.slice(0, index + 1), province.code).length - 1;
-              const xOffset = provinceCount > 1 ? ((siblingIndex % 3) - 1) * 2.2 : 0;
-              const yOffset = provinceCount > 1 ? (Math.floor(siblingIndex / 3) % 3) * 2.4 : 0;
-              const active = selectedStory?.id === story.id;
+              const active = selectedProvince === province.code;
 
               return (
                 <button
-                  key={story.id}
+                  key={province.code}
                   type="button"
-                  className={`province-marker ${active ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setSelectedProvince(province.code);
-                    setSelectedStoryId(story.id);
-                  }}
-                  aria-label={`${province.name}: lucky story preview from ${story.firstName || 'a Lucky Canadian'}`}
+                  className={`province-marker ${provinceCount ? 'has-stories' : ''} ${active ? 'is-active' : ''}`}
+                  onClick={() => selectProvince(province.code)}
+                  aria-label={`${province.name}: ${provinceCount} ${provinceCount === 1 ? 'lucky story' : 'lucky stories'}`}
                   aria-pressed={active}
-                  style={{ left: `${province.x + xOffset}%`, top: `${province.y + yOffset}%` }}
+                  style={{ left: `${province.x}%`, top: `${province.y}%` }}
                 >
-                  <span className="marker-sparkle" aria-hidden="true" />
-                  <span aria-hidden="true">☘</span>
-                  {provinceCount > 1 ? <span className="marker-count">{provinceCount}</span> : null}
-                  <span className="marker-twinkle" aria-hidden="true">✦</span>
+                  {provinceCount ? <span className="marker-sparkle" aria-hidden="true" /> : null}
+                  <span>{province.code}</span>
+                  {provinceCount ? <span className="marker-count">{provinceCount}</span> : null}
                 </button>
               );
             })}
             {!stories.length ? (
-              <div style={{ position: 'relative', zIndex: 1, maxWidth: 520, margin: '10rem auto 0', padding: '1rem', borderRadius: 24, border: '1px dashed rgba(255,235,160,0.34)', background: 'rgba(2,8,23,0.58)', textAlign: 'center', lineHeight: 1.65 }}>
-                No approved community stories with a province are ready for the map yet. Stories submitted in the existing Lucky Community section will appear here automatically when their location includes a Canadian province or territory.
+              <div style={{ position: 'relative', zIndex: 1, maxWidth: 520, margin: '16rem auto 0', padding: '1rem', borderRadius: 24, border: '1px dashed rgba(255,235,160,0.34)', background: 'rgba(2,8,23,0.58)', textAlign: 'center', lineHeight: 1.65 }}>
+                No community stories with a province are ready for the map yet. Stories submitted in the existing Lucky Stories section will appear here automatically when their location includes a Canadian province or territory.
               </div>
             ) : null}
           </div>
@@ -160,34 +156,41 @@ export default function LuckyMapOfCanada({ mapData }) {
           <aside style={{ ...cardStyle, padding: '1.2rem', position: 'relative', overflow: 'hidden' }}>
             <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>{selectedProvinceInfo.name}</p>
             <h2 style={{ margin: '0.45rem 0', fontSize: 'clamp(1.85rem, 4vw, 3rem)', lineHeight: 1 }}>
-              {selectedStories.length} {selectedStories.length === 1 ? 'lucky moment' : 'lucky moments'}
+              {selectedStories.length} {selectedStories.length === 1 ? 'lucky story' : 'lucky stories'}
             </h2>
-            {selectedStory ? (
-              <article style={{ marginTop: '1rem', padding: '1rem', borderRadius: 22, border: '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.09), rgba(16,185,129,0.08))' }}>
-                <p style={{ margin: 0, color: '#facc15', fontWeight: 900 }}>Story preview</p>
-                <p style={{ lineHeight: 1.65 }}>{selectedStory.preview}</p>
-                <p style={{ margin: 0, fontWeight: 850 }}>
-                  {selectedStory.firstName ? `— ${selectedStory.firstName}, ` : '— '}{selectedStory.provinceName}
-                </p>
-                <a href="/#lucky-stories" className="story-link" style={{ display: 'inline-flex', marginTop: '1rem', color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
-                  View full story in Lucky Community
+            {selectedStories.length ? (
+              <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
+                {selectedStories.map((story) => (
+                  <article key={story.id} style={{ padding: '1rem', borderRadius: 22, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.09), rgba(16,185,129,0.08))' }}>
+                    <button type="button" onClick={() => setSelectedStoryId(story.id)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
+                      Story from {story.firstName || 'a Lucky Canadian'}
+                    </button>
+                    <p style={{ lineHeight: 1.65 }}>{story.preview}</p>
+                    <p style={{ margin: 0, fontWeight: 850 }}>
+                      {story.firstName ? `— ${story.firstName}, ` : '— '}{story.provinceName}
+                    </p>
+                  </article>
+                ))}
+                <a href="/#lucky-stories" className="story-link" style={{ display: 'inline-flex', width: 'fit-content', color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
+                  Share or view Lucky Stories
                 </a>
-              </article>
+              </div>
             ) : (
-              <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>Select a glowing clover marker to preview a community story from that province.</p>
+              <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Stories have been shared from {selectedProvinceInfo.name} yet. Select another province or share a story from the Lucky Stories section.</p>
             )}
           </aside>
         </section>
 
         <section style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
-          <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>Stories by province</p>
+          <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>Province selection</p>
+          <h2 style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Lucky Stories by province</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
-            {storyStats.length ? storyStats.map((province) => (
-              <button key={province.code} type="button" onClick={() => { setSelectedProvince(province.code); setSelectedStoryId(provinceStories(stories, province.code)[0]?.id || ''); }} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(250,204,21,0.3), rgba(16,185,129,0.22))' : 'rgba(255,255,255,0.06)', cursor: 'pointer' }}>
+            {provinceSelections.map((province) => (
+              <button key={province.code} type="button" className="province-select-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(250,204,21,0.3), rgba(16,185,129,0.22))' : 'rgba(255,255,255,0.06)', cursor: 'pointer' }}>
                 <strong style={{ display: 'block', color: '#fde68a' }}>{province.name}</strong>
                 <span>{province.count} {province.count === 1 ? 'story' : 'stories'}</span>
               </button>
-            )) : <p style={{ margin: 0 }}>No province counts are available yet.</p>}
+            ))}
           </div>
         </section>
       </div>
