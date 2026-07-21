@@ -114,8 +114,14 @@ async function ensureLuckyStoriesTable(database) {
       display_name text not null,
       location text,
       story text not null,
-      created_at timestamptz not null default now()
+      created_at timestamptz not null default now(),
+      approved boolean not null default true
     )
+  `;
+
+  await database`
+    alter table lucky_stories
+    add column if not exists approved boolean not null default true
   `;
 }
 
@@ -163,6 +169,7 @@ export async function getLuckyStories() {
     const recentStories = await database`
       select id, display_name, location, story, created_at
       from lucky_stories
+      where approved = true
       order by created_at desc
       limit 2
     `;
@@ -187,6 +194,7 @@ export async function getLuckyStoryMap() {
     const rows = await database`
       select id, display_name, location, story, created_at
       from lucky_stories
+      where approved = true
       order by created_at desc
     `;
 
@@ -205,6 +213,7 @@ export async function getLuckyStoryMap() {
           provinceName: province.name,
           location: entry.location,
           preview: createStoryPreview(entry.story),
+          story: cleanText(entry.story, 1500),
           createdAt: entry.created_at?.toISOString?.() || String(entry.created_at || ''),
         };
       })

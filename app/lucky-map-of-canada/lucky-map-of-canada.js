@@ -84,7 +84,7 @@ export default function LuckyMapOfCanada({ mapData }) {
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <a href="/" className="home-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.55rem 0.8rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.26)', background: 'rgba(1, 4, 3, 0.54)' }}>
-            <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
+            <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada maple clover logo" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
             LuckyPickCanada.ca
           </a>
           <a href="/#lucky-stories" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1.05rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
@@ -98,7 +98,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             Where Luck Has Been Found Across Canada 🍀
           </h1>
           <p style={{ maxWidth: 760, margin: '1rem 0 0', fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.7, color: 'rgba(255, 247, 214, 0.86)' }}>
-            A living map powered by the existing Lucky Community stories. Approved stories with a province in the story location automatically light up the map.
+            A living map powered by the existing Lucky Community stories. Approved stories with a province or territory in the story location automatically light up the map.
           </p>
           {!mapData?.isConfigured ? (
             <p style={{ margin: '1rem 0 0', padding: '0.85rem 1rem', borderRadius: 16, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 800 }}>
@@ -165,7 +165,12 @@ export default function LuckyMapOfCanada({ mapData }) {
                     <button type="button" onClick={() => setSelectedStoryId(story.id)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
-                    <p style={{ lineHeight: 1.65 }}>{story.preview}</p>
+                    <p style={{ lineHeight: 1.65 }}>{selectedStory?.id === story.id ? story.story : story.preview}</p>
+                    {selectedStory?.id !== story.id ? (
+                      <button type="button" onClick={() => setSelectedStoryId(story.id)} style={{ padding: 0, border: 0, background: 'transparent', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textAlign: 'left', textDecoration: 'underline' }}>
+                        View full lucky story
+                      </button>
+                    ) : null}
                     <p style={{ margin: 0, fontWeight: 850 }}>
                       {story.firstName ? `— ${story.firstName}, ` : '— '}{story.provinceName}
                     </p>
