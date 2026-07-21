@@ -19,9 +19,8 @@ const navLinks = [
   { href: '#luck-meter-title', label: 'Free Lucky Meter' },
   { href: '#lucky-pick-checkout', label: '$1 Pick' },
   { href: '#lucky-blackjack-challenge', label: 'Cards' },
-  { href: '#share-your-luck-form', label: '🍀 Share Your Luck' },
   { href: '#little-luck-map', label: 'Lucky Picks by Province' },
-  { href: '/lucky-map-of-canada', label: '🍀 View Lucky Stories' },
+  { href: '/lucky-map-of-canada', label: 'Lucky Stories' },
 ];
 const visitReasons = [
   { icon: '✦', text: 'Fun and interactive luck-themed experiences' },
@@ -348,11 +347,11 @@ export default async function Home({ searchParams }) {
                 Fun personalized lucky numbers, lucky cards, and lucky experiences for entertainment — wrapped in a premium Canadian aurora glow.
               </p>
               <p style={{ fontSize: '1.02rem', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.82)', margin: '0 0 1.15rem' }}>
-                No sign-up required to enjoy the free features. Tap, play, and see where your luck takes you — or unlock your own personalized Lucky Pick for just $1 CAD.
+                No sign-up required to enjoy the free features. Tap, play, and see where your luck takes you — or get your personalized Slow Reveal Pick in the main section below.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
                 <a href="#luck-meter-title" className="aurora-gold-button" style={{ ...checkoutButtonStyle, width: 'auto', minWidth: 220, display: 'inline-flex', justifyContent: 'center', textDecoration: 'none' }}>Try the FREE Lucky Meter</a>
-                <a href="#lucky-pick-checkout" className="premium-secondary-button" style={{ ...premiumPillStyle, minWidth: 250, textDecoration: 'none' }}>Get Your Personalized Lucky Pick – $1 CAD</a>
+                <a href="#lucky-pick-checkout" className="premium-secondary-button" style={{ ...premiumPillStyle, minWidth: 250, textDecoration: 'none' }}>Learn About the Slow Reveal Pick</a>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(185px, 1fr))', gap: '0.7rem', marginTop: '1rem' }}>
                 {adFeatureCards.map((feature) => (
@@ -428,8 +427,9 @@ export default async function Home({ searchParams }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
           <form id="lucky-pick-checkout" action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="lucky_pick" />
-            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Personalized Lucky Pick</h2>
-            <p style={{ lineHeight: 1.5 }}>Unlock your own $1 CAD Lucky Pick with either a 6 Pick or 7 Pick result and no duplicate numbers.</p>
+            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Slow Reveal Pick</h2>
+            <p style={{ lineHeight: 1.5 }}>Get your personalized Slow Reveal Pick for only $1.</p>
+            <p style={{ lineHeight: 1.5 }}>Your Slow Reveal Pick will also help add to the Luck Generated Across Canada map, showing where luck is being created across the country.</p>
             <div style={{ display: 'grid', gap: '0.6rem', margin: '1rem 0' }}>
               <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
                 <input type="radio" name="luckyPickGame" value="6" defaultChecked />
@@ -446,8 +446,8 @@ export default async function Home({ searchParams }) {
               <li>Slow reveal with stars and Aurora</li>
             </ul>
             <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
-            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Get Your Personalized Lucky Pick – $1 CAD</button>
-            <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Little Luck Map.</p>
+            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Get your personalized Slow Reveal Pick for only $1</button>
+            <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Luck Generated Across Canada map.</p>
           </form>
 
           <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
@@ -540,16 +540,8 @@ export default async function Home({ searchParams }) {
             Share your stories of luck and happiness
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Lucky Pick Canada is more than lucky number reveals and gifts. View lucky stories on the community map, or use Share Your Luck when you want to submit your own lucky moment.
+            Lucky Pick Canada is more than lucky number reveals and gifts. View lucky stories on the community map, or submit your own lucky moment here.
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
-            <a href={luckyStoryMapUrl} className="aurora-gold-button" style={{ ...checkoutButtonStyle, display: 'inline-flex', width: 'fit-content', maxWidth: '100%', textDecoration: 'none' }}>
-              🍀 View Lucky Stories
-            </a>
-            <a href="#share-your-luck-form" className="aurora-gold-button" style={{ ...checkoutButtonStyle, display: 'inline-flex', width: 'fit-content', maxWidth: '100%', textDecoration: 'none' }}>
-              🍀 Share Your Luck
-            </a>
-          </div>
 
           {storyShared ? (
             <div style={{ ...successMessageStyle, display: 'grid', gap: '0.75rem', alignItems: 'start' }}>
@@ -581,7 +573,7 @@ export default async function Home({ searchParams }) {
               Website
               <input name="website" type="text" tabIndex={-1} autoComplete="off" />
             </label>
-            <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>🍀 Share Your Luck</button>
+            <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Share Your Lucky Story</button>
           </form>
 
           <div style={{ marginTop: '1.5rem' }}>
@@ -615,7 +607,7 @@ export default async function Home({ searchParams }) {
             Lucky Picks by Province
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Purchase the $1 Lucky Pick, then add your first name and province or territory so this province-based display shows purchase activity across Canada. Lucky Stories live on the Lucky Map of Canada page.
+            Your Slow Reveal Pick can help add to the Luck Generated Across Canada map, showing where luck is being created across the country. After checkout, add your first name and province or territory here. Lucky Stories live on the Lucky Map of Canada page.
           </p>
 
           {shared ? <p style={successMessageStyle}>Thanks for sharing a little luck.</p> : null}
@@ -641,17 +633,9 @@ export default async function Home({ searchParams }) {
               <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Share purchase province</button>
             </form>
           ) : (
-            <form action="/api/checkout" method="POST" style={{ display: 'grid', gap: '0.75rem', marginTop: '1.5rem', maxWidth: 360 }}>
-              <input type="hidden" name="checkoutType" value="lucky_pick" />
-              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-                Pick type
-                <select name="luckyPickGame" defaultValue="6" style={inputStyle}>
-                  <option value="6">6 Pick</option>
-                  <option value="7">7 Pick</option>
-                </select>
-              </label>
-              <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Buy $1 Lucky Pick to add your province</button>
-            </form>
+            <p style={{ lineHeight: 1.6, marginTop: '1.5rem', maxWidth: 520, color: 'rgba(255, 247, 214, 0.82)' }}>
+              Use the main Slow Reveal Pick section above to get your pick. Once checkout is complete, this map will let you add your province.
+            </p>
           )}
 
           <div aria-label="Lucky purchases by province" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>

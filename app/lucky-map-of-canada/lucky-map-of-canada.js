@@ -166,10 +166,7 @@ export default function LuckyMapOfCanada({ mapData }) {
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <a href="/" className="home-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.55rem 0.8rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.26)', background: 'rgba(1, 4, 3, 0.54)' }}>
             <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
-            LuckyPickCanada.ca
-          </a>
-          <a href="/#share-your-luck-form" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1.05rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
-            🍀 Share Your Luck
+            Back to Home Page
           </a>
         </nav>
 
@@ -179,14 +176,11 @@ export default function LuckyMapOfCanada({ mapData }) {
             Where Luck Has Been Found Across Canada 🍀
           </h1>
           <p style={{ maxWidth: 760, margin: '1rem 0 0', fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.7, color: 'rgba(255, 247, 214, 0.86)' }}>
-            The Lucky Story Map is for discovering and sharing community stories. Use Share Your Luck only when you want to submit a new lucky moment.
+            The Lucky Story Map is for discovering and sharing community stories from across Canada.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.35rem' }}>
             <a href="#lucky-story-map" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
               🍀 View Lucky Stories
-            </a>
-            <a href="/#share-your-luck-form" className="story-link" style={{ color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'rgba(1, 4, 3, 0.54)', border: '1px solid rgba(255,235,160,0.32)' }}>
-              🍀 Share Your Luck
             </a>
           </div>
           {!mapData?.isConfigured ? (
@@ -279,12 +273,9 @@ export default function LuckyMapOfCanada({ mapData }) {
                     </p>
                   </article>
                 ))}
-                <a href="/#share-your-luck-form" className="story-link" style={{ display: 'inline-flex', width: 'fit-content', color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.75rem 1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
-                  🍀 Share Your Luck
-                </a>
               </div>
             ) : (
-              <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Stories have been shared from {selectedProvinceInfo.name} yet. Select another province or use Share Your Luck to submit a new story.</p>
+              <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Stories have been shared from {selectedProvinceInfo.name} yet. Select another province to keep exploring the Lucky Story Map.</p>
             )}
           </aside>
         </section>
