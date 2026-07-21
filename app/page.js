@@ -19,9 +19,9 @@ const navLinks = [
   { href: '#luck-meter-title', label: 'Free Lucky Meter' },
   { href: '#lucky-pick-checkout', label: '$1 Pick' },
   { href: '#lucky-blackjack-challenge', label: 'Cards' },
-  { href: '#lucky-stories', label: 'Stories' },
+  { href: '#share-your-luck-form', label: '🍀 Share Your Luck' },
   { href: '#little-luck-map', label: 'Lucky Picks by Province' },
-  { href: '/lucky-map-of-canada', label: 'Lucky Map of Canada 🍀' },
+  { href: '/lucky-map-of-canada', label: '🍀 View Lucky Stories' },
 ];
 const visitReasons = [
   { icon: '✦', text: 'Fun and interactive luck-themed experiences' },
@@ -231,7 +231,7 @@ export default async function Home({ searchParams }) {
     }}>
       <style>{`
         html { scroll-behavior: smooth; }
-        #luck-meter-title, #lucky-pick-checkout, #lucky-blackjack-challenge, #lucky-stories, #little-luck-map { scroll-margin-top: 7rem; }
+        #luck-meter-title, #lucky-pick-checkout, #lucky-blackjack-challenge, #lucky-stories, #share-your-luck-form, #little-luck-map { scroll-margin-top: 7rem; }
         .premium-nav-link { transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
         .premium-ad-title { text-transform: uppercase; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.52)); }
         .ad-feature-card { transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
@@ -540,8 +540,16 @@ export default async function Home({ searchParams }) {
             Share your stories of luck and happiness
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Lucky Pick Canada is more than lucky number reveals and gifts. It’s a place to share where you found luck, what it meant, and how a little happiness showed up in your life.
+            Lucky Pick Canada is more than lucky number reveals and gifts. View lucky stories on the community map, or use Share Your Luck when you want to submit your own lucky moment.
           </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1rem' }}>
+            <a href={luckyStoryMapUrl} className="aurora-gold-button" style={{ ...checkoutButtonStyle, display: 'inline-flex', width: 'fit-content', maxWidth: '100%', textDecoration: 'none' }}>
+              🍀 View Lucky Stories
+            </a>
+            <a href="#share-your-luck-form" className="aurora-gold-button" style={{ ...checkoutButtonStyle, display: 'inline-flex', width: 'fit-content', maxWidth: '100%', textDecoration: 'none' }}>
+              🍀 Share Your Luck
+            </a>
+          </div>
 
           {storyShared ? (
             <div style={{ ...successMessageStyle, display: 'grid', gap: '0.75rem', alignItems: 'start' }}>
@@ -554,7 +562,7 @@ export default async function Home({ searchParams }) {
           {storyError ? <p style={errorMessageStyle}>{storyError}</p> : null}
           {!areStoriesConfigured ? <p style={warningMessageStyle}>Lucky Stories is ready, but the database needs to be available before stories can be saved.</p> : null}
 
-          <form action="/api/lucky-stories" method="POST" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
+          <form id="share-your-luck-form" action="/api/lucky-stories" method="POST" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
               <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
                 Your name
@@ -573,7 +581,7 @@ export default async function Home({ searchParams }) {
               Website
               <input name="website" type="text" tabIndex={-1} autoComplete="off" />
             </label>
-            <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Share your story</button>
+            <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>🍀 Share Your Luck</button>
           </form>
 
           <div style={{ marginTop: '1.5rem' }}>
@@ -596,7 +604,7 @@ export default async function Home({ searchParams }) {
               <p>No lucky stories yet. Be the first to share where luck found you.</p>
             )}
             <a href={luckyStoryMapUrl} className="aurora-gold-button" style={{ ...checkoutButtonStyle, display: 'inline-flex', width: 'fit-content', maxWidth: '100%', marginTop: '1rem', textDecoration: 'none' }}>
-              View All Lucky Stories on the Lucky Story Map 🍀
+              🍀 View Lucky Stories
             </a>
           </div>
         </section>
