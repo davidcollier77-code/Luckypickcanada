@@ -1,4 +1,5 @@
 import { createSubmissionFingerprint } from './form-security';
+import { getTurnstileSiteKey } from './turnstile-config';
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_SUBMISSIONS_PER_WINDOW = 5;
@@ -125,7 +126,7 @@ function checkDuplicateSubmission({ formName, ip, fields }) {
 }
 
 async function verifyTurnstile({ token, ip, formName }) {
-  const siteKey = process.env.TURNSTILE_SITE_KEY || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const siteKey = getTurnstileSiteKey();
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
   if (!siteKey) {
