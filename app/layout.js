@@ -44,6 +44,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://challenges.cloudflare.com" />
+      </head>
       <body style={{ margin: 0 }}>{children}</body>
     </html>
   );

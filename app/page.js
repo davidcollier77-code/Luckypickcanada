@@ -716,8 +716,8 @@ export default async function Home({ searchParams }) {
               Website
               <input name="website" type="text" tabIndex={-1} autoComplete="off" />
             </label>
-            <TurnstileField siteKey={turnstileSiteKey} />
-            <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
+            <TurnstileField siteKey={turnstileSiteKey} submitButtonId="suggestion-submit" />
+            <button id="suggestion-submit" type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
           </form>
         </section>
 
