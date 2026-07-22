@@ -685,10 +685,10 @@ export default async function Home({ searchParams }) {
             Help make Lucky Pick Canada better
           </h2>
           <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Share an idea for a new feature, a smoother checkout, a better gift package, or anything that would make the site more fun to use.
+            Have a suggestion? Share it with us — we’d love to hear from you!
           </p>
 
-          {suggested ? <p style={successMessageStyle}>Thanks for the suggestion. I’ll review it soon.</p> : null}
+          {suggested ? <p style={successMessageStyle}>Thanks! Your suggestion has been received. We appreciate your feedback.</p> : null}
           {suggestionError ? <p style={errorMessageStyle}>{suggestionError}</p> : null}
 
           <form action="/api/suggestions" method="POST" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
