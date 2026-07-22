@@ -56,8 +56,6 @@ Set these Vercel environment variables before using the payment buttons, gift em
 - `GIFT_TEST_SECRET`: optional secret for sending protected test gift emails through `/api/admin/test-gift-email`
 - `SUGGESTIONS_FROM_EMAIL`: optional verified sender email address for suggestion notifications
 - `SUGGESTIONS_TO_EMAIL`: optional destination for suggestion notifications; defaults to `davidcollier77@gmail.com`
-- `STORIES_FROM_EMAIL`: optional verified sender email address for Lucky Story notifications; falls back to `SUGGESTIONS_FROM_EMAIL` or `GIFT_FROM_EMAIL`
-- `STORIES_TO_EMAIL`: optional destination for Lucky Story notifications; falls back to `SUGGESTIONS_TO_EMAIL` and then `davidcollier77@gmail.com`
 - `POSTGRES_URL` or `DATABASE_URL`: database connection string used to save Little Luck Map submissions and suggestions
 - `ADMIN_PASSWORD`: password for `/admin/suggestions`, where saved suggestions can be reviewed
 - `TURNSTILE_SITE_KEY` or `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Cloudflare Turnstile site key shown on public, non-payment forms

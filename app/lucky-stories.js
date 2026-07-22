@@ -1,7 +1,5 @@
 import postgres from 'postgres';
-import { escapeHtml, sanitizePlainText, sanitizeSingleLine, validatePlainTextField } from './form-security';
-
-const DEFAULT_STORIES_TO_EMAIL = 'davidcollier77@gmail.com';
+import { sanitizePlainText, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 let sql;
 
@@ -130,56 +128,6 @@ function validateLuckyStory({ name, location, story }) {
   };
 }
 
-function buildLuckyStoryEmail({ name, location, story }) {
-  return `
-    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#102033;">
-      <h1 style="margin:0 0 16px;color:#0f766e;">New Lucky Pick Canada story</h1>
-      <p><strong>Name:</strong> ${escapeHtml(name)}</p>
-      <p><strong>Location:</strong> ${escapeHtml(location || 'Not provided')}</p>
-      <div style="margin-top:18px;padding:16px;border-radius:14px;background:#f0fdfa;border:1px solid #99f6e4;">
-        ${escapeHtml(story).replaceAll('\n', '<br />')}
-      </div>
-    </div>
-  `;
-}
-
-async function emailLuckyStory(story) {
-  const resendApiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.STORIES_FROM_EMAIL || process.env.SUGGESTIONS_FROM_EMAIL || process.env.GIFT_FROM_EMAIL;
-  const toEmail = process.env.STORIES_TO_EMAIL || process.env.SUGGESTIONS_TO_EMAIL || DEFAULT_STORIES_TO_EMAIL;
-
-  if (!resendApiKey || !fromEmail || !toEmail) {
-    return { ok: false, skipped: true };
-  }
-
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: fromEmail,
-      to: toEmail,
-      subject: 'New Lucky Pick Canada story',
-      html: buildLuckyStoryEmail(story),
-      text: [
-        'New Lucky Pick Canada story',
-        `Name: ${story.name}`,
-        `Location: ${story.location || 'Not provided'}`,
-        '',
-        story.story,
-      ].join('\n'),
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error((await response.text()) || 'Resend email request failed');
-  }
-
-  return { ok: true };
-}
-
 async function ensureLuckyStoriesTable(database) {
   await database`
     create table if not exists lucky_stories (
@@ -224,12 +172,6 @@ export async function createLuckyStory({ name, location, story, website }) {
   } catch (error) {
     console.error('Lucky Stories failed', error);
     return { error: 'Unable to save this lucky story right now.' };
-  }
-
-  try {
-    await emailLuckyStory(validated);
-  } catch (error) {
-    console.error('Lucky Stories email failed', error);
   }
 
   return { ok: true };
