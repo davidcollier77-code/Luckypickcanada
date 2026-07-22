@@ -120,7 +120,7 @@ async function emailSuggestion(suggestion) {
     body: JSON.stringify({
       from: fromEmail,
       to: toEmail,
-      reply_to: suggestion.email || undefined,
+      reply_to: 'hello@luckypickcanada.ca',
       subject: 'New Lucky Pick Canada suggestion',
       html: buildSuggestionEmail(suggestion),
       text: [
