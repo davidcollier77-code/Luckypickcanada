@@ -1,7 +1,7 @@
 import postgres from 'postgres';
 import { escapeHtml, hasHeaderInjection, isValidEmailAddress, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
-const DEFAULT_SUGGESTIONS_TO_EMAIL = 'davidcollier77@gmail.com';
+const DEFAULT_SUGGESTIONS_TO_EMAIL = 'notifications@luckypickcanada.ca';
 
 let sql;
 
@@ -120,7 +120,7 @@ async function emailSuggestion(suggestion) {
     body: JSON.stringify({
       from: fromEmail,
       to: toEmail,
-      reply_to: 'hello@luckypickcanada.ca',
+      reply_to: suggestion.email || 'hello@luckypickcanada.ca',
       subject: 'New Lucky Pick Canada suggestion',
       html: buildSuggestionEmail(suggestion),
       text: [
