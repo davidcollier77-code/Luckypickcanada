@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { getLuckMap, provinces } from './luck-map';
 import LuckMeter from './luck-meter';
 import LuckyBlackjackChallenge from './lucky-blackjack-challenge';
@@ -121,14 +122,17 @@ const logoCardStyle = {
   objectFit: 'contain',
 };
 
-function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8fafc', tagline }) {
+function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8fafc', tagline, priority = false }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
-      <img
+      <Image
         src="/file_00000000e8b8722f909e901d9b84325d.png"
         alt="LuckyPickCanada logo with maple leaf"
         width={size}
         height={size}
+        sizes={`${size}px`}
+        quality={85}
+        priority={priority}
         style={{ ...logoCardStyle, width: size, height: size }}
       />
       <div>
@@ -144,11 +148,13 @@ function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8faf
 function SectionKicker({ children }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
-      <img
+      <Image
         src="/file_00000000e8b8722f909e901d9b84325d.png"
         alt="LuckyPickCanada logo with maple leaf"
-        width="36"
-        height="36"
+        width={36}
+        height={36}
+        sizes="36px"
+        quality={85}
         style={{ ...logoCardStyle, width: 36, height: 36, borderRadius: 10, boxShadow: '0 0 22px rgba(250, 204, 21, 0.24)' }}
       />
       <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, color: '#facc15' }}>
@@ -163,7 +169,7 @@ function StickyNav() {
     <nav aria-label="Primary" style={{ position: 'sticky', top: '0.75rem', zIndex: 20, maxWidth: 1040, margin: '0 auto 1rem', padding: '0.55rem', borderRadius: 999, border: '1px solid rgba(255, 235, 160, 0.25)', background: 'linear-gradient(135deg, rgba(1, 4, 3, 0.72), rgba(4, 44, 40, 0.58))', boxShadow: '0 18px 56px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.08)', backdropFilter: 'blur(18px) saturate(135%)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
         <a href="#top" aria-label="LuckyPickCanada.ca home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, letterSpacing: '-0.02em', padding: '0.35rem 0.55rem' }}>
-          <img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width="34" height="34" style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
+          <Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width={34} height={34} sizes="34px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
           <span>LuckyPickCanada.ca</span>
         </a>
         <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -337,7 +343,7 @@ export default async function Home({ searchParams }) {
           </div>
           <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.25rem, 5vw, 3rem)', alignItems: 'center' }}>
             <div>
-              <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" />
+              <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" priority />
               <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '1rem' }}>
                 {heroStatChips.map((chip) => (
                   <span key={chip} style={{ padding: '0.34rem 0.7rem', borderRadius: 999, background: 'linear-gradient(180deg, rgba(13, 89, 46, 0.92), rgba(8, 54, 35, 0.86))', color: '#fff7d6', border: '1px solid rgba(255,235,160,0.28)', boxShadow: '0 0 20px rgba(16,185,129,0.18)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 950, fontSize: '0.78rem' }}>{chip}</span>
@@ -373,7 +379,7 @@ export default async function Home({ searchParams }) {
               <div style={{ position: 'absolute', top: 70, left: -80, width: 430, height: 120, borderRadius: 999, background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.54), rgba(250,204,21,0.3), transparent)', filter: 'blur(12px)', transform: 'rotate(-14deg)' }} />
               <div style={{ position: 'relative', display: 'grid', gap: '1rem', padding: '0.35rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#facc15', fontWeight: 950 }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}><img src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width="34" height="34" />LuckyPickCanada.ca</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}><Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width={34} height={34} sizes="34px" quality={85} />LuckyPickCanada.ca</span>
                   <span style={{ fontSize: '1.35rem' }}>☰</span>
                 </div>
                 <div style={{ minHeight: 190, borderRadius: 26, border: '1px solid rgba(255,235,160,0.26)', background: 'radial-gradient(circle at 50% 35%, rgba(16,185,129,0.42), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.08), rgba(2,8,23,0.42))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 18px 38px rgba(0,0,0,0.32)', display: 'grid', alignContent: 'end', padding: '1rem' }}>
@@ -731,9 +737,13 @@ export default async function Home({ searchParams }) {
             aria-label="Open the LuckyPick Canada Community Facebook group in a new tab"
             style={{ display: 'block', borderRadius: 28, border: '1px solid rgba(255, 235, 160, 0.42)', overflow: 'hidden', boxShadow: '0 26px 70px rgba(0, 0, 0, 0.42), 0 0 42px rgba(250, 204, 21, 0.18)', background: 'linear-gradient(145deg, rgba(250, 204, 21, 0.12), rgba(16, 185, 129, 0.08))' }}
           >
-            <img
+            <Image
               src="/facebook-community-cover.png"
               alt="LuckyPickCanada Facebook community group"
+              width={1254}
+              height={1254}
+              sizes="(max-width: 1040px) 100vw, 1040px"
+              quality={80}
               style={{ display: 'block', width: '100%', height: 'auto' }}
             />
           </a>
