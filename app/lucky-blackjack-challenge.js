@@ -214,7 +214,7 @@ export default function LuckyBlackjackChallenge() {
   }
 
   return (
-    <section id="lucky-blackjack-challenge" className="lucky-blackjack" aria-labelledby="lucky-blackjack-title">
+    <section id="lucky-blackjack-challenge" className="lucky-blackjack premium-surface" aria-labelledby="lucky-blackjack-title">
       <style>{`
         @keyframes blackjack-card-deal {
           from { opacity: 0; transform: translate3d(-34px, -42px, 0) rotate(-10deg) scale(0.92); }

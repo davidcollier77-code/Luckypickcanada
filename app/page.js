@@ -271,12 +271,12 @@ export default async function Home({ searchParams }) {
     : null;
 
   return (
-    <main id="top" style={{
+    <main id="top" className="lucky-site-shell" style={{
       minHeight: '100vh',
       padding: '1rem 1.5rem 4rem',
       background: 'radial-gradient(ellipse at 50% 115%, rgba(8, 89, 69, 0.38), transparent 44%), radial-gradient(ellipse at 88% 3%, rgba(61, 39, 111, 0.26), transparent 28%), radial-gradient(ellipse at 8% 28%, rgba(0, 148, 122, 0.18), transparent 25%), linear-gradient(180deg, #010409 0%, #020a15 42%, #061a29 72%, #02070d 100%)',
       color: '#fff7d6',
-      fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontFamily: 'var(--lpc-body)',
       overflowX: 'hidden',
       position: 'relative',
     }}>
@@ -494,7 +494,7 @@ export default async function Home({ searchParams }) {
 
         <LuckyBlackjackChallenge />
 
-        <section className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+        <section className="aurora-glass-card premium-section premium-surface" style={{ ...glassCardStyle, marginTop: '2rem' }}>
           <SectionKicker>Why People Visit LuckyPick Canada</SectionKicker>
           <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
             Start your lucky journey
@@ -510,7 +510,7 @@ export default async function Home({ searchParams }) {
         </section>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
-          <form id="lucky-pick-checkout" action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
+          <form id="lucky-pick-checkout" action="/api/checkout" method="POST" className="aurora-glass-card premium-section premium-surface" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="lucky_pick" />
             <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Slow Reveal Pick</h2>
             <p style={{ lineHeight: 1.5 }}>Get your personalized Slow Reveal Pick for only $1.</p>
@@ -535,7 +535,7 @@ export default async function Home({ searchParams }) {
             <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Luck Generated Across Canada map.</p>
           </form>
 
-          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section premium-surface" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="gift_package" />
             <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Gift a lucky pick</h2>
             <p style={{ lineHeight: 1.5 }}>Send the same lucky reveal by email with your personal greeting.</p>
@@ -570,7 +570,7 @@ export default async function Home({ searchParams }) {
             <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Send gift for $4.99</button>
           </form>
 
-          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section premium-surface" style={glassCardStyle}>
             <input type="hidden" name="checkoutType" value="tip" />
             <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Tip jar</h2>
             <label htmlFor="tipAmount" style={{ display: 'block', lineHeight: 1.5, marginBottom: '0.75rem' }}>
@@ -599,7 +599,7 @@ export default async function Home({ searchParams }) {
             const luckyDay = pickOne(luckyDays);
 
             return (
-              <article key={game.name} className="aurora-glass-card" style={glassCardStyle}>
+              <article key={game.name} className="aurora-glass-card premium-surface" style={glassCardStyle}>
                 <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>{game.name}</h2>
                 <p>{game.description}</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>

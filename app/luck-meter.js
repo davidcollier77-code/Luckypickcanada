@@ -63,7 +63,7 @@ export default function LuckMeter() {
 
   return (
     <>
-      <section aria-labelledby="luck-meter-title" style={{ marginTop: '2rem', padding: 'clamp(1.25rem, 3vw, 1.8rem)', borderRadius: 30, background: 'radial-gradient(circle at 12% 18%, rgba(250, 204, 21, 0.3), transparent 24%), radial-gradient(circle at 88% 5%, rgba(16, 185, 129, 0.38), transparent 28%), linear-gradient(145deg, rgba(3, 8, 14, 0.94), rgba(4, 44, 40, 0.84) 54%, rgba(7, 18, 37, 0.9))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.26)', boxShadow: '0 32px 96px rgba(0, 0, 0, 0.52), 0 0 54px rgba(16, 185, 129, 0.2), 0 0 34px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1)', overflow: 'hidden', position: 'relative', backdropFilter: 'blur(18px) saturate(130%)' }}>
+      <section aria-labelledby="luck-meter-title" className="lucky-meter premium-surface" style={{ marginTop: '2rem', padding: 'clamp(1.25rem, 3vw, 1.8rem)', borderRadius: 30, background: 'radial-gradient(circle at 12% 18%, rgba(250, 204, 21, 0.3), transparent 24%), radial-gradient(circle at 88% 5%, rgba(16, 185, 129, 0.38), transparent 28%), linear-gradient(145deg, rgba(3, 8, 14, 0.94), rgba(4, 44, 40, 0.84) 54%, rgba(7, 18, 37, 0.9))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.26)', boxShadow: '0 32px 96px rgba(0, 0, 0, 0.52), 0 0 54px rgba(16, 185, 129, 0.2), 0 0 34px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1)', overflow: 'hidden', position: 'relative', backdropFilter: 'blur(18px) saturate(130%)' }}>
       <style>{`
         @keyframes lucky-meter-glow {
           0%, 100% { box-shadow: 0 0 18px rgba(94, 234, 212, 0.45); }
@@ -81,6 +81,8 @@ export default function LuckMeter() {
           100% { transform: translateX(20%) rotate(-2deg); opacity: 0.44; }
         }
 
+        .luck-meter { font-family: var(--lpc-body); }
+        .luck-meter h2 { font-family: var(--lpc-display); }
         .luck-meter-button { transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease; }
         .luck-meter-button:not(:disabled):hover { transform: translateY(-2px); filter: saturate(1.12); }
       `}</style>
