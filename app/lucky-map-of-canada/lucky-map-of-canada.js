@@ -24,7 +24,7 @@ const pageStyle = {
   minHeight: '100vh',
   padding: '1rem 1.5rem 4rem',
   color: '#fff7d6',
-  fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fontFamily: 'var(--lpc-body)',
   background: 'radial-gradient(circle at 12% 10%, rgba(250, 204, 21, 0.22), transparent 28%), radial-gradient(circle at 82% 8%, rgba(16, 185, 129, 0.28), transparent 31%), radial-gradient(circle at 50% 92%, rgba(185, 28, 28, 0.16), transparent 34%), linear-gradient(135deg, #010403 0%, #020817 35%, #071225 60%, #021a18 100%)',
   overflowX: 'hidden',
   position: 'relative',
@@ -144,9 +144,11 @@ export default function LuckyMapOfCanada({ mapData }) {
   }
 
   return (
-    <main style={pageStyle}>
+    <main className="lucky-map-shell" style={pageStyle}>
       <style>{`
         html { scroll-behavior: smooth; }
+        .lucky-map-shell { font-family: var(--lpc-body); }
+        .lucky-map-shell h1, .lucky-map-shell h2 { font-family: var(--lpc-display); }
         .home-link, .story-link, .province-marker, .province-select-card { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease; }
         .home-link:hover, .home-link:focus-visible, .story-link:hover, .story-link:focus-visible, .province-marker:hover, .province-marker:focus-visible, .province-select-card:hover, .province-select-card:focus-visible { transform: translateY(-2px); outline: none; filter: saturate(1.12); }
         .map-panel::before { content: ''; position: absolute; inset: 8% 6% 10% 4%; border-radius: 52% 48% 42% 58% / 42% 40% 60% 58%; background: radial-gradient(circle at 18% 38%, rgba(34,197,94,0.26), transparent 16%), radial-gradient(circle at 42% 26%, rgba(250,204,21,0.2), transparent 20%), radial-gradient(circle at 69% 42%, rgba(16,185,129,0.22), transparent 22%), radial-gradient(circle at 84% 58%, rgba(250,204,21,0.18), transparent 14%), linear-gradient(145deg, rgba(21,128,61,0.42), rgba(15,118,110,0.22)); border: 1px solid rgba(255,235,160,0.18); filter: drop-shadow(0 0 44px rgba(16,185,129,0.22)); clip-path: polygon(5% 43%, 13% 24%, 25% 18%, 38% 12%, 55% 17%, 70% 13%, 86% 25%, 95% 43%, 87% 59%, 77% 62%, 70% 80%, 58% 74%, 45% 84%, 33% 72%, 20% 77%, 12% 61%); }
@@ -159,6 +161,8 @@ export default function LuckyMapOfCanada({ mapData }) {
         @keyframes marker-pulse { 0%, 100% { transform: scale(0.86); opacity: 0.35; } 50% { transform: scale(1.24); opacity: 0.95; } }
         @keyframes twinkle { 0%, 100% { opacity: 0.35; transform: scale(0.82) rotate(0deg); } 50% { opacity: 1; transform: scale(1.18) rotate(18deg); } }
         @keyframes aurora-drift { from { transform: translate3d(-8%, -2%, 0) rotate(-7deg); opacity: 0.42; } to { transform: translate3d(8%, 3%, 0) rotate(6deg); opacity: 0.76; } }
+        @media (max-width: 860px) { #lucky-story-map { grid-template-columns: 1fr !important; } }
+        @media (max-width: 560px) { .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; } .map-panel { min-height: 470px !important; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; } }
       `}</style>
 
@@ -172,7 +176,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           </a>
         </nav>
 
-        <header style={{ ...cardStyle, padding: 'clamp(1.35rem, 4vw, 3rem)', position: 'relative', overflow: 'hidden' }}>
+        <header className="premium-surface" style={{ ...cardStyle, padding: 'clamp(1.35rem, 4vw, 3rem)', position: 'relative', overflow: 'hidden' }}>
           <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, color: '#facc15', fontWeight: 900 }}>Lucky Map of Canada</p>
           <h1 style={{ maxWidth: 900, margin: '0.45rem 0', fontSize: 'clamp(2.5rem, 8vw, 5.4rem)', lineHeight: 0.95, letterSpacing: '-0.06em', textShadow: '0 0 28px rgba(250,204,21,0.22)' }}>
             Where Luck Has Been Found Across Canada 🍀
@@ -198,7 +202,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             ['Provinces with lucky moments', mapData?.provincesWithStories || 0],
             ['Mapped story markers', stories.length],
           ].map(([label, value]) => (
-            <div key={label} style={{ ...cardStyle, padding: '1rem' }}>
+            <div key={label} className="premium-surface" style={{ ...cardStyle, padding: '1rem' }}>
               <p style={{ margin: 0, color: '#facc15', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1.4, fontSize: '0.78rem' }}>{label}</p>
               <strong style={{ display: 'block', marginTop: '0.35rem', fontSize: 'clamp(2rem, 6vw, 3.2rem)', lineHeight: 1 }}>{value}</strong>
             </div>
@@ -242,7 +246,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             ) : null}
           </div>
 
-          <aside style={{ ...cardStyle, padding: '1.2rem', position: 'relative', overflow: 'hidden' }}>
+          <aside className="premium-surface" style={{ ...cardStyle, padding: '1.2rem', position: 'relative', overflow: 'hidden' }}>
             <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>{selectedProvinceInfo.name}</p>
             <h2 style={{ margin: '0.45rem 0', fontSize: 'clamp(1.85rem, 4vw, 3rem)', lineHeight: 1 }}>
               {selectedStories.length} {selectedStories.length === 1 ? 'lucky story' : 'lucky stories'}
@@ -282,7 +286,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           </aside>
         </section>
 
-        <section style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
+        <section className="premium-surface" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
           <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>Province selection</p>
           <h2 style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Lucky Stories by province</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
