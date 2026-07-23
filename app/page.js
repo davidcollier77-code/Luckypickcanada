@@ -181,6 +181,29 @@ function SectionKicker({ children }) {
   );
 }
 
+function HeroCardTableau() {
+  const cards = [
+    { src: '/lucky-card-clover.svg', alt: 'Clover lucky card', className: 'reference-card reference-card-clover' },
+    { src: '/lucky-card-fortune.svg', alt: 'Canada maple lucky card', className: 'reference-card reference-card-canada' },
+    { src: '/lucky-card-horseshoe.svg', alt: 'Gold horseshoe lucky card', className: 'reference-card reference-card-gold' },
+  ];
+
+  return (
+    <div className="reference-tableau" aria-hidden="true">
+      <div className="reference-tableau-halo" />
+      <div className="reference-logo-medallion">
+        <Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="" width={156} height={156} sizes="156px" quality={85} priority />
+      </div>
+      <div className="reference-card-fan">
+        {cards.map((card) => (
+          <Image key={card.src} src={card.src} alt={card.alt} width={220} height={320} sizes="(max-width: 820px) 28vw, 220px" className={card.className} />
+        ))}
+      </div>
+      <div className="reference-tableau-caption">Maple clover luck<br />made in Canada</div>
+    </div>
+  );
+}
+
 function StickyNav() {
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 20, padding: '0.8rem 0 1rem', background: 'linear-gradient(180deg, rgba(1, 4, 10, 0.82), rgba(1, 4, 10, 0.18), transparent)', backdropFilter: 'blur(10px)' }}>
@@ -364,13 +387,29 @@ export default async function Home({ searchParams }) {
         .premium-section { animation: premium-section-rise 720ms cubic-bezier(.16,.84,.28,1) both; scroll-margin-top: 1.5rem; }
         .premium-section:nth-of-type(2n) { animation-delay: 70ms; }
         .gold-text { background: linear-gradient(180deg, #fffdf0 0%, #ffe88d 20%, #facc15 52%, #9a5f10 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 34px rgba(250, 204, 21, 0.24); }
+        .reference-hero-grid > :first-child { order: 2; }
+        .reference-hero-grid > :nth-child(2) { order: 1; }
+        .reference-tableau { position: relative; justify-self: center; width: min(100%, 510px); min-height: 510px; display: grid; place-items: center; isolation: isolate; }
+        .reference-tableau::before { content: ''; position: absolute; inset: 8% 2%; border: 1px solid rgba(255, 232, 157, 0.38); border-radius: 32px; background: linear-gradient(145deg, rgba(0, 10, 12, 0.26), rgba(8, 67, 52, 0.18)); box-shadow: inset 0 0 0 8px rgba(255, 230, 157, 0.035), 0 28px 64px rgba(0,0,0,0.28); }
+        .reference-tableau-halo { position: absolute; width: 88%; height: 62%; border-radius: 50%; background: radial-gradient(ellipse, rgba(71, 245, 162, 0.38), rgba(54, 219, 216, 0.2) 36%, rgba(175, 91, 255, 0.12) 57%, transparent 74%); filter: blur(14px); animation: aurora-drift 13s ease-in-out infinite alternate; }
+        .reference-logo-medallion { position: absolute; z-index: 3; top: 2%; left: 50%; width: 146px; height: 146px; transform: translateX(-50%); display: grid; place-items: center; border-radius: 50%; border: 3px solid rgba(255, 224, 118, 0.9); background: radial-gradient(circle, #0d3f2b, #07130e); box-shadow: 0 0 0 9px rgba(250, 204, 21, 0.13), 0 0 40px rgba(250,204,21,0.46), inset 0 0 28px rgba(255,255,255,0.18); overflow: hidden; }
+        .reference-logo-medallion img { width: 118px; height: 118px; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.42)); }
+        .reference-card-fan { position: absolute; z-index: 2; inset: 22% 0 4%; display: grid; place-items: center; }
+        .reference-card { position: absolute; width: clamp(122px, 23vw, 198px); height: auto; border-radius: 17px; border: 1px solid rgba(255, 238, 169, 0.72); box-shadow: 0 22px 42px rgba(0,0,0,0.52), 0 0 30px rgba(250,204,21,0.22); transition: transform 300ms ease, filter 300ms ease; }
+        .reference-card-clover { transform: translateX(-76%) rotate(-15deg); }
+        .reference-card-canada { z-index: 2; transform: translateY(5%) rotate(-1deg); }
+        .reference-card-gold { transform: translateX(76%) rotate(15deg); }
+        .reference-tableau:hover .reference-card-clover { transform: translateX(-83%) translateY(-8px) rotate(-19deg); }
+        .reference-tableau:hover .reference-card-canada { transform: translateY(-12px) scale(1.03); }
+        .reference-tableau:hover .reference-card-gold { transform: translateX(83%) translateY(-8px) rotate(19deg); }
+        .reference-tableau-caption { position: absolute; z-index: 4; bottom: 5%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 86%; padding: 0.55rem 0.85rem; border-radius: 999px; border: 1px solid rgba(255, 235, 160, 0.38); color: #fff7d6; text-align: center; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.68rem; font-weight: 950; line-height: 1.35; background: rgba(1, 13, 13, 0.72); backdrop-filter: blur(12px); }
         .premium-phone { transform: rotate(6deg); transition: transform 260ms ease, box-shadow 260ms ease; }
         .premium-phone:hover { transform: rotate(3deg) translateY(-4px); }
         .premium-maple-accent { position: absolute; color: rgba(250,204,21,0.34); font-size: clamp(2rem, 7vw, 4.8rem); line-height: 1; filter: drop-shadow(0 0 20px rgba(250,204,21,0.24)); animation: maple-float 8s ease-in-out infinite; pointer-events: none; }
         .premium-lucky-number { animation: premium-number-glow 3.2s ease-in-out infinite; }
         .premium-hero-shell::after { content: ''; position: absolute; inset: -20% auto -20% -55%; width: 42%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), rgba(250,204,21,0.24), transparent); animation: premium-shimmer-sweep 7.5s ease-in-out infinite; pointer-events: none; }
         .floating-particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fde68a; box-shadow: 0 0 12px rgba(250,204,21,0.95), 0 0 26px rgba(16,185,129,0.45); animation: particle-float-up 6.8s ease-in-out infinite; opacity: 0; }
-        @media (max-width: 820px) { .premium-phone { transform: none; max-width: 340px; margin: 0 auto; } main { padding-left: 1rem !important; padding-right: 1rem !important; } }
+        @media (max-width: 820px) { .reference-hero-grid > :first-child, .reference-hero-grid > :nth-child(2) { order: initial; } .reference-tableau { min-height: 420px; } main { padding-left: 1rem !important; padding-right: 1rem !important; } }
         @media (max-width: 620px) { .premium-nav-link { padding: 0.42rem 0.55rem !important; font-size: 0.78rem !important; } }
       `}</style>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
@@ -393,7 +432,7 @@ export default async function Home({ searchParams }) {
               <span key={left} className="floating-particle" style={{ left: `${left}%`, bottom: `${8 + (index % 3) * 14}%`, animationDelay: `${index * 0.75}s` }} />
             ))}
           </div>
-          <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.25rem, 5vw, 3rem)', alignItems: 'center' }}>
+          <div className="reference-hero-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.25rem, 5vw, 3rem)', alignItems: 'center' }}>
             <div>
               <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" priority />
               <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '1rem' }}>
@@ -426,40 +465,7 @@ export default async function Home({ searchParams }) {
                 ))}
               </div>
             </div>
-            <div className="premium-phone" aria-hidden="true" style={{ justifySelf: 'center', width: 'min(100%, 348px)', minHeight: 540, padding: '1rem', borderRadius: 44, border: '2px solid rgba(255, 235, 160, 0.68)', background: 'linear-gradient(145deg, #05070a 0%, #061611 45%, #0a0f16 100%)', boxShadow: '0 34px 78px rgba(0,0,0,0.62), 0 0 66px rgba(250,204,21,0.34), 0 0 38px rgba(16,185,129,0.18), inset 0 0 0 6px rgba(255,255,255,0.04)', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', inset: 10, borderRadius: 34, background: 'radial-gradient(circle at 52% 28%, rgba(16,185,129,0.42), transparent 24%), linear-gradient(160deg, rgba(1,4,3,0.2), rgba(2,8,23,0.9)), radial-gradient(circle at 80% 88%, rgba(250,204,21,0.2), transparent 22%)' }} />
-              <div style={{ position: 'absolute', top: 70, left: -80, width: 430, height: 120, borderRadius: 999, background: 'linear-gradient(90deg, transparent, rgba(16,185,129,0.54), rgba(250,204,21,0.3), transparent)', filter: 'blur(12px)', transform: 'rotate(-14deg)' }} />
-              <div style={{ position: 'relative', display: 'grid', gap: '1rem', padding: '0.35rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#facc15', fontWeight: 950 }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}><Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width={34} height={34} sizes="34px" quality={85} />LuckyPickCanada.ca</span>
-                  <span style={{ fontSize: '1.35rem' }}>☰</span>
-                </div>
-                <div style={{ minHeight: 190, borderRadius: 26, border: '1px solid rgba(255,235,160,0.26)', background: 'radial-gradient(circle at 50% 35%, rgba(16,185,129,0.42), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.08), rgba(2,8,23,0.42))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 18px 38px rgba(0,0,0,0.32)', display: 'grid', alignContent: 'end', padding: '1rem' }}>
-                  <p className="gold-text" style={{ margin: 0, fontSize: '2rem', lineHeight: 1, fontWeight: 950, textTransform: 'uppercase' }}>Your Lucky Pick</p>
-                  <p style={{ margin: '0.35rem 0 0', color: '#fff7d6', fontWeight: 900 }}>Just for you</p>
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.42rem' }}>
-                  {[7, 14, 23, 31, 36, 42].map((number) => <span key={number} className="premium-lucky-number" style={{ ...luckyNumberStyle, width: 38, height: 38, fontSize: '0.92rem' }}>{String(number).padStart(2, '0')}</span>)}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
-                  <div style={{ padding: '0.75rem', borderRadius: 18, border: '1px solid rgba(255,235,160,0.24)', background: 'rgba(255,255,255,0.07)' }}><strong style={{ color: '#facc15' }}>Lucky Day</strong><br />Friday</div>
-                  <div style={{ padding: '0.75rem', borderRadius: 18, border: '1px solid rgba(255,235,160,0.24)', background: 'rgba(255,255,255,0.07)' }}><strong style={{ color: '#facc15' }}>Lucky Color</strong><br />Emerald</div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', perspective: 900 }}>
-                  {[
-                    { name: 'Clover', symbol: '♣', background: 'radial-gradient(circle at 50% 34%, rgba(250,204,21,0.32), transparent 26%), linear-gradient(150deg, #020a08, #064e3b 50%, #030712)' },
-                    { name: 'Canada', symbol: '✦', background: 'linear-gradient(90deg, #8f1118 0 26%, #fff7ed 26% 74%, #991b1b 74%), radial-gradient(circle at 50% 36%, rgba(250,204,21,0.32), transparent 24%)' },
-                    { name: 'Gold', symbol: '♣', background: 'linear-gradient(115deg, #6b3d07, #facc15 30%, #fff2a8 44%, #b7791f 62%, #ffe88d 84%, #5c3307)' },
-                  ].map((card) => (
-                    <div key={card.name} style={{ minHeight: 108, borderRadius: 18, border: '1px solid rgba(255,247,214,0.68)', background: card.background, display: 'grid', placeItems: 'center', alignContent: 'center', gap: '0.18rem', color: '#fff7d6', fontWeight: 950, fontSize: '0.7rem', letterSpacing: 0.4, textTransform: 'uppercase', textAlign: 'center', boxShadow: '0 16px 28px rgba(0,0,0,0.36), 0 0 24px rgba(250,204,21,0.2), inset 0 1px 0 rgba(255,255,255,0.34), inset 0 -12px 22px rgba(0,0,0,0.24)', transform: 'rotateX(6deg)', position: 'relative', overflow: 'hidden' }}>
-                      <span style={{ position: 'absolute', inset: 6, borderRadius: 13, border: '1px solid rgba(255,247,214,0.34)' }} />
-                      <span style={{ fontSize: '1.7rem', color: '#facc15', textShadow: '0 0 14px rgba(250,204,21,0.78)' }}>{card.symbol}</span>
-                      {card.name}<br />Card
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <HeroCardTableau />
           </div>
         </div>
         <p style={{ maxWidth: 760, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.24)', boxShadow: '0 0 28px rgba(250, 204, 21, 0.12)', backdropFilter: 'blur(12px)' }}>
