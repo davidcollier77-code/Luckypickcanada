@@ -76,13 +76,13 @@ const checkoutButtonStyle = {
 };
 
 const glassCardStyle = {
-  padding: 'clamp(1.25rem, 3vw, 1.75rem)',
-  borderRadius: 28,
-  background: 'linear-gradient(145deg, rgba(5, 13, 24, 0.9), rgba(8, 38, 36, 0.78) 48%, rgba(7, 18, 37, 0.86))',
+  padding: 'clamp(1.25rem, 3vw, 1.85rem)',
+  borderRadius: 24,
+  background: 'linear-gradient(135deg, rgba(3, 12, 20, 0.94), rgba(5, 43, 42, 0.8) 52%, rgba(19, 12, 39, 0.88))',
   color: '#fff7d6',
-  border: '1px solid rgba(255, 235, 160, 0.24)',
-  boxShadow: '0 28px 86px rgba(0, 0, 0, 0.5), 0 0 42px rgba(16, 185, 129, 0.16), 0 0 28px rgba(250, 204, 21, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
-  backdropFilter: 'blur(18px) saturate(130%)',
+  border: '1px solid rgba(255, 218, 112, 0.34)',
+  boxShadow: '0 28px 86px rgba(0, 0, 0, 0.52), 0 0 34px rgba(21, 214, 161, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.13), inset 0 0 0 1px rgba(255, 236, 164, 0.05)',
+  backdropFilter: 'blur(18px) saturate(135%)',
   position: 'relative',
   overflow: 'hidden',
 };
@@ -251,7 +251,7 @@ export default async function Home({ searchParams }) {
     <main id="top" style={{
       minHeight: '100vh',
       padding: '1rem 1.5rem 4rem',
-      background: 'radial-gradient(ellipse at 50% 110%, rgba(8, 65, 53, 0.34), transparent 42%), radial-gradient(ellipse at 84% 4%, rgba(13, 55, 91, 0.24), transparent 28%), linear-gradient(180deg, #01030a 0%, #020817 42%, #061526 72%, #02070d 100%)',
+      background: 'radial-gradient(ellipse at 50% 115%, rgba(8, 89, 69, 0.38), transparent 44%), radial-gradient(ellipse at 88% 3%, rgba(61, 39, 111, 0.26), transparent 28%), radial-gradient(ellipse at 8% 28%, rgba(0, 148, 122, 0.18), transparent 25%), linear-gradient(180deg, #010409 0%, #020a15 42%, #061a29 72%, #02070d 100%)',
       color: '#fff7d6',
       fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       overflowX: 'hidden',
@@ -260,7 +260,13 @@ export default async function Home({ searchParams }) {
       <style>{`
         html { scroll-behavior: smooth; }
         #luck-meter-title, #lucky-pick-checkout, #lucky-blackjack-challenge, #lucky-stories, #share-your-luck-form, #little-luck-map { scroll-margin-top: 7rem; }
-        .premium-nav-link { transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
+        .premium-nav-link { transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease; letter-spacing: 0.01em; }
+        .aurora-ribbon { will-change: transform, opacity; transform-origin: center; }
+        .premium-hero-shell { isolation: isolate; }
+        .premium-hero-shell::before { content: ''; position: absolute; inset: 11px; z-index: 0; border: 1px solid rgba(255, 229, 145, 0.18); border-radius: 29px; pointer-events: none; }
+        .premium-hero-shell > * { z-index: 1; }
+        input, select, textarea { accent-color: #facc15; }
+        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(94, 234, 212, 0.68); outline-offset: 3px; }
         .premium-ad-title { text-transform: uppercase; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.52)); }
         .ad-feature-card { transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
         .ad-feature-card:hover { transform: translateY(-3px); border-color: rgba(255,235,160,0.52) !important; box-shadow: 0 20px 48px rgba(0,0,0,0.36), 0 0 34px rgba(250,204,21,0.16); }
@@ -288,6 +294,11 @@ export default async function Home({ searchParams }) {
         @keyframes aurora-curtain {
           0%, 100% { transform: translate3d(-5%, 0, 0) skewX(-12deg) scaleY(0.92); opacity: 0.32; }
           50% { transform: translate3d(7%, -3%, 0) skewX(8deg) scaleY(1.12); opacity: 0.64; }
+        }
+
+        @keyframes aurora-ribbon-flow {
+          0%, 100% { transform: translate3d(-9%, 2%, 0) rotate(-7deg) scaleX(0.96); opacity: 0.22; }
+          50% { transform: translate3d(8%, -3%, 0) rotate(5deg) scaleX(1.08); opacity: 0.48; }
         }
 
         @keyframes canadian-sky-twinkle {
@@ -363,6 +374,7 @@ export default async function Home({ searchParams }) {
         @media (max-width: 620px) { .premium-nav-link { padding: 0.42rem 0.55rem !important; font-size: 0.78rem !important; } }
       `}</style>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <div className="aurora-ribbon" style={{ position: 'absolute', top: '13%', left: '-24%', width: '150vw', height: '7rem', borderRadius: '50%', background: 'linear-gradient(90deg, transparent 8%, rgba(38, 230, 173, 0.08) 23%, rgba(98, 222, 255, 0.22) 49%, rgba(187, 99, 255, 0.14) 68%, transparent 91%)', filter: 'blur(20px)', animation: 'aurora-ribbon-flow 42s ease-in-out infinite' }} />
         <div style={{ position: 'absolute', inset: 0, opacity: 0.68, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.92) 0 0.7px, transparent 1.3px), radial-gradient(circle, rgba(197,225,255,0.72) 0 1px, transparent 1.7px), radial-gradient(circle, rgba(255,240,191,0.86) 0 1.2px, transparent 2px)', backgroundSize: '83px 89px, 157px 149px, 263px 241px', backgroundPosition: '0 0, 37px 51px, 109px 21px', animation: 'canadian-sky-twinkle 9s ease-in-out infinite' }} />
         <div style={{ position: 'absolute', top: '-7%', left: '-20%', width: '140vw', height: '31rem', borderRadius: '48%', background: 'linear-gradient(98deg, transparent 10%, rgba(37, 224, 152, 0.13) 29%, rgba(71, 225, 255, 0.18) 47%, rgba(180, 95, 255, 0.16) 64%, transparent 86%)', filter: 'blur(32px)', animation: 'aurora-curtain 34s ease-in-out infinite' }} />
         <div style={{ position: 'absolute', top: '67%', left: '-15%', width: '130vw', height: '13rem', borderRadius: '50%', background: 'linear-gradient(90deg, transparent, rgba(47, 167, 132, 0.12), rgba(88, 203, 174, 0.2), rgba(92, 151, 212, 0.12), transparent)', filter: 'blur(28px)', animation: 'aurora-drift 28s ease-in-out infinite alternate' }} />
@@ -371,10 +383,10 @@ export default async function Home({ searchParams }) {
       </div>
       <LuckyRevealPopup reveal={purchasedReveal} />
       <StickyNav />
-      <section style={{ maxWidth: 1040, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
+      <section style={{ maxWidth: 1220, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 22, right: -18 }}>✦</span>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 370, left: -28, animationDelay: '-3s' }}>🍁</span>
-        <div className="premium-hero-shell" style={{ marginBottom: '1rem', padding: 'clamp(1.1rem, 4vw, 2.4rem)', borderRadius: 38, border: '1px solid rgba(255, 235, 160, 0.34)', background: 'radial-gradient(circle at 88% 10%, rgba(250, 204, 21, 0.28), transparent 26%), radial-gradient(circle at 10% 12%, rgba(16, 185, 129, 0.32), transparent 32%), radial-gradient(circle at 50% 100%, rgba(153, 27, 27, 0.18), transparent 30%), linear-gradient(145deg, rgba(1, 4, 3, 0.88), rgba(4, 24, 22, 0.76) 50%, rgba(2, 8, 23, 0.88))', boxShadow: '0 36px 120px rgba(0, 0, 0, 0.6), 0 0 64px rgba(16, 185, 129, 0.2), 0 0 48px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(18px) saturate(140%)', overflow: 'hidden', position: 'relative' }}>
+        <div className="premium-hero-shell" style={{ marginBottom: '1rem', padding: 'clamp(1.1rem, 4vw, 2.65rem)', borderRadius: 38, border: '1px solid rgba(255, 222, 124, 0.42)', background: 'radial-gradient(circle at 88% 10%, rgba(250, 204, 21, 0.28), transparent 26%), radial-gradient(circle at 10% 12%, rgba(16, 185, 129, 0.32), transparent 32%), radial-gradient(circle at 50% 100%, rgba(153, 27, 27, 0.18), transparent 30%), linear-gradient(145deg, rgba(1, 4, 3, 0.88), rgba(4, 24, 22, 0.76) 50%, rgba(2, 8, 23, 0.88))', boxShadow: '0 36px 120px rgba(0, 0, 0, 0.6), 0 0 64px rgba(16, 185, 129, 0.2), 0 0 48px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(18px) saturate(140%)', overflow: 'hidden', position: 'relative' }}>
           <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.13), transparent 18%, transparent 72%, rgba(250,204,21,0.14)), radial-gradient(circle at 72% 76%, rgba(16,185,129,0.2), transparent 28%), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 84px)', pointerEvents: 'none' }} />
           <div aria-hidden="true">
             {[12, 24, 38, 52, 68, 81].map((left, index) => (
