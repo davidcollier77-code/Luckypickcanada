@@ -249,7 +249,7 @@ export default async function Home({ searchParams }) {
     <main id="top" style={{
       minHeight: '100vh',
       padding: '1rem 1.5rem 4rem',
-      background: 'radial-gradient(circle at 14% 8%, rgba(250, 204, 21, 0.22), transparent 26%), radial-gradient(circle at 86% 12%, rgba(16, 185, 129, 0.28), transparent 31%), radial-gradient(circle at 50% 100%, rgba(185, 28, 28, 0.16), transparent 34%), linear-gradient(135deg, #010403 0%, #020817 35%, #071225 60%, #021a18 100%)',
+      background: 'radial-gradient(ellipse at 50% 110%, rgba(8, 65, 53, 0.34), transparent 42%), radial-gradient(ellipse at 84% 4%, rgba(13, 55, 91, 0.24), transparent 28%), linear-gradient(180deg, #01030a 0%, #020817 42%, #061526 72%, #02070d 100%)',
       color: '#fff7d6',
       fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       overflowX: 'hidden',
@@ -281,6 +281,19 @@ export default async function Home({ searchParams }) {
           0% { transform: translate3d(-10%, -4%, 0) rotate(-9deg) scaleX(1); opacity: 0.44; }
           50% { transform: translate3d(7%, 4%, 0) rotate(6deg) scaleX(1.08); opacity: 0.72; }
           100% { transform: translate3d(16%, -2%, 0) rotate(-4deg) scaleX(1.02); opacity: 0.5; }
+        }
+
+        @keyframes canadian-sky-twinkle {
+          0%, 100% { opacity: 0.34; }
+          48% { opacity: 0.72; }
+          54% { opacity: 0.4; }
+        }
+
+        @keyframes shooting-star {
+          0%, 82%, 100% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-22deg) scaleX(0.2); }
+          84% { opacity: 0; }
+          87% { opacity: 0.82; transform: translate3d(-8vw, 11vw, 0) rotate(-22deg) scaleX(1); }
+          90% { opacity: 0; transform: translate3d(-15vw, 20vw, 0) rotate(-22deg) scaleX(0.75); }
         }
 
         @keyframes page-fade-in {
@@ -342,15 +355,10 @@ export default async function Home({ searchParams }) {
         @media (max-width: 820px) { .premium-phone { transform: none; max-width: 340px; margin: 0 auto; } main { padding-left: 1rem !important; padding-right: 1rem !important; } }
       `}</style>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, opacity: 0.42, backgroundImage: 'radial-gradient(circle at 12% 18%, rgba(255,255,255,0.9) 0 1px, transparent 1.6px), radial-gradient(circle at 74% 12%, rgba(250,204,21,0.82) 0 1px, transparent 1.5px), radial-gradient(circle at 54% 62%, rgba(255,255,255,0.54) 0 1px, transparent 1.4px)', backgroundSize: '190px 190px, 260px 260px, 220px 220px' }} />
-        <div style={{ position: 'absolute', top: '2%', left: '-18%', width: '105vw', height: '22rem', borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(20, 184, 166, 0.58), rgba(250, 204, 21, 0.34), rgba(52, 211, 153, 0.42), rgba(16, 185, 129, 0))', filter: 'blur(16px)', animation: 'aurora-drift 14s ease-in-out infinite alternate' }} />
-        <div style={{ position: 'absolute', top: '17%', right: '-22%', width: '88vw', height: '17rem', borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16, 185, 129, 0), rgba(6, 182, 212, 0.34), rgba(52, 211, 153, 0.46), rgba(250, 204, 21, 0.26), rgba(16, 185, 129, 0))', filter: 'blur(20px)', animation: 'aurora-drift 18s ease-in-out -5s infinite alternate-reverse' }} />
-        <div style={{ position: 'absolute', bottom: '-14rem', left: '6%', width: '42rem', height: '42rem', borderRadius: '50%', background: 'radial-gradient(circle, rgba(250, 204, 21, 0.16), transparent 62%)', filter: 'blur(10px)' }} />
-        {[['✦', '9%', '12%', '0s'], ['✧', '82%', '10%', '0.7s'], ['✶', '72%', '32%', '1.3s'], ['✦', '16%', '44%', '1.8s'], ['✧', '90%', '64%', '2.4s'], ['✶', '35%', '76%', '3s']].map(([star, left, top, delay]) => (
-          <span key={`${star}-${left}-${top}`} style={{ position: 'absolute', left, top, color: '#fde68a', textShadow: '0 0 16px rgba(250, 204, 21, 0.9)', animation: `magical-star-twinkle 3.4s ease-in-out ${delay} infinite` }}>
-            {star}
-          </span>
-        ))}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.68, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.92) 0 0.7px, transparent 1.3px), radial-gradient(circle, rgba(197,225,255,0.72) 0 1px, transparent 1.7px), radial-gradient(circle, rgba(255,240,191,0.86) 0 1.2px, transparent 2px)', backgroundSize: '83px 89px, 157px 149px, 263px 241px', backgroundPosition: '0 0, 37px 51px, 109px 21px', animation: 'canadian-sky-twinkle 9s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '67%', left: '-15%', width: '130vw', height: '13rem', borderRadius: '50%', background: 'linear-gradient(90deg, transparent, rgba(47, 167, 132, 0.12), rgba(88, 203, 174, 0.2), rgba(92, 151, 212, 0.12), transparent)', filter: 'blur(28px)', animation: 'aurora-drift 24s ease-in-out infinite alternate' }} />
+        <div style={{ position: 'absolute', bottom: '-20rem', left: '12%', width: '44rem', height: '34rem', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(61, 131, 183, 0.13), transparent 66%)', filter: 'blur(18px)' }} />
+        <span style={{ position: 'absolute', top: '13%', right: '9%', width: '76px', height: '1px', transformOrigin: 'right center', background: 'linear-gradient(90deg, transparent, rgba(236, 247, 255, 0.95))', boxShadow: '0 0 7px rgba(220, 244, 255, 0.8)', animation: 'shooting-star 26s ease-in-out 8s infinite' }} />
       </div>
       <LuckyRevealPopup reveal={purchasedReveal} />
       <StickyNav />
