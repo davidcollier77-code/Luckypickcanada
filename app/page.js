@@ -815,7 +815,7 @@ export default async function Home({ searchParams }) {
             style={{ display: 'block', borderRadius: 28, border: '1px solid rgba(255, 235, 160, 0.42)', overflow: 'hidden', boxShadow: '0 26px 70px rgba(0, 0, 0, 0.42), 0 0 42px rgba(250, 204, 21, 0.18)', background: 'linear-gradient(145deg, rgba(250, 204, 21, 0.12), rgba(16, 185, 129, 0.08))' }}
           >
             <Image
-              src="/facebook-community-cover.png"
+              src="/Screenshot_20260723_190350_Gallery.jpg"
               alt="LuckyPickCanada Facebook community group"
               width={1254}
               height={1254}
