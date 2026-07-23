@@ -183,21 +183,23 @@ function SectionKicker({ children }) {
 
 function StickyNav() {
   return (
-    <nav aria-label="Primary" style={{ position: 'sticky', top: '0.75rem', zIndex: 20, maxWidth: 1040, margin: '0 auto 1rem', padding: '0.55rem', borderRadius: 999, border: '1px solid rgba(255, 235, 160, 0.25)', background: 'linear-gradient(135deg, rgba(1, 4, 3, 0.72), rgba(4, 44, 40, 0.58))', boxShadow: '0 18px 56px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.08)', backdropFilter: 'blur(18px) saturate(135%)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
-        <a href="#top" aria-label="LuckyPickCanada.ca home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, letterSpacing: '-0.02em', padding: '0.35rem 0.55rem' }}>
-          <Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width={34} height={34} sizes="34px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 12px rgba(250,204,21,0.35))' }} />
-          <span>LuckyPickCanada.ca</span>
-        </a>
-        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {navLinks.map((link) => (
-            <a key={link.href} href={link.href} className="premium-nav-link" style={{ color: '#fff7d6', textDecoration: 'none', padding: '0.55rem 0.75rem', borderRadius: 999, fontSize: '0.9rem', fontWeight: 850 }}>
-              {link.label}
-            </a>
-          ))}
+    <header style={{ position: 'sticky', top: 0, zIndex: 20, padding: '0.8rem 0 1rem', background: 'linear-gradient(180deg, rgba(1, 4, 10, 0.82), rgba(1, 4, 10, 0.18), transparent)', backdropFilter: 'blur(10px)' }}>
+      <nav aria-label="Primary" style={{ maxWidth: 1220, margin: '0 auto', padding: '0.5rem clamp(0.55rem, 1.5vw, 1rem)', borderRadius: 22, border: '1px solid rgba(255, 235, 160, 0.22)', background: 'linear-gradient(105deg, rgba(2, 9, 17, 0.88), rgba(4, 38, 43, 0.64) 50%, rgba(34, 17, 56, 0.52))', boxShadow: '0 18px 56px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)', backdropFilter: 'blur(22px) saturate(145%)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
+          <a href="#top" aria-label="LuckyPickCanada.ca home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, letterSpacing: '-0.02em', padding: '0.25rem 0.35rem' }}>
+            <Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 14px rgba(250,204,21,0.42))' }} />
+            <span>LuckyPickCanada.ca</span>
+          </a>
+          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {navLinks.map((link) => (
+              <a key={link.href} href={link.href} className="premium-nav-link" style={{ color: '#fff7d6', textDecoration: 'none', padding: '0.55rem 0.72rem', borderRadius: 999, fontSize: '0.88rem', fontWeight: 850 }}>
+                {link.label}
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
 
@@ -278,9 +280,14 @@ export default async function Home({ searchParams }) {
         }
 
         @keyframes aurora-drift {
-          0% { transform: translate3d(-10%, -4%, 0) rotate(-9deg) scaleX(1); opacity: 0.44; }
-          50% { transform: translate3d(7%, 4%, 0) rotate(6deg) scaleX(1.08); opacity: 0.72; }
-          100% { transform: translate3d(16%, -2%, 0) rotate(-4deg) scaleX(1.02); opacity: 0.5; }
+          0% { transform: translate3d(-12%, -5%, 0) rotate(-9deg) scaleX(1); opacity: 0.34; }
+          50% { transform: translate3d(5%, 3%, 0) rotate(5deg) scaleX(1.1); opacity: 0.68; }
+          100% { transform: translate3d(14%, -3%, 0) rotate(-4deg) scaleX(1.03); opacity: 0.42; }
+        }
+
+        @keyframes aurora-curtain {
+          0%, 100% { transform: translate3d(-5%, 0, 0) skewX(-12deg) scaleY(0.92); opacity: 0.32; }
+          50% { transform: translate3d(7%, -3%, 0) skewX(8deg) scaleY(1.12); opacity: 0.64; }
         }
 
         @keyframes canadian-sky-twinkle {
@@ -353,10 +360,12 @@ export default async function Home({ searchParams }) {
         .premium-hero-shell::after { content: ''; position: absolute; inset: -20% auto -20% -55%; width: 42%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), rgba(250,204,21,0.24), transparent); animation: premium-shimmer-sweep 7.5s ease-in-out infinite; pointer-events: none; }
         .floating-particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fde68a; box-shadow: 0 0 12px rgba(250,204,21,0.95), 0 0 26px rgba(16,185,129,0.45); animation: particle-float-up 6.8s ease-in-out infinite; opacity: 0; }
         @media (max-width: 820px) { .premium-phone { transform: none; max-width: 340px; margin: 0 auto; } main { padding-left: 1rem !important; padding-right: 1rem !important; } }
+        @media (max-width: 620px) { .premium-nav-link { padding: 0.42rem 0.55rem !important; font-size: 0.78rem !important; } }
       `}</style>
       <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, opacity: 0.68, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.92) 0 0.7px, transparent 1.3px), radial-gradient(circle, rgba(197,225,255,0.72) 0 1px, transparent 1.7px), radial-gradient(circle, rgba(255,240,191,0.86) 0 1.2px, transparent 2px)', backgroundSize: '83px 89px, 157px 149px, 263px 241px', backgroundPosition: '0 0, 37px 51px, 109px 21px', animation: 'canadian-sky-twinkle 9s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '67%', left: '-15%', width: '130vw', height: '13rem', borderRadius: '50%', background: 'linear-gradient(90deg, transparent, rgba(47, 167, 132, 0.12), rgba(88, 203, 174, 0.2), rgba(92, 151, 212, 0.12), transparent)', filter: 'blur(28px)', animation: 'aurora-drift 24s ease-in-out infinite alternate' }} />
+        <div style={{ position: 'absolute', top: '-7%', left: '-20%', width: '140vw', height: '31rem', borderRadius: '48%', background: 'linear-gradient(98deg, transparent 10%, rgba(37, 224, 152, 0.13) 29%, rgba(71, 225, 255, 0.18) 47%, rgba(180, 95, 255, 0.16) 64%, transparent 86%)', filter: 'blur(32px)', animation: 'aurora-curtain 34s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '67%', left: '-15%', width: '130vw', height: '13rem', borderRadius: '50%', background: 'linear-gradient(90deg, transparent, rgba(47, 167, 132, 0.12), rgba(88, 203, 174, 0.2), rgba(92, 151, 212, 0.12), transparent)', filter: 'blur(28px)', animation: 'aurora-drift 28s ease-in-out infinite alternate' }} />
         <div style={{ position: 'absolute', bottom: '-20rem', left: '12%', width: '44rem', height: '34rem', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(61, 131, 183, 0.13), transparent 66%)', filter: 'blur(18px)' }} />
         <span style={{ position: 'absolute', top: '13%', right: '9%', width: '76px', height: '1px', transformOrigin: 'right center', background: 'linear-gradient(90deg, transparent, rgba(236, 247, 255, 0.95))', boxShadow: '0 0 7px rgba(220, 244, 255, 0.8)', animation: 'shooting-star 26s ease-in-out 8s infinite' }} />
       </div>
