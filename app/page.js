@@ -143,7 +143,7 @@ function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8faf
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
       <Image
-        src="/file_00000000e8b8722f909e901d9b84325d.png"
+        src="/logo-maple-clover-20260719.svg"
         alt="LuckyPickCanada logo with maple leaf"
         width={size}
         height={size}
@@ -166,7 +166,7 @@ function SectionKicker({ children }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
       <Image
-        src="/file_00000000e8b8722f909e901d9b84325d.png"
+        src="/logo-maple-clover-20260719.svg"
         alt="LuckyPickCanada logo with maple leaf"
         width={36}
         height={36}
@@ -192,7 +192,7 @@ function HeroCardTableau() {
     <div className="reference-tableau" aria-hidden="true">
       <div className="reference-tableau-halo" />
       <div className="reference-logo-medallion">
-        <Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="" width={156} height={156} sizes="156px" quality={85} priority />
+        <Image src="/logo-maple-clover-20260719.svg" alt="" width={156} height={156} sizes="156px" quality={85} priority />
       </div>
       <div className="reference-card-fan">
         {cards.map((card) => (
@@ -210,7 +210,7 @@ function StickyNav() {
       <nav aria-label="Primary" style={{ maxWidth: 1220, margin: '0 auto', padding: '0.5rem clamp(0.55rem, 1.5vw, 1rem)', borderRadius: 22, border: '1px solid rgba(255, 235, 160, 0.22)', background: 'linear-gradient(105deg, rgba(2, 9, 17, 0.88), rgba(4, 38, 43, 0.64) 50%, rgba(34, 17, 56, 0.52))', boxShadow: '0 18px 56px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)', backdropFilter: 'blur(22px) saturate(145%)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
           <a href="#top" aria-label="LuckyPickCanada.ca home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, letterSpacing: '-0.02em', padding: '0.25rem 0.35rem' }}>
-            <Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 14px rgba(250,204,21,0.42))' }} />
+            <Image src="/logo-maple-clover-20260719.svg" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 14px rgba(250,204,21,0.42))' }} />
             <span>LuckyPickCanada.ca</span>
           </a>
           <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -274,7 +274,7 @@ export default async function Home({ searchParams }) {
     <main id="top" className="lucky-site-shell" style={{
       minHeight: '100vh',
       padding: '1rem 1.5rem 4rem',
-      background: 'radial-gradient(ellipse at 50% 115%, rgba(8, 89, 69, 0.38), transparent 44%), radial-gradient(ellipse at 88% 3%, rgba(61, 39, 111, 0.26), transparent 28%), radial-gradient(ellipse at 8% 28%, rgba(0, 148, 122, 0.18), transparent 25%), linear-gradient(180deg, #010409 0%, #020a15 42%, #061a29 72%, #02070d 100%)',
+      background: 'radial-gradient(ellipse at 50% 108%, rgba(8, 92, 64, 0.46), transparent 42%), radial-gradient(ellipse at 86% 4%, rgba(96, 51, 146, 0.32), transparent 30%), radial-gradient(ellipse at 10% 25%, rgba(0, 162, 122, 0.22), transparent 28%), linear-gradient(180deg, #02070c 0%, #061319 47%, #031117 74%, #02070c 100%)',
       color: '#fff7d6',
       fontFamily: 'var(--lpc-body)',
       overflowX: 'hidden',
@@ -434,14 +434,15 @@ export default async function Home({ searchParams }) {
           </div>
           <div className="reference-hero-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.25rem, 5vw, 3rem)', alignItems: 'center' }}>
             <div>
-              <BrandLogo size={128} textColor="#facc15" tagline="Maple clover luck, made in Canada" priority />
+              <BrandLogo size={112} textColor="#facc15" tagline="Maple clover luck, made in Canada" priority />
               <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '1rem' }}>
                 {heroStatChips.map((chip) => (
                   <span key={chip} style={{ padding: '0.34rem 0.7rem', borderRadius: 999, background: 'linear-gradient(180deg, rgba(13, 89, 46, 0.92), rgba(8, 54, 35, 0.86))', color: '#fff7d6', border: '1px solid rgba(255,235,160,0.28)', boxShadow: '0 0 20px rgba(16,185,129,0.18)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 950, fontSize: '0.78rem' }}>{chip}</span>
                 ))}
               </div>
-              <h1 className="gold-text premium-ad-title" style={{ fontSize: 'clamp(3.15rem, 10vw, 6.7rem)', lineHeight: 0.84, margin: '0.7rem 0 0.85rem', letterSpacing: '-0.07em', maxWidth: 900 }}>
-                Your Luck, Personalized!
+              <h1 className="gold-text premium-ad-title" style={{ fontSize: 'clamp(3rem, 8.2vw, 6.15rem)', lineHeight: 0.84, margin: '0.7rem 0 0.85rem', letterSpacing: '-0.07em', maxWidth: 900 }}>
+                Your Luck,
+                Personalized.
               </h1>
               <p style={{ fontSize: 'clamp(1.08rem, 2.4vw, 1.35rem)', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.9)', marginBottom: '1rem' }}>
                 Fun personalized lucky numbers, lucky cards, and lucky experiences for entertainment — wrapped in a premium Canadian aurora glow.
