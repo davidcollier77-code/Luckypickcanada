@@ -1,3 +1,5 @@
+import './globals.css';
+
 export const metadata = {
   metadataBase: new URL('https://luckypickcanada.ca'),
   title: 'LuckyPickCanada | Stories, Lucky Meter & Picks',
