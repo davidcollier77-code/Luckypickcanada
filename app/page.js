@@ -41,6 +41,23 @@ const adFeatureCards = [
 ];
 
 const heroStatChips = ['Fun', 'Personal', 'Just for You'];
+const luckyQuotes = [
+  'A little luck can brighten your day, but a positive spirit can change your journey.',
+  'Every new day brings a new chance for something lucky to happen.',
+  'Believe in good possibilities, and you may discover a little extra luck along the way.',
+  'Luck often finds those who stay hopeful, curious, and open to new moments.',
+  'Sometimes the smallest spark of luck creates the biggest smile.',
+  'Today could be the day something wonderful surprises you.',
+  'A lucky moment begins with a positive thought and a little imagination.',
+  'Carry a little hope, share a little kindness, and invite a little luck into your day.',
+  'Good energy, positive thoughts, and a little luck can make any day brighter.',
+  'Keep believing in possibilities — your next lucky moment could be closer than you think.',
+];
+
+function getLuckyQuoteOfTheDay(date = new Date()) {
+  const dayNumber = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 86_400_000);
+  return luckyQuotes[dayNumber % luckyQuotes.length];
+}
 
 const checkoutButtonStyle = {
   width: '100%',
@@ -216,6 +233,7 @@ export default async function Home({ searchParams }) {
   const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
   const turnstileSiteKey = getTurnstileSiteKey();
   const selectedGame = params?.pick === '7' ? games[1] : games[0];
+  const luckyQuoteOfTheDay = getLuckyQuoteOfTheDay();
   const purchasedReveal = canShareOnMap
     ? {
         game: {
@@ -268,6 +286,11 @@ export default async function Home({ searchParams }) {
         @keyframes page-fade-in {
           from { opacity: 0; transform: translateY(14px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes lucky-quote-shimmer {
+          0%, 100% { opacity: 0.42; transform: translateX(-8%) rotate(-8deg); }
+          50% { opacity: 0.82; transform: translateX(12%) rotate(-8deg); }
         }
 
         @keyframes premium-section-rise {
@@ -413,6 +436,24 @@ export default async function Home({ searchParams }) {
         <p style={{ maxWidth: 760, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.24)', boxShadow: '0 0 28px rgba(250, 204, 21, 0.12)', backdropFilter: 'blur(12px)' }}>
           Entertainment purposes only: Lucky Picks, Lucky Cards, Lucky Colours, and all other features are randomly generated for fun and enjoyment. Purchasing a personalized Lucky Pick does not increase the chances of winning any lottery, contest, or game of chance.
         </p>
+
+        <section aria-labelledby="lucky-quote-title" style={{
+          ...glassCardStyle,
+          marginTop: '1.25rem',
+          padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+          background: 'linear-gradient(135deg, rgba(7, 29, 24, 0.96), rgba(18, 59, 43, 0.82) 50%, rgba(76, 49, 9, 0.78))',
+          border: '1px solid rgba(250, 204, 21, 0.48)',
+          boxShadow: '0 20px 54px rgba(0, 0, 0, 0.34), 0 0 34px rgba(250, 204, 21, 0.15), inset 0 1px 0 rgba(255, 248, 200, 0.2)',
+        }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: '-40% -10%', background: 'linear-gradient(90deg, transparent 30%, rgba(255, 244, 174, 0.16) 50%, transparent 70%)', animation: 'lucky-quote-shimmer 7s ease-in-out infinite', pointerEvents: 'none' }} />
+          <div style={{ position: 'relative', display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
+            <span aria-hidden="true" style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', color: '#073326', background: 'radial-gradient(circle at 32% 24%, #fffbd8, #facc15 48%, #b7791f 100%)', boxShadow: '0 0 22px rgba(250, 204, 21, 0.45)', fontSize: '1.25rem' }}>☘</span>
+            <div>
+              <h2 id="lucky-quote-title" style={{ margin: '0 0 0.35rem', color: '#fde68a', fontSize: 'clamp(1rem, 2.6vw, 1.2rem)', letterSpacing: '0.01em' }}>Lucky Quote of the Day 🍀</h2>
+              <p style={{ margin: 0, maxWidth: 850, color: '#fff9e6', fontSize: 'clamp(1rem, 2.5vw, 1.12rem)', fontWeight: 750, lineHeight: 1.55, textShadow: '0 1px 12px rgba(0, 0, 0, 0.32)' }}>“{luckyQuoteOfTheDay}”</p>
+            </div>
+          </div>
+        </section>
 
         <LuckMeter />
 
