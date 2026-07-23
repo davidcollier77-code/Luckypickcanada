@@ -143,7 +143,7 @@ function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8faf
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
       <Image
-        src="/file_00000000e8b8722f909e901d9b84325d.png"
+        src="/logo-maple-clover-20260719.svg"
         alt="LuckyPickCanada logo with maple leaf"
         width={size}
         height={size}
@@ -166,7 +166,7 @@ function SectionKicker({ children }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
       <Image
-        src="/file_00000000e8b8722f909e901d9b84325d.png"
+        src="/logo-maple-clover-20260719.svg"
         alt="LuckyPickCanada logo with maple leaf"
         width={36}
         height={36}
@@ -192,7 +192,7 @@ function HeroCardTableau() {
     <div className="reference-tableau" aria-hidden="true">
       <div className="reference-tableau-halo" />
       <div className="reference-logo-medallion">
-        <Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="" width={156} height={156} sizes="156px" quality={85} priority />
+        <Image src="/logo-maple-clover-20260719.svg" alt="" width={156} height={156} sizes="156px" quality={85} priority />
       </div>
       <div className="reference-card-fan">
         {cards.map((card) => (
@@ -210,7 +210,7 @@ function StickyNav() {
       <nav aria-label="Primary" style={{ maxWidth: 1220, margin: '0 auto', padding: '0.5rem clamp(0.55rem, 1.5vw, 1rem)', borderRadius: 22, border: '1px solid rgba(255, 235, 160, 0.22)', background: 'linear-gradient(105deg, rgba(2, 9, 17, 0.88), rgba(4, 38, 43, 0.64) 50%, rgba(34, 17, 56, 0.52))', boxShadow: '0 18px 56px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)', backdropFilter: 'blur(22px) saturate(145%)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
           <a href="#top" aria-label="LuckyPickCanada.ca home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, letterSpacing: '-0.02em', padding: '0.25rem 0.35rem' }}>
-            <Image src="/file_00000000e8b8722f909e901d9b84325d.png" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 14px rgba(250,204,21,0.42))' }} />
+            <Image src="/logo-maple-clover-20260719.svg" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 14px rgba(250,204,21,0.42))' }} />
             <span>LuckyPickCanada.ca</span>
           </a>
           <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
