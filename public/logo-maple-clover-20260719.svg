@@ -30,8 +30,6 @@
     </filter>
   </defs>
 
-  <rect width="1024" height="1024" fill="#ffffff"/>
-
   <g filter="url(#shadow)">
     <path id="maple-leaf" fill="url(#leafGlow)" stroke="#720006" stroke-width="9" stroke-linejoin="round" d="M512 25 570 212 636 139 654 301 812 193 769 375 980 330 823 493 942 598 756 629 807 800 610 694 512 1000 414 694 217 800 268 629 82 598 201 493 44 330 255 375 212 193 370 301 388 139 454 212 512 25Z"/>
     <use href="#maple-leaf" fill="url(#leafDark)" opacity="0.88"/>
