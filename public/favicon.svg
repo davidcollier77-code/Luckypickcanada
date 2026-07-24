@@ -1,4 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1280" role="img" aria-labelledby="title desc">
+  <title id="title">Lucky Pick Canada official maple clover seal</title>
+  <desc id="desc">A red Canadian maple leaf and green four-leaf clover inside a metallic gold seal.</desc>
+  <defs>
+    <radialGradient id="seal" cx="35%" cy="26%" r="75%"><stop offset="0" stop-color="#fff6ba"/><stop offset=".22" stop-color="#eec35d"/><stop offset=".57" stop-color="#9b6516"/><stop offset=".78" stop-color="#ffe69a"/><stop offset="1" stop-color="#6d3c08"/></radialGradient>
+    <radialGradient id="well"><stop stop-color="#14382b"/><stop offset=".58" stop-color="#071811"/><stop offset="1" stop-color="#020705"/></radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#edbf4c" flood-opacity=".52"/></filter>
+  </defs>
+  <circle cx="640" cy="640" r="592" fill="#030705" stroke="url(#seal)" stroke-width="44" filter="url(#glow)"/>
+  <circle cx="640" cy="640" r="534" fill="url(#well)" stroke="#f6d774" stroke-opacity=".72" stroke-width="9"/>
+  <circle cx="640" cy="640" r="500" fill="none" stroke="#fff0a0" stroke-opacity=".24" stroke-width="5" stroke-dasharray="14 16"/>
+  <svg x="238" y="238" width="804" height="804" viewBox="0 0 1024 1024">
   <title id="title">Lucky Pick Canada maple leaf and four-leaf clover logo</title>
   <desc id="desc">A bright red Canadian maple leaf with a green four-leaf clover centered in front.</desc>
   <defs>
@@ -30,8 +41,6 @@
     </filter>
   </defs>
 
-  <rect width="1024" height="1024" fill="#ffffff"/>
-
   <g filter="url(#shadow)">
     <path id="maple-leaf" fill="url(#leafGlow)" stroke="#720006" stroke-width="9" stroke-linejoin="round" d="M512 25 570 212 636 139 654 301 812 193 769 375 980 330 823 493 942 598 756 629 807 800 610 694 512 1000 414 694 217 800 268 629 82 598 201 493 44 330 255 375 212 193 370 301 388 139 454 212 512 25Z"/>
     <use href="#maple-leaf" fill="url(#leafDark)" opacity="0.88"/>
@@ -56,4 +65,5 @@
       <path d="M512 520c-28 3-56 5-87 0M512 520c29 3 58 5 89 0M512 520c-2 38-1 72 5 106" stroke="#075c11" stroke-width="5" opacity="0.22"/>
     </g>
   </g>
+  </svg>
 </svg>
