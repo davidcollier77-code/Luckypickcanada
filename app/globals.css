@@ -254,6 +254,38 @@ body {
   transform-origin: center;
 }
 .lucky-meter-artwork.is-spinning .lucky-meter-reference-art { animation: lucky-meter-artwork-reveal 1.8s ease-out infinite; }
+.lucky-meter-dial-crop {
+  position: absolute;
+  z-index: 2;
+  width: 19%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-image: url('/1784862459046.png');
+  background-size: 526% auto;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  opacity: 0;
+}
+.lucky-meter-dial-left { left: 19%; top: 32%; background-position: 24% 32%; }
+.lucky-meter-dial-right { right: 19%; top: 32%; background-position: 76% 32%; }
+.lucky-meter-artwork.is-spinning .lucky-meter-dial-crop { opacity: 1; animation: lucky-meter-dial-spin .46s linear infinite; }
+.lucky-meter-image-start {
+  position: absolute;
+  z-index: 4;
+  left: 29%;
+  top: 70%;
+  width: 42%;
+  height: 8.5%;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+.lucky-meter-image-start:not(:disabled):active { transform: translateY(2px) scale(.985); }
+.lucky-meter-image-start:focus-visible { outline: 3px solid rgba(255, 244, 177, .92); outline-offset: 4px; }
+.lucky-meter-image-start:disabled { cursor: default; }
+.lucky-meter-artwork.is-spinning .lucky-meter-image-start { animation: lucky-meter-button-press .4s ease-out; }
 .lucky-meter-artwork-sparkle {
   position: absolute;
   inset: 6% 4%;
