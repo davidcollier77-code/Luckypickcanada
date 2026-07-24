@@ -183,23 +183,26 @@ function SectionKicker({ children }) {
 
 function HeroCardTableau() {
   const cards = [
-    { src: '/lucky-card-clover.svg', alt: 'Clover lucky card', className: 'reference-card reference-card-clover' },
-    { src: '/lucky-card-fortune.svg', alt: 'Canada maple lucky card', className: 'reference-card reference-card-canada' },
-    { src: '/lucky-card-horseshoe.svg', alt: 'Gold horseshoe lucky card', className: 'reference-card reference-card-gold' },
+    { src: '/lucky-card-ace-spades.svg', alt: 'Ace of spades lucky card', className: 'cinematic-card cinematic-card-one' },
+    { src: '/lucky-card-clover.svg', alt: 'Clover lucky card', className: 'cinematic-card cinematic-card-two' },
+    { src: '/lucky-card-joker.svg', alt: 'Joker lucky card', className: 'cinematic-card cinematic-card-three' },
+    { src: '/lucky-card-horseshoe.svg', alt: 'Horseshoe lucky card', className: 'cinematic-card cinematic-card-four' },
+    { src: '/lucky-card-fortune.svg', alt: 'Fortune lucky card', className: 'cinematic-card cinematic-card-five' },
   ];
 
   return (
-    <div className="reference-tableau" aria-hidden="true">
-      <div className="reference-tableau-halo" />
-      <div className="reference-logo-medallion">
-        <Image src="/logo-official.svg" alt="" width={156} height={156} sizes="156px" quality={85} priority />
+    <div className="cinematic-tableau" aria-label="A collection of premium Lucky Cards">
+      <div className="cinematic-orbit cinematic-orbit-one" aria-hidden="true" />
+      <div className="cinematic-orbit cinematic-orbit-two" aria-hidden="true" />
+      <div className="cinematic-crest" aria-hidden="true">
+        <Image src="/logo-official.svg" alt="" width={180} height={180} sizes="180px" quality={90} priority />
       </div>
-      <div className="reference-card-fan">
+      <div className="cinematic-card-fan">
         {cards.map((card) => (
-          <Image key={card.src} src={card.src} alt={card.alt} width={220} height={320} sizes="(max-width: 820px) 28vw, 220px" className={card.className} />
+          <Image key={card.src} src={card.src} alt={card.alt} width={220} height={320} sizes="(max-width: 820px) 29vw, 220px" className={card.className} />
         ))}
       </div>
-      <div className="reference-tableau-caption">Maple clover luck<br />made in Canada</div>
+      <p className="cinematic-tableau-caption">Premium Lucky Cards <span>✦</span> reveal a little extra magic</p>
     </div>
   );
 }
@@ -274,7 +277,7 @@ export default async function Home({ searchParams }) {
     <main id="top" className="lucky-site-shell" style={{
       minHeight: '100vh',
       padding: '1rem 1.5rem 4rem',
-      background: 'radial-gradient(ellipse at 50% 108%, rgba(8, 92, 64, 0.46), transparent 42%), radial-gradient(ellipse at 86% 4%, rgba(96, 51, 146, 0.32), transparent 30%), radial-gradient(ellipse at 10% 25%, rgba(0, 162, 122, 0.22), transparent 28%), linear-gradient(180deg, #02070c 0%, #061319 47%, #031117 74%, #02070c 100%)',
+      background: 'radial-gradient(ellipse at 50% 108%, rgba(121, 57, 4, 0.34), transparent 42%), radial-gradient(ellipse at 86% 4%, rgba(101, 52, 14, 0.24), transparent 30%), radial-gradient(ellipse at 10% 25%, rgba(218, 150, 25, 0.13), transparent 28%), linear-gradient(180deg, #020203 0%, #080705 47%, #100904 74%, #020203 100%)',
       color: '#fff7d6',
       fontFamily: 'var(--lpc-body)',
       overflowX: 'hidden',
@@ -425,45 +428,27 @@ export default async function Home({ searchParams }) {
       <section style={{ maxWidth: 1220, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 22, right: -18 }}>✦</span>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 370, left: -28, animationDelay: '-3s' }}>🍁</span>
-        <div className="premium-hero-shell" style={{ marginBottom: '1rem', padding: 'clamp(1.1rem, 4vw, 2.65rem)', borderRadius: 38, border: '1px solid rgba(255, 222, 124, 0.42)', background: 'radial-gradient(circle at 88% 10%, rgba(250, 204, 21, 0.28), transparent 26%), radial-gradient(circle at 10% 12%, rgba(16, 185, 129, 0.32), transparent 32%), radial-gradient(circle at 50% 100%, rgba(153, 27, 27, 0.18), transparent 30%), linear-gradient(145deg, rgba(1, 4, 3, 0.88), rgba(4, 24, 22, 0.76) 50%, rgba(2, 8, 23, 0.88))', boxShadow: '0 36px 120px rgba(0, 0, 0, 0.6), 0 0 64px rgba(16, 185, 129, 0.2), 0 0 48px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(18px) saturate(140%)', overflow: 'hidden', position: 'relative' }}>
+        <div className="premium-hero-shell" style={{ marginBottom: '1rem', padding: 'clamp(1.1rem, 4vw, 2.65rem)', borderRadius: 38, border: '1px solid rgba(255, 222, 124, 0.42)', background: 'radial-gradient(circle at 88% 10%, rgba(250, 204, 21, 0.32), transparent 26%), radial-gradient(circle at 10% 12%, rgba(190, 114, 14, 0.2), transparent 32%), radial-gradient(circle at 50% 100%, rgba(153, 27, 27, 0.2), transparent 30%), linear-gradient(145deg, rgba(4, 3, 2, 0.94), rgba(20, 12, 4, 0.84) 50%, rgba(7, 5, 4, 0.92))', boxShadow: '0 36px 120px rgba(0, 0, 0, 0.6), 0 0 64px rgba(16, 185, 129, 0.2), 0 0 48px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(18px) saturate(140%)', overflow: 'hidden', position: 'relative' }}>
           <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.13), transparent 18%, transparent 72%, rgba(250,204,21,0.14)), radial-gradient(circle at 72% 76%, rgba(16,185,129,0.2), transparent 28%), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 84px)', pointerEvents: 'none' }} />
           <div aria-hidden="true">
             {[12, 24, 38, 52, 68, 81].map((left, index) => (
               <span key={left} className="floating-particle" style={{ left: `${left}%`, bottom: `${8 + (index % 3) * 14}%`, animationDelay: `${index * 0.75}s` }} />
             ))}
           </div>
-          <div className="reference-hero-grid" style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'clamp(1.25rem, 5vw, 3rem)', alignItems: 'center' }}>
-            <div>
-              <BrandLogo size={112} textColor="#facc15" tagline="Maple clover luck, made in Canada" priority />
-              <div style={{ display: 'inline-flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-                {heroStatChips.map((chip) => (
-                  <span key={chip} style={{ padding: '0.34rem 0.7rem', borderRadius: 999, background: 'linear-gradient(180deg, rgba(13, 89, 46, 0.92), rgba(8, 54, 35, 0.86))', color: '#fff7d6', border: '1px solid rgba(255,235,160,0.28)', boxShadow: '0 0 20px rgba(16,185,129,0.18)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 950, fontSize: '0.78rem' }}>{chip}</span>
-                ))}
+          <div className="cinematic-hero-grid">
+            <div className="cinematic-hero-copy">
+              <p className="cinematic-eyebrow"><span>✦</span> A little extra luck, made in Canada <span>🍁</span></p>
+              <h1 className="cinematic-title">LuckyPickCanada<span>.ca</span></h1>
+              <p className="cinematic-tagline">Step into a magical lucky world.</p>
+              <p className="cinematic-intro">Discover personalized lucky numbers, enchanting card reveals, and feel-good moments created purely for fun and entertainment.</p>
+              <div className="cinematic-actions">
+                <a href="#luck-meter-title" className="cinematic-primary-button">Get Your Lucky Pick <span>✦</span></a>
+                <a href="#lucky-blackjack-challenge" className="cinematic-secondary-button">Explore Lucky Cards</a>
               </div>
-              <h1 className="gold-text premium-ad-title" style={{ fontSize: 'clamp(3rem, 8.2vw, 6.15rem)', lineHeight: 0.84, margin: '0.7rem 0 0.85rem', letterSpacing: '-0.07em', maxWidth: 900 }}>
-                Your Luck,
-                Personalized.
-              </h1>
-              <p style={{ fontSize: 'clamp(1.08rem, 2.4vw, 1.35rem)', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.9)', marginBottom: '1rem' }}>
-                Fun personalized lucky numbers, lucky cards, and lucky experiences for entertainment — wrapped in a premium Canadian aurora glow.
-              </p>
-              <p style={{ fontSize: '1.02rem', maxWidth: 720, lineHeight: 1.65, color: 'rgba(255, 247, 214, 0.82)', margin: '0 0 1.15rem' }}>
-                No sign-up required to enjoy the free features. Tap, play, and see where your luck takes you — or get your personalized Slow Reveal Pick in the main section below.
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-                <a href="#luck-meter-title" className="aurora-gold-button" style={{ ...checkoutButtonStyle, width: 'auto', minWidth: 220, display: 'inline-flex', justifyContent: 'center', textDecoration: 'none' }}>Try the FREE Lucky Meter</a>
-                <a href="#lucky-pick-checkout" className="premium-secondary-button" style={{ ...premiumPillStyle, minWidth: 250, textDecoration: 'none' }}>Learn About the Slow Reveal Pick</a>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(185px, 1fr))', gap: '0.7rem', marginTop: '1rem' }}>
-                {adFeatureCards.map((feature) => (
-                  <div key={feature.title} className="ad-feature-card" style={{ padding: '0.85rem', borderRadius: 20, border: '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.08), rgba(16,185,129,0.08), rgba(250,204,21,0.06))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)' }}>
-                    <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', marginBottom: '0.35rem' }}>
-                      <span aria-hidden="true" style={{ display: 'grid', placeItems: 'center', width: 34, height: 34, borderRadius: 10, color: '#06110d', background: 'radial-gradient(circle at 32% 24%, #fff8c8, #facc15 50%, #9a5f10 100%)', boxShadow: '0 0 18px rgba(250,204,21,0.38)' }}>{feature.icon}</span>
-                      <strong style={{ color: '#facc15', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.1 }}>{feature.title}</strong>
-                    </div>
-                    <p style={{ margin: 0, color: 'rgba(255,247,214,0.8)', lineHeight: 1.4, fontSize: '0.94rem' }}>{feature.copy}</p>
-                  </div>
-                ))}
+              <div className="cinematic-trust-row" aria-label="LuckyPickCanada benefits">
+                <span>Fun &amp; entertaining</span><i />
+                <span>Lucky day included</span><i />
+                <span>Made for sharing</span>
               </div>
             </div>
             <HeroCardTableau />
