@@ -143,7 +143,7 @@ function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8faf
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
       <Image
-        src="/logo-official.svg"
+        src="/1784889264858.png"
         alt="LuckyPickCanada logo with maple leaf"
         width={size}
         height={size}
@@ -166,7 +166,7 @@ function SectionKicker({ children }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
       <Image
-        src="/logo-official.svg"
+        src="/1784889264858.png"
         alt="LuckyPickCanada logo with maple leaf"
         width={36}
         height={36}
@@ -211,7 +211,7 @@ function StickyNav() {
       <nav aria-label="Primary" className="reference-site-nav">
         <div className="reference-nav-row">
           <a href="#top" aria-label="LuckyPickCanada.ca home" className="reference-brand">
-            <Image src="/logo-official.svg" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 14px rgba(250,204,21,0.42))' }} />
+            <Image src="/1784889264858.png" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 14px rgba(250,204,21,0.42))' }} />
             <span>LuckyPickCanada.ca</span>
           </a>
           <div className="reference-nav-links">
@@ -434,7 +434,7 @@ export default async function Home({ searchParams }) {
             ))}
           </div>
           <div className="reference-hero-copy">
-            <div className="reference-hero-crest" aria-hidden="true"><Image src="/logo-official.svg" alt="" width={190} height={190} sizes="190px" quality={90} priority /></div>
+            <div className="reference-hero-crest" aria-hidden="true"><Image src="/1784889264858.png" alt="" width={190} height={190} sizes="190px" quality={90} priority /></div>
             <h1 className="reference-hero-title">LuckyPickCanada<span>.ca</span></h1>
             <p className="reference-hero-kicker">Everyone could use a little extra luck. <span>☘</span></p>
             <p className="reference-hero-description">Get your personalized lucky numbers, lucky day<br className="desktop-break" /> and lucky colour — just for fun!</p>

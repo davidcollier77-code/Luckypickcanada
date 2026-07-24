@@ -3,9 +3,9 @@
   "short_name": "LuckyPickCanada",
   "icons": [
     {
-      "src": "/logo-official.svg",
+      "src": "/1784889264858.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     }
   ],
