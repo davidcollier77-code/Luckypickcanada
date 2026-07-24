@@ -92,7 +92,7 @@ export default function LuckMeter() {
         <div style={{ position: 'absolute', bottom: -120, right: -120, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(250,204,21,0.16), transparent 64%)' }} />
       </div>
 
-      <div className="experience-brand"><Image src="/logo-official.svg" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
+      <div className="experience-brand"><Image src="/1784889264858.png" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', alignItems: 'center' }}>
         <div>

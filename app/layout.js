@@ -30,8 +30,8 @@ export const metadata = {
   },
   manifest: '/site.webmanifest',
   icons: {
-    icon: [{ url: '/logo-official.svg', type: 'image/svg+xml' }],
-    shortcut: '/logo-official.svg',
+    icon: [{ url: '/1784889264858.png', type: 'image/png' }],
+    shortcut: '/1784889264858.png',
   },
 };
 
