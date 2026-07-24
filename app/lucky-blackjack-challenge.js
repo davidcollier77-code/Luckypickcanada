@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
 const suits = [
@@ -286,6 +287,7 @@ export default function LuckyBlackjackChallenge() {
       `}</style>
 
       <div className="blackjack-content">
+        <div className="experience-brand"><Image src="/logo-official.svg" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
         <div className="blackjack-hero">
           <div>
             <p className="blackjack-kicker">New free luck experience</p>
