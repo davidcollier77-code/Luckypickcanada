@@ -13,6 +13,7 @@ export default function LuckMeter() {
   const [targetLuck, setTargetLuck] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [dialRotation, setDialRotation] = useState(0);
   const frameRef = useRef(null);
 
   useEffect(() => {
@@ -34,17 +35,25 @@ export default function LuckMeter() {
 
     const target = getTodaysLuck();
     const duration = 1800;
+    const finalDialAngle = -120 + target * 2.4;
+    const totalDialRotation = 4 * 360 + finalDialAngle;
     const start = performance.now();
 
     setTargetLuck(target);
     setHasStarted(true);
     setIsSpinning(true);
     setLuckLevel(0);
+    setDialRotation(0);
 
     function tick(now) {
       const progress = Math.min((now - start) / duration, 1);
       const easedProgress = 1 - Math.pow(1 - progress, 3);
+      const dialProgress = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
       const spin = Math.sin(progress * Math.PI * 8) * (1 - progress) * 16;
+
+      setDialRotation(totalDialRotation * dialProgress);
       const nextLevel = Math.round(target * easedProgress + spin);
 
       setLuckLevel(Math.max(0, Math.min(100, nextLevel)));
@@ -53,6 +62,7 @@ export default function LuckMeter() {
         frameRef.current = requestAnimationFrame(tick);
       } else {
         setLuckLevel(target);
+        setDialRotation(totalDialRotation);
         setIsSpinning(false);
       }
     }
@@ -79,10 +89,6 @@ export default function LuckMeter() {
         @keyframes lucky-meter-artwork-sparkle {
           0%, 100% { opacity: 0.18; transform: translate3d(-5%, 3%, 0) scale(0.94); }
           50% { opacity: 0.72; transform: translate3d(5%, -3%, 0) scale(1.05); }
-        }
-
-        @keyframes lucky-meter-dial-spin {
-          to { transform: rotate(360deg); }
         }
 
         @keyframes lucky-meter-button-press {
@@ -133,8 +139,8 @@ export default function LuckMeter() {
               priority
               className="lucky-meter-reference-art"
             />
-            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-left" />
-            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-right" />
+            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-left" style={{ '--lucky-meter-dial-rotation': `${dialRotation}deg` }} />
+            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-right" style={{ '--lucky-meter-dial-rotation': `${dialRotation}deg` }} />
             <span aria-hidden="true" className="lucky-meter-artwork-sparkle" />
             <button
               type="button"
