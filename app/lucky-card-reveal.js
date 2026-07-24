@@ -1,10 +1,12 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 
 const premiumLuckyCards = [
   {
     id: 'clover',
+    artwork: '/lucky-card-clover.svg',
     title: 'Emerald Clover Card',
     name: 'Premium emerald clover collectible card',
     eyebrow: 'Clover Card',
@@ -15,6 +17,7 @@ const premiumLuckyCards = [
   },
   {
     id: 'canada',
+    artwork: '/lucky-card-fortune.svg',
     title: 'Canada Maple Card',
     name: 'Premium Canadian maple leaf collectible card',
     eyebrow: 'Canada Card',
@@ -25,6 +28,7 @@ const premiumLuckyCards = [
   },
   {
     id: 'gold',
+    artwork: '/lucky-card-horseshoe.svg',
     title: 'Gold Treasure Card',
     name: 'Premium brushed gold clover collectible card',
     eyebrow: 'Gold Card',
@@ -92,6 +96,7 @@ function pickRandomLuckyCard() {
 function PremiumCard({ card, isBack = false }) {
   return (
     <span className={`premium-card ${isBack ? 'premium-card-back' : `premium-card-${card.id}`}`}>
+      {!isBack ? <Image src={card.artwork} alt="" fill sizes="252px" className="premium-card-artwork" /> : null}
       <span className="premium-card-foil" />
       <span className="premium-card-inner-border" />
       <span className="premium-card-corner premium-card-corner-top">LPC</span>
@@ -224,7 +229,8 @@ export default function LuckyCardReveal({ luckScore }) {
         ))}
       </div>
 
-      <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2.4, color: '#fde68a', fontWeight: 950 }}>
+      <div className="experience-brand"><Image src="/logo-official.svg" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
+      <p style={{ margin: '1rem 0 0', textTransform: 'uppercase', letterSpacing: 2.4, color: '#fde68a', fontWeight: 950 }}>
         Premium HD Lucky Card Reveal
       </p>
       <h3 id="lucky-card-title" style={{ margin: '0.5rem 0 0.4rem', fontSize: 'clamp(1.9rem, 5vw, 3.2rem)', lineHeight: 1 }}>

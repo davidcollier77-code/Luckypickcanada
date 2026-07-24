@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import LuckyCardReveal from './lucky-card-reveal';
 
@@ -90,6 +91,8 @@ export default function LuckMeter() {
         <div style={{ position: 'absolute', top: 18, left: -140, width: 620, height: 130, borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16,185,129,0), rgba(20,184,166,0.52), rgba(250,204,21,0.3), rgba(16,185,129,0))', filter: 'blur(15px)', animation: 'lucky-meter-aurora 11s ease-in-out infinite alternate' }} />
         <div style={{ position: 'absolute', bottom: -120, right: -120, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(250,204,21,0.16), transparent 64%)' }} />
       </div>
+
+      <div className="experience-brand"><Image src="/logo-official.svg" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', alignItems: 'center' }}>
         <div>
