@@ -81,6 +81,16 @@ export default function LuckMeter() {
           50% { opacity: 0.72; transform: translate3d(5%, -3%, 0) scale(1.05); }
         }
 
+        @keyframes lucky-meter-dial-spin {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes lucky-meter-button-press {
+          0% { transform: translateY(0) scale(1); }
+          45% { transform: translateY(3px) scale(.975); }
+          100% { transform: translateY(0) scale(1); }
+        }
+
         @keyframes lucky-meter-aurora {
           0% { transform: translateX(-18%) rotate(-4deg); opacity: 0.36; }
           50% { transform: translateX(9%) rotate(5deg); opacity: 0.7; }
@@ -89,8 +99,6 @@ export default function LuckMeter() {
 
         .luck-meter { font-family: var(--lpc-body); }
         .luck-meter h2 { font-family: var(--lpc-display); }
-        .luck-meter-button { transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease; }
-        .luck-meter-button:not(:disabled):hover { transform: translateY(-2px); filter: saturate(1.12); }
       `}</style>
       <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 18, left: -140, width: 620, height: 130, borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16,185,129,0), rgba(20,184,166,0.52), rgba(250,204,21,0.3), rgba(16,185,129,0))', filter: 'blur(15px)', animation: 'lucky-meter-aurora 11s ease-in-out infinite alternate' }} />
@@ -110,14 +118,7 @@ export default function LuckMeter() {
           <p style={{ margin: 0, lineHeight: 1.6, maxWidth: 560 }}>
             Tap the button once and the meter will reveal your true luck percentage for today.
           </p>
-          <button
-            type="button"
-            onClick={startMeter}
-            disabled={isSpinning || hasStarted}
-            className="luck-meter-button" style={{ marginTop: '1rem', padding: '0.95rem 1.45rem', border: '1px solid rgba(255, 242, 180, 0.78)', borderRadius: 999, background: isSpinning || hasStarted ? 'linear-gradient(135deg, #64748b, #334155)' : 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)', color: isSpinning || hasStarted ? '#e5e7eb' : '#06110d', fontSize: '1rem', fontWeight: 950, cursor: isSpinning ? 'wait' : hasStarted ? 'not-allowed' : 'pointer', boxShadow: isSpinning || hasStarted ? '0 12px 28px rgba(0, 0, 0, 0.2)' : '0 0 28px rgba(250, 204, 21, 0.46), 0 16px 32px rgba(183, 121, 31, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.6)' }}
-          >
-            {isSpinning ? 'Meter spinning...' : hasStarted ? 'Luck locked in' : 'Start Meter'}
-          </button>
+
         </div>
 
         <div style={{ display: 'grid', gap: '0.85rem' }}>
@@ -132,7 +133,16 @@ export default function LuckMeter() {
               priority
               className="lucky-meter-reference-art"
             />
+            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-left" />
+            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-right" />
             <span aria-hidden="true" className="lucky-meter-artwork-sparkle" />
+            <button
+              type="button"
+              onClick={startMeter}
+              disabled={isSpinning || hasStarted}
+              className="lucky-meter-image-start"
+              aria-label={isSpinning ? 'Lucky Meter is running' : hasStarted ? `Luck locked in at ${luckLevel} percent` : 'Start the Lucky Meter'}
+            />
           </div>
 
           <div style={{ padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(2, 8, 23, 0.82), rgba(6, 39, 36, 0.66))', color: '#fff7d6', textAlign: 'center', border: '1px solid rgba(255, 235, 160, 0.26)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)' }}>
