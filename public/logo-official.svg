@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 1280" role="img" aria-labelledby="title desc">
+  <title id="title">Lucky Pick Canada official maple clover seal</title>
+  <desc id="desc">A red Canadian maple leaf and green four-leaf clover inside a metallic gold seal.</desc>
+  <defs>
+    <radialGradient id="seal" cx="35%" cy="26%" r="75%"><stop offset="0" stop-color="#fff6ba"/><stop offset=".22" stop-color="#eec35d"/><stop offset=".57" stop-color="#9b6516"/><stop offset=".78" stop-color="#ffe69a"/><stop offset="1" stop-color="#6d3c08"/></radialGradient>
+    <radialGradient id="well"><stop stop-color="#14382b"/><stop offset=".58" stop-color="#071811"/><stop offset="1" stop-color="#020705"/></radialGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#edbf4c" flood-opacity=".52"/></filter>
+  </defs>
+  <circle cx="640" cy="640" r="592" fill="#030705" stroke="url(#seal)" stroke-width="44" filter="url(#glow)"/>
+  <circle cx="640" cy="640" r="534" fill="url(#well)" stroke="#f6d774" stroke-opacity=".72" stroke-width="9"/>
+  <circle cx="640" cy="640" r="500" fill="none" stroke="#fff0a0" stroke-opacity=".24" stroke-width="5" stroke-dasharray="14 16"/>
+  <image href="/logo-maple-clover-20260719.svg" x="238" y="238" width="804" height="804"/>
+</svg>
