@@ -126,51 +126,33 @@ export default function LuckMeter() {
         <div style={{ display: 'grid', gap: '0.85rem' }}>
           <div className={`lucky-meter-artwork ${isSpinning ? 'is-spinning' : ''} ${hasStarted ? 'has-result' : ''}`}>
             <div className="lucky-meter-aurora" aria-hidden="true" />
-            <div className="lucky-meter-frame">
-              <div className="lucky-meter-frame-rim" />
-              <div className="lucky-meter-frame-lights" />
-              <div className="lucky-meter-face">
-                <div className="lucky-meter-face-glass" />
-                <div className="lucky-meter-scale" aria-hidden="true">
-                  {meterTicks.map((tick) => (
-                    <span
-                      key={tick}
-                      className={`lucky-meter-tick ${tick % 6 === 0 ? 'is-major' : ''}`}
-                      style={{ '--tick-angle': `${-126 + tick * 10.5}deg` }}
-                    />
-                  ))}
-                </div>
-                <div className="lucky-meter-dial-numbers" aria-hidden="true">
-                  <span className="lucky-meter-number is-zero">0</span>
-                  <span className="lucky-meter-number is-twenty-five">25</span>
-                  <span className="lucky-meter-number is-fifty">50</span>
-                  <span className="lucky-meter-number is-seventy-five">75</span>
-                  <span className="lucky-meter-number is-hundred">100</span>
-                </div>
-                <div className="lucky-meter-scale-label lucky-meter-scale-label-low">LOW</div>
-                <div className="lucky-meter-scale-label lucky-meter-scale-label-high">HIGH</div>
-                <div className="lucky-meter-score" aria-live="polite">{hasStarted ? luckLevel : '—'}<small>%</small></div>
-                <span
-                  aria-hidden="true"
-                  className="lucky-meter-needle"
-                  style={{ '--lucky-meter-needle-angle': `${needleAngle}deg` }}
-                />
+            <div className="lucky-meter-reference-assembly">
+              <Image
+                src="/1784931654864.png"
+                alt="LuckyPickCanada Lucky Meter"
+                width={704}
+                height={1524}
+                sizes="(max-width: 620px) 100vw, (max-width: 960px) 54vw, 430px"
+                quality={100}
+                priority
+                className="lucky-meter-reference-art"
+              />
+              <div className="lucky-meter-fixed-dial" aria-hidden="true">
+                <span aria-hidden="true" className="lucky-meter-needle" style={{ '--lucky-meter-needle-angle': `${needleAngle}deg` }} />
                 <span aria-hidden="true" className="lucky-meter-hub" />
                 <span aria-hidden="true" className="lucky-meter-artwork-sparkle" />
               </div>
+              <button
+                type="button"
+                onClick={startMeter}
+                disabled={isSpinning || hasStarted}
+                className="lucky-meter-image-start"
+                aria-label={isSpinning ? 'Lucky Meter is running' : hasStarted ? `Luck locked in at ${luckLevel} percent` : 'Generate your luck'}
+              >
+                <span className="lucky-meter-button-sheen" aria-hidden="true" />
+                <span className="lucky-meter-button-glow" aria-hidden="true" />
+              </button>
             </div>
-            <div className="lucky-meter-plinth" aria-hidden="true" />
-            <button
-              type="button"
-              onClick={startMeter}
-              disabled={isSpinning || hasStarted}
-              className="lucky-meter-image-start"
-              aria-label={isSpinning ? 'Lucky Meter is running' : hasStarted ? `Luck locked in at ${luckLevel} percent` : 'Generate your luck'}
-            >
-              <span className="lucky-meter-button-sheen" aria-hidden="true" />
-              <span>Generate Your Luck</span>
-              <small>{isSpinning ? 'Powering the meter…' : hasStarted ? 'Luck generated' : 'Tap to begin'}</small>
-            </button>
           </div>
 
           <div style={{ padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(2, 8, 23, 0.82), rgba(6, 39, 36, 0.66))', color: '#fff7d6', textAlign: 'center', border: '1px solid rgba(255, 235, 160, 0.26)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)' }}>
