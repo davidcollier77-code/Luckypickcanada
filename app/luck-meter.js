@@ -13,6 +13,7 @@ export default function LuckMeter() {
   const [targetLuck, setTargetLuck] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const needleAngle = -68 + (luckLevel / 100) * 136;
   const frameRef = useRef(null);
 
   useEffect(() => {
@@ -124,7 +125,7 @@ export default function LuckMeter() {
         <div style={{ display: 'grid', gap: '0.85rem' }}>
           <div className={`lucky-meter-artwork ${isSpinning ? 'is-spinning' : ''} ${hasStarted ? 'has-result' : ''}`}>
             <Image
-              src="/1784862459046.png"
+              src="/1784931654864.png"
               alt="LuckyPickCanada Lucky Meter"
               width={704}
               height={1524}
@@ -133,8 +134,11 @@ export default function LuckMeter() {
               priority
               className="lucky-meter-reference-art"
             />
-            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-left" />
-            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-right" />
+            <span
+              aria-hidden="true"
+              className="lucky-meter-needle"
+              style={{ '--lucky-meter-needle-angle': `${needleAngle}deg` }}
+            />
             <span aria-hidden="true" className="lucky-meter-artwork-sparkle" />
             <button
               type="button"
