@@ -127,9 +127,11 @@ export default function LuckMeter() {
           <div className={`lucky-meter-artwork ${isSpinning ? 'is-spinning' : ''} ${hasStarted ? 'has-result' : ''}`}>
             <div className="lucky-meter-aurora" aria-hidden="true" />
             <div className="lucky-meter-frame">
+              <span aria-hidden="true" className="lucky-meter-reference-layer lucky-meter-reference-housing" />
               <div className="lucky-meter-frame-rim" />
               <div className="lucky-meter-frame-lights" />
               <div className="lucky-meter-face">
+                <span aria-hidden="true" className="lucky-meter-reference-layer lucky-meter-reference-dial" />
                 <div className="lucky-meter-face-glass" />
                 <div className="lucky-meter-scale" aria-hidden="true">
                   {meterTicks.map((tick) => (
