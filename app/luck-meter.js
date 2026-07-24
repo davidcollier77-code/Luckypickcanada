@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import LuckyCardReveal from './lucky-card-reveal';
 
 function getTodaysLuck() {
-  return Math.floor(Math.random() * 101);
+  return Math.floor(Math.random() * 100) + 1;
 }
 
 export default function LuckMeter() {
