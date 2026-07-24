@@ -116,11 +116,12 @@ export default function LuckMeter() {
         </div>
 
         <div style={{ display: 'grid', gap: '0.85rem' }}>
-          <div role="img" aria-label="LuckyPickCanada Luck Meter generator" style={{ position: 'relative', height: 148, borderRadius: '148px 148px 24px 24px', background: 'conic-gradient(from 270deg at 50% 100%, #063b2f 0deg, #10b981 48deg, #facc15 108deg, #b7791f 154deg, #5f120f 180deg, transparent 180deg)', animation: 'lucky-meter-glow 2.8s ease-in-out infinite', overflow: 'hidden', border: '1px solid rgba(255,235,160,0.34)', boxShadow: 'inset 0 0 0 10px rgba(2,8,23,0.34), 0 18px 42px rgba(0,0,0,0.34)' }}>
+          <div role="img" aria-label="LuckyPickCanada interactive Luck Meter generator" className="lucky-meter-dial">
             <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.48), transparent)', animation: 'lucky-meter-shimmer 1.5s ease-in-out infinite' }} />
-            <span aria-hidden="true" style={{ position: 'absolute', inset: 18, borderRadius: '128px 128px 18px 18px', border: '1px solid rgba(255, 247, 214, 0.24)' }} />
-            <div style={{ position: 'absolute', left: '50%', bottom: 4, width: 8, height: 106, borderRadius: 999, background: 'linear-gradient(180deg, #fff7d6, #facc15 22%, #071225 24%)', transformOrigin: '50% 100%', transform: `translateX(-50%) rotate(${needleRotation}deg)`, transition: 'transform 120ms ease-out', boxShadow: '0 0 18px rgba(250, 204, 21, 0.32)' }} />
-            <div style={{ position: 'absolute', left: '50%', bottom: -8, width: 42, height: 42, borderRadius: '50%', background: '#071225', transform: 'translateX(-50%)', border: '7px solid #facc15', boxShadow: '0 0 28px rgba(250, 204, 21, 0.55), inset 0 0 12px rgba(255,255,255,0.12)' }} />
+            <span aria-hidden="true" className="lucky-meter-ticks" />
+            <span aria-hidden="true" className="lucky-meter-dial-inner" />
+            <div style={{ position: 'absolute', left: '50%', bottom: '50%', width: 8, height: '36%', borderRadius: 999, background: 'linear-gradient(180deg, #fff7d6, #facc15 22%, #071225 24%)', transformOrigin: '50% 100%', transform: `translateX(-50%) rotate(${needleRotation}deg)`, transition: 'transform 120ms ease-out', boxShadow: '0 0 18px rgba(250, 204, 21, 0.32)' }} />
+            <div className="lucky-meter-hub"><span>{hasStarted ? luckLevel : '☘'}</span></div>
           </div>
 
           <div style={{ padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(2, 8, 23, 0.82), rgba(6, 39, 36, 0.66))', color: '#fff7d6', textAlign: 'center', border: '1px solid rgba(255, 235, 160, 0.26)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)' }}>

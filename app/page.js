@@ -544,8 +544,10 @@ export default async function Home({ searchParams }) {
             <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Send gift for $4.99</button>
           </form>
 
-          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section premium-surface" style={glassCardStyle}>
+          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section premium-surface tip-jar-card" style={glassCardStyle}>
+            <span className="tip-jar-crest" aria-hidden="true">✦</span>
             <input type="hidden" name="checkoutType" value="tip" />
+            <p className="tip-jar-kicker">Support the magic</p>
             <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Tip jar</h2>
             <label htmlFor="tipAmount" style={{ display: 'block', lineHeight: 1.5, marginBottom: '0.75rem' }}>
               Enter any amount you want to tip.
@@ -661,7 +663,7 @@ export default async function Home({ searchParams }) {
           </div>
         </section>
 
-        <section id="little-luck-map" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
+        <section id="little-luck-map" className="aurora-glass-card premium-section premium-map-experience" style={{ ...glassCardStyle, marginTop: '2rem' }}>
           <SectionKicker>Lucky Purchases Across Canada</SectionKicker>
           <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
             Lucky Picks by Province
@@ -705,12 +707,12 @@ export default async function Home({ searchParams }) {
             </p>
           )}
 
-          <div aria-label="Lucky purchases by province" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>
+          <div aria-label="Lucky purchases by province" className="province-map-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>
             {provinces.map((province) => {
               const count = provinceCounts[province.code] || 0;
 
               return (
-                <div key={province.code} style={{ padding: '1rem', minHeight: 78, borderRadius: 20, background: count ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.96), rgba(250, 204, 21, 0.92))' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.06))', border: count ? '2px solid rgba(255, 235, 160, 0.78)' : '2px solid rgba(255, 255, 255, 0.16)', boxShadow: count ? '0 0 28px rgba(16, 185, 129, 0.38), inset 0 1px 0 rgba(255,255,255,0.28)' : 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                <div key={province.code} className={`province-map-marker ${count ? 'is-active' : ''}`} style={{ padding: '1rem', minHeight: 78, borderRadius: 20, background: count ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.96), rgba(250, 204, 21, 0.92))' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.06))', border: count ? '2px solid rgba(255, 235, 160, 0.78)' : '2px solid rgba(255, 255, 255, 0.16)', boxShadow: count ? '0 0 28px rgba(16, 185, 129, 0.38), inset 0 1px 0 rgba(255,255,255,0.28)' : 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
                   <strong style={{ display: 'block', fontSize: '1.25rem' }}>{province.code}</strong>
                   <span>{province.name}</span><br />
                   <span style={{ fontWeight: 700 }}>{count} {count === 1 ? 'purchase' : 'purchases'}</span>
@@ -788,10 +790,10 @@ export default async function Home({ searchParams }) {
             style={{ display: 'block', borderRadius: 28, border: '1px solid rgba(255, 235, 160, 0.42)', overflow: 'hidden', boxShadow: '0 26px 70px rgba(0, 0, 0, 0.42), 0 0 42px rgba(250, 204, 21, 0.18)', background: 'linear-gradient(145deg, rgba(250, 204, 21, 0.12), rgba(16, 185, 129, 0.08))' }}
           >
             <Image
-              src="/Screenshot_20260723_190350_Gallery.jpg"
+              src="/facebook-community-cover.png"
               alt="LuckyPickCanada Facebook community group"
-              width={1254}
-              height={1254}
+              width={1600}
+              height={900}
               sizes="(max-width: 1040px) 100vw, 1040px"
               quality={80}
               style={{ display: 'block', width: '100%', height: 'auto' }}
