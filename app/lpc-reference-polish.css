@@ -55,7 +55,7 @@
   box-shadow: 0 0 15px rgba(250, 204, 76, .76);
 }
 .reference-brand { color: var(--lpc-gold-bright) !important; }
-.reference-brand img { box-shadow: 0 0 0 1px rgba(255, 227, 139, .55), 0 0 22px rgba(243, 190, 59, .35); }
+.reference-brand img { object-fit: contain; }
 
 .premium-hero-shell {
   border-color: rgba(255, 216, 116, .55) !important;
@@ -64,8 +64,9 @@
     linear-gradient(140deg, rgba(3, 6, 5, .97), rgba(8, 38, 27, .92) 50%, rgba(20, 10, 2, .94)) !important;
 }
 .reference-hero-crest {
-  border-color: #ffdd78 !important;
-  box-shadow: 0 0 0 10px rgba(236, 174, 45, .12), 0 0 68px rgba(245, 182, 41, .66), inset 0 0 35px rgba(255, 246, 195, .28) !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 .reference-hero-title,
 .gold-text {
@@ -89,7 +90,7 @@
     conic-gradient(from 225deg, #0b4b35 0 20%, #25a96c 31%, #ffcf58 47%, #9a5f13 63%, #44250b 76%, #0b4b35 100%) !important;
   box-shadow: inset 0 0 0 4px rgba(255, 235, 162, .5), inset 0 0 48px rgba(0, 0, 0, .72), 0 0 0 4px #492b0b, 0 24px 54px rgba(0, 0, 0, .64), 0 0 52px rgba(240, 184, 46, .42) !important;
 }
-.lucky-meter-dial-inner { background: radial-gradient(circle at 40% 28%, rgba(74, 222, 149, .42), #093827 58%, #020705 100%) !important; }
+.lucky-meter-dial-inner { background: radial-gradient(circle at 40% 28%, rgba(74, 222, 149, .18), rgba(9, 56, 39, .36) 58%, rgba(2, 7, 5, .5) 100%) !important; }
 .lucky-meter-hub { border-color: #f8d263 !important; }
 
 .lucky-blackjack .blackjack-table {
@@ -139,7 +140,7 @@
 
 @media (max-width: 620px) {
   .reference-site-header { backdrop-filter: blur(18px) saturate(150%); }
-  .reference-hero-crest { width: 104px !important; height: 104px !important; }
-  .reference-hero-crest img { width: 88px !important; height: 88px !important; }
+  .reference-hero-crest { width: 148px !important; height: 148px !important; }
+  .reference-hero-crest img { width: 100% !important; height: 100% !important; }
   #facebook-community a:first-of-type::after { top: .65rem; font-size: .56rem; }
 }

@@ -211,7 +211,7 @@ function StickyNav() {
       <nav aria-label="Primary" className="reference-site-nav">
         <div className="reference-nav-row">
           <a href="#top" aria-label="LuckyPickCanada.ca home" className="reference-brand">
-            <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ objectFit: 'contain' }} />
+            <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada logo with maple leaf" width={56} height={56} sizes="(max-width: 760px) 46px, 56px" quality={90} priority style={{ objectFit: 'contain' }} />
             <span>LuckyPickCanada.ca</span>
           </a>
           <div className="reference-nav-links">
@@ -434,7 +434,7 @@ export default async function Home({ searchParams }) {
             ))}
           </div>
           <div className="reference-hero-copy">
-            <div className="reference-hero-crest" aria-hidden="true"><Image src="/BackgroundEraser_20260724_163638777.png" alt="" width={190} height={190} sizes="190px" quality={90} priority /></div>
+            <div className="reference-hero-crest" aria-hidden="true"><Image src="/BackgroundEraser_20260724_163638777.png" alt="" width={280} height={280} sizes="(max-width: 620px) 148px, (max-width: 960px) 220px, 280px" quality={90} priority /></div>
             <h1 className="reference-hero-title">LuckyPickCanada<span>.ca</span></h1>
             <p className="reference-hero-kicker">Everyone could use a little extra luck. <span>☘</span></p>
             <p className="reference-hero-description">Get your personalized lucky numbers, lucky day<br className="desktop-break" /> and lucky colour — just for fun!</p>
