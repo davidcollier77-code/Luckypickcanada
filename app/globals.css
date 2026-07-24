@@ -238,77 +238,52 @@ body {
 @media (max-width: 760px) { .reference-nav-row { flex-wrap: wrap; gap: .35rem; }.reference-brand { font-size: .9rem; }.reference-nav-links { width: 100%; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: .12rem; scrollbar-width: none; }.reference-nav-links::-webkit-scrollbar { display: none; }.reference-nav-links .premium-nav-link { flex: 0 0 auto; font-size: .61rem !important; }.reference-hero-title { font-size: clamp(1.78rem, 8.4vw, 3.9rem); letter-spacing: -.09em; }.experience-brand { font-size: 1rem; } }
 @media (max-width: 390px) { .reference-brand { font-size: .78rem; gap: .38rem; }.reference-brand img { width: 36px !important; height: 36px !important; }.reference-hero-title { font-size: clamp(1.52rem, 8.3vw, 2.15rem); }.experience-brand span { font-size: .88rem; } }
 
-/* Official Lucky Meter artwork: displayed intact with image-focused motion only. */
+/* Layered Lucky Meter: independently animated frame, face, dial, needle, light, and control. */
 .lucky-meter-artwork {
   position: relative;
+  isolation: isolate;
   width: min(100%, 430px);
+  min-height: 610px;
   margin-inline: auto;
-  overflow: visible;
+  padding-top: 2.25rem;
 }
-.lucky-meter-reference-art {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  animation: lucky-meter-artwork-reveal 1.8s ease-out both;
-  transform-origin: center;
+.lucky-meter-aurora {
+  position: absolute; z-index: -1; inset: 7% -18% 17%; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(25, 218, 163, .4), transparent 59%), radial-gradient(circle at 70% 32%, rgba(255, 202, 55, .34), transparent 30%);
+  filter: blur(24px); animation: lucky-meter-aurora 4s ease-in-out infinite alternate;
 }
-.lucky-meter-artwork.is-spinning .lucky-meter-reference-art { animation: lucky-meter-artwork-reveal 1.8s ease-out infinite; }
-.lucky-meter-needle {
-  position: absolute;
-  z-index: 3;
-  left: 50%;
-  top: 38.2%;
-  width: 2.2%;
-  height: 14.5%;
-  min-width: 7px;
-  border-radius: 999px 999px 35% 35%;
-  pointer-events: none;
-  transform: translateX(-50%) rotate(var(--lucky-meter-needle-angle, -68deg));
-  transform-origin: 50% 92%;
-  background: linear-gradient(90deg, #6d3105 0%, #ffd86a 31%, #fff7c2 50%, #d28317 70%, #703000 100%);
-  box-shadow: 0 0 4px rgba(255, 244, 180, .92), 0 0 13px rgba(244, 180, 40, .75), 0 3px 6px rgba(0, 0, 0, .55);
-  transition: transform 40ms linear;
+.lucky-meter-frame {
+  position: relative; z-index: 1; width: 86%; aspect-ratio: 1; margin: auto; padding: 5%; border-radius: 48% 48% 43% 43%;
+  background: linear-gradient(135deg, #fff2aa 0%, #a96108 12%, #301400 25%, #e9ad28 49%, #5a2900 69%, #f8d974 100%);
+  box-shadow: 0 25px 38px rgba(0,0,0,.65), 0 0 0 3px rgba(255, 234, 141, .25), 0 0 34px rgba(249, 192, 37, .52), inset 0 1px 2px #fff8c8;
 }
-.lucky-meter-needle::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -7%;
-  width: 210%;
-  aspect-ratio: 1;
-  border: 1px solid rgba(255, 239, 152, .78);
-  border-radius: 50%;
-  transform: translateX(-50%);
-  background: radial-gradient(circle at 34% 28%, #fff8cf 0 9%, #e9a72c 32%, #8a4805 74%);
-  box-shadow: 0 0 10px rgba(250, 204, 21, .72), inset 0 1px 1px rgba(255, 255, 255, .68);
-}
-.lucky-meter-image-start {
-  position: absolute;
-  z-index: 4;
-  left: 22%;
-  top: 82%;
-  width: 56%;
-  height: 8%;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  cursor: pointer;
-}
-.lucky-meter-image-start:not(:disabled):active { transform: translateY(2px) scale(.985); }
-.lucky-meter-image-start:focus-visible { outline: 3px solid rgba(255, 244, 177, .92); outline-offset: 4px; }
-.lucky-meter-image-start:disabled { cursor: default; }
-.lucky-meter-artwork.is-spinning .lucky-meter-image-start { animation: lucky-meter-button-press .4s ease-out; }
-.lucky-meter-artwork-sparkle {
-  position: absolute;
-  inset: 6% 4%;
-  pointer-events: none;
-  background: radial-gradient(circle at 22% 28%, rgba(255, 248, 199, .86) 0 2px, transparent 3px), radial-gradient(circle at 76% 18%, rgba(250, 214, 103, .78) 0 1.5px, transparent 3px), radial-gradient(circle at 70% 72%, rgba(112, 255, 205, .68) 0 1.5px, transparent 3px), radial-gradient(circle at 31% 82%, rgba(255, 246, 186, .66) 0 1px, transparent 3px);
-  filter: drop-shadow(0 0 8px rgba(250, 220, 107, .72));
-  animation: lucky-meter-artwork-sparkle 2.6s ease-in-out infinite;
-}
-@media (max-width: 620px) { .lucky-meter-artwork { width: min(100%, 340px); } }
+.lucky-meter-frame::before { content: ''; position: absolute; inset: 3%; border-radius: inherit; background: repeating-conic-gradient(from -18deg, rgba(255,255,255,.25) 0 2deg, transparent 2deg 12deg), linear-gradient(145deg, #4a2200, #d78a10 50%, #3e1a00); mix-blend-mode: overlay; opacity: .75; }
+.lucky-meter-frame-rim { position: absolute; inset: 7%; border: 2px solid rgba(255, 241, 161, .72); border-radius: 50%; box-shadow: inset 0 0 0 8px rgba(46, 18, 0, .5), inset 0 0 26px #130900, 0 0 12px rgba(255, 234, 136, .62); }
+.lucky-meter-frame-lights { position: absolute; inset: 1%; border-radius: 50%; background: radial-gradient(circle at 23% 20%, rgba(255,255,226,.95) 0 1%, transparent 2.8%), radial-gradient(circle at 75% 25%, rgba(255,244,184,.75) 0 1%, transparent 2.6%), radial-gradient(circle at 52% 5%, rgba(255,254,222,.78) 0 1%, transparent 2.4%), radial-gradient(circle at 12% 63%, rgba(255,233,143,.64) 0 1%, transparent 2.5%), radial-gradient(circle at 88% 63%, rgba(255,233,143,.64) 0 1%, transparent 2.5%); filter: drop-shadow(0 0 8px #ffe47e); }
+.lucky-meter-face { position: relative; width: 100%; height: 100%; overflow: hidden; border: 4px solid #180b00; border-radius: 50%; background: radial-gradient(circle at 50% 42%, #185a49 0 7%, #0a332b 22%, #071a18 55%, #020807 73%); box-shadow: inset 0 0 0 3px #d8a228, inset 0 0 32px #000, 0 5px 12px rgba(0,0,0,.64); }
+.lucky-meter-face::before { content: 'LUCKY METER'; position: absolute; z-index: 1; top: 22%; left: 0; width: 100%; color: #ffe89a; font: 900 clamp(.63rem, 2.2vw, .95rem)/1 var(--lpc-display); letter-spacing: .2em; text-align: center; text-shadow: 0 1px #482300, 0 0 12px rgba(255,205,62,.6); }
+.lucky-meter-face-glass { position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(140deg, rgba(255,255,255,.26), transparent 22% 61%, rgba(255,220,116,.11)), radial-gradient(circle at 35% 28%, rgba(255,255,255,.22), transparent 14%); pointer-events: none; }
+.lucky-meter-scale { position: absolute; inset: 5%; border-radius: 50%; }
+.lucky-meter-tick { position: absolute; top: 50%; left: 50%; width: 1px; height: 43%; transform-origin: 50% 100%; transform: translate(-50%, -100%) rotate(var(--tick-angle)); }
+.lucky-meter-tick::after { content: ''; display: block; width: 2px; height: 7%; margin: auto; border-radius: 2px; background: #d6a22d; box-shadow: 0 0 4px #ffe9a2; }
+.lucky-meter-tick.is-major::after { width: 4px; height: 11%; background: #fff0a4; }
+.lucky-meter-dial-numbers { position: absolute; inset: 0; z-index: 1; color: #ffe799; font: 900 .62rem/1 var(--lpc-body); text-shadow: 0 1px 4px #000, 0 0 4px rgba(255,207,70,.65); }
+.lucky-meter-number { position: absolute; }.lucky-meter-number.is-zero { left: 12%; top: 68%; }.lucky-meter-number.is-twenty-five { left: 16%; top: 39%; }.lucky-meter-number.is-fifty { left: 46%; top: 28%; }.lucky-meter-number.is-seventy-five { right: 13%; top: 39%; }.lucky-meter-number.is-hundred { right: 9%; top: 68%; }
+.lucky-meter-scale-label { position: absolute; z-index: 1; top: 60%; color: #f8d06a; font: 800 .57rem/1 var(--lpc-body); letter-spacing: .13em; text-shadow: 0 0 5px #000; }
+.lucky-meter-scale-label-low { left: 15%; }.lucky-meter-scale-label-high { right: 13%; }
+.lucky-meter-score { position: absolute; z-index: 1; top: 39%; left: 0; width: 100%; color: #fff5b3; font: 900 clamp(2rem, 8vw, 3.4rem)/1 var(--lpc-display); text-align: center; text-shadow: 0 2px 0 #5e2b00, 0 0 16px rgba(250, 209, 70, .68); }
+.lucky-meter-score small { font-size: .38em; margin-left: .05em; }
+.lucky-meter-needle { position: absolute; z-index: 4; left: 50%; top: 50%; width: 2.5%; height: 42%; border-radius: 100% 100% 35% 35%; transform: translateX(-50%) rotate(var(--lucky-meter-needle-angle, -126deg)); transform-origin: 50% 100%; background: linear-gradient(90deg, #551a00, #f8c84f 39%, #fff6c3 50%, #b96100 67%, #481500); box-shadow: 0 0 5px #fff3ad, 0 0 13px rgba(249, 182, 27, .86), 0 4px 6px rgba(0,0,0,.68); transition: transform 40ms linear; }
+.lucky-meter-hub { position: absolute; z-index: 5; left: 50%; top: 50%; width: 13%; aspect-ratio: 1; border: 2px solid #ffe495; border-radius: 50%; transform: translate(-50%, -50%); background: radial-gradient(circle at 32% 28%, #fff8c4, #dd961d 42%, #5b2400 78%); box-shadow: 0 0 12px #f6c23c, inset 0 1px 2px #fff9d2; }
+.lucky-meter-plinth { position: relative; z-index: 0; width: 70%; height: 5rem; margin: -2.2rem auto 0; border: 2px solid #ca8b1d; border-radius: 0 0 2rem 2rem; background: linear-gradient(90deg, #301500, #b96a09 22%, #f1bd42 50%, #8b4300 77%, #2e1200); box-shadow: inset 0 -12px 15px rgba(0,0,0,.5), 0 14px 24px rgba(0,0,0,.5); }
+.lucky-meter-image-start { position: relative; z-index: 3; display: grid; min-height: 5.1rem; width: 75%; margin: -1.85rem auto 0; place-content: center; overflow: hidden; border: 2px solid #ffe8a2; border-radius: 999px; color: #fff7c9; background: linear-gradient(180deg, #f7c647, #b56908 48%, #5e2700); box-shadow: inset 0 2px 1px rgba(255,255,255,.7), inset 0 -5px 8px rgba(63,20,0,.54), 0 8px 16px rgba(0,0,0,.58), 0 0 0 4px rgba(85,33,0,.8); cursor: pointer; font-family: var(--lpc-display); letter-spacing: .04em; text-shadow: 0 2px 1px #512000; transition: transform .22s ease, filter .22s ease, box-shadow .22s ease; }
+.lucky-meter-image-start > span:not(.lucky-meter-button-sheen) { position: relative; z-index: 1; font-size: clamp(.85rem, 3vw, 1.15rem); }.lucky-meter-image-start small { position: relative; z-index: 1; margin-top: .22rem; color: #fff1b2; font: 700 .54rem/1 var(--lpc-body); letter-spacing: .11em; text-transform: uppercase; }
+.lucky-meter-button-sheen { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.7) 47%, transparent 63%); transform: translateX(-130%); }
+.lucky-meter-image-start:not(:disabled):hover { filter: brightness(1.13) saturate(1.16); transform: translateY(-2px); }.lucky-meter-image-start:not(:disabled):active { transform: translateY(3px) scale(.985); box-shadow: inset 0 5px 9px rgba(70,22,0,.7), 0 2px 6px rgba(0,0,0,.5), 0 0 24px rgba(255,211,77,.85); }.lucky-meter-image-start:focus-visible { outline: 3px solid rgba(255,244,177,.92); outline-offset: 4px; }.lucky-meter-image-start:disabled { cursor: default; }
+.lucky-meter-artwork.is-spinning .lucky-meter-image-start { animation: lucky-meter-button-press .4s ease-out, lucky-meter-power 1.1s ease-in-out infinite; }.lucky-meter-artwork.is-spinning .lucky-meter-button-sheen { animation: lucky-meter-sheen 1.1s linear infinite; }.lucky-meter-artwork.is-spinning .lucky-meter-frame-lights { animation: lucky-meter-lights .55s ease-in-out infinite alternate; }.lucky-meter-artwork.is-spinning .lucky-meter-aurora { animation-duration: 1.1s; }
+.lucky-meter-artwork-sparkle { position: absolute; z-index: 6; inset: 8%; pointer-events: none; background: radial-gradient(circle at 22% 28%, rgba(255,248,199,.86) 0 2px, transparent 3px), radial-gradient(circle at 76% 18%, rgba(250,214,103,.78) 0 1.5px, transparent 3px), radial-gradient(circle at 70% 72%, rgba(112,255,205,.68) 0 1.5px, transparent 3px), radial-gradient(circle at 31% 82%, rgba(255,246,186,.66) 0 1px, transparent 3px); filter: drop-shadow(0 0 8px rgba(250,220,107,.72)); animation: lucky-meter-artwork-sparkle 2.6s ease-in-out infinite; }
+@keyframes lucky-meter-power { 50% { filter: brightness(1.22) saturate(1.2); box-shadow: inset 0 2px 1px rgba(255,255,255,.8), inset 0 -5px 8px rgba(63,20,0,.54), 0 8px 24px rgba(0,0,0,.58), 0 0 34px rgba(255,212,79,.95), 0 0 62px rgba(45,239,177,.55); } } @keyframes lucky-meter-sheen { to { transform: translateX(130%); } } @keyframes lucky-meter-lights { to { filter: brightness(1.7) drop-shadow(0 0 12px #fff2a8); } }
+@media (max-width: 620px) { .lucky-meter-artwork { width: min(100%, 340px); min-height: 500px; }.lucky-meter-image-start { min-height: 4.5rem; } }
 
 .tip-jar-card { isolation: isolate; }
 .tip-jar-card::after { content: ''; position: absolute; z-index: -1; right: -15%; bottom: -28%; width: 15rem; height: 15rem; border: 1px solid rgba(255,224,124,.34); border-radius: 50%; box-shadow: 0 0 0 18px rgba(232,186,82,.05), 0 0 46px rgba(232,186,82,.23); }
