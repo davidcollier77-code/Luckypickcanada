@@ -268,7 +268,13 @@ body {
 }
 .lucky-meter-dial-left { left: 19%; top: 32%; background-position: 24% 32%; }
 .lucky-meter-dial-right { right: 19%; top: 32%; background-position: 76% 32%; }
-.lucky-meter-artwork.is-spinning .lucky-meter-dial-crop { opacity: 1; animation: lucky-meter-dial-spin .46s linear infinite; }
+.lucky-meter-artwork.is-spinning .lucky-meter-dial-crop,
+.lucky-meter-artwork.has-result .lucky-meter-dial-crop {
+  opacity: 1;
+  transform: rotate(var(--lucky-meter-dial-rotation, 0deg));
+  transform-origin: center;
+  will-change: transform;
+}
 .lucky-meter-image-start {
   position: absolute;
   z-index: 4;
