@@ -140,6 +140,6 @@
 @media (max-width: 620px) {
   .reference-site-header { backdrop-filter: blur(18px) saturate(150%); }
   .reference-hero-crest { width: 104px !important; height: 104px !important; }
-  .reference-hero-crest img { width: 88px !important; height: 88px !important; }
+  .reference-hero-crest img { width: 82px !important; height: 82px !important; object-fit: contain; }
   #facebook-community a:first-of-type::after { top: .65rem; font-size: .56rem; }
 }

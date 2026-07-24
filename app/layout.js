@@ -30,8 +30,8 @@ export const metadata = {
   },
   manifest: '/site.webmanifest',
   icons: {
-    icon: [{ url: '/1784889264858.png', type: 'image/png' }],
-    shortcut: '/1784889264858.png',
+    icon: [{ url: '/lucky-pick-canada-logo.png', type: 'image/png' }],
+    shortcut: '/lucky-pick-canada-logo.png',
   },
 };
 
