@@ -58,12 +58,14 @@ Set these Vercel environment variables before using the payment buttons, gift em
 - `SUGGESTIONS_TO_EMAIL`: optional destination for suggestion notifications; defaults to `davidcollier77@gmail.com`
 - `POSTGRES_URL` or `DATABASE_URL`: database connection string used to save Little Luck Map submissions and suggestions
 - `ADMIN_PASSWORD`: password for `/admin/suggestions`, where saved suggestions can be reviewed
+- `TURNSTILE_SITE_KEY` or `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Cloudflare Turnstile site key shown on public, non-payment forms
+- `TURNSTILE_SECRET_KEY`: Cloudflare Turnstile secret key used to verify public form submissions server-side
 
 The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions for the $1.00 Lucky Pick, $4.99 gift email package, and a custom tip jar amount. Lucky Pick includes either 6 unique numbers from 1 to 49 or 7 unique numbers from 1 to 50, plus a slow reveal with stars and Aurora, a lucky color, and a lucky day of the week. The gift package sends the selected lucky pick, lucky color, lucky day, and personal greeting to the recipient by email after payment. The gift delivery route accepts either a Checkout Session ID (`session_id=cs_...`) or Payment Intent ID (`payment_id=pi_...`) for resends.
 
 To send a no-purchase test gift email, make a `POST` request to `/api/admin/test-gift-email` with the `x-gift-test-secret` header set to `GIFT_TEST_SECRET` and a JSON body containing `recipientEmail`. Optional fields are `recipientName`, `senderName`, `giftMessage`, and `luckyPickGame` (`6` or `7`).
 
-After completing the $1.00 Lucky Pick checkout, visitors can add their name and province or territory to the Little Luck Map. Submissions are verified against the paid Stripe Checkout Session, saved in the `luck_shares` database table, and shown as province counts plus recent shares.
+After completing the $1.00 Lucky Pick checkout, visitors can add their name and province or territory to the Lucky Purchases Across Canada display. Submissions are verified against the paid Stripe Checkout Session, saved in the `luck_shares` database table, and shown as purchase activity by province plus recent purchase provinces. Lucky Stories are handled separately by the existing Lucky Map of Canada page.
 
 Suggestions are saved in the `suggestions` database table and can be reviewed at `/admin/suggestions` with `ADMIN_PASSWORD`.
 
