@@ -60,7 +60,6 @@ export default function LuckMeter() {
     frameRef.current = requestAnimationFrame(tick);
   }
 
-  const needleRotation = -90 + (luckLevel / 100) * 180;
 
   return (
     <>
@@ -71,9 +70,15 @@ export default function LuckMeter() {
           50% { box-shadow: 0 0 34px rgba(250, 204, 21, 0.72); }
         }
 
-        @keyframes lucky-meter-shimmer {
-          from { transform: translateX(-120%); }
-          to { transform: translateX(220%); }
+        @keyframes lucky-meter-artwork-reveal {
+          0% { opacity: 0.78; transform: scale(0.985); filter: saturate(0.92) brightness(0.88); }
+          55% { opacity: 1; transform: scale(1.012); filter: saturate(1.12) brightness(1.08); }
+          100% { opacity: 0.94; transform: scale(1); filter: saturate(1) brightness(1); }
+        }
+
+        @keyframes lucky-meter-artwork-sparkle {
+          0%, 100% { opacity: 0.18; transform: translate3d(-5%, 3%, 0) scale(0.94); }
+          50% { opacity: 0.72; transform: translate3d(5%, -3%, 0) scale(1.05); }
         }
 
         @keyframes lucky-meter-aurora {
@@ -116,20 +121,18 @@ export default function LuckMeter() {
         </div>
 
         <div style={{ display: 'grid', gap: '0.85rem' }}>
-          <div role="img" aria-label="LuckyPickCanada interactive Luck Meter generator" className="lucky-meter-dial">
+          <div className={`lucky-meter-artwork ${isSpinning ? 'is-spinning' : ''} ${hasStarted ? 'has-result' : ''}`}>
             <Image
               src="/1784862459046.png"
-              alt=""
-              aria-hidden="true"
-              fill
-              sizes="(max-width: 620px) 300px, 370px"
+              alt="LuckyPickCanada Lucky Meter"
+              width={704}
+              height={1524}
+              sizes="(max-width: 620px) 100vw, (max-width: 960px) 54vw, 430px"
+              quality={100}
+              priority
               className="lucky-meter-reference-art"
             />
-            <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.48), transparent)', animation: 'lucky-meter-shimmer 1.5s ease-in-out infinite' }} />
-            <span aria-hidden="true" className="lucky-meter-ticks" />
-            <span aria-hidden="true" className="lucky-meter-dial-inner" />
-            <div style={{ position: 'absolute', left: '50%', bottom: '50%', width: 8, height: '36%', borderRadius: 999, background: 'linear-gradient(180deg, #fff7d6, #facc15 22%, #071225 24%)', transformOrigin: '50% 100%', transform: `translateX(-50%) rotate(${needleRotation}deg)`, transition: 'transform 120ms ease-out', boxShadow: '0 0 18px rgba(250, 204, 21, 0.32)' }} />
-            <div className="lucky-meter-hub"><span>{hasStarted ? luckLevel : '☘'}</span></div>
+            <span aria-hidden="true" className="lucky-meter-artwork-sparkle" />
           </div>
 
           <div style={{ padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(2, 8, 23, 0.82), rgba(6, 39, 36, 0.66))', color: '#fff7d6', textAlign: 'center', border: '1px solid rgba(255, 235, 160, 0.26)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)' }}>
