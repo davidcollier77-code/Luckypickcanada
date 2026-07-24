@@ -183,40 +183,38 @@ function SectionKicker({ children }) {
 
 function HeroCardTableau() {
   const cards = [
-    { src: '/lucky-card-ace-spades.svg', alt: 'Ace of spades lucky card', className: 'cinematic-card cinematic-card-one' },
-    { src: '/lucky-card-clover.svg', alt: 'Clover lucky card', className: 'cinematic-card cinematic-card-two' },
-    { src: '/lucky-card-joker.svg', alt: 'Joker lucky card', className: 'cinematic-card cinematic-card-three' },
-    { src: '/lucky-card-horseshoe.svg', alt: 'Horseshoe lucky card', className: 'cinematic-card cinematic-card-four' },
-    { src: '/lucky-card-fortune.svg', alt: 'Fortune lucky card', className: 'cinematic-card cinematic-card-five' },
+    { src: '/lucky-card-ace-spades.svg', alt: 'Ace of spades lucky card', className: 'reference-card reference-card-one' },
+    { src: '/lucky-card-clover.svg', alt: 'Lucky clover card', className: 'reference-card reference-card-two' },
+    { src: '/lucky-card-joker.svg', alt: 'Lucky joker card', className: 'reference-card reference-card-three' },
+    { src: '/lucky-card-horseshoe.svg', alt: 'Lucky horseshoe card', className: 'reference-card reference-card-four' },
+    { src: '/lucky-card-rabbit-foot.svg', alt: 'Lucky rabbit foot card', className: 'reference-card reference-card-five' },
+    { src: '/lucky-card-fortune.svg', alt: 'Lucky fortunes card', className: 'reference-card reference-card-six' },
   ];
 
   return (
-    <div className="cinematic-tableau" aria-label="A collection of premium Lucky Cards">
-      <div className="cinematic-orbit cinematic-orbit-one" aria-hidden="true" />
-      <div className="cinematic-orbit cinematic-orbit-two" aria-hidden="true" />
-      <div className="cinematic-crest" aria-hidden="true">
-        <Image src="/logo-official.svg" alt="" width={180} height={180} sizes="180px" quality={90} priority />
-      </div>
-      <div className="cinematic-card-fan">
+    <section className="reference-card-section" aria-labelledby="premium-cards-title">
+      <div className="reference-heading-line"><span /><div><h2 id="premium-cards-title">Premium Lucky Cards</h2><p>Pick a card and reveal your luck.</p></div><span /></div>
+      <div className="reference-card-stage">
+        <div className="reference-card-arc" aria-hidden="true" />
         {cards.map((card) => (
-          <Image key={card.src} src={card.src} alt={card.alt} width={220} height={320} sizes="(max-width: 820px) 29vw, 220px" className={card.className} />
+          <Image key={card.src} src={card.src} alt={card.alt} width={220} height={320} sizes="(max-width: 640px) 28vw, (max-width: 1000px) 18vw, 184px" className={card.className} />
         ))}
       </div>
-      <p className="cinematic-tableau-caption">Premium Lucky Cards <span>✦</span> reveal a little extra magic</p>
-    </div>
+      <a href="#lucky-blackjack-challenge" className="reference-reveal-button">Reveal Your Card</a>
+    </section>
   );
 }
 
 function StickyNav() {
   return (
-    <header style={{ position: 'sticky', top: 0, zIndex: 20, padding: '0.8rem 0 1rem', background: 'linear-gradient(180deg, rgba(1, 4, 10, 0.82), rgba(1, 4, 10, 0.18), transparent)', backdropFilter: 'blur(10px)' }}>
-      <nav aria-label="Primary" style={{ maxWidth: 1220, margin: '0 auto', padding: '0.5rem clamp(0.55rem, 1.5vw, 1rem)', borderRadius: 22, border: '1px solid rgba(255, 235, 160, 0.22)', background: 'linear-gradient(105deg, rgba(2, 9, 17, 0.88), rgba(4, 38, 43, 0.64) 50%, rgba(34, 17, 56, 0.52))', boxShadow: '0 18px 56px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)', backdropFilter: 'blur(22px) saturate(145%)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
-          <a href="#top" aria-label="LuckyPickCanada.ca home" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, letterSpacing: '-0.02em', padding: '0.25rem 0.35rem' }}>
+    <header className="reference-site-header">
+      <nav aria-label="Primary" className="reference-site-nav">
+        <div className="reference-nav-row">
+          <a href="#top" aria-label="LuckyPickCanada.ca home" className="reference-brand">
             <Image src="/logo-official.svg" alt="LuckyPickCanada logo with maple leaf" width={42} height={42} sizes="42px" quality={85} priority style={{ borderRadius: 10, filter: 'drop-shadow(0 0 14px rgba(250,204,21,0.42))' }} />
             <span>LuckyPickCanada.ca</span>
           </a>
-          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <div className="reference-nav-links">
             {navLinks.map((link) => (
               <a key={link.href} href={link.href} className="premium-nav-link" style={{ color: '#fff7d6', textDecoration: 'none', padding: '0.55rem 0.72rem', borderRadius: 999, fontSize: '0.88rem', fontWeight: 850 }}>
                 {link.label}
@@ -429,30 +427,20 @@ export default async function Home({ searchParams }) {
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 22, right: -18 }}>✦</span>
         <span className="premium-maple-accent" aria-hidden="true" style={{ top: 370, left: -28, animationDelay: '-3s' }}>🍁</span>
         <div className="premium-hero-shell" style={{ marginBottom: '1rem', padding: 'clamp(1.1rem, 4vw, 2.65rem)', borderRadius: 38, border: '1px solid rgba(255, 222, 124, 0.42)', background: 'radial-gradient(circle at 88% 10%, rgba(250, 204, 21, 0.32), transparent 26%), radial-gradient(circle at 10% 12%, rgba(190, 114, 14, 0.2), transparent 32%), radial-gradient(circle at 50% 100%, rgba(153, 27, 27, 0.2), transparent 30%), linear-gradient(145deg, rgba(4, 3, 2, 0.94), rgba(20, 12, 4, 0.84) 50%, rgba(7, 5, 4, 0.92))', boxShadow: '0 36px 120px rgba(0, 0, 0, 0.6), 0 0 64px rgba(16, 185, 129, 0.2), 0 0 48px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(18px) saturate(140%)', overflow: 'hidden', position: 'relative' }}>
-          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.13), transparent 18%, transparent 72%, rgba(250,204,21,0.14)), radial-gradient(circle at 72% 76%, rgba(16,185,129,0.2), transparent 28%), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 84px)', pointerEvents: 'none' }} />
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.13), transparent 18%, transparent 72%, rgba(250,204,21,0.14)), radial-gradient(circle at 72% 76%, rgba(208,132,20,0.18), transparent 28%), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 84px)', pointerEvents: 'none' }} />
           <div aria-hidden="true">
             {[12, 24, 38, 52, 68, 81].map((left, index) => (
               <span key={left} className="floating-particle" style={{ left: `${left}%`, bottom: `${8 + (index % 3) * 14}%`, animationDelay: `${index * 0.75}s` }} />
             ))}
           </div>
-          <div className="cinematic-hero-grid">
-            <div className="cinematic-hero-copy">
-              <p className="cinematic-eyebrow"><span>✦</span> A little extra luck, made in Canada <span>🍁</span></p>
-              <h1 className="cinematic-title">LuckyPickCanada<span>.ca</span></h1>
-              <p className="cinematic-tagline">Step into a magical lucky world.</p>
-              <p className="cinematic-intro">Discover personalized lucky numbers, enchanting card reveals, and feel-good moments created purely for fun and entertainment.</p>
-              <div className="cinematic-actions">
-                <a href="#luck-meter-title" className="cinematic-primary-button">Get Your Lucky Pick <span>✦</span></a>
-                <a href="#lucky-blackjack-challenge" className="cinematic-secondary-button">Explore Lucky Cards</a>
-              </div>
-              <div className="cinematic-trust-row" aria-label="LuckyPickCanada benefits">
-                <span>Fun &amp; entertaining</span><i />
-                <span>Lucky day included</span><i />
-                <span>Made for sharing</span>
-              </div>
-            </div>
-            <HeroCardTableau />
+          <div className="reference-hero-copy">
+            <div className="reference-hero-crest" aria-hidden="true"><Image src="/logo-official.svg" alt="" width={190} height={190} sizes="190px" quality={90} priority /></div>
+            <h1 className="reference-hero-title">LuckyPickCanada<span>.ca</span></h1>
+            <p className="reference-hero-kicker">Everyone could use a little extra luck. <span>☘</span></p>
+            <p className="reference-hero-description">Get your personalized lucky numbers, lucky day<br className="desktop-break" /> and lucky colour — just for fun!</p>
+            <a href="#luck-meter-title" className="reference-hero-button">Get Your Lucky Pick <span>☘</span></a>
           </div>
+          <HeroCardTableau />
         </div>
         <p style={{ maxWidth: 760, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.24)', boxShadow: '0 0 28px rgba(250, 204, 21, 0.12)', backdropFilter: 'blur(12px)' }}>
           Entertainment purposes only: Lucky Picks, Lucky Cards, Lucky Colours, and all other features are randomly generated for fun and enjoyment. Purchasing a personalized Lucky Pick does not increase the chances of winning any lottery, contest, or game of chance.
