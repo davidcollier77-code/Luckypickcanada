@@ -30,8 +30,8 @@ export const metadata = {
   },
   manifest: '/site.webmanifest',
   icons: {
-    icon: [{ url: '/1784889264858.png', type: 'image/png' }],
-    shortcut: '/1784889264858.png',
+    icon: [{ url: '/BackgroundEraser_20260724_163638777.png', type: 'image/png' }],
+    shortcut: '/BackgroundEraser_20260724_163638777.png',
   },
 };
 

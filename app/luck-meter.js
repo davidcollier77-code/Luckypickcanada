@@ -92,7 +92,7 @@ export default function LuckMeter() {
         <div style={{ position: 'absolute', bottom: -120, right: -120, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(250,204,21,0.16), transparent 64%)' }} />
       </div>
 
-      <div className="experience-brand"><Image src="/1784889264858.png" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
+      <div className="experience-brand"><Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', alignItems: 'center' }}>
         <div>
@@ -117,6 +117,14 @@ export default function LuckMeter() {
 
         <div style={{ display: 'grid', gap: '0.85rem' }}>
           <div role="img" aria-label="LuckyPickCanada interactive Luck Meter generator" className="lucky-meter-dial">
+            <Image
+              src="/1784862459046.png"
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="(max-width: 620px) 300px, 370px"
+              className="lucky-meter-reference-art"
+            />
             <span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.48), transparent)', animation: 'lucky-meter-shimmer 1.5s ease-in-out infinite' }} />
             <span aria-hidden="true" className="lucky-meter-ticks" />
             <span aria-hidden="true" className="lucky-meter-dial-inner" />
