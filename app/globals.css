@@ -100,3 +100,55 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(255, 226, 136, 0
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
+
+/* Lucky Pick Canada luxury visual system: midnight glass, metallic gold, and restrained aurora light. */
+:root {
+  --night: #030507;
+  --ink: #080b10;
+  --gold: #e8ba52;
+  --gold-light: #fff1b2;
+  --aurora-green: #49c99f;
+  --aurora-blue: #76bdfd;
+  --aurora-violet: #c58dff;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 58% 32% at 16% 8%, rgba(50, 205, 155, 0.16), transparent 70%),
+    radial-gradient(ellipse 48% 33% at 84% 13%, rgba(181, 107, 255, 0.18), transparent 70%),
+    radial-gradient(ellipse 72% 42% at 50% 110%, rgba(17, 67, 74, 0.38), transparent 74%),
+    linear-gradient(180deg, #010204 0%, #06090f 44%, #020609 100%);
+}
+
+.lucky-site-shell::before,
+.lucky-map-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(112deg, transparent 0 20%, rgba(83, 229, 179, 0.065) 32%, transparent 46%),
+    linear-gradient(72deg, transparent 38%, rgba(177, 103, 255, 0.08) 54%, transparent 70%);
+  mix-blend-mode: screen;
+}
+
+.lucky-site-shell .aurora-glass-card,
+.lucky-map-shell .premium-surface {
+  border-color: rgba(239, 198, 98, 0.38) !important;
+  background-image: linear-gradient(145deg, rgba(6, 8, 12, 0.92), rgba(10, 22, 29, 0.84) 52%, rgba(20, 13, 35, 0.84)) !important;
+  box-shadow: 0 28px 86px rgba(0, 0, 0, 0.56), 0 0 34px rgba(232, 186, 82, 0.1), inset 0 1px 0 rgba(255, 245, 203, 0.13) !important;
+}
+
+.lucky-site-shell .aurora-glass-card::before,
+.lucky-map-shell .premium-surface::before {
+  background: linear-gradient(135deg, rgba(255, 245, 203, 0.11), transparent 32%, rgba(123, 93, 212, 0.07) 68%, rgba(232, 186, 82, 0.1)) !important;
+}
+
+.lucky-site-shell .premium-nav-link:hover,
+.lucky-site-shell .premium-nav-link:focus-visible {
+  background: rgba(232, 186, 82, 0.16) !important;
+}
+
+@media (max-width: 620px) {
+  .lucky-site-shell, .lucky-map-shell { padding-left: .75rem !important; padding-right: .75rem !important; }
+}
