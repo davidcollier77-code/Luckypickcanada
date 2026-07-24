@@ -254,27 +254,36 @@ body {
   transform-origin: center;
 }
 .lucky-meter-artwork.is-spinning .lucky-meter-reference-art { animation: lucky-meter-artwork-reveal 1.8s ease-out infinite; }
-.lucky-meter-dial-crop {
+.lucky-meter-needle {
   position: absolute;
-  z-index: 2;
-  width: 19%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background-image: url('/1784862459046.png');
-  background-size: 526% auto;
-  background-repeat: no-repeat;
+  z-index: 3;
+  top: 32.5%;
+  width: 3px;
+  height: 9%;
+  border-radius: 999px 999px 2px 2px;
+  background: linear-gradient(90deg, #5a2606 0%, #ffeca2 42%, #a54a08 64%, #351405 100%);
+  box-shadow: 0 0 3px rgba(255, 223, 121, 0.85), 0 1px 2px rgba(0, 0, 0, 0.8);
   pointer-events: none;
-  opacity: 0;
-}
-.lucky-meter-dial-left { left: 19%; top: 32%; background-position: 24% 32%; }
-.lucky-meter-dial-right { right: 19%; top: 32%; background-position: 76% 32%; }
-.lucky-meter-artwork.is-spinning .lucky-meter-dial-crop,
-.lucky-meter-artwork.has-result .lucky-meter-dial-crop {
-  opacity: 1;
-  transform: rotate(var(--lucky-meter-dial-rotation, 0deg));
-  transform-origin: center;
+  transform: rotate(calc(-120deg + var(--lucky-meter-dial-rotation, 0deg)));
+  transform-origin: center bottom;
   will-change: transform;
 }
+.lucky-meter-needle::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -3px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(255, 235, 160, 0.9);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff8c8, #d98319 58%, #4b1a05 100%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.86);
+  transform: translateX(-50%);
+}
+.lucky-meter-needle-left { left: calc(28.5% - 1.5px); }
+.lucky-meter-needle-right { left: calc(71.5% - 1.5px); }
+
 .lucky-meter-image-start {
   position: absolute;
   z-index: 4;

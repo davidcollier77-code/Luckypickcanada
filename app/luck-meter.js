@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import LuckyCardReveal from './lucky-card-reveal';
 
 function getTodaysLuck() {
-  return Math.floor(Math.random() * 100) + 1;
+  return Math.floor(Math.random() * 101);
 }
 
 export default function LuckMeter() {
@@ -139,8 +139,8 @@ export default function LuckMeter() {
               priority
               className="lucky-meter-reference-art"
             />
-            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-left" style={{ '--lucky-meter-dial-rotation': `${dialRotation}deg` }} />
-            <span aria-hidden="true" className="lucky-meter-dial-crop lucky-meter-dial-right" style={{ '--lucky-meter-dial-rotation': `${dialRotation}deg` }} />
+            <span aria-hidden="true" className="lucky-meter-needle lucky-meter-needle-left" style={{ '--lucky-meter-dial-rotation': `${dialRotation}deg` }} />
+            <span aria-hidden="true" className="lucky-meter-needle lucky-meter-needle-right" style={{ '--lucky-meter-dial-rotation': `${dialRotation}deg` }} />
             <span aria-hidden="true" className="lucky-meter-artwork-sparkle" />
             <button
               type="button"
