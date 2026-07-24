@@ -229,7 +229,7 @@ export default function LuckyCardReveal({ luckScore }) {
         ))}
       </div>
 
-      <div className="experience-brand"><Image src="/logo-official.svg" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
+      <div className="experience-brand"><Image src="/logo-maple-clover-20260719.svg" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
       <p style={{ margin: '1rem 0 0', textTransform: 'uppercase', letterSpacing: 2.4, color: '#fde68a', fontWeight: 950 }}>
         Premium HD Lucky Card Reveal
       </p>
