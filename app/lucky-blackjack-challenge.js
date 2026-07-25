@@ -8,19 +8,11 @@ const Card = ({ cardDetails }) => {
   const isRed = cardDetails.includes('♥') || cardDetails.includes('♦');
   return (
     <div style={{
-      width: '50px',
-      height: '70px',
-      background: 'white',
-      color: isRed ? '#d32f2f' : '#000',
-      borderRadius: '6px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontWeight: 'bold',
-      fontSize: '1.2rem',
-      boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-      border: '1px solid #ddd',
-      margin: '0 5px'
+      width: '50px', height: '70px', background: '#fff',
+      color: isRed ? '#d32f2f' : '#000', borderRadius: '6px',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontWeight: 'bold', fontSize: '1.2rem', boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+      border: '1px solid #ddd', margin: '0 5px'
     }}>
       {cardDetails}
     </div>
@@ -42,8 +34,7 @@ export default function LuckyBlackjackChallenge() {
   };
 
   const calculateScore = (hand) => {
-    let score = 0;
-    let aces = 0;
+    let score = 0; let aces = 0;
     hand.forEach((num) => {
       const val = (num % 13) + 1;
       if (val === 1) { aces += 1; score += 11; } 
@@ -53,16 +44,8 @@ export default function LuckyBlackjackChallenge() {
     return score;
   };
 
-  const shuffleDeck = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  };
-
   const startNewGame = () => {
-    const newDeck = shuffleDeck([...Array(52).keys()]);
+    const newDeck = [...Array(52).keys()].sort(() => Math.random() - 0.5);
     setPlayerHand([newDeck.pop(), newDeck.pop()]);
     setDealerHand([newDeck.pop(), newDeck.pop()]);
     setDeck(newDeck);
@@ -72,10 +55,8 @@ export default function LuckyBlackjackChallenge() {
 
   const hit = () => {
     if (gameState !== 'playing') return;
-    const newDeck = [...deck];
-    const newHand = [...playerHand, newDeck.pop()];
+    const newHand = [...playerHand, deck.pop()];
     setPlayerHand(newHand);
-    setDeck(newDeck);
     if (calculateScore(newHand) > 21) {
       setGameState('lost');
       setMessage('Bust! Dealer wins.');
@@ -85,21 +66,24 @@ export default function LuckyBlackjackChallenge() {
   const stand = () => {
     if (gameState !== 'playing') return;
     
+    // Dealer logic: Draw until 17 or higher
+    let currentDealerHand = [...dealerHand];
+    let currentDeck = [...deck];
+    while (calculateScore(currentDealerHand) < 17) {
+      currentDealerHand.push(currentDeck.pop());
+    }
+    setDealerHand(currentDealerHand);
+    
     const pScore = calculateScore(playerHand);
-    const dScore = calculateScore(dealerHand);
+    const dScore = calculateScore(currentDealerHand);
 
-    if (pScore > dScore) {
+    if (dScore > 21 || pScore > dScore) {
       const quotes = [
-        "A little luck can open a world of possibilities.",
-        "Today, luck found its way to you.",
-        "Great moments begin with a little bit of luck.",
-        "Your lucky moment has arrived.",
-        "Trust the journey. Your luck is shining bright.",
-        "The cards aligned, and luck smiled your way.",
-        "Every win starts with a little magic.",
-        "A spark of luck can create something amazing.",
-        "Keep believing — your lucky story continues.",
-        "Good fortune is closer than you think."
+        "A little luck can open a world of possibilities.", "Today, luck found its way to you.",
+        "Great moments begin with a little bit of luck.", "Your lucky moment has arrived.",
+        "Trust the journey. Your luck is shining bright.", "The cards aligned, and luck smiled your way.",
+        "Every win starts with a little magic.", "A spark of luck can create something amazing.",
+        "Keep believing — your lucky story continues.", "Good fortune is closer than you think."
       ];
       setSelectedQuote(quotes[Math.floor(Math.random() * quotes.length)]);
       setGameState('won');
@@ -113,25 +97,25 @@ export default function LuckyBlackjackChallenge() {
   return (
     <div style={{ padding: '30px', background: '#0a0b1e', color: '#fff', borderRadius: '15px', border: '2px solid #FFB300', maxWidth: '500px', margin: 'auto' }}>
       <h1 style={{ color: '#FFB300', textAlign: 'center' }}>LuckyPick Blackjack</h1>
-      <p style={{ textAlign: 'center' }}>{message}</p>
+      <p style={{ textAlign: 'center', fontSize: '1.1rem' }}>{message}</p>
       
       <div style={{ margin: '20px 0', padding: '15px', border: '1px solid #FFB300', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.05)' }}>
         <div style={{ marginBottom: '15px' }}>
           <strong>Dealer:</strong>
           <div style={{ display: 'flex', marginTop: '5px' }}>
-             {gameState !== 'idle' ? <Card cardDetails={getCardDetails(dealerHand[0])} /> : '-'}
+             {dealerHand.map((num, i) => <Card key={i} cardDetails={getCardDetails(num)} />)}
           </div>
         </div>
         <div>
           <strong>Your Hand:</strong>
           <div style={{ display: 'flex', marginTop: '5px' }}>
-            {playerHand.map((num, i) => <Card key={i} cardDetails={getCardDetails(num)} />)}
+            {playerHand.map((num, i) => <Card key={i} key={i} cardDetails={getCardDetails(num)} />)}
           </div>
         </div>
       </div>
 
       {gameState === 'won' && (
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <div style={{ marginTop: '20px' }}>
             <LuckyCardReveal quote={selectedQuote} />
         </div>
       )}
@@ -139,12 +123,12 @@ export default function LuckyBlackjackChallenge() {
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
         {gameState === 'playing' ? (
           <>
-            <button onClick={hit} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300' }}>Hit</button>
-            <button onClick={stand} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300' }}>Stand</button>
+            <button onClick={hit} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold' }}>Hit</button>
+            <button onClick={stand} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold' }}>Stand</button>
           </>
         ) : (
-          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300' }}>
-            {gameState === 'idle' ? 'Deal' : 'Play Again'}
+          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold' }}>
+            {gameState === 'idle' ? 'Deal New Game' : 'Play Again'}
           </button>
         )}
       </div>
