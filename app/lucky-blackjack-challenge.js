@@ -11,7 +11,6 @@ export default function LuckyBlackjackChallenge() {
   const [message, setMessage] = useState('Beat the Dealer for Lucky Picks!');
   const [selectedQuote, setSelectedQuote] = useState('');
 
-  // Fisher-Yates Shuffle
   const shuffleDeck = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -30,20 +29,19 @@ export default function LuckyBlackjackChallenge() {
   };
 
   const hit = () => {
+    if (gameState !== 'playing') return;
     const newDeck = [...deck];
     setPlayerHand([...playerHand, newDeck.pop()]);
     setDeck(newDeck);
   };
 
   const stand = () => {
-    // Basic dealer logic for demonstration
-    let dScore = 18; // Simplified for this example
+    if (gameState !== 'playing') return;
+    
+    let dScore = 18; 
     let pScore = playerHand.reduce((acc, card) => acc + (card % 13 + 1), 0);
 
     if (dScore > 21 || pScore > dScore) {
-      setGameState('won');
-      setMessage('🎉 YOU WIN! Claim Your Lucky Pick!');
-      
       const quotes = [
         "A little luck can open a world of possibilities.",
         "Today, luck found its way to you.",
@@ -57,6 +55,8 @@ export default function LuckyBlackjackChallenge() {
         "Good fortune is closer than you think."
       ];
       setSelectedQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+      setGameState('won');
+      setMessage('🎉 YOU WIN! Claim Your Lucky Pick!');
     } else {
       setGameState('lost');
       setMessage('Dealer wins this time!');
@@ -64,30 +64,48 @@ export default function LuckyBlackjackChallenge() {
   };
 
   return (
-    <div style={{ padding: '20px', background: '#0a0b1e', color: '#fff', borderRadius: '15px', border: '2px solid #FFB300' }}>
-      <h1>LuckyPick Blackjack</h1>
-      <p>{message}</p>
+    <div style={{ padding: '30px', background: '#0a0b1e', color: '#fff', borderRadius: '15px', border: '2px solid #FFB300', maxWidth: '500px', margin: 'auto' }}>
+      <h1 style={{ color: '#FFB300', textAlign: 'center' }}>LuckyPick Blackjack</h1>
+      <p style={{ textAlign: 'center', fontSize: '1.2rem' }}>{message}</p>
 
+      {/* Card Display Section */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', padding: '15px', border: '1px dashed #FFB300' }}>
+        <div style={{ textAlign: 'center' }}>
+          <strong>Dealer Hand:</strong> {gameState !== 'idle' ? 'Hidden' : '-'}
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <strong>Player Hand:</strong> {playerHand.map((c) => (c % 13 + 1)).join(', ')}
+        </div>
+      </div>
+
+      {/* Quote Display Section */}
       {gameState === 'won' && (
-        <div style={{ marginTop: '20px' }}>
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
           <LuckyCardReveal quote={selectedQuote} />
         </div>
       )}
 
+      {/* Game Controls */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '20px' }}>
         {gameState === 'playing' ? (
           <>
-            <button onClick={hit} style={{ padding: '10px 20px', cursor: 'pointer' }}>Hit</button>
-            <button onClick={stand} style={{ padding: '10px 20px', cursor: 'pointer' }}>Stand</button>
+            <button onClick={hit} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', color: '#000', fontWeight: 'bold' }}>Hit</button>
+            <button onClick={stand} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', color: '#000', fontWeight: 'bold' }}>Stand</button>
           </>
-        ) : gameState === 'idle' ? (
-          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer' }}>Deal Cards</button>
-        ) : gameState === 'lost' || gameState === 'push' ? (
-          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer' }}>Play Again</button>
+        ) : gameState === 'lost' ? (
+          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', color: '#000', fontWeight: 'bold' }}>
+            Try Again
+          </button>
         ) : (
-          <p style={{ color: '#FFB300' }}>Refresh page to play again!</p>
+          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', color: '#000', fontWeight: 'bold' }}>
+            {gameState === 'idle' ? 'Deal New Game' : 'Play Again'}
+          </button>
         )}
       </div>
+      
+      {gameState === 'won' && (
+        <p style={{ textAlign: 'center', color: '#FFB300', marginTop: '15px' }}>*Refresh to start fresh*</p>
+      )}
     </div>
   );
 }
