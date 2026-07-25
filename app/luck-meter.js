@@ -126,27 +126,37 @@ export default function LuckMeter() {
         <div style={{ display: 'grid', gap: '0.85rem' }}>
           <div className={`lucky-meter-artwork ${isSpinning ? 'is-spinning' : ''} ${hasStarted ? 'has-result' : ''}`}>
             <div className="lucky-meter-aurora" aria-hidden="true" />
-            <div className="lucky-meter-reference-assembly">
-              <Image
-                src="/1784931654864.png"
-                alt="LuckyPickCanada Lucky Meter"
-                width={704}
-                height={1524}
-                sizes="(max-width: 620px) 100vw, (max-width: 960px) 54vw, 430px"
-                quality={100}
-                priority
-                className="lucky-meter-reference-art"
-              />
-              <div className="lucky-meter-fixed-dial" aria-hidden="true">
-                <span aria-hidden="true" className="lucky-meter-needle" style={{ '--lucky-meter-needle-angle': `${needleAngle}deg` }} />
-                <span aria-hidden="true" className="lucky-meter-hub" />
-                <span aria-hidden="true" className="lucky-meter-artwork-sparkle" />
+            <div className="lucky-meter-layer-stack">
+              {/* Keep layer hooks separate so dedicated artwork can replace these fallbacks later. */}
+              <div className="lucky-meter-background-layer">
+                <Image
+                  src="/1784931654864.png"
+                  alt="LuckyPickCanada Lucky Meter"
+                  width={704}
+                  height={1524}
+                  sizes="(max-width: 620px) 100vw, (max-width: 960px) 54vw, 430px"
+                  quality={100}
+                  priority
+                  className="lucky-meter-background-art"
+                />
+              </div>
+              <div className="lucky-meter-dial-face-layer" aria-hidden="true">
+                <span className="lucky-meter-dial-face-fallback" />
+              </div>
+              <div className="lucky-meter-needle-layer" aria-hidden="true">
+                <span className="lucky-meter-needle" style={{ '--lucky-meter-needle-angle': `${needleAngle}deg` }} />
+              </div>
+              <div className="lucky-meter-hub-layer" aria-hidden="true">
+                <span className="lucky-meter-hub" />
+              </div>
+              <div className="lucky-meter-effects-layer" aria-hidden="true">
+                <span className="lucky-meter-artwork-sparkle" />
               </div>
               <button
                 type="button"
                 onClick={startMeter}
                 disabled={isSpinning || hasStarted}
-                className="lucky-meter-image-start"
+                className="lucky-meter-button-overlay"
                 aria-label={isSpinning ? 'Lucky Meter is running' : hasStarted ? `Luck locked in at ${luckLevel} percent` : 'Generate your luck'}
               >
                 <span className="lucky-meter-button-sheen" aria-hidden="true" />
