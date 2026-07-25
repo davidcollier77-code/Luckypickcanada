@@ -59,20 +59,50 @@ export default function LuckMeter() {
         setIsSpinning(false);
       }
     }
+
     frameRef.current = requestAnimationFrame(tick);
   }
 
   return (
     <>
       <section aria-labelledby="luck-meter-title" className="lucky-meter premium-surface lucky-meter-shell">
-        {/* [Keep your existing dial/header markup here] */}
-        
-        <div className="lucky-meter-stage">
-          {/* [Keep existing meter dial and button code here] */}
+        <div className="lucky-meter-aura lucky-meter-aura-one" />
+        <div className="lucky-meter-aura lucky-meter-aura-two" />
+        <div className="experience-brand">
+          <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} />
+          <span>LuckyPickCanada.ca</span>
+        </div>
+
+        <div className="lucky-meter-grid">
+          <div className="lucky-meter-copy">
+            <p className="lucky-meter-kicker">Your personalized luck generator</p>
+            <h2 id="luck-meter-title" className="lucky-meter-title">Lucky Meter</h2>
+            <p className="lucky-meter-description">Turn the dial to discover your lucky percentage for today.</p>
+          </div>
+
+          <div className="lucky-meter-stage">
+            <div className={`lucky-meter-dial ${isSpinning ? 'is-spinning' : ''}`}>
+              <div className="lucky-meter-ticks" aria-hidden="true">
+                {DIAL_MARKS.map((mark) => <span key={mark} style={{ '--tick-angle': `${MIN_ANGLE + (mark * (MAX_ANGLE - MIN_ANGLE)) / 50}deg` }} className={mark % 5 === 0 ? 'is-major' : ''} />)}
+              </div>
+              <div className="lucky-meter-needle" style={{ '--needle-angle': `${needleAngle}deg` }} aria-hidden="true">
+                <span className="lucky-meter-needle-shaft" />
+                <span className="lucky-meter-needle-tip" />
+              </div>
+              <div className="lucky-meter-result-number" aria-live="polite">
+                <strong>{isSpinning ? luckLevel : targetLuck ?? '—'}</strong>
+                <span>{isSpinning ? 'reading' : targetLuck === null ? 'ready' : 'luck'}</span>
+              </div>
+            </div>
+
+            <button type="button" onClick={startMeter} disabled={isSpinning || hasSpun} className="lucky-meter-button">
+              <span>{isSpinning ? 'Reading...' : hasSpun ? 'Luck Revealed' : 'Generate Your Luck'}</span>
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Integrated Lucky Aura Display */}
+      {/* The Lucky Aura Reveal */}
       {targetLuck !== null && !isSpinning && (
         <div className="lucky-aura-display">
           <div className="lucky-aura-arc" style={{ '--fill-percentage': `${targetLuck}%` }} />
