@@ -1,121 +1,113 @@
 'use client';
 
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
-
-const MIN_ANGLE = -140;
-const MAX_ANGLE = 140;
-const DIAL_MARKS = Array.from({ length: 51 }, (_, index) => index);
-const DIAL_LABELS = Array.from({ length: 11 }, (_, index) => index * 10);
-
-function getTodaysLuck() {
-  return Math.floor(Math.random() * 101);
-}
-
-function angleForLuck(luck) {
-  return MIN_ANGLE + ((MAX_ANGLE - MIN_ANGLE) * luck) / 100;
-}
+import { useState } from 'react';
 
 export default function LuckMeter() {
-  const [luckLevel, setLuckLevel] = useState(0);
-  const [needleAngle, setNeedleAngle] = useState(MIN_ANGLE);
-  const [targetLuck, setTargetLuck] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [hasSpun, setHasSpun] = useState(false);
-  const frameRef = useRef(null);
+  const [targetLuck, setTargetLuck] = useState(null);
+  const [needleAngle, setNeedleAngle] = useState(0);
 
-  useEffect(() => () => frameRef.current && cancelAnimationFrame(frameRef.current), []);
-
-  function startMeter() {
-    if (isSpinning || hasSpun) return;
-
-    const target = getTodaysLuck();
-    const duration = 2600;
-    const start = performance.now();
-    const startingAngle = targetLuck === null ? MIN_ANGLE : angleForLuck(luckLevel);
-    const finalAngle = angleForLuck(target);
-    const travel = finalAngle - startingAngle + 1440;
-
-    setTargetLuck(null);
+  const startMeter = () => {
+    if (isSpinning) return;
     setIsSpinning(true);
+    setTargetLuck(null);
 
-    function tick(now) {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 4);
-      const wobble = Math.sin(progress * Math.PI * 11) * (1 - progress) * 14;
-      const currentAngle = startingAngle + travel * eased + wobble;
-      const displayedLuck = Math.round(target * eased);
+    // Random luck generation logic
+    const finalLuck = Math.floor(Math.random() * 101);
+    
+    // Animate rotation: 2 full spins + percentage position
+    const rotation = 720 + (finalLuck * 1.8); 
+    setNeedleAngle(rotation);
 
-      setNeedleAngle(currentAngle);
-      setLuckLevel(Math.max(0, Math.min(100, displayedLuck)));
-
-      if (progress < 1) {
-        frameRef.current = requestAnimationFrame(tick);
-      } else {
-        setLuckLevel(target);
-        setNeedleAngle(finalAngle);
-        setTargetLuck(target);
-        setHasSpun(true);
-        setIsSpinning(false);
-      }
-    }
-
-    frameRef.current = requestAnimationFrame(tick);
-  }
+    setTimeout(() => {
+      setTargetLuck(finalLuck);
+      setIsSpinning(false);
+    }, 3000); // Matches CSS transition duration
+  };
 
   return (
-    <>
-      <section aria-labelledby="luck-meter-title" className="lucky-meter premium-surface lucky-meter-shell">
-        <div className="lucky-meter-aura lucky-meter-aura-one" />
-        <div className="lucky-meter-aura lucky-meter-aura-two" />
-        <div className="experience-brand">
-          <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} />
-          <span>LuckyPickCanada.ca</span>
-        </div>
+    <div className="luck-generator-container">
+      <style jsx>{`
+        .luck-generator-container {
+          background: radial-gradient(circle at center, #1a0b2e, #050505);
+          color: #fff;
+          padding: 2rem;
+          border-radius: 20px;
+          border: 2px solid #c5a059;
+          text-align: center;
+          font-family: sans-serif;
+          min-height: 500px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+        }
+        .dial-wrapper {
+          position: relative;
+          width: 280px;
+          height: 280px;
+          border: 8px solid #c5a059;
+          border-radius: 50%;
+          background: conic-gradient(#1a4d2e 0%, #1a4d2e 20%, #c5a059 20%, #c5a059 40%, #5e17eb 40%, #5e17eb 100%);
+          margin-bottom: 2rem;
+          box-shadow: 0 0 20px rgba(197, 160, 89, 0.5);
+        }
+        .needle {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 4px;
+          height: 120px;
+          background: #ffcc00;
+          transform-origin: bottom center;
+          transition: transform 3s cubic-bezier(0.2, 0.8, 0.3, 1);
+          border-radius: 2px;
+        }
+        .generate-btn {
+          background: #c5a059;
+          color: #000;
+          padding: 1rem 2rem;
+          font-weight: bold;
+          border: none;
+          border-radius: 50px;
+          cursor: pointer;
+          font-size: 1.2rem;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .lucky-aura-reveal {
+          margin-top: 2rem;
+          padding: 1.5rem;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid #c5a059;
+          border-radius: 15px;
+          animation: glow 2s infinite alternate;
+        }
+        @keyframes glow {
+          from { box-shadow: 0 0 5px #c5a059; }
+          to { box-shadow: 0 0 20px #c5a059; }
+        }
+        .percentage { font-size: 2.5rem; color: #ffcc00; display: block; }
+      `}</style>
 
-        <div className="lucky-meter-grid">
-          <div className="lucky-meter-copy">
-            <p className="lucky-meter-kicker">Your personalized luck generator</p>
-            <h2 id="luck-meter-title" className="lucky-meter-title">Lucky Meter</h2>
-            <p className="lucky-meter-description">Turn the dial to discover your lucky percentage for today.</p>
-          </div>
+      <h1 style={{ margin: '0 0 1rem 0' }}>LUCK GENERATOR</h1>
+      
+      <div className="dial-wrapper">
+        <div className="needle" style={{ transform: `rotate(${needleAngle}deg)` }} />
+      </div>
 
-          <div className="lucky-meter-stage">
-            <div className={`lucky-meter-dial ${isSpinning ? 'is-spinning' : ''}`}>
-              <div className="lucky-meter-ticks" aria-hidden="true">
-                {DIAL_MARKS.map((mark) => <span key={mark} style={{ '--tick-angle': `${MIN_ANGLE + (mark * (MAX_ANGLE - MIN_ANGLE)) / 50}deg` }} className={mark % 5 === 0 ? 'is-major' : ''} />)}
-              </div>
-              <div className="lucky-meter-needle" style={{ '--needle-angle': `${needleAngle}deg` }} aria-hidden="true">
-                <span className="lucky-meter-needle-shaft" />
-                <span className="lucky-meter-needle-tip" />
-              </div>
-              <div className="lucky-meter-result-number" aria-live="polite">
-                <strong>{isSpinning ? luckLevel : targetLuck ?? '—'}</strong>
-                <span>{isSpinning ? 'reading' : targetLuck === null ? 'ready' : 'luck'}</span>
-              </div>
-            </div>
+      <button className="generate-btn" onClick={startMeter} disabled={isSpinning}>
+        {isSpinning ? 'SPINNING...' : 'GENERATE LUCK'}
+      </button>
 
-            <button type="button" onClick={startMeter} disabled={isSpinning || hasSpun} className="lucky-meter-button">
-              <span>{isSpinning ? 'Reading...' : hasSpun ? 'Luck Revealed' : 'Generate Your Luck'}</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* The Lucky Aura Reveal */}
-      {targetLuck !== null && !isSpinning && (
-        <div className="lucky-aura-display">
-          <div className="lucky-aura-arc" style={{ '--fill-percentage': `${targetLuck}%` }} />
-          <div className="lucky-aura-glow" />
-          <div className="lucky-aura-content">
-            <strong className="lucky-aura-percentage">{targetLuck}%</strong>
-            <span className="lucky-aura-label">Luck Today</span>
-          </div>
-          <p className="lucky-aura-affirmation">
-            {targetLuck > 80 ? "The stars are perfectly aligned for you." : "Keep believing in possibilities—your next lucky moment is close."}
-          </p>
+      {/* Lucky Aura Reveal: Triggers only after spin */}
+      {!isSpinning && targetLuck !== null && (
+        <div className="lucky-aura-reveal">
+          <span className="percentage">{targetLuck}%</span>
+          <p>YOUR LUCK LEVEL</p>
+          <small>{targetLuck > 75 ? "LEGENDARY LUCK!" : "AMAZING LUCK!"}</small>
         </div>
       )}
-    </>
+    </div>
   );
 }
