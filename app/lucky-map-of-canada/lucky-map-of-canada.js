@@ -23,18 +23,18 @@ const provinces = [
 const pageStyle = {
   minHeight: '100vh',
   padding: '1rem 1.5rem 4rem',
-  color: '#fff7d6',
+  color: '#fff9e7',
   fontFamily: 'var(--lpc-body)',
-  background: 'radial-gradient(circle at 12% 10%, rgba(250, 204, 21, 0.22), transparent 28%), radial-gradient(circle at 82% 8%, rgba(16, 185, 129, 0.28), transparent 31%), radial-gradient(circle at 50% 92%, rgba(185, 28, 28, 0.16), transparent 34%), linear-gradient(135deg, #010403 0%, #020817 35%, #071225 60%, #021a18 100%)',
+  background: 'radial-gradient(circle at 50% -8%, rgba(245, 194, 66, 0.2), transparent 28%), radial-gradient(circle at 8% 32%, rgba(13, 111, 87, 0.34), transparent 34%), radial-gradient(circle at 96% 60%, rgba(25, 92, 139, 0.22), transparent 33%), linear-gradient(150deg, #06110f 0%, #08231d 47%, #071b2e 100%)',
   overflowX: 'hidden',
   position: 'relative',
 };
 
 const cardStyle = {
-  borderRadius: 30,
-  border: '1px solid rgba(255, 235, 160, 0.24)',
-  background: 'linear-gradient(145deg, rgba(5, 13, 24, 0.9), rgba(8, 38, 36, 0.78) 48%, rgba(7, 18, 37, 0.86))',
-  boxShadow: '0 28px 86px rgba(0, 0, 0, 0.5), 0 0 42px rgba(16, 185, 129, 0.16), 0 0 28px rgba(250, 204, 21, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
+  borderRadius: 26,
+  border: '1px solid rgba(255, 231, 155, 0.24)',
+  background: 'linear-gradient(145deg, rgba(5, 25, 22, 0.92), rgba(10, 47, 38, 0.8))',
+  boxShadow: '0 24px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
   backdropFilter: 'blur(18px) saturate(130%)',
 };
 
@@ -147,26 +147,26 @@ export default function LuckyMapOfCanada({ mapData }) {
     <main className="lucky-map-shell" style={pageStyle}>
       <style>{`
         html { scroll-behavior: smooth; }
-        .lucky-map-shell { font-family: var(--lpc-body); }
+        .lucky-map-shell { font-family: var(--lpc-body); isolation: isolate; }
         .lucky-map-shell h1, .lucky-map-shell h2 { font-family: var(--lpc-display); }
-        .home-link, .story-link, .province-marker, .province-select-card { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease; }
-        .home-link:hover, .home-link:focus-visible, .story-link:hover, .story-link:focus-visible, .province-marker:hover, .province-marker:focus-visible, .province-select-card:hover, .province-select-card:focus-visible { transform: translateY(-2px); outline: none; filter: saturate(1.12); }
-        .map-panel::before { content: ''; position: absolute; inset: 8% 6% 10% 4%; border-radius: 52% 48% 42% 58% / 42% 40% 60% 58%; background: radial-gradient(circle at 18% 38%, rgba(34,197,94,0.26), transparent 16%), radial-gradient(circle at 42% 26%, rgba(250,204,21,0.2), transparent 20%), radial-gradient(circle at 69% 42%, rgba(16,185,129,0.22), transparent 22%), radial-gradient(circle at 84% 58%, rgba(250,204,21,0.18), transparent 14%), linear-gradient(145deg, rgba(21,128,61,0.42), rgba(15,118,110,0.22)); border: 1px solid rgba(255,235,160,0.18); filter: drop-shadow(0 0 44px rgba(16,185,129,0.22)); clip-path: polygon(5% 43%, 13% 24%, 25% 18%, 38% 12%, 55% 17%, 70% 13%, 86% 25%, 95% 43%, 87% 59%, 77% 62%, 70% 80%, 58% 74%, 45% 84%, 33% 72%, 20% 77%, 12% 61%); }
-        .map-panel::after { content: 'Canada story map'; position: absolute; right: 7%; top: 8%; color: rgba(253,230,138,0.84); font-weight: 950; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.75rem; }
-        .province-marker { position: absolute; display: grid; place-items: center; min-width: clamp(46px, 5vw, 68px); min-height: clamp(42px, 4.8vw, 62px); padding: 0.45rem; border-radius: 20px; border: 1px solid rgba(255, 242, 180, 0.62); color: #fff7d6; background: linear-gradient(145deg, rgba(6,78,59,0.96), rgba(16,185,129,0.78)); box-shadow: 0 0 22px rgba(16,185,129,0.24), inset 0 2px 6px rgba(255,255,255,0.16); cursor: pointer; font-size: clamp(0.9rem, 2vw, 1.2rem); font-weight: 950; z-index: 2; }
-        .province-marker.has-stories { color: #052e1c; background: radial-gradient(circle at 30% 20%, #fff8c8 0%, #facc15 35%, #22c55e 68%, #064e3b 100%); box-shadow: 0 0 32px rgba(250,204,21,0.55), 0 0 28px rgba(16,185,129,0.42), inset 0 2px 6px rgba(255,255,255,0.48); }
-        .province-marker.is-active { border-color: rgba(255,248,200,0.92); box-shadow: 0 0 0 5px rgba(255,248,200,0.16), 0 0 48px rgba(250,204,21,0.78), 0 0 34px rgba(52,211,153,0.62); }
-        .province-marker .marker-count { position: absolute; right: -0.2rem; top: -0.35rem; min-width: 1.45rem; height: 1.45rem; display: grid; place-items: center; padding: 0 0.28rem; border-radius: 999px; color: #fff7d6; background: #064e3b; border: 1px solid rgba(253,230,138,0.72); font-size: 0.76rem; font-weight: 950; box-shadow: 0 0 18px rgba(250,204,21,0.42); }
-        .province-marker .marker-sparkle { position: absolute; inset: -0.35rem; border-radius: inherit; border: 1px solid rgba(253,230,138,0.38); animation: marker-pulse 1.9s ease-in-out infinite; }
-        @keyframes marker-pulse { 0%, 100% { transform: scale(0.86); opacity: 0.35; } 50% { transform: scale(1.24); opacity: 0.95; } }
-        @keyframes twinkle { 0%, 100% { opacity: 0.35; transform: scale(0.82) rotate(0deg); } 50% { opacity: 1; transform: scale(1.18) rotate(18deg); } }
-        @keyframes aurora-drift { from { transform: translate3d(-8%, -2%, 0) rotate(-7deg); opacity: 0.42; } to { transform: translate3d(8%, 3%, 0) rotate(6deg); opacity: 0.76; } }
+        .home-link, .story-link, .province-marker, .province-select-card { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease, background 180ms ease; }
+        .home-link:hover, .home-link:focus-visible, .story-link:hover, .story-link:focus-visible, .province-marker:hover, .province-marker:focus-visible, .province-select-card:hover, .province-select-card:focus-visible { transform: translateY(-3px); outline: none; filter: brightness(1.08); }
+        .map-panel { background: linear-gradient(155deg, rgba(5, 41, 34, 0.98), rgba(6, 25, 44, 0.94)) !important; }
+        .map-panel::before { content: ''; position: absolute; inset: 15% 4% 8%; border-radius: 48% 52% 44% 56% / 43% 42% 58% 57%; background: radial-gradient(ellipse at 18% 56%, rgba(91, 194, 143, 0.48), transparent 12%), radial-gradient(ellipse at 35% 45%, rgba(53, 151, 115, 0.52), transparent 18%), radial-gradient(ellipse at 54% 42%, rgba(53, 151, 115, 0.46), transparent 19%), radial-gradient(ellipse at 72% 50%, rgba(53, 151, 115, 0.5), transparent 17%), radial-gradient(ellipse at 87% 39%, rgba(91, 194, 143, 0.42), transparent 13%), linear-gradient(145deg, rgba(28, 109, 82, 0.83), rgba(22, 74, 82, 0.74)); border: 1px solid rgba(255, 233, 160, 0.28); box-shadow: 0 0 0 8px rgba(255, 239, 186, 0.035), 0 24px 70px rgba(1, 12, 12, 0.48), inset 0 1px rgba(255,255,255,.28); clip-path: polygon(4% 47%, 10% 31%, 18% 21%, 31% 17%, 43% 22%, 55% 16%, 68% 21%, 80% 17%, 91% 29%, 98% 46%, 91% 57%, 81% 59%, 75% 74%, 65% 75%, 57% 84%, 47% 77%, 39% 85%, 29% 75%, 18% 79%, 9% 64%); filter: drop-shadow(0 0 30px rgba(99, 211, 160, 0.18)); }
+        .map-panel::after { content: 'LUCKY STORIES · CANADA'; position: absolute; right: 7%; bottom: 8%; color: rgba(255, 241, 185, 0.44); font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; font-size: clamp(0.58rem, 1.25vw, 0.76rem); }
+        .province-marker { position: absolute; display: grid; place-items: center; min-width: clamp(40px, 4.4vw, 58px); min-height: clamp(40px, 4.4vw, 58px); padding: 0.4rem; border-radius: 50%; border: 1px solid rgba(255, 245, 198, 0.68); color: #f8f0ce; background: linear-gradient(145deg, #164d42, #0a2925); box-shadow: 0 7px 18px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.18); cursor: pointer; font-size: clamp(0.75rem, 1.5vw, 1rem); font-weight: 950; z-index: 2; }
+        .province-marker.has-stories { color: #15372a; background: radial-gradient(circle at 32% 28%, #fffdf0 0 8%, #fce38a 23%, #e7ae36 51%, #9b6513 100%); border-color: #fff0a9; box-shadow: 0 0 0 4px rgba(255, 220, 111, 0.12), 0 0 24px rgba(248, 198, 73, 0.6), 0 8px 18px rgba(0,0,0,.28), inset 0 2px 3px rgba(255,255,255,.65); }
+        .province-marker.is-active { transform: translateY(-2px) scale(1.12); border-color: #fffbea; box-shadow: 0 0 0 6px rgba(255, 236, 162, 0.18), 0 0 34px rgba(255, 202, 64, 0.9), 0 10px 22px rgba(0,0,0,.38); z-index: 3; }
+        .province-marker .marker-count { position: absolute; right: -0.38rem; top: -0.42rem; min-width: 1.38rem; height: 1.38rem; display: grid; place-items: center; padding: 0 0.26rem; border-radius: 999px; color: #fff7d6; background: #0b3b30; border: 2px solid #f8dc78; font-size: 0.68rem; font-weight: 950; box-shadow: 0 3px 10px rgba(0,0,0,.28); }
+        .province-marker .marker-sparkle { position: absolute; inset: -0.48rem; border-radius: inherit; border: 1px solid rgba(255, 235, 155, 0.58); animation: marker-pulse 2.1s ease-in-out infinite; }
+        @keyframes marker-pulse { 0%, 100% { transform: scale(0.88); opacity: 0.22; } 50% { transform: scale(1.28); opacity: 0.82; } }
+        @keyframes aurora-drift { from { transform: translate3d(-8%, -2%, 0) rotate(-7deg); opacity: 0.34; } to { transform: translate3d(8%, 3%, 0) rotate(6deg); opacity: 0.62; } }
         @media (max-width: 860px) { #lucky-story-map { grid-template-columns: 1fr !important; } }
-        @media (max-width: 560px) { .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; } .map-panel { min-height: 470px !important; } }
+        @media (max-width: 560px) { .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; } .map-panel { min-height: 470px !important; } .province-marker { min-width: 36px; min-height: 36px; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; } }
       `}</style>
 
-      <div aria-hidden="true" style={{ position: 'absolute', inset: '5% -10% auto', height: 180, background: 'linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.23), rgba(250, 204, 21, 0.18), rgba(59, 130, 246, 0.2), transparent)', filter: 'blur(22px)', borderRadius: '50%', transformOrigin: 'center', animation: 'aurora-drift 10s ease-in-out infinite alternate' }} />
+      <div aria-hidden="true" style={{ position: 'absolute', inset: '5% -10% auto', height: 220, background: 'linear-gradient(90deg, transparent, rgba(62, 178, 126, 0.2), rgba(247, 202, 82, 0.18), rgba(70, 133, 177, 0.16), transparent)', filter: 'blur(22px)', borderRadius: '50%', transformOrigin: 'center', animation: 'aurora-drift 10s ease-in-out infinite alternate' }} />
 
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
@@ -215,7 +215,7 @@ export default function LuckyMapOfCanada({ mapData }) {
 
         <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
           <div className="map-panel" style={{ ...cardStyle, minHeight: 560, padding: '1rem', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: 460, padding: '0.9rem 1rem', borderRadius: 22, background: 'rgba(2,8,23,0.58)', border: '1px solid rgba(255,235,160,0.22)', lineHeight: 1.55 }}>
+            <div style={{ position: 'relative', zIndex: 1, maxWidth: 460, padding: '0.9rem 1rem', borderRadius: 22, background: 'rgba(4, 29, 27, 0.68)', border: '1px solid rgba(255,235,160,0.22)', lineHeight: 1.55 }}>
               <strong style={{ color: '#fde68a' }}>Click a province or territory</strong><br />
               Select an area on the Canada story map to see Lucky Stories shared from that part of Canada.
             </div>
@@ -240,7 +240,7 @@ export default function LuckyMapOfCanada({ mapData }) {
               );
             })}
             {!stories.length ? (
-              <div style={{ position: 'relative', zIndex: 1, maxWidth: 520, margin: '16rem auto 0', padding: '1rem', borderRadius: 24, border: '1px dashed rgba(255,235,160,0.34)', background: 'rgba(2,8,23,0.58)', textAlign: 'center', lineHeight: 1.65 }}>
+              <div style={{ position: 'relative', zIndex: 1, maxWidth: 520, margin: '16rem auto 0', padding: '1rem', borderRadius: 24, border: '1px dashed rgba(255,235,160,0.34)', background: 'rgba(4, 29, 27, 0.68)', textAlign: 'center', lineHeight: 1.65 }}>
                 No community stories with a province are ready for the map yet. Stories submitted in the existing Lucky Stories section will appear here automatically when their location includes a Canadian province or territory.
               </div>
             ) : null}
@@ -254,7 +254,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             {selectedStories.length ? (
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
                 {selectedStories.map((story) => (
-                  <article key={story.id} style={{ padding: '1rem', borderRadius: 22, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.09), rgba(16,185,129,0.08))' }}>
+                  <article key={story.id} style={{ padding: '1rem', borderRadius: 22, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.1), rgba(41,148,107,0.11))' }}>
                     <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
@@ -291,7 +291,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           <h2 style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Lucky Stories by province</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
             {provinceSelections.map((province) => (
-              <button key={province.code} type="button" className="province-select-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(250,204,21,0.3), rgba(16,185,129,0.22))' : 'rgba(255,255,255,0.06)', cursor: 'pointer' }}>
+              <button key={province.code} type="button" className="province-select-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(244,195,70,0.35), rgba(35,140,101,0.25))' : 'rgba(255,255,255,0.055)', cursor: 'pointer' }}>
                 <strong style={{ display: 'block', color: '#fde68a' }}>{province.name}</strong>
                 <span>{province.count} {province.count === 1 ? 'story' : 'stories'}</span>
               </button>
