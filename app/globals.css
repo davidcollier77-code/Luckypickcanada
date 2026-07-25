@@ -271,3 +271,38 @@ body {
 #facebook-community a:first-of-type::after { content: 'Official Community Group'; position: absolute; top: 1rem; left: 50%; transform: translateX(-50%); padding: .42rem .8rem; border: 1px solid rgba(255,229,145,.55); border-radius: 999px; color: #fff1b0; background: rgba(1,7,10,.78); font-size: .68rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; backdrop-filter: blur(8px); }
 #facebook-community a:first-of-type img { width: 100%; height: auto; object-fit: contain; transition: transform .55s ease, filter .55s ease; }
 #facebook-community a:first-of-type:hover img { transform: scale(1.025); filter: saturate(1.1) contrast(1.04); }
+
+/* Lucky Meter: a framed, heirloom-style instrument inspired by the Canadian stories display. */
+.lucky-meter-shell {
+  margin-top: clamp(2.5rem, 6vw, 5rem);
+  padding: clamp(1.5rem, 4vw, 3.25rem);
+  border: 1px solid rgba(255, 221, 132, .56);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 76% 31%, rgba(117, 218, 179, .3), transparent 21%),
+    radial-gradient(circle at 57% 47%, rgba(89, 66, 157, .32), transparent 35%),
+    linear-gradient(112deg, rgba(1, 3, 7, .94), rgba(11, 17, 35, .88) 50%, rgba(7, 33, 29, .91));
+  box-shadow: 0 0 0 7px rgba(10, 7, 4, .92), 0 0 0 9px rgba(168, 113, 33, .5), 0 34px 92px rgba(0, 0, 0, .7), inset 0 0 75px rgba(0, 0, 0, .7), inset 0 1px rgba(255, 245, 199, .22);
+}
+.lucky-meter-shell::before {
+  inset: 12px;
+  border: 1px solid rgba(255, 227, 147, .38);
+  border-radius: 5px;
+  background:
+    linear-gradient(135deg, rgba(255, 232, 157, .18), transparent 11%) top left / 90px 90px no-repeat,
+    linear-gradient(225deg, rgba(255, 232, 157, .18), transparent 11%) top right / 90px 90px no-repeat,
+    linear-gradient(45deg, rgba(255, 232, 157, .18), transparent 11%) bottom left / 90px 90px no-repeat,
+    linear-gradient(315deg, rgba(255, 232, 157, .18), transparent 11%) bottom right / 90px 90px no-repeat;
+}
+.lucky-meter-shell::after { content: '✦'; position: absolute; z-index: 1; top: 11px; left: 50%; color: #ffe79a; font-size: 1.1rem; text-shadow: 0 0 14px #f6c450; transform: translateX(-50%); }
+.lucky-meter-aura { opacity: .3; }.lucky-meter-aura-one { background: #6e5bd3; }.lucky-meter-aura-two { background: #46bd8e; }
+.lucky-meter-grid { gap: clamp(1.5rem, 5vw, 5rem); }.lucky-meter-copy { position: relative; z-index: 2; }.lucky-meter-kicker { color: #f8dc8d; }.lucky-meter-title { color: #f8d575; text-shadow: 0 2px #623a08, 0 0 34px rgba(255, 199, 67, .38); }.lucky-meter-description { color: rgba(255, 245, 215, .9); font-size: 1.03rem; }.lucky-meter-copy-rule { color: #f4d994; }.lucky-meter-copy-rule span { width: 2.75rem; background: linear-gradient(90deg, transparent, #eabe52, transparent); }
+.lucky-meter-stage { position: relative; z-index: 2; }.lucky-meter-dial { border: 10px solid #68430e; background: radial-gradient(circle at 50% 49%, #102542 0 15%, #0c1530 16% 43%, transparent 44%), radial-gradient(circle at 30% 24%, rgba(116, 221, 185, .22), transparent 44%), radial-gradient(circle at 72% 31%, rgba(138, 106, 214, .28), transparent 42%), #070d21; box-shadow: 0 0 0 2px #fff0aa, 0 0 0 6px #a66b1a, 0 0 0 11px #1c1208, 0 0 0 13px rgba(243, 194, 77, .42), 0 25px 55px rgba(0, 0, 0, .7), 0 0 45px rgba(92, 213, 176, .26), inset 0 0 46px rgba(0, 0, 0, .82); }
+.lucky-meter-dial::before { inset: 6%; border-color: rgba(255, 229, 146, .72); box-shadow: inset 0 0 0 8px rgba(4, 8, 19, .6), inset 0 0 42px rgba(92, 196, 173, .19); }.lucky-meter-dial::after { inset: 2.5%; border-color: rgba(255, 239, 177, .68); }
+.lucky-meter-dial-stars { inset: 18%; background-image: radial-gradient(#fff9d7 0 1px, transparent 1.6px), radial-gradient(#c8b5ff 0 1px, transparent 1.7px), radial-gradient(#94f3d1 0 1px, transparent 1.6px); opacity: .9; }.lucky-meter-rings { border-color: rgba(255, 219, 119, .48); box-shadow: 0 0 0 12px rgba(255, 210, 97, .05), 0 0 30px rgba(102, 222, 185, .3); }
+.lucky-meter-ticks span { background: #d4d4b9; box-shadow: 0 0 7px rgba(123, 246, 213, .66); }.lucky-meter-ticks span.is-major { background: #f9dc7a; box-shadow: 0 0 9px rgba(255, 214, 111, .7); }.lucky-meter-labels span { color: #ffdfa0; text-shadow: 0 1px 2px #000, 0 0 13px rgba(255, 202, 92, .72); }
+.lucky-meter-needle-shaft { border-color: #fff4bc; background: linear-gradient(90deg, #5c3305, #e7a82d 36%, #fff4bd 50%, #c97712 62%, #3d2103); box-shadow: 0 0 18px rgba(255, 212, 104, .82); }.lucky-meter-needle-tip { border-color: #fff0a3; background: #d99a25; box-shadow: 0 0 19px #ffd66d; }.lucky-meter-hub { border-color: #ffe08a; background: radial-gradient(circle at 35% 30%, #fff8d5, #db9f26 27%, #714613 48%, #100d12 72%); box-shadow: 0 0 0 6px #58390c, 0 0 27px rgba(255, 199, 80, .78); }.lucky-meter-hub span { border-color: #fff0a9; background: #b97916; box-shadow: 0 0 15px #ffda77; }
+.lucky-meter-result-number strong { color: #ffe5a2; text-shadow: 0 2px 10px #000, 0 0 18px rgba(255, 202, 90, .52); }.lucky-meter-result-number span { color: #b8f0d5; }.lucky-meter-maple { color: #ffe59b; text-shadow: 0 0 14px #e8b23d; }
+.lucky-meter-button { border-radius: 7px; border-color: #ffdf83; color: #fff0b0; background: linear-gradient(180deg, #6e4310, #2c1b08 52%, #110b05); box-shadow: inset 0 1px rgba(255,255,255,.36), inset 0 -4px rgba(0,0,0,.5), 0 0 0 4px rgba(161,101,21,.58), 0 14px 28px rgba(0,0,0,.52), 0 0 30px rgba(243, 188, 61, .29); }.lucky-meter-button:hover:not(:disabled) { box-shadow: inset 0 1px rgba(255,255,255,.45), inset 0 -4px rgba(0,0,0,.45), 0 0 0 4px rgba(217,157,49,.72), 0 16px 32px rgba(0,0,0,.55), 0 0 42px rgba(255, 205, 81, .5); }
+.lucky-meter-status { color: #d6eddc; }
+@keyframes hub-glow { to { box-shadow: 0 0 0 6px #58390c, 0 0 42px #ffe38b; } }
