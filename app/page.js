@@ -33,14 +33,6 @@ const visitReasons = [
   { icon: '✨', text: 'Designed for entertainment and fun' },
 ];
 
-const adFeatureCards = [
-  { icon: '☘', title: 'Personalized Lucky Picks', copy: 'Choose 6 or 7 fun numbers for just $1 CAD' },
-  { icon: '▣', title: 'Lucky Card Reveal', copy: 'Flip Clover, Canada, or Gold cards with a premium reveal' },
-  { icon: '◈', title: 'Lucky Day + Color', copy: 'Get a daily-feeling lucky detail just for entertainment' },
-  { icon: '🍁', title: 'Community of Luck', copy: 'Lucky Stories and purchase province activity across Canada' },
-];
-
-const heroStatChips = ['Fun', 'Personal', 'Just for You'];
 const luckyQuotes = [
   'A little luck can brighten your day, but a positive spirit can change your journey.',
   'Every new day brings a new chance for something lucky to happen.',
@@ -102,19 +94,6 @@ const sectionHeadingStyle = {
   textShadow: '0 0 24px rgba(250, 204, 21, 0.18)',
 };
 
-const premiumPillStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '0.55rem 0.9rem',
-  borderRadius: 999,
-  border: '1px solid rgba(255, 235, 160, 0.32)',
-  background: 'linear-gradient(135deg, rgba(250, 204, 21, 0.18), rgba(16, 185, 129, 0.12))',
-  color: '#fff7d6',
-  fontWeight: 900,
-  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 22px rgba(250, 204, 21, 0.12)',
-};
-
 const luckyNumberStyle = {
   display: 'inline-grid',
   placeItems: 'center',
@@ -167,7 +146,7 @@ function SectionKicker({ children }) {
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
       <Image
         src="/BackgroundEraser_20260724_163638777.png"
-        alt="LuckyPickCanada logo with maple leaf"
+        alt="LuckyPickCanada logo icon"
         width={36}
         height={36}
         sizes="36px"
