@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useTransition } from 'react';
 
 // Pure CSS / SVG Gilded Maple Leaf & Clover Logo
 const CustomLogo = () => (
@@ -32,7 +32,17 @@ export default function LuckyBlackjackChallenge() {
   const [dealerHand, setDealerHand] = useState([]);
   const [deck, setDeck] = useState([]);
   const [message, setMessage] = useState('Beat the Dealer for Lucky Picks!');
+  const [selectedQuote, setSelectedQuote] = useState('');
   const [, startTransition] = useTransition();
+
+  const shuffle = (array) => {
+    const newDeck = [...array];
+    for (let i = newDeck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+    }
+    return newDeck;
+  };
 
   const createDeck = () => {
     const suits = ['♠', '♥', '♦', '♣'];
@@ -46,7 +56,7 @@ export default function LuckyBlackjackChallenge() {
         newDeck.push({ suit: s, value: v, numericValue });
       }
     }
-    return newDeck.sort(() => Math.random() - 0.5);
+    return shuffle(newDeck);
   };
 
   const calculateScore = (hand) => {
@@ -63,7 +73,6 @@ export default function LuckyBlackjackChallenge() {
     const newDeck = createDeck();
     const pHand = [newDeck.pop(), newDeck.pop()];
     const dHand = [newDeck.pop(), newDeck.pop()];
-    
     setDeck(newDeck);
     setPlayerHand(pHand);
     setDealerHand(dHand);
@@ -76,10 +85,8 @@ export default function LuckyBlackjackChallenge() {
     const newDeck = [...deck];
     const card = newDeck.pop();
     const newHand = [...playerHand, card];
-    
     setDeck(newDeck);
     setPlayerHand(newHand);
-    
     if (calculateScore(newHand) > 21) {
       setGameState('lost');
       setMessage('Bust! Dealer Wins.');
@@ -88,24 +95,21 @@ export default function LuckyBlackjackChallenge() {
 
   const stand = () => {
     if (gameState !== 'playing') return;
-    
     let currentDeck = [...deck];
     let currentDealerHand = [...dealerHand];
-    
     while (calculateScore(currentDealerHand) < 17 && currentDeck.length > 0) {
       currentDealerHand.push(currentDeck.pop());
     }
-    
     const pScore = calculateScore(playerHand);
     const dScore = calculateScore(currentDealerHand);
-    
     setDealerHand(currentDealerHand);
     setDeck(currentDeck);
-    
     startTransition(() => {
       if (dScore > 21 || pScore > dScore) {
         setGameState('won');
         setMessage('🎉 YOU WIN! Claim Your Lucky Pick!');
+        const quotes = ["Fortune favors the bold!", "Your luck is blooming today!", "A golden opportunity awaits!", "Victory looks good on you!"];
+        setSelectedQuote(quotes[Math.floor(Math.random() * quotes.length)]);
       } else if (dScore > pScore) {
         setGameState('lost');
         setMessage('Dealer Wins. Try Again!');
@@ -119,26 +123,19 @@ export default function LuckyBlackjackChallenge() {
   return (
     <div style={{
       background: 'linear-gradient(135deg, #05130E 0%, #0A2218 50%, #040D09 100%)',
-      border: '2px solid #FFB300',
+      border: '4px solid #FFB300',
       borderRadius: '16px',
       padding: '24px',
       maxWidth: '500px',
       margin: '20px auto',
-      boxShadow: '0px 10px 30px rgba(0, 230, 118, 0.15), 0px 0px 15px rgba(255, 179, 0, 0.3)',
+      boxShadow: '0px 0px 20px rgba(255, 179, 0, 0.4)',
       color: '#FFFFFF',
       fontFamily: 'sans-serif',
       textAlign: 'center'
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '16px' }}>
         <CustomLogo />
-        <h2 style={{
-          background: 'linear-gradient(90deg, #FFE082, #FFB300)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          fontSize: '24px',
-          fontWeight: 'bold',
-          margin: '10px 0 4px 0'
-        }}>
+        <h2 style={{ color: '#FFB300', fontSize: '24px', fontWeight: 'bold', margin: '10px 0 4px 0' }}>
           LuckyPick Canada Blackjack
         </h2>
         <p style={{ color: '#00E676', fontSize: '14px', margin: 0 }}>{message}</p>
@@ -147,48 +144,20 @@ export default function LuckyBlackjackChallenge() {
       {gameState !== 'idle' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
           <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '12px' }}>
-            <p style={{ fontSize: '12px', color: '#FFB300', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-              Dealer ({gameState === 'playing' ? '?' : calculateScore(dealerHand)})
-            </p>
+            <p style={{ fontSize: '12px', color: '#FFB300', margin: '0 0 8px 0' }}>Dealer ({gameState === 'playing' ? '?' : calculateScore(dealerHand)})</p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
               {dealerHand.map((card, idx) => (
-                <div key={idx} style={{
-                  width: '45px',
-                  height: '65px',
-                  background: idx === 1 && gameState === 'playing' ? '#1A3A2A' : '#FFF',
-                  color: ['♥', '♦'].includes(card.suit) ? '#D32F2F' : '#212121',
-                  borderRadius: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  border: idx === 1 && gameState === 'playing' ? '1px solid #00E676' : 'none'
-                }}>
+                <div key={idx} style={{ width: '45px', height: '65px', background: idx === 1 && gameState === 'playing' ? '#1A3A2A' : '#FFF', color: ['♥', '♦'].includes(card.suit) ? '#D32F2F' : '#212121', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px' }}>
                   {idx === 1 && gameState === 'playing' ? '?' : `${card.value}${card.suit}`}
                 </div>
               ))}
             </div>
           </div>
-
           <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '12px' }}>
-            <p style={{ fontSize: '12px', color: '#00E676', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
-              You ({calculateScore(playerHand)})
-            </p>
+            <p style={{ fontSize: '12px', color: '#00E676', margin: '0 0 8px 0' }}>You ({calculateScore(playerHand)})</p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
               {playerHand.map((card, idx) => (
-                <div key={idx} style={{
-                  width: '45px',
-                  height: '65px',
-                  background: '#FFF',
-                  color: ['♥', '♦'].includes(card.suit) ? '#D32F2F' : '#212121',
-                  borderRadius: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '16px'
-                }}>
+                <div key={idx} style={{ width: '45px', height: '65px', background: '#FFF', color: ['♥', '♦'].includes(card.suit) ? '#D32F2F' : '#212121', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '16px' }}>
                   {card.value}{card.suit}
                 </div>
               ))}
@@ -197,47 +166,22 @@ export default function LuckyBlackjackChallenge() {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+      {gameState === 'won' && (
+        <div style={{ marginTop: '20px', padding: '20px', border: '2px solid #FFB300', borderRadius: '12px', background: 'rgba(0,0,0,0.3)' }}>
+          <h3 style={{ color: '#FFB300', margin: '0 0 10px 0' }}>Your Lucky Quote</h3>
+          <p style={{ fontStyle: 'italic', fontSize: '18px', color: '#FFF' }}>"{selectedQuote}"</p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '20px' }}>
         {gameState === 'idle' || gameState !== 'playing' ? (
-          <button onClick={startNewGame} style={{
-            background: 'linear-gradient(180deg, #FFD54F 0%, #FFB300 100%)',
-            color: '#000',
-            border: 'none',
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            borderRadius: '25px',
-            cursor: 'pointer',
-            boxShadow: '0 4px 10px rgba(255, 179, 0, 0.4)'
-          }}>
+          <button onClick={startNewGame} style={{ background: 'linear-gradient(180deg, #FFD54F 0%, #FFB300 100%)', color: '#000', border: 'none', padding: '12px 24px', fontSize: '16px', fontWeight: 'bold', borderRadius: '25px', cursor: 'pointer' }}>
             {gameState === 'idle' ? 'Deal Cards' : 'Play Again'}
           </button>
         ) : (
           <>
-            <button onClick={hit} style={{
-              background: '#00E676',
-              color: '#000',
-              border: 'none',
-              padding: '10px 20px',
-              fontSize: '15px',
-              fontWeight: 'bold',
-              borderRadius: '20px',
-              cursor: 'pointer'
-            }}>
-              Hit
-            </button>
-            <button onClick={stand} style={{
-              background: '#FF5252',
-              color: '#FFF',
-              border: 'none',
-              padding: '10px 20px',
-              fontSize: '15px',
-              fontWeight: 'bold',
-              borderRadius: '20px',
-              cursor: 'pointer'
-            }}>
-              Stand
-            </button>
+            <button onClick={hit} style={{ background: '#00E676', color: '#000', border: 'none', padding: '10px 20px', fontSize: '15px', fontWeight: 'bold', borderRadius: '20px', cursor: 'pointer' }}>Hit</button>
+            <button onClick={stand} style={{ background: '#FF5252', color: '#FFF', border: 'none', padding: '10px 20px', fontSize: '15px', fontWeight: 'bold', borderRadius: '20px', cursor: 'pointer' }}>Stand</button>
           </>
         )}
       </div>
