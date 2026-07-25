@@ -1,39 +1,3 @@
-'use client';
-
-import Image from 'next/image';
-import { useMemo, useState } from 'react';
-
-const suits = [
-  { id: 'hearts', symbol: '♥', label: 'Hearts', color: '#b91c1c' },
-  { id: 'diamonds', symbol: '♦', label: 'Diamonds', color: '#dc2626' },
-  { id: 'clubs', symbol: '♣', label: 'Clubs', color: '#064e3b' },
-  { id: 'spades', symbol: '♠', label: 'Spades', color: '#111827' },
-];
-
-const ranks = [
-  { rank: 'A', value: 11, label: 'Ace' },
-  { rank: '2', value: 2, label: 'Two' },
-  { rank: '3', value: 3, label: 'Three' },
-  { rank: '4', value: 4, label: 'Four' },
-  { rank: '5', value: 5, label: 'Five' },
-  { rank: '6', value: 6, label: 'Six' },
-  { rank: '7', value: 7, label: 'Seven' },
-  { rank: '8', value: 8, label: 'Eight' },
-  { rank: '9', value: 9, label: 'Nine' },
-  { rank: '10', value: 10, label: 'Ten' },
-  { rank: 'J', value: 10, label: 'Jack' },
-  { rank: 'Q', value: 10, label: 'Queen' },
-  { rank: 'K', value: 10, label: 'King' },
-];
-
-const resultCopy = {
-  win: {
-    title: '🏆 YOU WIN!',
-    messages: [
-      'The cards were feeling lucky today! Enjoy your winning hand!',
-      'A golden hand for a lucky Canadian moment. Keep that clover energy close!',
-      'Your LuckyPickCanada streak just found the spotlight. Nicely played!',
-    ],
   },
   push: {
     title: '🤝 PUSH!',
