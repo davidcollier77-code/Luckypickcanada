@@ -12,100 +12,67 @@ export default function LuckMeter() {
     setIsSpinning(true);
     setTargetLuck(null);
 
-    // Random luck generation logic
     const finalLuck = Math.floor(Math.random() * 101);
-    
-    // Animate rotation: 2 full spins + percentage position
-    const rotation = 720 + (finalLuck * 1.8); 
+    const rotation = 1440 + (finalLuck * 1.8); // 4 full spins for dramatic effect
     setNeedleAngle(rotation);
 
     setTimeout(() => {
       setTargetLuck(finalLuck);
       setIsSpinning(false);
-    }, 3000); // Matches CSS transition duration
+    }, 4000); 
   };
 
   return (
-    <div className="luck-generator-container">
+    <div className="luck-generator-premium">
       <style jsx>{`
-        .luck-generator-container {
-          background: radial-gradient(circle at center, #1a0b2e, #050505);
-          color: #fff;
-          padding: 2rem;
-          border-radius: 20px;
-          border: 2px solid #c5a059;
+        .luck-generator-premium {
+          background: radial-gradient(circle at center, #0f1c3f, #000);
+          border: 4px solid #c5a059; /* Metallic gold look */
+          border-radius: 50px;
+          padding: 3rem;
           text-align: center;
-          font-family: sans-serif;
-          min-height: 500px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          position: relative;
+          color: #e0d0a0;
+          box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 0 30px rgba(197, 160, 89, 0.3);
         }
-        .dial-wrapper {
-          position: relative;
-          width: 280px;
-          height: 280px;
-          border: 8px solid #c5a059;
+        .dial {
+          width: 250px; height: 250px;
           border-radius: 50%;
-          background: conic-gradient(#1a4d2e 0%, #1a4d2e 20%, #c5a059 20%, #c5a059 40%, #5e17eb 40%, #5e17eb 100%);
-          margin-bottom: 2rem;
-          box-shadow: 0 0 20px rgba(197, 160, 89, 0.5);
+          border: 10px solid #5d4a2a;
+          margin: 0 auto 2rem;
+          position: relative;
+          background: conic-gradient(#1a4d2e 0% 25%, #c5a059 25% 50%, #5e17eb 50% 100%);
         }
         .needle {
           position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 4px;
-          height: 120px;
-          background: #ffcc00;
+          width: 6px; height: 110px;
+          background: linear-gradient(to bottom, #ffd700, #b8860b);
+          top: 15px; left: calc(50% - 3px);
           transform-origin: bottom center;
-          transition: transform 3s cubic-bezier(0.2, 0.8, 0.3, 1);
-          border-radius: 2px;
+          transition: transform 4s cubic-bezier(0.1, 0.7, 0.3, 1);
         }
-        .generate-btn {
-          background: #c5a059;
-          color: #000;
-          padding: 1rem 2rem;
-          font-weight: bold;
-          border: none;
-          border-radius: 50px;
-          cursor: pointer;
-          font-size: 1.2rem;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        .reveal-aura {
+          padding: 2rem;
+          background: rgba(0,0,0,0.6);
+          border: 2px solid #c5a059;
+          border-radius: 20px;
+          transition: all 0.5s ease;
+          box-shadow: 0 0 ${targetLuck ? targetLuck / 5 : 0}px #ffd700; /* Glow scales with luck */
         }
-        .lucky-aura-reveal {
-          margin-top: 2rem;
-          padding: 1.5rem;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid #c5a059;
-          border-radius: 15px;
-          animation: glow 2s infinite alternate;
-        }
-        @keyframes glow {
-          from { box-shadow: 0 0 5px #c5a059; }
-          to { box-shadow: 0 0 20px #c5a059; }
-        }
-        .percentage { font-size: 2.5rem; color: #ffcc00; display: block; }
       `}</style>
 
-      <h1 style={{ margin: '0 0 1rem 0' }}>LUCK GENERATOR</h1>
-      
-      <div className="dial-wrapper">
+      <h2>LUCK GENERATOR</h2>
+      <div className="dial">
         <div className="needle" style={{ transform: `rotate(${needleAngle}deg)` }} />
       </div>
 
-      <button className="generate-btn" onClick={startMeter} disabled={isSpinning}>
-        {isSpinning ? 'SPINNING...' : 'GENERATE LUCK'}
+      <button className="spin-btn" onClick={startMeter} disabled={isSpinning}>
+        {isSpinning ? 'GENERATING...' : 'SPIN FOR LUCK'}
       </button>
 
-      {/* Lucky Aura Reveal: Triggers only after spin */}
       {!isSpinning && targetLuck !== null && (
-        <div className="lucky-aura-reveal">
-          <span className="percentage">{targetLuck}%</span>
+        <div className="reveal-aura">
+          <h3 style={{ fontSize: '2rem', color: '#ffd700' }}>{targetLuck}%</h3>
           <p>YOUR LUCK LEVEL</p>
-          <small>{targetLuck > 75 ? "LEGENDARY LUCK!" : "AMAZING LUCK!"}</small>
         </div>
       )}
     </div>
