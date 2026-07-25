@@ -69,12 +69,12 @@ export default function LuckyBlackjackChallenge() {
       <p style={{ textAlign: 'center', fontSize: '1.2rem' }}>{message}</p>
 
       {/* Card Display Section */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', padding: '15px', border: '1px dashed #FFB300' }}>
-        <div style={{ textAlign: 'center' }}>
-          <strong>Dealer Hand:</strong> {gameState !== 'idle' ? 'Hidden' : '-'}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', margin: '20px 0', padding: '15px', border: '1px solid #FFB300', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.03)' }}>
+        <div style={{ textAlign: 'center', fontSize: '1.1rem', letterSpacing: '1px' }}>
+          <span style={{ color: '#FFB300' }}>Dealer</span> | <span style={{ fontStyle: 'italic' }}>Awaiting Challenge</span>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <strong>Player Hand:</strong> {playerHand.map((c) => (c % 13 + 1)).join(', ')}
+        <div style={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
+          Your Hand: {playerHand.length > 0 ? playerHand.map((c) => (c % 13 + 1)).join(', ') : '-'}
         </div>
       </div>
 
