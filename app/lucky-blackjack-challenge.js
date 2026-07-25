@@ -4,7 +4,17 @@ import React, { useState } from 'react';
 import LuckyCardReveal from './lucky-card-reveal'; 
 
 // Premium Card Component
-const Card = ({ cardDetails }) => {
+const Card = ({ cardDetails, isHidden }) => {
+  if (isHidden) {
+    return (
+      <div style={{
+        width: '50px', height: '70px', background: 'linear-gradient(135deg, #FFB300 25%, #d32f2f 100%)',
+        borderRadius: '6px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+        border: '2px solid #fff', margin: '0 5px'
+      }} />
+    );
+  }
+
   const isRed = cardDetails.includes('♥') || cardDetails.includes('♦');
   return (
     <div style={{
@@ -42,6 +52,34 @@ export default function LuckyBlackjackChallenge() {
     });
     while (score > 21 && aces > 0) { score -= 10; aces -= 1; }
     return score;
+  };
+
+  // --- New Score Display Helpers ---
+  const getPlayerDisplayScore = (hand) => {
+    if (hand.length === 0) return '';
+    const currentScore = calculateScore(hand);
+    
+    // Logic for soft Aces (e.g., displaying "7 / 17")
+    let rawScore = 0; let aces = 0;
+    hand.forEach((num) => {
+      const val = (num % 13) + 1;
+      if (val === 1) aces += 1; 
+      else rawScore += val > 10 ? 10 : val;
+    });
+
+    if (aces > 0 && (rawScore + 11 + (aces - 1) <= 21) && currentScore !== 21) {
+      return `${currentScore - 10} / ${currentScore}`;
+    }
+    return currentScore;
+  };
+
+  const getDealerDisplayScore = (hand) => {
+    if (hand.length === 0) return '';
+    // Only calculate the first card's score while the player is taking their turn
+    if (gameState === 'playing') {
+      return calculateScore([hand[0]]);
+    }
+    return calculateScore(hand);
   };
 
   const startNewGame = () => {
@@ -100,18 +138,39 @@ export default function LuckyBlackjackChallenge() {
       <p style={{ textAlign: 'center', fontSize: '1.1rem' }}>{message}</p>
       
       <div style={{ margin: '20px 0', padding: '15px', border: '1px solid #FFB300', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.05)' }}>
+        
+        {/* Dealer Area */}
         <div style={{ marginBottom: '15px' }}>
-          <strong>Dealer:</strong>
+          <strong>Dealer:</strong> 
+          {dealerHand.length > 0 && (
+            <span style={{ marginLeft: '10px', color: '#FFB300', fontWeight: 'bold' }}>
+              {getDealerDisplayScore(dealerHand)}
+            </span>
+          )}
           <div style={{ display: 'flex', marginTop: '5px' }}>
-             {dealerHand.map((num, i) => <Card key={i} cardDetails={getCardDetails(num)} />)}
+             {dealerHand.map((num, i) => (
+               <Card 
+                 key={i} 
+                 cardDetails={getCardDetails(num)} 
+                 isHidden={gameState === 'playing' && i === 1} 
+               />
+             ))}
           </div>
         </div>
+        
+        {/* Player Area */}
         <div>
-          <strong>Your Hand:</strong>
+          <strong>Your Hand:</strong> 
+          {playerHand.length > 0 && (
+            <span style={{ marginLeft: '10px', color: '#FFB300', fontWeight: 'bold' }}>
+              {getPlayerDisplayScore(playerHand)}
+            </span>
+          )}
           <div style={{ display: 'flex', marginTop: '5px' }}>
-            {playerHand.map((num, i) => <Card key={i} key={i} cardDetails={getCardDetails(num)} />)}
+            {playerHand.map((num, i) => <Card key={i} cardDetails={getCardDetails(num)} />)}
           </div>
         </div>
+
       </div>
 
       {gameState === 'won' && (
@@ -123,11 +182,11 @@ export default function LuckyBlackjackChallenge() {
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
         {gameState === 'playing' ? (
           <>
-            <button onClick={hit} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold' }}>Hit</button>
-            <button onClick={stand} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold' }}>Stand</button>
+            <button onClick={hit} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold', border: 'none', borderRadius: '4px', color: '#000' }}>Hit</button>
+            <button onClick={stand} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold', border: 'none', borderRadius: '4px', color: '#000' }}>Stand</button>
           </>
         ) : (
-          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold' }}>
+          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer', background: '#FFB300', fontWeight: 'bold', border: 'none', borderRadius: '4px', color: '#000' }}>
             {gameState === 'idle' ? 'Deal New Game' : 'Play Again'}
           </button>
         )}
