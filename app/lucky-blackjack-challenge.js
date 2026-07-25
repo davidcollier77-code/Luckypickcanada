@@ -1,10 +1,7 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
-// Import your existing component
+import React, { useState } from 'react';
 import LuckyCardReveal from './lucky-card-reveal'; 
-
-// ... (Keep the CustomLogo code exactly as it was) ...
 
 export default function LuckyBlackjackChallenge() {
   const [gameState, setGameState] = useState('idle');
@@ -13,46 +10,81 @@ export default function LuckyBlackjackChallenge() {
   const [deck, setDeck] = useState([]);
   const [message, setMessage] = useState('Beat the Dealer for Lucky Picks!');
   const [selectedQuote, setSelectedQuote] = useState('');
-  const [, startTransition] = useTransition();
 
-  // ... (Keep your shuffle and helper functions exactly as they were) ...
+  // Fisher-Yates Shuffle
+  const shuffleDeck = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
+  const startNewGame = () => {
+    const newDeck = shuffleDeck([...Array(52).keys()]);
+    setPlayerHand([newDeck.pop(), newDeck.pop()]);
+    setDealerHand([newDeck.pop(), newDeck.pop()]);
+    setDeck(newDeck);
+    setGameState('playing');
+    setMessage('Good luck!');
+  };
+
+  const hit = () => {
+    const newDeck = [...deck];
+    setPlayerHand([...playerHand, newDeck.pop()]);
+    setDeck(newDeck);
+  };
 
   const stand = () => {
-    // ... (Keep your existing stand logic) ...
-    // Inside your 'won' block:
+    // Basic dealer logic for demonstration
+    let dScore = 18; // Simplified for this example
+    let pScore = playerHand.reduce((acc, card) => acc + (card % 13 + 1), 0);
+
     if (dScore > 21 || pScore > dScore) {
       setGameState('won');
       setMessage('🎉 YOU WIN! Claim Your Lucky Pick!');
-      const quotes = ["Fortune favors the bold!", "Your luck is blooming today!", "A golden opportunity awaits!", "Victory looks good on you!"];
+      
+      const quotes = [
+        "A little luck can open a world of possibilities.",
+        "Today, luck found its way to you.",
+        "Great moments begin with a little bit of luck.",
+        "Your lucky moment has arrived.",
+        "Trust the journey. Your luck is shining bright.",
+        "The cards aligned, and luck smiled your way.",
+        "Every win starts with a little magic.",
+        "A spark of luck can create something amazing.",
+        "Keep believing — your lucky story continues.",
+        "Good fortune is closer than you think."
+      ];
       setSelectedQuote(quotes[Math.floor(Math.random() * quotes.length)]);
-    } 
-    // ...
+    } else {
+      setGameState('lost');
+      setMessage('Dealer wins this time!');
+    }
   };
 
   return (
-    <div style={{ /* ... your existing styles ... */ }}>
-      {/* ... your existing logo and hand display code ... */}
+    <div style={{ padding: '20px', background: '#0a0b1e', color: '#fff', borderRadius: '15px', border: '2px solid #FFB300' }}>
+      <h1>LuckyPick Blackjack</h1>
+      <p>{message}</p>
 
-      {/* 1. Only show the card if we won */}
       {gameState === 'won' && (
         <div style={{ marginTop: '20px' }}>
           <LuckyCardReveal quote={selectedQuote} />
         </div>
       )}
 
-      {/* 2. Modified Button Logic to "Lock" the game */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '20px' }}>
         {gameState === 'playing' ? (
           <>
-            <button onClick={hit} style={{ /* ... styles ... */ }}>Hit</button>
-            <button onClick={stand} style={{ /* ... styles ... */ }}>Stand</button>
+            <button onClick={hit} style={{ padding: '10px 20px', cursor: 'pointer' }}>Hit</button>
+            <button onClick={stand} style={{ padding: '10px 20px', cursor: 'pointer' }}>Stand</button>
           </>
         ) : gameState === 'idle' ? (
-          <button onClick={startNewGame} style={{ /* ... styles ... */ }}>Deal Cards</button>
+          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer' }}>Deal Cards</button>
         ) : gameState === 'lost' || gameState === 'push' ? (
-          <button onClick={startNewGame} style={{ /* ... styles ... */ }}>Play Again</button>
+          <button onClick={startNewGame} style={{ padding: '10px 20px', cursor: 'pointer' }}>Play Again</button>
         ) : (
-          // If gameState === 'won', we render NOTHING here, locking the game.
           <p style={{ color: '#FFB300' }}>Refresh page to play again!</p>
         )}
       </div>
