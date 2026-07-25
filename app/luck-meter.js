@@ -22,12 +22,13 @@ export default function LuckMeter() {
   const [needleAngle, setNeedleAngle] = useState(MIN_ANGLE);
   const [targetLuck, setTargetLuck] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [hasSpun, setHasSpun] = useState(false);
   const frameRef = useRef(null);
 
   useEffect(() => () => frameRef.current && cancelAnimationFrame(frameRef.current), []);
 
   function startMeter() {
-    if (isSpinning) return;
+    if (isSpinning || hasSpun) return;
 
     const target = getTodaysLuck();
     const duration = 2600;
@@ -55,6 +56,7 @@ export default function LuckMeter() {
         setLuckLevel(target);
         setNeedleAngle(finalAngle);
         setTargetLuck(target);
+        setHasSpun(true);
         setIsSpinning(false);
       }
     }
@@ -104,8 +106,8 @@ export default function LuckMeter() {
               <span className="lucky-meter-maple lucky-meter-maple-right">✦</span>
             </div>
 
-            <button type="button" onClick={startMeter} disabled={isSpinning} className="lucky-meter-button" aria-label={isSpinning ? 'Lucky Meter is spinning' : 'Generate your luck'}>
-              <span>{isSpinning ? 'Reading the stars...' : 'Generate Your Luck'}</span>
+            <button type="button" onClick={startMeter} disabled={isSpinning || hasSpun} className="lucky-meter-button" aria-label={isSpinning ? 'Lucky Meter is spinning' : hasSpun ? 'Lucky Meter result generated for this page session' : 'Generate your luck'}>
+              <span>{isSpinning ? 'Reading the stars...' : hasSpun ? 'Luck Revealed' : 'Generate Your Luck'}</span>
             </button>
             <p role="status" className="lucky-meter-status">
               {isSpinning ? 'Your needle is finding today’s number.' : targetLuck === null ? 'Tap to reveal your luck percentage.' : `Your luck is locked in at ${targetLuck}%.`}
