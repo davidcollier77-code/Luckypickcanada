@@ -238,29 +238,40 @@ body {
 @media (max-width: 760px) { .reference-nav-row { flex-wrap: wrap; gap: .35rem; }.reference-brand { font-size: .9rem; }.reference-nav-links { width: 100%; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: .12rem; scrollbar-width: none; }.reference-nav-links::-webkit-scrollbar { display: none; }.reference-nav-links .premium-nav-link { flex: 0 0 auto; font-size: .61rem !important; }.reference-hero-title { font-size: clamp(1.78rem, 8.4vw, 3.9rem); letter-spacing: -.09em; }.experience-brand { font-size: 1rem; } }
 @media (max-width: 390px) { .reference-brand { font-size: .78rem; gap: .38rem; }.reference-brand img { width: 36px !important; height: 36px !important; }.reference-hero-title { font-size: clamp(1.52rem, 8.3vw, 2.15rem); }.experience-brand span { font-size: .88rem; } }
 
-/* Official Lucky Meter assembly: fixed reference artwork with independent needle and button layers. */
-.lucky-meter-artwork { position: relative; isolation: isolate; width: min(100%, 430px); margin-inline: auto; }
-.lucky-meter-aurora { position: absolute; z-index: -1; inset: 7% -18% 17%; border-radius: 50%; background: radial-gradient(ellipse, rgba(25, 218, 163, .4), transparent 59%), radial-gradient(circle at 70% 32%, rgba(255, 202, 55, .34), transparent 30%); filter: blur(24px); animation: lucky-meter-aurora 4s ease-in-out infinite alternate; }
-.lucky-meter-layer-stack { position: relative; }
-.lucky-meter-background-layer { position: relative; z-index: 1; }
-.lucky-meter-background-art { display: block; width: 100%; height: auto; object-fit: contain; filter: drop-shadow(0 24px 28px rgba(0, 0, 0, .52)); }
-/* Dedicated dial artwork can replace this transparent fallback without changing layout. */
+/* Premium Lucky Meter: artwork remains a background while interaction layers stay independent. */
+.lucky-meter-shell { isolation: isolate; }
+.lucky-meter-grid { position: relative; z-index: 1; }
+.lucky-meter-copy { display: grid; gap: .8rem; align-content: center; }
+.lucky-meter-kicker { text-shadow: 0 0 18px rgba(250, 204, 21, .3); }
+.lucky-meter-title { max-width: 10ch; }
+.lucky-meter-description { color: rgba(255, 247, 214, .86); }
+.lucky-meter-stage { justify-items: center; }
+.lucky-meter-artwork { position: relative; isolation: isolate; width: min(100%, 470px); margin-inline: auto; }
+.lucky-meter-aurora { position: absolute; z-index: -1; inset: 9% -17% 16%; border-radius: 48%; background: radial-gradient(ellipse at 28% 62%, rgba(35, 233, 175, .43), transparent 53%), radial-gradient(ellipse at 72% 30%, rgba(255, 203, 66, .36), transparent 42%); filter: blur(28px); animation: lucky-meter-aurora 5s ease-in-out infinite alternate; }
+.lucky-meter-layer-stack { position: relative; filter: drop-shadow(0 24px 32px rgba(0, 0, 0, .52)); }
+.lucky-meter-background-layer { position: relative; z-index: 1; overflow: hidden; border-radius: 3%; }
+.lucky-meter-background-layer::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(120deg, rgba(255, 239, 167, .12), transparent 25% 70%, rgba(47, 241, 179, .12)), radial-gradient(ellipse at 50% 34%, transparent 46%, rgba(1, 8, 12, .16)); mix-blend-mode: screen; }
+.lucky-meter-background-art { display: block; width: 100%; height: auto; object-fit: contain; filter: saturate(1.06) contrast(1.04); }
 .lucky-meter-dial-face-layer, .lucky-meter-needle-layer, .lucky-meter-hub-layer, .lucky-meter-effects-layer { position: absolute; left: 19%; top: 29.5%; width: 62%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; }
 .lucky-meter-dial-face-layer { z-index: 2; overflow: hidden; }
-.lucky-meter-dial-face-fallback { position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 235, 160, .08); }
-.lucky-meter-needle-layer { z-index: 3; }
+.lucky-meter-dial-face-fallback { position: absolute; inset: 5%; border: 1px solid rgba(255, 236, 158, .15); border-radius: inherit; box-shadow: inset 0 0 24px rgba(6, 74, 55, .28), 0 0 20px rgba(54, 245, 183, .12); }
+.lucky-meter-needle-layer { z-index: 3; will-change: transform; }
 .lucky-meter-hub-layer { z-index: 4; }
-.lucky-meter-effects-layer { z-index: 5; }
-.lucky-meter-needle { position: absolute; left: 50%; top: 15%; width: 2.7%; height: 36%; border-radius: 100% 100% 35% 35%; transform: translateX(-50%) rotate(var(--lucky-meter-needle-angle, -126deg)); transform-origin: 50% 97%; background: linear-gradient(90deg, #551a00, #f8c84f 39%, #fff6c3 50%, #b96100 67%, #481500); box-shadow: 0 0 5px #fff3ad, 0 0 13px rgba(249, 182, 27, .86), 0 4px 6px rgba(0,0,0,.68); transition: transform 40ms linear; }
-.lucky-meter-hub { position: absolute; left: 50%; top: 49.5%; width: 13%; aspect-ratio: 1; border: 2px solid #ffe495; border-radius: 50%; transform: translate(-50%, -50%); background: radial-gradient(circle at 32% 28%, #fff8c4, #dd961d 42%, #5b2400 78%); box-shadow: 0 0 12px #f6c23c, inset 0 1px 2px #fff9d2; }
+.lucky-meter-effects-layer { z-index: 5; overflow: visible; }
+.lucky-meter-needle { position: absolute; left: 50%; top: 11%; width: 3.1%; height: 40%; border-radius: 100% 100% 35% 35%; transform: translateX(-50%) rotate(var(--lucky-meter-needle-angle, -126deg)); transform-origin: 50% 97%; background: linear-gradient(90deg, #4d1600, #bf7611 28%, #fff6c3 49%, #d58b16 67%, #3d1200); box-shadow: 0 0 5px #fff4b3, 0 0 14px rgba(249, 182, 27, .82), 0 5px 8px rgba(0,0,0,.7); transition: transform 40ms linear; }
+.lucky-meter-hub { position: absolute; left: 50%; top: 49.5%; width: 14%; aspect-ratio: 1; border: 2px solid #ffe495; border-radius: 50%; transform: translate(-50%, -50%); background: radial-gradient(circle at 32% 28%, #fff8c4, #dd961d 42%, #5b2400 78%); box-shadow: 0 0 14px #f6c23c, 0 0 26px rgba(44, 239, 174, .36), inset 0 1px 2px #fff9d2; }
 .lucky-meter-button-overlay { position: absolute; z-index: 6; left: 22%; top: 82%; width: 56%; height: 8%; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; transition: transform .22s ease, filter .22s ease; }
-.lucky-meter-button-overlay:not(:disabled):active { transform: translateY(3px) scale(.985); filter: brightness(1.26); }.lucky-meter-button-overlay:focus-visible { outline: 3px solid rgba(255, 244, 177, .92); outline-offset: 4px; }.lucky-meter-button-overlay:disabled { cursor: default; }
-.lucky-meter-button-glow { position: absolute; inset: -18%; border-radius: inherit; opacity: 0; background: radial-gradient(ellipse, rgba(255,241,157,.98), rgba(250,190,35,.56) 34%, rgba(34,255,183,.42) 56%, transparent 73%); filter: blur(12px); transition: opacity .2s ease; pointer-events: none; }
-.lucky-meter-button-sheen { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.7) 47%, transparent 63%); transform: translateX(-130%); pointer-events: none; }
+.lucky-meter-button-overlay:not(:disabled):hover { filter: brightness(1.16) saturate(1.12); }
+.lucky-meter-button-overlay:not(:disabled):active { transform: translateY(3px) scale(.985); filter: brightness(1.28); }.lucky-meter-button-overlay:focus-visible { outline: 3px solid rgba(255, 244, 177, .92); outline-offset: 4px; }.lucky-meter-button-overlay:disabled { cursor: default; }
+.lucky-meter-button-glow { position: absolute; inset: -24%; border-radius: inherit; opacity: 0; background: radial-gradient(ellipse, rgba(255,241,157,.98), rgba(250,190,35,.56) 34%, rgba(34,255,183,.42) 56%, transparent 73%); filter: blur(14px); transition: opacity .2s ease; pointer-events: none; }
+.lucky-meter-button-sheen { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 25%, rgba(255,255,255,.72) 47%, transparent 63%); transform: translateX(-130%); pointer-events: none; }
 .lucky-meter-artwork.is-spinning .lucky-meter-button-overlay { animation: lucky-meter-button-press .4s ease-out, lucky-meter-power 1.1s ease-in-out infinite; }.lucky-meter-artwork.is-spinning .lucky-meter-button-glow { opacity: 1; }.lucky-meter-artwork.is-spinning .lucky-meter-button-sheen { animation: lucky-meter-sheen 1.1s linear infinite; }.lucky-meter-artwork.is-spinning .lucky-meter-aurora { animation-duration: 1.1s; }
-.lucky-meter-artwork-sparkle { position: absolute; z-index: 4; inset: 7%; background: radial-gradient(circle at 22% 28%, rgba(255,248,199,.86) 0 2px, transparent 3px), radial-gradient(circle at 76% 18%, rgba(250,214,103,.78) 0 1.5px, transparent 3px), radial-gradient(circle at 70% 72%, rgba(112,255,205,.68) 0 1.5px, transparent 3px), radial-gradient(circle at 31% 82%, rgba(255,246,186,.66) 0 1px, transparent 3px); filter: drop-shadow(0 0 8px rgba(250,220,107,.72)); animation: lucky-meter-artwork-sparkle 2.6s ease-in-out infinite; }
+.lucky-meter-artwork-sparkle { position: absolute; z-index: 4; inset: -2%; border-radius: inherit; background: radial-gradient(circle at 18% 31%, rgba(255,248,199,.9) 0 1.5px, transparent 3px), radial-gradient(circle at 78% 18%, rgba(250,214,103,.84) 0 1.5px, transparent 3px), radial-gradient(circle at 74% 73%, rgba(112,255,205,.76) 0 1.5px, transparent 3px), radial-gradient(circle at 28% 78%, rgba(255,246,186,.72) 0 1px, transparent 3px); filter: drop-shadow(0 0 8px rgba(250,220,107,.78)); animation: lucky-meter-artwork-sparkle 2.6s ease-in-out infinite; }
+.lucky-meter-result { width: min(100%, 470px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 12px 28px rgba(0, 0, 0, .22); }
 @keyframes lucky-meter-power { 50% { filter: brightness(1.2) drop-shadow(0 0 16px rgba(255,212,79,.95)) drop-shadow(0 0 28px rgba(45,239,177,.55)); } } @keyframes lucky-meter-sheen { to { transform: translateX(130%); } }
-@media (max-width: 620px) { .lucky-meter-artwork { width: min(100%, 340px); } }
+@media (max-width: 760px) { .lucky-meter-copy { text-align: center; justify-items: center; }.lucky-meter-title { max-width: none; }.lucky-meter-artwork { width: min(100%, 390px); } }
+@media (max-width: 420px) { .lucky-meter-artwork { width: min(100%, 340px); }.lucky-meter-result { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .lucky-meter-aurora, .lucky-meter-artwork-sparkle, .lucky-meter-artwork.is-spinning .lucky-meter-button-overlay, .lucky-meter-artwork.is-spinning .lucky-meter-button-sheen { animation: none; } }
 
 .tip-jar-card { isolation: isolate; }
 .tip-jar-card::after { content: ''; position: absolute; z-index: -1; right: -15%; bottom: -28%; width: 15rem; height: 15rem; border: 1px solid rgba(255,224,124,.34); border-radius: 50%; box-shadow: 0 0 0 18px rgba(232,186,82,.05), 0 0 46px rgba(232,186,82,.23); }
