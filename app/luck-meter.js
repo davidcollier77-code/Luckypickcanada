@@ -13,8 +13,6 @@ export default function LuckMeter() {
   const [targetLuck, setTargetLuck] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
-  const needleAngle = -126 + (luckLevel / 100) * 252;
-  const meterTicks = Array.from({ length: 25 }, (_, index) => index);
   const frameRef = useRef(null);
 
   useEffect(() => {
@@ -67,46 +65,9 @@ export default function LuckMeter() {
     <>
       <section aria-labelledby="luck-meter-title" className="lucky-meter premium-surface lucky-meter-shell" style={{ marginTop: '2rem', padding: 'clamp(1.25rem, 3vw, 1.8rem)', borderRadius: 30, background: 'radial-gradient(circle at 12% 18%, rgba(250, 204, 21, 0.3), transparent 24%), radial-gradient(circle at 88% 5%, rgba(16, 185, 129, 0.38), transparent 28%), linear-gradient(145deg, rgba(3, 8, 14, 0.94), rgba(4, 44, 40, 0.84) 54%, rgba(7, 18, 37, 0.9))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.26)', boxShadow: '0 32px 96px rgba(0, 0, 0, 0.52), 0 0 54px rgba(16, 185, 129, 0.2), 0 0 34px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1)', overflow: 'hidden', position: 'relative', backdropFilter: 'blur(18px) saturate(130%)' }}>
       <style>{`
-        @keyframes lucky-meter-glow {
-          0%, 100% { box-shadow: 0 0 18px rgba(94, 234, 212, 0.45); }
-          50% { box-shadow: 0 0 34px rgba(250, 204, 21, 0.72); }
-        }
-
-        @keyframes lucky-meter-artwork-reveal {
-          0% { opacity: 0.78; transform: scale(0.985); filter: saturate(0.92) brightness(0.88); }
-          55% { opacity: 1; transform: scale(1.012); filter: saturate(1.12) brightness(1.08); }
-          100% { opacity: 0.94; transform: scale(1); filter: saturate(1) brightness(1); }
-        }
-
-        @keyframes lucky-meter-artwork-sparkle {
-          0%, 100% { opacity: 0.18; transform: translate3d(-5%, 3%, 0) scale(0.94); }
-          50% { opacity: 0.72; transform: translate3d(5%, -3%, 0) scale(1.05); }
-        }
-
-        @keyframes lucky-meter-dial-spin {
-          to { transform: rotate(360deg); }
-        }
-
-        @keyframes lucky-meter-button-press {
-          0% { transform: translateY(0) scale(1); }
-          45% { transform: translateY(3px) scale(.975); }
-          100% { transform: translateY(0) scale(1); }
-        }
-
-        @keyframes lucky-meter-aurora {
-          0% { transform: translateX(-18%) rotate(-4deg); opacity: 0.36; }
-          50% { transform: translateX(9%) rotate(5deg); opacity: 0.7; }
-          100% { transform: translateX(20%) rotate(-2deg); opacity: 0.44; }
-        }
-
         .luck-meter { font-family: var(--lpc-body); }
         .luck-meter h2 { font-family: var(--lpc-display); }
       `}</style>
-      <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: 18, left: -140, width: 620, height: 130, borderRadius: '999px', background: 'linear-gradient(90deg, rgba(16,185,129,0), rgba(20,184,166,0.52), rgba(250,204,21,0.3), rgba(16,185,129,0))', filter: 'blur(15px)', animation: 'lucky-meter-aurora 11s ease-in-out infinite alternate' }} />
-        <div style={{ position: 'absolute', bottom: -120, right: -120, width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(250,204,21,0.16), transparent 64%)' }} />
-      </div>
-
       <div className="experience-brand"><Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
 
       <div className="lucky-meter-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', alignItems: 'center' }}>
@@ -125,43 +86,23 @@ export default function LuckMeter() {
 
         <div className="lucky-meter-stage" style={{ display: 'grid', gap: '0.85rem' }}>
           <div className={`lucky-meter-artwork ${isSpinning ? 'is-spinning' : ''} ${hasStarted ? 'has-result' : ''}`}>
-            <div className="lucky-meter-aurora" aria-hidden="true" />
-            <div className="lucky-meter-layer-stack">
-              {/* Keep layer hooks separate so dedicated artwork can replace these fallbacks later. */}
-              <div className="lucky-meter-background-layer">
-                <Image
-                  src="/1784931654864.png"
-                  alt="LuckyPickCanada Lucky Meter"
-                  width={704}
-                  height={1524}
-                  sizes="(max-width: 620px) 100vw, (max-width: 960px) 54vw, 430px"
-                  quality={90}
-                  className="lucky-meter-background-art"
-                />
-              </div>
-              <div className="lucky-meter-dial-face-layer" aria-hidden="true">
-                <span className="lucky-meter-dial-face-fallback" />
-              </div>
-              <div className="lucky-meter-needle-layer" aria-hidden="true">
-                <span className="lucky-meter-needle" style={{ '--lucky-meter-needle-angle': `${needleAngle}deg` }} />
-              </div>
-              <div className="lucky-meter-hub-layer" aria-hidden="true">
-                <span className="lucky-meter-hub" />
-              </div>
-              <div className="lucky-meter-effects-layer" aria-hidden="true">
-                <span className="lucky-meter-artwork-sparkle" />
-              </div>
-              <button
-                type="button"
-                onClick={startMeter}
-                disabled={isSpinning || hasStarted}
-                className="lucky-meter-button-overlay"
-                aria-label={isSpinning ? 'Lucky Meter is running' : hasStarted ? `Luck locked in at ${luckLevel} percent` : 'Generate your luck'}
-              >
-                <span className="lucky-meter-button-sheen" aria-hidden="true" />
-                <span className="lucky-meter-button-glow" aria-hidden="true" />
-              </button>
-            </div>
+            <Image
+              src="/1784931654864.png"
+              alt="LuckyPickCanada Lucky Meter"
+              width={704}
+              height={1524}
+              sizes="(max-width: 420px) 100vw, (max-width: 760px) 390px, 470px"
+              quality={90}
+              priority
+              className="lucky-meter-finished-art"
+            />
+            <button
+              type="button"
+              onClick={startMeter}
+              disabled={isSpinning || hasStarted}
+              className="lucky-meter-button-overlay"
+              aria-label={isSpinning ? 'Lucky Meter is running' : hasStarted ? `Luck locked in at ${luckLevel} percent` : 'Generate your luck'}
+            />
           </div>
 
           <div className="lucky-meter-result" style={{ padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(2, 8, 23, 0.82), rgba(6, 39, 36, 0.66))', color: '#fff7d6', textAlign: 'center', border: '1px solid rgba(255, 235, 160, 0.26)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)' }}>
