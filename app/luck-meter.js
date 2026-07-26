@@ -36,46 +36,44 @@ export default function LuckMeter() {
   }, []);
 
   const spinMeter = () => {
-    // Prevent spamming the button while spinning or after already spinning
     if (isSpinning || hasSpun) return;
 
     setIsSpinning(true);
     setHasSpun(true);
     
-    // Generate score between 0% and 100%
     const randomLuck = Math.floor(Math.random() * 101);
-    
-    // Map 0-100% to -90deg (0%) through +90deg (100%)
     const targetAngle = (randomLuck / 100) * 180 - 90;
-    
-    // Add 3 full extra rotations (1080 deg) for dramatic spin effect
     const nextRotation = rotation + 1080 + (targetAngle - (rotation % 360));
 
     setRotation(nextRotation);
 
-    // Reveal score and trigger lights once the 2.5s needle spin completes
     setTimeout(() => {
       setLuckPercentage(randomLuck);
       setIsSpinning(false);
     }, 2500);
   };
 
-  // Determine dynamic lighting effects and messages based on the final score
+  // Logic for dynamic lighting (Charging state vs Result state)
   let glowColor = 'transparent';
   let glowIntensity = '0px';
   let luckMessage = '';
   
-  if (luckPercentage !== null && !isSpinning) {
+  if (isSpinning) {
+    // Active "Charging" state while spinning
+    glowColor = 'rgba(255, 255, 255, 0.4)'; 
+    glowIntensity = '30px';
+  } else if (luckPercentage !== null) {
+    // Result state colors
     if (luckPercentage >= 80) {
-      glowColor = 'rgba(0, 255, 128, 0.7)'; // Bright Green
+      glowColor = 'rgba(0, 255, 128, 0.7)';
       glowIntensity = '60px';
       luckMessage = "Outstanding! The universe is totally on your side today.";
     } else if (luckPercentage >= 50) {
-      glowColor = 'rgba(255, 215, 0, 0.6)'; // Gold
+      glowColor = 'rgba(255, 215, 0, 0.6)';
       glowIntensity = '40px';
       luckMessage = "Solid energy! A perfectly balanced day ahead.";
     } else {
-      glowColor = 'rgba(255, 100, 100, 0.5)'; // Soft Red
+      glowColor = 'rgba(255, 100, 100, 0.5)';
       glowIntensity = '25px';
       luckMessage = "Hey, the only way is up! You make your own luck anyway.";
     }
@@ -106,11 +104,11 @@ export default function LuckMeter() {
         Lucky Meter
       </h2>
 
-      {/* Meter Display Frame - Increased Size */}
+      {/* Meter Display Frame - Size increased to 420px */}
       <div style={{
         position: 'relative',
         width: '100%',
-        maxWidth: '350px',
+        maxWidth: '420px',
         aspectRatio: '1 / 1',
         display: 'flex',
         alignItems: 'center',
@@ -118,13 +116,13 @@ export default function LuckMeter() {
         marginBottom: '30px'
       }}>
         
-        {/* Dynamic Glowing Aura behind the meter */}
+        {/* Dynamic Glowing Aura */}
         <div style={{
           position: 'absolute',
           top: '10%', left: '10%', right: '10%', bottom: '10%',
           borderRadius: '50%',
           boxShadow: `0 0 ${glowIntensity} ${glowColor}`,
-          transition: 'box-shadow 1.5s ease-in-out',
+          transition: 'all 0.5s ease-in-out',
           zIndex: 0
         }} />
 
@@ -175,7 +173,7 @@ export default function LuckMeter() {
         )}
       </div>
 
-      {/* Trigger Button - Locks after one use */}
+      {/* Trigger Button */}
       <button
         onClick={spinMeter}
         disabled={isSpinning || hasSpun}
