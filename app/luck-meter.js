@@ -99,19 +99,19 @@ export default function LuckMeter() {
         {/* Dial Base */}
         <img src={DIAL_IMAGE} alt="Dial Base" style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} />
         
-        {/* Frosted Glass Label Plate - Modern look */}
+        {/* Modern Frosted Glass Label Plate - Force Centered */}
         <div style={{
-          position: 'absolute', top: '92%', left: '50%', transform: 'translate(-50%, -50%)', 
-          width: '52%', height: '13%',
+          position: 'absolute', top: '88%', left: '50%', transform: 'translate(-50%, -50%)', 
+          width: '50%', height: '12%',
           background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)', 
-          borderRadius: '20px', 
+          backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)', 
+          borderRadius: '15px', 
           zIndex: 5,
-          display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.4rem',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+          display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
         }}>
-          🍀
+          LUCKY PICK
         </div>
 
         {/* Sparkler Effect */}
