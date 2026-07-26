@@ -1,126 +1,117 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
-
-const AURORA_KEYFRAMES = `
-@keyframes lm-aurora-glow {
-  0%, 100% {
-    filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.65))
-            drop-shadow(0 0 14px rgba(34, 211, 238, 0.45))
-            hue-rotate(0deg);
-  }
-  50% {
-    filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.85))
-            drop-shadow(0 0 22px rgba(129, 140, 248, 0.55))
-            hue-rotate(35deg);
-  }
-}
-@keyframes lm-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .lm-needle-aurora { animation: none !important; }
-  .lm-result { animation: none !important; }
-  .lm-needle-img { transition-duration: 400ms !important; }
-}
-`;
-
-const READING_COPY = (pct) => {
-  if (pct >= 80) return 'Incredible! Your luck is off the charts today!';
-  if (pct >= 50) return 'Positive vibes are coming your way!';
-  if (pct >= 25) return 'A quiet kind of luck — good things build slowly.';
-  return "Today's about steady ground, not fireworks. Tomorrow's a new reading.";
-};
-
-const angleForPercentage = (pct) => pct * 2.7 - 135;
+import React, { useState, useEffect } from 'react';
 
 export default function LuckyMeter() {
+  const [rotation, setRotation] = useState(0);
   const [percentage, setPercentage] = useState(null);
-  const [rotation, setRotation] = useState(0); 
   const [isSpinning, setIsSpinning] = useState(false);
-  const [shareState, setShareState] = useState('idle');
 
-  const hasResult = percentage !== null && !isSpinning;
-  const isHighScore = hasResult && percentage >= 50;
+  // Preload both PNG assets immediately when component mounts
+  useEffect(() => {
+    const baseImg = new Image();
+    baseImg.src = '/1785063390164.png';
+    const handImg = new Image();
+    handImg.src = '/1785063404048.png';
+  }, []);
 
-  const handleGenerate = useCallback(() => {
-    if (isSpinning || hasResult) return;
-    
-    const result = Math.floor(Math.random() * 101);
-    const targetAngle = angleForPercentage(result);
-    
-    // 1080 = 3 full spins
-    const extraSpins = 1080; 
-    setRotation(extraSpins + targetAngle);
-    
+  const spinMeter = () => {
+    if (isSpinning) return;
+
     setIsSpinning(true);
-    setPercentage(result);
-    
-    window.setTimeout(() => setIsSpinning(false), 2200);
-  }, [isSpinning, hasResult]);
 
-  const handleShare = useCallback(async () => {
-    const text = `My Daily Luck Reading from Lucky Pick Canada: ${percentage}% — ${READING_COPY(percentage)}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'My Daily Luck Reading',
-          text,
-          url: 'https://luckypickcanada.ca',
-        });
-      } catch {}
-      return;
-    }
-    if (navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(`${text} — https://luckypickcanada.ca`);
-        setShareState('copied');
-        window.setTimeout(() => setShareState('idle'), 2000);
-      } catch {}
-    }
-  }, [percentage]);
+    // Pick a lucky score between 1 and 100
+    const newScore = Math.floor(Math.random() * 100) + 1;
+
+    // Map 0-100% to needle sweep angle (-120 deg to +120 deg)
+    const targetAngle = -120 + (newScore / 100) * 240;
+
+    // Calculate forward spin momentum so needle always rotates continuously forward
+    const currentNormalized = ((rotation % 360) + 360) % 360;
+    const targetNormalized = ((targetAngle % 360) + 360) % 360;
+    let delta = targetNormalized - currentNormalized;
+    if (delta <= 0) delta += 360;
+
+    // Add 3 full rotations (1080 deg) for visual momentum
+    const totalRotation = rotation + 1080 + delta;
+
+    setRotation(totalRotation);
+
+    // Display score readout when spinning animation completes (2.5 seconds)
+    setTimeout(() => {
+      setPercentage(newScore);
+      setIsSpinning(false);
+    }, 2500);
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8 w-full max-w-sm mx-auto p-8 rounded-3xl bg-gradient-to-b from-[#0B1929] to-[#0A1420] border border-[#2A3F52] shadow-[0_0_60px_-15px_rgba(34,211,238,0.25)]">
-      <style>{AURORA_KEYFRAMES}</style>
+    <div className="flex flex-col items-center justify-center p-6 bg-[#0A1420] text-[#F5E6C8] rounded-2xl border border-[#2A3F52] max-w-sm mx-auto shadow-2xl select-none">
+      {/* Header Branding */}
+      <h2 className="text-xl font-extrabold tracking-wide uppercase mb-0.5 text-[#5EEAD4]">
+        Daily Luck Meter
+      </h2>
+      <p className="text-[#7FA8B8] text-[11px] font-semibold tracking-wider uppercase mb-5">
+        LUCKY PICK CANADA.CA
+      </p>
 
-      <div className="text-center">
-        <p className="text-[11px] tracking-[0.3em] uppercase text-[#7FA8B8] font-medium">Lucky Pick Canada</p>
-        <h1 className="mt-1 text-2xl font-semibold text-[#F5E6C8] tracking-wide">Daily Luck Reading</h1>
-      </div>
-
-      <div className="relative w-72 h-72 select-none">
-        <img src="/meter-base.png" alt="" draggable={false} className="absolute inset-0 w-full h-full object-contain pointer-events-none" />
+      {/* Meter Visual Container */}
+      <div className="relative w-64 h-64 flex items-center justify-center mb-5">
+        {/* Base Layer: Dial */}
         <img
-          src="/meter-hand.png"
-          alt=""
-          draggable={false}
-          className={`absolute inset-0 w-full h-full object-contain pointer-events-none origin-center lm-needle-img ${isHighScore ? 'lm-needle-aurora' : ''}`}
+          src="/1785063390164.png"
+          alt="Lucky Meter Base Dial"
+          className="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-md"
+        />
+
+        {/* Top Layer: Single Spinning Needle */}
+        <img
+          src="/1785063404048.png"
+          alt="Lucky Meter Needle Hand"
+          className="absolute inset-0 w-full h-full object-contain pointer-events-none drop-shadow-lg"
           style={{
             transform: `rotate(${rotation}deg)`,
-            transition: 'transform 2200ms cubic-bezier(0.22, 1, 0.36, 1)',
-            animation: isHighScore ? 'lm-aurora-glow 2.4s ease-in-out infinite' : 'none',
+            transformOrigin: 'center center',
+            transition: isSpinning
+              ? 'transform 2.5s cubic-bezier(0.15, 0.85, 0.35, 1.2)'
+              : 'none',
           }}
         />
       </div>
 
-      {!hasResult && (
-        <button type="button" onClick={handleGenerate} disabled={isSpinning} className="w-full py-4 rounded-full font-semibold tracking-wide text-[#0B1929] bg-gradient-to-r from-[#5EEAD4] via-[#34D399] to-[#818CF8] shadow-[0_0_30px_-6px_rgba(52,211,153,0.6)] transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed">
-          {isSpinning ? 'Reading the aurora…' : 'Generate My Daily Vibe'}
-        </button>
-      )}
+      {/* Score Output Readout */}
+      <div className="h-12 flex flex-col items-center justify-center mb-4 text-center">
+        {percentage !== null ? (
+          <div className="flex flex-col items-center">
+            <span className="text-2xl font-black tracking-tight text-[#5EEAD4] animate-pulse">
+              {percentage}%
+            </span>
+            <span className="text-xs text-[#BFE3E0] font-medium">
+              {percentage >= 80
+                ? '🔥 High Energy Today!'
+                : percentage >= 50
+                ? '✨ Solid Daily Vibe!'
+                : '☘️ Steady & Balanced'}
+            </span>
+          </div>
+        ) : (
+          <span className="text-xs text-[#7FA8B8] tracking-wide">
+            Tap spin to reveal today's reading
+          </span>
+        )}
+      </div>
 
-      {hasResult && (
-        <div className="lm-result w-full text-center p-6 rounded-2xl border border-[#2A3F52] bg-[#0F2030]/70" style={{ animation: 'lm-fade-in 500ms ease-out' }}>
-          <p className="text-5xl font-bold text-[#F5E6C8]">{percentage}%</p>
-          <p className="mt-3 text-[#BFE3E0] leading-relaxed">{READING_COPY(percentage)}</p>
-          <button type="button" onClick={handleShare} className="mt-5 w-full py-3 rounded-full font-medium text-[#DCE7EC] border border-[#3A5568] bg-transparent hover:bg-[#15283A] transition-colors">
-            {shareState === 'copied' ? 'Copied to clipboard' : 'Share My Result'}
-          </button>
-          <p className="mt-4 text-xs text-[#5C7A8A]">Come back tomorrow for a new reading.</p>
-        </div>
-      )}
+      {/* Action Button */}
+      <button
+        onClick={spinMeter}
+        disabled={isSpinning}
+        className={`w-full py-3.5 px-6 rounded-xl font-extrabold text-sm tracking-wider uppercase transition-all duration-200 shadow-lg ${
+          isSpinning
+            ? 'bg-[#1E2D3B] text-[#526D82] cursor-not-allowed border border-[#2A3F52]'
+            : 'bg-[#5EEAD4] text-[#0A1420] hover:bg-[#43C6B1] active:scale-95 shadow-[#5EEAD4]/20'
+        }`}
+      >
+        {isSpinning ? 'Reading Energy...' : 'SPIN THE METER'}
+      </button>
     </div>
   );
 }
