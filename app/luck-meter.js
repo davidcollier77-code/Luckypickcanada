@@ -8,7 +8,7 @@ const NEEDLE_IMAGE = '/1491_trimmed.png';
 export default function LuckMeter() {
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [luckPercentage, setLuckPercentage] = useState(null);
-  const [rotation, setRotation] = useState(-90);
+  const [rotation, setRotation] = useState(-85);
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasSpun, setHasSpun] = useState(false);
 
@@ -29,20 +29,24 @@ export default function LuckMeter() {
     needleImg.src = NEEDLE_IMAGE;
   }, []);
 
+  const getCommentary = (luck) => {
+    if (luck >= 90) return "Incredible! Your luck is off the charts!";
+    if (luck >= 70) return "Wow! You’re on a serious roll today!";
+    if (luck >= 40) return "Solid luck! Keep that positive energy.";
+    if (luck >= 20) return "A little modest, but luck can change in a heartbeat!";
+    return "Time to reset your vibe—better luck next time!";
+  };
+
   const spinMeter = () => {
     if (isSpinning || hasSpun) return;
 
     setIsSpinning(true);
     setHasSpun(true);
     
-    // Generate the luck percentage
     const randomLuck = Math.floor(Math.random() * 101);
     
-    // MATHEMATICAL PRECISION: 
-    // 0%  = -90 degrees
-    // 50% =   0 degrees
-    // 100% = +90 degrees
-    const targetAngle = (randomLuck / 100) * 180 - 90;
+    // Tightened the range (170 instead of 180) to stop the 5% overshoot
+    const targetAngle = (randomLuck / 100) * 170 - 85;
     
     setRotation(targetAngle);
 
@@ -74,7 +78,6 @@ export default function LuckMeter() {
       `}</style>
 
       <div style={{ position: 'relative', width: '85%', maxWidth: '360px', aspectRatio: '1 / 1', margin: '10px auto 25px auto' }}>
-        
         <div style={{
           position: 'absolute', top: '5%', left: '5%', right: '5%', bottom: '5%', borderRadius: '50%',
           boxShadow: isSpinning ? 'none' : `0 0 100px 30px ${finalGlowColor}`,
@@ -84,19 +87,22 @@ export default function LuckMeter() {
 
         <img src={DIAL_IMAGE} alt="Dial Base" style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} />
         
+        {/* Adjusted centering values to fix alignment */}
         <img src={NEEDLE_IMAGE} alt="Needle" style={{
-          position: 'absolute', top: '26.25%', left: '26.25%', width: '47.5%', height: '47.5%', objectFit: 'contain',
+          position: 'absolute', top: '26%', left: '26%', width: '48%', height: '48%', objectFit: 'contain',
           animation: isSpinning ? 'sweep 1.2s infinite alternate ease-in-out' : 'none',
-          // Here, the rotation is directly bound to the calculated 'rotation' state
           transform: isSpinning ? 'none' : `rotate(${rotation}deg)`,
           transition: isSpinning ? 'none' : 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
           transformOrigin: 'center center', zIndex: 3, display: 'block'
         }} />
       </div>
 
-      <div style={{ minHeight: '70px', textAlign: 'center', padding: '0 15px' }}>
+      <div style={{ minHeight: '100px', textAlign: 'center', padding: '0 15px' }}>
         {luckPercentage !== null && !isSpinning && (
-          <p style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 6px 0', color: '#FFD700' }}>Your Luck: {luckPercentage}%</p>
+          <>
+            <p style={{ fontSize: '1.2rem', fontStyle: 'italic', color: '#FFF', margin: '0 0 10px 0' }}>{getCommentary(luckPercentage)}</p>
+            <p style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 6px 0', color: '#FFD700' }}>Your Luck: {luckPercentage}%</p>
+          </>
         )}
         {isSpinning && <p style={{ fontSize: '1.3rem', opacity: 0.85, color: '#FFD700' }}>Scanning for your luck...</p>}
       </div>
@@ -105,7 +111,7 @@ export default function LuckMeter() {
         padding: '14px 36px', fontSize: '1.2rem', fontWeight: 'bold', color: '#000',
         backgroundColor: (isSpinning || hasSpun) ? '#555' : '#FFD700', border: 'none', borderRadius: '30px', cursor: (isSpinning || hasSpun) ? 'not-allowed' : 'pointer'
       }}>
-        {isSpinning ? 'Scanning...' : (hasSpun ? 'Luck Found' : 'Get Your Lucky Pick')}
+        {isSpinning ? 'Scanning...' : (hasSpun ? 'Luck Found' : 'Generate Your Luck')}
       </button>
     </div>
   );
