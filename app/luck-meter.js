@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-// Exact matching filenames from your GitHub /public folder
 const DIAL_IMAGE = '/BackgroundEraser_20260726_100033229.png';
 const NEEDLE_IMAGE = '/IMG_20260726_103932_591006.png';
 
@@ -48,14 +47,14 @@ export default function LuckMeter() {
     }, 2500);
   };
 
-  // Determine lighting logic
-  let glowColor = 'rgba(255, 255, 255, 0.4)'; // Default white pulse
+  // Lighting/Pulse Logic
+  let glowColor = 'rgba(255, 255, 255, 0.4)';
   let glowIntensity = '40px';
   let animation = isSpinning ? 'pulse 1.5s infinite' : 'none';
   let luckMessage = '';
 
   if (!isSpinning && luckPercentage !== null) {
-    animation = 'none'; // Stop pulsing when finished
+    animation = 'none';
     if (luckPercentage >= 80) {
       glowColor = 'rgba(0, 255, 128, 0.7)';
       glowIntensity = '80px';
@@ -87,11 +86,11 @@ export default function LuckMeter() {
         }
       `}</style>
 
-      {/* Meter Display Frame - Increased size logic */}
+      {/* Sizing Fix: Removed maxWidth restriction, pushed width to 98% of container */}
       <div style={{
         position: 'relative',
-        width: '90%', 
-        maxWidth: '550px',
+        width: '98%', 
+        maxWidth: '800px',
         aspectRatio: '1 / 1',
         display: 'flex',
         alignItems: 'center',
@@ -102,7 +101,6 @@ export default function LuckMeter() {
         transition: 'box-shadow 0.5s ease-in-out'
       }}>
         
-        {/* Glow Layer */}
         <div style={{
           position: 'absolute', top: '10%', left: '10%', right: '10%', bottom: '10%',
           borderRadius: '50%', boxShadow: `0 0 ${glowIntensity} ${glowColor}`,
