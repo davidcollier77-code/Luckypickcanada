@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-// Standard asset paths
 const DIAL_IMAGE = '/1492_trimmed.png';
 const NEEDLE_IMAGE = '/1491_trimmed.png';
 
@@ -36,7 +35,13 @@ export default function LuckMeter() {
     setIsSpinning(true);
     setHasSpun(true);
     
+    // Generate the luck percentage
     const randomLuck = Math.floor(Math.random() * 101);
+    
+    // MATHEMATICAL PRECISION: 
+    // 0%  = -90 degrees
+    // 50% =   0 degrees
+    // 100% = +90 degrees
     const targetAngle = (randomLuck / 100) * 180 - 90;
     
     setRotation(targetAngle);
@@ -47,7 +52,6 @@ export default function LuckMeter() {
     }, 3000);
   };
 
-  // Determine static result color
   let finalGlowColor = 'transparent';
   if (!isSpinning && luckPercentage !== null) {
     if (luckPercentage >= 80) finalGlowColor = 'rgba(0, 255, 128, 1)';
@@ -61,7 +65,6 @@ export default function LuckMeter() {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: '0 auto', color: '#ffffff', fontFamily: 'sans-serif' }}>
       <style>{`
         @keyframes sweep { 0% { transform: rotate(-80deg); } 100% { transform: rotate(80deg); } }
-        @keyframes twinkle { 0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.9); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); } }
         @keyframes colorCycle {
           0% { box-shadow: 0 0 80px 20px rgba(0, 255, 128, 0.6); }
           33% { box-shadow: 0 0 80px 20px rgba(255, 215, 0, 0.6); }
@@ -72,7 +75,6 @@ export default function LuckMeter() {
 
       <div style={{ position: 'relative', width: '85%', maxWidth: '360px', aspectRatio: '1 / 1', margin: '10px auto 25px auto' }}>
         
-        {/* Dynamic Aurora: Cycles colors while spinning, locks to final color when finished */}
         <div style={{
           position: 'absolute', top: '5%', left: '5%', right: '5%', bottom: '5%', borderRadius: '50%',
           boxShadow: isSpinning ? 'none' : `0 0 100px 30px ${finalGlowColor}`,
@@ -82,16 +84,10 @@ export default function LuckMeter() {
 
         <img src={DIAL_IMAGE} alt="Dial Base" style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} />
         
-        {/* Center Twinkle Effect */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%', width: '12%', height: '12%', borderRadius: '50%',
-          background: '#ffffff', zIndex: 2, animation: 'twinkle 1.5s infinite ease-in-out', pointerEvents: 'none' 
-        }} />
-
-        {/* Needle */}
         <img src={NEEDLE_IMAGE} alt="Needle" style={{
-          position: 'absolute', top: '25%', left: '25%', width: '50%', height: '50%', objectFit: 'contain',
+          position: 'absolute', top: '26.25%', left: '26.25%', width: '47.5%', height: '47.5%', objectFit: 'contain',
           animation: isSpinning ? 'sweep 1.2s infinite alternate ease-in-out' : 'none',
+          // Here, the rotation is directly bound to the calculated 'rotation' state
           transform: isSpinning ? 'none' : `rotate(${rotation}deg)`,
           transition: isSpinning ? 'none' : 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
           transformOrigin: 'center center', zIndex: 3, display: 'block'
@@ -100,9 +96,7 @@ export default function LuckMeter() {
 
       <div style={{ minHeight: '70px', textAlign: 'center', padding: '0 15px' }}>
         {luckPercentage !== null && !isSpinning && (
-          <>
-            <p style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 6px 0', color: '#FFD700' }}>Your Luck: {luckPercentage}%</p>
-          </>
+          <p style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 6px 0', color: '#FFD700' }}>Your Luck: {luckPercentage}%</p>
         )}
         {isSpinning && <p style={{ fontSize: '1.3rem', opacity: 0.85, color: '#FFD700' }}>Scanning for your luck...</p>}
       </div>
