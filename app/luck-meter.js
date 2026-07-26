@@ -85,6 +85,7 @@ export default function LuckMeter() {
         }
       `}</style>
 
+      {/* Main Container - The anchor for all absolute elements */}
       <div style={{ position: 'relative', width: '90%', maxWidth: '380px', aspectRatio: '1 / 1', margin: '0 auto' }}>
         
         {/* Glow Effects */}
@@ -98,33 +99,40 @@ export default function LuckMeter() {
         {/* Dial Base */}
         <img src={DIAL_IMAGE} alt="Dial Base" style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} />
         
-        {/* Adjusted Label Plate (Bigger) */}
+        {/* Frosted Glass Label Plate - Modern look */}
         <div style={{
-          position: 'absolute', bottom: '10%', left: '24%', width: '52%', height: '13%',
-          background: 'linear-gradient(135deg, #d4af37, #f7ef8a, #d4af37)',
-          border: '2px solid #8b6e15', borderRadius: '8px', zIndex: 5,
+          position: 'absolute', top: '92%', left: '50%', transform: 'translate(-50%, -50%)', 
+          width: '52%', height: '13%',
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)', 
+          borderRadius: '20px', 
+          zIndex: 5,
           display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.4rem',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.7)'
+          boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
         }}>
           🍀
         </div>
 
-        {/* Sparkler Effect (Bumped zIndex to 7) */}
+        {/* Sparkler Effect */}
         {luckPercentage >= 80 && !isSpinning && (
           <div style={{
-            position: 'absolute', top: '20%', left: '20%', right: '20%', bottom: '20%', 
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
+            width: '60%', height: '60%',
             background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)',
             animation: 'spark 1.5s ease-in-out infinite', zIndex: 7, pointerEvents: 'none'
           }} />
         )}
 
-        {/* Needle (Enlarged and zIndex: 6) */}
+        {/* Needle - Force Centered with Translate */}
         <img src={NEEDLE_IMAGE} alt="Needle" style={{
-          position: 'absolute', top: '24%', left: '24%', width: '52%', height: '52%', objectFit: 'contain',
+          position: 'absolute', 
+          top: '50%', left: '50%', 
+          transform: isSpinning ? 'translate(-50%, -50%)' : `translate(-50%, -50%) rotate(${rotation}deg)`,
+          width: '52%', height: '52%', objectFit: 'contain',
           animation: isSpinning ? 'sweep 1.2s infinite alternate ease-in-out' : 'none',
-          transform: isSpinning ? 'none' : `rotate(${rotation}deg)`,
           transition: isSpinning ? 'none' : 'transform 2.5s cubic-bezier(0.16, 1, 0.3, 1)',
-          transformOrigin: 'center center', zIndex: 6, display: 'block'
+          zIndex: 6, display: 'block'
         }} />
       </div>
 
