@@ -4,164 +4,99 @@ import React, { useState, useEffect } from 'react';
 
 export default function LuckyMeter() {
   const [luckLevel, setLuckLevel] = useState(0);
-  const [displayNumber, setDisplayNumber] = useState('0');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [comment, setComment] = useState("Ready to test your luck?");
 
-  // Helper to determine color based on luck percentage
-  const getLuckColor = (val) => {
-    if (val < 40) return { primary: '#ffaa00', secondary: '#ff4500', name: 'Amber Glow' };
-    if (val < 75) return { primary: '#00e5ff', secondary: '#0077ff', name: 'Cyan Aura' };
-    return { primary: '#00ff80', secondary: '#059669', name: 'Emerald Aurora' };
+  // Logic to generate comments based on luck
+  const getComment = (luck) => {
+    if (luck >= 80) return "Maximum Canadian Luck! You're unstoppable! 🇨🇦🍀";
+    if (luck >= 50) return "A solid wave of good fortune coming your way.";
+    return "Keep smiling! Every day has potential. ✨";
   };
 
-  const currentColor = getLuckColor(luckLevel);
-
-  // Rapidly cycle random numbers during animation
-  useEffect(() => {
-    let interval;
-    if (isAnimating) {
-      interval = setInterval(() => {
-        setDisplayNumber(Math.floor(Math.random() * 90 + 10).toString());
-      }, 70); // Cycle every 70ms
-    } else {
-      setDisplayNumber(`${luckLevel}%`);
-    }
-    return () => clearInterval(interval);
-  }, [isAnimating, luckLevel]);
+  // Logic to get colors based on luck
+  const getColor = (luck) => {
+    if (luck >= 80) return "#00ff80"; // Bright Emerald
+    if (luck >= 50) return "#00ccff"; // Electric Blue
+    return "#ffaa00"; // Warm Amber
+  };
 
   const handleTestLuck = () => {
     if (isAnimating) return;
-
     setIsAnimating(true);
-    const finalLuck = Math.floor(Math.random() * 90) + 10;
+    setComment("Generating energy...");
+
+    // Animate numbers for 2 seconds
+    let interval = setInterval(() => {
+        setLuckLevel(Math.floor(Math.random() * 90) + 10);
+    }, 100);
 
     setTimeout(() => {
+      clearInterval(interval);
+      const finalLuck = Math.floor(Math.random() * 90) + 10;
       setLuckLevel(finalLuck);
+      setComment(getComment(finalLuck));
       setIsAnimating(false);
-    }, 2200); // 2.2 seconds of slot-machine style cycling
+    }, 2000);
   };
 
+  const activeColor = getColor(luckLevel);
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '100%',
-      padding: '20px',
-    }}>
-      {/* Animations */}
-      <style>{`
-        @keyframes spinVortex {
-          0% { transform: rotate(0deg) scale(1); }
-          50% { transform: rotate(180deg) scale(1.2); }
-          100% { transform: rotate(360deg) scale(1); }
-        }
-        @keyframes pulseGlow {
-          0%, 100% { opacity: 0.5; }
-          50% { opacity: 0.95; }
-        }
-      `}</style>
-
-      {/* Main Machine Container */}
-      <div style={{
-        position: 'relative',
-        width: '100%',
-        maxWidth: '340px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        {/* Machine Base Graphic */}
-        <img 
-          src="/1785101753301.png" 
-          alt="Lucky Machine" 
-          style={{
-            width: '100%',
-            height: 'auto',
-            display: 'block',
-          }}
-        />
-
-        {/* Glass Portal Overlay */}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '20px' }}>
+      
+      {/* Container for the layering effect */}
+      <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
+        
+        {/* VORTEX LAYER (Behind the machine) */}
         <div style={{
           position: 'absolute',
-          top: '21.5%',
-          left: '26.5%',
-          width: '47%',
-          height: '47%',
+          top: '25%', left: '25%', width: '50%', height: '50%',
           borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-          boxShadow: `inset 0 0 ${isAnimating ? '30px' : '15px'} ${currentColor.primary}`,
-          transition: 'box-shadow 0.6s ease',
+          background: isAnimating ? `conic-gradient(from 0deg, ${activeColor}, transparent)` : 'transparent',
+          filter: 'blur(20px)',
+          opacity: isAnimating ? 0.8 : 0,
+          animation: 'spin 1s linear infinite',
+          transition: 'all 0.5s ease',
+          zIndex: 1, // Sits behind the machine
+        }}></div>
+
+        {/* MACHINE IMAGE (On top) */}
+        <img 
+          src="/1785101753301.png" 
+          alt="Lucky Meter" 
+          style={{ width: '100%', position: 'relative', zIndex: 2 }} 
+        />
+
+        {/* PERCENTAGE TEXT (On top of everything) */}
+        <div style={{
+          position: 'absolute',
+          top: '40%', width: '100%', textAlign: 'center',
+          fontSize: '2rem', fontWeight: 'bold', color: '#fff',
+          zIndex: 3,
+          textShadow: '0 0 10px rgba(0,0,0,0.5)'
         }}>
-          
-          {/* Swirling Color Conic Stream */}
-          <div style={{
-            position: 'absolute',
-            width: '150%',
-            height: '150%',
-            background: `conic-gradient(from 0deg, transparent, ${currentColor.primary}, transparent, ${currentColor.secondary}, transparent)`,
-            animation: isAnimating ? 'spinVortex 0.6s linear infinite' : 'spinVortex 7s linear infinite',
-            borderRadius: '40%',
-            filter: 'blur(8px)',
-            transition: 'background 0.6s ease',
-          }} />
-
-          {/* Core Glow Layer */}
-          <div style={{
-            position: 'absolute',
-            width: '85%',
-            height: '85%',
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${currentColor.primary} 0%, rgba(0,0,0,0) 75%)`,
-            animation: isAnimating ? 'pulseGlow 0.25s infinite' : 'pulseGlow 2.5s infinite',
-            transition: 'background 0.6s ease',
-          }} />
-
-          {/* Rapid Flashing Percentage Display */}
-          <div style={{
-            position: 'relative',
-            zIndex: 10,
-            color: '#ffffff',
-            fontSize: isAnimating ? '2.2rem' : '2.4rem',
-            fontWeight: '900',
-            fontFamily: 'monospace, sans-serif',
-            letterSpacing: '1px',
-            textShadow: `0 0 12px ${currentColor.primary}, 0 0 24px #000`,
-            transition: 'color 0.4s ease',
-          }}>
-            {displayNumber}
-          </div>
+          {luckLevel}%
         </div>
       </div>
 
-      {/* Trigger Button */}
+      {/* COMMENT BOX */}
+      <div style={{ 
+        marginTop: '20px', padding: '15px', borderRadius: '10px',
+        background: 'rgba(0,0,0,0.3)', border: `1px solid ${activeColor}`,
+        color: '#fff', textAlign: 'center', transition: 'border 0.5s'
+      }}>
+        {comment}
+      </div>
+
       <button 
-        onClick={handleTestLuck}
-        disabled={isAnimating}
-        style={{
-          marginTop: '25px',
-          padding: '12px 35px',
-          borderRadius: '25px',
-          border: `1px solid ${currentColor.primary}`,
-          background: isAnimating 
-            ? '#111' 
-            : `linear-gradient(135deg, ${currentColor.primary}, ${currentColor.secondary})`,
-          color: '#fff',
-          fontSize: '1rem',
-          fontWeight: 'bold',
-          letterSpacing: '1px',
-          cursor: isAnimating ? 'not-allowed' : 'pointer',
-          boxShadow: `0 4px 20px ${currentColor.primary}55`,
-          transition: 'all 0.4s ease',
-        }}
+        onClick={handleTestLuck} disabled={isAnimating}
+        style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}
       >
-        {isAnimating ? 'CHARGING...' : 'GENERATE LUCK'}
+        {isAnimating ? 'Generating...' : 'Generate Luck'}
       </button>
+
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
