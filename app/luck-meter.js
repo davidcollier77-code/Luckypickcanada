@@ -68,11 +68,9 @@ export default function LuckMeter() {
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center', 
-      justifyContent: 'center',
+      justifyContent: 'center', 
       width: '100%', 
       margin: '0 auto', 
-      padding: '0', 
-      boxSizing: 'border-box',
       color: '#ffffff', 
       fontFamily: 'sans-serif' 
     }}>
@@ -87,7 +85,9 @@ export default function LuckMeter() {
         }
       `}</style>
 
-      <div style={{ position: 'relative', width: '85%', maxWidth: '360px', aspectRatio: '1 / 1', margin: '10px auto 25px auto' }}>
+      <div style={{ position: 'relative', width: '90%', maxWidth: '380px', aspectRatio: '1 / 1', margin: '0 auto' }}>
+        
+        {/* Glow Effects */}
         <div style={{
           position: 'absolute', top: '5%', left: '5%', right: '5%', bottom: '5%', borderRadius: '50%',
           boxShadow: isSpinning ? 'none' : `0 0 100px 30px ${finalGlowColor}`,
@@ -95,36 +95,40 @@ export default function LuckMeter() {
           zIndex: 0, transition: 'box-shadow 0.5s ease-in-out'
         }} />
 
+        {/* Dial Base */}
         <img src={DIAL_IMAGE} alt="Dial Base" style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} />
         
-        {luckPercentage >= 80 && !isSpinning && (
-          <div style={{
-            position: 'absolute', top: '20%', left: '20%', right: '20%', bottom: '20%', 
-            background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)',
-            animation: 'spark 1.5s ease-in-out infinite', zIndex: 4, pointerEvents: 'none'
-          }} />
-        )}
-
+        {/* Adjusted Label Plate (Bigger) */}
         <div style={{
-          position: 'absolute', bottom: '9%', left: '33%', width: '34%', height: '10%',
+          position: 'absolute', bottom: '10%', left: '24%', width: '52%', height: '13%',
           background: 'linear-gradient(135deg, #d4af37, #f7ef8a, #d4af37)',
-          border: '1px solid #8b6e15', borderRadius: '4px', zIndex: 2,
-          display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
+          border: '2px solid #8b6e15', borderRadius: '8px', zIndex: 5,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.4rem',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.7)'
         }}>
           🍀
         </div>
 
+        {/* Sparkler Effect (Bumped zIndex to 7) */}
+        {luckPercentage >= 80 && !isSpinning && (
+          <div style={{
+            position: 'absolute', top: '20%', left: '20%', right: '20%', bottom: '20%', 
+            background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)',
+            animation: 'spark 1.5s ease-in-out infinite', zIndex: 7, pointerEvents: 'none'
+          }} />
+        )}
+
+        {/* Needle (Enlarged and zIndex: 6) */}
         <img src={NEEDLE_IMAGE} alt="Needle" style={{
-          position: 'absolute', top: '26%', left: '26%', width: '48%', height: '48%', objectFit: 'contain',
+          position: 'absolute', top: '24%', left: '24%', width: '52%', height: '52%', objectFit: 'contain',
           animation: isSpinning ? 'sweep 1.2s infinite alternate ease-in-out' : 'none',
           transform: isSpinning ? 'none' : `rotate(${rotation}deg)`,
           transition: isSpinning ? 'none' : 'transform 2.5s cubic-bezier(0.16, 1, 0.3, 1)',
-          transformOrigin: 'center center', zIndex: 3, display: 'block'
+          transformOrigin: 'center center', zIndex: 6, display: 'block'
         }} />
       </div>
 
-      <div style={{ minHeight: '100px', textAlign: 'center', padding: '0 15px' }}>
+      <div style={{ minHeight: '100px', textAlign: 'center', padding: '0 15px', marginTop: '10px' }}>
         {luckPercentage !== null && !isSpinning && (
           <>
             <p style={{ fontSize: '1.2rem', fontStyle: 'italic', color: '#FFF', margin: '0 0 10px 0' }}>{getCommentary(luckPercentage)}</p>
