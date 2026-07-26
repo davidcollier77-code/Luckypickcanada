@@ -48,74 +48,66 @@ export default function LuckMeter() {
     }, 2500);
   };
 
-  // Determine styles for lighting and pulse
-  let glowColor = 'transparent';
-  let glowIntensity = '0px';
-  let animationStyle = isSpinning ? 'pulse 1.5s infinite' : 'none';
+  // Determine lighting logic
+  let glowColor = 'rgba(255, 255, 255, 0.4)'; // Default white pulse
+  let glowIntensity = '40px';
+  let animation = isSpinning ? 'pulse 1.5s infinite' : 'none';
   let luckMessage = '';
-  
-  if (luckPercentage !== null && !isSpinning) {
+
+  if (!isSpinning && luckPercentage !== null) {
+    animation = 'none'; // Stop pulsing when finished
     if (luckPercentage >= 80) {
       glowColor = 'rgba(0, 255, 128, 0.7)';
-      glowIntensity = '60px';
+      glowIntensity = '80px';
       luckMessage = "Outstanding! The universe is totally on your side today.";
     } else if (luckPercentage >= 50) {
       glowColor = 'rgba(255, 215, 0, 0.6)';
-      glowIntensity = '40px';
+      glowIntensity = '60px';
       luckMessage = "Solid energy! A perfectly balanced day ahead.";
     } else {
       glowColor = 'rgba(255, 100, 100, 0.5)';
-      glowIntensity = '25px';
+      glowIntensity = '40px';
       luckMessage = "Hey, the only way is up! You make your own luck anyway.";
     }
   }
 
-  if (!imagesLoaded) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: '#ffffff' }}>Loading...</div>;
-  }
+  if (!imagesLoaded) return <div style={{ padding: '20px', textAlign: 'center', color: '#ffffff' }}>Loading...</div>;
 
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: 'center', padding: '20px', width: '100%',
-      maxWidth: '500px', margin: '0 auto', color: '#ffffff', fontFamily: 'sans-serif'
+      justifyContent: 'center', padding: '10px', width: '100%',
+      margin: '0 auto', color: '#ffffff', fontFamily: 'sans-serif'
     }}>
-      {/* Animation Styles */}
       <style>{`
         @keyframes pulse {
-          0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
-          50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.8); }
-          100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+          0% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+          50% { box-shadow: 0 0 60px rgba(255, 255, 255, 0.9); }
+          100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
         }
       `}</style>
 
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-        Lucky Meter
-      </h2>
-
-      {/* Meter Display Frame - Expanded to 85% width */}
+      {/* Meter Display Frame - Increased size logic */}
       <div style={{
         position: 'relative',
-        width: '85%', 
-        maxWidth: '450px',
+        width: '90%', 
+        maxWidth: '550px',
         aspectRatio: '1 / 1',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '30px',
+        marginBottom: '40px',
         borderRadius: '50%',
-        animation: animationStyle, // Triggers pulse when spinning
-        transition: 'box-shadow 0.3s ease-in-out'
+        animation: animation,
+        transition: 'box-shadow 0.5s ease-in-out'
       }}>
         
-        {/* Static Aura (shows only when finished spinning) */}
-        {!isSpinning && (
-          <div style={{
-            position: 'absolute', top: '10%', left: '10%', right: '10%', bottom: '10%',
-            borderRadius: '50%', boxShadow: `0 0 ${glowIntensity} ${glowColor}`,
-            zIndex: 0
-          }} />
-        )}
+        {/* Glow Layer */}
+        <div style={{
+          position: 'absolute', top: '10%', left: '10%', right: '10%', bottom: '10%',
+          borderRadius: '50%', boxShadow: `0 0 ${glowIntensity} ${glowColor}`,
+          zIndex: 0, transition: 'all 0.5s ease-in-out'
+        }} />
 
         <img src={DIAL_IMAGE} alt="Dial" style={{ position: 'relative', width: '100%', zIndex: 1 }} />
         <img src={NEEDLE_IMAGE} alt="Needle" style={{
@@ -126,24 +118,24 @@ export default function LuckMeter() {
         }} />
       </div>
 
-      <div style={{ height: '80px', textAlign: 'center' }}>
+      <div style={{ height: '80px', textAlign: 'center', padding: '0 20px' }}>
         {luckPercentage !== null && !isSpinning && (
           <>
-            <p style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 8px 0' }}>Your Luck: {luckPercentage}%</p>
-            <p style={{ fontSize: '1rem', fontStyle: 'italic', opacity: 0.9 }}>{luckMessage}</p>
+            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: '0 0 8px 0' }}>Your Luck: {luckPercentage}%</p>
+            <p style={{ fontSize: '1.1rem', fontStyle: 'italic', opacity: 0.9 }}>{luckMessage}</p>
           </>
         )}
-        {isSpinning && <p style={{ fontSize: '1.2rem', opacity: 0.8 }}>Generating luck...</p>}
+        {isSpinning && <p style={{ fontSize: '1.4rem', opacity: 0.8 }}>Generating luck...</p>}
       </div>
 
       <button
         onClick={spinMeter}
         disabled={isSpinning || hasSpun}
         style={{
-          padding: '14px 32px', fontSize: '1.2rem', fontWeight: 'bold', color: '#000',
+          padding: '16px 40px', fontSize: '1.3rem', fontWeight: 'bold', color: '#000',
           backgroundColor: (isSpinning || hasSpun) ? '#666' : '#FFD700',
           border: 'none', borderRadius: '30px', cursor: (isSpinning || hasSpun) ? 'not-allowed' : 'pointer',
-          opacity: (isSpinning || hasSpun) ? 0.7 : 1
+          marginTop: '20px', opacity: (isSpinning || hasSpun) ? 0.7 : 1
         }}
       >
         {isSpinning ? 'Generating...' : (hasSpun ? 'Luck Tested' : 'Test Your Luck')}
