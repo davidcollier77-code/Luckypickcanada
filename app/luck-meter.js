@@ -44,8 +44,6 @@ export default function LuckMeter() {
     setHasSpun(true);
     
     const randomLuck = Math.floor(Math.random() * 101);
-    
-    // Tightened the range (170 instead of 180) to stop the 5% overshoot
     const targetAngle = (randomLuck / 100) * 170 - 85;
     
     setRotation(targetAngle);
@@ -66,9 +64,21 @@ export default function LuckMeter() {
   if (!imagesLoaded) return <div style={{ padding: '20px', textAlign: 'center', color: '#ffffff' }}>Loading Meter...</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', margin: '0 auto', color: '#ffffff', fontFamily: 'sans-serif' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      width: '100%', 
+      margin: '0 auto', 
+      padding: '0', 
+      boxSizing: 'border-box',
+      color: '#ffffff', 
+      fontFamily: 'sans-serif' 
+    }}>
       <style>{`
         @keyframes sweep { 0% { transform: rotate(-80deg); } 100% { transform: rotate(80deg); } }
+        @keyframes spark { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
         @keyframes colorCycle {
           0% { box-shadow: 0 0 80px 20px rgba(0, 255, 128, 0.6); }
           33% { box-shadow: 0 0 80px 20px rgba(255, 215, 0, 0.6); }
@@ -87,12 +97,29 @@ export default function LuckMeter() {
 
         <img src={DIAL_IMAGE} alt="Dial Base" style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} />
         
-        {/* Adjusted centering values to fix alignment */}
+        {luckPercentage >= 80 && !isSpinning && (
+          <div style={{
+            position: 'absolute', top: '20%', left: '20%', right: '20%', bottom: '20%', 
+            background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)',
+            animation: 'spark 1.5s ease-in-out infinite', zIndex: 4, pointerEvents: 'none'
+          }} />
+        )}
+
+        <div style={{
+          position: 'absolute', bottom: '9%', left: '33%', width: '34%', height: '10%',
+          background: 'linear-gradient(135deg, #d4af37, #f7ef8a, #d4af37)',
+          border: '1px solid #8b6e15', borderRadius: '4px', zIndex: 2,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
+        }}>
+          🍀
+        </div>
+
         <img src={NEEDLE_IMAGE} alt="Needle" style={{
           position: 'absolute', top: '26%', left: '26%', width: '48%', height: '48%', objectFit: 'contain',
           animation: isSpinning ? 'sweep 1.2s infinite alternate ease-in-out' : 'none',
           transform: isSpinning ? 'none' : `rotate(${rotation}deg)`,
-          transition: isSpinning ? 'none' : 'transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
+          transition: isSpinning ? 'none' : 'transform 2.5s cubic-bezier(0.16, 1, 0.3, 1)',
           transformOrigin: 'center center', zIndex: 3, display: 'block'
         }} />
       </div>
