@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 
-const DIAL_IMAGE = '/BackgroundEraser_20260726_100033229.png';
+// Updated to point to your new high-quality base image
+const DIAL_IMAGE = '/IMG_20260726_121730_667905.png';
 const NEEDLE_IMAGE = '/IMG_20260726_103932_591006.png';
 
 export default function LuckMeter() {
@@ -86,7 +87,6 @@ export default function LuckMeter() {
         }
       `}</style>
 
-      {/* Sizing Fix: Removed maxWidth restriction, pushed width to 98% of container */}
       <div style={{
         position: 'relative',
         width: '98%', 
