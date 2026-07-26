@@ -49,24 +49,25 @@ export default function LuckMeter() {
   };
 
   // Dynamic Lighting / Glow Logic based on luck output
-  let glowColor = 'rgba(255, 255, 255, 0.3)';
-  let glowIntensity = '30px';
+  let glowColor = 'rgba(255, 255, 255, 0.5)';
+  // Base intensity before spinning
+  let glowIntensity = '60px';
   let animation = isSpinning ? 'pulse 1.2s infinite ease-in-out' : 'none';
   let luckMessage = '';
 
   if (!isSpinning && luckPercentage !== null) {
     animation = 'none';
     if (luckPercentage >= 80) {
-      glowColor = 'rgba(0, 255, 128, 0.8)';
-      glowIntensity = '60px';
+      glowColor = 'rgba(0, 255, 128, 1)'; // Max opacity for aurora effect
+      glowIntensity = '120px'; // Massive glow spread
       luckMessage = "Outstanding! The universe is totally on your side today.";
     } else if (luckPercentage >= 50) {
-      glowColor = 'rgba(255, 215, 0, 0.7)';
-      glowIntensity = '45px';
+      glowColor = 'rgba(255, 215, 0, 0.9)'; 
+      glowIntensity = '90px'; 
       luckMessage = "Solid energy! A perfectly balanced day ahead.";
     } else {
-      glowColor = 'rgba(255, 80, 80, 0.6)';
-      glowIntensity = '30px';
+      glowColor = 'rgba(255, 80, 80, 0.8)'; 
+      glowIntensity = '70px'; 
       luckMessage = "Hey, the only way is up! You make your own luck anyway.";
     }
   }
@@ -80,10 +81,18 @@ export default function LuckMeter() {
       margin: '0 auto', color: '#ffffff', fontFamily: 'sans-serif'
     }}>
       <style>{`
+        /* Enhanced pulse animation for spinning state */
         @keyframes pulse {
-          0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
-          50% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.8); }
-          100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+          0% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
+          50% { box-shadow: 0 0 100px rgba(255, 215, 0, 1); }
+          100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
+        }
+        
+        /* Rapid glitter effect for the center while generating */
+        @keyframes glitter {
+          0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.8); }
+          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+          100% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.8); }
         }
       `}</style>
 
@@ -99,14 +108,16 @@ export default function LuckMeter() {
         margin: '10px auto 25px auto',
         borderRadius: '50%',
         animation: animation,
-        transition: 'box-shadow 0.5s ease-in-out'
+        transition: 'box-shadow 0.8s ease-in-out' // Smoother transition for the glow
       }}>
         
-        {/* Dynamic Backlight Glow Effect */}
+        {/* Dynamic Backlight Glow Effect (The "Aurora") */}
         <div style={{
           position: 'absolute', top: '5%', left: '5%', right: '5%', bottom: '5%',
-          borderRadius: '50%', boxShadow: `0 0 ${glowIntensity} ${glowColor}`,
-          zIndex: 0, transition: 'all 0.5s ease-in-out'
+          borderRadius: '50%', 
+          boxShadow: `0 0 ${glowIntensity} ${glowIntensity} ${glowColor}`, 
+          zIndex: 0, 
+          transition: 'all 0.8s ease-in-out'
         }} />
 
         {/* Base Dial Graphic */}
@@ -116,20 +127,37 @@ export default function LuckMeter() {
           style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} 
         />
         
-        {/* Rotating Needle Layer */}
+        {/* Active Glittering Center Effect (Only visible when spinning) */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: '30%', 
+          height: '30%',
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,215,0,0.6) 30%, rgba(255,255,255,0) 70%)',
+          zIndex: 2,
+          animation: isSpinning ? 'glitter 0.5s infinite ease-in-out' : 'none',
+          opacity: isSpinning ? 1 : 0, // Hides it entirely when not generating
+          transition: 'opacity 0.3s ease-in-out',
+          pointerEvents: 'none' 
+        }} />
+
+        {/* Rotating Needle Layer (Scaled down by 50% and centered) */}
         <img 
           src={NEEDLE_IMAGE} 
           alt="Needle" 
           style={{
             position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            width: '100%',
-            height: '100%',
+            top: '25%', // Pushes it down to center
+            left: '25%', // Pushes it right to center
+            width: '50%', // Halves the width
+            height: '50%', // Halves the height
+            objectFit: 'contain',
             transform: `rotate(${rotation}deg)`,
             transition: isSpinning ? 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
             transformOrigin: 'center center', 
-            zIndex: 2,
+            zIndex: 3, 
             display: 'block'
           }} 
         />
@@ -165,4 +193,3 @@ export default function LuckMeter() {
     </div>
   );
 }
-
