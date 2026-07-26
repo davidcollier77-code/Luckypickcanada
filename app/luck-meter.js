@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 
-// Updated to point to your new high-quality base image
-const DIAL_IMAGE = '/IMG_20260726_121730_667905.png';
-const NEEDLE_IMAGE = '/IMG_20260726_103932_591006.png';
+// Updated to use your new auto-trimmed PNG assets
+const DIAL_IMAGE = '/1491_trimmed.png';
+const NEEDLE_IMAGE = '/1492_trimmed.png';
 
 export default function LuckMeter() {
   const [imagesLoaded, setImagesLoaded] = useState(false);
