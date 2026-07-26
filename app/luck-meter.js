@@ -11,6 +11,7 @@ export default function LuckMeter() {
   const [luckPercentage, setLuckPercentage] = useState(null);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [hasSpun, setHasSpun] = useState(false);
 
   // Safe preloading: handles both load and error events so UI never freezes
   useEffect(() => {
@@ -25,7 +26,6 @@ export default function LuckMeter() {
     const dialImg = new Image();
     const needleImg = new Image();
 
-    // Trigger completion on success OR error to prevent infinite loading freeze
     dialImg.onload = handleComplete;
     dialImg.onerror = handleComplete;
     needleImg.onload = handleComplete;
@@ -36,9 +36,11 @@ export default function LuckMeter() {
   }, []);
 
   const spinMeter = () => {
-    if (isSpinning) return;
+    // Prevent spamming the button while spinning or after already spinning
+    if (isSpinning || hasSpun) return;
 
     setIsSpinning(true);
+    setHasSpun(true);
     
     // Generate score between 0% and 100%
     const randomLuck = Math.floor(Math.random() * 101);
@@ -51,12 +53,33 @@ export default function LuckMeter() {
 
     setRotation(nextRotation);
 
-    // Reveal score once the 2.5s needle spin completes
+    // Reveal score and trigger lights once the 2.5s needle spin completes
     setTimeout(() => {
       setLuckPercentage(randomLuck);
       setIsSpinning(false);
     }, 2500);
   };
+
+  // Determine dynamic lighting effects and messages based on the final score
+  let glowColor = 'transparent';
+  let glowIntensity = '0px';
+  let luckMessage = '';
+  
+  if (luckPercentage !== null && !isSpinning) {
+    if (luckPercentage >= 80) {
+      glowColor = 'rgba(0, 255, 128, 0.7)'; // Bright Green
+      glowIntensity = '60px';
+      luckMessage = "Outstanding! The universe is totally on your side today.";
+    } else if (luckPercentage >= 50) {
+      glowColor = 'rgba(255, 215, 0, 0.6)'; // Gold
+      glowIntensity = '40px';
+      luckMessage = "Solid energy! A perfectly balanced day ahead.";
+    } else {
+      glowColor = 'rgba(255, 100, 100, 0.5)'; // Soft Red
+      glowIntensity = '25px';
+      luckMessage = "Hey, the only way is up! You make your own luck anyway.";
+    }
+  }
 
   if (!imagesLoaded) {
     return (
@@ -73,33 +96,48 @@ export default function LuckMeter() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      maxWidth: '400px',
+      width: '100%',
+      maxWidth: '500px',
       margin: '0 auto',
       color: '#ffffff',
       fontFamily: 'sans-serif'
     }}>
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+      <h2 style={{ fontSize: '1.5rem', marginBottom: '25px', textTransform: 'uppercase', letterSpacing: '1px' }}>
         Lucky Meter
       </h2>
 
-      {/* Meter Display Frame */}
+      {/* Meter Display Frame - Increased Size */}
       <div style={{
         position: 'relative',
-        width: '280px',
-        height: '280px',
+        width: '100%',
+        maxWidth: '350px',
+        aspectRatio: '1 / 1',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '20px'
+        marginBottom: '30px'
       }}>
+        
+        {/* Dynamic Glowing Aura behind the meter */}
+        <div style={{
+          position: 'absolute',
+          top: '10%', left: '10%', right: '10%', bottom: '10%',
+          borderRadius: '50%',
+          boxShadow: `0 0 ${glowIntensity} ${glowColor}`,
+          transition: 'box-shadow 1.5s ease-in-out',
+          zIndex: 0
+        }} />
+
         {/* Base Meter Dial */}
         <img
           src={DIAL_IMAGE}
           alt="Lucky Meter Dial"
           style={{
+            position: 'relative',
             width: '100%',
             height: '100%',
-            objectFit: 'contain'
+            objectFit: 'contain',
+            zIndex: 1
           }}
         />
 
@@ -114,41 +152,48 @@ export default function LuckMeter() {
             objectFit: 'contain',
             transform: `rotate(${rotation}deg)`,
             transition: isSpinning ? 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
-            transformOrigin: 'center center'
+            transformOrigin: 'center center',
+            zIndex: 2
           }}
         />
       </div>
 
-      {/* Score Readout */}
-      <div style={{ height: '40px', marginBottom: '15px', textAlign: 'center' }}>
+      {/* Score and Message Readout */}
+      <div style={{ height: '80px', marginBottom: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         {luckPercentage !== null && !isSpinning && (
-          <p style={{ fontSize: '1.4rem', fontWeight: 'bold', margin: 0 }}>
-            Your Luck: <span style={{ color: '#FFD700' }}>{luckPercentage}%</span>
-          </p>
+          <>
+            <p style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 8px 0' }}>
+              Your Luck: <span style={{ color: '#FFD700' }}>{luckPercentage}%</span>
+            </p>
+            <p style={{ fontSize: '1rem', fontStyle: 'italic', margin: 0, opacity: 0.9 }}>
+              {luckMessage}
+            </p>
+          </>
         )}
         {isSpinning && (
-          <p style={{ fontSize: '1.1rem', opacity: 0.8, margin: 0 }}>Testing your luck...</p>
+          <p style={{ fontSize: '1.2rem', opacity: 0.8, margin: 0 }}>Testing your luck...</p>
         )}
       </div>
 
-      {/* Trigger Button */}
+      {/* Trigger Button - Locks after one use */}
       <button
         onClick={spinMeter}
-        disabled={isSpinning}
+        disabled={isSpinning || hasSpun}
         style={{
-          padding: '12px 28px',
-          fontSize: '1.1rem',
+          padding: '14px 32px',
+          fontSize: '1.2rem',
           fontWeight: 'bold',
           color: '#000000',
-          backgroundColor: isSpinning ? '#888888' : '#FFD700',
+          backgroundColor: (isSpinning || hasSpun) ? '#666666' : '#FFD700',
           border: 'none',
-          borderRadius: '25px',
-          cursor: isSpinning ? 'not-allowed' : 'pointer',
+          borderRadius: '30px',
+          cursor: (isSpinning || hasSpun) ? 'not-allowed' : 'pointer',
           boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
-          transition: 'background-color 0.2s ease, transform 0.1s ease'
+          transition: 'background-color 0.3s ease, transform 0.1s ease',
+          opacity: (isSpinning || hasSpun) ? 0.7 : 1
         }}
       >
-        {isSpinning ? 'Testing...' : 'Test Your Luck'}
+        {isSpinning ? 'Testing...' : (hasSpun ? 'Luck Tested' : 'Test Your Luck')}
       </button>
     </div>
   );
