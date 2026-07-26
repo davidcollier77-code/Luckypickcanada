@@ -1,156 +1,100 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-const DIAL_IMAGE = '/1492_trimmed.png';
-const NEEDLE_IMAGE = '/1491_trimmed.png';
+export default function LuckyMeter() {
+  const [luckLevel, setLuckLevel] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-export default function LuckMeter() {
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [luckPercentage, setLuckPercentage] = useState(null);
-  const [rotation, setRotation] = useState(-85);
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [hasSpun, setHasSpun] = useState(false);
-
-  useEffect(() => {
-    let loadedCount = 0;
-    const handleComplete = () => {
-      loadedCount++;
-      if (loadedCount === 2) setImagesLoaded(true);
-    };
-
-    const dialImg = new Image();
-    const needleImg = new Image();
-    dialImg.onload = handleComplete;
-    dialImg.onerror = handleComplete;
-    needleImg.onload = handleComplete;
-    needleImg.onerror = handleComplete;
-    dialImg.src = DIAL_IMAGE;
-    needleImg.src = NEEDLE_IMAGE;
-  }, []);
-
-  const getCommentary = (luck) => {
-    if (luck >= 90) return "Incredible! Your luck is off the charts!";
-    if (luck >= 70) return "Wow! You’re on a serious roll today!";
-    if (luck >= 40) return "Solid luck! Keep that positive energy.";
-    if (luck >= 20) return "A little modest, but luck can change in a heartbeat!";
-    return "Time to reset your vibe—better luck next time!";
-  };
-
-  const spinMeter = () => {
-    if (isSpinning || hasSpun) return;
-
-    setIsSpinning(true);
-    setHasSpun(true);
+  // Math for the gauge arc
+  const radius = 90;
+  const circumference = 2 * Math.PI * radius;
+  
+  const handleTestLuck = () => {
+    if (isAnimating) return;
     
-    const randomLuck = Math.floor(Math.random() * 101);
-    const targetAngle = (randomLuck / 100) * 170 - 85;
+    setIsAnimating(true);
+    // Random luck between 10 and 100
+    const randomLuck = Math.floor(Math.random() * 90) + 10;
     
-    setRotation(targetAngle);
-
     setTimeout(() => {
-      setLuckPercentage(randomLuck);
-      setIsSpinning(false);
-    }, 3000);
+      setLuckLevel(randomLuck);
+      setIsAnimating(false);
+    }, 1500);
   };
-
-  let finalGlowColor = 'transparent';
-  if (!isSpinning && luckPercentage !== null) {
-    if (luckPercentage >= 80) finalGlowColor = 'rgba(0, 255, 128, 1)';
-    else if (luckPercentage >= 50) finalGlowColor = 'rgba(255, 215, 0, 0.9)';
-    else finalGlowColor = 'rgba(255, 80, 80, 0.8)';
-  }
-
-  if (!imagesLoaded) return <div style={{ padding: '20px', textAlign: 'center', color: '#ffffff' }}>Loading Meter...</div>;
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      width: '100%', 
-      margin: '0 auto', 
-      color: '#ffffff', 
-      fontFamily: 'sans-serif' 
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      padding: '20px',
     }}>
-      <style>{`
-        @keyframes sweep { 0% { transform: rotate(-80deg); } 100% { transform: rotate(80deg); } }
-        @keyframes spark { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
-        @keyframes colorCycle {
-          0% { box-shadow: 0 0 80px 20px rgba(0, 255, 128, 0.6); }
-          33% { box-shadow: 0 0 80px 20px rgba(255, 215, 0, 0.6); }
-          66% { box-shadow: 0 0 80px 20px rgba(255, 80, 80, 0.6); }
-          100% { box-shadow: 0 0 80px 20px rgba(0, 255, 128, 0.6); }
-        }
-      `}</style>
-
-      {/* Main Container - The anchor for all absolute elements */}
-      <div style={{ position: 'relative', width: '90%', maxWidth: '380px', aspectRatio: '1 / 1', margin: '0 auto' }}>
-        
-        {/* Glow Effects */}
-        <div style={{
-          position: 'absolute', top: '5%', left: '5%', right: '5%', bottom: '5%', borderRadius: '50%',
-          boxShadow: isSpinning ? 'none' : `0 0 100px 30px ${finalGlowColor}`,
-          animation: isSpinning ? 'colorCycle 2s infinite ease-in-out' : 'none',
-          zIndex: 0, transition: 'box-shadow 0.5s ease-in-out'
-        }} />
-
-        {/* Dial Base */}
-        <img src={DIAL_IMAGE} alt="Dial Base" style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} />
-        
-        {/* Modern Frosted Glass Label Plate - Force Centered */}
-        <div style={{
-          position: 'absolute', top: '88%', left: '50%', transform: 'translate(-50%, -50%)', 
-          width: '50%', height: '12%',
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)', 
-          borderRadius: '15px', 
-          zIndex: 5,
-          display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.2rem',
-          boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
-        }}>
-          LUCKY PICK
-        </div>
-
-        {/* Sparkler Effect */}
-        {luckPercentage >= 80 && !isSpinning && (
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
-            width: '60%', height: '60%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%)',
-            animation: 'spark 1.5s ease-in-out infinite', zIndex: 7, pointerEvents: 'none'
-          }} />
-        )}
-
-        {/* Needle - Force Centered with Translate */}
-        <img src={NEEDLE_IMAGE} alt="Needle" style={{
-          position: 'absolute', 
-          top: '50%', left: '50%', 
-          transform: isSpinning ? 'translate(-50%, -50%)' : `translate(-50%, -50%) rotate(${rotation}deg)`,
-          width: '52%', height: '52%', objectFit: 'contain',
-          animation: isSpinning ? 'sweep 1.2s infinite alternate ease-in-out' : 'none',
-          transition: isSpinning ? 'none' : 'transform 2.5s cubic-bezier(0.16, 1, 0.3, 1)',
-          zIndex: 6, display: 'block'
-        }} />
-      </div>
-
-      <div style={{ minHeight: '100px', textAlign: 'center', padding: '0 15px', marginTop: '10px' }}>
-        {luckPercentage !== null && !isSpinning && (
-          <>
-            <p style={{ fontSize: '1.2rem', fontStyle: 'italic', color: '#FFF', margin: '0 0 10px 0' }}>{getCommentary(luckPercentage)}</p>
-            <p style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 6px 0', color: '#FFD700' }}>Your Luck: {luckPercentage}%</p>
-          </>
-        )}
-        {isSpinning && <p style={{ fontSize: '1.3rem', opacity: 0.85, color: '#FFD700' }}>Scanning for your luck...</p>}
-      </div>
-
-      <button onClick={spinMeter} disabled={isSpinning || hasSpun} style={{
-        padding: '14px 36px', fontSize: '1.2rem', fontWeight: 'bold', color: '#000',
-        backgroundColor: (isSpinning || hasSpun) ? '#555' : '#FFD700', border: 'none', borderRadius: '30px', cursor: (isSpinning || hasSpun) ? 'not-allowed' : 'pointer'
+      <div style={{
+        position: 'relative',
+        width: '240px',
+        height: '240px',
+        background: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '50%',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
       }}>
-        {isSpinning ? 'Scanning...' : (hasSpun ? 'Luck Found' : 'Generate Your Luck')}
+        {/* SVG Gauge */}
+        <svg width="200" height="200" style={{ transform: 'rotate(-90deg)' }}>
+          {/* Background Arc */}
+          <circle 
+            cx="100" cy="100" r={radius} 
+            fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="15" 
+          />
+          {/* Progress Arc */}
+          <circle 
+            cx="100" cy="100" r={radius} 
+            fill="none" 
+            stroke={isAnimating ? "#fff" : "#00ff80"} 
+            strokeWidth="15"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference - (isAnimating ? 100 : luckLevel) / 100 * circumference}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 1.5s ease-out, stroke 0.5s' }}
+          />
+        </svg>
+
+        {/* Center Text */}
+        <div style={{
+          position: 'absolute',
+          color: '#fff',
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          textAlign: 'center'
+        }}>
+          {isAnimating ? '...' : `${luckLevel}%`}
+        </div>
+      </div>
+
+      <button 
+        onClick={handleTestLuck}
+        disabled={isAnimating}
+        style={{
+          marginTop: '30px',
+          padding: '12px 30px',
+          borderRadius: '25px',
+          border: 'none',
+          background: isAnimating ? '#666' : 'linear-gradient(135deg, #00ff80, #0080ff)',
+          color: '#fff',
+          fontSize: '1rem',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+          transition: 'transform 0.2s'
+        }}
+      >
+        {isAnimating ? 'Scanning...' : 'Test Your Luck'}
       </button>
     </div>
   );
