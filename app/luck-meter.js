@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 
-// Updated to use your new auto-trimmed PNG assets
-const DIAL_IMAGE = '/1491_trimmed.png';
-const NEEDLE_IMAGE = '/1492_trimmed.png';
+// Swapped so 1492 is the still background dial and 1491 is the rotating needle
+const DIAL_IMAGE = '/1492_trimmed.png';
+const NEEDLE_IMAGE = '/1491_trimmed.png';
 
 export default function LuckMeter() {
   const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [luckPercentage, setLuckPercentage] = useState(null);
+  const [luckPercentage, setLuckPercentage] = useState<number | null>(null);
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasSpun, setHasSpun] = useState(false);
@@ -37,6 +37,7 @@ export default function LuckMeter() {
     setHasSpun(true);
     
     const randomLuck = Math.floor(Math.random() * 101);
+    // Calculates rotation angle based on luck percentage (-90deg to +90deg)
     const targetAngle = (randomLuck / 100) * 180 - 90;
     const nextRotation = rotation + 1080 + (targetAngle - (rotation % 360));
 
@@ -48,30 +49,30 @@ export default function LuckMeter() {
     }, 2500);
   };
 
-  // Lighting/Pulse Logic
-  let glowColor = 'rgba(255, 255, 255, 0.4)';
-  let glowIntensity = '40px';
-  let animation = isSpinning ? 'pulse 1.5s infinite' : 'none';
+  // Dynamic Lighting / Glow Logic based on luck output
+  let glowColor = 'rgba(255, 255, 255, 0.3)';
+  let glowIntensity = '30px';
+  let animation = isSpinning ? 'pulse 1.2s infinite ease-in-out' : 'none';
   let luckMessage = '';
 
   if (!isSpinning && luckPercentage !== null) {
     animation = 'none';
     if (luckPercentage >= 80) {
-      glowColor = 'rgba(0, 255, 128, 0.7)';
-      glowIntensity = '80px';
+      glowColor = 'rgba(0, 255, 128, 0.8)';
+      glowIntensity = '60px';
       luckMessage = "Outstanding! The universe is totally on your side today.";
     } else if (luckPercentage >= 50) {
-      glowColor = 'rgba(255, 215, 0, 0.6)';
-      glowIntensity = '60px';
+      glowColor = 'rgba(255, 215, 0, 0.7)';
+      glowIntensity = '45px';
       luckMessage = "Solid energy! A perfectly balanced day ahead.";
     } else {
-      glowColor = 'rgba(255, 100, 100, 0.5)';
-      glowIntensity = '40px';
+      glowColor = 'rgba(255, 80, 80, 0.6)';
+      glowIntensity = '30px';
       luckMessage = "Hey, the only way is up! You make your own luck anyway.";
     }
   }
 
-  if (!imagesLoaded) return <div style={{ padding: '20px', textAlign: 'center', color: '#ffffff' }}>Loading...</div>;
+  if (!imagesLoaded) return <div style={{ padding: '20px', textAlign: 'center', color: '#ffffff' }}>Loading Meter...</div>;
 
   return (
     <div style={{
@@ -81,59 +82,83 @@ export default function LuckMeter() {
     }}>
       <style>{`
         @keyframes pulse {
-          0% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
-          50% { box-shadow: 0 0 60px rgba(255, 255, 255, 0.9); }
-          100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+          0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+          50% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.8); }
+          100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
         }
       `}</style>
 
+      {/* Meter Container (Sized cleanly for mobile screens) */}
       <div style={{
         position: 'relative',
-        width: '98%', 
-        maxWidth: '800px',
+        width: '85%', 
+        maxWidth: '360px',
         aspectRatio: '1 / 1',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '40px',
+        margin: '10px auto 25px auto',
         borderRadius: '50%',
         animation: animation,
         transition: 'box-shadow 0.5s ease-in-out'
       }}>
         
+        {/* Dynamic Backlight Glow Effect */}
         <div style={{
-          position: 'absolute', top: '10%', left: '10%', right: '10%', bottom: '10%',
+          position: 'absolute', top: '5%', left: '5%', right: '5%', bottom: '5%',
           borderRadius: '50%', boxShadow: `0 0 ${glowIntensity} ${glowColor}`,
           zIndex: 0, transition: 'all 0.5s ease-in-out'
         }} />
 
-        <img src={DIAL_IMAGE} alt="Dial" style={{ position: 'relative', width: '100%', zIndex: 1 }} />
-        <img src={NEEDLE_IMAGE} alt="Needle" style={{
-          position: 'absolute', width: '100%',
-          transform: `rotate(${rotation}deg)`,
-          transition: isSpinning ? 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
-          transformOrigin: 'center center', zIndex: 2
-        }} />
+        {/* Base Dial Graphic */}
+        <img 
+          src={DIAL_IMAGE} 
+          alt="Dial Base" 
+          style={{ position: 'relative', width: '100%', zIndex: 1, display: 'block' }} 
+        />
+        
+        {/* Rotating Needle Layer */}
+        <img 
+          src={NEEDLE_IMAGE} 
+          alt="Needle" 
+          style={{
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100%',
+            height: '100%',
+            transform: `rotate(${rotation}deg)`,
+            transition: isSpinning ? 'transform 2.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'none',
+            transformOrigin: 'center center', 
+            zIndex: 2,
+            display: 'block'
+          }} 
+        />
       </div>
 
-      <div style={{ height: '80px', textAlign: 'center', padding: '0 20px' }}>
+      {/* Results and Messaging Area */}
+      <div style={{ minHeight: '70px', textAlign: 'center', padding: '0 15px' }}>
         {luckPercentage !== null && !isSpinning && (
           <>
-            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: '0 0 8px 0' }}>Your Luck: {luckPercentage}%</p>
-            <p style={{ fontSize: '1.1rem', fontStyle: 'italic', opacity: 0.9 }}>{luckMessage}</p>
+            <p style={{ fontSize: '1.6rem', fontWeight: 'bold', margin: '0 0 6px 0', color: '#FFD700' }}>
+              Your Luck: {luckPercentage}%
+            </p>
+            <p style={{ fontSize: '1.05rem', fontStyle: 'italic', opacity: 0.95 }}>{luckMessage}</p>
           </>
         )}
-        {isSpinning && <p style={{ fontSize: '1.4rem', opacity: 0.8 }}>Generating luck...</p>}
+        {isSpinning && <p style={{ fontSize: '1.3rem', opacity: 0.85, color: '#FFD700' }}>Generating luck...</p>}
       </div>
 
+      {/* Spin Action Button */}
       <button
         onClick={spinMeter}
         disabled={isSpinning || hasSpun}
         style={{
-          padding: '16px 40px', fontSize: '1.3rem', fontWeight: 'bold', color: '#000',
-          backgroundColor: (isSpinning || hasSpun) ? '#666' : '#FFD700',
+          padding: '14px 36px', fontSize: '1.2rem', fontWeight: 'bold', color: '#000',
+          backgroundColor: (isSpinning || hasSpun) ? '#555' : '#FFD700',
           border: 'none', borderRadius: '30px', cursor: (isSpinning || hasSpun) ? 'not-allowed' : 'pointer',
-          marginTop: '20px', opacity: (isSpinning || hasSpun) ? 0.7 : 1
+          marginTop: '15px', opacity: (isSpinning || hasSpun) ? 0.7 : 1,
+          boxShadow: (isSpinning || hasSpun) ? 'none' : '0 4px 15px rgba(255, 215, 0, 0.4)'
         }}
       >
         {isSpinning ? 'Generating...' : (hasSpun ? 'Luck Tested' : 'Test Your Luck')}
