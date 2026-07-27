@@ -58,13 +58,14 @@ export default function LuckyCardReveal() {
 }
 
 const styles = {
-  container: { perspective: '1000px', width: '300px', height: '420px', margin: '20px auto' },
+  // Mobile responsive container
+  container: { perspective: '1000px', width: '100%', maxWidth: '300px', height: '420px', margin: '20px auto' },
   card: { width: '100%', height: '100%', transition: 'transform 0.6s ease-in-out', transformStyle: 'preserve-3d', position: 'relative', borderRadius: '16px' },
-  cardFace: { position: 'absolute', width: '100%', height: '100%', backfaceVisibility: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '16px', border: '3px solid #FFB300', boxSizing: 'border-box' },
-  cardBack: { backgroundColor: '#00205B', color: '#FFB300' },
-  cardFront: { backgroundColor: '#FFFFFF', color: '#00205B', transform: 'rotateY(180deg)', padding: '20px', textAlign: 'center' },
+  cardFace: { position: 'absolute', width: '100%', height: '100%', backfaceVisibility: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '16px', border: '2px solid #fbbf24', boxSizing: 'border-box' }, // Amber-400 border
+  cardBack: { backgroundColor: '#0f172a', color: '#fbbf24' }, // Slate-900 bg, Amber-400 text
+  cardFront: { backgroundColor: '#020617', color: '#f1f5f9', transform: 'rotateY(180deg)', padding: '20px', textAlign: 'center' }, // Slate-950 bg, Slate-100 text
   content: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', transition: 'opacity 300ms' },
-  title: { margin: '0', fontSize: '1.25rem', color: '#00205B' },
+  title: { margin: '0', fontSize: '1.25rem', color: '#fbbf24' },
   image: { width: '80px', height: '80px', objectFit: 'contain' },
-  quote: { fontStyle: 'italic', fontSize: '0.9rem', color: '#334155' }
+  quote: { fontStyle: 'italic', fontSize: '0.9rem', color: '#cbd5e1' }
 };
