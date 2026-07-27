@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import LuckyCardReveal from './lucky-card-reveal';
+// Temporarily disabled to check page stability
+// import LuckyCardReveal from './lucky-card-reveal';
 
 // --- Style Constants ---
 const PRIMARY_GOLD = "text-amber-400";
@@ -18,6 +19,7 @@ const luckyQuotes = [
   "Positivity is a magnet for good fortune."
 ];
 
+// --- SEO Metadata ---
 export const metadata = {
   title: 'LuckyPickCanada - Lucky Meter & Personalized Picks',
   description:
@@ -25,7 +27,6 @@ export const metadata = {
 };
 
 export default function HomePage() {
-  // Static daily quote to guarantee zero hydration mismatch errors
   const dailyQuote = luckyQuotes[0];
 
   return (
@@ -64,12 +65,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. Card Reveal Section */}
+      {/* 3. Card Reveal Section (Temporarily Disabled for Diagnostic Test) */}
       <section className="space-y-4">
         <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
           Card Reveal
         </h2>
-        <LuckyCardReveal />
+        <div className="p-4 rounded-xl border border-dashed border-amber-500/30 text-center text-slate-400 text-sm">
+          Card reveal testing in progress...
+        </div>
       </section>
 
       {/* 4. Lucky Journey & Personalized Picks Section */}
