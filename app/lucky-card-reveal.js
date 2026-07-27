@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 
 // Keep these for fallback scenarios
@@ -22,12 +21,11 @@ const sparklePositions = [
 ];
 
 function PremiumCard({ card, isBack = false }) {
-  // Determine tier-specific class for glows
   const tierClass = card.tier ? `premium-card-tier-${card.tier}` : '';
   
   return (
     <span className={`premium-card ${tierClass} ${isBack ? 'premium-card-back' : `premium-card-${card.id}`}`}>
-      {!isBack ? <Image src={card.artwork || '/placeholder.svg'} alt="" fill sizes="252px" className="premium-card-artwork" /> : null}
+      {!isBack ? <img src={card.artwork || '/placeholder.svg'} alt="" style={{width: '100%', height: '100%', objectFit: 'cover'}} className="premium-card-artwork" /> : null}
       <span className="premium-card-foil" />
       <span className="premium-card-inner-border" />
       <span className="premium-card-corner premium-card-corner-top">LPC</span>
@@ -60,13 +58,10 @@ export default function LuckyCardReveal({ luckScore, card }) {
   
   const isRevealing = revealState === 'revealing';
   const isRevealed = revealState === 'revealed';
-  
-  // Prioritize the passed card prop, fallback to default
   const activeCard = selectedCard || card || premiumLuckyCards[0];
 
   function revealCard() {
     if (revealState !== 'closed') return;
-
     setSelectedCard(card || premiumLuckyCards[Math.floor(Math.random() * premiumLuckyCards.length)]);
     setRevealState('revealing');
     window.setTimeout(() => setRevealState('revealed'), 1450);
@@ -81,11 +76,8 @@ export default function LuckyCardReveal({ luckScore, card }) {
         @keyframes premium-card-orbit { from { transform: rotate(0deg) translateX(8px) rotate(0deg); } to { transform: rotate(360deg) translateX(8px) rotate(-360deg); } }
         @keyframes premium-final-glow { from { opacity: 0.78; transform: scale(0.97) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         @keyframes premium-edge-light { 0% { transform: translateX(-145%) rotate(16deg); opacity: 0; } 34% { opacity: 0.86; } 100% { transform: translateX(145%) rotate(16deg); opacity: 0; } }
-
-        /* Tier Specific Visuals */
         .premium-card-tier-legendary { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 0 1px rgba(255, 215, 0, 0.5); }
         .premium-card-tier-epic { box-shadow: 0 0 30px rgba(192, 192, 192, 0.5), inset 0 0 0 1px rgba(192, 192, 192, 0.5); }
-
         .premium-card-stage { perspective: 1200px; transform-style: preserve-3d; }
         .premium-card-button { transition: transform 240ms ease, box-shadow 240ms ease, filter 240ms ease; transform-style: preserve-3d; }
         .premium-card-button::before { content: ''; position: absolute; inset: 7% -18% -12%; border-radius: 44px; background: radial-gradient(ellipse at center, rgba(250,204,21,0.34), rgba(16,185,129,0.18) 42%, transparent 68%); filter: blur(20px); z-index: -1; transform: translateZ(-36px); }
@@ -135,7 +127,7 @@ export default function LuckyCardReveal({ luckScore, card }) {
         ))}
       </div>
 
-      <div className="experience-brand"><Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada official maple clover logo" width={52} height={52} sizes="52px" quality={90} /><span>LuckyPickCanada.ca</span></div>
+      <div className="experience-brand"><img src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada official maple clover logo" width="52" height="52" /><span>LuckyPickCanada.ca</span></div>
       <p style={{ margin: '1rem 0 0', textTransform: 'uppercase', letterSpacing: 2.4, color: '#fde68a', fontWeight: 950 }}>
         Premium HD Lucky Card Reveal
       </p>
