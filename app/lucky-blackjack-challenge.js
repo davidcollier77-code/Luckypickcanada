@@ -3,6 +3,26 @@
 import React, { useState } from 'react';
 import LuckyCardReveal from './lucky-card-reveal'; 
 
+// --- Rarity Logic ---
+const LUCKY_CARDS = [
+  { id: 1, name: 'Horseshoe', tier: 'standard', color: '#fff' },
+  { id: 2, name: 'Four-Leaf Clover', tier: 'standard', color: '#fff' },
+  { id: 3, name: 'Ladybug', tier: 'standard', color: '#fff' },
+  { id: 4, name: 'Dice', tier: 'standard', color: '#fff' },
+  { id: 5, name: 'Sun', tier: 'standard', color: '#fff' },
+  { id: 6, name: 'Shooting Star', tier: 'standard', color: '#fff' },
+  { id: 7, name: 'Silver Maple Leaf', tier: 'epic', color: '#C0C0C0' },
+  { id: 8, name: 'Arctic Aurora', tier: 'epic', color: '#87CEEB' },
+  { id: 9, name: 'Golden Medallion', tier: 'legendary', color: '#FFD700' }
+];
+
+const getWeightedLuckyCard = () => {
+  const rand = Math.random() * 100;
+  if (rand < 10) return LUCKY_CARDS[8]; // Legendary (10%)
+  if (rand < 40) return LUCKY_CARDS[Math.floor(Math.random() * 2) + 6]; // Epic (30%)
+  return LUCKY_CARDS[Math.floor(Math.random() * 6)]; // Standard (60%)
+};
+
 // Premium Card Component
 const Card = ({ cardDetails, isHidden }) => {
   if (isHidden) {
@@ -36,6 +56,7 @@ export default function LuckyBlackjackChallenge() {
   const [deck, setDeck] = useState([]);
   const [message, setMessage] = useState('Beat the Dealer for Lucky Picks!');
   const [selectedQuote, setSelectedQuote] = useState('');
+  const [revealedCard, setRevealedCard] = useState(null); // New state for the won card
 
   const getCardDetails = (num) => {
     const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -54,19 +75,15 @@ export default function LuckyBlackjackChallenge() {
     return score;
   };
 
-  // --- New Score Display Helpers ---
   const getPlayerDisplayScore = (hand) => {
     if (hand.length === 0) return '';
     const currentScore = calculateScore(hand);
-    
-    // Logic for soft Aces (e.g., displaying "7 / 17")
     let rawScore = 0; let aces = 0;
     hand.forEach((num) => {
       const val = (num % 13) + 1;
       if (val === 1) aces += 1; 
       else rawScore += val > 10 ? 10 : val;
     });
-
     if (aces > 0 && (rawScore + 11 + (aces - 1) <= 21) && currentScore !== 21) {
       return `${currentScore - 10} / ${currentScore}`;
     }
@@ -75,10 +92,7 @@ export default function LuckyBlackjackChallenge() {
 
   const getDealerDisplayScore = (hand) => {
     if (hand.length === 0) return '';
-    // Only calculate the first card's score while the player is taking their turn
-    if (gameState === 'playing') {
-      return calculateScore([hand[0]]);
-    }
+    if (gameState === 'playing') return calculateScore([hand[0]]);
     return calculateScore(hand);
   };
 
@@ -88,6 +102,7 @@ export default function LuckyBlackjackChallenge() {
     setDealerHand([newDeck.pop(), newDeck.pop()]);
     setDeck(newDeck);
     setGameState('playing');
+    setRevealedCard(null);
     setMessage('Good luck!');
   };
 
@@ -103,8 +118,6 @@ export default function LuckyBlackjackChallenge() {
 
   const stand = () => {
     if (gameState !== 'playing') return;
-    
-    // Dealer logic: Draw until 17 or higher
     let currentDealerHand = [...dealerHand];
     let currentDeck = [...deck];
     while (calculateScore(currentDealerHand) < 17) {
@@ -116,6 +129,7 @@ export default function LuckyBlackjackChallenge() {
     const dScore = calculateScore(currentDealerHand);
 
     if (dScore > 21 || pScore > dScore) {
+      const luckyCard = getWeightedLuckyCard();
       const quotes = [
         "A little luck can open a world of possibilities.", "Today, luck found its way to you.",
         "Great moments begin with a little bit of luck.", "Your lucky moment has arrived.",
@@ -124,8 +138,9 @@ export default function LuckyBlackjackChallenge() {
         "Keep believing — your lucky story continues.", "Good fortune is closer than you think."
       ];
       setSelectedQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+      setRevealedCard(luckyCard);
       setGameState('won');
-      setMessage('🎉 YOU WIN! Claim Your Lucky Pick!');
+      setMessage(`🎉 YOU WIN! You found the ${luckyCard.name}!`);
     } else {
       setGameState('lost');
       setMessage('Dealer wins this time!');
@@ -138,44 +153,25 @@ export default function LuckyBlackjackChallenge() {
       <p style={{ textAlign: 'center', fontSize: '1.1rem' }}>{message}</p>
       
       <div style={{ margin: '20px 0', padding: '15px', border: '1px solid #FFB300', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.05)' }}>
-        
-        {/* Dealer Area */}
         <div style={{ marginBottom: '15px' }}>
           <strong>Dealer:</strong> 
-          {dealerHand.length > 0 && (
-            <span style={{ marginLeft: '10px', color: '#FFB300', fontWeight: 'bold' }}>
-              {getDealerDisplayScore(dealerHand)}
-            </span>
-          )}
+          {dealerHand.length > 0 && <span style={{ marginLeft: '10px', color: '#FFB300', fontWeight: 'bold' }}>{getDealerDisplayScore(dealerHand)}</span>}
           <div style={{ display: 'flex', marginTop: '5px' }}>
-             {dealerHand.map((num, i) => (
-               <Card 
-                 key={i} 
-                 cardDetails={getCardDetails(num)} 
-                 isHidden={gameState === 'playing' && i === 1} 
-               />
-             ))}
+             {dealerHand.map((num, i) => <Card key={i} cardDetails={getCardDetails(num)} isHidden={gameState === 'playing' && i === 1} />)}
           </div>
         </div>
-        
-        {/* Player Area */}
         <div>
           <strong>Your Hand:</strong> 
-          {playerHand.length > 0 && (
-            <span style={{ marginLeft: '10px', color: '#FFB300', fontWeight: 'bold' }}>
-              {getPlayerDisplayScore(playerHand)}
-            </span>
-          )}
+          {playerHand.length > 0 && <span style={{ marginLeft: '10px', color: '#FFB300', fontWeight: 'bold' }}>{getPlayerDisplayScore(playerHand)}</span>}
           <div style={{ display: 'flex', marginTop: '5px' }}>
             {playerHand.map((num, i) => <Card key={i} cardDetails={getCardDetails(num)} />)}
           </div>
         </div>
-
       </div>
 
-      {gameState === 'won' && (
+      {gameState === 'won' && revealedCard && (
         <div style={{ marginTop: '20px' }}>
-            <LuckyCardReveal quote={selectedQuote} />
+            <LuckyCardReveal quote={selectedQuote} card={revealedCard} />
         </div>
       )}
 
