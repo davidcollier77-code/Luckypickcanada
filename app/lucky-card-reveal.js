@@ -3,40 +3,11 @@
 import Image from 'next/image';
 import { useState } from 'react';
 
+// Keep these for fallback scenarios
 const premiumLuckyCards = [
-  {
-    id: 'clover',
-    artwork: '/lucky-card-clover.svg',
-    title: 'Emerald Clover Card',
-    name: 'Premium emerald clover collectible card',
-    eyebrow: 'Clover Card',
-    emblem: '♣',
-    signature: 'Lucky Clover',
-    footer: 'Emerald fortune edition',
-    message: 'A glowing clover brings premium lucky energy, confidence, and a little magic to your next move.',
-  },
-  {
-    id: 'canada',
-    artwork: '/lucky-card-fortune.svg',
-    title: 'Canada Maple Card',
-    name: 'Premium Canadian maple leaf collectible card',
-    eyebrow: 'Canada Card',
-    emblem: '✦',
-    signature: 'Maple Luck',
-    footer: 'Canadian collector finish',
-    message: 'A raised maple-leaf keepsake celebrates Canadian luck with a polished red, white, and gold finish.',
-  },
-  {
-    id: 'gold',
-    artwork: '/lucky-card-horseshoe.svg',
-    title: 'Gold Treasure Card',
-    name: 'Premium brushed gold clover collectible card',
-    eyebrow: 'Gold Card',
-    emblem: '♣',
-    signature: 'Golden Fortune',
-    footer: 'Treasure vault edition',
-    message: 'A full metallic gold card signals treasure-style luck, abundance, and a bright reveal ahead.',
-  },
+  { id: 'clover', tier: 'standard', artwork: '/lucky-card-clover.svg', title: 'Emerald Clover Card', eyebrow: 'Clover Card', emblem: '♣', signature: 'Lucky Clover', footer: 'Emerald fortune edition', message: 'A glowing clover brings premium lucky energy, confidence, and a little magic to your next move.' },
+  { id: 'canada', tier: 'epic', artwork: '/lucky-card-fortune.svg', title: 'Canada Maple Card', eyebrow: 'Canada Card', emblem: '✦', signature: 'Maple Luck', footer: 'Canadian collector finish', message: 'A raised maple-leaf keepsake celebrates Canadian luck with a polished red, white, and gold finish.' },
+  { id: 'gold', tier: 'legendary', artwork: '/lucky-card-horseshoe.svg', title: 'Gold Treasure Card', eyebrow: 'Gold Card', emblem: '♣', signature: 'Golden Fortune', footer: 'Treasure vault edition', message: 'A full metallic gold card signals treasure-style luck, abundance, and a bright reveal ahead.' },
 ];
 
 const sparklePositions = [
@@ -50,53 +21,13 @@ const sparklePositions = [
   { star: '✦', top: '47%', left: '78%', size: '0.86rem', delay: '1.2s' },
 ];
 
-function getRandomIndex(length) {
-  if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
-    const values = new Uint32Array(1);
-    window.crypto.getRandomValues(values);
-    return values[0] % length;
-  }
-
-  return Math.floor(Math.random() * length);
-}
-
-function getLastCardIndex() {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  try {
-    const storedIndex = Number(window.localStorage.getItem('lastPremiumLuckyCardIndex'));
-    return Number.isInteger(storedIndex) ? storedIndex : null;
-  } catch {
-    return null;
-  }
-}
-
-function pickRandomLuckyCard() {
-  const cardCount = premiumLuckyCards.length;
-  const lastIndex = getLastCardIndex();
-  let nextIndex = getRandomIndex(cardCount);
-
-  if (cardCount > 1 && lastIndex !== null && nextIndex === lastIndex) {
-    nextIndex = (nextIndex + 1 + getRandomIndex(cardCount - 1)) % cardCount;
-  }
-
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage.setItem('lastPremiumLuckyCardIndex', String(nextIndex));
-    } catch {
-      // The reveal still works if browser storage is unavailable.
-    }
-  }
-
-  return premiumLuckyCards[nextIndex];
-}
-
 function PremiumCard({ card, isBack = false }) {
+  // Determine tier-specific class for glows
+  const tierClass = card.tier ? `premium-card-tier-${card.tier}` : '';
+  
   return (
-    <span className={`premium-card ${isBack ? 'premium-card-back' : `premium-card-${card.id}`}`}>
-      {!isBack ? <Image src={card.artwork} alt="" fill sizes="252px" className="premium-card-artwork" /> : null}
+    <span className={`premium-card ${tierClass} ${isBack ? 'premium-card-back' : `premium-card-${card.id}`}`}>
+      {!isBack ? <Image src={card.artwork || '/placeholder.svg'} alt="" fill sizes="252px" className="premium-card-artwork" /> : null}
       <span className="premium-card-foil" />
       <span className="premium-card-inner-border" />
       <span className="premium-card-corner premium-card-corner-top">LPC</span>
@@ -123,20 +54,20 @@ function PremiumCard({ card, isBack = false }) {
   );
 }
 
-export default function LuckyCardReveal({ luckScore }) {
+export default function LuckyCardReveal({ luckScore, card }) {
   const [revealState, setRevealState] = useState('closed');
   const [selectedCard, setSelectedCard] = useState(null);
+  
   const isRevealing = revealState === 'revealing';
   const isRevealed = revealState === 'revealed';
-  const activeCard = selectedCard || premiumLuckyCards[0];
+  
+  // Prioritize the passed card prop, fallback to default
+  const activeCard = selectedCard || card || premiumLuckyCards[0];
 
   function revealCard() {
-    if (revealState !== 'closed') {
-      return;
-    }
+    if (revealState !== 'closed') return;
 
-    const nextCard = pickRandomLuckyCard();
-    setSelectedCard(nextCard);
+    setSelectedCard(card || premiumLuckyCards[Math.floor(Math.random() * premiumLuckyCards.length)]);
     setRevealState('revealing');
     window.setTimeout(() => setRevealState('revealed'), 1450);
   }
@@ -144,40 +75,16 @@ export default function LuckyCardReveal({ luckScore }) {
   return (
     <section aria-labelledby="lucky-card-title" style={{ marginTop: '1.25rem', padding: 'clamp(1.25rem, 3vw, 1.9rem)', borderRadius: 34, background: 'radial-gradient(circle at 16% 18%, rgba(250, 204, 21, 0.34), transparent 28%), radial-gradient(circle at 84% 10%, rgba(16, 185, 129, 0.34), transparent 24%), radial-gradient(circle at 50% 105%, rgba(185, 28, 28, 0.18), transparent 34%), linear-gradient(145deg, rgba(2, 6, 23, 0.98), rgba(4, 31, 27, 0.9) 48%, rgba(14, 9, 5, 0.96))', color: '#fff7d6', border: '1px solid rgba(255, 235, 160, 0.38)', boxShadow: '0 36px 110px rgba(0, 0, 0, 0.58), 0 0 64px rgba(250, 204, 21, 0.26), 0 0 42px rgba(16,185,129,0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12)', overflow: 'hidden', textAlign: 'center', position: 'relative', backdropFilter: 'blur(18px) saturate(140%)' }}>
       <style>{`
-        @keyframes premium-deck-shake {
-          0%, 100% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translate3d(0, 0, 0); }
-          12% { transform: rotateX(5deg) rotateY(-10deg) rotateZ(-2.8deg) translate3d(-4px, -2px, 16px); }
-          24% { transform: rotateX(-3deg) rotateY(10deg) rotateZ(2.6deg) translate3d(4px, 2px, 18px); }
-          38% { transform: rotateX(4deg) rotateY(-7deg) rotateZ(-1.8deg) translate3d(-3px, 0, 20px); }
-          54% { transform: rotateX(-2deg) rotateY(7deg) rotateZ(1.6deg) translate3d(3px, -1px, 18px); }
-          70% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translate3d(0, 0, 8px); }
-        }
+        @keyframes premium-deck-shake { 0%, 100% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translate3d(0, 0, 0); } 12% { transform: rotateX(5deg) rotateY(-10deg) rotateZ(-2.8deg) translate3d(-4px, -2px, 16px); } 24% { transform: rotateX(-3deg) rotateY(10deg) rotateZ(2.6deg) translate3d(4px, 2px, 18px); } 38% { transform: rotateX(4deg) rotateY(-7deg) rotateZ(-1.8deg) translate3d(-3px, 0, 20px); } 54% { transform: rotateX(-2deg) rotateY(7deg) rotateZ(1.6deg) translate3d(3px, -1px, 18px); } 70% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) translate3d(0, 0, 8px); } }
+        @keyframes premium-card-idle-glow { 0%, 100% { filter: drop-shadow(0 0 18px rgba(250, 204, 21, 0.44)); transform: translateY(0) rotateX(0deg); } 50% { filter: drop-shadow(0 0 34px rgba(255, 247, 214, 0.74)); transform: translateY(-3px) rotateX(2deg); } }
+        @keyframes premium-card-twinkle { 0%, 100% { opacity: 0.18; transform: scale(0.58) rotate(0deg); } 45% { opacity: 1; transform: scale(1.36) rotate(28deg); } }
+        @keyframes premium-card-orbit { from { transform: rotate(0deg) translateX(8px) rotate(0deg); } to { transform: rotate(360deg) translateX(8px) rotate(-360deg); } }
+        @keyframes premium-final-glow { from { opacity: 0.78; transform: scale(0.97) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes premium-edge-light { 0% { transform: translateX(-145%) rotate(16deg); opacity: 0; } 34% { opacity: 0.86; } 100% { transform: translateX(145%) rotate(16deg); opacity: 0; } }
 
-        @keyframes premium-card-idle-glow {
-          0%, 100% { filter: drop-shadow(0 0 18px rgba(250, 204, 21, 0.44)); transform: translateY(0) rotateX(0deg); }
-          50% { filter: drop-shadow(0 0 34px rgba(255, 247, 214, 0.74)); transform: translateY(-3px) rotateX(2deg); }
-        }
-
-        @keyframes premium-card-twinkle {
-          0%, 100% { opacity: 0.18; transform: scale(0.58) rotate(0deg); }
-          45% { opacity: 1; transform: scale(1.36) rotate(28deg); }
-        }
-
-        @keyframes premium-card-orbit {
-          from { transform: rotate(0deg) translateX(8px) rotate(0deg); }
-          to { transform: rotate(360deg) translateX(8px) rotate(-360deg); }
-        }
-
-        @keyframes premium-final-glow {
-          from { opacity: 0.78; transform: scale(0.97) translateY(8px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        @keyframes premium-edge-light {
-          0% { transform: translateX(-145%) rotate(16deg); opacity: 0; }
-          34% { opacity: 0.86; }
-          100% { transform: translateX(145%) rotate(16deg); opacity: 0; }
-        }
+        /* Tier Specific Visuals */
+        .premium-card-tier-legendary { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6), inset 0 0 0 1px rgba(255, 215, 0, 0.5); }
+        .premium-card-tier-epic { box-shadow: 0 0 30px rgba(192, 192, 192, 0.5), inset 0 0 0 1px rgba(192, 192, 192, 0.5); }
 
         .premium-card-stage { perspective: 1200px; transform-style: preserve-3d; }
         .premium-card-button { transition: transform 240ms ease, box-shadow 240ms ease, filter 240ms ease; transform-style: preserve-3d; }
@@ -187,8 +94,7 @@ export default function LuckyCardReveal({ luckScore }) {
         .premium-card-button.is-revealing { animation: premium-deck-shake 0.62s ease-in-out both; }
         .premium-card-button.is-revealed { animation: premium-final-glow 0.42s ease-out both; }
         .premium-card-flipper { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.86s cubic-bezier(.18,.78,.24,1); transition-delay: 0.58s; }
-        .premium-card-button.is-revealing .premium-card-flipper,
-        .premium-card-button.is-revealed .premium-card-flipper { transform: rotateY(180deg); }
+        .premium-card-button.is-revealing .premium-card-flipper, .premium-card-button.is-revealed .premium-card-flipper { transform: rotateY(180deg); }
         .premium-card-face { position: absolute; display: block; inset: 0; backface-visibility: hidden; transform-style: preserve-3d; }
         .premium-card-face-front { transform: rotateY(180deg); }
         .premium-card { position: absolute; display: block; inset: 0; overflow: hidden; border-radius: 28px; border: 2px solid rgba(255, 247, 214, 0.72); box-shadow: inset 0 0 0 1px rgba(121, 69, 12, 0.7), inset 0 0 0 7px rgba(255, 219, 103, 0.2), inset 0 16px 26px rgba(255,255,255,0.18), inset 0 -26px 38px rgba(0,0,0,0.34); }
@@ -245,7 +151,7 @@ export default function LuckyCardReveal({ luckScore }) {
           type="button"
           onClick={revealCard}
           disabled={revealState !== 'closed'}
-          aria-label={isRevealed && selectedCard ? `LuckyPickCanada lucky card reveal: ${selectedCard.name}` : 'LuckyPickCanada lucky card reveal'}
+          aria-label={isRevealed && activeCard ? `LuckyPickCanada lucky card reveal: ${activeCard.name}` : 'LuckyPickCanada lucky card reveal'}
           className={`premium-card-button ${isRevealing ? 'is-revealing' : ''} ${isRevealed ? 'is-revealed' : ''} ${revealState === 'closed' ? 'is-idle' : ''}`}
           style={{ position: 'relative', width: 'min(72vw, 252px)', aspectRatio: '210 / 296', border: 0, borderRadius: 30, background: 'transparent', padding: 0, cursor: revealState === 'closed' ? 'pointer' : 'default', boxShadow: '0 28px 64px rgba(0, 0, 0, 0.52), 0 0 42px rgba(250, 204, 21, 0.28)', transformStyle: 'preserve-3d' }}
         >
@@ -260,9 +166,9 @@ export default function LuckyCardReveal({ luckScore }) {
         </button>
       </div>
 
-      {isRevealed && selectedCard ? (
+      {isRevealed && activeCard ? (
         <p role="status" aria-live="polite" style={{ margin: '1rem auto 0', maxWidth: 610, padding: '1rem 1.1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(2, 6, 23, 0.62), rgba(6, 78, 59, 0.28))', border: '1px solid rgba(255, 235, 160, 0.34)', color: '#fff7d6', fontSize: '1rem', lineHeight: 1.55, fontWeight: 850, boxShadow: '0 0 34px rgba(250,204,21,0.14), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
-          <strong>{selectedCard.title}:</strong> {selectedCard.message}
+          <strong>{activeCard.title}:</strong> {activeCard.message}
         </p>
       ) : null}
     </section>
