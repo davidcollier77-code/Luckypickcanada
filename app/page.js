@@ -31,7 +31,8 @@ export default function HomePage() {
         <img 
           src="/BackgroundEraser_20260724_163638777.png" 
           alt="Official Lucky Pick Canada Logo" 
-          className="mx-auto h-16 w-auto mb-2"
+          className="mx-auto mb-2"
+          style={{ maxWidth: '180px', height: 'auto', width: '100%' }}
         />
         <h1 className={`text-3xl sm:text-5xl font-extrabold tracking-tight ${PRIMARY_GOLD}`}>
           Your Luck, Personalized!
