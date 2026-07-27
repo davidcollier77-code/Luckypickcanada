@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import LuckyCardReveal from './lucky-card-reveal';
+import LuckyCardReveal from './LuckyCardReveal';
 
 // --- Style Constants ---
 const PRIMARY_GOLD = "text-amber-400";
