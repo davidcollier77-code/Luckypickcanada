@@ -29,7 +29,7 @@ export default function HomePage() {
       {/* 1. Header Section */}
       <header className="text-center space-y-3 py-6 border-b border-slate-800/60">
         <img 
-          src="/official-logo.png" 
+          src="/BackgroundEraser_20260724_163638777.png" 
           alt="Official Lucky Pick Canada Logo" 
           className="mx-auto h-16 w-auto mb-2"
         />
