@@ -1,4 +1,4 @@
-import { createLuckyStory } from '../../lucky-stories';
+import { createLuckyStory } from '../../lucky-stories-db';
 import { validatePublicFormSubmission } from '../../spam-protection';
 
 export const runtime = 'nodejs';
