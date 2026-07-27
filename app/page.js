@@ -2,7 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
+// We replaced the broken blackjack import with this:
 import LuckyCardReveal from './lucky-card-reveal';
+import { getLuckMap, provinces } from './luck-map';
+import LuckMeter from './luck-meter';
+import LuckyRevealPopup from './lucky-reveal-popup';
+import { getLuckyStories } from './lucky-stories';
+import { getTurnstileSiteKey } from './turnstile-config';
 
 // --- Style Constants ---
 const PRIMARY_GOLD = "text-amber-400";
