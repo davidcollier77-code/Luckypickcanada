@@ -1,4 +1,46 @@
-'use client';
+'use clien'use client';
+
+import React, { useState } from 'react';
+
+/**
+ * LuckyCardReveal
+ * Handles the interactive card flip, shake, and reveal animation.
+ */
+export default function LuckyCardReveal({ quote }) {
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  const handleReveal = () => {
+    setIsRevealed(true);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6">
+      {/* Container with pulse-card class for the idle glow effect */}
+      <div 
+        onClick={handleReveal}
+        className={`pulse-card relative w-64 h-96 cursor-pointer transition-transform duration-500 transform ${isRevealed ? 'rotate-y-180' : ''}`}
+        style={{ perspective: '1000px' }}
+      >
+        <div className="w-full h-full bg-gradient-to-br from-amber-400 to-red-600 rounded-xl shadow-xl flex items-center justify-center text-white text-xl font-bold p-6 text-center border-2 border-white">
+           {isRevealed ? (
+             <div className="animate-in fade-in duration-700">
+               {quote || "Your Lucky Pick is waiting!"}
+             </div>
+           ) : (
+             "Tap to Reveal Your Lucky Pick!"
+           )}
+        </div>
+      </div>
+      
+      {isRevealed && (
+        <p className="mt-4 text-amber-500 font-semibold animate-bounce">
+          Good luck!
+        </p>
+      )}
+    </div>
+  );
+}
+t'
 
 import React, { useState } from 'react';
 import LuckyCardReveal from './lucky-card-reveal'; 
