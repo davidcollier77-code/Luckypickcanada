@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-// Line 4: Imports the renamed module directly
+// Line 4: Corrected import to match renamed file
 import LuckyCardReveal from './LuckyCardReveal';
 
 // --- Style Constants ---
