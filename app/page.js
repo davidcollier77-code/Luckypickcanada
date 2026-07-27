@@ -1,768 +1,198 @@
-import Image from 'next/image';
-import { getLuckMap, provinces } from './luck-map';
-import LuckMeter from './luck-meter';
-import LuckyBlackjackChallenge from './lucky-blackjack-challenge';
-import LuckyRevealPopup from './lucky-reveal-popup';
-import { getLuckyStories } from './lucky-stories';
-import { getTurnstileSiteKey } from './turnstile-config';
-import TurnstileField from './turnstile-field';
+import React from 'react';
+import Link from 'next/link';
+// Line 4: Corrected import to match renamed file
+import LuckyCardReveal from './LuckyCardReveal';
 
-export const dynamic = 'force-dynamic';
+// --- Style Constants ---
+const PRIMARY_GOLD = "text-amber-400";
+const SECONDARY_GOLD = "text-amber-300";
+const CARD_BG = "bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-lg";
+const BUTTON_STYLE = "inline-block px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all shadow-md";
 
-const games = [
-  { name: '6 Pick', count: 6, max: 49, description: 'Six unique numbers from 1 to 49.' },
-  { name: '7 Pick', count: 7, max: 50, description: 'Seven unique numbers from 1 to 50.' },
-];
-
-const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
-const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const facebookGroupUrl = 'https://www.facebook.com/share/g/1DASPZT9Cu/';
-const luckyStoryMapUrl = '/lucky-map-of-canada';
-const navLinks = [
-  { href: '#luck-meter-title', label: 'Free Lucky Meter' },
-  { href: '#lucky-pick-checkout', label: '$1 Pick' },
-  { href: '#lucky-blackjack-challenge', label: 'Cards' },
-  { href: '#little-luck-map', label: 'Lucky Picks by Province' },
-  { href: '/lucky-map-of-canada', label: 'Lucky Stories' },
-];
-const visitReasons = [
-  { icon: '✦', text: 'Fun and interactive luck-themed experiences' },
-  { icon: '♣', text: 'Beautiful animations and card reveals' },
-  { icon: '☾', text: 'New lucky moments every visit' },
-  { icon: '🍁', text: 'Built in Canada' },
-  { icon: '✨', text: 'Designed for entertainment and fun' },
-];
-
-// --- MISSING DEFINITIONS RESTORED ---
+// --- Quote Data & Helper ---
 const luckyQuotes = [
-  'A little luck can brighten your day, but a positive spirit can change your journey.',
-  'Every new day brings a new chance for something lucky to happen.',
-  'Believe in good possibilities, and you may discover a little extra luck along the way.',
-  'Luck often finds those who stay hopeful, curious, and open to new moments.',
-  'Sometimes the smallest spark of luck creates the biggest smile.',
-  'Today could be the day something wonderful surprises you.',
-  'A lucky moment begins with a positive thought and a little imagination.',
-  'Carry a little hope, share a little kindness, and invite a little luck into your day.',
-  'Good energy, positive thoughts, and a little luck can make any day brighter.',
-  'Keep believing in possibilities — your next lucky moment could be closer than you think.',
+  "Your positive energy creates your own luck every day.",
+  "Small acts of kindness bring immense fortune.",
+  "Luck is what happens when preparation meets opportunity.",
+  "Happiness is not by chance, but by choice.",
+  "Every daily step forward brings you closer to your goals.",
+  "Positivity is a magnet for good fortune."
 ];
 
-function getLuckyQuoteOfTheDay(date = new Date()) {
-  const dayNumber = Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / 86_400_000);
-  return luckyQuotes[dayNumber % luckyQuotes.length];
+function getLuckyQuoteOfTheDay() {
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+  return luckyQuotes[dayOfYear % luckyQuotes.length];
 }
 
-const luckyNumberStyle = {
-  display: 'inline-grid',
-  placeItems: 'center',
-  width: 46,
-  height: 46,
-  borderRadius: '50%',
-  background: 'radial-gradient(circle at 32% 24%, #fff8c8 0%, #facc15 28%, #8a4f07 63%, #050d18 100%)',
-  color: '#fff7d6',
-  fontWeight: 950,
-  border: '1px solid rgba(255, 235, 160, 0.74)',
-  boxShadow: '0 0 0 2px rgba(2, 8, 23, 0.72), 0 0 24px rgba(250, 204, 21, 0.54), inset 0 2px 6px rgba(255, 255, 255, 0.42)',
-  textShadow: '0 2px 4px rgba(0, 0, 0, 0.56)',
+// --- SEO Metadata ---
+export const metadata = {
+  title: 'LuckyPickCanada - Lucky Meter & Personalized Picks',
+  description:
+    "Discover your luck with LuckyPickCanada's Lucky Meter & personalized picks. Share your stories and explore luck across Canada.",
 };
 
-const successMessageStyle = { padding: '0.8rem 1rem', borderRadius: 14, background: 'rgba(16, 185, 129, 0.16)', color: '#d1fae5', border: '1px solid rgba(52, 211, 153, 0.34)', fontWeight: 700 };
-const errorMessageStyle = { padding: '0.8rem 1rem', borderRadius: 14, background: 'rgba(185, 28, 28, 0.16)', color: '#fecaca', border: '1px solid rgba(239, 68, 68, 0.36)', fontWeight: 700 };
-const warningMessageStyle = { padding: '0.8rem 1rem', borderRadius: 14, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 700 };
-// -------------------------------------
+export default function HomePage() {
+  const dailyQuote = getLuckyQuoteOfTheDay();
 
-const checkoutButtonStyle = {
-  width: '100%',
-  padding: '0.95rem 1.45rem',
-  border: '1px solid rgba(255, 242, 180, 0.86)',
-  borderRadius: 999,
-  background: 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)',
-  color: '#06110d',
-  fontSize: '1rem',
-  fontWeight: 950,
-  letterSpacing: '0.01em',
-  cursor: 'pointer',
-  boxShadow: '0 0 30px rgba(250, 204, 21, 0.62), 0 18px 38px rgba(183, 121, 31, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.72), inset 0 -10px 18px rgba(122, 68, 5, 0.18)',
-  textShadow: '0 1px 0 rgba(255, 255, 255, 0.45)',
-  transition: 'transform 180ms ease, box-shadow 180ms ease, filter 180ms ease',
-};
-
-const glassCardStyle = {
-  padding: 'clamp(1.25rem, 3vw, 1.85rem)',
-  borderRadius: 24,
-  background: 'linear-gradient(135deg, rgba(3, 12, 20, 0.94), rgba(5, 43, 42, 0.8) 52%, rgba(19, 12, 39, 0.88))',
-  color: '#fff7d6',
-  border: '1px solid rgba(255, 218, 112, 0.34)',
-  boxShadow: '0 28px 86px rgba(0, 0, 0, 0.52), 0 0 34px rgba(21, 214, 161, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.13), inset 0 0 0 1px rgba(255, 236, 164, 0.05)',
-  backdropFilter: 'blur(18px) saturate(135%)',
-  position: 'relative',
-  overflow: 'hidden',
-};
-
-const inputStyle = {
-  padding: '0.85rem 1rem',
-  borderRadius: 14,
-  border: '1px solid rgba(255, 235, 160, 0.32)',
-  background: 'linear-gradient(180deg, rgba(255, 253, 239, 0.96), rgba(239, 253, 245, 0.9))',
-  color: '#071225',
-  fontSize: '1rem',
-  boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 10px 24px rgba(0, 0, 0, 0.16)',
-};
-
-const sectionHeadingStyle = {
-  color: '#fff7d6',
-  textShadow: '0 0 24px rgba(250, 204, 21, 0.18)',
-};
-
-const logoCardStyle = {
-  flex: '0 0 auto',
-  display: 'block',
-  objectFit: 'contain',
-};
-
-function BrandLogo({ size = 64, label = 'Lucky Pick Canada', textColor = '#f8fafc', tagline, priority = false }) {
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
-      <Image
-        src="/BackgroundEraser_20260724_163638777.png"
-        alt="LuckyPickCanada logo with maple leaf"
-        width={size}
-        height={size}
-        sizes={`${size}px`}
-        quality={85}
-        priority={priority}
-        style={{ ...logoCardStyle, width: size, height: size }}
-      />
-      <div>
-        <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, color: textColor }}>
-          {label}
+    <main className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-8 space-y-12 max-w-6xl mx-auto">
+      
+      {/* 1. Header Section */}
+      <header className="text-center space-y-3 py-6 border-b border-slate-800/60">
+        <img 
+          src="/official-logo.png" 
+          alt="Official Lucky Pick Canada Logo" 
+          className="mx-auto h-16 w-auto mb-2"
+        />
+        <h1 className={`text-3xl sm:text-5xl font-extrabold tracking-tight ${PRIMARY_GOLD}`}>
+          Your Luck, Personalized!
+        </h1>
+        <p className="text-slate-400 text-sm sm:text-base max-w-lg mx-auto">
+          Discover your luck with LuckyPickCanada's Lucky Meter, personalized picks, and share your stories across Canada.
         </p>
-        {tagline ? <p style={{ margin: '0.25rem 0 0', color: 'rgba(255, 245, 203, 0.78)' }}>{tagline}</p> : null}
-      </div>
-    </div>
-  );
-}
+        <p className="text-xs text-amber-300/80 italic mt-2">
+          Today's Thought: "{dailyQuote}"
+        </p>
+      </header>
 
-function SectionKicker({ children }) {
-  return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
-      <Image
-        src="/BackgroundEraser_20260724_163638777.png"
-        alt="LuckyPickCanada logo with maple leaf"
-        width={36}
-        height={36}
-        sizes="36px"
-        quality={85}
-        style={{ ...logoCardStyle, width: 36, height: 36, borderRadius: 10, boxShadow: '0 0 22px rgba(250, 204, 21, 0.24)' }}
-      />
-      <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 800, color: '#facc15' }}>
-        {children}
-      </p>
-    </div>
-  );
-}
-
-function HeroCardTableau() {
-  const cards = [
-    { src: '/lucky-card-ace-spades.svg', alt: 'Ace of spades lucky card', className: 'reference-card reference-card-one' },
-    { src: '/lucky-card-clover.svg', alt: 'Lucky clover card', className: 'reference-card reference-card-two' },
-    { src: '/lucky-card-joker.svg', alt: 'Lucky joker card', className: 'reference-card reference-card-three' },
-    { src: '/lucky-card-horseshoe.svg', alt: 'Lucky horseshoe card', className: 'reference-card reference-card-four' },
-    { src: '/lucky-card-rabbit-foot.svg', alt: 'Lucky rabbit foot card', className: 'reference-card reference-card-five' },
-    { src: '/lucky-card-fortune.svg', alt: 'Lucky fortunes card', className: 'reference-card reference-card-six' },
-  ];
-
-  return (
-    <section className="reference-card-section" aria-labelledby="premium-cards-title">
-      <div className="reference-heading-line"><span /><div><h2 id="premium-cards-title">Premium Lucky Cards</h2><p>Pick a card and reveal your luck.</p></div><span /></div>
-      <div className="reference-card-stage">
-        <div className="reference-card-arc" aria-hidden="true" />
-        {cards.map((card) => (
-          <Image key={card.src} src={card.src} alt={card.alt} width={220} height={320} sizes="(max-width: 640px) 28vw, (max-width: 1000px) 18vw, 184px" className={card.className} />
-        ))}
-      </div>
-      <a href="#lucky-blackjack-challenge" className="reference-reveal-button">Reveal Your Card</a>
-    </section>
-  );
-}
-
-function StickyNav() {
-  return (
-    <header className="reference-site-header">
-      <nav aria-label="Primary" className="reference-site-nav">
-        <div className="reference-nav-row">
-          <a href="#top" aria-label="LuckyPickCanada.ca home" className="reference-brand">
-            <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada logo with maple leaf" width={56} height={56} sizes="(max-width: 760px) 46px, 56px" quality={90} priority style={{ objectFit: 'contain' }} />
-            <span>LuckyPickCanada.ca</span>
+      {/* 2. Lucky Meter Section */}
+      <section className={`${CARD_BG} space-y-4`}>
+        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
+          Start your luck meter
+        </h2>
+        <p className="text-slate-300 text-sm">
+          Test your daily energy and see where your luck stands today!
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <a href="#lucky-meter" className={BUTTON_STYLE}>
+            Try the FREE Lucky Meter
           </a>
-          <div className="reference-nav-links">
-            {navLinks.map((link) => (
-              <a key={link.href} href={link.href} className="premium-nav-link" style={{ color: '#fff7d6', textDecoration: 'none', padding: '0.55rem 0.72rem', borderRadius: 999, fontSize: '0.88rem', fontWeight: 850 }}>
-                {link.label}
-              </a>
-            ))}
-          </div>
         </div>
-      </nav>
-    </header>
-  );
-}
+      </section>
 
-function generateNumbers(count, max) {
-  const numbers = Array.from({ length: max }, (_, index) => index + 1);
+      {/* 3. Card Reveal Section */}
+      <section className="space-y-4">
+        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
+          Card Reveal
+        </h2>
+        <LuckyCardReveal />
+      </section>
 
-  for (let index = numbers.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [numbers[index], numbers[swapIndex]] = [numbers[swapIndex], numbers[index]];
-  }
+      {/* 4. Lucky Journey & Personalized Picks Section */}
+      <section className={`${CARD_BG} space-y-6`}>
+        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
+          Start your lucky journey
+        </h2>
 
-  return numbers.slice(0, count).sort((a, b) => a - b);
-}
-
-function pickOne(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-export default async function Home({ searchParams }) {
-  const params = await searchParams;
-  const [luckMap, luckyStories] = await Promise.all([getLuckMap(), getLuckyStories()]);
-  const { provinceCounts, recentShares, totalShares, isConfigured } = luckMap;
-  const { recentStories, isConfigured: areStoriesConfigured } = luckyStories;
-  const mapError = params?.mapError;
-  const suggestionError = params?.suggestionError;
-  const storyError = params?.storyError;
-  const giftError = params?.giftError;
-  const giftSent = params?.giftSent === '1';
-  const shared = params?.shared === '1';
-  const suggested = params?.suggested === '1';
-  const storyShared = params?.storyShared === '1';
-  const checkoutSessionId = params?.session_id || '';
-  const canShareOnMap = params?.payment === 'success' && params?.map === '1' && checkoutSessionId;
-  const turnstileSiteKey = getTurnstileSiteKey();
-  const selectedGame = params?.pick === '7' ? games[1] : games[0];
-  const luckyQuoteOfTheDay = getLuckyQuoteOfTheDay();
-  const purchasedReveal = canShareOnMap
-    ? {
-        game: {
-          name: selectedGame.name,
-          numbers: generateNumbers(selectedGame.count, selectedGame.max),
-        },
-        luckyColor: pickOne(luckyColors),
-        luckyDay: pickOne(luckyDays),
-      }
-    : null;
-
-  return (
-    <main id="top" className="lucky-site-shell" style={{
-      minHeight: '100vh',
-      padding: '1rem 1.5rem 4rem',
-      background: 'radial-gradient(ellipse at 50% 108%, rgba(121, 57, 4, 0.34), transparent 42%), radial-gradient(ellipse at 86% 4%, rgba(101, 52, 14, 0.24), transparent 30%), radial-gradient(ellipse at 10% 25%, rgba(218, 150, 25, 0.13), transparent 28%), linear-gradient(180deg, #020203 0%, #080705 47%, #100904 74%, #020203 100%)',
-      color: '#fff7d6',
-      fontFamily: 'var(--lpc-body)',
-      overflowX: 'hidden',
-      position: 'relative',
-    }}>
-      <style>{`
-        html { scroll-behavior: smooth; }
-        #luck-meter-title, #lucky-pick-checkout, #lucky-blackjack-challenge, #lucky-stories, #share-your-luck-form, #little-luck-map { scroll-margin-top: 7rem; }
-        .premium-nav-link { transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease; letter-spacing: 0.01em; }
-        .aurora-ribbon { will-change: transform, opacity; transform-origin: center; }
-        .premium-hero-shell { isolation: isolate; }
-        .premium-hero-shell::before { content: ''; position: absolute; inset: 11px; z-index: 0; border: 1px solid rgba(255, 229, 145, 0.18); border-radius: 29px; pointer-events: none; }
-        .premium-hero-shell > * { z-index: 1; }
-        input, select, textarea { accent-color: #facc15; }
-        input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(94, 234, 212, 0.68); outline-offset: 3px; }
-        .premium-ad-title { text-transform: uppercase; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.52)); }
-        .ad-feature-card { transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
-        .ad-feature-card:hover { transform: translateY(-3px); border-color: rgba(255,235,160,0.52) !important; box-shadow: 0 20px 48px rgba(0,0,0,0.36), 0 0 34px rgba(250,204,21,0.16); }
-        .premium-nav-link:hover, .premium-nav-link:focus-visible { background: rgba(250, 204, 21, 0.16); color: #fde68a; transform: translateY(-1px); outline: none; box-shadow: inset 0 0 0 1px rgba(255,235,160,0.18); }
-        .premium-secondary-button { transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
-        .premium-secondary-button:hover, .premium-secondary-button:focus-visible { transform: translateY(-2px); border-color: rgba(255, 235, 160, 0.56) !important; box-shadow: 0 16px 34px rgba(0,0,0,0.28), 0 0 28px rgba(250,204,21,0.18); outline: none; }
-        .aurora-gold-button:focus-visible, .blackjack-button:focus-visible, .luck-meter-button:focus-visible { outline: 3px solid rgba(253, 230, 138, 0.72); outline-offset: 3px; }
-        .aurora-gold-button:active, .premium-secondary-button:active, .blackjack-button:active, .luck-meter-button:active { transform: translateY(1px) scale(0.99); }
-        @media (prefers-reduced-motion: reduce) {
-          html { scroll-behavior: auto; }
-          *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.001ms !important; }
-        }
-        @keyframes magical-star-twinkle {
-          0%, 100% { opacity: 0.32; transform: scale(0.86) rotate(0deg); }
-          50% { opacity: 1; transform: scale(1.12) rotate(18deg); }
-        }
-        @keyframes aurora-drift {
-          0% { transform: translate3d(-12%, -5%, 0) rotate(-9deg) scaleX(1); opacity: 0.34; }
-          50% { transform: translate3d(5%, 3%, 0) rotate(5deg) scaleX(1.1); opacity: 0.68; }
-          100% { transform: translate3d(14%, -3%, 0) rotate(-4deg) scaleX(1.03); opacity: 0.42; }
-        }
-        @keyframes aurora-curtain {
-          0%, 100% { transform: translate3d(-5%, 0, 0) skewX(-12deg) scaleY(0.92); opacity: 0.32; }
-          50% { transform: translate3d(7%, -3%, 0) skewX(8deg) scaleY(1.12); opacity: 0.64; }
-        }
-        @keyframes aurora-ribbon-flow {
-          0%, 100% { transform: translate3d(-9%, 2%, 0) rotate(-7deg) scaleX(0.96); opacity: 0.22; }
-          50% { transform: translate3d(8%, -3%, 0) rotate(5deg) scaleX(1.08); opacity: 0.48; }
-        }
-        @keyframes canadian-sky-twinkle {
-          0%, 100% { opacity: 0.34; }
-          48% { opacity: 0.72; }
-          54% { opacity: 0.4; }
-        }
-        @keyframes shooting-star {
-          0%, 82%, 100% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-22deg) scaleX(0.2); }
-          84% { opacity: 0; }
-          87% { opacity: 0.82; transform: translate3d(-8vw, 11vw, 0) rotate(-22deg) scaleX(1); }
-          90% { opacity: 0; transform: translate3d(-15vw, 20vw, 0) rotate(-22deg) scaleX(0.75); }
-        }
-        @keyframes page-fade-in {
-          from { opacity: 0; transform: translateY(14px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes lucky-quote-shimmer {
-          0%, 100% { opacity: 0.42; transform: translateX(-8%) rotate(-8deg); }
-          50% { opacity: 0.82; transform: translateX(12%) rotate(-8deg); }
-        }
-        @keyframes premium-section-rise {
-          from { opacity: 0; transform: translateY(18px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes premium-shimmer-sweep {
-          0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
-          20% { opacity: 0.55; }
-          55% { opacity: 0.55; }
-          100% { transform: translateX(130%) skewX(-18deg); opacity: 0; }
-        }
-        @keyframes particle-float-up {
-          0% { transform: translate3d(0, 24px, 0) scale(0.8); opacity: 0; }
-          18% { opacity: 0.75; }
-          100% { transform: translate3d(18px, -76px, 0) scale(1.12); opacity: 0; }
-        }
-        @keyframes maple-float {
-          0%, 100% { transform: translate3d(0, 0, 0) rotate(-8deg); opacity: 0.28; }
-          50% { transform: translate3d(10px, -12px, 0) rotate(7deg); opacity: 0.52; }
-        }
-        @keyframes premium-number-glow {
-          0%, 100% { filter: drop-shadow(0 0 10px rgba(250,204,21,0.38)); }
-          50% { filter: drop-shadow(0 0 22px rgba(255,247,214,0.72)); }
-        }
-        .aurora-gold-button { position: relative; overflow: hidden; }
-        .aurora-gold-button::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.42) 42%, transparent 58%); transform: translateX(-120%); transition: transform 520ms ease; }
-        .aurora-gold-button:hover { transform: translateY(-2px) scale(1.01); filter: saturate(1.12); box-shadow: 0 0 42px rgba(250, 204, 21, 0.74), 0 20px 46px rgba(183, 121, 31, 0.36) !important; }
-        .aurora-gold-button:hover::after { transform: translateX(120%); }
-        .aurora-glass-card { transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
-        .aurora-glass-card::before { content: ''; position: absolute; inset: 1px; border-radius: inherit; background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent 30%, rgba(16,185,129,0.08) 62%, rgba(250,204,21,0.12)); pointer-events: none; }
-        .aurora-glass-card::after { content: ''; position: absolute; top: -35%; right: -30%; width: 16rem; height: 16rem; border-radius: 999px; background: radial-gradient(circle, rgba(250,204,21,0.16), transparent 66%); filter: blur(6px); pointer-events: none; }
-        .aurora-glass-card > * { position: relative; z-index: 1; }
-        .aurora-glass-card:hover { transform: translateY(-4px); border-color: rgba(255, 235, 160, 0.48) !important; box-shadow: 0 34px 96px rgba(0, 0, 0, 0.54), 0 0 50px rgba(16, 185, 129, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important; }
-        .premium-section { animation: premium-section-rise 720ms cubic-bezier(.16,.84,.28,1) both; scroll-margin-top: 1.5rem; }
-        .premium-section:nth-of-type(2n) { animation-delay: 70ms; }
-        .gold-text { background: linear-gradient(180deg, #fffdf0 0%, #ffe88d 20%, #facc15 52%, #9a5f10 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 34px rgba(250, 204, 21, 0.24); }
-        .reference-hero-grid > :first-child { order: 2; }
-        .reference-hero-grid > :nth-child(2) { order: 1; }
-        .reference-tableau { position: relative; justify-self: center; width: min(100%, 510px); min-height: 510px; display: grid; place-items: center; isolation: isolate; }
-        .reference-tableau::before { content: ''; position: absolute; inset: 8% 2%; border: 1px solid rgba(255, 232, 157, 0.38); border-radius: 32px; background: linear-gradient(145deg, rgba(0, 10, 12, 0.26), rgba(8, 67, 52, 0.18)); box-shadow: inset 0 0 0 8px rgba(255, 230, 157, 0.035), 0 28px 64px rgba(0,0,0,0.28); }
-        .reference-tableau-halo { position: absolute; width: 88%; height: 62%; border-radius: 50%; background: radial-gradient(ellipse, rgba(71, 245, 162, 0.38), rgba(54, 219, 216, 0.2) 36%, rgba(175, 91, 255, 0.12) 57%, transparent 74%); filter: blur(14px); animation: aurora-drift 13s ease-in-out infinite alternate; }
-        .reference-logo-medallion { position: absolute; z-index: 3; top: 2%; left: 50%; width: 146px; height: 146px; transform: translateX(-50%); display: grid; place-items: center; border-radius: 50%; border: 3px solid rgba(255, 224, 118, 0.9); background: radial-gradient(circle, #0d3f2b, #07130e); box-shadow: 0 0 0 9px rgba(250, 204, 21, 0.13), 0 0 40px rgba(250,204,21,0.46), inset 0 0 28px rgba(255,255,255,0.18); overflow: hidden; }
-        .reference-logo-medallion img { width: 118px; height: 118px; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.42)); }
-        .reference-card-fan { position: absolute; z-index: 2; inset: 22% 0 4%; display: grid; place-items: center; }
-        .reference-card { position: absolute; width: clamp(122px, 23vw, 198px); height: auto; border-radius: 17px; border: 1px solid rgba(255, 238, 169, 0.72); box-shadow: 0 22px 42px rgba(0,0,0,0.52), 0 0 30px rgba(250,204,21,0.22); transition: transform 300ms ease, filter 300ms ease; }
-        .reference-card-clover { transform: translateX(-76%) rotate(-15deg); }
-        .reference-card-canada { z-index: 2; transform: translateY(5%) rotate(-1deg); }
-        .reference-card-gold { transform: translateX(76%) rotate(15deg); }
-        .reference-tableau:hover .reference-card-clover { transform: translateX(-83%) translateY(-8px) rotate(-19deg); }
-        .reference-tableau:hover .reference-card-canada { transform: translateY(-12px) scale(1.03); }
-        .reference-tableau:hover .reference-card-gold { transform: translateX(83%) translateY(-8px) rotate(19deg); }
-        .reference-tableau-caption { position: absolute; z-index: 4; bottom: 5%; left: 50%; transform: translateX(-50%); width: max-content; max-width: 86%; padding: 0.55rem 0.85rem; border-radius: 999px; border: 1px solid rgba(255, 235, 160, 0.38); color: #fff7d6; text-align: center; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.68rem; font-weight: 950; line-height: 1.35; background: rgba(1, 13, 13, 0.72); backdrop-filter: blur(12px); }
-        .premium-phone { transform: rotate(6deg); transition: transform 260ms ease, box-shadow 260ms ease; }
-        .premium-phone:hover { transform: rotate(3deg) translateY(-4px); }
-        .premium-maple-accent { position: absolute; color: rgba(250,204,21,0.34); font-size: clamp(2rem, 7vw, 4.8rem); line-height: 1; filter: drop-shadow(0 0 20px rgba(250,204,21,0.24)); animation: maple-float 8s ease-in-out infinite; pointer-events: none; }
-        .premium-lucky-number { animation: premium-number-glow 3.2s ease-in-out infinite; }
-        .premium-hero-shell::after { content: ''; position: absolute; inset: -20% auto -20% -55%; width: 42%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), rgba(250,204,21,0.24), transparent); animation: premium-shimmer-sweep 7.5s ease-in-out infinite; pointer-events: none; }
-        .floating-particle { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #fde68a; box-shadow: 0 0 12px rgba(250,204,21,0.95), 0 0 26px rgba(16,185,129,0.45); animation: particle-float-up 6.8s ease-in-out infinite; opacity: 0; }
-        @media (max-width: 820px) { .reference-hero-grid > :first-child, .reference-hero-grid > :nth-child(2) { order: initial; } .reference-tableau { min-height: 420px; } main { padding-left: 1rem !important; padding-right: 1rem !important; } }
-        @media (max-width: 620px) { .premium-nav-link { padding: 0.42rem 0.55rem !important; font-size: 0.78rem !important; } }
-      `}</style>
-      <div aria-hidden="true" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-        <div className="aurora-ribbon" style={{ position: 'absolute', top: '13%', left: '-24%', width: '150vw', height: '7rem', borderRadius: '50%', background: 'linear-gradient(90deg, transparent 8%, rgba(38, 230, 173, 0.08) 23%, rgba(98, 222, 255, 0.22) 49%, rgba(187, 99, 255, 0.14) 68%, transparent 91%)', filter: 'blur(20px)', animation: 'aurora-ribbon-flow 42s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', inset: 0, opacity: 0.68, backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.92) 0 0.7px, transparent 1.3px), radial-gradient(circle, rgba(197,225,255,0.72) 0 1px, transparent 1.7px), radial-gradient(circle, rgba(255,240,191,0.86) 0 1.2px, transparent 2px)', backgroundSize: '83px 89px, 157px 149px, 263px 241px', backgroundPosition: '0 0, 37px 51px, 109px 21px', animation: 'canadian-sky-twinkle 9s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '-7%', left: '-20%', width: '140vw', height: '31rem', borderRadius: '48%', background: 'linear-gradient(98deg, transparent 10%, rgba(37, 224, 152, 0.13) 29%, rgba(71, 225, 255, 0.18) 47%, rgba(180, 95, 255, 0.16) 64%, transparent 86%)', filter: 'blur(32px)', animation: 'aurora-curtain 34s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '67%', left: '-15%', width: '130vw', height: '13rem', borderRadius: '50%', background: 'linear-gradient(90deg, transparent, rgba(47, 167, 132, 0.12), rgba(88, 203, 174, 0.2), rgba(92, 151, 212, 0.12), transparent)', filter: 'blur(28px)', animation: 'aurora-drift 28s ease-in-out infinite alternate' }} />
-        <div style={{ position: 'absolute', bottom: '-20rem', left: '12%', width: '44rem', height: '34rem', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(61, 131, 183, 0.13), transparent 66%)', filter: 'blur(18px)' }} />
-        <span style={{ position: 'absolute', top: '13%', right: '9%', width: '76px', height: '1px', transformOrigin: 'right center', background: 'linear-gradient(90deg, transparent, rgba(236, 247, 255, 0.95))', boxShadow: '0 0 7px rgba(220, 244, 255, 0.8)', animation: 'shooting-star 26s ease-in-out 8s infinite' }} />
-      </div>
-      <LuckyRevealPopup reveal={purchasedReveal} />
-      <StickyNav />
-      <section style={{ maxWidth: 1220, margin: '0 auto', position: 'relative', zIndex: 1, animation: 'page-fade-in 700ms ease both' }}>
-        <span className="premium-maple-accent" aria-hidden="true" style={{ top: 22, right: -18 }}>✦</span>
-        <span className="premium-maple-accent" aria-hidden="true" style={{ top: 370, left: -28, animationDelay: '-3s' }}>🍁</span>
-        <div className="premium-hero-shell" style={{ marginBottom: '1rem', padding: 'clamp(1.1rem, 4vw, 2.65rem)', borderRadius: 38, border: '1px solid rgba(255, 222, 124, 0.42)', background: 'radial-gradient(circle at 88% 10%, rgba(250, 204, 21, 0.32), transparent 26%), radial-gradient(circle at 10% 12%, rgba(190, 114, 14, 0.2), transparent 32%), radial-gradient(circle at 50% 100%, rgba(153, 27, 27, 0.2), transparent 30%), linear-gradient(145deg, rgba(4, 3, 2, 0.94), rgba(20, 12, 4, 0.84) 50%, rgba(7, 5, 4, 0.92))', boxShadow: '0 36px 120px rgba(0, 0, 0, 0.6), 0 0 64px rgba(16, 185, 129, 0.2), 0 0 48px rgba(250, 204, 21, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(18px) saturate(140%)', overflow: 'hidden', position: 'relative' }}>
-          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.13), transparent 18%, transparent 72%, rgba(250,204,21,0.14)), radial-gradient(circle at 72% 76%, rgba(208,132,20,0.18), transparent 28%), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 84px)', pointerEvents: 'none' }} />
-          <div aria-hidden="true">
-            {[12, 24, 38, 52, 68, 81].map((left, index) => (
-              <span key={left} className="floating-particle" style={{ left: `${left}%`, bottom: `${8 + (index % 3) * 14}%`, animationDelay: `${index * 0.75}s` }} />
-            ))}
-          </div>
-          <div className="reference-hero-copy">
-            <div className="reference-hero-crest" aria-hidden="true"><Image src="/BackgroundEraser_20260724_163638777.png" alt="" width={280} height={280} sizes="(max-width: 620px) 148px, (max-width: 960px) 220px, 280px" quality={90} priority /></div>
-            <h1 className="reference-hero-title">LuckyPickCanada<span>.ca</span></h1>
-            <p className="reference-hero-kicker">Everyone could use a little extra luck. <span>☘</span></p>
-            <p className="reference-hero-description">Get your personalized lucky numbers, lucky day<br className="desktop-break" /> and lucky colour — just for fun!</p>
-            <a href="#luck-meter-title" className="reference-hero-button">Get Your Lucky Pick <span>☘</span></a>
-          </div>
-          <HeroCardTableau />
-        </div>
-        <p style={{ maxWidth: 760, lineHeight: 1.6, padding: '0.9rem 1rem', borderRadius: 16, background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 235, 160, 0.24)', boxShadow: '0 0 28px rgba(250, 204, 21, 0.12)', backdropFilter: 'blur(12px)' }}>
-          Entertainment purposes only: Lucky Picks, Lucky Cards, Lucky Colours, and all other features are randomly generated for fun and enjoyment. Purchasing a personalized Lucky Pick does not increase the chances of winning any lottery, contest, or game of chance.
-        </p>
-        <section aria-labelledby="lucky-quote-title" style={{
-          ...glassCardStyle,
-          marginTop: '1.25rem',
-          padding: 'clamp(1rem, 2.5vw, 1.35rem)',
-          background: 'linear-gradient(135deg, rgba(7, 29, 24, 0.96), rgba(18, 59, 43, 0.82) 50%, rgba(76, 49, 9, 0.78))',
-          border: '1px solid rgba(250, 204, 21, 0.48)',
-          boxShadow: '0 20px 54px rgba(0, 0, 0, 0.34), 0 0 34px rgba(250, 204, 21, 0.15), inset 0 1px 0 rgba(255, 248, 200, 0.2)',
-        }}>
-          <div aria-hidden="true" style={{ position: 'absolute', inset: '-40% -10%', background: 'linear-gradient(90deg, transparent 30%, rgba(255, 244, 174, 0.16) 50%, transparent 70%)', animation: 'lucky-quote-shimmer 7s ease-in-out infinite', pointerEvents: 'none' }} />
-          <div style={{ position: 'relative', display: 'flex', gap: '0.9rem', alignItems: 'flex-start' }}>
-            <span aria-hidden="true" style={{ flex: '0 0 auto', display: 'grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', color: '#073326', background: 'radial-gradient(circle at 32% 24%, #fffbd8, #facc15 48%, #b7791f 100%)', boxShadow: '0 0 22px rgba(250, 204, 21, 0.45)', fontSize: '1.25rem' }}>☘</span>
-            <div>
-              <h2 id="lucky-quote-title" style={{ margin: '0 0 0.35rem', color: '#fde68a', fontSize: 'clamp(1rem, 2.6vw, 1.2rem)', letterSpacing: '0.01em' }}>Lucky Quote of the Day 🍀</h2>
-              <p style={{ margin: 0, maxWidth: 850, color: '#fff9e6', fontSize: 'clamp(1rem, 2.5vw, 1.12rem)', fontWeight: 750, lineHeight: 1.55, textShadow: '0 1px 12px rgba(0, 0, 0, 0.32)' }}>“{luckyQuoteOfTheDay}”</p>
-            </div>
-          </div>
-        </section>
-        <LuckMeter />
-        <LuckyBlackjackChallenge />
-        <section className="aurora-glass-card premium-section premium-surface" style={{ ...glassCardStyle, marginTop: '2rem' }}>
-          <SectionKicker>Why People Visit LuckyPick Canada</SectionKicker>
-          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
-            Start your lucky journey
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
-            {visitReasons.map((reason) => (
-              <div key={reason.text} style={{ display: 'grid', gridTemplateColumns: '2.6rem 1fr', gap: '0.85rem', alignItems: 'center', padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(255,255,255,0.08), rgba(16,185,129,0.08))', border: '1px solid rgba(255, 235, 160, 0.22)', fontWeight: 850 }}>
-                <span aria-hidden="true" style={{ display: 'grid', placeItems: 'center', width: '2.6rem', height: '2.6rem', borderRadius: '50%', color: '#06110d', background: 'radial-gradient(circle at 32% 24%, #fff8c8, #facc15 46%, #b7791f 100%)', boxShadow: '0 0 22px rgba(250,204,21,0.34)' }}>{reason.icon}</span>
-                <span>{reason.text}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
-          <form id="lucky-pick-checkout" action="/api/checkout" method="POST" className="aurora-glass-card premium-section premium-surface" style={glassCardStyle}>
-            <input type="hidden" name="checkoutType" value="lucky_pick" />
-            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Slow Reveal Pick</h2>
-            <p style={{ lineHeight: 1.5 }}>Get your personalized Slow Reveal Pick for only $1.</p>
-            <p style={{ lineHeight: 1.5 }}>Your Slow Reveal Pick will also help add to the Luck Generated Across Canada map, showing where luck is being created across the country.</p>
-            <div style={{ display: 'grid', gap: '0.6rem', margin: '1rem 0' }}>
-              <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
-                <input type="radio" name="luckyPickGame" value="6" defaultChecked />
-                6 Pick: 1 to 49
-              </label>
-              <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: 700 }}>
-                <input type="radio" name="luckyPickGame" value="7" />
-                7 Pick: 1 to 50
-              </label>
-            </div>
-            <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.6 }}>
-              <li>Randomly generated lucky pick</li>
-              <li>Lucky color and lucky day included</li>
-              <li>Slow reveal with stars and Aurora</li>
-            </ul>
-            <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$1.00 CAD</p>
-            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Get your personalized Slow Reveal Pick for only $1</button>
-            <p style={{ lineHeight: 1.5, marginBottom: 0 }}>After checkout, you can add your name and province to the Luck Generated Across Canada map.</p>
-          </form>
-          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section premium-surface" style={glassCardStyle}>
-            <input type="hidden" name="checkoutType" value="gift_package" />
-            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Gift a lucky pick</h2>
-            <p style={{ lineHeight: 1.5 }}>Send the same lucky reveal by email with your personal greeting.</p>
-            {giftSent ? <p style={successMessageStyle}>Your lucky pick gift was sent.</p> : null}
-            {giftError ? <p style={errorMessageStyle}>{giftError}</p> : null}
-            <div style={{ display: 'grid', gap: '0.75rem' }}>
-              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
-                Recipient name
-                <input name="recipientName" type="text" maxLength="80" placeholder="Friend's name" required style={inputStyle} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
-                Recipient email
-                <input name="recipientEmail" type="email" maxLength="120" placeholder="friend@example.com" required style={inputStyle} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
-                Your name (optional)
-                <input name="senderName" type="text" maxLength="80" placeholder="From David" style={inputStyle} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
-                Pick type
-                <select name="luckyPickGame" defaultValue="6" style={inputStyle}>
-                  <option value="6">6 Pick</option>
-                  <option value="7">7 Pick</option>
-                </select>
-              </label>
-              <label style={{ display: 'grid', gap: '0.35rem', fontWeight: 700 }}>
-                Personal greeting
-                <textarea name="giftMessage" maxLength="500" rows={4} placeholder="Wishing you a lucky day." style={{ ...inputStyle, resize: 'vertical' }} />
-              </label>
-            </div>
-            <p style={{ fontSize: '1.5rem', fontWeight: 700 }}>$4.99 CAD</p>
-            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Send gift for $4.99</button>
-          </form>
-          <form action="/api/checkout" method="POST" className="aurora-glass-card premium-section premium-surface tip-jar-card" style={glassCardStyle}>
-            <span className="tip-jar-crest" aria-hidden="true">✦</span>
-            <input type="hidden" name="checkoutType" value="tip" />
-            <p className="tip-jar-kicker">Support the magic</p>
-            <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>Tip jar</h2>
-            <label htmlFor="tipAmount" style={{ display: 'block', lineHeight: 1.5, marginBottom: '0.75rem' }}>
-              Enter any amount you want to tip.
-            </label>
-            <input
-              id="tipAmount"
-              name="tipAmount"
-              type="number"
-              min="0.50"
-              step="0.01"
-              placeholder="5.00"
-              required
-              style={{ ...inputStyle, width: '100%', boxSizing: 'border-box', marginBottom: '1rem' }}
-            />
-            <p style={{ lineHeight: 1.5, marginTop: 0 }}>
-              Your tip helps keep Lucky Pick Canada running and supports new ideas, improvements, and visitor suggestions. Thanks for your support.
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
+            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
+              Personalized Lucky Pick
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Get custom numbers generated specifically for your daily routine.
             </p>
-            <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Leave a tip</button>
-          </form>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginTop: '2rem' }}>
-          {games.map((game) => {
-            const luckyColor = pickOne(luckyColors);
-            const luckyDay = pickOne(luckyDays);
-            return (
-              <article key={game.name} className="aurora-glass-card premium-surface" style={glassCardStyle}>
-                <h2 style={{ ...sectionHeadingStyle, marginTop: 0 }}>{game.name}</h2>
-                <p>{game.description}</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {generateNumbers(game.count, game.max).map((number) => (
-                    <span key={number} className="premium-lucky-number" style={luckyNumberStyle}>
-                      {number}
-                    </span>
-                  ))}
-                </div>
-                <p style={{ lineHeight: 1.6 }}>
-                  Slow reveal theme: stars and Aurora<br />
-                  Lucky color: <strong>{luckyColor}</strong><br />
-                  Lucky day: <strong>{luckyDay}</strong>
-                </p>
-              </article>
-            );
-          })}
-        </div>
-        <section id="lucky-stories" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
-          <SectionKicker>Lucky Stories</SectionKicker>
-          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
-            Share your stories of luck and happiness
-          </h2>
-          <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Lucky Pick Canada is more than lucky number reveals and gifts. View lucky stories on the community map, or submit your own lucky moment here.
-          </p>
-          {storyShared ? (
-            <div style={{ ...successMessageStyle, display: 'grid', gap: '0.75rem', alignItems: 'start' }}>
-              <span>Your lucky story has been added. You can now view it with other lucky stories from across Canada.</span>
-              <a href={luckyStoryMapUrl} className="aurora-gold-button" style={{ ...checkoutButtonStyle, width: 'fit-content', maxWidth: '100%', textDecoration: 'none' }}>
-                View Your Story on the Lucky Story Map 🍀
-              </a>
-            </div>
-          ) : null}
-          {storyError ? <p style={errorMessageStyle}>{storyError}</p> : null}
-          {!areStoriesConfigured ? <p style={warningMessageStyle}>Lucky Stories is ready, but the database needs to be available before stories can be saved.</p> : null}
-          <form id="share-your-luck-form" action="/api/lucky-stories" method="POST" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-                Your name
-                <input name="name" type="text" minLength="2" maxLength="40" placeholder="David" required style={inputStyle} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-                Where did it happen? (optional)
-                <input name="location" type="text" maxLength="80" placeholder="Ontario, Canada" style={inputStyle} />
-              </label>
-            </div>
-            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-              Your lucky story
-              <textarea name="story" minLength="20" maxLength="1500" rows={6} placeholder="Tell us where you found luck or happiness." required style={{ ...inputStyle, resize: 'vertical' }} />
-            </label>
-            <label aria-hidden="true" style={{ display: 'none' }}>
-              Website
-              <input name="website" type="text" tabIndex={-1} autoComplete="off" />
-            </label>
-            <TurnstileField siteKey={turnstileSiteKey} />
-            <button type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Share Your Lucky Story</button>
-          </form>
-          <div style={{ marginTop: '1.5rem' }}>
-            <h3 style={{ marginBottom: '0.5rem' }}>Recent lucky stories</h3>
-            <p style={{ marginTop: 0, lineHeight: 1.6, color: 'rgba(255, 247, 214, 0.82)' }}>
-              Here are the 2 newest lucky stories. Older stories are waiting on the Lucky Story Map.
-            </p>
-            {recentStories.length ? (
-              <div style={{ display: 'grid', gap: '0.75rem' }}>
-                {recentStories.map((entry) => (
-                  <article key={`${entry.display_name}-${entry.created_at}`} style={{ padding: '1rem', borderRadius: 20, background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.09), rgba(16, 185, 129, 0.08))', border: '1px solid rgba(255, 235, 160, 0.22)', boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)' }}>
-                    <p style={{ marginTop: 0, lineHeight: 1.6 }}>{entry.story}</p>
-                    <p style={{ marginBottom: 0, fontWeight: 700 }}>
-                      — {entry.display_name}{entry.location ? `, ${entry.location}` : ''}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <p>No lucky stories yet. Be the first to share where luck found you.</p>
-            )}
-            <a href={luckyStoryMapUrl} className="aurora-gold-button" style={{ ...checkoutButtonStyle, display: 'inline-flex', width: 'fit-content', maxWidth: '100%', marginTop: '1rem', textDecoration: 'none' }}>
-              🍀 View Lucky Stories
+            <a 
+              href="#personalized" 
+              className={`inline-block mt-2 text-sm font-semibold ${PRIMARY_GOLD} hover:underline`}
+            >
+              Get Your Personalized Lucky Pick - $1 CAD &rarr;
             </a>
           </div>
-        </section>
-        <section id="little-luck-map" className="aurora-glass-card premium-section premium-map-experience" style={{ ...glassCardStyle, marginTop: '2rem' }}>
-          <SectionKicker>Lucky Purchases Across Canada</SectionKicker>
-          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
+
+          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
+            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
+              Gift a lucky pick
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Share positive vibes with friends and family across the country.
+            </p>
+          </div>
+
+          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
+            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
+              Tip jar
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Support the LuckyPick Canada project and keep the luck spreading.
+            </p>
+          </div>
+
+          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
+            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
+              6 Pick &amp; 7 Pick
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Select your favorite combinations and explore regional stats.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Lucky Stories & Canada Map Section */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`${CARD_BG} space-y-4`}>
+          <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
+            Share your stories of luck and happiness
+          </h2>
+          <h3 className="text-lg font-semibold text-slate-200">
+            Recent lucky stories
+          </h3>
+          <p className="text-slate-400 text-sm">
+            Read inspiring moments from participants from coast to coast.
+          </p>
+          <Link 
+            href="/lucky-map-of-canada" 
+            className={`inline-block text-sm font-semibold ${PRIMARY_GOLD} hover:underline`}
+          >
+            View All Lucky Stories on the Lucky Story Map &rarr;
+          </Link>
+        </div>
+
+        <div className={`${CARD_BG} space-y-4`}>
+          <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
             Lucky Picks by Province
           </h2>
-          <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Your Slow Reveal Pick can help add to the Luck Generated Across Canada map, showing where luck is being created across the country. After checkout, add your first name and province or territory here. Lucky Stories live on the Lucky Map of Canada page.
+          <h3 className="text-lg font-semibold text-slate-200">
+            Recent purchase provinces: 2
+          </h3>
+          <p className="text-slate-400 text-sm">
+            Explore interactive regional insights on our Canada Story Map.
           </p>
-          {shared ? <p style={successMessageStyle}>Thanks for sharing a little luck.</p> : null}
-          {mapError ? <p style={errorMessageStyle}>{mapError}</p> : null}
-          {!isConfigured ? <p style={warningMessageStyle}>The purchase display is ready, but the database needs to be available before entries can be saved.</p> : null}
-          {canShareOnMap ? (
-            <form action="/api/luck-map" method="POST" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', alignItems: 'end', marginTop: '1.5rem' }}>
-              <input type="hidden" name="checkoutSessionId" value={checkoutSessionId} />
-              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-                Your name
-                <input name="name" type="text" minLength="2" maxLength="40" placeholder="David" required style={inputStyle} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-                Province or territory
-                <select name="province" required defaultValue="" style={inputStyle}>
-                  <option value="" disabled>Choose one</option>
-                  {provinces.map((province) => (
-                    <option key={province.code} value={province.code}>{province.name}</option>
-                  ))}
-                </select>
-              </label>
-              <label aria-hidden="true" style={{ display: 'none' }}>
-                Website
-                <input name="website" type="text" tabIndex={-1} autoComplete="off" />
-              </label>
-              <div style={{ gridColumn: '1 / -1' }}>
-                <TurnstileField siteKey={turnstileSiteKey} />
-              </div>
-              <button type="submit" className="aurora-gold-button" style={checkoutButtonStyle}>Share purchase province</button>
-            </form>
-          ) : (
-            <p style={{ lineHeight: 1.6, marginTop: '1.5rem', maxWidth: 520, color: 'rgba(255, 247, 214, 0.82)' }}>
-              Use the main Slow Reveal Pick section above to get your pick. Once checkout is complete, this map will let you add your province.
-            </p>
-          )}
-          <div aria-label="Lucky purchases by province" className="province-map-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', marginTop: '1.5rem' }}>
-            {provinces.map((province) => {
-              const count = provinceCounts[province.code] || 0;
-              return (
-                <div key={province.code} className={`province-map-marker ${count ? 'is-active' : ''}`} style={{ padding: '1rem', minHeight: 78, borderRadius: 20, background: count ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.96), rgba(250, 204, 21, 0.92))' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.06))', border: count ? '2px solid rgba(255, 235, 160, 0.78)' : '2px solid rgba(255, 255, 255, 0.16)', boxShadow: count ? '0 0 28px rgba(16, 185, 129, 0.38), inset 0 1px 0 rgba(255,255,255,0.28)' : 'inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-                  <strong style={{ display: 'block', fontSize: '1.25rem' }}>{province.code}</strong>
-                  <span>{province.name}</span><br />
-                  <span style={{ fontWeight: 700 }}>{count} {count === 1 ? 'purchase' : 'purchases'}</span>
-                </div>
-              );
-            })}
-          </div>
-          <div style={{ marginTop: '1.5rem' }}>
-            <h3 style={{ marginBottom: '0.5rem' }}>Recent purchase provinces: {totalShares}</h3>
-            {recentShares.length ? (
-              <ul style={{ display: 'grid', gap: '0.5rem', paddingLeft: '1.25rem' }}>
-                {recentShares.map((share) => (
-                  <li key={`${share.display_name}-${share.province}-${share.created_at}`}>
-                    <strong>{share.display_name}</strong> added a Lucky Pick purchase from {share.province}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No purchase provinces yet. Be the first to add your province after a Lucky Pick purchase.</p>
-            )}
-          </div>
-        </section>
-        <section id="suggestion-box" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem' }}>
-          <SectionKicker>Suggestion Box</SectionKicker>
-          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0', letterSpacing: '-0.035em' }}>
-            Help make Lucky Pick Canada better
-          </h2>
-          <p style={{ lineHeight: 1.6, maxWidth: 680 }}>
-            Have a suggestion? Share it with us — we’d love to hear from you!
-          </p>
-          {suggested ? <p style={successMessageStyle}>Thanks! Your suggestion has been received. We appreciate your feedback.</p> : null}
-          {suggestionError ? <p style={errorMessageStyle}>{suggestionError}</p> : null}
-          <form action="/api/suggestions" method="POST" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-                Name (optional)
-                <input name="name" type="text" maxLength="40" placeholder="David" style={inputStyle} />
-              </label>
-              <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-                Email (optional)
-                <input name="email" type="email" maxLength="120" placeholder="you@example.com" style={inputStyle} />
-              </label>
-            </div>
-            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>
-              Your suggestion
-              <textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required style={{ ...inputStyle, resize: 'vertical' }} />
-            </label>
-            <label aria-hidden="true" style={{ display: 'none' }}>
-              Website
-              <input name="website" type="text" tabIndex={-1} autoComplete="off" />
-            </label>
-            <TurnstileField siteKey={turnstileSiteKey} submitButtonId="suggestion-submit" />
-            <button id="suggestion-submit" type="submit" className="aurora-gold-button" style={{ ...checkoutButtonStyle, maxWidth: 320 }}>Send suggestion</button>
-          </form>
-        </section>
-        <section id="facebook-community" className="aurora-glass-card premium-section" style={{ ...glassCardStyle, marginTop: '2rem', textAlign: 'center' }}>
-          <SectionKicker>Community</SectionKicker>
-          <h2 style={{ ...sectionHeadingStyle, fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.6rem auto 0.75rem', letterSpacing: '-0.035em', maxWidth: 760 }}>
-            🍀 Join the LuckyPick Canada Community
-          </h2>
-          <p style={{ lineHeight: 1.7, maxWidth: 720, margin: '0 auto 1.5rem', color: 'rgba(255, 247, 214, 0.9)', fontSize: '1.05rem' }}>
-            Share your luck, talk about your lucky picks, and connect with other Canadians who enjoy a little extra fun and positivity.
-          </p>
-          <a
-            href={facebookGroupUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Open the LuckyPick Canada Community Facebook group in a new tab"
-            style={{ display: 'block', borderRadius: 28, border: '1px solid rgba(255, 235, 160, 0.42)', overflow: 'hidden', boxShadow: '0 26px 70px rgba(0, 0, 0, 0.42), 0 0 42px rgba(250, 204, 21, 0.18)', background: 'linear-gradient(145deg, rgba(250, 204, 21, 0.12), rgba(16, 185, 129, 0.08))' }}
+          <Link 
+            href="/lucky-map-of-canada" 
+            className="inline-block px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-all"
           >
-            <Image
-              src="/FB_IMG_1785107325979.jpg"
-              alt="LuckyPickCanada Facebook community group"
-              width={1600}
-              height={900}
-              sizes="(max-width: 1040px) 100vw, 1040px"
-              quality={80}
-              style={{ display: 'block', width: '100%', height: 'auto' }}
+            Lucky Map of Canada
+          </Link>
+        </div>
+      </section>
+
+      {/* 6. Community Footer */}
+      <section className={`${CARD_BG} text-center space-y-6`}>
+        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
+          Help make Lucky Pick Canada better
+        </h2>
+        
+        <div className="space-y-4 pt-2">
+          <h2 className="text-xl font-semibold text-slate-100">
+            Join the LuckyPick Canada Community
+          </h2>
+          <a 
+            href="https://www.facebook.com/share" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-block transition-transform hover:scale-[1.02]"
+          >
+            <img 
+              src="/facebook-community-cover.png" 
+              alt="Lucky Pick Canada Community Facebook group cover" 
+              className="rounded-xl border border-slate-700 max-w-full h-auto mx-auto shadow-md"
             />
           </a>
-          <a
-            href={facebookGroupUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="aurora-gold-button"
-            style={{ ...checkoutButtonStyle, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 'auto', minWidth: 260, marginTop: '1.3rem', textDecoration: 'none' }}
-          >
-            Join the Facebook Group 🍀
-          </a>
-        </section>
-        <footer className="premium-section" style={{ marginTop: '2rem', padding: 'clamp(1.25rem, 4vw, 2rem)', borderRadius: 30, border: '1px solid rgba(255, 235, 160, 0.24)', background: 'linear-gradient(145deg, rgba(2, 8, 23, 0.68), rgba(4, 44, 40, 0.48))', boxShadow: '0 22px 70px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08)', backdropFilter: 'blur(16px)', position: 'relative', overflow: 'hidden' }}>
-          <span aria-hidden="true" style={{ position: 'absolute', right: '1.2rem', top: '0.8rem', color: 'rgba(250,204,21,0.26)', fontSize: '3.2rem', lineHeight: 1 }}>🍁</span>
-          <BrandLogo size={44} textColor="#fff7d6" />
-          <p style={{ margin: '0.9rem 0 0', color: '#fde68a', fontWeight: 950, fontSize: 'clamp(1.08rem, 3vw, 1.45rem)', lineHeight: 1.35 }}>
-            Thank You For Your Support! Enjoy Your Luck! 🍀
-          </p>
-          <p style={{ margin: '0.75rem 0 0', color: 'rgba(255, 245, 203, 0.76)', lineHeight: 1.65, maxWidth: 860 }}>
-            LuckyPickCanada.ca provides fun personalized luck experiences for entertainment purposes only. Lucky Picks, Lucky Cards, Lucky Colours, and all other features are randomly generated for fun and enjoyment, and purchases do not increase the chances of winning any lottery, contest, or game of chance.
-          </p>
-        </footer>
+        </div>
       </section>
+
     </main>
   );
 }
