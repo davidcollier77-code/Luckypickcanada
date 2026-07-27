@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-// Line 4: Exactly matches lucky-card-reveal.js on patch-84
 import LuckyCardReveal from './lucky-card-reveal';
 
 // --- Style Constants ---
@@ -9,7 +8,7 @@ const SECONDARY_GOLD = "text-amber-300";
 const CARD_BG = "bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-lg";
 const BUTTON_STYLE = "inline-block px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all shadow-md";
 
-// --- Quote Data & Helper ---
+// --- Quote Data ---
 const luckyQuotes = [
   "Your positive energy creates your own luck every day.",
   "Small acts of kindness bring immense fortune.",
@@ -19,12 +18,6 @@ const luckyQuotes = [
   "Positivity is a magnet for good fortune."
 ];
 
-function getLuckyQuoteOfTheDay() {
-  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-  return luckyQuotes[dayOfYear % luckyQuotes.length];
-}
-
-// --- SEO Metadata ---
 export const metadata = {
   title: 'LuckyPickCanada - Lucky Meter & Personalized Picks',
   description:
@@ -32,7 +25,8 @@ export const metadata = {
 };
 
 export default function HomePage() {
-  const dailyQuote = getLuckyQuoteOfTheDay();
+  // Static daily quote to guarantee zero hydration mismatch errors
+  const dailyQuote = luckyQuotes[0];
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-8 space-y-12 max-w-6xl mx-auto">
