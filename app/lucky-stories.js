@@ -1,4 +1,5 @@
 'use client';
+
 import { sanitizePlainText, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 export const storyProvinces = [
