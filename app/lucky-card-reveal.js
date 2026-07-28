@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 
 const CARD_DATA = [
-  { id: 'logo-official', name: 'Lucky Pick Canada', imagePath: '/logo-official.svg', quote: 'Your positive energy creates your own luck every day.' },
-  { id: 'maple-clover', name: 'Maple Clover', imagePath: '/logo-maple-clover-20260719.svg', quote: 'Luck follows those who appreciate the little things.' },
+  { id: 'lucky-card-one', name: 'Lucky Pick', imagePath: '/1784862459046.png', quote: 'Your positive energy creates your own luck every day.' },
+  { id: 'lucky-card-two', name: 'Northern Fortune', imagePath: '/1784889264858.png', quote: 'Luck follows those who appreciate the little things.' },
+  { id: 'lucky-card-three', name: 'Golden Moment', imagePath: '/1784931654864.png', quote: 'A bright opportunity is waiting for your next step.' },
 ];
 
 export default function LuckyCardReveal() {
@@ -33,19 +34,10 @@ export default function LuckyCardReveal() {
 
   return (
     <div className="lucky-card-reveal-shell">
-      <div
-        className={`lucky-card-reveal${flipped ? ' is-flipped' : ''}`}
-        onClick={handleFlip}
-        onKeyDown={handleKeyDown}
-        role="button"
-        aria-label={flipped ? `Revealed card: ${selectedCard?.name}` : 'Reveal your lucky card'}
-        tabIndex={0}
-      >
+      <div className={`lucky-card-reveal${flipped ? ' is-flipped' : ''}`} onClick={handleFlip} onKeyDown={handleKeyDown} role="button" aria-label={flipped ? `Revealed card: ${selectedCard?.name}` : 'Reveal your lucky card'} tabIndex={0}>
         <div className="lucky-card-face lucky-card-back-face">
-          <img className="lucky-card-back-logo" src="/logo-official.svg" alt="" />
-          <span className="lucky-card-corner">LPC</span>
+          <img className="lucky-card-back-logo" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada" />
           <p>Tap to reveal</p>
-          <span className="lucky-card-ornament">✦</span>
         </div>
         <div className="lucky-card-face lucky-card-front-face">
           {selectedCard && (

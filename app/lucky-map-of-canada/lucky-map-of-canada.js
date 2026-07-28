@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import TurnstileField from '../turnstile-field';
 
 import { useEffect, useMemo, useState } from 'react';
 
@@ -49,6 +50,8 @@ export default function LuckyMapOfCanada({ mapData }) {
   const [selectedProvince, setSelectedProvince] = useState(firstStoryProvince);
   const [selectedStoryId, setSelectedStoryId] = useState('');
   const [shareStatus, setShareStatus] = useState('');
+  const [isStoryFormOpen, setIsStoryFormOpen] = useState(false);
+  const [reactions, setReactions] = useState({});
   const selectedProvinceInfo = provinces.find((province) => province.code === selectedProvince) || provinces[4];
   const selectedStories = provinceStories(stories, selectedProvince);
   const selectedStory = selectedStoryId ? selectedStories.find((story) => story.id === selectedStoryId) || null : null;
@@ -98,6 +101,10 @@ export default function LuckyMapOfCanada({ mapData }) {
       url.hash = 'lucky-story-map';
       window.history.replaceState(null, '', url);
     }
+  }
+
+  function reactToStory(storyId) {
+    setReactions((current) => ({ ...current, [storyId]: (current[storyId] || 0) + 1 }));
   }
 
   function returnToMap() {
@@ -162,7 +169,8 @@ export default function LuckyMapOfCanada({ mapData }) {
         @keyframes marker-pulse { 0%, 100% { transform: scale(0.88); opacity: 0.22; } 50% { transform: scale(1.28); opacity: 0.82; } }
         @keyframes aurora-drift { from { transform: translate3d(-8%, -2%, 0) rotate(-7deg); opacity: 0.34; } to { transform: translate3d(8%, 3%, 0) rotate(6deg); opacity: 0.62; } }
         @media (max-width: 860px) { #lucky-story-map { grid-template-columns: 1fr !important; } }
-        @media (max-width: 560px) { .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; } .map-panel { min-height: 470px !important; } .province-marker { min-width: 36px; min-height: 36px; } }
+        .mobile-province-select { display: none; } .story-modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.72); } .story-modal { position: relative; width: min(100%, 440px); padding: 1.5rem; border-radius: 20px; color: #fff7d6; background: #0b2d28; } .story-modal > button { position: absolute; top: .5rem; right: .8rem; border: 0; color: inherit; background: transparent; font-size: 2rem; cursor: pointer; } .story-modal form, .story-modal label { display: grid; gap: .55rem; } .story-modal form { margin-top: 1rem; } .story-modal input, .story-modal textarea { padding: .65rem; border: 1px solid rgba(255,235,160,.5); border-radius: 8px; color: inherit; background: rgba(0,0,0,.18); } .story-modal form button { padding: .75rem; border: 0; border-radius: 999px; color: #06110d; background: #facc15; font-weight: 900; cursor: pointer; }
+        @media (max-width: 560px) { .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; } .map-panel { min-height: 470px !important; } .province-marker { min-width: 36px; min-height: 36px; } .mobile-province-select { display: grid; gap: .4rem; margin-top: 1rem; color: #fde68a; font-weight: 800; } .mobile-province-select select { padding: .7rem; border-radius: 10px; color: #fff7d6; background: #0b2d28; border: 1px solid rgba(255,235,160,.4); } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; } }
       `}</style>
 
@@ -171,7 +179,7 @@ export default function LuckyMapOfCanada({ mapData }) {
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <a href="/" className="home-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.55rem 0.8rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.26)', background: 'rgba(1, 4, 3, 0.54)' }}>
-            <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada logo with maple leaf" width={34} height={34} sizes="34px" quality={85} priority style={{ objectFit: 'contain' }} />
+            <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada logo with maple leaf" width={40} height={40} sizes="40px" quality={85} priority style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
             Back to Home Page
           </a>
         </nav>
@@ -188,6 +196,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             <a href="#lucky-story-map" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
               🍀 View Lucky Stories
             </a>
+            <button type="button" onClick={() => setIsStoryFormOpen(true)} className="story-link" style={{ color: '#06110d', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer' }}>Share your lucky story</button>
           </div>
           {!mapData?.isConfigured ? (
             <p style={{ margin: '1rem 0 0', padding: '0.85rem 1rem', borderRadius: 16, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 800 }}>
@@ -264,6 +273,9 @@ export default function LuckyMapOfCanada({ mapData }) {
                         <button type="button" onClick={() => shareStory(story)} className="story-link" style={{ color: '#06110d', fontWeight: 950, padding: '0.65rem 0.9rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer' }}>
                           🍀 Share This Story
                         </button>
+                        <button type="button" onClick={() => reactToStory(story.id)} style={{ padding: 0, border: 0, background: 'transparent', color: '#d1fae5', fontWeight: 900, cursor: 'pointer' }}>
+                          Celebrate {reactions[story.id] ? `(${reactions[story.id]})` : ''}
+                        </button>
                         <button type="button" onClick={returnToMap} style={{ padding: 0, border: 0, background: 'transparent', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textDecoration: 'underline' }}>
                           ← Back to Lucky Story Map
                         </button>
@@ -289,6 +301,7 @@ export default function LuckyMapOfCanada({ mapData }) {
         <section className="premium-surface" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
           <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>Province selection</p>
           <h2 style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Lucky Stories by province</h2>
+          <label className="mobile-province-select">Choose a province or territory<select value={selectedProvince} onChange={(event) => selectProvince(event.target.value)}>{provinceSelections.map((province) => <option key={province.code} value={province.code}>{province.name} ({province.count})</option>)}</select></label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
             {provinceSelections.map((province) => (
               <button key={province.code} type="button" className="province-select-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(244,195,70,0.35), rgba(35,140,101,0.25))' : 'rgba(255,255,255,0.055)', cursor: 'pointer' }}>
@@ -298,6 +311,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             ))}
           </div>
         </section>
+        {isStoryFormOpen ? <div className="story-modal-backdrop" onMouseDown={() => setIsStoryFormOpen(false)}><section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}><button type="button" aria-label="Close story form" onClick={() => setIsStoryFormOpen(false)}>×</button><h2 id="story-form-title">Share your lucky story</h2><form action="/api/lucky-stories" method="post"><input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} /><label>Name<input name="name" required maxLength="40" /></label><label>Province or territory<input name="location" maxLength="80" /></label><label>Your story<textarea name="story" required minLength="20" maxLength="1500" rows="5" /></label><TurnstileField siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAD6xRRyXK4C4YQ1x'} submitButtonId="lucky-story-submit" /><button id="lucky-story-submit" type="submit">Submit story</button></form></section></div> : null}
       </div>
     </main>
   );
