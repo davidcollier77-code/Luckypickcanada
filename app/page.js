@@ -136,7 +136,7 @@ export default function HomePage() {
           <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
         </div>
         <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
-          <img src="/facebook-community-cover.png" alt="Lucky Pick Canada Community Facebook group cover" />
+          <img src="/FB_IMG_1785107325979.jpg" alt="Lucky Pick Canada Community Facebook group cover" />
         </a>
       </section>
 
