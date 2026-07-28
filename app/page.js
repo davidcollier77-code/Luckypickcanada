@@ -116,8 +116,8 @@ export default function HomePage() {
       </section>
 
       <section id="cards" className="homepage-section homepage-cards-section" aria-labelledby="cards-heading">
-        <SectionHeading eyebrow="A moment of surprise" title="Reveal your lucky card">
-          Choose one card for a small spark of encouragement. Your daily reveal remains just for fun.
+        <SectionHeading eyebrow="A daily moment of possibility" title="Today’s Lucky Moment">
+          Open one collectible card each day for a calm spark of encouragement.
         </SectionHeading>
         <LuckyCardReveal />
       </section>
