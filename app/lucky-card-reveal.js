@@ -43,7 +43,7 @@ export default function LuckyCardReveal() {
       >
         <div className="lucky-card-face lucky-card-back-face">
           <span className="lucky-card-corner">LPC</span>
-          <img src="/logo-maple-clover-20260719.svg" alt="" />
+          <img src="/logo-official.svg" alt="" />
           <p>Tap to reveal</p>
           <span className="lucky-card-ornament">✦</span>
         </div>

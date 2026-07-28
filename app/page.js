@@ -29,7 +29,7 @@ export default function HomePage() {
       <header className="reference-site-header">
         <nav className="reference-site-nav reference-nav-row" aria-label="Primary navigation">
           <a className="reference-brand" href="#top" aria-label="Lucky Pick Canada home">
-            <img src="/logo-maple-clover-20260719.svg" alt="" width="48" height="48" />
+            <img src="/logo-official.svg" alt="" width="48" height="48" />
             <span>Lucky Pick Canada</span>
           </a>
           <div className="reference-nav-links">
@@ -128,7 +128,7 @@ export default function HomePage() {
           <h2 id="community-heading">Keep the good energy moving.</h2>
           <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
         </div>
-        <a href="https://www.facebook.com/share" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
+        <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
           <img src="/facebook-community-cover.png" alt="Lucky Pick Canada Community Facebook group cover" />
         </a>
       </section>
