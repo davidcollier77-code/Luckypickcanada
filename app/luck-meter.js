@@ -57,6 +57,7 @@ export default function LuckyMeter() {
               height={600}
               priority
             />
+            <output className="lucky-meter-result-number" aria-live="polite" aria-label="Lucky score">{displayNumber}</output>
           </div>
           <button type="button" className="lucky-meter-button" onClick={handleTestLuck} disabled={isAnimating || hasGenerated}>
             {isAnimating ? 'Finding your signal…' : hasGenerated ? 'Your luck has arrived' : 'Read my lucky energy'}

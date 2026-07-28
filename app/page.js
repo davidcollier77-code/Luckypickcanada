@@ -1,16 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import CheckoutModal from './checkout-modal';
 import LuckyCardReveal from './lucky-card-reveal';
 import LuckyMeter from './luck-meter';
 
 const cards = [
-  '/lucky-card-ace-spades.svg',
-  '/lucky-card-clover.svg',
-  '/lucky-card-fortune.svg',
-  '/lucky-card-horseshoe.svg',
-  '/lucky-card-rabbit-foot.svg',
-  '/lucky-card-joker.svg',
+  '/1784862459046.png',
+  '/1784889264858.png',
+  '/1784931654864.png',
 ];
 
 function SectionHeading({ eyebrow, title, children }) {
@@ -24,12 +23,14 @@ function SectionHeading({ eyebrow, title, children }) {
 }
 
 export default function HomePage() {
+  const [checkoutType, setCheckoutType] = useState(null);
+
   return (
     <main className="lucky-site-shell homepage-experience">
       <header className="reference-site-header">
         <nav className="reference-site-nav reference-nav-row" aria-label="Primary navigation">
           <a className="reference-brand" href="#top" aria-label="Lucky Pick Canada home">
-            <img src="/logo-official.svg" alt="" width="48" height="48" />
+            <img className="navigation-logo" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada" />
             <span>Lucky Pick Canada</span>
           </a>
           <div className="reference-nav-links">
@@ -59,7 +60,7 @@ export default function HomePage() {
           <div className="reference-card-stage">
             <div className="reference-card-arc" />
             {cards.map((src, index) => (
-              <img key={src} className={`reference-card reference-card-${['one', 'two', 'three', 'four', 'five', 'six'][index]}`} src={src} alt="" />
+              <img key={src} className={`reference-card reference-card-${['one', 'three', 'five'][index]}`} src={src} alt="" />
             ))}
           </div>
           <p className="reference-tableau-caption">A daily ritual of <span>possibility</span> and positive energy</p>
@@ -86,23 +87,29 @@ export default function HomePage() {
         </SectionHeading>
         <div className="homepage-offer-grid">
           <article className="homepage-offer homepage-offer-featured">
+            <img className="homepage-offer-image" src="/1784862459046.png" alt="Lucky Pick card" />
             <p className="homepage-offer-kicker">Personalized Lucky Pick</p>
             <h3>Six or seven numbers. One luminous reveal.</h3>
             <p>Select a 6 Pick or 7 Pick and enjoy your lucky colour and lucky day in the existing reveal experience.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
+            <button type="button" className="homepage-offer-action" onClick={() => setCheckoutType('lucky_pick')}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
+            <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift card" />
             <p className="homepage-offer-kicker">Gift a little luck</p>
             <h3>Send a bright surprise across Canada.</h3>
             <p>The existing gift package delivers a Lucky Pick reveal and personal greeting for someone you care about.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
+            <button type="button" className="homepage-offer-action" onClick={() => setCheckoutType('gift_package')}>Gift a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
+            <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick card" />
             <p className="homepage-offer-kicker">Keep the lights glowing</p>
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
+            <button type="button" className="homepage-offer-action" onClick={() => setCheckoutType('tip')}>Open the tip jar</button>
           </article>
         </div>
       </section>
@@ -134,6 +141,7 @@ export default function HomePage() {
       </section>
 
       <footer className="homepage-footer">Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</footer>
+      {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} />}
     </main>
   );
 }
