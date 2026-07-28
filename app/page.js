@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CheckoutModal from './checkout-modal';
 import LuckyCardReveal from './lucky-card-reveal';
+import { createLuckyReveal } from './lucky-reveal';
+import LuckyRevealPopup from './lucky-reveal-popup';
 import LuckyMeter from './luck-meter';
 
 const cards = [
@@ -24,6 +26,21 @@ function SectionHeading({ eyebrow, title, children }) {
 
 export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
+  const [luckyReveal, setLuckyReveal] = useState(null);
+  const [suggested, setSuggested] = useState(false);
+  const [suggestionError, setSuggestionError] = useState('');
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+
+    if (searchParams.get('payment') === 'success' && searchParams.get('session_id')) {
+      setLuckyReveal(createLuckyReveal(searchParams.get('pick')));
+    }
+
+    setSuggested(searchParams.get('suggested') === '1');
+    setSuggestionError(searchParams.get('suggestionError') || '');
+  }, []);
+
   function openLuckyPickCheckout(event) {
     event.currentTarget.blur();
     setCheckoutType('lucky_pick');
@@ -37,6 +54,15 @@ export default function HomePage() {
   function openTipJar(event) {
     event.currentTarget.blur();
     setCheckoutType('tip');
+  }
+
+  function closeLuckyReveal() {
+    setLuckyReveal(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('payment');
+    url.searchParams.delete('pick');
+    url.searchParams.delete('session_id');
+    window.history.replaceState(null, '', url);
   }
 
   return (
@@ -154,8 +180,26 @@ export default function HomePage() {
         </a>
       </section>
 
+      <section id="suggestion-box" style={{ margin: '0 clamp(1rem, 5vw, 5.5rem)', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
+        <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>Suggestion Box</p>
+        <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>Help make Lucky Pick Canada better</h2>
+        <p style={{ lineHeight: 1.6, maxWidth: 680 }}>Share an idea for a new feature, a smoother checkout, a better gift package, or anything that would make the site more fun to use.</p>
+        {suggested && <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Thanks for the suggestion. I’ll review it soon.</p>}
+        {suggestionError && <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontWeight: 700 }}>{suggestionError}</p>}
+        <form action="/api/suggestions" method="post" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>Name (optional)<input name="name" type="text" maxLength="40" placeholder="David" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} /></label>
+            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>Email (optional)<input name="email" type="email" maxLength="120" placeholder="you@example.com" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} /></label>
+          </div>
+          <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem', resize: 'vertical' }} /></label>
+          <label aria-hidden="true" style={{ display: 'none' }}>Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
+          <button type="submit" className="homepage-offer-action" style={{ maxWidth: 320 }}>Send suggestion</button>
+        </form>
+      </section>
+
       <footer className="homepage-footer">Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</footer>
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} />}
+      {luckyReveal && <LuckyRevealPopup reveal={luckyReveal} onClose={closeLuckyReveal} />}
     </main>
   );
 }
