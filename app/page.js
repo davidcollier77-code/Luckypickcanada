@@ -27,20 +27,33 @@ function SectionHeading({ eyebrow, title, children }) {
 export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
   const [luckyReveal, setLuckyReveal] = useState(null);
+  const [suggested, setSuggested] = useState(false);
+  const [suggestionError, setSuggestionError] = useState('');
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
 
-    if (searchParams.get('payment') !== 'success' || !searchParams.get('session_id')) {
-      return;
+    if (searchParams.get('payment') === 'success' && searchParams.get('session_id')) {
+      setLuckyReveal(createLuckyReveal(searchParams.get('pick')));
     }
 
-    setLuckyReveal(createLuckyReveal(searchParams.get('pick')));
+    setSuggested(searchParams.get('suggested') === '1');
+    setSuggestionError(searchParams.get('suggestionError') || '');
   }, []);
 
-  function openCheckout(type, event) {
+  function openLuckyPickCheckout(event) {
     event.currentTarget.blur();
-    setCheckoutType(type);
+    setCheckoutType('lucky_pick');
+  }
+
+  function openGiftCheckout(event) {
+    event.currentTarget.blur();
+    setCheckoutType('gift_package');
+  }
+
+  function openTipJar(event) {
+    event.currentTarget.blur();
+    setCheckoutType('tip');
   }
 
   function closeLuckyReveal() {
@@ -120,7 +133,7 @@ export default function HomePage() {
             <p>Select a 6 Pick or 7 Pick and enjoy your lucky colour and lucky day in the existing reveal experience.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="homepage-offer-action" onClick={(event) => openCheckout('lucky_pick', event)}>Choose a Lucky Pick</button>
+            <button type="button" className="homepage-offer-action" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift card" />
@@ -128,7 +141,7 @@ export default function HomePage() {
             <h3>Send a bright surprise across Canada.</h3>
             <p>The existing gift package delivers a Lucky Pick reveal and personal greeting for someone you care about.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
-            <button type="button" className="homepage-offer-action" onClick={(event) => openCheckout('gift_package', event)}>Gift a Lucky Pick</button>
+            <button type="button" className="homepage-offer-action" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick card" />
@@ -136,7 +149,7 @@ export default function HomePage() {
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <button type="button" className="homepage-offer-action" onClick={(event) => openCheckout('tip', event)}>Open the tip jar</button>
+            <button type="button" className="homepage-offer-action" onClick={openTipJar}>Open the tip jar</button>
           </article>
         </div>
       </section>
@@ -165,6 +178,23 @@ export default function HomePage() {
         <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
           <img src="/FB_IMG_1785107325979.jpg" alt="Lucky Pick Canada Community Facebook group cover" />
         </a>
+      </section>
+
+      <section id="suggestion-box" style={{ margin: '0 clamp(1rem, 5vw, 5.5rem)', padding: '1.5rem', borderRadius: 24, background: 'rgba(255, 255, 255, 0.95)', color: '#102033', boxShadow: '0 20px 50px rgba(15, 118, 110, 0.18)' }}>
+        <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 700, color: '#0f766e' }}>Suggestion Box</p>
+        <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', margin: '0.5rem 0' }}>Help make Lucky Pick Canada better</h2>
+        <p style={{ lineHeight: 1.6, maxWidth: 680 }}>Share an idea for a new feature, a smoother checkout, a better gift package, or anything that would make the site more fun to use.</p>
+        {suggested && <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Thanks for the suggestion. I’ll review it soon.</p>}
+        {suggestionError && <p style={{ padding: '0.8rem 1rem', borderRadius: 14, background: '#fee2e2', color: '#991b1b', fontWeight: 700 }}>{suggestionError}</p>}
+        <form action="/api/suggestions" method="post" style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>Name (optional)<input name="name" type="text" maxLength="40" placeholder="David" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} /></label>
+            <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>Email (optional)<input name="email" type="email" maxLength="120" placeholder="you@example.com" style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem' }} /></label>
+          </div>
+          <label style={{ display: 'grid', gap: '0.4rem', fontWeight: 700 }}>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required style={{ padding: '0.8rem 1rem', borderRadius: 12, border: '1px solid #b7d9d5', fontSize: '1rem', resize: 'vertical' }} /></label>
+          <label aria-hidden="true" style={{ display: 'none' }}>Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
+          <button type="submit" className="homepage-offer-action" style={{ maxWidth: 320 }}>Send suggestion</button>
+        </form>
       </section>
 
       <footer className="homepage-footer">Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</footer>
