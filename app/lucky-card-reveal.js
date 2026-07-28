@@ -42,8 +42,8 @@ export default function LuckyCardReveal() {
         tabIndex={0}
       >
         <div className="lucky-card-face lucky-card-back-face">
+          <img className="lucky-card-back-logo" src="/logo-official.svg" alt="" />
           <span className="lucky-card-corner">LPC</span>
-          <img src="/logo-official.svg" alt="" />
           <p>Tap to reveal</p>
           <span className="lucky-card-ornament">✦</span>
         </div>
