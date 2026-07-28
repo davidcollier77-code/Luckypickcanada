@@ -1,5 +1,5 @@
 .homepage-experience { position: relative; max-width: 1440px; margin: 0 auto; overflow: hidden; }
-.homepage-experience > :not(.reference-site-header) { position: relative; z-index: 1; }
+.homepage-experience > :not(.reference-site-header, .checkout-modal-backdrop) { position: relative; z-index: 1; }
 .navigation-logo { height: 40px; width: auto; object-fit: contain; }
 .homepage-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(380px, 1.1fr); align-items: center; min-height: 680px; padding: clamp(2rem, 7vw, 6rem) clamp(1rem, 5vw, 5.5rem); }
 .homepage-hero::before { content: ''; position: absolute; inset: 3% 8% 8%; z-index: -1; border: 1px solid rgba(247, 210, 107, .2); border-radius: 46% 54% 50% 45%; background: radial-gradient(ellipse at 65% 42%, rgba(95, 210, 165, .18), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(141, 102, 224, .14), transparent 30%); }
