@@ -107,7 +107,7 @@ export async function POST(request) {
         giftMessage: checkoutType === 'gift_package' ? giftDetails.giftMessage : '',
       },
       success_url: checkoutType === 'lucky_pick'
-        ? `${origin}/?payment=success&map=1&pick=${luckyPickGame}&session_id={CHECKOUT_SESSION_ID}#little-luck-map`
+        ? `${origin}/?payment=success&pick=${luckyPickGame}&session_id={CHECKOUT_SESSION_ID}`
         : checkoutType === 'gift_package'
           ? `${origin}/api/gift-delivery?session_id={CHECKOUT_SESSION_ID}`
           : `${origin}/?payment=success`,
