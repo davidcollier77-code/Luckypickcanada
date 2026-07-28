@@ -51,3 +51,40 @@
 .lucky-card-back-face img { width: 142px; filter: drop-shadow(0 10px 17px rgba(0,0,0,.65)) drop-shadow(0 0 15px rgba(241, 193, 75, .28)); }
 .lucky-card-back-face p, .lucky-card-corner, .lucky-card-ornament { z-index: 1; }
 @media (max-width: 440px) { .homepage-community-image::after { right: .5rem; bottom: .5rem; font-size: .58rem; } }
+
+/* Supplied official Lucky Meter artwork; interaction state stays in the component. */
+.lucky-meter-dial {
+  display: block;
+  width: min(100%, 600px);
+  aspect-ratio: 1;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.lucky-meter-dial > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 20px 28px rgba(0, 0, 0, .4));
+}
+.lucky-meter-dial.is-spinning > img { animation: lucky-meter-artwork-pulse .8s ease-in-out infinite; }
+.lucky-card-back-face .lucky-card-back-logo {
+  position: absolute;
+  z-index: 2;
+  top: 2.5rem;
+  width: 5.25rem;
+  height: 5.25rem;
+  object-fit: contain;
+}
+@keyframes lucky-meter-artwork-pulse {
+  50% { filter: brightness(1.12) drop-shadow(0 0 22px rgba(246, 205, 104, .45)); }
+}
+@media (max-width: 390px) {
+  .lucky-meter-dial { width: min(100%, 315px); }
+  .lucky-card-back-face .lucky-card-back-logo { top: 2rem; width: 4.5rem; height: 4.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lucky-meter-dial.is-spinning > img { animation: none; }
+}

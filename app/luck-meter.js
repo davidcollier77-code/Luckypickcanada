@@ -1,11 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
-const labels = [0, 20, 40, 60, 80, 100];
-
 export default function LuckyMeter() {
-  const [luckLevel, setLuckLevel] = useState(0);
   const [displayNumber, setDisplayNumber] = useState('—');
   const [isAnimating, setIsAnimating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
@@ -31,7 +29,6 @@ export default function LuckyMeter() {
     setComment('Reading the northern lights…');
     const finalLuck = Math.floor(Math.random() * 90) + 10;
     window.setTimeout(() => {
-      setLuckLevel(finalLuck);
       setDisplayNumber(`${finalLuck}%`);
       setComment(getComment(finalLuck));
       setIsAnimating(false);
@@ -39,7 +36,6 @@ export default function LuckyMeter() {
     }, 2500);
   };
 
-  const needleAngle = -130 + (luckLevel / 100) * 260;
 
   return (
     <div className="lucky-meter-shell">
@@ -54,23 +50,13 @@ export default function LuckyMeter() {
         </div>
         <div className="lucky-meter-stage">
           <div className={`lucky-meter-dial${isAnimating ? ' is-spinning' : ''}`}>
-            <div className="lucky-meter-dial-stars" />
-            <div className="lucky-meter-rings" />
-            <div className="lucky-meter-ticks" aria-hidden="true">
-              {Array.from({ length: 21 }, (_, index) => <span key={index} className={index % 4 === 0 ? 'is-major' : ''} style={{ '--tick-angle': `${-130 + index * 13}deg` }} />)}
-            </div>
-            <div className="lucky-meter-labels" aria-hidden="true">
-              {labels.map((label) => <span key={label} style={{ '--label-angle': `${-130 + (label / 100) * 260}deg` }}>{label}</span>)}
-            </div>
-            <div className="lucky-meter-needle" style={{ '--needle-angle': `${isAnimating ? -130 + (Number(displayNumber) || 0) / 100 * 260 : needleAngle}deg` }}>
-              <div className="lucky-meter-needle-shaft" />
-              <div className="lucky-meter-needle-tip" />
-            </div>
-            <div className="lucky-meter-hub"><span /><i /></div>
-            <span className="lucky-meter-maple lucky-meter-maple-top">✦</span>
-            <span className="lucky-meter-maple lucky-meter-maple-left">🍁</span>
-            <span className="lucky-meter-maple lucky-meter-maple-right">🍁</span>
-            <div className="lucky-meter-result-number"><strong>{displayNumber}</strong><span>{hasGenerated ? 'Today’s reading' : 'Your signal'}</span></div>
+            <Image
+              src="/1785101753301.png"
+              alt="Lucky Pick Canada Lucky Meter"
+              width={600}
+              height={600}
+              priority
+            />
           </div>
           <button type="button" className="lucky-meter-button" onClick={handleTestLuck} disabled={isAnimating || hasGenerated}>
             {isAnimating ? 'Finding your signal…' : hasGenerated ? 'Your luck has arrived' : 'Read my lucky energy'}
