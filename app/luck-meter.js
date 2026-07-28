@@ -8,6 +8,7 @@ export default function LuckyMeter() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
   const [comment, setComment] = useState('The aurora is waiting for your signal.');
+  const [resultTier, setResultTier] = useState('idle');
 
   const getComment = (value) => {
     if (value < 40) return 'A quiet glow is still a glow. Keep your heart open today.';
@@ -23,14 +24,18 @@ export default function LuckyMeter() {
     return () => window.clearInterval(interval);
   }, [isAnimating]);
 
+  const getResultTier = (value) => (value < 40 ? 'low' : value < 75 ? 'medium' : 'high');
+
   const handleTestLuck = () => {
     if (isAnimating || hasGenerated) return;
     setIsAnimating(true);
+    setResultTier('generating');
     setComment('Reading the northern lights…');
     const finalLuck = Math.floor(Math.random() * 90) + 10;
     window.setTimeout(() => {
       setDisplayNumber(`${finalLuck}%`);
       setComment(getComment(finalLuck));
+      setResultTier(getResultTier(finalLuck));
       setIsAnimating(false);
       setHasGenerated(true);
     }, 2500);
@@ -38,9 +43,10 @@ export default function LuckyMeter() {
 
 
   return (
-    <div className="lucky-meter-shell">
-      <div className="lucky-meter-aura lucky-meter-aura-one" />
-      <div className="lucky-meter-aura lucky-meter-aura-two" />
+    <div className={`lucky-meter-shell lucky-meter-tier-${resultTier}`}>
+      <div className="lucky-meter-vortex" aria-hidden="true" />
+      <div className="lucky-meter-aura lucky-meter-aura-one" aria-hidden="true" />
+      <div className="lucky-meter-aura lucky-meter-aura-two" aria-hidden="true" />
       <div className="lucky-meter-grid">
         <div className="lucky-meter-copy">
           <p className="lucky-meter-kicker">The Aurora Instrument</p>
