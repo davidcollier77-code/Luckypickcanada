@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import CheckoutModal from './checkout-modal';
 import LuckyCardReveal from './lucky-card-reveal';
-import { createLuckyReveal } from './lucky-reveal';
-import LuckyRevealPopup from './lucky-reveal-popup';
 import LuckyMeter from './luck-meter';
 
 const cards = [
@@ -26,30 +24,19 @@ function SectionHeading({ eyebrow, title, children }) {
 
 export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
-  const [luckyReveal, setLuckyReveal] = useState(null);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-
-    if (searchParams.get('payment') !== 'success' || !searchParams.get('session_id')) {
-      return;
-    }
-
-    setLuckyReveal(createLuckyReveal(searchParams.get('pick')));
-  }, []);
-
-  function openCheckout(type, event) {
+  function openLuckyPickCheckout(event) {
     event.currentTarget.blur();
-    setCheckoutType(type);
+    setCheckoutType('lucky_pick');
   }
 
-  function closeLuckyReveal() {
-    setLuckyReveal(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete('payment');
-    url.searchParams.delete('pick');
-    url.searchParams.delete('session_id');
-    window.history.replaceState(null, '', url);
+  function openGiftCheckout(event) {
+    event.currentTarget.blur();
+    setCheckoutType('gift_package');
+  }
+
+  function openTipJar(event) {
+    event.currentTarget.blur();
+    setCheckoutType('tip');
   }
 
   return (
@@ -120,7 +107,7 @@ export default function HomePage() {
             <p>Select a 6 Pick or 7 Pick and enjoy your lucky colour and lucky day in the existing reveal experience.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="homepage-offer-action" onClick={(event) => openCheckout('lucky_pick', event)}>Choose a Lucky Pick</button>
+            <button type="button" className="homepage-offer-action" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift card" />
@@ -128,7 +115,7 @@ export default function HomePage() {
             <h3>Send a bright surprise across Canada.</h3>
             <p>The existing gift package delivers a Lucky Pick reveal and personal greeting for someone you care about.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
-            <button type="button" className="homepage-offer-action" onClick={(event) => openCheckout('gift_package', event)}>Gift a Lucky Pick</button>
+            <button type="button" className="homepage-offer-action" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick card" />
@@ -136,7 +123,7 @@ export default function HomePage() {
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <button type="button" className="homepage-offer-action" onClick={(event) => openCheckout('tip', event)}>Open the tip jar</button>
+            <button type="button" className="homepage-offer-action" onClick={openTipJar}>Open the tip jar</button>
           </article>
         </div>
       </section>
@@ -169,7 +156,6 @@ export default function HomePage() {
 
       <footer className="homepage-footer">Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</footer>
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} />}
-      {luckyReveal && <LuckyRevealPopup reveal={luckyReveal} onClose={closeLuckyReveal} />}
     </main>
   );
 }
