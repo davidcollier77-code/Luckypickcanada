@@ -1,56 +1,100 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 
-const CARD_DATA = [
-  { id: 'lucky-card-one', name: 'Lucky Pick', imagePath: '/1784862459046.png', quote: 'Your positive energy creates your own luck every day.' },
-  { id: 'lucky-card-two', name: 'Northern Fortune', imagePath: '/1784889264858.png', quote: 'Luck follows those who appreciate the little things.' },
-  { id: 'lucky-card-three', name: 'Golden Moment', imagePath: '/1784931654864.png', quote: 'A bright opportunity is waiting for your next step.' },
-];
+const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function findCard(cardId) {
+  return LUCKY_CARDS.find((card) => card.id === cardId) ?? null;
+}
 
 export default function LuckyCardReveal() {
-  const [flipped, setFlipped] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
-  const [contentVisible, setContentVisible] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (!flipped) return undefined;
-    const timer = window.setTimeout(() => setContentVisible(true), 350);
-    return () => window.clearTimeout(timer);
-  }, [flipped]);
+    const today = localDateKey();
 
-  const handleFlip = () => {
-    if (flipped) return;
-    setSelectedCard(CARD_DATA[Math.floor(Math.random() * CARD_DATA.length)]);
-    setFlipped(true);
-  };
+    try {
+      const storedReveal = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
+      const storedCard = storedReveal?.revealDate === today ? findCard(storedReveal.cardId) : null;
 
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      handleFlip();
+      if (storedCard) {
+        setSelectedCard(storedCard);
+        setIsRevealed(true);
+      } else {
+        window.localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY);
     }
-  };
+
+    setIsReady(true);
+  }, []);
+
+  function revealLuckyMoment() {
+    if (isRevealed) return;
+
+    const card = selectWeightedLuckyCard();
+    setSelectedCard(card);
+    setIsRevealed(true);
+
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ cardId: card.id, revealDate: localDateKey() }));
+    } catch {
+      // The card remains visible for this visit when browser storage is unavailable.
+    }
+  }
 
   return (
-    <div className="lucky-card-reveal-shell">
-      <div className={`lucky-card-reveal${flipped ? ' is-flipped' : ''}`} onClick={handleFlip} onKeyDown={handleKeyDown} role="button" aria-label={flipped ? `Revealed card: ${selectedCard?.name}` : 'Reveal your lucky card'} tabIndex={0}>
-        <div className="lucky-card-face lucky-card-back-face">
-          <img className="lucky-card-back-logo" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada" />
-          <p>Tap to reveal</p>
-        </div>
-        <div className="lucky-card-face lucky-card-front-face">
-          {selectedCard && (
-            <div className={`lucky-card-content${contentVisible ? ' is-visible' : ''}`}>
-              <p className="lucky-card-eyebrow">Today’s lucky sign</p>
-              <img src={selectedCard.imagePath} alt={selectedCard.name} />
-              <h3>{selectedCard.name}</h3>
-              <p>“{selectedCard.quote}”</p>
-            </div>
-          )}
+    <div className="lucky-moment-shell" aria-busy={!isReady}>
+      <div className={`lucky-moment-stage${isRevealed ? ' is-revealed' : ''}`}>
+        <div className="lucky-moment-card" aria-live="polite">
+          <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
+            <span className="lucky-moment-card-mark">LPC</span>
+            <span className="lucky-moment-card-label">Today’s Lucky Moment</span>
+            <span className="lucky-moment-card-detail">A quiet daily ritual</span>
+          </div>
+          <div className="lucky-moment-card-face lucky-moment-card-front" aria-hidden={!isRevealed}>
+            {selectedCard && (
+              <div className="lucky-moment-card-content">
+                {selectedCard.image ? (
+                  <img src={selectedCard.image} alt={selectedCard.title} />
+                ) : (
+                  <div className="lucky-moment-artwork-placeholder" aria-hidden="true">
+                    <span>Lucky Pick Canada</span>
+                  </div>
+                )}
+                <p className="lucky-moment-eyebrow">Today’s collectible card</p>
+                <h3>{selectedCard.title}</h3>
+                {selectedCard.quote ? (
+                  <p className="lucky-moment-quote">“{selectedCard.quote}”</p>
+                ) : (
+                  <p className="lucky-moment-quote">Your approved daily message will appear with this card.</p>
+                )}
+                {selectedCard.isPremium && <span className="lucky-moment-rarity">Premium card</span>}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <p className="lucky-card-instruction">{flipped ? 'Your message has been revealed.' : 'Choose the card when you are ready.'}</p>
+      {isReady && !isRevealed && (
+        <button type="button" className="lucky-moment-reveal-button" onClick={revealLuckyMoment}>
+          Reveal Your Lucky Moment
+        </button>
+      )}
+      <p className="lucky-moment-instruction">
+        {isRevealed ? 'Your lucky moment is saved for today.' : 'One calm, positive moment awaits each day.'}
+      </p>
     </div>
   );
 }
