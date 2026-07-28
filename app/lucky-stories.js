@@ -1,5 +1,4 @@
-'use client';
-
+import postgres from 'postgres';
 import { sanitizePlainText, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 export const storyProvinces = [
@@ -101,4 +100,110 @@ export function validateLuckyStory({ name, location, story }) {
     location: sanitizeSingleLine(cleanLocation.value, 80) || null,
     story: cleanStory.value,
   };
+}
+
+
+let sql;
+
+function getSql() {
+  if (!process.env.POSTGRES_URL) {
+    return null;
+  }
+
+  if (!sql) {
+    sql = postgres(process.env.POSTGRES_URL, { max: 1 });
+  }
+
+  return sql;
+}
+
+async function ensureLuckyStoriesTable(database) {
+  await database`
+    create table if not exists lucky_stories (
+      id bigserial primary key,
+      display_name text not null,
+      location text,
+      story text not null,
+      approved boolean not null default true,
+      created_at timestamptz not null default now()
+    )
+  `;
+}
+
+export async function createLuckyStory({ name, location, story }) {
+  const validated = validateLuckyStory({ name, location, story });
+
+  if (validated.error) {
+    return validated;
+  }
+
+  const database = getSql();
+
+  if (!database) {
+    return { error: 'The Lucky Stories database is not configured yet.' };
+  }
+
+  try {
+    await ensureLuckyStoriesTable(database);
+    await database`
+      insert into lucky_stories (display_name, location, story)
+      values (${validated.name}, ${validated.location}, ${validated.story})
+    `;
+  } catch (error) {
+    console.error('Lucky Stories submission failed', error);
+    return { error: 'Unable to share your lucky story.' };
+  }
+
+  return { ok: true };
+}
+
+export async function getLuckyStoryMap() {
+  const database = getSql();
+
+  if (!database) {
+    return { stories: [], provinceCounts: {}, totalStories: 0, provincesWithStories: 0, isConfigured: false };
+  }
+
+  try {
+    await ensureLuckyStoriesTable(database);
+    const rows = await database`
+      select id, display_name, location, story, created_at
+      from lucky_stories
+      where approved = true
+      order by created_at desc
+      limit 100
+    `;
+    const stories = rows
+      .map((row) => {
+        const province = getStoryProvince(row.location);
+
+        if (!province) return null;
+
+        return {
+          id: String(row.id),
+          firstName: sanitizeSingleLine(row.display_name, 40).split(' ')[0],
+          province: province.code,
+          provinceName: province.name,
+          story: sanitizePlainText(row.story, 1500),
+          preview: createStoryPreview(row.story),
+          createdAt: row.created_at,
+        };
+      })
+      .filter(Boolean);
+    const provinceCounts = stories.reduce((counts, story) => {
+      counts[story.province] = (counts[story.province] || 0) + 1;
+      return counts;
+    }, {});
+
+    return {
+      stories,
+      provinceCounts,
+      totalStories: stories.length,
+      provincesWithStories: Object.keys(provinceCounts).length,
+      isConfigured: true,
+    };
+  } catch (error) {
+    console.error('Lucky Stories lookup failed', error);
+    return { stories: [], provinceCounts: {}, totalStories: 0, provincesWithStories: 0, isConfigured: false };
+  }
 }

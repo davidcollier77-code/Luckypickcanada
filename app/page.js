@@ -93,7 +93,7 @@ export default function HomePage() {
             <p>Select a 6 Pick or 7 Pick and enjoy your lucky colour and lucky day in the existing reveal experience.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="homepage-offer-action" onClick={() => setCheckoutType('lucky_pick')}>Choose a Lucky Pick</button>
+            <button type="button" className="homepage-offer-action" onClick={(event) => { event.currentTarget.blur(); setCheckoutType('lucky_pick'); }}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift card" />
@@ -101,7 +101,7 @@ export default function HomePage() {
             <h3>Send a bright surprise across Canada.</h3>
             <p>The existing gift package delivers a Lucky Pick reveal and personal greeting for someone you care about.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
-            <button type="button" className="homepage-offer-action" onClick={() => setCheckoutType('gift_package')}>Gift a Lucky Pick</button>
+            <button type="button" className="homepage-offer-action" onClick={(event) => { event.currentTarget.blur(); setCheckoutType('gift_package'); }}>Gift a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick card" />
@@ -109,7 +109,7 @@ export default function HomePage() {
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <button type="button" className="homepage-offer-action" onClick={() => setCheckoutType('tip')}>Open the tip jar</button>
+            <button type="button" className="homepage-offer-action" onClick={(event) => { event.currentTarget.blur(); setCheckoutType('tip'); }}>Open the tip jar</button>
           </article>
         </div>
       </section>
@@ -119,13 +119,13 @@ export default function HomePage() {
           <p className="homepage-offer-kicker">Lucky Stories</p>
           <h2>Good fortune travels well.</h2>
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
-          <Link href="/lucky-map-of-canada" className="homepage-text-link">Explore Lucky Stories <span>→</span></Link>
+          <Link href="/stories" className="homepage-text-link">Explore Lucky Stories <span>→</span></Link>
         </article>
         <article className="homepage-community-card homepage-map-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Find where luck has landed.</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
-          <Link href="/lucky-map-of-canada" className="homepage-text-link">Visit the Lucky Map <span>→</span></Link>
+          <Link href="/map" className="homepage-text-link">Visit the Lucky Map <span>→</span></Link>
         </article>
       </section>
 

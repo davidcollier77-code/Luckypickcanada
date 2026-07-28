@@ -55,6 +55,10 @@ export default function LuckyMapOfCanada({ mapData }) {
   const selectedProvinceInfo = provinces.find((province) => province.code === selectedProvince) || provinces[4];
   const selectedStories = provinceStories(stories, selectedProvince);
   const selectedStory = selectedStoryId ? selectedStories.find((story) => story.id === selectedStoryId) || null : null;
+  const recentStoriesByProvince = useMemo(() => stories.reduce((groups, story) => {
+    (groups[story.province] ||= []).push(story);
+    return groups;
+  }, {}), [stories]);
 
   const provinceSelections = useMemo(
     () => provinces.map((province) => ({ ...province, count: provinceCounts[province.code] || 0 })),
@@ -267,6 +271,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                     <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
+                    <p style={{ display: 'inline-flex', margin: '0.55rem 0 0', padding: '0.28rem 0.55rem', border: '1px solid rgba(250,204,21,0.5)', borderRadius: 999, color: '#fde68a', fontSize: '0.72rem', fontWeight: 900, letterSpacing: 0.8, textTransform: 'uppercase' }}>Community Lucky Story</p>
                     <p style={{ lineHeight: 1.65 }}>{selectedStory?.id === story.id ? story.story : story.preview}</p>
                     {selectedStory?.id === story.id ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center', margin: '0.65rem 0 0.85rem' }}>
@@ -296,6 +301,30 @@ export default function LuckyMapOfCanada({ mapData }) {
               <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Stories have been shared from {selectedProvinceInfo.name} yet. Select another province to keep exploring the Lucky Story Map.</p>
             )}
           </aside>
+        </section>
+
+        <section className="premium-surface" aria-labelledby="recent-activity-heading" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
+          <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>Community</p>
+          <h2 id="recent-activity-heading" style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Recent Canadian Activity</h2>
+          {stories.length ? (
+            <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+              {provinceSelections.filter((province) => recentStoriesByProvince[province.code]?.length).map((province) => (
+                <section key={province.code} aria-label={`${province.name} recent stories`}>
+                  <h3 style={{ margin: 0, color: '#fde68a', fontSize: '1rem' }}>{province.name}</h3>
+                  <div style={{ display: 'grid', gap: '0.65rem', marginTop: '0.55rem' }}>
+                    {recentStoriesByProvince[province.code].slice(0, 3).map((story) => (
+                      <button key={story.id} type="button" onClick={() => openStory(story)} style={{ display: 'grid', gap: '0.35rem', padding: '0.8rem', border: '1px solid rgba(255,235,160,0.24)', borderRadius: 16, color: '#fff7d6', background: 'rgba(255,255,255,0.055)', cursor: 'pointer', font: 'inherit', textAlign: 'left' }}>
+                        <strong>{story.firstName || 'A Lucky Canadian'}</strong>
+                        <span style={{ color: 'rgba(255,247,214,0.82)', lineHeight: 1.55 }}>{story.preview}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          ) : (
+            <p style={{ margin: '1rem 0 0', color: 'rgba(255,247,214,0.82)', lineHeight: 1.65 }}>Community stories will appear here as they are shared.</p>
+          )}
         </section>
 
         <section className="premium-surface" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
