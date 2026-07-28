@@ -24,16 +24,15 @@ export default function HomePage() {
   const dailyQuote = luckyQuotes[0];
 
   return (
-    // Updated to use the shell class from globals.css to restore the intended aesthetic
     <main className="lucky-site-shell">
-      
+
       {/* 1. Header Section */}
       <header className="text-center space-y-3 py-6 border-b border-slate-800/60">
-        <img 
-          src="/BackgroundEraser_20260724_163638777.png" 
-          alt="Official Lucky Pick Canada Logo" 
+        <img
+          src="/BackgroundEraser_20260724_163638777.png"
+          alt="Official Lucky Pick Canada Logo"
           className="mx-auto mb-2"
-          style={{ maxWidth: '180px', width: '100%' }}
+          style={{ maxWidth: '180px', height: 'auto', width: '100%' }}
         />
         <h1 className={`text-3xl sm:text-5xl font-extrabold tracking-tight ${PRIMARY_GOLD}`}>
           Your Luck, Personalized!
@@ -46,7 +45,7 @@ export default function HomePage() {
         </p>
       </header>
 
-      {/* 2. Lucky Meter Callout */}
+      {/* 2. Lucky Meter Section */}
       <section className={`${CARD_BG} space-y-4`}>
         <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
           Start your luck meter
@@ -69,23 +68,93 @@ export default function HomePage() {
         <LuckyCardReveal />
       </section>
 
-      {/* 3.5 Lucky Meter Section (anchor target) */}
-      <section id="lucky-meter" className={`${CARD_BG} space-y-4 scroll-mt-20`}>
-        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
-          Lucky Meter
-        </h2>
-        <p className="text-slate-300 text-sm">
-          Your personalized Lucky Meter is coming soon. Check back to measure today's luck!
-        </p>
-      </section>
-
-      {/* 4. Lucky Journey Section */}
+      {/* 4. Lucky Journey & Personalized Picks Section */}
       <section className={`${CARD_BG} space-y-6`}>
         <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
           Start your lucky journey
         </h2>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Items content here... */}
+          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
+            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
+              Personalized Lucky Pick
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Get custom numbers generated specifically for your daily routine.
+            </p>
+            <a
+              href="#personalized"
+              className={`inline-block mt-2 text-sm font-semibold ${PRIMARY_GOLD} hover:underline`}
+            >
+              Get Your Personalized Lucky Pick - $1 CAD &rarr;
+            </a>
+          </div>
+
+          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
+            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
+              Gift a lucky pick
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Share positive vibes with friends and family across the country.
+            </p>
+          </div>
+
+          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
+            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
+              Tip jar
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Support the LuckyPick Canada project and keep the luck spreading.
+            </p>
+          </div>
+
+          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
+            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
+              6 Pick &amp; 7 Pick
+            </h2>
+            <p className="text-slate-300 text-sm">
+              Select your favorite combinations and explore regional stats.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Lucky Stories & Canada Map Section */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={`${CARD_BG} space-y-4`}>
+          <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
+            Share your stories of luck and happiness
+          </h2>
+          <h3 className="text-lg font-semibold text-slate-200">
+            Recent lucky stories
+          </h3>
+          <p className="text-slate-400 text-sm">
+            Read inspiring moments from participants from coast to coast.
+          </p>
+          <Link
+            href="/lucky-map-of-canada"
+            className={`inline-block text-sm font-semibold ${PRIMARY_GOLD} hover:underline`}
+          >
+            View All Lucky Stories on the Lucky Story Map &rarr;
+          </Link>
+        </div>
+
+        <div className={`${CARD_BG} space-y-4`}>
+          <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
+            Lucky Picks by Province
+          </h2>
+          <h3 className="text-lg font-semibold text-slate-200">
+            Recent purchase provinces: 2
+          </h3>
+          <p className="text-slate-400 text-sm">
+            Explore interactive regional insights on our Canada Story Map.
+          </p>
+          <Link
+            href="/lucky-map-of-canada"
+            className="inline-block px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-all"
+          >
+            Lucky Map of Canada
+          </Link>
         </div>
       </section>
 
@@ -94,20 +163,21 @@ export default function HomePage() {
         <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
           Help make Lucky Pick Canada better
         </h2>
+
         <div className="space-y-4 pt-2">
           <h2 className="text-xl font-semibold text-slate-100">
             Join the LuckyPick Canada Community
           </h2>
-          <a 
-            href="https://www.facebook.com/share" 
-            target="_blank" 
+          <a
+            href="https://www.facebook.com/share"
+            target="_blank"
             rel="noopener noreferrer"
             className="inline-block transition-transform hover:scale-[1.02]"
           >
-            <img 
-              src="/facebook-community-cover.png" 
-              alt="Lucky Pick Canada Community" 
-              className="rounded-xl border border-slate-700 w-full max-w-sm h-auto mx-auto shadow-md"
+            <img
+              src="/facebook-community-cover.png"
+              alt="Lucky Pick Canada Community Facebook group cover"
+              className="rounded-xl border border-slate-700 max-w-full h-auto mx-auto shadow-md"
             />
           </a>
         </div>
