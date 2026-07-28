@@ -61,8 +61,13 @@ function SlowWords({ children, startDelay = 0 }) {
   ));
 }
 
-export default function LuckyRevealPopup({ reveal }) {
+export default function LuckyRevealPopup({ reveal, onClose }) {
   const [isOpen, setIsOpen] = useState(Boolean(reveal));
+
+  function closeReveal() {
+    setIsOpen(false);
+    onClose?.();
+  }
 
   if (!isOpen || !reveal) {
     return null;
@@ -71,7 +76,7 @@ export default function LuckyRevealPopup({ reveal }) {
   return (
     <div role="presentation" style={overlayStyle}>
       <section role="dialog" aria-modal="true" aria-labelledby="lucky-reveal-title" style={dialogStyle}>
-        <button type="button" aria-label="Close lucky reveal" onClick={() => setIsOpen(false)} style={closeButtonStyle}>
+        <button type="button" aria-label="Close lucky reveal" onClick={closeReveal} style={closeButtonStyle}>
           ×
         </button>
 
@@ -138,7 +143,7 @@ export default function LuckyRevealPopup({ reveal }) {
 
           <ShareLuckyPickButton reveal={reveal} />
 
-          <button type="button" onClick={() => setIsOpen(false)} style={{ marginTop: '1.4rem', padding: '0.9rem 1.4rem', border: '1px solid rgba(255, 235, 160, 0.72)', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)', color: '#071225', boxShadow: '0 0 24px rgba(250, 204, 21, 0.42)', fontSize: '1rem', fontWeight: 900, cursor: 'pointer' }}>
+          <button type="button" onClick={closeReveal} style={{ marginTop: '1.4rem', padding: '0.9rem 1.4rem', border: '1px solid rgba(255, 235, 160, 0.72)', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)', color: '#071225', boxShadow: '0 0 24px rgba(250, 204, 21, 0.42)', fontSize: '1rem', fontWeight: 900, cursor: 'pointer' }}>
             Add me to the Little Luck Map
           </button>
         </div>
