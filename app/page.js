@@ -1,188 +1,139 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import LuckyCardReveal from './lucky-card-reveal';
+import LuckyMeter from './luck-meter';
 
-// --- Style Constants ---
-const PRIMARY_GOLD = "text-amber-400";
-const SECONDARY_GOLD = "text-amber-300";
-const CARD_BG = "bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-lg";
-const BUTTON_STYLE = "inline-block px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all shadow-md";
-
-// --- Quote Data ---
-const luckyQuotes = [
-  "Your positive energy creates your own luck every day.",
-  "Small acts of kindness bring immense fortune.",
-  "Luck is what happens when preparation meets opportunity.",
-  "Happiness is not by chance, but by choice.",
-  "Every daily step forward brings you closer to your goals.",
-  "Positivity is a magnet for good fortune."
+const cards = [
+  '/lucky-card-ace-spades.svg',
+  '/lucky-card-clover.svg',
+  '/lucky-card-fortune.svg',
+  '/lucky-card-horseshoe.svg',
+  '/lucky-card-rabbit-foot.svg',
+  '/lucky-card-joker.svg',
 ];
 
-export default function HomePage() {
-  const dailyQuote = luckyQuotes[0];
-
+function SectionHeading({ eyebrow, title, children }) {
   return (
-    <main className="lucky-site-shell">
+    <div className="homepage-section-heading">
+      <p>{eyebrow}</p>
+      <h2>{title}</h2>
+      {children && <span>{children}</span>}
+    </div>
+  );
+}
 
-      {/* 1. Header Section */}
-      <header className="text-center space-y-3 py-6 border-b border-slate-800/60">
-        <img
-          src="/BackgroundEraser_20260724_163638777.png"
-          alt="Official Lucky Pick Canada Logo"
-          className="mx-auto mb-2"
-          style={{ maxWidth: '180px', height: 'auto', width: '100%' }}
-        />
-        <h1 className={`text-3xl sm:text-5xl font-extrabold tracking-tight ${PRIMARY_GOLD}`}>
-          Your Luck, Personalized!
-        </h1>
-        <p className="text-slate-400 text-sm sm:text-base max-w-lg mx-auto">
-          Discover your luck with LuckyPickCanada's Lucky Meter, personalized picks, and share your stories across Canada.
-        </p>
-        <p className="text-xs text-amber-300/80 italic mt-2">
-          Today's Thought: "{dailyQuote}"
-        </p>
+export default function HomePage() {
+  return (
+    <main className="lucky-site-shell homepage-experience">
+      <header className="reference-site-header">
+        <nav className="reference-site-nav reference-nav-row" aria-label="Primary navigation">
+          <a className="reference-brand" href="#top" aria-label="Lucky Pick Canada home">
+            <img src="/logo-maple-clover-20260719.svg" alt="" width="48" height="48" />
+            <span>Lucky Pick Canada</span>
+          </a>
+          <div className="reference-nav-links">
+            <a className="premium-nav-link" href="#meter">Lucky Meter</a>
+            <a className="premium-nav-link" href="#cards">Lucky Cards</a>
+            <a className="premium-nav-link" href="#personalized">Lucky Picks</a>
+            <a className="premium-nav-link" href="#community">Community</a>
+          </div>
+        </nav>
       </header>
 
-      {/* 2. Lucky Meter Section */}
-      <section className={`${CARD_BG} space-y-4`}>
-        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
-          Start your luck meter
-        </h2>
-        <p className="text-slate-300 text-sm">
-          Test your daily energy and see where your luck stands today!
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <a href="#lucky-meter" className={BUTTON_STYLE}>
-            Try the FREE Lucky Meter
-          </a>
+      <section id="top" className="homepage-hero" aria-labelledby="homepage-title">
+        <div className="reference-hero-copy">
+          <div className="reference-hero-crest">
+            <img src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada maple and clover emblem" />
+          </div>
+          <p className="reference-hero-kicker">A little Canadian magic <span>✦</span> made for today</p>
+          <h1 id="homepage-title" className="reference-hero-title">Your luck,<br /><span>personalized.</span></h1>
+          <p className="reference-hero-description">Follow the aurora into a playful daily ritual of lucky numbers, cards, stories, and good energy from coast to coast.</p>
+          <div className="homepage-hero-actions">
+            <a className="reference-hero-button" href="#meter">Find your lucky energy <span>✦</span></a>
+            <a className="homepage-text-link" href="#personalized">Explore Lucky Picks</a>
+          </div>
+        </div>
+
+        <div className="reference-card-section" aria-hidden="true">
+          <div className="reference-card-stage">
+            <div className="reference-card-arc" />
+            {cards.map((src, index) => (
+              <img key={src} className={`reference-card reference-card-${['one', 'two', 'three', 'four', 'five', 'six'][index]}`} src={src} alt="" />
+            ))}
+          </div>
+          <p className="reference-tableau-caption">A daily ritual of <span>possibility</span> and positive energy</p>
         </div>
       </section>
 
-      {/* 3. Card Reveal Section */}
-      <section className="space-y-4">
-        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
-          Card Reveal
-        </h2>
+      <section id="meter" className="homepage-section" aria-labelledby="meter-heading">
+        <SectionHeading eyebrow="Your free daily ritual" title="Tune into your lucky frequency">
+          The Lucky Meter keeps its original random daily-energy experience, now framed as a premium aurora instrument.
+        </SectionHeading>
+        <LuckyMeter />
+      </section>
+
+      <section id="cards" className="homepage-section homepage-cards-section" aria-labelledby="cards-heading">
+        <SectionHeading eyebrow="A moment of surprise" title="Reveal your lucky card">
+          Choose one card for a small spark of encouragement. Your daily reveal remains just for fun.
+        </SectionHeading>
         <LuckyCardReveal />
       </section>
 
-      {/* 4. Lucky Journey & Personalized Picks Section */}
-      <section className={`${CARD_BG} space-y-6`}>
-        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
-          Start your lucky journey
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
-            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
-              Personalized Lucky Pick
-            </h2>
-            <p className="text-slate-300 text-sm">
-              Get custom numbers generated specifically for your daily routine.
-            </p>
-            <a
-              href="#personalized"
-              className={`inline-block mt-2 text-sm font-semibold ${PRIMARY_GOLD} hover:underline`}
-            >
-              Get Your Personalized Lucky Pick - $1 CAD &rarr;
-            </a>
-          </div>
-
-          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
-            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
-              Gift a lucky pick
-            </h2>
-            <p className="text-slate-300 text-sm">
-              Share positive vibes with friends and family across the country.
-            </p>
-          </div>
-
-          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
-            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
-              Tip jar
-            </h2>
-            <p className="text-slate-300 text-sm">
-              Support the LuckyPick Canada project and keep the luck spreading.
-            </p>
-          </div>
-
-          <div className="space-y-2 border border-slate-800 bg-slate-950/60 p-4 rounded-xl">
-            <h2 className={`text-xl font-semibold ${PRIMARY_GOLD}`}>
-              6 Pick &amp; 7 Pick
-            </h2>
-            <p className="text-slate-300 text-sm">
-              Select your favorite combinations and explore regional stats.
-            </p>
-          </div>
+      <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
+        <SectionHeading eyebrow="Made for your next moment" title="Choose your Lucky Pick experience">
+          Pick your game, share a gift, or support the experience. Lucky Picks are for entertainment only.
+        </SectionHeading>
+        <div className="homepage-offer-grid">
+          <article className="homepage-offer homepage-offer-featured">
+            <p className="homepage-offer-kicker">Personalized Lucky Pick</p>
+            <h3>Six or seven numbers. One luminous reveal.</h3>
+            <p>Select a 6 Pick or 7 Pick and enjoy your lucky colour and lucky day in the existing reveal experience.</p>
+            <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
+            <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
+          </article>
+          <article className="homepage-offer">
+            <p className="homepage-offer-kicker">Gift a little luck</p>
+            <h3>Send a bright surprise across Canada.</h3>
+            <p>The existing gift package delivers a Lucky Pick reveal and personal greeting for someone you care about.</p>
+            <p className="homepage-offer-note">Gift package · CAD $4.99</p>
+          </article>
+          <article className="homepage-offer">
+            <p className="homepage-offer-kicker">Keep the lights glowing</p>
+            <h3>Leave a tip for the journey.</h3>
+            <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
+            <p className="homepage-offer-note">Tip jar · Choose your amount</p>
+          </article>
         </div>
       </section>
 
-      {/* 5. Lucky Stories & Canada Map Section */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className={`${CARD_BG} space-y-4`}>
-          <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
-            Share your stories of luck and happiness
-          </h2>
-          <h3 className="text-lg font-semibold text-slate-200">
-            Recent lucky stories
-          </h3>
-          <p className="text-slate-400 text-sm">
-            Read inspiring moments from participants from coast to coast.
-          </p>
-          <Link
-            href="/lucky-map-of-canada"
-            className={`inline-block text-sm font-semibold ${PRIMARY_GOLD} hover:underline`}
-          >
-            View All Lucky Stories on the Lucky Story Map &rarr;
-          </Link>
-        </div>
-
-        <div className={`${CARD_BG} space-y-4`}>
-          <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
-            Lucky Picks by Province
-          </h2>
-          <h3 className="text-lg font-semibold text-slate-200">
-            Recent purchase provinces: 2
-          </h3>
-          <p className="text-slate-400 text-sm">
-            Explore interactive regional insights on our Canada Story Map.
-          </p>
-          <Link
-            href="/lucky-map-of-canada"
-            className="inline-block px-4 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-all"
-          >
-            Lucky Map of Canada
-          </Link>
-        </div>
+      <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
+        <article className="homepage-community-card">
+          <p className="homepage-offer-kicker">Lucky Stories</p>
+          <h2>Good fortune travels well.</h2>
+          <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
+          <Link href="/lucky-map-of-canada" className="homepage-text-link">Explore Lucky Stories <span>→</span></Link>
+        </article>
+        <article className="homepage-community-card homepage-map-card">
+          <p className="homepage-offer-kicker">Lucky Map</p>
+          <h2>Find where luck has landed.</h2>
+          <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
+          <Link href="/lucky-map-of-canada" className="homepage-text-link">Visit the Lucky Map <span>→</span></Link>
+        </article>
       </section>
 
-      {/* 6. Community Footer */}
-      <section className={`${CARD_BG} text-center space-y-6`}>
-        <h2 className={`text-2xl font-bold ${SECONDARY_GOLD}`}>
-          Help make Lucky Pick Canada better
-        </h2>
-
-        <div className="space-y-4 pt-2">
-          <h2 className="text-xl font-semibold text-slate-100">
-            Join the LuckyPick Canada Community
-          </h2>
-          <a
-            href="https://www.facebook.com/share"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block transition-transform hover:scale-[1.02]"
-          >
-            <img
-              src="/facebook-community-cover.png"
-              alt="Lucky Pick Canada Community Facebook group cover"
-              className="rounded-xl border border-slate-700 max-w-full h-auto mx-auto shadow-md"
-            />
-          </a>
+      <section id="community" className="homepage-community-banner" aria-labelledby="community-heading">
+        <div>
+          <p className="homepage-offer-kicker">The Lucky Pick Canada community</p>
+          <h2 id="community-heading">Keep the good energy moving.</h2>
+          <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
         </div>
+        <a href="https://www.facebook.com/share" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
+          <img src="/facebook-community-cover.png" alt="Lucky Pick Canada Community Facebook group cover" />
+        </a>
       </section>
 
+      <footer className="homepage-footer">Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</footer>
     </main>
   );
 }
