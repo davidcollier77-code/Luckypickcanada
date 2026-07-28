@@ -24,7 +24,8 @@ export default function HomePage() {
   const dailyQuote = luckyQuotes[0];
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-8 space-y-12 max-w-6xl mx-auto">
+    // Updated to use the shell class from globals.css to restore the intended aesthetic
+    <main className="lucky-site-shell">
       
       {/* 1. Header Section */}
       <header className="text-center space-y-3 py-6 border-b border-slate-800/60">
