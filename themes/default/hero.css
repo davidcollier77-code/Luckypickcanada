@@ -1,37 +1,24 @@
-/* Homepage Hero: the supplied artwork is the only visual layer. */
+/* Homepage Hero: the supplied artwork contains the complete branded composition. */
 .homepage-hero {
-  grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr);
-  gap: clamp(1.5rem, 4vw, 4.5rem);
-}
-
-.homepage-hero-visual {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(420px, 54.6vw, 768px);
   padding: 0;
-  overflow: visible;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
+  text-align: center;
+  background-image: url('/1785347037732.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
-.homepage-hero-artwork {
-  display: block;
-  width: min(100%, 760px);
-  height: auto;
-  object-fit: contain;
+.homepage-hero::before {
+  display: none;
 }
 
 @media (max-width: 780px) {
   .homepage-hero {
-    gap: 1.75rem;
-  }
-
-  .homepage-hero-visual {
-    width: min(100%, 680px);
-    margin: 0 auto;
+    min-height: clamp(420px, 125vw, 620px);
   }
 }
