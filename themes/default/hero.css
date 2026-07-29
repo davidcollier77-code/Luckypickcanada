@@ -2,11 +2,14 @@
 .homepage-hero {
   position: relative;
   display: block;
-  min-height: 0;
+  min-height: 50vh;
   aspect-ratio: 1407 / 768;
   padding: 0;
   text-align: initial;
-  background: url('/1785347037732.png') center / cover no-repeat;
+  background-image: url('/1785347037732.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
 
 .homepage-hero::before {
@@ -38,6 +41,10 @@
   left: 37.8%;
   width: 24.4%;
   height: 7.4%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
 .homepage-hero-overlay-link:focus-visible,
@@ -56,11 +63,4 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-@media (max-width: 780px) {
-  .homepage-hero {
-    min-height: 0;
-    aspect-ratio: 1407 / 768;
-  }
 }

@@ -1,3 +1,5 @@
+'use client';
+
 const heroLinks = [
   { href: '#meter', label: 'Lucky Meter', className: 'homepage-hero-overlay-meter' },
   { href: '#cards', label: 'Lucky Cards', className: 'homepage-hero-overlay-cards' },
@@ -6,6 +8,10 @@ const heroLinks = [
 ];
 
 export default function Hero() {
+  function scrollToLuckyMeter() {
+    window.location.hash = 'meter';
+  }
+
   return (
     <section
       id="top"
@@ -19,9 +25,9 @@ export default function Hero() {
           </a>
         ))}
       </nav>
-      <a href="#meter" className="homepage-hero-overlay-action">
+      <button type="button" className="homepage-hero-overlay-action" onClick={scrollToLuckyMeter}>
         <span className="sr-only">Find your lucky energy</span>
-      </a>
+      </button>
     </section>
   );
 }
