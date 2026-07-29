@@ -39,6 +39,10 @@ export default function HomePage() {
     setSuggestionError(searchParams.get('suggestionError') || '');
   }, []);
 
+  function startLuckyReveal(luckyPickGame) {
+    setLuckyReveal(createLuckyReveal(luckyPickGame));
+  }
+
   function openLuckyPickCheckout(event) {
     event.currentTarget.blur();
     setCheckoutType('lucky_pick');
@@ -199,7 +203,12 @@ export default function HomePage() {
       </section>
 
       <footer className="homepage-footer">Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</footer>
-      {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} />}
+      {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onRevealTestStart={(revealType, luckyPickGame) => {
+        if (revealType === 'lucky_pick' || revealType === 'gift_package') {
+          setCheckoutType(null);
+          startLuckyReveal(luckyPickGame);
+        }
+      }} />}
       {luckyReveal && <LuckyRevealPopup reveal={luckyReveal} onClose={closeLuckyReveal} />}
     </main>
   );

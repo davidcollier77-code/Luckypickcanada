@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { canBypassRevealPayment } from './test-tools/reveal-testing/revealTestConfig';
 
 const COPY = {
   lucky_pick: { title: 'Choose your Lucky Pick', description: 'Select a game to continue to the secure checkout.' },
@@ -8,9 +9,17 @@ const COPY = {
   tip: { title: 'Leave a tip', description: 'Choose an amount in Canadian dollars to continue to the secure checkout.' },
 };
 
-export default function CheckoutModal({ type, onClose }) {
+export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
   const [luckyPickGame, setLuckyPickGame] = useState('6');
   const copy = COPY[type];
+  const isRevealTestMode = canBypassRevealPayment(type);
+
+  function requestRevealAccess(event) {
+    if (!isRevealTestMode) return;
+
+    event.preventDefault();
+    onRevealTestStart?.(type, luckyPickGame);
+  }
 
   return (
     <div className="checkout-modal-backdrop" role="presentation" onMouseDown={onClose}>
@@ -19,7 +28,7 @@ export default function CheckoutModal({ type, onClose }) {
         <p className="homepage-offer-kicker">Lucky Pick Canada</p>
         <h2 id="checkout-modal-title">{copy.title}</h2>
         <p>{copy.description}</p>
-        <form action="/api/checkout" method="post" className="checkout-modal-form">
+        <form action="/api/checkout" method="post" className="checkout-modal-form" onSubmit={requestRevealAccess} noValidate={isRevealTestMode}>
           <input type="hidden" name="checkoutType" value={type} />
           {(type === 'lucky_pick' || type === 'gift_package') && (
             <fieldset>
