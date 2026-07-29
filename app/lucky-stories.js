@@ -166,13 +166,20 @@ export async function getLuckyStoryMap() {
 
   try {
     await ensureLuckyStoriesTable(database);
-    const rows = await database`
-      select id, display_name, location, story, created_at
-      from lucky_stories
-      where approved = true
-      order by created_at desc
-      limit 100
-    `;
+    const [rows, locations] = await Promise.all([
+      database`
+        select id, display_name, location, story, created_at
+        from lucky_stories
+        where approved = true
+        order by created_at desc
+        limit 100
+      `,
+      database`
+        select location
+        from lucky_stories
+        where approved = true
+      `,
+    ]);
     const stories = rows
       .map((row) => {
         const province = getStoryProvince(row.location);
@@ -190,15 +197,20 @@ export async function getLuckyStoryMap() {
         };
       })
       .filter(Boolean);
-    const provinceCounts = stories.reduce((counts, story) => {
-      counts[story.province] = (counts[story.province] || 0) + 1;
+    const provinceCounts = locations.reduce((counts, row) => {
+      const province = getStoryProvince(row.location);
+
+      if (province) {
+        counts[province.code] = (counts[province.code] || 0) + 1;
+      }
+
       return counts;
     }, {});
 
     return {
       stories,
       provinceCounts,
-      totalStories: stories.length,
+      totalStories: locations.length,
       provincesWithStories: Object.keys(provinceCounts).length,
       isConfigured: true,
     };

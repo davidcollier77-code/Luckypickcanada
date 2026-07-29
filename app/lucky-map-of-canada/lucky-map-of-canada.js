@@ -30,8 +30,10 @@ function provinceStories(stories, provinceCode) {
 }
 
 export default function LuckyMapOfCanada({ mapData }) {
-  const stories = mapData?.stories || [];
-  const provinceCounts = mapData?.provinceCounts || {};
+  const [liveMapData, setLiveMapData] = useState(mapData);
+  const currentMapData = liveMapData || mapData;
+  const stories = currentMapData?.stories || [];
+  const provinceCounts = currentMapData?.provinceCounts || {};
   const firstStoryProvince = stories[0]?.province || 'ON';
   const [selectedProvince, setSelectedProvince] = useState(firstStoryProvince);
   const [selectedStoryId, setSelectedStoryId] = useState('');
@@ -50,6 +52,36 @@ export default function LuckyMapOfCanada({ mapData }) {
     () => provinces.map((province) => ({ ...province, count: provinceCounts[province.code] ?? 0 })),
     [provinceCounts],
   );
+
+  useEffect(() => {
+    setLiveMapData(mapData);
+  }, [mapData]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function refreshMapData() {
+      try {
+        const response = await fetch('/api/lucky-stories', { cache: 'no-store' });
+
+        if (!response.ok) return;
+
+        const nextMapData = await response.json();
+
+        if (isActive && nextMapData.isConfigured) {
+          setLiveMapData(nextMapData);
+        }
+      } catch {
+        // Keep the server-rendered map values visible until the next refresh succeeds.
+      }
+    }
+
+    const interval = window.setInterval(refreshMapData, 60_000);
+    return () => {
+      isActive = false;
+      window.clearInterval(interval);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -167,7 +199,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             </a>
             <button type="button" onClick={() => setIsStoryFormOpen(true)} className="story-link" style={{ color: '#06110d', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer' }}>Share your lucky story</button>
           </div>
-          {!mapData?.isConfigured ? (
+          {!currentMapData?.isConfigured ? (
             <p style={{ margin: '1rem 0 0', padding: '0.85rem 1rem', borderRadius: 16, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 800 }}>
               The Lucky Stories database needs to be available before the map can load community stories.
             </p>
@@ -176,8 +208,8 @@ export default function LuckyMapOfCanada({ mapData }) {
 
         <section aria-label="Lucky Map statistics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.85rem', marginTop: '1rem' }}>
           {[
-            ['Total lucky stories shared', mapData?.totalStories || 0],
-            ['Provinces with lucky moments', mapData?.provincesWithStories || 0],
+            ['Total lucky stories shared', currentMapData?.totalStories || 0],
+            ['Provinces with lucky moments', currentMapData?.provincesWithStories || 0],
             ['Mapped story markers', stories.length],
           ].map(([label, value]) => (
             <div key={label} className="premium-surface" style={{ ...cardStyle, padding: '1rem' }}>
