@@ -102,9 +102,10 @@ export default function LuckyCardReveal() {
             aria-hidden={!isRevealed}
           >
             {selectedCard && (
-              <div className="lucky-moment-card-content">
+              <>
                 {selectedCard.image ? (
                   <img
+                    className="lucky-moment-card-image"
                     src={selectedCard.image}
                     alt={selectedCard.title}
                   />
@@ -117,28 +118,30 @@ export default function LuckyCardReveal() {
                   </div>
                 )}
 
-                <p className="lucky-moment-eyebrow">
-                  Today’s collectible card
-                </p>
-
-                <h3>{selectedCard.title}</h3>
-
-                {selectedCard.quote ? (
-                  <p className="lucky-moment-quote">
-                    “{selectedCard.quote}”
+                <div className="lucky-moment-card-content">
+                  <p className="lucky-moment-eyebrow">
+                    Today’s collectible card
                   </p>
-                ) : (
-                  <p className="lucky-moment-quote">
-                    Your approved daily message will appear with this card.
-                  </p>
-                )}
 
-                {selectedCard.isPremium && (
-                  <span className="lucky-moment-rarity">
-                    Premium card
-                  </span>
-                )}
-              </div>
+                  <h3>{selectedCard.title}</h3>
+
+                  {selectedCard.quote ? (
+                    <p className="lucky-moment-quote">
+                      “{selectedCard.quote}”
+                    </p>
+                  ) : (
+                    <p className="lucky-moment-quote">
+                      Your approved daily message will appear with this card.
+                    </p>
+                  )}
+
+                  {selectedCard.isPremium && (
+                    <span className="lucky-moment-rarity">
+                      Premium card
+                    </span>
+                  )}
+                </div>
+              </>
             )}
           </div>
 
