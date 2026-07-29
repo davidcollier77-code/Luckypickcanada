@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
+import { isLuckyCardTestModeEnabled } from './developer-tools/lucky-card-test-mode/toggle-card-test-mode';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
 
@@ -17,6 +18,7 @@ function findCard(cardId) {
 }
 
 export default function LuckyCardReveal() {
+  const isTestMode = isLuckyCardTestModeEnabled;
   const [selectedCard, setSelectedCard] = useState(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -30,7 +32,7 @@ export default function LuckyCardReveal() {
       );
 
       const storedCard =
-        storedReveal?.revealDate === today
+        !isTestMode && storedReveal?.revealDate === today
           ? findCard(storedReveal.cardId)
           : null;
 
@@ -45,14 +47,14 @@ export default function LuckyCardReveal() {
     }
 
     setIsReady(true);
-  }, []);
+  }, [isTestMode]);
 
-  function revealLuckyMoment() {
-    if (isRevealed) return;
-
+  function showLuckyCard() {
     const card = selectWeightedLuckyCard();
     setSelectedCard(card);
     setIsRevealed(true);
+
+    if (isTestMode) return;
 
     try {
       window.localStorage.setItem(
@@ -65,6 +67,18 @@ export default function LuckyCardReveal() {
     } catch {
       // The card remains visible for this visit when browser storage is unavailable.
     }
+  }
+
+  function revealLuckyMoment() {
+    if (!isTestMode && isRevealed) return;
+
+    if (!isRevealed) {
+      showLuckyCard();
+      return;
+    }
+
+    setIsRevealed(false);
+    window.setTimeout(showLuckyCard, 0);
   }
 
   return (
@@ -130,19 +144,21 @@ export default function LuckyCardReveal() {
         </div>
       </div>
 
-      {isReady && !isRevealed && (
+      {isReady && (!isRevealed || isTestMode) && (
         <button
           type="button"
           className="lucky-moment-reveal-button"
           onClick={revealLuckyMoment}
         >
-          Reveal Your Lucky Moment
+          {isRevealed ? 'Reveal Another Test Card' : 'Reveal Your Lucky Moment'}
         </button>
       )}
 
       <p className="lucky-moment-instruction">
         {isRevealed
-          ? 'Your lucky moment is saved for today.'
+          ? (isTestMode
+            ? 'Test mode is on. Reveal another card any time.'
+            : 'Your lucky moment is saved for today.')
           : 'One calm, positive moment awaits each day.'}
       </p>
     </div>
