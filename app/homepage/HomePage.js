@@ -9,7 +9,6 @@ import LuckyRevealPopup from '../lucky-reveal-popup';
 import LuckyMeter from '../luck-meter';
 import TurnstileField from '../turnstile-field';
 import { DEFAULT_THEME } from '../../themes/default/theme';
-import Header from './Header';
 import Hero from './Hero';
 
 function SectionHeading({ eyebrow, title, children }) {
@@ -69,7 +68,6 @@ export default function HomePage() {
 
   return (
     <main className="lucky-site-shell homepage-experience">
-      <Header />
       <Hero />
 
       <section id="meter" className="homepage-section" aria-labelledby="meter-heading">
