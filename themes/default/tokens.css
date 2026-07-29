@@ -1,0 +1,9 @@
+/* Default Theme identity tokens. Future themes should provide this same contract. */
+:root {
+  --lpc-theme-name: 'default';
+  --lpc-theme-logo: url('/BackgroundEraser_20260724_163638777.png');
+  --lpc-theme-card-one: url('/1784862459046.png');
+  --lpc-theme-card-two: url('/1784889264858.png');
+  --lpc-theme-card-three: url('/1784931654864.png');
+  --lpc-theme-community-cover: url('/FB_IMG_1785107325979.jpg');
+}

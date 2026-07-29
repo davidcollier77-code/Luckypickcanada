@@ -8,12 +8,9 @@ import { createLuckyReveal } from './lucky-reveal';
 import LuckyRevealPopup from './lucky-reveal-popup';
 import LuckyMeter from './luck-meter';
 import TurnstileField from './turnstile-field';
+import { DEFAULT_THEME } from '../themes/default/theme';
 
-const cards = [
-  '/1784862459046.png',
-  '/1784889264858.png',
-  '/1784931654864.png',
-];
+const cards = DEFAULT_THEME.assets.heroCards;
 
 function SectionHeading({ eyebrow, title, children }) {
   return (
@@ -71,7 +68,7 @@ export default function HomePage() {
       <header className="reference-site-header">
         <nav className="reference-site-nav reference-nav-row" aria-label="Primary navigation">
           <a className="reference-brand" href="#top" aria-label="Lucky Pick Canada home">
-            <img className="navigation-logo" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada" />
+            <img className="navigation-logo" src={DEFAULT_THEME.assets.logo} alt="Lucky Pick Canada" />
             <span>Lucky Pick Canada</span>
           </a>
           <div className="reference-nav-links">
@@ -86,7 +83,7 @@ export default function HomePage() {
       <section id="top" className="homepage-hero" aria-labelledby="homepage-title">
         <div className="reference-hero-copy">
           <div className="reference-hero-crest">
-            <img src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada maple and clover emblem" />
+            <img src={DEFAULT_THEME.assets.logo} alt="Lucky Pick Canada maple and clover emblem" />
           </div>
           <p className="reference-hero-kicker">A little Canadian magic <span>✦</span> made for today</p>
           <h1 id="homepage-title" className="reference-hero-title">Your luck,<br /><span>personalized.</span></h1>
@@ -177,7 +174,7 @@ export default function HomePage() {
           <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
         </div>
         <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
-          <img src="/FB_IMG_1785107325979.jpg" alt="Lucky Pick Canada Community Facebook group cover" />
+          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" />
         </a>
       </section>
 
