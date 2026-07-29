@@ -11,7 +11,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="reference-card-section" aria-hidden="true">
+      <div className="homepage-hero-visual" aria-hidden="true">
         <img className="homepage-hero-artwork" src="/1785347037732.png" alt="" />
       </div>
     </section>
