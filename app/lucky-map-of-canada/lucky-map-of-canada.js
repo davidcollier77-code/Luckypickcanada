@@ -224,36 +224,42 @@ export default function LuckyMapOfCanada({ mapData }) {
         </p>
 
         <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
-          <div className="map-panel" style={{ ...cardStyle, minHeight: 560, padding: '1rem', position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: 460, padding: '0.9rem 1rem', borderRadius: 22, background: 'rgba(4, 29, 27, 0.68)', border: '1px solid rgba(255,235,160,0.22)', lineHeight: 1.55 }}>
-              <strong style={{ color: '#fde68a' }}>Click a province or territory</strong><br />
-              Select an area on the Canada story map to see Lucky Stories shared from that part of Canada.
-            </div>
-            {provinceSelections.map((province) => {
-              const provinceCount = province.count;
-              const active = selectedProvince === province.code;
+          <div className="map-panel" style={{ ...cardStyle }}>
+            <div className="official-map-artwork">
+              <Image
+                src="/1784971978021.png"
+                alt="Official LuckyPickCanada community map of Canada"
+                width={1024}
+                height={1024}
+                sizes="(max-width: 860px) 100vw, 65vw"
+                priority
+                className="official-map-image"
+              />
+              <p className="map-overlay-instruction">Select a province or territory to explore its live community stories.</p>
+              {provinceSelections.map((province) => {
+                const provinceCount = province.count;
+                const active = selectedProvince === province.code;
 
-              return (
-                <button
-                  key={province.code}
-                  type="button"
-                  className={`province-marker ${provinceCount ? 'has-stories' : ''} ${active ? 'is-active' : ''}`}
-                  onClick={() => selectProvince(province.code)}
-                  aria-label={`${province.name}: ${provinceCount} ${provinceCount === 1 ? 'lucky story' : 'lucky stories'}`}
-                  aria-pressed={active}
-                  style={{ left: `${province.x}%`, top: `${province.y}%` }}
-                >
-                  {provinceCount ? <span className="marker-sparkle" aria-hidden="true" /> : null}
-                  <span>{province.code}</span>
-                  <span className="marker-count">{provinceCount}</span>
-                </button>
-              );
-            })}
-            {!stories.length ? (
-              <div style={{ position: 'relative', zIndex: 1, maxWidth: 520, margin: '16rem auto 0', padding: '1rem', borderRadius: 24, border: '1px dashed rgba(255,235,160,0.34)', background: 'rgba(4, 29, 27, 0.68)', textAlign: 'center', lineHeight: 1.65 }}>
-                No community stories with a province are ready for the map yet. Stories submitted in the existing Lucky Stories section will appear here automatically when their location includes a Canadian province or territory.
-              </div>
-            ) : null}
+                return (
+                  <button
+                    key={province.code}
+                    type="button"
+                    className={`province-marker ${provinceCount ? 'has-stories' : ''} ${active ? 'is-active' : ''}`}
+                    onClick={() => selectProvince(province.code)}
+                    aria-label={`${province.name}: ${provinceCount} ${provinceCount === 1 ? 'lucky story' : 'lucky stories'}`}
+                    aria-pressed={active}
+                    style={{ left: `${province.x}%`, top: `${province.y}%` }}
+                  >
+                    {provinceCount ? <span className="marker-sparkle" aria-hidden="true" /> : null}
+                    <span>{province.code}</span>
+                    <span className="marker-count">{provinceCount}</span>
+                  </button>
+                );
+              })}
+              {!stories.length ? (
+                <p className="map-empty-state">No community stories with a province are ready for the map yet.</p>
+              ) : null}
+            </div>
           </div>
 
           <aside className="premium-surface" style={{ ...cardStyle, padding: '1.2rem', position: 'relative', overflow: 'hidden' }}>
