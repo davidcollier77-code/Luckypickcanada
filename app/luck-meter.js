@@ -63,6 +63,7 @@ export default function LuckyMeter() {
               height={600}
               priority
             />
+            <div className="lucky-meter-glass-vortex" aria-hidden="true" />
             <output className="lucky-meter-result-number" aria-live="polite" aria-label="Lucky score">{displayNumber}</output>
           </div>
           <button type="button" className="lucky-meter-button" onClick={handleTestLuck} disabled={isAnimating || hasGenerated}>
