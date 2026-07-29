@@ -11,12 +11,13 @@ export const LUCKY_CARD_QUOTES = {
   'iron-horseshoe': 'Strong steps lead to lucky paths.',
   'emerald-clover': 'Good fortune grows where hope is planted.',
   'guiding-star': 'When the path ahead feels uncertain, let your inner light guide you toward new opportunities and unexpected luck.',
-  'flagship-card': 'Not every moment of luck is found. Some are discovered. This rare card carries a spark of fortune meant for an unforgettable journey.',
+  'flagship-card': 'Some find luck by searching for it. Others create the moment where luck finds them. This rare card marks a journey where possibility, timing, and fortune align.',
 };
 
 export const LUCKY_CARD_RARITY_WEIGHTS = {
-  'number-seeker': 70 / 6,
-  'iron-horseshoe': 70 / 6,
-  'emerald-clover': 70 / 6,
-  'guiding-star': 15,
+  'number-seeker': 28.33,
+  'iron-horseshoe': 28.33,
+  'emerald-clover': 28.34,
+  'guiding-star': 10,
+  'flagship-card': 5,
 };
