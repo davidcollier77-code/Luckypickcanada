@@ -21,10 +21,13 @@
   --lpc-body: 'Manrope', Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
-* { box-sizing: border-box; }
-html { min-width: 320px; background: var(--night); }
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+html { background: var(--night); }
 body {
-  min-width: 320px;
   margin: 0;
   color: #fff8de;
   font-family: var(--lpc-body);

@@ -77,7 +77,7 @@ export default function LuckyCardReveal() {
             aria-hidden={isRevealed}
           >
             <img
-              src="/IMG_20260728_220305_112042.png"
+              src="/lucky-card-back.svg"
               alt="Lucky Pick Canada card back"
             />
           </div>

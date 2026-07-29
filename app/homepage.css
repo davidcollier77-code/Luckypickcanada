@@ -1,5 +1,6 @@
-.homepage-experience { position: relative; max-width: 1440px; margin: 0 auto; overflow: hidden; }
-.homepage-experience > :not(.reference-site-header, .checkout-modal-backdrop) { position: relative; z-index: 1; }
+.homepage-experience { position: relative; width: 100%; max-width: 1440px; min-width: 0; margin: 0 auto; overflow: hidden; }
+.homepage-experience > :not(.reference-site-header, .checkout-modal-backdrop) { position: relative; z-index: 1; max-width: 100%; min-width: 0; }
+.homepage-hero > *, .homepage-community-banner > *, .lucky-meter-grid > *, .homepage-offer-grid > *, .homepage-community-grid > * { min-width: 0; max-width: 100%; }
 .navigation-logo { height: 40px; width: auto; object-fit: contain; }
 .homepage-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(380px, 1.1fr); align-items: center; min-height: 680px; padding: clamp(2rem, 7vw, 6rem) clamp(1rem, 5vw, 5.5rem); }
 .homepage-hero::before { content: ''; position: absolute; inset: 3% 8% 8%; z-index: -1; border: 1px solid rgba(247, 210, 107, .2); border-radius: 46% 54% 50% 45%; background: radial-gradient(ellipse at 65% 42%, rgba(95, 210, 165, .18), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(141, 102, 224, .14), transparent 30%); }
@@ -46,3 +47,20 @@
 .suggestion-box-form { position: relative; z-index: 1; display: grid; gap: 1rem; max-width: 48rem; margin-top: 1.65rem; }.suggestion-box-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }.suggestion-box-form label { display: grid; gap: .45rem; color: #fff0ba; font-weight: 800; }.suggestion-box-form label span { color: rgba(255, 239, 186, .72); font-size: .82em; font-weight: 600; }.suggestion-box-form input, .suggestion-box-form textarea { width: 100%; border: 1px solid rgba(255, 224, 139, .48); border-radius: 12px; padding: .84rem 1rem; color: #fffdf2; background: rgba(1, 8, 11, .62); box-shadow: inset 0 1px rgba(255,255,255,.06); }.suggestion-box-form input::placeholder, .suggestion-box-form textarea::placeholder { color: rgba(255, 242, 207, .62); }.suggestion-box-form textarea { min-height: 9rem; resize: vertical; }.suggestion-box-form input:hover, .suggestion-box-form textarea:hover { border-color: rgba(255, 228, 145, .8); background: rgba(2, 13, 16, .78); }.suggestion-box-form input:focus, .suggestion-box-form textarea:focus { outline: 3px solid rgba(94, 232, 190, .28); outline-offset: 2px; border-color: #ffe08e; box-shadow: 0 0 0 4px rgba(232, 186, 82, .14), 0 12px 28px rgba(0, 0, 0, .26); }.suggestion-box-honeypot { display: none !important; }
 .suggestion-box-submit { justify-self: start; min-width: min(100%, 18rem); padding: .88rem 1.2rem; border: 1px solid #ffe49a; border-radius: 999px; color: #180e00; background: linear-gradient(135deg, #fff7cc, #efbe47 55%, #c37a16); box-shadow: inset 0 1px rgba(255,255,255,.72), 0 12px 28px rgba(0,0,0,.35), 0 0 26px rgba(239,190,71,.2); font-weight: 900; letter-spacing: .04em; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }.suggestion-box-submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); box-shadow: inset 0 1px rgba(255,255,255,.8), 0 16px 32px rgba(0,0,0,.42), 0 0 30px rgba(255,211,102,.38); }.suggestion-box-submit:focus-visible { outline: 3px solid #fff1ac; outline-offset: 4px; }.suggestion-box-submit:disabled { cursor: not-allowed; opacity: .64; }
 @media (max-width: 620px) { .suggestion-box { border-radius: 21px; }.suggestion-box-fields { grid-template-columns: 1fr; }.suggestion-box-submit { width: 100%; } }
+
+/* One card frame keeps the shared back and revealed front on the same dimensions. */
+.lucky-moment-shell { display: grid; justify-items: center; gap: .85rem; width: 100%; max-width: 100%; min-width: 0; }
+.lucky-moment-stage { width: min(100%, 16rem); max-width: 100%; perspective: 900px; }
+.lucky-moment-card { position: relative; width: 100%; aspect-ratio: 840 / 1184; min-width: 0; transform-style: preserve-3d; transition: transform .6s ease; }
+.lucky-moment-stage.is-revealed .lucky-moment-card { transform: rotateY(180deg); }
+.lucky-moment-card-face { position: absolute; inset: 0; overflow: hidden; border-radius: 12px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.lucky-moment-card-back img, .lucky-moment-card-content > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lucky-moment-card-front { display: grid; padding: 1rem; color: #fff5d1; background: linear-gradient(145deg, #12382f, #080e1b); transform: rotateY(180deg); }
+.lucky-moment-card-content { display: grid; align-content: center; gap: .65rem; min-width: 0; text-align: center; }
+.lucky-moment-card-content > img { position: absolute; inset: 0; z-index: -1; opacity: .28; }
+.lucky-moment-artwork-placeholder { display: grid; min-height: 5rem; place-items: center; border: 1px solid rgba(255, 225, 145, .45); border-radius: 8px; color: #f9d575; font-family: var(--lpc-display); }
+.lucky-moment-eyebrow, .lucky-moment-quote { margin: 0; font-size: .72rem; line-height: 1.45; }
+.lucky-moment-card-content h3 { margin: 0; color: #fff0b2; font-size: clamp(1.1rem, 5vw, 1.5rem); }
+.lucky-moment-rarity { justify-self: center; padding: .25rem .55rem; border: 1px solid rgba(255, 224, 135, .45); border-radius: 999px; color: #ffe8a0; font-size: .65rem; font-weight: 800; text-transform: uppercase; }
+.lucky-moment-reveal-button { width: min(100%, 16rem); max-width: 100%; padding: .7rem 1rem; border: 1px solid #ffe2a0; border-radius: 999px; color: #0a1918; background: linear-gradient(135deg, #fff6c7, #f4c958); font-weight: 900; cursor: pointer; }
+.lucky-moment-instruction { margin: 0; color: rgba(255, 245, 218, .76); font-size: .82rem; text-align: center; }
