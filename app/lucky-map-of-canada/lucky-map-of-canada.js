@@ -47,7 +47,7 @@ export default function LuckyMapOfCanada({ mapData }) {
   }, {}), [stories]);
 
   const provinceSelections = useMemo(
-    () => provinces.map((province) => ({ ...province, count: provinceCounts[province.code] || 0 })),
+    () => provinces.map((province) => ({ ...province, count: provinceCounts[province.code] ?? 0 })),
     [provinceCounts],
   );
 
@@ -198,7 +198,7 @@ export default function LuckyMapOfCanada({ mapData }) {
               Select an area on the Canada story map to see Lucky Stories shared from that part of Canada.
             </div>
             {provinceSelections.map((province) => {
-              const provinceCount = provinceCounts[province.code] || 0;
+              const provinceCount = province.count;
               const active = selectedProvince === province.code;
 
               return (
@@ -213,7 +213,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                 >
                   {provinceCount ? <span className="marker-sparkle" aria-hidden="true" /> : null}
                   <span>{province.code}</span>
-                  {provinceCount ? <span className="marker-count">{provinceCount}</span> : null}
+                  <span className="marker-count">{provinceCount}</span>
                 </button>
               );
             })}
