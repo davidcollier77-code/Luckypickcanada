@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import { isLuckyCardTestModeEnabled } from './developer-tools/lucky-card-test-mode/toggle-card-test-mode';
 import LuckyCardShare from './lucky-card-share';
@@ -23,6 +23,8 @@ export default function LuckyCardReveal() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isReady, setIsReady] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const revealTimer = useRef(null);
 
   useEffect(() => {
     const today = localDateKey();
@@ -53,6 +55,7 @@ export default function LuckyCardReveal() {
   function showLuckyCard() {
     const card = selectWeightedLuckyCard();
     setSelectedCard(card);
+    setIsGenerating(false);
     setIsRevealed(true);
 
     if (isTestMode) return;
@@ -70,23 +73,20 @@ export default function LuckyCardReveal() {
     }
   }
 
-  function revealLuckyMoment() {
-    if (!isTestMode && isRevealed) return;
+  useEffect(() => () => window.clearTimeout(revealTimer.current), []);
 
-    if (!isRevealed) {
-      showLuckyCard();
-      return;
-    }
+  function revealLuckyMoment() {
+    if (isGenerating || (!isTestMode && isRevealed)) return;
 
     setIsRevealed(false);
-    window.setTimeout(showLuckyCard, 0);
+    setIsGenerating(true);
+    revealTimer.current = window.setTimeout(showLuckyCard, 2000);
   }
 
   return (
-    <div className="lucky-moment-shell" aria-busy={!isReady}>
-      <div className={`lucky-moment-stage${isRevealed ? ' is-revealed' : ''}`}>
+    <div className="lucky-moment-shell" aria-busy={!isReady || isGenerating}>
+      <div className={`lucky-moment-stage${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}`}>
         <div className="lucky-moment-card" aria-live="polite">
-
           <div
             className="lucky-moment-card-face lucky-moment-card-back"
             aria-hidden={isRevealed}
@@ -101,71 +101,56 @@ export default function LuckyCardReveal() {
             className="lucky-moment-card-face lucky-moment-card-front"
             aria-hidden={!isRevealed}
           >
-            {selectedCard && (
-              <>
-                {selectedCard.image ? (
-                  <img
-                    className="lucky-moment-card-image"
-                    src={selectedCard.image}
-                    alt={selectedCard.title}
-                  />
-                ) : (
-                  <div
-                    className="lucky-moment-artwork-placeholder"
-                    aria-hidden="true"
-                  >
-                    <span>Lucky Pick Canada</span>
-                  </div>
-                )}
-
-                <div className="lucky-moment-card-content">
-                  <p className="lucky-moment-eyebrow">
-                    Today’s collectible card
-                  </p>
-
-                  <h3>{selectedCard.title}</h3>
-
-                  {selectedCard.quote ? (
-                    <p className="lucky-moment-quote">
-                      “{selectedCard.quote}”
-                    </p>
-                  ) : (
-                    <p className="lucky-moment-quote">
-                      Your approved daily message will appear with this card.
-                    </p>
-                  )}
-
-                  {selectedCard.isPremium && (
-                    <span className="lucky-moment-rarity">
-                      Premium card
-                    </span>
-                  )}
-                </div>
-              </>
-            )}
+            {selectedCard && (selectedCard.image ? (
+              <img
+                className="lucky-moment-card-image"
+                src={selectedCard.image}
+                alt={selectedCard.title}
+              />
+            ) : (
+              <div className="lucky-moment-artwork-placeholder" aria-hidden="true">
+                <span>Lucky Pick Canada</span>
+              </div>
+            ))}
           </div>
-
         </div>
       </div>
 
-      {isReady && (!isRevealed || isTestMode) && (
-        <button
-          type="button"
-          className="lucky-moment-reveal-button"
-          onClick={revealLuckyMoment}
-        >
-          {isRevealed ? 'Reveal Another Test Card' : 'Reveal Your Lucky Moment'}
-        </button>
+      {isRevealed && selectedCard && (
+        <div className="lucky-moment-details">
+          <p className="lucky-moment-eyebrow">Today’s collectible card</p>
+          <h3>{selectedCard.title}</h3>
+          <p className="lucky-moment-quote">
+            “{selectedCard.quote || 'Your approved daily message will appear with this card.'}”
+          </p>
+        </div>
       )}
 
-      {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
+      <div className="lucky-moment-actions">
+        {isReady && (!isRevealed || isTestMode) && (
+          <button
+            type="button"
+            className="lucky-moment-reveal-button"
+            onClick={revealLuckyMoment}
+            disabled={isGenerating}
+          >
+            {isGenerating
+              ? 'Generating Luck…'
+              : (isRevealed ? 'Reveal Another Test Card' : 'Reveal Your Lucky Moment')}
+          </button>
+        )}
+
+        {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
+      </div>
 
       <p className="lucky-moment-instruction">
-        {isRevealed
-          ? (isTestMode
-            ? 'Test mode is on. Reveal another card any time.'
-            : 'Your lucky moment is saved for today.')
-          : 'One calm, positive moment awaits each day.'}
+        {isGenerating
+          ? 'Generating a little luck…'
+          : (isRevealed
+            ? (isTestMode
+              ? 'Test mode is on. Reveal another card any time.'
+              : 'Your lucky moment is saved for today.')
+            : 'One calm, positive moment awaits each day.')}
       </p>
     </div>
   );

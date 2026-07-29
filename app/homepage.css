@@ -48,22 +48,31 @@
 .suggestion-box-submit { justify-self: start; min-width: min(100%, 18rem); padding: .88rem 1.2rem; border: 1px solid #ffe49a; border-radius: 999px; color: #180e00; background: linear-gradient(135deg, #fff7cc, #efbe47 55%, #c37a16); box-shadow: inset 0 1px rgba(255,255,255,.72), 0 12px 28px rgba(0,0,0,.35), 0 0 26px rgba(239,190,71,.2); font-weight: 900; letter-spacing: .04em; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }.suggestion-box-submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); box-shadow: inset 0 1px rgba(255,255,255,.8), 0 16px 32px rgba(0,0,0,.42), 0 0 30px rgba(255,211,102,.38); }.suggestion-box-submit:focus-visible { outline: 3px solid #fff1ac; outline-offset: 4px; }.suggestion-box-submit:disabled { cursor: not-allowed; opacity: .64; }
 @media (max-width: 620px) { .suggestion-box { border-radius: 21px; }.suggestion-box-fields { grid-template-columns: 1fr; }.suggestion-box-submit { width: 100%; } }
 
-/* One card frame keeps the shared back and revealed front on the same dimensions. */
-.lucky-moment-shell { display: grid; justify-items: center; gap: .85rem; width: 100%; max-width: 100%; min-width: 0; }
-.lucky-moment-stage { width: min(100%, 16rem); max-width: 100%; perspective: 900px; }
-.lucky-moment-card { position: relative; width: 100%; aspect-ratio: 840 / 1184; min-width: 0; transform-style: preserve-3d; transition: transform .6s ease; }
-.lucky-moment-stage.is-revealed .lucky-moment-card { transform: rotateY(180deg); }
-.lucky-moment-card-face { position: absolute; inset: 0; overflow: hidden; border-radius: 12px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+/* The card is always displayed flat and unobstructed; its details live below the artwork. */
+.lucky-moment-shell { display: grid; justify-items: center; gap: 1rem; width: 100%; max-width: 100%; min-width: 0; }
+.lucky-moment-stage { position: relative; width: min(100%, 18rem); max-width: 100%; }
+.lucky-moment-card { position: relative; width: 100%; aspect-ratio: 840 / 1184; min-width: 0; border-radius: 12px; box-shadow: 0 20px 34px rgba(0, 0, 0, .38); }
+.lucky-moment-card-face { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
 .lucky-moment-card-back img, .lucky-moment-card-image { display: block; width: 100%; height: 100%; object-fit: cover; }
-.lucky-moment-card-front { position: relative; display: grid; padding: 1rem; color: #fff5d1; background: transparent; transform: rotateY(180deg); }
-.lucky-moment-card-image { position: absolute; inset: 0; z-index: 1; }
-.lucky-moment-card-content { position: relative; z-index: 2; display: grid; align-content: center; gap: .65rem; min-width: 0; background: transparent; background-color: transparent; text-align: center; }
-.lucky-moment-artwork-placeholder { position: absolute; inset: 0; z-index: 1; display: grid; min-height: 5rem; place-items: center; border: 1px solid rgba(255, 225, 145, .45); border-radius: 8px; color: #f9d575; font-family: var(--lpc-display); }
-.lucky-moment-eyebrow, .lucky-moment-quote { margin: 0; font-size: .72rem; line-height: 1.45; }
-.lucky-moment-card-content h3 { margin: 0; color: #fff0b2; font-size: clamp(1.1rem, 5vw, 1.5rem); }
-.lucky-moment-rarity { justify-self: center; padding: .25rem .55rem; border: 1px solid rgba(255, 224, 135, .45); border-radius: 999px; color: #ffe8a0; font-size: .65rem; font-weight: 800; text-transform: uppercase; }
-.lucky-moment-reveal-button { width: min(100%, 16rem); max-width: 100%; padding: .7rem 1rem; border: 1px solid #ffe2a0; border-radius: 999px; color: #0a1918; background: linear-gradient(135deg, #fff6c7, #f4c958); font-weight: 900; cursor: pointer; }
+.lucky-moment-card-front { opacity: 0; pointer-events: none; }
+.lucky-moment-stage.is-revealed .lucky-moment-card-back { opacity: 0; }
+.lucky-moment-stage.is-revealed .lucky-moment-card-front { opacity: 1; animation: lucky-moment-flat-reveal .62s cubic-bezier(.2, .75, .28, 1) both; }
+.lucky-moment-card-image, .lucky-moment-artwork-placeholder { position: absolute; inset: 0; }
+.lucky-moment-artwork-placeholder { z-index: 1; display: grid; min-height: 5rem; place-items: center; border: 1px solid rgba(255, 225, 145, .45); border-radius: inherit; color: #f9d575; font-family: var(--lpc-display); }
+.lucky-moment-stage.is-generating::after { content: ''; position: absolute; inset: -.8rem; z-index: -1; border-radius: 18px; background: radial-gradient(ellipse, rgba(255, 218, 112, .35), rgba(86, 227, 183, .2) 42%, transparent 72%); filter: blur(12px); animation: lucky-moment-aura 1s ease-in-out infinite alternate; }
+.lucky-moment-stage.is-generating .lucky-moment-card { animation: lucky-moment-generate 2s cubic-bezier(.36, .02, .18, 1) both; }
+.lucky-moment-details { display: grid; justify-items: center; gap: .55rem; width: min(100%, 32rem); padding: .1rem .75rem 0; text-align: center; }
+.lucky-moment-eyebrow { margin: 0; color: #f8d575; font-size: .72rem; font-weight: 900; letter-spacing: .15em; line-height: 1.45; text-transform: uppercase; }
+.lucky-moment-details h3 { margin: 0; color: #fff0b2; font-family: var(--lpc-display); font-size: clamp(1.45rem, 5vw, 2rem); line-height: 1.08; }
+.lucky-moment-quote { margin: 0; color: #fff8df; font-family: Georgia, serif; font-size: clamp(1.05rem, 3vw, 1.3rem); font-style: italic; font-weight: 700; line-height: 1.5; text-shadow: 0 0 18px rgba(250, 204, 81, .22); }
+.lucky-moment-actions { display: grid; justify-items: center; gap: .65rem; width: min(100%, 20rem); }
+.lucky-moment-reveal-button { width: 100%; max-width: 100%; padding: .78rem 1rem; border: 1px solid #ffe2a0; border-radius: 999px; color: #0a1918; background: linear-gradient(135deg, #fff6c7, #f4c958); font-weight: 900; cursor: pointer; }
+.lucky-moment-reveal-button:disabled { cursor: wait; opacity: .82; }
 .lucky-moment-instruction { margin: 0; color: rgba(255, 245, 218, .76); font-size: .82rem; text-align: center; }
+@keyframes lucky-moment-generate { 0%, 100% { transform: translateX(0) scale(1); } 12% { transform: translateX(-2px) scale(1.012); } 24% { transform: translateX(3px) scale(1.025); } 38% { transform: translateX(-3px) scale(1.018); } 52% { transform: translateX(2px) scale(1.035); } 68% { transform: translateX(-1px) scale(1.022); } 84% { transform: translateX(1px) scale(1.04); } }
+@keyframes lucky-moment-aura { from { opacity: .5; transform: scale(.94); } to { opacity: 1; transform: scale(1.08); } }
+@keyframes lucky-moment-flat-reveal { 0% { opacity: 0; transform: scaleX(0); } 45% { opacity: 1; transform: scaleX(.08); } 100% { opacity: 1; transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .lucky-moment-stage.is-generating::after, .lucky-moment-stage.is-generating .lucky-moment-card, .lucky-moment-stage.is-revealed .lucky-moment-card-front { animation: none; } }
 
 .lucky-card-share { display: grid; justify-items: center; gap: .5rem; width: min(100%, 20rem); }
 .lucky-card-share-button { width: 100%; padding: .72rem 1rem; border: 1px solid rgba(173, 244, 205, .82); border-radius: 999px; color: #effff4; background: linear-gradient(135deg, #21685a, #12332f); box-shadow: inset 0 1px rgba(255,255,255,.2), 0 9px 24px rgba(0,0,0,.28); font-weight: 900; cursor: pointer; }
