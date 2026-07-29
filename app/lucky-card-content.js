@@ -4,8 +4,8 @@ export const LUCKY_CARD_IMAGES = {
   'coast-to-coast-tale': null,
   'cosmic-flow': null,
   'optimists-path': null,
-  'iron-horseshoe': null,
-  'emerald-four-leaf': null,
+  'iron-horseshoe': '/IMG_20260728_232807_958705.png',
+  'emerald-clover': '/IMG_20260728_232716_825894.png',
   'auroras-pot-of-gold': null,
   'guiding-star': null,
 };
@@ -16,8 +16,8 @@ export const LUCKY_CARD_QUOTES = {
   'coast-to-coast-tale': null,
   'cosmic-flow': null,
   'optimists-path': null,
-  'iron-horseshoe': null,
-  'emerald-four-leaf': null,
+  'iron-horseshoe': 'Strong steps lead to lucky paths.',
+  'emerald-clover': 'Good fortune grows where hope is planted.',
   'auroras-pot-of-gold': null,
   'guiding-star': null,
 };
@@ -29,7 +29,7 @@ export const LUCKY_CARD_RARITY_WEIGHTS = {
   'cosmic-flow': 70 / 6,
   'optimists-path': 70 / 6,
   'iron-horseshoe': 70 / 6,
-  'emerald-four-leaf': 70 / 6,
+  'emerald-clover': 70 / 6,
   'auroras-pot-of-gold': 10,
   'guiding-star': 15,
 };
