@@ -1,14 +1,9 @@
 import { LUCKY_CARD_IMAGES, LUCKY_CARD_QUOTES, LUCKY_CARD_RARITY_WEIGHTS } from './lucky-card-content';
 
 const CARD_DEFINITIONS = [
-  ['golden-maple-clover', 'The Golden Maple Clover', true],
   ['number-seeker', 'The Number Seeker', false],
-  ['coast-to-coast-tale', 'Coast-to-Coast Tale', false],
-  ['cosmic-flow', 'Cosmic Flow', false],
-  ['optimists-path', 'The Optimist’s Path', false],
   ['iron-horseshoe', 'The Iron Horseshoe', false],
   ['emerald-clover', 'The Emerald Four-Leaf', false],
-  ['auroras-pot-of-gold', 'The Aurora’s Pot of Gold', true],
   ['guiding-star', 'The Guiding Star', true],
 ];
 
