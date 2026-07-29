@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import { isLuckyCardTestModeEnabled } from './developer-tools/lucky-card-test-mode/toggle-card-test-mode';
+import LuckyCardShare from './lucky-card-share';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
 
@@ -153,6 +154,8 @@ export default function LuckyCardReveal() {
           {isRevealed ? 'Reveal Another Test Card' : 'Reveal Your Lucky Moment'}
         </button>
       )}
+
+      {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
 
       <p className="lucky-moment-instruction">
         {isRevealed
