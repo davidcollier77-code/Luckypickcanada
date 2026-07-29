@@ -1,1 +1,37 @@
-/* Hero extension point. The Default Theme preserves the existing hero styles. */
+/* Homepage Hero: the supplied artwork is the only visual layer. */
+.homepage-hero {
+  grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr);
+  gap: clamp(1.5rem, 4vw, 4.5rem);
+}
+
+.homepage-hero-visual {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.homepage-hero-artwork {
+  display: block;
+  width: min(100%, 760px);
+  height: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 780px) {
+  .homepage-hero {
+    gap: 1.75rem;
+  }
+
+  .homepage-hero-visual {
+    width: min(100%, 680px);
+    margin: 0 auto;
+  }
+}
