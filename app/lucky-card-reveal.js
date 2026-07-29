@@ -120,7 +120,8 @@ export default function LuckyCardReveal() {
           >
             <img
               src="/IMG_20260728_220305_112042.png"
-              alt="Lucky Pick Canada card back"
+              alt=""
+              loading="lazy"
             />
           </div>
           <div
@@ -132,6 +133,7 @@ export default function LuckyCardReveal() {
                 className="lucky-moment-card-image"
                 src={selectedCard.image}
                 alt={selectedCard.title}
+                loading="lazy"
               />
             ) : (
               <div className="lucky-moment-artwork-placeholder" aria-hidden="true">

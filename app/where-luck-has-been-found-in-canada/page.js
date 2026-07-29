@@ -4,10 +4,17 @@ import LuckyMapOfCanada from '../lucky-map-of-canada/lucky-map-of-canada';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Lucky Map of Canada 🍀 | LuckyPickCanada.ca',
-  description: 'Explore where LuckyPickCanada community stories have been shared across Canada using the existing Lucky Stories collection.',
-  alternates: {
-    canonical: '/where-luck-has-been-found-in-canada',
+  title: 'Where Luck Has Been Found in Canada | LuckyPickCanada.ca',
+  description: 'See where LuckyPickCanada community stories have been shared across Canada.',
+  alternates: { canonical: '/map' },
+  openGraph: {
+    title: 'Where Luck Has Been Found in Canada | LuckyPickCanada.ca',
+    description: 'See where LuckyPickCanada community stories have been shared across Canada.',
+    url: '/map',
+  },
+  twitter: {
+    title: 'Where Luck Has Been Found in Canada | LuckyPickCanada.ca',
+    description: 'See where LuckyPickCanada community stories have been shared across Canada.',
   },
 };
 

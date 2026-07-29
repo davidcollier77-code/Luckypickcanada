@@ -90,7 +90,7 @@ export default function HomePage() {
         </SectionHeading>
         <div className="homepage-offer-grid">
           <article className="homepage-offer homepage-offer-featured">
-            <img className="homepage-offer-image" src="/1784862459046.png" alt="Lucky Pick card" />
+            <img className="homepage-offer-image" src="/1784862459046.png" alt="Personalized Lucky Pick card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">Personalized Lucky Pick</p>
             <h3>Six or seven numbers. One luminous reveal.</h3>
             <p>Select a 6 Pick or 7 Pick and enjoy your lucky colour and lucky day in the existing reveal experience.</p>
@@ -99,7 +99,7 @@ export default function HomePage() {
             <button type="button" className="homepage-offer-action" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
-            <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift card" />
+            <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">Gift a little luck</p>
             <h3>Send a bright surprise across Canada.</h3>
             <p>The existing gift package delivers a Lucky Pick reveal and personal greeting for someone you care about.</p>
@@ -107,7 +107,7 @@ export default function HomePage() {
             <button type="button" className="homepage-offer-action" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
-            <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick card" />
+            <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">Keep the lights glowing</p>
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
@@ -139,7 +139,7 @@ export default function HomePage() {
           <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
         </div>
         <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
-          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" />
+          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" width="769" height="1376" loading="lazy" />
         </a>
       </section>
 
