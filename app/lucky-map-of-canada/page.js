@@ -4,10 +4,17 @@ import LuckyMapOfCanada from './lucky-map-of-canada';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Lucky Map of Canada 🍀 | LuckyPickCanada.ca',
-  description: 'Explore where LuckyPickCanada community stories have been shared across Canada using the existing Lucky Stories collection.',
-  alternates: {
-    canonical: '/lucky-map-of-canada',
+  title: 'Lucky Map of Canada | LuckyPickCanada.ca',
+  description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
+  alternates: { canonical: '/map' },
+  openGraph: {
+    title: 'Lucky Map of Canada | LuckyPickCanada.ca',
+    description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
+    url: '/map',
+  },
+  twitter: {
+    title: 'Lucky Map of Canada | LuckyPickCanada.ca',
+    description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
   },
 };
 
