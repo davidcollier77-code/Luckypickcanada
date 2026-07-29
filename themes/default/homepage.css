@@ -113,3 +113,8 @@
 @keyframes lucky-moment-flagship-generate { 0%, 16% { transform: translateX(0) rotate(0); } 28% { transform: translateX(-2px) rotate(-.28deg); } 40% { transform: translateX(3px) rotate(.42deg); } 53% { transform: translateX(-5px) rotate(-.62deg); } 67% { transform: translateX(4px) rotate(.52deg); } 80% { transform: translateX(-3px) rotate(-.34deg); } 91% { transform: translateX(1px) rotate(.14deg); } 100% { transform: translateX(0) rotate(0); } }
 @keyframes lucky-moment-card-flip-reveal { 0% { opacity: 0; transform: perspective(1000px) rotateY(-16deg); filter: brightness(1.35); } 55% { opacity: 1; filter: brightness(1.15); } 100% { opacity: 1; transform: perspective(1000px) rotateY(0); filter: brightness(1); } }
 @media (prefers-reduced-motion: reduce) { .lucky-moment-stage::before, .lucky-moment-stage::after, .lucky-moment-tier-premium.is-generating .lucky-moment-card, .lucky-moment-tier-flagship.is-generating .lucky-moment-card, .lucky-moment-tier-premium.is-revealed .lucky-moment-card-front, .lucky-moment-tier-flagship.is-revealed .lucky-moment-card-front { animation: none; } }
+
+/* Keep the three purchase offer cards free of decorative artwork. */
+.homepage-offer-grid > .homepage-offer:nth-child(-n + 3) > .homepage-offer-image {
+  display: none;
+}
