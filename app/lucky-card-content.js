@@ -1,6 +1,6 @@
 export const LUCKY_CARD_IMAGES = {
   'golden-maple-clover': null,
-  'number-seeker': null,
+  'number-seeker': '/IMG_20260728_222536_078566.png',
   'coast-to-coast-tale': null,
   'cosmic-flow': null,
   'optimists-path': null,
@@ -12,7 +12,7 @@ export const LUCKY_CARD_IMAGES = {
 
 export const LUCKY_CARD_QUOTES = {
   'golden-maple-clover': null,
-  'number-seeker': null,
+  'number-seeker': 'Some numbers are found by chance. Others are found by following your lucky feeling.',
   'coast-to-coast-tale': null,
   'cosmic-flow': null,
   'optimists-path': null,
