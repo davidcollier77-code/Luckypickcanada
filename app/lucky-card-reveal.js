@@ -96,7 +96,6 @@ export default function LuckyCardReveal() {
               alt="Lucky Pick Canada card back"
             />
           </div>
-
           <div
             className="lucky-moment-card-face lucky-moment-card-front"
             aria-hidden={!isRevealed}
@@ -139,7 +138,6 @@ export default function LuckyCardReveal() {
               : (isRevealed ? 'Reveal Another Test Card' : 'Reveal Your Lucky Moment')}
           </button>
         )}
-
         {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
       </div>
 
