@@ -7,7 +7,7 @@ const CARD_DEFINITIONS = [
   ['cosmic-flow', 'Cosmic Flow', false],
   ['optimists-path', 'The Optimist’s Path', false],
   ['iron-horseshoe', 'The Iron Horseshoe', false],
-  ['emerald-four-leaf', 'The Emerald Four-Leaf', false],
+  ['emerald-clover', 'The Emerald Four-Leaf', false],
   ['auroras-pot-of-gold', 'The Aurora’s Pot of Gold', true],
   ['guiding-star', 'The Guiding Star', true],
 ];
