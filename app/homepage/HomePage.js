@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import CheckoutModal from './checkout-modal';
-import LuckyCardReveal from './lucky-card-reveal';
-import { createLuckyReveal } from './lucky-reveal';
-import LuckyRevealPopup from './lucky-reveal-popup';
-import LuckyMeter from './luck-meter';
-import TurnstileField from './turnstile-field';
-import { DEFAULT_THEME } from '../themes/default/theme';
-import Header from './homepage/Header';
-import Hero from './homepage/Hero';
+import CheckoutModal from '../checkout-modal';
+import LuckyCardReveal from '../lucky-card-reveal';
+import { createLuckyReveal } from '../lucky-reveal';
+import LuckyRevealPopup from '../lucky-reveal-popup';
+import LuckyMeter from '../luck-meter';
+import TurnstileField from '../turnstile-field';
+import { DEFAULT_THEME } from '../../themes/default/theme';
+import Header from './Header';
+import Hero from './Hero';
 
 function SectionHeading({ eyebrow, title, children }) {
   return (
