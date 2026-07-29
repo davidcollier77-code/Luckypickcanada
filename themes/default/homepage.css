@@ -5,6 +5,7 @@
 .homepage-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(380px, 1.1fr); align-items: center; min-height: 680px; padding: clamp(2rem, 7vw, 6rem) clamp(1rem, 5vw, 5.5rem); }
 .homepage-hero::before { content: ''; position: absolute; inset: 3% 8% 8%; z-index: -1; border: 1px solid rgba(247, 210, 107, .2); border-radius: 46% 54% 50% 45%; background: radial-gradient(ellipse at 65% 42%, rgba(95, 210, 165, .18), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(141, 102, 224, .14), transparent 30%); }
 .homepage-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; margin-top: 1.4rem; }
+.homepage-hero-artwork { display: block; width: 100%; height: auto; }
 .homepage-text-link { color: #ffe29a; font-size: .86rem; font-weight: 800; letter-spacing: .05em; text-decoration: none; text-transform: uppercase; transition: color .2s ease, transform .2s ease; }
 .homepage-text-link:hover { color: #fff5cf; transform: translateX(3px); }
 .homepage-section { padding: clamp(3.5rem, 8vw, 7rem) clamp(1rem, 5vw, 5.5rem); }
