@@ -83,3 +83,32 @@
 .lucky-card-share-button:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
 .lucky-card-share-button:disabled { cursor: wait; opacity: .75; }
 .lucky-card-share-status { margin: 0; color: rgba(222, 255, 232, .86); font-size: .76rem; line-height: 1.4; text-align: center; }
+
+/* Tiered Lucky Card reveal treatment: presentation-only; card selection and saved daily reveal remain unchanged. */
+.lucky-moment-stage::before, .lucky-moment-stage::after { content: ''; position: absolute; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .45s ease; }
+.lucky-moment-stage::before { inset: -2rem; border-radius: 40%; background: radial-gradient(ellipse, rgba(120, 244, 196, .22), rgba(80, 127, 234, .11) 42%, transparent 72%); filter: blur(20px); }
+.lucky-moment-stage::after { inset: -.75rem; border: 1px solid rgba(203, 255, 229, .28); border-radius: 18px; box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset, 0 0 30px rgba(99, 241, 192, .14); }
+.lucky-moment-stage.is-generating::before, .lucky-moment-stage.is-generating::after { opacity: 1; }
+.lucky-moment-tier-standard.is-generating .lucky-moment-card { animation-duration: 1.5s; }
+.lucky-moment-tier-standard.is-generating::before { animation: lucky-moment-standard-aura 1.5s ease-out both; }
+.lucky-moment-tier-premium::before { inset: -2.7rem; background: radial-gradient(ellipse at 50% 44%, rgba(255, 226, 125, .42), rgba(232, 171, 53, .17) 37%, transparent 73%); filter: blur(24px) saturate(1.13); }
+.lucky-moment-tier-premium::after { inset: -1rem; border-color: rgba(255, 221, 126, .58); box-shadow: 0 0 24px rgba(245, 192, 66, .32), 0 0 55px rgba(235, 187, 77, .18), inset 0 0 22px rgba(255, 235, 174, .09); }
+.lucky-moment-tier-premium.is-generating::before { animation: lucky-moment-premium-aura 2.6s ease-in-out both; }
+.lucky-moment-tier-premium.is-generating .lucky-moment-card { animation-name: lucky-moment-premium-generate; animation-duration: 2.6s; }
+.lucky-moment-tier-flagship::before { inset: -3.3rem; background: conic-gradient(from 145deg, rgba(80, 237, 192, .08), rgba(137, 107, 255, .32), rgba(255, 219, 107, .47), rgba(74, 215, 185, .28), rgba(80, 237, 192, .08)); filter: blur(27px) saturate(1.16); }
+.lucky-moment-tier-flagship::after { inset: -1.2rem; border-color: rgba(255, 232, 157, .67); box-shadow: 0 0 20px rgba(255, 230, 136, .34), 0 0 56px rgba(101, 224, 191, .23), 0 0 88px rgba(135, 98, 243, .18), inset 0 0 26px rgba(255, 247, 210, .12); }
+.lucky-moment-tier-flagship.is-generating::before { animation: lucky-moment-flagship-aurora 3.6s cubic-bezier(.22,.61,.36,1) both; }
+.lucky-moment-tier-flagship.is-generating::after { animation: lucky-moment-light-pulse 1.2s ease-in-out 3; }
+.lucky-moment-tier-flagship.is-generating .lucky-moment-card { animation-name: lucky-moment-flagship-generate; animation-duration: 3.6s; }
+.lucky-moment-tier-premium.is-revealed .lucky-moment-card-front, .lucky-moment-tier-flagship.is-revealed .lucky-moment-card-front { animation-name: lucky-moment-card-flip-reveal; animation-duration: .82s; }
+.lucky-moment-tier-flagship.is-revealed .lucky-moment-card-front { animation-duration: 1s; }
+.lucky-moment-tier-message { width: min(100%, 32rem); margin: 0; padding: .7rem 1rem; border: 1px solid rgba(255, 223, 132, .58); border-radius: 999px; color: #fff4c9; font-size: clamp(.88rem, 2.8vw, 1rem); font-weight: 900; letter-spacing: .02em; line-height: 1.45; text-align: center; text-shadow: 0 1px 8px rgba(0,0,0,.8); background: linear-gradient(135deg, rgba(87, 56, 7, .82), rgba(14, 39, 34, .86)); box-shadow: inset 0 1px rgba(255,255,255,.17), 0 0 25px rgba(242, 190, 67, .2); }
+.lucky-moment-tier-message-flagship { border-color: rgba(255, 235, 167, .74); background: linear-gradient(135deg, rgba(42, 31, 13, .92), rgba(21, 69, 59, .86) 56%, rgba(47, 29, 69, .88)); box-shadow: inset 0 1px rgba(255,255,255,.2), 0 0 28px rgba(246, 201, 86, .28), 0 0 48px rgba(81, 224, 187, .13); }
+@keyframes lucky-moment-standard-aura { 0% { opacity: 0; } 46% { opacity: .72; } 100% { opacity: .36; } }
+@keyframes lucky-moment-premium-aura { 0% { opacity: 0; transform: scale(.9); } 42% { opacity: .9; transform: scale(1.04); } 100% { opacity: .65; transform: scale(1); } }
+@keyframes lucky-moment-flagship-aurora { 0%, 18% { opacity: 0; transform: scale(.85) rotate(-8deg); } 50% { opacity: .72; transform: scale(1.04) rotate(3deg); } 78% { opacity: 1; transform: scale(1.08) rotate(-2deg); } 100% { opacity: .74; transform: scale(1); } }
+@keyframes lucky-moment-light-pulse { 0%, 100% { opacity: .38; } 50% { opacity: 1; } }
+@keyframes lucky-moment-premium-generate { 0%, 100% { transform: translateX(0) rotate(0); } 16% { transform: translateX(-2px) rotate(-.35deg); } 31% { transform: translateX(3px) rotate(.45deg); } 49% { transform: translateX(-4px) rotate(-.55deg); } 67% { transform: translateX(3px) rotate(.4deg); } 84% { transform: translateX(-1px) rotate(-.16deg); } }
+@keyframes lucky-moment-flagship-generate { 0%, 16% { transform: translateX(0) rotate(0); } 28% { transform: translateX(-2px) rotate(-.28deg); } 40% { transform: translateX(3px) rotate(.42deg); } 53% { transform: translateX(-5px) rotate(-.62deg); } 67% { transform: translateX(4px) rotate(.52deg); } 80% { transform: translateX(-3px) rotate(-.34deg); } 91% { transform: translateX(1px) rotate(.14deg); } 100% { transform: translateX(0) rotate(0); } }
+@keyframes lucky-moment-card-flip-reveal { 0% { opacity: 0; transform: perspective(1000px) rotateY(-16deg); filter: brightness(1.35); } 55% { opacity: 1; filter: brightness(1.15); } 100% { opacity: 1; transform: perspective(1000px) rotateY(0); filter: brightness(1); } }
+@media (prefers-reduced-motion: reduce) { .lucky-moment-stage::before, .lucky-moment-stage::after, .lucky-moment-tier-premium.is-generating .lucky-moment-card, .lucky-moment-tier-flagship.is-generating .lucky-moment-card, .lucky-moment-tier-premium.is-revealed .lucky-moment-card-front, .lucky-moment-tier-flagship.is-revealed .lucky-moment-card-front { animation: none; } }
