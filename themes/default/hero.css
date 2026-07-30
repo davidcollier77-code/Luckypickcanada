@@ -66,11 +66,18 @@
 }
 
 
+@media (min-width: 781px) {
+  .homepage-hero {
+    min-height: clamp(22rem, 54.6vw, 48rem);
+    max-height: 48rem;
+  }
+}
+
 @media (max-width: 780px) {
   .homepage-hero {
-    min-height: 0;
-    aspect-ratio: 1407 / 768;
-    background-size: 100% auto;
+    min-height: 50svh;
+    aspect-ratio: auto;
+    background-size: cover;
     background-position: center top;
   }
 
@@ -80,4 +87,8 @@
   .homepage-hero-overlay-picks { left: 53%; width: 13%; }
   .homepage-hero-overlay-community { left: 66%; width: 12%; }
   .homepage-hero-overlay-action { top: 79%; left: 29%; width: 42%; height: 15%; }
+}
+
+@media (max-width: 420px) {
+  .homepage-hero { min-height: 52svh; }
 }
