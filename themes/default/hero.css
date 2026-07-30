@@ -79,6 +79,16 @@
 }
 
 @media (max-width: 780px) {
+  .homepage-hero {
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 1407 / 768;
+    padding-inline: 1rem;
+    overflow-x: hidden;
+    background-color: #071614;
+    background-size: contain;
+    background-position: center;
+  }
   .homepage-hero-overlay-link { top: 0; height: 14%; }
   .homepage-hero-overlay-meter { left: 26%; width: 13%; }
   .homepage-hero-overlay-cards { left: 40%; width: 13%; }

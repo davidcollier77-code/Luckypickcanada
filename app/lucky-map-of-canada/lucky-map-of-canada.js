@@ -231,7 +231,8 @@ export default function LuckyMapOfCanada({ mapData }) {
                 alt="Official LuckyPickCanada community map of Canada"
                 width={140}
                 height={250}
-                sizes="(max-width: 860px) 100vw, 65vw"
+                sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) 28rem, 28rem"
+                quality={100}
                 priority
                 className="official-map-image"
               />
