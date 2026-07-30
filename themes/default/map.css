@@ -31,3 +31,35 @@ html { scroll-behavior: smooth; }
 .story-modal form button { padding: .75rem; border: 0; border-radius: 999px; color: #06110d; background: #facc15; font-weight: 900; cursor: pointer; }
 @media (max-width: 560px) { .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; } .map-overlay-instruction { right: 2%; bottom: 2%; max-width: 62%; } .province-marker { min-width: 34px; min-height: 34px; } .mobile-province-select { display: grid; gap: .4rem; margin-top: 1rem; color: #fde68a; font-weight: 800; } .mobile-province-select select { padding: .7rem; border: 1px solid rgba(255,235,160,.4); border-radius: 10px; color: #fff7d6; background: #0b2d28; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; } }
+
+/* Map and community presentation only: live data and interactions remain unchanged. */
+.map-statistics { align-items: stretch; }
+.map-statistic { display: grid; align-content: center; min-height: 7.5rem; }
+.lucky-story-map { align-items: start; }
+.official-map-artwork { width: min(100%, 60rem); background: #071614; }
+.official-map-image { aspect-ratio: 1; object-fit: contain; image-rendering: auto; }
+.province-marker { min-width: clamp(2.15rem, 4.3vw, 3.35rem); min-height: clamp(2.15rem, 4.3vw, 3.35rem); padding: .2rem; border-radius: 999px; background: rgba(5, 31, 29, .92); }
+.province-marker-code { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.province-marker .marker-count { position: static; min-width: 0; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; color: inherit; background: transparent; box-shadow: none; font-size: clamp(.78rem, 1.7vw, 1.12rem); }
+.province-marker.has-stories .marker-count { color: #17382b; }
+.map-story-panel { position: sticky !important; top: 1rem; }
+.map-story-card { box-shadow: inset 0 1px rgba(255, 255, 255, .08), 0 10px 24px rgba(0, 0, 0, .16); }
+.map-community-section, .map-province-section { border-radius: 24px; }
+.map-activity-card, .map-province-card { transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
+.map-activity-card:hover, .map-activity-card:focus-visible, .map-province-card:hover, .map-province-card:focus-visible { transform: translateY(-2px); border-color: rgba(250,204,21,.7) !important; outline: none; }
+
+@media (max-width: 860px) {
+  .map-story-panel { position: static !important; }
+  .official-map-artwork { width: min(58vw, 22rem); margin-inline: auto; }
+  .map-panel { justify-content: center; }
+}
+
+@media (max-width: 560px) {
+  .lucky-map-shell > div { width: 100%; }
+  .map-statistics { grid-template-columns: 1fr !important; gap: .65rem !important; }
+  .map-statistic { min-height: 0; }
+  .official-map-artwork { width: min(54vw, 13.5rem); border-radius: 12px; box-shadow: 0 0 0 3px rgba(15, 9, 3, .92), 0 0 0 4px rgba(160, 103, 26, .52), 0 16px 36px rgba(0, 0, 0, .42); }
+  .province-marker { min-width: 1.55rem; min-height: 1.55rem; }
+  .province-marker .marker-count { font-size: .63rem; }
+  .map-community-section, .map-province-section { border-radius: 18px; }
+}

@@ -118,3 +118,24 @@
 .homepage-offer-grid > .homepage-offer:nth-child(-n + 3) > .homepage-offer-image {
   display: none;
 }
+
+
+/* UI-only spacing and touch refinements. */
+.homepage-section { scroll-margin-top: 1rem; }
+.homepage-offer-grid { gap: clamp(1rem, 2vw, 1.5rem); }
+.homepage-offer, .homepage-community-card { min-height: 300px; border-radius: 26px; }
+.homepage-offer-action { min-height: 44px; padding-inline: 1.2rem; }
+.homepage-community-banner { gap: clamp(1.5rem, 4vw, 4rem); border-radius: 30px; }
+.homepage-community-image { box-shadow: 0 18px 38px rgba(0, 0, 0, .28); }
+
+@media (max-width: 780px) {
+  .homepage-section { padding: clamp(3rem, 12vw, 4.5rem) clamp(1rem, 5vw, 1.5rem); }
+  .homepage-section-heading { margin-bottom: 1.5rem; }
+  .homepage-section-heading > span { line-height: 1.6; }
+  .homepage-offer-grid { gap: 1rem; }
+  .homepage-offer, .homepage-community-card { min-height: 0; padding: 1.35rem; border-radius: 20px; }
+  .homepage-offer h3, .homepage-community-card h2 { font-size: clamp(1.45rem, 7vw, 1.9rem); }
+  .homepage-offer-action { width: 100%; min-height: 48px; margin-top: 1.15rem; }
+  .homepage-community-banner { margin: 1rem; padding: 1.35rem; border-radius: 22px; }
+  .homepage-community-image { max-width: 30rem; margin-inline: auto; }
+}
