@@ -128,7 +128,7 @@ export default function HomePage() {
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Find where luck has landed.</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
-          <Link href="/map" className="homepage-text-link">Visit the Lucky Map <span>→</span></Link>
+          <Link href="/map" className="homepage-map-cta">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
         </article>
       </section>
 
