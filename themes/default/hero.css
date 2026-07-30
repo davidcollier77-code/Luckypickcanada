@@ -4,7 +4,7 @@
   display: block;
   min-height: 55vh;
   max-height: 850px;
-  padding: 0;
+  padding: 6rem clamp(1rem, 5vw, 5.5rem);
   overflow: hidden;
   text-align: initial;
   background-image: url('/1785347037732.png');
@@ -15,6 +15,19 @@
 
 .homepage-hero::before {
   display: none;
+}
+
+.homepage-hero-title {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(2.25rem, 7vw, 5rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-shadow: 0 3px 18px rgba(0, 0, 0, .45);
 }
 
 .homepage-hero-overlay-nav,
@@ -82,13 +95,13 @@
   .homepage-hero {
     width: 100%;
     min-height: 0;
-    aspect-ratio: 1407 / 768;
-    padding-inline: 1rem;
+    padding: 4rem 1rem;
     overflow-x: hidden;
     background-color: #071614;
-    background-size: contain;
+    background-size: cover;
     background-position: center;
   }
+  .homepage-hero-title { font-size: 2.25rem; }
   .homepage-hero-overlay-link { top: 0; height: 14%; }
   .homepage-hero-overlay-meter { left: 26%; width: 13%; }
   .homepage-hero-overlay-cards { left: 40%; width: 13%; }
