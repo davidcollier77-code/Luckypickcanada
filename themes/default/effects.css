@@ -13,7 +13,6 @@
 .lucky-site-shell .aurora-glass-card,
 .lucky-site-shell .premium-hero-shell,
 .lucky-site-shell .lucky-blackjack,
-.lucky-site-shell .lucky-meter,
 .lucky-map-shell .premium-surface,
 .lucky-map-shell .map-panel {
   isolation: isolate;
@@ -81,8 +80,6 @@
   border-color: rgba(255, 229, 147, .94) !important;
   box-shadow: 0 25px 40px rgba(0, 0, 0, .75), 0 0 28px rgba(236, 171, 32, .54), inset 0 0 0 1px rgba(255, 247, 203, .3) !important;
 }
-
-/* The official Lucky Meter artwork is rendered directly; no replacement gauge styling. */
 
 .lucky-blackjack .blackjack-table {
   border-color: rgba(255, 223, 128, .46) !important;
