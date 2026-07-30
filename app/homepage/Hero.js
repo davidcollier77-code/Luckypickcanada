@@ -30,9 +30,7 @@ export default function Hero() {
       </nav>
 
       <div className="hero-content">
-        <div className="hero-emblem-ring" aria-hidden="true">
-          <img src="/BackgroundEraser_20260724_163638777.png" alt="" width="220" height="220" />
-        </div>
+        <img className="hero-emblem" src="/BackgroundEraser_20260724_163638777.png" alt="" width="460" height="460" aria-hidden="true" />
         <p className="hero-kicker">A little Canadian magic ✦ made for today</p>
         <h1 id="hero-title" className="gold-3d">Your luck, personalized.</h1>
         <p className="hero-copy">Follow the aurora into a playful daily ritual of lucky numbers, cards, stories, and good energy from coast to coast.</p>
