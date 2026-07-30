@@ -206,13 +206,13 @@ export default function LuckyMapOfCanada({ mapData }) {
           ) : null}
         </header>
 
-        <section aria-label="Lucky Map statistics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.85rem', marginTop: '1rem' }}>
+        <section aria-label="Lucky Map statistics" className="map-statistics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.85rem', marginTop: '1rem' }}>
           {[
             ['Total lucky stories shared', currentMapData?.totalStories || 0],
             ['Provinces with lucky moments', currentMapData?.provincesWithStories || 0],
             ['Mapped story markers', stories.length],
           ].map(([label, value]) => (
-            <div key={label} className="premium-surface" style={{ ...cardStyle, padding: '1rem' }}>
+            <div key={label} className="premium-surface map-statistic" style={{ ...cardStyle, padding: '1rem' }}>
               <p style={{ margin: 0, color: '#facc15', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1.4, fontSize: '0.78rem' }}>{label}</p>
               <strong style={{ display: 'block', marginTop: '0.35rem', fontSize: 'clamp(2rem, 6vw, 3.2rem)', lineHeight: 1 }}>{value}</strong>
             </div>
@@ -223,7 +223,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           Explore lucky stories shared by people across Canada. Find yours on the map or share your own lucky moment.
         </p>
 
-        <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
+        <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" className="lucky-story-map" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
           <div className="map-panel" style={{ ...cardStyle }}>
             <div className="official-map-artwork">
               <Image
@@ -235,7 +235,6 @@ export default function LuckyMapOfCanada({ mapData }) {
                 priority
                 className="official-map-image"
               />
-              <p className="map-overlay-instruction">Select a province or territory to explore its live community stories.</p>
               {provinceSelections.map((province) => {
                 const provinceCount = province.count;
                 const active = selectedProvince === province.code;
@@ -251,7 +250,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                     style={{ left: `${province.x}%`, top: `${province.y}%` }}
                   >
                     {provinceCount ? <span className="marker-sparkle" aria-hidden="true" /> : null}
-                    <span>{province.code}</span>
+                    <span className="province-marker-code" aria-hidden="true">{province.code}</span>
                     <span className="marker-count">{provinceCount}</span>
                   </button>
                 );
@@ -262,7 +261,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             </div>
           </div>
 
-          <aside className="premium-surface" style={{ ...cardStyle, padding: '1.2rem', position: 'relative', overflow: 'hidden' }}>
+          <aside className="premium-surface map-story-panel" style={{ ...cardStyle, padding: '1.2rem', position: 'relative', overflow: 'hidden' }}>
             <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>{selectedProvinceInfo.name}</p>
             <h2 style={{ margin: '0.45rem 0', fontSize: 'clamp(1.85rem, 4vw, 3rem)', lineHeight: 1 }}>
               {selectedStories.length} {selectedStories.length === 1 ? 'lucky story' : 'lucky stories'}
@@ -270,7 +269,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             {selectedStories.length ? (
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
                 {selectedStories.map((story) => (
-                  <article key={story.id} style={{ padding: '1rem', borderRadius: 22, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.1), rgba(41,148,107,0.11))' }}>
+                  <article key={story.id} className="map-story-card" style={{ padding: '1rem', borderRadius: 22, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.1), rgba(41,148,107,0.11))' }}>
                     <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
@@ -306,7 +305,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           </aside>
         </section>
 
-        <section className="premium-surface" aria-labelledby="recent-activity-heading" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
+        <section className="premium-surface map-community-section" aria-labelledby="recent-activity-heading" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
           <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>Community</p>
           <h2 id="recent-activity-heading" style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Recent Canadian Activity</h2>
           {stories.length ? (
@@ -330,13 +329,13 @@ export default function LuckyMapOfCanada({ mapData }) {
           )}
         </section>
 
-        <section className="premium-surface" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
+        <section className="premium-surface map-province-section" style={{ ...cardStyle, marginTop: '1rem', padding: 'clamp(1.25rem, 3vw, 2rem)' }}>
           <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>Province selection</p>
           <h2 style={{ margin: '0.35rem 0 0', fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', lineHeight: 1 }}>Lucky Stories by province</h2>
           <label className="mobile-province-select">Choose a province or territory<select value={selectedProvince} onChange={(event) => selectProvince(event.target.value)}>{provinceSelections.map((province) => <option key={province.code} value={province.code}>{province.name} ({province.count})</option>)}</select></label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', marginTop: '1rem' }}>
             {provinceSelections.map((province) => (
-              <button key={province.code} type="button" className="province-select-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(244,195,70,0.35), rgba(35,140,101,0.25))' : 'rgba(255,255,255,0.055)', cursor: 'pointer' }}>
+              <button key={province.code} type="button" className="province-select-card map-province-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(244,195,70,0.35), rgba(35,140,101,0.25))' : 'rgba(255,255,255,0.055)', cursor: 'pointer' }}>
                 <strong style={{ display: 'block', color: '#fde68a' }}>{province.name}</strong>
                 <span>{province.count} {province.count === 1 ? 'story' : 'stories'}</span>
               </button>
