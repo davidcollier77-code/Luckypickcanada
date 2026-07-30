@@ -122,7 +122,7 @@ export default function HomePage() {
           <p className="homepage-offer-kicker">Lucky Stories</p>
           <h2>Good fortune travels well.</h2>
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
-          <Link href="/stories" className="homepage-text-link">Explore Lucky Stories <span>→</span></Link>
+          <Link href="/stories" className="homepage-story-cta">See Our Story Section</Link>
         </article>
         <article className="homepage-community-card homepage-map-card">
           <p className="homepage-offer-kicker">Lucky Map</p>

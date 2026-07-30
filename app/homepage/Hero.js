@@ -18,7 +18,7 @@ export default function Hero() {
       className="homepage-hero"
       aria-label="LuckyPickCanada: a little Canadian magic made for today"
     >
-      <h1 className="sr-only">LuckyPickCanada: Canadian luck, stories, and playful daily picks</h1>
+      <h1 className="homepage-hero-title">Lucky Pick Canada.ca</h1>
       <nav className="homepage-hero-overlay-nav" aria-label="Primary navigation">
         {heroLinks.map(({ href, label, className }) => (
           <a key={href} href={href} className={`homepage-hero-overlay-link ${className}`}>
