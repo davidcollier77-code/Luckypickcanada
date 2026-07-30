@@ -223,9 +223,9 @@ export default function LuckyMapOfCanada({ mapData }) {
           Explore lucky stories shared by people across Canada. Find yours on the map or share your own lucky moment.
         </p>
 
-        <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" className="lucky-story-map" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr)', gap: '1rem', marginTop: '1rem' }}>
+        <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" className="lucky-story-map" style={{ gap: '1rem', marginTop: '1rem' }}>
           <div className="map-panel" style={{ ...cardStyle }}>
-            <div className="official-map-artwork">
+            <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
               <Image
                 src="/1784971978021.png"
                 alt="Official LuckyPickCanada community map of Canada"
@@ -266,6 +266,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             <h2 style={{ margin: '0.45rem 0', fontSize: 'clamp(1.85rem, 4vw, 3rem)', lineHeight: 1 }}>
               {selectedStories.length} {selectedStories.length === 1 ? 'lucky story' : 'lucky stories'}
             </h2>
+            <div className="map-province-details" key={selectedProvince}>
             {selectedStories.length ? (
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
                 {selectedStories.map((story) => (
@@ -302,6 +303,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             ) : (
               <p style={{ lineHeight: 1.65, color: 'rgba(255,247,214,0.82)' }}>No Lucky Stories have been shared from {selectedProvinceInfo.name} yet. Select another province to keep exploring the Lucky Story Map.</p>
             )}
+            </div>
           </aside>
         </section>
 

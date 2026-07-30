@@ -4,10 +4,10 @@ html { scroll-behavior: smooth; }
 .lucky-map-shell h1, .lucky-map-shell h2 { font-family: var(--lpc-display); }
 .home-link, .story-link, .province-marker, .province-select-card { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease, background 180ms ease; }
 .home-link:hover, .home-link:focus-visible, .story-link:hover, .story-link:focus-visible, .province-marker:hover, .province-marker:focus-visible, .province-select-card:hover, .province-select-card:focus-visible { transform: translateY(-3px); outline: none; filter: brightness(1.08); }
-.map-panel { display: flex; justify-content: center; padding: 0 !important; overflow: visible !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+.map-panel { display: flex; width: 100%; max-height: 750px; align-items: center; justify-content: center; padding: 0 !important; overflow: visible !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
 .map-panel::before, .map-panel::after { content: none !important; }
-.official-map-artwork { position: relative; width: min(100%, 48rem); overflow: hidden; border: 1px solid rgba(255, 219, 126, 0.68); border-radius: 18px; background: #071614; box-shadow: 0 0 0 6px rgba(15, 9, 3, 0.92), 0 0 0 8px rgba(160, 103, 26, 0.52), 0 30px 72px rgba(0, 0, 0, 0.58); }
-.official-map-image { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; image-rendering: auto; }
+.official-map-artwork { position: relative; width: min(100%, 64rem); max-width: 100%; overflow: hidden; border: 1px solid rgba(255, 219, 126, 0.68); border-radius: 18px; background: #071614; box-shadow: 0 0 0 6px rgba(15, 9, 3, 0.92), 0 0 0 8px rgba(160, 103, 26, 0.52), 0 30px 72px rgba(0, 0, 0, 0.58); }
+.official-map-image { display: block; width: 100%; height: auto; max-height: 750px; object-fit: contain; image-rendering: auto; }
 .map-overlay-instruction, .map-empty-state { position: absolute; z-index: 1; margin: 0; padding: .6rem .8rem; border: 1px solid rgba(255, 235, 160, .45); border-radius: 999px; color: #fff7d6; background: rgba(4, 29, 27, .86); box-shadow: 0 4px 16px rgba(0, 0, 0, .34); font-size: clamp(.62rem, 1.4vw, .82rem); font-weight: 800; line-height: 1.35; text-align: center; }
 .map-overlay-instruction { right: 3%; bottom: 3%; max-width: 52%; }
 .map-empty-state { top: 50%; left: 50%; width: min(76%, 30rem); transform: translate(-50%, -50%); }
@@ -25,7 +25,9 @@ html { scroll-behavior: smooth; }
 .mobile-province-select { display: none; }
 .map-statistics { align-items: stretch; }
 .map-statistic { display: grid; align-content: center; min-height: 7.5rem; }
-.lucky-story-map { align-items: start; }
+.lucky-story-map { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr); align-items: start; max-width: 80rem; margin-inline: auto; }
+.map-province-details { overflow: hidden; max-height: 36rem; opacity: 1; animation: province-details-reveal 300ms ease-in-out both; }
+@keyframes province-details-reveal { from { max-height: 0; opacity: 0; transform: translateY(-.35rem); } to { max-height: 36rem; opacity: 1; transform: translateY(0); } }
 .map-story-panel { position: sticky !important; top: 1rem; }
 .map-story-card { box-shadow: inset 0 1px rgba(255, 255, 255, .08), 0 10px 24px rgba(0, 0, 0, .16); }
 .map-community-section, .map-province-section { border-radius: 24px; }
@@ -42,8 +44,8 @@ html { scroll-behavior: smooth; }
 @media (max-width: 860px) {
   #lucky-story-map { grid-template-columns: 1fr !important; }
   .map-story-panel { position: static !important; }
-  .official-map-artwork { width: min(100%, 42rem); margin-inline: auto; }
-  .map-panel { justify-content: center; }
+  .official-map-artwork { width: min(100%, 42rem); min-height: 50svh; margin-inline: auto; }
+  .map-panel { min-height: 50svh; justify-content: center; }
 }
 
 @media (max-width: 560px) {
