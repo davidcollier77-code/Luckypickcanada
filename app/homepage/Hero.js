@@ -1,7 +1,7 @@
 'use client';
 
 const heroLinks = [
-  { href: '#meter', label: 'Lucky Meter' },
+  { href: '#lucky-meter', label: 'Lucky Meter' },
   { href: '#cards', label: 'Lucky Cards' },
   { href: '#community-map', label: 'Community Map' },
   { href: 'https://www.facebook.com/groups/1060808069624999/', label: 'Facebook Group', external: true },
