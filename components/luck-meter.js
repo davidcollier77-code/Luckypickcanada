@@ -1,13 +1,48 @@
 import React, { useState } from 'react';
 
+const luckyQuotes = [
+  'Small steps taken today can lead to a fortunate tomorrow.',
+  'Trust your instincts; they know where your luck is waiting.',
+  'A positive outlook makes room for unexpected opportunities.',
+  'Your next lucky break may begin with a simple hello.',
+  'Good fortune favors an open mind and a grateful heart.',
+];
+
+function getTierForScore(score) {
+  if (score >= 67) return 'lm-tier-3';
+  if (score >= 34) return 'lm-tier-2';
+  return 'lm-tier-1';
+}
+
 export default function LuckyMeter() {
   const [activeTier, setActiveTier] = useState('lm-tier-1');
+  const [energyLevel, setEnergyLevel] = useState(50);
+  const [dailyQuote, setDailyQuote] = useState('');
   const [isCalibrating, setIsCalibrating] = useState(false);
 
   const handleCalibration = () => {
     setIsCalibrating(true);
+
     setTimeout(() => {
-      setActiveTier('lm-tier-3');
+      const lastScore = localStorage.getItem('lucky_meter_last_score');
+      const lastQuoteIndex = localStorage.getItem('lucky_meter_last_quote_index');
+      let newScore;
+      let newQuoteIndex;
+
+      do {
+        newScore = Math.floor(Math.random() * 101);
+      } while (lastScore !== null && newScore.toString() === lastScore);
+
+      do {
+        newQuoteIndex = Math.floor(Math.random() * luckyQuotes.length);
+      } while (lastQuoteIndex !== null && newQuoteIndex.toString() === lastQuoteIndex);
+
+      localStorage.setItem('lucky_meter_last_score', newScore.toString());
+      localStorage.setItem('lucky_meter_last_quote_index', newQuoteIndex.toString());
+
+      setEnergyLevel(newScore);
+      setDailyQuote(luckyQuotes[newQuoteIndex]);
+      setActiveTier(getTierForScore(newScore));
       setIsCalibrating(false);
     }, 2000);
   };
@@ -35,7 +70,7 @@ export default function LuckyMeter() {
           
           <div className="text-center">
             <span className="block text-5xl font-bold text-white mb-2">
-              {isCalibrating ? '...' : activeTier === 'lm-tier-3' ? '99%' : activeTier === 'lm-tier-2' ? '75%' : '50%'}
+              {isCalibrating ? '...' : `${energyLevel}%`}
             </span>
             <span className="text-xs text-gray-400 uppercase tracking-wider">
               Energy Level
@@ -50,6 +85,12 @@ export default function LuckyMeter() {
         >
           {isCalibrating ? 'Calibrating...' : 'Calibrate Today\'s Meter'}
         </button>
+
+        {dailyQuote && (
+          <p className="mt-6 text-sm text-cyan-100 italic">
+            “{dailyQuote}”
+          </p>
+        )}
 
         <p className="mt-6 text-sm text-gray-400">
           Next calibration available in <span className="text-white font-mono">14:22:05</span>
