@@ -8,19 +8,19 @@ import { DEFAULT_MAP_THEME } from '../../themes/default/map-theme';
 import { useEffect, useMemo, useState } from 'react';
 
 const provinces = [
-  { code: 'BC', name: 'British Columbia', x: 10, y: 52 },
-  { code: 'AB', name: 'Alberta', x: 25, y: 54 },
-  { code: 'SK', name: 'Saskatchewan', x: 37, y: 55 },
-  { code: 'MB', name: 'Manitoba', x: 49, y: 54 },
-  { code: 'ON', name: 'Ontario', x: 61, y: 66 },
-  { code: 'QC', name: 'Quebec', x: 75, y: 52 },
-  { code: 'NB', name: 'New Brunswick', x: 84, y: 70 },
-  { code: 'NS', name: 'Nova Scotia', x: 90, y: 75 },
-  { code: 'PE', name: 'Prince Edward Island', x: 88, y: 68 },
-  { code: 'NL', name: 'Newfoundland and Labrador', x: 91, y: 43 },
-  { code: 'YT', name: 'Yukon', x: 13, y: 27 },
-  { code: 'NT', name: 'Northwest Territories', x: 32, y: 25 },
-  { code: 'NU', name: 'Nunavut', x: 58, y: 21 },
+  { code: 'BC', name: 'British Columbia', x: 25, y: 59 },
+  { code: 'AB', name: 'Alberta', x: 39, y: 61 },
+  { code: 'SK', name: 'Saskatchewan', x: 51, y: 62 },
+  { code: 'MB', name: 'Manitoba', x: 62, y: 61 },
+  { code: 'ON', name: 'Ontario', x: 72, y: 69 },
+  { code: 'QC', name: 'Quebec', x: 82, y: 58 },
+  { code: 'NB', name: 'New Brunswick', x: 87, y: 74 },
+  { code: 'NS', name: 'Nova Scotia', x: 92, y: 79 },
+  { code: 'PE', name: 'Prince Edward Island', x: 90, y: 74 },
+  { code: 'NL', name: 'Newfoundland and Labrador', x: 91, y: 47 },
+  { code: 'YT', name: 'Yukon', x: 24, y: 34 },
+  { code: 'NT', name: 'Northwest Territories', x: 43, y: 31 },
+  { code: 'NU', name: 'Nunavut', x: 69, y: 25 },
 ];
 
 const { pageStyle, cardStyle } = DEFAULT_MAP_THEME;
@@ -227,10 +227,10 @@ export default function LuckyMapOfCanada({ mapData }) {
           <div className="map-panel" style={{ ...cardStyle }}>
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
               <Image
-                src="/1784971978021.png"
+                src="/IMG_20260730_053904_860801.png"
                 alt="Official LuckyPickCanada community map of Canada"
-                width={1024}
-                height={1024}
+                width={140}
+                height={250}
                 sizes="(max-width: 860px) 100vw, 65vw"
                 priority
                 className="official-map-image"
