@@ -66,33 +66,3 @@
   white-space: nowrap;
   border: 0;
 }
-
-@media (max-width: 780px) {
-  .homepage-hero {
-    /* Give the hero a stronger viewport presence without ever cropping its artwork. */
-    min-height: clamp(18rem, 58svh, 32rem);
-    aspect-ratio: auto;
-    background-color: #0b0803;
-    background-size: contain;
-  }
-
-  .homepage-hero-overlay-nav {
-    top: calc((100% - 54.5842vw) / 2);
-    right: 0;
-    bottom: auto;
-    left: 0;
-    height: 54.5842vw;
-  }
-
-  .homepage-hero-overlay-link { top: 0; height: 14%; }
-  .homepage-hero-overlay-meter { left: 26%; width: 13%; }
-  .homepage-hero-overlay-cards { left: 40%; width: 13%; }
-  .homepage-hero-overlay-picks { left: 53%; width: 13%; }
-  .homepage-hero-overlay-community { left: 66%; width: 12%; }
-  .homepage-hero-overlay-action {
-    top: calc((100% - 54.5842vw) / 2 + 43.1215vw);
-    left: 29%;
-    width: 42%;
-    height: 8.1876vw;
-  }
-}
