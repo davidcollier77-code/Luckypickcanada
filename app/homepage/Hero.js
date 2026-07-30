@@ -1,34 +1,43 @@
 'use client';
 
 const heroLinks = [
-  { href: '#meter', label: 'Lucky Meter', className: 'homepage-hero-overlay-meter' },
-  { href: '#cards', label: 'Lucky Cards', className: 'homepage-hero-overlay-cards' },
-  { href: '#personalized', label: 'Lucky Picks', className: 'homepage-hero-overlay-picks' },
-  { href: '#community', label: 'Community', className: 'homepage-hero-overlay-community' },
+  { href: '#meter', label: 'Lucky Meter' },
+  { href: '#cards', label: 'Lucky Cards' },
+  { href: '#community-map', label: 'Community Map' },
+  { href: 'https://www.facebook.com/groups/1060808069624999/', label: 'Facebook Group', external: true },
 ];
 
 export default function Hero() {
-  function scrollToLuckyMeter() {
-    window.location.hash = 'meter';
+  function scrollToCommunityMap() {
+    document.querySelector('#community-map')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   return (
-    <section
-      id="top"
-      className="homepage-hero"
-      aria-label="LuckyPickCanada: a little Canadian magic made for today"
-    >
-      <h1 className="sr-only">Lucky Pick Canada.ca</h1>
-      <nav className="homepage-hero-overlay-nav" aria-label="Primary navigation">
-        {heroLinks.map(({ href, label, className }) => (
-          <a key={href} href={href} className={`homepage-hero-overlay-link ${className}`}>
-            <span className="sr-only">{label}</span>
-          </a>
-        ))}
+    <section id="top" className="aurora-stage homepage-hero" aria-labelledby="hero-title">
+      <div className="aurora-stage-glow" aria-hidden="true" />
+      <nav className="hero-nav" aria-label="Primary navigation">
+        <a className="hero-brand" href="#top" aria-label="Lucky Pick Canada home">
+          <img src="/emblem.png" alt="" width="72" height="72" />
+          <span>Lucky Pick Canada</span>
+        </a>
+        <div className="hero-nav-links">
+          {heroLinks.map(({ href, label, external }) => (
+            <a key={href} href={href} className="hero-nav-link" {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+              {label}
+            </a>
+          ))}
+        </div>
       </nav>
-      <button type="button" className="homepage-hero-overlay-action" onClick={scrollToLuckyMeter}>
-        <span className="sr-only">Find your lucky energy</span>
-      </button>
+
+      <div className="hero-content">
+        <div className="hero-emblem-ring" aria-hidden="true">
+          <img src="/emblem.png" alt="" width="220" height="220" />
+        </div>
+        <p className="hero-kicker">A little Canadian magic for your day</p>
+        <h1 id="hero-title" className="gold-3d">Find your lucky moment.</h1>
+        <p className="hero-copy">Discover a daily spark of optimism, community stories, and a little extra luck from coast to coast.</p>
+        <button type="button" className="cta-glow" onClick={scrollToCommunityMap}>Explore the Community Map <span aria-hidden="true">→</span></button>
+      </div>
     </section>
   );
 }
