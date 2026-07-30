@@ -2,13 +2,14 @@
 .homepage-hero {
   position: relative;
   display: block;
-  min-height: clamp(22rem, 54.6vw, 48rem);
-  aspect-ratio: 1407 / 768;
+  min-height: 55vh;
+  max-height: 850px;
   padding: 0;
+  overflow: hidden;
   text-align: initial;
   background-image: url('/1785347037732.png');
   background-size: cover;
-  background-position: center top;
+  background-position: center;
   background-repeat: no-repeat;
 }
 
@@ -65,30 +66,23 @@
   border: 0;
 }
 
+@media (min-width: 640px) {
+  .homepage-hero { min-height: 60vh; }
+}
 
-@media (min-width: 781px) {
-  .homepage-hero {
-    min-height: clamp(22rem, 54.6vw, 48rem);
-    max-height: 48rem;
-  }
+@media (min-width: 1024px) {
+  .homepage-hero { min-height: 650px; }
+}
+
+@media (min-width: 1280px) {
+  .homepage-hero { min-height: 720px; }
 }
 
 @media (max-width: 780px) {
-  .homepage-hero {
-    min-height: 50svh;
-    aspect-ratio: auto;
-    background-size: cover;
-    background-position: center top;
-  }
-
   .homepage-hero-overlay-link { top: 0; height: 14%; }
   .homepage-hero-overlay-meter { left: 26%; width: 13%; }
   .homepage-hero-overlay-cards { left: 40%; width: 13%; }
   .homepage-hero-overlay-picks { left: 53%; width: 13%; }
   .homepage-hero-overlay-community { left: 66%; width: 12%; }
   .homepage-hero-overlay-action { top: 79%; left: 29%; width: 42%; height: 15%; }
-}
-
-@media (max-width: 420px) {
-  .homepage-hero { min-height: 52svh; }
 }
