@@ -124,7 +124,7 @@ export default function HomePage() {
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
           <Link href="/stories" className="homepage-story-cta">See Our Story Section</Link>
         </article>
-        <article className="homepage-community-card homepage-map-card">
+        <article id="community-map" className="homepage-community-card homepage-map-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Find where luck has landed.</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
