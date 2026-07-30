@@ -51,7 +51,7 @@ html { scroll-behavior: smooth; }
 .hero-nav-link:hover, .hero-nav-link:focus-visible { color: #ffe483; text-shadow: 0 0 14px rgba(255, 218, 118, .8); }
 
 .hero-content { display: grid; justify-items: center; align-content: center; flex: 1; max-width: 900px; padding-top: clamp(3rem, 8vw, 6rem); text-align: center; }
-.hero-emblem-ring { display: grid; width: clamp(132px, 17vw, 220px); aspect-ratio: 1; place-items: center; border: 2px solid rgba(255, 221, 128, .9); border-radius: 50%; background: radial-gradient(circle, rgba(244, 191, 58, .38), rgba(17, 23, 61, .8) 63%); box-shadow: inset 0 0 0 8px rgba(255, 231, 157, .12), 0 0 0 8px rgba(244, 194, 61, .12), 0 0 44px rgba(249, 196, 59, .62); }
+.hero-emblem-ring { display: grid; width: clamp(132px, 17vw, 220px); aspect-ratio: 1; place-items: center; border: 2px solid rgba(255, 221, 128, .9); border-radius: 50%; background: rgba(255, 229, 145, .06); box-shadow: inset 0 0 0 8px rgba(255, 231, 157, .12), 0 0 0 8px rgba(244, 194, 61, .12), 0 0 44px rgba(249, 196, 59, .62); }
 .hero-emblem-ring img { width: 78%; height: 78%; object-fit: contain; filter: drop-shadow(0 7px 8px rgba(0,0,0,.35)); }
 .hero-kicker { margin: clamp(1.2rem, 3vw, 1.8rem) 0 .55rem; color: #fbdfa0; font-family: var(--lpc-display, sans-serif); font-size: clamp(.72rem, 1.4vw, 1rem); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .gold-3d { max-width: 100%; margin: 0; color: #f8cf64; font-family: var(--lpc-display, sans-serif); font-size: clamp(2.6rem, 8vw, 6.7rem); font-weight: 950; letter-spacing: -.075em; line-height: .9; text-shadow: 0 2px #fff1ae, 0 5px #bf7615, 0 11px 20px rgba(0,0,0,.55); }
@@ -61,17 +61,16 @@ html { scroll-behavior: smooth; }
 
 @media (max-width: 680px) {
   .aurora-stage { min-height: 100svh; padding-inline: 1rem; }
-  .hero-nav { justify-content: center; }
-  .hero-brand { flex: 1 1 100%; justify-content: center; }
-  .hero-nav-links { justify-content: center; }
-  .hero-nav-link { padding-inline: .22rem; font-size: .63rem; }
+  .hero-nav { flex-wrap: nowrap; justify-content: space-between; gap: .45rem; }
+  .hero-brand { display: none; }
+  .hero-nav-links { flex: 1 1 auto; flex-wrap: nowrap; justify-content: space-between; gap: 0; }
+  .hero-nav-link { padding: .42rem .16rem; font-size: clamp(.42rem, 1.5vw, .58rem); letter-spacing: 0; white-space: nowrap; }
   .hero-content { padding-top: 2.5rem; }
   .hero-copy { max-width: 34rem; }
 }
 
 @media (max-width: 380px) {
-  .hero-brand span { font-size: .82rem; }
-  .hero-nav-links { gap: 0 .35rem; }
-  .hero-nav-link { font-size: .57rem; }
+  .hero-nav { gap: .25rem; }
+  .hero-nav-link { padding-inline: .1rem; font-size: .42rem; }
   .cta-glow { width: 100%; padding-inline: .75rem; }
 }
