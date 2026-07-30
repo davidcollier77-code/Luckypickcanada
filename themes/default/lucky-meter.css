@@ -1,0 +1,14 @@
+.lucky-meter-component { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 400px; background: #000; }
+.lucky-meter-component > div:first-child { position: relative; display: flex; width: 18rem; height: 18rem; align-items: center; justify-content: center; overflow: hidden; border: 1px solid rgba(255, 255, 255, .1); border-radius: 9999px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, .7); }
+.lucky-meter-component > div:first-child > img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s; }
+.lucky-meter-component > div:first-child > img.rotate-\[360deg\] { transform: rotate(360deg) scale(1.1); }
+.lucky-meter-component > div:first-child > img.rotate-0 { transform: rotate(0); }
+.lucky-meter-component > div:first-child > div { position: absolute; z-index: 10; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.lucky-meter-component button { padding: .5rem 1.5rem; border: 1px solid rgba(255, 255, 255, .3); border-radius: 9999px; color: #fff; background: transparent; font-size: .875rem; font-weight: 300; letter-spacing: .1em; text-transform: uppercase; transition: all .15s ease; }
+.lucky-meter-component button:hover { background: rgba(255, 255, 255, .1); }
+.lucky-meter-component .text-white\/50 { color: rgba(255, 255, 255, .5); font: .75rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .05em; animation: lucky-meter-synthesizing-pulse 1s cubic-bezier(.4, 0, .6, 1) infinite; }
+.lucky-meter-component .text-center { text-align: center; }
+.lucky-meter-component .text-4xl { color: #fff; font-size: 2.25rem; font-weight: 700; line-height: 2.5rem; letter-spacing: -.05em; }
+.lucky-meter-component .text-\[10px\] { max-width: 140px; margin: .25rem auto 0; color: rgba(178, 248, 246, .8); font-size: 10px; line-height: 1.25; }
+.lucky-meter-component > div:last-child { margin-top: 1.5rem; color: rgba(255, 255, 255, .4); font: .75rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; }
+@keyframes lucky-meter-synthesizing-pulse { 50% { opacity: .5; } }

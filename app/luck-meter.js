@@ -1,90 +1,95 @@
 'use client';
 
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LuckyMeter() {
-  const [displayNumber, setDisplayNumber] = useState('—');
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [hasGenerated, setHasGenerated] = useState(false);
-  const [comment, setComment] = useState('The aurora is waiting for your signal.');
-  const [resultTier, setResultTier] = useState('idle');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [reading, setReading] = useState(null);
+  const [usageCount, setUsageCount] = useState(1284);
 
-  const getComment = (value) => {
-    if (value < 40) return 'A quiet glow is still a glow. Keep your heart open today.';
-    if (value < 75) return 'A steady current of good energy is moving your way.';
-    return 'Maximum Canadian luck: the aurora is shining bright for you.';
-  };
-
+  // 12-Hour Reset Logic
   useEffect(() => {
-    if (!isAnimating) return undefined;
-    const interval = window.setInterval(() => {
-      setDisplayNumber(String(Math.floor(Math.random() * 90 + 10)));
-    }, 70);
-    return () => window.clearInterval(interval);
-  }, [isAnimating]);
+    const lastReset = localStorage.getItem('lastReset');
+    const now = new Date().getTime();
+    if (!lastReset || now - parseInt(lastReset) > 12 * 60 * 60 * 1000) {
+      setReading(null);
+      localStorage.setItem('lastReset', now.toString());
+    } else {
+      setReading(56);
+    }
+  }, []);
 
-  const getResultTier = (value) => (value < 40 ? 'low' : value < 75 ? 'medium' : 'high');
+  const handleInteract = () => {
+    if (isGenerating || reading !== null) return;
+    setIsGenerating(true);
+    setUsageCount(prev => prev + 1);
 
-  const handleTestLuck = () => {
-    if (isAnimating || hasGenerated) return;
-    setIsAnimating(true);
-    setResultTier('generating');
-    setComment('Reading the northern lights…');
-    const finalLuck = Math.floor(Math.random() * 90) + 10;
-    window.setTimeout(() => {
-      setDisplayNumber(`${finalLuck}%`);
-      setComment(getComment(finalLuck));
-      setResultTier(getResultTier(finalLuck));
-      setIsAnimating(false);
-      setHasGenerated(true);
+    setTimeout(() => {
+      setReading(56);
+      setIsGenerating(false);
     }, 2500);
   };
 
-
   return (
-    <div className={`lucky-meter-shell lucky-meter-tier-${resultTier}`}>
-      <div className="lucky-meter-vortex" aria-hidden="true" />
-      <div className="lucky-meter-aura lucky-meter-aura-one" aria-hidden="true" />
-      <div className="lucky-meter-aura lucky-meter-aura-two" aria-hidden="true" />
-      <div className="lucky-meter-grid">
-        <div className="lucky-meter-copy">
-          <p className="lucky-meter-kicker">The Aurora Instrument</p>
-          <h3 className="lucky-meter-title">Lucky<br />Meter</h3>
-          <p className="lucky-meter-description">Take a breath, make a wish, and let the dial find a playful reading for your day.</p>
-          <div className="lucky-meter-copy-rule"><span /> <i>One reading each visit</i></div>
+    <div className="lucky-meter-component flex flex-col items-center justify-center w-full min-h-[400px] bg-black">
+      <div className="relative w-72 h-72 flex items-center justify-center overflow-hidden rounded-full border border-white/10 shadow-2xl">
+        <img
+          src="/gauge-base-1600w.png"
+          srcSet="/gauge-base-400w.png 400w, /gauge-base-800w.png 800w, /gauge-base-1600w.png 1600w"
+          sizes="(max-width: 600px) 400px, 800px"
+          alt="Lucky Meter"
+          className={`w-full h-full object-cover transition-transform duration-1000 ${
+            isGenerating ? 'rotate-[360deg] scale-110' : 'rotate-0'
+          }`}
+        />
+
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+          <AnimatePresence mode="wait">
+            {!isGenerating && reading === null && (
+              <motion.button
+                key="button"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={handleInteract}
+                className="text-white text-sm font-light tracking-widest uppercase border border-white/30 px-6 py-2 rounded-full hover:bg-white/10 transition-all"
+              >
+                Generate Luck
+              </motion.button>
+            )}
+
+            {isGenerating && (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-white/50 text-xs font-mono tracking-wider animate-pulse"
+              >
+                SYNTHESIZING...
+              </motion.div>
+            )}
+
+            {reading !== null && (
+              <motion.div
+                key="reading"
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="text-center"
+              >
+                <div className="text-4xl font-bold text-white tracking-tighter">{reading}%</div>
+                <p className="text-[10px] text-teal-200/80 max-w-[140px] mt-1 leading-tight">
+                  The tide is exactly halfway in, and it is still rising.
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        <div className="lucky-meter-stage">
-          <div
-            className={`lucky-meter-dial${isAnimating ? ' is-spinning' : ''}`}
-            role="button"
-            tabIndex={hasGenerated ? -1 : 0}
-            aria-disabled={isAnimating || hasGenerated}
-            aria-label="Read my lucky energy"
-            onClick={handleTestLuck}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                handleTestLuck();
-              }
-            }}
-          >
-            <Image
-              src="/1785101753301.png"
-              alt="Lucky Pick Canada Lucky Meter"
-              width={600}
-              height={600}
-              sizes="(max-width: 780px) min(100vw - 2rem, 400px), (max-width: 1200px) 800px, 1600px"
-              priority
-            />
-            <div className="lucky-meter-glass-vortex" aria-hidden="true" />
-            <output className="lucky-meter-result-number" aria-live="polite" aria-label="Lucky score">{displayNumber}</output>
-          </div>
-          <button type="button" className="lucky-meter-button" onClick={handleTestLuck} disabled={isAnimating || hasGenerated}>
-            {isAnimating ? 'Finding your signal…' : hasGenerated ? 'Your luck has arrived' : 'Read my lucky energy'}
-          </button>
-          <p className="lucky-meter-status" aria-live="polite">{comment}</p>
-        </div>
+      </div>
+
+      <div className="mt-6 text-white/40 text-xs font-mono tracking-widest">
+        COMMUNITY READINGS: {usageCount.toLocaleString()}
       </div>
     </div>
   );
