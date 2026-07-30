@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-const RITUAL_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const RITUAL_STORAGE_KEY = 'lucky_meter_daily_ritual';
 
 const luckyQuotes = [
@@ -46,6 +45,19 @@ function getDifferentEnergyLevel(previousEnergyLevel) {
   return nextEnergyLevel >= previousEnergyLevel ? nextEnergyLevel + 1 : nextEnergyLevel;
 }
 
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getTimeUntilLocalMidnight(now = new Date()) {
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  return Math.max(0, midnight.getTime() - now.getTime());
+}
+
 function readSavedRitual() {
   try {
     const savedValue = window.localStorage.getItem(RITUAL_STORAGE_KEY);
@@ -54,6 +66,8 @@ function readSavedRitual() {
     const ritual = JSON.parse(savedValue);
     if (
       typeof ritual?.completedAt !== 'number'
+      || (typeof ritual?.calibrationDate !== 'undefined'
+        && (typeof ritual.calibrationDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(ritual.calibrationDate)))
       || typeof ritual?.energyLevel !== 'number'
       || ritual.energyLevel < 0
       || ritual.energyLevel > 100
@@ -64,7 +78,10 @@ function readSavedRitual() {
       return null;
     }
 
-    return ritual;
+    return {
+      ...ritual,
+      calibrationDate: ritual.calibrationDate ?? getLocalDateKey(new Date(ritual.completedAt)),
+    };
   } catch {
     return null;
   }
@@ -97,8 +114,8 @@ export default function LuckyMeter() {
     }
 
     const updateRemainingTime = () => {
-      const nextRemainingTime = Math.max(0, lastRitual.completedAt + RITUAL_COOLDOWN_MS - Date.now());
-      setRemainingTime(nextRemainingTime);
+      const isCompletedToday = lastRitual.calibrationDate === getLocalDateKey();
+      setRemainingTime(isCompletedToday ? getTimeUntilLocalMidnight() : 0);
     };
 
     updateRemainingTime();
@@ -118,8 +135,10 @@ export default function LuckyMeter() {
       const previousQuoteIndex = lastRitual?.quoteIndex ?? -1;
       const nextEnergyLevel = getDifferentEnergyLevel(previousEnergyLevel);
       const nextQuoteIndex = getDifferentRandomIndex(luckyQuotes.length, previousQuoteIndex);
+      const completedAt = Date.now();
       const nextRitual = {
-        completedAt: Date.now(),
+        completedAt,
+        calibrationDate: getLocalDateKey(new Date(completedAt)),
         energyLevel: nextEnergyLevel,
         quoteIndex: nextQuoteIndex,
       };
@@ -137,34 +156,38 @@ export default function LuckyMeter() {
     <section id="lucky-meter" className="w-full py-16 flex flex-col items-center justify-center relative overflow-hidden">
       <style>{`
         @keyframes lucky-meter-vortex-drift {
-          0%, 100% { transform: translate3d(-5%, -3%, 0) rotate(0deg) scale(1); opacity: 0.55; }
-          50% { transform: translate3d(6%, 4%, 0) rotate(18deg) scale(1.16); opacity: 0.9; }
+          0%, 100% { transform: translate3d(-9%, -7%, 0) rotate(0deg) scale(0.96); opacity: 0.62; }
+          50% { transform: translate3d(10%, 8%, 0) rotate(48deg) scale(1.3); opacity: 1; }
         }
         @keyframes lucky-meter-vortex-breathe {
-          0%, 100% { transform: scale(0.88); opacity: 0.35; }
-          50% { transform: scale(1.12); opacity: 0.76; }
+          0%, 100% { transform: scale(0.78) rotate(0deg); opacity: 0.42; }
+          50% { transform: scale(1.24) rotate(-24deg); opacity: 0.96; }
+        }
+        @keyframes lucky-meter-vortex-pulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.36), 0 0 42px rgba(139, 92, 246, 0.18); }
+          50% { box-shadow: 0 0 38px rgba(34, 211, 238, 0.78), 0 0 76px rgba(139, 92, 246, 0.54), 0 0 108px rgba(250, 204, 21, 0.28); }
         }
       `}</style>
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0f1a]/50 to-transparent pointer-events-none" />
       <div aria-hidden="true" className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -inset-1/3 rounded-full blur-3xl bg-[radial-gradient(circle_at_35%_35%,rgba(34,211,238,0.28),transparent_27%),radial-gradient(circle_at_65%_60%,rgba(139,92,246,0.26),transparent_30%),radial-gradient(circle_at_50%_50%,rgba(250,204,21,0.16),transparent_38%)]" style={{ animation: 'lucky-meter-vortex-drift 14s ease-in-out infinite alternate' }} />
-        <div className="absolute inset-[20%] rounded-full blur-2xl bg-[radial-gradient(circle,rgba(125,211,252,0.24),rgba(14,116,144,0.06)_42%,transparent_70%)]" style={{ animation: 'lucky-meter-vortex-breathe 7s ease-in-out infinite' }} />
+        <div className="absolute -inset-1/3 rounded-full blur-3xl saturate-150 contrast-125 bg-[radial-gradient(circle_at_35%_35%,rgba(34,211,238,0.46),transparent_27%),radial-gradient(circle_at_65%_60%,rgba(139,92,246,0.44),transparent_30%),radial-gradient(circle_at_50%_50%,rgba(250,204,21,0.3),transparent_38%)]" style={{ animation: 'lucky-meter-vortex-drift 4s cubic-bezier(0.45, 0, 0.55, 1) infinite' }} />
+        <div className="absolute inset-[16%] rounded-full blur-2xl saturate-150 contrast-125 bg-[radial-gradient(circle,rgba(125,211,252,0.46),rgba(14,116,144,0.14)_42%,transparent_70%)]" style={{ animation: 'lucky-meter-vortex-breathe 4s ease-in-out infinite' }} />
       </div>
 
       <div className="relative z-10 flex flex-col items-center max-w-lg mx-auto text-center px-4">
         <h2 className="text-sm tracking-widest uppercase text-cyan-400 font-semibold mb-2">Daily Calibration</h2>
         <h3 className="text-3xl font-serif text-gold-400 text-[#ffd700] mb-8">Find Your Luck</h3>
 
-        <div className={`relative w-64 h-64 rounded-full flex items-center justify-center mb-8 border-2 transition-all duration-700 ease-in-out ${isCalibrating ? 'animate-pulse border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.5)]' : ''} ${!isCalibrating && activeTier === 'lm-tier-1' ? 'border-gray-500 shadow-[0_0_15px_rgba(107,114,128,0.3)]' : ''} ${!isCalibrating && activeTier === 'lm-tier-2' ? 'border-cyan-400 shadow-[0_0_25px_rgba(34,211,238,0.4)]' : ''} ${!isCalibrating && activeTier === 'lm-tier-3' ? 'border-[#ffd700] shadow-[0_0_40px_rgba(255,215,0,0.6)]' : ''}`}>
+        <div className={`relative w-64 h-64 rounded-full flex items-center justify-center mb-8 border-2 transition-all duration-700 ease-in-out ${isCalibrating ? 'border-cyan-300' : ''} ${!isCalibrating && activeTier === 'lm-tier-1' ? 'border-gray-400' : ''} ${!isCalibrating && activeTier === 'lm-tier-2' ? 'border-cyan-300' : ''} ${!isCalibrating && activeTier === 'lm-tier-3' ? 'border-[#ffe48d]' : ''}`} style={{ animation: 'lucky-meter-vortex-pulse 4s ease-in-out infinite' }}>
           <div className="absolute inset-2 rounded-full border border-white/10" />
-          <div aria-hidden="true" className="absolute inset-5 rounded-full bg-[radial-gradient(circle,rgba(186,230,253,0.18),rgba(8,47,73,0.24)_55%,transparent_72%)]" style={{ animation: 'lucky-meter-vortex-breathe 5s ease-in-out infinite' }} />
+          <div aria-hidden="true" className="absolute inset-5 rounded-full bg-[radial-gradient(circle,rgba(186,230,253,0.18),rgba(8,47,73,0.24)_55%,transparent_72%)]" style={{ animation: 'lucky-meter-vortex-breathe 4s ease-in-out infinite' }} />
           <div className="relative text-center">
             <span className="block text-5xl font-bold text-white mb-2">{isCalibrating ? '...' : `${energyLevel}%`}</span>
             <span className="text-xs text-gray-400 uppercase tracking-wider">Energy Level</span>
           </div>
         </div>
 
-        <button type="button" onClick={handleCalibration} disabled={!isReady || isCalibrating || isLocked} className="px-8 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-full font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+        <button type="button" onClick={handleCalibration} disabled={!isReady || isCalibrating || isLocked} className="min-h-[54px] px-8 py-3 border border-[#ffe48d] rounded-[7px] bg-[linear-gradient(135deg,#4c2904,#c77a0e_21%,#f3c246_52%,#733e05)] shadow-[inset_0_1px_0_rgba(255,255,255,0.65),0_0_0_3px_rgba(120,67,5,0.65),0_0_26px_rgba(248,184,35,0.56),0_15px_28px_rgba(0,0,0,0.5)] text-[#1f1000] font-black text-sm tracking-[0.07em] uppercase transition-[transform,filter,opacity] duration-200 hover:-translate-y-0.5 hover:brightness-110 focus-visible:-translate-y-0.5 focus-visible:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:brightness-100">
           {isCalibrating ? 'Calibrating...' : 'Generate Luck'}
         </button>
 
