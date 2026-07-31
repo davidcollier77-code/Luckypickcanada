@@ -6,7 +6,6 @@ import CheckoutModal from '../checkout-modal';
 import LuckyCardReveal from '../lucky-card-reveal';
 import { createLuckyReveal } from '../lucky-reveal';
 import LuckyRevealPopup from '../lucky-reveal-popup';
-import LuckyMeter from '../../components/luck-meter';
 import TurnstileField from '../turnstile-field';
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import Hero from './Hero';
@@ -70,7 +69,6 @@ export default function HomePage() {
     <main className="lucky-site-shell homepage-experience">
       <Hero />
 
-      <LuckyMeter />
 
       <section id="cards" className="homepage-section homepage-cards-section" aria-labelledby="cards-heading">
         <SectionHeading eyebrow="A daily moment of possibility" id="cards-heading" title="Today’s Lucky Moment">

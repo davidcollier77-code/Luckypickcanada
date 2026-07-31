@@ -1,17 +1,13 @@
 'use client';
 
 const heroLinks = [
-  { href: '#lucky-meter', label: 'Lucky Meter' },
+  { href: '/lucky-meter', label: 'Lucky Meter' },
   { href: '#cards', label: 'Today’s Lucky Moment' },
   { href: '#community-map', label: 'Community Map' },
   { href: 'https://www.facebook.com/groups/1060808069624999/', label: 'Facebook Group', external: true },
 ];
 
 export default function Hero() {
-  function scrollToLuckyMeter() {
-    document.querySelector('#lucky-meter')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
   return (
     <section id="top" className="aurora-stage homepage-hero hero-container" aria-labelledby="hero-title">
       <div className="aurora-stage-glow" aria-hidden="true" />
@@ -36,7 +32,7 @@ export default function Hero() {
         <p className="hero-copy">A Canadian digital entertainment experience focused on lucky moments, positive messages, personalized picks, and community stories.</p>
         <p className="hero-supporting-copy">LuckyPickCanada is a digital entertainment experience created for fun, positive moments, and community connection. Discover your daily lucky moment, explore personalized picks, share stories, and enjoy a little Canadian magic every day.</p>
         <div className="button-wrapper">
-          <button type="button" className="cta-glow" onClick={scrollToLuckyMeter}>Reveal Your Daily Luck <span aria-hidden="true">→</span></button>
+          <a className="cta-glow" href="/lucky-meter">Reveal Today’s Luck <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>
