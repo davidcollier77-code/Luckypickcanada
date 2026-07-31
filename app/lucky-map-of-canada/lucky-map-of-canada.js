@@ -17,10 +17,10 @@ const provinces = [
   { code: 'MB', name: 'Manitoba', x: 49, y: 64 },
   { code: 'ON', name: 'Ontario', x: 60, y: 71 },
   { code: 'QC', name: 'Quebec', x: 74, y: 57 },
-  { code: 'NB', name: 'New Brunswick', x: 79.5, y: 78.5 },
-  { code: 'PE', name: 'Prince Edward Island', x: 84.3, y: 75.5 },
-  { code: 'NS', name: 'Nova Scotia', x: 84.5, y: 81.5 },
-  { code: 'NL', name: 'Newfoundland and Labrador', x: 91, y: 65.8 },
+  { code: 'NB', name: 'New Brunswick', x: 77, y: 75 },
+  { code: 'PE', name: 'Prince Edward Island', x: 80.5, y: 72.5 },
+  { code: 'NS', name: 'Nova Scotia', x: 81.5, y: 78 },
+  { code: 'NL', name: 'Newfoundland and Labrador', x: 87.5, y: 61.5 },
 ];
 
 const { pageStyle, cardStyle } = DEFAULT_MAP_THEME;
@@ -225,10 +225,6 @@ export default function LuckyMapOfCanada({ mapData }) {
 
         <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" className="lucky-story-map" style={{ gap: '1rem', marginTop: '1rem' }}>
           <div className="map-panel" style={{ ...cardStyle }}>
-            <div className="map-story-intro">
-              <strong>Canada’s Lucky Stories</strong>
-              <span>Discover where luck has landed in real-time. Explore these shared stories from across the provinces or add your own moment to help us map our growing community joy.</span>
-            </div>
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
               <Image
                 src="/IMG_20260731_055452_187611.png"

@@ -8,9 +8,6 @@ html { scroll-behavior: smooth; }
 .map-panel::before, .map-panel::after { content: none !important; }
 .official-map-artwork { position: relative; width: min(100%, 44rem); max-width: 100%; aspect-ratio: 569 / 464; overflow: hidden; border: 1px solid rgba(255, 219, 126, 0.68); border-radius: 18px; background: #071614; box-shadow: 0 0 0 6px rgba(15, 9, 3, 0.92), 0 0 0 8px rgba(160, 103, 26, 0.52), 0 30px 72px rgba(0, 0, 0, 0.58); }
 .official-map-image { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; -webkit-transform: translateZ(0); transform: translateZ(0); }
-.map-story-intro { width: min(100%, 44rem); padding: clamp(.8rem, 2vw, 1rem) clamp(.9rem, 2.2vw, 1.2rem); border: 1px solid rgba(255, 224, 142, .72); border-radius: 14px; color: #fff1bf; background: linear-gradient(135deg, rgba(15, 10, 3, .9), rgba(91, 61, 9, .82)); box-shadow: inset 0 1px rgba(255,255,255,.16), 0 10px 24px rgba(0,0,0,.32); line-height: 1.45; }
-.map-story-intro strong { display: block; margin-bottom: .35rem; color: #d4af37; font-family: var(--lpc-display); font-size: clamp(.8rem, 1.8vw, 1.15rem); font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-.map-story-intro span { display: block; font-size: clamp(.7rem, 1.25vw, .86rem); font-weight: 700; }
 .map-overlay-instruction, .map-empty-state { position: absolute; z-index: 1; margin: 0; padding: .6rem .8rem; border: 1px solid rgba(255, 235, 160, .45); border-radius: 999px; color: #fff7d6; background: rgba(4, 29, 27, .86); box-shadow: 0 4px 16px rgba(0, 0, 0, .34); font-size: clamp(.62rem, 1.4vw, .82rem); font-weight: 800; line-height: 1.35; text-align: center; }
 .map-overlay-instruction { right: 3%; bottom: 3%; max-width: 52%; }
 .map-empty-state { top: 50%; left: 50%; width: min(76%, 30rem); transform: translate(-50%, -50%); }
@@ -59,7 +56,6 @@ html { scroll-behavior: smooth; }
   .official-map-artwork { width: min(100%, 36rem); display: grid; place-items: center; border-radius: 14px; box-shadow: 0 0 0 3px rgba(15, 9, 3, .92), 0 0 0 4px rgba(160, 103, 26, .52), 0 16px 36px rgba(0, 0, 0, .42); }
   .official-map-image { max-width: 100%; }
   .province-marker .marker-count { font-size: .68rem; }
-  .map-story-intro { width: 100%; padding: .75rem .85rem; }
   .map-overlay-instruction { right: 2%; bottom: 2%; max-width: 62%; }
   .map-community-section, .map-province-section { border-radius: 18px; }
   .mobile-province-select { display: grid; gap: .5rem; margin-top: 1rem; color: #fde68a; font-weight: 800; }
