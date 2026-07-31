@@ -176,7 +176,13 @@ export default function LuckyMeter() {
 
       <div className="relative z-10 flex flex-col items-center max-w-lg mx-auto text-center px-4">
         <h2 className="text-sm tracking-widest uppercase text-cyan-400 font-semibold mb-2">Lucky Meter</h2>
-        <h3 className="text-3xl font-serif text-gold-400 text-[#ffd700] mb-8">Find Your Luck</h3>
+        <h3 className="text-3xl font-serif text-gold-400 text-[#ffd700] mb-4">Find Your Luck</h3>
+
+        <div className="w-full rounded-xl border border-[#4a4a4a] bg-[#0a0f0d] p-4 mb-8">
+          <p className="m-0 text-sm text-white">
+            The Lucky Meter is a once-a-day ritual. It generates your personal luck and a unique lucky quote. The meter resets after midnight, allowing you to return daily for a moment of positive energy.
+          </p>
+        </div>
 
         <div role="img" aria-label="A glowing circular energy meter displaying daily personalized luck calibration" className={`relative w-64 h-64 rounded-full flex items-center justify-center mb-8 border-2 transition-all duration-700 ease-in-out ${isCalibrating ? 'border-cyan-300' : ''} ${!isCalibrating && activeTier === 'lm-tier-1' ? 'border-gray-400' : ''} ${!isCalibrating && activeTier === 'lm-tier-2' ? 'border-cyan-300' : ''} ${!isCalibrating && activeTier === 'lm-tier-3' ? 'border-[#ffe48d]' : ''}`} style={{ animation: 'lucky-meter-vortex-pulse 4s ease-in-out infinite' }}>
           <div className="absolute inset-2 rounded-full border border-white/10" />
