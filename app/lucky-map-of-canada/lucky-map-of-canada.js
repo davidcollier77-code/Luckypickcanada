@@ -228,7 +228,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
               <Image
                 src="/IMG_20260731_055452_187611.png"
-                alt="Official LuckyPickCanada community map of Canada"
+                alt="Interactive map displaying community stories across Canadian provinces"
                 width={569}
                 height={464}
                 sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem"

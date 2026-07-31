@@ -175,10 +175,10 @@ export default function LuckyMeter() {
       </div>
 
       <div className="relative z-10 flex flex-col items-center max-w-lg mx-auto text-center px-4">
-        <h2 className="text-sm tracking-widest uppercase text-cyan-400 font-semibold mb-2">Daily Calibration</h2>
+        <h2 className="text-sm tracking-widest uppercase text-cyan-400 font-semibold mb-2">Lucky Meter</h2>
         <h3 className="text-3xl font-serif text-gold-400 text-[#ffd700] mb-8">Find Your Luck</h3>
 
-        <div className={`relative w-64 h-64 rounded-full flex items-center justify-center mb-8 border-2 transition-all duration-700 ease-in-out ${isCalibrating ? 'border-cyan-300' : ''} ${!isCalibrating && activeTier === 'lm-tier-1' ? 'border-gray-400' : ''} ${!isCalibrating && activeTier === 'lm-tier-2' ? 'border-cyan-300' : ''} ${!isCalibrating && activeTier === 'lm-tier-3' ? 'border-[#ffe48d]' : ''}`} style={{ animation: 'lucky-meter-vortex-pulse 4s ease-in-out infinite' }}>
+        <div role="img" aria-label="A glowing circular energy meter displaying daily personalized luck calibration" className={`relative w-64 h-64 rounded-full flex items-center justify-center mb-8 border-2 transition-all duration-700 ease-in-out ${isCalibrating ? 'border-cyan-300' : ''} ${!isCalibrating && activeTier === 'lm-tier-1' ? 'border-gray-400' : ''} ${!isCalibrating && activeTier === 'lm-tier-2' ? 'border-cyan-300' : ''} ${!isCalibrating && activeTier === 'lm-tier-3' ? 'border-[#ffe48d]' : ''}`} style={{ animation: 'lucky-meter-vortex-pulse 4s ease-in-out infinite' }}>
           <div className="absolute inset-2 rounded-full border border-white/10" />
           <div aria-hidden="true" className="absolute inset-5 rounded-full bg-[radial-gradient(circle,rgba(186,230,253,0.18),rgba(8,47,73,0.24)_55%,transparent_72%)]" style={{ animation: 'lucky-meter-vortex-breathe 4s ease-in-out infinite' }} />
           <div className="relative text-center">
