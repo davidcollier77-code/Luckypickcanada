@@ -178,7 +178,7 @@ export default function LuckyMeter() {
         <h2 className="text-sm tracking-widest uppercase text-cyan-400 font-semibold mb-2">Lucky Meter</h2>
         <h3 className="text-3xl font-serif text-gold-400 text-[#ffd700] mb-4">Find Your Luck</h3>
 
-        <div className="w-full rounded-xl border border-[#4a4a4a] bg-[#0a0f0d] p-4 mb-8">
+        <div className="lucky-meter-info-box">
           <p className="m-0 text-sm text-white">
             The Lucky Meter is a once-a-day ritual. It generates your personal luck and a unique lucky quote. The meter resets after midnight, allowing you to return daily for a moment of positive energy.
           </p>

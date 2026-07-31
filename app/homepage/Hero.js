@@ -13,7 +13,7 @@ export default function Hero() {
   }
 
   return (
-    <section id="top" className="aurora-stage homepage-hero" aria-labelledby="hero-title">
+    <section id="top" className="aurora-stage homepage-hero hero-container" aria-labelledby="hero-title">
       <div className="aurora-stage-glow" aria-hidden="true" />
       <nav className="hero-nav" aria-label="Primary navigation">
         <a className="hero-brand" href="#top" aria-label="Lucky Pick Canada home">
@@ -35,7 +35,9 @@ export default function Hero() {
         <h1 id="hero-title" className="gold-3d">Your daily lucky moment.</h1>
         <p className="hero-copy">A Canadian digital entertainment experience focused on lucky moments, positive messages, personalized picks, and community stories.</p>
         <p className="hero-supporting-copy">LuckyPickCanada is a digital entertainment experience created for fun, positive moments, and community connection. Discover your daily lucky moment, explore personalized picks, share stories, and enjoy a little Canadian magic every day.</p>
-        <button type="button" className="cta-glow" onClick={scrollToLuckyMeter}>Reveal Your Daily Luck <span aria-hidden="true">→</span></button>
+        <div className="button-wrapper">
+          <button type="button" className="cta-glow" onClick={scrollToLuckyMeter}>Reveal Your Daily Luck <span aria-hidden="true">→</span></button>
+        </div>
       </div>
     </section>
   );
