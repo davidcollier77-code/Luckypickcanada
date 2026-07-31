@@ -83,3 +83,10 @@ html { scroll-behavior: smooth; }
   .hero-nav-link { padding-inline: .1rem; font-size: .75rem; }
   .cta-glow { width: 100%; padding-inline: .75rem; }
 }
+
+.hero-supporting-copy { max-width: 720px; margin: 0 auto 1.5rem; color: rgba(255, 248, 221, .82); font-size: clamp(.88rem, 1.45vw, 1rem); line-height: 1.55; }
+
+@media (max-width: 680px) {
+  .hero-nav { position: sticky; top: .5rem; z-index: 30; padding: .65rem .75rem; border: 1px solid rgba(255, 224, 135, .2); border-radius: 14px; background: rgba(8, 13, 37, .96); box-shadow: 0 10px 28px rgba(0, 0, 0, .28); }
+  .hero-supporting-copy { margin-bottom: 1rem; line-height: 1.45; }
+}

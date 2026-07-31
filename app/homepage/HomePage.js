@@ -11,11 +11,11 @@ import TurnstileField from '../turnstile-field';
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import Hero from './Hero';
 
-function SectionHeading({ eyebrow, title, children }) {
+function SectionHeading({ eyebrow, id, title, children }) {
   return (
     <div className="homepage-section-heading">
       <p>{eyebrow}</p>
-      <h2>{title}</h2>
+      <h2 id={id}>{title}</h2>
       {children && <span>{children}</span>}
     </div>
   );
@@ -73,31 +73,31 @@ export default function HomePage() {
       <LuckyMeter />
 
       <section id="cards" className="homepage-section homepage-cards-section" aria-labelledby="cards-heading">
-        <SectionHeading eyebrow="A daily moment of possibility" title="Today’s Lucky Moment">
+        <SectionHeading eyebrow="A daily moment of possibility" id="cards-heading" title="Today’s Lucky Moment">
           Open one collectible card each day for a calm spark of encouragement.
         </SectionHeading>
         <LuckyCardReveal />
       </section>
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
-        <SectionHeading eyebrow="Made for your next moment" title="Choose your Lucky Pick experience">
-          Pick your game, share a gift, or support the experience. Lucky Picks are for entertainment only.
+        <SectionHeading eyebrow="Made for your next moment" id="picks-heading" title="Lucky Pick Experience">
+          Create a personal LuckyPickCanada moment, send a thoughtful digital gift, or support the experience.
         </SectionHeading>
         <div className="homepage-offer-grid">
           <article className="homepage-offer homepage-offer-featured">
             <img className="homepage-offer-image" src="/1784862459046.png" alt="Personalized Lucky Pick card artwork" width="704" height="1524" loading="lazy" />
-            <p className="homepage-offer-kicker">Personalized Lucky Pick</p>
-            <h3>Six or seven numbers. One luminous reveal.</h3>
-            <p>Select a 6 Pick or 7 Pick and enjoy your lucky colour and lucky day in the existing reveal experience.</p>
+            <p className="homepage-offer-kicker">$1 Lucky Pick</p>
+            <h3>Make your moment personal.</h3>
+            <p>Create your personal LuckyPickCanada moment with a unique interactive pick experience.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
             <button type="button" className="homepage-offer-action" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
-            <p className="homepage-offer-kicker">Gift a little luck</p>
-            <h3>Send a bright surprise across Canada.</h3>
-            <p>The existing gift package delivers a Lucky Pick reveal and personal greeting for someone you care about.</p>
+            <p className="homepage-offer-kicker">$4.99 Gift Experience</p>
+            <h2 className="homepage-offer-title">Gift Experience</h2>
+            <p>Send someone special their own LuckyPickCanada experience — a fun digital gift filled with lucky moments.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
             <button type="button" className="homepage-offer-action" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
           </article>
@@ -115,13 +115,13 @@ export default function HomePage() {
       <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
         <article className="homepage-community-card">
           <p className="homepage-offer-kicker">Lucky Stories</p>
-          <h2>Good fortune travels well.</h2>
+          <h2>Community Stories</h2>
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
           <Link href="/stories" className="homepage-story-cta">See Our Story Section</Link>
         </article>
         <article id="community-map" className="homepage-community-card homepage-map-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
-          <h2>Find where luck has landed.</h2>
+          <h2>Community Map</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
           <Link href="/map" className="homepage-map-cta">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
         </article>
@@ -158,7 +158,16 @@ export default function HomePage() {
         </form>
       </section>
 
-      <footer className="homepage-footer">Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</footer>
+      <footer className="homepage-footer">
+        <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
+        <p className="homepage-disclaimer">LuckyPickCanada is a digital entertainment experience created for fun and positive moments. It does not provide lottery or gambling services.</p>
+        <nav className="homepage-social-links" aria-label="Social links">
+          <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" aria-label="Facebook Community Group">Facebook</a>
+          <a href="#" aria-label="X">X</a>
+          <a href="#" aria-label="Instagram">Instagram</a>
+          <a href="#" aria-label="TikTok">TikTok</a>
+        </nav>
+      </footer>
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onRevealTestStart={(revealType, luckyPickGame) => {
         if (revealType === 'lucky_pick' || revealType === 'gift_package') {
           setCheckoutType(null);

@@ -36,6 +36,7 @@ export const metadata = {
   icons: {
     icon: [{ url: '/BackgroundEraser_20260724_163638777.png', type: 'image/png' }],
     shortcut: '/BackgroundEraser_20260724_163638777.png',
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
 };
 

@@ -128,3 +128,10 @@
   .homepage-community-banner { margin: 1rem; padding: 1.35rem; border-radius: 22px; }
   .homepage-community-image { max-width: 30rem; margin-inline: auto; }
 }
+
+.homepage-offer-title { margin: 0; color: #fff0bd; font-size: clamp(1.35rem, 2.2vw, 2rem); line-height: 1.13; }
+.homepage-footer p { max-width: 760px; margin: 0 auto; }
+.homepage-disclaimer { margin-top: .9rem !important; color: rgba(255, 235, 173, .72); font-weight: 600; letter-spacing: normal; line-height: 1.55; text-transform: none; }
+.homepage-social-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem 1.25rem; margin-top: 1.35rem; }
+.homepage-social-links a { color: #ffe49a; font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
+.homepage-social-links a:hover, .homepage-social-links a:focus-visible { color: #fff7cc; text-decoration: underline; }
