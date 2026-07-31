@@ -8,19 +8,19 @@ import { DEFAULT_MAP_THEME } from '../../themes/default/map-theme';
 import { useEffect, useMemo, useState } from 'react';
 
 const provinces = [
-  { code: 'BC', name: 'British Columbia', x: 25, y: 59 },
-  { code: 'AB', name: 'Alberta', x: 39, y: 61 },
-  { code: 'SK', name: 'Saskatchewan', x: 51, y: 62 },
-  { code: 'MB', name: 'Manitoba', x: 62, y: 61 },
-  { code: 'ON', name: 'Ontario', x: 72, y: 69 },
-  { code: 'QC', name: 'Quebec', x: 82, y: 58 },
-  { code: 'NB', name: 'New Brunswick', x: 87, y: 74 },
-  { code: 'NS', name: 'Nova Scotia', x: 92, y: 79 },
-  { code: 'PE', name: 'Prince Edward Island', x: 90, y: 74 },
-  { code: 'NL', name: 'Newfoundland and Labrador', x: 91, y: 47 },
-  { code: 'YT', name: 'Yukon', x: 24, y: 34 },
-  { code: 'NT', name: 'Northwest Territories', x: 43, y: 31 },
-  { code: 'NU', name: 'Nunavut', x: 69, y: 25 },
+  { code: 'YT', name: 'Yukon', x: 15, y: 23 },
+  { code: 'NT', name: 'Northwest Territories', x: 25, y: 28 },
+  { code: 'NU', name: 'Nunavut', x: 50, y: 24 },
+  { code: 'BC', name: 'British Columbia', x: 16, y: 51 },
+  { code: 'AB', name: 'Alberta', x: 27, y: 61 },
+  { code: 'SK', name: 'Saskatchewan', x: 36, y: 61 },
+  { code: 'MB', name: 'Manitoba', x: 46, y: 63 },
+  { code: 'ON', name: 'Ontario', x: 62, y: 70 },
+  { code: 'QC', name: 'Quebec', x: 76, y: 58 },
+  { code: 'NB', name: 'New Brunswick', x: 82, y: 79 },
+  { code: 'PE', name: 'Prince Edward Island', x: 85, y: 78 },
+  { code: 'NS', name: 'Nova Scotia', x: 85, y: 82 },
+  { code: 'NL', name: 'Newfoundland and Labrador', x: 89, y: 65 },
 ];
 
 const { pageStyle, cardStyle } = DEFAULT_MAP_THEME;
@@ -227,15 +227,19 @@ export default function LuckyMapOfCanada({ mapData }) {
           <div className="map-panel" style={{ ...cardStyle }}>
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
               <Image
-                src="/IMG_20260730_053904_860801.png"
+                src="/IMG_20260731_055452_187611.png"
                 alt="Official LuckyPickCanada community map of Canada"
-                width={140}
-                height={250}
-                sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) 28rem, 28rem"
+                width={569}
+                height={464}
+                sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem"
                 quality={100}
                 priority
                 className="official-map-image"
               />
+              <div className="map-story-plaque">
+                <strong>Canada’s Lucky Stories</strong>
+                <span>Discover where luck has landed in real-time. Explore these shared stories from across the provinces or add your own moment to help us map our growing community joy.</span>
+              </div>
               {provinceSelections.map((province) => {
                 const provinceCount = province.count;
                 const active = selectedProvince === province.code;
