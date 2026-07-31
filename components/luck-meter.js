@@ -87,7 +87,7 @@ function readSavedRitual() {
   }
 }
 
-export default function LuckyMeter() {
+export default function LuckyMeter({ onFortuneChange }) {
   const [activeTier, setActiveTier] = useState('lm-tier-1');
   const [energyLevel, setEnergyLevel] = useState(50);
   const [dailyQuote, setDailyQuote] = useState('');
@@ -122,6 +122,10 @@ export default function LuckyMeter() {
     const timer = window.setInterval(updateRemainingTime, 1000);
     return () => window.clearInterval(timer);
   }, [lastRitual]);
+
+  useEffect(() => {
+    onFortuneChange?.(dailyQuote);
+  }, [dailyQuote, onFortuneChange]);
 
   const isLocked = remainingTime > 0;
 
@@ -197,7 +201,6 @@ export default function LuckyMeter() {
           {isCalibrating ? 'Calibrating...' : 'Generate Luck'}
         </button>
 
-        {dailyQuote && <p className="mt-6 text-sm text-cyan-100 italic">“{dailyQuote}”</p>}
 
         <p className="mt-6 text-sm text-gray-400" aria-live="polite">
           {isLocked ? <>Next ritual available in: <span className="text-white font-mono">{formatRemainingTime(remainingTime)}</span></> : 'Your daily ritual is ready.'}
