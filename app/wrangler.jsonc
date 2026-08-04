@@ -11,6 +11,12 @@
     "binding": "ASSETS",
     "run_worker_first": true
   },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "luckypickcanada-site"
+    }
+  ],
   "observability": {
     "enabled": true
   }
