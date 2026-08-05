@@ -19,72 +19,156 @@ body {
   min-height: 100vh;
 }
 
-/* ================================
-   LUCKY METER — CONTAINER
-   ================================ */
-#lucky-meter {
-  width: 260px;
-  height: 260px;
+/* ==========================================================================
+   LUCKY METER FEATURE STYLES
+   ========================================================================== */
+
+/* Cosmic Canvas & Background */
+.lm-cosmic-container {
   position: relative;
-  margin: 0 auto;
+  min-height: 100vh;
+  width: 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
-  transform: translateZ(0);
+  justify-content: center;
+  background-color: #0b0f19;
+  background-image: 
+    radial-gradient(circle at 50% 20%, rgba(13, 27, 42, 0.8) 0%, #070a12 100%);
+  overflow: hidden;
+  padding: 2rem 1rem;
+  font-family: inherit;
 }
 
-.lm-container {
+.lm-starfield {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0,0,0,0)),
+    radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.9), rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.lm-aurora-glow {
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 242, 254, 0.15) 0%, rgba(16, 185, 129, 0.08) 40%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  animation: lm-aurora-pulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes lm-aurora-pulse {
+  0% { transform: translateX(-50%) scale(0.9); opacity: 0.6; }
+  100% { transform: translateX(-50%) scale(1.1); opacity: 0.9; }
+}
+
+/* Watermark Cropping Container */
+.lm-watermark-crop {
   position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  max-width: 460px;
   width: 100%;
-  height: 100%;
 }
 
-/* ================================
-   VORTEX ANIMATION
-   ================================ */
-.lm-vortex {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+/* Metallic Dome Vault Frame */
+.lm-dome-frame {
+  position: relative;
+  background: linear-gradient(145deg, #1c2331 0%, #0d111a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.8),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.8);
+  border-radius: 24px;
+  padding: 2rem 1.5rem;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  overflow: visible;
+  gap: 1.5rem;
+  transition: box-shadow 0.4s ease;
 }
 
-.lm-vortex-ring {
+.lm-dome-frame.is-active {
+  box-shadow: 
+    0 20px 60px rgba(0, 242, 254, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.8);
+}
+
+/* Dome Header Branding */
+.lm-dome-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 0.5rem;
+}
+
+.lm-header-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #94a3b8;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.lm-status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #334155;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+  transition: all 0.3s ease;
+}
+
+.lm-status-indicator.active {
+  background-color: #00f2fe;
+  box-shadow: 0 0 10px #00f2fe, 0 0 20px #00f2fe;
+}
+
+/* Vortex Chamber */
+.lm-vortex-chamber {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #151c28 0%, #080c14 100%);
+  border: 4px solid #111827;
+  box-shadow: 
+    inset 0 10px 20px rgba(0,0,0,0.9),
+    inset 0 -5px 10px rgba(255,255,255,0.05),
+    0 0 0 2px rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lm-vortex-core {
   position: absolute;
+  inset: 15px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.25);
-  animation: lm-spin 4s linear infinite;
-  filter: blur(2px);
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(0, 242, 254, 0.1) 120deg, rgba(0, 242, 254, 0.6) 240deg, transparent 360deg);
+  filter: blur(8px);
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
 }
 
-.lm-ring-1 {
-  width: 180px;
-  height: 180px;
-  animation-duration: 5s;
-}
-
-.lm-ring-2 {
-  width: 140px;
-  height: 140px;
-  animation-duration: 3.5s;
-}
-
-.lm-ring-3 {
-  width: 100px;
-  height: 100px;
-  animation-duration: 2.5s;
-}
-
-.lm-vortex-center {
-  width: 40px;
-  height: 40px;
-  background: radial-gradient(circle, #00ffcc, #0066ff);
-  border-radius: 50%;
-  box-shadow: 0 0 20px #00ffcc, 0 0 40px #0066ff;
+.lm-vortex-core.spinning {
+  opacity: 0.95;
+  animation: lm-spin 1.2s linear infinite;
 }
 
 @keyframes lm-spin {
@@ -92,58 +176,166 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* ================================
-   PERCENTAGE DISPLAY
-   ================================ */
-.lm-percentage {
+.lm-glass-reflection {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 42px;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 40%, transparent 60%);
   pointer-events: none;
 }
 
-#lm-percent-value {
-  transition: all 0.3s ease-out;
-}
-
-/* ================================
-   INDICATOR LIGHTS
-   ================================ */
-.lm-indicators {
+/* LED Ring */
+.lm-led-ring {
   position: absolute;
-  bottom: -20px;
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-}
-
-.lm-light {
-  width: 18px;
-  height: 18px;
+  inset: 10px;
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255,255,255,0.4);
-  opacity: 0.4;
-  transition: opacity 0.3s ease, box-shadow 0.3s ease;
+  pointer-events: none;
 }
 
-.lm-light-green {
-  background: #00ff66;
+.lm-led-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #1e293b;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.8);
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
 }
 
-.lm-light-yellow {
-  background: #ffdd33;
+/* Circular Positioning for 8 LEDs */
+.lm-led-dot:nth-child(1) { transform: rotate(0deg) translate(105px) translate(-3px, -3px); }
+.lm-led-dot:nth-child(2) { transform: rotate(45deg) translate(105px) translate(-3px, -3px); }
+.lm-led-dot:nth-child(3) { transform: rotate(90deg) translate(105px) translate(-3px, -3px); }
+.lm-led-dot:nth-child(4) { transform: rotate(135deg) translate(105px) translate(-3px, -3px); }
+.lm-led-dot:nth-child(5) { transform: rotate(180deg) translate(105px) translate(-3px, -3px); }
+.lm-led-dot:nth-child(6) { transform: rotate(225deg) translate(105px) translate(-3px, -3px); }
+.lm-led-dot:nth-child(7) { transform: rotate(270deg) translate(105px) translate(-3px, -3px); }
+.lm-led-dot:nth-child(8) { transform: rotate(315deg) translate(105px) translate(-3px, -3px); }
+
+.lm-led-dot.pulse {
+  animation: lm-led-glow 0.8s ease-in-out infinite alternate;
 }
 
-.lm-light-red {
-  background: #ff3366;
+@keyframes lm-led-glow {
+  0% { background-color: #1e293b; box-shadow: none; }
+  100% { background-color: #00f2fe; box-shadow: 0 0 8px #00f2fe; }
 }
 
-.lm-light.active {
+/* Score Display Overlay */
+.lm-score-overlay {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.lm-score-value {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+  line-height: 1;
+}
+
+.lm-percent-symbol {
+  font-size: 1.8rem;
+  color: #00f2fe;
+  margin-left: 2px;
+}
+
+.lm-score-label {
+  margin-top: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+/* Fortune Card */
+.lm-fortune-card {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  border-radius: 12px;
+  text-align: center;
+  animation: lm-fade-in 0.4s ease-out forwards;
+}
+
+.lm-fortune-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #e2e8f0;
+}
+
+@keyframes lm-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ritual Button */
+.lm-action-wrapper {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.lm-generate-btn {
+  position: relative;
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #00f2fe;
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
+}
+
+.lm-generate-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 242, 254, 0.6);
+  border-color: #38bdf8;
+}
+
+.lm-generate-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.lm-generate-btn:disabled {
+  opacity: 0.85;
+  cursor: not-allowed;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-color: #334155;
+  box-shadow: none;
+}
+
+.lm-btn-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.lm-generate-btn:hover .lm-btn-glow {
   opacity: 1;
-  box-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
+}
+
+.lm-btn-text {
+  position: relative;
+  z-index: 1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
