@@ -1,6 +1,149 @@
-/* The visual system is isolated in the active Default Theme. */
-@import '../themes/default/index.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 15, 23, 42;
+  --background-end-rgb: 2, 6, 23;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  min-height: 100vh;
+}
+
+/* ================================
+   LUCKY METER — CONTAINER
+   ================================ */
+#lucky-meter {
+  width: 260px;
+  height: 260px;
+  position: relative;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: translateZ(0);
+}
+
+.lm-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* ================================
+   VORTEX ANIMATION
+   ================================ */
+.lm-vortex {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+}
+
+.lm-vortex-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  animation: lm-spin 4s linear infinite;
+  filter: blur(2px);
+}
+
+.lm-ring-1 {
+  width: 180px;
+  height: 180px;
+  animation-duration: 5s;
+}
+
+.lm-ring-2 {
+  width: 140px;
+  height: 140px;
+  animation-duration: 3.5s;
+}
+
+.lm-ring-3 {
+  width: 100px;
+  height: 100px;
+  animation-duration: 2.5s;
+}
+
+.lm-vortex-center {
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, #00ffcc, #0066ff);
+  border-radius: 50%;
+  box-shadow: 0 0 20px #00ffcc, 0 0 40px #0066ff;
+}
+
+@keyframes lm-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ================================
+   PERCENTAGE DISPLAY
+   ================================ */
+.lm-percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 42px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+#lm-percent-value {
+  transition: all 0.3s ease-out;
+}
+
+/* ================================
+   INDICATOR LIGHTS
+   ================================ */
+.lm-indicators {
+  position: absolute;
+  bottom: -20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.lm-light {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255,255,255,0.4);
+  opacity: 0.4;
+  transition: opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+.lm-light-green {
+  background: #00ff66;
+}
+
+.lm-light-yellow {
+  background: #ffdd33;
+}
+
+.lm-light-red {
+  background: #ff3366;
+}
+
+.lm-light.active {
+  opacity: 1;
+  box-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
+}
