@@ -2,7 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 
-// Core Lucky Meter Animation & Math Engine
+// ==========================================
+// 1. Core Lucky Meter Animation Engine
+// ==========================================
 class LuckyMeterEngine {
   constructor(onUpdate) {
     this.value = 0;
@@ -25,7 +27,7 @@ class LuckyMeterEngine {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       
-      // Smooth ease-out quadratic deceleration curve
+      // Easing function: smooth quadratic ease-out
       const eased = start + diff * (1 - (1 - progress) * (1 - progress));
       this.setValue(eased);
 
@@ -38,6 +40,101 @@ class LuckyMeterEngine {
   }
 }
 
+// ==========================================
+// 2. SSR-Safe State Manager (Persistence)
+// ==========================================
+class LuckyMeterStateManager {
+  constructor({ meter, storageKey = "luckyMeterValue" }) {
+    this.meter = meter;
+    this.storageKey = storageKey;
+  }
+
+  save(value) {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(value));
+    } catch (err) {
+      console.warn("LuckyMeterStateManager: Could not save state", err);
+    }
+  }
+
+  load() {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(this.storageKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch (err) {
+      console.warn("LuckyMeterStateManager: Could not load state", err);
+      return null;
+    }
+  }
+
+  init() {
+    const saved = this.load();
+    if (saved !== null) {
+      this.meter.setValue(saved);
+      return saved;
+    }
+    return 0;
+  }
+
+  animateAndStore(target, duration = 2500) {
+    this.meter.animateTo(target, duration);
+    setTimeout(() => {
+      this.save(target);
+    }, duration + 50);
+  }
+
+  reset() {
+    this.meter.setValue(0);
+    this.save(0);
+  }
+}
+
+// ==========================================
+// 3. Event Bridge (External & Custom Triggers)
+// ==========================================
+class LuckyMeterEventBridge {
+  constructor({ stateManager }) {
+    this.stateManager = stateManager;
+    this.listeners = {};
+  }
+
+  on(eventName, callback) {
+    if (!this.listeners[eventName]) {
+      this.listeners[eventName] = [];
+    }
+    this.listeners[eventName].push(callback);
+  }
+
+  emit(eventName, data) {
+    const callbacks = this.listeners[eventName];
+    if (!callbacks) return;
+
+    callbacks.forEach((cb) => {
+      try {
+        cb(data);
+      } catch (err) {
+        console.warn(`LuckyMeterEventBridge: Error in '${eventName}' listener`, err);
+      }
+    });
+  }
+
+  bindDefaultEvents() {
+    this.on("luck:update", (value) => {
+      const safeValue = Math.max(0, Math.min(100, value));
+      this.stateManager.animateAndStore(safeValue);
+    });
+
+    this.on("luck:reset", () => {
+      this.stateManager.reset();
+    });
+  }
+}
+
+// ==========================================
+// Fortune Definitions
+// ==========================================
 const COSMIC_FORTUNES = [
   { min: 90, text: "✨ Supreme Cosmic Alignment! The universe is bending probability in your favor." },
   { min: 75, text: "🌟 High Vibrational Sync! Fortune favors your boldest moves today." },
@@ -46,16 +143,39 @@ const COSMIC_FORTUNES = [
   { min: 0, text: "🌌 Cosmic Reset! Charge your energy and manifest a new path." }
 ];
 
+// ==========================================
+// 4. Main React Page Component
+// ==========================================
 export default function LuckyMeterPage() {
   const [displayScore, setDisplayScore] = useState(0);
   const [isCalculating, setIsCalculating] = useState(false);
   const [fortune, setFortune] = useState('');
+  
   const engineRef = useRef(null);
+  const managerRef = useRef(null);
+  const bridgeRef = useRef(null);
 
   useEffect(() => {
-    engineRef.current = new LuckyMeterEngine((val) => {
+    // Initialize Core System
+    const engine = new LuckyMeterEngine((val) => {
       setDisplayScore(Math.round(val));
     });
+
+    const manager = new LuckyMeterStateManager({ meter: engine });
+    const bridge = new LuckyMeterEventBridge({ stateManager: manager });
+    
+    bridge.bindDefaultEvents();
+
+    engineRef.current = engine;
+    managerRef.current = manager;
+    bridgeRef.current = bridge;
+
+    // Load persisted luck score on initial mount
+    const savedScore = manager.init();
+    if (savedScore > 0) {
+      const matchedFortune = COSMIC_FORTUNES.find(f => savedScore >= f.min)?.text || COSMIC_FORTUNES[4].text;
+      setFortune(matchedFortune);
+    }
 
     return () => {
       if (engineRef.current && engineRef.current.animId) {
@@ -70,15 +190,14 @@ export default function LuckyMeterPage() {
     setIsCalculating(true);
     setFortune('');
 
-    // Generate random 1-100% target score
     const targetScore = Math.floor(Math.random() * 100) + 1;
 
-    // Trigger 2.5-second (2500ms) animation ritual
-    if (engineRef.current) {
-      engineRef.current.animateTo(targetScore, 2500);
+    // Trigger state manager animation & persistence save
+    if (managerRef.current) {
+      managerRef.current.animateAndStore(targetScore, 2500);
     }
 
-    // Resolve ritual state and reveal cosmic fortune
+    // Resolve ritual UI state after 2.5 seconds
     setTimeout(() => {
       setIsCalculating(false);
       const matchedFortune = COSMIC_FORTUNES.find(f => targetScore >= f.min)?.text || COSMIC_FORTUNES[4].text;
