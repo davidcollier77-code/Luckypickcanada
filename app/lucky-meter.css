@@ -1,0 +1,29 @@
+import './lucky-meter.css';
+
+export default function LuckyMeterPage() {
+  return (
+    <div id="lucky-meter" className="lm-container">
+      
+      {/* Vortex Animation Core */}
+      <div className="lm-vortex">
+        <div className="lm-vortex-ring lm-ring-1"></div>
+        <div className="lm-vortex-ring lm-ring-2"></div>
+        <div className="lm-vortex-ring lm-ring-3"></div>
+        <div className="lm-vortex-center"></div>
+      </div>
+
+      {/* Percentage Reveal */}
+      <div className="lm-percentage">
+        <span id="lm-percent-value">0%</span>
+      </div>
+
+      {/* Indicator Lights */}
+      <div className="lm-indicators">
+        <div className="lm-light lm-light-green"></div>
+        <div className="lm-light lm-light-yellow"></div>
+        <div className="lm-light lm-light-red"></div>
+      </div>
+
+    </div>
+  );
+}
