@@ -1,0 +1,7 @@
+name = "luckypickcanada-site"
+pages_build_output_dir = ".vercel/output/static"
+compatibility_date = "2026-08-05"
+
+[build]
+command = "npm run build"
+output_dir = ".vercel/output/static"
