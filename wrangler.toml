@@ -1,7 +1,19 @@
 name = "luckypickcanada-site"
-pages_build_output_dir = ".vercel/output/static"
+main = ".open-next/worker.js"
 compatibility_date = "2026-08-05"
+compatibility_flags = ["nodejs_compat"]
 
 [build]
 command = "npm run build"
-output_dir = ".vercel/output/static"
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+run_worker_first = true
+
+[[services]]
+binding = "WORKER_SELF_REFERENCE"
+service = "luckypickcanada-site"
+
+[observability]
+enabled = true
