@@ -1,0 +1,49 @@
+name: Validate OpenNext Repair
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  validate:
+    name: Validate OpenNext build artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies (npm ci)
+        run: npm ci
+
+      - name: Build (npm run build)
+        run: npm run build
+
+      - name: Verify .open-next/worker.js exists
+        run: |
+          if [ -f .open-next/worker.js ]; then
+            echo "WORKER EXISTS";
+          else
+            echo "WORKER MISSING";
+            ls -la .open-next || true;
+            exit 1;
+          fi
+
+      - name: Verify .open-next/assets directory exists
+        run: |
+          if [ -d .open-next/assets ]; then
+            echo "ASSETS DIR EXISTS";
+          else
+            echo "ASSETS DIR MISSING";
+            ls -la .open-next || true;
+            exit 1;
+          fi
+
+      - name: Wrangler build validation (no deploy)
+        run: npx wrangler build --config ./wrangler.toml
+
+      - name: Git status
+        run: git status --porcelain=2 --branch
