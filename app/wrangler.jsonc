@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "luckypickcanada-site",
+  "name": "luckypickcanada-app",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-04",
   "compatibility_flags": [
@@ -14,7 +14,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "luckypickcanada-site"
+      "service": "luckypickcanada-app"
     }
   ],
   "observability": {
