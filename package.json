@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx open-next@latest build && npx wrangler deploy",
+    "build": "next build",
     "start": "next start"
   },
   "dependencies": {
