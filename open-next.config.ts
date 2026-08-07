@@ -1,11 +1,9 @@
-import { defineOpenNextConfig } from "@opennextjs/cloudflare";
-
-export default defineOpenNextConfig({
+export default {
   default: {
     override: {
-      wrapper: "cloudflare",
+      wrapper: "cloudflare-node",
       converter: "edge",
       proxyExternalRequest: "fetch",
     },
   },
-});
+};
