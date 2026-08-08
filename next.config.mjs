@@ -15,9 +15,6 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [],
   },
-  experimental: {
-    optimizeCss: true,
-  },
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
 };
