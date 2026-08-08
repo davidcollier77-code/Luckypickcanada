@@ -154,7 +154,6 @@ export async function getLuckyStoryMap() {
 
   try {
     await ensureLuckyStoriesTable(database);
-    await initializeDatabase();
     const [rows, locations] = await Promise.all([
       database`
         select id, display_name, location, story, created_at

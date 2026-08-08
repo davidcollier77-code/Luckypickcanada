@@ -108,11 +108,19 @@ export async function GET(request) {
     });
   }
 
-  const result = await listSuggestions(100);
+  try {
+    const result = await listSuggestions(100);
 
-  return new Response(renderSuggestions(result), {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
-  });
+    return new Response(renderSuggestions(result), {
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  } catch (error) {
+    console.error('Admin suggestions page failed', error);
+    return new Response(renderSuggestions({ isConfigured: false, suggestions: [] }), {
+      status: 500,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
 }
 
 export async function POST(request) {

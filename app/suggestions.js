@@ -1,25 +1,9 @@
-import postgres from 'postgres';
+import { getSql } from './lib/db-init';
 import { escapeHtml, hasHeaderInjection, isValidEmailAddress, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
+function validateSuggestion({ name, email, message }) {
 const DEFAULT_SUGGESTIONS_TO_EMAIL = 'notifications@luckypickcanada.ca';
 
-let sql;
-
-function getSql() {
-  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-
-  if (!connectionString) {
-    return null;
-  }
-
-  if (!sql) {
-    sql = postgres(connectionString, { max: 1 });
-  }
-
-  return sql;
-}
-
-function validateSuggestion({ name, email, message }) {
   const cleanName = validatePlainTextField({
     value: name,
     label: 'Name',
@@ -148,17 +132,22 @@ export async function listSuggestions(limit = 50) {
     return { isConfigured: false, suggestions: [] };
   }
 
-  await ensureSuggestionsTable(database);
+  try {
+    await ensureSuggestionsTable(database);
 
-  const suggestions = await database`
-    select display_name, email, message, created_at
-    from suggestions
-    where message is not null and length(trim(message)) > 0
-    order by created_at desc
-    limit ${limit}
-  `;
+    const suggestions = await database`
+      select display_name, email, message, created_at
+      from suggestions
+      where message is not null and length(trim(message)) > 0
+      order by created_at desc
+      limit ${limit}
+    `;
 
-  return { isConfigured: true, suggestions };
+    return { isConfigured: true, suggestions };
+  } catch (error) {
+    console.error('List suggestions failed', error);
+    return { isConfigured: false, suggestions: [] };
+  }
 }
 
 export async function createSuggestion({ name, email, message, website }) {
