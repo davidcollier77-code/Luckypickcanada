@@ -2,15 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import fonts and custom theme styles after Tailwind */
-  color-scheme: dark;
-  --lp-night: #02070c;
 @import '../themes/default/default.css';
 @import '../themes/default/effects.css';
 @import '../themes/default/homepage.css';
 @import '../themes/default/header.css';
 @import '../themes/default/hero.css';
 @import '../themes/default/map.css';
+
+:root {
+  color-scheme: dark;
+  --lp-night: #02070c;
   --lp-ink: #07110d;
   --lp-gold: #eabe52;
   --lp-gold-light: #fff0ac;
