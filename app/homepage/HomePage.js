@@ -1,7 +1,4 @@
 'use client';
-
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import CheckoutModal from '../checkout-modal';
 import LuckyCardReveal from '../lucky-card-reveal';
 import { createLuckyReveal } from '../lucky-reveal';
