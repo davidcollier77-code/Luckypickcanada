@@ -43,7 +43,7 @@ jobs:
           fi
 
       - name: Wrangler build validation (no deploy)
-        run: npx wrangler build --config ./wrangler.toml
+        run: npx wrangler build --config ./wrangler.jsonc
 
       - name: Git status
         run: git status --porcelain=2 --branch

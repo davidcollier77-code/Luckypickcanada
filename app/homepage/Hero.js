@@ -28,7 +28,7 @@ export default function Hero() {
       </nav>
 
       <div className="hero-content">
-        <Image className="hero-emblem" src="/BackgroundEraser_20260724_163638777.png" alt="" width={460} height={460} priority style={{ width: 'auto', height: 460 }} aria-hidden="true" />
+        <Image className="hero-emblem" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada emblem showing maple leaf and clover design" width={460} height={460} priority style={{ width: 'auto', height: 460 }} />
         <p className="hero-kicker">A little Canadian magic ✦ made for today</p>
         <h1 id="hero-title" className="gold-3d">Your daily lucky moment.</h1>
         <p className="hero-copy">A Canadian digital entertainment experience focused on lucky moments, positive messages, personalized picks, and community stories.</p>
