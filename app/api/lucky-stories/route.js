@@ -4,9 +4,18 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-// 1. GET: Fetch the current map data without CDN or browser caching.
+// GET: Fetch the current map data without CDN or browser caching
+// Returns community stories, province counts, and total statistics
 export async function GET() {
+  try {
   const mapData = await getLuckyStoryMap();
+    
+    // Log data for debugging visibility issues
+    console.log('Lucky Stories Map Data:', {
+      totalStories: mapData.totalStories,
+      provincesWithStories: mapData.provincesWithStories,
+      isConfigured: mapData.isConfigured
+    });
   const status = mapData.isConfigured ? 200 : 500;
 
   return NextResponse.json(mapData, {
@@ -14,9 +23,16 @@ export async function GET() {
     headers: { 'Cache-Control': 'no-store, max-age=0' },
   });
 }
+  } catch (error) {
+    console.error('Error fetching lucky stories:', error);
+    return NextResponse.json(
+      { stories: [], provinceCounts: {}, totalStories: 0, provincesWithStories: 0, isConfigured: false },
+      { status: 500, headers: { 'Cache-Control': 'no-store, max-age=0' } }
+    );
+  }
 
 // 2. POST: Handle new story submissions (Maintains your security)
-export async function POST(request) {
+// POST: Handle new story submissions with spam protection
   const formData = await request.formData();
   const redirectUrl = new URL('/#lucky-stories', request.url);
   

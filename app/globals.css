@@ -1,3 +1,9 @@
+/* Import custom theme stylesheets for global dark theme, aurora effects, and gold accents */
+@import url('../themes/default/default.css');
+@import url('../themes/default/homepage.css');
+@import url('../themes/default/map.css');
+@import url('../themes/default/effects.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
