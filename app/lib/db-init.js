@@ -4,12 +4,24 @@ let sql;
 let isInitialized = false;
 
 export function getSql() {
-  if (!process.env.POSTGRES_URL) {
+  // Check multiple common environment variable names as fallbacks
+  const connectionString = 
+    process.env.DATABASE_URL || 
+    process.env.POSTGRES_URL || 
+    process.env.POSTGRES_URL_NON_POOLING || 
+    process.env.POSTGRES_PRISMA_URL;
+  
+  if (!connectionString) {
+    console.error(
+      'Neon database connection failed: No connection string found. ' +
+      'Checked environment variables: DATABASE_URL, POSTGRES_URL, ' +
+      'POSTGRES_URL_NON_POOLING, POSTGRES_PRISMA_URL'
+    );
     return null;
   }
 
   if (!sql) {
-    sql = neon(process.env.POSTGRES_URL);
+    sql = neon(connectionString);
   }
 
   return sql;
