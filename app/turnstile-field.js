@@ -5,9 +5,14 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 const TURNSTILE_SCRIPT_ID = 'cloudflare-turnstile-script';
 const TURNSTILE_SCRIPT_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
+const MAX_RETRIES = 2;
+const RETRY_DELAY = 1000;
+const API_CHECK_DELAY = 100;
+const API_CHECK_TIMEOUT = 2000;
+
 let turnstileScriptPromise;
 
-function loadTurnstileScript() {
+function loadTurnstileScript(retryCount = 0) {
   if (typeof window === 'undefined') {
     return Promise.resolve(null);
   }
@@ -21,7 +26,7 @@ function loadTurnstileScript() {
   }
 
   turnstileScriptPromise = new Promise((resolve, reject) => {
-    const existingScript = document.getElementById(TURNSTILE_SCRIPT_ID);
+    let existingScript = document.getElementById(TURNSTILE_SCRIPT_ID);
 
     if (existingScript) {
       existingScript.addEventListener('load', () => resolve(window.turnstile), { once: true });
@@ -34,8 +39,35 @@ function loadTurnstileScript() {
     script.src = TURNSTILE_SCRIPT_URL;
     script.async = true;
     script.defer = true;
-    script.onload = () => resolve(window.turnstile);
-    script.onerror = reject;
+    script.onload = () => {
+      setTimeout(() => {
+        if (window.turnstile && typeof window.turnstile.render === 'function') {
+          resolve(window.turnstile);
+        } else {
+          const startTime = Date.now();
+          const checkInterval = setInterval(() => {
+            if (window.turnstile && typeof window.turnstile.render === 'function') {
+              clearInterval(checkInterval);
+              resolve(window.turnstile);
+            } else if (Date.now() - startTime > API_CHECK_TIMEOUT) {
+              clearInterval(checkInterval);
+              reject(new Error('Turnstile API not available after timeout'));
+            }
+          }, 50);
+        }
+      }, API_CHECK_DELAY);
+    };
+    script.onerror = () => {
+      if (retryCount < MAX_RETRIES) {
+        setTimeout(() => {
+          document.getElementById(TURNSTILE_SCRIPT_ID)?.remove();
+          turnstileScriptPromise = null;
+          resolve(loadTurnstileScript(retryCount + 1));
+        }, RETRY_DELAY);
+      } else {
+        reject(new Error('Failed to load Turnstile script after retries'));
+      }
+    };
     document.head.appendChild(script);
   });
 
