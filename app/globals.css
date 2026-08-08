@@ -1,13 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import '../themes/default/default.css';
 @import '../themes/default/effects.css';
 @import '../themes/default/homepage.css';
 @import '../themes/default/header.css';
 @import '../themes/default/hero.css';
 @import '../themes/default/map.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   color-scheme: dark;
