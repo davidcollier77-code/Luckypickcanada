@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import postgres from 'postgres';
+import { getSql, initializeDatabase } from './lib/db-init';
 import { sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 export const provinces = [
@@ -22,7 +22,6 @@ const provinceCodes = new Set(provinces.map((province) => province.code));
 
 let sql;
 let stripe;
-
 function getStripe() {
   if (!process.env.STRIPE_SECRET_KEY) {
     return null;
@@ -36,18 +35,6 @@ function getStripe() {
 }
 
 function getSql() {
-  if (!process.env.POSTGRES_URL) {
-    return null;
-  }
-
-  if (!sql) {
-    sql = postgres(process.env.POSTGRES_URL, { max: 1 });
-  }
-
-  return sql;
-}
-
-export function validateLuckShare({ name, province }) {
   const cleanProvince = String(province || '').toUpperCase();
   const cleanDisplayName = validatePlainTextField({
     value: name,
@@ -136,6 +123,7 @@ export async function createLuckShare({ name, province, checkoutSessionId }) {
 
   try {
     await ensureLuckSharesTable(database);
+    await initializeDatabase();
     await database`
       insert into luck_shares (display_name, province, checkout_session_id)
       values (${validated.name}, ${validated.province}, ${payment.checkoutSessionId})
@@ -157,6 +145,7 @@ export async function getLuckMap() {
 
   try {
     await ensureLuckSharesTable(database);
+    await initializeDatabase();
 
     const rows = await database`
       select display_name, province, created_at

@@ -1,4 +1,4 @@
-import postgres from 'postgres';
+import { getSql, initializeDatabase } from './lib/db-init';
 import { sanitizePlainText, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 export const storyProvinces = [
@@ -103,19 +103,6 @@ export function validateLuckyStory({ name, location, story }) {
 }
 
 
-let sql;
-
-function getSql() {
-  if (!process.env.POSTGRES_URL) {
-    return null;
-  }
-
-  if (!sql) {
-    sql = postgres(process.env.POSTGRES_URL, { max: 1 });
-  }
-
-  return sql;
-}
 
 async function ensureLuckyStoriesTable(database) {
   await database`
@@ -145,6 +132,7 @@ export async function createLuckyStory({ name, location, story }) {
 
   try {
     await ensureLuckyStoriesTable(database);
+    await initializeDatabase();
     await database`
       insert into lucky_stories (display_name, location, story)
       values (${validated.name}, ${validated.location}, ${validated.story})
@@ -166,6 +154,7 @@ export async function getLuckyStoryMap() {
 
   try {
     await ensureLuckyStoriesTable(database);
+    await initializeDatabase();
     const [rows, locations] = await Promise.all([
       database`
         select id, display_name, location, story, created_at
