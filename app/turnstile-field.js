@@ -21,6 +21,7 @@ function loadTurnstileScript() {
   }
 
   turnstileScriptPromise = new Promise((resolve, reject) => {
+    let retryCount = 0;
     const existingScript = document.getElementById(TURNSTILE_SCRIPT_ID);
 
     if (existingScript) {
@@ -30,14 +31,46 @@ function loadTurnstileScript() {
     }
 
     const script = document.createElement('script');
-    script.id = TURNSTILE_SCRIPT_ID;
-    script.src = TURNSTILE_SCRIPT_URL;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => resolve(window.turnstile);
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
+    const attemptLoad = () => {
+      const script = document.createElement('script');
+      script.id = TURNSTILE_SCRIPT_ID;
+      script.src = TURNSTILE_SCRIPT_URL;
+      script.async = true;
+      script.defer = true;
+      
+      script.onload = () => {
+        if (window.turnstile) {
+          resolve(window.turnstile);
+        } else {
+          // Turnstile API not available yet, wait a bit
+          setTimeout(() => {
+            if (window.turnstile) {
+              resolve(window.turnstile);
+            } else if (retryCount < 2) {
+              retryCount++;
+              document.head.removeChild(script);
+              attemptLoad();
+            } else {
+              reject(new Error('Turnstile API failed to initialize'));
+            }
+          }, 500);
+        }
+      };
+      
+      script.onerror = () => {
+        if (retryCount < 2) {
+          retryCount++;
+          document.head.removeChild(script);
+          setTimeout(attemptLoad, 1000);
+        } else {
+          reject(new Error('Failed to load Turnstile script'));
+        }
+      };
+      
+      document.head.appendChild(script);
+    };
+    
+    attemptLoad();
 
   return turnstileScriptPromise;
 }

@@ -45,6 +45,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="preload" href="/1785347037732.png" as="image" fetchPriority="high" />
       </head>
