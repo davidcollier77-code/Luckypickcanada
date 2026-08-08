@@ -1,4 +1,7 @@
 'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import CheckoutModal from '../checkout-modal';
 import LuckyCardReveal from '../lucky-card-reveal';
 import { createLuckyReveal } from '../lucky-reveal';
@@ -65,7 +68,6 @@ export default function HomePage() {
   return (
     <main className="lucky-site-shell homepage-experience">
       <Hero />
-
 
       <section id="cards" className="homepage-section homepage-cards-section" aria-labelledby="cards-heading">
         <SectionHeading eyebrow="A daily moment of possibility" id="cards-heading" title="Today’s Lucky Moment">
