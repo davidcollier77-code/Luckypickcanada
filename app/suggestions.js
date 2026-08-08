@@ -1,25 +1,9 @@
-import postgres from 'postgres';
+import { getSql } from './lib/db-init';
 import { escapeHtml, hasHeaderInjection, isValidEmailAddress, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
+function validateSuggestion({ name, email, message }) {
 const DEFAULT_SUGGESTIONS_TO_EMAIL = 'notifications@luckypickcanada.ca';
 
-let sql;
-
-function getSql() {
-  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-
-  if (!connectionString) {
-    return null;
-  }
-
-  if (!sql) {
-    sql = postgres(connectionString, { max: 1 });
-  }
-
-  return sql;
-}
-
-function validateSuggestion({ name, email, message }) {
   const cleanName = validatePlainTextField({
     value: name,
     label: 'Name',

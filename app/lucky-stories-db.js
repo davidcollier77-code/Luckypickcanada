@@ -1,11 +1,5 @@
-import postgres from 'postgres';
+import { getSql } from './lib/db-init';
 import { validateLuckyStory } from './lucky-stories';
-
-const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-
-const sql = connectionString ? postgres(connectionString, {
-  ssl: 'require',
-}) : null;
 
 export async function createLuckyStory({ name, location, story }) {
   const validated = validateLuckyStory({ name, location, story });
@@ -13,6 +7,8 @@ export async function createLuckyStory({ name, location, story }) {
   if (validated.error) {
     return { error: validated.error };
   }
+
+  const sql = getSql();
   if (!sql) {
     return { error: 'The Lucky Stories database is not configured yet.' };
   }
