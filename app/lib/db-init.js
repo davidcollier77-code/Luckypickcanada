@@ -1,4 +1,4 @@
-import postgres from 'postgres';
+import { neon } from '@neondatabase/serverless';
 
 let sql;
 let isInitialized = false;
@@ -9,7 +9,7 @@ export function getSql() {
   }
 
   if (!sql) {
-    sql = postgres(process.env.POSTGRES_URL, { max: 1 });
+    sql = neon(process.env.POSTGRES_URL);
   }
 
   return sql;

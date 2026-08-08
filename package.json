@@ -12,7 +12,7 @@
   "dependencies": {
     "framer-motion": "latest",
     "next": "latest",
-    "postgres": "^3.4.9",
+    "@neondatabase/serverless": "^0.10.1",
     "react": "latest",
     "react-dom": "latest",
     "stripe": "latest"
