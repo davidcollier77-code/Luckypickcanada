@@ -1,5 +1,4 @@
 import './globals.css';
-import '../themes/default/index.css';
 
 const siteUrl = 'https://luckypickcanada.ca';
 const siteTitle = 'LuckyPickCanada | Stories, Lucky Meter & Picks';
@@ -45,6 +44,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="/themes/default/index.css" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="preload" href="/1785347037732.png" as="image" fetchPriority="high" />
       </head>
