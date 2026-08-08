@@ -1,5 +1,3 @@
-/q dev Please update app/lib/db-init.js to check for the Next.js build phase (process.env.NEXT_PHASE === 'phase-production-build') and safely return null without calling getCloudflareContext() during builds. Here is the updated code:
-
 import { neon } from '@neondatabase/serverless';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
@@ -18,10 +16,8 @@ export function getSql() {
 
   let cfEnv = null;
   try {
-    if (typeof getCloudflareContext === 'function') {
-      const ctx = getCloudflareContext();
-      cfEnv = ctx?.env || null;
-    }
+    const ctx = getCloudflareContext();
+    cfEnv = ctx?.env || null;
   } catch (e) {
     cfEnv = null;
   }
