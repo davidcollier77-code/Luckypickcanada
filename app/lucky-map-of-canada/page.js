@@ -4,11 +4,11 @@ import LuckyMapOfCanada from './lucky-map-of-canada';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Lucky Map of Canada | LuckyPickCanada.ca',
+  alternates: { canonical: '/lucky-map-of-canada' },
   description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
   alternates: { canonical: '/map' },
   openGraph: {
-    title: 'Lucky Map of Canada | LuckyPickCanada.ca',
+    url: '/lucky-map-of-canada',
     description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
     url: '/map',
   },

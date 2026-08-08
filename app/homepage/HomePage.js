@@ -151,7 +151,7 @@ export default function HomePage() {
           </div>
           <label>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required /></label>
           <label aria-hidden="true" className="suggestion-box-honeypot">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
-          <TurnstileField siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAD6xRRyXK4C4YQ1x'} submitButtonId="suggestion-box-submit" />
+          <TurnstileField siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} submitButtonId="suggestion-box-submit" />
           <button id="suggestion-box-submit" type="submit" className="suggestion-box-submit">Send suggestion <span aria-hidden="true">→</span></button>
         </form>
       </section>
@@ -161,9 +161,6 @@ export default function HomePage() {
         <p className="homepage-disclaimer">LuckyPickCanada is a digital entertainment experience created for fun and positive moments. It does not provide lottery or gambling services.</p>
         <nav className="homepage-social-links" aria-label="Social links">
           <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" aria-label="Facebook Community Group">Facebook</a>
-          <a href="https://www.instagram.com/accounts/login/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
-          <a href="https://x.com/i/flow/login" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">X (Twitter)</a>
-          <a href="https://www.tiktok.com/login/" target="_blank" rel="noopener noreferrer" aria-label="TikTok">TikTok</a>
         </nav>
       </footer>
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onRevealTestStart={(revealType, luckyPickGame) => {
