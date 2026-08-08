@@ -1,4 +1,5 @@
 import './globals.css';
+import '../themes/default/index.css';
 
 const siteUrl = 'https://luckypickcanada.ca';
 const siteTitle = 'LuckyPickCanada | Stories, Lucky Meter & Picks';
