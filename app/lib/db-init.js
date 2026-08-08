@@ -1,4 +1,4 @@
-/q dev Please update app/lib/db-init.js so that table initialization runs automatically in the background whenever getSql() is invoked, guaranteeing the lucky_stories and luck_shares tables are created on startup. Here is the code:
+/q dev Please update app/lib/db-init.js to check for the Next.js build phase (process.env.NEXT_PHASE === 'phase-production-build') and safely return null without calling getCloudflareContext() during builds. Here is the updated code:
 
 import { neon } from '@neondatabase/serverless';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
@@ -11,27 +11,42 @@ export function getSql() {
     return sqlInstance;
   }
 
-  let cfEnv;
+  // Skip during Next.js build phase to prevent prerender crashes
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return null;
+  }
+
+  let cfEnv = null;
   try {
-    cfEnv = getCloudflareContext()?.env;
+    if (typeof getCloudflareContext === 'function') {
+      const ctx = getCloudflareContext();
+      cfEnv = ctx?.env || null;
+    }
   } catch (e) {
     cfEnv = null;
   }
   
   const connectionString = 
-    (cfEnv?.POSTGRES_URL || process.env.POSTGRES_URL) || 
-    (cfEnv?.DATABASE_URL || process.env.DATABASE_URL) || 
-    (cfEnv?.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL_NON_POOLING) || 
-    (cfEnv?.POSTGRES_PRISMA_URL || process.env.POSTGRES_PRISMA_URL);
+    cfEnv?.POSTGRES_URL || 
+    cfEnv?.DATABASE_URL || 
+    cfEnv?.POSTGRES_URL_NON_POOLING || 
+    cfEnv?.POSTGRES_PRISMA_URL ||
+    process.env.POSTGRES_URL || 
+    process.env.DATABASE_URL || 
+    process.env.POSTGRES_URL_NON_POOLING || 
+    process.env.POSTGRES_PRISMA_URL;
   
   if (!connectionString) {
-    console.error('Neon database connection failed: No connection string found.');
     return null;
   }
 
-  sqlInstance = neon(connectionString);
+  try {
+    sqlInstance = neon(connectionString);
+  } catch (err) {
+    console.error('Failed to initialize Neon client:', err);
+    return null;
+  }
 
-  // Automatically kick off table initialization in the background
   initializeDatabase().catch(err => {
     console.error('Background table initialization error:', err);
   });
@@ -40,6 +55,10 @@ export function getSql() {
 }
 
 export async function initializeDatabase() {
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return;
+  }
+
   const sql = getSql();
   if (!sql) return;
 
