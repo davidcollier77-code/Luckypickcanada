@@ -1,15 +1,24 @@
 import { neon } from '@neondatabase/serverless';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 let sql;
 let isInitialized = false;
 
 export function getSql() {
+  // Try to get Cloudflare context environment variables first, fall back to process.env
+  let cfEnv;
+  try {
+    cfEnv = getCloudflareContext()?.env;
+  } catch (e) {
+    cfEnv = null;
+  }
+  
   // Check multiple common environment variable names as fallbacks
   const connectionString = 
-    process.env.DATABASE_URL || 
-    process.env.POSTGRES_URL || 
-    process.env.POSTGRES_URL_NON_POOLING || 
-    process.env.POSTGRES_PRISMA_URL;
+    (cfEnv?.POSTGRES_URL || process.env.POSTGRES_URL) || 
+    (cfEnv?.DATABASE_URL || process.env.DATABASE_URL) || 
+    (cfEnv?.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL_NON_POOLING) || 
+    (cfEnv?.POSTGRES_PRISMA_URL || process.env.POSTGRES_PRISMA_URL);
   
   if (!connectionString) {
     console.error(
