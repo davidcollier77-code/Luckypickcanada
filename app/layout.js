@@ -48,14 +48,7 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="preload" href="/1785347037732.png" as="image" fetchPriority="high" />
       </head>
-      <body
-        style={{
-          margin: 0,
-          backgroundColor: '#02070c',
-          minHeight: '100vh',
-          colorScheme: 'dark',
-        }}
-      >{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
