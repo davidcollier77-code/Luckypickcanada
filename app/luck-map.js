@@ -20,7 +20,6 @@ export const provinces = [
 
 const provinceCodes = new Set(provinces.map((province) => province.code));
 
-let sql;
 let stripe;
 function getStripe() {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -34,7 +33,7 @@ function getStripe() {
   return stripe;
 }
 
-function getSql() {
+function validateLuckShare({ name, province }) {
   const cleanProvince = String(province || '').toUpperCase();
   const cleanDisplayName = validatePlainTextField({
     value: name,
