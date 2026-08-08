@@ -9,7 +9,9 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",
-    "run_worker_first": true
+    "run_worker_first": true,
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "single-page-application"
   },
   "services": [
     {
@@ -19,5 +21,8 @@
   ],
   "observability": {
     "enabled": true
+  },
+  "limits": {
+    "cpu_ms": 50
   }
 }

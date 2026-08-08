@@ -9,7 +9,7 @@ export default {
       queue: "dummy",
     },
   },
-  edgeExternals: ["node:crypto"],
+  edgeExternals: ["node:crypto", "node:buffer", "node:stream"],
   middleware: {
     external: true,
     override: {
@@ -20,5 +20,8 @@ export default {
       tagCache: "dummy",
       queue: "dummy",
     },
+  },
+  dangerous: {
+    disableIncrementalCache: true,
   },
 };

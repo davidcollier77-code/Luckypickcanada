@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  poweredByHeader: false,
+  compress: true,
+  generateEtags: true,
   images: {
     unoptimized: true,
     formats: ['image/avif', 'image/webp'],
@@ -12,6 +15,11 @@ const nextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [],
   },
+  experimental: {
+    optimizeCss: true,
+  },
+  productionBrowserSourceMaps: false,
+  reactStrictMode: true,
 };
 
 export default nextConfig;

@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "NODE_ENV=production next build",
     "build:worker": "NODE_ENV=production next build && opennextjs-cloudflare build",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "start": "next start"
+    "start": "next start",
+    "postbuild": "echo 'Build completed successfully'"
   },
   "dependencies": {
     "framer-motion": "latest",
