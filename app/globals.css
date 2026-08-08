@@ -3,18 +3,42 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 15, 23, 42;
-  --background-end-rgb: 2, 6, 23;
+  color-scheme: dark;
+  --lp-night: #02070c;
+  --lp-ink: #07110d;
+  --lp-gold: #eabe52;
+  --lp-gold-light: #fff0ac;
+  --lp-emerald: #18b978;
+  --lp-teal: #57e5d0;
+  --lp-aurora-blue: #69b8ff;
+  --lp-aurora-violet: #bf8bff;
+  --lp-canada-red: #c91624;
+  --lp-bg: #02070c;
+  --lp-text: #fff8de;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  margin: 0;
+  color: var(--lp-text);
+  background:
+    radial-gradient(ellipse 70% 42% at 50% -8%, rgba(24, 208, 132, 0.18), transparent 68%),
+    radial-gradient(ellipse 55% 38% at 94% 12%, rgba(151, 78, 240, 0.16), transparent 70%),
+    linear-gradient(180deg, #02070c 0%, #061a1c 48%, #020609 100%);
   min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.34;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 0.65px, transparent 1.35px),
+    radial-gradient(circle, rgba(255, 223, 139, 0.72) 0 0.7px, transparent 1.4px);
+  background-size: 97px 97px, 163px 163px;
+  background-position: 0 0, 41px 69px;
+  mask-image: linear-gradient(to bottom, black, transparent 84%);
 }
