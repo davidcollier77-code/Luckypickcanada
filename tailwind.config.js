@@ -7,7 +7,20 @@ module.exports = {
     './*.{js,jsx,ts,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        background: 'var(--lp-bg)',
+        foreground: 'var(--lp-text)',
+        aurora: {
+          blue: 'var(--lp-aurora-blue)',
+          violet: 'var(--lp-aurora-violet)',
+        },
+        starry: {
+          night: 'var(--lp-night)',
+          ink: 'var(--lp-ink)',
+        },
+      },
+    },
   },
   plugins: [],
 };
