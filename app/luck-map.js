@@ -144,7 +144,6 @@ export async function getLuckMap() {
 
   try {
     await ensureLuckSharesTable(database);
-    await initializeDatabase();
 
     const rows = await database`
       select display_name, province, created_at

@@ -132,17 +132,22 @@ export async function listSuggestions(limit = 50) {
     return { isConfigured: false, suggestions: [] };
   }
 
-  await ensureSuggestionsTable(database);
+  try {
+    await ensureSuggestionsTable(database);
 
-  const suggestions = await database`
-    select display_name, email, message, created_at
-    from suggestions
-    where message is not null and length(trim(message)) > 0
-    order by created_at desc
-    limit ${limit}
-  `;
+    const suggestions = await database`
+      select display_name, email, message, created_at
+      from suggestions
+      where message is not null and length(trim(message)) > 0
+      order by created_at desc
+      limit ${limit}
+    `;
 
-  return { isConfigured: true, suggestions };
+    return { isConfigured: true, suggestions };
+  } catch (error) {
+    console.error('List suggestions failed', error);
+    return { isConfigured: false, suggestions: [] };
+  }
 }
 
 export async function createSuggestion({ name, email, message, website }) {
