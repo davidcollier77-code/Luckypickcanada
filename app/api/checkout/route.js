@@ -118,7 +118,8 @@ export async function POST(request) {
       return Response.json({ error: 'Stripe did not return a checkout URL.' }, { status: 502 });
     }
 
-    return Response.redirect(session.url, 303);
+    // Return the URL as JSON so client-side JavaScript can redirect cleanly
+    return Response.json({ url: session.url });
   } catch (error) {
     console.error('Stripe checkout failed', error);
     return Response.json({ error: 'Unable to start checkout.' }, { status: 500 });
