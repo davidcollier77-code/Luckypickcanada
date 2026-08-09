@@ -70,7 +70,15 @@ export default function LuckyMeterPage() {
 
   // Load persistence state on mount
   useEffect(() => {
-    const savedStr = window.localStorage.getItem('lucky_meter_daily_state');
+    if (typeof window === 'undefined' || !window.localStorage) return;
+
+    let savedStr;
+    try {
+      savedStr = window.localStorage.getItem('lucky_meter_daily_state');
+    } catch (e) {
+      console.error('Error accessing localStorage', e);
+      return;
+    }
     if (savedStr) {
       try {
         const state = JSON.parse(savedStr);
@@ -147,7 +155,13 @@ export default function LuckyMeterPage() {
           lastResult: savedState?.currentResult || null
         };
         setSavedState(newState);
-        window.localStorage.setItem('lucky_meter_daily_state', JSON.stringify(newState));
+        if (typeof window !== 'undefined' && window.localStorage) {
+          try {
+            window.localStorage.setItem('lucky_meter_daily_state', JSON.stringify(newState));
+          } catch (e) {
+            console.error('Error saving to localStorage', e);
+          }
+        }
       }
     };
 
@@ -172,15 +186,20 @@ export default function LuckyMeterPage() {
 
     // Percentage: 0 to 100 ensuring no duplicate consecutive days
     let targetPercent;
+    let attempts = 0;
+    const maxAttempts = 100;
     do {
       targetPercent = Math.floor(Math.random() * 101);
-    } while (lastPercent !== null && targetPercent === lastPercent);
+      attempts++;
+    } while (lastPercent !== null && targetPercent === lastPercent && attempts < maxAttempts);
 
     // Quote: select ensuring no duplicate consecutive days
     let targetQ;
+    attempts = 0;
     do {
       targetQ = CANADIAN_FORTUNES[Math.floor(Math.random() * CANADIAN_FORTUNES.length)];
-    } while (lastQuote !== null && targetQ === lastQuote);
+      attempts++;
+    } while (lastQuote !== null && targetQ === lastQuote && attempts < maxAttempts);
 
     setTargetLuck(targetPercent);
     setTargetQuote(targetQ);
