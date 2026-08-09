@@ -518,7 +518,7 @@ export default function LuckyMeterPage() {
             📤 Share Daily Reading
           </button>
         )}
-
+ 
         {shareToast && (
           <div style={{ fontSize: "13px", color: "#4ade80", backgroundColor: "rgba(74,222,128,0.1)", padding: "6px 12px", borderRadius: "6px" }}>
             Copied to clipboard!
