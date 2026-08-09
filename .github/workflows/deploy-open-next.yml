@@ -1,11 +1,8 @@
 name: Deploy OpenNext to Cloudflare
 
 on:
-  workflow_dispatch: {}
   push:
-    branches:
-      - open-next/repair-wrangler-build
-      - main
+    branches: [main]
 
 jobs:
   deploy:
