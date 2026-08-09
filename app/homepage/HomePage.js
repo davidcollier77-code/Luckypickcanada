@@ -8,6 +8,7 @@ import { createLuckyReveal } from '../lucky-reveal';
 import LuckyRevealPopup from '../lucky-reveal-popup';
 import { TURNSTILE_SITE_KEY } from '../turnstile-config';
 import { DEFAULT_THEME } from '../../themes/default/theme';
+import TurnstileField from '../turnstile-field';
 import Hero from './Hero';
 
 function SectionHeading({ eyebrow, id, title, children }) {
