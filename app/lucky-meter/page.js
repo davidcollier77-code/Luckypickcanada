@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 // --- 16 Mystical Canadian Luck Quotes ---
@@ -33,6 +33,11 @@ export default function LuckyMeterPage() {
   const [countdown, setCountdown] = useState("00:00:00");
   const [shareToast, setShareToast] = useState(false);
 
+  const [imageError, setImageError] = useState(false);
+
+  const countdownIntervalRef = useRef(null);
+  const animationIntervalRef = useRef(null);
+  const animationTimeoutRef = useRef(null);
   // Helper: Get user's local YYYY-MM-DD date key
   const getTodayDateKey = () => {
     const d = new Date();
@@ -100,9 +105,28 @@ export default function LuckyMeterPage() {
     };
 
     updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
+    countdownIntervalRef.current = setInterval(updateCountdown, 1000);
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+    };
   }, [isMounted]);
+
+  // --- Cleanup animation timers on unmount ---
+  useEffect(() => {
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current);
+        animationIntervalRef.current = null;
+      }
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+        animationTimeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // --- Generate Daily Reading ---
   const handleGenerateLuck = () => {
@@ -128,15 +152,19 @@ export default function LuckyMeterPage() {
     // Roll random percentage (0-100) rejecting consecutive match
     let newPct;
     do {
-      newPct = Math.floor(Math.random() * 101);
+    let pctAttempts = 0;
+    do {
     } while (newPct === lastResult);
-
+      pctAttempts++;
+    } while (newPct === lastResult && pctAttempts < 10);
     // Select random quote rejecting consecutive match
     let newQuote;
     do {
-      newQuote = LUCK_QUOTES[Math.floor(Math.random() * LUCK_QUOTES.length)];
+    let quoteAttempts = 0;
+    do {
     } while (newQuote === lastQuote && LUCK_QUOTES.length > 1);
-
+      quoteAttempts++;
+    } while (newQuote === lastQuote && LUCK_QUOTES.length > 1 && quoteAttempts < 10);
     const newTier = calculateTier(newPct);
 
     // Reduced motion preference support
@@ -149,18 +177,26 @@ export default function LuckyMeterPage() {
     // Smooth counting effect during reveal
     let currentPct = 0;
     const stepTime = Math.max(10, Math.floor(animationDuration / Math.max(1, newPct)));
-    const counterInterval = setInterval(() => {
+    
+    // Clear any existing animation timers
+    if (animationIntervalRef.current) clearInterval(animationIntervalRef.current);
+    if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
+    
+    animationIntervalRef.current = setInterval(() => {
       currentPct += 1;
       if (currentPct >= newPct) {
-        clearInterval(counterInterval);
+        clearInterval(animationIntervalRef.current);
+        animationIntervalRef.current = null;
         setPercentage(newPct);
       } else {
         setPercentage(currentPct);
       }
     }, stepTime);
 
-    setTimeout(() => {
-      clearInterval(counterInterval);
+    animationTimeoutRef.current = setTimeout(() => {
+      if (animationIntervalRef.current) clearInterval(animationIntervalRef.current);
+      animationIntervalRef.current = null;
+      animationTimeoutRef.current = null;
       setPercentage(newPct);
       setTier(newTier);
       setQuote(newQuote);
@@ -244,8 +280,20 @@ export default function LuckyMeterPage() {
         <img
           src="/copilot_image_1785515250260.jpeg"
           alt="Lucky Meter Artwork"
-          style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none", userSelect: "none" }}
+          style={{ 
+            width: "100%", 
+            height: "auto", 
+            display: imageError ? "none" : "block", 
+            pointerEvents: "none", 
+            userSelect: "none" 
+          }}
+          onError={() => setImageError(true)}
         />
+        {imageError && (
+          <div style={{ width: "100%", height: "300px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(15,23,42,0.8)", color: "#a0aec0", fontSize: "14px" }}>
+            Lucky Meter Visual Unavailable
+          </div>
+        )}
 
         {/* Inline SVG Aurora Overlay */}
         <svg
