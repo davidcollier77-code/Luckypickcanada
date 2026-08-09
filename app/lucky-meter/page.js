@@ -131,8 +131,9 @@ export default function LuckyMeterPage() {
         });
       }
 
-      // Draw and update Shooting Stars
-      shootingStars.forEach((ss, idx) => {
+      // Draw and update Shooting Stars with a reverse for loop to prevent splicing bugs
+      for (let idx = shootingStars.length - 1; idx >= 0; idx--) {
+        const ss = shootingStars[idx];
         ctx.beginPath();
         const gradient = ctx.createLinearGradient(ss.x, ss.y, ss.x - ss.length, ss.y - (ss.length * (ss.dy / ss.dx)));
         gradient.addColorStop(0, `rgba(255, 244, 211, ${ss.opacity})`);
@@ -151,7 +152,7 @@ export default function LuckyMeterPage() {
         if (ss.opacity <= 0 || ss.x > canvas.width || ss.y > canvas.height) {
           shootingStars.splice(idx, 1);
         }
-      });
+      }
 
       animationFrameId = requestAnimationFrame(draw);
     };
