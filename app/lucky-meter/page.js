@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -34,6 +34,7 @@ function getLocalDateString() {
 }
 
 export default function LuckyMeterPage() {
+  const canvasRef = useRef(null);
   const [savedState, setSavedState] = useState(null);
   const [visualPercentage, setVisualPercentage] = useState(null);
   const [luckPercentage, setLuckPercentage] = useState(null);
@@ -66,6 +67,104 @@ export default function LuckyMeterPage() {
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Sky Starfield & Shooting Stars Canvas Animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationFrameId;
+    let stars = [];
+    let shootingStars = [];
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initStars();
+    };
+
+    const initStars = () => {
+      stars = [];
+      const numStars = Math.floor((canvas.width * canvas.height) / 8000);
+      const boundedNum = Math.max(60, Math.min(numStars, 180));
+      for (let i = 0; i < boundedNum; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.2 + 0.3,
+          alpha: Math.random(),
+          twinkleSpeed: 0.005 + Math.random() * 0.015,
+          colorPhase: Math.random() * Math.PI,
+        });
+      }
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw Twinkling Starfield
+      stars.forEach((star) => {
+        star.alpha += star.twinkleSpeed;
+        const currentOpacity = Math.abs(Math.sin(star.alpha + star.colorPhase));
+
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        // Cream-colored stars matching LPC theme
+        ctx.fillStyle = `rgba(255, 248, 223, ${0.15 + currentOpacity * 0.75})`;
+        ctx.fill();
+      });
+
+      // Spawn Shooting Stars at randomized intervals
+      if (Math.random() < 0.0012 && shootingStars.length < 2) {
+        shootingStars.push({
+          x: Math.random() * canvas.width * 0.7,
+          y: Math.random() * canvas.height * 0.4,
+          dx: 3.5 + Math.random() * 4,
+          dy: 1.5 + Math.random() * 2,
+          length: 50 + Math.random() * 80,
+          opacity: 1,
+          speed: 1.2 + Math.random() * 1.5,
+        });
+      }
+
+      // Draw and update Shooting Stars with a reverse for loop to prevent splicing bugs
+      for (let idx = shootingStars.length - 1; idx >= 0; idx--) {
+        const ss = shootingStars[idx];
+        ctx.beginPath();
+        const gradient = ctx.createLinearGradient(ss.x, ss.y, ss.x - ss.length, ss.y - (ss.length * (ss.dy / ss.dx)));
+        gradient.addColorStop(0, `rgba(255, 244, 211, ${ss.opacity})`);
+        gradient.addColorStop(1, 'rgba(255, 244, 211, 0)');
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 1.5;
+        ctx.moveTo(ss.x, ss.y);
+        ctx.lineTo(ss.x - ss.length, ss.y - (ss.length * (ss.dy / ss.dx)));
+        ctx.stroke();
+
+        ss.x += ss.dx * ss.speed;
+        ss.y += ss.dy * ss.speed;
+        ss.opacity -= 0.015;
+
+        if (ss.opacity <= 0 || ss.x > canvas.width || ss.y > canvas.height) {
+          shootingStars.splice(idx, 1);
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   // Load persistence state on mount
@@ -303,8 +402,19 @@ export default function LuckyMeterPage() {
   return (
     <div className="min-h-screen bg-[#030507] text-[#fff8df] flex flex-col justify-between font-sans relative overflow-x-hidden">
       
-      {/* Dynamic Aurora Atmospheric Background Effects */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      {/* Dynamic Aurora Atmospheric Background Effects & Canvas Layers */}
+      <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-[#030507]">
+        {/* Starfield & Shooting Stars Canvas */}
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
+
+        {/* Dynamic Vector Aurora Beams */}
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[90%] rounded-full bg-gradient-to-br from-[#18b978]/25 via-[#57e5d0]/15 to-transparent blur-[110px] animate-aurora-slow" />
+          <div className="absolute top-[-15%] right-[-10%] w-[75%] h-[85%] rounded-full bg-gradient-to-bl from-[#69b8ff]/20 via-[#bf8bff]/15 to-transparent blur-[110px] animate-aurora-mid" />
+          <div className="absolute top-[10%] left-[20%] w-[90%] h-[70%] rounded-full bg-gradient-to-tr from-[#18b978]/12 via-[#e8ba52]/10 to-transparent blur-[120px] animate-aurora-delayed" />
+        </div>
+
+        {/* Dynamic Glow Core tied to Daily Luck Tier or active generation */}
         <div
           className="absolute top-[-10%] left-[50%] translate-x-[-50%] w-[120%] h-[60%] rounded-full opacity-30 blur-[100px] transition-all duration-1000"
           style={{
@@ -313,11 +423,35 @@ export default function LuckyMeterPage() {
               : `radial-gradient(circle, ${tierColor} 0%, rgba(6, 26, 28, 0.8) 50%, transparent 80%)`
           }}
         />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] opacity-40" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] opacity-25" />
       </div>
 
-      {/* Styled JSX for vortex and led flickering */}
+      {/* Styled JSX for vortex, led flickering and aurora animations */}
       <style jsx global>{`
+        @keyframes auroraSlow {
+          0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 0.35; }
+          50% { transform: translate3d(40px, -20px, 0) rotate(5deg) scale(1.15); opacity: 0.65; }
+          100% { transform: translate3d(-20px, 30px, 0) rotate(-3deg) scale(0.95); opacity: 0.35; }
+        }
+        @keyframes auroraMid {
+          0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 0.3; }
+          50% { transform: translate3d(-30px, 40px, 0) rotate(-6deg) scale(0.9); opacity: 0.55; }
+          100% { transform: translate3d(50px, -15px, 0) rotate(4deg) scale(1.1); opacity: 0.3; }
+        }
+        @keyframes auroraDelayed {
+          0% { transform: translate3d(0, 0, 0) rotate(0deg) scale(1); opacity: 0.2; }
+          50% { transform: translate3d(35px, 30px, 0) rotate(3deg) scale(1.12); opacity: 0.45; }
+          100% { transform: translate3d(-40px, -30px, 0) rotate(-5deg) scale(0.92); opacity: 0.2; }
+        }
+        .animate-aurora-slow {
+          animation: auroraSlow 28s ease-in-out infinite alternate;
+        }
+        .animate-aurora-mid {
+          animation: auroraMid 24s ease-in-out infinite alternate;
+        }
+        .animate-aurora-delayed {
+          animation: auroraDelayed 32s ease-in-out infinite alternate;
+        }
         @keyframes vortexSlowSpin {
           0% { transform: rotate(0deg) scale(1); }
           50% { transform: rotate(180deg) scale(1.05); }
