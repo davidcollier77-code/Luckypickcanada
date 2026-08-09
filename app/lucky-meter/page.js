@@ -1,372 +1,343 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import styles from './LuckyMeter.module.css';
+import { useState, useEffect } from "react";
+import Link from "next/link";
 
-const STORAGE_KEY = 'lm_daily_luck_v1';
-
-function getDateKey(d = new Date()) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function getNextMidnight(now = new Date()) {
-  const next = new Date(now);
-  next.setHours(24, 0, 0, 0);
-  return next;
-}
-
-function getTierFromPercentage(p) {
-  if (p >= 80) return 'flagship';
-  if (p >= 36) return 'premium';
-  return 'standard';
-}
-
-function generateDailyPercentage() {
-  const seed = getDateKey();
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  }
-  return hash % 101;
-}
+// --- 16 Mystical Canadian Luck Quotes ---
+const LUCK_QUOTES = [
+  "The northern lights align to guide your steps today.",
+  "Great fortune flows like the strong currents of the Great Lakes.",
+  "A quiet clarity brings golden opportunities your way.",
+  "The winds of the North carry fresh luck to your door.",
+  "Trust your instincts today—the stars favor bold choices.",
+  "An unexpected spark of luck will illuminate your path.",
+  "Serendipity surrounds you; keep your eyes wide open.",
+  "Like the enduring pine, your luck remains steadfast and strong.",
+  "A wave of positive momentum is building around you.",
+  "The frost clears to reveal a bright, lucky day ahead.",
+  "Small choices today lead to grand rewards tomorrow.",
+  "Your energy attracts prosperity from coast to coast.",
+  "The celestial compass points directly toward good fortune.",
+  "A golden opportunity is quietly making its way to you.",
+  "Embrace the day with confidence—luck is in your corner.",
+  "Mystic aurora lights signal a breakthrough moment for you."
+];
 
 export default function LuckyMeterPage() {
-  const [percentage, setPercentage] = useState(null);
-  const [tier, setTier] = useState(null);
-  const [revealed, setRevealed] = useState(false);
-  const [locked, setLocked] = useState(false);
-  const [countdownText, setCountdownText] = useState('Next reset at midnight.');
-  const [message, setMessage] = useState({ text: '', type: '' });
-  const [warnLock, setWarnLock] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [percentage, setPercentage] = useState(0);
+  const [tier, setTier] = useState("");
+  const [quote, setQuote] = useState("");
+  const [hasRolledToday, setHasRolledToday] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [countdown, setCountdown] = useState("00:00:00");
+  const [shareToast, setShareToast] = useState(false);
 
-  const canvasRef = useRef(null);
-  const animFrameRef = useRef(null);
-  const vortexModeRef = useRef('idle');
-  const particlesRef = useRef([]);
+  // Helper: Get user's local YYYY-MM-DD date key
+  const getTodayDateKey = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
-  // Hydration state check
+  // Tier calculation helper (Strict 3-Tier System)
+  const calculateTier = (pct) => {
+    if (pct >= 80) return "FLAGSHIP LUCK";
+    if (pct >= 50) return "PREMIUM LUCK";
+    return "STANDARD LUCK";
+  };
+
+  // --- Hydration Safety & Persistence Load ---
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const now = new Date();
-    const todayKey = getDateKey(now);
+    setIsMounted(true);
+    const todayKey = getTodayDateKey();
 
-    if (raw) {
-      try {
-        const data = JSON.parse(raw);
-        if (data.dateKey === todayKey && typeof data.percentage === 'number') {
-          setPercentage(data.percentage);
-          setTier(getTierFromPercentage(data.percentage));
-          setRevealed(true);
-          setLocked(true);
-          return;
-        }
-      } catch (e) {
-        console.error('Failed to parse lucky meter state:', e);
+    try {
+      const savedData = localStorage.getItem(`luckymeter_${todayKey}`);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        setPercentage(parsed.percentage);
+        setTier(parsed.tier);
+        setQuote(parsed.quote);
+        setHasRolledToday(true);
       }
+    } catch (e) {
+      console.warn("Storage access failed:", e);
     }
   }, []);
 
-  // Reset countdown interval
+  // --- Live Countdown Timer targeting Local Midnight ---
   useEffect(() => {
-    function updateCountdown() {
-      const nextReset = getNextMidnight();
-      const diff = nextReset.getTime() - new Date().getTime();
+    if (!isMounted) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const nextMidnight = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1,
+        0,
+        0,
+        0
+      );
+      const diff = nextMidnight.getTime() - now.getTime();
+
       if (diff <= 0) {
-        setCountdownText('Resetting… reload to get a new reading.');
-        setLocked(false);
-        setWarnLock(false);
+        // Midnight reached: automatically unlock new daily roll
+        setHasRolledToday(false);
+        setPercentage(0);
+        setTier("");
+        setQuote("");
         return;
       }
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      if (hours <= 0 && minutes <= 0) {
-        setCountdownText('Less than a minute until reset.');
-      } else {
-        setCountdownText(`Next reset in ${hours}h ${minutes}m.`);
-      }
-    }
+
+      const hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
+      const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0");
+      const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
+      setCountdown(`${hours}:${minutes}:${seconds}`);
+    };
 
     updateCountdown();
-    const timer = setInterval(updateCountdown, 30000);
-    return () => clearInterval(timer);
-  }, []);
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [isMounted]);
 
-  // Canvas particle animation
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  // --- Generate Daily Reading ---
+  const handleGenerateLuck = () => {
+    if (hasRolledToday || isAnimating) return;
 
-    const ctx = canvas.getContext('2d');
+    setIsAnimating(true);
+    const todayKey = getTodayDateKey();
 
-    function resizeCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * window.devicePixelRatio;
-      canvas.height = rect.height * window.devicePixelRatio;
-    }
-
-    function initParticles() {
-      particlesRef.current = [];
-      const count = 80;
-      const w = canvas.width || 200;
-      const h = canvas.height || 200;
-      for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = (Math.random() * 0.4 + 0.1) * (Math.min(w, h) / 2);
-        particlesRef.current.push({
-          x: w / 2 + Math.cos(angle) * radius,
-          y: h / 2 + Math.sin(angle) * radius,
-          angle,
-          speed: 0.0008 + Math.random() * 0.0012,
-          size: 18 + Math.random() * 22,
-          alpha: 0.12 + Math.random() * 0.18,
-        });
+    // Check yesterday's score to prevent back-to-back duplicates
+    let lastResult = null;
+    let lastQuote = null;
+    try {
+      const prevData = localStorage.getItem("luckymeter_last_result");
+      if (prevData) {
+        const parsedPrev = JSON.parse(prevData);
+        lastResult = parsedPrev.percentage;
+        lastQuote = parsedPrev.quote;
       }
+    } catch (e) {
+      console.warn("Storage read error:", e);
     }
 
-    resizeCanvas();
-    initParticles();
-    window.addEventListener('resize', resizeCanvas);
+    // Roll random percentage (0-100) rejecting consecutive match
+    let newPct;
+    do {
+      newPct = Math.floor(Math.random() * 101);
+    } while (newPct === lastResult);
 
-    function animate() {
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+    // Select random quote rejecting consecutive match
+    let newQuote;
+    do {
+      newQuote = LUCK_QUOTES[Math.floor(Math.random() * LUCK_QUOTES.length)];
+    } while (newQuote === lastQuote && LUCK_QUOTES.length > 1);
 
-      const centerX = w / 2;
-      const centerY = h / 2;
+    const newTier = calculateTier(newPct);
 
-      let speedFactor = 1;
-      let pullFactor = 0.0004;
-      let alphaBoost = 0;
+    // Reduced motion preference support
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      if (vortexModeRef.current === 'activate') {
-        speedFactor = 3.2;
-        pullFactor = 0.0012;
-        alphaBoost = 0.08;
-      } else if (vortexModeRef.current === 'post') {
-        speedFactor = 1.4;
-        pullFactor = 0.0004;
-        alphaBoost = 0.02;
+    const animationDuration = prefersReducedMotion ? 1000 : 8000;
+
+    // Smooth counting effect during reveal
+    let currentPct = 0;
+    const stepTime = Math.max(10, Math.floor(animationDuration / Math.max(1, newPct)));
+    const counterInterval = setInterval(() => {
+      currentPct += 1;
+      if (currentPct >= newPct) {
+        clearInterval(counterInterval);
+        setPercentage(newPct);
+      } else {
+        setPercentage(currentPct);
       }
+    }, stepTime);
 
-      ctx.globalCompositeOperation = 'lighter';
-
-      particlesRef.current.forEach((p) => {
-        p.angle += p.speed * speedFactor;
-
-        const dx = centerX - p.x;
-        const dy = centerY - p.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const pull = pullFactor * dist;
-
-        p.x += Math.cos(p.angle) * 0.6 + dx * pull;
-        p.y += Math.sin(p.angle) * 0.6 + dy * pull;
-
-        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-        gradient.addColorStop(0, `rgba(148, 163, 184, ${p.alpha + alphaBoost})`);
-        gradient.addColorStop(0.4, `rgba(56, 189, 248, ${p.alpha * 0.8 + alphaBoost})`);
-        gradient.addColorStop(1, 'rgba(15, 23, 42, 0)');
-
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      ctx.globalCompositeOperation = 'source-over';
-      animFrameRef.current = requestAnimationFrame(animate);
-    }
-
-    animate();
-
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
-
-  const handleReveal = () => {
-    if (locked) {
-      setMessage({
-        text: 'You’ve already revealed today’s luck. Come back after midnight.',
-        type: 'alert',
-      });
-      setWarnLock(true);
-      return;
-    }
-
-    const p = generateDailyPercentage();
-    const t = getTierFromPercentage(p);
-
-    setPercentage(p);
-    setTier(t);
-    setRevealed(true);
-    setLocked(true);
-
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ dateKey: getDateKey(), percentage: p })
-    );
-
-    vortexModeRef.current = 'activate';
     setTimeout(() => {
-      vortexModeRef.current = 'post';
-    }, 1800);
+      clearInterval(counterInterval);
+      setPercentage(newPct);
+      setTier(newTier);
+      setQuote(newQuote);
+      setHasRolledToday(true);
+      setIsAnimating(false);
 
-    if (t === 'flagship') {
-      setMessage({ text: 'Flagship luck unlocked. Make today count.', type: 'success' });
-    } else if (t === 'premium') {
-      setMessage({ text: 'Premium luck. Strong odds in your favor.', type: 'success' });
-    } else {
-      setMessage({ text: 'Standard luck. Stay sharp and intentional.', type: '' });
-    }
+      // Save today's result locally
+      const resultObj = { percentage: newPct, tier: newTier, quote: newQuote };
+      try {
+        localStorage.setItem(`luckymeter_${todayKey}`, JSON.stringify(resultObj));
+        localStorage.setItem("luckymeter_last_result", JSON.stringify(resultObj));
+      } catch (e) {
+        console.warn("Storage write error:", e);
+      }
+    }, animationDuration);
   };
 
-  const handleShare = () => {
-    if (!revealed || percentage == null) return;
-    const tierLabel = tier ? tier.charAt(0).toUpperCase() + tier.slice(1) : 'Standard';
-    const text = `My Lucky Meter reading today is ${percentage}% (${tierLabel} tier).`;
-    const url = window.location.href;
+  // --- Share Button Action ---
+  const handleShare = async () => {
+    const shareData = {
+      title: "My Lucky Meter Result — LuckyPickCanada",
+      text: `🍁 I rolled ${percentage}% (${tier}) on LuckyPickCanada today! "${quote}"`,
+      url: "https://luckypickcanada.ca"
+    };
 
     if (navigator.share) {
-      navigator.share({ title: 'Lucky Meter Reading', text, url }).catch(() => {});
-    } else {
-      navigator.clipboard
-        .writeText(`${text} ${url}`)
-        .then(() => {
-          setMessage({ text: 'Copied today’s luck to your clipboard.', type: 'success' });
-        })
-        .catch(() => {
-          setMessage({ text: 'Unable to share automatically.', type: 'alert' });
-        });
+      try {
+        await navigator.share(shareData);
+      } catch (e) {
+        // Share modal dismissed by user
+      }
+    } else if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(
+          `${shareData.text} Check yours at ${shareData.url}`
+        );
+        setShareToast(true);
+        setTimeout(() => setShareToast(false), 3000);
+      } catch (e) {
+        console.warn("Clipboard failed:", e);
+      }
     }
   };
 
-  const getTierColor = () => {
-    if (tier === 'flagship') return 'var(--flagship)';
-    if (tier === 'premium') return 'var(--premium)';
-    return 'var(--standard)';
-  };
+  // Loading state guard prevents React Hydration Errors
+  if (!isMounted) {
+    return (
+      <div style={{ minHeight: "100vh", backgroundColor: "#0b1320", display: "flex", alignItems: "center", justifyContent: "center", color: "#d4af37", fontFamily: "sans-serif" }}>
+        Loading Lucky Meter...
+      </div>
+    );
+  }
 
-  const getTierLabel = () => {
-    if (tier === 'flagship') return 'Tier: Flagship';
-    if (tier === 'premium') return 'Tier: Premium';
-    if (tier === 'standard') return 'Tier: Standard';
-    return 'Tier: —';
-  };
+  // Dynamic Tier Colors
+  const tierColor =
+    tier === "FLAGSHIP LUCK" ? "#ffd700" :
+    tier === "PREMIUM LUCK" ? "#00f0ff" : "#5ce1e6";
+
+  const glowStrength = isAnimating ? 0.9 : hasRolledToday ? Math.max(0.3, percentage / 100) : 0.25;
 
   return (
-    <div className={styles.lmRoot}>
-      <div className={styles.lmAurora}></div>
-      <div className={styles.lmInner}>
-        <div className={styles.lmHeader}>
-          <div className={styles.lmTitle}>Lucky Meter</div>
-          <div className={styles.lmIndicators}>
-            <div className={`${styles.lmIndicator} ${styles.lmIndicatorOn}`}></div>
-            <div className={`${styles.lmIndicator} ${revealed ? styles.lmIndicatorOn : ''}`}></div>
-            <div
-              className={`${styles.lmIndicator} ${
-                warnLock ? styles.lmIndicatorWarn : locked ? styles.lmIndicatorOn : ''
-              }`}
-            ></div>
-          </div>
+    <main style={{ minHeight: "100vh", backgroundColor: "#0b1320", color: "#ffffff", padding: "20px 16px", fontFamily: "'Inter', system-ui, sans-serif", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      
+      {/* Navigation Bar */}
+      <div style={{ width: "100%", maxWidth: "420px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <Link href="/" style={{ color: "#d4af37", textDecoration: "none", fontSize: "14px", fontWeight: "600", padding: "8px 16px", borderRadius: "20px", border: "1px solid rgba(212,175,55,0.4)", backgroundColor: "rgba(212,175,55,0.08)" }}>
+          ← Back to Home
+        </Link>
+        <div style={{ fontSize: "12px", color: "#a0aec0" }}>🍁 LuckyPickCanada</div>
+      </div>
+
+      {/* Ritual Header */}
+      <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#ffd700", textShadow: "0 0 10px rgba(255,215,0,0.5)", margin: "8px 0 20px", textAlign: "center" }}>
+        ✨ Your Daily Luck Ritual
+      </h1>
+
+      {/* Main Meter Machine Area */}
+      <div style={{ position: "relative", width: "100%", maxWidth: "420px", borderRadius: "16px", overflow: "hidden", boxShadow: "0 0 30px rgba(0,240,255,0.15)" }}>
+        
+        {/* Background Meter Image */}
+        <img
+          src="/copilot_image_1785515250260.jpeg"
+          alt="Lucky Meter Artwork"
+          style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none", userSelect: "none" }}
+        />
+
+        {/* Inline SVG Aurora Overlay */}
+        <svg
+          width="100%"
+          height="100%"
+          style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+        >
+          <defs>
+            <radialGradient id="auroraGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor={tier === "FLAGSHIP LUCK" ? "rgba(255,215,0,0.9)" : "rgba(0,240,255,0.9)"} />
+              <stop offset="60%" stopColor="rgba(0,240,255,0.25)" />
+              <stop offset="100%" stopColor="rgba(0,240,255,0)" />
+            </radialGradient>
+          </defs>
+
+          <circle
+            cx="50%"
+            cy="50%"
+            r="38%"
+            fill="url(#auroraGlow)"
+            style={{ opacity: glowStrength, transition: "opacity 0.8s ease-out" }}
+          />
+
+          <rect
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            fill="rgba(0,255,255,0.08)"
+            style={{ mixBlendMode: "overlay", animation: isAnimating ? "shimmer 1s infinite linear" : "shimmer 3.5s infinite linear" }}
+          />
+
+          <style>{`
+            @keyframes shimmer {
+              0% { opacity: 0.05; }
+              50% { opacity: 0.25; }
+              100% { opacity: 0.05; }
+            }
+          `}</style>
+        </svg>
+
+        {/* Percentage Display */}
+        <div style={{ position: "absolute", top: "46%", left: "50%", transform: "translate(-50%, -50%)", fontSize: "44px", fontWeight: "800", color: "#ffffff", textShadow: "0 0 14px rgba(0,240,255,0.8)" }}>
+          {isAnimating || hasRolledToday ? `${percentage}%` : "0%"}
         </div>
 
-        <div className={styles.lmDevice}>
-          <div className={styles.lmDeviceTop}>
-            <div className={styles.lmDeviceLabel}>Daily Luck Device</div>
-            <div className={styles.lmTierPill}>
-              <span
-                className={styles.lmTierDot}
-                style={{ background: getTierColor() }}
-              ></span>
-              <span>{getTierLabel()}</span>
-            </div>
-          </div>
-
-          <div className={styles.lmMeterShell}>
-            <div className={styles.lmMeterRing}></div>
-            <div className={styles.lmMeterGlass}></div>
-            <div className={styles.lmMeterCanvasWrap}>
-              <canvas ref={canvasRef} className={styles.lmSmokeCanvas}></canvas>
-            </div>
-            <div className={styles.lmMeterCore}>
-              <div className={styles.lmPercentageWrap}>
-                <div
-                  className={`${styles.lmPercentageValue} ${
-                    revealed ? styles.lmPercentageValueVisible : ''
-                  }`}
-                >
-                  {revealed ? `${percentage}%` : '--%'}
-                </div>
-                <div
-                  className={`${styles.lmPercentageLabel} ${
-                    revealed ? styles.lmPercentageLabelVisible : ''
-                  }`}
-                >
-                  {revealed ? 'Today’s luck' : 'Awaiting reveal'}
-                </div>
-              </div>
-            </div>
-            <div className={styles.lmTierBadge}>
-              <span
-                className={styles.lmTierBadgeDot}
-                style={{ background: getTierColor() }}
-              ></span>
-              <span>{getTierLabel()}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.lmFooter}>
-          <div className={styles.lmStatusRow}>
-            <div className={styles.lmStatusLabel}>Status</div>
-            <div
-              className={`${styles.lmStatusValue} ${
-                locked ? styles.lmStatusLocked : ''
-              }`}
-            >
-              {locked ? 'Used for today' : 'Ready'}
-            </div>
-          </div>
-          <div className={styles.lmCountdown}>{countdownText}</div>
-
-          <div className={styles.lmActions}>
-            <button
-              onClick={handleReveal}
-              className={`${styles.lmBtn} ${styles.lmBtnPrimary} ${
-                locked ? styles.lmBtnPrimaryDisabled : ''
-              }`}
-            >
-              <span>Reveal Today’s Luck</span>
-            </button>
-            <button
-              onClick={handleShare}
-              className={`${styles.lmBtn} ${styles.lmBtnSecondary} ${
-                !revealed ? styles.lmBtnHidden : ''
-              }`}
-            >
-              <span>Share</span>
-              <span className={styles.lmBtnIcon}></span>
-            </button>
-          </div>
-
-          <div
-            className={`${styles.lmMessage} ${
-              message.type === 'alert'
-                ? styles.lmMessageAlert
-                : message.type === 'success'
-                ? styles.lmMessageSuccess
-                : ''
-            }`}
-          >
-            {message.text}
-          </div>
+        {/* Tier Label */}
+        <div style={{ position: "absolute", bottom: "12%", left: "50%", transform: "translateX(-50%)", fontSize: "20px", fontWeight: "700", color: tierColor, textShadow: "0 0 10px rgba(0,240,255,0.6)", letterSpacing: "1px", textTransform: "uppercase" }}>
+          {isAnimating ? "Consulting Stars..." : tier || "Ready"}
         </div>
       </div>
-    </div>
+
+      {/* Quote Display */}
+      {hasRolledToday && quote && (
+        <div style={{ marginTop: "20px", width: "100%", maxWidth: "420px", textAlign: "center", padding: "16px", backgroundColor: "rgba(15,23,42,0.8)", borderRadius: "12px", border: "1px solid rgba(0,240,255,0.2)", color: "#e2e8f0", fontSize: "15px", lineHeight: "1.5" }}>
+          "{quote}"
+        </div>
+      )}
+
+      {/* Interactive Actions */}
+      <div style={{ marginTop: "20px", width: "100%", maxWidth: "420px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+        {!hasRolledToday ? (
+          <button
+            onClick={handleGenerateLuck}
+            disabled={isAnimating}
+            style={{ width: "100%", padding: "16px", borderRadius: "30px", border: "none", background: isAnimating ? "linear-gradient(90deg, #4a5568, #2d3748)" : "linear-gradient(90deg, #d4af37, #ffd700)", color: "#0b1320", fontSize: "18px", fontWeight: "700", cursor: isAnimating ? "not-allowed" : "pointer", boxShadow: "0 0 20px rgba(255,215,0,0.4)" }}
+          >
+            {isAnimating ? "Revealing Your Daily Luck..." : "Generate Luck"}
+          </button>
+        ) : (
+          <button
+            onClick={handleShare}
+            style={{ width: "100%", padding: "14px", borderRadius: "30px", border: "1px solid #00f0ff", background: "rgba(0,240,255,0.1)", color: "#00f0ff", fontSize: "16px", fontWeight: "600", cursor: "pointer", boxShadow: "0 0 12px rgba(0,240,255,0.2)" }}
+          >
+            📤 Share Daily Reading
+          </button>
+        )}
+
+        {shareToast && (
+          <div style={{ fontSize: "13px", color: "#4ade80", backgroundColor: "rgba(74,222,128,0.1)", padding: "6px 12px", borderRadius: "6px" }}>
+            Copied to clipboard!
+          </div>
+        )}
+      </div>
+
+      {/* Countdown Timer */}
+      <div style={{ marginTop: "24px", textAlign: "center", color: "#a0aec0", fontSize: "14px" }}>
+        <div style={{ marginBottom: "4px" }}>Next Lucky Reading In</div>
+        <div style={{ fontSize: "22px", fontWeight: "700", color: "#d4af37", fontFamily: "monospace", letterSpacing: "2px" }}>
+          {countdown}
+        </div>
+      </div>
+    </main>
   );
 }
