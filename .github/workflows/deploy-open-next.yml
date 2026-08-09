@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - open-next/repair-wrangler-build
+      - main
 
 jobs:
   deploy:
