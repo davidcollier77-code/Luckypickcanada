@@ -3,42 +3,50 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
-// --- 16 Mystical Canadian Luck Quotes ---
+// 16 Mystical Canadian Luck Quotes
 const LUCK_QUOTES = [
+  "A wave of Canadian luck is quietly forming behind you.",
+  "Someone will brighten your day in an unexpected way.",
+  "Your patience today will unlock tomorrow’s reward.",
+  "A small risk will turn into a big opportunity.",
+  "Your kindness will return to you before the week ends.",
+  "A lucky break is waiting in a familiar place.",
+  "Your energy today attracts good fortune.",
+  "A positive surprise is on its way.",
+  "Your intuition will guide you to something valuable.",
+  "A new connection will bring unexpected luck.",
+  "Your calm mindset strengthens your luck today.",
+  "A moment of clarity will lead to a lucky decision.",
   "The northern lights align to guide your steps today.",
   "Great fortune flows like the strong currents of the Great Lakes.",
-  "A quiet clarity brings golden opportunities your way.",
-  "The winds of the North carry fresh luck to your door.",
-  "Trust your instincts today—the stars favor bold choices.",
-  "An unexpected spark of luck will illuminate your path.",
-  "Serendipity surrounds you; keep your eyes wide open.",
-  "Like the enduring pine, your luck remains steadfast and strong.",
-  "A wave of positive momentum is building around you.",
   "The frost clears to reveal a bright, lucky day ahead.",
-  "Small choices today lead to grand rewards tomorrow.",
-  "Your energy attracts prosperity from coast to coast.",
-  "The celestial compass points directly toward good fortune.",
-  "A golden opportunity is quietly making its way to you.",
-  "Embrace the day with confidence—luck is in your corner.",
-  "Mystic aurora lights signal a breakthrough moment for you."
+  "Your energy attracts prosperity from coast to coast."
 ];
 
 export default function LuckyMeterPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [percentage, setPercentage] = useState(0);
+  const [displayedPercentage, setDisplayedPercentage] = useState(0);
   const [tier, setTier] = useState("");
   const [quote, setQuote] = useState("");
   const [hasRolledToday, setHasRolledToday] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [countdown, setCountdown] = useState("00:00:00");
+  const [revealProgress, setRevealProgress] = useState(0); // 0 -> 1 during reveal
+  const [timeLeft, setTimeLeft] = useState("");
   const [shareToast, setShareToast] = useState(false);
 
-  const [imageError, setImageError] = useState(false);
+  const animIntervalRef = useRef(null);
+  const animTimeoutRef = useRef(null);
 
-  const countdownIntervalRef = useRef(null);
-  const animationIntervalRef = useRef(null);
-  const animationTimeoutRef = useRef(null);
-  // Helper: Get user's local YYYY-MM-DD date key
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (animIntervalRef.current) clearInterval(animIntervalRef.current);
+      if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+    };
+  }, []);
+
+  // Helper: Local Date Key YYYY-MM-DD
   const getTodayDateKey = () => {
     const d = new Date();
     const year = d.getFullYear();
@@ -47,14 +55,14 @@ export default function LuckyMeterPage() {
     return `${year}-${month}-${day}`;
   };
 
-  // Tier calculation helper (Strict 3-Tier System)
+  // 3-Tier System Helper
   const calculateTier = (pct) => {
     if (pct >= 80) return "FLAGSHIP LUCK";
     if (pct >= 50) return "PREMIUM LUCK";
     return "STANDARD LUCK";
   };
 
-  // --- Hydration Safety & Persistence Load ---
+  // Hydration safety & state restore
   useEffect(() => {
     setIsMounted(true);
     const todayKey = getTodayDateKey();
@@ -64,78 +72,58 @@ export default function LuckyMeterPage() {
       if (savedData) {
         const parsed = JSON.parse(savedData);
         setPercentage(parsed.percentage);
+        setDisplayedPercentage(parsed.percentage);
         setTier(parsed.tier);
         setQuote(parsed.quote);
         setHasRolledToday(true);
+        setRevealProgress(1);
       }
     } catch (e) {
       console.warn("Storage access failed:", e);
     }
   }, []);
 
-  // --- Live Countdown Timer targeting Local Midnight ---
+  // Countdown timer to local midnight
   useEffect(() => {
     if (!isMounted) return;
 
-    const updateCountdown = () => {
+    function updateCountdown() {
       const now = new Date();
-      const nextMidnight = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate() + 1,
-        0,
-        0,
-        0
-      );
-      const diff = nextMidnight.getTime() - now.getTime();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
 
+      const diff = midnight.getTime() - now.getTime();
       if (diff <= 0) {
-        // Midnight reached: automatically unlock new daily roll
+        setTimeLeft("0h 0m 0s");
         setHasRolledToday(false);
         setPercentage(0);
+        setDisplayedPercentage(0);
+        setRevealProgress(0);
         setTier("");
         setQuote("");
         return;
       }
 
-      const hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
-      const minutes = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, "0");
-      const seconds = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
-      setCountdown(`${hours}:${minutes}:${seconds}`);
-    };
+      const hrs = Math.floor(diff / 1000 / 60 / 60);
+      const mins = Math.floor((diff / 1000 / 60) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
+
+      setTimeLeft(`${hrs}h ${mins}m ${secs}s`);
+    }
 
     updateCountdown();
-    countdownIntervalRef.current = setInterval(updateCountdown, 1000);
-    return () => {
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-        countdownIntervalRef.current = null;
-      }
-    };
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
   }, [isMounted]);
 
-  // --- Cleanup animation timers on unmount ---
-  useEffect(() => {
-    return () => {
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current);
-        animationIntervalRef.current = null;
-      }
-      if (animationTimeoutRef.current) {
-        clearTimeout(animationTimeoutRef.current);
-        animationTimeoutRef.current = null;
-      }
-    };
-  }, []);
-
-  // --- Generate Daily Reading ---
+  // Generate Daily Reading Action
   const handleGenerateLuck = () => {
     if (hasRolledToday || isAnimating) return;
 
     setIsAnimating(true);
     const todayKey = getTodayDateKey();
 
-    // Check yesterday's score to prevent back-to-back duplicates
+    // Consecutive day duplicate rejection
     let lastResult = null;
     let lastQuote = null;
     try {
@@ -149,61 +137,55 @@ export default function LuckyMeterPage() {
       console.warn("Storage read error:", e);
     }
 
-    // Roll random percentage (0-100) rejecting consecutive match
     let newPct;
-    do {
     let pctAttempts = 0;
     do {
-    } while (newPct === lastResult);
+      newPct = Math.floor(Math.random() * 101);
       pctAttempts++;
-    } while (newPct === lastResult && pctAttempts < 10);
-    // Select random quote rejecting consecutive match
+    } while (newPct === lastResult && lastResult !== null && pctAttempts < 10);
+
     let newQuote;
-    do {
     let quoteAttempts = 0;
     do {
-    } while (newQuote === lastQuote && LUCK_QUOTES.length > 1);
+      newQuote = LUCK_QUOTES[Math.floor(Math.random() * LUCK_QUOTES.length)];
       quoteAttempts++;
-    } while (newQuote === lastQuote && LUCK_QUOTES.length > 1 && quoteAttempts < 10);
+    } while (newQuote === lastQuote && lastQuote !== null && LUCK_QUOTES.length > 1 && quoteAttempts < 10);
+
     const newTier = calculateTier(newPct);
 
-    // Reduced motion preference support
+    // Reduced motion support
     const prefersReducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const animationDuration = prefersReducedMotion ? 1000 : 8000;
+    const duration = prefersReducedMotion ? 1000 : 9000;
+    const start = Date.now();
 
-    // Smooth counting effect during reveal
-    let currentPct = 0;
-    const stepTime = Math.max(10, Math.floor(animationDuration / Math.max(1, newPct)));
-    
-    // Clear any existing animation timers
-    if (animationIntervalRef.current) clearInterval(animationIntervalRef.current);
-    if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
-    
-    animationIntervalRef.current = setInterval(() => {
-      currentPct += 1;
-      if (currentPct >= newPct) {
-        clearInterval(animationIntervalRef.current);
-        animationIntervalRef.current = null;
-        setPercentage(newPct);
-      } else {
-        setPercentage(currentPct);
+    if (animIntervalRef.current) clearInterval(animIntervalRef.current);
+    animIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const t = Math.min(elapsed / duration, 1);
+
+      setRevealProgress(t);
+      setDisplayedPercentage(Math.round(newPct * t));
+
+      if (t >= 1) {
+        if (animIntervalRef.current) clearInterval(animIntervalRef.current);
       }
-    }, stepTime);
+    }, 50);
 
-    animationTimeoutRef.current = setTimeout(() => {
-      if (animationIntervalRef.current) clearInterval(animationIntervalRef.current);
-      animationIntervalRef.current = null;
-      animationTimeoutRef.current = null;
+    if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
+    animTimeoutRef.current = setTimeout(() => {
+      if (animIntervalRef.current) clearInterval(animIntervalRef.current);
+
       setPercentage(newPct);
+      setDisplayedPercentage(newPct);
+      setRevealProgress(1);
       setTier(newTier);
       setQuote(newQuote);
       setHasRolledToday(true);
       setIsAnimating(false);
 
-      // Save today's result locally
       const resultObj = { percentage: newPct, tier: newTier, quote: newQuote };
       try {
         localStorage.setItem(`luckymeter_${todayKey}`, JSON.stringify(resultObj));
@@ -211,10 +193,10 @@ export default function LuckyMeterPage() {
       } catch (e) {
         console.warn("Storage write error:", e);
       }
-    }, animationDuration);
+    }, duration);
   };
 
-  // --- Share Button Action ---
+  // Share Reading Action
   const handleShare = async () => {
     const shareData = {
       title: "My Lucky Meter Result — LuckyPickCanada",
@@ -226,7 +208,7 @@ export default function LuckyMeterPage() {
       try {
         await navigator.share(shareData);
       } catch (e) {
-        // Share modal dismissed by user
+        // Dismissed
       }
     } else if (navigator.clipboard) {
       try {
@@ -241,132 +223,284 @@ export default function LuckyMeterPage() {
     }
   };
 
-  // Loading state guard prevents React Hydration Errors
   if (!isMounted) {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#0b1320", display: "flex", alignItems: "center", justifyContent: "center", color: "#d4af37", fontFamily: "sans-serif" }}>
+      <div style={{ minHeight: "100vh", backgroundColor: "#00060a", display: "flex", alignItems: "center", justifyContent: "center", color: "#00eaff" }}>
         Loading Lucky Meter...
       </div>
     );
   }
 
-  // Dynamic Tier Colors
-  const tierColor =
-    tier === "FLAGSHIP LUCK" ? "#ffd700" :
-    tier === "PREMIUM LUCK" ? "#00f0ff" : "#5ce1e6";
+  // Visual Styles
+  const pageStyle = {
+    padding: "40px 16px",
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    color: "white",
+    fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    background: "radial-gradient(circle at top, #02131f 0%, #00060a 40%, #000000 100%)"
+  };
 
-  const glowStrength = isAnimating ? 0.9 : hasRolledToday ? Math.max(0.3, percentage / 100) : 0.25;
+  const headerStyle = {
+    textAlign: "center",
+    marginBottom: "20px",
+    maxWidth: "640px",
+    lineHeight: "1.5"
+  };
+
+  const countdownStyle = {
+    marginTop: "10px",
+    fontSize: "18px",
+    opacity: 0.9
+  };
+
+  const homeButtonStyle = {
+    marginTop: "20px",
+    display: "inline-block",
+    padding: "10px 20px",
+    background: "#00eaff",
+    color: "#003b45",
+    borderRadius: "8px",
+    fontWeight: "600",
+    textDecoration: "none",
+    boxShadow: "0 0 12px rgba(0,234,255,0.6)"
+  };
+
+  const meterContainer = {
+    position: "relative",
+    width: "100%",
+    maxWidth: "420px",
+    marginTop: "30px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
+  };
+
+  const meterImage = {
+    width: "100%",
+    height: "auto",
+    display: "block",
+    clipPath: "inset(0 8% 0 0)",
+    pointerEvents: "none",
+    userSelect: "none"
+  };
+
+  const percentageStyle = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: `translate(-50%, -50%) scale(${0.7 + 0.3 * revealProgress})`,
+    fontSize: "48px",
+    fontWeight: "700",
+    textShadow: "0 0 16px rgba(0,255,255,0.9)",
+    letterSpacing: "0.06em",
+    opacity: isAnimating || hasRolledToday ? revealProgress : 0.3,
+    transition: "opacity 0.3s linear"
+  };
+
+  const tierStyle = {
+    position: "absolute",
+    bottom: "12%",
+    left: "50%",
+    transform: "translateX(-50%)",
+    fontSize: "20px",
+    fontWeight: "700",
+    letterSpacing: "1px",
+    color: tier === "FLAGSHIP LUCK" ? "#ffd700" : tier === "PREMIUM LUCK" ? "#00eaff" : "#5ce1e6",
+    textShadow: "0 0 10px rgba(0,255,255,0.6)",
+    opacity: hasRolledToday ? 1 : isAnimating ? 0.6 : 0,
+    transition: "opacity 0.6s ease-out",
+    textTransform: "uppercase"
+  };
+
+  const fortuneCardStyle = {
+    marginTop: "30px",
+    width: "100%",
+    maxWidth: "420px",
+    background: "rgba(0, 20, 30, 0.7)",
+    padding: "20px",
+    borderRadius: "12px",
+    boxShadow: "0 0 24px rgba(0,255,255,0.25)",
+    backdropFilter: "blur(8px)",
+    textAlign: "center"
+  };
+
+  const vortexIntensity = isAnimating ? 0.25 + 0.75 * revealProgress : hasRolledToday ? 0.8 : 0.25;
 
   return (
-    <main style={{ minHeight: "100vh", backgroundColor: "#0b1320", color: "#ffffff", padding: "20px 16px", fontFamily: "'Inter', system-ui, sans-serif", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      
-      {/* Navigation Bar */}
-      <div style={{ width: "100%", maxWidth: "420px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-        <Link href="/" style={{ color: "#d4af37", textDecoration: "none", fontSize: "14px", fontWeight: "600", padding: "8px 16px", borderRadius: "20px", border: "1px solid rgba(212,175,55,0.4)", backgroundColor: "rgba(212,175,55,0.08)" }}>
-          ← Back to Home
+    <main style={pageStyle}>
+      {/* HEADER + RITUAL DESCRIPTION */}
+      <div style={headerStyle}>
+        <h1 style={{ color: "#ffd700", textShadow: "0 0 10px rgba(255,215,0,0.5)" }}>
+          ✨ Daily Lucky Meter Ritual
+        </h1>
+        <p style={{ color: "#cbd5e1", fontSize: "15px", marginTop: "8px" }}>
+          Every night at local midnight, your Lucky Meter resets for a new daily reading.
+          Tap below to awaken the vortex and reveal your daily luck percentage.
+        </p>
+
+        {/* COUNTDOWN */}
+        <div style={countdownStyle}>
+          Reset happens in: <strong style={{ color: "#00eaff", fontFamily: "monospace" }}>{timeLeft}</strong>
+        </div>
+
+        {/* HOME BUTTON */}
+        <Link href="/" style={homeButtonStyle}>
+          Return Home
         </Link>
-        <div style={{ fontSize: "12px", color: "#a0aec0" }}>🍁 LuckyPickCanada</div>
       </div>
 
-      {/* Ritual Header */}
-      <h1 style={{ fontSize: "22px", fontWeight: "700", color: "#ffd700", textShadow: "0 0 10px rgba(255,215,0,0.5)", margin: "8px 0 20px", textAlign: "center" }}>
-        ✨ Your Daily Luck Ritual
-      </h1>
-
-      {/* Main Meter Machine Area */}
-      <div style={{ position: "relative", width: "100%", maxWidth: "420px", borderRadius: "16px", overflow: "hidden", boxShadow: "0 0 30px rgba(0,240,255,0.15)" }}>
-        
-        {/* Background Meter Image */}
+      {/* LUCKY METER */}
+      <div style={meterContainer}>
+        {/* Base meter image with crop */}
         <img
           src="/copilot_image_1785515250260.jpeg"
-          alt="Lucky Meter Artwork"
-          style={{ 
-            width: "100%", 
-            height: "auto", 
-            display: imageError ? "none" : "block", 
-            pointerEvents: "none", 
-            userSelect: "none" 
-          }}
-          onError={() => setImageError(true)}
+          alt="Lucky Meter"
+          style={meterImage}
         />
-        {imageError && (
-          <div style={{ width: "100%", height: "300px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(15,23,42,0.8)", color: "#a0aec0", fontSize: "14px" }}>
-            Lucky Meter Visual Unavailable
-          </div>
-        )}
 
-        {/* Inline SVG Aurora Overlay */}
+        {/* HYBRID VORTEX OVERLAY (SMOKE + AURORA) */}
         <svg
-          width="100%"
-          height="100%"
-          style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+          width="60%"
+          height="60%"
+          viewBox="0 0 200 200"
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            pointerEvents: "none"
+          }}
         >
           <defs>
-            <radialGradient id="auroraGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor={tier === "FLAGSHIP LUCK" ? "rgba(255,215,0,0.9)" : "rgba(0,240,255,0.9)"} />
-              <stop offset="60%" stopColor="rgba(0,240,255,0.25)" />
-              <stop offset="100%" stopColor="rgba(0,240,255,0)" />
+            <radialGradient id="smokeBase" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor={tier === "FLAGSHIP LUCK" ? "rgba(255,215,0,0.95)" : "rgba(0,255,200,0.95)"} />
+              <stop offset="40%" stopColor="rgba(0,180,150,0.7)" />
+              <stop offset="80%" stopColor="rgba(0,60,80,0.4)" />
+              <stop offset="100%" stopColor="rgba(0,10,20,0)" />
             </radialGradient>
+
+            <linearGradient id="auroraRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#00ffe0" />
+              <stop offset="50%" stopColor="#00b0ff" />
+              <stop offset="100%" stopColor="#00ff88" />
+            </linearGradient>
+
+            <filter id="smokeNoise">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.9"
+                numOctaves="3"
+                stitchTiles="noStitch"
+              />
+              <feGaussianBlur stdDeviation="2" />
+            </filter>
           </defs>
 
-          <circle
-            cx="50%"
-            cy="50%"
-            r="38%"
-            fill="url(#auroraGlow)"
-            style={{ opacity: glowStrength, transition: "opacity 0.8s ease-out" }}
-          />
+          {/* SMOKE VORTEX */}
+          <g style={{ transformOrigin: "100px 100px", animation: "vortexSpin 30s linear infinite" }}>
+            <circle
+              cx="100"
+              cy="100"
+              r="70"
+              fill="url(#smokeBase)"
+              filter="url(#smokeNoise)"
+              style={{
+                opacity: vortexIntensity,
+                transition: "opacity 0.6s ease-out"
+              }}
+            />
+          </g>
 
-          <rect
-            x="0"
-            y="0"
-            width="100%"
-            height="100%"
-            fill="rgba(0,255,255,0.08)"
-            style={{ mixBlendMode: "overlay", animation: isAnimating ? "shimmer 1s infinite linear" : "shimmer 3.5s infinite linear" }}
-          />
+          {/* AURORA RIBBONS */}
+          <g style={{ animation: "auroraDrift 18s ease-in-out infinite", opacity: 0.35 + 0.65 * (hasRolledToday ? 1 : revealProgress) }}>
+            <path
+              d="M10 120 C 40 80, 80 60, 130 80 C 160 95, 185 120, 190 140"
+              fill="none"
+              stroke="url(#auroraRibbon)"
+              strokeWidth="10"
+              strokeLinecap="round"
+            />
+            <path
+              d="M20 90 C 60 60, 110 50, 160 70"
+              fill="none"
+              stroke="url(#auroraRibbon)"
+              strokeWidth="6"
+              strokeLinecap="round"
+              style={{ opacity: 0.7 }}
+            />
+          </g>
 
           <style>{`
-            @keyframes shimmer {
-              0% { opacity: 0.05; }
-              50% { opacity: 0.25; }
-              100% { opacity: 0.05; }
+            @keyframes vortexSpin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+            @keyframes auroraDrift {
+              0% { transform: translateY(0px); }
+              50% { transform: translateY(-6px); }
+              100% { transform: translateY(0px); }
             }
           `}</style>
         </svg>
 
-        {/* Percentage Display */}
-        <div style={{ position: "absolute", top: "46%", left: "50%", transform: "translate(-50%, -50%)", fontSize: "44px", fontWeight: "800", color: "#ffffff", textShadow: "0 0 14px rgba(0,240,255,0.8)" }}>
-          {isAnimating || hasRolledToday ? `${percentage}%` : "0%"}
+        {/* PERCENTAGE DISPLAY */}
+        <div style={percentageStyle}>
+          {hasRolledToday ? `${percentage}%` : `${displayedPercentage}%`}
         </div>
 
-        {/* Tier Label */}
-        <div style={{ position: "absolute", bottom: "12%", left: "50%", transform: "translateX(-50%)", fontSize: "20px", fontWeight: "700", color: tierColor, textShadow: "0 0 10px rgba(0,240,255,0.6)", letterSpacing: "1px", textTransform: "uppercase" }}>
+        {/* TIER LABEL */}
+        <div style={tierStyle}>
           {isAnimating ? "Consulting Stars..." : tier || "Ready"}
         </div>
       </div>
 
-      {/* Quote Display */}
+      {/* TODAY'S FORTUNE CARD */}
       {hasRolledToday && quote && (
-        <div style={{ marginTop: "20px", width: "100%", maxWidth: "420px", textAlign: "center", padding: "16px", backgroundColor: "rgba(15,23,42,0.8)", borderRadius: "12px", border: "1px solid rgba(0,240,255,0.2)", color: "#e2e8f0", fontSize: "15px", lineHeight: "1.5" }}>
-          "{quote}"
+        <div style={fortuneCardStyle}>
+          <h3 style={{ marginBottom: "8px", color: "#00eaff", fontSize: "16px" }}>Today's Fortune</h3>
+          <p style={{ fontSize: "15px", lineHeight: "1.5", color: "#e2e8f0" }}>"{quote}"</p>
         </div>
       )}
 
-      {/* Interactive Actions */}
-      <div style={{ marginTop: "20px", width: "100%", maxWidth: "420px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+      {/* ACTIONS: GENERATE OR SHARE */}
+      <div style={{ marginTop: "24px", width: "100%", maxWidth: "420px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
         {!hasRolledToday ? (
           <button
             onClick={handleGenerateLuck}
             disabled={isAnimating}
-            style={{ width: "100%", padding: "16px", borderRadius: "30px", border: "none", background: isAnimating ? "linear-gradient(90deg, #4a5568, #2d3748)" : "linear-gradient(90deg, #d4af37, #ffd700)", color: "#0b1320", fontSize: "18px", fontWeight: "700", cursor: isAnimating ? "not-allowed" : "pointer", boxShadow: "0 0 20px rgba(255,215,0,0.4)" }}
+            style={{
+              width: "100%",
+              padding: "16px",
+              borderRadius: "30px",
+              border: "none",
+              background: isAnimating ? "linear-gradient(90deg, #334155, #1e293b)" : "linear-gradient(90deg, #d4af37, #ffd700)",
+              color: "#0b1320",
+              fontSize: "18px",
+              fontWeight: "700",
+              cursor: isAnimating ? "not-allowed" : "pointer",
+              boxShadow: "0 0 20px rgba(255,215,0,0.4)"
+            }}
           >
             {isAnimating ? "Revealing Your Daily Luck..." : "Generate Luck"}
           </button>
         ) : (
           <button
             onClick={handleShare}
-            style={{ width: "100%", padding: "14px", borderRadius: "30px", border: "1px solid #00f0ff", background: "rgba(0,240,255,0.1)", color: "#00f0ff", fontSize: "16px", fontWeight: "600", cursor: "pointer", boxShadow: "0 0 12px rgba(0,240,255,0.2)" }}
+            style={{
+              width: "100%",
+              padding: "14px",
+              borderRadius: "30px",
+              border: "1px solid #00eaff",
+              background: "rgba(0,234,255,0.1)",
+              color: "#00eaff",
+              fontSize: "16px",
+              fontWeight: "600",
+              cursor: "pointer",
+              boxShadow: "0 0 12px rgba(0,234,255,0.3)"
+            }}
           >
             📤 Share Daily Reading
           </button>
@@ -377,14 +511,6 @@ export default function LuckyMeterPage() {
             Copied to clipboard!
           </div>
         )}
-      </div>
-
-      {/* Countdown Timer */}
-      <div style={{ marginTop: "24px", textAlign: "center", color: "#a0aec0", fontSize: "14px" }}>
-        <div style={{ marginBottom: "4px" }}>Next Lucky Reading In</div>
-        <div style={{ fontSize: "22px", fontWeight: "700", color: "#d4af37", fontFamily: "monospace", letterSpacing: "2px" }}>
-          {countdown}
-        </div>
       </div>
     </main>
   );
