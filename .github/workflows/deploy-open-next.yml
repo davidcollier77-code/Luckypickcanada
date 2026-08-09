@@ -47,7 +47,6 @@ jobs:
           fi
 
       - name: Publish to Cloudflare (wrangler)
-        if: github.event_name == 'push'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
