@@ -1,530 +1,295 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
-// 16 Mystical Canadian Luck Quotes
-const LUCK_QUOTES = [
-  "A wave of Canadian luck is quietly forming behind you.",
-  "Someone will brighten your day in an unexpected way.",
-  "Your patience today will unlock tomorrow’s reward.",
-  "A small risk will turn into a big opportunity.",
-  "Your kindness will return to you before the week ends.",
-  "A lucky break is waiting in a familiar place.",
-  "Your energy today attracts good fortune.",
-  "A positive surprise is on its way.",
+const CANADIAN_FORTUNES = [
   "Your intuition will guide you to something valuable.",
-  "A new connection will bring unexpected luck.",
-  "Your calm mindset strengthens your luck today.",
-  "A moment of clarity will lead to a lucky decision.",
-  "The northern lights align to guide your steps today.",
-  "Great fortune flows like the strong currents of the Great Lakes.",
-  "The frost clears to reveal a bright, lucky day ahead.",
-  "Your energy attracts prosperity from coast to coast."
+  "Great fortune favors those who take bold strides today.",
+  "An unexpected opportunity will present itself soon.",
+  "Clear vision and patience will yield rich rewards.",
+  "A wave of positive momentum is heading your way.",
+  "Trust the process—luck is aligning in your favor.",
+  "A surprise victory will highlight your week.",
+  "Your creative energy is at an all-time high."
 ];
 
 export default function LuckyMeterPage() {
-  const [isMounted, setIsMounted] = useState(false);
-  const [percentage, setPercentage] = useState(0);
-  const [displayedPercentage, setDisplayedPercentage] = useState(0);
-  const [tier, setTier] = useState("");
-  const [quote, setQuote] = useState("");
-  const [hasRolledToday, setHasRolledToday] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [revealProgress, setRevealProgress] = useState(0); // 0 -> 1 during reveal
-  const [timeLeft, setTimeLeft] = useState("");
-  const [shareToast, setShareToast] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [luckPercentage, setLuckPercentage] = useState(null);
+  const [fortune, setFortune] = useState('');
+  const [statusText, setStatusText] = useState('READY TO AWAKEN');
+  const [timeLeft, setTimeLeft] = useState('');
 
-  const animIntervalRef = useRef(null);
-  const animTimeoutRef = useRef(null);
-
-  // Clean up animation timers on component unmount
+  // Daily Countdown Timer to Midnight
   useEffect(() => {
-    return () => {
-      if (animIntervalRef.current) clearInterval(animIntervalRef.current);
-      if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
-    };
-  }, []);
-
-  // Helper: Get user's local YYYY-MM-DD date key
-  const getTodayDateKey = () => {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  // Strict 3-Tier Calculation Helper
-  const calculateTier = (pct) => {
-    if (pct >= 80) return "FLAGSHIP LUCK";
-    if (pct >= 50) return "PREMIUM LUCK";
-    return "STANDARD LUCK";
-  };
-
-  // Hydration safety & restore saved daily roll
-  useEffect(() => {
-    setIsMounted(true);
-    const todayKey = getTodayDateKey();
-
-    try {
-      const savedData = localStorage.getItem(`luckymeter_${todayKey}`);
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        setPercentage(parsed.percentage);
-        setDisplayedPercentage(parsed.percentage);
-        setTier(parsed.tier);
-        setQuote(parsed.quote);
-        setHasRolledToday(true);
-        setRevealProgress(1);
-      }
-    } catch (e) {
-      console.warn("Storage access failed:", e);
-    }
-  }, []);
-
-  // Live countdown timer targeting local midnight
-  useEffect(() => {
-    if (!isMounted) return;
-
-    function updateCountdown() {
+    const updateCountdown = () => {
       const now = new Date();
       const midnight = new Date();
       midnight.setHours(24, 0, 0, 0);
+      const diff = midnight - now;
 
-      const diff = midnight.getTime() - now.getTime();
-      if (diff <= 0) {
-        setTimeLeft("0h 0m 0s");
-        setHasRolledToday(false);
-        setPercentage(0);
-        setDisplayedPercentage(0);
-        setRevealProgress(0);
-        setTier("");
-        setQuote("");
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / 1000 / 60) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
 
-        try {
-          const todayKey = getTodayDateKey();
-          localStorage.removeItem(`luckymeter_${todayKey}`);
-        } catch (e) {
-          console.warn("Storage cleanup failed:", e);
-        }
-        return;
-      }
-
-      const hrs = Math.floor(diff / 1000 / 60 / 60);
-      const mins = Math.floor((diff / 1000 / 60) % 60);
-      const secs = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft(`${hrs}h ${mins}m ${secs}s`);
-    }
+      setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+    };
 
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, [isMounted]);
+  }, []);
 
-  // Generate Daily Luck Reading Action
+  // Generate Luck Routine
   const handleGenerateLuck = () => {
-    if (hasRolledToday || isAnimating) return;
+    if (isGenerating) return;
+    setIsGenerating(true);
+    setLuckPercentage(0);
+    setStatusText('CONNECTING TO STARS...');
 
-    setIsAnimating(true);
-    const todayKey = getTodayDateKey();
+    const targetLuck = Math.floor(Math.random() * 45) + 55; // 55% to 99%
+    let current = 0;
 
-    // Consecutive day duplicate rejection check
-    let lastResult = null;
-    let lastQuote = null;
-    try {
-      const prevData = localStorage.getItem("luckymeter_last_result");
-      if (prevData) {
-        const parsedPrev = JSON.parse(prevData);
-        lastResult = parsedPrev.percentage;
-        lastQuote = parsedPrev.quote;
+    const stepInterval = setInterval(() => {
+      current += 1;
+      setLuckPercentage(current);
+
+      if (current >= targetLuck) {
+        clearInterval(stepInterval);
+        setIsGenerating(false);
+        setStatusText('DAILY READ COMPLETE');
+        const randomFortune = CANADIAN_FORTUNES[Math.floor(Math.random() * CANADIAN_FORTUNES.length)];
+        setFortune(randomFortune);
       }
-    } catch (e) {
-      console.warn("Storage read error:", e);
-    }
-
-    // Roll percentage (0-100) with capped attempt loop to prevent infinite hangs
-    let newPct;
-    let pctAttempts = 0;
-    do {
-      newPct = Math.floor(Math.random() * 101);
-      pctAttempts++;
-    } while (newPct === lastResult && lastResult !== null && pctAttempts < 10);
-
-    // Pick quote with capped attempt loop
-    let newQuote;
-    let quoteAttempts = 0;
-    do {
-      newQuote = LUCK_QUOTES[Math.floor(Math.random() * LUCK_QUOTES.length)];
-      quoteAttempts++;
-    } while (newQuote === lastQuote && lastQuote !== null && LUCK_QUOTES.length > 1 && quoteAttempts < 10);
-
-    const newTier = calculateTier(newPct);
-
-    // Reduced motion preference support
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const duration = prefersReducedMotion ? 1000 : 8000;
-    const start = Date.now();
-
-    if (animIntervalRef.current) clearInterval(animIntervalRef.current);
-    animIntervalRef.current = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const t = Math.min(elapsed / duration, 1);
-
-      setRevealProgress(t);
-      setDisplayedPercentage(Math.round(newPct * t));
-    }, 50);
-
-    if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
-    animTimeoutRef.current = setTimeout(() => {
-      if (animIntervalRef.current) clearInterval(animIntervalRef.current);
-
-      setPercentage(newPct);
-      setDisplayedPercentage(newPct);
-      setRevealProgress(1);
-      setTier(newTier);
-      setQuote(newQuote);
-      setHasRolledToday(true);
-      setIsAnimating(false);
-
-      const resultObj = { percentage: newPct, tier: newTier, quote: newQuote };
-      try {
-        localStorage.setItem(`luckymeter_${todayKey}`, JSON.stringify(resultObj));
-        localStorage.setItem("luckymeter_last_result", JSON.stringify(resultObj));
-      } catch (e) {
-        console.warn("Storage write error:", e);
-      }
-    }, duration);
+    }, 35);
   };
 
-  // Share Reading Action
+  // Share Routine
   const handleShare = async () => {
     const shareData = {
-      title: "My Lucky Meter Result — LuckyPickCanada",
-      text: `🍁 I rolled ${percentage}% (${tier}) on LuckyPickCanada today! "${quote}"`,
-      url: "https://luckypickcanada.ca"
+      title: 'My Daily Lucky Meter Result',
+      text: `🍁 I rolled ${luckPercentage}% Today's Luck on Lucky Pick Canada!`,
+      url: window.location.href,
     };
 
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (e) {
-        // Dismissed by user
+      } catch (err) {
+        console.log('Share cancelled or failed', err);
       }
-    } else if (navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(
-          `${shareData.text} Check yours at ${shareData.url}`
-        );
-        setShareToast(true);
-        setTimeout(() => setShareToast(false), 3000);
-      } catch (e) {
-        console.warn("Clipboard failed:", e);
-      }
+    } else {
+      navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+      alert('Result copied to clipboard!');
     }
   };
 
-  if (!isMounted) {
-    return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#00060a", display: "flex", alignItems: "center", justifyContent: "center", color: "#00eaff", fontFamily: "sans-serif" }}>
-        Loading Lucky Meter...
-      </div>
-    );
-  }
-
-  // Layout Styles
-  const pageStyle = {
-    padding: "40px 16px",
-    minHeight: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    color: "white",
-    fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-    background: "radial-gradient(circle at top, #02131f 0%, #00060a 40%, #000000 100%)"
-  };
-
-  const headerStyle = {
-    textAlign: "center",
-    marginBottom: "20px",
-    maxWidth: "640px",
-    lineHeight: "1.5"
-  };
-
-  const countdownStyle = {
-    marginTop: "10px",
-    fontSize: "18px",
-    opacity: 0.9
-  };
-
-  const homeButtonStyle = {
-    marginTop: "20px",
-    display: "inline-block",
-    padding: "10px 20px",
-    background: "#00eaff",
-    color: "#003b45",
-    borderRadius: "8px",
-    fontWeight: "600",
-    textDecoration: "none",
-    boxShadow: "0 0 12px rgba(0,234,255,0.6)"
-  };
-
-  const meterContainer = {
-    position: "relative",
-    width: "100%",
-    maxWidth: "420px",
-    marginTop: "30px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-  };
-
-  const meterImage = {
-    width: "100%",
-    height: "auto",
-    display: "block",
-    clipPath: "inset(0 8% 0 0)", // Crop ~8% off right edge to trim AI logo
-    pointerEvents: "none",
-    userSelect: "none"
-  };
-
-  const percentageStyle = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: `translate(-50%, -50%) scale(${0.7 + 0.3 * revealProgress})`,
-    fontSize: "48px",
-    fontWeight: "700",
-    textShadow: "0 0 16px rgba(0,255,255,0.9)",
-    letterSpacing: "0.06em",
-    opacity: isAnimating || hasRolledToday ? revealProgress : 0.3,
-    transition: "opacity 0.3s linear"
-  };
-
-  const tierStyle = {
-    position: "absolute",
-    bottom: "12%",
-    left: "50%",
-    transform: "translateX(-50%)",
-    fontSize: "20px",
-    fontWeight: "700",
-    letterSpacing: "1px",
-    color: tier === "FLAGSHIP LUCK" ? "#ffd700" : tier === "PREMIUM LUCK" ? "#00eaff" : "#5ce1e6",
-    textShadow: "0 0 10px rgba(0,255,255,0.6)",
-    opacity: hasRolledToday ? 1 : isAnimating ? 0.6 : 0,
-    transition: "opacity 0.6s ease-out",
-    textTransform: "uppercase"
-  };
-
-  const fortuneCardStyle = {
-    marginTop: "30px",
-    width: "100%",
-    maxWidth: "420px",
-    background: "rgba(0, 20, 30, 0.7)",
-    padding: "20px",
-    borderRadius: "12px",
-    boxShadow: "0 0 24px rgba(0,255,255,0.25)",
-    backdropFilter: "blur(8px)",
-    textAlign: "center"
-  };
-
-  const vortexIntensity = isAnimating ? 0.25 + 0.75 * revealProgress : hasRolledToday ? 0.8 : 0.25;
-
   return (
-    <main style={pageStyle}>
-      {/* HEADER + RITUAL DESCRIPTION */}
-      <div style={headerStyle}>
-        <h1 style={{ color: "#ffd700", textShadow: "0 0 10px rgba(255,215,0,0.5)" }}>
-          ✨ Daily Lucky Meter Ritual
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-between p-4 sm:p-6 font-sans">
+      
+      {/* Embedded CSS Animations for Vortex & Base LEDs */}
+      <style jsx global>{`
+        @keyframes vortexSpin {
+          0% { transform: rotate(0deg) scale(1); }
+          50% { transform: rotate(180deg) scale(1.08); }
+          100% { transform: rotate(360deg) scale(1); }
+        }
+        @keyframes vortexPulse {
+          0%, 100% { opacity: 0.45; }
+          50% { opacity: 0.85; }
+        }
+        @keyframes ledFlicker1 {
+          0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px #10b981); }
+          30% { opacity: 0.3; filter: none; }
+          60% { opacity: 0.9; filter: drop-shadow(0 0 4px #10b981); }
+          80% { opacity: 0.4; filter: none; }
+        }
+        @keyframes ledFlicker2 {
+          0%, 100% { opacity: 0.4; filter: none; }
+          20% { opacity: 1; filter: drop-shadow(0 0 6px #06b6d4); }
+          50% { opacity: 0.2; filter: none; }
+          75% { opacity: 0.95; filter: drop-shadow(0 0 5px #06b6d4); }
+        }
+        .vortex-layer-1 {
+          animation: vortexSpin 8s linear infinite, vortexPulse 3s ease-in-out infinite;
+          transform-origin: center;
+        }
+        .vortex-layer-2 {
+          animation: vortexSpin 5s linear infinite reverse;
+          transform-origin: center;
+        }
+        .vortex-active {
+          animation-duration: 1.5s !important;
+        }
+        .led-1 { animation: ledFlicker1 2.2s infinite ease-in-out; }
+        .led-2 { animation: ledFlicker2 1.8s infinite ease-in-out 0.4s; }
+        .led-3 { animation: ledFlicker1 2.7s infinite ease-in-out 0.9s; }
+      `}</style>
+
+      {/* Header Info */}
+      <header className="w-full max-w-md text-center mt-2 mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-wider text-emerald-400 flex items-center justify-center gap-2">
+          <span>✨</span> DAILY LUCKY METER RITUAL
         </h1>
-        <p style={{ color: "#cbd5e1", fontSize: "15px", marginTop: "8px" }}>
-          Every night at local midnight, your Lucky Meter resets for a new daily reading.
-          Tap below to awaken the vortex and reveal your daily luck percentage.
+        <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          Every night at midnight, your Lucky Meter resets for a new daily reading.
         </p>
 
-        {/* COUNTDOWN */}
-        <div style={countdownStyle}>
-          Reset happens in: <strong style={{ color: "#00eaff", fontFamily: "monospace" }}>{timeLeft}</strong>
+        {/* Midnight Reset Banner */}
+        <div className="mt-3 inline-flex items-center gap-2 bg-slate-900/80 border border-slate-800 px-4 py-1.5 rounded-full text-xs font-semibold text-emerald-300">
+          <span>Reset happens in:</span>
+          <span className="font-mono text-emerald-400 text-sm">{timeLeft || 'calculating...'}</span>
         </div>
+      </header>
 
-        {/* HOME BUTTON */}
-        <Link href="/" style={homeButtonStyle}>
-          Return Home
-        </Link>
-      </div>
+      {/* Navigation Return Button */}
+      <Link 
+        href="/"
+        className="mb-4 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-lg border border-slate-700 transition"
+      >
+        Return Home
+      </Link>
 
-      {/* LUCKY METER */}
-      <div style={meterContainer}>
-        {/* Base artwork with crop & fallback */}
-        {!imageError ? (
-          <img
-            src="/copilot_image_1785515250260.jpeg"
-            alt="Lucky Meter"
-            onError={() => setImageError(true)}
-            style={meterImage}
-          />
-        ) : (
-          <div style={{ width: "100%", height: "320px", backgroundColor: "#001420", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffd700", fontWeight: "700", borderRadius: "12px", border: "1px solid rgba(0,234,255,0.3)" }}>
-            ✨ Lucky Meter ✨
-          </div>
-        )}
-
-        {/* HYBRID VORTEX OVERLAY (SMOKE + AURORA) */}
-        <svg
-          width="60%"
-          height="60%"
-          viewBox="0 0 200 200"
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            pointerEvents: "none"
-          }}
-        >
+      {/* CORE METER DEVICE */}
+      <div className="relative w-full max-w-xs sm:max-w-sm aspect-square flex items-center justify-center my-auto">
+        
+        {/* SVG Device Housing */}
+        <svg viewBox="0 0 400 400" className="w-full h-full drop-shadow-[0_0_25px_rgba(16,185,129,0.2)]">
           <defs>
-            <radialGradient id="smokeBase" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor={tier === "FLAGSHIP LUCK" ? "rgba(255,215,0,0.95)" : "rgba(0,255,200,0.95)"} />
-              <stop offset="40%" stopColor="rgba(0,180,150,0.7)" />
-              <stop offset="80%" stopColor="rgba(0,60,80,0.4)" />
-              <stop offset="100%" stopColor="rgba(0,10,20,0)" />
+            <radialGradient id="vortexGrad1" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
+              <stop offset="60%" stopColor="#06b6d4" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#020617" stopOpacity="0" />
+            </radialGradient>
+            
+            <radialGradient id="vortexGrad2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#34d399" stopOpacity="0.6" />
+              <stop offset="70%" stopColor="#0f172a" stopOpacity="0.1" />
+              <stop offset="100%" stopColor="#020617" stopOpacity="0" />
             </radialGradient>
 
-            <linearGradient id="auroraRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#00ffe0" />
-              <stop offset="50%" stopColor="#00b0ff" />
-              <stop offset="100%" stopColor="#00ff88" />
+            <linearGradient id="arcGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="100%" stopColor="#06b6d4" />
             </linearGradient>
-
-            <filter id="smokeNoise">
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.9"
-                numOctaves="3"
-                stitchTiles="noStitch"
-              />
-              <feGaussianBlur stdDeviation="2" />
-            </filter>
           </defs>
 
-          {/* SMOKE VORTEX */}
-          <g style={{ transformOrigin: "100px 100px", animation: "vortexSpin 30s linear infinite" }}>
-            <circle
-              cx="100"
-              cy="100"
-              r="70"
-              fill="url(#smokeBase)"
-              filter="url(#smokeNoise)"
-              style={{
-                opacity: vortexIntensity,
-                transition: "opacity 0.6s ease-out"
-              }}
-            />
+          {/* Outer Metallic Bezel */}
+          <circle cx="200" cy="200" r="185" fill="#090d16" stroke="#1e293b" strokeWidth="8" />
+          <circle cx="200" cy="200" r="175" fill="#020617" stroke="#0f172a" strokeWidth="4" />
+
+          {/* SWIRLING ANIMATED VORTEX CORE */}
+          <g className={`vortex-layer-1 ${isGenerating ? 'vortex-active' : ''}`}>
+            <ellipse cx="200" cy="200" rx="140" ry="110" fill="url(#vortexGrad1)" />
+          </g>
+          <g className={`vortex-layer-2 ${isGenerating ? 'vortex-active' : ''}`}>
+            <ellipse cx="200" cy="200" rx="110" ry="140" fill="url(#vortexGrad2)" />
           </g>
 
-          {/* AURORA RIBBONS */}
-          <g style={{ animation: "auroraDrift 18s ease-in-out infinite", opacity: 0.35 + 0.65 * (hasRolledToday ? 1 : revealProgress) }}>
-            <path
-              d="M10 120 C 40 80, 80 60, 130 80 C 160 95, 185 120, 190 140"
-              fill="none"
-              stroke="url(#auroraRibbon)"
-              strokeWidth="10"
-              strokeLinecap="round"
-            />
-            <path
-              d="M20 90 C 60 60, 110 50, 160 70"
-              fill="none"
-              stroke="url(#auroraRibbon)"
-              strokeWidth="6"
-              strokeLinecap="round"
-              style={{ opacity: 0.7 }}
-            />
-          </g>
+          {/* Progress Arc Track */}
+          <circle 
+            cx="200" 
+            cy="200" 
+            r="140" 
+            fill="none" 
+            stroke="#1e293b" 
+            strokeWidth="14" 
+            strokeDasharray="660" 
+            strokeDashoffset="165" 
+            strokeLinecap="round" 
+            transform="rotate(135 200 200)"
+          />
 
-          <style>{`
-            @keyframes vortexSpin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-            @keyframes auroraDrift {
-              0% { transform: translateY(0px); }
-              50% { transform: translateY(-6px); }
-              100% { transform: translateY(0px); }
-            }
-          `}</style>
+          {/* Active Progress Arc Fill */}
+          {luckPercentage !== null && (
+            <circle 
+              cx="200" 
+              cy="200" 
+              r="140" 
+              fill="none" 
+              stroke="url(#arcGlow)" 
+              strokeWidth="14" 
+              strokeDasharray="660" 
+              strokeDashoffset={660 - (495 * (luckPercentage / 100))} 
+              strokeLinecap="round" 
+              transform="rotate(135 200 200)"
+              className="transition-all duration-75 ease-out"
+            />
+          )}
+
+          {/* DEVICE BASE HARDWARE RIM & FLICKERING LEDS */}
+          <path d="M 80 340 Q 200 375 320 340 L 300 375 Q 200 395 100 375 Z" fill="#0f172a" stroke="#334155" strokeWidth="2" />
+          
+          {/* Flickering LED Lights on Base */}
+          <circle cx="140" cy="360" r="5" fill="#10b981" className="led-1" />
+          <circle cx="180" cy="365" r="5" fill="#06b6d4" className="led-2" />
+          <circle cx="220" cy="365" r="5" fill="#10b981" className="led-3" />
+          <circle cx="260" cy="360" r="5" fill="#06b6d4" className="led-1" />
         </svg>
 
-        {/* PERCENTAGE DISPLAY */}
-        <div style={percentageStyle}>
-          {hasRolledToday ? `${percentage}%` : `${displayedPercentage}%`}
-        </div>
-
-        {/* TIER LABEL */}
-        <div style={tierStyle}>
-          {isAnimating ? "Consulting Stars..." : tier || "Ready"}
+        {/* Center Text Display */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10 pointer-events-none">
+          {luckPercentage !== null ? (
+            <div className="animate-fade-in">
+              <span className="text-5xl sm:text-6xl font-black tracking-tight text-white drop-shadow-[0_0_15px_rgba(16,185,129,0.8)]">
+                {luckPercentage}%
+              </span>
+              <p className="text-xs font-bold tracking-widest text-emerald-400 mt-1 uppercase">
+                {isGenerating ? 'CALCULATING LUCK...' : 'TODAY\'S LUCK'}
+              </p>
+            </div>
+          ) : (
+            <div className="text-slate-400">
+              <p className="text-sm font-semibold tracking-wider text-emerald-400 uppercase">
+                METER STANDBY
+              </p>
+              <p className="text-xs text-slate-500 mt-1">Tap below to awaken</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* TODAY'S FORTUNE CARD */}
-      {hasRolledToday && quote && (
-        <div style={fortuneCardStyle}>
-          <h3 style={{ marginBottom: "8px", color: "#00eaff", fontSize: "16px" }}>Today's Fortune</h3>
-          <p style={{ fontSize: "15px", lineHeight: "1.5", color: "#e2e8f0" }}>"{quote}"</p>
-        </div>
-      )}
+      {/* ACTION CONTROLS & RESULTS */}
+      <div className="w-full max-w-xs sm:max-w-sm mt-4 flex flex-col items-center gap-3">
+        
+        {/* Generate / Action Button */}
+        <button
+          onClick={handleGenerateLuck}
+          disabled={isGenerating}
+          className={`w-full py-3.5 px-6 rounded-xl font-bold tracking-wider text-sm transition-all duration-200 uppercase shadow-lg ${
+            isGenerating 
+              ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+              : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/25 active:scale-95'
+          }`}
+        >
+          {isGenerating ? 'Revealing Daily Luck...' : luckPercentage !== null ? 'Re-Test Luck' : 'Generate Luck'}
+        </button>
 
-      {/* ACTIONS: GENERATE OR SHARE */}
-      <div style={{ marginTop: "24px", width: "100%", maxWidth: "420px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-        {!hasRolledToday ? (
-          <button
-            onClick={handleGenerateLuck}
-            disabled={isAnimating}
-            style={{
-              width: "100%",
-              padding: "16px",
-              borderRadius: "30px",
-              border: "none",
-              background: isAnimating ? "linear-gradient(90deg, #334155, #1e293b)" : "linear-gradient(90deg, #d4af37, #ffd700)",
-              color: "#0b1320",
-              fontSize: "18px",
-              fontWeight: "700",
-              cursor: isAnimating ? "not-allowed" : "pointer",
-              boxShadow: "0 0 20px rgba(255,215,0,0.4)"
-            }}
-          >
-            {isAnimating ? "Revealing Your Daily Luck..." : "Generate Luck"}
-          </button>
-        ) : (
-          <button
-            onClick={handleShare}
-            style={{
-              width: "100%",
-              padding: "14px",
-              borderRadius: "30px",
-              border: "1px solid #00eaff",
-              background: "rgba(0,234,255,0.1)",
-              color: "#00eaff",
-              fontSize: "16px",
-              fontWeight: "600",
-              cursor: "pointer",
-              boxShadow: "0 0 12px rgba(0,234,255,0.3)"
-            }}
-          >
-            📤 Share Daily Reading
-          </button>
-        )}
- 
-        {shareToast && (
-          <div style={{ fontSize: "13px", color: "#4ade80", backgroundColor: "rgba(74,222,128,0.1)", padding: "6px 12px", borderRadius: "6px" }}>
-            Copied to clipboard!
+        {/* Fortune Card Box (Revealed after generation) */}
+        {fortune && !isGenerating && (
+          <div className="w-full bg-slate-900/90 border border-emerald-500/30 rounded-xl p-4 text-center mt-2 shadow-xl animate-fade-in">
+            <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">
+              Today's Fortune
+            </p>
+            <p className="text-sm italic text-slate-200">
+              "{fortune}"
+            </p>
+            
+            {/* Share Reading Button */}
+            <button
+              onClick={handleShare}
+              className="mt-3 w-full py-2 bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-semibold rounded-lg border border-emerald-500/20 flex items-center justify-center gap-2 transition"
+            >
+              <span>📤</span> Share Daily Reading
+            </button>
           </div>
         )}
       </div>
-    </main>
+
+      <footer className="mt-6 text-center text-[10px] text-slate-600">
+        Lucky Pick Canada © 2026 • Daily Luck Meter
+      </footer>
+    </div>
   );
 }
