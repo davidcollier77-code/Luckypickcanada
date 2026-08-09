@@ -11,6 +11,16 @@
     "binding": "ASSETS",
     "run_worker_first": false
   },
+  "routes": [
+    {
+      "pattern": "luckypickcanada.ca",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.luckypickcanada.ca",
+      "custom_domain": true
+    }
+  ],
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
