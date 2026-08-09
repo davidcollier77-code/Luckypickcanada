@@ -34,11 +34,12 @@ export default function LuckyMeterPage() {
   const [revealProgress, setRevealProgress] = useState(0); // 0 -> 1 during reveal
   const [timeLeft, setTimeLeft] = useState("");
   const [shareToast, setShareToast] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const animIntervalRef = useRef(null);
   const animTimeoutRef = useRef(null);
 
-  // Cleanup timers on unmount
+  // Clean up animation timers on component unmount
   useEffect(() => {
     return () => {
       if (animIntervalRef.current) clearInterval(animIntervalRef.current);
@@ -46,7 +47,7 @@ export default function LuckyMeterPage() {
     };
   }, []);
 
-  // Helper: Local Date Key YYYY-MM-DD
+  // Helper: Get user's local YYYY-MM-DD date key
   const getTodayDateKey = () => {
     const d = new Date();
     const year = d.getFullYear();
@@ -55,14 +56,14 @@ export default function LuckyMeterPage() {
     return `${year}-${month}-${day}`;
   };
 
-  // 3-Tier System Helper
+  // Strict 3-Tier Calculation Helper
   const calculateTier = (pct) => {
     if (pct >= 80) return "FLAGSHIP LUCK";
     if (pct >= 50) return "PREMIUM LUCK";
     return "STANDARD LUCK";
   };
 
-  // Hydration safety & state restore
+  // Hydration safety & restore saved daily roll
   useEffect(() => {
     setIsMounted(true);
     const todayKey = getTodayDateKey();
@@ -83,7 +84,7 @@ export default function LuckyMeterPage() {
     }
   }, []);
 
-  // Countdown timer to local midnight
+  // Live countdown timer targeting local midnight
   useEffect(() => {
     if (!isMounted) return;
 
@@ -96,21 +97,18 @@ export default function LuckyMeterPage() {
       if (diff <= 0) {
         setTimeLeft("0h 0m 0s");
         setHasRolledToday(false);
-        // Remove old daily localStorage key for clean state reset
-        try {
-          const prevKey = getTodayDateKey();
-          const yesterday = new Date(now);
-          yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
-          localStorage.removeItem(`luckymeter_${yesterdayKey}`);
-        } catch (e) {
-          console.warn("Storage cleanup failed:", e);
-        }
         setPercentage(0);
         setDisplayedPercentage(0);
         setRevealProgress(0);
         setTier("");
         setQuote("");
+
+        try {
+          const todayKey = getTodayDateKey();
+          localStorage.removeItem(`luckymeter_${todayKey}`);
+        } catch (e) {
+          console.warn("Storage cleanup failed:", e);
+        }
         return;
       }
 
@@ -126,14 +124,14 @@ export default function LuckyMeterPage() {
     return () => clearInterval(interval);
   }, [isMounted]);
 
-  // Generate Daily Reading Action
+  // Generate Daily Luck Reading Action
   const handleGenerateLuck = () => {
     if (hasRolledToday || isAnimating) return;
 
     setIsAnimating(true);
     const todayKey = getTodayDateKey();
 
-    // Consecutive day duplicate rejection
+    // Consecutive day duplicate rejection check
     let lastResult = null;
     let lastQuote = null;
     try {
@@ -147,6 +145,7 @@ export default function LuckyMeterPage() {
       console.warn("Storage read error:", e);
     }
 
+    // Roll percentage (0-100) with capped attempt loop to prevent infinite hangs
     let newPct;
     let pctAttempts = 0;
     do {
@@ -154,6 +153,7 @@ export default function LuckyMeterPage() {
       pctAttempts++;
     } while (newPct === lastResult && lastResult !== null && pctAttempts < 10);
 
+    // Pick quote with capped attempt loop
     let newQuote;
     let quoteAttempts = 0;
     do {
@@ -163,7 +163,7 @@ export default function LuckyMeterPage() {
 
     const newTier = calculateTier(newPct);
 
-    // Reduced motion support
+    // Reduced motion preference support
     const prefersReducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -178,7 +178,6 @@ export default function LuckyMeterPage() {
 
       setRevealProgress(t);
       setDisplayedPercentage(Math.round(newPct * t));
-
     }, 50);
 
     if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
@@ -215,7 +214,7 @@ export default function LuckyMeterPage() {
       try {
         await navigator.share(shareData);
       } catch (e) {
-        // Dismissed
+        // Dismissed by user
       }
     } else if (navigator.clipboard) {
       try {
@@ -232,13 +231,13 @@ export default function LuckyMeterPage() {
 
   if (!isMounted) {
     return (
-      <div style={{ minHeight: "100vh", backgroundColor: "#00060a", display: "flex", alignItems: "center", justifyContent: "center", color: "#00eaff" }}>
+      <div style={{ minHeight: "100vh", backgroundColor: "#00060a", display: "flex", alignItems: "center", justifyContent: "center", color: "#00eaff", fontFamily: "sans-serif" }}>
         Loading Lucky Meter...
       </div>
     );
   }
 
-  // Visual Styles
+  // Layout Styles
   const pageStyle = {
     padding: "40px 16px",
     minHeight: "100vh",
@@ -289,7 +288,7 @@ export default function LuckyMeterPage() {
     width: "100%",
     height: "auto",
     display: "block",
-    clipPath: "inset(0 8% 0 0)",
+    clipPath: "inset(0 8% 0 0)", // Crop ~8% off right edge to trim AI logo
     pointerEvents: "none",
     userSelect: "none"
   };
@@ -361,12 +360,19 @@ export default function LuckyMeterPage() {
 
       {/* LUCKY METER */}
       <div style={meterContainer}>
-        {/* Base meter image with crop */}
-        <img
-          src="/copilot_image_1785515250260.jpeg"
-          alt="Lucky Meter"
-          style={meterImage}
-        />
+        {/* Base artwork with crop & fallback */}
+        {!imageError ? (
+          <img
+            src="/copilot_image_1785515250260.jpeg"
+            alt="Lucky Meter"
+            onError={() => setImageError(true)}
+            style={meterImage}
+          />
+        ) : (
+          <div style={{ width: "100%", height: "320px", backgroundColor: "#001420", display: "flex", alignItems: "center", justifyContent: "center", color: "#ffd700", fontWeight: "700", borderRadius: "12px", border: "1px solid rgba(0,234,255,0.3)" }}>
+            ✨ Lucky Meter ✨
+          </div>
+        )}
 
         {/* HYBRID VORTEX OVERLAY (SMOKE + AURORA) */}
         <svg
