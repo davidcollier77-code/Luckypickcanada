@@ -1,9 +1,4 @@
-@import '../themes/default/default.css';
-@import '../themes/default/effects.css';
-@import '../themes/default/homepage.css';
-@import '../themes/default/header.css';
-@import '../themes/default/hero.css';
-@import '../themes/default/map.css';
+@import "../themes/default/index.css";
 
 @tailwind base;
 @tailwind components;
