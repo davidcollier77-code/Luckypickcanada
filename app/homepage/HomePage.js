@@ -6,7 +6,7 @@ import CheckoutModal from '../checkout-modal';
 import LuckyCardReveal from '../lucky-card-reveal';
 import { createLuckyReveal } from '../lucky-reveal';
 import LuckyRevealPopup from '../lucky-reveal-popup';
-import TurnstileField from '../turnstile-field';
+import { TURNSTILE_SITE_KEY } from '../turnstile-config';
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import Hero from './Hero';
 
@@ -150,7 +150,7 @@ export default function HomePage() {
           </div>
           <label>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required /></label>
           <label aria-hidden="true" className="suggestion-box-honeypot">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
-          <TurnstileField siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} submitButtonId="suggestion-box-submit" />
+          <TurnstileField siteKey={TURNSTILE_SITE_KEY} submitButtonId="suggestion-box-submit" />
           <button id="suggestion-box-submit" type="submit" className="suggestion-box-submit">Send suggestion <span aria-hidden="true">→</span></button>
         </form>
       </section>
