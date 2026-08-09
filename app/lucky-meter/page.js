@@ -96,6 +96,16 @@ export default function LuckyMeterPage() {
       if (diff <= 0) {
         setTimeLeft("0h 0m 0s");
         setHasRolledToday(false);
+        // Remove old daily localStorage key for clean state reset
+        try {
+          const prevKey = getTodayDateKey();
+          const yesterday = new Date(now);
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+          localStorage.removeItem(`luckymeter_${yesterdayKey}`);
+        } catch (e) {
+          console.warn("Storage cleanup failed:", e);
+        }
         setPercentage(0);
         setDisplayedPercentage(0);
         setRevealProgress(0);
@@ -158,7 +168,7 @@ export default function LuckyMeterPage() {
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const duration = prefersReducedMotion ? 1000 : 9000;
+    const duration = prefersReducedMotion ? 1000 : 8000;
     const start = Date.now();
 
     if (animIntervalRef.current) clearInterval(animIntervalRef.current);
@@ -169,9 +179,6 @@ export default function LuckyMeterPage() {
       setRevealProgress(t);
       setDisplayedPercentage(Math.round(newPct * t));
 
-      if (t >= 1) {
-        if (animIntervalRef.current) clearInterval(animIntervalRef.current);
-      }
     }, 50);
 
     if (animTimeoutRef.current) clearTimeout(animTimeoutRef.current);
