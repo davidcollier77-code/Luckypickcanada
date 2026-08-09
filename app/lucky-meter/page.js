@@ -70,28 +70,22 @@ export default function LuckyMeterPage() {
 
   // Load persistence state on mount
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.localStorage) return;
-
-    let savedStr;
-    try {
-      savedStr = window.localStorage.getItem('lucky_meter_daily_state');
-    } catch (e) {
-      console.error('Error accessing localStorage', e);
-      return;
-    }
-    if (savedStr) {
+    if (typeof window !== 'undefined' && window.localStorage) {
       try {
-        const state = JSON.parse(savedStr);
-        setSavedState(state);
-        const today = getLocalDateString();
-        if (state?.currentResult?.date === today) {
-          // Already revealed today
-          const p = state.currentResult.percentage;
-          setLuckPercentage(p);
-          setVisualPercentage(p);
-          setFortune(state.currentResult.quote);
-          setIsRevealed(true);
-          setStatusText('DAILY READ COMPLETE');
+        const savedStr = window.localStorage.getItem('lucky_meter_daily_state');
+        if (savedStr) {
+          const state = JSON.parse(savedStr);
+          setSavedState(state);
+          const today = getLocalDateString();
+          if (state?.currentResult?.date === today) {
+            // Already revealed today
+            const p = state.currentResult.percentage;
+            setLuckPercentage(p);
+            setVisualPercentage(p);
+            setFortune(state.currentResult.quote);
+            setIsRevealed(true);
+            setStatusText('DAILY READ COMPLETE');
+          }
         }
       } catch (e) {
         console.error('Error loading daily state', e);
@@ -159,7 +153,7 @@ export default function LuckyMeterPage() {
           try {
             window.localStorage.setItem('lucky_meter_daily_state', JSON.stringify(newState));
           } catch (e) {
-            console.error('Error saving to localStorage', e);
+            console.error('Error saving daily state', e);
           }
         }
       }
@@ -186,20 +180,19 @@ export default function LuckyMeterPage() {
 
     // Percentage: 0 to 100 ensuring no duplicate consecutive days
     let targetPercent;
-    let attempts = 0;
-    const maxAttempts = 100;
+    let percentAttempts = 0;
     do {
       targetPercent = Math.floor(Math.random() * 101);
-      attempts++;
-    } while (lastPercent !== null && targetPercent === lastPercent && attempts < maxAttempts);
+      percentAttempts++;
+    } while (lastPercent !== null && targetPercent === lastPercent && percentAttempts < 100);
 
     // Quote: select ensuring no duplicate consecutive days
     let targetQ;
-    attempts = 0;
+    let quoteAttempts = 0;
     do {
       targetQ = CANADIAN_FORTUNES[Math.floor(Math.random() * CANADIAN_FORTUNES.length)];
-      attempts++;
-    } while (lastQuote !== null && targetQ === lastQuote && attempts < maxAttempts);
+      quoteAttempts++;
+    } while (lastQuote !== null && targetQ === lastQuote && quoteAttempts < 100);
 
     setTargetLuck(targetPercent);
     setTargetQuote(targetQ);
