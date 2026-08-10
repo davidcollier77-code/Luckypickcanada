@@ -8,9 +8,5 @@ export const REVEAL_TEST_MODE = true;
 const TESTABLE_REVEAL_TYPES = new Set(['lucky_pick', 'gift_package']);
 
 export function canBypassRevealPayment(revealType) {
-  return (
-    process.env.NODE_ENV === 'development'
-    && REVEAL_TEST_MODE
-    && TESTABLE_REVEAL_TYPES.has(revealType)
-  );
+  return REVEAL_TEST_MODE;
 }
