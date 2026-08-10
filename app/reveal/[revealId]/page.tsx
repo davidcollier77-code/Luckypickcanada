@@ -57,7 +57,8 @@ function RevealPageContent() {
   const [reveal, setReveal] = useState<any>(null);
   const [showGiftBanner, setShowGiftBanner] = useState(false);
   
-  const recipientEmail = searchParams?.get('recipientEmail') || '';
+  const rawRecipientEmail = searchParams?.get('recipientEmail') || '';
+  const recipientEmail = rawRecipientEmail.replace(/[<>"']/g, '');
 
   useEffect(() => {
     if (revealId) {
@@ -112,7 +113,7 @@ function RevealPageContent() {
             }
           `}</style>
           <span style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-            🎁 Gift Dispatched Successfully: A special gem-tier pick has been emailed to <strong style={{ color: '#fff0ac', textDecoration: 'underline', textUnderlineOffset: '3px' }}>{recipientEmail.replace(/[<>"']/g, '')}</strong>
+            🎁 Gift Dispatched Successfully: A special gem-tier pick has been emailed to <strong style={{ color: '#fff0ac', textDecoration: 'underline', textUnderlineOffset: '3px' }}>{recipientEmail}</strong>
           </span>
           <button onClick={() => setShowGiftBanner(false)} style={{
             background: 'rgba(255, 255, 255, 0.15)',
