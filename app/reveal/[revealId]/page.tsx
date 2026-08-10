@@ -68,7 +68,7 @@ function RevealPageContent() {
   }, [revealId]);
 
   useEffect(() => {
-    if (recipientEmail) {
+    if (recipientEmail && recipientEmail.trim() !== '') {
       setShowGiftBanner(true);
     }
   }, [recipientEmail]);
