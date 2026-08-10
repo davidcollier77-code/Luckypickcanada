@@ -4,17 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NODE_ENV=production next build",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "build": "RESEND_API_KEY=re_dummy NODE_ENV=production next build",
+    "deploy": "RESEND_API_KEY=re_dummy opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "start": "next start",
     "postbuild": "echo 'Build completed successfully'"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.10.1",
     "framer-motion": "latest",
     "next": "latest",
-    "@neondatabase/serverless": "^0.10.1",
     "react": "latest",
     "react-dom": "latest",
+    "resend": "^6.18.1",
     "stripe": "latest"
   },
   "engines": {
@@ -25,8 +26,10 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "1.20.2",
+    "@types/react": "^19.2.18",
     "autoprefixer": "^10.4.21",
     "tailwindcss": "^3.4.17",
+    "typescript": "^5.4.5",
     "wrangler": "latest"
   }
 }
