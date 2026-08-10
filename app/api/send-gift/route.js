@@ -105,8 +105,8 @@ export async function POST(request) {
       return Response.json({ error: `Email sending failed: ${emailResult.details}` }, { status: 502 });
     }
 
-    console.log('[send-gift] Email successfully sent to:', recipientEmail);
     console.log('[send-gift] Gift email successfully sent');
+    return Response.json({
       ok: true,
       recipientEmail,
       reveal,
