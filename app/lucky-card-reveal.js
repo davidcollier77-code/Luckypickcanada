@@ -123,6 +123,7 @@ export default function LuckyCardReveal() {
               alt=""
               loading="lazy"
             />
+              style={{ filter: isGenerating ? 'brightness(1.1) drop-shadow(0 0 10px rgba(250, 204, 21, 0.3))' : 'none', transition: 'filter 0.3s ease' }}
           </div>
           <div
             className="lucky-moment-card-face lucky-moment-card-front"
@@ -134,6 +135,7 @@ export default function LuckyCardReveal() {
                 src={selectedCard.image}
                 alt={selectedCard.title}
                 loading="lazy"
+                style={{ transform: isRevealed ? 'scale(1)' : 'scale(0.95)', transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
               />
             ) : (
               <div className="lucky-moment-artwork-placeholder" aria-hidden="true">
@@ -168,6 +170,7 @@ export default function LuckyCardReveal() {
             className="lucky-moment-reveal-button"
             onClick={revealLuckyMoment}
             disabled={isGenerating}
+            style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           >
             {isGenerating
               ? 'Generating Luck…'
