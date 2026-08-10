@@ -2,8 +2,6 @@ import { getSql } from './lib/db-init';
 import { escapeHtml, hasHeaderInjection, isValidEmailAddress, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
 function validateSuggestion({ name, email, message }) {
-const DEFAULT_SUGGESTIONS_TO_EMAIL = 'notifications@luckypickcanada.ca';
-
   const cleanName = validatePlainTextField({
     value: name,
     label: 'Name',
@@ -89,7 +87,7 @@ function buildSuggestionEmail({ name, email, message }) {
 async function emailSuggestion(suggestion) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.SUGGESTIONS_FROM_EMAIL || process.env.GIFT_FROM_EMAIL;
-  const toEmail = process.env.SUGGESTIONS_TO_EMAIL || DEFAULT_SUGGESTIONS_TO_EMAIL;
+  const toEmail = process.env.SUGGESTIONS_TO_EMAIL;
 
   if (!resendApiKey || !fromEmail || !toEmail) {
     return { ok: false, skipped: true };
@@ -172,10 +170,12 @@ export async function createSuggestion({ name, email, message, website }) {
 
   if (saveResult.status === 'rejected') {
     console.error('Suggestion box save failed', saveResult.reason);
+    return { error: `Suggestion box save failed: ${saveResult.reason?.message || saveResult.reason}` };
   }
 
   if (emailResult.status === 'rejected') {
     console.error('Suggestion box email failed', emailResult.reason);
+    return { error: `Suggestion box email failed: ${emailResult.reason?.message || emailResult.reason}` };
   }
 
   if (!saved && !emailed) {
