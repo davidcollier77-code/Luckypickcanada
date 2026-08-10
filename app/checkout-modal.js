@@ -18,6 +18,40 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
     if (!isRevealTestMode) return;
 
     event.preventDefault();
+
+    if (type === 'gift_package') {
+      const formData = new FormData(event.currentTarget);
+      const recipientName = formData.get('recipientName') || '';
+      const recipientEmail = formData.get('recipientEmail') || '';
+      const senderName = formData.get('senderName') || '';
+      const giftMessage = formData.get('giftMessage') || '';
+      const selectedGame = formData.get('luckyPickGame') || luckyPickGame;
+
+      fetch('/api/send-gift', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recipientName,
+          recipientEmail,
+          senderName,
+          personalMessage: giftMessage,
+          pickType: selectedGame,
+        }),
+      })
+        .then((res) => {
+          if (!res.ok) {
+            console.error('[Client] Backend gift email sending failed');
+          } else {
+            console.log('[Client] Backend gift email sending triggered successfully');
+          }
+        })
+        .catch((err) => {
+          console.error('[Client] Network error when sending gift email:', err);
+        });
+    }
+
     onRevealTestStart?.(type, luckyPickGame);
   }
 
