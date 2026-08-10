@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
@@ -35,15 +36,22 @@ function dollarsToCents(amount) {
 }
 
 export async function POST(request) {
-  const origin = new URL(request.url).origin;
-  const secretKey = process.env.STRIPE_SECRET_KEY;
-
-  if (!secretKey) {
-    const errorMsg = 'Stripe is not configured. Set STRIPE_SECRET_KEY.';
-    return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
+  let origin;
+  try {
+    origin = new URL(request.url).origin;
+  } catch (urlError) {
+    console.error('Failed to parse origin from request url', urlError);
+    origin = 'https://luckypickcanada.ca';
   }
 
   try {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+
+    if (!secretKey) {
+      const errorMsg = 'Stripe is not configured. Set STRIPE_SECRET_KEY.';
+      return NextResponse.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
+    }
+
     const formData = await request.formData();
     const checkoutType = formData.get('checkoutType');
     const luckyPickGame = formData.get('luckyPickGame') === '7' ? '7' : '6';
@@ -62,7 +70,7 @@ export async function POST(request) {
     if (checkoutType === 'gift_package') {
       if (!giftDetails.recipientName || !isValidEmail(giftDetails.recipientEmail)) {
         const errorMsg = 'Enter the recipient name and a valid recipient email.';
-        return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
+        return NextResponse.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
       }
     }
 
@@ -71,7 +79,7 @@ export async function POST(request) {
 
       if (!tipAmount || tipAmount < 50) {
         const errorMsg = 'Enter a tip amount of at least $0.50.';
-        return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
+        return NextResponse.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
       }
 
       checkoutOption = {
@@ -83,7 +91,7 @@ export async function POST(request) {
 
     if (!checkoutOption) {
       const errorMsg = 'Choose a valid checkout option.';
-      return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
+      return NextResponse.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -117,15 +125,15 @@ export async function POST(request) {
       cancel_url: `${origin}/?payment=cancelled`,
     });
 
-    if (!session.url) {
+    if (!session || !session.url) {
       const errorMsg = 'Stripe did not return a checkout URL.';
-      return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
+      return NextResponse.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
     }
 
-    return Response.redirect(session.url, 303);
+    return NextResponse.redirect(session.url, 303);
   } catch (error) {
     console.error('Stripe checkout failed', error);
-    const errorMsg = 'Unable to start checkout.';
-    return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
+    const errorMsg = error instanceof Error ? error.message : 'Unable to start checkout.';
+    return NextResponse.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
   }
 }
