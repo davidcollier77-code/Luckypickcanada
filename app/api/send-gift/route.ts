@@ -5,13 +5,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
+    // Ensure fromEmail has a robust fallback
+    const fromEmail = process.env.GIFT_FROM_EMAIL?.trim() || 'gifts@luckypickcanada.ca';
+
     const { recipientEmail, personalMessage, revealId } = await req.json();
 
     // Build the unique link to your dedicated web page
     const revealUrl = `https://luckypickcanada.ca/reveal/${revealId}`;
 
     const data = await resend.emails.send({
-      from: process.env.GIFT_FROM_EMAIL || 'gifts@luckypickcanada.ca',
+      from: fromEmail,
       to: [recipientEmail],
       subject: "✨ Someone sent you a Lucky Pick Canada reveal!",
       html: `<!DOCTYPE html>
