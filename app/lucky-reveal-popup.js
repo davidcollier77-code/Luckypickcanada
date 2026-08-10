@@ -158,6 +158,17 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             background: rgba(15, 23, 42, 0.9) !important;
             transform: scale(1.05);
           }
+
+          .lucky-map-button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 35px rgba(250, 204, 21, 0.5), 0 0 30px rgba(250, 204, 21, 0.3) !important;
+            border-color: rgba(250, 204, 21, 1) !important;
+          }
+
+          .lucky-map-button:active {
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 6px 20px rgba(250, 204, 21, 0.4), 0 0 15px rgba(250, 204, 21, 0.2) !important;
+          }
         `}</style>
 
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 28, pointerEvents: 'none' }}>

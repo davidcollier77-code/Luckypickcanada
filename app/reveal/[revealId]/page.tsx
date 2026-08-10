@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import LuckyRevealPopup from '../../lucky-reveal-popup';
 import { createLuckyReveal } from '../../lucky-reveal';
+import { useState } from 'react';
 
 // Create a deterministic reveal based on revealId
 function createRevealFromId(revealId: string) {
@@ -55,6 +56,7 @@ export default function RevealPage() {
   const router = useRouter();
   const revealId = params?.revealId as string;
   const [reveal, setReveal] = useState<any>(null);
+  const [showGiftBanner, setShowGiftBanner] = useState(true);
   
   useEffect(() => {
     if (revealId) {
@@ -71,6 +73,35 @@ export default function RevealPage() {
   if (!reveal) {
     return null;
   }
-  
-  return <LuckyRevealPopup reveal={reveal} onClose={handleClose} />;
+
+  return (
+    <>
+      {showGiftBanner && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          padding: '1rem 1.5rem',
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+          color: '#ffffff',
+          textAlign: 'center',
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          borderBottom: '2px solid rgba(255, 255, 255, 0.3)',
+          animation: 'slideDown 0.4s ease-out'
+        }}>
+          <style>{`@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+          ✉️ Gift successfully emailed to the recipient!
+          <button onClick={() => setShowGiftBanner(false)} style={{
+            marginLeft: '1rem', background: 'rgba(255, 255, 255, 0.2)', border: '1px solid rgba(255, 255, 255, 0.4)',
+            borderRadius: '4px', padding: '0.25rem 0.75rem', color: '#ffffff', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600
+          }}>Dismiss</button>
+        </div>
+      )}
+      <LuckyRevealPopup reveal={reveal} onClose={handleClose} />
+    </>
+  );
 }
