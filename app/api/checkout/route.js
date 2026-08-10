@@ -55,7 +55,9 @@ export async function POST(request) {
       giftMessage: cleanText(formData.get('giftMessage'), 500),
     };
     const origin = new URL(request.url).origin;
-    const stripe = new Stripe(secretKey);
+    const stripe = new Stripe(secretKey, {
+      httpClient: Stripe.createFetchHttpClient(),
+    });
 
     let checkoutOption = checkoutOptions[checkoutType];
 
