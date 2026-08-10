@@ -8,20 +8,69 @@ function cleanText(value, maxLength) {
 }
 
 function isValidEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  return /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(value);
+}
+
+// Simple in-memory rate limiter
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 5; // Max 5 requests per minute per IP
+
+function getRateLimitKey(request) {
+  // Try to get IP from various headers (for proxies/load balancers)
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIP = request.headers.get('x-real-ip');
+  const cfConnectingIP = request.headers.get('cf-connecting-ip');
+  
+  return forwarded?.split(',')[0].trim() || realIP || cfConnectingIP || 'unknown';
+}
+
+function checkRateLimit(request) {
+  const key = getRateLimitKey(request);
+  const now = Date.now();
+  
+  // Clean up old entries
+  for (const [k, v] of rateLimitStore.entries()) {
+    if (now - v.windowStart > RATE_LIMIT_WINDOW_MS) {
+      rateLimitStore.delete(k);
+    }
+  }
+  
+  const record = rateLimitStore.get(key);
+  
+  if (!record) {
+    rateLimitStore.set(key, { count: 1, windowStart: now });
+    return true;
+  }
+  
+  if (now - record.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rateLimitStore.set(key, { count: 1, windowStart: now });
+    return true;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
 }
 
 export async function POST(request) {
-  // Add backend console logging to check if the email provider API key exists in process.env
+  // Check rate limit
+  if (!checkRateLimit(request)) {
+    console.error('[send-gift] Rate limit exceeded');
+    return Response.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+  }
+
+  // Backend logging added for email provider API key validation
   const resendApiKey = process.env.RESEND_API_KEY;
-  console.log('[send-gift] Checking if email provider API key (RESEND_API_KEY) exists in process.env:', !!resendApiKey);
 
   const fromEmail = process.env.GIFT_FROM_EMAIL || 'noreply@luckypickcanada.ca';
-  console.log('[send-gift] Using fromEmail:', fromEmail);
 
   try {
     const body = await request.json().catch(() => ({}));
-    console.log('[send-gift] Received request body:', body);
+    console.log('[send-gift] Processing gift email request');
 
     const recipientName = cleanText(body.recipientName, 80);
     const recipientEmail = cleanText(body.recipientEmail, 120).toLowerCase();
@@ -57,7 +106,7 @@ export async function POST(request) {
     }
 
     console.log('[send-gift] Email successfully sent to:', recipientEmail);
-    return Response.json({
+    console.log('[send-gift] Gift email successfully sent');
       ok: true,
       recipientEmail,
       reveal,
