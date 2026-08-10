@@ -29,5 +29,8 @@
   ],
   "observability": {
     "enabled": true
+  },
+  "vars": {
+    "GIFT_FROM_EMAIL": "gifts@luckypickcanada.ca"
   }
 }
