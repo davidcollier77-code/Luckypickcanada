@@ -55,7 +55,12 @@ export default function RootLayout({ children }) {
               "@type": "WebSite",
               "name": "Lucky Pick Canada",
               "url": "https://luckypickcanada.ca/",
-              "sameAs": []
+              "sameAs": [
+                "https://x.com/",
+                "https://www.instagram.com/",
+                "https://www.facebook.com/",
+                "https://www.tiktok.com/"
+              ]
             })
           }}
         />

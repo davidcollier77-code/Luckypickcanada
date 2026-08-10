@@ -160,7 +160,11 @@ export default function HomePage() {
         <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
         <p className="homepage-disclaimer">LuckyPickCanada is a digital entertainment experience created for fun and positive moments. It does not provide lottery or gambling services.</p>
         <nav className="homepage-social-links" aria-label="Social links">
-          <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" aria-label="Facebook Community Group">Facebook Group</a>
+          <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" aria-label="Facebook Community Group">Facebook</a>
+          <a href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">X</a>
+          <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
+          <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook Page">Facebook Page</a>
+          <a href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer" aria-label="TikTok">TikTok</a>
         </nav>
       </footer>
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onRevealTestStart={(revealType, luckyPickGame) => {
