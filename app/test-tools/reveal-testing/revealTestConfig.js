@@ -3,7 +3,7 @@
 //
 // This switch is evaluated in the browser and is deliberately restricted to
 // `next dev`. Production and Cloudflare builds always keep payment gates on.
-export const REVEAL_TEST_MODE = true;
+export const REVEAL_TEST_MODE = false;
 
 const TESTABLE_REVEAL_TYPES = new Set(['lucky_pick', 'gift_package']);
 
