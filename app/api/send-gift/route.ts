@@ -82,6 +82,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    console.error('Failed to send gift email:', error);
+    return NextResponse.json({ error: 'Failed to send gift email' }, { status: 500 });
   }
 }
