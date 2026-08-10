@@ -5,29 +5,29 @@ const socialImage = '/1785347037732.png';
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Lucky Pick Canada | Your Daily Luck & Random Pick Generator",
-  description: "Discover your daily picks, test your luck, and generate random lucky numbers instantly at Lucky Pick Canada.",
+  title: "Lucky Pick Canada - Daily Luck & Random Pick Generator",
+  description: "Discover your daily lucky picks, random numbers, and custom digital card reveals at Lucky Pick Canada. Try your luck today!",
   keywords: [
     'luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks',
     'canada luck', 'lucky card', 'lucky day', 'lucky color', 'lucky community',
     'share your luck', 'canada stories', 'story map', 'lucky gifts', 'lucky reveal',
     'entertainment only', 'personalized picks', 'maple leaf', 'canadian luck',
   ],
-  alternates: { canonical: '/' },
+  alternates: { canonical: 'https://luckypickcanada.ca/' },
   openGraph: {
     type: 'website',
     locale: 'en_CA',
-    url: 'https://luckypickcanada.ca',
+    url: 'https://luckypickcanada.ca/',
     siteName: "Lucky Pick Canada",
-    title: "Lucky Pick Canada | Your Daily Luck & Pick Generator",
-    description: "Discover your daily picks, test your luck, and generate random lucky numbers instantly at Lucky Pick Canada.",
-    images: [{ url: socialImage, width: 1407, height: 768, alt: 'LuckyPickCanada hero artwork' }],
+    title: "Lucky Pick Canada - Daily Luck Generator",
+    description: "Discover your daily lucky picks, random numbers, and custom card reveals at Lucky Pick Canada.",
+    images: [{ url: 'https://luckypickcanada.ca/og-image.jpg', width: 1200, height: 630, alt: 'Lucky Pick Canada - Daily Luck Generator' }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Lucky Pick Canada | Your Daily Luck & Pick Generator",
-    description: "Discover your daily picks, test your luck, and generate random lucky numbers instantly at Lucky Pick Canada.",
-    images: [socialImage],
+    title: "Lucky Pick Canada - Daily Luck Generator",
+    description: "Discover your daily lucky picks, random numbers, and custom card reveals at Lucky Pick Canada.",
+    images: ['https://luckypickcanada.ca/og-image.jpg'],
   },
   robots: { index: true, follow: true },
   manifest: '/site.webmanifest',
@@ -40,13 +40,30 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en-CA">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="preload" href="/1785347037732.png" as="image" fetchPriority="high" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "Lucky Pick Canada",
+              "url": "https://luckypickcanada.ca/",
+              "sameAs": [
+                "https://x.com/",
+                "https://www.instagram.com/",
+                "https://www.facebook.com/",
+                "https://www.tiktok.com/"
+              ]
+            })
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>
