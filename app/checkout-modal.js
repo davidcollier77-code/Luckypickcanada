@@ -14,7 +14,7 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
   const copy = COPY[type];
   const isRevealTestMode = canBypassRevealPayment(type);
 
-  function requestRevealAccess(event) {
+  async function requestRevealAccess(event) {
     if (!isRevealTestMode) return;
 
     event.preventDefault();
@@ -27,29 +27,31 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
       const giftMessage = formData.get('giftMessage') || '';
       const selectedGame = formData.get('luckyPickGame') || luckyPickGame;
 
-      fetch('/api/send-gift', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipientName,
-          recipientEmail,
-          senderName,
-          personalMessage: giftMessage,
-          pickType: selectedGame,
-        }),
-      })
-        .then((res) => {
-          if (!res.ok) {
-            console.error('[Client] Backend gift email sending failed');
-          } else {
-            console.log('[Client] Backend gift email sending triggered successfully');
-          }
-        })
-        .catch((err) => {
-          console.error('[Client] Network error when sending gift email:', err);
+      try {
+        const res = await fetch('/api/send-gift', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            recipientName,
+            recipientEmail,
+            senderName,
+            personalMessage: giftMessage,
+            pickType: selectedGame,
+          }),
         });
+
+        if (!res.ok) {
+          console.error('[Client] Backend gift email sending failed with status:', res.status);
+          console.error('[Client] Response:', await res.text().catch(() => 'Unable to read response'));
+        } else {
+          console.log('[Client] Backend gift email sending triggered successfully');
+        }
+      } catch (err) {
+        console.error('[Client] Network error when sending gift email:', err);
+        console.error('[Client] Error details:', err.message || 'Unknown error');
+      }
     }
 
     onRevealTestStart?.(type, luckyPickGame);
