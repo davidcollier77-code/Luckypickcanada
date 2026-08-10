@@ -5,29 +5,32 @@ import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 
 const buttonStyle = {
-  padding: '0.9rem 1.25rem',
-  border: 0,
+  padding: '1rem 2rem',
+  border: '1px solid rgba(251, 191, 36, 0.7)',
   borderRadius: 999,
-  background: 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)',
+  background: 'linear-gradient(135deg, #ffe066 0%, #f59e0b 50%, #d97706 100%)',
   color: '#071225',
   fontSize: '1rem',
   fontWeight: 900,
   cursor: 'pointer',
-  boxShadow: '0 0 24px rgba(250, 204, 21, 0.44), 0 14px 28px rgba(183, 121, 31, 0.22)',
-  transition: 'transform 180ms ease, filter 180ms ease, box-shadow 180ms ease',
+  boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
 };
 
 const secondaryButtonStyle = {
-  ...buttonStyle,
-  background: 'linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(16, 185, 129, 0.08))',
+  padding: '0.9rem 1.5rem',
+  border: '1px solid rgba(255, 235, 160, 0.32)',
+  borderRadius: 999,
+  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(16, 185, 129, 0.12) 100%)',
   color: '#fff7d6',
-  border: '1px solid rgba(255, 235, 160, 0.28)',
-  boxShadow: '0 12px 26px rgba(0, 0, 0, 0.24)',
+  fontSize: '1rem',
+  fontWeight: 900,
+  cursor: 'pointer',
+  boxShadow: '0 8px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
 };
 
 const quietButtonStyle = {
   ...secondaryButtonStyle,
-  padding: '0.78rem 1rem',
+  padding: '0.85rem 1.25rem',
   fontSize: '0.95rem',
 };
 
@@ -128,13 +131,42 @@ export default function ShareLuckyPickButton({ reveal }) {
   return (
     <div style={{ marginTop: '1.4rem', display: 'grid', gap: '0.75rem' }}>
       <style>{`
-        .share-lucky-button:hover { transform: translateY(-2px); filter: saturate(1.1); }
+        .share-lucky-button-main {
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          touch-action: manipulation;
+        }
+        .share-lucky-button-main:hover {
+          transform: translateY(-2px) scale(1.03) !important;
+          box-shadow: 0 14px 30px rgba(245, 158, 11, 0.55), 0 6px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+          filter: brightness(1.05);
+        }
+        .share-lucky-button-main:active {
+          transform: translateY(1px) scale(0.97) !important;
+          box-shadow: 0 6px 15px rgba(245, 158, 11, 0.3), 0 2px 5px rgba(0, 0, 0, 0.4) !important;
+          filter: brightness(0.95);
+        }
+
+        .share-lucky-button-option {
+          transition: all 0.2s ease !important;
+          touch-action: manipulation;
+        }
+        .share-lucky-button-option:hover {
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%) !important;
+          border-color: rgba(255, 235, 160, 0.5) !important;
+          transform: translateY(-1px) scale(1.02) !important;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+        }
+        .share-lucky-button-option:active {
+          transform: translateY(1px) scale(0.98) !important;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
+        }
+
         .share-luck-card { position: relative; overflow: hidden; }
         .share-luck-card::before { content: ''; position: absolute; inset: -35% -20% auto; height: 75%; border-radius: 999px; background: linear-gradient(90deg, rgba(16,185,129,0), rgba(16,185,129,0.45), rgba(250,204,21,0.34), rgba(16,185,129,0)); filter: blur(10px); transform: rotate(-8deg); pointer-events: none; }
       `}</style>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-        <button type="button" onClick={() => setIsOpen((current) => !current)} className="share-lucky-button" style={buttonStyle} aria-expanded={isOpen}>
+        <button type="button" onClick={() => setIsOpen((current) => !current)} className="share-lucky-button-main" style={buttonStyle} aria-expanded={isOpen}>
           Share Your Luck 🍀
         </button>
         <p style={{ margin: 0, color: 'rgba(255, 245, 203, 0.78)', lineHeight: 1.5 }}>
@@ -143,8 +175,8 @@ export default function ShareLuckyPickButton({ reveal }) {
       </div>
 
       {isOpen ? (
-        <section aria-label="Share Your Luck options" className="share-luck-card" style={{ padding: '1rem', borderRadius: 24, border: '1px solid rgba(255, 235, 160, 0.32)', background: 'radial-gradient(circle at 15% 10%, rgba(250,204,21,0.2), transparent 24%), linear-gradient(145deg, rgba(255,255,255,0.12), rgba(16,185,129,0.1))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 20px 48px rgba(0,0,0,0.24)' }}>
-          <div style={{ position: 'relative', display: 'grid', gap: '0.9rem' }}>
+        <section aria-label="Share Your Luck options" className="share-luck-card" style={{ padding: '1.25rem', borderRadius: 24, border: '1px solid rgba(255, 235, 160, 0.32)', background: 'radial-gradient(circle at 15% 10%, rgba(250,204,21,0.2), transparent 24%), linear-gradient(145deg, rgba(255,255,255,0.12), rgba(16,185,129,0.1))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 20px 48px rgba(0,0,0,0.24)' }}>
+          <div style={{ position: 'relative', display: 'grid', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada logo with maple leaf" width={48} height={48} sizes="48px" quality={85} style={{ objectFit: 'contain' }} />
               <div>
@@ -177,28 +209,28 @@ export default function ShareLuckyPickButton({ reveal }) {
             </p>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center' }}>
-              <button type="button" onClick={shareDirectly} className="share-lucky-button" style={secondaryButtonStyle}>
+              <button type="button" onClick={shareDirectly} className="share-lucky-button-option" style={secondaryButtonStyle}>
                 Share directly
               </button>
-              <button type="button" onClick={copyShareLink} className="share-lucky-button" style={quietButtonStyle}>
+              <button type="button" onClick={copyShareLink} className="share-lucky-button-option" style={quietButtonStyle}>
                 Copy share link
               </button>
-              <button type="button" onClick={copyShareCardMessage} className="share-lucky-button" style={quietButtonStyle}>
+              <button type="button" onClick={copyShareCardMessage} className="share-lucky-button-option" style={quietButtonStyle}>
                 Copy card message
               </button>
-              <button type="button" onClick={shareToFacebook} className="share-lucky-button" style={quietButtonStyle}>
+              <button type="button" onClick={shareToFacebook} className="share-lucky-button-option" style={quietButtonStyle}>
                 Facebook
               </button>
-              <button type="button" onClick={shareToX} className="share-lucky-button" style={quietButtonStyle}>
+              <button type="button" onClick={shareToX} className="share-lucky-button-option" style={quietButtonStyle}>
                 X
               </button>
-              <button type="button" onClick={shareToWhatsApp} className="share-lucky-button" style={quietButtonStyle}>
+              <button type="button" onClick={shareToWhatsApp} className="share-lucky-button-option" style={quietButtonStyle}>
                 Friends and family
               </button>
-              <a href={`mailto:?subject=${encodedTitle}&body=${encodedMessage}%0A${encodedUrl}`} className="share-lucky-button" style={{ ...quietButtonStyle, display: 'inline-flex', textDecoration: 'none' }}>
+              <a href={`mailto:?subject=${encodedTitle}&body=${encodedMessage}%0A${encodedUrl}`} className="share-lucky-button-option" style={{ ...quietButtonStyle, display: 'inline-flex', textDecoration: 'none' }}>
                 Email
               </a>
-              <a href={`sms:?&body=${encodedMessage}%20${encodedUrl}`} className="share-lucky-button" style={{ ...quietButtonStyle, display: 'inline-flex', textDecoration: 'none' }}>
+              <a href={`sms:?&body=${encodedMessage}%20${encodedUrl}`} className="share-lucky-button-option" style={{ ...quietButtonStyle, display: 'inline-flex', textDecoration: 'none' }}>
                 Text
               </a>
             </div>

@@ -41,10 +41,45 @@ const dialogStyle = {
   overflow: 'auto',
   padding: 'clamp(1.5rem, 5vw, 2.5rem)',
   borderRadius: 28,
-  border: '1px solid rgba(250, 204, 21, 0.25)',
   color: '#fff7d6',
-  background: 'radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.15) 0%, transparent 60%), radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 40%), linear-gradient(180deg, #020617 0%, #030712 100%)',
-  boxShadow: '0 30px 80px rgba(0, 0, 0, 0.8), 0 0 50px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+};
+
+const themeGlows = {
+  'Aurora Green': {
+    borderColor: 'rgba(52, 211, 153, 0.45)',
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(16, 185, 129, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.25) 0%, transparent 60%)',
+  },
+  'Star Gold': {
+    borderColor: 'rgba(251, 191, 36, 0.55)',
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(245, 158, 11, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
+    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(245, 158, 11, 0.35) 0%, transparent 60%)',
+  },
+  'Midnight Blue': {
+    borderColor: 'rgba(96, 165, 250, 0.45)',
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(59, 130, 246, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.25) 0%, transparent 60%)',
+  },
+  'Lucky Red': {
+    borderColor: 'rgba(248, 113, 113, 0.45)',
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(239, 68, 68, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(239, 68, 68, 0.25) 0%, transparent 60%)',
+  },
+  'Moonlight Silver': {
+    borderColor: 'rgba(226, 232, 240, 0.5)',
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(226, 232, 240, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(226, 232, 240, 0.25) 0%, transparent 60%)',
+  },
+  'Northern Purple': {
+    borderColor: 'rgba(167, 139, 250, 0.45)',
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(139, 92, 246, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.25) 0%, transparent 60%)',
+  },
+  'Sky Blue': {
+    borderColor: 'rgba(34, 211, 238, 0.45)',
+    boxShadow: '0 30px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(6, 182, 212, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+    radialGlow: 'radial-gradient(circle at 50% -20%, rgba(6, 182, 212, 0.25) 0%, transparent 60%)',
+  }
 };
 
 const closeButtonStyle = {
@@ -116,12 +151,20 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
   const startNumbersDelay = 2.0;
   const numItems = reveal.game.numbers.length;
   // Let colors card start after all numbers are fully animating
-  const startColorsDelay = startNumbersDelay + (numItems * 0.22) + 0.3;
-  const startDaysDelay = startColorsDelay + 0.5;
+  const startColorsDelay = startNumbersDelay + (numItems * 0.35) + 0.6;
+  const startDaysDelay = startColorsDelay + 0.6;
+
+  const theme = themeGlows[reveal.luckyColor] || themeGlows['Aurora Green'];
+  const dynamicDialogStyle = {
+    ...dialogStyle,
+    borderColor: theme.borderColor,
+    boxShadow: theme.boxShadow,
+    background: `${theme.radialGlow}, radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%), linear-gradient(180deg, #020617 0%, #030712 100%)`,
+  };
 
   return (
     <div role="presentation" style={overlayStyle}>
-      <section role="dialog" aria-modal="true" aria-labelledby="lucky-reveal-title" style={dialogStyle}>
+      <section role="dialog" aria-modal="true" aria-labelledby="lucky-reveal-title" style={dynamicDialogStyle}>
         <button type="button" aria-label="Close lucky reveal" onClick={closeReveal} style={closeButtonStyle} className="lucky-close-btn-hover">
           ×
         </button>
@@ -129,6 +172,42 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
         <style>{`
           @keyframes lucky-word-rise {
             to { opacity: 1; transform: translateY(0); }
+          }
+
+          @keyframes lucky-number-reveal {
+            0% {
+              opacity: 0;
+              transform: translateY(24px) scale(0.5);
+              filter: blur(2px);
+              box-shadow: 0 0 0 rgba(250, 204, 21, 0);
+            }
+            70% {
+              opacity: 1;
+              transform: translateY(-6px) scale(1.18);
+              filter: blur(0px);
+              box-shadow: 0 0 35px rgba(250, 204, 21, 0.95), inset 0 1px 6px rgba(255, 255, 255, 0.4);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+              filter: blur(0px);
+              box-shadow: 0 0 18px rgba(250, 204, 21, 0.5), inset 0 1px 4px rgba(255, 255, 255, 0.2);
+            }
+          }
+
+          @keyframes lucky-glow-pulse {
+            0% {
+              box-shadow: 0 0 15px rgba(250, 204, 21, 0.45), inset 0 1px 4px rgba(255, 255, 255, 0.15);
+              border-color: rgba(232, 186, 82, 0.8);
+            }
+            50% {
+              box-shadow: 0 0 28px rgba(250, 204, 21, 0.85), inset 0 1px 6px rgba(255, 255, 255, 0.35);
+              border-color: rgba(250, 204, 21, 1);
+            }
+            100% {
+              box-shadow: 0 0 15px rgba(250, 204, 21, 0.45), inset 0 1px 4px rgba(255, 255, 255, 0.15);
+              border-color: rgba(232, 186, 82, 0.8);
+            }
           }
 
           @keyframes lucky-aurora-glow-1 {
@@ -159,15 +238,19 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
             transform: scale(1.05);
           }
 
-          .lucky-map-button:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 12px 35px rgba(250, 204, 21, 0.5), 0 0 30px rgba(250, 204, 21, 0.3) !important;
-            border-color: rgba(250, 204, 21, 1) !important;
+          .lucky-map-button-enhanced {
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            touch-action: manipulation;
           }
-
-          .lucky-map-button:active {
-            transform: translateY(0) scale(0.98);
-            box-shadow: 0 6px 20px rgba(250, 204, 21, 0.4), 0 0 15px rgba(250, 204, 21, 0.2) !important;
+          .lucky-map-button-enhanced:hover {
+            transform: translateY(-2px) scale(1.03) !important;
+            box-shadow: 0 14px 30px rgba(245, 158, 11, 0.55), 0 6px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+            filter: brightness(1.05);
+          }
+          .lucky-map-button-enhanced:active {
+            transform: translateY(1px) scale(0.97) !important;
+            box-shadow: 0 6px 15px rgba(245, 158, 11, 0.3), 0 2px 5px rgba(0, 0, 0, 0.4) !important;
+            filter: brightness(0.95);
           }
         `}</style>
 
@@ -255,12 +338,16 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
                     fontSize: '1.15rem',
                     fontFamily: 'monospace',
                     border: '2px solid #e8ba52',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5), inset 0 1px 4px rgba(255, 255, 255, 0.15), 0 0 12px rgba(232, 186, 82, 0.25)',
                     textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
                     opacity: 0,
-                    transform: 'translateY(14px)',
-                    animation: 'lucky-word-rise 0.78s ease forwards',
-                    animationDelay: `${startNumbersDelay + numberIndex * 0.22}s`
+                    transform: 'translateY(24px) scale(0.5)',
+                    animationName: 'lucky-number-reveal, lucky-glow-pulse',
+                    animationDuration: '0.9s, 3s',
+                    animationTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1), ease-in-out',
+                    animationDelay: `${startNumbersDelay + numberIndex * 0.35}s, ${startNumbersDelay + numberIndex * 0.35 + 0.9}s`,
+                    animationIterationCount: '1, infinite',
+                    animationDirection: 'normal, alternate',
+                    animationFillMode: 'forwards, none',
                   }}
                 >
                   {number}
@@ -303,7 +390,27 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
 
           <ShareLuckyPickButton reveal={reveal} />
 
-          <button type="button" onClick={closeReveal} style={{ marginTop: '1.8rem', padding: '1rem 1.6rem', border: '1px solid rgba(255, 235, 160, 0.6)', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #f9d86c 22%, #facc15 48%, #b7791f 100%)', color: '#071225', boxShadow: '0 8px 24px rgba(250, 204, 21, 0.3)', fontSize: '1.05rem', fontWeight: 900, cursor: 'pointer', transition: 'all 0.2s ease' }}>
+          <button
+            type="button"
+            onClick={closeReveal}
+            className="lucky-map-button-enhanced"
+            style={{
+              marginTop: '1.8rem',
+              padding: '1.1rem 2.2rem',
+              border: '1px solid rgba(251, 191, 36, 0.7)',
+              borderRadius: 999,
+              background: 'linear-gradient(135deg, #ffe066 0%, #f59e0b 50%, #d97706 100%)',
+              color: '#071225',
+              boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+              fontSize: '1.05rem',
+              fontWeight: 900,
+              cursor: 'pointer',
+              width: '100%',
+              maxWidth: '360px',
+              textAlign: 'center',
+              display: 'inline-block'
+            }}
+          >
             Add me to the Little Luck Map
           </button>
         </div>

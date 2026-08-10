@@ -56,7 +56,12 @@ export async function GET(request) {
     const result = await deliverGiftEmailForSession(stripe, session.id);
 
     if (result.ok) {
-      return redirectHome(request, { giftSent: '1' });
+      const recipientEmail = session.metadata?.recipientEmail || '';
+      const url = new URL(`/reveal/${session.id}`, request.url);
+      if (recipientEmail) {
+        url.searchParams.set('recipientEmail', recipientEmail);
+      }
+      return Response.redirect(url, 303);
     }
 
     return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
