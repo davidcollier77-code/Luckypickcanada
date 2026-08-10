@@ -1,14 +1,12 @@
 import './globals.css';
 
 const siteUrl = 'https://luckypickcanada.ca';
-const siteTitle = 'LuckyPickCanada | Stories, Lucky Meter & Picks';
-const siteDescription = 'Discover your luck with LuckyPickCanada. Enjoy a fun Lucky Meter, personalized lucky picks, lucky cards, and community stories — just for fun.';
 const socialImage = '/1785347037732.png';
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
-  title: siteTitle,
-  description: siteDescription,
+  title: "Lucky Pick Canada | Your Daily Luck & Random Pick Generator",
+  description: "Discover your daily picks, test your luck, and generate random lucky numbers instantly at Lucky Pick Canada.",
   keywords: [
     'luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks',
     'canada luck', 'lucky card', 'lucky day', 'lucky color', 'lucky community',
@@ -19,16 +17,16 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_CA',
-    url: '/',
-    siteName: 'LuckyPickCanada',
-    title: siteTitle,
-    description: siteDescription,
+    url: 'https://luckypickcanada.ca',
+    siteName: "Lucky Pick Canada",
+    title: "Lucky Pick Canada | Your Daily Luck & Pick Generator",
+    description: "Discover your daily picks, test your luck, and generate random lucky numbers instantly at Lucky Pick Canada.",
     images: [{ url: socialImage, width: 1407, height: 768, alt: 'LuckyPickCanada hero artwork' }],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: siteTitle,
-    description: siteDescription,
+    card: "summary_large_image",
+    title: "Lucky Pick Canada | Your Daily Luck & Pick Generator",
+    description: "Discover your daily picks, test your luck, and generate random lucky numbers instantly at Lucky Pick Canada.",
     images: [socialImage],
   },
   robots: { index: true, follow: true },
