@@ -541,9 +541,9 @@ export default function LuckyMeterPage() {
 
         {/* UPPER DISPLAY CARD */}
         <div className="text-center w-full">
-          <h2 className="text-2xl sm:text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-[#fff9db] via-[#ffe28a] to-[#eeb333] font-serif filter drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] select-none uppercase">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-[#fff9db] via-[#ffe28a] to-[#eeb333] font-serif filter drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] select-none uppercase">
             DAILY LUCKY METER
-          </h2>
+          </h1>
           <p className="text-xs sm:text-sm text-[#fff4d3]/70 font-medium tracking-wide mt-1.5 max-w-md mx-auto leading-relaxed">
             Every night at midnight, your Lucky Meter resets. Awaken the vector core to reveal your daily reading.
           </p>

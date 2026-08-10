@@ -1,9 +1,9 @@
 export const LUCKY_CARD_IMAGES = {
-  'number-seeker': '/IMG_20260728_222536_078566.png',
-  'iron-horseshoe': '/IMG_20260728_232807_958705.png',
-  'emerald-clover': '/IMG_20260728_232716_825894.png',
-  'guiding-star': '/IMG_20260729_082610_857839.png',
-  'flagship-card': '/IMG_20260729_125426_781846.png',
+  'number-seeker': '/IMG_20260728_222536_078566.webp',
+  'iron-horseshoe': '/IMG_20260728_232807_958705.webp',
+  'emerald-clover': '/IMG_20260728_232716_825894.webp',
+  'guiding-star': '/IMG_20260729_082610_857839.webp',
+  'flagship-card': '/IMG_20260729_125426_781846.webp',
 };
 
 export const LUCKY_CARD_QUOTES = {

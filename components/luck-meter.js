@@ -62,7 +62,7 @@ export default function LuckyMeter({ onFortuneChange }) {
         <div>
           <p className="text-xs font-bold uppercase tracking-[.24em] text-cyan-300">Daily Lucky Meter</p>
           <h2 id="lucky-meter-heading" className="mt-3 font-serif text-3xl text-[#ffd700] sm:text-4xl">Your moment of possibility</h2>
-          <img src="/copilot_image_1785515250260.jpeg" width="420" height="420" alt="Lucky Meter" className="mx-auto mt-3 w-full max-w-[340px]" style={isRevealing ? { animation: 'lucky-meter-reveal .9s ease-in-out infinite' } : undefined} />
+          <img src="/copilot_image_1785515250260.webp" width="420" height="420" alt="Lucky Pick Canada official vector core Daily Lucky Meter dial with glowing energy arcs and starfield background" className="mx-auto mt-3 w-full max-w-[340px]" style={isRevealing ? { animation: 'lucky-meter-reveal .9s ease-in-out infinite' } : undefined} />
           <button type="button" onClick={revealFortune} disabled={Boolean(fortune) || isRevealing} className="mt-3 min-h-[54px] rounded-full border border-[#ffe48d] bg-[linear-gradient(135deg,#4c2904,#c77a0e_21%,#f3c246_52%,#733e05)] px-8 py-3 text-sm font-black uppercase tracking-[.08em] text-[#1f1000] shadow-[0_0_30px_rgba(248,184,35,.45)] transition hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-default disabled:opacity-65">
             {isRevealing ? 'Revealing...' : fortune ? 'Today’s fortune revealed' : 'Reveal today’s fortune'}
           </button>

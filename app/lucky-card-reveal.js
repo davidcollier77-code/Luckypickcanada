@@ -119,8 +119,8 @@ export default function LuckyCardReveal() {
             aria-hidden={isRevealed}
           >
             <img
-              src="/IMG_20260728_220305_112042.png"
-              alt=""
+              src="/IMG_20260728_220305_112042.webp"
+              alt="Lucky Pick Canada official collectible card back with gold trim and maple leaf details"
               loading="lazy"
               style={{ filter: isGenerating ? 'brightness(1.1) drop-shadow(0 0 10px rgba(250, 204, 21, 0.3))' : 'none', transition: 'filter 0.3s ease' }}
             />
@@ -133,7 +133,7 @@ export default function LuckyCardReveal() {
               <img
                 className="lucky-moment-card-image"
                 src={selectedCard.image}
-                alt={selectedCard.title}
+                alt={selectedCard.id === 'flagship-card' ? 'Coast to Coast premium collectible card featuring Canadian clover' : (selectedCard.id === 'number-seeker' ? 'The Number Seeker standard collectible card representing random numbers and destiny.' : (selectedCard.id === 'iron-horseshoe' ? 'The Iron Horseshoe standard collectible card representing strong steps and good fortune.' : (selectedCard.id === 'emerald-clover' ? 'The Emerald Four-Leaf standard collectible card featuring an emerald four-leaf clover.' : (selectedCard.id === 'guiding-star' ? 'The Guiding Star premium collectible card featuring a celestial guiding star.' : selectedCard.title))))}
                 loading="lazy"
                 style={{ transform: isRevealed ? 'scale(1)' : 'scale(0.95)', transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
               />

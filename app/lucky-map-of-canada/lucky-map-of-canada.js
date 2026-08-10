@@ -347,6 +347,29 @@ export default function LuckyMapOfCanada({ mapData }) {
         </section>
         {isStoryFormOpen ? <div className="story-modal-backdrop" onMouseDown={() => setIsStoryFormOpen(false)}><section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}><button type="button" aria-label="Close story form" onClick={() => setIsStoryFormOpen(false)}>×</button><h2 id="story-form-title">Share your lucky story</h2><form action="/api/lucky-stories" method="post"><input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} /><label>Name<input name="name" required maxLength="40" /></label><label>Province or territory<input name="location" maxLength="80" /></label><label>Your story<textarea name="story" required minLength="20" maxLength="1500" rows="5" /></label><TurnstileField siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} submitButtonId="lucky-story-submit" /><button id="lucky-story-submit" type="submit">Submit story</button></form></section></div> : null}
       </div>
+
+      {/* Visually Hidden SEO Archive for Search Crawlers */}
+      <section
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: '0',
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          border: '0'
+        }}
+        aria-hidden="true"
+      >
+        <h2>All Community Lucky Stories from across Canadian Provinces</h2>
+        {stories.map((story) => (
+          <article key={`seo-story-${story.id}`}>
+            <h3>Lucky story from {story.firstName || 'a Lucky Canadian'} in {story.provinceName || story.province}</h3>
+            <p>{story.story}</p>
+          </article>
+        ))}
+      </section>
     </main>
   );
 }
