@@ -35,13 +35,12 @@ function dollarsToCents(amount) {
 }
 
 export async function POST(request) {
+  const origin = new URL(request.url).origin;
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
-    return Response.json(
-      { error: 'Stripe is not configured. Set STRIPE_SECRET_KEY.' },
-      { status: 500 },
-    );
+    const errorMsg = 'Stripe is not configured. Set STRIPE_SECRET_KEY.';
+    return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
   }
 
   try {
@@ -54,7 +53,6 @@ export async function POST(request) {
       senderName: cleanText(formData.get('senderName'), 80),
       giftMessage: cleanText(formData.get('giftMessage'), 500),
     };
-    const origin = new URL(request.url).origin;
     const stripe = new Stripe(secretKey, {
       httpClient: Stripe.createFetchHttpClient(),
     });
@@ -63,7 +61,8 @@ export async function POST(request) {
 
     if (checkoutType === 'gift_package') {
       if (!giftDetails.recipientName || !isValidEmail(giftDetails.recipientEmail)) {
-        return Response.json({ error: 'Enter the recipient name and a valid recipient email.' }, { status: 400 });
+        const errorMsg = 'Enter the recipient name and a valid recipient email.';
+        return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
       }
     }
 
@@ -71,7 +70,8 @@ export async function POST(request) {
       const tipAmount = dollarsToCents(formData.get('tipAmount'));
 
       if (!tipAmount || tipAmount < 50) {
-        return Response.json({ error: 'Enter a tip amount of at least $0.50.' }, { status: 400 });
+        const errorMsg = 'Enter a tip amount of at least $0.50.';
+        return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
       }
 
       checkoutOption = {
@@ -82,7 +82,8 @@ export async function POST(request) {
     }
 
     if (!checkoutOption) {
-      return Response.json({ error: 'Choose a valid checkout option.' }, { status: 400 });
+      const errorMsg = 'Choose a valid checkout option.';
+      return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -117,13 +118,14 @@ export async function POST(request) {
     });
 
     if (!session.url) {
-      return Response.json({ error: 'Stripe did not return a checkout URL.' }, { status: 502 });
+      const errorMsg = 'Stripe did not return a checkout URL.';
+      return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
     }
 
-    // Return the URL as JSON so client-side JavaScript can redirect cleanly
-    return Response.json({ url: session.url });
+    return Response.redirect(session.url, 303);
   } catch (error) {
     console.error('Stripe checkout failed', error);
-    return Response.json({ error: 'Unable to start checkout.' }, { status: 500 });
+    const errorMsg = 'Unable to start checkout.';
+    return Response.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
   }
 }
