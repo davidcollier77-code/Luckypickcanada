@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -353,51 +353,59 @@ export default function LuckyMeterPage() {
     }
   }
 
-  // Generate ticks for SVG Programmatically
-  const ticks = [];
-  for (let i = 0; i <= 100; i += 5) {
-    const angle = -135 + i * 2.7;
-    const isMajor = i % 10 === 0;
-    const strokeColor = isMajor ? '#e8ba52' : 'rgba(232, 186, 82, 0.4)';
-    const strokeWidth = isMajor ? 2.5 : 1.2;
-    const tickLen = isMajor ? 14 : 7;
-    ticks.push(
-      <line
-        key={`tick-${i}`}
-        x1="200"
-        y1={200 - 150}
-        x2="200"
-        y2={200 - 150 + tickLen}
-        stroke={strokeColor}
-        strokeWidth={strokeWidth}
-        transform={`rotate(${angle} 200 200)`}
-      />
-    );
-  }
+  // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+  // Cache programmatically-generated static SVG ticks and labels to prevent recreating 27 React elements
+  // on every frame of the 8-second requestAnimationFrame animation.
+  // This reduces object allocation from ~12,960 elements to exactly 27 elements per mount, avoiding GC jank.
+  const ticks = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i <= 100; i += 5) {
+      const angle = -135 + i * 2.7;
+      const isMajor = i % 10 === 0;
+      const strokeColor = isMajor ? '#e8ba52' : 'rgba(232, 186, 82, 0.4)';
+      const strokeWidth = isMajor ? 2.5 : 1.2;
+      const tickLen = isMajor ? 14 : 7;
+      arr.push(
+        <line
+          key={`tick-${i}`}
+          x1="200"
+          y1={200 - 150}
+          x2="200"
+          y2={200 - 150 + tickLen}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          transform={`rotate(${angle} 200 200)`}
+        />
+      );
+    }
+    return arr;
+  }, []);
 
-  // Generate numeric labels for SVG Programmatically
-  const labels = [];
-  for (let i = 0; i <= 100; i += 20) {
-    const angle = -135 + i * 2.7;
-    const radius = 122;
-    const rad = ((angle - 90) * Math.PI) / 180;
-    const lx = 200 + radius * Math.cos(rad);
-    const ly = 200 + radius * Math.sin(rad);
-    labels.push(
-      <text
-        key={`label-${i}`}
-        x={lx}
-        y={ly + 4}
-        fill="#ffe29a"
-        fontSize="11"
-        fontWeight="bold"
-        textAnchor="middle"
-        className="select-none font-mono opacity-80"
-      >
-        {i}
-      </text>
-    );
-  }
+  const labels = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i <= 100; i += 20) {
+      const angle = -135 + i * 2.7;
+      const radius = 122;
+      const rad = ((angle - 90) * Math.PI) / 180;
+      const lx = 200 + radius * Math.cos(rad);
+      const ly = 200 + radius * Math.sin(rad);
+      arr.push(
+        <text
+          key={`label-${i}`}
+          x={lx}
+          y={ly + 4}
+          fill="#ffe29a"
+          fontSize="11"
+          fontWeight="bold"
+          textAnchor="middle"
+          className="select-none font-mono opacity-80"
+        >
+          {i}
+        </text>
+      );
+    }
+    return arr;
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#030507] text-[#fff8df] flex flex-col justify-between font-sans relative overflow-x-hidden">
