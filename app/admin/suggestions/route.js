@@ -1,7 +1,17 @@
+import crypto from 'crypto';
 import { listSuggestions } from '../../suggestions';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+function secureCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') {
+    return false;
+  }
+  const hashA = crypto.createHash('sha256').update(a).digest();
+  const hashB = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
+}
 
 function escapeHtml(value) {
   return String(value || '')
@@ -33,7 +43,13 @@ function isAuthorized(request) {
       })
   );
 
-  return cookies.get('suggestions_admin') === adminPassword;
+  const providedCookie = cookies.get('suggestions_admin');
+  if (!providedCookie) {
+    return false;
+  }
+
+  const expectedCookie = crypto.createHash('sha256').update(adminPassword).digest('hex');
+  return secureCompare(providedCookie, expectedCookie);
 }
 
 function renderLogin(error = '') {
@@ -128,18 +144,20 @@ export async function POST(request) {
   const password = String(formData.get('password') || '');
   const adminPassword = process.env.ADMIN_PASSWORD;
 
-  if (!adminPassword || password !== adminPassword) {
+  if (!adminPassword || !secureCompare(password, adminPassword)) {
     return new Response(renderLogin('Incorrect admin password.'), {
       status: 401,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     });
   }
 
+  const sessionToken = crypto.createHash('sha256').update(adminPassword).digest('hex');
+
   return new Response(null, {
     status: 303,
     headers: {
       Location: '/admin/suggestions',
-      'Set-Cookie': `suggestions_admin=${encodeURIComponent(adminPassword)}; HttpOnly; Secure; SameSite=Lax; Path=/admin/suggestions; Max-Age=86400`,
+      'Set-Cookie': `suggestions_admin=${sessionToken}; HttpOnly; Secure; SameSite=Lax; Path=/admin/suggestions; Max-Age=86400`,
     },
   });
 }
