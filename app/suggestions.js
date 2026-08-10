@@ -86,8 +86,8 @@ function buildSuggestionEmail({ name, email, message }) {
 
 async function emailSuggestion(suggestion) {
   const resendApiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.SUGGESTIONS_FROM_EMAIL || process.env.GIFT_FROM_EMAIL;
-  const toEmail = process.env.SUGGESTIONS_TO_EMAIL;
+  const fromEmail = process.env.SUGGESTIONS_FROM_EMAIL || process.env.GIFT_FROM_EMAIL || 'noreply@luckypickcanada.ca';
+  const toEmail = process.env.SUGGESTIONS_TO_EMAIL || 'davidcollier77@gmail.com';
 
   if (!resendApiKey || !fromEmail || !toEmail) {
     return { ok: false, skipped: true };
@@ -116,8 +116,25 @@ async function emailSuggestion(suggestion) {
   });
 
   if (!response.ok) {
-    const details = await response.text();
-    throw new Error(details || 'Resend email request failed');
+    let errorMessage = 'Resend email request failed';
+    try {
+      const details = await response.json();
+      if (details && details.message) {
+        errorMessage = `Resend API Error: ${details.message} (Status: ${response.status})`;
+      } else {
+        errorMessage = `Resend API Error: ${JSON.stringify(details)} (Status: ${response.status})`;
+      }
+    } catch {
+      try {
+        const text = await response.text();
+        if (text) {
+          errorMessage = `Resend API Error: ${text} (Status: ${response.status})`;
+        }
+      } catch (err) {
+        errorMessage = `Resend API Error: Status ${response.status}`;
+      }
+    }
+    throw new Error(errorMessage);
   }
 
   return { ok: true };
