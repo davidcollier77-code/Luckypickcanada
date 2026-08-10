@@ -156,6 +156,33 @@ export default function HomePage() {
         </form>
       </section>
 
+      {/* Low-Profile SEO Text Section */}
+      <section
+        className="homepage-seo-section"
+        style={{
+          marginTop: '40px',
+          padding: '24px 16px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          maxWidth: '800px',
+          marginInline: 'auto',
+          textAlign: 'left',
+          opacity: '0.9'
+        }}
+      >
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '600' }}>
+          About Lucky Pick Canada
+        </h2>
+        <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
+          Welcome to <strong>Lucky Pick Canada</strong>, your interactive destination for daily lucky picks, custom digital card reveals, and random number generation. Whether you are checking your daily luck meter or exploring unique card draws, our site brings a fun and engaging digital experience directly to your screen.
+        </p>
+        <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
+          Our digital card decks feature tiered card reveals—ranging from standard draws to premium cards like <em>Coast to Coast</em>—designed to make every pick exciting. Use our random pick tool for daily decisions, entertainment, or simply testing your fortune today.
+        </p>
+        <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '16px' }}>
+          Lucky Pick Canada is intended strictly for entertainment purposes. Enjoy your daily draws and see what luck has in store for you!
+        </p>
+      </section>
+
       <footer className="homepage-footer">
         <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
         <p className="homepage-disclaimer">LuckyPickCanada is a digital entertainment experience created for fun and positive moments. It does not provide lottery or gambling services.</p>
