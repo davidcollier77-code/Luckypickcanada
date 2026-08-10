@@ -3,12 +3,40 @@ import { NextResponse } from 'next/server';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
 export async function POST(req: Request) {
   try {
-    const { recipientEmail, personalMessage, revealId } = await req.json();
+    const body = await req.json();
+    const { recipientEmail, personalMessage, revealId } = body;
 
-    // Build the unique link to your dedicated web page
-    const revealUrl = `https://luckypickcanada.ca/reveal/${revealId}`;
+    // Validate recipientEmail
+    if (!recipientEmail || typeof recipientEmail !== 'string' || recipientEmail.length > 120 || !EMAIL_REGEX.test(recipientEmail)) {
+      return NextResponse.json({ error: 'Invalid recipient email address.' }, { status: 400 });
+    }
+
+    // Validate revealId
+    if (!revealId || typeof revealId !== 'string' || revealId.length > 100 || !/^[a-zA-Z0-9-_]+$/.test(revealId)) {
+      return NextResponse.json({ error: 'Invalid reveal ID.' }, { status: 400 });
+    }
+
+    // Validate and escape personalMessage
+    if (personalMessage !== undefined && typeof personalMessage !== 'string') {
+      return NextResponse.json({ error: 'Invalid personal message format.' }, { status: 400 });
+    }
+    const cleanMessage = personalMessage ? escapeHtml(personalMessage.slice(0, 500)) : '';
+
+    // Build the unique link to your dedicated web page safely
+    const revealUrl = `https://luckypickcanada.ca/reveal/${encodeURIComponent(revealId)}`;
 
     const data = await resend.emails.send({
       from: process.env.GIFT_FROM_EMAIL || 'gifts@luckypickcanada.ca',
@@ -45,7 +73,7 @@ export async function POST(req: Request) {
           <tr>
             <td style="padding: 16px 24px;">
               <div style="background-color: #1f2937; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px; color: #f3f4f6; font-size: 14px; line-height: 1.5; font-style: italic;">
-                "${personalMessage || 'Enjoy your lucky jewel pick!'}"
+                "${cleanMessage || 'Enjoy your lucky jewel pick!'}"
               </div>
             </td>
           </tr>
@@ -82,7 +110,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error('Failed to send gift email:', error);
-    return NextResponse.json({ error: 'Failed to send gift email' }, { status: 500 });
+    console.error('[send-reveal-error] Error in send-gift endpoint:', error);
+    return NextResponse.json({ error: 'An unexpected error occurred while processing your request.' }, { status: 500 });
   }
 }
