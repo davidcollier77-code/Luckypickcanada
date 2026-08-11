@@ -89,9 +89,7 @@ export default function LuckyCardReveal() {
     window.clearTimeout(announcementTimer.current);
   }, []);
 
-  function revealLuckyMoment() {
-    if (isGenerating || (!isTestMode && isRevealed)) return;
-
+  const triggerCardDraw = () => {
     const card = selectWeightedLuckyCard();
     const timing = REVEAL_TIMINGS[card.tier] || REVEAL_TIMINGS.standard;
 
@@ -108,7 +106,18 @@ export default function LuckyCardReveal() {
       setIsAnnouncing(true);
       announcementTimer.current = window.setTimeout(() => showLuckyCard(card), timing.announcement);
     }, timing.anticipation);
-  }
+  };
+
+  // 2. The clean function to handle the draw
+  const handleReveal = () => {
+    // BYPASS ACTIVE: The if-statement is commented out to allow button spamming
+    // if (!isRevealed) {
+
+      triggerCardDraw(); // This calls your existing 10-card logic
+      setIsRevealed(true);
+
+    // }
+  };
 
   return (
     <div className="lucky-moment-shell" aria-busy={!isReady || isGenerating}>
@@ -164,17 +173,16 @@ export default function LuckyCardReveal() {
       )}
 
       <div className="lucky-moment-actions">
-        {isReady && (!isRevealed || isTestMode) && (
+        {isReady && (
           <button
             type="button"
+            onClick={handleReveal}
+            // BYPASS ACTIVE: The disabled property is commented out so the button stays clickable
+            // disabled={isRevealed}
             className="lucky-moment-reveal-button"
-            onClick={revealLuckyMoment}
-            disabled={isGenerating}
             style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           >
-            {isGenerating
-              ? 'Generating Luck…'
-              : (isRevealed ? 'Reveal Another Test Card' : 'Reveal Your Lucky Moment')}
+            Reveal Your Lucky Moment
           </button>
         )}
         {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
