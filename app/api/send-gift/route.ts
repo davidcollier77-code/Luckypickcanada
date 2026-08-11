@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { escapeHtml, isValidEmailAddress } from '../../form-security';
 
 // Force dynamic rendering to prevent build-time evaluation
 export const dynamic = 'force-dynamic';
@@ -13,8 +14,28 @@ export async function POST(req: Request) {
 
     const { recipientEmail, personalMessage, revealId } = await req.json();
 
+    if (
+      !recipientEmail ||
+      typeof recipientEmail !== 'string' ||
+      !isValidEmailAddress(recipientEmail) ||
+      !revealId ||
+      typeof revealId !== 'string' ||
+      revealId.length === 0 ||
+      revealId.length > 100 ||
+      (personalMessage !== undefined && personalMessage !== null && typeof personalMessage !== 'string')
+      (personalMessage !== undefined && personalMessage !== null && personalMessage.length > 500)
+    ) {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+    }
+
+    const safePersonalMessage = escapeHtml(
+      personalMessage !== undefined && personalMessage !== null && personalMessage !== ''
+        ? personalMessage
+        : 'Enjoy your lucky jewel pick!'
+    );
+
     // Build the unique link to your dedicated web page
-    const revealUrl = `https://luckypickcanada.ca/reveal/${revealId}`;
+    const revealUrl = `https://luckypickcanada.ca/reveal/${encodeURIComponent(revealId)}`;
 
     const data = await resend.emails.send({
       from: fromEmail,
@@ -51,7 +72,7 @@ export async function POST(req: Request) {
           <tr>
             <td style="padding: 16px 24px;">
               <div style="background-color: #1f2937; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px; color: #f3f4f6; font-size: 14px; line-height: 1.5; font-style: italic;">
-                "${personalMessage || 'Enjoy your lucky jewel pick!'}"
+                "${safePersonalMessage}"
               </div>
             </td>
           </tr>
