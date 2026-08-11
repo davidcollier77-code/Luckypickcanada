@@ -1,7 +1,6 @@
-  const handleReveal = () => {
-    alert("Click received!"); // <--- ADD THIS LINE
-    
-    if (isTestMode || (!isRevealed && !isGenerating)) {
-      triggerCardDraw(); 
-    }
-  };
+export function isLuckyCardTestModeEnabled() {
+  if (typeof window === 'undefined') return false;
+  const val = window.localStorage.getItem('luckyCardTestModeEnabled');
+  return val === 'true';
+}
+
