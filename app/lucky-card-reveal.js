@@ -90,6 +90,9 @@ export default function LuckyCardReveal() {
   }, []);
 
   const triggerCardDraw = () => {
+    window.clearTimeout(revealTimer.current);
+    window.clearTimeout(announcementTimer.current);
+
     const card = selectWeightedLuckyCard();
     const timing = REVEAL_TIMINGS[card.tier] || REVEAL_TIMINGS.standard;
 
@@ -110,13 +113,9 @@ export default function LuckyCardReveal() {
 
   // 2. The clean function to handle the draw
   const handleReveal = () => {
-    // BYPASS ACTIVE: The if-statement is commented out to allow button spamming
-    // if (!isRevealed) {
-
+    if (isTestMode || (!isRevealed && !isGenerating)) {
       triggerCardDraw(); // This calls your existing 10-card logic
-      setIsRevealed(true);
-
-    // }
+    }
   };
 
   return (
@@ -177,8 +176,7 @@ export default function LuckyCardReveal() {
           <button
             type="button"
             onClick={handleReveal}
-            // BYPASS ACTIVE: The disabled property is commented out so the button stays clickable
-            // disabled={isRevealed}
+            disabled={!isTestMode && (isRevealed || isGenerating)}
             className="lucky-moment-reveal-button"
             style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           >
