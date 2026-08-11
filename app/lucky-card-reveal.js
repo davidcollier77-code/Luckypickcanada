@@ -120,7 +120,7 @@ export default function LuckyCardReveal() {
           >
             <img
               src="/IMG_20260728_220305_112042.png"
-              alt=""
+              alt="Lucky Pick Canada card back"
               loading="lazy"
               style={{ filter: isGenerating ? 'brightness(1.1) drop-shadow(0 0 10px rgba(250, 204, 21, 0.3))' : 'none', transition: 'filter 0.3s ease' }}
             />

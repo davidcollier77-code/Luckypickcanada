@@ -5,7 +5,7 @@ const socialImage = '/1785347037732.png';
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Lucky Pick Canada - Daily Luck & Random Pick Generator",
+  title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
   description: "Discover your daily lucky picks, random numbers, and custom digital card reveals at Lucky Pick Canada. Try your luck today!",
   keywords: [
     'luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks',
