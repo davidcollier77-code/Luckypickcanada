@@ -17,6 +17,7 @@ const nextConfig = {
   },
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
+  // 301 Redirect for Domain Consistency: route www to non-www
   async redirects() {
     return [
       {

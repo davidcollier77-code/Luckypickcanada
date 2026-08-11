@@ -6,7 +6,7 @@ const socialImage = '/1785347037732.png';
 export const metadata = {
   metadataBase: new URL(siteUrl),
   title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
-  description: "Discover your daily lucky picks, random numbers, and custom digital card reveals at Lucky Pick Canada. Try your luck today!",
+  description: "Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.",
   keywords: [
     'luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks',
     'canada luck', 'lucky card', 'lucky day', 'lucky color', 'lucky community',
@@ -17,17 +17,15 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_CA',
-    url: 'https://luckypickcanada.ca/',
+    url: 'https://luckypickcanada.ca',
     siteName: "Lucky Pick Canada",
-    title: "Lucky Pick Canada - Daily Luck Generator",
-    description: "Discover your daily lucky picks, random numbers, and custom card reveals at Lucky Pick Canada.",
-    images: [{ url: 'https://luckypickcanada.ca/og-image.jpg', width: 1200, height: 630, alt: 'Lucky Pick Canada - Daily Luck Generator' }],
+    title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
+    description: "Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Lucky Pick Canada - Daily Luck Generator",
-    description: "Discover your daily lucky picks, random numbers, and custom card reveals at Lucky Pick Canada.",
-    images: ['https://luckypickcanada.ca/og-image.jpg'],
+    title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
+    description: "Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.",
   },
   robots: { index: true, follow: true },
   manifest: '/site.webmanifest',
