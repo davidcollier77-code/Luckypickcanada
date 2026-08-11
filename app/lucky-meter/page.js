@@ -511,7 +511,7 @@ export default function LuckyMeterPage() {
           <Link href="/" className="inline-flex items-center gap-2 group min-w-0">
             <Image
               src="/BackgroundEraser_20260724_163638777.png"
-              alt="LuckyPickCanada logo"
+              alt="Lucky Pick Canada logo"
               width={42}
               height={42}
               priority

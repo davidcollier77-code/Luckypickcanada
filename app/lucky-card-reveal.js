@@ -120,7 +120,7 @@ export default function LuckyCardReveal() {
           >
             <img
               src="/IMG_20260728_220305_112042.png"
-              alt="Lucky Pick Canada card back"
+              alt="Lucky Pick Canada random generator card back"
               loading="lazy"
               style={{ filter: isGenerating ? 'brightness(1.1) drop-shadow(0 0 10px rgba(250, 204, 21, 0.3))' : 'none', transition: 'filter 0.3s ease' }}
             />
@@ -133,7 +133,7 @@ export default function LuckyCardReveal() {
               <img
                 className="lucky-moment-card-image"
                 src={selectedCard.image}
-                alt={selectedCard.title}
+                alt={`Lucky Pick Canada card layout for ${selectedCard.title}`}
                 loading="lazy"
                 style={{ transform: isRevealed ? 'scale(1)' : 'scale(0.95)', transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
               />
