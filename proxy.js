@@ -14,4 +14,5 @@ export default function proxy(request) {
 
 export const config = {
   matcher: '/:path*',
+  runtime: 'edge',
 };
