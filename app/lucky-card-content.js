@@ -25,7 +25,7 @@ export const LUCKY_CARD_RARITY_WEIGHTS = {
   'iron-horseshoe': 17.5,
   'emerald-clover': 17.5,
   'optimists-path': 12.5,
-  'cosmic-flow': 12.5,
+  'cosmic-flow': 10.0,
   'guiding-star': 10.0,
   'northern-lights': 10.0,
   'flagship-card': 5.0,
