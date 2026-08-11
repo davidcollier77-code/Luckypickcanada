@@ -54,12 +54,12 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              "@context": "https://schema.org",
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: 'Lucky Pick Canada',
               url: 'https://luckypickcanada.ca',
               description: 'Interactive tier-based pick platform in Canada.',
+            }),
           }}
         />
       </head>
