@@ -4,7 +4,9 @@ const CARD_DEFINITIONS = [
   ['number-seeker', 'The Number Seeker', false, 'standard'],
   ['iron-horseshoe', 'The Iron Horseshoe', false, 'standard'],
   ['emerald-clover', 'The Emerald Four-Leaf', false, 'standard'],
+  ['optimists-path', 'The Optimist\'s Path', false, 'standard'],
   ['guiding-star', 'The Guiding Star', true, 'premium'],
+  ['northern-lights', 'The Northern Lights', true, 'premium'],
   ['flagship-card', 'The Flagship Card', false, 'flagship'],
 ];
 
