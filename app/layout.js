@@ -36,13 +36,13 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
 };
 
+export default function RootLayout({ children }) {
   return (
     <html lang="en-CA">
       <head>
