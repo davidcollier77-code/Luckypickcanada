@@ -17,6 +17,21 @@ const nextConfig = {
   },
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.luckypickcanada.ca',
+          },
+        ],
+        destination: 'https://luckypickcanada.ca/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
