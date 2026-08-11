@@ -21,13 +21,11 @@ export const metadata = {
     siteName: "Lucky Pick Canada",
     title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
     description: "Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.",
-    images: [{ url: 'https://luckypickcanada.ca/og-image.jpg', width: 1200, height: 630, alt: 'Lucky Pick Canada | Digital Random Generator & Card Reveals' }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
     description: "Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.",
-    images: ['https://luckypickcanada.ca/og-image.jpg'],
   },
   robots: { index: true, follow: true },
   manifest: '/site.webmanifest',
