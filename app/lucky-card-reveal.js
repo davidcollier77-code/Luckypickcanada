@@ -173,14 +173,14 @@ export default function LuckyCardReveal() {
 
       <div className="lucky-moment-actions">
         {isReady && (
-          <button
+      <div className="lucky-moment-actions" style={{ position: 'relative', zIndex: 99998, pointerEvents: 'auto' }}>
             type="button"
             onClick={handleReveal}
             disabled={isRevealed && !isTestMode}
             className="lucky-moment-reveal-button"
             style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', position: 'relative', zIndex: 50 }}
           >
-            Reveal Your Lucky Moment
+            style={{ position: 'relative', zIndex: 99999, pointerEvents: 'auto', touchAction: 'manipulation', transition: 'all 0.2s ease', WebkitTapHighlightColor: 'transparent' }}
           </button>
         )}
         {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
