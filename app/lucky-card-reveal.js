@@ -40,17 +40,21 @@ export default function LuckyCardReveal() {
       {!selectedCard ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-md mx-auto">
           {CARDS.map((card, index) => (
-            <button
-              key={card.id}
-              type="button"
-              onClick={() => triggerCardDraw(card)}
-              disabled={isFlipping}
-              className={`aspect-[2/3] bg-gradient-to-br from-amber-500/20 via-slate-900 to-slate-950 border-2 border-amber-500/40 hover:border-amber-400 rounded-xl p-3 flex flex-col items-center justify-center text-amber-300 font-bold transition-all transform hover:-translate-y-1 active:scale-95 shadow-md ${
-                isFlipping ? 'animate-pulse opacity-60' : ''
-              }`}
-              style={{ position: 'relative', zIndex: 1 }}
-            >
-              <span className="text-3xl mb-1">🍁</span>
+            <button 
+              key={card.id} 
+              type="button" 
+              disabled={isFlipping} 
+              onClick={() => triggerCardDraw(card)} 
+              className={
+                isFlipping 
+                  ? 'aspect-[2/3] bg-gradient-to-br from-amber-500/20 via-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-xl p-3 flex flex-col items-center justify-center text-amber-300 font-bold animate-pulse opacity-60 shadow-md' 
+                  : 'aspect-[2/3] bg-gradient-to-br from-amber-500/20 via-slate-900 to-slate-950 border-2 border-amber-500/40 hover:border-amber-400 rounded-xl p-3 flex flex-col items-center justify-center text-amber-300 font-bold transition-all transform hover:-translate-y-1 active:scale-95 shadow-md'
+              }
+              style={{
+                position: 'relative',
+                zIndex: 10
+              }}>
+              <span className="text-3xl mb-1" style={{ pointerEvents: 'none' }}>🍁</span>
               <span className="text-xs font-semibold text-slate-300">Card {index + 1}</span>
             </button>
           ))}
