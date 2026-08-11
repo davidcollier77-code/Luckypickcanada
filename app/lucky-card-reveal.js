@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
+// We keep the import so it doesn't break, but we bypass it below
 import { isLuckyCardTestModeEnabled } from './developer-tools/lucky-card-test-mode/toggle-card-test-mode';
 import LuckyCardShare from './lucky-card-share';
 
@@ -29,7 +30,9 @@ function findCard(cardId) {
 }
 
 export default function LuckyCardReveal() {
-  const isTestMode = isLuckyCardTestModeEnabled;
+  // 1. THE FIX: Force test mode to TRUE so we don't rely on the external file
+  const isTestMode = true; 
+
   const [selectedCard, setSelectedCard] = useState(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -111,11 +114,9 @@ export default function LuckyCardReveal() {
     }, timing.anticipation);
   };
 
-  // 2. The clean function to handle the draw
+  // 2. THE FIX: Force the button to unconditionally fire the draw function
   const handleReveal = () => {
-    if (isTestMode || (!isRevealed && !isGenerating)) {
-      triggerCardDraw(); // This calls your existing 10-card logic
-    }
+    triggerCardDraw(); 
   };
 
   return (
@@ -176,7 +177,7 @@ export default function LuckyCardReveal() {
           <button
             type="button"
             onClick={handleReveal}
-            disabled={!isTestMode && (isRevealed || isGenerating)}
+            // 3. THE FIX: The 'disabled' property is completely removed for your visual test
             className="lucky-moment-reveal-button"
             style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           >
