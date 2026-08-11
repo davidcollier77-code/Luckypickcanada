@@ -52,14 +52,42 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "WebSite",
-              "name": "Lucky Pick Canada",
-              "url": "https://luckypickcanada.ca/",
-              "sameAs": [
-                "https://x.com/",
-                "https://www.instagram.com/",
-                "https://www.facebook.com/",
-                "https://www.tiktok.com/"
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": "https://luckypickcanada.ca/#website",
+                  "url": "https://luckypickcanada.ca/",
+                  "name": "Lucky Pick Canada",
+                  "description": "Experience custom digital card reveals and random number generation with Lucky Pick Canada.",
+                  "publisher": {
+                    "@type": "Organization",
+                    "name": "Lucky Pick Canada",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "url": "https://luckypickcanada.ca/logo.png"
+                    },
+                    "sameAs": [
+                      "https://www.facebook.com/yourpage",
+                      "https://www.instagram.com/yourprofile",
+                      "https://twitter.com/yourhandle"
+                    ]
+                  }
+                },
+                {
+                  "@type": "WebApplication",
+                  "@id": "https://luckypickcanada.ca/#webapp",
+                  "name": "Lucky Pick Canada Generator",
+                  "url": "https://luckypickcanada.ca/",
+                  "applicationCategory": "EntertainmentApplication",
+                  "operatingSystem": "All",
+                  "browserRequirements": "Requires JavaScript",
+                  "description": "Interactive digital card draws, premium tier reveals, and luck-themed entertainment.",
+                  "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "CAD"
+                  }
+                }
               ]
             })
           }}
