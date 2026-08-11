@@ -17,7 +17,10 @@ export async function POST(req: Request) {
       !isValidEmailAddress(recipientEmail) ||
       !revealId ||
       typeof revealId !== 'string' ||
+      revealId.length === 0 ||
+      revealId.length > 100 ||
       (personalMessage !== undefined && personalMessage !== null && typeof personalMessage !== 'string')
+      (personalMessage !== undefined && personalMessage !== null && personalMessage.length > 500)
     ) {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
