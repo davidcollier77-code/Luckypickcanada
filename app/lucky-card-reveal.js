@@ -1,84 +1,115 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
+import LuckyCardShare from './lucky-card-share';
 
-// --- Card Data ---
-const CARDS = [
-  { id: 1, title: "Abundance", value: "🌟 777", description: "Positive energy and good fortune are flowing your way today." },
-  { id: 2, title: "Serendipity", value: "🍀 Lucky Clover", description: "An unexpected pleasant surprise or encounter awaits you." },
-  { id: 3, title: "Harmony", value: "✨ High Vibe", description: "Your calm focus and positive mindset attract great results." },
-  { id: 4, title: "Opportunity", value: "🚀 Open Door", description: "Keep your eyes open for an exciting fresh idea today." }
-];
+const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
+const REVEAL_TIMINGS = {
+  standard: { anticipation: 1500, announcement: 0 },
+  premium: { anticipation: 2600, announcement: 900 },
+  flagship: { anticipation: 3600, announcement: 1200 },
+};
+
+const TIER_MESSAGES = {
+  premium: '✨ You discovered a Premium Lucky Card! ✨',
+  flagship: '⭐ Congratulations! You discovered the rarest Lucky Card! ⭐',
+};
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function findCard(cardId) {
+  return LUCKY_CARDS.find((card) => card.id === cardId) ?? null;
+}
 
 export default function LuckyCardReveal() {
+  const isTestMode = false;
+
   const [selectedCard, setSelectedCard] = useState(null);
-  const [isFlipping, setIsFlipping] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isAnnouncing, setIsAnnouncing] = useState(false);
+  const revealTimer = useRef(null);
+  const announcementTimer = useRef(null);
 
-  const triggerCardDraw = (card) => {
-    if (isFlipping) return;
-    setIsFlipping(true);
-    
-    setTimeout(() => {
-      setSelectedCard(card);
-      setIsFlipping(false);
-    }, 300);
-  };
+  useEffect(() => {
+    const today = localDateKey();
+    try {
+      const storedReveal = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
+      const storedCard = storedReveal?.revealDate === today ? findCard(storedReveal.cardId) : null;
+      if (storedCard) {
+        setSelectedCard(storedCard);
+        setIsRevealed(true);
+      }
+    } catch (e) {
+      window.localStorage.removeItem(STORAGE_KEY);
+    }
+    setIsReady(true);
+  }, []);
 
-  const handleReset = () => {
-    setSelectedCard(null);
+  function showLuckyCard(card) {
+    setIsAnnouncing(false);
+    setIsGenerating(false);
+    setIsRevealed(true);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        cardId: card.id,
+        revealDate: localDateKey(),
+      }));
+    } catch (e) {}
+  }
+
+  const triggerCardDraw = () => {
+    window.clearTimeout(revealTimer.current);
+    window.clearTimeout(announcementTimer.current);
+    const card = selectWeightedLuckyCard();
+    const timing = REVEAL_TIMINGS[card.tier] || REVEAL_TIMINGS.standard;
+    setSelectedCard(card);
+    setIsRevealed(false);
+    setIsAnnouncing(false);
+    setIsGenerating(true);
+    revealTimer.current = window.setTimeout(() => {
+      if (!timing.announcement) {
+        showLuckyCard(card);
+        return;
+      }
+      setIsAnnouncing(true);
+      announcementTimer.current = window.setTimeout(() => showLuckyCard(card), timing.announcement);
+    }, timing.anticipation);
   };
 
   return (
-    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-lg text-center space-y-6">
-      <div className="space-y-2">
-        <h3 className="text-xl font-bold text-amber-400">Daily Lucky Card Reveal</h3>
-        <p className="text-slate-300 text-sm">
-          Select a card below to reveal your daily message of inspiration and good fortune!
-        </p>
+    <div className="lucky-moment-shell">
+      <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
+        <div className="lucky-moment-card" aria-live="polite">
+          <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
+            <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" />
+          </div>
+          <div className="lucky-moment-card-face lucky-moment-card-front" aria-hidden={!isRevealed}>
+            {selectedCard && (selectedCard.image ? <img src={selectedCard.image} className="lucky-moment-card-image" /> : <span>Lucky Pick Canada</span>)}
+          </div>
+        </div>
       </div>
 
-      {!selectedCard ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-md mx-auto">
-          {CARDS.map((card, index) => (
-            <button 
-              key={card.id} 
-              type="button" 
-              disabled={isFlipping} 
-              onClick={() => triggerCardDraw(card)} 
-              className={
-                isFlipping 
-                  ? 'aspect-[2/3] bg-gradient-to-br from-amber-500/20 via-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-xl p-3 flex flex-col items-center justify-center text-amber-300 font-bold animate-pulse opacity-60 shadow-md' 
-                  : 'aspect-[2/3] bg-gradient-to-br from-amber-500/20 via-slate-900 to-slate-950 border-2 border-amber-500/40 hover:border-amber-400 rounded-xl p-3 flex flex-col items-center justify-center text-amber-300 font-bold transition-all transform hover:-translate-y-1 active:scale-95 shadow-md'
-              }
-              style={{
-                position: 'relative',
-                zIndex: 10
-              }}>
-              <span className="text-3xl mb-1" style={{ pointerEvents: 'none' }}>🍁</span>
-              <span className="text-xs font-semibold text-slate-300">Card {index + 1}</span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="max-w-md mx-auto space-y-5 animate-in fade-in zoom-in duration-300">
-          <div className="bg-gradient-to-br from-slate-900 via-amber-950/30 to-slate-900 border-2 border-amber-400 rounded-xl p-6 shadow-xl space-y-3">
-            <div className="text-4xl">{selectedCard.value.split(" ")[0]}</div>
-            <h4 className="text-lg font-bold text-amber-300">{selectedCard.title}</h4>
-            <p className="text-sm text-slate-200 italic">{selectedCard.description}</p>
-            <div className="text-xs font-mono text-amber-400/80 pt-3 border-t border-slate-800/80">
-              {selectedCard.value}
-            </div>
-          </div>
-
+      <div className="lucky-moment-actions">
+        {isReady && (
           <button
             type="button"
-            onClick={handleReset}
-            className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 text-sm font-semibold border border-amber-500/30 transition-all shadow-sm"
-            style={{ position: 'relative', zIndex: 1 }}
+            onClick={triggerCardDraw}
+            disabled={isRevealed || isGenerating}
+            className="lucky-moment-reveal-button"
           >
-            Pick Another Card 🔄
+            Reveal Your Lucky Moment
           </button>
-        </div>
-      )}
+        )}
+        {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
+      </div>
     </div>
   );
+}
