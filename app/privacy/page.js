@@ -1,15 +1,17 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Privacy Policy | Lucky Pick Canada',
+  title: "Privacy Policy | Lucky Pick Canada",
 };
 
 export default function PrivacyPolicy() {
   return (
     <main className="max-w-4xl mx-auto p-6 leading-relaxed">
-      <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
-        ← Back to Home
-      </Link>
+      <div className="mb-6">
+        <Link href="/" className="text-blue-600 hover:underline">
+          &larr; Back to Home
+        </Link>
+      </div>
       <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
       <p className="text-sm text-gray-500 mb-8">Last Updated: August 10, 2026</p>
 
