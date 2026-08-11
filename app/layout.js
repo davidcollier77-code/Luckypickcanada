@@ -37,11 +37,16 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
   return (
     <html lang="en-CA">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="preload" href="/1785347037732.png" as="image" fetchPriority="high" />
@@ -50,39 +55,11 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@graph": [
-                {
-                  "@type": "WebSite",
-                  "@id": "https://luckypickcanada.ca/#website",
-                  "url": "https://luckypickcanada.ca/",
-                  "name": "Lucky Pick Canada",
-                  "description": "Experience custom digital card reveals and random number generation with Lucky Pick Canada.",
-                  "publisher": {
-                    "@type": "Organization",
-                    "name": "Lucky Pick Canada",
-                    "logo": {
-                      "@type": "ImageObject",
-                      "url": "https://luckypickcanada.ca/logo.png"
-                    }
-                  }
-                },
-                {
-                  "@type": "WebApplication",
-                  "@id": "https://luckypickcanada.ca/#webapp",
-                  "name": "Lucky Pick Canada Generator",
-                  "url": "https://luckypickcanada.ca/",
-                  "applicationCategory": "EntertainmentApplication",
-                  "operatingSystem": "All",
-                  "browserRequirements": "Requires JavaScript",
-                  "description": "Interactive digital card draws, premium tier reveals, and luck-themed entertainment.",
-                  "offers": {
-                    "@type": "Offer",
-                    "price": "0",
-                    "priceCurrency": "CAD"
-                  }
-                }
-              ]
-            })
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'Lucky Pick Canada',
+              url: 'https://luckypickcanada.ca',
+              description: 'Interactive tier-based pick platform in Canada.',
           }}
         />
       </head>
