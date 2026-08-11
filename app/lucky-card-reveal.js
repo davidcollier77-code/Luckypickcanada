@@ -1,200 +1,35 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
-// We keep the import so it doesn't break, but we bypass it below
-import { isLuckyCardTestModeEnabled } from './developer-tools/lucky-card-test-mode/toggle-card-test-mode';
-import LuckyCardShare from './lucky-card-share';
-
-const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
-const REVEAL_TIMINGS = {
-  standard: { anticipation: 1500, announcement: 0 },
-  premium: { anticipation: 2600, announcement: 900 },
-  flagship: { anticipation: 3600, announcement: 1200 },
-};
-
-const TIER_MESSAGES = {
-  premium: '✨ You discovered a Premium Lucky Card! ✨',
-  flagship: '⭐ Congratulations! You discovered the rarest Lucky Card! ⭐',
-};
-
-function localDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function findCard(cardId) {
-  return LUCKY_CARDS.find((card) => card.id === cardId) ?? null;
-}
+import { useState } from 'react';
 
 export default function LuckyCardReveal() {
-  // 1. THE FIX: Force test mode to TRUE so we don't rely on the external file
-  const isTestMode = true; 
+  const [clicked, setClicked] = useState(false);
 
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isAnnouncing, setIsAnnouncing] = useState(false);
-  const revealTimer = useRef(null);
-  const announcementTimer = useRef(null);
-
-  useEffect(() => {
-    const today = localDateKey();
-
-    try {
-      const storedReveal = JSON.parse(
-        window.localStorage.getItem(STORAGE_KEY) || 'null'
-      );
-
-      const storedCard =
-        !isTestMode && storedReveal?.revealDate === today
-          ? findCard(storedReveal.cardId)
-          : null;
-
-      if (storedCard) {
-        setSelectedCard(storedCard);
-        setIsRevealed(true);
-      } else {
-        window.localStorage.removeItem(STORAGE_KEY);
-      }
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
-    }
-
-    setIsReady(true);
-  }, [isTestMode]);
-
-  function showLuckyCard(card) {
-    setIsAnnouncing(false);
-    setIsGenerating(false);
-    setIsRevealed(true);
-
-    if (isTestMode) return;
-
-    try {
-      window.localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          cardId: card.id,
-          revealDate: localDateKey(),
-        })
-      );
-    } catch {
-      // The card remains visible for this visit when browser storage is unavailable.
-    }
-  }
-
-  useEffect(() => () => {
-    window.clearTimeout(revealTimer.current);
-    window.clearTimeout(announcementTimer.current);
-  }, []);
-
-  const triggerCardDraw = () => {
-    window.clearTimeout(revealTimer.current);
-    window.clearTimeout(announcementTimer.current);
-
-    const card = selectWeightedLuckyCard();
-    const timing = REVEAL_TIMINGS[card.tier] || REVEAL_TIMINGS.standard;
-
-    setSelectedCard(card);
-    setIsRevealed(false);
-    setIsAnnouncing(false);
-    setIsGenerating(true);
-    revealTimer.current = window.setTimeout(() => {
-      if (!timing.announcement) {
-        showLuckyCard(card);
-        return;
-      }
-
-      setIsAnnouncing(true);
-      announcementTimer.current = window.setTimeout(() => showLuckyCard(card), timing.announcement);
-    }, timing.anticipation);
-  };
-
-  // 2. THE FIX: Force the button to unconditionally fire the draw function
-  const handleReveal = () => {
-    triggerCardDraw(); 
+  const handleManualClick = () => {
+    alert("Success! The button is connected.");
+    setClicked(true);
   };
 
   return (
-    <div className="lucky-moment-shell" aria-busy={!isReady || isGenerating}>
-      <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
-        <div className="lucky-moment-card" aria-live="polite">
-          <div
-            className="lucky-moment-card-face lucky-moment-card-back"
-            aria-hidden={isRevealed}
-          >
-            <img
-              src="/IMG_20260728_220305_112042.png"
-              alt="Lucky Pick Canada random generator card back"
-              loading="lazy"
-              style={{ filter: isGenerating ? 'brightness(1.1) drop-shadow(0 0 10px rgba(250, 204, 21, 0.3))' : 'none', transition: 'filter 0.3s ease' }}
-            />
-          </div>
-          <div
-            className="lucky-moment-card-face lucky-moment-card-front"
-            aria-hidden={!isRevealed}
-          >
-            {selectedCard && (selectedCard.image ? (
-              <img
-                className="lucky-moment-card-image"
-                src={selectedCard.image}
-                alt={`Lucky Pick Canada card layout for ${selectedCard.title}`}
-                loading="lazy"
-                style={{ transform: isRevealed ? 'scale(1)' : 'scale(0.95)', transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-              />
-            ) : (
-              <div className="lucky-moment-artwork-placeholder" aria-hidden="true">
-                <span>Lucky Pick Canada</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {isAnnouncing && selectedCard && TIER_MESSAGES[selectedCard.tier] && (
-        <p className={`lucky-moment-tier-message lucky-moment-tier-message-${selectedCard.tier}`} role="status">
-          {TIER_MESSAGES[selectedCard.tier]}
-        </p>
-      )}
-
-      {isRevealed && selectedCard && (
-        <div className="lucky-moment-details">
-          {TIER_MESSAGES[selectedCard.tier] && <p className={`lucky-moment-tier-message lucky-moment-tier-message-${selectedCard.tier}`}>{TIER_MESSAGES[selectedCard.tier]}</p>}
-          <p className="lucky-moment-eyebrow">Today’s collectible card</p>
-          <h3>{selectedCard.title}</h3>
-          <p className="lucky-moment-quote">
-            “{selectedCard.quote || 'Your approved daily message will appear with this card.'}”
-          </p>
-        </div>
-      )}
-
-      <div className="lucky-moment-actions">
-        {isReady && (
-          <button
-            type="button"
-            onClick={handleReveal}
-            // 3. THE FIX: The 'disabled' property is completely removed for your visual test
-            className="lucky-moment-reveal-button"
-            style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-          >
-            Reveal Your Lucky Moment
-          </button>
-        )}
-        {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
-      </div>
-
-      <p className="lucky-moment-instruction">
-        {isGenerating
-          ? 'Generating a little luck…'
-          : (isRevealed
-            ? (isTestMode
-              ? 'Test mode is on. Reveal another card any time.'
-              : 'Your lucky moment is saved for today.')
-            : 'One calm, positive moment awaits each day.')}
+    <div style={{ padding: '20px', border: '5px solid red', margin: '20px' }}>
+      <h2>Testing Button Connectivity</h2>
+      <button 
+        type="button" 
+        onClick={handleManualClick}
+        style={{ 
+          padding: '20px', 
+          backgroundColor: '#0070f3', 
+          color: 'white', 
+          fontSize: '18px',
+          cursor: 'pointer',
+          zIndex: 9999, // Force it to the top
+          position: 'relative'
+        }}
+      >
+        {clicked ? "It Worked!" : "Click Me to Test"}
+      </button>
+      <p style={{ marginTop: '10px' }}>
+        If this button does not click, the issue is not your code logic—it is a CSS overlay or layout issue in your main page wrapper.
       </p>
     </div>
   );
