@@ -65,12 +65,7 @@ export default function RootLayout({ children }) {
                     "logo": {
                       "@type": "ImageObject",
                       "url": "https://luckypickcanada.ca/logo.png"
-                    },
-                    "sameAs": [
-                      "https://www.facebook.com/yourpage",
-                      "https://www.instagram.com/yourprofile",
-                      "https://twitter.com/yourhandle"
-                    ]
+                    }
                   }
                 },
                 {
