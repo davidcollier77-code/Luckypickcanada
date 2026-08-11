@@ -92,7 +92,7 @@ export default function LuckyCardReveal() {
             <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" />
           </div>
           <div className="lucky-moment-card-face lucky-moment-card-front" aria-hidden={!isRevealed}>
-            {selectedCard && (selectedCard.image ? <img src={selectedCard.image} className="lucky-moment-card-image" /> : <span>Lucky Pick Canada</span>)}
+            {selectedCard && (selectedCard.image ? <img src={selectedCard.image} alt={selectedCard.title || 'Lucky Card'} className="lucky-moment-card-image" /> : <span>Lucky Pick Canada</span>)}
           </div>
         </div>
       </div>
