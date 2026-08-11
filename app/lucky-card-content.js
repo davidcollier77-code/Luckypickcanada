@@ -6,6 +6,7 @@ export const LUCKY_CARD_IMAGES = {
   'optimists-path': '/IMG_20260811_104034_403355.png',
   'cosmic-flow': '/IMG_20260811_110751_562871.png',
   'northern-lights': '/IMG_20260730_181802_670354.png',
+  'coast-to-coast-tale': '/IMG_20260811_112327_703192.png',
   'flagship-card': '/IMG_20260729_125426_781846.png',
 };
 
@@ -17,16 +18,18 @@ export const LUCKY_CARD_QUOTES = {
   'optimists-path': 'Every sunrise brings a fresh horizon and endless possibilities to discover.',
   'cosmic-flow': 'Align with the currents of the universe where every motion bends toward fortune.',
   'northern-lights': 'Underneath the dancing skies, true fortune finds those who dare to look up.',
+  'coast-to-coast-tale': 'From sea to sea, every journey holds a story of unexpected fortune waiting to unfold.',
   'flagship-card': 'Some find luck by searching for it. Others create the moment where luck finds them. This rare card marks a journey where possibility, timing, and fortune align.',
 };
 
 export const LUCKY_CARD_RARITY_WEIGHTS = {
-  'number-seeker': 17.5,
-  'iron-horseshoe': 17.5,
-  'emerald-clover': 17.5,
-  'optimists-path': 12.5,
+  'number-seeker': 15.0,
+  'iron-horseshoe': 15.0,
+  'emerald-clover': 15.0,
+  'optimists-path': 10.0,
   'cosmic-flow': 10.0,
   'guiding-star': 10.0,
   'northern-lights': 10.0,
+  'coast-to-coast-tale': 10.0,
   'flagship-card': 5.0,
 };
