@@ -139,7 +139,7 @@ export default function LuckyCardReveal() {
         {isReady && isRevealed && selectedCard && (
           <>
             <div className="text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-xl italic text-gray-800 font-serif">"{selectedCard.quote}"</p>
+              <p className="text-xl italic text-gray-800 font-serif">"{selectedCard.quote || 'Your lucky moment awaits'}"</p>
             </div>
             <LuckyCardShare card={selectedCard} />
           </>
