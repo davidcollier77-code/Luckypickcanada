@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import { useEffect, useRef, useState } from 'react';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
@@ -125,9 +126,11 @@ export default function LuckyCardReveal() {
             className="lucky-moment-card-face lucky-moment-card-back"
             aria-hidden={isRevealed}
           >
-            <img
+            <Image
               src="/IMG_20260728_220305_112042.png"
               alt="Lucky Pick Canada random generator card back"
+              width={704}
+              height={1524}
               loading="lazy"
               style={{ filter: isGenerating ? 'brightness(1.1) drop-shadow(0 0 10px rgba(250, 204, 21, 0.3))' : 'none', transition: 'filter 0.3s ease' }}
             />
@@ -137,10 +140,12 @@ export default function LuckyCardReveal() {
             aria-hidden={!isRevealed}
           >
             {selectedCard && (selectedCard.image ? (
-              <img
+              <Image
                 className="lucky-moment-card-image"
                 src={selectedCard.image}
                 alt={`Lucky Pick Canada card layout for ${selectedCard.title}`}
+                width={704}
+                height={1524}
                 loading="lazy"
                 style={{ transform: isRevealed ? 'scale(1)' : 'scale(0.95)', transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
               />
