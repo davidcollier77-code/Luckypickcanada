@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
-// We keep the import so it doesn't break, but we bypass it below
 import { isLuckyCardTestModeEnabled } from './developer-tools/lucky-card-test-mode/toggle-card-test-mode';
 import LuckyCardShare from './lucky-card-share';
 
@@ -171,16 +170,16 @@ export default function LuckyCardReveal() {
         </div>
       )}
 
-      <div className="lucky-moment-actions">
-        {isReady && (
       <div className="lucky-moment-actions" style={{ position: 'relative', zIndex: 99998, pointerEvents: 'auto' }}>
+        {isReady && (
+          <button
             type="button"
             onClick={handleReveal}
             disabled={isRevealed && !isTestMode}
             className="lucky-moment-reveal-button"
-            style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', position: 'relative', zIndex: 50 }}
-          >
             style={{ position: 'relative', zIndex: 99999, pointerEvents: 'auto', touchAction: 'manipulation', transition: 'all 0.2s ease', WebkitTapHighlightColor: 'transparent' }}
+          >
+            Reveal Your Lucky Moment
           </button>
         )}
         {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
