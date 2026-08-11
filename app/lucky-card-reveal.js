@@ -35,8 +35,27 @@ export default function LuckyCardReveal() {
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnnouncing, setIsAnnouncing] = useState(false);
+  const [timeLeft, setTimeLeft] = useState('');
   const revealTimer = useRef(null);
   const announcementTimer = useRef(null);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight - now;
+
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff / 1000 / 60) % 60);
+      const s = Math.floor((diff / 1000) % 60);
+      setTimeLeft(`${h}h ${m}m ${s}s`);
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const today = localDateKey();
@@ -86,6 +105,25 @@ export default function LuckyCardReveal() {
 
   return (
     <div className="lucky-moment-shell">
+      <div className="mb-6 flex flex-col items-center">
+        {timeLeft && (
+          <div className="text-center font-bold text-gray-700 mb-4 text-lg">
+            Next card available in: {timeLeft}
+          </div>
+        )}
+
+        {isReady && !isRevealed && !isGenerating && !selectedCard && (
+          <button
+            type="button"
+            onClick={triggerCardDraw}
+            disabled={isRevealed || isGenerating}
+            className="lucky-moment-reveal-button"
+          >
+            Reveal Your Lucky Moment
+          </button>
+        )}
+      </div>
+
       <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
         <div className="lucky-moment-card" aria-live="polite">
           <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
@@ -97,18 +135,15 @@ export default function LuckyCardReveal() {
         </div>
       </div>
 
-      <div className="lucky-moment-actions">
-        {isReady && (
-          <button
-            type="button"
-            onClick={triggerCardDraw}
-            disabled={isRevealed || isGenerating}
-            className="lucky-moment-reveal-button"
-          >
-            Reveal Your Lucky Moment
-          </button>
+      <div className="lucky-moment-actions mt-6">
+        {isReady && isRevealed && selectedCard && (
+          <>
+            <div className="text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
+              <p className="text-xl italic text-gray-800 font-serif">"{selectedCard.quote}"</p>
+            </div>
+            <LuckyCardShare card={selectedCard} />
+          </>
         )}
-        {isReady && isRevealed && selectedCard && <LuckyCardShare card={selectedCard} />}
       </div>
     </div>
   );
