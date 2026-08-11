@@ -193,6 +193,10 @@ export default function HomePage() {
           <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook Page">Facebook Page</a>
           <a href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer" aria-label="TikTok">TikTok</a>
         </nav>
+        <nav className="homepage-legal-links" aria-label="Legal links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '16px' }}>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/terms">Terms of Service</Link>
+        </nav>
       </footer>
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onRevealTestStart={(revealType, luckyPickGame) => {
         if (revealType === 'lucky_pick' || revealType === 'gift_package') {
