@@ -30,8 +30,7 @@ function findCard(cardId) {
 }
 
 export default function LuckyCardReveal() {
-  // 1. THE FIX: Force test mode to TRUE so we don't rely on the external file
-  const isTestMode = true; 
+  const isTestMode = isLuckyCardTestModeEnabled();
 
   const [selectedCard, setSelectedCard] = useState(null);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -114,9 +113,9 @@ export default function LuckyCardReveal() {
     }, timing.anticipation);
   };
 
-  // 2. THE FIX: Force the button to unconditionally fire the draw function
   const handleReveal = () => {
-    triggerCardDraw(); 
+    if (isRevealed && !isTestMode) return;
+    triggerCardDraw();
   };
 
   return (
@@ -164,10 +163,10 @@ export default function LuckyCardReveal() {
       {isRevealed && selectedCard && (
         <div className="lucky-moment-details">
           {TIER_MESSAGES[selectedCard.tier] && <p className={`lucky-moment-tier-message lucky-moment-tier-message-${selectedCard.tier}`}>{TIER_MESSAGES[selectedCard.tier]}</p>}
-          <p className="lucky-moment-eyebrow">Today’s collectible card</p>
+          <p className="lucky-moment-eyebrow">Today's collectible card</p>
           <h3>{selectedCard.title}</h3>
           <p className="lucky-moment-quote">
-            “{selectedCard.quote || 'Your approved daily message will appear with this card.'}”
+            "{selectedCard.quote || 'Your approved daily message will appear with this card.'}"
           </p>
         </div>
       )}
@@ -177,9 +176,9 @@ export default function LuckyCardReveal() {
           <button
             type="button"
             onClick={handleReveal}
-            // 3. THE FIX: The 'disabled' property is completely removed for your visual test
+            disabled={isRevealed && !isTestMode}
             className="lucky-moment-reveal-button"
-            style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', position: 'relative', zIndex: 10 }}
           >
             Reveal Your Lucky Moment
           </button>
