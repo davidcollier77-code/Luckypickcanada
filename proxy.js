@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export function middleware(request) {
+export default function proxy(request) {
   const host = request.headers.get('host');
 
   if (host === 'www.luckypickcanada.ca') {
