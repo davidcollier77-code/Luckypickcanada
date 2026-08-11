@@ -19,6 +19,7 @@ const nextConfig = {
   },
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
+  webpack: (config) => config,
   // 301 Redirect for Domain Consistency: route www to non-www
   async redirects() {
     return [
