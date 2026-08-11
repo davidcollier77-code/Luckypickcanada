@@ -178,7 +178,7 @@ export default function LuckyCardReveal() {
             onClick={handleReveal}
             disabled={isRevealed && !isTestMode}
             className="lucky-moment-reveal-button"
-            style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', position: 'relative', zIndex: 10 }}
+            style={{ transition: 'all 0.2s ease', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', position: 'relative', zIndex: 50 }}
           >
             Reveal Your Lucky Moment
           </button>
