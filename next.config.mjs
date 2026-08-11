@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // Disable Turbopack for production builds (Cloudflare Workers compatibility)
+  experimental: {},
   poweredByHeader: false,
   compress: true,
   generateEtags: true,
