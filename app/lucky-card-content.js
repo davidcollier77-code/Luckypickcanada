@@ -8,6 +8,7 @@ export const LUCKY_CARD_IMAGES = {
   'northern-lights': '/IMG_20260730_181802_670354.png',
   'coast-to-coast-tale': '/IMG_20260811_112327_703192.png',
   'flagship-card': '/IMG_20260729_125426_781846.png',
+  'lucky-golden-pick': '/IMG_20260811_121330_480019.png',
 };
 
 export const LUCKY_CARD_QUOTES = {
@@ -20,16 +21,18 @@ export const LUCKY_CARD_QUOTES = {
   'northern-lights': 'Underneath the dancing skies, true fortune finds those who dare to look up.',
   'coast-to-coast-tale': 'From sea to sea, every journey holds a story of unexpected fortune waiting to unfold.',
   'flagship-card': 'Some find luck by searching for it. Others create the moment where luck finds them. This rare card marks a journey where possibility, timing, and fortune align.',
+  'lucky-golden-pick': 'Strike gold in the moments you least expect.',
 };
 
 export const LUCKY_CARD_RARITY_WEIGHTS = {
-  'number-seeker': 15.0,
-  'iron-horseshoe': 15.0,
-  'emerald-clover': 15.0,
-  'optimists-path': 10.0,
-  'cosmic-flow': 10.0,
+  'number-seeker': 12.0,
+  'iron-horseshoe': 12.0,
+  'emerald-clover': 12.0,
+  'optimists-path': 12.0,
+  'cosmic-flow': 12.0,
   'guiding-star': 10.0,
   'northern-lights': 10.0,
   'coast-to-coast-tale': 10.0,
   'flagship-card': 5.0,
+  'lucky-golden-pick': 5.0,
 };
