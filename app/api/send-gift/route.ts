@@ -1,7 +1,10 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Force dynamic rendering to prevent build-time evaluation
+export const dynamic = 'force-dynamic';
+
+const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
 
 export async function POST(req: Request) {
   try {
