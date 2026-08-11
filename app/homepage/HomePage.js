@@ -94,7 +94,7 @@ export default function HomePage() {
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">$4.99 Gift Experience</p>
-            <h2 className="homepage-offer-title">Gift Experience</h2>
+            <h3 className="homepage-offer-title">Gift Experience</h3>
             <p>Send someone special their own LuckyPickCanada experience — a fun digital gift filled with lucky moments.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
             <button type="button" className="homepage-offer-action" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
@@ -119,7 +119,7 @@ export default function HomePage() {
         </article>
         <article id="community-map" className="homepage-community-card homepage-map-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
-          <h2>Community Map</h2>
+          <h2>Lucky Map</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
           <Link href="/map" className="homepage-map-cta">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
         </article>
