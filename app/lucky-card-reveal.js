@@ -31,6 +31,7 @@ export default function LuckyCardReveal() {
   const isTestMode = false;
 
   const [selectedCard, setSelectedCard] = useState(null);
+  const [previousCardId, setPreviousCardId] = useState(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -64,10 +65,17 @@ export default function LuckyCardReveal() {
       const today = localDateKey();
       try {
         const storedReveal = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
-        const storedCard = storedReveal?.revealDate === today ? findCard(storedReveal.cardId) : null;
-        if (storedCard) {
-          setSelectedCard(storedCard);
-          setIsRevealed(true);
+        if (storedReveal) {
+          if (storedReveal.revealDate === today) {
+            const storedCard = findCard(storedReveal.cardId);
+            if (storedCard) {
+              setSelectedCard(storedCard);
+              setIsRevealed(true);
+            }
+          } else {
+            // It's a previous day, store the old card ID so we don't draw it again today
+            setPreviousCardId(storedReveal.cardId);
+          }
         }
       } catch (e) {
         window.localStorage.removeItem(STORAGE_KEY);
@@ -91,7 +99,7 @@ export default function LuckyCardReveal() {
   const triggerCardDraw = () => {
     window.clearTimeout(revealTimer.current);
     window.clearTimeout(announcementTimer.current);
-    const card = selectWeightedLuckyCard();
+    const card = selectWeightedLuckyCard(previousCardId);
     const timing = REVEAL_TIMINGS[card.tier] || REVEAL_TIMINGS.standard;
     setSelectedCard(card);
     setIsRevealed(false);
