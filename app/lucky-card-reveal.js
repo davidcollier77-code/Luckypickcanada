@@ -40,36 +40,40 @@ export default function LuckyCardReveal() {
   const announcementTimer = useRef(null);
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const midnight = new Date();
-      midnight.setHours(24, 0, 0, 0);
-      const diff = midnight - now;
+    if (typeof window !== 'undefined') {
+      const calculateTimeLeft = () => {
+        const now = new Date();
+        const midnight = new Date();
+        midnight.setHours(24, 0, 0, 0);
+        const diff = midnight - now;
 
-      const h = Math.floor(diff / (1000 * 60 * 60));
-      const m = Math.floor((diff / 1000 / 60) % 60);
-      const s = Math.floor((diff / 1000) % 60);
-      setTimeLeft(`${h}h ${m}m ${s}s`);
-    };
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff / 1000 / 60) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        setTimeLeft(`${h}h ${m}m ${s}s`);
+      };
 
-    calculateTimeLeft();
-    const interval = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(interval);
+      calculateTimeLeft();
+      const interval = setInterval(calculateTimeLeft, 1000);
+      return () => clearInterval(interval);
+    }
   }, []);
 
   useEffect(() => {
-    const today = localDateKey();
-    try {
-      const storedReveal = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
-      const storedCard = storedReveal?.revealDate === today ? findCard(storedReveal.cardId) : null;
-      if (storedCard) {
-        setSelectedCard(storedCard);
-        setIsRevealed(true);
+    if (typeof window !== 'undefined') {
+      const today = localDateKey();
+      try {
+        const storedReveal = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
+        const storedCard = storedReveal?.revealDate === today ? findCard(storedReveal.cardId) : null;
+        if (storedCard) {
+          setSelectedCard(storedCard);
+          setIsRevealed(true);
+        }
+      } catch (e) {
+        window.localStorage.removeItem(STORAGE_KEY);
       }
-    } catch (e) {
-      window.localStorage.removeItem(STORAGE_KEY);
+      setIsReady(true);
     }
-    setIsReady(true);
   }, []);
 
   function showLuckyCard(card) {
@@ -105,10 +109,10 @@ export default function LuckyCardReveal() {
 
   return (
     <div className="lucky-moment-shell">
-      <div className="mb-6 flex flex-col items-center">
+      <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto">
         {timeLeft && (
           <div className="text-center font-bold text-gray-700 mb-4 text-lg">
-            Next card available in: {timeLeft}
+            Resets in: {timeLeft}
           </div>
         )}
 
@@ -135,7 +139,7 @@ export default function LuckyCardReveal() {
         </div>
       </div>
 
-      <div className="lucky-moment-actions mt-6">
+      <div className="lucky-moment-actions mt-6 relative z-10 pointer-events-auto">
         {isReady && isRevealed && selectedCard && (
           <>
             <div className="text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
