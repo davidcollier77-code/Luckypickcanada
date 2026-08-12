@@ -24,24 +24,29 @@ export const LUCKY_CARDS = CARD_DEFINITIONS.map(([id, title, isReveal, tier]) =>
   rarityWeight: LUCKY_CARD_RARITY_WEIGHTS[id]
 }));
 
-export function selectWeightedLuckyCard() {
+export function selectWeightedLuckyCard(previousCardId = null) {
   const isTestMode = isLuckyCardTestModeEnabled();
+
+  let availableCards = LUCKY_CARDS;
+  if (previousCardId && availableCards.length > 1) {
+    availableCards = availableCards.filter(card => card.id !== previousCardId);
+  }
 
   if (isTestMode) {
     // During test mode, randomly select any card to make testing all states easy
-    const randomIndex = Math.floor(Math.random() * LUCKY_CARDS.length);
-    return LUCKY_CARDS[randomIndex];
+    const randomIndex = Math.floor(Math.random() * availableCards.length);
+    return availableCards[randomIndex];
   }
 
-  const totalWeight = LUCKY_CARDS.reduce((sum, card) => sum + card.rarityWeight, 0);
+  const totalWeight = availableCards.reduce((sum, card) => sum + card.rarityWeight, 0);
   let randomValue = Math.random() * totalWeight;
 
-  for (const card of LUCKY_CARDS) {
+  for (const card of availableCards) {
     if (randomValue < card.rarityWeight) {
       return card;
     }
     randomValue -= card.rarityWeight;
   }
 
-  return LUCKY_CARDS[0]; // Fallback to first card if something goes wrong
+  return availableCards[0]; // Fallback to first card if something goes wrong
 }
