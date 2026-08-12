@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import MidnightCountdown from '../../components/midnight-countdown';
 
 const CANADIAN_FORTUNES = [
   "Like an aurora over the North, your brightest moment can arrive when you least expect it.",
@@ -40,7 +41,6 @@ export default function LuckyMeterPage() {
   const [luckPercentage, setLuckPercentage] = useState(null);
   const [fortune, setFortune] = useState('');
   const [statusText, setStatusText] = useState('METER STANDBY');
-  const [timeLeft, setTimeLeft] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
   const [shareStatus, setShareStatus] = useState('');
@@ -48,26 +48,6 @@ export default function LuckyMeterPage() {
   // Values for animation target
   const [targetLuck, setTargetLuck] = useState(null);
   const [targetQuote, setTargetQuote] = useState(null);
-
-  // Daily Countdown Timer to Midnight
-  useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date();
-      const midnight = new Date();
-      midnight.setHours(24, 0, 0, 0);
-      const diff = midnight - now;
-
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / 1000 / 60) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Sky Starfield & Shooting Stars Canvas Animation
   useEffect(() => {
@@ -560,7 +540,7 @@ export default function LuckyMeterPage() {
           <div className="mt-4 inline-flex items-center gap-2 bg-[#02070c]/95 border border-[#eeb83f]/20 px-5 py-2 rounded-full text-xs font-semibold text-[#fff1b2] shadow-[0_6px_20px_rgba(0,0,0,0.5)]">
             <span className="opacity-75">Resets in:</span>
             <span className="font-mono text-[#e8ba52] text-sm tracking-widest bg-[#030507] px-2.5 py-0.5 rounded border border-[#e8ba52]/20 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]">
-              {timeLeft || '00h 00m 00s'}
+              <MidnightCountdown />
             </span>
           </div>
         </div>

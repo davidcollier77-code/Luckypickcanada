@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
+import MidnightCountdown from '../components/midnight-countdown';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
 const REVEAL_TIMINGS = {
@@ -36,29 +37,8 @@ export default function LuckyCardReveal() {
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnnouncing, setIsAnnouncing] = useState(false);
-  const [timeLeft, setTimeLeft] = useState('');
   const revealTimer = useRef(null);
   const announcementTimer = useRef(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const calculateTimeLeft = () => {
-        const now = new Date();
-        const midnight = new Date();
-        midnight.setHours(24, 0, 0, 0);
-        const diff = midnight - now;
-
-        const h = Math.floor(diff / (1000 * 60 * 60));
-        const m = Math.floor((diff / 1000 / 60) % 60);
-        const s = Math.floor((diff / 1000) % 60);
-        setTimeLeft(`${h}h ${m}m ${s}s`);
-      };
-
-      calculateTimeLeft();
-      const interval = setInterval(calculateTimeLeft, 1000);
-      return () => clearInterval(interval);
-    }
-  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -118,11 +98,9 @@ export default function LuckyCardReveal() {
   return (
     <div className="lucky-moment-shell">
       <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto">
-        {timeLeft && (
-          <div className="text-center font-bold text-gray-700 mb-4 text-lg">
-            Resets in: {timeLeft}
-          </div>
-        )}
+        <div className="text-center font-bold text-gray-700 mb-4 text-lg">
+          Resets in: <MidnightCountdown fallback="--h --m --s" />
+        </div>
 
         {isReady && !isRevealed && !isGenerating && !selectedCard && (
           <button
