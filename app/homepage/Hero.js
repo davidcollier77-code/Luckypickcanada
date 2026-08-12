@@ -13,10 +13,6 @@ export default function Hero() {
     <section id="top" className="aurora-stage homepage-hero hero-container" aria-labelledby="hero-title">
       <div className="aurora-stage-glow" aria-hidden="true" />
       <nav className="hero-nav" aria-label="Primary navigation">
-        <a className="hero-brand" href="#top" aria-label="Lucky Pick Canada home">
-          <img src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada primary branding logo" width="72" height="72" />
-          <span>Lucky Pick Canada</span>
-        </a>
         <div className="hero-nav-links">
           {heroLinks.map(({ href, label, external }) => (
             <a key={href} href={href} className="hero-nav-link" {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
@@ -27,6 +23,10 @@ export default function Hero() {
       </nav>
 
       <div className="hero-content">
+        <a className="hero-brand" href="#top" aria-label="Lucky Pick Canada home">
+          <img src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada primary branding logo" width="72" height="72" />
+          <span>Lucky Pick Canada</span>
+        </a>
         <div className="hero-emblem-wrapper">
           <div className="sparkles-layer" aria-hidden="true">
             <div className="sparkle sparkle-1"></div>
@@ -39,7 +39,7 @@ export default function Hero() {
           <img className="hero-emblem" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada emblem showing maple leaf and clover design" width="460" height="460" />
         </div>
         <div className="hero-text-panel">
-          <p className="hero-kicker !mt-0 tracking-widest">A little Canadian magic made for today</p>
+          <p className="hero-kicker !mt-0 tracking-widest">A little Canadian magic made for today — discover your luck & share the magic.</p>
           <h1 id="hero-title" className="gold-3d drop-shadow-lg">Your daily lucky moment.</h1>
           <p className="hero-copy text-lg sm:text-xl !mb-2">A Canadian digital entertainment experience focused on lucky moments, positive messages, personalized picks, and community stories.</p>
           <p className="hero-supporting-copy text-base sm:text-lg !mb-4">LuckyPickCanada is a digital entertainment experience created for fun, positive moments, and community connection. Discover your daily lucky moment, explore personalized picks, share stories, and enjoy a little Canadian magic every day.</p>
