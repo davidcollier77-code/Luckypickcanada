@@ -40,46 +40,40 @@ export default function LuckyCardReveal() {
   const announcementTimer = useRef(null);
 
   useEffect(() => {
-    // Client-side guard for Cloudflare/Next.js hydration safety
-    if (typeof window === 'undefined') {
-      return;
+    if (typeof window !== 'undefined') {
+      const calculateTimeLeft = () => {
+        const now = new Date();
+        const midnight = new Date();
+        midnight.setHours(24, 0, 0, 0);
+        const diff = midnight - now;
+
+        const h = Math.floor(diff / (1000 * 60 * 60));
+        const m = Math.floor((diff / 1000 / 60) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        setTimeLeft(`${h}h ${m}m ${s}s`);
+      };
+
+      calculateTimeLeft();
+      const interval = setInterval(calculateTimeLeft, 1000);
+      return () => clearInterval(interval);
     }
-
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const midnight = new Date();
-      midnight.setHours(24, 0, 0, 0);
-      const diff = midnight - now;
-
-      const h = Math.floor(diff / (1000 * 60 * 60));
-      const m = Math.floor((diff / 1000 / 60) % 60);
-      const s = Math.floor((diff / 1000) % 60);
-      setTimeLeft(`${h}h ${m}m ${s}s`);
-    };
-
-    calculateTimeLeft();
-    const interval = setInterval(calculateTimeLeft, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    // Client-side guard for Cloudflare/Next.js hydration safety
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const today = localDateKey();
-    try {
-      const storedReveal = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
-      const storedCard = storedReveal?.revealDate === today ? findCard(storedReveal.cardId) : null;
-      if (storedCard) {
-        setSelectedCard(storedCard);
-        setIsRevealed(true);
+    if (typeof window !== 'undefined') {
+      const today = localDateKey();
+      try {
+        const storedReveal = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
+        const storedCard = storedReveal?.revealDate === today ? findCard(storedReveal.cardId) : null;
+        if (storedCard) {
+          setSelectedCard(storedCard);
+          setIsRevealed(true);
+        }
+      } catch (e) {
+        window.localStorage.removeItem(STORAGE_KEY);
       }
-    } catch (e) {
-      window.localStorage.removeItem(STORAGE_KEY);
+      setIsReady(true);
     }
-    setIsReady(true);
   }, []);
 
   function showLuckyCard(card) {
