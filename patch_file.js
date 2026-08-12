@@ -1,4 +1,13 @@
-'use client';
+const fs = require('fs');
+let code = fs.readFileSync('app/lucky-card-reveal.js', 'utf8');
+
+// The original file before I modified it had:
+// className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto"
+// text-[rgba(255,245,218,0.76)] mb-4 text-sm tracking-wide
+
+// I will overwrite it with the complete file string that incorporates all the fixes asked by the user, and respects the layout.
+
+const fullCode = `'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
@@ -20,7 +29,7 @@ function localDateKey(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return \`\${year}-\${month}-\${day}\`;
 }
 
 function findCard(cardId) {
@@ -49,7 +58,7 @@ export default function LuckyCardReveal() {
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff / 1000 / 60) % 60);
       const s = Math.floor((diff / 1000) % 60);
-      setTimeLeft(`${h}h ${m}m ${s}s`);
+      setTimeLeft(\`\${h}h \${m}m \${s}s\`);
     };
 
     calculateTimeLeft();
@@ -124,7 +133,7 @@ export default function LuckyCardReveal() {
         )}
       </div>
 
-      <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
+      <div className={\`lucky-moment-stage lucky-moment-tier-\${selectedCard?.tier || 'standard'}\${isRevealed ? ' is-revealed' : ''}\${isGenerating ? ' is-generating' : ''}\${isAnnouncing ? ' is-announcing' : ''}\`}>
         <div className="lucky-moment-card" aria-live="polite">
           <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
             <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" />
@@ -148,3 +157,5 @@ export default function LuckyCardReveal() {
     </div>
   );
 }
+`;
+fs.writeFileSync('app/lucky-card-reveal.js', fullCode, 'utf8');

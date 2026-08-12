@@ -1,0 +1,47 @@
+<<<<<<< SEARCH
+  return (
+    <div className="lucky-moment-shell">
+      <div className="mb-6 flex flex-col items-center">
+        {timeLeft && (
+          <div className="text-center font-bold text-gray-700 mb-4 text-lg">
+            Next card available in: {timeLeft}
+          </div>
+        )}
+
+        {isReady && !isRevealed && !isGenerating && !selectedCard && (
+          <button
+            type="button"
+            onClick={triggerCardDraw}
+            disabled={isRevealed || isGenerating}
+            className="lucky-moment-reveal-button"
+          >
+            Reveal Your Lucky Moment
+          </button>
+        )}
+      </div>
+
+      <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
+=======
+  return (
+    <div className="lucky-moment-shell">
+      <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto">
+        {isReady && timeLeft && (
+          <div className="text-center font-bold text-[rgba(255,245,218,0.76)] mb-4 text-sm tracking-wide">
+            Resets in: {timeLeft}
+          </div>
+        )}
+
+        {isReady && !isRevealed && !isGenerating && !selectedCard && (
+          <button
+            type="button"
+            onClick={triggerCardDraw}
+            disabled={isRevealed || isGenerating}
+            className="lucky-moment-reveal-button"
+          >
+            Reveal Your Lucky Moment
+          </button>
+        )}
+      </div>
+
+      <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
+>>>>>>> REPLACE
