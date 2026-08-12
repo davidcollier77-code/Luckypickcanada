@@ -9,10 +9,10 @@ html { scroll-behavior: smooth; }
   overflow: hidden;
   padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 5vw, 5rem) clamp(3.5rem, 9vw, 7rem);
   background:
-    radial-gradient(circle at 50% 13%, rgba(255, 209, 84, .26), transparent 19%),
-    radial-gradient(ellipse at 12% 73%, rgba(77, 190, 139, .3), transparent 36%),
-    radial-gradient(ellipse at 88% 63%, rgba(117, 82, 220, .31), transparent 37%),
-    linear-gradient(155deg, #080d25 0%, #11143c 48%, #07121b 100%);
+    radial-gradient(circle at 50% 13%, rgba(255, 209, 84, .15), transparent 19%),
+    radial-gradient(ellipse at 12% 73%, rgba(77, 190, 139, .15), transparent 36%),
+    radial-gradient(ellipse at 88% 63%, rgba(117, 82, 220, .15), transparent 37%),
+    linear-gradient(155deg, #030612 0%, #07091a 48%, #020609 100%);
 }
 
 .hero-container {
@@ -59,7 +59,24 @@ html { scroll-behavior: smooth; }
 .hero-nav-link:hover, .hero-nav-link:focus-visible { color: #ffe483; text-shadow: 0 0 14px rgba(255, 218, 118, .8); }
 
 .hero-content { display: grid; justify-items: center; align-content: center; flex: 1; max-width: 900px; padding-top: clamp(3rem, 8vw, 6rem); text-align: center; }
-.hero-emblem { display: block; width: clamp(230px, 35vw, 460px); height: auto; max-width: min(460px, 92vw); object-fit: contain; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .35)); }
+.hero-emblem-wrapper { position: relative; display: inline-block; }
+.hero-emblem { position: relative; z-index: 2; display: block; width: clamp(230px, 35vw, 460px); height: auto; max-width: min(460px, 92vw); object-fit: contain; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .35)); }
+
+/* Sparkles Animation styles */
+.sparkles-layer { position: absolute; inset: -20%; z-index: 1; pointer-events: none; }
+.sparkle { position: absolute; color: #ffe894; font-size: 1.2rem; filter: drop-shadow(0 0 8px #ffdf70); opacity: 0; animation: sparkle-float 4s infinite ease-in-out; }
+.sparkle-1 { top: 15%; left: 10%; font-size: 1.8rem; animation-delay: 0s; }
+.sparkle-2 { top: 5%; right: 20%; font-size: 1.2rem; animation-delay: 1.2s; }
+.sparkle-3 { bottom: 20%; left: 5%; font-size: 1.4rem; animation-delay: 2.1s; }
+.sparkle-4 { bottom: 10%; right: 15%; font-size: 2rem; animation-delay: 0.7s; }
+.sparkle-5 { top: 45%; right: -5%; font-size: 1.1rem; animation-delay: 2.8s; }
+.sparkle-6 { bottom: 45%; left: -5%; font-size: 1.5rem; animation-delay: 1.7s; }
+
+@keyframes sparkle-float {
+  0% { opacity: 0; transform: translateY(0) scale(0.5); }
+  50% { opacity: 1; transform: translateY(-15px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-30px) scale(0.5); }
+}
 .hero-kicker { margin: clamp(1.2rem, 3vw, 1.8rem) 0 .55rem; color: #fbdfa0; font-family: var(--lpc-display, sans-serif); font-size: clamp(.72rem, 1.4vw, 1rem); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .gold-3d { max-width: 100%; margin: 0; color: #f8cf64; font-family: var(--lpc-display, sans-serif); font-size: clamp(2.6rem, 8vw, 6.7rem); font-weight: 950; letter-spacing: -.075em; line-height: .9; text-shadow: 0 2px #fff1ae, 0 5px #bf7615, 0 11px 20px rgba(0,0,0,.55); }
 .hero-copy { max-width: 600px; margin: 1rem auto 1.5rem; color: rgba(255, 251, 236, .94); font-size: clamp(.98rem, 1.7vw, 1.18rem); font-weight: 600; line-height: 1.55; }
@@ -94,7 +111,7 @@ html { scroll-behavior: smooth; }
 .hero-supporting-copy { max-width: 720px; margin: 0 auto 1.5rem; color: rgba(255, 248, 221, .82); font-size: clamp(.88rem, 1.45vw, 1rem); line-height: 1.55; }
 
 @media (max-width: 680px) {
-  .hero-nav { position: sticky; top: .5rem; z-index: 30; padding: .65rem .75rem; border: 1px solid rgba(255, 224, 135, .2); border-radius: 14px; background: rgba(8, 13, 37, .96); box-shadow: 0 10px 28px rgba(0, 0, 0, .28); }
+  .hero-nav { position: sticky; top: .5rem; z-index: 30; padding: .65rem .75rem; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px; background: rgba(8, 13, 37, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 28px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
   .hero-supporting-copy { margin-bottom: 1rem; line-height: 1.45; }
 }
 
