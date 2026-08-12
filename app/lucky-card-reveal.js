@@ -40,6 +40,11 @@ export default function LuckyCardReveal() {
   const announcementTimer = useRef(null);
 
   useEffect(() => {
+    // Client-side guard for Cloudflare/Next.js hydration safety
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const calculateTimeLeft = () => {
       const now = new Date();
       const midnight = new Date();
@@ -58,6 +63,11 @@ export default function LuckyCardReveal() {
   }, []);
 
   useEffect(() => {
+    // Client-side guard for Cloudflare/Next.js hydration safety
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const today = localDateKey();
     try {
       const storedReveal = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || 'null');
@@ -106,7 +116,7 @@ export default function LuckyCardReveal() {
   return (
     <div className="lucky-moment-shell">
       <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto">
-        {isReady && timeLeft && (
+        {timeLeft && (
           <div className="text-center font-bold text-gray-700 mb-4 text-lg">
             Resets in: {timeLeft}
           </div>
