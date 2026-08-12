@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.1",
-    "framer-motion": "latest",
+    "framer-motion": "^13.1.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",

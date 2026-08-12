@@ -49,8 +49,7 @@ body::before {
 }
 
 .text-gold-gradient {
-  background: linear-gradient(180deg, #FFF5C0 0%, #F59E0B 45%, #B45309 85%, #78350F 100%);
+  background: linear-gradient(180deg, #FFF5C0 0%, #FDC830 30%, #F37335 70%, #904000 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.8));
 }
