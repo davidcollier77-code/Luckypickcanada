@@ -18,8 +18,8 @@ export default function Hero() {
         <Image
           src="/hero-background-high-def.jpg"
           layout="fill"
-          objectFit="cover"
-          alt="Deep midnight blue starry sky with green aurora and golden sparks"
+          fill
+          className="object-cover"
           priority
         />
       </div>
