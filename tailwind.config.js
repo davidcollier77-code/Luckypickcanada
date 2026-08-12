@@ -12,6 +12,13 @@ module.exports = {
         serif: ['"Playfair Display"', 'Georgia', 'serif'],
         sans: ['Inter', 'sans-serif'],
       },
+      dropShadow: {
+        '3d': [
+          '0 2px 2px rgba(0,0,0,0.8)',
+          '0 4px 6px rgba(0,0,0,0.5)',
+          '0 8px 12px rgba(0,0,0,0.4)',
+        ]
+      },
       animation: {
         'spin-slow': 'spin 25s linear infinite',
         'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
