@@ -18,26 +18,47 @@ export default function Hero() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
+    // Initialize stars array first
+    const stars = [];
+    let prevWidth = window.innerWidth;
+    let prevHeight = window.innerHeight;
+
+    const initStars = (width, height) => {
+      const numStars = Math.floor((width * height) / 1000); // High density
+      stars.length = 0; // Clear existing stars
+      for (let i = 0; i < numStars; i++) {
+        stars.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 0.8 + 0.2, // 0.2 to 1.0 (so 1-2px diameter)
+          alpha: Math.random() * 0.7 + 0.2, // 0.2 to 0.9
+          twinkleSpeed: Math.random() * 0.02 + 0.005,
+          twinkleDir: Math.random() > 0.5 ? 1 : -1
+        });
+      }
+    };
+
     const resizeCanvas = () => {
+      const oldWidth = canvas.width;
+      const oldHeight = canvas.height;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+
+      // Recalculate star positions proportionally if stars exist
+      if (stars.length > 0 && oldWidth > 0 && oldHeight > 0) {
+        const widthRatio = canvas.width / oldWidth;
+        const heightRatio = canvas.height / oldHeight;
+        stars.forEach(star => {
+          star.x *= widthRatio;
+          star.y *= heightRatio;
+        });
+      }
     };
+
+    // Initialize stars before setting up resize
+    initStars(window.innerWidth, window.innerHeight);
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-
-    const stars = [];
-    const numStars = Math.floor((window.innerWidth * window.innerHeight) / 1000); // High density
-
-    for (let i = 0; i < numStars; i++) {
-      stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 0.8 + 0.2, // 0.2 to 1.0 (so 1-2px diameter)
-        alpha: Math.random() * 0.7 + 0.2, // 0.2 to 0.9
-        twinkleSpeed: Math.random() * 0.02 + 0.005,
-        twinkleDir: Math.random() > 0.5 ? 1 : -1
-      });
-    }
 
     let animationFrameId;
 
