@@ -45,10 +45,12 @@
 /* The card stays straight and unobstructed; details live below the artwork. */
 .lucky-moment-shell { display: grid; justify-items: center; gap: 1rem; width: 100%; max-width: 100%; min-width: 0; }
 .lucky-moment-stage { position: relative; width: min(100%, 18rem); max-width: 100%; isolation: isolate; }
-.lucky-moment-card { position: relative; width: 100%; aspect-ratio: 840 / 1184; min-width: 0; overflow: hidden; border: 1px solid rgba(255, 234, 172, .42); border-radius: 12px; background: #081614; box-shadow: inset 0 1px rgba(255, 255, 255, .18), inset 0 -1px rgba(0, 0, 0, .45), 0 14px 24px rgba(0, 0, 0, .38); }
+.lucky-moment-card { position: relative; width: 100%; aspect-ratio: 384 / 688; min-width: 0; overflow: hidden; border: 1px solid rgba(255, 234, 172, .42); border-radius: 12px; background: #081614; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+.lucky-moment-card::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05); }
 .lucky-moment-card-face { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; transition: opacity .2s ease; }
-.lucky-moment-card-back img, .lucky-moment-card-image { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lucky-moment-card-back img, .lucky-moment-card-image { display: block; width: 100%; height: 100%; object-fit: cover; image-rendering: high-quality; -webkit-font-smoothing: antialiased; }
 .lucky-moment-card-front { opacity: 0; pointer-events: none; }
+.lucky-moment-card-front::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.12) 25%, rgba(255, 255, 255, 0.08) 28%, transparent 34%); mix-blend-mode: overlay; opacity: 0.6; }
 .lucky-moment-stage.is-revealed .lucky-moment-card-back { opacity: 0; }
 .lucky-moment-stage.is-revealed .lucky-moment-card-front { opacity: 1; animation: lucky-moment-card-reveal .56s ease-out both; }
 .lucky-moment-card-image, .lucky-moment-artwork-placeholder { position: absolute; inset: 0; }
@@ -63,7 +65,7 @@
 .lucky-moment-reveal-button { width: 100%; max-width: 100%; padding: .78rem 1rem; border: 1px solid #ffe2a0; border-radius: 999px; color: #0a1918; background: linear-gradient(135deg, #fff6c7, #f4c958); font-weight: 900; cursor: pointer; }
 .lucky-moment-reveal-button:disabled { cursor: wait; opacity: .82; }
 .lucky-moment-instruction { margin: 0; color: rgba(255, 245, 218, .76); font-size: .82rem; text-align: center; }
-@keyframes lucky-moment-generate { 0%, 100% { transform: translateX(0) scale(1); } 12% { transform: translateX(-2px) scale(1.004); } 24% { transform: translateX(3px) scale(1.009); } 38% { transform: translateX(-3px) scale(1.006); } 52% { transform: translateX(2px) scale(1.012); } 68% { transform: translateX(-1px) scale(1.007); } 84% { transform: translateX(1px) scale(1.014); } }
+@keyframes lucky-moment-generate { 0%, 100% { transform: translateX(0) scale(1); } 12% { transform: translateX(-1px) scale(1.002); } 24% { transform: translateX(2px) scale(1.004); } 38% { transform: translateX(-2px) scale(1.003); } 52% { transform: translateX(1px) scale(1.005); } 68% { transform: translateX(-1px) scale(1.003); } 84% { transform: translateX(1px) scale(1.006); } }
 @keyframes lucky-moment-aura { from { opacity: .42; } to { opacity: .78; } }
 @keyframes lucky-moment-card-reveal { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .lucky-moment-stage.is-generating::after, .lucky-moment-stage.is-generating .lucky-moment-card, .lucky-moment-stage.is-revealed .lucky-moment-card-front { animation: none; } }
@@ -98,9 +100,9 @@
 @keyframes lucky-moment-premium-aura { 0% { opacity: 0; transform: scale(.9); } 42% { opacity: .9; transform: scale(1.04); } 100% { opacity: .65; transform: scale(1); } }
 @keyframes lucky-moment-flagship-aurora { 0%, 18% { opacity: 0; transform: scale(.85) rotate(-8deg); } 50% { opacity: .72; transform: scale(1.04) rotate(3deg); } 78% { opacity: 1; transform: scale(1.08) rotate(-2deg); } 100% { opacity: .74; transform: scale(1); } }
 @keyframes lucky-moment-light-pulse { 0%, 100% { opacity: .38; } 50% { opacity: 1; } }
-@keyframes lucky-moment-premium-generate { 0%, 100% { transform: translateX(0) rotate(0); } 16% { transform: translateX(-2px) rotate(-.35deg); } 31% { transform: translateX(3px) rotate(.45deg); } 49% { transform: translateX(-4px) rotate(-.55deg); } 67% { transform: translateX(3px) rotate(.4deg); } 84% { transform: translateX(-1px) rotate(-.16deg); } }
-@keyframes lucky-moment-flagship-generate { 0%, 16% { transform: translateX(0) rotate(0); } 28% { transform: translateX(-2px) rotate(-.28deg); } 40% { transform: translateX(3px) rotate(.42deg); } 53% { transform: translateX(-5px) rotate(-.62deg); } 67% { transform: translateX(4px) rotate(.52deg); } 80% { transform: translateX(-3px) rotate(-.34deg); } 91% { transform: translateX(1px) rotate(.14deg); } 100% { transform: translateX(0) rotate(0); } }
-@keyframes lucky-moment-card-flip-reveal { 0% { opacity: 0; transform: perspective(1000px) rotateY(-16deg); filter: brightness(1.35); } 55% { opacity: 1; filter: brightness(1.15); } 100% { opacity: 1; transform: perspective(1000px) rotateY(0); filter: brightness(1); } }
+@keyframes lucky-moment-premium-generate { 0%, 100% { transform: translateX(0) rotate(0); } 16% { transform: translateX(-1px) rotate(-.15deg); } 31% { transform: translateX(2px) rotate(.2deg); } 49% { transform: translateX(-2px) rotate(-.25deg); } 67% { transform: translateX(1px) rotate(.2deg); } 84% { transform: translateX(-1px) rotate(-.08deg); } }
+@keyframes lucky-moment-flagship-generate { 0%, 16% { transform: translateX(0) rotate(0); } 28% { transform: translateX(-1px) rotate(-.1deg); } 40% { transform: translateX(2px) rotate(.15deg); } 53% { transform: translateX(-2px) rotate(-.2deg); } 67% { transform: translateX(2px) rotate(.18deg); } 80% { transform: translateX(-1px) rotate(-.1deg); } 91% { transform: translateX(1px) rotate(.05deg); } 100% { transform: translateX(0) rotate(0); } }
+@keyframes lucky-moment-card-flip-reveal { 0% { opacity: 0; transform: perspective(1000px) rotateY(-10deg) scale(0.95); filter: brightness(1.35); } 55% { opacity: 1; filter: brightness(1.1); transform: perspective(1000px) rotateY(-2deg) scale(1.02); } 100% { opacity: 1; transform: perspective(1000px) rotateY(0) scale(1); filter: brightness(1); } }
 @media (prefers-reduced-motion: reduce) { .lucky-moment-stage::before, .lucky-moment-stage::after, .lucky-moment-tier-premium.is-generating .lucky-moment-card, .lucky-moment-tier-flagship.is-generating .lucky-moment-card, .lucky-moment-tier-premium.is-revealed .lucky-moment-card-front, .lucky-moment-tier-flagship.is-revealed .lucky-moment-card-front { animation: none; } }
 
 /* Keep the three purchase offer cards free of decorative artwork. */
