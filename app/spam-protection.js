@@ -16,15 +16,19 @@ function now() {
 }
 
 function getClientIp(request) {
+  // Prefer cf-connecting-ip as it is trustworthy when running behind Cloudflare
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  if (cfConnectingIp) {
+    return cfConnectingIp.trim();
+  }
+
   const forwardedFor = request.headers.get('x-forwarded-for');
 
   if (forwardedFor) {
     return forwardedFor.split(',')[0].trim();
   }
 
-  return request.headers.get('cf-connecting-ip')
-    || request.headers.get('x-real-ip')
-    || 'unknown';
+  return request.headers.get('x-real-ip') || 'unknown';
 }
 
 function pruneExpiredEntries() {

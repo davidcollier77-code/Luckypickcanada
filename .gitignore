@@ -10,3 +10,5 @@ build/
 .env.production.local
 __pycache__/
 .pytest_cache/
+venv/
+test-venv/
