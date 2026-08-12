@@ -48,7 +48,7 @@
 .lucky-moment-card { position: relative; width: 100%; aspect-ratio: 384 / 688; min-width: 0; overflow: hidden; border: 1px solid rgba(255, 234, 172, .42); border-radius: 12px; background: #081614; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
 .lucky-moment-card::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05); }
 .lucky-moment-card-face { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; transition: opacity .2s ease; }
-.lucky-moment-card-back img, .lucky-moment-card-image { display: block; width: 100%; height: 100%; object-fit: cover; image-rendering: high-quality; -webkit-font-smoothing: antialiased; }
+.lucky-moment-card-back img, .lucky-moment-card-image { display: block; width: 100%; height: 100%; object-fit: cover; }
 .lucky-moment-card-front { opacity: 0; pointer-events: none; }
 .lucky-moment-card-front::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.12) 25%, rgba(255, 255, 255, 0.08) 28%, transparent 34%); mix-blend-mode: overlay; opacity: 0.6; }
 .lucky-moment-stage.is-revealed .lucky-moment-card-back { opacity: 0; }
