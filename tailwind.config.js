@@ -22,11 +22,19 @@ module.exports = {
       animation: {
         'spin-slow': 'spin 25s linear infinite',
         'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+        'aurora-1': 'auroraWave 20s ease-in-out infinite alternate',
+        'aurora-2': 'auroraWave 25s ease-in-out infinite alternate-reverse',
+        'aurora-3': 'auroraWave 30s ease-in-out infinite alternate',
       },
       keyframes: {
         pulseGlow: {
           '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
           '50%': { opacity: 1, transform: 'scale(1.03)' },
+        },
+        auroraWave: {
+          '0%': { transform: 'translateY(0) scaleX(1)', opacity: 0.3 },
+          '50%': { transform: 'translateY(-5%) scaleX(1.05)', opacity: 0.5 },
+          '100%': { transform: 'translateY(2%) scaleX(0.95)', opacity: 0.3 },
         }
       },
       colors: {
