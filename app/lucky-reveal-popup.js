@@ -42,6 +42,8 @@ const dialogStyle = {
   padding: 'clamp(1.5rem, 5vw, 2.5rem)',
   borderRadius: 28,
   color: '#fff7d6',
+  backdropFilter: 'blur(24px)',
+  WebkitBackdropFilter: 'blur(24px)',
 };
 
 const themeGlows = {
@@ -159,7 +161,7 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
     ...dialogStyle,
     borderColor: theme.borderColor,
     boxShadow: theme.boxShadow,
-    background: `${theme.radialGlow}, radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%), linear-gradient(180deg, #020617 0%, #030712 100%)`,
+    background: `${theme.radialGlow}, radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.12) 0%, transparent 50%), linear-gradient(180deg, rgba(2, 6, 23, 0.65) 0%, rgba(3, 7, 18, 0.75) 100%)`,
   };
 
   return (
@@ -223,8 +225,8 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
           }
 
           @keyframes lucky-twinkle {
-            0%, 100% { opacity: 0.15; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.2); }
+            0%, 100% { opacity: 0.2; transform: scale(0.8); filter: blur(1px); }
+            50% { opacity: 0.9; transform: scale(1.3); filter: blur(2px); }
           }
 
           @keyframes lucky-premium-fade-in {
@@ -257,26 +259,41 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 28, pointerEvents: 'none' }}>
           <div style={{
             position: 'absolute',
-            top: '-20%',
+            top: '-25%',
             left: '-20%',
-            width: '100%',
-            height: '100%',
+            width: '110%',
+            height: '110%',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, rgba(45, 212, 191, 0.1) 50%, transparent 80%)',
-            filter: 'blur(45px)',
-            animation: 'lucky-aurora-glow-1 14s ease-in-out infinite'
+            background: 'radial-gradient(ellipse at center, rgba(16, 185, 129, 0.25) 0%, rgba(45, 212, 191, 0.15) 40%, transparent 75%)',
+            filter: 'blur(60px)',
+            animation: 'lucky-aurora-glow-1 16s ease-in-out infinite alternate',
+            mixBlendMode: 'screen'
           }} />
 
           <div style={{
             position: 'absolute',
-            top: '-30%',
-            right: '-20%',
-            width: '100%',
-            height: '100%',
+            top: '-35%',
+            right: '-25%',
+            width: '115%',
+            height: '115%',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, rgba(59, 130, 246, 0.1) 60%, transparent 80%)',
-            filter: 'blur(50px)',
-            animation: 'lucky-aurora-glow-2 18s ease-in-out infinite'
+            background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.12) 45%, transparent 75%)',
+            filter: 'blur(65px)',
+            animation: 'lucky-aurora-glow-2 20s ease-in-out infinite alternate',
+            mixBlendMode: 'screen'
+          }} />
+
+          <div style={{
+            position: 'absolute',
+            bottom: '-20%',
+            left: '10%',
+            width: '80%',
+            height: '60%',
+            borderRadius: '50%',
+            background: 'radial-gradient(ellipse at center, rgba(236, 72, 153, 0.15) 0%, rgba(217, 70, 239, 0.08) 50%, transparent 70%)',
+            filter: 'blur(55px)',
+            animation: 'lucky-aurora-glow-1 22s ease-in-out infinite alternate-reverse',
+            mixBlendMode: 'screen'
           }} />
 
           {starPositions.map((star, index) => (
@@ -286,13 +303,15 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
                 position: 'absolute',
                 top: star.top,
                 left: star.left,
-                width: star.size,
-                height: star.size,
+                width: `calc(${star.size} * 4)`,
+                height: `calc(${star.size} * 4)`,
                 borderRadius: '50%',
-                background: '#fff8e7',
-                boxShadow: '0 0 6px #fff, 0 0 12px rgba(250, 204, 21, 0.5)',
+                background: 'radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 20%, rgba(250, 204, 21, 0.1) 50%, transparent 80%)',
+                boxShadow: '0 0 15px rgba(255, 255, 255, 0.3), 0 0 25px rgba(250, 204, 21, 0.2)',
                 animation: `lucky-twinkle ${star.duration} ease-in-out infinite`,
                 animationDelay: star.delay,
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none'
               }}
             />
           ))}
