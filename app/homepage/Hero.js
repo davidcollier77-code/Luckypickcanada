@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 
 const heroLinks = [
@@ -10,18 +11,85 @@ const heroLinks = [
 ];
 
 export default function Hero() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const stars = [];
+    const numStars = Math.floor((window.innerWidth * window.innerHeight) / 1000); // High density
+
+    for (let i = 0; i < numStars; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 0.8 + 0.2, // 0.2 to 1.0 (so 1-2px diameter)
+        alpha: Math.random() * 0.7 + 0.2, // 0.2 to 0.9
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        twinkleDir: Math.random() > 0.5 ? 1 : -1
+      });
+    }
+
+    let animationFrameId;
+
+    const drawStars = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+
+      for (let i = 0; i < stars.length; i++) {
+        const star = stars[i];
+
+        ctx.globalAlpha = star.alpha;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        star.alpha += star.twinkleSpeed * star.twinkleDir;
+
+        if (star.alpha <= 0.2) {
+          star.alpha = 0.2;
+          star.twinkleDir = 1;
+        } else if (star.alpha >= 0.9) {
+          star.alpha = 0.9;
+          star.twinkleDir = -1;
+        }
+      }
+      animationFrameId = requestAnimationFrame(drawStars);
+    };
+
+    drawStars();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   return (
     <header className="relative min-h-screen w-full flex flex-col items-center justify-between px-4 py-6 md:py-10 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
 
       {/* Layer 1 (Background): Full-bleed absolute container */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <Image
-          src="/hero-background-high-def.jpg"
-          layout="fill"
-          fill
-          className="object-cover"
-          priority
-        />
+      <div className="absolute inset-0 z-0 pointer-events-none bg-[#020609]">
+        {/* Starfield Canvas */}
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+        {/* Aurora Layer 1 */}
+        <div className="absolute top-0 left-[-10%] right-[-10%] h-[40%] bg-gradient-to-b from-transparent via-[#18b978]/20 to-transparent blur-3xl rounded-full animate-aurora-1 mix-blend-screen" />
+
+        {/* Aurora Layer 2 */}
+        <div className="absolute top-[10%] left-[-20%] right-[10%] h-[35%] bg-gradient-to-b from-transparent via-[#57e5d0]/15 to-transparent blur-3xl rounded-full animate-aurora-2 mix-blend-screen" />
+
+        {/* Aurora Layer 3 */}
+        <div className="absolute top-[-5%] left-[10%] right-[-20%] h-[45%] bg-gradient-to-b from-transparent via-[#69b8ff]/10 to-transparent blur-3xl rounded-full animate-aurora-3 mix-blend-screen" />
       </div>
 
       {/* Layer 2 (UI Overlay): Relative container for all interactive elements */}
@@ -46,14 +114,20 @@ export default function Hero() {
         {/* Center Content: Logo and Typography */}
         <main className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto my-10">
 
-          {/* Logo with drop shadow */}
-          <div className="relative w-48 h-48 md:w-56 md:h-56 mb-8 drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] flex items-center justify-center">
+          {/* Logo with spark portal and drop shadow */}
+          <div className="relative w-48 h-48 md:w-56 md:h-56 mb-8 flex items-center justify-center">
+            {/* Spark Portal Glow - Radial */}
+            <div className="absolute inset-[-20%] bg-radial-gradient from-amber-500/30 to-transparent blur-2xl rounded-full mix-blend-screen animate-pulse-glow" style={{ backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.4) 0%, transparent 70%)' }}></div>
+
+            {/* Spark Portal Glow - Spinning Conic */}
+            <div className="absolute inset-[-10%] bg-conic-gradient from-amber-300/0 via-amber-400/20 to-amber-300/0 blur-xl rounded-full animate-spin-slow mix-blend-screen" style={{ backgroundImage: 'conic-gradient(from 0deg, transparent 0deg, rgba(251,191,36,0.3) 180deg, transparent 360deg)' }}></div>
+
             <Image
               src="/BackgroundEraser_20260724_163638777.png"
               alt="Lucky Pick Canada Logo"
               width={224}
               height={224}
-              className="object-contain"
+              className="object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] relative z-10"
               priority
             />
           </div>
