@@ -18,16 +18,13 @@ export default function Hero() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    // Initialize stars array first
-    const stars = [];
-    let prevWidth = window.innerWidth;
-    let prevHeight = window.innerHeight;
+    let stars = [];
 
     const initStars = (width, height) => {
       const numStars = Math.floor((width * height) / 1000); // High density
-      stars.length = 0; // Clear existing stars
+      const newStars = [];
       for (let i = 0; i < numStars; i++) {
-        stars.push({
+        newStars.push({
           x: Math.random() * width,
           y: Math.random() * height,
           radius: Math.random() * 0.8 + 0.2, // 0.2 to 1.0 (so 1-2px diameter)
@@ -36,28 +33,53 @@ export default function Hero() {
           twinkleDir: Math.random() > 0.5 ? 1 : -1
         });
       }
+      return newStars;
     };
 
     const resizeCanvas = () => {
       const oldWidth = canvas.width;
       const oldHeight = canvas.height;
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
 
-      // Recalculate star positions proportionally if stars exist
-      if (stars.length > 0 && oldWidth > 0 && oldHeight > 0) {
-        const widthRatio = canvas.width / oldWidth;
-        const heightRatio = canvas.height / oldHeight;
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      if (stars.length === 0) {
+        stars = initStars(newWidth, newHeight);
+      } else {
+        // Recalculate star positions proportionally
         stars.forEach(star => {
-          star.x *= widthRatio;
-          star.y *= heightRatio;
+          star.x = (star.x / oldWidth) * newWidth;
+          star.y = (star.y / oldHeight) * newHeight;
         });
+
+        // If window got significantly larger, we might need more stars, but proportional repositioning is usually enough for a resize.
+        // For a perfect implementation, we would add/remove stars based on the new area.
+        const targetNumStars = Math.floor((newWidth * newHeight) / 1000);
+        if (targetNumStars > stars.length) {
+            const addedStarsCount = targetNumStars - stars.length;
+            for(let i=0; i < addedStarsCount; i++){
+                stars.push({
+                  x: Math.random() * newWidth,
+                  y: Math.random() * newHeight,
+                  radius: Math.random() * 0.8 + 0.2,
+                  alpha: Math.random() * 0.7 + 0.2,
+                  twinkleSpeed: Math.random() * 0.02 + 0.005,
+                  twinkleDir: Math.random() > 0.5 ? 1 : -1
+                });
+            }
+        } else if (targetNumStars < stars.length) {
+             stars = stars.slice(0, targetNumStars);
+        }
       }
     };
 
-    // Initialize stars before setting up resize
-    initStars(window.innerWidth, window.innerHeight);
+    // Set initial size and initialize stars
+    canvas.width = window.innerWidth || 1024; // Fallback for safety
+    canvas.height = window.innerHeight || 768;
     resizeCanvas();
+
     window.addEventListener('resize', resizeCanvas);
 
     let animationFrameId;
