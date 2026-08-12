@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 
 const heroLinks = [
   { href: '/lucky-meter', label: 'Lucky Meter' },
@@ -15,7 +14,7 @@ export default function Hero() {
       <div className="aurora-stage-glow" aria-hidden="true" />
       <nav className="hero-nav" aria-label="Primary navigation">
         <a className="hero-brand" href="#top" aria-label="Lucky Pick Canada home">
-          <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada primary branding logo" width={72} height={72} priority style={{ width: 'auto', height: 72 }} />
+          <img src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada primary branding logo" width="72" height="72" />
           <span>Lucky Pick Canada</span>
         </a>
         <div className="hero-nav-links">
@@ -28,13 +27,13 @@ export default function Hero() {
       </nav>
 
       <div className="hero-content">
-        <Image className="hero-emblem" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada emblem showing maple leaf and clover design" width={460} height={460} priority style={{ width: 'auto', height: 460 }} />
-        <p className="hero-kicker !mt-2 tracking-widest">A little Canadian magic ✦ made for today</p>
-        <h1 id="hero-title" className="gold-3d drop-shadow-md">Your daily lucky moment.</h1>
-        <p className="hero-copy">A Canadian digital entertainment experience focused on lucky moments, positive messages, personalized picks, and community stories.</p>
-        <p className="hero-supporting-copy">LuckyPickCanada is a digital entertainment experience created for fun, positive moments, and community connection. Discover your daily lucky moment, explore personalized picks, share stories, and enjoy a little Canadian magic every day.</p>
-        <div className="button-wrapper">
-          <a className="cta-glow" href="/lucky-meter">Reveal Today’s Luck <span aria-hidden="true">→</span></a>
+        <img className="hero-emblem" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada emblem showing maple leaf and clover design" width="460" height="460" />
+        <p className="hero-kicker !mt-0 tracking-widest">A little Canadian magic ✦ made for today</p>
+        <h1 id="hero-title" className="gold-3d drop-shadow-lg">Your daily lucky moment.</h1>
+        <p className="hero-copy text-lg sm:text-xl !mb-2">A Canadian digital entertainment experience focused on lucky moments, positive messages, personalized picks, and community stories.</p>
+        <p className="hero-supporting-copy text-base sm:text-lg !mb-4">LuckyPickCanada is a digital entertainment experience created for fun, positive moments, and community connection. Discover your daily lucky moment, explore personalized picks, share stories, and enjoy a little Canadian magic every day.</p>
+        <div className="button-wrapper !mt-2">
+          <a className="cta-glow transition-transform hover:scale-105" href="/lucky-meter">Reveal Today’s Luck <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </section>
