@@ -89,7 +89,7 @@ export default function HomePage() {
             <p>Create your personal LuckyPickCanada moment with a unique interactive pick experience.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="homepage-offer-action transition-transform hover:scale-105" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
+            <button type="button" className="cta-glow transition-transform hover:scale-105" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
@@ -97,7 +97,7 @@ export default function HomePage() {
             <h3 className="homepage-offer-title">Gift Experience</h3>
             <p>Send someone special their own LuckyPickCanada experience — a fun digital gift filled with lucky moments.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
-            <button type="button" className="homepage-offer-action transition-transform hover:scale-105" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
+            <button type="button" className="cta-glow transition-transform hover:scale-105" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
@@ -105,7 +105,7 @@ export default function HomePage() {
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <button type="button" className="homepage-offer-action transition-transform hover:scale-105" onClick={openTipJar}>Open the tip jar</button>
+            <button type="button" className="cta-glow transition-transform hover:scale-105" onClick={openTipJar}>Open the tip jar</button>
           </article>
         </div>
       </section>
@@ -115,13 +115,13 @@ export default function HomePage() {
           <p className="homepage-offer-kicker">Lucky Stories</p>
           <h2>Community Stories</h2>
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
-          <Link href="/stories" className="homepage-map-cta transition-transform hover:scale-105">See Our Story Section</Link>
+          <Link href="/stories" className="cta-glow transition-transform hover:scale-105">See Our Story Section</Link>
         </article>
         <article id="community-map" className="homepage-community-card homepage-map-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Lucky Map</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
-          <Link href="/map" className="homepage-map-cta transition-transform hover:scale-105">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
+          <Link href="/map" className="cta-glow transition-transform hover:scale-105">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
         </article>
       </section>
 
@@ -152,7 +152,7 @@ export default function HomePage() {
           <label>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required /></label>
           <label aria-hidden="true" className="suggestion-box-honeypot">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField siteKey={TURNSTILE_SITE_KEY} submitButtonId="suggestion-box-submit" />
-          <button id="suggestion-box-submit" type="submit" className="suggestion-box-submit transition-transform hover:scale-105">Send suggestion <span aria-hidden="true">→</span></button>
+          <button id="suggestion-box-submit" type="submit" className="cta-glow transition-transform hover:scale-105">Send suggestion <span aria-hidden="true">→</span></button>
         </form>
       </section>
 
