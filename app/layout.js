@@ -4,35 +4,29 @@ const siteUrl = 'https://luckypickcanada.ca';
 const socialImage = '/1785347037732.png';
 
 export const metadata = {
-  metadataBase: new URL(siteUrl),
-  title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
-  description: "Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.",
-  keywords: [
-    'luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks',
-    'canada luck', 'lucky card', 'lucky day', 'lucky color', 'lucky community',
-    'share your luck', 'canada stories', 'story map', 'lucky gifts', 'lucky reveal',
-    'entertainment only', 'personalized picks', 'maple leaf', 'canadian luck',
-  ],
-  alternates: { canonical: 'https://luckypickcanada.ca/' },
+  title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
+  description: 'Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.',
+  keywords: ['luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks', 'canada luck', 'lucky card', 'story map', 'canadian luck'],
+  metadataBase: new URL('https://luckypickcanada.ca'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    type: 'website',
-    locale: 'en_CA',
+    title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
+    description: 'Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.',
     url: 'https://luckypickcanada.ca',
-    siteName: "Lucky Pick Canada",
-    title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
-    description: "Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.",
+    siteName: 'Lucky Pick Canada',
+    locale: 'en_CA',
+    type: 'website',
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Lucky Pick Canada | Digital Random Generator & Card Reveals",
-    description: "Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.",
+    card: 'summary_large_image',
+    title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
+    description: 'Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.',
   },
-  robots: { index: true, follow: true },
-  manifest: '/site.webmanifest',
   icons: {
-    icon: [{ url: '/BackgroundEraser_20260724_163638777.png', type: 'image/png' }],
-    shortcut: '/BackgroundEraser_20260724_163638777.png',
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
 };
 
