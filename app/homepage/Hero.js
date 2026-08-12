@@ -27,7 +27,17 @@ export default function Hero() {
       </nav>
 
       <div className="hero-content">
-        <img className="hero-emblem" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada emblem showing maple leaf and clover design" width="460" height="460" />
+        <div className="hero-emblem-wrapper">
+          <div className="sparkles-layer" aria-hidden="true">
+            <div className="sparkle sparkle-1">✦</div>
+            <div className="sparkle sparkle-2">✦</div>
+            <div className="sparkle sparkle-3">✦</div>
+            <div className="sparkle sparkle-4">✦</div>
+            <div className="sparkle sparkle-5">✦</div>
+            <div className="sparkle sparkle-6">✦</div>
+          </div>
+          <img className="hero-emblem" src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada emblem showing maple leaf and clover design" width="460" height="460" />
+        </div>
         <p className="hero-kicker !mt-0 tracking-widest">A little Canadian magic ✦ made for today</p>
         <h1 id="hero-title" className="gold-3d drop-shadow-lg">Your daily lucky moment.</h1>
         <p className="hero-copy text-lg sm:text-xl !mb-2">A Canadian digital entertainment experience focused on lucky moments, positive messages, personalized picks, and community stories.</p>
