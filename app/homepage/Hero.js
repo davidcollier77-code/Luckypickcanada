@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 const heroLinks = [
   { href: '/lucky-meter', label: 'Lucky Meter' },
@@ -55,7 +56,7 @@ export default function Hero() {
 
           {/* Inner Circular Emblem Container */}
           <div className="relative w-44 h-44 md:w-52 md:h-52 rounded-full bg-slate-950 border-2 border-amber-400 shadow-[inset_0_0_25px_rgba(245,158,11,0.6)] flex items-center justify-center overflow-hidden">
-            <img
+            <Image
               src="/BackgroundEraser_20260724_163638777.png"
               alt="Lucky Pick Canada emblem showing maple leaf and clover design"
               width="184"
