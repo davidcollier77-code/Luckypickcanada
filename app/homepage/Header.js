@@ -9,6 +9,7 @@ export default function Header() {
           <a className="premium-nav-link" href="/lucky-meter">Lucky Meter</a>
           <a className="premium-nav-link" href="#cards">Lucky Cards</a>
           <a className="premium-nav-link" href="#community-map">Community Map</a>
+          <a className="premium-nav-link" href="/crystal-ball">Crystal Ball</a>
           <a className="premium-nav-link" href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer">Facebook Group</a>
         </div>
       </nav>

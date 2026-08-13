@@ -118,6 +118,12 @@ export default function HomePage() {
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
           <Link href="/stories" className="cta-glow transition-transform hover:scale-105">See Our Story Section</Link>
         </article>
+        <article className="homepage-community-card">
+          <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
+          <h2>Consult the Lucky Crystal Ball</h2>
+          <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
+          <Link href="/crystal-ball" className="cta-glow transition-transform hover:scale-105">CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
+        </article>
         <article id="community-map" className="homepage-community-card homepage-map-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Lucky Map</h2>
@@ -197,6 +203,7 @@ export default function HomePage() {
           <a href="https://www.tiktok.com/@luckypickcanada" target="_blank" rel="noopener noreferrer" aria-label="TikTok">TikTok</a>
         </nav>
         <nav className="homepage-legal-links" aria-label="Legal links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '16px' }}>
+          <Link href="/crystal-ball">Crystal Ball</Link>
           <Link href="/privacy">Privacy Policy</Link>
           <Link href="/terms">Terms of Service</Link>
         </nav>
