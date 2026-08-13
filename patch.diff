@@ -1,0 +1,29 @@
+--- public/crystal-ball.html
++++ public/crystal-ball.html
+@@ -14,14 +14,14 @@
+         <div class="lens-flare"></div>
+         <div class="glass-refraction"></div>
+         <div class="core-emblem">
+-          <img src="/logo-official.svg" alt="Lucky Pick Canada Core Emblem" class="emblem-img" />
++          <img src="/BackgroundEraser_20260724_163638777.png" alt="Lucky Pick Canada Core Emblem" class="emblem-img" />
+         </div>
+       </div>
+       <div class="pedestal">
+         <div class="pedestal-top"></div>
+         <div class="pedestal-base"></div>
+         <div class="nameplate">
+-          The Lucky Crystal Ball
++          luckypickcanada.ca
+         </div>
+       </div>
+     </div>
+@@ -45,7 +45,8 @@
+     </div>
+
+     <div class="navigation-pills">
+-      <a href="/meter" class="pill-btn">Luck Meter</a>
++      <a href="/" class="pill-btn">Back to Home</a>
++      <a href="/lucky-meter" class="pill-btn">Luck Meter</a>
+       <a href="/map" class="pill-btn">Community Map</a>
+     </div>
+   </div>

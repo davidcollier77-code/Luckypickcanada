@@ -150,6 +150,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS"
       }
+      headers: { "Content-Type": "application/json" }
     });
 
   } catch (error) {

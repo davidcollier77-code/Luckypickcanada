@@ -1,0 +1,11 @@
+--- functions/api/oracle.js
++++ functions/api/oracle.js
+@@ -148,8 +148,7 @@
+       headers: {
+         "Content-Type": "application/json",
+         "Access-Control-Allow-Origin": "*",
+         "Access-Control-Allow-Methods": "POST, OPTIONS"
+-      }
+-      headers: { "Content-Type": "application/json" }
++      }
+     });

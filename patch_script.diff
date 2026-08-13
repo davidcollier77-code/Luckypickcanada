@@ -1,0 +1,11 @@
+--- public/script.js
++++ public/script.js
+@@ -70,7 +70,7 @@
+     startCooldown();
+
+     try {
+-      const response = await fetch('/api/oracle', {
++      const response = await fetch('/api/oracle', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json'
