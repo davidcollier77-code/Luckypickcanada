@@ -10,6 +10,7 @@ import { TURNSTILE_SITE_KEY } from '../turnstile-config';
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import TurnstileField from '../turnstile-field';
 import Hero from './Hero';
+import FAQSection from './FAQSection';
 
 function SectionHeading({ eyebrow, id, title, children }) {
   return (
@@ -155,6 +156,8 @@ export default function HomePage() {
           <button id="suggestion-box-submit" type="submit" className="cta-glow transition-transform hover:scale-105">Send suggestion <span aria-hidden="true">→</span></button>
         </form>
       </section>
+
+      <FAQSection />
 
       {/* Low-Profile SEO Text Section */}
       <section
