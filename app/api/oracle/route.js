@@ -2,26 +2,19 @@ import { NextResponse } from 'next/server';
 
 // Sanitize user input to prevent prompt injection
 function sanitizeInput(input) {
-  // Remove any potentially dangerous characters that could break out of the prompt context
   const cleaned = input
-    .replace(/["'`\\]/g, '') // Remove quotes and backslashes
-    .replace(/[\r
-    .replace(/[<>]/g, '') // Remove angle brackets
+    .replace(/["'`\\]/g, '')
+    .replace(/[\r\n]/g, ' ')
+    .replace(/[<>]/g, '')
     .trim();
-  
-  // Additional protection: limit semantic injection attempts
+
   const lowercased = cleaned.toLowerCase();
-  const injectionPatterns = [
-    'ignore previous', 'ignore all', 'disregard', 
-    'system:', 'assistant:', 'prompt:', 'instructions:'
-  ];
-  
+  const injectionPatterns = [ 'ignore previous', 'ignore all', 'disregard', 'system:', 'assistant:', 'prompt:', 'instructions:' ];
   for (const pattern of injectionPatterns) {
     if (lowercased.includes(pattern)) {
-      return 'What does my future hold?'; // Replace with safe default
+      return 'What does my future hold?';
     }
   }
-  
   return cleaned;
 }
 
