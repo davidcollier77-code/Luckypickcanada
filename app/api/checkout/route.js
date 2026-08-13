@@ -133,7 +133,7 @@ export async function POST(request) {
     return NextResponse.redirect(session.url, 303);
   } catch (error) {
     console.error('Stripe checkout failed', error);
-    const errorMsg = error instanceof Error ? error.message : 'Unable to start checkout.';
+    const errorMsg = 'Unable to start checkout. Please try again.';
     return NextResponse.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
   }
 }
