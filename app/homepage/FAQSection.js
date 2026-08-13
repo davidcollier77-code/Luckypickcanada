@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function FAQSection() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const [openQuestion, setOpenQuestion] = useState(null);
 
   const faqs = [
     {
@@ -25,11 +25,15 @@ export default function FAQSection() {
     {
       question: "How do gift experiences work?",
       answer: "Our gift experiences allow you to send a premium, interactive digital card reveal to a friend or loved one. When you purchase a gift package, we send a beautifully styled email to the recipient containing a unique link. Once they click the link, they get to enjoy a specialized, animated slow reveal of their lucky jewel-themed picks!"
+    },
+    {
+      question: "What is the Lucky Crystal Ball?",
+      answer: "The Lucky Crystal Ball is an AI-powered oracle that delivers playful, mystical fortunes and daily guidance. Simply ask a question to receive a whimsical reading steeped in Canadian magic!"
     }
   ];
 
-  const toggleFaq = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
+  const toggleFaq = (question) => {
+    setOpenQuestion(openQuestion === question ? null : question);
   };
 
   const faqSchema = {
@@ -58,7 +62,7 @@ export default function FAQSection() {
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, '\\u003c').replace(/>/g, '\\u003e') }}
       />
 
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
@@ -67,11 +71,11 @@ export default function FAQSection() {
       </div>
 
       <div className="faq-accordion" style={{ display: 'grid', gap: '12px' }}>
-        {faqs.map((faq, index) => {
-          const isOpen = openIndex === index;
+        {faqs.map((faq) => {
+          const isOpen = openQuestion === faq.question;
           return (
             <div
-              key={index}
+              key={faq.question}
               className="faq-item"
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -81,7 +85,7 @@ export default function FAQSection() {
               }}
             >
               <button
-                onClick={() => toggleFaq(index)}
+                onClick={() => toggleFaq(faq.question)}
                 aria-expanded={isOpen}
                 style={{
                   width: '100%',
