@@ -112,14 +112,15 @@ export default function DailyMeterWidget() {
       for (let idx = shootingStars.length - 1; idx >= 0; idx--) {
         const ss = shootingStars[idx];
         ctx.beginPath();
-        const gradient = ctx.createLinearGradient(ss.x, ss.y, ss.x - ss.length, ss.y - (ss.dx !== 0 ? ss.length * (ss.dy / ss.dx) : 0));
+        const slope = ss.dx !== 0 ? (ss.dy / ss.dx) : 0;
+        const gradient = ctx.createLinearGradient(ss.x, ss.y, ss.x - ss.length, ss.y - (ss.length * slope));
         gradient.addColorStop(0, `rgba(255, 244, 211, ${ss.opacity})`);
         gradient.addColorStop(1, 'rgba(255, 244, 211, 0)');
 
         ctx.strokeStyle = gradient;
         ctx.lineWidth = 1.0;
         ctx.moveTo(ss.x, ss.y);
-        ctx.lineTo(ss.x - ss.length, ss.y - (ss.dx !== 0 ? ss.length * (ss.dy / ss.dx) : 0));
+        ctx.lineTo(ss.x - ss.length, ss.y - (ss.length * slope));
         ctx.stroke();
 
         ss.x += ss.dx * ss.speed;
@@ -565,15 +566,15 @@ export default function DailyMeterWidget() {
                 <circle cx="0" cy="3" r="3" fill="#e8ba52" />
               </g>
 
-              <circle cx="100" cy="100" r="11" fill="url(#darkBezel)" stroke="#e8ba52" strokeWidth="0.75" />
               <circle cx="100" cy="100" r="11" fill="url(#dlm-widget-darkBezel)" stroke="#e8ba52" strokeWidth="0.75" />
               <circle cx="100" cy="100" r="7.5" fill="url(#dlm-widget-goldBezel)" />
+              <circle cx="100" cy="100" r="3.5" fill="#030507" />
               <circle cx="100" cy="100" r="1.5" fill={tierColor} />
 
               <path d="M 50 172.5 Q 100 188 150 172.5 L 142.5 186 Q 100 197.5 57.5 186 Z" fill="#090d12" stroke="#e8ba52" strokeWidth="0.6" strokeOpacity="0.4" />
-              <circle cx="60" cy="179" r="1.5" fill="url(#goldBezel)" />
               <circle cx="60" cy="179" r="1.5" fill="url(#dlm-widget-goldBezel)" />
               <circle cx="140" cy="179" r="1.5" fill="url(#dlm-widget-goldBezel)" />
+
               <circle cx="80" cy="181" r="2.25" fill="#131d27" stroke="#000" strokeWidth="0.5" />
               <circle cx="80" cy="181" r="1.75" fill={isGenerating ? '#eac56d' : (luckPercentage !== null && luckPercentage < 40) ? '#ffe49a' : '#131d27'} className={isGenerating ? 'led-active-a' : ''} />
 
