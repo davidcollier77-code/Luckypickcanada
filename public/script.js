@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const submitBtn = document.getElementById('oracle-submit');
   const display = document.getElementById('oracle-display');
   const sessionLog = document.getElementById('session-log');
+  const auroraGlow = document.getElementById('aurora-glow');
 
   let cooldownTimer = null;
   const COOLDOWN_SECONDS = 6;
@@ -76,6 +77,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start reading phase
     display.textContent = 'Reading the mists...';
     startCooldown();
+    if (auroraGlow) {
+      auroraGlow.classList.add('active');
+    }
 
     try {
       const response = await fetch('/api/oracle', {
@@ -113,5 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
       display.textContent = "The connection to the ethereal realm was lost. Please try again.";
     }
       resetCooldown();
+      if (auroraGlow) {
+        auroraGlow.classList.remove('active');
+      }
   });
 });
