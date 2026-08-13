@@ -3,11 +3,26 @@ import { NextResponse } from 'next/server';
 // Sanitize user input to prevent prompt injection
 function sanitizeInput(input) {
   // Remove any potentially dangerous characters that could break out of the prompt context
-  return input
+  const cleaned = input
     .replace(/["'`\\]/g, '') // Remove quotes and backslashes
-    .replace(/[\r\n]/g, '')
+    .replace(/[\r
     .replace(/[<>]/g, '') // Remove angle brackets
     .trim();
+  
+  // Additional protection: limit semantic injection attempts
+  const lowercased = cleaned.toLowerCase();
+  const injectionPatterns = [
+    'ignore previous', 'ignore all', 'disregard', 
+    'system:', 'assistant:', 'prompt:', 'instructions:'
+  ];
+  
+  for (const pattern of injectionPatterns) {
+    if (lowercased.includes(pattern)) {
+      return 'What does my future hold?'; // Replace with safe default
+    }
+  }
+  
+  return cleaned;
 }
 
 export async function POST(request) {
@@ -19,7 +34,7 @@ export async function POST(request) {
         status: 500,
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS"
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
     }
@@ -33,7 +48,7 @@ export async function POST(request) {
         status: 400,
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS"
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
     }
@@ -46,7 +61,7 @@ export async function POST(request) {
         status: 400,
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS"
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
     }
@@ -56,7 +71,7 @@ export async function POST(request) {
         status: 400,
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS"
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
     }
@@ -100,7 +115,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
           status: 504,
           headers: {
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS"
+            "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
           }
         });
       }
@@ -114,19 +129,20 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
         status: 429,
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS"
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
     }
 
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
-      console.error('Gemini API Error:', geminiResponse.status, errorText);
+      // Log only non-sensitive information
+      console.error('Gemini API Error:', geminiResponse.status, 'Response length:', errorText.length);
       return NextResponse.json({ error: "The oracle is temporarily unavailable." }, {
         status: 502,
         headers: {
           "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS"
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
     }
@@ -141,7 +157,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
     return NextResponse.json({ fortune }, {
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS"
+        "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
       }
     });
 
@@ -149,8 +165,9 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
     console.error('Unhandled Oracle Error:', error);
     return NextResponse.json({ error: "An unexpected disturbance occurred in the ethereal realm." }, {
       headers: {
+      status: 500,
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS"
+        "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
       }
     });
   }
