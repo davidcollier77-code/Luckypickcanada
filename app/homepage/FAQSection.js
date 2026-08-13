@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 export default function FAQSection() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const [openQuestion, setOpenQuestion] = useState(null);
 
   const faqs = [
     {
@@ -28,8 +28,8 @@ export default function FAQSection() {
     }
   ];
 
-  const toggleFaq = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
+  const toggleFaq = (question) => {
+    setOpenQuestion(openQuestion === question ? null : question);
   };
 
   const faqSchema = {
@@ -58,7 +58,7 @@ export default function FAQSection() {
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, '\\u003c').replace(/>/g, '\\u003e') }}
       />
 
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
@@ -67,11 +67,11 @@ export default function FAQSection() {
       </div>
 
       <div className="faq-accordion" style={{ display: 'grid', gap: '12px' }}>
-        {faqs.map((faq, index) => {
-          const isOpen = openIndex === index;
+        {faqs.map((faq) => {
+          const isOpen = openQuestion === faq.question;
           return (
             <div
-              key={index}
+              key={faq.question}
               className="faq-item"
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -81,8 +81,9 @@ export default function FAQSection() {
               }}
             >
               <button
-                onClick={() => toggleFaq(index)}
+                onClick={() => toggleFaq(faq.question)}
                 aria-expanded={isOpen}
+                className="faq-accordion-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#eabe52]"
                 style={{
                   width: '100%',
                   display: 'flex',
@@ -98,8 +99,6 @@ export default function FAQSection() {
                   cursor: 'pointer',
                   transition: 'background-color 0.2s'
                 }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(234, 190, 82, 0.1)'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <span>{faq.question}</span>
                 <span

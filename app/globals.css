@@ -53,3 +53,8 @@ body::before {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Added for PR feedback: FAQ accordion hover state */
+.faq-accordion-btn:hover {
+  background-color: rgba(234, 190, 82, 0.1) !important;
+}
