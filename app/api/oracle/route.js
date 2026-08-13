@@ -78,7 +78,6 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
         parts: [{ text: prompt }]
       }],
       generationConfig: {
-        maxOutputTokens: 250,
         temperature: 0.7,
       }
     };
