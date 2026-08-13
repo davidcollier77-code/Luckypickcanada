@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Lucky Crystal Ball | Lucky Pick Canada</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="crystal-ball-container">
+    <div class="crystal-ball-wrapper">
+      <div class="crystal-ball">
+        <div class="orb-mist"></div>
+        <div class="lens-flare"></div>
+        <div class="glass-refraction"></div>
+        <div class="core-emblem">
+          <img src="/logo-official.svg" alt="Lucky Pick Canada Core Emblem" class="emblem-img" />
+        </div>
+      </div>
+      <div class="pedestal">
+        <div class="pedestal-top"></div>
+        <div class="pedestal-base"></div>
+        <div class="nameplate">
+          The Lucky Crystal Ball
+        </div>
+      </div>
+    </div>
+
+    <div class="crate-container">
+      <div class="crate">
+        <div class="oracle-display" aria-live="polite" id="oracle-display">
+          Awaiting your question...
+        </div>
+        <form class="input-form" id="oracle-form">
+          <input type="text" id="oracle-input" placeholder="Ask the mists..." maxlength="120" autocomplete="off" />
+          <button type="submit" id="oracle-submit">Seek Fortune</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="session-log-container">
+      <h3>Session Readings</h3>
+      <ul class="session-log" id="session-log">
+        <!-- Log items will appear here -->
+      </ul>
+    </div>
+
+    <div class="navigation-pills">
+      <a href="/meter" class="pill-btn">Luck Meter</a>
+      <a href="/map" class="pill-btn">Community Map</a>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
