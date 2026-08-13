@@ -69,13 +69,18 @@ export async function POST(request) {
     const sanitizedQuestion = sanitizeInput(question);
 
     // Gemini API Request
-    const prompt = `You are a mystical, upbeat, and friendly oracle crystal ball.
-The user asks: "${sanitizedQuestion}".
-Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading.`;
+    const currentDateTime = new Date().toLocaleString("en-CA", { timeZone: "America/Halifax" });
 
     const apiBody = {
+      systemInstruction: {
+        parts: [{
+          text: `You are the Mystic Crystal Ball of LuckyPickCanada. The current real-world date and time is ${currentDateTime}. You are fully aware of the current date, time, and day of the week, and should seamlessly weave this temporal knowledge into your answers when asked.
+
+    Provide mysterious and slightly whimsical fortunes (maximum 3 sentences). Always stay in character as a magical Canadian oracle. When appropriate, mysteriously hint that the seeker should consult their three-tier digital cards or check the randomized percentage gauge on the luck meter for further guidance.`
+        }]
+      },
       contents: [{
-        parts: [{ text: prompt }]
+        parts: [{ text: sanitizedQuestion }]
       }],
       generationConfig: {
         temperature: 0.7,
