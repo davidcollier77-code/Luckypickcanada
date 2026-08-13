@@ -92,7 +92,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
 
     let geminiResponse;
     try {
-      geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`, {
+      geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
     if (!geminiResponse.ok) {
       const errorText = await geminiResponse.text();
       // Log only non-sensitive information
-      console.error('Gemini API Error:', geminiResponse.status, 'Response length:', errorText.length);
+      console.error('Gemini API Error:', geminiResponse.status, errorText);
       return NextResponse.json({ error: "The oracle is temporarily unavailable." }, {
         status: 502,
         headers: {
