@@ -24,7 +24,7 @@ body {
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 4rem 1rem;
   position: relative;
   overflow-x: hidden;
 }
@@ -78,6 +78,28 @@ body::after {
   width: 100%;
 }
 
+.welcome-banner {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+}
+
+.welcome-banner h1 {
+  font-family: 'Playfair Display', serif;
+  color: var(--gold);
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 4px 8px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.6);
+}
+
+.welcome-banner p {
+  color: var(--text-color);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  font-style: italic;
+}
+
 .crystal-ball-wrapper {
   position: relative;
   display: flex;
@@ -86,8 +108,44 @@ body::after {
   margin-bottom: 2rem;
 }
 
+.aurora-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateY(-30px);
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    rgba(21, 191, 150, 0.4) 0%,
+    rgba(121, 60, 255, 0.3) 30%,
+    rgba(0, 150, 255, 0.2) 60%,
+    transparent 80%);
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 1s ease-in-out;
+  animation: rotateAurora 10s linear infinite;
+}
+
+.aurora-glow.active {
+  opacity: 1;
+  animation: pulseAuroraActive 4s ease-in-out infinite alternate, rotateAurora 10s linear infinite;
+}
+
+@keyframes pulseAuroraActive {
+  0% { transform: translate(-50%, -50%) translateY(-30px) scale(0.9); }
+  100% { transform: translate(-50%, -50%) translateY(-30px) scale(1.1); }
+}
+
+@keyframes rotateAurora {
+  0% { filter: hue-rotate(0deg) blur(40px); }
+  100% { filter: hue-rotate(360deg) blur(40px); }
+}
+
 .crystal-ball {
   position: relative;
+  z-index: 1;
   width: 250px;
   height: 250px;
   border-radius: 50%;
