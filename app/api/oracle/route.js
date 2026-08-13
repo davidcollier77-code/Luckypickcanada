@@ -26,7 +26,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "Configuration error: Missing API key" }, {
         status: 500,
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
@@ -40,7 +39,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid JSON body" }, {
         status: 400,
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
@@ -53,7 +51,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "Please ask a question." }, {
         status: 400,
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
@@ -63,7 +60,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "Question is too long. Please keep it under 120 characters." }, {
         status: 400,
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
@@ -92,7 +88,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
 
     let geminiResponse;
     try {
-      geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`, {
+      geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +103,6 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
         return NextResponse.json({ error: "The mists took too long to answer. Try again." }, {
           status: 504,
           headers: {
-            "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
           }
         });
@@ -121,7 +116,6 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
       return NextResponse.json({ error: "The mists are tired! Please wait a moment before asking again." }, {
         status: 429,
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
@@ -134,7 +128,6 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
       return NextResponse.json({ error: "The oracle is temporarily unavailable." }, {
         status: 502,
         headers: {
-          "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         }
       });
@@ -149,7 +142,6 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
 
     return NextResponse.json({ fortune }, {
       headers: {
-        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
       }
     });
@@ -159,7 +151,6 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
     return NextResponse.json({ error: "An unexpected disturbance occurred in the ethereal realm." }, {
       headers: {
       status: 500,
-        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
       }
     });
