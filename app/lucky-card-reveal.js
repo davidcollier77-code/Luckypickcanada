@@ -115,13 +115,15 @@ export default function LuckyCardReveal() {
       </div>
 
       <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
-        <div className="card-wrapper-box">
-          <div className="lucky-moment-card" aria-live="polite">
-            <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
-              <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" />
-            </div>
-            <div className="lucky-moment-card-face lucky-moment-card-front" aria-hidden={!isRevealed}>
-              {selectedCard && (selectedCard.image ? <img src={selectedCard.image} alt={selectedCard.title || 'Lucky Card'} className="lucky-moment-card-image" /> : <span>Lucky Pick Canada</span>)}
+        <div className={`card-stage-container tier-${selectedCard?.tier || 'standard'}`}>
+          <div className={`flip-card-wrapper ${isRevealed ? 'is-revealed' : ''}`}>
+            <div className="lucky-moment-card" aria-live="polite">
+              <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
+                <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" />
+              </div>
+              <div className="lucky-moment-card-face lucky-moment-card-front" aria-hidden={!isRevealed}>
+                {selectedCard && (selectedCard.image ? <img src={selectedCard.image} alt={selectedCard.title || 'Lucky Card'} className="lucky-moment-card-image" /> : <span>Lucky Pick Canada</span>)}
+              </div>
             </div>
           </div>
         </div>

@@ -46,17 +46,120 @@
 .lucky-moment-shell { display: grid; justify-items: center; gap: 1rem; width: 100%; max-width: 100%; min-width: 0; }
 .lucky-moment-stage { position: relative; width: min(100%, 18rem); max-width: 100%; isolation: isolate; }
 
-/* Container holding the card */
-.card-wrapper-box {
+/* ==========================================================================
+   1. Card Stage Container (Starry Night + Flowing Aurora)
+   ========================================================================== */
+.card-stage-container {
+  position: relative;
+  overflow: hidden;
+  background: #04080e; /* Deep night sky base */
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 16px;
+}
+
+/* Layer 1: Realistic Pin-Point Stars */
+.card-stage-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20px 30px, #ffffff, rgba(0, 0, 0, 0)),
+    radial-gradient(1.5px 1.5px at 40px 70px, rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0)),
+    radial-gradient(1px 1px at 90px 40px, #ffffff, rgba(0, 0, 0, 0)),
+    radial-gradient(1.2px 1.2px at 160px 120px, rgba(255, 255, 255, 0.9), rgba(0, 0, 0, 0)),
+    radial-gradient(1.5px 1.5px at 230px 80px, #ffffff, rgba(0, 0, 0, 0)),
+    radial-gradient(1px 1px at 290px 150px, rgba(255, 255, 255, 0.7), rgba(0, 0, 0, 0)),
+    radial-gradient(1.5px 1.5px at 320px 40px, #ffffff, rgba(0, 0, 0, 0));
+  background-repeat: repeat;
+  background-size: 350px 250px;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Layer 2: Slow-Flowing Aurora Ribbon */
+.card-stage-container::after {
+  content: "";
+  position: absolute;
+  inset: -35%;
   background: radial-gradient(
-    circle at 50% 45%,
-    var(--tier-ambient-color, rgba(20, 35, 30, 0.6)) 0%,
-    #0d141b 60%,
-    #070b0e 100%
+    ellipse 70% 40% at 50% 35%,
+    var(--tier-aurora-color, rgba(16, 185, 129, 0.25)) 0%,
+    rgba(6, 95, 70, 0.1) 50%,
+    transparent 80%
   );
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 18px;
-  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.85);
+  filter: blur(45px);
+  animation: auroraDrift 18s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes auroraDrift {
+  0% {
+    transform: translateY(-6%) rotate(-3deg) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(6%) rotate(2deg) scale(1.1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-2%) rotate(-1deg) scale(1.02);
+    opacity: 0.6;
+  }
+}
+
+/* ==========================================================================
+   2. Three-Tier Theme Variables
+   ========================================================================== */
+/* Standard Tier */
+.card-stage-container.tier-standard {
+  --tier-aurora-color: rgba(16, 140, 100, 0.22);
+  --tier-halo-glow: 0 0 25px rgba(205, 127, 50, 0.35);
+}
+
+/* Premium Tier */
+.card-stage-container.tier-premium {
+  --tier-aurora-color: rgba(56, 189, 248, 0.35);
+  --tier-halo-glow: 0 0 35px rgba(186, 230, 253, 0.6), 0 0 70px rgba(56, 189, 248, 0.3);
+}
+
+/* Flagship Tier */
+.card-stage-container.tier-flagship {
+  --tier-aurora-color: rgba(245, 158, 11, 0.45);
+  --tier-halo-glow: 0 0 50px rgba(255, 215, 0, 0.8), 0 0 100px rgba(245, 158, 11, 0.45);
+}
+
+/* ==========================================================================
+   3. Card Flip & Reveal Glow
+   ========================================================================== */
+.flip-card-wrapper {
+  position: relative;
+  z-index: 3; /* Sits above the stars & aurora */
+  transition: transform 0.8s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.8s ease;
+  transform-style: preserve-3d;
+}
+
+.flip-card-wrapper.is-revealed {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), var(--tier-halo-glow);
+  animation: revealPulse 1.2s ease-out;
+}
+
+@keyframes revealPulse {
+  0% {
+    filter: drop-shadow(0 0 0px transparent);
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.5));
+  }
+  100% {
+    filter: drop-shadow(0 0 0px transparent);
+  }
 }
 
 .lucky-moment-card { position: relative; width: 100%; aspect-ratio: 384 / 688; min-width: 0; overflow: hidden; border: 1px solid rgba(255, 234, 172, .42); border-radius: 12px; background: #081614; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
