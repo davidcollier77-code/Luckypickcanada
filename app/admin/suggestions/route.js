@@ -111,7 +111,7 @@ function renderSuggestions({ isConfigured, suggestions }) {
         ${isConfigured ? '' : '<p style="padding:.8rem 1rem;border-radius:14px;background:#fef3c7;color:#92400e;font-weight:700;">Database settings are missing, so suggestions cannot be listed.</p>'}
         <div style="display:grid;gap:1rem;margin-top:1.5rem;">${rows}</div>
       </section>
-    </main>
+    </div>
   </body>
 </html>`;
 }
