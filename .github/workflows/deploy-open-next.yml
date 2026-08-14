@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies (npm ci)
         run: npm ci
 
+      - name: Clear cache directories
+        run: rm -rf .next/cache .open-next
+
       - name: Build Next.js app
         run: NODE_ENV=production npm run build
 

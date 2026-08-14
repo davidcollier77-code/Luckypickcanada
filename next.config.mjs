@@ -20,6 +20,9 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
   webpack: (config) => config,
+  generateBuildId: async () => {
+    return process.env.GITHUB_SHA || `build-${Date.now()}`;
+  },
   // 301 Redirect for Domain Consistency: route www to non-www
   async redirects() {
     return [
