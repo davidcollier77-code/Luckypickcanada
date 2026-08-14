@@ -50,8 +50,8 @@
   "d1_databases": [
     {
       "binding": "NEXT_TAG_CACHE_D1",
-      "database_name": "luckypick",
-      "database_id": "3820f2b5-0854-4586-acb4-e05c1b77ce0a"
+      "database_id": "3820f2b5-0854-4586-acb4-e05c1b77ce0a",
+      "database_name": "luckypick"
     }
   ],
   "observability": {
