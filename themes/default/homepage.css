@@ -278,7 +278,20 @@
   bottom: 0;
   left: 0;
   right: 0;
-  opacity: 0.4;
+  z-index: -1;
+  background:
+    radial-gradient(1.5px 1.5px at 10% 20%, rgba(255, 255, 255, 0.8) 100%, transparent),
+    radial-gradient(1px 1px at 30% 15%, rgba(255, 255, 255, 0.6) 100%, transparent),
+    radial-gradient(2px 2px at 80% 40%, rgba(255, 255, 255, 0.9) 100%, transparent),
+    radial-gradient(1px 1px at 70% 80%, rgba(255, 255, 255, 0.7) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 40% 70%, rgba(255, 255, 255, 0.5) 100%, transparent),
+    radial-gradient(1px 1px at 90% 10%, rgba(255, 255, 255, 0.4) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 50% 90%, rgba(255, 255, 255, 0.8) 100%, transparent),
+    radial-gradient(2px 2px at 20% 60%, rgba(255, 255, 255, 0.6) 100%, transparent),
+    radial-gradient(1px 1px at 60% 30%, rgba(255, 255, 255, 0.9) 100%, transparent);
+  background-size: 200px 200px;
+  background-color: transparent;
+  opacity: 0.6;
   pointer-events: none;
 }
 
