@@ -50,8 +50,8 @@
   "d1_databases": [
     {
       "binding": "NEXT_TAG_CACHE_D1",
-      "database_id": "f68f4ddd-9a4d-486b-97bf-1093b35378d4",
-      "database_name": "luckypickcanada-tags"
+      "database_id": "15f2f588-1574-418d-95fb-4547f91bf45c",
+      "database_name": "luckypick"
     }
   ],
   "observability": {
