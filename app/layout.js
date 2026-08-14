@@ -58,7 +58,15 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <div className="fixed-cosmic-background">
+          <div className="starfield-layer"></div>
+          <div className="aurora-layer"></div>
+        </div>
+        <main className="relative z-10 w-full">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }

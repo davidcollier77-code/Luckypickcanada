@@ -61,7 +61,7 @@ function renderLogin(error = '') {
     <title>Lucky Pick Canada Suggestions</title>
   </head>
   <body style="margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#102033;">
-    <main style="min-height:100vh;display:grid;place-items:center;padding:1.5rem;">
+    <div style="min-height:100vh;display:grid;place-items:center;padding:1.5rem;">
       <form method="POST" style="width:min(100%,420px);padding:1.5rem;border-radius:22px;background:white;box-shadow:0 24px 60px rgba(0,0,0,.25);display:grid;gap:1rem;">
         <img src="/apple-touch-icon.png" alt="LuckyPickCanada logo with maple leaf" width="72" height="72" style="border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.18);" />
         <h1 style="margin:0;color:#0f766e;">Suggestion admin</h1>
@@ -73,7 +73,7 @@ function renderLogin(error = '') {
         </label>
         <button type="submit" style="padding:.9rem 1.2rem;border:0;border-radius:999px;background:#0f766e;color:white;font-weight:800;font-size:1rem;cursor:pointer;">View suggestions</button>
       </form>
-    </main>
+      </div>
   </body>
 </html>`;
 }
@@ -99,7 +99,7 @@ function renderSuggestions({ isConfigured, suggestions }) {
     <title>Lucky Pick Canada Suggestions</title>
   </head>
   <body style="margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#102033;">
-    <main style="max-width:900px;margin:0 auto;padding:2rem 1.5rem;">
+    <div style="max-width:900px;margin:0 auto;padding:2rem 1.5rem;">
       <section style="padding:1.5rem;border-radius:24px;background:white;box-shadow:0 24px 60px rgba(0,0,0,.25);">
         <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
           <img src="/apple-touch-icon.png" alt="LuckyPickCanada logo with maple leaf" width="72" height="72" style="border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.18);" />

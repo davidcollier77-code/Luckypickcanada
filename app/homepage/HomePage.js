@@ -68,7 +68,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="lucky-site-shell homepage-experience">
+    <div className="lucky-site-shell homepage-experience">
       <Hero />
 
       <section id="cards" className="homepage-section homepage-cards-section" aria-labelledby="cards-heading">
@@ -215,6 +215,6 @@ export default function HomePage() {
         }
       }} />}
       {luckyReveal && <LuckyRevealPopup reveal={luckyReveal} onClose={closeLuckyReveal} />}
-    </main>
+    </div>
   );
 }
