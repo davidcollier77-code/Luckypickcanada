@@ -173,7 +173,7 @@ export default function LuckyMapOfCanada({ mapData }) {
   }
 
   return (
-    <main className="lucky-map-shell" style={pageStyle}>
+    <div className="lucky-map-shell" style={pageStyle}>
 
       <div aria-hidden="true" style={{ position: 'absolute', inset: '5% -10% auto', height: 220, background: 'linear-gradient(90deg, transparent, rgba(62, 178, 126, 0.2), rgba(247, 202, 82, 0.18), rgba(70, 133, 177, 0.16), transparent)', filter: 'blur(22px)', borderRadius: '50%', transformOrigin: 'center', animation: 'aurora-drift 10s ease-in-out infinite alternate' }} />
 
@@ -347,6 +347,6 @@ export default function LuckyMapOfCanada({ mapData }) {
         </section>
         {isStoryFormOpen ? <div className="story-modal-backdrop" onMouseDown={() => setIsStoryFormOpen(false)}><section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}><button type="button" aria-label="Close story form" onClick={() => setIsStoryFormOpen(false)}>×</button><h2 id="story-form-title">Share your lucky story</h2><form action="/api/lucky-stories" method="post"><input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} /><label>Name<input name="name" required maxLength="40" /></label><label>Province or territory<input name="location" maxLength="80" /></label><label>Your story<textarea name="story" required minLength="20" maxLength="1500" rows="5" /></label><TurnstileField siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} submitButtonId="lucky-story-submit" /><button id="lucky-story-submit" type="submit">Submit story</button></form></section></div> : null}
       </div>
-    </main>
+    </div>
   );
 }

@@ -6,7 +6,7 @@ export const metadata = {
 
 export default function PrivacyPolicy() {
   return (
-    <main className="max-w-4xl mx-auto p-6 leading-relaxed">
+    <div className="max-w-4xl mx-auto p-6 leading-relaxed">
       <Link href="/" className="text-blue-600 hover:underline mb-4 inline-block">
         ← Back to Home
       </Link>
@@ -40,6 +40,6 @@ export default function PrivacyPolicy() {
           To deliver our website quickly and reliably across Canada, we use standard edge-caching and analytics services. These third-party services may collect standard web log information (such as IP addresses and browser types) necessary for providing their technical infrastructure and security services.
         </p>
       </section>
-    </main>
+    </div>
   );
 }

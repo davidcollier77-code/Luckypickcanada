@@ -96,10 +96,7 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <main className="cosmic-aurora-background">
-      <div className="starfield-layer"></div>
-      <div className="aurora-layer"></div>
-
+    <div className="cosmic-aurora-background">
       <div className="lucky-moment-shell">
         <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto">
           <div className="text-center font-bold text-gray-700 mb-4 text-lg">
@@ -152,6 +149,6 @@ export default function LuckyCardReveal() {
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }

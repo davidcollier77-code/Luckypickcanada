@@ -155,7 +155,7 @@ export default function Hero() {
         </nav>
 
         {/* Center Content: Logo and Typography */}
-        <main className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto my-10">
+        <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto my-10">
 
           {/* Logo with spark portal and drop shadow */}
           <div className="relative w-48 h-48 md:w-56 md:h-56 mb-8 flex items-center justify-center">
@@ -191,7 +191,7 @@ export default function Hero() {
           <p className="text-white text-sm md:text-base font-sans font-medium tracking-wide mt-6 mb-8 drop-shadow-md">
             A Canadian digital entertainment
           </p>
-        </main>
+        </div>
 
         {/* CTA Button */}
         <div className="relative group mt-4">
