@@ -24,6 +24,8 @@ jobs:
         run: rm -rf .next/cache .open-next
 
       - name: Build Next.js app
+        env:
+          GITHUB_SHA: ${{ github.sha }}
         run: NODE_ENV=production npm run build
 
       - name: Build OpenNext for Cloudflare
