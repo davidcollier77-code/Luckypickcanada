@@ -278,10 +278,6 @@
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: -1;
-  background-image: url('/copilot_image_1785515250260.jpeg');
-  background-size: cover;
-  background-position: center top;
   opacity: 0.4;
   pointer-events: none;
 }
