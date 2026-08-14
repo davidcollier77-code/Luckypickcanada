@@ -96,49 +96,62 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="lucky-moment-shell">
-      <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto">
-        <div className="text-center font-bold text-gray-700 mb-4 text-lg">
-          Resets in: <MidnightCountdown fallback="--h --m --s" />
+    <main className="cosmic-aurora-background">
+      <div className="starfield-layer"></div>
+      <div className="aurora-layer"></div>
+
+      <div className="lucky-moment-shell">
+        <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto">
+          <div className="text-center font-bold text-gray-700 mb-4 text-lg">
+            Resets in: <MidnightCountdown fallback="--h --m --s" />
+          </div>
+
+          {isReady && !isRevealed && !isGenerating && !selectedCard && (
+            <button
+              type="button"
+              onClick={triggerCardDraw}
+              disabled={isRevealed || isGenerating}
+              className="lucky-moment-reveal-button"
+            >
+              Reveal Your Lucky Moment
+            </button>
+          )}
         </div>
 
-        {isReady && !isRevealed && !isGenerating && !selectedCard && (
-          <button
-            type="button"
-            onClick={triggerCardDraw}
-            disabled={isRevealed || isGenerating}
-            className="lucky-moment-reveal-button"
-          >
-            Reveal Your Lucky Moment
-          </button>
-        )}
-      </div>
-
-      <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
-        <div className={`card-stage-container tier-${selectedCard?.tier || 'standard'}`}>
-          <div className={`flip-card-wrapper ${isRevealed ? 'is-revealed' : ''}`}>
-            <div className="lucky-moment-card" aria-live="polite">
-              <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
-                <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" />
-              </div>
-              <div className="lucky-moment-card-face lucky-moment-card-front" aria-hidden={!isRevealed}>
-                {selectedCard && (selectedCard.image ? <img src={selectedCard.image} alt={selectedCard.title || 'Lucky Card'} className="lucky-moment-card-image" /> : <span>Lucky Pick Canada</span>)}
+        <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
+          <div className={`card-stage-container tier-${selectedCard?.tier || 'standard'}`}>
+            <div className={`flip-card-wrapper ${isRevealed ? 'is-revealed' : ''}`}>
+              <div className="lucky-moment-card" aria-live="polite">
+                <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
+                  <div className="card-reveal-wrapper">
+                    <div className="card-aura-glow"></div>
+                    <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="card-image" />
+                  </div>
+                </div>
+                <div className="lucky-moment-card-face lucky-moment-card-front" aria-hidden={!isRevealed}>
+                  {selectedCard && (selectedCard.image ? (
+                    <div className="card-reveal-wrapper">
+                      <div className="card-aura-glow"></div>
+                      <img src={selectedCard.image} alt={selectedCard.title || 'Lucky Card'} className="lucky-moment-card-image card-image" />
+                    </div>
+                  ) : <span>Lucky Pick 🍁 Canada.ca</span>)}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="lucky-moment-actions mt-6 relative z-10 pointer-events-auto">
-        {isReady && isRevealed && selectedCard && (
-          <>
-            <div className="text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
-              <p className="text-xl italic text-gray-800 font-serif">"{selectedCard.quote || 'Your lucky moment awaits'}"</p>
-            </div>
-            <LuckyCardShare card={selectedCard} />
-          </>
-        )}
+        <div className="lucky-moment-actions mt-6 relative z-10 pointer-events-auto">
+          {isReady && isRevealed && selectedCard && (
+            <>
+              <div className="glass-quote-container text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
+                <p className="text-xl italic text-gray-800 font-serif">"{selectedCard.quote || 'Your lucky moment awaits'}"</p>
+              </div>
+              <LuckyCardShare card={selectedCard} />
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
