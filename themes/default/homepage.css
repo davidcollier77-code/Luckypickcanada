@@ -270,3 +270,46 @@
 .homepage-social-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem 1.25rem; margin-top: 1.35rem; }
 .homepage-social-links a { color: #ffe49a; font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
 .homepage-social-links a:hover, .homepage-social-links a:focus-visible { color: #fff7cc; text-decoration: underline; }
+
+.homepage-experience::before {
+  content: "";
+  position: absolute;
+  top: 100vh;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  background-image: url('/copilot_image_1785515250260.jpeg');
+  background-size: cover;
+  background-position: center top;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.homepage-experience::after {
+  content: "";
+  position: absolute;
+  top: 100vh;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: cosmic-aurora-shift 30s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse 60% 40% at 20% -10%, rgba(24, 208, 132, 0.15), transparent 70%),
+              radial-gradient(ellipse 70% 50% at 80% 110%, rgba(151, 78, 240, 0.12), transparent 70%),
+              radial-gradient(ellipse 80% 60% at 50% 50%, rgba(105, 184, 255, 0.08), transparent 60%);
+}
+
+@keyframes cosmic-aurora-shift {
+  0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 0.8; }
+  50% { transform: scale(1.1) translate(-2%, 2%) rotate(1deg); opacity: 1; }
+  100% { transform: scale(1.05) translate(2%, -1%) rotate(-1deg); opacity: 0.85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homepage-experience::after {
+    animation: none !important;
+  }
+}
