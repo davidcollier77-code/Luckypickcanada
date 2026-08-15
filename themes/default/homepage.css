@@ -361,13 +361,13 @@
 }
 
 /* Align homepage buttons with main reveal button style (cta-glow) */
-.homepage-offer-action,
-.checkout-modal-submit,
-.homepage-story-cta,
-.homepage-map-cta,
-.suggestion-box-submit,
-.lucky-moment-reveal-button,
-.lucky-card-share-button {
+.homepage-experience .homepage-offer-action,
+.homepage-experience .checkout-modal-submit,
+.homepage-experience .homepage-story-cta,
+.homepage-experience .homepage-map-cta,
+.homepage-experience .suggestion-box-submit,
+.homepage-experience .lucky-moment-reveal-button,
+.homepage-experience .lucky-card-share-button {
   background: linear-gradient(to right, #fde68a, #fbbf24, #d97706);
   color: #020617;
   font-weight: 900;
@@ -379,25 +379,25 @@
   border: none;
 }
 
-.homepage-offer-action:hover, .homepage-offer-action:focus-visible,
-.checkout-modal-submit:hover, .checkout-modal-submit:focus-visible,
-.homepage-story-cta:hover, .homepage-story-cta:focus-visible,
-.homepage-map-cta:hover, .homepage-map-cta:focus-visible,
-.suggestion-box-submit:hover, .suggestion-box-submit:focus-visible,
-.lucky-moment-reveal-button:hover, .lucky-moment-reveal-button:focus-visible,
-.lucky-card-share-button:hover, .lucky-card-share-button:focus-visible {
+.homepage-experience .homepage-offer-action:hover, .homepage-experience .homepage-offer-action:focus-visible,
+.homepage-experience .checkout-modal-submit:hover, .homepage-experience .checkout-modal-submit:focus-visible,
+.homepage-experience .homepage-story-cta:hover, .homepage-experience .homepage-story-cta:focus-visible,
+.homepage-experience .homepage-map-cta:hover, .homepage-experience .homepage-map-cta:focus-visible,
+.homepage-experience .suggestion-box-submit:hover, .homepage-experience .suggestion-box-submit:focus-visible,
+.homepage-experience .lucky-moment-reveal-button:hover, .homepage-experience .lucky-moment-reveal-button:focus-visible,
+.homepage-experience .lucky-card-share-button:hover, .homepage-experience .lucky-card-share-button:focus-visible {
   background: linear-gradient(to right, #fef08a, #f59e0b, #b45309);
   box-shadow: 0 0 35px rgba(245, 158, 11, 1);
   transform: scale(1.05);
 }
 
-.homepage-offer-action:active,
-.checkout-modal-submit:active,
-.homepage-story-cta:active,
-.homepage-map-cta:active,
-.suggestion-box-submit:active,
-.lucky-moment-reveal-button:active,
-.lucky-card-share-button:active {
+.homepage-experience .homepage-offer-action:active,
+.homepage-experience .checkout-modal-submit:active,
+.homepage-experience .homepage-story-cta:active,
+.homepage-experience .homepage-map-cta:active,
+.homepage-experience .suggestion-box-submit:active,
+.homepage-experience .lucky-moment-reveal-button:active,
+.homepage-experience .lucky-card-share-button:active {
   transform: scale(0.95);
 }
 
