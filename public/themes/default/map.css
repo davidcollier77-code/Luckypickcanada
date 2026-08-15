@@ -1,0 +1,67 @@
+/* Community Map visual layer for the Default Theme. */
+html { scroll-behavior: smooth; }
+.lucky-map-shell { font-family: var(--lpc-body); isolation: isolate; }
+.lucky-map-shell h1, .lucky-map-shell h2 { font-family: var(--lpc-display); }
+.home-link, .story-link, .province-marker, .province-select-card { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, filter 180ms ease, background 180ms ease; }
+.home-link:hover, .home-link:focus-visible, .story-link:hover, .story-link:focus-visible, .province-marker:hover, .province-marker:focus-visible, .province-select-card:hover, .province-select-card:focus-visible { transform: translateY(-3px); outline: none; filter: brightness(1.08); }
+.map-panel { display: flex; flex-direction: column; width: 100%; align-items: center; justify-content: center; gap: 1rem; padding: 0 !important; overflow: visible !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+.map-panel::before, .map-panel::after { content: none !important; }
+.official-map-artwork { position: relative; width: min(100%, 44rem); max-width: 100%; aspect-ratio: 569 / 464; overflow: hidden; border: 1px solid rgba(255, 219, 126, 0.68); border-radius: 18px; background: #071614; box-shadow: 0 0 0 6px rgba(15, 9, 3, 0.92), 0 0 0 8px rgba(160, 103, 26, 0.52), 0 30px 72px rgba(0, 0, 0, 0.58); }
+.official-map-image { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; -webkit-transform: translateZ(0); transform: translateZ(0); }
+.map-overlay-instruction, .map-empty-state { position: absolute; z-index: 1; margin: 0; padding: .6rem .8rem; border: 1px solid rgba(255, 235, 160, .45); border-radius: 999px; color: #fff7d6; background: rgba(4, 29, 27, .86); box-shadow: 0 4px 16px rgba(0, 0, 0, .34); font-size: clamp(.62rem, 1.4vw, .82rem); font-weight: 800; line-height: 1.35; text-align: center; }
+.map-overlay-instruction { right: 3%; bottom: 3%; max-width: 52%; }
+.map-empty-state { top: 50%; left: 50%; width: min(76%, 30rem); transform: translate(-50%, -50%); }
+.province-marker { position: absolute; z-index: 5; display: grid; place-items: center; width: clamp(1.5rem, 4vw, 2.625rem); height: clamp(1.5rem, 4vw, 2.625rem); padding: 0; border: 1px solid rgba(255, 239, 177, .9); border-radius: 999px; color: #fff3c8; background: rgba(5, 31, 29, .92); box-shadow: 0 7px 18px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .18); cursor: pointer; font-size: clamp(.72rem, 1.6vw, 1rem); font-weight: 950; transform: translate(-50%, -50%); }
+.province-marker.has-stories { color: #15372a; background: radial-gradient(circle at 32% 28%, #fffdf0 0 8%, #fce38a 23%, #e7ae36 51%, #9b6513 100%); border-color: #fff0a9; box-shadow: 0 0 0 4px rgba(255, 220, 111, .12), 0 0 24px rgba(248, 198, 73, .6), 0 8px 18px rgba(0, 0, 0, .38), inset 0 2px 3px rgba(255, 255, 255, .65); }
+.province-marker.is-active { transform: translate(-50%, calc(-50% - 2px)) scale(1.12); border-color: #fffbea; box-shadow: 0 0 0 6px rgba(255, 236, 162, .18), 0 0 34px rgba(255, 202, 64, .9), 0 10px 22px rgba(0, 0, 0, .42); z-index: 3; }
+.province-marker:hover, .province-marker:focus-visible { transform: translate(-50%, calc(-50% - 3px)); }
+.province-marker.is-active:hover, .province-marker.is-active:focus-visible { transform: translate(-50%, calc(-50% - 3px)) scale(1.12); }
+.province-marker .marker-count { position: static; display: grid; width: 100%; height: 100%; min-width: 0; place-items: center; padding: 0; border: 0; border-radius: inherit; color: inherit; background: transparent; box-shadow: none; font-size: clamp(.78rem, 1.7vw, 1.12rem); }
+.province-marker.has-stories .marker-count { color: #17382b; }
+.province-marker-code { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.province-marker .marker-sparkle { position: absolute; inset: -.48rem; border: 1px solid rgba(255, 235, 155, .58); border-radius: inherit; animation: marker-pulse 2.1s ease-in-out infinite; }
+@keyframes marker-pulse { 0%, 100% { transform: scale(.88); opacity: .22; } 50% { transform: scale(1.28); opacity: .82; } }
+@keyframes aurora-drift { from { transform: translate3d(-8%, -2%, 0) rotate(-7deg); opacity: .34; } to { transform: translate3d(8%, 3%, 0) rotate(6deg); opacity: .62; } }
+.mobile-province-select { display: none; }
+.map-statistics { align-items: stretch; }
+.map-statistic { display: grid; align-content: center; min-height: 7.5rem; }
+.lucky-story-map { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr); align-items: start; max-width: 80rem; margin-inline: auto; }
+.map-province-details { overflow: hidden; max-height: 36rem; opacity: 1; animation: province-details-reveal 300ms ease-in-out both; }
+@keyframes province-details-reveal { from { max-height: 0; opacity: 0; transform: translateY(-.35rem); } to { max-height: 36rem; opacity: 1; transform: translateY(0); } }
+.map-story-panel { position: sticky !important; top: 1rem; }
+.map-story-card { box-shadow: inset 0 1px rgba(255, 255, 255, .08), 0 10px 24px rgba(0, 0, 0, .16); }
+.map-community-section, .map-province-section { border-radius: 24px; }
+.map-activity-card, .map-province-card { transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
+.map-activity-card:hover, .map-activity-card:focus-visible, .map-province-card:hover, .map-province-card:focus-visible { transform: translateY(-2px); border-color: rgba(250,204,21,.7) !important; outline: none; }
+.story-modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.72); }
+.story-modal { position: relative; width: min(100%, 440px); padding: 1.5rem; border-radius: 20px; color: #fff7d6; background: #0b2d28; }
+.story-modal > button { position: absolute; top: .5rem; right: .8rem; border: 0; color: inherit; background: transparent; font-size: 2rem; cursor: pointer; }
+.story-modal form, .story-modal label { display: grid; gap: .55rem; }
+.story-modal form { margin-top: 1rem; }
+.story-modal input, .story-modal textarea { padding: .65rem; border: 1px solid rgba(255,235,160,.5); border-radius: 8px; color: inherit; background: rgba(0,0,0,.18); }
+.story-modal form button { padding: .75rem; border: 0; border-radius: 999px; color: #06110d; background: #facc15; font-weight: 900; cursor: pointer; }
+
+@media (max-width: 860px) {
+  #lucky-story-map { grid-template-columns: 1fr !important; }
+  .map-story-panel { position: static !important; }
+  .official-map-artwork { width: min(100%, 44rem); margin-inline: auto; }
+  .map-panel { justify-content: center; }
+}
+
+@media (max-width: 560px) {
+  .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
+  .lucky-map-shell > div { width: 100%; }
+  .map-statistics { grid-template-columns: 1fr !important; gap: .65rem !important; }
+  .map-statistic { min-height: 0; }
+  .official-map-artwork { width: min(100%, 36rem); display: grid; place-items: center; border-radius: 14px; box-shadow: 0 0 0 3px rgba(15, 9, 3, .92), 0 0 0 4px rgba(160, 103, 26, .52), 0 16px 36px rgba(0, 0, 0, .42); }
+  .official-map-image { max-width: 100%; }
+  .province-marker .marker-count { font-size: .68rem; }
+  .map-overlay-instruction { right: 2%; bottom: 2%; max-width: 62%; }
+  .map-community-section, .map-province-section { border-radius: 18px; }
+  .mobile-province-select { display: grid; gap: .5rem; margin-top: 1rem; color: #fde68a; font-weight: 800; }
+  .mobile-province-select select { width: 100%; min-height: 3.25rem; padding: .7rem 2.5rem .7rem .9rem; border: 1px solid rgba(255,235,160,.52); border-radius: 12px; color: #fff7d6; background: linear-gradient(135deg, #0b2d28, #123a35); box-shadow: inset 0 1px rgba(255,255,255,.1), 0 8px 20px rgba(0,0,0,.18); font: inherit; }
+  .mobile-province-select select:focus-visible { outline: 3px solid rgba(250,204,21,.38); outline-offset: 3px; }
+  .province-selection-grid { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; } }

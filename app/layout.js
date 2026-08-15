@@ -1,4 +1,10 @@
 import './globals.css';
+import { headers } from 'next/headers';
+
+// Use Next.js build ID for cache-busting, automatically updated on each build
+// This ensures CSS cache invalidation without manual version bumps
+const buildId = process.env.BUILD_ID || process.env.GITHUB_SHA || Date.now().toString();
+const cssPath = `/themes/default/index.css?v=${buildId}`;
 
 const siteUrl = 'https://luckypickcanada.ca';
 const socialImage = '/1785347037732.png';
@@ -40,6 +46,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en-CA">
       <head>
+        <link rel="stylesheet" href={cssPath} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />

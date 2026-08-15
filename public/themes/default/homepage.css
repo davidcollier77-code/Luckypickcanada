@@ -1,0 +1,460 @@
+.homepage-experience { position: relative; width: 100%; max-width: 1440px; min-width: 0; margin: 0 auto; overflow: hidden; }
+.homepage-experience > :not(.reference-site-header, .checkout-modal-backdrop) { position: relative; z-index: 1; max-width: 100%; min-width: 0; }
+.homepage-hero > *, .homepage-community-banner > *, .homepage-offer-grid > *, .homepage-community-grid > * { min-width: 0; max-width: 100%; }
+.navigation-logo { height: 40px; width: auto; object-fit: contain; }
+.homepage-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(380px, 1.1fr); align-items: center; min-height: 680px; padding: clamp(2rem, 7vw, 6rem) clamp(1rem, 5vw, 5.5rem); }
+.homepage-hero::before { display: none; content: ''; position: absolute; inset: 3% 8% 8%; z-index: -1; border: 1px solid rgba(247, 210, 107, .2); border-radius: 46% 54% 50% 45%; background: radial-gradient(ellipse at 65% 42%, rgba(95, 210, 165, .18), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(141, 102, 224, .14), transparent 30%); }
+.homepage-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; margin-top: 1.4rem; }
+.homepage-hero-artwork { display: block; width: 100%; height: auto; }
+.homepage-text-link { color: #ffe29a; font-size: .86rem; font-weight: 800; letter-spacing: .05em; text-decoration: none; text-transform: uppercase; transition: color .2s ease, transform .2s ease; }
+.homepage-text-link:hover { color: #fff5cf; transform: translateX(3px); }
+.homepage-section { padding: clamp(3.5rem, 8vw, 7rem) clamp(1rem, 5vw, 5.5rem); }
+.homepage-section-heading { max-width: 750px; margin: 0 auto 2rem; text-align: center; }
+.homepage-section-heading > p, .homepage-offer-kicker { margin: 0 0 .65rem; color: #eac56d; font-size: .7rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+.homepage-section-heading h2 { margin: 0; color: #fff0b6; font-size: clamp(2rem, 5vw, 4rem); line-height: .98; text-shadow: 0 0 28px rgba(244, 190, 64, .22); }
+.homepage-section-heading > span { display: block; max-width: 620px; margin: 1rem auto 0; color: rgba(255, 244, 211, .76); line-height: 1.7; }
+.homepage-cards-section { background: linear-gradient(90deg, transparent, rgba(117, 61, 193, .07), transparent); }
+.homepage-offer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.homepage-offer, .homepage-community-card { position: relative; isolation: isolate; overflow: hidden; min-height: 275px; padding: clamp(1.4rem, 3vw, 2.2rem); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 22px; background: rgba(10, 20, 30, 0.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 1px rgba(255,255,255,.09), 0 18px 48px rgba(0,0,0,.23); }
+.homepage-offer::before, .homepage-community-card::before { content: ''; position: absolute; z-index: 0; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgba(255, 231, 151, .05), transparent 30%, rgba(68, 210, 161, .05)); }
+.homepage-offer-featured { padding-top: clamp(1.75rem, 3vw, 2.2rem); border-color: rgba(255, 255, 255, 0.15); background: radial-gradient(circle at 90% 5%, rgba(234, 179, 56, .15), transparent 30%), rgba(20, 20, 25, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.homepage-offer-image { position: absolute; z-index: 0; right: -.75rem; bottom: -1.25rem; width: 42%; max-height: 92%; object-fit: contain; object-position: right bottom; opacity: .28; pointer-events: none; }
+.homepage-offer > :not(.homepage-offer-image) { position: relative; z-index: 20; }
+.homepage-offer h3, .homepage-community-card h2 { margin: 0; color: #fff0bd; font-size: clamp(1.35rem, 2.2vw, 2rem); line-height: 1.13; }
+.homepage-offer > p:not(.homepage-offer-kicker):not(.homepage-offer-note), .homepage-community-card > p:not(.homepage-offer-kicker) { color: rgba(255, 245, 218, .75); line-height: 1.65; }
+.homepage-offer-note { margin: 1.3rem 0 0; color: #a4dbbf; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.homepage-choice-row { display: flex; gap: .6rem; margin-top: 1.2rem; }.homepage-choice-row span { padding: .48rem .75rem; border: 1px solid rgba(255, 224, 135, .45); border-radius: 999px; color: #ffe8a0; font-family: var(--lpc-display); font-size: .82rem; }
+.homepage-offer-action, .checkout-modal-submit { margin-top: 1rem; padding: .68rem 1rem; border: 1px solid #ffe2a0; border-radius: 999px; color: #0a1918; background: linear-gradient(135deg, #fff6c7, #f4c958); font-weight: 900; cursor: pointer; }
+@media (min-width: 781px) { .homepage-offer:nth-child(2) > :not(.homepage-offer-image), .homepage-offer:nth-child(3) > :not(.homepage-offer-image) { max-width: 60%; padding-right: 1.25rem; } }
+.homepage-community-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; padding-top: 0; }.homepage-story-cta { position: relative; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; width: 90%; margin-top: 1rem; padding: 1rem 2rem; border-radius: .75rem; color: #fff; background: #0f172a; font-weight: 800; text-align: center; text-decoration: none; transition: transform .15s ease, background-color .15s ease; }.homepage-story-cta:hover, .homepage-story-cta:focus-visible { background: #1e293b; }.homepage-story-cta:focus-visible { outline: 3px solid #fff1ac; outline-offset: 4px; }.homepage-story-cta:active { transform: scale(.95); } @media (min-width: 640px) { .homepage-story-cta { width: auto; } }.homepage-map-card { background: radial-gradient(circle at 80% 10%, rgba(68, 178, 130, .26), transparent 35%), linear-gradient(145deg, rgba(6, 23, 29, .94), rgba(12, 19, 45, .84)); }.homepage-community-card .homepage-text-link { position: relative; display: inline-block; margin-top: .9rem; }
+.homepage-map-cta { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 3rem; margin-top: 1rem; padding: .75rem 1.5rem; border: 1px solid #ffe49a; border-radius: 999px; box-sizing: border-box; color: #180e00; background: linear-gradient(135deg, #fff7cc, #facc15 55%, #c37a16); box-shadow: inset 0 1px rgba(255,255,255,.72), 0 12px 28px rgba(0,0,0,.35), 0 0 26px rgba(250,204,21,.24); font-weight: 900; letter-spacing: .04em; text-align: center; text-decoration: none; text-transform: uppercase; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }.homepage-map-cta:hover, .homepage-map-cta:focus-visible { transform: translateY(-2px); filter: brightness(1.06); box-shadow: inset 0 1px rgba(255,255,255,.8), 0 16px 32px rgba(0,0,0,.42), 0 0 30px rgba(255,211,102,.38); }.homepage-map-cta:focus-visible { outline: 3px solid #fff1ac; outline-offset: 4px; }
+@media (min-width: 640px) { .homepage-map-cta { width: auto; } }
+.homepage-community-banner { display: grid; grid-template-columns: minmax(0, .9fr) minmax(300px, 1.1fr); gap: clamp(1.5rem, 5vw, 5rem); align-items: center; margin: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 5.5rem); padding: clamp(1.25rem, 4vw, 3rem); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 26px; background: radial-gradient(circle at 20% 10%, rgba(102, 83, 184, .15), transparent 35%), rgba(10, 20, 30, 0.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 1px rgba(255, 255, 255, 0.05); }.homepage-community-banner h2 { margin: 0; color: #fff1bd; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1; }.homepage-community-banner > div > p:not(.homepage-offer-kicker) { max-width: 500px; color: rgba(255, 245, 218, .76); line-height: 1.65; }.homepage-community-image { display: block; overflow: hidden; border: 1px solid rgba(255, 222, 132, .38); border-radius: 16px; }.homepage-community-image img { display: block; width: 100%; height: auto; }.homepage-footer { padding: 2.5rem 1rem 3.2rem; color: rgba(255, 235, 173, .58); font-size: .72rem; font-weight: 800; letter-spacing: .09em; text-align: center; text-transform: uppercase; }
+.checkout-modal-backdrop { position:fixed; z-index:31; inset:0; display:grid; place-items:center; padding:1rem; background:rgba(2,9,12,.76); backdrop-filter:blur(8px); }.checkout-modal { position:relative; width:min(100%, 480px); max-height:calc(100vh - 2rem); overflow:auto; padding:clamp(1.4rem,4vw,2.4rem); border:1px solid rgba(255,225,145,.5); border-radius:24px; color:#fff6d4; background:linear-gradient(145deg,#102c27,#0c1024); box-shadow:0 26px 80px rgba(0,0,0,.7); }.checkout-modal h2 { margin:.1rem 0 .6rem; }.checkout-modal > p { line-height:1.55; color:rgba(255,246,212,.8); }.checkout-modal-close { position:absolute; top:.75rem; right:.9rem; border:0; color:#fff6d4; background:transparent; font-size:2rem; cursor:pointer; }.checkout-modal-form { display:grid; gap:.9rem; margin-top:1.25rem; }.checkout-modal-form label { display:grid; gap:.35rem; color:#fff0ba; font-weight:800; }.checkout-modal-form input, .checkout-modal-form textarea { width:100%; box-sizing:border-box; padding:.7rem; border:1px solid rgba(255,225,145,.5); border-radius:10px; color:#fff; background:rgba(0,0,0,.2); font:inherit; }.checkout-modal-form fieldset { display:flex; flex-wrap:wrap; gap:.8rem; border:1px solid rgba(255,225,145,.3); border-radius:12px; }.checkout-modal-form fieldset label { display:block; }.checkout-modal-submit { width:100%; }
+@media (max-width: 780px) { .homepage-hero, .homepage-offer-grid, .homepage-community-grid, .homepage-community-banner { grid-template-columns: 1fr; }.homepage-hero { min-height:auto; padding-top:2.5rem; text-align:center; }.homepage-hero-actions { justify-content:center; } }
+
+
+/* Suggestion Box: premium glass surface with accessible, high-contrast form controls. */
+.suggestion-box { position: relative; overflow: hidden; margin: clamp(2rem, 5vw, 4rem) clamp(1rem, 5vw, 5.5rem); padding: clamp(1.35rem, 4vw, 3rem); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 28px; color: #fff5d6; background: radial-gradient(circle at 8% 10%, rgba(75, 217, 166, .15), transparent 28%), radial-gradient(circle at 94% 2%, rgba(184, 126, 255, .15), transparent 31%), rgba(10, 20, 30, 0.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), 0 26px 70px rgba(0, 0, 0, .48), 0 0 42px rgba(232, 186, 82, .1); }
+.suggestion-box-copy { position: relative; z-index: 1; max-width: 48rem; }.suggestion-box-kicker { margin: 0 0 .7rem; color: #f7d575; font-size: .72rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }.suggestion-box h2 { margin: 0; color: #fff0b2; font-size: clamp(2rem, 5vw, 3.7rem); line-height: .98; text-shadow: 0 0 24px rgba(246, 198, 83, .22); }.suggestion-box-copy > p:last-child { margin: 1rem 0 0; color: rgba(255, 246, 217, .88); line-height: 1.7; }
+.suggestion-box-notice { position: relative; z-index: 1; margin: 1.25rem 0 0; padding: .85rem 1rem; border: 1px solid; border-radius: 14px; font-weight: 800; line-height: 1.5; }.suggestion-box-notice-success { border-color: rgba(121, 231, 174, .52); color: #dcffe9; background: rgba(18, 115, 72, .32); }.suggestion-box-notice-error { border-color: rgba(255, 158, 158, .62); color: #fff0ef; background: rgba(147, 34, 47, .38); }
+.suggestion-box-form { position: relative; z-index: 1; display: grid; gap: 1rem; max-width: 48rem; margin-top: 1.65rem; }.suggestion-box-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }.suggestion-box-form label { display: grid; gap: .45rem; color: #fff0ba; font-weight: 800; }.suggestion-box-form label span { color: rgba(255, 239, 186, .72); font-size: .82em; font-weight: 600; }.suggestion-box-form input, .suggestion-box-form textarea { width: 100%; border: 1px solid rgba(255, 224, 139, .48); border-radius: 12px; padding: .84rem 1rem; color: #fffdf2; background: rgba(1, 8, 11, .62); box-shadow: inset 0 1px rgba(255,255,255,.06); }.suggestion-box-form input::placeholder, .suggestion-box-form textarea::placeholder { color: rgba(255, 242, 207, .62); }.suggestion-box-form textarea { min-height: 9rem; resize: vertical; }.suggestion-box-form input:hover, .suggestion-box-form textarea:hover { border-color: rgba(255, 228, 145, .8); background: rgba(2, 13, 16, .78); }.suggestion-box-form input:focus, .suggestion-box-form textarea:focus { outline: 3px solid rgba(94, 232, 190, .28); outline-offset: 2px; border-color: #ffe08e; box-shadow: 0 0 0 4px rgba(232, 186, 82, .14), 0 12px 28px rgba(0, 0, 0, .26); }.suggestion-box-honeypot { display: none !important; }
+.suggestion-box-submit { justify-self: start; min-width: min(100%, 18rem); padding: .88rem 1.2rem; border: 1px solid #ffe49a; border-radius: 999px; color: #180e00; background: linear-gradient(135deg, #fff7cc, #efbe47 55%, #c37a16); box-shadow: inset 0 1px rgba(255,255,255,.72), 0 12px 28px rgba(0,0,0,.35), 0 0 26px rgba(239,190,71,.2); font-weight: 900; letter-spacing: .04em; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }.suggestion-box-submit:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.06); box-shadow: inset 0 1px rgba(255,255,255,.8), 0 16px 32px rgba(0,0,0,.42), 0 0 30px rgba(255,211,102,.38); }.suggestion-box-submit:focus-visible { outline: 3px solid #fff1ac; outline-offset: 4px; }.suggestion-box-submit:disabled { cursor: not-allowed; opacity: .64; }
+@media (max-width: 620px) { .suggestion-box { border-radius: 21px; }.suggestion-box-fields { grid-template-columns: 1fr; }.suggestion-box-submit { width: 100%; } }
+
+/* The card stays straight and unobstructed; details live below the artwork. */
+.lucky-moment-shell { display: grid; justify-items: center; gap: 1rem; width: 100%; max-width: 100%; min-width: 0; }
+.lucky-moment-stage { position: relative; width: min(100%, 18rem); max-width: 100%; isolation: isolate; }
+
+/* ==========================================================================
+   1. Card Stage Container (Starry Night + Flowing Aurora)
+   ========================================================================== */
+.card-stage-container {
+  width: 100%;
+  max-width: 380px;
+  min-height: 520px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  background: #04080e; /* Deep night sky base */
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.9);
+}
+
+/* Layer 1: Realistic Pin-Point Stars */
+.card-stage-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle 1.5px at 15% 18%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 2px at 28% 65%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1.2px at 42% 28%, rgba(255,255,255,0.9) 100%, transparent 100%),
+    radial-gradient(circle 1.8px at 58% 82%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1.5px at 72% 22%, rgba(255,255,255,0.95) 100%, transparent 100%),
+    radial-gradient(circle 2px at 85% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1.2px at 92% 35%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 6% 80%, rgba(255,255,255,0.8) 100%, transparent 100%),
+    radial-gradient(circle 1.5px at 50% 12%, #ffffff 100%, transparent 100%);
+  background-size: 200px 200px;
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Layer 2: Slow-Flowing Aurora Ribbon */
+.card-stage-container::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(
+    ellipse 80% 50% at 50% 40%,
+    var(--tier-aurora-color, rgba(16, 185, 129, 0.55)) 0%,
+    rgba(6, 182, 212, 0.35) 40%,
+    rgba(15, 23, 42, 0) 75%
+  );
+  mix-blend-mode: screen;
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  animation: auroraDrift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes auroraDrift {
+  0% {
+    transform: translateY(-8%) rotate(-4deg) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translateY(6%) rotate(3deg) scale(1.12);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(-3%) rotate(-1deg) scale(1.04);
+    opacity: 0.7;
+  }
+}
+
+/* ==========================================================================
+   2. Three-Tier Theme Variables
+   ========================================================================== */
+/* Standard Tier */
+.tier-standard {
+  --tier-aurora-color: rgba(16, 185, 129, 0.55);
+  --tier-halo-glow: 0 0 25px rgba(205, 127, 50, 0.35);
+}
+
+/* Premium Tier */
+.tier-premium {
+  --tier-aurora-color: rgba(56, 189, 248, 0.65);
+  --tier-halo-glow: 0 0 35px rgba(186, 230, 253, 0.6), 0 0 70px rgba(56, 189, 248, 0.3);
+}
+
+/* Flagship Tier */
+.tier-flagship {
+  --tier-aurora-color: rgba(245, 158, 11, 0.75);
+  --tier-halo-glow: 0 0 50px rgba(255, 215, 0, 0.8), 0 0 100px rgba(245, 158, 11, 0.45);
+}
+
+/* ==========================================================================
+   3. Card Flip & Reveal Glow
+   ========================================================================== */
+.flip-card-wrapper {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 5 / 7;
+  min-height: 460px;
+  position: relative;
+  z-index: 3; /* Sits above the stars & aurora */
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.34, 1.4, 0.64, 1), box-shadow 0.8s ease;
+}
+
+.flip-card-wrapper.is-revealed {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), var(--tier-halo-glow);
+  animation: revealPulse 1.2s ease-out;
+}
+
+@keyframes revealPulse {
+  0% {
+    filter: drop-shadow(0 0 0px transparent);
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.5));
+  }
+  100% {
+    filter: drop-shadow(0 0 0px transparent);
+  }
+}
+
+.lucky-moment-card { position: relative; width: 100%; height: 100%; min-width: 0; border: 1px solid rgba(255, 234, 172, .42); border-radius: 12px; background: #081614; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2); transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.34, 1.4, 0.64, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .card-stage-container::after,
+  .flip-card-wrapper.is-revealed {
+    animation: none !important;
+  }
+}
+.lucky-moment-card::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05); }
+.lucky-moment-card-face { position: absolute; inset: 0; border-radius: inherit; backface-visibility: hidden; -webkit-backface-visibility: hidden; width: 100%; height: 100%; }
+.lucky-moment-card-back img, .lucky-moment-card-image { display: block; width: 100%; height: 100%; object-fit: contain; }
+.lucky-moment-card-front { transform: rotateY(180deg); pointer-events: none; opacity: 1; }
+.lucky-moment-card-front::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.12) 25%, rgba(255, 255, 255, 0.08) 28%, transparent 34%); mix-blend-mode: overlay; opacity: 0.6; }
+
+.lucky-moment-stage.is-revealed .lucky-moment-card-front { pointer-events: auto; opacity: 1; }
+.lucky-moment-card-image, .lucky-moment-artwork-placeholder { position: absolute; inset: 0; }
+.lucky-moment-artwork-placeholder { z-index: 1; display: grid; min-height: 5rem; place-items: center; border: 1px solid rgba(255, 225, 145, .45); border-radius: inherit; color: #f9d575; font-family: var(--lpc-display); }
+.lucky-moment-stage.is-generating::after { content: ''; position: absolute; inset: -.65rem; z-index: -1; border-radius: 18px; background: radial-gradient(ellipse, rgba(159, 220, 193, .22), rgba(86, 140, 151, .12) 44%, transparent 74%); filter: blur(14px); animation: lucky-moment-aura 1s ease-in-out infinite alternate; }
+.lucky-moment-stage.is-generating .lucky-moment-card { animation: lucky-moment-generate 2s cubic-bezier(.36, .02, .18, 1) both; }
+.lucky-moment-details { display: grid; justify-items: center; gap: .55rem; width: min(100%, 32rem); padding: .1rem .75rem 0; text-align: center; }
+.lucky-moment-eyebrow { margin: 0; color: #f8d575; font-size: .72rem; font-weight: 900; letter-spacing: .15em; line-height: 1.45; text-transform: uppercase; }
+.lucky-moment-details h3 { margin: 0; color: #fff0b2; font-family: var(--lpc-display); font-size: clamp(1.45rem, 5vw, 2rem); line-height: 1.08; }
+.lucky-moment-quote { margin: 0; color: #fff8df; font-family: Georgia, serif; font-size: clamp(1.05rem, 3vw, 1.3rem); font-style: italic; font-weight: 700; line-height: 1.5; text-shadow: 0 0 18px rgba(250, 204, 81, .22); }
+.lucky-moment-actions { display: grid; justify-items: center; gap: .65rem; width: min(100%, 20rem); }
+.lucky-moment-reveal-button { width: 100%; max-width: 100%; padding: .78rem 1rem; border: 1px solid #ffe2a0; border-radius: 999px; color: #0a1918; background: linear-gradient(135deg, #fff6c7, #f4c958); font-weight: 900; cursor: pointer; }
+.lucky-moment-reveal-button:disabled { cursor: wait; opacity: .82; }
+.lucky-moment-instruction { margin: 0; color: rgba(255, 245, 218, .76); font-size: .82rem; text-align: center; }
+@keyframes lucky-moment-generate { 0%, 100% { transform: translateX(0) scale(1); } 12% { transform: translateX(-1px) scale(1.002); } 24% { transform: translateX(2px) scale(1.004); } 38% { transform: translateX(-2px) scale(1.003); } 52% { transform: translateX(1px) scale(1.005); } 68% { transform: translateX(-1px) scale(1.003); } 84% { transform: translateX(1px) scale(1.006); } }
+@keyframes lucky-moment-aura { from { opacity: .42; } to { opacity: .78; } }
+@keyframes lucky-moment-card-reveal { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lucky-moment-stage.is-generating::after, .lucky-moment-stage.is-generating .lucky-moment-card, .lucky-moment-stage.is-revealed .lucky-moment-card-front { animation: none; } }
+
+.lucky-card-share { display: grid; justify-items: center; gap: .5rem; width: min(100%, 20rem); }
+.lucky-card-share-button { width: 100%; padding: .72rem 1rem; border: 1px solid rgba(173, 244, 205, .82); border-radius: 999px; color: #effff4; background: linear-gradient(135deg, #21685a, #12332f); box-shadow: inset 0 1px rgba(255,255,255,.2), 0 9px 24px rgba(0,0,0,.28); font-weight: 900; cursor: pointer; }
+.lucky-card-share-button:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
+.lucky-card-share-button:disabled { cursor: wait; opacity: .75; }
+.lucky-card-share-status { margin: 0; color: rgba(222, 255, 232, .86); font-size: .76rem; line-height: 1.4; text-align: center; }
+
+/* Tiered Lucky Card reveal treatment: presentation-only; card selection and saved daily reveal remain unchanged. */
+.lucky-moment-stage::before, .lucky-moment-stage::after { content: ''; position: absolute; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .45s ease; }
+.lucky-moment-stage::before { inset: -2rem; border-radius: 40%; background: radial-gradient(ellipse, rgba(120, 244, 196, .22), rgba(80, 127, 234, .11) 42%, transparent 72%); filter: blur(20px); }
+.lucky-moment-stage::after { inset: -.75rem; border: 1px solid rgba(203, 255, 229, .28); border-radius: 18px; box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset, 0 0 30px rgba(99, 241, 192, .14); }
+.lucky-moment-stage.is-generating::before, .lucky-moment-stage.is-generating::after { opacity: 1; }
+.lucky-moment-tier-standard.is-generating .lucky-moment-card { animation-duration: 1.5s; }
+.lucky-moment-tier-standard.is-generating::before { animation: lucky-moment-standard-aura 1.5s ease-out both; }
+.lucky-moment-tier-premium::before { inset: -2.7rem; background: radial-gradient(ellipse at 50% 44%, rgba(255, 226, 125, .42), rgba(232, 171, 53, .17) 37%, transparent 73%); filter: blur(24px) saturate(1.13); }
+.lucky-moment-tier-premium::after { inset: -1rem; border-color: rgba(255, 221, 126, .58); box-shadow: 0 0 24px rgba(245, 192, 66, .32), 0 0 55px rgba(235, 187, 77, .18), inset 0 0 22px rgba(255, 235, 174, .09); }
+.lucky-moment-tier-premium.is-generating::before { animation: lucky-moment-premium-aura 2.6s ease-in-out both; }
+.lucky-moment-tier-premium.is-generating .lucky-moment-card { animation-name: lucky-moment-premium-generate; animation-duration: 2.6s; }
+.lucky-moment-tier-flagship::before { inset: -3.3rem; background: conic-gradient(from 145deg, rgba(80, 237, 192, .08), rgba(137, 107, 255, .32), rgba(255, 219, 107, .47), rgba(74, 215, 185, .28), rgba(80, 237, 192, .08)); filter: blur(27px) saturate(1.16); }
+.lucky-moment-tier-flagship::after { inset: -1.2rem; border-color: rgba(255, 232, 157, .67); box-shadow: 0 0 20px rgba(255, 230, 136, .34), 0 0 56px rgba(101, 224, 191, .23), 0 0 88px rgba(135, 98, 243, .18), inset 0 0 26px rgba(255, 247, 210, .12); }
+.lucky-moment-tier-flagship.is-generating::before { animation: lucky-moment-flagship-aurora 3.6s cubic-bezier(.22,.61,.36,1) both; }
+.lucky-moment-tier-flagship.is-generating::after { animation: lucky-moment-light-pulse 1.2s ease-in-out 3; }
+.lucky-moment-tier-flagship.is-generating .lucky-moment-card { animation-name: lucky-moment-flagship-generate; animation-duration: 3.6s; }
+.lucky-moment-tier-premium.is-revealed .lucky-moment-card-front, .lucky-moment-tier-flagship.is-revealed .lucky-moment-card-front { animation-name: lucky-moment-card-flip-reveal; animation-duration: .82s; }
+.lucky-moment-tier-flagship.is-revealed .lucky-moment-card-front { animation-duration: 1s; }
+.lucky-moment-tier-message { width: min(100%, 32rem); margin: 0; padding: .7rem 1rem; border: 1px solid rgba(255, 223, 132, .58); border-radius: 999px; color: #fff4c9; font-size: clamp(.88rem, 2.8vw, 1rem); font-weight: 900; letter-spacing: .02em; line-height: 1.45; text-align: center; text-shadow: 0 1px 8px rgba(0,0,0,.8); background: linear-gradient(135deg, rgba(87, 56, 7, .82), rgba(14, 39, 34, .86)); box-shadow: inset 0 1px rgba(255,255,255,.17), 0 0 25px rgba(242, 190, 67, .2); }
+.lucky-moment-tier-message-flagship { border-color: rgba(255, 235, 167, .74); background: linear-gradient(135deg, rgba(42, 31, 13, .92), rgba(21, 69, 59, .86) 56%, rgba(47, 29, 69, .88)); box-shadow: inset 0 1px rgba(255,255,255,.2), 0 0 28px rgba(246, 201, 86, .28), 0 0 48px rgba(81, 224, 187, .13); }
+@keyframes lucky-moment-standard-aura { 0% { opacity: 0; } 46% { opacity: .72; } 100% { opacity: .36; } }
+@keyframes lucky-moment-premium-aura { 0% { opacity: 0; transform: scale(.9); } 42% { opacity: .9; transform: scale(1.04); } 100% { opacity: .65; transform: scale(1); } }
+@keyframes lucky-moment-flagship-aurora { 0%, 18% { opacity: 0; transform: scale(.85) rotate(-8deg); } 50% { opacity: .72; transform: scale(1.04) rotate(3deg); } 78% { opacity: 1; transform: scale(1.08) rotate(-2deg); } 100% { opacity: .74; transform: scale(1); } }
+@keyframes lucky-moment-light-pulse { 0%, 100% { opacity: .38; } 50% { opacity: 1; } }
+@keyframes lucky-moment-premium-generate { 0%, 100% { transform: translateX(0) rotate(0); } 16% { transform: translateX(-1px) rotate(-.15deg); } 31% { transform: translateX(2px) rotate(.2deg); } 49% { transform: translateX(-2px) rotate(-.25deg); } 67% { transform: translateX(1px) rotate(.2deg); } 84% { transform: translateX(-1px) rotate(-.08deg); } }
+@keyframes lucky-moment-flagship-generate { 0%, 16% { transform: translateX(0) rotate(0); } 28% { transform: translateX(-1px) rotate(-.1deg); } 40% { transform: translateX(2px) rotate(.15deg); } 53% { transform: translateX(-2px) rotate(-.2deg); } 67% { transform: translateX(2px) rotate(.18deg); } 80% { transform: translateX(-1px) rotate(-.1deg); } 91% { transform: translateX(1px) rotate(.05deg); } 100% { transform: translateX(0) rotate(0); } }
+@keyframes lucky-moment-card-flip-reveal { 0% { opacity: 0; transform: perspective(1000px) rotateY(-10deg) scale(0.95); filter: brightness(1.35); } 55% { opacity: 1; filter: brightness(1.1); transform: perspective(1000px) rotateY(-2deg) scale(1.02); } 100% { opacity: 1; transform: perspective(1000px) rotateY(0) scale(1); filter: brightness(1); } }
+@media (prefers-reduced-motion: reduce) { .lucky-moment-stage::before, .lucky-moment-stage::after, .lucky-moment-tier-premium.is-generating .lucky-moment-card, .lucky-moment-tier-flagship.is-generating .lucky-moment-card, .lucky-moment-tier-premium.is-revealed .lucky-moment-card-front, .lucky-moment-tier-flagship.is-revealed .lucky-moment-card-front { animation: none; } }
+
+/* Keep the three purchase offer cards free of decorative artwork. */
+.homepage-offer-grid > .homepage-offer:nth-child(-n + 3) > .homepage-offer-image {
+  display: none;
+}
+
+
+/* UI-only spacing and touch refinements. */
+.homepage-section { scroll-margin-top: 1rem; }
+.homepage-offer-grid { gap: clamp(1rem, 2vw, 1.5rem); }
+.homepage-offer, .homepage-community-card { min-height: 300px; border-radius: 26px; }
+.homepage-offer-action { min-height: 44px; padding-inline: 1.2rem; }
+.homepage-community-banner { gap: clamp(1.5rem, 4vw, 4rem); border-radius: 30px; }
+.homepage-community-image { box-shadow: 0 18px 38px rgba(0, 0, 0, .28); }
+
+@media (max-width: 780px) {
+  .homepage-section { padding: clamp(3rem, 12vw, 4.5rem) clamp(1rem, 5vw, 1.5rem); }
+  .homepage-section-heading { margin-bottom: 1.5rem; }
+  .homepage-section-heading > span { line-height: 1.6; }
+  .homepage-offer-grid { gap: 1rem; }
+  .homepage-offer, .homepage-community-card { min-height: 0; padding: 1.35rem; border-radius: 20px; }
+  .homepage-offer h3, .homepage-community-card h2 { font-size: clamp(1.45rem, 7vw, 1.9rem); }
+  .homepage-offer-action { width: 100%; min-height: 48px; margin-top: 1.15rem; }
+  .homepage-community-banner { margin: 1rem; padding: 1.35rem; border-radius: 22px; }
+  .homepage-community-image { max-width: 30rem; margin-inline: auto; }
+}
+
+.homepage-offer-title { margin: 0; color: #fff0bd; font-size: clamp(1.35rem, 2.2vw, 2rem); line-height: 1.13; }
+.homepage-footer p { max-width: 760px; margin: 0 auto; }
+.homepage-disclaimer { margin-top: .9rem !important; color: rgba(255, 235, 173, .72); font-weight: 600; letter-spacing: normal; line-height: 1.55; text-transform: none; }
+.homepage-social-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem 1.25rem; margin-top: 1.35rem; }
+.homepage-social-links a { color: #ffe49a; font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
+.homepage-social-links a:hover, .homepage-social-links a:focus-visible { color: #fff7cc; text-decoration: underline; }
+
+.homepage-experience::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle 1.5px at 10% 20%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 30% 15%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 2px at 80% 40%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 70% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1.5px at 40% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 90% 10%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1.5px at 50% 90%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 2px at 20% 60%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 60% 30%, #ffffff 100%, transparent 100%);
+  background-size: 200px 200px;
+  background-color: transparent;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.homepage-experience::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: cosmic-aurora-shift 30s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  background: radial-gradient(ellipse 60% 40% at 20% -10%, rgba(24, 208, 132, 0.15) 0%, rgba(24, 208, 132, 0.05) 40%, transparent 70%),
+              radial-gradient(ellipse 70% 50% at 80% 110%, rgba(151, 78, 240, 0.12) 0%, rgba(151, 78, 240, 0.04) 40%, transparent 70%),
+              radial-gradient(ellipse 80% 60% at 50% 50%, rgba(105, 184, 255, 0.08) 0%, rgba(105, 184, 255, 0.03) 30%, transparent 60%);
+}
+
+@keyframes cosmic-aurora-shift {
+  0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 0.8; }
+  50% { transform: scale(1.1) translate(-2%, 2%) rotate(1deg); opacity: 1; }
+  100% { transform: scale(1.05) translate(2%, -1%) rotate(-1deg); opacity: 0.85; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homepage-experience::after {
+    animation: none !important;
+  }
+}
+
+/* Rare Shooting Star */
+.homepage-hero::after {
+  content: "";
+  position: absolute;
+  top: 10%;
+  left: 20%;
+  width: 2px;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  transform: rotate(45deg);
+  opacity: 0;
+  pointer-events: none;
+  animation: rare-shooting-star 25s linear infinite;
+  z-index: 0;
+}
+
+@keyframes rare-shooting-star {
+  0%, 94% {
+    opacity: 0;
+    transform: rotate(45deg) translateY(-200px);
+  }
+  95% {
+    opacity: 1;
+  }
+  97% {
+    opacity: 0;
+    transform: rotate(45deg) translateY(600px);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(45deg) translateY(600px);
+  }
+}
+
+/* Align homepage buttons with main reveal button style (cta-glow) */
+.homepage-offer-action,
+.checkout-modal-submit,
+.homepage-story-cta,
+.homepage-map-cta,
+.suggestion-box-submit,
+.lucky-moment-reveal-button,
+.lucky-card-share-button {
+  background: linear-gradient(to right, #fde68a, #fbbf24, #d97706);
+  color: #020617;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 9999px;
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.8);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+  border: none;
+}
+
+.homepage-offer-action:hover, .homepage-offer-action:focus-visible,
+.checkout-modal-submit:hover, .checkout-modal-submit:focus-visible,
+.homepage-story-cta:hover, .homepage-story-cta:focus-visible,
+.homepage-map-cta:hover, .homepage-map-cta:focus-visible,
+.suggestion-box-submit:hover, .suggestion-box-submit:focus-visible,
+.lucky-moment-reveal-button:hover, .lucky-moment-reveal-button:focus-visible,
+.lucky-card-share-button:hover, .lucky-card-share-button:focus-visible {
+  background: linear-gradient(to right, #fef08a, #f59e0b, #b45309);
+  box-shadow: 0 0 35px rgba(245, 158, 11, 1);
+  transform: scale(1.05);
+}
+
+.homepage-offer-action:active,
+.checkout-modal-submit:active,
+.homepage-story-cta:active,
+.homepage-map-cta:active,
+.suggestion-box-submit:active,
+.lucky-moment-reveal-button:active,
+.lucky-card-share-button:active {
+  transform: scale(0.95);
+}
+
+/* Specific resets for structural layouts keeping their padding/dimensions intact without overriding the global visual styles above */
+
+/* Override solid backgrounds in the hero section to reveal the cosmic starry night sky */
+.homepage-experience > header > .absolute.inset-0.bg-\[\#020609\] {
+  background-color: transparent !important;
+}
+
+.homepage-experience > header nav > div.backdrop-blur-xl {
+  background-color: transparent !important;
+}
+
+
+/* HD Aurora and Underglows */
+.hd-aurora-bg {
+  background: radial-gradient(circle at center, rgba(30, 215, 150, 0.2) 0%, rgba(15, 80, 150, 0.1) 40%, transparent 70%);
+  filter: blur(40px);
+}
+.hd-aurora-accent {
+  background: radial-gradient(circle at center, rgba(100, 200, 255, 0.25) 0%, rgba(50, 100, 200, 0.1) 50%, transparent 70%);
+  filter: blur(30px);
+}
+
+.tier-underglow {
+  transition: opacity 0.5s ease-in-out;
+}
+.tier-silver {
+  background: radial-gradient(ellipse at center, rgba(200, 200, 200, 0.4) 0%, rgba(100, 100, 100, 0.1) 50%, transparent 70%);
+  animation: pulse-silver 2s infinite alternate;
+}
+.tier-gold {
+  background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.5) 0%, rgba(200, 150, 0, 0.15) 50%, transparent 70%);
+  animation: pulse-gold 1.5s infinite alternate;
+}
+.tier-premium, .tier-flagship {
+  background: radial-gradient(ellipse at center, rgba(100, 255, 200, 0.5) 0%, rgba(50, 150, 255, 0.2) 50%, transparent 70%);
+  animation: pulse-premium 1s infinite alternate;
+}
+
+@keyframes pulse-silver {
+  from { opacity: 0.6; filter: blur(20px); }
+  to { opacity: 0.9; filter: blur(25px); }
+}
+@keyframes pulse-gold {
+  from { opacity: 0.5; filter: blur(25px); }
+  to { opacity: 1; filter: blur(35px); }
+}
+@keyframes pulse-premium {
+  from { opacity: 0.7; filter: blur(30px); }
+  to { opacity: 1; filter: blur(45px); }
+}
+
+.card-reveal-wrapper { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+
+.flip-card-wrapper { position: absolute; inset: 0; width: 100%; height: 100%; transform-style: preserve-3d; perspective: 1200px; }
+.flip-card-wrapper.is-revealed .lucky-moment-card { transform: rotateY(180deg); }
+
+.card-stage-container { perspective: 1200px; }
