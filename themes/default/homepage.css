@@ -368,15 +368,15 @@
 .suggestion-box-submit,
 .lucky-moment-reveal-button,
 .lucky-card-share-button {
-  background: linear-gradient(to right, #fde68a, #fbbf24, #d97706) !important;
-  color: #020617 !important;
-  font-weight: 900 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
-  border-radius: 9999px !important;
-  box-shadow: 0 0 30px rgba(245, 158, 11, 0.8) !important;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease !important;
-  border: none !important;
+  background: linear-gradient(to right, #fde68a, #fbbf24, #d97706);
+  color: #020617;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 9999px;
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.8);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+  border: none;
 }
 
 .homepage-offer-action:hover, .homepage-offer-action:focus-visible,
@@ -386,10 +386,9 @@
 .suggestion-box-submit:hover, .suggestion-box-submit:focus-visible,
 .lucky-moment-reveal-button:hover, .lucky-moment-reveal-button:focus-visible,
 .lucky-card-share-button:hover, .lucky-card-share-button:focus-visible {
-  background: linear-gradient(to right, #fef08a, #f59e0b, #b45309) !important;
-  box-shadow: 0 0 35px rgba(245, 158, 11, 1) !important;
-  transform: scale(1.05) !important;
-  filter: brightness(1.05) !important;
+  background: linear-gradient(to right, #fef08a, #f59e0b, #b45309);
+  box-shadow: 0 0 35px rgba(245, 158, 11, 1);
+  transform: scale(1.05);
 }
 
 .homepage-offer-action:active,
@@ -399,7 +398,7 @@
 .suggestion-box-submit:active,
 .lucky-moment-reveal-button:active,
 .lucky-card-share-button:active {
-  transform: scale(0.95) !important;
+  transform: scale(0.95);
 }
 
 /* Specific resets for structural layouts keeping their padding/dimensions intact without overriding the global visual styles above */
