@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 const heroLinks = [
   { href: '/lucky-meter', label: 'Lucky Meter' },
-  { href: '#cards', label: 'Today’s Lucky Moment' },
+  { href: '#cards', label: "Today's Lucky Moment" },
   { href: '#community-map', label: 'Community Map' },
   { href: 'https://www.facebook.com/groups/1060808069624999/', label: 'Facebook Group', external: true },
 ];
@@ -139,13 +139,13 @@ export default function Hero() {
       <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-between">
 
         {/* Top Nav: Glassmorphism pill */}
-        <nav className="w-full max-w-3xl mx-auto" aria-label="Primary navigation">
+        <nav className="w-full max-w-3xl mx-auto relative z-20 pointer-events-auto" aria-label="Primary navigation">
           <div className="backdrop-blur-xl bg-white/5 border border-white/20 md:border-amber-400/20 rounded-full px-4 py-3 flex items-center justify-around gap-2 md:gap-4 text-center shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             {heroLinks.map(({ href, label, external }) => (
               <a
                 key={href}
                 href={href}
-                className="text-[11px] sm:text-xs md:text-sm font-medium text-amber-50 hover:text-amber-200 transition-colors py-1 px-2 rounded-full hover:bg-white/5"
+                className="pointer-events-auto text-[11px] sm:text-xs md:text-sm font-medium text-amber-50 hover:text-amber-200 transition-colors py-1 px-2 rounded-full hover:bg-white/5"
                 {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
               >
                 {label}
