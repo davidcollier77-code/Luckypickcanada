@@ -3,7 +3,7 @@
 .homepage-hero > *, .homepage-community-banner > *, .homepage-offer-grid > *, .homepage-community-grid > * { min-width: 0; max-width: 100%; }
 .navigation-logo { height: 40px; width: auto; object-fit: contain; }
 .homepage-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(380px, 1.1fr); align-items: center; min-height: 680px; padding: clamp(2rem, 7vw, 6rem) clamp(1rem, 5vw, 5.5rem); }
-.homepage-hero::before { content: ''; position: absolute; inset: 3% 8% 8%; z-index: -1; border: 1px solid rgba(247, 210, 107, .2); border-radius: 46% 54% 50% 45%; background: radial-gradient(ellipse at 65% 42%, rgba(95, 210, 165, .18), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(141, 102, 224, .14), transparent 30%); }
+.homepage-hero::before { display: none; content: ''; position: absolute; inset: 3% 8% 8%; z-index: -1; border: 1px solid rgba(247, 210, 107, .2); border-radius: 46% 54% 50% 45%; background: radial-gradient(ellipse at 65% 42%, rgba(95, 210, 165, .18), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(141, 102, 224, .14), transparent 30%); }
 .homepage-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; margin-top: 1.4rem; }
 .homepage-hero-artwork { display: block; width: 100%; height: auto; }
 .homepage-text-link { color: #ffe29a; font-size: .86rem; font-weight: 800; letter-spacing: .05em; text-decoration: none; text-transform: uppercase; transition: color .2s ease, transform .2s ease; }
@@ -280,15 +280,15 @@
   right: 0;
   z-index: -1;
   background:
-    radial-gradient(circle 1.5px at 10% 20%, rgba(255, 255, 255, 0.9) 100%, transparent 100%),
-    radial-gradient(circle 1px at 30% 15%, rgba(255, 255, 255, 0.7) 100%, transparent 100%),
-    radial-gradient(circle 2px at 80% 40%, rgba(255, 255, 255, 1) 100%, transparent 100%),
-    radial-gradient(circle 1px at 70% 80%, rgba(255, 255, 255, 0.8) 100%, transparent 100%),
-    radial-gradient(circle 1.5px at 40% 70%, rgba(255, 255, 255, 0.6) 100%, transparent 100%),
-    radial-gradient(circle 1px at 90% 10%, rgba(255, 255, 255, 0.5) 100%, transparent 100%),
-    radial-gradient(circle 1.5px at 50% 90%, rgba(255, 255, 255, 0.9) 100%, transparent 100%),
-    radial-gradient(circle 2px at 20% 60%, rgba(255, 255, 255, 0.7) 100%, transparent 100%),
-    radial-gradient(circle 1px at 60% 30%, rgba(255, 255, 255, 1) 100%, transparent 100%);
+    radial-gradient(circle 1.5px at 10% 20%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 30% 15%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 2px at 80% 40%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 70% 80%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1.5px at 40% 70%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 90% 10%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1.5px at 50% 90%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 2px at 20% 60%, #ffffff 100%, transparent 100%),
+    radial-gradient(circle 1px at 60% 30%, #ffffff 100%, transparent 100%);
   background-size: 200px 200px;
   background-color: transparent;
   opacity: 0.8;
@@ -307,9 +307,10 @@
   pointer-events: none;
   animation: cosmic-aurora-shift 30s ease-in-out infinite alternate;
   will-change: transform, opacity;
-  background: radial-gradient(ellipse 60% 40% at 20% -10%, rgba(24, 208, 132, 0.15), transparent 70%),
-              radial-gradient(ellipse 70% 50% at 80% 110%, rgba(151, 78, 240, 0.12), transparent 70%),
-              radial-gradient(ellipse 80% 60% at 50% 50%, rgba(105, 184, 255, 0.08), transparent 60%);
+  transform: translateZ(0);
+  background: radial-gradient(ellipse 60% 40% at 20% -10%, rgba(24, 208, 132, 0.15) 0%, rgba(24, 208, 132, 0.05) 40%, transparent 70%),
+              radial-gradient(ellipse 70% 50% at 80% 110%, rgba(151, 78, 240, 0.12) 0%, rgba(151, 78, 240, 0.04) 40%, transparent 70%),
+              radial-gradient(ellipse 80% 60% at 50% 50%, rgba(105, 184, 255, 0.08) 0%, rgba(105, 184, 255, 0.03) 30%, transparent 60%);
 }
 
 @keyframes cosmic-aurora-shift {
@@ -342,14 +343,14 @@
 }
 
 @keyframes rare-shooting-star {
-  0%, 92% {
+  0%, 94% {
     opacity: 0;
     transform: rotate(45deg) translateY(-200px);
   }
-  94% {
+  95% {
     opacity: 1;
   }
-  98% {
+  97% {
     opacity: 0;
     transform: rotate(45deg) translateY(600px);
   }
@@ -360,43 +361,44 @@
 }
 
 /* Align homepage buttons with main reveal button style (cta-glow) */
-.homepage-offer-action {
-  /* Using specific styling from cta-glow matching the prompt */
+.homepage-offer-action,
+.checkout-modal-submit,
+.homepage-story-cta,
+.homepage-map-cta,
+.suggestion-box-submit,
+.lucky-moment-reveal-button,
+.lucky-card-share-button {
   background: linear-gradient(to right, #fde68a, #fbbf24, #d97706);
-  color: #020617; /* text-slate-950 */
-  font-weight: 900; /* font-black */
+  color: #020617;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.1em; /* tracking-widest */
+  letter-spacing: 0.1em;
   border-radius: 9999px;
   box-shadow: 0 0 30px rgba(245, 158, 11, 0.8);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
   border: none;
 }
 
-.homepage-offer-action:hover, .homepage-offer-action:focus-visible {
+.homepage-offer-action:hover, .homepage-offer-action:focus-visible,
+.checkout-modal-submit:hover, .checkout-modal-submit:focus-visible,
+.homepage-story-cta:hover, .homepage-story-cta:focus-visible,
+.homepage-map-cta:hover, .homepage-map-cta:focus-visible,
+.suggestion-box-submit:hover, .suggestion-box-submit:focus-visible,
+.lucky-moment-reveal-button:hover, .lucky-moment-reveal-button:focus-visible,
+.lucky-card-share-button:hover, .lucky-card-share-button:focus-visible {
+  background: linear-gradient(to right, #fef08a, #f59e0b, #b45309);
+  box-shadow: 0 0 35px rgba(245, 158, 11, 1);
   transform: scale(1.05);
 }
 
-.homepage-offer-action:active {
+.homepage-offer-action:active,
+.checkout-modal-submit:active,
+.homepage-story-cta:active,
+.homepage-map-cta:active,
+.suggestion-box-submit:active,
+.lucky-moment-reveal-button:active,
+.lucky-card-share-button:active {
   transform: scale(0.95);
 }
 
-/* Align homepage buttons with main reveal button style (cta-glow) without important flag */
-.homepage-offer-grid .cta-glow,
-.homepage-community-grid .cta-glow,
-.suggestion-box-form .cta-glow {
-  background: linear-gradient(to right, #fde68a, #fbbf24, #d97706);
-  color: #020617; /* text-slate-950 */
-  font-weight: 900; /* font-black */
-  text-transform: uppercase;
-  letter-spacing: 0.1em; /* tracking-widest */
-  box-shadow: 0 0 30px rgba(245, 158, 11, 0.8);
-  border: none;
-}
-
-.homepage-offer-grid .cta-glow:hover, .homepage-offer-grid .cta-glow:focus-visible,
-.homepage-community-grid .cta-glow:hover, .homepage-community-grid .cta-glow:focus-visible,
-.suggestion-box-form .cta-glow:hover, .suggestion-box-form .cta-glow:focus-visible {
-  background: linear-gradient(to right, #fef08a, #f59e0b, #b45309);
-  box-shadow: 0 0 35px rgba(245, 158, 11, 1);
-}
+/* Specific resets for structural layouts keeping their padding/dimensions intact without overriding the global visual styles above */
