@@ -96,9 +96,9 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="cosmic-aurora-background">
-      <div className="lucky-moment-shell">
-        <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto">
+    <div className="cosmic-aurora-background relative min-h-[100dvh] w-full bg-[#030712] flex flex-col items-center justify-between p-4 overflow-x-hidden select-none">
+      <div className="lucky-moment-shell relative z-10 w-full max-w-sm flex flex-col items-center justify-center my-auto py-2">
+        <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto top-header">
           <div className="text-center font-bold text-gray-700 mb-4 text-lg">
             Resets in: <MidnightCountdown fallback="--h --m --s" />
           </div>
@@ -116,20 +116,29 @@ export default function LuckyCardReveal() {
         </div>
 
         <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
-          <div className={`card-stage-container tier-${selectedCard?.tier || 'standard'}`}>
+          <div className={`card-stage-container relative w-[260px] xs:w-[280px] sm:w-[300px] aspect-[5/7] flex items-center justify-center [perspective:1200px] tier-${selectedCard?.tier || 'standard'}`}>
+            {/* HD AURORA BACKGROUND LAYER */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+              <div className="hd-aurora-bg absolute -top-[20%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[600px] sm:h-[900px] rounded-full opacity-80 mix-blend-screen pointer-events-none"></div>
+              <div className="hd-aurora-accent absolute top-[10%] right-[-10%] w-[350px] h-[350px] rounded-full opacity-60 mix-blend-screen pointer-events-none"></div>
+            </div>
+
+            {/* TIER UNDERGLOW */}
+            <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier || 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-0`}></div>
+
             <div className={`flip-card-wrapper ${isRevealed ? 'is-revealed' : ''}`}>
               <div className="lucky-moment-card" aria-live="polite">
                 <div className="lucky-moment-card-face lucky-moment-card-back" aria-hidden={isRevealed}>
                   <div className="card-reveal-wrapper">
                     <div className="card-aura-glow"></div>
-                    <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="card-image" />
+                    <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="card-image w-full h-full object-cover select-none pointer-events-none" />
                   </div>
                 </div>
                 <div className="lucky-moment-card-face lucky-moment-card-front" aria-hidden={!isRevealed}>
                   {selectedCard && (selectedCard.image ? (
                     <div className="card-reveal-wrapper">
                       <div className="card-aura-glow"></div>
-                      <img src={selectedCard.image} alt={selectedCard.title || 'Lucky Card'} className="lucky-moment-card-image card-image" />
+                      <img src={selectedCard.image} alt={selectedCard.title || 'Lucky Card'} className="lucky-moment-card-image card-image w-full h-full object-cover select-none pointer-events-none" />
                     </div>
                   ) : <span>Lucky Pick 🍁 Canada.ca</span>)}
                 </div>
@@ -138,7 +147,7 @@ export default function LuckyCardReveal() {
           </div>
         </div>
 
-        <div className="lucky-moment-actions mt-6 relative z-10 pointer-events-auto">
+        <div className="lucky-moment-actions mt-6 relative z-10 w-full max-w-md flex flex-col items-center gap-3 pb-4 pointer-events-auto footer-action">
           {isReady && isRevealed && selectedCard && (
             <>
               <div className="glass-quote-container text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
