@@ -1,9 +1,9 @@
 /* LuckyPickCanada Default Theme: the active visual layer. */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap');
-@import './tokens.css';
-@import './default.css';
-@import './effects.css';
-@import './homepage.css';
-@import './header.css';
-@import './hero.css';
-@import './map.css';
+@import './tokens.css?v=ed7687bf';
+@import './default.css?v=ed7687bf';
+@import './effects.css?v=ed7687bf';
+@import './homepage.css?v=ed7687bf';
+@import './header.css?v=ed7687bf';
+@import './hero.css?v=ed7687bf';
+@import './map.css?v=ed7687bf';
