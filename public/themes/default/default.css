@@ -1,14 +1,13 @@
+/* Lucky Pick Canada luxury visual system: midnight glass, metallic gold, and restrained aurora light. */
 :root {
   color-scheme: dark;
-  --night: #02070c;
-  --ink: #07110d;
-  --gold: #eabe52;
-  --gold-light: #fff0ac;
-  --emerald: #18b978;
-  --teal: #57e5d0;
-  --aurora-blue: #69b8ff;
-  --aurora-violet: #bf8bff;
-  --canada-red: #c91624;
+  --night: #030507;
+  --ink: #080b10;
+  --gold: #e8ba52;
+  --gold-light: #fff1b2;
+  --aurora-green: #49c99f;
+  --aurora-blue: #76bdfd;
+  --aurora-violet: #c58dff;
   --lpc-display: 'Cinzel', Georgia, serif;
   --lpc-body: 'Manrope', Inter, ui-sans-serif, system-ui, sans-serif;
 }
@@ -24,9 +23,10 @@ body {
   color: #fff8de;
   font-family: var(--lpc-body);
   background:
-    radial-gradient(ellipse 70% 42% at 50% -8%, rgba(24, 208, 132, 0.18), transparent 68%),
-    radial-gradient(ellipse 55% 38% at 94% 12%, rgba(151, 78, 240, 0.16), transparent 70%),
-    linear-gradient(180deg, #02070c 0%, #061a1c 48%, #020609 100%);
+    radial-gradient(ellipse 58% 32% at 16% 8%, rgba(50, 205, 155, 0.16), transparent 70%),
+    radial-gradient(ellipse 48% 33% at 84% 13%, rgba(181, 107, 255, 0.18), transparent 70%),
+    radial-gradient(ellipse 72% 42% at 50% 110%, rgba(17, 67, 74, 0.38), transparent 74%),
+    linear-gradient(180deg, #010204 0%, #06090f 44%, #020609 100%);
   text-rendering: optimizeLegibility;
 }
 body::before,
@@ -101,24 +101,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(255, 226, 136, 0
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
-
-/* Lucky Pick Canada luxury visual system: midnight glass, metallic gold, and restrained aurora light. */
-:root {
-  --night: #030507;
-  --ink: #080b10;
-  --gold: #e8ba52;
-  --gold-light: #fff1b2;
-  --aurora-green: #49c99f;
-  --aurora-blue: #76bdfd;
-  --aurora-violet: #c58dff;
-}
-
-body {
-  background:
-    radial-gradient(ellipse 58% 32% at 16% 8%, rgba(50, 205, 155, 0.16), transparent 70%),
-    radial-gradient(ellipse 48% 33% at 84% 13%, rgba(181, 107, 255, 0.18), transparent 70%),
-    radial-gradient(ellipse 72% 42% at 50% 110%, rgba(17, 67, 74, 0.38), transparent 74%),
-    linear-gradient(180deg, #010204 0%, #06090f 44%, #020609 100%);
 }
 
 .lucky-site-shell::before,
