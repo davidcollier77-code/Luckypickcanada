@@ -402,3 +402,12 @@
 }
 
 /* Specific resets for structural layouts keeping their padding/dimensions intact without overriding the global visual styles above */
+
+/* Override solid backgrounds in the hero section to reveal the cosmic starry night sky */
+.homepage-experience > header > .absolute.inset-0.bg-\[\#020609\] {
+  background-color: transparent !important;
+}
+
+.homepage-experience > header nav > div.backdrop-blur-xl {
+  background-color: transparent !important;
+}
