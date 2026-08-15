@@ -126,7 +126,7 @@ export default function LuckyCardReveal() {
             {/* TIER UNDERGLOW */}
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier || 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-0`}></div>
 
-            <div className={`flip-card-wrapper ${isRevealed ? 'is-revealed' : ''}`}>
+            <div className={`flip-card-wrapper z-10 ${isRevealed ? 'is-revealed' : ''}`}>
               <div id="flippable-card" className="lucky-moment-card relative w-full h-full cursor-pointer transition-transform duration-700 [transform-style:preserve-3d] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl" aria-live="polite">
 
                 {/* FRONT FACE: UNREVEALED (which is the "back" of the collectible card conceptually, but visually it's what you see first) */}
