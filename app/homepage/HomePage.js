@@ -11,6 +11,7 @@ import { DEFAULT_THEME } from '../../themes/default/theme';
 import TurnstileField from '../turnstile-field';
 import Hero from './Hero';
 import FAQSection from './FAQSection';
+import { LUCKY_CARDS } from '../lucky-card-data';
 
 function SectionHeading({ eyebrow, id, title, children }) {
   return (
@@ -73,7 +74,7 @@ export default function HomePage() {
 
       <section id="cards" className="homepage-section homepage-cards-section" aria-labelledby="cards-heading">
         <SectionHeading eyebrow="A daily moment of possibility" id="cards-heading" title="Today’s Lucky Moment">
-          Open one collectible card each day for a calm spark of encouragement.
+          Open one collectible card each day for a calm spark of encouragement. Can you collect all {LUCKY_CARDS.length}?
         </SectionHeading>
         <LuckyCardReveal />
       </section>
