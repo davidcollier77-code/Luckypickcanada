@@ -9,3 +9,7 @@ This journal records critical performance lessons, patterns, and anti-patterns e
 ## 2026-08-12 - setInterval Component Re-render Bottleneck
 **Learning:** Components that rely on `setInterval` for updating time displays (like `timeLeft` in `app/lucky-meter/page.js` and `app/lucky-card-reveal.js`) will trigger full component tree re-renders every single second. This causes significant performance degradation and battery drain when large child trees or complex SVG animations are present.
 **Action:** Isolate frequently updating state (like a countdown timer updated via `setInterval`) into its own tiny component (e.g. `<MidnightCountdown />`). This localizes the 1-second interval re-renders to just that text element, preventing the parent page from constantly re-rendering.
+
+## 2026-08-16 - Canvas Particle System Optimization
+**Learning:** Using `ctx.arc()` to draw thousands of tiny 1-2px particles (like a starfield) is a massive performance bottleneck. It requires trig calculations and multiple API calls (`beginPath`, `arc`, `fill`) per particle per frame, which severely limits framerate on mobile devices.
+**Action:** Always use `ctx.fillRect()` instead of `ctx.arc()` for sub-pixel or tiny particles. A 1px square visually looks identical to a 1px circle due to screen resolution, but renders magnitudes faster.
