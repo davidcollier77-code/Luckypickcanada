@@ -77,6 +77,7 @@ export default function LuckyCardReveal() {
     setIsRevealed(false);
     setIsAnnouncing(false);
     setIsGenerating(true);
+
     revealTimer.current = window.setTimeout(() => {
       if (!timing.announcement) {
         showLuckyCard(card);
@@ -90,7 +91,8 @@ export default function LuckyCardReveal() {
   return (
     <div className="cosmic-aurora-background relative min-h-[100dvh] w-full bg-[#030712] flex flex-col items-center justify-between p-4 overflow-x-hidden select-none">
       <div className="lucky-moment-shell relative z-10 w-full max-w-sm flex flex-col items-center justify-center my-auto py-2">
-        <div className="mb-6 flex flex-col items-center w-full relative z-10 pointer-events-auto top-header">
+
+        <div className="mb-6 flex flex-col items-center w-full relative z-50 pointer-events-auto top-header">
           <div className="text-center font-bold text-gray-700 mb-4 text-lg">
             Resets in: <MidnightCountdown fallback="--h --m --s" />
           </div>
@@ -107,50 +109,61 @@ export default function LuckyCardReveal() {
           )}
         </div>
 
-        <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'} ${isGenerating ? 'is-generating' : ''} ${isAnnouncing ? 'is-announcing' : ''}`}>
-          <div className={`card-stage-container relative w-[260px] xs:w-[280px] sm:w-[300px] aspect-[5/7] flex items-center justify-center [perspective:1200px] tier-${selectedCard?.tier || 'standard'}`}>
+        {/* ISOLATE creates a strict boundary so layers cannot cross over each other */}
+        <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'} relative isolate z-[100]`}>
+          <div className="card-stage-container relative w-[260px] xs:w-[280px] sm:w-[300px] aspect-[5/7] flex items-center justify-center" style={{ perspective: '1200px', zIndex: 999 }}>
             
-            <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
+            {/* BACKGROUND AURORAS: Forced to the absolute back */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden z-[-10]">
               <div className="hd-aurora-bg absolute -top-[20%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[600px] sm:h-[900px] rounded-full opacity-80 mix-blend-screen pointer-events-none"></div>
               <div className="hd-aurora-accent absolute top-[10%] right-[-10%] w-[350px] h-[350px] rounded-full opacity-60 mix-blend-screen pointer-events-none"></div>
             </div>
 
-            <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier || 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-0`}></div>
+            {/* UNDERGLOW: Forced behind the card */}
+            <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier || 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
 
-            <div className="flip-card-wrapper z-10 w-full h-full relative">
+            {/* CARD WRAPPER: Forced to the absolute front */}
+            <div className="relative z-[9999] w-full h-full cursor-pointer">
               
-              <div id="flippable-card" className="relative w-full h-full cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl" aria-live="polite">
-                <div className="shake-target relative w-full h-full">
-                  
-                  {/* FRONT FACE: INDEPENDENT ROTATION */}
-                  <div className={`absolute inset-0 w-full h-full [backface-visibility:hidden] [-webkit-backface-visibility:hidden] transition-transform duration-700 rounded-2xl shadow-2xl ${isRevealed ? '[transform:rotateY(180deg)]' : '[transform:rotateY(0deg)]'}`} aria-hidden={isRevealed}>
-                    <div className="relative w-full h-full rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
-                      <div className="card-aura-glow"></div>
-                      <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="card-image w-full h-full object-cover select-none pointer-events-none" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
-                    </div>
-                  </div>
-
-                  {/* BACK FACE: INDEPENDENT ROTATION (Starts backward at -180, flips to 0) */}
-                  <div className={`absolute inset-0 w-full h-full [backface-visibility:hidden] [-webkit-backface-visibility:hidden] transition-transform duration-700 rounded-2xl shadow-2xl ${isRevealed ? '[transform:rotateY(0deg)]' : '[transform:rotateY(-180deg)]'}`} aria-hidden={!isRevealed}>
-                    <div className="relative w-full h-full rounded-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80 flex items-center justify-center">
-                      {selectedCard && (selectedCard.image ? (
-                        <>
-                          <div className="card-aura-glow"></div>
-                          <img id="revealed-card-img" src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="card-image w-full h-full object-cover select-none pointer-events-none" />
-                        </>
-                      ) : <span className="relative z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
-                    </div>
-                  </div>
-
-                </div>
+              {/* FRONT FACE */}
+              <div
+                className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                  transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                  zIndex: isRevealed ? -1 : 10
+                }}
+                aria-hidden={isRevealed}
+              >
+                <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="w-full h-full object-cover select-none pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
               </div>
+
+              {/* BACK FACE */}
+              <div
+                className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80 flex items-center justify-center"
+                style={{
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                  transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transform: isRevealed ? 'rotateY(0deg)' : 'rotateY(-180deg)',
+                  zIndex: isRevealed ? 10 : -1
+                }}
+                aria-hidden={!isRevealed}
+              >
+                {selectedCard && (selectedCard.image ? (
+                  <img src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-cover select-none pointer-events-none" />
+                ) : <span className="relative z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
+              </div>
+
             </div>
           </div>
         </div>
 
-        <div className="lucky-moment-actions mt-6 relative z-10 w-full max-w-md flex flex-col items-center gap-3 pb-4 pointer-events-auto footer-action">
+        <div className="lucky-moment-actions mt-6 relative z-50 w-full max-w-md flex flex-col items-center gap-3 pb-4 pointer-events-auto footer-action">
           {isReady && isRevealed && selectedCard && (
             <>
               <div className="glass-quote-container text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
