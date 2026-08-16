@@ -11,4 +11,4 @@ export function getTurnstileSiteKey() {
 }
 
 // Client-side function for React components
-export const TURNSTILE_SITE_KEY = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY !== '[SENSITIVE]' && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY !== '' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : null) : null;
+export const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY !== '[SENSITIVE]' && process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY !== '' ? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY : null;
