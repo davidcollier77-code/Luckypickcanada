@@ -1,7 +1,7 @@
 import { getLuckyStoryMap } from '../lucky-stories';
 import LuckyMapOfCanada from './lucky-map-of-canada';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export const metadata = {
   alternates: { canonical: '/lucky-map-of-canada' },
