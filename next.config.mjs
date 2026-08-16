@@ -23,6 +23,19 @@ const nextConfig = {
   generateBuildId: async () => {
     return process.env.GITHUB_SHA || `build-${Date.now()}`;
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=3600, stale-while-revalidate=86400',
+          },
+        ],
+      },
+    ];
+  },
   // 301 Redirect for Domain Consistency: route www to non-www
   async redirects() {
     return [

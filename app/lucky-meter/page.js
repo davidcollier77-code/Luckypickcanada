@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import MidnightCountdown from '../../components/midnight-countdown';
 
+export const dynamic = 'force-static';
+
 const CANADIAN_FORTUNES = [
   "Like an aurora over the North, your brightest moment can arrive when you least expect it.",
   "From coast to coast, every small hopeful step carries its own kind of Canadian magic.",
