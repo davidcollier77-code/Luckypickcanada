@@ -131,6 +131,8 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
   }, [onClose]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         closeReveal();
@@ -138,7 +140,7 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeReveal]);
+  }, [closeReveal, isOpen]);
 
   if (!isOpen || !reveal) {
     return null;

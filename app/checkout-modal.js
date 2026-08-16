@@ -15,6 +15,8 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
   const isRevealTestMode = canBypassRevealPayment(type);
 
   useEffect(() => {
+    if (!isOpen) return;
+    
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         onClose();
@@ -22,7 +24,7 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, isOpen]);
 
   async function requestRevealAccess(event) {
     if (!isRevealTestMode) return;
