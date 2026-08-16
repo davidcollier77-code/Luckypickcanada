@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { canBypassRevealPayment } from './test-tools/reveal-testing/revealTestConfig';
 
 const COPY = {
@@ -13,6 +13,16 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
   const [luckyPickGame, setLuckyPickGame] = useState('6');
   const copy = COPY[type];
   const isRevealTestMode = canBypassRevealPayment(type);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   async function requestRevealAccess(event) {
     if (!isRevealTestMode) return;
