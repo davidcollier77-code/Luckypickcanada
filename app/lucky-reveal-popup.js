@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ShareLuckyPickButton from './share-lucky-pick-button';
 
 const colorDescriptions = {
@@ -125,10 +125,22 @@ function SlowWords({ children, startDelay = 0 }) {
 export default function LuckyRevealPopup({ reveal, onClose }) {
   const [isOpen, setIsOpen] = useState(Boolean(reveal));
 
-  function closeReveal() {
+  const closeReveal = useCallback(() => {
     setIsOpen(false);
     onClose?.();
-  }
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        closeReveal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [closeReveal, isOpen]);
 
   if (!isOpen || !reveal) {
     return null;
