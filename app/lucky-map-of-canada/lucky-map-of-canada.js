@@ -23,7 +23,8 @@ const provinces = [
   { code: 'NL', name: 'Newfoundland and Labrador', x: 87.5, y: 61.5 },
 ];
 
-const { pageStyle, cardStyle } = DEFAULT_MAP_THEME;
+const { pageStyle: origPageStyle, cardStyle } = DEFAULT_MAP_THEME;
+const { background: _bg, backgroundColor: _bgc, ...pageStyle } = origPageStyle;
 
 function provinceStories(stories, provinceCode) {
   return stories.filter((story) => story.province === provinceCode);
@@ -173,7 +174,7 @@ export default function LuckyMapOfCanada({ mapData }) {
   }
 
   return (
-    <div className="lucky-map-shell" style={pageStyle}>
+    <div className="lucky-map-shell cosmic-aurora-background bg-[#030712]" style={pageStyle}>
 
       <div aria-hidden="true" style={{ position: 'absolute', inset: '5% -10% auto', height: 220, background: 'linear-gradient(90deg, transparent, rgba(62, 178, 126, 0.2), rgba(247, 202, 82, 0.18), rgba(70, 133, 177, 0.16), transparent)', filter: 'blur(22px)', borderRadius: '50%', transformOrigin: 'center', animation: 'aurora-drift 10s ease-in-out infinite alternate' }} />
 
