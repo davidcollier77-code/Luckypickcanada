@@ -91,11 +91,13 @@ export default function LuckyMeterPage() {
         star.alpha += star.twinkleSpeed;
         const currentOpacity = Math.abs(Math.sin(star.alpha + star.colorPhase));
 
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
         // Cream-colored stars matching LPC theme
         ctx.fillStyle = `rgba(255, 248, 223, ${0.15 + currentOpacity * 0.75})`;
-        ctx.fill();
+
+        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+        // Replaced expensive path/arc rendering with fillRect for tiny 1-2px stars.
+        // This drops canvas API calls per frame significantly and improves rendering speed.
+        ctx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
       });
 
       // Spawn Shooting Stars at randomized intervals

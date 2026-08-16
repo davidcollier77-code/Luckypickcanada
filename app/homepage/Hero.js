@@ -92,9 +92,12 @@ export default function Hero() {
         const star = stars[i];
 
         ctx.globalAlpha = star.alpha;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fill();
+
+        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+        // Replaced expensive path/arc rendering with fillRect for tiny 1-2px stars.
+        // Bypassing trigonometric curve calculations for thousands of particles
+        // keeps main thread execution time low and maintains a smooth 60fps.
+        ctx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
 
         star.alpha += star.twinkleSpeed * star.twinkleDir;
 
