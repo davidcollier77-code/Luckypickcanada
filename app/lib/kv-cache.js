@@ -21,13 +21,12 @@ export async function cached(env, ctx, key, fetcher, opts = {}) {
   const { ttl, swr, kvCacheTtl } = { ...DEFAULTS, ...opts };
   const now = Date.now();
 
+  let raw = null;
   // 1) Try KV (edge-cached read). cacheTtl keeps hot reads local to the colo.
-  let raw;
   try {
     raw = await env.LUCKYPICK_KV.get(key, { type: "json", cacheTtl: kvCacheTtl });
   } catch (error) {
-    console.error('Failed to read from KV cache:', error);
-    raw = null;
+    console.warn(`[KV Cache Error] Failed to GET key "${key}":`, error);
   }
 
   if (raw) {
@@ -40,7 +39,11 @@ export async function cached(env, ctx, key, fetcher, opts = {}) {
 
     // Stale but within SWR window → return stale, refresh in background.
     if (now < entry.s) {
-      ctx.waitUntil(refresh(env, key, fetcher, ttl, swr));
+      try {
+        ctx.waitUntil(refresh(env, key, fetcher, ttl, swr).catch(err => console.error('[KV Cache Error] SWR refresh failed:', err)));
+      } catch (err) {
+        console.warn(`[KV Cache Error] waitUntil failed for SWR:`, err);
+      }
       return entry.v;
     }
   }
@@ -51,13 +54,7 @@ export async function cached(env, ctx, key, fetcher, opts = {}) {
 
 /** Fetch from Neon and write the new entry to KV. Returns the fresh value. */
 async function refresh(env, key, fetcher, ttl, swr) {
-  let value;
-  try {
-    value = await fetcher();
-  } catch (error) {
-    console.error('Fetcher failed in refresh:', error);
-    throw error;
-  }
+  const value = await fetcher();
   const now = Date.now();
   const entry = {
     v: value,
@@ -70,8 +67,7 @@ async function refresh(env, key, fetcher, ttl, swr) {
       expirationTtl: ttl + swr,
     });
   } catch (error) {
-    console.error('Failed to write to KV cache:', error);
-    // Continue to return the value even if cache write fails
+    console.warn(`[KV Cache Error] Failed to PUT key "${key}":`, error);
   }
   return value;
 }
@@ -83,7 +79,11 @@ async function refresh(env, key, fetcher, ttl, swr) {
  * consider a short ttl or a versioned key.
  */
 export async function invalidate(env, key) {
-  await env.LUCKYPICK_KV.delete(key);
+  try {
+    await env.LUCKYPICK_KV.delete(key);
+  } catch (error) {
+    console.warn(`[KV Cache Error] Failed to DELETE key "${key}":`, error);
+  }
 }
 
 /**
