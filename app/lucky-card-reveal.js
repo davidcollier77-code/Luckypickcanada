@@ -128,31 +128,31 @@ export default function LuckyCardReveal() {
 
             <div className={`flip-card-wrapper z-10 ${isRevealed ? 'is-revealed' : ''}`}>
               <div id="flippable-card" className="lucky-moment-card relative w-full h-full cursor-pointer transition-transform duration-700 [transform-style:preserve-3d] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl" aria-live="polite">
+                <div className="shake-target relative w-full h-full [transform-style:preserve-3d]">
+                  {/* FRONT FACE: UNREVEALED (which is the "back" of the collectible card conceptually, but visually it's what you see first) */}
+                  <div className="lucky-moment-card-face lucky-moment-card-back absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-2xl" aria-hidden={isRevealed}>
+                    {/* INNER CLIPPING WRAPPER */}
+                    <div className="relative w-full h-full rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
+                      <div className="card-aura-glow"></div>
+                      <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="card-image w-full h-full object-cover select-none pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
+                    </div>
+                  </div>
 
-                {/* FRONT FACE: UNREVEALED (which is the "back" of the collectible card conceptually, but visually it's what you see first) */}
-                <div className="lucky-moment-card-face lucky-moment-card-back absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-2xl" aria-hidden={isRevealed}>
-                  {/* INNER CLIPPING WRAPPER */}
-                  <div className="relative w-full h-full rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
-                    <div className="card-aura-glow"></div>
-                    <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="card-image w-full h-full object-cover select-none pointer-events-none" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
+                  {/* BACK FACE: REVEALED CARD (visually the "front" of the collectible card) */}
+                  <div className="lucky-moment-card-face lucky-moment-card-front absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl shadow-2xl" aria-hidden={!isRevealed}>
+                    {/* INNER CLIPPING WRAPPER */}
+                    <div className="relative w-full h-full rounded-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80 flex items-center justify-center">
+                      {selectedCard && (selectedCard.image ? (
+                        <>
+                          <div className="card-aura-glow"></div>
+                          <img id="revealed-card-img" src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="lucky-moment-card-image card-image w-full h-full object-cover select-none pointer-events-none" />
+                        </>
+                      ) : <span className="relative z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
+                    </div>
                   </div>
                 </div>
-
-                {/* BACK FACE: REVEALED CARD (visually the "front" of the collectible card) */}
-                <div className="lucky-moment-card-face lucky-moment-card-front absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl shadow-2xl" aria-hidden={!isRevealed}>
-                  {/* INNER CLIPPING WRAPPER */}
-                  <div className="relative w-full h-full rounded-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80 flex items-center justify-center">
-                    {selectedCard && (selectedCard.image ? (
-                      <>
-                        <div className="card-aura-glow"></div>
-                        <img id="revealed-card-img" src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="lucky-moment-card-image card-image w-full h-full object-cover select-none pointer-events-none" />
-                      </>
-                    ) : <span className="relative z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>
