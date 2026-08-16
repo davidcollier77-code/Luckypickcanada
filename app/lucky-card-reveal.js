@@ -12,11 +12,6 @@ const REVEAL_TIMINGS = {
   flagship: { anticipation: 3600, announcement: 1200 },
 };
 
-const TIER_MESSAGES = {
-  premium: '✨ You discovered a Premium Lucky Card! ✨',
-  flagship: '⭐ Congratulations! You discovered the rarest Lucky Card! ⭐',
-};
-
 function localDateKey(date = new Date()) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -29,8 +24,6 @@ function findCard(cardId) {
 }
 
 export default function LuckyCardReveal() {
-  const isTestMode = false;
-
   const [selectedCard, setSelectedCard] = useState(null);
   const [previousCardId, setPreviousCardId] = useState(null);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -117,23 +110,20 @@ export default function LuckyCardReveal() {
         <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'} ${isGenerating ? 'is-generating' : ''} ${isAnnouncing ? 'is-announcing' : ''}`}>
           <div className={`card-stage-container relative w-[260px] xs:w-[280px] sm:w-[300px] aspect-[5/7] flex items-center justify-center [perspective:1200px] tier-${selectedCard?.tier || 'standard'}`}>
             
-            {/* HD AURORA BACKGROUND LAYER */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
               <div className="hd-aurora-bg absolute -top-[20%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[600px] sm:h-[900px] rounded-full opacity-80 mix-blend-screen pointer-events-none"></div>
               <div className="hd-aurora-accent absolute top-[10%] right-[-10%] w-[350px] h-[350px] rounded-full opacity-60 mix-blend-screen pointer-events-none"></div>
             </div>
 
-            {/* TIER UNDERGLOW */}
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier || 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-0`}></div>
 
-            <div className="flip-card-wrapper z-10 w-full h-full">
+            <div className="flip-card-wrapper z-10 w-full h-full relative">
               
-              {/* THE FIX: Tailwind rotation applied directly via state, skipping broken external CSS */}
-              <div id="flippable-card" className={`relative w-full h-full cursor-pointer transition-transform duration-700 [transform-style:preserve-3d] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl ${isRevealed ? '[transform:rotateY(180deg)]' : ''}`} aria-live="polite">
-                <div className="shake-target relative w-full h-full [transform-style:preserve-3d]">
+              <div id="flippable-card" className="relative w-full h-full cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl" aria-live="polite">
+                <div className="shake-target relative w-full h-full">
                   
-                  {/* FRONT FACE: UNREVEALED */}
-                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [-webkit-backface-visibility:hidden] rounded-2xl shadow-2xl" aria-hidden={isRevealed}>
+                  {/* FRONT FACE: INDEPENDENT ROTATION */}
+                  <div className={`absolute inset-0 w-full h-full [backface-visibility:hidden] [-webkit-backface-visibility:hidden] transition-transform duration-700 rounded-2xl shadow-2xl ${isRevealed ? '[transform:rotateY(180deg)]' : '[transform:rotateY(0deg)]'}`} aria-hidden={isRevealed}>
                     <div className="relative w-full h-full rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
                       <div className="card-aura-glow"></div>
                       <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="card-image w-full h-full object-cover select-none pointer-events-none" />
@@ -141,8 +131,8 @@ export default function LuckyCardReveal() {
                     </div>
                   </div>
 
-                  {/* BACK FACE: REVEALED CARD */}
-                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl shadow-2xl" aria-hidden={!isRevealed}>
+                  {/* BACK FACE: INDEPENDENT ROTATION (Starts backward at -180, flips to 0) */}
+                  <div className={`absolute inset-0 w-full h-full [backface-visibility:hidden] [-webkit-backface-visibility:hidden] transition-transform duration-700 rounded-2xl shadow-2xl ${isRevealed ? '[transform:rotateY(0deg)]' : '[transform:rotateY(-180deg)]'}`} aria-hidden={!isRevealed}>
                     <div className="relative w-full h-full rounded-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80 flex items-center justify-center">
                       {selectedCard && (selectedCard.image ? (
                         <>
