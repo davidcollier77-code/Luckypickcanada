@@ -6,6 +6,7 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "pages_build_output_dir": ".next",
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",
@@ -36,7 +37,7 @@
   "kv_namespaces": [
     {
       "binding": "LUCKYPICK_KV",
-      "id": "mock-kv-id"
+      "id": "ed5fd42773164a139315cafa4da4ca6e"
     }
   ],
   "durable_objects": {
