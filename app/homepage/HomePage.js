@@ -125,7 +125,7 @@ export default function HomePage() {
           <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
           <Link href="/crystal-ball" className="cta-glow transition-transform hover:scale-105">CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
         </article>
-        <article id="community-map" className="homepage-community-card homepage-map-card">
+        <article id="community-map" className="homepage-community-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Lucky Map</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
