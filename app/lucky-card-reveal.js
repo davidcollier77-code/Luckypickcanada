@@ -128,6 +128,7 @@ export default function LuckyCardReveal() {
 
             <div className={`flip-card-wrapper z-10 ${isRevealed ? 'is-revealed' : ''}`}>
               <div id="flippable-card" className="lucky-moment-card relative w-full h-full cursor-pointer transition-transform duration-700 [transform-style:preserve-3d] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl" aria-live="polite">
+                <div className="shake-target w-full h-full relative [transform-style:preserve-3d]">
 
                 {/* FRONT FACE: UNREVEALED (which is the "back" of the collectible card conceptually, but visually it's what you see first) */}
                 <div className="lucky-moment-card-face lucky-moment-card-back absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-2xl" aria-hidden={isRevealed}>
@@ -153,6 +154,7 @@ export default function LuckyCardReveal() {
                   </div>
                 </div>
 
+                </div>
               </div>
             </div>
           </div>
