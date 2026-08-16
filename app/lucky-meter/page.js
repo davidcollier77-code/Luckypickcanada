@@ -318,18 +318,22 @@ export default function LuckyMeterPage() {
   let tierName = 'Low Luck';
 
   if (visualPercentage !== null) {
-    if (visualPercentage < 40) {
+    if (visualPercentage <= 30) {
       tierColor = '#76bdfd';
       tierGlow = 'rgba(118, 189, 253, 0.45)';
-      tierName = 'Low Luck';
-    } else if (visualPercentage < 70) {
-      tierColor = '#49c99f'; // Good Luck (Teal/Emerald)
+      tierName = 'A quiet day to recharge.';
+    } else if (visualPercentage <= 60) {
+      tierColor = '#49c99f';
       tierGlow = 'rgba(73, 201, 159, 0.6)';
-      tierName = 'Good Luck';
-    } else {
-      tierColor = '#e8ba52'; // High Luck (Gold/Aurora)
+      tierName = 'Steady vibes and good luck.';
+    } else if (visualPercentage <= 89) {
+      tierColor = '#e8ba52';
       tierGlow = 'rgba(232, 186, 82, 0.75)';
-      tierName = 'High Luck';
+      tierName = 'The stars are aligning for you!';
+    } else {
+      tierColor = '#e8ba52';
+      tierGlow = 'rgba(232, 186, 82, 0.95)';
+      tierName = 'Cosmic energy is off the charts!';
     }
   }
 
@@ -388,10 +392,10 @@ export default function LuckyMeterPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#030507] text-[#fff8df] flex flex-col justify-between font-sans relative overflow-x-hidden">
+    <div className="cosmic-aurora-background min-h-screen bg-[#030712] text-[#fff8df] flex flex-col justify-between font-sans relative overflow-x-hidden">
       
       {/* Dynamic Aurora Atmospheric Background Effects & Canvas Layers */}
-      <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-[#030507]">
+      <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-[#030712]">
         {/* Starfield & Shooting Stars Canvas */}
         <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
@@ -551,8 +555,8 @@ export default function LuckyMeterPage() {
           {/* HIGH-DEFINITION METALLIC DIAL SVG */}
           <svg
             viewBox="0 0 400 400"
-            className="w-full h-full select-none"
-            style={{ filter: `drop-shadow(0 15px 45px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 30px ${tierGlow})` }}
+            className={`w-full h-full select-none ${isRevealed ? 'animate-pulse' : ''}`}
+            style={{ filter: `drop-shadow(0 15px 45px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 ${isRevealed ? '60px' : '30px'} ${isRevealed ? '#e8ba52' : tierGlow})` }}
           >
             <defs>
               {/* Gold Bezel Linear Gradient representing luxurious metal */}
