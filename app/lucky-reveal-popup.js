@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import ShareLuckyPickButton from './share-lucky-pick-button';
 
 const colorDescriptions = {
@@ -132,7 +132,7 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
 
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         closeReveal();
