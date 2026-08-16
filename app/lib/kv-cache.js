@@ -22,7 +22,13 @@ export async function cached(env, ctx, key, fetcher, opts = {}) {
   const now = Date.now();
 
   // 1) Try KV (edge-cached read). cacheTtl keeps hot reads local to the colo.
-  const raw = await env.LUCKYPICK_KV.get(key, { type: "json", cacheTtl: kvCacheTtl });
+  let raw;
+  try {
+    raw = await env.LUCKYPICK_KV.get(key, { type: "json", cacheTtl: kvCacheTtl });
+  } catch (error) {
+    console.error('Failed to read from KV cache:', error);
+    raw = null;
+  }
 
   if (raw) {
     const entry = raw;
@@ -45,7 +51,13 @@ export async function cached(env, ctx, key, fetcher, opts = {}) {
 
 /** Fetch from Neon and write the new entry to KV. Returns the fresh value. */
 async function refresh(env, key, fetcher, ttl, swr) {
-  const value = await fetcher();
+  let value;
+  try {
+    value = await fetcher();
+  } catch (error) {
+    console.error('Fetcher failed in refresh:', error);
+    throw error;
+  }
   const now = Date.now();
   const entry = {
     v: value,
@@ -53,9 +65,14 @@ async function refresh(env, key, fetcher, ttl, swr) {
     s: now + (ttl + swr) * 1000,
   };
   // Write to KV. TTL in KV is the absolute stale deadline (ttl + swr).
-  await env.LUCKYPICK_KV.put(key, JSON.stringify(entry), {
-    expirationTtl: ttl + swr,
-  });
+  try {
+    await env.LUCKYPICK_KV.put(key, JSON.stringify(entry), {
+      expirationTtl: ttl + swr,
+    });
+  } catch (error) {
+    console.error('Failed to write to KV cache:', error);
+    // Continue to return the value even if cache write fails
+  }
   return value;
 }
 

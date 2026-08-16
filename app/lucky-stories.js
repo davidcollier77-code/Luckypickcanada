@@ -144,6 +144,7 @@ export async function createLuckyStory({ name, location, story }) {
     return { error: 'Unable to share your lucky story.' };
   }
 
+  // Invalidate cache before returning success
   try {
     const ctx = getCloudflareContext();
     if (ctx?.env?.LUCKYPICK_KV) {
@@ -151,6 +152,7 @@ export async function createLuckyStory({ name, location, story }) {
     }
   } catch (err) {
     console.warn('Failed to invalidate cache after story creation', err);
+    // Continue even if cache invalidation fails
   }
 
   return { ok: true };
