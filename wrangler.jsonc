@@ -36,7 +36,7 @@
   "kv_namespaces": [
     {
       "binding": "LUCKYPICK_KV",
-      "id": "mock-kv-id"
+      "id": "ed5fd42773164a139315cafa4da4ca6e"
     }
   ],
   "durable_objects": {
