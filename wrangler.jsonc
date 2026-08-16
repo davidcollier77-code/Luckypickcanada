@@ -6,7 +6,6 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "pages_build_output_dir": ".next",
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS",
