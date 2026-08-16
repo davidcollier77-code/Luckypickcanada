@@ -53,7 +53,6 @@ export default function LuckyCardReveal() {
               setIsRevealed(true);
             }
           } else {
-            // It's a previous day, store the old card ID so we don't draw it again today
             setPreviousCardId(storedReveal.cardId);
           }
         }
@@ -115,8 +114,9 @@ export default function LuckyCardReveal() {
           )}
         </div>
 
-        <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'}${isRevealed ? ' is-revealed' : ''}${isGenerating ? ' is-generating' : ''}${isAnnouncing ? ' is-announcing' : ''}`}>
+        <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'} ${isGenerating ? 'is-generating' : ''} ${isAnnouncing ? 'is-announcing' : ''}`}>
           <div className={`card-stage-container relative w-[260px] xs:w-[280px] sm:w-[300px] aspect-[5/7] flex items-center justify-center [perspective:1200px] tier-${selectedCard?.tier || 'standard'}`}>
+            
             {/* HD AURORA BACKGROUND LAYER */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden z-0">
               <div className="hd-aurora-bg absolute -top-[20%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[600px] sm:h-[900px] rounded-full opacity-80 mix-blend-screen pointer-events-none"></div>
@@ -126,12 +126,14 @@ export default function LuckyCardReveal() {
             {/* TIER UNDERGLOW */}
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier || 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-0`}></div>
 
-            <div className={`flip-card-wrapper z-10 ${isRevealed ? 'is-revealed' : ''}`}>
-              <div id="flippable-card" className="lucky-moment-card relative w-full h-full cursor-pointer transition-transform duration-700 [transform-style:preserve-3d] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl" aria-live="polite">
+            <div className="flip-card-wrapper z-10 w-full h-full">
+              
+              {/* THE FIX: Tailwind rotation applied directly via state, skipping broken external CSS */}
+              <div id="flippable-card" className={`relative w-full h-full cursor-pointer transition-transform duration-700 [transform-style:preserve-3d] shadow-[0_20px_50px_rgba(0,0,0,0.8)] rounded-2xl ${isRevealed ? '[transform:rotateY(180deg)]' : ''}`} aria-live="polite">
                 <div className="shake-target relative w-full h-full [transform-style:preserve-3d]">
-                  {/* FRONT FACE: UNREVEALED (which is the "back" of the collectible card conceptually, but visually it's what you see first) */}
-                  <div className="lucky-moment-card-face lucky-moment-card-back absolute inset-0 w-full h-full [backface-visibility:hidden] rounded-2xl shadow-2xl" aria-hidden={isRevealed}>
-                    {/* INNER CLIPPING WRAPPER */}
+                  
+                  {/* FRONT FACE: UNREVEALED */}
+                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [-webkit-backface-visibility:hidden] rounded-2xl shadow-2xl" aria-hidden={isRevealed}>
                     <div className="relative w-full h-full rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
                       <div className="card-aura-glow"></div>
                       <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="card-image w-full h-full object-cover select-none pointer-events-none" />
@@ -139,19 +141,19 @@ export default function LuckyCardReveal() {
                     </div>
                   </div>
 
-                  {/* BACK FACE: REVEALED CARD (visually the "front" of the collectible card) */}
-                  <div className="lucky-moment-card-face lucky-moment-card-front absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl shadow-2xl" aria-hidden={!isRevealed}>
-                    {/* INNER CLIPPING WRAPPER */}
+                  {/* BACK FACE: REVEALED CARD */}
+                  <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl shadow-2xl" aria-hidden={!isRevealed}>
                     <div className="relative w-full h-full rounded-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80 flex items-center justify-center">
                       {selectedCard && (selectedCard.image ? (
                         <>
                           <div className="card-aura-glow"></div>
-                          <img id="revealed-card-img" src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="lucky-moment-card-image card-image w-full h-full object-cover select-none pointer-events-none" />
+                          <img id="revealed-card-img" src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="card-image w-full h-full object-cover select-none pointer-events-none" />
                         </>
                       ) : <span className="relative z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
                     </div>
                   </div>
+
                 </div>
               </div>
             </div>
