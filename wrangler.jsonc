@@ -33,6 +33,12 @@
       "bucket_name": "luckypickcanada-cache"
     }
   ],
+  "kv_namespaces": [
+    {
+      "binding": "LUCKYPICK_KV",
+      "id": "mock-kv-id"
+    }
+  ],
   "durable_objects": {
     "bindings": [
       {

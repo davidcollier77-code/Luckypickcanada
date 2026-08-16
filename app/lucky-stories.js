@@ -1,5 +1,7 @@
 import { getSql, initializeDatabase } from './lib/db-init';
 import { sanitizePlainText, sanitizeSingleLine, validatePlainTextField } from './form-security';
+import { cached, cacheKey, invalidate } from './lib/kv-cache';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export const storyProvinces = [
   { code: 'BC', name: 'British Columbia', aliases: ['bc', 'b.c.', 'british columbia'] },
@@ -142,6 +144,17 @@ export async function createLuckyStory({ name, location, story }) {
     return { error: 'Unable to share your lucky story.' };
   }
 
+  // Invalidate cache before returning success
+  try {
+    const ctx = getCloudflareContext();
+    if (ctx?.env?.LUCKYPICK_KV) {
+      await invalidate(ctx.env, cacheKey('lucky-stories-map'));
+    }
+  } catch (err) {
+    console.warn('Failed to invalidate cache after story creation', err);
+    // Continue even if cache invalidation fails
+  }
+
   return { ok: true };
 }
 
@@ -154,20 +167,38 @@ export async function getLuckyStoryMap() {
 
   try {
     await ensureLuckyStoriesTable(database);
-    const [rows, locations] = await Promise.all([
-      database`
-        select id, display_name, location, story, created_at
-        from lucky_stories
-        where approved = true
-        order by created_at desc
-        limit 100
-      `,
-      database`
-        select location
-        from lucky_stories
-        where approved = true
-      `,
-    ]);
+
+    let cfEnv = null;
+    let cfCtx = null;
+    try {
+      const context = getCloudflareContext();
+      cfEnv = context.env;
+      cfCtx = context;
+    } catch (e) {
+      // getCloudflareContext might throw if not running in CF environment
+    }
+
+    const fetcher = async () => {
+      return await Promise.all([
+        database`
+          select id, display_name, location, story, created_at
+          from lucky_stories
+          where approved = true
+          order by created_at desc
+          limit 100
+        `,
+        database`
+          select location
+          from lucky_stories
+          where approved = true
+        `,
+      ]);
+    };
+
+    const [rows, locations] = (cfEnv && cfEnv.LUCKYPICK_KV && cfCtx && cfCtx.waitUntil)
+      ? await cached(cfEnv, cfCtx, cacheKey('lucky-stories-map'), fetcher)
+      : await fetcher();
+
     const stories = rows
       .map((row) => {
         const province = getStoryProvince(row.location);
