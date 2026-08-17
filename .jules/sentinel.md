@@ -6,3 +6,7 @@
 **Vulnerability:** The Stripe checkout error handling in `app/api/checkout/route.js` could expose raw exception messages to the client.
 **Learning:** Returning `error.message` directly in URL parameters during a catch block could leak sensitive internal application structure, third-party API details, or environment configurations to users if an unhandled exception occurred.
 **Prevention:** Always replace unhandled internal exceptions with a static, generic error message (e.g. "Unable to start checkout. Please try again.") when communicating failures to the client. Keep the detailed errors isolated in secure server logs (e.g., `console.error()`).
+## 2024-08-17 - [Security Enhancement] Overly Permissive CORS Configuration
+**Vulnerability:** The `functions/api/oracle.js` Cloudflare function used `Access-Control-Allow-Origin: "*"` which allowed any domain to make cross-origin requests to this endpoint. This could potentially allow malicious sites to interact with the API on behalf of a user.
+**Learning:** Cloudflare Pages functions and other edge functions often have a permissive default or copy-pasted configuration for CORS. It is critical to restrict CORS origins to only trusted domains.
+**Prevention:** Always set `Access-Control-Allow-Origin` to specific, trusted domains rather than using a wildcard (`*`).

@@ -19,7 +19,7 @@ export async function onRequestPost(context) {
         status: 500,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
           "Access-Control-Allow-Methods": "POST, OPTIONS"
         }
       });
@@ -34,7 +34,7 @@ export async function onRequestPost(context) {
         status: 400,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
           "Access-Control-Allow-Methods": "POST, OPTIONS"
         }
       });
@@ -48,7 +48,7 @@ export async function onRequestPost(context) {
         status: 400,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
           "Access-Control-Allow-Methods": "POST, OPTIONS"
         }
       });
@@ -59,7 +59,7 @@ export async function onRequestPost(context) {
         status: 400,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
           "Access-Control-Allow-Methods": "POST, OPTIONS"
         }
       });
@@ -103,7 +103,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
           status: 504,
           headers: {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
             "Access-Control-Allow-Methods": "POST, OPTIONS"
           }
         });
@@ -118,7 +118,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
         status: 429,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
           "Access-Control-Allow-Methods": "POST, OPTIONS"
         }
       });
@@ -131,7 +131,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
         status: 502,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
           "Access-Control-Allow-Methods": "POST, OPTIONS"
         }
       });
@@ -147,7 +147,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
     return new Response(JSON.stringify({ fortune }), {
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         "Access-Control-Allow-Methods": "POST, OPTIONS"
       }
     });
@@ -157,7 +157,7 @@ Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading
     return new Response(JSON.stringify({ error: "An unexpected disturbance occurred in the ethereal realm." }), {
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
         "Access-Control-Allow-Methods": "POST, OPTIONS"
       }
     });
