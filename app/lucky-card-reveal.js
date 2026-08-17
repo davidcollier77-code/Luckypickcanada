@@ -125,6 +125,11 @@ export default function LuckyCardReveal() {
             {/* CARD WRAPPER: Forced to the absolute front */}
             <div className="relative z-[9999] w-full h-full cursor-pointer">
               
+              {/* CELEBRATORY PULSE */}
+              {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
+                <div className="celebratory-pulse"></div>
+              )}
+
               {/* FRONT FACE */}
               <div
                 className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80"
@@ -132,8 +137,7 @@ export default function LuckyCardReveal() {
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                  transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                  zIndex: isRevealed ? -1 : 10
+                  transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)'
                 }}
                 aria-hidden={isRevealed}
               >
@@ -148,8 +152,7 @@ export default function LuckyCardReveal() {
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
                   transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                  transform: isRevealed ? 'rotateY(0deg)' : 'rotateY(-180deg)',
-                  zIndex: isRevealed ? 10 : -1
+                  transform: isRevealed ? 'rotateY(0deg)' : 'rotateY(-180deg)'
                 }}
                 aria-hidden={!isRevealed}
               >
