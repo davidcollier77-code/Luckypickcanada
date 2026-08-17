@@ -110,7 +110,7 @@ export default function LuckyCardReveal() {
         </div>
 
         {/* ISOLATE creates a strict boundary so layers cannot cross over each other */}
-        <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'} relative isolate z-[100]`}>
+        <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'} relative isolate z-[100] max-w-full overflow-hidden`}>
           <div className="card-stage-container relative w-[260px] xs:w-[280px] sm:w-[300px] aspect-[5/7] flex items-center justify-center" style={{ perspective: '1200px', zIndex: 999 }}>
             
             {/* BACKGROUND AURORAS: Forced to the absolute back */}
