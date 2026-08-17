@@ -96,6 +96,17 @@ export default function LuckyMapOfCanada({ mapData }) {
     }
   }, [stories]);
 
+  useEffect(() => {
+    if (!isStoryFormOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsStoryFormOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isStoryFormOpen]);
+
   function storyUrl(storyId) {
     if (typeof window === 'undefined') return '/lucky-map-of-canada';
 
