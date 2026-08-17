@@ -70,7 +70,7 @@ export default function RootLayout({ children }) {
           <div className="starfield-layer"></div>
           <div className="aurora-layer"></div>
         </div>
-        <main className="relative z-10 w-full">
+        <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw]">
           {children}
         </main>
       </body>
