@@ -3,7 +3,7 @@ export const LUCKY_CARD_IMAGES = {
   'iron-horseshoe': '/IMG_20260728_232807_958705.png',
   'emerald-clover': '/IMG_20260728_232716_825894.png',
   'guiding-star': '/IMG_20260729_082610_857839.png',
-  'optimists-path': '/IMG_20260811_104034_403355.png',
+  'optimists-path': '/optimists-path.png',
   'cosmic-flow': '/IMG_20260811_110751_562871.png',
   'northern-lights': '/IMG_20260730_181802_670354.png',
   'coast-to-coast-tale': '/IMG_20260811_112327_703192.png',

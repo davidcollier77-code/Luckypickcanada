@@ -30,6 +30,7 @@ export default function LuckyCardReveal() {
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnnouncing, setIsAnnouncing] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const revealTimer = useRef(null);
   const announcementTimer = useRef(null);
 
@@ -77,6 +78,7 @@ export default function LuckyCardReveal() {
     setIsRevealed(false);
     setIsAnnouncing(false);
     setIsGenerating(true);
+    setImageError(false);
 
     revealTimer.current = window.setTimeout(() => {
       if (!timing.announcement) {
@@ -156,8 +158,8 @@ export default function LuckyCardReveal() {
                 }}
                 aria-hidden={!isRevealed}
               >
-                {selectedCard && (selectedCard.image ? (
-                  <img src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-cover select-none pointer-events-none" />
+                {selectedCard && (selectedCard.image && !imageError ? (
+                  <img src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-cover select-none pointer-events-none" onError={() => setImageError(true)} />
                 ) : <span className="relative z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
               </div>
