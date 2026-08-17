@@ -1,5 +1,35 @@
 import { NextResponse } from 'next/server';
 
+const ALLOWED_ORIGINS = [
+  "https://luckypickcanada.ca",
+  "https://www.luckypickcanada.ca",
+  "http://localhost:3000",
+  "http://localhost:8788",
+];
+
+function getCorsHeaders(request) {
+  const origin = request.headers.get("Origin");
+  const allowOrigin = ALLOWED_ORIGINS.includes(origin)
+    ? origin
+    : "https://luckypickcanada.ca";
+
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Vary": "Origin",
+  };
+}
+
+export async function OPTIONS(request) {
+  return new Response(null, {
+    status: 204,
+    headers: getCorsHeaders(request),
+  });
+}
+
+
+
 // Sanitize user input to prevent prompt injection
 function sanitizeInput(input) {
   const cleaned = input
@@ -19,6 +49,7 @@ function sanitizeInput(input) {
 }
 
 export async function POST(request) {
+  const corsHeaders = getCorsHeaders(request);
   try {
     // Check API Key
     const apiKey = process.env.GEMINI_API_KEY;
@@ -26,7 +57,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Configuration error: Missing API key" }, {
         status: 500,
         headers: {
-          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+          ...corsHeaders
         }
       });
     }
@@ -39,7 +70,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid JSON body" }, {
         status: 400,
         headers: {
-          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+          ...corsHeaders
         }
       });
     }
@@ -51,7 +82,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Please ask a question." }, {
         status: 400,
         headers: {
-          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+          ...corsHeaders
         }
       });
     }
@@ -60,7 +91,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Question is too long. Please keep it under 120 characters." }, {
         status: 400,
         headers: {
-          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+          ...corsHeaders
         }
       });
     }
@@ -107,7 +138,7 @@ export async function POST(request) {
         return NextResponse.json({ error: "The mists took too long to answer. Try again." }, {
           status: 504,
           headers: {
-            "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+            ...corsHeaders
           }
         });
       }
@@ -120,7 +151,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "The mists are tired! Please wait a moment before asking again." }, {
         status: 429,
         headers: {
-          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+          ...corsHeaders
         }
       });
     }
@@ -132,7 +163,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "The oracle is temporarily unavailable." }, {
         status: 502,
         headers: {
-          "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+          ...corsHeaders
         }
       });
     }
@@ -146,7 +177,7 @@ export async function POST(request) {
 
     return NextResponse.json({ fortune }, {
       headers: {
-        "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+        ...corsHeaders
       }
     });
 
@@ -155,7 +186,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "An unexpected disturbance occurred in the ethereal realm." }, {
       headers: {
       status: 500,
-        "Access-Control-Allow-Origin": "https://luckypickcanada.ca",
+        ...corsHeaders
       }
     });
   }
