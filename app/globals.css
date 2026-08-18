@@ -108,17 +108,17 @@ body {
 }
 
 @keyframes shake-flagship {
-  0% { transform: translate(0, 0) rotate(0deg); scale: 1; filter: brightness(1); }
-  10% { transform: translate(2px, 3px) rotate(1.5deg); scale: 1.02; filter: brightness(1.2); }
-  20% { transform: translate(-3px, -2px) rotate(-1.5deg); scale: 1.01; filter: brightness(1.1); }
-  30% { transform: translate(3px, 2px) rotate(1.5deg); scale: 1.03; filter: brightness(1.3); }
-  40% { transform: translate(-2px, 3px) rotate(-1.5deg); scale: 1.02; filter: brightness(1.2); }
-  50% { transform: translate(3px, -3px) rotate(1.5deg); scale: 1.04; filter: brightness(1.4); }
-  60% { transform: translate(-3px, 2px) rotate(-1.5deg); scale: 1.02; filter: brightness(1.2); }
-  70% { transform: translate(2px, -2px) rotate(1.5deg); scale: 1.03; filter: brightness(1.3); }
-  80% { transform: translate(-2px, -3px) rotate(-1.5deg); scale: 1.01; filter: brightness(1.1); }
-  90% { transform: translate(3px, 3px) rotate(1.5deg); scale: 1.02; filter: brightness(1.2); }
-  100% { transform: translate(0, 0) rotate(0deg); scale: 1; filter: brightness(1); }
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); filter: brightness(1); }
+  10% { transform: translate(2px, 3px) rotate(1.5deg) scale(1.02); filter: brightness(1.2); }
+  20% { transform: translate(-3px, -2px) rotate(-1.5deg) scale(1.01); filter: brightness(1.1); }
+  30% { transform: translate(3px, 2px) rotate(1.5deg) scale(1.03); filter: brightness(1.3); }
+  40% { transform: translate(-2px, 3px) rotate(-1.5deg) scale(1.02); filter: brightness(1.2); }
+  50% { transform: translate(3px, -3px) rotate(1.5deg) scale(1.04); filter: brightness(1.4); }
+  60% { transform: translate(-3px, 2px) rotate(-1.5deg) scale(1.02); filter: brightness(1.2); }
+  70% { transform: translate(2px, -2px) rotate(1.5deg) scale(1.03); filter: brightness(1.3); }
+  80% { transform: translate(-2px, -3px) rotate(-1.5deg) scale(1.01); filter: brightness(1.1); }
+  90% { transform: translate(3px, 3px) rotate(1.5deg) scale(1.02); filter: brightness(1.2); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); filter: brightness(1); }
 }
 
 .shake-standard {
