@@ -91,10 +91,9 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="relative w-full overflow-hidden flex flex-col items-center py-6 space-y-4 select-none">
-      <div className="lucky-moment-shell relative z-10 w-full max-w-sm flex flex-col items-center justify-center">
+    <div className="w-full max-w-sm mx-auto px-4 py-6 flex flex-col items-center text-center space-y-4 select-none">
 
-        <div className="mb-3 flex flex-col items-center w-full relative z-50 pointer-events-auto top-header">
+        <div className="flex flex-col items-center w-full relative z-50 pointer-events-auto top-header">
           <div className="text-center font-bold text-gray-700 mb-4 text-lg">
             Resets in: <MidnightCountdown fallback="--h --m --s" />
           </div>
@@ -116,8 +115,8 @@ export default function LuckyCardReveal() {
           selectedCard?.tier === 'flagship' ? 'lucky-moment-tier-flagship' :
           selectedCard?.tier === 'premium' ? 'lucky-moment-tier-premium' :
           'lucky-moment-tier-standard'
-        } ${isGenerating ? 'is-generating' : ''} ${isRevealed ? 'is-revealed' : ''} relative isolate z-[100] max-w-full`}>
-          <div className="card-stage-container relative w-full p-4 sm:p-6 flex items-center justify-center" style={{ perspective: '1200px', zIndex: 999 }}>
+        } ${isGenerating ? 'is-generating' : ''} ${isRevealed ? 'is-revealed' : ''} w-full`}>
+          <div className="card-stage-container relative w-full flex items-center justify-center" style={{ perspective: '1200px', zIndex: 999 }}>
             
             {/* BACKGROUND AURORAS: Forced to the absolute back */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden z-[-10]">
@@ -129,7 +128,7 @@ export default function LuckyCardReveal() {
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier === 'premium' ? 'premium' : selectedCard?.tier === 'flagship' ? 'flagship' : 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
 
             {/* CARD WRAPPER: Forced to the absolute front */}
-            <div className="flip-card-wrapper relative z-10 w-full max-w-[260px] aspect-[5/7] mx-auto">
+            <div className="flip-card-wrapper z-10 w-full max-w-[280px] aspect-[5/7] mx-auto relative">
               <div className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card">
 
                 {/* CELEBRATORY PULSE */}
@@ -178,17 +177,17 @@ export default function LuckyCardReveal() {
           </div>
         </div>
 
-        <div className="lucky-moment-actions mt-6 relative z-50 w-full max-w-md flex flex-col items-center gap-3 pb-4 pointer-events-auto footer-action">
+        <div className="lucky-moment-actions relative z-50 w-full max-w-md flex flex-col items-center gap-3 pointer-events-auto footer-action">
           {isReady && isRevealed && selectedCard && (
             <>
-              <div className="glass-quote-container text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
+              <div className="glass-quote-container text-center p-6 bg-white/80 rounded-xl shadow-sm border border-gray-100">
                 <p className="text-xl italic text-gray-800 font-serif">"{selectedCard.quote || 'Your lucky moment awaits'}"</p>
               </div>
               <LuckyCardShare card={selectedCard} />
             </>
           )}
         </div>
-      </div>
+
     </div>
   );
 }
