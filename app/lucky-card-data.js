@@ -39,15 +39,36 @@ export function selectWeightedLuckyCard(previousCardId = null) {
     return availableCards[randomIndex];
   }
 
-  const totalWeight = availableCards.reduce((sum, card) => sum + card.rarityWeight, 0);
+  // Step 1: Select tier based on fixed probabilities
+  const tierRoll = Math.random();
+  let selectedTier = 'standard';
+
+  if (tierRoll < 0.70) {
+    selectedTier = 'standard';
+  } else if (tierRoll < 0.95) {
+    selectedTier = 'premium';
+  } else {
+    selectedTier = 'flagship';
+  }
+
+  // Step 2: Filter available cards by the selected tier
+  let tierCards = availableCards.filter((card) => card.tier === selectedTier);
+
+  // Step 3: Fallback if no cards are available in that tier (e.g., all were excluded by anti-repeat)
+  if (tierCards.length === 0) {
+    tierCards = availableCards;
+  }
+
+  // Step 4: Pick randomly among the tier cards based on their relative rarity weight
+  const totalWeight = tierCards.reduce((sum, card) => sum + card.rarityWeight, 0);
   let randomValue = Math.random() * totalWeight;
 
-  for (const card of availableCards) {
+  for (const card of tierCards) {
     if (randomValue < card.rarityWeight) {
       return card;
     }
     randomValue -= card.rarityWeight;
   }
 
-  return availableCards[0]; // Fallback to first card if something goes wrong
+  return tierCards[0]; // Fallback to first card if something goes wrong
 }
