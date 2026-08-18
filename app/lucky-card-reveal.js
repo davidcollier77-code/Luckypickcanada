@@ -130,7 +130,12 @@ export default function LuckyCardReveal() {
 
             {/* CARD WRAPPER: Forced to the absolute front */}
             <div className="flip-card-wrapper flex-shrink-0 relative z-10 w-full max-w-[260px] aspect-[5/7] mx-auto">
-              <div className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card">
+              <div
+                className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card [transform-style:preserve-3d] transition-transform duration-[800ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+                style={{
+                  transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                }}
+              >
 
                 {/* CELEBRATORY PULSE */}
                 {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
@@ -139,13 +144,7 @@ export default function LuckyCardReveal() {
 
                 {/* FRONT FACE */}
                 <div
-                  className="absolute inset-0 w-full h-full lucky-moment-card-front"
-                  style={{
-                    backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden',
-                    transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)'
-                  }}
+                  className="absolute inset-0 w-full h-full lucky-moment-card-front [backface-visibility:hidden] [-webkit-backface-visibility:hidden] !transform-none !transition-none"
                   aria-hidden={isRevealed}
                 >
                   <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
@@ -156,13 +155,7 @@ export default function LuckyCardReveal() {
 
                 {/* BACK FACE */}
                 <div
-                  className="absolute inset-0 w-full h-full flex items-center justify-center lucky-moment-card-back"
-                  style={{
-                    backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden',
-                    transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: isRevealed ? 'rotateY(0deg)' : 'rotateY(-180deg)'
-                  }}
+                  className="absolute inset-0 w-full h-full flex items-center justify-center lucky-moment-card-back [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] !transition-none"
                   aria-hidden={!isRevealed}
                 >
                   <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80">
