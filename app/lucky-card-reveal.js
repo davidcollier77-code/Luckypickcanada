@@ -129,49 +129,51 @@ export default function LuckyCardReveal() {
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier === 'premium' ? 'premium' : selectedCard?.tier === 'flagship' ? 'flagship' : 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
 
             {/* CARD WRAPPER: Forced to the absolute front */}
-            <div className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card">
-              
-              {/* CELEBRATORY PULSE */}
-              {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
-                <div className="celebratory-pulse"></div>
-              )}
+            <div className="flip-card-wrapper relative z-10 w-[85%] max-w-xs aspect-[5/7] flex flex-col items-center justify-center">
+              <div className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card">
 
-              {/* FRONT FACE */}
-              <div
-                className="absolute inset-0 w-full h-full lucky-moment-card-front"
-                style={{
-                  backfaceVisibility: 'hidden',
-                  WebkitBackfaceVisibility: 'hidden',
-                  transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                  transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)'
-                }}
-                aria-hidden={isRevealed}
-              >
-                <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
-                  <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="w-full h-full object-contain select-none pointer-events-none" style={{ imageRendering: 'high-quality' }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
+                {/* CELEBRATORY PULSE */}
+                {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
+                  <div className="celebratory-pulse"></div>
+                )}
+
+                {/* FRONT FACE */}
+                <div
+                  className="absolute inset-0 w-full h-full lucky-moment-card-front"
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                  }}
+                  aria-hidden={isRevealed}
+                >
+                  <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
+                    <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="w-full h-full object-contain select-none pointer-events-none" style={{ imageRendering: 'high-quality' }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
+                  </div>
                 </div>
-              </div>
 
-              {/* BACK FACE */}
-              <div
-                className="absolute inset-0 w-full h-full flex items-center justify-center lucky-moment-card-back"
-                style={{
-                  backfaceVisibility: 'hidden',
-                  WebkitBackfaceVisibility: 'hidden',
-                  transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                  transform: isRevealed ? 'rotateY(0deg)' : 'rotateY(-180deg)'
-                }}
-                aria-hidden={!isRevealed}
-              >
-                <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80">
-                  {selectedCard && (selectedCard.image && !imageError ? (
-                    <img src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-contain select-none pointer-events-none" onError={() => setImageError(true)} style={{ imageRendering: 'high-quality' }} />
-                  ) : <span className="absolute inset-0 flex items-center justify-center z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
+                {/* BACK FACE */}
+                <div
+                  className="absolute inset-0 w-full h-full flex items-center justify-center lucky-moment-card-back"
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
+                    transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: isRevealed ? 'rotateY(0deg)' : 'rotateY(-180deg)'
+                  }}
+                  aria-hidden={!isRevealed}
+                >
+                  <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80">
+                    {selectedCard && (selectedCard.image && !imageError ? (
+                      <img src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-contain select-none pointer-events-none" onError={() => setImageError(true)} style={{ imageRendering: 'high-quality' }} />
+                    ) : <span className="absolute inset-0 flex items-center justify-center z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
+                  </div>
                 </div>
-              </div>
 
+              </div>
             </div>
           </div>
         </div>
