@@ -134,31 +134,62 @@ export default function LuckyCardReveal() {
               role="button"
               aria-pressed={isRevealed}
               onClick={() => setIsRevealed((s) => !s)}
-              className="flip-card-wrapper flex-shrink-0 relative z-10 w-full h-[50vh] max-h-[400px] aspect-[5/7] mx-auto [perspective:1000px] cursor-pointer [WebkitTapHighlightColor:transparent]"
+              className="flip-card-wrapper flex-shrink-0 relative z-10 w-[280px] h-[400px] mx-auto cursor-pointer [WebkitTapHighlightColor:transparent]"
+              style={{ perspective: "1200px", WebkitPerspective: "1200px" }}
             >
               <div
-                className={`relative w-full h-full [transform-style:preserve-3d] transition-transform duration-700 ${
-                  isRevealed ? '[transform:rotateY(180deg)]' : '[transform:rotateY(0deg)]'
-                }`}
+                className="relative w-full h-full select-none"
+                style={{
+                  minWidth: "280px",
+                  minHeight: "400px",
+                  backgroundColor: "transparent",
+                }}
               >
-                {/* CELEBRATORY PULSE */}
-                {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
-                  <div className="celebratory-pulse"></div>
-                )}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    transformStyle: "preserve-3d",
+                    WebkitTransformStyle: "preserve-3d",
+                    transition: "transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+                    transform: isRevealed ? "rotateY(180deg)" : "rotateY(0deg)",
+                    WebkitTransform: isRevealed ? "rotateY(180deg)" : "rotateY(0deg)",
+                  }}
+                >
+                  {/* CELEBRATORY PULSE */}
+                  {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
+                    <div className="celebratory-pulse"></div>
+                  )}
 
-                {/* Front face */}
-                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [WebkitTapHighlightColor:transparent]">
-                  <div className="relative w-full h-full">
-                    <Image alt="Card front" className="object-contain" fill quality={100} src="/IMG_20260728_220305_112042.png"/>
+                  {/* Front face */}
+                  <div
+                    className="absolute inset-0 rounded-lg overflow-hidden shadow-lg"
+                    style={{
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      transform: "rotateY(0deg)",
+                      WebkitTransform: "rotateY(0deg)",
+                    }}
+                  >
+                    <div className="relative w-full h-full">
+                      <Image alt="Card front" className="object-contain" fill quality={100} src="/IMG_20260728_220305_112042.png"/>
+                    </div>
                   </div>
-                </div>
 
-                {/* Back face */}
-                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] [WebkitTapHighlightColor:transparent]">
-                  <div className="relative w-full h-full">
-                    {selectedCard && (selectedCard.image && !imageError ? (
-                      <Image alt={selectedCard.title || 'Revealed Card'} className="object-contain" fill quality={100} src={selectedCard.image} onError={() => setImageError(true)} />
-                    ) : <span className="absolute inset-0 flex items-center justify-center z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
+                  {/* Back face */}
+                  <div
+                    className="absolute inset-0 rounded-lg overflow-hidden"
+                    style={{
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      transform: "rotateY(180deg)",
+                      WebkitTransform: "rotateY(180deg)",
+                    }}
+                  >
+                    <div className="relative w-full h-full">
+                      {selectedCard && (selectedCard.image && !imageError ? (
+                        <Image alt={selectedCard.title || 'Revealed Card'} className="object-contain" fill quality={100} src={selectedCard.image} onError={() => setImageError(true)} />
+                      ) : <span className="absolute inset-0 flex items-center justify-center z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
+                    </div>
                   </div>
                 </div>
               </div>
