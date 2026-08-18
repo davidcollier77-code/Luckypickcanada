@@ -84,7 +84,7 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center px-4 py-6 space-y-6 select-none">
+    <div className="w-full max-w-md mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none">
       
       {/* 1. Countdown Header */}
       <div className="w-full flex flex-col items-center text-center space-y-2">
@@ -104,13 +104,13 @@ export default function LuckyCardReveal() {
         )}
       </div>
 
-      {/* 2. 3D Card Stage (Clean Flow - Never Overlaps) */}
+      {/* 2. 3D Card Stage (Transparent & Sized Up) */}
       <div className="w-full flex justify-center py-2">
         <div
           role="button"
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
-          className="relative w-[260px] h-[370px] cursor-pointer [WebkitTapHighlightColor:transparent]"
+          className="relative w-[300px] h-[430px] cursor-pointer [WebkitTapHighlightColor:transparent]"
           style={{ perspective: '1200px' }}
         >
           <div
@@ -123,10 +123,10 @@ export default function LuckyCardReveal() {
           >
             {/* Front Face */}
             <div
-              className="absolute inset-0 rounded-2xl shadow-2xl bg-slate-900 border border-amber-400/30 overflow-hidden"
+              className="absolute inset-0 bg-transparent flex items-center justify-center"
               style={{ backfaceVisibility: 'hidden' }}
             >
-              <div className="relative w-full h-full p-2">
+              <div className="relative w-full h-full">
                 <Image
                   alt="Card Back Face"
                   className="object-contain"
@@ -140,13 +140,13 @@ export default function LuckyCardReveal() {
 
             {/* Back Face (Revealed Card) */}
             <div
-              className="absolute inset-0 rounded-2xl shadow-2xl bg-slate-900 border border-amber-400/30 overflow-hidden"
+              className="absolute inset-0 bg-transparent flex items-center justify-center"
               style={{
                 backfaceVisibility: 'hidden',
                 transform: 'rotateY(180deg)',
               }}
             >
-              <div className="relative w-full h-full p-2">
+              <div className="relative w-full h-full">
                 {selectedCard && selectedCard.image && !imageError ? (
                   <Image
                     alt={selectedCard.title || 'Revealed Card'}
@@ -168,7 +168,7 @@ export default function LuckyCardReveal() {
         </div>
       </div>
 
-      {/* 3. Quote & Share Actions (Naturally Stacked Below Card) */}
+      {/* 3. Quote & Share Actions */}
       {isReady && isRevealed && selectedCard && (
         <div className="w-full flex flex-col items-center space-y-4 pt-2 animate-fade-in">
           <div className="w-full p-5 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
