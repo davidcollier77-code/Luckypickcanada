@@ -91,7 +91,7 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="cosmic-aurora-background relative w-full bg-[#030712] flex flex-col items-center justify-between p-4 overflow-x-hidden select-none">
+    <div className="relative w-full overflow-hidden flex flex-col items-center py-6 space-y-4 select-none">
       <div className="lucky-moment-shell relative z-10 w-full max-w-sm flex flex-col items-center justify-center">
 
         <div className="mb-3 flex flex-col items-center w-full relative z-50 pointer-events-auto top-header">
@@ -129,7 +129,7 @@ export default function LuckyCardReveal() {
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier === 'premium' ? 'premium' : selectedCard?.tier === 'flagship' ? 'flagship' : 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
 
             {/* CARD WRAPPER: Forced to the absolute front */}
-            <div className="flip-card-wrapper relative z-10 w-full max-w-[260px] sm:max-w-[280px] aspect-[5/7] mx-auto flex flex-col items-center justify-center">
+            <div className="flip-card-wrapper relative z-10 w-full max-w-[260px] aspect-[5/7] mx-auto">
               <div className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card">
 
                 {/* CELEBRATORY PULSE */}
