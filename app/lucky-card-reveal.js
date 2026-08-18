@@ -99,20 +99,24 @@ export default function LuckyCardReveal() {
             Resets in: <MidnightCountdown fallback="--h --m --s" />
           </div>
 
-          {isReady && !isRevealed && !isGenerating && !selectedCard && (
+          {isReady && !isRevealed && !selectedCard && (
             <button
               type="button"
               onClick={triggerCardDraw}
               disabled={isRevealed || isGenerating}
-              className="lucky-moment-reveal-button"
+              className={`lucky-moment-reveal-button ${isGenerating ? 'scale-95 opacity-80' : ''}`}
             >
-              Reveal Your Lucky Moment
+              {isGenerating ? 'Revealing...' : 'Reveal Your Lucky Moment'}
             </button>
           )}
         </div>
 
         {/* ISOLATE creates a strict boundary so layers cannot cross over each other */}
-        <div className={`lucky-moment-stage lucky-moment-tier-${selectedCard?.tier || 'standard'} relative isolate z-[100] max-w-full overflow-hidden`}>
+        <div className={`lucky-moment-stage ${
+          selectedCard?.tier === 'flagship' ? 'lucky-moment-tier-flagship' :
+          selectedCard?.tier === 'premium' ? 'lucky-moment-tier-premium' :
+          'lucky-moment-tier-standard'
+        } ${isGenerating ? 'is-generating' : ''} ${isRevealed ? 'is-revealed' : ''} relative isolate z-[100] max-w-full`}>
           <div className="card-stage-container relative w-[260px] xs:w-[280px] sm:w-[300px] aspect-[5/7] flex items-center justify-center" style={{ perspective: '1200px', zIndex: 999 }}>
             
             {/* BACKGROUND AURORAS: Forced to the absolute back */}
@@ -122,10 +126,10 @@ export default function LuckyCardReveal() {
             </div>
 
             {/* UNDERGLOW: Forced behind the card */}
-            <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier || 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
+            <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier === 'premium' ? 'premium' : selectedCard?.tier === 'flagship' ? 'flagship' : 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
 
             {/* CARD WRAPPER: Forced to the absolute front */}
-            <div className="relative z-[9999] w-full h-full cursor-pointer">
+            <div className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card">
               
               {/* CELEBRATORY PULSE */}
               {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
@@ -134,7 +138,7 @@ export default function LuckyCardReveal() {
 
               {/* FRONT FACE */}
               <div
-                className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80"
+                className="absolute inset-0 w-full h-full lucky-moment-card-front"
                 style={{
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
@@ -143,13 +147,15 @@ export default function LuckyCardReveal() {
                 }}
                 aria-hidden={isRevealed}
               >
-                <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="w-full h-full object-cover select-none pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
+                <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
+                  <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="w-full h-full object-contain select-none pointer-events-none" style={{ imageRendering: 'high-quality' }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
+                </div>
               </div>
 
               {/* BACK FACE */}
               <div
-                className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80 flex items-center justify-center"
+                className="absolute inset-0 w-full h-full flex items-center justify-center lucky-moment-card-back"
                 style={{
                   backfaceVisibility: 'hidden',
                   WebkitBackfaceVisibility: 'hidden',
@@ -158,10 +164,12 @@ export default function LuckyCardReveal() {
                 }}
                 aria-hidden={!isRevealed}
               >
-                {selectedCard && (selectedCard.image && !imageError ? (
-                  <img src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-cover select-none pointer-events-none" onError={() => setImageError(true)} />
-                ) : <span className="relative z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
+                <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80">
+                  {selectedCard && (selectedCard.image && !imageError ? (
+                    <img src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-contain select-none pointer-events-none" onError={() => setImageError(true)} style={{ imageRendering: 'high-quality' }} />
+                  ) : <span className="absolute inset-0 flex items-center justify-center z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
+                </div>
               </div>
 
             </div>
