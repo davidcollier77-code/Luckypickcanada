@@ -13,3 +13,7 @@ This journal records critical performance lessons, patterns, and anti-patterns e
 ## 2026-08-16 - Canvas Particle System Optimization
 **Learning:** Using `ctx.arc()` to draw thousands of tiny 1-2px particles (like a starfield) is a massive performance bottleneck. It requires trig calculations and multiple API calls (`beginPath`, `arc`, `fill`) per particle per frame, which severely limits framerate on mobile devices.
 **Action:** Always use `ctx.fillRect()` instead of `ctx.arc()` for sub-pixel or tiny particles. A 1px square visually looks identical to a 1px circle due to screen resolution, but renders magnitudes faster.
+
+## 2026-08-16 - Canvas Color Interpolation Optimization
+**Learning:** Using dynamic string interpolation (like \`rgba(..., ${alpha})\`) to set `ctx.fillStyle` inside a `requestAnimationFrame` loop creates massive garbage collection pressure, especially when iterating over thousands of particles per frame. This triggers frequent GC pauses that manifest as animation stutter.
+**Action:** Set a static hex or RGB color (e.g. `ctx.fillStyle = '#fff8df'`) outside the rendering loop or particle iteration. Inside the loop, adjust dynamic transparency solely through floating-point assignments to `ctx.globalAlpha`. Remember to reset `ctx.globalAlpha = 1.0` after the loop to prevent unintentional transparency on subsequent drawing operations.
