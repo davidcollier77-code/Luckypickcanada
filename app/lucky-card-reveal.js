@@ -30,7 +30,6 @@ export default function LuckyCardReveal() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isAnnouncing, setIsAnnouncing] = useState(false);
   const [imageError, setImageError] = useState(false);
   const revealTimer = useRef(null);
   const announcementTimer = useRef(null);
@@ -59,7 +58,6 @@ export default function LuckyCardReveal() {
   }, []);
 
   function showLuckyCard(card) {
-    setIsAnnouncing(false);
     setIsGenerating(false);
     setIsRevealed(true);
     try {
@@ -77,137 +75,113 @@ export default function LuckyCardReveal() {
     const timing = REVEAL_TIMINGS[card.tier] || REVEAL_TIMINGS.standard;
     setSelectedCard(card);
     setIsRevealed(false);
-    setIsAnnouncing(false);
     setIsGenerating(true);
     setImageError(false);
 
     revealTimer.current = window.setTimeout(() => {
-      if (!timing.announcement) {
-        showLuckyCard(card);
-        return;
-      }
-      setIsAnnouncing(true);
-      announcementTimer.current = window.setTimeout(() => showLuckyCard(card), timing.announcement);
+      showLuckyCard(card);
     }, timing.anticipation);
   };
 
   return (
-    <div className="relative w-full flex flex-col items-center py-6 space-y-4 select-none">
-      <div className="lucky-moment-shell relative z-10 w-full max-w-sm flex flex-col items-center justify-center">
-
-        <div className="mb-3 flex flex-col items-center w-full relative z-50 pointer-events-auto top-header">
-          <div className="text-center font-bold text-gray-700 mb-4 text-lg">
-            Resets in: <MidnightCountdown fallback="--h --m --s" />
-          </div>
-
-          {isReady && !isRevealed && !selectedCard && (
-            <button
-              type="button"
-              onClick={triggerCardDraw}
-              disabled={isRevealed || isGenerating}
-              className={`lucky-moment-reveal-button ${isGenerating ? 'scale-95 opacity-80' : ''}`}
-            >
-              {isGenerating ? 'Revealing...' : 'Reveal Your Lucky Moment'}
-            </button>
-          )}
+    <div className="w-full max-w-md mx-auto flex flex-col items-center px-4 py-6 space-y-6 select-none">
+      
+      {/* 1. Countdown Header */}
+      <div className="w-full flex flex-col items-center text-center space-y-2">
+        <div className="text-lg font-bold text-gray-300">
+          Resets in: <MidnightCountdown fallback="--h --m --s" />
         </div>
 
-        <div className={`lucky-moment-stage ${
-          selectedCard?.tier === 'flagship' ? 'lucky-moment-tier-flagship' :
-          selectedCard?.tier === 'premium' ? 'lucky-moment-tier-premium' :
-          'lucky-moment-tier-standard'
-        } ${isGenerating ? 'is-generating' : ''} ${isRevealed ? 'is-revealed' : ''} relative isolate z-[100] max-w-full`}>
-          
-          <div className="card-stage-container relative w-full p-4 sm:p-6 flex items-center justify-center" style={{ perspective: '1200px', zIndex: 999 }}>
-            
-            {/* BACKGROUND AURORAS */}
-            <div className="pointer-events-none absolute inset-0 rounded-3xl overflow-hidden z-[-10]">
-              <div className="hd-aurora-bg absolute -top-[20%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[600px] sm:h-[900px] rounded-full opacity-80 mix-blend-screen pointer-events-none"></div>
-              <div className="hd-aurora-accent absolute top-[10%] right-[-10%] w-[350px] h-[350px] rounded-full opacity-60 mix-blend-screen pointer-events-none"></div>
-            </div>
+        {isReady && !isRevealed && !selectedCard && (
+          <button
+            type="button"
+            onClick={triggerCardDraw}
+            disabled={isRevealed || isGenerating}
+            className="mt-3 px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-base shadow-lg hover:brightness-110 active:scale-95 transition-all"
+          >
+            {isGenerating ? 'Revealing...' : 'Reveal Today’s Luck'}
+          </button>
+        )}
+      </div>
 
-            {/* UNDERGLOW */}
-            <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier === 'premium' ? 'premium' : selectedCard?.tier === 'flagship' ? 'flagship' : 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
-
-            {/* CARD WRAPPER */}
+      {/* 2. 3D Card Stage (Clean Flow - Never Overlaps) */}
+      <div className="w-full flex justify-center py-2">
+        <div
+          role="button"
+          aria-pressed={isRevealed}
+          onClick={() => isRevealed && setIsRevealed((s) => !s)}
+          className="relative w-[260px] h-[370px] cursor-pointer [WebkitTapHighlightColor:transparent]"
+          style={{ perspective: '1200px' }}
+        >
+          <div
+            className="w-full h-full relative"
+            style={{
+              transformStyle: 'preserve-3d',
+              transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+              transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            }}
+          >
+            {/* Front Face */}
             <div
-              role="button"
-              aria-pressed={isRevealed}
-              onClick={() => setIsRevealed((s) => !s)}
-              className="flip-card-wrapper flex-shrink-0 relative z-10 w-[280px] h-[400px] mx-auto cursor-pointer [WebkitTapHighlightColor:transparent]"
-              style={{ perspective: "1200px", WebkitPerspective: "1200px" }}
+              className="absolute inset-0 rounded-2xl shadow-2xl bg-slate-900 border border-amber-400/30 overflow-hidden"
+              style={{ backfaceVisibility: 'hidden' }}
             >
-              <div
-                className="relative w-full h-full select-none"
-                style={{
-                  minWidth: "280px",
-                  minHeight: "400px",
-                  backgroundColor: "transparent",
-                }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    WebkitTransformStyle: "preserve-3d",
-                    transition: "transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)",
-                    transform: isRevealed ? "rotateY(180deg)" : "rotateY(0deg)",
-                    WebkitTransform: isRevealed ? "rotateY(180deg)" : "rotateY(0deg)",
-                  }}
-                >
-                  {/* CELEBRATORY PULSE */}
-                  {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
-                    <div className="celebratory-pulse"></div>
-                  )}
+              <div className="relative w-full h-full p-2">
+                <Image
+                  alt="Card Back Face"
+                  className="object-contain"
+                  fill
+                  quality={100}
+                  priority
+                  src="/IMG_20260728_220305_112042.png"
+                />
+              </div>
+            </div>
 
-                  {/* Front face */}
-                  <div
-                    className="absolute inset-0 rounded-lg shadow-lg"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden",
-                      transform: "rotateY(0deg)",
-                      WebkitTransform: "rotateY(0deg)",
-                    }}
-                  >
-                    <div className="relative w-full h-full">
-                      <Image alt="Card front" className="object-contain" fill quality={100} src="/IMG_20260728_220305_112042.png"/>
-                    </div>
+            {/* Back Face (Revealed Card) */}
+            <div
+              className="absolute inset-0 rounded-2xl shadow-2xl bg-slate-900 border border-amber-400/30 overflow-hidden"
+              style={{
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)',
+              }}
+            >
+              <div className="relative w-full h-full p-2">
+                {selectedCard && selectedCard.image && !imageError ? (
+                  <Image
+                    alt={selectedCard.title || 'Revealed Card'}
+                    className="object-contain"
+                    fill
+                    quality={100}
+                    priority
+                    src={selectedCard.image}
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
+                    Lucky Pick 🍁 Canada.ca
                   </div>
-
-                  {/* Back face */}
-                  <div
-                    className="absolute inset-0 rounded-lg"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      WebkitBackfaceVisibility: "hidden",
-                      transform: "rotateY(180deg)",
-                      WebkitTransform: "rotateY(180deg)",
-                    }}
-                  >
-                    <div className="relative w-full h-full">
-                      {selectedCard && (selectedCard.image && !imageError ? (
-                        <Image alt={selectedCard.title || 'Revealed Card'} className="object-contain" fill quality={100} src={selectedCard.image} onError={() => setImageError(true)} />
-                      ) : <span className="absolute inset-0 flex items-center justify-center z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="lucky-moment-actions mt-6 relative z-50 w-full max-w-md flex flex-col items-center gap-3 pb-4 pointer-events-auto footer-action">
-          {isReady && isRevealed && selectedCard && (
-            <>
-              <div className="glass-quote-container text-center p-6 mb-4 bg-white/80 rounded-xl shadow-sm border border-gray-100">
-                <p className="text-xl italic text-gray-800 font-serif">"{selectedCard.quote || 'Your lucky moment awaits'}"</p>
-              </div>
-              <LuckyCardShare card={selectedCard} />
-            </>
-          )}
         </div>
       </div>
+
+      {/* 3. Quote & Share Actions (Naturally Stacked Below Card) */}
+      {isReady && isRevealed && selectedCard && (
+        <div className="w-full flex flex-col items-center space-y-4 pt-2 animate-fade-in">
+          <div className="w-full p-5 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
+            <p className="text-lg italic text-gray-800 font-serif leading-relaxed">
+              "{selectedCard.quote || 'Your lucky moment awaits.'}"
+            </p>
+          </div>
+
+          <div className="w-full flex justify-center">
+            <LuckyCardShare card={selectedCard} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
