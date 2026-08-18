@@ -51,8 +51,7 @@
    ========================================================================== */
 .card-stage-container {
   width: 100%;
-  max-width: 380px;
-  min-height: 520px;
+  max-width: 320px;
   margin: 0 auto;
   display: flex;
   justify-content: center;
