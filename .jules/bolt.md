@@ -13,3 +13,7 @@ This journal records critical performance lessons, patterns, and anti-patterns e
 ## 2026-08-16 - Canvas Particle System Optimization
 **Learning:** Using `ctx.arc()` to draw thousands of tiny 1-2px particles (like a starfield) is a massive performance bottleneck. It requires trig calculations and multiple API calls (`beginPath`, `arc`, `fill`) per particle per frame, which severely limits framerate on mobile devices.
 **Action:** Always use `ctx.fillRect()` instead of `ctx.arc()` for sub-pixel or tiny particles. A 1px square visually looks identical to a 1px circle due to screen resolution, but renders magnitudes faster.
+
+## 2026-08-18 - Canvas Animation GC Pause from String Allocation
+**Learning:** Using string interpolation to generate colors for thousands of particles inside a `requestAnimationFrame` loop (e.g. `ctx.fillStyle = \`rgba(255, 255, 255, ${opacity})\``) forces the JS engine to allocate a new string per particle per frame. This massive string allocation quickly overwhelms garbage collection, leading to noticeable GC pauses and stuttering on lower-end devices.
+**Action:** Instead of interpolating dynamic alpha into strings, assign a base static hex/color outside the render loop (`ctx.fillStyle = '#ffffff'`), and control transparency strictly via floating-point assignment using `ctx.globalAlpha` inside the loop. This eliminates string allocations entirely.

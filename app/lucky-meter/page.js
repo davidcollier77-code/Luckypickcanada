@@ -87,18 +87,23 @@ export default function LuckyMeterPage() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw Twinkling Starfield
+      ctx.fillStyle = '#fff8df'; // Base cream color
+
       stars.forEach((star) => {
         star.alpha += star.twinkleSpeed;
         const currentOpacity = Math.abs(Math.sin(star.alpha + star.colorPhase));
 
-        // Cream-colored stars matching LPC theme
-        ctx.fillStyle = `rgba(255, 248, 223, ${0.15 + currentOpacity * 0.75})`;
+        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+        // Using globalAlpha instead of string interpolation (rgba) prevents thousands
+        // of string allocations and GC pauses per second.
+        ctx.globalAlpha = 0.15 + currentOpacity * 0.75;
 
         // PERFORMANCE OPTIMIZATION (Bolt ⚡):
         // Replaced expensive path/arc rendering with fillRect for tiny 1-2px stars.
         // This drops canvas API calls per frame significantly and improves rendering speed.
         ctx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
       });
+      ctx.globalAlpha = 1.0; // Reset alpha for subsequent drawing
 
       // Spawn Shooting Stars at randomized intervals
       if (Math.random() < 0.0012 && shootingStars.length < 2) {
