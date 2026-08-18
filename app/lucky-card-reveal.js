@@ -92,7 +92,7 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="relative w-full overflow-hidden flex flex-col items-center py-6 space-y-4 select-none">
+    <div className="relative w-full flex flex-col items-center py-6 space-y-4 select-none">
       <div className="lucky-moment-shell relative z-10 w-full max-w-sm flex flex-col items-center justify-center">
 
         <div className="mb-3 flex flex-col items-center w-full relative z-50 pointer-events-auto top-header">
@@ -112,24 +112,24 @@ export default function LuckyCardReveal() {
           )}
         </div>
 
-        {/* ISOLATE creates a strict boundary so layers cannot cross over each other */}
         <div className={`lucky-moment-stage ${
           selectedCard?.tier === 'flagship' ? 'lucky-moment-tier-flagship' :
           selectedCard?.tier === 'premium' ? 'lucky-moment-tier-premium' :
           'lucky-moment-tier-standard'
         } ${isGenerating ? 'is-generating' : ''} ${isRevealed ? 'is-revealed' : ''} relative isolate z-[100] max-w-full`}>
-          <div className="card-stage-container relative w-full p-4 sm:p-6 flex items-center justify-center overflow-hidden" style={{ perspective: '1200px', zIndex: 999 }}>
+          
+          <div className="card-stage-container relative w-full p-4 sm:p-6 flex items-center justify-center" style={{ perspective: '1200px', zIndex: 999 }}>
             
-            {/* BACKGROUND AURORAS: Forced to the absolute back */}
-            <div className="pointer-events-none absolute inset-0 overflow-hidden z-[-10]">
+            {/* BACKGROUND AURORAS */}
+            <div className="pointer-events-none absolute inset-0 rounded-3xl overflow-hidden z-[-10]">
               <div className="hd-aurora-bg absolute -top-[20%] left-1/2 -translate-x-1/2 w-[600px] sm:w-[900px] h-[600px] sm:h-[900px] rounded-full opacity-80 mix-blend-screen pointer-events-none"></div>
               <div className="hd-aurora-accent absolute top-[10%] right-[-10%] w-[350px] h-[350px] rounded-full opacity-60 mix-blend-screen pointer-events-none"></div>
             </div>
 
-            {/* UNDERGLOW: Forced behind the card */}
+            {/* UNDERGLOW */}
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier === 'premium' ? 'premium' : selectedCard?.tier === 'flagship' ? 'flagship' : 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
 
-            {/* CARD WRAPPER: Forced to the absolute front */}
+            {/* CARD WRAPPER */}
             <div
               role="button"
               aria-pressed={isRevealed}
@@ -162,7 +162,7 @@ export default function LuckyCardReveal() {
 
                   {/* Front face */}
                   <div
-                    className="absolute inset-0 rounded-lg overflow-hidden shadow-lg"
+                    className="absolute inset-0 rounded-lg shadow-lg"
                     style={{
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
@@ -177,7 +177,7 @@ export default function LuckyCardReveal() {
 
                   {/* Back face */}
                   <div
-                    className="absolute inset-0 rounded-lg overflow-hidden"
+                    className="absolute inset-0 rounded-lg"
                     style={{
                       backfaceVisibility: "hidden",
                       WebkitBackfaceVisibility: "hidden",
