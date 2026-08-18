@@ -84,12 +84,12 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none">
+    <div className="w-full max-w-md mx-auto flex flex-col items-center px-4 py-4 space-y-5 select-none">
       
       {/* 1. Countdown Header */}
       <div className="w-full flex flex-col items-center text-center space-y-2">
         <div className="text-lg font-bold text-gray-300">
-          Resets in: <MidnightCountdown fallback="--h --m --s" />
+          Resets in: <MidnightCountdown fallback="--h --m --s"/>
         </div>
 
         {isReady && !isRevealed && !selectedCard && (
@@ -97,21 +97,21 @@ export default function LuckyCardReveal() {
             type="button"
             onClick={triggerCardDraw}
             disabled={isRevealed || isGenerating}
-            className="mt-3 px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-base shadow-lg hover:brightness-110 active:scale-95 transition-all"
+            className="mt-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-base shadow-lg hover:brightness-110 active:scale-95 transition-all"
           >
             {isGenerating ? 'Revealing...' : 'Reveal Today’s Luck'}
           </button>
         )}
       </div>
 
-      {/* 2. 3D Card Stage */}
-      <div className="w-full flex justify-center py-2">
+      {/* 2. 3D Card Stage (Scaled for Mobile Fit) */}
+      <div className="w-full flex justify-center py-1">
         <div
           role="button"
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
-          className="relative w-[320px] h-[460px] cursor-pointer [WebkitTapHighlightColor:transparent]"
-          style={{ perspective: '1200px' }}
+          className="relative w-[280px] h-[405px] cursor-pointer [WebkitTapHighlightColor:transparent]"
+          style={{ perspective: '1200px', minWidth: '280px', minHeight: '405px' }}
         >
           <div
             className="w-full h-full relative"
@@ -121,7 +121,7 @@ export default function LuckyCardReveal() {
               transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
             }}
           >
-            {/* Unrevealed Face (Card Back Design) */}
+            {/* Front Face (Card Back Design) */}
             <div
               className="absolute inset-0 bg-transparent flex items-center justify-center"
               style={{ backfaceVisibility: 'hidden' }}
@@ -131,14 +131,14 @@ export default function LuckyCardReveal() {
                   alt="Card Back Face"
                   className="object-contain"
                   fill
-                  quality={100}
                   priority
+                  quality={100}
                   src="/IMG_20260728_220305_112042.png"
                 />
               </div>
             </div>
 
-            {/* Revealed Face (Card Artwork) */}
+            {/* Back Face (Revealed Artwork) */}
             <div
               className="absolute inset-0 bg-transparent flex items-center justify-center"
               style={{
@@ -152,10 +152,10 @@ export default function LuckyCardReveal() {
                     alt={selectedCard.title || 'Revealed Card'}
                     className="object-cover rounded-2xl"
                     fill
-                    quality={100}
-                    priority
-                    src={selectedCard.image}
                     onError={() => setImageError(true)}
+                    priority
+                    quality={100}
+                    src={selectedCard.image}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
@@ -170,8 +170,8 @@ export default function LuckyCardReveal() {
 
       {/* 3. Quote & Share Actions */}
       {isReady && isRevealed && selectedCard && (
-        <div className="w-full flex flex-col items-center space-y-4 pt-2 animate-fade-in">
-          <div className="w-full p-5 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
+        <div className="w-full flex flex-col items-center space-y-4 pt-1 animate-fade-in">
+          <div className="w-full p-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
             <p className="text-lg italic text-gray-800 font-serif leading-relaxed">
               "{selectedCard.quote || 'Your lucky moment awaits.'}"
             </p>
