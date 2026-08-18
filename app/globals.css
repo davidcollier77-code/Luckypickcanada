@@ -88,3 +88,75 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Tier Based Shakes */
+@keyframes shake-standard {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(1px, 1px) rotate(0.5deg); }
+  50% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+  75% { transform: translate(-1px, 1px) rotate(0.5deg); }
+  100% { transform: translate(1px, -1px) rotate(-0.5deg); }
+}
+
+@keyframes shake-premium {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(1px, 2px) rotate(1deg); }
+  40% { transform: translate(-2px, -1px) rotate(-1deg); }
+  60% { transform: translate(-1px, 2px) rotate(1deg); }
+  80% { transform: translate(2px, -1px) rotate(-1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes shake-flagship {
+  0% { transform: translate(0, 0) rotate(0deg); scale: 1; filter: brightness(1); }
+  10% { transform: translate(2px, 3px) rotate(1.5deg); scale: 1.02; filter: brightness(1.2); }
+  20% { transform: translate(-3px, -2px) rotate(-1.5deg); scale: 1.01; filter: brightness(1.1); }
+  30% { transform: translate(3px, 2px) rotate(1.5deg); scale: 1.03; filter: brightness(1.3); }
+  40% { transform: translate(-2px, 3px) rotate(-1.5deg); scale: 1.02; filter: brightness(1.2); }
+  50% { transform: translate(3px, -3px) rotate(1.5deg); scale: 1.04; filter: brightness(1.4); }
+  60% { transform: translate(-3px, 2px) rotate(-1.5deg); scale: 1.02; filter: brightness(1.2); }
+  70% { transform: translate(2px, -2px) rotate(1.5deg); scale: 1.03; filter: brightness(1.3); }
+  80% { transform: translate(-2px, -3px) rotate(-1.5deg); scale: 1.01; filter: brightness(1.1); }
+  90% { transform: translate(3px, 3px) rotate(1.5deg); scale: 1.02; filter: brightness(1.2); }
+  100% { transform: translate(0, 0) rotate(0deg); scale: 1; filter: brightness(1); }
+}
+
+.shake-standard {
+  animation: shake-standard 0.2s ease-in-out infinite;
+}
+.shake-premium {
+  animation: shake-premium 0.15s ease-in-out infinite;
+}
+.shake-flagship {
+  animation: shake-flagship 0.1s ease-in-out infinite;
+}
+
+/* Cinematic Sweep */
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-150%) skewX(-15deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+    opacity: 0;
+  }
+}
+
+.shimmer-sweep {
+  animation: shimmer-sweep 2.5s ease-out forwards;
+}
+
+/* Tier Glows */
+.tier-glow-standard {
+  box-shadow: 0 0 20px 2px rgba(255, 255, 255, 0.15);
+}
+.tier-glow-premium {
+  box-shadow: 0 0 35px 5px rgba(105, 184, 255, 0.4), inset 0 0 10px rgba(105, 184, 255, 0.2);
+}
+.tier-glow-flagship {
+  box-shadow: 0 0 50px 10px rgba(253, 200, 48, 0.6), inset 0 0 15px rgba(253, 200, 48, 0.3);
+}

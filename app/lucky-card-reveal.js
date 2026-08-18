@@ -110,43 +110,55 @@ export default function LuckyCardReveal() {
           role="button"
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
-          className="relative w-[280px] h-[400px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent]"
+          className="relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent]"
           style={{ perspective: '1200px' }}
         >
-          <div
-            className="w-full h-full relative"
-            style={{
-              transformStyle: 'preserve-3d',
-              transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-              transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            }}
-          >
-            {/* Front Face (Card Back Design) */}
+          <div className={`shake-target relative w-full h-full ${isGenerating && selectedCard ? `shake-${selectedCard.tier}` : ''}`}>
             <div
-              className="absolute inset-0 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-amber-400/20"
-              style={{ backfaceVisibility: 'hidden' }}
-            >
-              <div className="relative w-full h-full">
-                <Image alt="Card Back Face" className="object-contain" fill priority quality={100} src="/IMG_20260728_220305_112042.png"/>
-              </div>
-            </div>
-
-            {/* Back Face (Revealed Artwork) */}
-            <div
-              className="absolute inset-0 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-amber-400/20"
+              className="w-full h-full relative"
               style={{
-                backfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)',
+                transformStyle: 'preserve-3d',
+                transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+                transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
               }}
             >
-              <div className="relative w-full h-full">
-                {selectedCard && selectedCard.image && !imageError ? (
-                  <Image alt={selectedCard.title || 'Revealed Card'} className="object-contain" fill onError={() => setImageError(true)} priority quality={100} src={selectedCard.image} />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
-                    Lucky Pick 🍁 Canada.ca
+              {/* Front Face (Card Back Design) */}
+              <div
+                className="absolute inset-0"
+                style={{ backfaceVisibility: 'hidden' }}
+              >
+                <div className="absolute inset-0 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-amber-400/20">
+                  <div className="relative w-full h-full">
+                    <Image alt="Card Back Face" className="object-cover rounded-2xl" fill priority quality={100} src="/IMG_20260728_220305_112042.png"/>
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/* Back Face (Revealed Artwork) */}
+              <div
+                className={`absolute inset-0 rounded-2xl transition-shadow duration-700 ${isRevealed && selectedCard ? `tier-glow-${selectedCard.tier}` : ''}`}
+                style={{
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)',
+                }}
+              >
+                <div className="absolute inset-0 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-amber-400/20">
+                  <div className="relative w-full h-full">
+                    {selectedCard && selectedCard.image && !imageError ? (
+                      <Image alt={selectedCard.title || 'Revealed Card'} className="object-cover rounded-2xl" fill onError={() => setImageError(true)} priority quality={100} src={selectedCard.image} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
+                        Lucky Pick 🍁 Canada.ca
+                      </div>
+                    )}
+                    {/* Cinematic Sweep Effect */}
+                    {isRevealed && (
+                      <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden rounded-2xl">
+                        <div className="absolute top-0 left-0 w-[50%] h-[150%] bg-gradient-to-r from-transparent via-white/40 to-transparent shimmer-sweep -translate-y-[20%]" />
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

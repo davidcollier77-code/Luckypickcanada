@@ -28,6 +28,7 @@ export function selectWeightedLuckyCard(previousCardId = null) {
   const isTestMode = isLuckyCardTestModeEnabled();
 
   let availableCards = LUCKY_CARDS;
+  // Strict Anti-Repeat Protection: Exclude yesterday's card so users never receive duplicates back-to-back.
   if (previousCardId && availableCards.length > 1) {
     availableCards = availableCards.filter(card => card.id !== previousCardId);
   }
