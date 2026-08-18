@@ -110,58 +110,67 @@ export default function LuckyCardReveal() {
           role="button"
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
-          className="relative w-[280px] h-[405px] cursor-pointer [WebkitTapHighlightColor:transparent]"
-          style={{ perspective: '1200px' }}
+          className={`relative w-[280px] h-[405px] cursor-pointer [WebkitTapHighlightColor:transparent] card-stage-container lucky-moment-stage ${selectedCard ? `lucky-moment-tier-${selectedCard.tier}` : 'lucky-moment-tier-standard'} ${isGenerating ? 'is-generating' : ''} ${isRevealed ? 'is-revealed' : ''}`}
+          style={{ perspective: '1200px', minWidth: '280px', minHeight: '405px', zIndex: 10 }}
         >
-          <div
-            className="w-full h-full relative"
-            style={{
-              transformStyle: 'preserve-3d',
-              transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-              transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
-            }}
-          >
-            {/* Front Face (Card Back Design - Matched with object-cover and rounded-2xl) */}
-            <div
-              className="absolute inset-0 bg-transparent flex items-center justify-center"
-              style={{ backfaceVisibility: 'hidden' }}
-            >
-              <div className="relative w-full h-full">
-                <Image
-                  alt="Card Back Face"
-                  className="object-cover rounded-2xl"
-                  fill
-                  quality={100}
-                  priority
-                  src="/IMG_20260728_220305_112042.png"
-                />
-              </div>
-            </div>
-
-            {/* Back Face (Revealed Artwork) */}
-            <div
-              className="absolute inset-0 bg-transparent flex items-center justify-center"
-              style={{
-                backfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)',
-              }}
-            >
-              <div className="relative w-full h-full">
-                {selectedCard && selectedCard.image && !imageError ? (
-                  <Image
-                    alt={selectedCard.title || 'Revealed Card'}
-                    className="object-cover rounded-2xl"
-                    fill
-                    quality={100}
-                    priority
-                    src={selectedCard.image}
-                    onError={() => setImageError(true)}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
-                    Lucky Pick 🍁 Canada.ca
+          {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
+            <div className="celebratory-pulse" />
+          )}
+          <div className="shake-target relative w-full h-full">
+            <div className="card-reveal-wrapper">
+              <div className={`flip-card-wrapper ${isRevealed ? 'is-revealed' : ''}`}>
+                <div
+                  className="lucky-moment-card"
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+                    transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                  }}
+                >
+                  {/* Front Face (Card Back Design - Matched with object-cover and rounded-2xl) */}
+                  <div
+                    className="lucky-moment-card-face lucky-moment-card-back absolute inset-0 bg-transparent flex items-center justify-center"
+                    style={{ backfaceVisibility: 'hidden' }}
+                  >
+                    <div className="relative w-full h-full">
+                      <Image
+                        alt="Card Back Face"
+                        className="object-cover rounded-2xl"
+                        fill
+                        quality={100}
+                        priority
+                        src="/IMG_20260728_220305_112042.png"
+                      />
+                    </div>
                   </div>
-                )}
+
+                  {/* Back Face (Revealed Artwork) */}
+                  <div
+                    className="lucky-moment-card-face lucky-moment-card-front absolute inset-0 bg-transparent flex items-center justify-center"
+                    style={{
+                      backfaceVisibility: 'hidden',
+                      transform: 'rotateY(180deg)',
+                    }}
+                  >
+                    <div className="relative w-full h-full">
+                      {selectedCard && selectedCard.image && !imageError ? (
+                        <Image
+                          alt={selectedCard.title || 'Revealed Card'}
+                          className="object-cover rounded-2xl"
+                          fill
+                          quality={100}
+                          priority
+                          src={selectedCard.image}
+                          onError={() => setImageError(true)}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
+                          Lucky Pick 🍁 Canada.ca
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
