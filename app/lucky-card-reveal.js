@@ -127,7 +127,7 @@ export default function LuckyCardReveal() {
                 className="absolute inset-0"
                 style={{ backfaceVisibility: 'hidden' }}
               >
-                <div className="absolute inset-0 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-amber-400/20">
+                <div className="absolute inset-0 bg-transparent rounded-2xl overflow-hidden shadow-2xl border-none">
                   <div className="relative w-full h-full">
                     <Image alt="Card Back Face" className="object-cover rounded-2xl" fill priority quality={100} src="/IMG_20260728_220305_112042.png"/>
                   </div>
@@ -142,7 +142,7 @@ export default function LuckyCardReveal() {
                   transform: 'rotateY(180deg)',
                 }}
               >
-                <div className="absolute inset-0 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-amber-400/20">
+                <div className="absolute inset-0 bg-transparent rounded-2xl overflow-hidden shadow-2xl border-none">
                   <div className="relative w-full h-full">
                     {selectedCard && selectedCard.image && !imageError ? (
                       <Image alt={selectedCard.title || 'Revealed Card'} className="object-cover rounded-2xl" fill onError={() => setImageError(true)} priority quality={100} src={selectedCard.image} />
