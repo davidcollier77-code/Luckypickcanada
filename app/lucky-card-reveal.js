@@ -89,7 +89,7 @@ export default function LuckyCardReveal() {
       {/* 1. Countdown Header */}
       <div className="w-full flex flex-col items-center text-center space-y-2">
         <div className="text-lg font-bold text-gray-300">
-          Resets in: <MidnightCountdown fallback="--h --m --s"/>
+          Resets in: <MidnightCountdown fallback="--h --m --s" />
         </div>
 
         {isReady && !isRevealed && !selectedCard && (
@@ -104,14 +104,14 @@ export default function LuckyCardReveal() {
         )}
       </div>
 
-      {/* 2. 3D Card Stage (Scaled for Mobile Fit) */}
+      {/* 2. 3D Card Stage */}
       <div className="w-full flex justify-center py-1">
         <div
           role="button"
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
           className="relative w-[280px] h-[405px] cursor-pointer [WebkitTapHighlightColor:transparent]"
-          style={{ perspective: '1200px', minWidth: '280px', minHeight: '405px' }}
+          style={{ perspective: '1200px' }}
         >
           <div
             className="w-full h-full relative"
@@ -121,7 +121,7 @@ export default function LuckyCardReveal() {
               transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
             }}
           >
-            {/* Front Face (Card Back Design) */}
+            {/* Front Face (Card Back Design - Matched with object-cover and rounded-2xl) */}
             <div
               className="absolute inset-0 bg-transparent flex items-center justify-center"
               style={{ backfaceVisibility: 'hidden' }}
@@ -129,10 +129,10 @@ export default function LuckyCardReveal() {
               <div className="relative w-full h-full">
                 <Image
                   alt="Card Back Face"
-                  className="object-contain"
+                  className="object-cover rounded-2xl"
                   fill
-                  priority
                   quality={100}
+                  priority
                   src="/IMG_20260728_220305_112042.png"
                 />
               </div>
@@ -152,10 +152,10 @@ export default function LuckyCardReveal() {
                     alt={selectedCard.title || 'Revealed Card'}
                     className="object-cover rounded-2xl"
                     fill
-                    onError={() => setImageError(true)}
-                    priority
                     quality={100}
+                    priority
                     src={selectedCard.image}
+                    onError={() => setImageError(true)}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
