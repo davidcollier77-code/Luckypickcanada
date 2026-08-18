@@ -84,12 +84,12 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center px-4 py-4 space-y-5 select-none">
+    <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none">
       
-      {/* 1. Countdown Header */}
+      {/* 1. Countdown & Draw Button */}
       <div className="w-full flex flex-col items-center text-center space-y-2">
         <div className="text-lg font-bold text-gray-300">
-          Resets in: <MidnightCountdown fallback="--h --m --s" />
+          Resets in: <MidnightCountdown fallback="--h --m --s"/>
         </div>
 
         {isReady && !isRevealed && !selectedCard && (
@@ -105,89 +105,65 @@ export default function LuckyCardReveal() {
       </div>
 
       {/* 2. 3D Card Stage */}
-      <div className="w-full flex justify-center py-1">
+      <div className="w-full flex justify-center py-2 flex-shrink-0">
         <div
           role="button"
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
-          className={`relative w-[280px] h-[405px] cursor-pointer [WebkitTapHighlightColor:transparent] card-stage-container lucky-moment-stage ${selectedCard ? `lucky-moment-tier-${selectedCard.tier}` : 'lucky-moment-tier-standard'} ${isGenerating ? 'is-generating' : ''} ${isRevealed ? 'is-revealed' : ''}`}
-          style={{ perspective: '1200px', minWidth: '280px', minHeight: '405px', zIndex: 10 }}
+          className="relative w-[280px] h-[400px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent]"
+          style={{ perspective: '1200px' }}
         >
-          {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
-            <div className="celebratory-pulse" />
-          )}
-          <div className="shake-target relative w-full h-full">
-            <div className="card-reveal-wrapper">
-              <div className={`flip-card-wrapper ${isRevealed ? 'is-revealed' : ''}`}>
-                <div
-                  className="lucky-moment-card"
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-                    transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                  }}
-                >
-                  {/* Front Face (Card Back Design - Matched with object-cover and rounded-2xl) */}
-                  <div
-                    className="lucky-moment-card-face lucky-moment-card-back absolute inset-0 bg-transparent flex items-center justify-center"
-                    style={{ backfaceVisibility: 'hidden' }}
-                  >
-                    <div className="relative w-full h-full">
-                      <Image
-                        alt="Card Back Face"
-                        className="object-cover rounded-2xl"
-                        fill
-                        quality={100}
-                        priority
-                        src="/IMG_20260728_220305_112042.png"
-                      />
-                    </div>
-                  </div>
+          <div
+            className="w-full h-full relative"
+            style={{
+              transformStyle: 'preserve-3d',
+              transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+              transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            }}
+          >
+            {/* Front Face (Card Back Design) */}
+            <div
+              className="absolute inset-0 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-amber-400/20"
+              style={{ backfaceVisibility: 'hidden' }}
+            >
+              <div className="relative w-full h-full">
+                <Image alt="Card Back Face" className="object-contain" fill priority quality={100} src="/IMG_20260728_220305_112042.png"/>
+              </div>
+            </div>
 
-                  {/* Back Face (Revealed Artwork) */}
-                  <div
-                    className="lucky-moment-card-face lucky-moment-card-front absolute inset-0 bg-transparent flex items-center justify-center"
-                    style={{
-                      backfaceVisibility: 'hidden',
-                      transform: 'rotateY(180deg)',
-                    }}
-                  >
-                    <div className="relative w-full h-full">
-                      {selectedCard && selectedCard.image && !imageError ? (
-                        <Image
-                          alt={selectedCard.title || 'Revealed Card'}
-                          className="object-cover rounded-2xl"
-                          fill
-                          quality={100}
-                          priority
-                          src={selectedCard.image}
-                          onError={() => setImageError(true)}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
-                          Lucky Pick 🍁 Canada.ca
-                        </div>
-                      )}
-                    </div>
+            {/* Back Face (Revealed Artwork) */}
+            <div
+              className="absolute inset-0 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-amber-400/20"
+              style={{
+                backfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)',
+              }}
+            >
+              <div className="relative w-full h-full">
+                {selectedCard && selectedCard.image && !imageError ? (
+                  <Image alt={selectedCard.title || 'Revealed Card'} className="object-contain" fill onError={() => setImageError(true)} priority quality={100} src={selectedCard.image} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
+                    Lucky Pick 🍁 Canada.ca
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Quote & Share Actions */}
+      {/* 3. Quote & Share Actions (Strictly Stacked Below) */}
       {isReady && isRevealed && selectedCard && (
-        <div className="w-full flex flex-col items-center space-y-4 pt-1 animate-fade-in">
-          <div className="w-full p-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
-            <p className="text-lg italic text-gray-800 font-serif leading-relaxed">
+        <div className="w-full flex flex-col items-center space-y-4 pt-2 animate-fade-in">
+          <div className="w-full p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
+            <p className="text-base italic text-gray-800 font-serif leading-relaxed">
               "{selectedCard.quote || 'Your lucky moment awaits.'}"
             </p>
           </div>
 
-          <div className="w-full flex justify-center">
-            <LuckyCardShare card={selectedCard} />
+          <div className="w-full flex justify-center pb-4">
+            <LuckyCardShare card={selectedCard}/>
           </div>
         </div>
       )}
