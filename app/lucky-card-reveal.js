@@ -104,13 +104,13 @@ export default function LuckyCardReveal() {
         )}
       </div>
 
-      {/* 2. 3D Card Stage (Transparent & Sized Up) */}
+      {/* 2. 3D Card Stage */}
       <div className="w-full flex justify-center py-2">
         <div
           role="button"
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
-          className="relative w-[300px] h-[430px] cursor-pointer [WebkitTapHighlightColor:transparent]"
+          className="relative w-[320px] h-[460px] cursor-pointer [WebkitTapHighlightColor:transparent]"
           style={{ perspective: '1200px' }}
         >
           <div
@@ -121,7 +121,7 @@ export default function LuckyCardReveal() {
               transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
             }}
           >
-            {/* Front Face */}
+            {/* Unrevealed Face (Card Back Design) */}
             <div
               className="absolute inset-0 bg-transparent flex items-center justify-center"
               style={{ backfaceVisibility: 'hidden' }}
@@ -138,7 +138,7 @@ export default function LuckyCardReveal() {
               </div>
             </div>
 
-            {/* Back Face (Revealed Card) */}
+            {/* Revealed Face (Card Artwork) */}
             <div
               className="absolute inset-0 bg-transparent flex items-center justify-center"
               style={{
@@ -150,7 +150,7 @@ export default function LuckyCardReveal() {
                 {selectedCard && selectedCard.image && !imageError ? (
                   <Image
                     alt={selectedCard.title || 'Revealed Card'}
-                    className="object-contain"
+                    className="object-cover rounded-2xl"
                     fill
                     quality={100}
                     priority
