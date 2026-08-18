@@ -117,7 +117,7 @@ export default function LuckyCardReveal() {
           selectedCard?.tier === 'premium' ? 'lucky-moment-tier-premium' :
           'lucky-moment-tier-standard'
         } ${isGenerating ? 'is-generating' : ''} ${isRevealed ? 'is-revealed' : ''} relative isolate z-[100] max-w-full`}>
-          <div className="card-stage-container relative w-full p-4 sm:p-6 flex items-center justify-center" style={{ perspective: '1200px', zIndex: 999 }}>
+          <div className="card-stage-container relative w-full p-4 sm:p-6 flex items-center justify-center overflow-hidden" style={{ perspective: '1200px', zIndex: 999 }}>
             
             {/* BACKGROUND AURORAS: Forced to the absolute back */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden z-[-10]">
@@ -129,7 +129,7 @@ export default function LuckyCardReveal() {
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier === 'premium' ? 'premium' : selectedCard?.tier === 'flagship' ? 'flagship' : 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
 
             {/* CARD WRAPPER: Forced to the absolute front */}
-            <div className="flip-card-wrapper relative z-10 w-full max-w-[260px] aspect-[5/7] mx-auto">
+            <div className="flip-card-wrapper flex-shrink-0 relative z-10 w-full max-w-[260px] aspect-[5/7] mx-auto">
               <div className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card">
 
                 {/* CELEBRATORY PULSE */}
