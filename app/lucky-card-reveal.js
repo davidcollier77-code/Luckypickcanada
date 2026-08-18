@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
@@ -129,43 +130,37 @@ export default function LuckyCardReveal() {
             <div id="card-underglow" className={`tier-underglow tier-${selectedCard?.tier === 'premium' ? 'premium' : selectedCard?.tier === 'flagship' ? 'flagship' : 'standard'} absolute -inset-4 rounded-3xl pointer-events-none z-[-5]`}></div>
 
             {/* CARD WRAPPER: Forced to the absolute front */}
-            <div className="flip-card-wrapper flex-shrink-0 relative z-10 w-full max-w-[16rem] aspect-[5/7] mx-auto">
+            <div
+              role="button"
+              aria-pressed={isRevealed}
+              onClick={() => setIsRevealed((s) => !s)}
+              className="flip-card-wrapper flex-shrink-0 relative z-10 w-full h-[50vh] max-h-[400px] aspect-[5/7] mx-auto [perspective:1000px] cursor-pointer [WebkitTapHighlightColor:transparent]"
+            >
               <div
-                className="relative z-[9999] w-full h-full cursor-pointer shake-target lucky-moment-card transition-all duration-700 [transform-style:preserve-3d]"
-                style={{
-                  transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)'
-                }}
+                className={`relative w-full h-full [transform-style:preserve-3d] transition-transform duration-700 ${
+                  isRevealed ? '[transform:rotateY(180deg)]' : '[transform:rotateY(0deg)]'
+                }`}
               >
-
                 {/* CELEBRATORY PULSE */}
                 {isRevealed && selectedCard && (selectedCard.tier === 'premium' || selectedCard.tier === 'flagship') && (
                   <div className="celebratory-pulse"></div>
                 )}
 
-                {/* FRONT FACE */}
-                <div
-                  className="absolute inset-0 w-full h-full lucky-moment-card-front [backface-visibility:hidden] [-webkit-backface-visibility:hidden] !transition-none"
-                  aria-hidden={isRevealed}
-                >
-                  <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-emerald-500/30 bg-slate-950/80">
-                    <img src="/IMG_20260728_220305_112042.png" alt="Lucky Pick Canada" loading="lazy" className="w-full h-full object-contain select-none pointer-events-none" style={{ imageRendering: 'high-quality' }} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-white/10 pointer-events-none"></div>
+                {/* Front face */}
+                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [WebkitTapHighlightColor:transparent]">
+                  <div className="relative w-full h-full">
+                    <Image alt="Card front" className="object-contain" fill quality={100} src="/IMG_20260728_220305_112042.png"/>
                   </div>
                 </div>
 
-                {/* BACK FACE */}
-                <div
-                  className="absolute inset-0 w-full h-full flex items-center justify-center lucky-moment-card-back [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] !transition-none"
-                  aria-hidden={!isRevealed}
-                >
-                  <div className="absolute inset-0 w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-cyan-400/40 bg-slate-950/80">
+                {/* Back face */}
+                <div className="absolute inset-0 w-full h-full [backface-visibility:hidden] [transform:rotateY(180deg)] [WebkitTapHighlightColor:transparent]">
+                  <div className="relative w-full h-full">
                     {selectedCard && (selectedCard.image && !imageError ? (
-                      <img src={selectedCard.image} alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-contain select-none pointer-events-none" onError={() => setImageError(true)} style={{ imageRendering: 'high-quality' }} />
+                      <Image alt={selectedCard.title || 'Revealed Card'} className="object-contain" fill quality={100} src={selectedCard.image} onError={() => setImageError(true)} />
                     ) : <span className="absolute inset-0 flex items-center justify-center z-10 text-white">Lucky Pick 🍁 Canada.ca</span>)}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/15 pointer-events-none"></div>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
