@@ -264,7 +264,7 @@ export default function DailyMeterWidget() {
     <div className="relative w-[300px] h-[250px] overflow-hidden bg-[#03060d] text-slate-100 flex flex-col items-center justify-center m-0 p-0 selection:bg-amber-500/30 font-sans">
 
       {/* 1. Photorealistic Ultra-HD Space Video Layer */}
-      <video
+            <video
         autoPlay
         loop
         muted
@@ -274,8 +274,8 @@ export default function DailyMeterWidget() {
         poster="/assets/images/deep-cosmos-poster.webp"
         onError={(e) => { e.currentTarget.style.display = 'none'; }}
       >
-        <source src="/assets/videos/deep-cosmos-optimized.webm" type="video/webm" />
-        <source src="/assets/videos/deep-cosmos-1080p.mp4" type="video/mp4" />
+        <source src="/assets/videos/deep-cosmos-720p.webm" type="video/webm" />
+        <source src="/assets/videos/deep-cosmos-720p.mp4" type="video/mp4" />
         <source src="/assets/videos/deep-cosmos-4k.mp4" type="video/mp4" />
       </video>
 
