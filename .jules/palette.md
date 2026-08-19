@@ -5,3 +5,7 @@
 ## 2026-08-18 - Remove rigid card framing for transparent organic feel
 **Learning:** For premium, cinematic visual aesthetics, rigid, dark rectangular framing (like solid black backgrounds or borders) around transparent graphics disrupts the visual flow against organic starry backgrounds.
 **Action:** Use transparent backgrounds and remove borders on inner card wrappers to allow the card graphic to sit seamlessly and naturally over the main atmospheric background.
+
+## 2026-08-19 - Enhance Modal Focus Management
+**Learning:** For manually constructed React modal dialogs, immediately trapping or directing focus into the modal upon opening is critical for keyboard and screen reader accessibility. If a modal opens but focus remains on the triggering element or is lost, keyboard users may struggle to interact with the modal content.
+**Action:** When implementing or modifying custom modal dialogs, always include the `autoFocus` attribute on a primary interactive element within the modal, such as the close button, to ensure focus is properly managed.
