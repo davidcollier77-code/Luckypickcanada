@@ -269,11 +269,15 @@ export default function DailyMeterWidget() {
         loop
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-70 filter contrast-110 brightness-95"
-        src="/assets/videos/deep-cosmos-4k.mp4"
         poster="/assets/images/deep-cosmos-poster.webp"
-      />
+        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+      >
+        <source src="/assets/videos/deep-cosmos-optimized.webm" type="video/webm" />
+        <source src="/assets/videos/deep-cosmos-1080p.mp4" type="video/mp4" />
+        <source src="/assets/videos/deep-cosmos-4k.mp4" type="video/mp4" />
+      </video>
 
       {/* 2. Optical Backlight (Accentuates the Metallic Dial) */}
       <div
