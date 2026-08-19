@@ -74,6 +74,7 @@ function readStored() {
 }
 
 function writeStored(data) {
+  if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch {
