@@ -30,6 +30,14 @@ module.exports = {
         'aurora-2': 'auroraWave 25s ease-in-out infinite alternate-reverse',
         'aurora-3': 'auroraWave 30s ease-in-out infinite alternate',
         'flicker': 'flicker 1.5s infinite alternate',
+        'float-slow': 'floatSlow 4s ease-in-out infinite',
+        'shake-slight': 'shakeSlight 0.5s cubic-bezier(.36,.07,.19,.97) both',
+        'shake-heavy': 'shakeHeavy 0.4s cubic-bezier(.36,.07,.19,.97) both',
+        'pulse-rapid': 'pulseRapid 0.6s ease-in-out infinite',
+        'surge-flash': 'surgeFlash 0.3s ease-in-out infinite alternate',
+        'fade-in-dim': 'fadeInDim 1s ease-out forwards',
+        'pop-bright': 'popBright 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+        'scale-dramatic-neon': 'scaleDramaticNeon 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
       },
       keyframes: {
         flicker: {
@@ -65,6 +73,43 @@ module.exports = {
           '0%': { transform: 'translateY(0) scaleX(1)', opacity: 0.3 },
           '50%': { transform: 'translateY(-5%) scaleX(1.05)', opacity: 0.5 },
           '100%': { transform: 'translateY(2%) scaleX(0.95)', opacity: 0.3 },
+        },
+        floatSlow: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        shakeSlight: {
+          '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+          '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+          '30%, 50%, 70%': { transform: 'translate3d(-2px, 0, 0)' },
+          '40%, 60%': { transform: 'translate3d(2px, 0, 0)' }
+        },
+        shakeHeavy: {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translate3d(-4px, -2px, 0)' },
+          '20%, 40%, 60%, 80%': { transform: 'translate3d(4px, 2px, 0)' }
+        },
+        pulseRapid: {
+          '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+          '50%': { transform: 'scale(1.1)', opacity: 0.8 },
+        },
+        surgeFlash: {
+          '0%': { filter: 'drop-shadow(0 0 10px rgba(74, 222, 128, 0.2))' },
+          '100%': { filter: 'drop-shadow(0 0 30px rgba(74, 222, 128, 1))' },
+        },
+        fadeInDim: {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 0.5 },
+        },
+        popBright: {
+          '0%': { transform: 'scale(0.5)', opacity: 0 },
+          '80%': { transform: 'scale(1.1)', opacity: 1 },
+          '100%': { transform: 'scale(1)', opacity: 1 },
+        },
+        scaleDramaticNeon: {
+          '0%': { transform: 'scale(0.1)', opacity: 0, textShadow: '0 0 5px #000' },
+          '50%': { transform: 'scale(1.3)', opacity: 1, textShadow: '0 0 20px #4ade80, 0 0 40px #4ade80' },
+          '100%': { transform: 'scale(1)', opacity: 1, textShadow: '0 0 15px #4ade80, 0 0 30px #4ade80' },
         }
       },
       colors: {
