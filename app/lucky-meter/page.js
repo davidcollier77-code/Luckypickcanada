@@ -35,7 +35,6 @@ function getLocalDateString() {
 }
 
 export default function LuckyMeterPage() {
-  const canvasRef = useRef(null);
   const [savedState, setSavedState] = useState(null);
   const [visualPercentage, setVisualPercentage] = useState(null);
   const [luckPercentage, setLuckPercentage] = useState(null);
@@ -49,111 +48,7 @@ export default function LuckyMeterPage() {
   const [targetLuck, setTargetLuck] = useState(null);
   const [targetQuote, setTargetQuote] = useState(null);
 
-  // Sky Starfield & Shooting Stars Canvas Animation
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let animationFrameId;
-    let stars = [];
-    let shootingStars = [];
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      initStars();
-    };
-
-    const initStars = () => {
-      stars = [];
-      const numStars = Math.floor((canvas.width * canvas.height) / 8000);
-      const boundedNum = Math.max(60, Math.min(numStars, 180));
-      for (let i = 0; i < boundedNum; i++) {
-        stars.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 1.2 + 0.3,
-          alpha: Math.random(),
-          twinkleSpeed: 0.005 + Math.random() * 0.015,
-          colorPhase: Math.random() * Math.PI,
-        });
-      }
-    };
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw Twinkling Starfield
-      ctx.fillStyle = '#fff8df';
-      stars.forEach((star) => {
-        star.alpha += star.twinkleSpeed;
-        const currentOpacity = Math.abs(Math.sin(star.alpha + star.colorPhase));
-
-        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
-        // Replaced string interpolation with ctx.globalAlpha inside the render loop
-        // to minimize garbage collection overhead during requestAnimationFrame.
-        ctx.globalAlpha = 0.15 + currentOpacity * 0.75;
-
-        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
-        // Replaced expensive path/arc rendering with fillRect for tiny 1-2px stars.
-        // This drops canvas API calls per frame significantly and improves rendering speed.
-        ctx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
-      });
-      ctx.globalAlpha = 1.0;
-
-      // Spawn Shooting Stars at randomized intervals
-      if (Math.random() < 0.0012 && shootingStars.length < 2) {
-        shootingStars.push({
-          x: Math.random() * canvas.width * 0.7,
-          y: Math.random() * canvas.height * 0.4,
-          dx: 3.5 + Math.random() * 4,
-          dy: 1.5 + Math.random() * 2,
-          length: 50 + Math.random() * 80,
-          opacity: 1,
-          speed: 1.2 + Math.random() * 1.5,
-        });
-      }
-
-      // Draw and update Shooting Stars with a reverse for loop to prevent splicing bugs
-      for (let idx = shootingStars.length - 1; idx >= 0; idx--) {
-        const ss = shootingStars[idx];
-        ctx.beginPath();
-        const gradient = ctx.createLinearGradient(ss.x, ss.y, ss.x - ss.length, ss.y - (ss.length * (ss.dy / ss.dx)));
-        gradient.addColorStop(0, `rgba(255, 244, 211, ${ss.opacity})`);
-        gradient.addColorStop(1, 'rgba(255, 244, 211, 0)');
-
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 1.5;
-        ctx.moveTo(ss.x, ss.y);
-        ctx.lineTo(ss.x - ss.length, ss.y - (ss.length * (ss.dy / ss.dx)));
-        ctx.stroke();
-
-        ss.x += ss.dx * ss.speed;
-        ss.y += ss.dy * ss.speed;
-        ss.opacity -= 0.015;
-
-        if (ss.opacity <= 0 || ss.x > canvas.width || ss.y > canvas.height) {
-          shootingStars.splice(idx, 1);
-        }
-      }
-
-      animationFrameId = requestAnimationFrame(draw);
-    };
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-    draw();
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  // Load persistence state on mount
+    // Load persistence state on mount
   useEffect(() => {
     if (typeof window === 'undefined' || !window.localStorage) return;
 
@@ -398,31 +293,34 @@ export default function LuckyMeterPage() {
   }, []);
 
   return (
-    <div className="cosmic-aurora-background min-h-screen bg-[#030712] text-[#fff8df] flex flex-col justify-between font-sans relative overflow-x-hidden">
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#03060d] text-slate-100 flex flex-col justify-between selection:bg-amber-500/30">
       
-      {/* Dynamic Aurora Atmospheric Background Effects & Canvas Layers */}
-      <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden bg-[#030712]">
-        {/* Starfield & Shooting Stars Canvas */}
-        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
+      {/* 1. Photorealistic Ultra-HD Space Video Layer */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover opacity-70 filter contrast-110 brightness-95"
+        src="/assets/videos/deep-cosmos-4k.mp4"
+        poster="/assets/images/deep-cosmos-poster.webp"
+      />
 
-        {/* Dynamic Vector Aurora Beams */}
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[90%] rounded-full bg-gradient-to-br from-[#18b978]/25 via-[#57e5d0]/15 to-transparent blur-[110px] animate-aurora-slow" />
-          <div className="absolute top-[-15%] right-[-10%] w-[75%] h-[85%] rounded-full bg-gradient-to-bl from-[#69b8ff]/20 via-[#bf8bff]/15 to-transparent blur-[110px] animate-aurora-mid" />
-          <div className="absolute top-[10%] left-[20%] w-[90%] h-[70%] rounded-full bg-gradient-to-tr from-[#18b978]/12 via-[#e8ba52]/10 to-transparent blur-[120px] animate-aurora-delayed" />
-        </div>
+      {/* 2. Optical Backlight (Accentuates the Metallic Dial) */}
+      <div
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-400/15 via-indigo-950/20 to-transparent blur-3xl z-[1]"
+      />
 
-        {/* Dynamic Glow Core tied to Daily Luck Tier or active generation */}
-        <div
-          className="absolute top-[-10%] left-[50%] translate-x-[-50%] w-[120%] h-[60%] rounded-full opacity-30 blur-[100px] transition-all duration-1000"
-          style={{
-            background: isGenerating
-              ? 'radial-gradient(circle, #57e5d0 0%, #18b978 40%, transparent 70%)'
-              : `radial-gradient(circle, ${tierColor} 0%, rgba(6, 26, 28, 0.8) 50%, transparent 80%)`
-          }}
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] opacity-25" />
-      </div>
+      {/* 3. Dark Vignette Overlay for Crisp Contrast */}
+      <div
+        className="pointer-events-none absolute inset-0 z-[2] bg-gradient-to-b from-[#03060d]/80 via-transparent to-[#03060d]/90"
+      />
+
+      {/* 4. Foreground UI (Meter, Navigation, Controls) */}
+      <div className="relative z-10 flex flex-col flex-1 w-full">
+
+
 
       {/* Styled JSX for vortex, led flickering and aurora animations */}
       <style jsx global>{`
@@ -838,6 +736,8 @@ export default function LuckyMeterPage() {
       <footer className="w-full py-6 text-center text-[10px] text-[#fff8df]/30 font-semibold tracking-wider select-none z-10 border-t border-[#eeb83f]/10 mt-auto">
         LUCKY PICK CANADA © 2026 • THE REALM OF OPTIMISM
       </footer>
+      </div>
+
     </div>
   );
 }
