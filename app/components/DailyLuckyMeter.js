@@ -121,17 +121,17 @@ export function DailyLuckyMeter({ compact = false }) {
     };
   }, []);
 
-  const sizeClass = compact ? "w-[240px] h-[240px]" : "w-[340px] h-[340px]";
+  const sizeClass = compact ? "w-[160px] h-[160px]" : "w-[300px] h-[300px]";
 
   return (
     <div className={`relative flex flex-col items-center ${compact ? "gap-3" : "gap-5"} w-full max-w-md`}>
       {!compact && (
         <div className="text-center space-y-1">
           <h1 className="text-base tracking-[0.25em] text-amber-200 uppercase font-bold drop-shadow-[0_0_10px_rgba(255,215,106,0.5)]">
-            DAILY LUCKY METER
+            DAILY LUCKY GENERATOR
           </h1>
           <p className="text-xs text-cyan-100/70 max-w-xs mx-auto">
-            Every night at midnight, your Lucky Meter resets. Awaken the vector core to reveal your daily reading.
+            Every night at midnight, your Lucky Generator resets. Activate the vortex core to reveal your daily reading.
           </p>
         </div>
       )}
@@ -142,9 +142,19 @@ export function DailyLuckyMeter({ compact = false }) {
         <span className="font-semibold text-amber-300">{timeLeft}</span>
       </div>
 
-      {/* Futuristic Gauge Dial */}
-      <div className={`relative ${sizeClass} rounded-full bg-black/80 border border-cyan-400/30 shadow-[0_0_50px_rgba(0,255,255,0.25)] flex items-center justify-center backdrop-blur-xl`}>
-        {/* Outer Scale Dial SVG */}
+      {/* Faceplate Container */}
+      <div className={`relative bg-gradient-to-b from-gray-800 to-black border-2 border-gray-700 rounded-2xl shadow-2xl flex flex-col items-center justify-center ${compact ? "p-3 pt-6 pb-2" : "p-6 pt-10"} w-full`}>
+
+        {/* Nameplate */}
+        <div className="bg-gray-900 border border-gray-600 rounded px-4 py-1 shadow-inner absolute top-0 -translate-y-1/2">
+          <span className="font-mono text-gray-400 tracking-widest text-[8px] sm:text-[10px] drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]">
+            LUCKY GENERATOR - MODEL 01
+          </span>
+        </div>
+
+        {/* Futuristic Gauge Dial */}
+        <div className={`relative ${sizeClass} rounded-full bg-black/80 border border-cyan-400/30 shadow-[0_0_50px_rgba(0,255,255,0.25)] flex items-center justify-center backdrop-blur-xl`}>
+          {/* Outer Scale Dial SVG */}
         <svg className="absolute inset-0 w-full h-full p-3" viewBox="0 0 200 200">
           <defs>
             <linearGradient id="meterGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -159,8 +169,8 @@ export function DailyLuckyMeter({ compact = false }) {
             cx="100"
             cy="100"
             r="80"
-            stroke="rgba(255, 255, 255, 0.1)"
-            strokeWidth="6"
+            stroke="rgba(55, 65, 81, 0.8)"
+            strokeWidth="10"
             fill="none"
             strokeDasharray="360"
             strokeDashoffset="90"
@@ -174,7 +184,7 @@ export function DailyLuckyMeter({ compact = false }) {
             cy="100"
             r="80"
             stroke="url(#meterGradient)"
-            strokeWidth="7"
+            strokeWidth="12"
             fill="none"
             strokeDasharray="360"
             strokeDashoffset={360 - (270 * (isComplete || isAwakening ? displayPercentage : 0)) / 100}
@@ -197,7 +207,7 @@ export function DailyLuckyMeter({ compact = false }) {
                 x={x}
                 y={y + 3}
                 fill="rgba(200, 230, 255, 0.6)"
-                fontSize="7"
+                fontSize="9"
                 fontWeight="bold"
                 textAnchor="middle"
               >
@@ -208,8 +218,9 @@ export function DailyLuckyMeter({ compact = false }) {
         </svg>
 
         {/* Center Rotating Vortex */}
-        <div className={`absolute w-32 h-32 rounded-full border border-cyan-300/30 overflow-hidden ${isAwakening ? "animate-spin" : ""}`}>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,255,0.2),transparent_70%)]" />
+        <div className={`absolute w-32 h-32 rounded-full border border-cyan-300/30 overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,1)] animate-spin`} style={{ animationDuration: isAwakening ? "0.5s" : "3s" }}>
+          <div className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent,rgba(0,255,255,0.4),transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(0,0,0,0.8),transparent)]" />
         </div>
 
         {/* Center Text Readouts */}
@@ -222,6 +233,28 @@ export function DailyLuckyMeter({ compact = false }) {
           <div className="mt-1 text-[10px] tracking-[0.18em] font-medium uppercase text-cyan-200/90 max-w-[170px] leading-tight">
             {status}
           </div>
+        </div>
+        </div>
+
+        {/* Sequential Base LEDs */}
+        <div className="flex gap-2 mt-4 z-10">
+          {[0, 150, 300, 450, 600].map((delay, index) => {
+            let ledClass = "bg-gray-800";
+            if (isAwakening) {
+              ledClass = "bg-cyan-400 animate-pulse";
+            } else if (isComplete) {
+              if (displayPercentage >= 75) ledClass = "bg-amber-400 shadow-[0_0_10px_#fbbf24]";
+              else if (displayPercentage >= 40) ledClass = "bg-amber-200 shadow-[0_0_10px_#fde68a]";
+              else ledClass = "bg-cyan-400 shadow-[0_0_10px_#22d3ee]";
+            }
+            return (
+              <div
+                key={index}
+                className={`w-3 h-3 rounded-full transition-colors duration-300 ${ledClass}`}
+                style={{ animationDelay: `${delay}ms` }}
+              />
+            );
+          })}
         </div>
       </div>
 
@@ -237,7 +270,7 @@ export function DailyLuckyMeter({ compact = false }) {
             : "bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-black shadow-[0_0_25px_rgba(255,215,106,0.6)] hover:brightness-110 active:scale-95"
         }`}
       >
-        {isComplete ? "TODAY'S RESONANCE COMPLETE" : isAwakening ? "CONNECTING TO STARS..." : "AWAKEN LUCKY METER"}
+        {isComplete ? "TODAY'S RESONANCE COMPLETE" : isAwakening ? "CONNECTING TO STARS..." : "ACTIVATE LUCKY GENERATOR"}
       </button>
 
       {/* Canadian Oracle Fortune Card */}
