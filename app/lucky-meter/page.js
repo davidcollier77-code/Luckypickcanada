@@ -1,6 +1,6 @@
 "use client";
 
-import { DailyLuckyMeter } from "../components/DailyLuckyMeter";
+import DailyLuckyMeter from "../components/DailyLuckyMeter";
 
 export default function LuckyMeterPage() {
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { DailyLuckyMeter } from "../../components/DailyLuckyMeter";
+import DailyLuckyMeter from "../../components/DailyLuckyMeter";
 
 export default function DailyMeterWidget() {
   return (
@@ -26,8 +26,8 @@ export default function DailyMeterWidget() {
 
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_0%,rgba(0,255,255,0.35),transparent_55%),radial-gradient(circle_at_80%_100%,rgba(255,215,106,0.35),transparent_55%)]" />
 
-      <div className="relative flex h-full w-full items-center justify-center px-3 py-2">
-        <DailyLuckyMeter compact/>
+      <div className="relative flex h-full w-full items-center justify-center px-3 py-2 transform scale-[0.6] origin-center">
+        <DailyLuckyMeter />
       </div>
     </div>
   );
