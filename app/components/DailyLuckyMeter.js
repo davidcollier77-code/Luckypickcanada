@@ -14,25 +14,31 @@ export function DailyLuckyMeter({ compact = false }) {
 
   useEffect(() => {
     const checkCooldown = () => {
-      const nextAvailable = localStorage.getItem("luckyGeneratorNextAvailable");
-      if (nextAvailable) {
-        const remaining = parseInt(nextAvailable, 10) - Date.now();
-        if (remaining > 0) {
-          setIsLocked(true);
-          const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24);
-          const minutes = Math.floor((remaining / 1000 / 60) % 60);
-          const seconds = Math.floor((remaining / 1000) % 60);
-          setCooldownRemaining(
-            `${hours.toString().padStart(2, "0")}:${minutes
-              .toString()
-              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-          );
+      try {
+        const nextAvailable = localStorage.getItem("luckyGeneratorNextAvailable");
+        if (nextAvailable) {
+          const remaining = parseInt(nextAvailable, 10) - Date.now();
+          if (remaining > 0) {
+            setIsLocked(true);
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining / 1000 / 60) % 60);
+            const seconds = Math.floor((remaining / 1000) % 60);
+            setCooldownRemaining(
+              `${hours.toString().padStart(2, "0")}:${minutes
+                .toString()
+                .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+            );
+          } else {
+            setIsLocked(false);
+            setCooldownRemaining(null);
+            localStorage.removeItem("luckyGeneratorNextAvailable");
+          }
         } else {
           setIsLocked(false);
           setCooldownRemaining(null);
-          localStorage.removeItem("luckyGeneratorNextAvailable");
         }
-      } else {
+      } catch (error) {
+        console.error("Failed to access localStorage:", error);
         setIsLocked(false);
         setCooldownRemaining(null);
       }
@@ -60,11 +66,15 @@ export function DailyLuckyMeter({ compact = false }) {
 
       // Lock for 24 hours
       localStorage.setItem(
-        "luckyGeneratorNextAvailable",
-        (Date.now() + 24 * 60 * 60 * 1000).toString()
-      );
-      setIsLocked(true);
-    }, 2000);
+      try {
+        localStorage.setItem(
+          "luckyGeneratorNextAvailable",
+          (Date.now() + 24 * 60 * 60 * 1000).toString()
+        );
+        setIsLocked(true);
+      } catch (error) {
+        console.error("Failed to set cooldown in localStorage:", error);
+      }
   };
 
   const sizeClass = compact ? "w-[160px] h-[160px]" : "w-[320px] h-[320px]";
