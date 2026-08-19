@@ -41,7 +41,7 @@ function msUntilNextLocalMidnight() {
     now.getFullYear(),
     now.getMonth(),
     now.getDate() + 1,
-    0, 0, 1, 0
+    0, 0, 0, 0
   );
   return Math.max(next.getTime() - now.getTime(), 1000);
 }
@@ -55,6 +55,7 @@ function formatCountdown(ms) {
 }
 
 function readStored() {
+  if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
@@ -287,9 +288,11 @@ export default function DailyLuckyMeter() {
 
   return (
     <div className="relative w-full min-h-screen bg-[#04070a] overflow-x-hidden flex flex-col items-center px-4 py-10 sm:py-14">
-      <div className="pointer-events-none fixed inset-0 opacity-70" style={{ backgroundImage: "radial-gradient(circle at 20% 15%, rgba(16,185,129,0.10), transparent 40%), radial-gradient(circle at 82% 78%, rgba(52,211,153,0.08), transparent 45%), radial-gradient(circle at 50% 100%, rgba(163,230,53,0.06), transparent 50%)" }} />
+      <div className="pointer-events-none fixed inset-0 opacity-40" style={{ backgroundImage: "radial-gradient(circle at 20% 15%, rgba(16,185,129,0.10), transparent 40%), radial-gradient(circle at 82% 78%, rgba(52,211,153,0.08), transparent 45%), radial-gradient(circle at 50% 100%, rgba(163,230,53,0.06), transparent 50%)" }} />
+      <div className="pointer-events-none fixed inset-0 mix-blend-screen will-change-[opacity] animate-[dlm-twinkle_5s_ease-in-out_infinite]" style={{ backgroundSize: "200px 200px", backgroundImage: "radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 100px 50px, rgba(255,255,255,0.8), rgba(0,0,0,0)), radial-gradient(1px 1px at 150px 120px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 180px, rgba(255,255,255,0.6), rgba(0,0,0,0)), radial-gradient(1px 1px at 180px 180px, rgba(255,255,255,0.9), rgba(0,0,0,0))" }} />
       <div className="pointer-events-none fixed inset-0 opacity-[0.05] mix-blend-overlay" style={{ backgroundImage: "repeating-linear-gradient(0deg, #fff 0px, transparent 1px, transparent 3px)" }} />
       <style>{`
+        @keyframes dlm-twinkle { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
         @keyframes dlm-breathe { 0% { transform: scale(0.96); filter: brightness(0.92); } 50% { transform: scale(1.045); filter: brightness(1.12); } 100% { transform: scale(0.96); filter: brightness(0.92); } }
         @keyframes dlm-rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes dlm-rotate-slow-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
@@ -339,7 +342,7 @@ export default function DailyLuckyMeter() {
             const { delay, duration } = ledTiming(i, leds.length);
             const isAmber = i % 5 === 0;
             return (
-              <div key={`led-${i}`} className="absolute w-[5px] h-[5px] sm:w-[6px] sm:h-[6px] rounded-full -translate-x-1/2 -translate-y-1/2 dlm-motion-safe" style={{ left: pos.left, top: pos.top, background: isAmber ? "#fbbf24" : "#4ade80", boxShadow: isAmber ? "0 0 6px 1px rgba(251,191,36,0.9)" : "0 0 6px 1px rgba(74,222,128,0.9)", animation: `dlm-led ${duration}s ease-in-out ${delay}s infinite` }} />
+              <div key={`led-${i}`} className="absolute w-[5px] h-[5px] sm:w-[6px] sm:h-[6px] rounded-full -translate-x-1/2 -translate-y-1/2 dlm-motion-safe" style={{ left: pos.left, top: pos.top, background: isAmber ? "#fbbf24" : "#f8fafc", boxShadow: isAmber ? "0 0 6px 1px rgba(251,191,36,0.9)" : "0 0 6px 1px rgba(248,250,252,0.9)", animation: `dlm-led ${duration}s ease-in-out ${delay}s infinite` }} />
             );
           })}
 
@@ -406,7 +409,7 @@ export default function DailyLuckyMeter() {
 
       {/* CONTROLS */}
       <div className="w-full max-w-xl mt-10 flex flex-col items-center gap-5">
-        <button type="button" onClick={handleReveal} disabled={locked || isRevealing} className={`relative min-w-[220px] px-8 py-3.5 rounded-2xl font-semibold tracking-wide text-sm sm:text-base transition-transform duration-150 active:scale-[0.97] disabled:active:scale-100 ${locked ? "cursor-not-allowed text-white/35" : "text-emerald-950 cursor-pointer hover:brightness-110"}`} style={{ background: locked ? "linear-gradient(180deg, #3a4038, #23271f)" : "linear-gradient(180deg, #d9ffe8 0%, #6ee7a3 12%, #22c55e 55%, #0f7a3e 100%)", boxShadow: locked ? "inset 0 2px 3px rgba(255,255,255,0.06), inset 0 -4px 8px rgba(0,0,0,0.6)" : "inset 0 2px 2px rgba(255,255,255,0.8), inset 0 -6px 10px rgba(0,60,30,0.5), 0 10px 25px -8px rgba(16,185,129,0.7)" }}>
+        <button type="button" onClick={handleReveal} disabled={locked || isRevealing} className={`relative min-w-[220px] px-8 py-3.5 rounded-2xl font-semibold tracking-wide text-sm sm:text-base transition-transform duration-150 active:scale-[0.97] disabled:active:scale-100 ${locked ? "cursor-not-allowed text-white/35" : "text-amber-950 cursor-pointer hover:brightness-110"}`} style={{ background: locked ? "linear-gradient(180deg, #3a4038, #23271f)" : "linear-gradient(180deg, #fef3c7 0%, #fde68a 12%, #f59e0b 55%, #b45309 100%)", boxShadow: locked ? "inset 0 2px 3px rgba(255,255,255,0.06), inset 0 -4px 8px rgba(0,0,0,0.6)" : "inset 0 2px 2px rgba(255,255,255,0.8), inset 0 -6px 10px rgba(120,53,15,0.5), 0 10px 25px -8px rgba(245,158,11,0.7)" }}>
           {isRevealing ? "Reading The Signs…" : locked ? "Revealed For Today" : "Reveal Luck"}
         </button>
 
