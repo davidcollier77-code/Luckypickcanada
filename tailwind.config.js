@@ -20,6 +20,9 @@ module.exports = {
         ]
       },
       animation: {
+        'pop-out': 'popOut 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+        'vortex-spin': 'vortexSpin 4s linear infinite',
+        'vortex-spin-reverse': 'vortexSpinReverse 6s linear infinite',
         'spin-slow': 'spin 25s linear infinite',
         'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
         'aurora-1': 'auroraWave 20s ease-in-out infinite alternate',
@@ -27,6 +30,19 @@ module.exports = {
         'aurora-3': 'auroraWave 30s ease-in-out infinite alternate',
       },
       keyframes: {
+        popOut: {
+          '0%': { transform: 'translate(-50%, -50%) scale(0)', opacity: '0' },
+          '60%': { transform: 'translate(-50%, -50%) scale(1.2)', opacity: '1' },
+          '100%': { transform: 'translate(-50%, -50%) scale(1)', opacity: '1' },
+        },
+        vortexSpin: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        vortexSpinReverse: {
+          '0%': { transform: 'rotate(360deg)' },
+          '100%': { transform: 'rotate(0deg)' },
+        },
         pulseGlow: {
           '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
           '50%': { opacity: 1, transform: 'scale(1.03)' },
