@@ -41,7 +41,7 @@ function msUntilNextLocalMidnight() {
     now.getFullYear(),
     now.getMonth(),
     now.getDate() + 1,
-    0, 0, 1, 0
+    0, 0, 0, 0
   );
   return Math.max(next.getTime() - now.getTime(), 1000);
 }
@@ -55,6 +55,7 @@ function formatCountdown(ms) {
 }
 
 function readStored() {
+  if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
