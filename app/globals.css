@@ -160,3 +160,13 @@ body {
 .tier-glow-flagship {
   box-shadow: 0 0 50px 10px rgba(253, 200, 48, 0.6), inset 0 0 15px rgba(253, 200, 48, 0.3);
 }
+
+/* Cinematic Flicker */
+@keyframes flicker {
+  0% { opacity: 0.4; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1.05); }
+}
+
+.animate-flicker {
+  animation: flicker 0.1s infinite alternate ease-in-out;
+}
