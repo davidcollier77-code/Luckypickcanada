@@ -114,6 +114,9 @@ export default function LuckyCardReveal() {
           style={{ perspective: '1200px' }}
         >
           <div className={`shake-target relative w-full h-full ${isGenerating && selectedCard ? `shake-${selectedCard.tier}` : ''}`}>
+            {isGenerating && (
+              <div className="absolute -inset-4 z-[-1] blur-2xl bg-amber-400/50 animate-flicker rounded-2xl" />
+            )}
             <div
               className="w-full h-full relative"
               style={{
