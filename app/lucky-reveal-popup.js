@@ -179,7 +179,7 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
   return (
     <div role="presentation" style={overlayStyle}>
       <section role="dialog" aria-modal="true" aria-labelledby="lucky-reveal-title" style={dynamicDialogStyle}>
-        <button type="button" aria-label="Close lucky reveal" onClick={closeReveal} style={closeButtonStyle} className="lucky-close-btn-hover">
+        <button type="button" aria-label="Close lucky reveal" onClick={closeReveal} style={closeButtonStyle} className="lucky-close-btn-hover" autoFocus>
           ×
         </button>
 
