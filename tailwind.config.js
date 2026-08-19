@@ -22,14 +22,28 @@ module.exports = {
       animation: {
         'pop-out': 'popOut 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'vortex-spin': 'vortexSpin 4s linear infinite',
+        'vortex-spin-fast': 'vortexSpin 0.5s linear infinite',
         'vortex-spin-reverse': 'vortexSpinReverse 6s linear infinite',
         'spin-slow': 'spin 25s linear infinite',
         'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
         'aurora-1': 'auroraWave 20s ease-in-out infinite alternate',
         'aurora-2': 'auroraWave 25s ease-in-out infinite alternate-reverse',
         'aurora-3': 'auroraWave 30s ease-in-out infinite alternate',
+        'flicker': 'flicker 1.5s infinite alternate',
       },
       keyframes: {
+        flicker: {
+          '0%, 100%': { opacity: '1' },
+          '10%': { opacity: '0.8' },
+          '20%': { opacity: '0.4' },
+          '30%': { opacity: '0.9' },
+          '40%': { opacity: '0.7' },
+          '50%': { opacity: '1' },
+          '60%': { opacity: '0.3' },
+          '70%': { opacity: '0.8' },
+          '80%': { opacity: '0.6' },
+          '90%': { opacity: '0.9' },
+        },
         popOut: {
           '0%': { transform: 'translate(-50%, -50%) scale(0)', opacity: '0' },
           '60%': { transform: 'translate(-50%, -50%) scale(1.2)', opacity: '1' },
