@@ -14,31 +14,35 @@ export function DailyLuckyMeter({ compact = false }) {
 
   useEffect(() => {
     const checkCooldown = () => {
+      let nextAvailable = null;
       try {
-        const nextAvailable = localStorage.getItem("luckyGeneratorNextAvailable");
-        if (nextAvailable) {
-          const remaining = parseInt(nextAvailable, 10) - Date.now();
-          if (remaining > 0) {
-            setIsLocked(true);
-            const hours = Math.floor(remaining / (1000 * 60 * 60));
-            const minutes = Math.floor((remaining / 1000 / 60) % 60);
-            const seconds = Math.floor((remaining / 1000) % 60);
-            setCooldownRemaining(
-              `${hours.toString().padStart(2, "0")}:${minutes
-                .toString()
-                .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
-            );
-          } else {
-            setIsLocked(false);
-            setCooldownRemaining(null);
-            localStorage.removeItem("luckyGeneratorNextAvailable");
-          }
+        nextAvailable = localStorage.getItem("luckyGeneratorNextAvailable");
+      } catch (e) {
+        console.error("Error reading localStorage", e);
+      }
+
+      if (nextAvailable) {
+        const remaining = parseInt(nextAvailable, 10) - Date.now();
+        if (remaining > 0) {
+          setIsLocked(true);
+          const hours = Math.floor((remaining / (1000 * 60 * 60)));
+          const minutes = Math.floor((remaining / 1000 / 60) % 60);
+          const seconds = Math.floor((remaining / 1000) % 60);
+          setCooldownRemaining(
+            `${hours.toString().padStart(2, "0")}:${minutes
+              .toString()
+              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+          );
         } else {
           setIsLocked(false);
           setCooldownRemaining(null);
+          try {
+            localStorage.removeItem("luckyGeneratorNextAvailable");
+          } catch (e) {
+            console.error("Error removing from localStorage", e);
+          }
         }
-      } catch (error) {
-        console.error("Failed to access localStorage:", error);
+      } else {
         setIsLocked(false);
         setCooldownRemaining(null);
       }
@@ -65,16 +69,16 @@ export function DailyLuckyMeter({ compact = false }) {
       setIsComplete(true);
 
       // Lock for 24 hours
-      localStorage.setItem(
       try {
         localStorage.setItem(
           "luckyGeneratorNextAvailable",
           (Date.now() + 24 * 60 * 60 * 1000).toString()
         );
-        setIsLocked(true);
-      } catch (error) {
-        console.error("Failed to set cooldown in localStorage:", error);
+      } catch (e) {
+        console.error("Error writing to localStorage", e);
       }
+      setIsLocked(true);
+    }, 2000);
   };
 
   const sizeClass = compact ? "w-[160px] h-[160px]" : "w-[320px] h-[320px]";
