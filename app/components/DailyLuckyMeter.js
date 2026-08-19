@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -18,6 +18,9 @@ export function DailyLuckyMeter({ compact = false }) {
   const [cooldownRemaining, setCooldownRemaining] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
 
+  const awakenTimeoutRef = useRef(null);
+  const tierResetTimeoutRef = useRef(null);
+
   const fortuneQuotes = [
     "Your luck is like a spring bloom – abundant and beautiful.",
     "The stars are aligned for an unexpected positive turn.",
@@ -32,6 +35,15 @@ export function DailyLuckyMeter({ compact = false }) {
     "A chance encounter will lead to a lucky result.",
     "You don't just find luck, you are luck.",
   ];
+
+  useEffect(() => {
+    return () => {
+      // Cleanup any running timeouts when unmounting
+      if (awakenTimeoutRef.current) clearTimeout(awakenTimeoutRef.current);
+      if (tierResetTimeoutRef.current)
+        clearTimeout(tierResetTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const checkCooldown = () => {
@@ -81,7 +93,7 @@ export function DailyLuckyMeter({ compact = false }) {
     setIsAwakening(true);
 
     // Simulate complex calculation
-    setTimeout(() => {
+    awakenTimeoutRef.current = setTimeout(() => {
       let targetScore;
       let selectedQuote;
 
@@ -94,15 +106,27 @@ export function DailyLuckyMeter({ compact = false }) {
         );
 
         // Anti-repeat logic for score
+        let scoreAttempts = 0;
         do {
           targetScore = Math.floor(Math.random() * 101); // 0% to 100%
-        } while (previousScore && targetScore.toString() === previousScore);
+          scoreAttempts++;
+        } while (
+          previousScore &&
+          targetScore.toString() === previousScore &&
+          scoreAttempts < 10
+        );
 
         // Anti-repeat logic for quote
+        let quoteAttempts = 0;
         do {
           selectedQuote =
             fortuneQuotes[Math.floor(Math.random() * fortuneQuotes.length)];
-        } while (previousQuote && selectedQuote === previousQuote);
+          quoteAttempts++;
+        } while (
+          previousQuote &&
+          selectedQuote === previousQuote &&
+          quoteAttempts < 10
+        );
 
         localStorage.setItem(
           "luckyGeneratorPreviousScore",
@@ -143,7 +167,7 @@ export function DailyLuckyMeter({ compact = false }) {
       setIsComplete(true);
 
       // Reset machine float animation after reveal effects
-      setTimeout(() => {
+      tierResetTimeoutRef.current = setTimeout(() => {
         setTierClass("animate-float-slow");
       }, 1500);
 
