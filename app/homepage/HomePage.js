@@ -1,11 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import CheckoutModal from '../checkout-modal';
 import LuckyCardReveal from '../lucky-card-reveal';
 import { createLuckyReveal } from '../lucky-reveal';
-import LuckyRevealPopup from '../lucky-reveal-popup';
+
+// PERFORMANCE OPTIMIZATION (Bolt ⚡):
+// Lazy load non-critical modal components to reduce the initial JS bundle size.
+// These components are only needed upon user interaction (e.g. checkout or reveal completion).
+// Expected impact: Faster initial page load and improved Time to Interactive.
+const CheckoutModal = dynamic(() => import('../checkout-modal'));
+const LuckyRevealPopup = dynamic(() => import('../lucky-reveal-popup'));
 import { TURNSTILE_SITE_KEY } from '../turnstile-config';
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import TurnstileField from '../turnstile-field';
