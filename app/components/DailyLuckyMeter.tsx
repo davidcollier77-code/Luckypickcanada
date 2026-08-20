@@ -736,7 +736,9 @@ export default function DailyLuckyMeter() {
         setScrambleValue(null);
         setDisplayedScore(finalScore);
         setIsRevealing(true);
-        triggerBurst(targetTier); // Trigger the canvas particle explosion
+        if (isMountedRef.current) {
+          triggerBurst(targetTier); // Trigger the canvas particle explosion
+        }
 
         setTimeout(() => {
           if (isMountedRef.current) {
