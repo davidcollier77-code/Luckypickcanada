@@ -170,3 +170,41 @@ body {
 .animate-flicker {
   animation: flicker 0.1s infinite alternate ease-in-out;
 }
+
+@keyframes cinematicPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.45;
+    filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.35));
+  }
+  50% {
+    transform: scale(1.025);
+    opacity: 0.8;
+    filter: drop-shadow(0 0 32px rgba(52, 211, 153, 0.65));
+  }
+}
+
+@keyframes specularGlint {
+  0% { transform: rotate(0deg); opacity: 0.2; }
+  50% { opacity: 0.65; }
+  100% { transform: rotate(360deg); opacity: 0.2; }
+}
+
+@keyframes moteDrift {
+  0% { transform: translateY(0px) translateX(0px); opacity: 0; }
+  30% { opacity: 0.75; }
+  70% { opacity: 0.45; }
+  100% { transform: translateY(-35px) translateX(15px); opacity: 0; }
+}
+
+.animate-cinematic-pulse {
+  animation: cinematicPulse 4s ease-in-out infinite;
+}
+
+.animate-specular-glint {
+  animation: specularGlint 10s linear infinite;
+}
+
+.animate-mote-1 { animation: moteDrift 5s ease-in-out infinite; }
+.animate-mote-2 { animation: moteDrift 6.5s ease-in-out 1.8s infinite; }
+.animate-mote-3 { animation: moteDrift 8s ease-in-out 3.2s infinite; }

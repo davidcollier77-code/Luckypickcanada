@@ -9,6 +9,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRollingScore } from "../hooks/useRollingScore";
 
 const STORAGE_KEY = "lpc_daily_lucky_meter_v1";
 const SHARE_URL = "https://luckypickcanada.ca";
@@ -133,7 +134,6 @@ export default function DailyLuckyMeter() {
   const [locked, setLocked] = useState(false);
   const [tier, setTier] = useState(1);
   const [score, setScore] = useState(null);
-  const [displayScore, setDisplayScore] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(null);
   const [showShare, setShowShare] = useState(false);
   const [shareLabel, setShareLabel] = useState("Share My Luck");
@@ -142,7 +142,10 @@ export default function DailyLuckyMeter() {
   const revealTimeoutRef = useRef(null);
   const midnightTimeoutRef = useRef(null);
   const countdownIntervalRef = useRef(null);
-  const rafRef = useRef(null);
+
+  const isRevealing = phase === "revealing";
+  const isRevealed = phase === "revealed";
+  const displayScore = useRollingScore(score || 0, isRevealing, 3000);
 
   const scheduleMidnightReset = useCallback(() => {
     if (midnightTimeoutRef.current) clearTimeout(midnightTimeoutRef.current);
@@ -175,7 +178,6 @@ export default function DailyLuckyMeter() {
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (midnightTimeoutRef.current) clearTimeout(midnightTimeoutRef.current);
       if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [scheduleMidnightReset]);
 
@@ -193,21 +195,6 @@ export default function DailyLuckyMeter() {
     };
   }, [locked]);
 
-  const animateCountUp = useCallback((target) => {
-    const duration = 1400;
-    const start = performance.now();
-    const step = (now) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayScore(Math.round(eased * target));
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(step);
-      }
-    };
-    rafRef.current = requestAnimationFrame(step);
-  }, []);
-
   const handleReveal = useCallback(() => {
     if (locked || phase === "revealing") return;
     const stored = readStored();
@@ -218,13 +205,12 @@ export default function DailyLuckyMeter() {
     const finalTier = getTier(finalScore);
 
     setTier(finalTier);
-    setDisplayScore(0);
+    setScore(finalScore);
     setShowShare(false);
     setShareLabel("Share My Luck");
     setPhase("revealing");
 
     revealTimeoutRef.current = setTimeout(() => {
-      setScore(finalScore);
       setQuoteIndex(finalQuoteIndex);
       setPhase("revealed");
       setLocked(true);
@@ -233,10 +219,9 @@ export default function DailyLuckyMeter() {
         lastScore: finalScore,
         lastQuoteIndex: finalQuoteIndex,
       });
-      animateCountUp(finalScore);
       setTimeout(() => setShowShare(true), 550);
     }, 3000);
-  }, [locked, phase, animateCountUp]);
+  }, [locked, phase]);
 
   const handleShare = useCallback(async () => {
     if (score === null) return;
@@ -257,8 +242,6 @@ export default function DailyLuckyMeter() {
     } catch {}
   }, [score]);
 
-  const isRevealing = phase === "revealing";
-  const isRevealed = phase === "revealed";
   const quote = quoteIndex !== null ? QUOTES[quoteIndex] : null;
 
   const leds = useMemo(() => Array.from({ length: 20 }, (_, i) => i), []);
@@ -380,7 +363,7 @@ export default function DailyLuckyMeter() {
               <div className="absolute inset-0 rounded-full bg-lime-200 dlm-motion-safe animate-[dlm-flash_0.45s_ease-in-out_infinite]" style={{ mixBlendMode: "overlay" }} />
             )}
 
-            <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
               {phase === "idle" && (
                 <div className="flex flex-col items-center gap-1 dlm-motion-safe animate-[dlm-breathe_4s_ease-in-out_infinite]">
                   <svg width="30" height="30" viewBox="0 0 24 24" fill="none" className="opacity-70">
@@ -390,16 +373,32 @@ export default function DailyLuckyMeter() {
                 </div>
               )}
               {isRevealing && (
-                <span className="text-[11px] sm:text-xs tracking-[0.3em] font-semibold text-emerald-100/80">
+                <span className="absolute top-[20%] text-[11px] sm:text-xs tracking-[0.3em] font-semibold text-emerald-100/80">
                   ANALYZING <span className="inline-block animate-pulse">...</span>
                 </span>
               )}
-              {isRevealed && score !== null && (
-                <div key={score} className="flex flex-col items-center dlm-motion-safe animate-[dlm-pop-in_0.55s_cubic-bezier(0.34,1.56,0.64,1)_both]">
-                  <span className={`font-black leading-none tabular-nums text-4xl sm:text-5xl bg-clip-text text-transparent bg-gradient-to-b ${tier === 3 ? "from-lime-100 via-lime-300 to-lime-500 drop-shadow-[0_0_25px_rgba(190,242,100,0.85)]" : tier === 2 ? "from-emerald-100 via-emerald-300 to-emerald-500 drop-shadow-[0_0_18px_rgba(74,222,128,0.7)]" : "from-emerald-200 via-emerald-400 to-emerald-600 drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]"}`}>
-                    {displayScore}%
-                  </span>
-                  <span className="mt-1 text-[9px] sm:text-[10px] tracking-[0.3em] text-white/40">LUCK SCORE</span>
+              {(isRevealing || isRevealed) && score !== null && (
+                <div className="relative flex items-center justify-center my-6">
+                  {/* Ambient Optical Bloom */}
+                  <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-2xl animate-cinematic-pulse pointer-events-none" />
+
+                  {/* Specular Rim Light */}
+                  <div className="absolute inset-0 rounded-full border border-emerald-400/20 animate-specular-glint pointer-events-none" />
+
+                  {/* Micro Stardust Motes */}
+                  <span className="absolute top-8 left-12 w-1.5 h-1.5 rounded-full bg-emerald-300/80 blur-[0.5px] animate-mote-1 pointer-events-none" />
+                  <span className="absolute bottom-10 right-14 w-1 h-1 rounded-full bg-amber-200/70 blur-[0.5px] animate-mote-2 pointer-events-none" />
+                  <span className="absolute top-1/2 right-6 w-1.5 h-1.5 rounded-full bg-teal-200/60 blur-[0.5px] animate-mote-3 pointer-events-none" />
+
+                  {/* Center Score Display */}
+                  <div className="z-10 text-center">
+                    <div className="text-4xl font-extrabold text-emerald-300 drop-shadow-[0_0_12px_rgba(52,211,153,0.6)]">
+                      {displayScore}%
+                    </div>
+                    <div className="text-xs uppercase tracking-widest text-emerald-400/80 mt-1 font-semibold">
+                      Luck Score
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -432,7 +431,7 @@ export default function DailyLuckyMeter() {
         </div>
 
         {showShare && quote && (
-          <button type="button" onClick={handleShare} className="dlm-motion-safe animate-[dlm-fade-up_0.5s_ease_both] px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold tracking-wide text-emerald-950 active:scale-[0.97] transition-transform duration-150" style={{ background: "linear-gradient(180deg, #f0fdf4 0%, #bbf7d0 20%, #4ade80 65%, #16a34a 100%)", boxShadow: "inset 0 1px 1px rgba(255,255,255,0.9), inset 0 -4px 8px rgba(0,60,30,0.4), 0 8px 18px -6px rgba(74,222,128,0.6)" }}>
+          <button type="button" onClick={handleShare} className="w-full py-3.5 px-6 rounded-xl font-bold text-neutral-950 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 shadow-[0_0_24px_rgba(245,158,11,0.35)] hover:shadow-[0_0_32px_rgba(245,158,11,0.55)] active:scale-95 transition-all duration-300">
             {shareLabel}
           </button>
         )}
