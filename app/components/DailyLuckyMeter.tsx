@@ -1107,7 +1107,7 @@ export default function DailyLuckyMeter() {
 
     const shareData = {
       title: 'Daily Lucky Meter',
-      text: `⚡ My Daily Resonance: \${displayedScore}% [\${currentTier.name}]\\n"\${fortune}"\\nCheck your luck today:`,
+      text: `⚡ My Daily Resonance: ${displayedScore}% [${currentTier.name}]\\n"${fortune}"\\nCheck your luck today:`,
       url: typeof window !== 'undefined' ? window.location.href : '',
     };
 
@@ -1122,7 +1122,7 @@ export default function DailyLuckyMeter() {
 
     try {
       if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-        await navigator.clipboard.writeText(`\${shareData.text} \${shareData.url}`);
+        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
         if (isMountedRef.current) {
           setCopied(true);
           setTimeout(() => {
@@ -1154,7 +1154,7 @@ export default function DailyLuckyMeter() {
   } as React.CSSProperties;
 
   return (
-    <div className={`lucky-meter-container \${isSpinning ? 'is-spinning' : ''}`} style={cssVars} ref={containerRef}>
+    <div className={`lucky-meter-container ${isSpinning ? 'is-spinning' : ''}`} style={cssVars} ref={containerRef}>
       <canvas
         ref={canvasRef}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 20 }}
@@ -1186,16 +1186,16 @@ export default function DailyLuckyMeter() {
       </div>
 
       {/* Primary Metallic Machine Bezel */}
-      <div className={`machine-frame \${isSpinning ? (scrambleValue !== null && scrambleValue % 3 === 0 ? 'vibrating-intense' : 'vibrating') : ''} \${isRevealing ? 'final-lock-shudder' : ''}`}>
+      <div className={`machine-frame ${isSpinning ? (scrambleValue !== null && scrambleValue % 3 === 0 ? 'vibrating-intense' : 'vibrating') : ''} ${isRevealing ? 'final-lock-shudder' : ''}`}>
         {/* Bezel Structural Rivets */}
         {Array.from({ length: RIVET_COUNT }).map((_, i) => {
           const pos = ringPosition(i, RIVET_COUNT, 46.5);
-          return <div key={`rivet-\${i}`} className="rivet" style={{ left: pos.left, top: pos.top }} />;
+          return <div key={`rivet-${i}`} className="rivet" style={{ left: pos.left, top: pos.top }} />;
         })}
 
         {/* Recessed Internal Well */}
         <div className="recessed-well">
-          <div className={`flash-overlay \${isRevealing ? 'trigger-flash' : ''}`} />
+          <div className={`flash-overlay ${isRevealing ? 'trigger-flash' : ''}`} />
           <div className="led-ring-container">
             {Array.from({ length: LED_COUNT }).map((_, i) => {
               const pos = ringPosition(i, LED_COUNT, 42);
@@ -1203,12 +1203,12 @@ export default function DailyLuckyMeter() {
               const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
 
               const duration = isSpinning ? 1 : 7;
-              const staggerDelay = isLit ? '0s' : `-\${(duration - (i * duration / LED_COUNT)).toFixed(3)}s`;
+              const staggerDelay = isLit ? '0s' : `-${(duration - (i * duration / LED_COUNT)).toFixed(3)}s`;
 
               return (
                 <div
-                  key={`led-\${i}`}
-                  className={`led-indicator \${
+                  key={`led-${i}`}
+                  className={`led-indicator ${
                     isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
                   }`}
                   style={{
@@ -1223,7 +1223,7 @@ export default function DailyLuckyMeter() {
           </div>
 
           {/* Plasma Vortex Core */}
-          <div className={`plasma-vortex-wrapper \${!isSpinning ? 'heartbeat-active' : ''} \${isRevealing ? 'reveal-bloom final-lock-bloom' : ''}`}>
+          <div className={`plasma-vortex-wrapper ${!isSpinning ? 'heartbeat-active' : ''} ${isRevealing ? 'reveal-bloom final-lock-bloom' : ''}`}>
             <div className="plasma-layer-1" />
             <div className="plasma-layer-2" />
             <div className="plasma-breathing-core" />
