@@ -155,7 +155,6 @@ export default function DailyLuckyMeter() {
       setPhase("idle");
       setScore(null);
       setQuoteIndex(null);
-      setDisplayScore(0);
       setShowShare(false);
       scheduleMidnightReset();
     }, ms);
@@ -167,7 +166,6 @@ export default function DailyLuckyMeter() {
     if (stored && stored.lastPlayedDate === today) {
       setLocked(true);
       setScore(stored.lastScore);
-      setDisplayScore(stored.lastScore);
       setQuoteIndex(stored.lastQuoteIndex);
       setTier(getTier(stored.lastScore));
       setPhase("revealed");
