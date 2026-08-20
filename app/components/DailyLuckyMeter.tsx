@@ -538,7 +538,50 @@ const formatCountdown = (ms: number) => {
 // COMPONENT
 // ==========================================
 
+
+// Localized countdown component to prevent parent re-renders every second
+const LockedCountdown = ({ loadState }: { loadState: () => void }) => {
+  const [countdown, setCountdown] = useState<string>("");
+
+  useEffect(() => {
+    let countInterval: NodeJS.Timeout | null = null;
+    let midnightTimer: NodeJS.Timeout | null = null;
+
+    const scheduleMidnightUnlock = () => {
+      if (midnightTimer) clearTimeout(midnightTimer);
+      if (countInterval) clearInterval(countInterval);
+
+      const msUntilMidnight = getTimeUntilMidnight();
+      setCountdown(formatCountdown(msUntilMidnight));
+
+      countInterval = setInterval(() => {
+        const remaining = getTimeUntilMidnight();
+        setCountdown(formatCountdown(remaining));
+        if (remaining <= 1000) {
+          if (countInterval) clearInterval(countInterval);
+          countInterval = null;
+        }
+      }, 1000);
+
+      midnightTimer = setTimeout(() => {
+        loadState();
+        scheduleMidnightUnlock();
+      }, msUntilMidnight + 1000);
+    };
+
+    scheduleMidnightUnlock();
+
+    return () => {
+      if (midnightTimer) clearTimeout(midnightTimer);
+      if (countInterval) clearInterval(countInterval);
+    };
+  }, [loadState]);
+
+  return <>{countdown}</>;
+};
+
 export default function DailyLuckyMeter() {
+
   const [mounted, setMounted] = useState(false);
 
 
@@ -553,13 +596,11 @@ export default function DailyLuckyMeter() {
 
   const [currentTier, setCurrentTier] = useState<TierConfig>(TIERS[1]);
   const [fortune, setFortune] = useState<string>('');
-  const [countdown, setCountdown] = useState<string>('');
+
   const [copied, setCopied] = useState(false);
 
   const isMountedRef = useRef(true);
   const animationFrameRef = useRef<number | null>(null);
-  const midnightTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const countIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Canvas render loop
   useEffect(() => {
@@ -704,45 +745,17 @@ export default function DailyLuckyMeter() {
     }
   }, []);
 
-  const scheduleMidnightUnlock = useCallback(() => {
-    if (midnightTimerRef.current) clearTimeout(midnightTimerRef.current);
-    if (countIntervalRef.current) clearInterval(countIntervalRef.current);
-
-    const msUntilMidnight = getTimeUntilMidnight();
-    setCountdown(formatCountdown(msUntilMidnight));
-
-    countIntervalRef.current = setInterval(() => {
-      if (!isMountedRef.current) return;
-      const remaining = getTimeUntilMidnight();
-      setCountdown(formatCountdown(remaining));
-      if (remaining <= 1000) {
-        if (countIntervalRef.current) clearInterval(countIntervalRef.current);
-        countIntervalRef.current = null;
-      }
-    }, 1000);
-
-    midnightTimerRef.current = setTimeout(() => {
-      if (!isMountedRef.current) return;
-      loadState();
-      scheduleMidnightUnlock();
-    }, msUntilMidnight + 1000);
-  }, [loadState]);
 
   useEffect(() => {
     setMounted(true);
     loadState();
-    scheduleMidnightUnlock();
 
     return () => {
       isMountedRef.current = false;
-      if (midnightTimerRef.current) clearTimeout(midnightTimerRef.current);
-      if (countIntervalRef.current) clearInterval(countIntervalRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      midnightTimerRef.current = null;
-      countIntervalRef.current = null;
       animationFrameRef.current = null;
     };
-  }, [loadState, scheduleMidnightUnlock]);
+  }, [loadState]);
 
   const rollMetrics = () => {
     let lastScore = -1;
@@ -1022,7 +1035,7 @@ export default function DailyLuckyMeter() {
 
       {/* Main Activation Control */}
       <button className="activate-btn" onClick={handleActivate} disabled={isLocked || isSpinning}>
-        {isSpinning ? 'RESONATING...' : isLocked ? `LOCKED (${countdown})` : 'ENGAGE METER'}
+        {isSpinning ? 'RESONATING...' : isLocked ? <>LOCKED (<LockedCountdown loadState={loadState} />)</> : 'ENGAGE METER'}
       </button>
 
       {/* Fortune Reading & Sharing (Post-Reveal) */}
