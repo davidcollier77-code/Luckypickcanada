@@ -383,6 +383,15 @@ const STATIC_STYLES = `
     100% { filter: brightness(1); box-shadow: var(--vort-glow); }
   }
 
+  .final-lock-bloom {
+    animation: finalGlowBloom 0.2s ease-out forwards;
+  }
+  @keyframes finalGlowBloom {
+    0% { filter: brightness(1) contrast(1); box-shadow: var(--vort-glow); }
+    50% { filter: brightness(1.8) contrast(1.2); box-shadow: 0 0 120px #ffffff, inset 0 0 80px #ffffff; }
+    100% { filter: brightness(1) contrast(1); box-shadow: var(--vort-glow); }
+  }
+
   /* Disable transitions while spinning to keep flicker sharp */
   .lucky-meter-container.is-spinning .plasma-vortex-wrapper,
   .lucky-meter-container.is-spinning .led-indicator,
@@ -671,6 +680,8 @@ export default function DailyLuckyMeter() {
   const [copied, setCopied] = useState(false);
 
   const isMountedRef = useRef(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scoreRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const tierRef = useRef(currentTier);
 
@@ -895,7 +906,17 @@ export default function DailyLuckyMeter() {
         // Scrambling phase
         if (now - lastScrambleTime > 50) { // Change every 50ms
           setScrambleValue(Math.floor(Math.random() * 100));
-          setCurrentTier(TIERS[Math.floor(Math.random() * TIERS.length)]);
+          const randomTier = TIERS[Math.floor(Math.random() * TIERS.length)];
+          tierRef.current = randomTier;
+          if (containerRef.current) {
+            containerRef.current.style.setProperty('--pri-color', randomTier.primaryColor);
+            containerRef.current.style.setProperty('--sec-color', randomTier.secondaryColor);
+            containerRef.current.style.setProperty('--acc-glow', randomTier.accentGlow);
+            containerRef.current.style.setProperty('--vort-glow', randomTier.vortexGlow);
+            containerRef.current.style.setProperty('--plas-g0', randomTier.plasmaGradients[0]);
+            containerRef.current.style.setProperty('--plas-g1', randomTier.plasmaGradients[1]);
+            containerRef.current.style.setProperty('--vib-int', randomTier.vibrationIntensity.toString());
+          }
           lastScrambleTime = now;
         }
       }
@@ -908,6 +929,17 @@ export default function DailyLuckyMeter() {
         setDisplayedScore(finalScore);
         setCurrentTier(targetTier); // Set the actual tier at the very end
         setIsRevealing(true);
+        // Explicitly set the DOM styles to the target tier to ensure they lock in correctly
+        // even if React decides not to re-render the inline style object due to prop diffing.
+        if (containerRef.current) {
+          containerRef.current.style.setProperty('--pri-color', targetTier.primaryColor);
+          containerRef.current.style.setProperty('--sec-color', targetTier.secondaryColor);
+          containerRef.current.style.setProperty('--acc-glow', targetTier.accentGlow);
+          containerRef.current.style.setProperty('--vort-glow', targetTier.vortexGlow);
+          containerRef.current.style.setProperty('--plas-g0', targetTier.plasmaGradients[0]);
+          containerRef.current.style.setProperty('--plas-g1', targetTier.plasmaGradients[1]);
+          containerRef.current.style.setProperty('--vib-int', targetTier.vibrationIntensity.toString());
+        }
         if (isMountedRef.current) {
           triggerBurst(targetTier); // Trigger the canvas particle explosion
         }
@@ -996,7 +1028,7 @@ export default function DailyLuckyMeter() {
   } as React.CSSProperties;
 
   return (
-    <div className={`lucky-meter-container ${isSpinning ? 'is-spinning' : ''}`} style={cssVars}>
+    <div className={`lucky-meter-container ${isSpinning ? 'is-spinning' : ''}`} style={cssVars} ref={containerRef}>
       {/* High-Performance Canvas Particles */}
       <canvas
         ref={canvasRef}
@@ -1062,7 +1094,7 @@ export default function DailyLuckyMeter() {
           </div>
 
           {/* Plasma Vortex Core (with Dynamic Heartbeat before & after reveal) */}
-          <div className={`plasma-vortex-wrapper ${!isSpinning ? 'heartbeat-active' : ''} ${isRevealing ? 'reveal-bloom' : ''}`}>
+          <div className={`plasma-vortex-wrapper ${!isSpinning ? 'heartbeat-active' : ''} ${isRevealing ? 'reveal-bloom final-lock-bloom' : ''}`}>
             <div className="plasma-layer-1" />
             <div className="plasma-layer-2" />
             <div className="plasma-breathing-core" />
