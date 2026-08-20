@@ -103,6 +103,278 @@ const FORTUNES: Record<string, string[]> = {
 };
 
 const STORAGE_KEY = 'daily_lucky_meter_v1';
+
+// Extract static CSS to avoid recreating on every render
+const STATIC_CSS_RULES = `
+  .lucky-meter-container {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #f8fafc;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    user-select: none;
+  }
+
+  @keyframes heartbeatPulse {
+    0% { transform: scale(1); filter: brightness(1); }
+    10% { transform: scale(1.035); filter: brightness(1.22); }
+    20% { transform: scale(0.99); filter: brightness(0.95); }
+    32% { transform: scale(1.055); filter: brightness(1.35); }
+    50% { transform: scale(1); filter: brightness(1); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
+
+  @keyframes cardiacAura {
+    0%, 100% { opacity: 0.3; transform: scale(0.92); }
+    10% { opacity: 0.75; transform: scale(1.04); }
+    20% { opacity: 0.4; transform: scale(0.98); }
+    32% { opacity: 0.9; transform: scale(1.08); }
+    50% { opacity: 0.3; transform: scale(0.92); }
+  }
+
+  .machine-frame {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #1e293b, #475569, #0f172a, #64748b, #1e293b, #475569, #0f172a, #1e293b);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12), inset 0 2px 4px rgba(255, 255, 255, 0.25), inset 0 -4px 6px rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .machine-frame.vibrating { animation: machineVibrate 0.08s infinite ease-in-out alternate; }
+
+  @keyframes machineVibrate {
+    0% { transform: translate(calc(var(--vib-int) * -1px), calc(var(--vib-int) * 0.5px)) rotate(-0.3deg); }
+    100% { transform: translate(calc(var(--vib-int) * 1px), calc(var(--vib-int) * -0.5px)) rotate(0.3deg); }
+  }
+
+  .rivet {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #94a3b8, #1e293b 80%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), inset 0 0.5px 1px rgba(255, 255, 255, 0.6);
+    transform: translate(-50%, -50%);
+  }
+
+  .recessed-well {
+    position: relative;
+    width: 270px;
+    height: 270px;
+    border-radius: 50%;
+    background: #030712;
+    box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(0, 0, 0, 0.95), 0 1px 1px rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .led-indicator {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: #1e293b;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .led-indicator.idle-heartbeat { animation: ledCardiacPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+  .led-indicator.active { background: var(--sec-color); box-shadow: 0 0 8px var(--sec-color), 0 0 14px var(--pri-color); }
+  .led-indicator.spinning-chase { animation: ledSpin 0.9s infinite linear; }
+
+  @keyframes ledCardiacPulse {
+    0%, 100% { opacity: 0.25; background: #334155; box-shadow: none; }
+    10% { opacity: 0.85; background: var(--sec-color); box-shadow: 0 0 6px var(--pri-color); }
+    20% { opacity: 0.35; background: #334155; box-shadow: none; }
+    32% { opacity: 1; background: var(--sec-color); box-shadow: 0 0 10px var(--sec-color); }
+    50% { opacity: 0.25; background: #334155; box-shadow: none; }
+  }
+
+  @keyframes ledSpin {
+    0% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); background: var(--sec-color); box-shadow: 0 0 10px var(--sec-color); }
+    100% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
+  }
+
+  .plasma-vortex-wrapper {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #020617;
+    box-shadow: var(--vort-glow);
+    transition: box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .plasma-vortex-wrapper.heartbeat-active { animation: heartbeatPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+
+  .plasma-layer-1 {
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent 0deg, var(--plas-g0) 90deg, transparent 180deg, var(--plas-g1) 270deg, transparent 360deg);
+    opacity: 0.75;
+    animation: rotateClockwise var(--rot-dur1) linear infinite;
+  }
+
+  .plasma-layer-2 {
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: conic-gradient(from 180deg, transparent 0deg, var(--sec-color) 80deg, transparent 170deg, var(--pri-color) 260deg, transparent 360deg);
+    opacity: 0.55;
+    mix-blend-mode: screen;
+    animation: rotateCounter var(--rot-dur2) linear infinite;
+  }
+
+  .plasma-breathing-core {
+    position: absolute;
+    inset: 15px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--sec-color) 0%, var(--pri-color) 35%, transparent 70%);
+    opacity: 0.45;
+    animation: cardiacAura var(--breath-dur) infinite cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-reflection {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 35%, transparent 60%, rgba(255, 255, 255, 0.03) 100%);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  @keyframes rotateClockwise {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes rotateCounter {
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  .core-content {
+    position: relative;
+    z-index: 20;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+  }
+
+  .score-display {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    color: #ffffff;
+    text-shadow: 0 0 16px var(--sec-color), 0 2px 4px rgba(0, 0, 0, 0.8);
+    animation: scorePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .score-percent {
+    font-size: 1.75rem;
+    opacity: 0.8;
+    font-weight: 600;
+    margin-left: 2px;
+  }
+
+  .tier-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sec-color);
+    margin-top: 4px;
+    text-shadow: 0 0 8px var(--pri-color);
+  }
+
+  @keyframes scorePop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .activate-btn {
+    margin-top: 24px;
+    padding: 14px 32px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+    background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .activate-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    border-color: var(--sec-color);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 15px var(--acc-glow), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  }
+
+  .activate-btn:not(:disabled):active { transform: translateY(1px); }
+  .activate-btn:disabled { opacity: 0.75; cursor: not-allowed; }
+
+  .quote-card {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    max-width: 320px;
+    text-align: center;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: #cbd5e1;
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .share-btn {
+    margin-top: 14px;
+    background: transparent;
+    border: none;
+    color: var(--sec-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+
+  .share-btn:hover { background: rgba(255, 255, 255, 0.05); }
+`;
+
 const LED_COUNT = 20;
 const RIVET_COUNT = 16;
 const ANIMATION_DURATION_MS = 3000;
@@ -147,6 +419,7 @@ export default function DailyLuckyMeter() {
   const [countdown, setCountdown] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
+  const isMountedRef = useRef(true);
   const animationFrameRef = useRef<number | null>(null);
   const midnightTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -182,14 +455,17 @@ export default function DailyLuckyMeter() {
     setCountdown(formatCountdown(msUntilMidnight));
 
     countIntervalRef.current = setInterval(() => {
+      if (!isMountedRef.current) return;
       const remaining = getTimeUntilMidnight();
       setCountdown(formatCountdown(remaining));
       if (remaining <= 1000) {
         if (countIntervalRef.current) clearInterval(countIntervalRef.current);
+        countIntervalRef.current = null;
       }
     }, 1000);
 
     midnightTimerRef.current = setTimeout(() => {
+      if (!isMountedRef.current) return;
       loadState();
       scheduleMidnightUnlock();
     }, msUntilMidnight + 1000);
@@ -201,9 +477,13 @@ export default function DailyLuckyMeter() {
     scheduleMidnightUnlock();
 
     return () => {
+      isMountedRef.current = false;
       if (midnightTimerRef.current) clearTimeout(midnightTimerRef.current);
       if (countIntervalRef.current) clearInterval(countIntervalRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      midnightTimerRef.current = null;
+      countIntervalRef.current = null;
+      animationFrameRef.current = null;
     };
   }, [loadState, scheduleMidnightUnlock]);
 
@@ -229,6 +509,9 @@ export default function DailyLuckyMeter() {
       attempts++;
     }
     if (score === lastScore) score = (lastScore + 37) % 101;
+    
+    // Explicitly clamp score between 0 and 100
+    score = Math.max(0, Math.min(100, score));
 
     const tier = TIERS.find((t) => score >= t.minScore && score <= t.maxScore) || TIERS[1];
     const quotes = FORTUNES[tier.name];
@@ -256,6 +539,7 @@ export default function DailyLuckyMeter() {
     const startTime = performance.now();
 
     const animateDisplay = (now: number) => {
+      if (!isMountedRef.current) return;
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
 
@@ -301,15 +585,17 @@ export default function DailyLuckyMeter() {
       url: typeof window !== 'undefined' ? window.location.href : '',
     };
 
-    if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare(shareData)) {
-      try {
+    // Defensively check Web Share API availability
+    try {
+      if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare(shareData)) {
         await navigator.share(shareData);
         return;
-      } catch {
-        // Fallback to clipboard
       }
+    } catch {
+      // Web Share API not available or failed, fallback to clipboard
     }
 
+    // Fallback: copy to clipboard
     try {
       await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
       setCopied(true);
@@ -322,388 +608,23 @@ export default function DailyLuckyMeter() {
   if (!mounted) return null;
 
   return (
+  // Inject dynamic theme values via CSS variables
+  const cssVars = {
+    '--pri-color': currentTier.primaryColor,
+    '--sec-color': currentTier.secondaryColor,
+    '--acc-glow': currentTier.accentGlow,
+    '--vort-glow': currentTier.vortexGlow,
+    '--plas-g0': currentTier.plasmaGradients[0],
+    '--plas-g1': currentTier.plasmaGradients[1],
+    '--vib-int': currentTier.vibrationIntensity.toString(),
+    '--rot-dur1': isSpinning ? '0.8s' : '9s',
+    '--rot-dur2': isSpinning ? '0.6s' : '6s',
+    '--breath-dur': isSpinning ? '0.4s' : '1.6s',
+  } as React.CSSProperties;
+
     <div className="lucky-meter-container">
-      <style>{`
-        .lucky-meter-container {
-          --primary: ${currentTier.primaryColor};
-          --secondary: ${currentTier.secondaryColor};
-          --accent-glow: ${currentTier.accentGlow};
-          width: 100%;
-          max-width: 440px;
-          margin: 0 auto;
-          padding: 24px 16px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          color: #f8fafc;
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          user-select: none;
-        }
-
-        /* Heartbeat (Systole / Diastole Dual-Thump) Keyframes */
-        @keyframes heartbeatPulse {
-          0% {
-            transform: scale(1);
-            filter: brightness(1);
-          }
-          10% {
-            transform: scale(1.035);
-            filter: brightness(1.22);
-          }
-          20% {
-            transform: scale(0.99);
-            filter: brightness(0.95);
-          }
-          32% {
-            transform: scale(1.055);
-            filter: brightness(1.35);
-          }
-          50% {
-            transform: scale(1);
-            filter: brightness(1);
-          }
-          100% {
-            transform: scale(1);
-            filter: brightness(1);
-          }
-        }
-
-        @keyframes cardiacAura {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(0.92);
-          }
-          10% {
-            opacity: 0.75;
-            transform: scale(1.04);
-          }
-          20% {
-            opacity: 0.4;
-            transform: scale(0.98);
-          }
-          32% {
-            opacity: 0.9;
-            transform: scale(1.08);
-          }
-          50% {
-            opacity: 0.3;
-            transform: scale(0.92);
-          }
-        }
-
-        /* Machine Housing */
-        .machine-frame {
-          position: relative;
-          width: 320px;
-          height: 320px;
-          border-radius: 50%;
-          background: conic-gradient(
-            from 0deg,
-            #1e293b,
-            #475569,
-            #0f172a,
-            #64748b,
-            #1e293b,
-            #475569,
-            #0f172a,
-            #1e293b
-          );
-          box-shadow:
-            0 20px 45px rgba(0, 0, 0, 0.75),
-            0 0 0 1px rgba(255, 255, 255, 0.12),
-            inset 0 2px 4px rgba(255, 255, 255, 0.25),
-            inset 0 -4px 6px rgba(0, 0, 0, 0.8);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .machine-frame.vibrating {
-          animation: machineVibrate 0.08s infinite ease-in-out alternate;
-        }
-
-        @keyframes machineVibrate {
-          0% { transform: translate(-${currentTier.vibrationIntensity}px, ${currentTier.vibrationIntensity * 0.5}px) rotate(-0.3deg); }
-          100% { transform: translate(${currentTier.vibrationIntensity}px, -${currentTier.vibrationIntensity * 0.5}px) rotate(0.3deg); }
-        }
-
-        /* Rivets */
-        .rivet {
-          position: absolute;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: radial-gradient(circle at 35% 35%, #94a3b8, #1e293b 80%);
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), inset 0 0.5px 1px rgba(255, 255, 255, 0.6);
-          transform: translate(-50%, -50%);
-        }
-
-        /* Recessed Well */
-        .recessed-well {
-          position: relative;
-          width: 270px;
-          height: 270px;
-          border-radius: 50%;
-          background: #030712;
-          box-shadow:
-            inset 0 10px 20px rgba(0, 0, 0, 0.9),
-            inset 0 0 30px rgba(0, 0, 0, 0.95),
-            0 1px 1px rgba(255, 255, 255, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        /* 20-LED Ring */
-        .led-indicator {
-          position: absolute;
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          transform: translate(-50%, -50%);
-          background: #1e293b;
-          transition: background 0.3s, box-shadow 0.3s;
-        }
-
-        .led-indicator.idle-heartbeat {
-          animation: ledCardiacPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .led-indicator.active {
-          background: var(--secondary);
-          box-shadow: 0 0 8px var(--secondary), 0 0 14px var(--primary);
-        }
-
-        .led-indicator.spinning-chase {
-          animation: ledSpin 0.9s infinite linear;
-        }
-
-        @keyframes ledCardiacPulse {
-          0%, 100% { opacity: 0.25; background: #334155; box-shadow: none; }
-          10% { opacity: 0.85; background: var(--secondary); box-shadow: 0 0 6px var(--primary); }
-          20% { opacity: 0.35; background: #334155; box-shadow: none; }
-          32% { opacity: 1; background: var(--secondary); box-shadow: 0 0 10px var(--secondary); }
-          50% { opacity: 0.25; background: #334155; box-shadow: none; }
-        }
-
-        @keyframes ledSpin {
-          0% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
-          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); background: var(--secondary); box-shadow: 0 0 10px var(--secondary); }
-          100% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
-        }
-
-        /* Plasma Vortex Wrapper with Heartbeat */
-        .plasma-vortex-wrapper {
-          position: relative;
-          width: 200px;
-          height: 200px;
-          border-radius: 50%;
-          overflow: hidden;
-          background: #020617;
-          box-shadow: ${currentTier.vortexGlow};
-          transition: box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Censorship / Cardiac Pulse on Idle & Locked States */
-        .plasma-vortex-wrapper.heartbeat-active {
-          animation: heartbeatPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Counter-Rotating Plasma Layers */
-        .plasma-layer-1 {
-          position: absolute;
-          inset: -20px;
-          border-radius: 50%;
-          background: conic-gradient(
-            from 0deg,
-            transparent 0deg,
-            ${currentTier.plasmaGradients[0]} 90deg,
-            transparent 180deg,
-            ${currentTier.plasmaGradients[1]} 270deg,
-            transparent 360deg
-          );
-          opacity: 0.75;
-          animation: rotateClockwise ${isSpinning ? '0.8s' : '9s'} linear infinite;
-        }
-
-        .plasma-layer-2 {
-          position: absolute;
-          inset: -20px;
-          border-radius: 50%;
-          background: conic-gradient(
-            from 180deg,
-            transparent 0deg,
-            ${currentTier.secondaryColor} 80deg,
-            transparent 170deg,
-            ${currentTier.primaryColor} 260deg,
-            transparent 360deg
-          );
-          opacity: 0.55;
-          mix-blend-mode: screen;
-          animation: rotateCounter ${isSpinning ? '0.6s' : '6s'} linear infinite;
-        }
-
-        .plasma-breathing-core {
-          position: absolute;
-          inset: 15px;
-          border-radius: 50%;
-          background: radial-gradient(circle, var(--secondary) 0%, var(--primary) 35%, transparent 70%);
-          opacity: 0.45;
-          animation: cardiacAura ${isSpinning ? '0.4s' : '1.6s'} infinite cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .glass-reflection {
-          position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.35) 0%,
-            rgba(255, 255, 255, 0.08) 35%,
-            transparent 60%,
-            rgba(255, 255, 255, 0.03) 100%
-          );
-          pointer-events: none;
-          z-index: 10;
-        }
-
-        @keyframes rotateClockwise {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        @keyframes rotateCounter {
-          0% { transform: rotate(360deg); }
-          100% { transform: rotate(0deg); }
-        }
-
-        /* Vortex Core Content */
-        .core-content {
-          position: relative;
-          z-index: 20;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          padding: 16px;
-        }
-
-        .score-display {
-          font-size: 3.5rem;
-          font-weight: 900;
-          letter-spacing: -0.05em;
-          line-height: 1;
-          color: #ffffff;
-          text-shadow: 0 0 16px var(--secondary), 0 2px 4px rgba(0, 0, 0, 0.8);
-          animation: scorePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .score-percent {
-          font-size: 1.75rem;
-          opacity: 0.8;
-          font-weight: 600;
-          margin-left: 2px;
-        }
-
-        .tier-label {
-          font-size: 0.75rem;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: var(--secondary);
-          margin-top: 4px;
-          text-shadow: 0 0 8px var(--primary);
-        }
-
-        @keyframes scorePop {
-          0% { transform: scale(0.6); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* Interactive Trigger / Button */
-        .activate-btn {
-          margin-top: 24px;
-          padding: 14px 32px;
-          font-size: 0.95rem;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          color: #ffffff;
-          background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          border-radius: 9999px;
-          cursor: pointer;
-          position: relative;
-          box-shadow:
-            0 4px 15px rgba(0, 0, 0, 0.5),
-            inset 0 1px 1px rgba(255, 255, 255, 0.3);
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .activate-btn:not(:disabled):hover {
-          transform: translateY(-2px);
-          border-color: var(--secondary);
-          box-shadow:
-            0 6px 20px rgba(0, 0, 0, 0.6),
-            0 0 15px var(--accent-glow),
-            inset 0 1px 1px rgba(255, 255, 255, 0.4);
-        }
-
-        .activate-btn:not(:disabled):active {
-          transform: translateY(1px);
-        }
-
-        .activate-btn:disabled {
-          opacity: 0.75;
-          cursor: not-allowed;
-        }
-
-        /* Fortune Quote Card */
-        .quote-card {
-          margin-top: 20px;
-          padding: 14px 18px;
-          background: rgba(15, 23, 42, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 12px;
-          backdrop-filter: blur(8px);
-          max-width: 320px;
-          text-align: center;
-          font-size: 0.85rem;
-          line-height: 1.45;
-          color: #cbd5e1;
-          animation: fadeIn 0.4s ease-out;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Share Button */
-        .share-btn {
-          margin-top: 14px;
-          background: transparent;
-          border: none;
-          color: var(--secondary);
-          font-size: 0.8rem;
-          font-weight: 600;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 12px;
-          border-radius: 6px;
-          transition: background 0.2s;
-        }
-
-        .share-btn:hover {
-          background: rgba(255, 255, 255, 0.05);
-        }
-      `}</style>
-
+    <div className="lucky-meter-container" style={cssVars}>
+      <style>{STATIC_CSS_RULES}</style>
       {/* Primary Metallic Machine Bezel */}
       <div className={`machine-frame ${isSpinning ? 'vibrating' : ''}`}>
         {/* Bezel Structural Rivets */}
