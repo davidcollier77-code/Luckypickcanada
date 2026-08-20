@@ -935,9 +935,10 @@ export default function DailyLuckyMeter() {
           let nextVal;
           if (elapsed > 8500) {
              const timeLeft = 10000 - elapsed;
-             const ticksLeft = Math.max(1, Math.floor(timeLeft / scrambleInterval));
+             const avgInterval = (300 + 600) / 2; // Use average interval for stable convergence
+             const ticksLeft = Math.max(1, Math.floor(timeLeft / avgInterval));
              const diff = finalScore - (scrambleValue || 0);
-             nextVal = (scrambleValue || 0) + Math.round(diff / ticksLeft);
+             nextVal = Math.max(0, Math.min(100, (scrambleValue || 0) + Math.round(diff / ticksLeft)));
           } else {
              nextVal = Math.floor(Math.random() * 100);
           }
