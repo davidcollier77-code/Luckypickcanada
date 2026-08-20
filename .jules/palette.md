@@ -9,3 +9,7 @@
 ## 2026-08-19 - Enhance Modal Focus Management
 **Learning:** For manually constructed React modal dialogs, immediately trapping or directing focus into the modal upon opening is critical for keyboard and screen reader accessibility. If a modal opens but focus remains on the triggering element or is lost, keyboard users may struggle to interact with the modal content.
 **Action:** When implementing or modifying custom modal dialogs, always include the `autoFocus` attribute on a primary interactive element within the modal, such as the close button, to ensure focus is properly managed.
+
+## 2026-08-20 - Ensure icon-only buttons have accessible names
+**Learning:** Buttons that rely purely on visual indicators (like SVG icons) for their meaning are inaccessible to screen reader users if they lack an explicit accessible name. For example, a share button featuring only an icon must define what action it performs.
+**Action:** Always verify that icon-only buttons include an `aria-label` attribute (e.g., `aria-label="Share your result"`) to clearly communicate their purpose.
