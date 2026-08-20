@@ -333,20 +333,23 @@ const STATIC_STYLES = `
     height: 7px;
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    /* Soft dim baseline 25% opacity with primary color */
-    background: var(--pri-color);
-    opacity: 0.25;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+    background: #020617;
+    opacity: 0.2;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.1);
     transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
   }
 
   .led-indicator.idle-orbital, .led-indicator.spinning-chase {
     /* Continuous chaser animation */
-    animation: chaserRing 10s infinite linear;
+    animation: chaserRing var(--chaser-dur, 7s) infinite linear;
   }
 
   @keyframes chaserRing {
-    0%, 90%, 100% { opacity: 0.25; background: var(--pri-color); box-shadow: none; }
+    0%, 90%, 100% {
+      opacity: 0.2;
+      background: #020617;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
     5% {
       opacity: 1;
       background: #ffffff;
@@ -384,12 +387,25 @@ const STATIC_STYLES = `
   }
 
   .final-lock-bloom {
-    animation: finalGlowBloom 0.2s ease-out forwards;
+    animation: finalGlowBloom 0.3s ease-out forwards;
   }
   @keyframes finalGlowBloom {
     0% { filter: brightness(1) contrast(1); box-shadow: var(--vort-glow); }
-    50% { filter: brightness(1.8) contrast(1.2); box-shadow: 0 0 120px #ffffff, inset 0 0 80px #ffffff; }
+    30% { filter: brightness(2) contrast(1.2); box-shadow: 0 0 120px #ffffff, inset 0 0 80px #ffffff; }
     100% { filter: brightness(1) contrast(1); box-shadow: var(--vort-glow); }
+  }
+
+  .final-lock-shudder {
+    animation: lockShudder 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+  @keyframes lockShudder {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    15% { transform: translate(-2px, 1px) rotate(-0.5deg); }
+    30% { transform: translate(2px, -2px) rotate(0.5deg); }
+    45% { transform: translate(-1px, 2px) rotate(-0.25deg); }
+    60% { transform: translate(1px, -1px) rotate(0.25deg); }
+    75% { transform: translate(-1px, 0px) rotate(0deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
   }
 
   /* Disable transitions while spinning to keep flicker sharp */
@@ -584,9 +600,9 @@ const STATIC_STYLES = `
   }
 `;
 
-const LED_COUNT = 20;
+const LED_COUNT = 32;
 const RIVET_COUNT = 16;
-const ANIMATION_DURATION_MS = 7500;
+const ANIMATION_DURATION_MS = 10000;
 
 const ringPosition = (index: number, total: number, radiusPct: number) => {
   const angle = (index / total) * 2 * Math.PI - Math.PI / 2;
@@ -902,10 +918,32 @@ export default function DailyLuckyMeter() {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
 
-      if (progress < 0.95) {
-        // Scrambling phase
-        if (now - lastScrambleTime > 50) { // Change every 50ms
-          setScrambleValue(Math.floor(Math.random() * 100));
+      if (progress < 1) {
+        // Scrambling logic based on time phases
+        let scrambleInterval = 50; // 0-5s: rapid 50ms
+        if (elapsed > 5000 && elapsed <= 8500) {
+           // 5.0s - 8.5s: Deceleration (50ms -> ~300ms)
+           const decelProgress = (elapsed - 5000) / 3500;
+           scrambleInterval = 50 + (decelProgress * 250);
+        } else if (elapsed > 8500) {
+           // 8.5s - 10.0s: Final crawl (~300ms -> ~600ms)
+           const crawlProgress = (elapsed - 8500) / 1500;
+           scrambleInterval = 300 + (crawlProgress * 300);
+        }
+
+        if (now - lastScrambleTime > scrambleInterval) {
+          let nextVal;
+          if (elapsed > 8500) {
+             const timeLeft = 10000 - elapsed;
+             const avgInterval = (300 + 600) / 2; // Use average interval for stable convergence
+             const ticksLeft = Math.max(1, Math.floor(timeLeft / avgInterval));
+             const diff = finalScore - (scrambleValue || 0);
+             nextVal = Math.max(0, Math.min(100, (scrambleValue || 0) + Math.round(diff / ticksLeft)));
+          } else {
+             nextVal = Math.floor(Math.random() * 100);
+          }
+          setScrambleValue(nextVal);
+
           const randomTier = TIERS[Math.floor(Math.random() * TIERS.length)];
           tierRef.current = randomTier;
           if (containerRef.current) {
@@ -919,15 +957,14 @@ export default function DailyLuckyMeter() {
           }
           lastScrambleTime = now;
         }
-      }
-
-      if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(animateDisplay);
       } else {
-        // Final Reveal
+        // Exact 10.0s Lock: Final Reveal
         setScrambleValue(null);
         setDisplayedScore(finalScore);
         setCurrentTier(targetTier); // Set the actual tier at the very end
+        setIsSpinning(false);
+        setIsLocked(true);
         setIsRevealing(true);
         // Explicitly set the DOM styles to the target tier to ensure they lock in correctly
         // even if React decides not to re-render the inline style object due to prop diffing.
@@ -944,14 +981,13 @@ export default function DailyLuckyMeter() {
           triggerBurst(targetTier); // Trigger the canvas particle explosion
         }
 
+        // 10.5s (0.5s after lock): Fade in quote
         setTimeout(() => {
           if (isMountedRef.current) {
             setFortune(finalQuote);
-            setIsSpinning(false);
-            setIsLocked(true);
             setIsRevealing(false);
           }
-        }, 1500); // Allow time for the flash/burst to subside before showing quote
+        }, 500); // 0.5s after exact lock
 
         try {
           localStorage.setItem(
@@ -1025,6 +1061,7 @@ export default function DailyLuckyMeter() {
     '--rot-dur1': isSpinning ? '0.8s' : '9s',
     '--rot-dur2': isSpinning ? '0.6s' : '6s',
     '--breath-dur': isSpinning ? '0.4s' : '1.6s',
+    '--chaser-dur': isSpinning ? '1s' : '7s',
   } as React.CSSProperties;
 
   return (
@@ -1054,7 +1091,7 @@ export default function DailyLuckyMeter() {
       </div>
 
       {/* Primary Metallic Machine Bezel */}
-      <div className={`machine-frame ${isSpinning ? (scrambleValue !== null && scrambleValue % 3 === 0 ? 'vibrating-intense' : 'vibrating') : ''}`}>
+      <div className={`machine-frame ${isSpinning ? (scrambleValue !== null && scrambleValue % 3 === 0 ? 'vibrating-intense' : 'vibrating') : ''} ${isRevealing ? 'final-lock-shudder' : ''}`}>
         {/* Bezel Structural Rivets */}
         {Array.from({ length: RIVET_COUNT }).map((_, i) => {
           const pos = ringPosition(i, RIVET_COUNT, 46.5);
@@ -1065,15 +1102,15 @@ export default function DailyLuckyMeter() {
         <div className="recessed-well">
           {/* Flash Overlay inside well to isolate color */}
           <div className={`flash-overlay ${isRevealing ? 'trigger-flash' : ''}`} />
-          {/* 20-LED Ring Array */}
+          {/* LED Ring Array */}
           <div className="led-ring-container">
             {Array.from({ length: LED_COUNT }).map((_, i) => {
-              const pos = ringPosition(i, LED_COUNT, 44);
+              const pos = ringPosition(i, LED_COUNT, 42);
               const isChase = isSpinning;
               const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
 
               // Calculate staggered delay dynamically for both spinning and ambient chases
-              const duration = 10;
+              const duration = isSpinning ? 1 : 7;
               const staggerDelay = isLit ? '0s' : `-${(duration - (i * duration / LED_COUNT)).toFixed(3)}s`;
 
               return (
