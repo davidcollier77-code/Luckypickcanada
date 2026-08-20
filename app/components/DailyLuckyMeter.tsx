@@ -255,8 +255,23 @@ const STATIC_STYLES = `
     width: 320px;
     height: 320px;
     border-radius: 50%;
-    background: conic-gradient(from 0deg, #1e293b, #475569, #0f172a, #64748b, #1e293b, #475569, #0f172a, #1e293b);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12), inset 0 2px 4px rgba(255, 255, 255, 0.25), inset 0 -4px 6px rgba(0, 0, 0, 0.8);
+    /* Realistic brushed gold bezel: deep antique bronze, warm bullion, pale champagne */
+    background: conic-gradient(from 0deg,
+      #4a3b1a 0deg,
+      #8c7335 45deg,
+      #d4af37 90deg,
+      #f8e287 135deg,
+      #8c7335 180deg,
+      #4a3b1a 225deg,
+      #d4af37 270deg,
+      #f8e287 315deg,
+      #4a3b1a 360deg
+    );
+    box-shadow:
+      0 20px 45px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(255, 223, 128, 0.4),
+      inset 0 4px 10px rgba(255, 255, 255, 0.3),
+      inset 0 -6px 12px rgba(40, 30, 10, 0.8);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -264,7 +279,7 @@ const STATIC_STYLES = `
   }
 
   .machine-frame.vibrating { animation: machineVibrate 0.08s infinite ease-in-out alternate; }
-  .machine-frame.vibrating-intense { animation: machineVibrateIntense 0.04s infinite ease-in-out alternate; filter: brightness(1.2); }
+  .machine-frame.vibrating-intense { animation: machineVibrateIntense 0.04s infinite ease-in-out alternate; }
 
   @keyframes machineVibrate {
     0% { transform: translate(calc(var(--vib-int) * -1px), calc(var(--vib-int) * 0.5px)) rotate(-0.3deg); }
@@ -278,11 +293,15 @@ const STATIC_STYLES = `
 
   .rivet {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #94a3b8, #1e293b 80%);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), inset 0 0.5px 1px rgba(255, 255, 255, 0.6);
+    /* Polished, machined brass stud */
+    background: radial-gradient(circle at 35% 35%, #fff2cc 0%, #b38600 40%, #4d3900 90%);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.8),
+      inset 0 1px 1px rgba(255, 255, 255, 0.8),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.6);
     transform: translate(-50%, -50%);
   }
 
@@ -292,7 +311,12 @@ const STATIC_STYLES = `
     height: 270px;
     border-radius: 50%;
     background: #030712;
-    box-shadow: inset 0 10px 20px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(0, 0, 0, 0.95), 0 1px 1px rgba(255, 255, 255, 0.1);
+    /* Inner dark shadow track to seat the core */
+    box-shadow:
+      0 0 0 4px #1a150c,
+      inset 0 10px 20px rgba(0, 0, 0, 0.9),
+      inset 0 0 30px rgba(0, 0, 0, 0.95),
+      0 1px 1px rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -309,37 +333,34 @@ const STATIC_STYLES = `
     height: 7px;
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    background: #334155;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
-    transition: background 0.3s, box-shadow 0.3s;
-  }
-
-  /* Photorealistic high-luminosity optics */
-  .led-indicator.idle-orbital {
+    /* Soft dim baseline 25% opacity with primary color */
     background: var(--pri-color);
-    animation: ambientChase 8s infinite linear;
+    opacity: 0.25;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+    transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
   }
 
-  @keyframes ambientChase {
-    0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(1); box-shadow: none; }
-    5% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 8px var(--pri-color), 0 0 16px var(--sec-color); }
-    20% { opacity: 0.25; transform: translate(-50%, -50%) scale(1); box-shadow: none; }
+  .led-indicator.idle-orbital, .led-indicator.spinning-chase {
+    /* Continuous chaser animation */
+    animation: chaserRing 10s infinite linear;
+  }
+
+  @keyframes chaserRing {
+    0%, 90%, 100% { opacity: 0.25; background: var(--pri-color); box-shadow: none; }
+    5% {
+      opacity: 1;
+      background: #ffffff;
+      box-shadow: 0 0 8px #ffffff, 0 0 16px var(--sec-color), 0 0 24px var(--pri-color);
+    }
   }
 
   .led-indicator.active {
-    background: #ffffff; /* Hot white core */
+    background: #ffffff;
+    opacity: 1;
     box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color), 0 0 30px var(--pri-color), inset 0 0 4px var(--sec-color);
+    animation: none;
   }
 
-  .led-indicator.spinning-chase {
-    animation: ledSpin 0.9s infinite linear;
-  }
-
-  @keyframes ledSpin {
-    0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); box-shadow: none; background: #334155; }
-    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); background: #ffffff; box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color); }
-    100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); box-shadow: none; background: #334155; }
-  }
 
   .plasma-vortex-wrapper {
     position: relative;
@@ -980,8 +1001,6 @@ export default function DailyLuckyMeter() {
 
       {/* Primary Metallic Machine Bezel */}
       <div className={`machine-frame ${isSpinning ? (scrambleValue !== null && scrambleValue % 3 === 0 ? 'vibrating-intense' : 'vibrating') : ''}`}>
-        {/* Flash Overlay */}
-        <div className={`flash-overlay ${isRevealing ? 'trigger-flash' : ''}`} />
         {/* Bezel Structural Rivets */}
         {Array.from({ length: RIVET_COUNT }).map((_, i) => {
           const pos = ringPosition(i, RIVET_COUNT, 46.5);
@@ -990,6 +1009,8 @@ export default function DailyLuckyMeter() {
 
         {/* Recessed Internal Well */}
         <div className="recessed-well">
+          {/* Flash Overlay inside well to isolate color */}
+          <div className={`flash-overlay ${isRevealing ? 'trigger-flash' : ''}`} />
           {/* 20-LED Ring Array */}
           <div className="led-ring-container">
             {Array.from({ length: LED_COUNT }).map((_, i) => {
@@ -998,11 +1019,8 @@ export default function DailyLuckyMeter() {
               const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
 
               // Calculate staggered delay dynamically for both spinning and ambient chases
-              const spinDuration = 0.9;
-              const ambientDuration = 8;
-              const staggerDelay = isChase
-                ? `${(i * spinDuration / LED_COUNT).toFixed(3)}s`
-                : isLit ? '0s' : `${(i * ambientDuration / LED_COUNT).toFixed(3)}s`;
+              const duration = 10;
+              const staggerDelay = isLit ? '0s' : `-${(duration - (i * duration / LED_COUNT)).toFixed(3)}s`;
 
               return (
                 <div
