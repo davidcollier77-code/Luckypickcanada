@@ -496,7 +496,7 @@ const STATIC_STYLES = `
   .lucky-meter-container.is-spinning .plasma-vortex-wrapper,
   .lucky-meter-container.is-spinning .led-indicator,
   .lucky-meter-container.is-spinning .score-display {
-    transition: none !important;
+    transition: all 0.15s ease-out !important;
   }
 
   .plasma-layer-1 {
@@ -887,13 +887,10 @@ export default function DailyLuckyMeter() {
         let alpha = progress < 0.1 ? progress * 10 : 1 - Math.pow(progress, 2);
 
         ctx.globalAlpha = Math.max(0, alpha);
-        ctx.shadowBlur = p.size * 3;
-        ctx.shadowColor = p.color;
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
       }
       ctx.globalAlpha = 1.0;
-      ctx.shadowBlur = 0;
 
       animationId = requestAnimationFrame(renderParticles);
     };
