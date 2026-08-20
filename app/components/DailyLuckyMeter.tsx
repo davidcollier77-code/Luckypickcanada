@@ -924,7 +924,7 @@ export default function DailyLuckyMeter() {
             &ldquo;{fortune}&rdquo;
           </div>
 
-          <button className="share-btn" onClick={handleShare}>
+          <button className="share-btn" onClick={handleShare} aria-label="Share your daily attunement result">
             {copied ? (
               <>✓ Copied Result</>
             ) : (
