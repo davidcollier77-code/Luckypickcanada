@@ -2,6 +2,28 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
+// --- CANVAS PARTICLE SYSTEM ---
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  color: string;
+  isBurst?: boolean;
+}
+
+const hexToRgb = (hex: string) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+};
+
 // ==========================================
 // CONFIGURATION & CONSTANTS
 // ==========================================
@@ -120,20 +142,20 @@ const STATIC_CSS_RULES = `
   }
 
   @keyframes heartbeatPulse {
-    0% { transform: scale(1); filter: brightness(1); }
-    10% { transform: scale(1.035); filter: brightness(1.22); }
-    20% { transform: scale(0.99); filter: brightness(0.95); }
-    32% { transform: scale(1.055); filter: brightness(1.35); }
-    50% { transform: scale(1); filter: brightness(1); }
-    100% { transform: scale(1); filter: brightness(1); }
+    0% { transform: scale(1); filter: brightness(1); box-shadow: var(--vort-glow); }
+    10% { transform: scale(1.08); filter: brightness(1.3); box-shadow: 0 0 60px var(--acc-glow), inset 0 0 40px var(--acc-glow); }
+    20% { transform: scale(0.96); filter: brightness(0.85); box-shadow: var(--vort-glow); }
+    32% { transform: scale(1.12); filter: brightness(1.5); box-shadow: 0 0 90px var(--acc-glow), inset 0 0 60px var(--acc-glow); }
+    50% { transform: scale(1); filter: brightness(1); box-shadow: var(--vort-glow); }
+    100% { transform: scale(1); filter: brightness(1); box-shadow: var(--vort-glow); }
   }
 
   @keyframes cardiacAura {
-    0%, 100% { opacity: 0.3; transform: scale(0.92); }
-    10% { opacity: 0.75; transform: scale(1.04); }
-    20% { opacity: 0.4; transform: scale(0.98); }
-    32% { opacity: 0.9; transform: scale(1.08); }
-    50% { opacity: 0.3; transform: scale(0.92); }
+    0%, 100% { opacity: 0.2; transform: scale(0.9); }
+    10% { opacity: 0.85; transform: scale(1.15); }
+    20% { opacity: 0.3; transform: scale(0.95); }
+    32% { opacity: 1; transform: scale(1.25); }
+    50% { opacity: 0.2; transform: scale(0.9); }
   }
 
   .machine-frame {
@@ -150,10 +172,16 @@ const STATIC_CSS_RULES = `
   }
 
   .machine-frame.vibrating { animation: machineVibrate 0.08s infinite ease-in-out alternate; }
+  .machine-frame.vibrating-intense { animation: machineVibrateIntense 0.04s infinite ease-in-out alternate; filter: brightness(1.2); }
 
   @keyframes machineVibrate {
     0% { transform: translate(calc(var(--vib-int) * -1px), calc(var(--vib-int) * 0.5px)) rotate(-0.3deg); }
     100% { transform: translate(calc(var(--vib-int) * 1px), calc(var(--vib-int) * -0.5px)) rotate(0.3deg); }
+  }
+
+  @keyframes machineVibrateIntense {
+    0% { transform: translate(calc(var(--vib-int) * -2.5px), calc(var(--vib-int) * 1.5px)) rotate(-0.8deg); }
+    100% { transform: translate(calc(var(--vib-int) * 2.5px), calc(var(--vib-int) * -1.5px)) rotate(0.8deg); }
   }
 
   .rivet {
@@ -286,7 +314,12 @@ const STATIC_CSS_RULES = `
     line-height: 1;
     color: #ffffff;
     text-shadow: 0 0 16px var(--sec-color), 0 2px 4px rgba(0, 0, 0, 0.8);
-    animation: scorePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.1s;
+  }
+
+  .score-display.locked {
+    animation: scorePop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-shadow: 0 0 30px var(--sec-color), 0 0 60px var(--pri-color), 0 2px 4px rgba(0, 0, 0, 0.8);
   }
 
   .score-percent {
@@ -373,11 +406,32 @@ const STATIC_CSS_RULES = `
   }
 
   .share-btn:hover { background: rgba(255, 255, 255, 0.05); }
+
+  .flash-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffffff 0%, var(--sec-color) 40%, transparent 80%);
+    pointer-events: none;
+    z-index: 40;
+    opacity: 0;
+    mix-blend-mode: screen;
+  }
+
+  .flash-overlay.trigger-flash {
+    animation: novaFlash 1.2s cubic-bezier(0.1, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes novaFlash {
+    0% { opacity: 0; transform: scale(0.5); }
+    10% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0; transform: scale(2); }
+  }
 `;
 
 const LED_COUNT = 20;
 const RIVET_COUNT = 16;
-const ANIMATION_DURATION_MS = 3000;
+const ANIMATION_DURATION_MS = 7500;
 
 const ringPosition = (index: number, total: number, radiusPct: number) => {
   const angle = (index / total) * 2 * Math.PI - Math.PI / 2;
@@ -411,9 +465,17 @@ const formatCountdown = (ms: number) => {
 
 export default function DailyLuckyMeter() {
   const [mounted, setMounted] = useState(false);
+
+
   const [isLocked, setIsLocked] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
   const [displayedScore, setDisplayedScore] = useState<number | null>(null);
+  const [scrambleValue, setScrambleValue] = useState<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Particle[]>([]);
+
+
   const [currentTier, setCurrentTier] = useState<TierConfig>(TIERS[1]);
   const [fortune, setFortune] = useState<string>('');
   const [countdown, setCountdown] = useState<string>('');
@@ -423,6 +485,120 @@ export default function DailyLuckyMeter() {
   const animationFrameRef = useRef<number | null>(null);
   const midnightTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Canvas render loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animationId: number;
+    let lastTime = performance.now();
+
+    const renderParticles = (time: number) => {
+      const dt = (time - lastTime) / 16.66; // Normalize to 60fps
+      lastTime = time;
+
+      // Ensure canvas sizing is correct
+      if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const particles = particlesRef.current;
+
+      // Spawn ambient/spinning particles
+      if (isSpinning) {
+        // High intensity spawning
+        if (Math.random() < 0.6 * dt) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 8;
+          particles.push({
+            x: cx + Math.cos(angle) * 100,
+            y: cy + Math.sin(angle) * 100,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1,
+            maxLife: 20 + Math.random() * 30,
+            size: 1 + Math.random() * 2.5,
+            color: currentTier.secondaryColor
+          });
+        }
+      } else {
+        // Ambient heartbeat spawns
+        if (Math.random() < 0.05 * dt) {
+          const angle = Math.random() * Math.PI * 2;
+          particles.push({
+            x: cx + Math.cos(angle) * 120,
+            y: cy + Math.sin(angle) * 120,
+            vx: Math.cos(angle) * 0.5,
+            vy: Math.sin(angle) * -0.5 - Math.random() * 0.5, // float up slowly
+            life: 1,
+            maxLife: 60 + Math.random() * 60,
+            size: 1 + Math.random() * 1.5,
+            color: currentTier.primaryColor
+          });
+        }
+      }
+
+      // Update and draw particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life += dt;
+
+        if (p.life >= p.maxLife) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        const progress = p.life / p.maxLife;
+        // Fade in quickly, then fade out
+        let alpha = progress < 0.1 ? progress * 10 : 1 - Math.pow(progress, 2);
+
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = p.color;
+        // Optimization: Use fillRect instead of arc
+        ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
+      }
+      ctx.globalAlpha = 1.0;
+
+      animationId = requestAnimationFrame(renderParticles);
+    };
+
+    animationId = requestAnimationFrame(renderParticles);
+    return () => cancelAnimationFrame(animationId);
+  }, [isSpinning, currentTier]);
+
+  const triggerBurst = useCallback((tierConfig: TierConfig) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    // Create explosion burst
+    for (let i = 0; i < 80; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 5 + Math.random() * 15;
+      particlesRef.current.push({
+        x: cx + Math.cos(angle) * 50,
+        y: cy + Math.sin(angle) * 50,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        maxLife: 30 + Math.random() * 40,
+        size: 2 + Math.random() * 3,
+        color: i % 2 === 0 ? tierConfig.secondaryColor : '#ffffff',
+        isBurst: true
+      });
+    }
+  }, []);
 
   const loadState = useCallback(() => {
     try {
@@ -530,7 +706,9 @@ export default function DailyLuckyMeter() {
     if (isLocked || isSpinning) return;
 
     setIsSpinning(true);
+    setIsRevealing(false);
     setDisplayedScore(null);
+    setScrambleValue(0);
     setFortune('');
 
     const { score: finalScore, tier: targetTier, quote: finalQuote } = rollMetrics();
@@ -543,19 +721,31 @@ export default function DailyLuckyMeter() {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
 
-      if (progress > 0.45) {
-        const localProgress = (progress - 0.45) / 0.55;
-        const eased = 1 - Math.pow(1 - localProgress, 4);
-        setDisplayedScore(Math.floor(eased * finalScore));
+      if (progress < 0.95) {
+        // Scrambling phase
+        // Change number frequently but not every frame to make it readable
+        if (Math.floor(elapsed / 50) % 2 === 0) {
+           setScrambleValue(Math.floor(Math.random() * 100));
+        }
       }
 
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(animateDisplay);
       } else {
+        // Final Reveal
+        setScrambleValue(null);
         setDisplayedScore(finalScore);
-        setFortune(finalQuote);
-        setIsSpinning(false);
-        setIsLocked(true);
+        setIsRevealing(true);
+        triggerBurst(targetTier); // Trigger the canvas particle explosion
+
+        setTimeout(() => {
+          if (isMountedRef.current) {
+            setFortune(finalQuote);
+            setIsSpinning(false);
+            setIsLocked(true);
+            setIsRevealing(false);
+          }
+        }, 1500); // Allow time for the flash/burst to subside before showing quote
 
         try {
           localStorage.setItem(
@@ -607,7 +797,6 @@ export default function DailyLuckyMeter() {
 
   if (!mounted) return null;
 
-  return (
   // Inject dynamic theme values via CSS variables
   const cssVars = {
     '--pri-color': currentTier.primaryColor,
@@ -622,11 +811,18 @@ export default function DailyLuckyMeter() {
     '--breath-dur': isSpinning ? '0.4s' : '1.6s',
   } as React.CSSProperties;
 
-    <div className="lucky-meter-container">
+  return (
     <div className="lucky-meter-container" style={cssVars}>
+      {/* High-Performance Canvas Particles */}
+      <canvas
+        ref={canvasRef}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 50 }}
+      />
       <style>{STATIC_CSS_RULES}</style>
       {/* Primary Metallic Machine Bezel */}
-      <div className={`machine-frame ${isSpinning ? 'vibrating' : ''}`}>
+      <div className={`machine-frame ${isSpinning ? (scrambleValue !== null && scrambleValue % 3 === 0 ? 'vibrating-intense' : 'vibrating') : ''}`}>
+        {/* Flash Overlay */}
+        <div className={`flash-overlay ${isRevealing ? 'trigger-flash' : ''}`} />
         {/* Bezel Structural Rivets */}
         {Array.from({ length: RIVET_COUNT }).map((_, i) => {
           const pos = ringPosition(i, RIVET_COUNT, 46.5);
@@ -669,11 +865,19 @@ export default function DailyLuckyMeter() {
             <div className="core-content">
               {displayedScore !== null ? (
                 <>
-                  <div className="score-display">
+                  <div className="score-display locked">
                     {displayedScore}
                     <span className="score-percent">%</span>
                   </div>
                   <div className="tier-label">{currentTier.name}</div>
+                </>
+              ) : scrambleValue !== null ? (
+                <>
+                  <div className="score-display" style={{ filter: 'blur(1px)' }}>
+                    {scrambleValue}
+                    <span className="score-percent">%</span>
+                  </div>
+                  <div className="tier-label" style={{ opacity: 0.5 }}>CALCULATING...</div>
                 </>
               ) : (
                 <div style={{ textAlign: 'center' }}>
