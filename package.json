@@ -11,12 +11,14 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.1",
+    "@stripe/stripe-js": "^9.13.0",
+    "eslint": "^10.8.1",
     "framer-motion": "^13.1.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "resend": "^6.18.1",
-    "stripe": "latest"
+    "resend": "^6.21.0",
+    "stripe": "^22.5.0"
   },
   "engines": {
     "node": "22.x"
