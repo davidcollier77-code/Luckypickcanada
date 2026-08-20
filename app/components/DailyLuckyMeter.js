@@ -260,15 +260,11 @@ export default function DailyLuckyMeter() {
     : "";
 
   const vortexRotateSpeed = isRevealing
-    ? tier === 3
-      ? "animate-[dlm-rotate-fast_1.1s_linear_infinite]"
-      : tier === 2
-      ? "animate-[dlm-rotate-fast_1.8s_linear_infinite]"
-      : "animate-[dlm-rotate-slow_9s_linear_infinite]"
-    : "animate-[dlm-rotate-slow_22s_linear_infinite]";
+    ? "animate-orbital-charge"
+    : "animate-orbital-smooth";
 
   return (
-    <div className="relative w-full min-h-screen bg-[#04070a] overflow-x-hidden flex flex-col items-center px-4 py-10 sm:py-14">
+    <div className="relative w-full min-h-screen bg-[#04070a] overflow-x-hidden flex flex-col items-center px-4 py-10 sm:py-14 antialiased">
       <div className="pointer-events-none fixed inset-0 opacity-40" style={{ backgroundImage: "radial-gradient(circle at 20% 15%, rgba(16,185,129,0.10), transparent 40%), radial-gradient(circle at 82% 78%, rgba(52,211,153,0.08), transparent 45%), radial-gradient(circle at 50% 100%, rgba(163,230,53,0.06), transparent 50%)" }} />
       <div className="pointer-events-none fixed inset-0 mix-blend-screen will-change-[opacity] animate-[dlm-twinkle_5s_ease-in-out_infinite]" style={{ backgroundSize: "200px 200px", backgroundImage: "radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)), radial-gradient(1.5px 1.5px at 100px 50px, rgba(255,255,255,0.8), rgba(0,0,0,0)), radial-gradient(1px 1px at 150px 120px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 50px 180px, rgba(255,255,255,0.6), rgba(0,0,0,0)), radial-gradient(1px 1px at 180px 180px, rgba(255,255,255,0.9), rgba(0,0,0,0))" }} />
       <div className="pointer-events-none fixed inset-0 opacity-[0.05] mix-blend-overlay" style={{ backgroundImage: "repeating-linear-gradient(0deg, #fff 0px, transparent 1px, transparent 3px)" }} />
@@ -305,7 +301,7 @@ export default function DailyLuckyMeter() {
 
       {/* MACHINE */}
       <div className="relative w-[300px] h-[300px] sm:w-[360px] sm:h-[360px] shrink-0">
-        <div className={`absolute -inset-6 rounded-full blur-3xl dlm-motion-safe ${isRevealing || isRevealed ? (tier === 3 ? "bg-lime-400/40" : tier === 2 ? "bg-emerald-400/30" : "bg-emerald-600/20") : "bg-emerald-500/15"} animate-[dlm-glow-pulse_4.5s_ease-in-out_infinite]`} />
+        <div className={`absolute -inset-6 rounded-full blur-3xl dlm-motion-safe ${isRevealing || isRevealed ? (tier === 3 ? "bg-lime-400/40" : tier === 2 ? "bg-emerald-400/30" : "bg-emerald-600/20") : "bg-emerald-500/15"} animate-tier-breathe`} />
 
         <div className={`absolute inset-0 rounded-full dlm-motion-safe animate-[dlm-shadow-shift_6s_ease-in-out_infinite] ${machineAnimClass}`} style={{ background: "conic-gradient(from 210deg, #e6ecef, #97a3ab, #4b545c, #232a30, #4b545c, #97a3ab, #cfd8dc, #97a3ab, #4b545c, #e6ecef)" }}>
           <div className="absolute inset-0 rounded-full mix-blend-overlay opacity-60" style={{ background: "radial-gradient(circle at 30% 22%, rgba(255,255,255,0.9), transparent 45%), radial-gradient(circle at 75% 80%, rgba(255,255,255,0.25), transparent 55%)" }} />
@@ -329,8 +325,8 @@ export default function DailyLuckyMeter() {
 
           <div className={`absolute inset-[13%] rounded-full overflow-hidden dlm-motion-safe transition-shadow duration-500 ${isRevealing || isRevealed ? tierGlow : ""}`}>
             <div className="absolute inset-0 rounded-full bg-[#020604]" />
-            <div className={`absolute -inset-4 dlm-motion-safe ${vortexRotateSpeed}`} style={{ background: "conic-gradient(from 0deg, #052e19, #0f7a45, #34d399, #052e19, #0a5c33, #0f7a45, #052e19)", opacity: isRevealing || isRevealed ? 0.9 : 0.55, mixBlendMode: "screen" }} />
-            <div className="absolute -inset-6 dlm-motion-safe animate-[dlm-rotate-slow-rev_16s_linear_infinite]" style={{ background: "conic-gradient(from 90deg, transparent, rgba(163,230,53,0.5), transparent 40%, transparent 60%, rgba(74,222,128,0.35), transparent)", opacity: isRevealing ? (tier === 3 ? 0.95 : 0.6) : 0.3, mixBlendMode: "screen" }} />
+            <div className={`absolute -inset-4 dlm-motion-safe transform-gpu backface-hidden ${vortexRotateSpeed}`} style={{ background: "conic-gradient(from 0deg, #052e19, #0f7a45, #34d399, #052e19, #0a5c33, #0f7a45, #052e19)", opacity: isRevealing || isRevealed ? 0.9 : 0.55, mixBlendMode: "screen" }} />
+            <div className="absolute -inset-6 dlm-motion-safe transform-gpu backface-hidden animate-[dlm-rotate-slow-rev_16s_linear_infinite]" style={{ background: "conic-gradient(from 90deg, transparent, rgba(163,230,53,0.5), transparent 40%, transparent 60%, rgba(74,222,128,0.35), transparent)", opacity: isRevealing ? (tier === 3 ? 0.95 : 0.6) : 0.3, mixBlendMode: "screen" }} />
             <div className="absolute inset-[18%] rounded-full dlm-motion-safe animate-[dlm-breathe_4s_ease-in-out_infinite]" style={{ background: "radial-gradient(circle at 45% 40%, rgba(220,255,230,0.95), rgba(52,211,153,0.55) 35%, rgba(6,78,44,0.25) 65%, transparent 75%)" }} />
             <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.15) 100%)" }} />
 
@@ -339,7 +335,7 @@ export default function DailyLuckyMeter() {
               const dur = 0.4 + (i % 4) * 0.15;
               const del = (i * 0.09) % 0.6;
               return (
-                <div key={`spark-${i}`} className="absolute w-[3px] h-[3px] sm:w-1 sm:h-1 rounded-full bg-white" style={{ left: pos.left, top: pos.top, boxShadow: "0 0 8px 2px rgba(190,255,210,0.9)", animation: `dlm-spark ${dur}s ease-in-out ${del}s infinite` }} />
+                <div key={`spark-${i}`} className="absolute w-[3px] h-[3px] sm:w-1 sm:h-1 rounded-full bg-white transform-gpu backface-hidden" style={{ left: pos.left, top: pos.top, boxShadow: "0 0 4px #fff, 0 0 10px rgba(190,255,210,0.9)", animation: `dlm-spark ${dur}s ease-in-out ${del}s infinite` }} />
               );
             })}
 
@@ -364,9 +360,6 @@ export default function DailyLuckyMeter() {
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               {phase === "idle" && (
                 <div className="flex flex-col items-center gap-1 dlm-motion-safe animate-[dlm-breathe_4s_ease-in-out_infinite]">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" className="opacity-70">
-                    <path d="M12 2 L14.2 9.2 L21.5 9.5 L15.6 14 L17.8 21.2 L12 16.8 L6.2 21.2 L8.4 14 L2.5 9.5 L9.8 9.2 Z" stroke="#6ee7b7" strokeWidth="1" fill="rgba(110,231,183,0.15)" />
-                  </svg>
                   <span className="text-[9px] sm:text-[10px] tracking-[0.25em] text-emerald-200/50 font-medium">TAP TO REVEAL</span>
                 </div>
               )}
@@ -378,7 +371,7 @@ export default function DailyLuckyMeter() {
               {(isRevealing || isRevealed) && score !== null && (
                 <div className="relative flex items-center justify-center my-6">
                   {/* Ambient Optical Bloom */}
-                  <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-2xl animate-cinematic-pulse pointer-events-none" />
+                  <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-2xl animate-crisp-bloom pointer-events-none" />
 
                   {/* Specular Rim Light */}
                   <div className="absolute inset-0 rounded-full border border-emerald-400/20 animate-specular-glint pointer-events-none" />
