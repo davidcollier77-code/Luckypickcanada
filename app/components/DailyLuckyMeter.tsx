@@ -301,7 +301,6 @@ const STATIC_STYLES = `
   .led-ring-container {
     position: absolute;
     inset: 0;
-    animation: rotateClockwise 30s linear infinite; /* Smooth 360 ambient rotation */
   }
 
   .led-indicator {
@@ -318,8 +317,13 @@ const STATIC_STYLES = `
   /* Photorealistic high-luminosity optics */
   .led-indicator.idle-orbital {
     background: var(--pri-color);
-    box-shadow: 0 0 8px var(--pri-color), 0 0 16px var(--sec-color);
-    opacity: 0.7;
+    animation: ambientChase 8s infinite linear;
+  }
+
+  @keyframes ambientChase {
+    0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(1); box-shadow: none; }
+    5% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 8px var(--pri-color), 0 0 16px var(--sec-color); }
+    20% { opacity: 0.25; transform: translate(-50%, -50%) scale(1); box-shadow: none; }
   }
 
   .led-indicator.active {
@@ -332,9 +336,9 @@ const STATIC_STYLES = `
   }
 
   @keyframes ledSpin {
-    0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
+    0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); box-shadow: none; background: #334155; }
     50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); background: #ffffff; box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color); }
-    100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
+    100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); box-shadow: none; background: #334155; }
   }
 
   .plasma-vortex-wrapper {
@@ -993,7 +997,12 @@ export default function DailyLuckyMeter() {
               const isChase = isSpinning;
               const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
 
-              const staggerDelay = isChase ? `${(i * 0.045).toFixed(3)}s` : '0s';
+              // Calculate staggered delay dynamically for both spinning and ambient chases
+              const spinDuration = 0.9;
+              const ambientDuration = 8;
+              const staggerDelay = isChase
+                ? `${(i * spinDuration / LED_COUNT).toFixed(3)}s`
+                : isLit ? '0s' : `${(i * ambientDuration / LED_COUNT).toFixed(3)}s`;
 
               return (
                 <div
