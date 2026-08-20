@@ -127,7 +127,7 @@ const FORTUNES: Record<string, string[]> = {
 const STORAGE_KEY = 'daily_lucky_meter_v1';
 
 // Extract static CSS to avoid recreating on every render
-const STATIC_CSS_RULES = `
+const STATIC_STYLES = `
   .lucky-meter-container {
     width: 100%;
     max-width: 440px;
@@ -158,8 +158,82 @@ const STATIC_CSS_RULES = `
     50% { opacity: 0.2; transform: scale(0.9); }
   }
 
+  .ritual-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 32px;
+    z-index: 10;
+  }
+
+  .ritual-header-icon {
+    margin-bottom: 8px;
+    color: var(--sec-color);
+    filter: drop-shadow(0 0 8px var(--pri-color));
+  }
+
+  .ritual-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-shadow: 0 0 12px var(--sec-color);
+    margin-bottom: 4px;
+  }
+
+  .ritual-subtitle {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    text-align: center;
+    max-width: 280px;
+  }
+
+  .nebula-backdrop {
+    position: absolute;
+    inset: -100px;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nebula-cloud-1 {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--pri-color) 0%, transparent 70%);
+    opacity: 0.4;
+    filter: blur(60px);
+    animation: driftCloud1 24s infinite alternate ease-in-out;
+  }
+
+  .nebula-cloud-2 {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, #4338ca 0%, #1e1b4b 50%, transparent 80%);
+    opacity: 0.5;
+    filter: blur(60px);
+    animation: driftCloud2 32s infinite alternate ease-in-out;
+  }
+
+  @keyframes driftCloud1 {
+    0% { transform: translate(-30px, -20px) rotate(0deg) scale(1); }
+    100% { transform: translate(40px, 30px) rotate(45deg) scale(1.2); }
+  }
+
+  @keyframes driftCloud2 {
+    0% { transform: translate(50px, 10px) rotate(0deg) scale(1.1); }
+    100% { transform: translate(-40px, -40px) rotate(-30deg) scale(0.9); }
+  }
+
   .machine-frame {
     position: relative;
+    z-index: 10;
     width: 320px;
     height: 320px;
     border-radius: 50%;
@@ -216,16 +290,14 @@ const STATIC_CSS_RULES = `
     transition: background 0.3s, box-shadow 0.3s;
   }
 
-  .led-indicator.idle-heartbeat { animation: ledCardiacPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+  .led-indicator.idle-orbital { animation: ledOrbitalSweep 3s infinite linear; }
   .led-indicator.active { background: var(--sec-color); box-shadow: 0 0 8px var(--sec-color), 0 0 14px var(--pri-color); }
   .led-indicator.spinning-chase { animation: ledSpin 0.9s infinite linear; }
 
-  @keyframes ledCardiacPulse {
-    0%, 100% { opacity: 0.25; background: #334155; box-shadow: none; }
-    10% { opacity: 0.85; background: var(--sec-color); box-shadow: 0 0 6px var(--pri-color); }
-    20% { opacity: 0.35; background: #334155; box-shadow: none; }
-    32% { opacity: 1; background: var(--sec-color); box-shadow: 0 0 10px var(--sec-color); }
-    50% { opacity: 0.25; background: #334155; box-shadow: none; }
+  @keyframes ledOrbitalSweep {
+    0%, 100% { opacity: 0.25; background: #334155; box-shadow: none; transform: translate(-50%, -50%) scale(0.9); }
+    10% { opacity: 1; background: var(--sec-color); box-shadow: 0 0 12px var(--sec-color), 0 0 20px var(--pri-color); transform: translate(-50%, -50%) scale(1.4); }
+    30% { opacity: 0.25; background: #334155; box-shadow: none; transform: translate(-50%, -50%) scale(0.9); }
   }
 
   @keyframes ledSpin {
@@ -345,6 +417,7 @@ const STATIC_CSS_RULES = `
   }
 
   .activate-btn {
+    z-index: 10;
     margin-top: 24px;
     padding: 14px 32px;
     font-size: 0.95rem;
@@ -370,6 +443,7 @@ const STATIC_CSS_RULES = `
   .activate-btn:disabled { opacity: 0.75; cursor: not-allowed; }
 
   .quote-card {
+    z-index: 10;
     margin-top: 20px;
     padding: 14px 18px;
     background: rgba(15, 23, 42, 0.6);
@@ -390,6 +464,7 @@ const STATIC_CSS_RULES = `
   }
 
   .share-btn {
+    z-index: 10;
     margin-top: 14px;
     background: transparent;
     border: none;
@@ -488,6 +563,7 @@ export default function DailyLuckyMeter() {
 
   // Canvas render loop
   useEffect(() => {
+    let isActive = true;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -497,6 +573,8 @@ export default function DailyLuckyMeter() {
     let lastTime = performance.now();
 
     const renderParticles = (time: number) => {
+      if (!isActive) return;
+
       const dt = (time - lastTime) / 16.66; // Normalize to 60fps
       lastTime = time;
 
@@ -515,7 +593,7 @@ export default function DailyLuckyMeter() {
       // Spawn ambient/spinning particles
       if (isSpinning) {
         // High intensity spawning
-        if (Math.random() < 0.6 * dt) {
+        if (particles.length < 200 && Math.random() < 0.6 * dt) {
           const angle = Math.random() * Math.PI * 2;
           const speed = 2 + Math.random() * 8;
           particles.push({
@@ -531,7 +609,7 @@ export default function DailyLuckyMeter() {
         }
       } else {
         // Ambient heartbeat spawns
-        if (Math.random() < 0.05 * dt) {
+        if (particles.length < 50 && Math.random() < 0.05 * dt) {
           const angle = Math.random() * Math.PI * 2;
           particles.push({
             x: cx + Math.cos(angle) * 120,
@@ -573,7 +651,10 @@ export default function DailyLuckyMeter() {
     };
 
     animationId = requestAnimationFrame(renderParticles);
-    return () => cancelAnimationFrame(animationId);
+    return () => {
+      isActive = false;
+      cancelAnimationFrame(animationId);
+    };
   }, [isSpinning, currentTier]);
 
   const triggerBurst = useCallback((tierConfig: TierConfig) => {
@@ -781,19 +862,29 @@ export default function DailyLuckyMeter() {
     try {
       if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare(shareData)) {
         await navigator.share(shareData);
-        return;
+        return; // Successfully shared natively
       }
-    } catch {
-      // Web Share API not available or failed, fallback to clipboard
+    } catch (err) {
+      // Web Share API failed or user cancelled, fallback gracefully
+      console.warn('Native share failed, falling back to clipboard.', err);
     }
 
     // Fallback: copy to clipboard
     try {
-      await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    } catch {
-      // Clipboard fallback
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+        if (isMountedRef.current) {
+          setCopied(true);
+          setTimeout(() => {
+            if (isMountedRef.current) setCopied(false);
+          }, 2200);
+        }
+      } else {
+         console.warn('Clipboard API not available.');
+      }
+    } catch (err) {
+      // Clipboard fallback failed
+      console.warn('Clipboard fallback failed.', err);
     }
   };
 
@@ -818,9 +909,25 @@ export default function DailyLuckyMeter() {
       {/* High-Performance Canvas Particles */}
       <canvas
         ref={canvasRef}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 50 }}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 20 }}
       />
-      <style>{STATIC_CSS_RULES}</style>
+      <style>{STATIC_STYLES}</style>
+
+      {/* Ritual Header Branding */}
+      <div className="ritual-header">
+        <svg className="ritual-header-icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M17.43 10.59L22 11l-3.34 5.34.82 5.66-5.88-2.22-1.35 4.22h-1.5L9.4 19.78 3.52 22l.82-5.66L1 11l4.57-.41L7.05 4h2.12l1.6 4.3 1.23-5.3h1.86l1.23 5.3 1.6-4.3h2.12l1.5 6.59z" />
+        </svg>
+        <div className="ritual-title">DAILY RESONANCE RITUAL</div>
+        <div className="ritual-subtitle">Tune in once every 24 hours to sync your daily momentum.</div>
+      </div>
+
+      {/* Deep-Space Nebula Backdrop */}
+      <div className="nebula-backdrop">
+        <div className="nebula-cloud-1" />
+        <div className="nebula-cloud-2" />
+      </div>
+
       {/* Primary Metallic Machine Bezel */}
       <div className={`machine-frame ${isSpinning ? (scrambleValue !== null && scrambleValue % 3 === 0 ? 'vibrating-intense' : 'vibrating') : ''}`}>
         {/* Flash Overlay */}
@@ -838,13 +945,17 @@ export default function DailyLuckyMeter() {
             const pos = ringPosition(i, LED_COUNT, 44);
             const isChase = isSpinning;
             const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
-            const staggerDelay = `${(i * 0.045).toFixed(3)}s`;
+
+            // Deterministic stagger: 3-second cycle during idle, rapid stagger during active spin
+            const staggerDelay = isChase
+              ? `${(i * 0.045).toFixed(3)}s`
+              : `${((i / LED_COUNT) * 3).toFixed(3)}s`;
 
             return (
               <div
                 key={`led-${i}`}
                 className={`led-indicator ${
-                  isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-heartbeat'
+                  isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
                 }`}
                 style={{
                   left: pos.left,
