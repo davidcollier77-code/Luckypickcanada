@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // Logical canvas size in CSS pixels (kept separate from physical DPR scaling)
@@ -74,21 +75,18 @@ export default function LuckyOrbReveal({ targetScore = 88, onComplete }) {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
-      timersRef.current.forEach((timer) => {
-        if (timer.type === 'interval') {
-          clearInterval(timer.id);
-        } else if (timer.type === 'timeout') {
-          clearTimeout(timer.id);
-        }
+      timersRef.current.forEach(({ id, type }) => {
+        if (type === 'timeout') clearTimeout(id);
+        if (type === 'interval') clearInterval(id);
       });
       timersRef.current = [];
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, []);
 
-  const track = (id) => {
   const track = (id, type) => {
     timersRef.current.push({ id, type });
+    return id;
   };
 
   // ---------- Canvas Setup (Centered + DPR Scaled) ----------
@@ -96,11 +94,8 @@ export default function LuckyOrbReveal({ targetScore = 88, onComplete }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const dpr =
-      typeof window !== 'undefined'
-        ? Math.min(window.devicePixelRatio || 1, 2)
-        : 1;
+    const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    canvas.width = CANVAS_SIZE * dpr;
     canvas.height = CANVAS_SIZE * dpr;
 
     const ctx = canvas.getContext('2d');
@@ -189,7 +184,7 @@ export default function LuckyOrbReveal({ targetScore = 88, onComplete }) {
     const duration = 4200;
 
     const interval = track(
-    const interval = track(
+      setInterval(() => {
         if (!isMountedRef.current) return;
 
         const elapsed = performance.now() - startTime;
@@ -218,8 +213,9 @@ export default function LuckyOrbReveal({ targetScore = 88, onComplete }) {
             track(
               setTimeout(() => {
                 if (isMountedRef.current) setFlashActive(false);
-              }, 300)
-            , 'timeout');
+              }, 300),
+              'timeout'
+            );
           }
 
           track(
@@ -227,10 +223,12 @@ export default function LuckyOrbReveal({ targetScore = 88, onComplete }) {
               if (!isMountedRef.current) return;
               setPhase('settled');
               if (onComplete) onComplete(targetScore, activeTier);
-          , 'timeout');
+            }, 5500),
+            'timeout'
           );
         }
-    , 'interval');
+      }, 60),
+      'interval'
     );
   };
 
