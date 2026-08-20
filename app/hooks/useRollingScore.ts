@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function useRollingScore(targetScore: number, isAnalyzing: boolean, durationMs = 3000) {
+export function useRollingScore(targetScore: number, isAnalyzing: boolean, durationMs = 10000) {
   const [displayScore, setDisplayScore] = useState(0);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export function useRollingScore(targetScore: number, isAnalyzing: boolean, durat
       const progress = Math.min((timestamp - startTime) / durationMs, 1);
 
       // Smooth easeOutCubic curve
-      const ease = 1 - Math.pow(1 - progress, 3);
+      const ease = 1 - Math.pow(1 - progress, 3.5);
       setDisplayScore(Math.floor(ease * targetScore));
 
       if (progress < 1) {
