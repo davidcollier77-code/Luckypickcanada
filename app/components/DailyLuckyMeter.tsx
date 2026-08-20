@@ -1260,7 +1260,7 @@ export default function DailyLuckyMeter() {
                     strokeLinejoin="round"
                     style={{
                       color: currentTier.secondaryColor,
-                      filter: `drop-shadow(0 0 8px \${currentTier.primaryColor}) drop-shadow(0 0 18px \${currentTier.accentGlow})`,
+                      filter: `drop-shadow(0 0 8px ${currentTier.primaryColor}) drop-shadow(0 0 18px ${currentTier.accentGlow})`,
                     }}
                   >
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
