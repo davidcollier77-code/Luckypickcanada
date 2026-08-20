@@ -208,3 +208,35 @@ body {
 .animate-mote-1 { animation: moteDrift 5s ease-in-out infinite; }
 .animate-mote-2 { animation: moteDrift 6.5s ease-in-out 1.8s infinite; }
 .animate-mote-3 { animation: moteDrift 8s ease-in-out 3.2s infinite; }
+
+@keyframes moteDrift1 {
+  0% { transform: translate(0, 0) scale(0.8); opacity: 0; }
+  25% { opacity: 1; }
+  75% { opacity: 0.8; }
+  100% { transform: translate(25px, -45px) scale(1.2); opacity: 0; }
+}
+
+@keyframes moteDrift2 {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 0.7; }
+  100% { transform: translate(-30px, -40px) scale(0.7); opacity: 0; }
+}
+
+@keyframes revealBloom {
+  0% { opacity: 0; transform: scale(0.9); }
+  30% { opacity: 0.9; transform: scale(1.08); filter: drop-shadow(0 0 35px rgba(52, 211, 153, 0.9)); }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+
+.animate-mote-drift-1 {
+  animation: moteDrift1 4.5s ease-in-out infinite;
+}
+
+.animate-mote-drift-2 {
+  animation: moteDrift2 6s ease-in-out 1.5s infinite;
+}
+
+.animate-reveal-bloom {
+  animation: revealBloom 0.75s ease-out forwards;
+}

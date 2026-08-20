@@ -218,7 +218,7 @@ export default function DailyLuckyMeter() {
         lastQuoteIndex: finalQuoteIndex,
       });
       setTimeout(() => setShowShare(true), 550);
-    }, 3000);
+    }, 10000);
   }, [locked, phase]);
 
   const handleShare = useCallback(async () => {
