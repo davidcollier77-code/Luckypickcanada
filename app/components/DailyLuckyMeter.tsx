@@ -97,32 +97,18 @@ const TIERS: TierConfig[] = [
   },
 ];
 
-const FORTUNES: Record<string, string[]> = {
-  'Dormant Void': [
-    'Conserve your energy; the quiet before momentum builds.',
-    'A subtle pivot today creates massive leverage tomorrow.',
-    'Patience is an active strategy, not a passive delay.',
-    'Low noise brings high clarity. Focus on fundamentals.',
-  ],
-  'Emerald Surge': [
-    'The currents are turning in your favor. Lean into action.',
-    'Clear pathways open where resistance once stood.',
-    'Trust your immediate instincts on critical decisions.',
-    'A minor calculated risk yields immediate momentum.',
-  ],
-  'Kinetic Lime': [
-    'High-voltage alignment across all your active efforts.',
-    'Synchronicity is on your side today—accelerate boldly.',
-    'Opportunities compound rapidly when you initiate.',
-    'You are in the flow state. Execute without hesitation.',
-  ],
-  'Supernova Gold': [
-    'Peak planetary resonance! Everything clicks today.',
-    'Maximum serendipity unlocked. Take your biggest swing.',
-    'Unstoppable creative and strategic breakthrough.',
-    'The jackpot timeline is active. Own the day.',
-  ],
-};
+const CANADIAN_QUOTES: string[] = [
+  'May your momentum burn as bright and vibrant as the northern lights over the Yukon.',
+  'Like the Canadian Shield, your foundation is immovable—good fortune follows your next move.',
+  'The compass points true North: trust your inner instincts along the open trail.',
+  'Clear skies over the Rockies bring peak perspective and high-frequency alignment today.',
+  'Good vibes flow swift like a boreal river—harness the current and ride the momentum.',
+  'From coast to coast to coast, quiet efforts are aligning to bring fortunate breakthroughs.',
+  'Patience through the frost brings golden rewards when the season turns.',
+  'A steady compass and a grounded spirit will navigate any wilderness toward success.',
+  'Every maple leaf finds its golden hour; today your resonance is running at full power.',
+  'Breathe in the crisp pine air: total clarity and lucky breaks are on your horizon.',
+];
 
 const STORAGE_KEY = 'daily_lucky_meter_v1';
 
@@ -190,45 +176,77 @@ const STATIC_STYLES = `
     max-width: 280px;
   }
 
-  .nebula-backdrop {
+  .aurora-backdrop {
     position: absolute;
     inset: -100px;
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #020617; /* Deep cosmic dark */
   }
 
-  .nebula-cloud-1 {
+  .starfield-layer {
     position: absolute;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, var(--pri-color) 0%, transparent 70%);
-    opacity: 0.4;
-    filter: blur(60px);
-    animation: driftCloud1 24s infinite alternate ease-in-out;
-  }
-
-  .nebula-cloud-2 {
-    position: absolute;
-    width: 400px;
-    height: 400px;
-    background: radial-gradient(circle, #4338ca 0%, #1e1b4b 50%, transparent 80%);
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.8) 1px, transparent 0),
+      radial-gradient(1.5px 1.5px at 30% 40%, rgba(255, 255, 255, 0.9) 1px, transparent 0),
+      radial-gradient(1px 1px at 50% 60%, rgba(255, 255, 255, 0.6) 1px, transparent 0),
+      radial-gradient(2px 2px at 70% 80%, rgba(255, 255, 255, 1) 1px, transparent 0),
+      radial-gradient(1px 1px at 90% 10%, rgba(255, 255, 255, 0.5) 1px, transparent 0);
+    background-size: 200px 200px;
     opacity: 0.5;
+    animation: slowStarDrift 100s linear infinite;
+  }
+
+  .aurora-gradient-1 {
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    top: -25%;
+    left: -25%;
+    background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.15) 0%, transparent 60%);
+    filter: blur(80px);
+    animation: auroraDrift 30s infinite alternate ease-in-out;
+  }
+
+  .aurora-gradient-2 {
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    bottom: -10%;
+    right: -10%;
+    background: radial-gradient(ellipse at center, rgba(20, 184, 166, 0.12) 0%, transparent 65%);
     filter: blur(60px);
-    animation: driftCloud2 32s infinite alternate ease-in-out;
+    animation: auroraDrift2 25s infinite alternate-reverse ease-in-out;
   }
 
-  @keyframes driftCloud1 {
-    0% { transform: translate(-30px, -20px) rotate(0deg) scale(1); }
-    100% { transform: translate(40px, 30px) rotate(45deg) scale(1.2); }
+  .aurora-gradient-3 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 20%;
+    left: 20%;
+    background: radial-gradient(circle at center, rgba(2, 6, 23, 0.5) 0%, transparent 70%); /* Deep cosmic dark accents */
+    filter: blur(40px);
+    mix-blend-mode: multiply;
   }
 
-  @keyframes driftCloud2 {
-    0% { transform: translate(50px, 10px) rotate(0deg) scale(1.1); }
-    100% { transform: translate(-40px, -40px) rotate(-30deg) scale(0.9); }
+  @keyframes slowStarDrift {
+    from { background-position: 0 0; }
+    to { background-position: -400px 400px; }
+  }
+
+  @keyframes auroraDrift {
+    0% { transform: translate(-5%, -5%) rotate(0deg) scale(1); opacity: 0.6; }
+    50% { transform: translate(5%, 2%) rotate(2deg) scale(1.05); opacity: 0.8; }
+    100% { transform: translate(0%, 5%) rotate(-1deg) scale(1); opacity: 0.6; }
+  }
+
+  @keyframes auroraDrift2 {
+    0% { transform: translate(5%, 5%) rotate(0deg) scale(1); opacity: 0.5; }
+    50% { transform: translate(-2%, -5%) rotate(-2deg) scale(1.1); opacity: 0.7; }
+    100% { transform: translate(-5%, 0%) rotate(1deg) scale(1.05); opacity: 0.5; }
   }
 
   .machine-frame {
@@ -280,30 +298,43 @@ const STATIC_STYLES = `
     justify-content: center;
   }
 
+  .led-ring-container {
+    position: absolute;
+    inset: 0;
+    animation: rotateClockwise 30s linear infinite; /* Smooth 360 ambient rotation */
+  }
+
   .led-indicator {
     position: absolute;
     width: 7px;
     height: 7px;
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    background: #1e293b;
+    background: #334155;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
     transition: background 0.3s, box-shadow 0.3s;
   }
 
-  .led-indicator.idle-orbital { animation: ledOrbitalSweep 3s infinite linear; }
-  .led-indicator.active { background: var(--sec-color); box-shadow: 0 0 8px var(--sec-color), 0 0 14px var(--pri-color); }
-  .led-indicator.spinning-chase { animation: ledSpin 0.9s infinite linear; }
+  /* Photorealistic high-luminosity optics */
+  .led-indicator.idle-orbital {
+    background: var(--pri-color);
+    box-shadow: 0 0 8px var(--pri-color), 0 0 16px var(--sec-color);
+    opacity: 0.7;
+  }
 
-  @keyframes ledOrbitalSweep {
-    0%, 100% { opacity: 0.25; background: #334155; box-shadow: none; transform: translate(-50%, -50%) scale(0.9); }
-    10% { opacity: 1; background: var(--sec-color); box-shadow: 0 0 12px var(--sec-color), 0 0 20px var(--pri-color); transform: translate(-50%, -50%) scale(1.4); }
-    30% { opacity: 0.25; background: #334155; box-shadow: none; transform: translate(-50%, -50%) scale(0.9); }
+  .led-indicator.active {
+    background: #ffffff; /* Hot white core */
+    box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color), 0 0 30px var(--pri-color), inset 0 0 4px var(--sec-color);
+  }
+
+  .led-indicator.spinning-chase {
+    animation: ledSpin 0.9s infinite linear;
   }
 
   @keyframes ledSpin {
-    0% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
-    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); background: var(--sec-color); box-shadow: 0 0 10px var(--sec-color); }
-    100% { opacity: 0.2; transform: translate(-50%, -50%) scale(0.9); }
+    0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); background: #ffffff; box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color); }
+    100% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.9); }
   }
 
   .plasma-vortex-wrapper {
@@ -694,7 +725,7 @@ export default function DailyLuckyMeter() {
         setDisplayedScore(data.score);
         const tier = TIERS.find((t) => data.score >= t.minScore && data.score <= t.maxScore) || TIERS[1];
         setCurrentTier(tier);
-        setFortune(data.fortune || FORTUNES[tier.name][0]);
+        setFortune(data.fortune || CANADIAN_QUOTES[0]);
       } else {
         setIsLocked(false);
         setDisplayedScore(null);
@@ -771,7 +802,7 @@ export default function DailyLuckyMeter() {
     score = Math.max(0, Math.min(100, score));
 
     const tier = TIERS.find((t) => score >= t.minScore && score <= t.maxScore) || TIERS[1];
-    const quotes = FORTUNES[tier.name];
+    const quotes = CANADIAN_QUOTES;
 
     let pickedQuote = quotes[Math.floor(Math.random() * quotes.length)];
     let quoteAttempts = 0;
@@ -915,17 +946,19 @@ export default function DailyLuckyMeter() {
 
       {/* Ritual Header Branding */}
       <div className="ritual-header">
-        <svg className="ritual-header-icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-          <path d="M17.43 10.59L22 11l-3.34 5.34.82 5.66-5.88-2.22-1.35 4.22h-1.5L9.4 19.78 3.52 22l.82-5.66L1 11l4.57-.41L7.05 4h2.12l1.6 4.3 1.23-5.3h1.86l1.23 5.3 1.6-4.3h2.12l1.5 6.59z" />
-        </svg>
+        <div className="text-[10px] tracking-widest text-emerald-400/80 uppercase font-medium mb-2 text-center">
+          ENTERTAINMENT & MOTIVATIONAL EXPERIENCE | FOR FUN ONLY
+        </div>
         <div className="ritual-title">DAILY RESONANCE RITUAL</div>
         <div className="ritual-subtitle">Tune in once every 24 hours to sync your daily momentum.</div>
       </div>
 
-      {/* Deep-Space Nebula Backdrop */}
-      <div className="nebula-backdrop">
-        <div className="nebula-cloud-1" />
-        <div className="nebula-cloud-2" />
+      {/* Deep-Space Starfield & Aurora Backdrop */}
+      <div className="aurora-backdrop">
+        <div className="starfield-layer" />
+        <div className="aurora-gradient-1" />
+        <div className="aurora-gradient-2" />
+        <div className="aurora-gradient-3" />
       </div>
 
       {/* Primary Metallic Machine Bezel */}
@@ -941,31 +974,30 @@ export default function DailyLuckyMeter() {
         {/* Recessed Internal Well */}
         <div className="recessed-well">
           {/* 20-LED Ring Array */}
-          {Array.from({ length: LED_COUNT }).map((_, i) => {
-            const pos = ringPosition(i, LED_COUNT, 44);
-            const isChase = isSpinning;
-            const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
+          <div className="led-ring-container">
+            {Array.from({ length: LED_COUNT }).map((_, i) => {
+              const pos = ringPosition(i, LED_COUNT, 44);
+              const isChase = isSpinning;
+              const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
 
-            // Deterministic stagger: 3-second cycle during idle, rapid stagger during active spin
-            const staggerDelay = isChase
-              ? `${(i * 0.045).toFixed(3)}s`
-              : `${((i / LED_COUNT) * 3).toFixed(3)}s`;
+              const staggerDelay = isChase ? `${(i * 0.045).toFixed(3)}s` : '0s';
 
-            return (
-              <div
-                key={`led-${i}`}
-                className={`led-indicator ${
-                  isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
-                }`}
-                style={{
-                  left: pos.left,
-                  top: pos.top,
-                  animationDelay: staggerDelay,
-                  ...(isLit ? { backgroundColor: currentTier.secondaryColor } : {}),
-                }}
-              />
-            );
-          })}
+              return (
+                <div
+                  key={`led-${i}`}
+                  className={`led-indicator ${
+                    isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
+                  }`}
+                  style={{
+                    left: pos.left,
+                    top: pos.top,
+                    animationDelay: staggerDelay,
+                    ...(isLit ? { backgroundColor: '#ffffff' } : {}), // override to hot white core if lit
+                  }}
+                />
+              );
+            })}
+          </div>
 
           {/* Plasma Vortex Core (with Dynamic Heartbeat before & after reveal) */}
           <div className={`plasma-vortex-wrapper ${!isSpinning ? 'heartbeat-active' : ''}`}>
