@@ -374,6 +374,21 @@ const STATIC_STYLES = `
   }
 
   .plasma-vortex-wrapper.heartbeat-active { animation: heartbeatPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+  .plasma-vortex-wrapper.reveal-bloom { animation: punchyBloom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+  .plasma-vortex-wrapper.reveal-bloom.heartbeat-active { animation: punchyBloom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), heartbeatPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1) 0.2s; }
+
+  @keyframes punchyBloom {
+    0% { filter: brightness(1); box-shadow: var(--vort-glow); }
+    50% { filter: brightness(2); box-shadow: 0 0 100px #ffffff, inset 0 0 50px #ffffff; }
+    100% { filter: brightness(1); box-shadow: var(--vort-glow); }
+  }
+
+  /* Disable transitions while spinning to keep flicker sharp */
+  .lucky-meter-container.is-spinning .plasma-vortex-wrapper,
+  .lucky-meter-container.is-spinning .led-indicator,
+  .lucky-meter-container.is-spinning .score-display {
+    transition: none !important;
+  }
 
   .plasma-layer-1 {
     position: absolute;
@@ -657,6 +672,11 @@ export default function DailyLuckyMeter() {
 
   const isMountedRef = useRef(true);
   const animationFrameRef = useRef<number | null>(null);
+  const tierRef = useRef(currentTier);
+
+  useEffect(() => {
+    tierRef.current = currentTier;
+  }, [currentTier]);
 
   // Canvas render loop
   useEffect(() => {
@@ -701,7 +721,7 @@ export default function DailyLuckyMeter() {
             life: 1,
             maxLife: 20 + Math.random() * 30,
             size: 1 + Math.random() * 2.5,
-            color: currentTier.secondaryColor
+            color: tierRef.current.secondaryColor
           });
         }
       } else {
@@ -716,7 +736,7 @@ export default function DailyLuckyMeter() {
             life: 1,
             maxLife: 60 + Math.random() * 60,
             size: 1 + Math.random() * 1.5,
-            color: currentTier.primaryColor
+            color: tierRef.current.primaryColor
           });
         }
       }
@@ -752,7 +772,7 @@ export default function DailyLuckyMeter() {
       isActive = false;
       cancelAnimationFrame(animationId);
     };
-  }, [isSpinning, currentTier]);
+  }, [isSpinning]);
 
   const triggerBurst = useCallback((tierConfig: TierConfig) => {
     const canvas = canvasRef.current;
@@ -862,9 +882,9 @@ export default function DailyLuckyMeter() {
     setFortune('');
 
     const { score: finalScore, tier: targetTier, quote: finalQuote } = rollMetrics();
-    setCurrentTier(targetTier);
 
     const startTime = performance.now();
+    let lastScrambleTime = startTime;
 
     const animateDisplay = (now: number) => {
       if (!isMountedRef.current) return;
@@ -873,9 +893,10 @@ export default function DailyLuckyMeter() {
 
       if (progress < 0.95) {
         // Scrambling phase
-        // Change number frequently but not every frame to make it readable
-        if (Math.floor(elapsed / 50) % 2 === 0) {
-           setScrambleValue(Math.floor(Math.random() * 100));
+        if (now - lastScrambleTime > 50) { // Change every 50ms
+          setScrambleValue(Math.floor(Math.random() * 100));
+          setCurrentTier(TIERS[Math.floor(Math.random() * TIERS.length)]);
+          lastScrambleTime = now;
         }
       }
 
@@ -885,6 +906,7 @@ export default function DailyLuckyMeter() {
         // Final Reveal
         setScrambleValue(null);
         setDisplayedScore(finalScore);
+        setCurrentTier(targetTier); // Set the actual tier at the very end
         setIsRevealing(true);
         if (isMountedRef.current) {
           triggerBurst(targetTier); // Trigger the canvas particle explosion
@@ -974,7 +996,7 @@ export default function DailyLuckyMeter() {
   } as React.CSSProperties;
 
   return (
-    <div className="lucky-meter-container" style={cssVars}>
+    <div className={`lucky-meter-container ${isSpinning ? 'is-spinning' : ''}`} style={cssVars}>
       {/* High-Performance Canvas Particles */}
       <canvas
         ref={canvasRef}
@@ -1040,7 +1062,7 @@ export default function DailyLuckyMeter() {
           </div>
 
           {/* Plasma Vortex Core (with Dynamic Heartbeat before & after reveal) */}
-          <div className={`plasma-vortex-wrapper ${!isSpinning ? 'heartbeat-active' : ''}`}>
+          <div className={`plasma-vortex-wrapper ${!isSpinning ? 'heartbeat-active' : ''} ${isRevealing ? 'reveal-bloom' : ''}`}>
             <div className="plasma-layer-1" />
             <div className="plasma-layer-2" />
             <div className="plasma-breathing-core" />
