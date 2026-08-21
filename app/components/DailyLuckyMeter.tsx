@@ -121,12 +121,10 @@ const STATIC_STYLES = `
   }
 
   @keyframes heartbeatPulse {
-    0% { transform: scale(1); filter: brightness(1); box-shadow: var(--vort-glow); }
-    10% { transform: scale(1.08); filter: brightness(1.3); box-shadow: 0 0 60px var(--acc-glow), inset 0 0 40px var(--acc-glow); }
-    20% { transform: scale(0.96); filter: brightness(0.85); box-shadow: var(--vort-glow); }
-    32% { transform: scale(1.12); filter: brightness(1.5); box-shadow: 0 0 90px var(--acc-glow), inset 0 0 60px var(--acc-glow); }
-    50% { transform: scale(1); filter: brightness(1); box-shadow: var(--vort-glow); }
-    100% { transform: scale(1); filter: brightness(1); box-shadow: var(--vort-glow); }
+    0%, 50%, 100% { transform: scale(1); }
+    10% { transform: scale(1.04); }
+    20% { transform: scale(0.98); }
+    32% { transform: scale(1.06); }
   }
 
   @keyframes cardiacAura {
