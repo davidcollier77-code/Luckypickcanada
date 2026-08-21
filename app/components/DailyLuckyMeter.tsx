@@ -846,8 +846,7 @@ export default function DailyLuckyMeter() {
   const isMountedRef = useRef(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const machineFrameRef = useRef<HTMLDivElement>(null);
-  const scoreValueRef = useRef<HTMLSpanElement>(null);
-  const scrambleValueRef = useRef<number | null>(null);
+  const scoreRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const tierRef = useRef(currentTier);
 
@@ -1044,13 +1043,13 @@ export default function DailyLuckyMeter() {
     setIsSpinning(true);
     setIsRevealing(false);
     setDisplayedScore(null);
-    scrambleValueRef.current = 0;
     setFortune('');
 
     const { score: finalScore, tier: targetTier, quote: finalQuote } = rollMetrics();
 
     const startTime = performance.now();
     let lastScrambleTime = startTime;
+    let currentScrambleVal = 0;
 
     const animateDisplay = (now: number) => {
       if (!isMountedRef.current) return;
@@ -1073,15 +1072,15 @@ export default function DailyLuckyMeter() {
              const timeLeft = 10000 - elapsed;
              const avgInterval = (300 + 600) / 2;
              const ticksLeft = Math.max(1, Math.floor(timeLeft / avgInterval));
-             const diff = finalScore - (scrambleValueRef.current || 0);
-             nextVal = Math.max(0, Math.min(100, (scrambleValueRef.current || 0) + Math.round(diff / ticksLeft)));
+             const diff = finalScore - currentScrambleVal;
+             nextVal = Math.max(0, Math.min(100, currentScrambleVal + Math.round(diff / ticksLeft)));
           } else {
              nextVal = Math.floor(Math.random() * 100);
           }
-          scrambleValueRef.current = nextVal;
+          currentScrambleVal = nextVal;
 
-          if (scoreValueRef.current) {
-            scoreValueRef.current.innerText = nextVal.toString();
+          if (scoreRef.current) {
+            scoreRef.current.innerText = nextVal.toString() + '%';
           }
 
           if (machineFrameRef.current) {
@@ -1109,7 +1108,6 @@ export default function DailyLuckyMeter() {
         }
         animationFrameRef.current = requestAnimationFrame(animateDisplay);
       } else {
-        scrambleValueRef.current = null;
         if (machineFrameRef.current) {
            machineFrameRef.current.classList.remove('vibrating');
            machineFrameRef.current.classList.remove('vibrating-intense');
@@ -1265,16 +1263,15 @@ export default function DailyLuckyMeter() {
               {displayedScore !== null ? (
                 <>
                   <div className="score-display locked">
-                    <span ref={scoreValueRef}>{displayedScore}</span>
+                    <span>{displayedScore}</span>
                     <span className="score-percent">%</span>
                   </div>
                   <div className="tier-label">{currentTier.name}</div>
                 </>
               ) : isSpinning ? (
                 <>
-                  <div className="score-display" style={{ filter: 'blur(1px)' }}>
-                    <span ref={scoreValueRef}>{scrambleValueRef.current !== null ? scrambleValueRef.current : 0}</span>
-                    <span className="score-percent">%</span>
+                  <div className="score-display" ref={scoreRef} style={{ filter: 'blur(1px)' }}>
+                    0
                   </div>
                   <div className="tier-label" style={{ opacity: 0.5 }}>CALCULATING...</div>
                 </>
