@@ -467,23 +467,6 @@ const STATIC_STYLES = `
   }
 
   .plasma-vortex-wrapper.heartbeat-active { animation: heartbeatPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1); }
-  .plasma-vortex-wrapper.reveal-bloom { animation: punchyBloom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .plasma-vortex-wrapper.reveal-bloom.heartbeat-active { animation: punchyBloom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), heartbeatPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1) 0.2s; }
-
-  @keyframes punchyBloom {
-    0% { filter: brightness(1); box-shadow: var(--vort-glow); }
-    50% { filter: brightness(2); box-shadow: 0 0 100px #ffffff, inset 0 0 50px #ffffff; }
-    100% { filter: brightness(1); box-shadow: var(--vort-glow); }
-  }
-
-  .final-lock-bloom {
-    animation: finalGlowBloom 0.3s ease-out forwards;
-  }
-  @keyframes finalGlowBloom {
-    0% { filter: brightness(1) contrast(1); box-shadow: var(--vort-glow); }
-    30% { filter: brightness(2) contrast(1.2); box-shadow: 0 0 120px #ffffff, inset 0 0 80px #ffffff; }
-    100% { filter: brightness(1) contrast(1); box-shadow: var(--vort-glow); }
-  }
 
   .final-lock-shudder {
     animation: lockShudder 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
@@ -521,7 +504,6 @@ const STATIC_STYLES = `
     border-radius: 50%;
     background: conic-gradient(from 180deg, transparent 0deg, var(--sec-color) 80deg, transparent 170deg, var(--pri-color) 260deg, transparent 360deg);
     opacity: 0.55;
-    mix-blend-mode: screen;
     animation: rotateCounter var(--rot-dur2) linear infinite;
   }
 
@@ -1377,9 +1359,11 @@ export default function DailyLuckyMeter() {
       </div>
 
       {/* Main Activation Control */}
-      <button className="activate-btn" onClick={handleActivate} disabled={isLocked || isSpinning}>
-        {isSpinning ? 'RESONATING...' : isLocked ? <>LOCKED (<LockedCountdown loadState={loadState} />)</> : 'ENGAGE METER'}
-      </button>
+      {!isLocked && !fortune && (
+        <button className="activate-btn" onClick={handleActivate} disabled={isSpinning}>
+          {isSpinning ? 'RESONATING...' : 'ENGAGE METER'}
+        </button>
+      )}
 
       {/* Fortune Reading & Sharing (Post-Reveal) */}
       {fortune && !isSpinning && (
