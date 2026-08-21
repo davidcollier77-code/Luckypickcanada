@@ -10,7 +10,7 @@
     "postbuild": "echo 'Build completed successfully'"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.1",
+    "@neondatabase/serverless": "^0.10.4",
     "@stripe/stripe-js": "^9.13.0",
     "eslint": "^10.8.1",
     "framer-motion": "^13.1.0",
