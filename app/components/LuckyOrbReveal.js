@@ -124,9 +124,10 @@ export default function LuckyOrbReveal({ targetScore = 88, onComplete }) {
         ctx.fillStyle = p.color;
         ctx.shadowColor = p.color;
         ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
+        // Optimization (⚡ Bolt): Use fillRect instead of arc for particles.
+        // Rendering a tiny square is visually identical to a circle but much faster.
+        // Size represents radius in the old code, so multiply by 2 for width/height.
+        ctx.fillRect(p.x - p.size, p.y - p.size, p.size * 2, p.size * 2);
         ctx.restore();
       }
 
