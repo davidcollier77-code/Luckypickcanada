@@ -4,9 +4,9 @@ import DailyLuckyMeter from "../components/DailyLuckyMeter";
 
 export default function LuckyMeterPage() {
   return (
-    <main className="relative min-h-screen w-full bg-black text-white flex flex-col items-center justify-center p-4">
+    <main className="relative min-h-screen w-full bg-black text-white flex flex-col items-center p-4">
       {/* Background Video */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
+      <div className="absolute inset-0 -z-10 ">
         <video
           className="h-full w-full object-cover opacity-60 filter contrast-110 brightness-95"
           autoPlay
