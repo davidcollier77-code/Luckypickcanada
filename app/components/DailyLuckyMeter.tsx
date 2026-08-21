@@ -1093,17 +1093,6 @@ export default function DailyLuckyMeter() {
              }
           }
 
-          const randomTier = TIERS[Math.floor(Math.random() * TIERS.length)];
-          tierRef.current = randomTier;
-          if (containerRef.current) {
-            containerRef.current.style.setProperty('--pri-color', randomTier.primaryColor);
-            containerRef.current.style.setProperty('--sec-color', randomTier.secondaryColor);
-            containerRef.current.style.setProperty('--acc-glow', randomTier.accentGlow);
-            containerRef.current.style.setProperty('--vort-glow', randomTier.vortexGlow);
-            containerRef.current.style.setProperty('--plas-g0', randomTier.plasmaGradients[0]);
-            containerRef.current.style.setProperty('--plas-g1', randomTier.plasmaGradients[1]);
-            containerRef.current.style.setProperty('--vib-int', randomTier.vibrationIntensity.toString());
-          }
           lastScrambleTime = now;
         }
         animationFrameRef.current = requestAnimationFrame(animateDisplay);
