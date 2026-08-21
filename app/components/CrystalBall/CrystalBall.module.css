@@ -1,0 +1,547 @@
+/* =========================================================================
+   CRYSTAL BALL — Glass & Machined Brass
+   -------------------------------------------------------------------------
+   Perf notes (read before touching animations):
+   - The ONLY infinite-loop animations in this file animate `transform`
+     (translate/scale) and, for the aurora layer only, `opacity`. Nothing
+     ever animates `box-shadow` or `filter: blur()` inside a keyframe —
+     both are set once, statically, and left alone so the browser can
+     rasterize them a single time and just move the resulting layer on
+     the GPU.
+   - Every animated layer gets `will-change` + a `translateZ(0)` (or
+     `translate3d`) hint so it's promoted to its own compositor layer.
+   ========================================================================= */
+
+/* ---------- tokens ---------- */
+.page {
+  --space-950: #05060f;
+  --space-900: #090c1c;
+  --space-800: #10142a;
+
+  --aurora-emerald: #1fa781;
+  --aurora-violet: #6b4bd6;
+  --aurora-rose: #b23a63;
+
+  --brass-100: #fbe7ad;
+  --brass-300: #e8c465;
+  --brass-500: #c89a3c;
+  --brass-700: #8b6a1e;
+  --brass-900: #3a2a0d;
+
+  --glass-hi: rgba(255, 255, 255, 0.55);
+  --ink-100: #f6f1e4;
+  --ink-300: #cdd3e6;
+  --ink-500: #8f97b8;
+
+  --font-header: var(--font-cinzel), 'Cinzel', serif;
+  --font-ui: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+  --font-fortune: var(--font-cormorant), 'Cormorant Garamond', serif;
+
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background: radial-gradient(ellipse at 50% -10%, var(--space-800) 0%, var(--space-950) 60%);
+  color: var(--ink-100);
+  font-family: var(--font-ui);
+}
+
+/* =========================================================================
+   AURORA NIGHT-SKY BACKGROUND
+   Three pre-blurred gradient blobs. `filter: blur()` is applied once as a
+   static value — it is never inside a @keyframes block. The keyframes
+   below only ever touch transform + opacity, so each blob is painted
+   once and then cheaply moved/faded by the compositor.
+   ========================================================================= */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.6px 1.6px at 20% 30%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1.2px 1.2px at 60% 75%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.6px 1.6px at 82% 22%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1.2px 1.2px at 35% 88%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.6px 1.6px at 92% 60%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.2px 1.2px at 8% 62%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.6px 1.6px at 50% 8%, rgba(255, 255, 255, 0.6), transparent);
+  background-repeat: repeat;
+  background-size: 240px 240px;
+  opacity: 0.75;
+}
+
+.auroraBlob {
+  position: absolute;
+  width: 90vmax;
+  height: 90vmax;
+  border-radius: 50%;
+  filter: blur(70px);
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  mix-blend-mode: screen;
+}
+
+.auroraBlob1 {
+  top: -35vmax;
+  left: -25vmax;
+  background: radial-gradient(circle, var(--aurora-emerald) 0%, transparent 65%);
+  opacity: 0.32;
+  animation: auroraDrift1 52s ease-in-out infinite;
+}
+
+.auroraBlob2 {
+  top: -15vmax;
+  right: -30vmax;
+  background: radial-gradient(circle, var(--aurora-violet) 0%, transparent 65%);
+  opacity: 0.28;
+  animation: auroraDrift2 64s ease-in-out infinite;
+}
+
+.auroraBlob3 {
+  bottom: -40vmax;
+  left: 10vmax;
+  width: 70vmax;
+  height: 70vmax;
+  background: radial-gradient(circle, var(--aurora-rose) 0%, transparent 70%);
+  opacity: 0.16;
+  animation: auroraDrift3 76s ease-in-out infinite;
+}
+
+@keyframes auroraDrift1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.28; }
+  50%      { transform: translate3d(6vmax, 4vmax, 0) scale(1.12); opacity: 0.4; }
+}
+
+@keyframes auroraDrift2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.24; }
+  50%      { transform: translate3d(-5vmax, 5vmax, 0) scale(1.1); opacity: 0.34; }
+}
+
+@keyframes auroraDrift3 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.14; }
+  50%      { transform: translate3d(4vmax, -3vmax, 0) scale(1.08); opacity: 0.22; }
+}
+
+/* =========================================================================
+   LAYOUT SHELL
+   ========================================================================= */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-family: var(--font-header);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 6vw, 2.6rem);
+  letter-spacing: 0.03em;
+  background: linear-gradient(180deg, var(--brass-100), var(--brass-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 18px rgba(200, 154, 60, 0.35);
+  margin: 0 0 0.6rem;
+}
+
+.subtitle {
+  font-family: var(--font-fortune);
+  font-style: italic;
+  font-size: clamp(1.05rem, 3.6vw, 1.25rem);
+  color: var(--ink-300);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* =========================================================================
+   THE CRYSTAL BALL SCENE
+   ========================================================================= */
+.ballScene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5rem 0 2rem;
+}
+
+.ballWrapper {
+  position: relative;
+  width: clamp(220px, 62vw, 300px);
+  aspect-ratio: 1 / 1;
+  will-change: transform;
+  transform: translateZ(0);
+  animation: floatBall 6.5s ease-in-out infinite;
+}
+
+@keyframes floatBall {
+  0%, 100% { transform: translateZ(0) translateY(0); }
+  50%      { transform: translateZ(0) translateY(-10px); }
+}
+
+.ball {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.04) 32%, transparent 55%),
+    radial-gradient(circle at 68% 78%, rgba(20, 30, 60, 0.55), transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(150, 170, 220, 0.18), rgba(8, 12, 28, 0.5) 78%);
+
+  backdrop-filter: blur(7px) saturate(135%);
+  -webkit-backdrop-filter: blur(7px) saturate(135%);
+
+  border: 1px solid rgba(255, 255, 255, 0.32);
+
+  box-shadow:
+    inset -22px -22px 55px rgba(0, 0, 0, 0.5),
+    inset 18px 18px 36px rgba(255, 255, 255, 0.22),
+    inset 0 0 40px rgba(120, 160, 230, 0.15),
+    0 30px 55px rgba(0, 0, 0, 0.55),
+    0 0 70px rgba(140, 190, 255, 0.22);
+}
+
+.ballSpecular {
+  position: absolute;
+  top: 8%;
+  left: 12%;
+  width: 42%;
+  height: 26%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.65), transparent 70%);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+.ballSpecularSmall {
+  position: absolute;
+  top: 14%;
+  left: 22%;
+  width: 8%;
+  height: 8%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.ballInnerGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  background: radial-gradient(circle, rgba(255, 244, 214, 0.85) 0%, rgba(232, 196, 101, 0.25) 55%, transparent 75%);
+  will-change: transform;
+  animation: pulseGlow 5s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%      { transform: translate(-50%, -50%) scale(1.08); }
+}
+
+.logoRing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30%;
+  height: 30%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- brass pedestal ---------- */
+.pedestalGlow {
+  width: 70%;
+  max-width: 260px;
+  height: 34px;
+  margin-top: -18px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(232, 196, 101, 0.45), transparent 70%);
+  pointer-events: none;
+}
+
+.pedestalTop {
+  position: relative;
+  width: 78%;
+  max-width: 280px;
+  height: clamp(34px, 9vw, 46px);
+  margin-top: -20px;
+  border-radius: 50%;
+  background:
+    repeating-linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    linear-gradient(180deg, var(--brass-100) 0%, var(--brass-300) 22%, var(--brass-500) 45%, var(--brass-700) 72%, var(--brass-900) 100%);
+  box-shadow:
+    0 10px 18px rgba(0, 0, 0, 0.55),
+    inset 0 2px 3px rgba(255, 255, 255, 0.5),
+    inset 0 -6px 10px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 224, 160, 0.4);
+}
+
+.pedestalBase {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  margin-top: -6px;
+  padding: 1.5rem 1rem 1.25rem;
+  border-radius: 26px;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(180deg, #1c1a16 0%, #0c0b09 70%, #000 100%);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -12px 24px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(232, 196, 101, 0.18);
+}
+
+.plaque {
+  font-family: var(--font-header);
+  font-size: clamp(0.85rem, 3vw, 1rem);
+  letter-spacing: 0.08em;
+  color: var(--brass-900);
+  padding: 0.55rem 1.4rem;
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--brass-100), var(--brass-300) 45%, var(--brass-500) 100%);
+  border: 1px solid rgba(255, 224, 160, 0.6);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* =========================================================================
+   QUESTION CARD
+   ========================================================================= */
+.card {
+  width: 100%;
+  border-radius: 20px;
+  padding: 1.75rem 1.5rem;
+  background: linear-gradient(180deg, rgba(20, 25, 48, 0.75), rgba(10, 13, 28, 0.75));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(200, 210, 255, 0.18);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
+.cardStatus {
+  font-family: var(--font-fortune);
+  font-style: italic;
+  font-size: clamp(1.15rem, 4vw, 1.4rem);
+  color: var(--brass-300);
+  margin: 0 0 0.9rem;
+}
+
+.cardHint,
+.fortuneText {
+  font-family: var(--font-fortune);
+  font-size: clamp(1rem, 3.4vw, 1.15rem);
+  color: var(--ink-300);
+  line-height: 1.6;
+  margin: 0 0 1.4rem;
+}
+
+.fortuneText {
+  color: var(--ink-100);
+}
+
+.input {
+  width: 100%;
+  min-height: 52px;
+  resize: none;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: rgba(6, 8, 18, 0.6);
+  border: 1px solid rgba(200, 210, 255, 0.25);
+  color: var(--ink-100);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.input::placeholder {
+  color: var(--ink-500);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--brass-300);
+  outline-offset: 2px;
+}
+
+.seekButton {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #241a05;
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--brass-100), var(--brass-300) 45%, var(--brass-500) 100%);
+  box-shadow:
+    0 10px 22px rgba(200, 154, 60, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.seekButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.seekButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.seekButton:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.seekButton:focus-visible {
+  outline: 2px solid var(--brass-100);
+  outline-offset: 3px;
+}
+
+/* =========================================================================
+   SESSION READINGS
+   ========================================================================= */
+.readings {
+  width: 100%;
+  margin-top: 1.75rem;
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: rgba(12, 15, 30, 0.55);
+  border: 1px solid rgba(200, 210, 255, 0.12);
+}
+
+.readingsTitle {
+  font-family: var(--font-header);
+  font-size: 1.15rem;
+  color: var(--brass-300);
+  letter-spacing: 0.02em;
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(232, 196, 101, 0.25);
+}
+
+.readingsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.readingItem {
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--brass-500);
+}
+
+.readingQ {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--ink-300);
+  margin: 0 0 0.35rem;
+}
+
+.readingA {
+  font-family: var(--font-fortune);
+  font-size: 1.05rem;
+  color: var(--ink-100);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* =========================================================================
+   BOTTOM NAV
+   ========================================================================= */
+.nav {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 2.25rem;
+  flex-wrap: wrap;
+}
+
+.navButton {
+  flex: 1 1 auto;
+  min-width: 96px;
+  padding: 0.8rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 196, 101, 0.3);
+  background: rgba(20, 24, 44, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--ink-100);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.navButton:hover {
+  background: rgba(30, 35, 60, 0.85);
+  border-color: rgba(232, 196, 101, 0.55);
+}
+
+.navButton:focus-visible {
+  outline: 2px solid var(--brass-300);
+  outline-offset: 2px;
+}
+
+/* =========================================================================
+   ACCESSIBILITY / LOW-END FALLBACK
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .ballWrapper,
+  .ballInnerGlow,
+  .auroraBlob1,
+  .auroraBlob2,
+  .auroraBlob3 {
+    animation: none;
+  }
+}
