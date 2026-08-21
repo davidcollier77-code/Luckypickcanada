@@ -73,12 +73,13 @@ export default function CrystalBall({
       const answer = await onSeekFortune(trimmed);
       setCurrentFortune(answer);
       setReadings((prev) => [
-        { id: `${Date.now()}-${prev.length}`, question: trimmed, answer },
+        { id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, question: trimmed, answer },
         ...prev,
       ]);
       setQuestion('');
       setStatus('idle');
-    } catch {
+    } catch (error) {
+      console.error('Failed to fetch fortune:', error);
       setCurrentFortune(null);
       setStatus('error');
     }
