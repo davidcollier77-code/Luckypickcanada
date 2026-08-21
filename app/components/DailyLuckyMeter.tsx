@@ -423,21 +423,22 @@ const STATIC_STYLES = `
     /* Transition removed from here to prevent keyframe conflict */
   }
 
-  .led-indicator.idle-orbital, .led-indicator.spinning-chase {
+  .led-indicator.chase-mode {
     /* Continuous chaser animation */
     animation: chaserRing var(--chaser-dur, 7s) infinite linear;
+    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / 32 - 1));
   }
 
   @keyframes chaserRing {
     0% {
       opacity: 1;
       background: #ffffff;
-      box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color), 0 0 35px var(--pri-color), 0 0 50px var(--acc-glow);
+      box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color);
     }
     5% {
       opacity: 0.8;
       background: var(--sec-color);
-      box-shadow: 0 0 10px var(--sec-color), 0 0 20px var(--pri-color);
+      box-shadow: 0 0 10px var(--sec-color);
     }
     15%, 100% {
       opacity: 0.2;
@@ -453,8 +454,6 @@ const STATIC_STYLES = `
       0 0 6px #ffffff,
       0 0 14px #ffffff,
       0 0 26px var(--sec-color),
-      0 0 42px var(--pri-color),
-      0 0 62px var(--acc-glow),
       inset 0 0 4px var(--sec-color);
     animation: none;
     transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
@@ -1227,36 +1226,25 @@ export default function DailyLuckyMeter() {
     }
   };
 
-  // LED positions/delays computed statically — only recomputed when isSpinning or
-  // displayedScore actually change (at most a couple of times per spin cycle), never on every
-  // tick. This is what lets the chaser glide continuously instead of resetting.
   const ledElements = useMemo(() => {
     return Array.from({ length: LED_COUNT }).map((_, i) => {
       const pos = ringPosition(i, LED_COUNT, 42);
-
-      const scoreNum = Number(displayedScore);
-      const isLit = displayedScore !== null && !isNaN(scoreNum) && (Number(i) / Number(LED_COUNT)) <= (scoreNum / 100);
-
-      // Calculate staggered delay statically for both spinning and ambient chases
-      const duration = isSpinning ? 2.5 : 7;
-      const staggerDelay = isLit ? '0s' : `-${(duration - (i * duration / LED_COUNT)).toFixed(3)}s`;
+      const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
 
       return (
         <div
           key={`led-${i}`}
-          className={`led-indicator ${
-            isSpinning ? 'spinning-chase' : isLit ? 'active' : isLocked ? '' : 'idle-orbital'
-          }`}
+          className={`led-indicator ${isLit ? 'active' : 'chase-mode'}`}
           style={{
             left: pos.left,
             top: pos.top,
-            animationDelay: staggerDelay,
-            ...(isLit ? { backgroundColor: '#ffffff', opacity: 1 } : {}), // override to strict hot white if lit
-          }}
+            '--led-index': i,
+            ...(isLit ? { backgroundColor: '#ffffff' } : {}),
+          } as React.CSSProperties}
         />
       );
     });
-  }, [isSpinning, displayedScore, isLocked]);
+  }, [displayedScore]);
 
   if (!mounted) return null;
 
