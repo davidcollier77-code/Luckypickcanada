@@ -751,6 +751,45 @@ const formatCountdown = (ms: number) => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
+const Rivets = React.memo(() => (
+  <>
+    {Array.from({ length: RIVET_COUNT }).map((_, i) => {
+      const pos = ringPosition(i, RIVET_COUNT, 46.5);
+      return <div key={`rivet-${i}`} className="rivet" style={{ left: pos.left, top: pos.top }} />;
+    })}
+  </>
+));
+Rivets.displayName = 'Rivets';
+
+const LEDRing = React.memo(({ isSpinning, displayedScore }: { isSpinning: boolean, displayedScore: number | null }) => (
+  <>
+    {Array.from({ length: LED_COUNT }).map((_, i) => {
+      const pos = ringPosition(i, LED_COUNT, 42);
+      const isChase = isSpinning;
+      const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
+
+      const ratio = 1 - (i / LED_COUNT);
+      const staggerDelay = isLit ? '0s' : `calc(var(--chaser-dur) * -${ratio})`;
+
+      return (
+        <div
+          key={`led-${i}`}
+          className={`led-indicator ${
+            isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
+          }`}
+          style={{
+            left: pos.left,
+            top: pos.top,
+            animationDelay: staggerDelay,
+            ...(isLit ? { backgroundColor: '#ffffff' } : {}),
+          }}
+        />
+      );
+    })}
+  </>
+));
+LEDRing.displayName = 'LEDRing';
+
 const LockedCountdown = ({ loadState }: { loadState: () => void }) => {
   const [countdown, setCountdown] = useState<string>("");
 
@@ -797,7 +836,6 @@ export default function DailyLuckyMeter() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const [displayedScore, setDisplayedScore] = useState<number | null>(null);
-  const [scrambleValue, setScrambleValue] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
 
@@ -807,6 +845,9 @@ export default function DailyLuckyMeter() {
 
   const isMountedRef = useRef(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  const machineFrameRef = useRef<HTMLDivElement>(null);
+  const scoreValueRef = useRef<HTMLSpanElement>(null);
+  const scrambleValueRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const tierRef = useRef(currentTier);
 
@@ -1003,7 +1044,7 @@ export default function DailyLuckyMeter() {
     setIsSpinning(true);
     setIsRevealing(false);
     setDisplayedScore(null);
-    setScrambleValue(0);
+    scrambleValueRef.current = 0;
     setFortune('');
 
     const { score: finalScore, tier: targetTier, quote: finalQuote } = rollMetrics();
@@ -1032,12 +1073,26 @@ export default function DailyLuckyMeter() {
              const timeLeft = 10000 - elapsed;
              const avgInterval = (300 + 600) / 2;
              const ticksLeft = Math.max(1, Math.floor(timeLeft / avgInterval));
-             const diff = finalScore - (scrambleValue || 0);
-             nextVal = Math.max(0, Math.min(100, (scrambleValue || 0) + Math.round(diff / ticksLeft)));
+             const diff = finalScore - (scrambleValueRef.current || 0);
+             nextVal = Math.max(0, Math.min(100, (scrambleValueRef.current || 0) + Math.round(diff / ticksLeft)));
           } else {
              nextVal = Math.floor(Math.random() * 100);
           }
-          setScrambleValue(nextVal);
+          scrambleValueRef.current = nextVal;
+
+          if (scoreValueRef.current) {
+            scoreValueRef.current.innerText = nextVal.toString();
+          }
+
+          if (machineFrameRef.current) {
+             if (nextVal % 3 === 0) {
+                machineFrameRef.current.classList.add('vibrating-intense');
+                machineFrameRef.current.classList.remove('vibrating');
+             } else {
+                machineFrameRef.current.classList.add('vibrating');
+                machineFrameRef.current.classList.remove('vibrating-intense');
+             }
+          }
 
           const randomTier = TIERS[Math.floor(Math.random() * TIERS.length)];
           tierRef.current = randomTier;
@@ -1054,7 +1109,11 @@ export default function DailyLuckyMeter() {
         }
         animationFrameRef.current = requestAnimationFrame(animateDisplay);
       } else {
-        setScrambleValue(null);
+        scrambleValueRef.current = null;
+        if (machineFrameRef.current) {
+           machineFrameRef.current.classList.remove('vibrating');
+           machineFrameRef.current.classList.remove('vibrating-intense');
+        }
         setDisplayedScore(finalScore);
         setCurrentTier(targetTier);
         setIsSpinning(false);
@@ -1183,40 +1242,15 @@ export default function DailyLuckyMeter() {
       </div>
 
       {/* Primary Metallic Machine Bezel */}
-      <div className={`machine-frame ${isSpinning ? (scrambleValue !== null && scrambleValue % 3 === 0 ? 'vibrating-intense' : 'vibrating') : ''} ${isRevealing ? 'final-lock-shudder' : ''}`}>
+      <div ref={machineFrameRef} className={`machine-frame ${isSpinning ? 'vibrating' : ''} ${isRevealing ? 'final-lock-shudder' : ''}`}>
         {/* Bezel Structural Rivets */}
-        {Array.from({ length: RIVET_COUNT }).map((_, i) => {
-          const pos = ringPosition(i, RIVET_COUNT, 46.5);
-          return <div key={`rivet-${i}`} className="rivet" style={{ left: pos.left, top: pos.top }} />;
-        })}
+        <Rivets />
 
         {/* Recessed Internal Well */}
         <div className="recessed-well">
           <div className={`flash-overlay ${isRevealing ? 'trigger-flash' : ''}`} />
           <div className="led-ring-container">
-            {Array.from({ length: LED_COUNT }).map((_, i) => {
-              const pos = ringPosition(i, LED_COUNT, 42);
-              const isChase = isSpinning;
-              const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
-
-              const duration = isSpinning ? 1 : 7;
-              const staggerDelay = isLit ? '0s' : `-${(duration - (i * duration / LED_COUNT)).toFixed(3)}s`;
-
-              return (
-                <div
-                  key={`led-${i}`}
-                  className={`led-indicator ${
-                    isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
-                  }`}
-                  style={{
-                    left: pos.left,
-                    top: pos.top,
-                    animationDelay: staggerDelay,
-                    ...(isLit ? { backgroundColor: '#ffffff' } : {}),
-                  }}
-                />
-              );
-            })}
+            <LEDRing isSpinning={isSpinning} displayedScore={displayedScore} />
           </div>
 
           {/* Plasma Vortex Core */}
@@ -1231,15 +1265,15 @@ export default function DailyLuckyMeter() {
               {displayedScore !== null ? (
                 <>
                   <div className="score-display locked">
-                    {displayedScore}
+                    <span ref={scoreValueRef}>{displayedScore}</span>
                     <span className="score-percent">%</span>
                   </div>
                   <div className="tier-label">{currentTier.name}</div>
                 </>
-              ) : scrambleValue !== null ? (
+              ) : isSpinning ? (
                 <>
                   <div className="score-display" style={{ filter: 'blur(1px)' }}>
-                    {scrambleValue}
+                    <span ref={scoreValueRef}>{scrambleValueRef.current !== null ? scrambleValueRef.current : 0}</span>
                     <span className="score-percent">%</span>
                   </div>
                   <div className="tier-label" style={{ opacity: 0.5 }}>CALCULATING...</div>
