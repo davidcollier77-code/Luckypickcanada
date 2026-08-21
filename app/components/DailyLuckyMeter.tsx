@@ -426,7 +426,7 @@ const STATIC_STYLES = `
   .led-indicator.chase-mode {
     /* Continuous chaser animation */
     animation: chaserRing var(--chaser-dur, 7s) infinite linear;
-    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / 32 - 1));
+    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / var(--led-count, 32) - 1));
   }
 
   @keyframes chaserRing {
@@ -1261,6 +1261,7 @@ export default function DailyLuckyMeter() {
     '--rot-dur2': isSpinning ? '0.6s' : '6s',
     '--breath-dur': isSpinning ? '0.4s' : '1.6s',
     '--chaser-dur': isSpinning ? '2.5s' : '7s',
+    '--led-count': LED_COUNT,
   } as React.CSSProperties;
 
   return (
