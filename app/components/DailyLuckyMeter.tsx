@@ -431,15 +431,20 @@ const STATIC_STYLES = `
   }
 
   @keyframes chaserRing {
-    0%, 90%, 100% {
+    0% {
+      opacity: 1;
+      background: #ffffff;
+      box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color), 0 0 35px var(--pri-color), 0 0 50px var(--acc-glow);
+    }
+    15% {
+      opacity: 0.8;
+      background: var(--sec-color);
+      box-shadow: 0 0 10px var(--sec-color), 0 0 20px var(--pri-color);
+    }
+    40%, 100% {
       opacity: 0.2;
       background: #020617;
       box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.1);
-    }
-    5% {
-      opacity: 1;
-      background: #ffffff;
-      box-shadow: 0 0 8px #ffffff, 0 0 18px var(--sec-color), 0 0 30px var(--pri-color), 0 0 44px var(--acc-glow);
     }
   }
 
@@ -1220,8 +1225,9 @@ export default function DailyLuckyMeter() {
   const ledElements = useMemo(() => {
     return Array.from({ length: LED_COUNT }).map((_, i) => {
       const pos = ringPosition(i, LED_COUNT, 42);
-      const isChase = isSpinning;
-      const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
+
+      const scoreNum = Number(displayedScore);
+      const isLit = displayedScore !== null && !isNaN(scoreNum) && (Number(i) / Number(LED_COUNT)) <= (scoreNum / 100);
 
       // Calculate staggered delay statically for both spinning and ambient chases
       const duration = isSpinning ? 2.5 : 7;
@@ -1231,18 +1237,18 @@ export default function DailyLuckyMeter() {
         <div
           key={`led-${i}`}
           className={`led-indicator ${
-            isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
+            isSpinning ? 'spinning-chase' : isLit ? 'active' : isLocked ? '' : 'idle-orbital'
           }`}
           style={{
             left: pos.left,
             top: pos.top,
             animationDelay: staggerDelay,
-            ...(isLit ? { backgroundColor: '#ffffff' } : {}), // override to hot white core if lit
+            ...(isLit ? { backgroundColor: '#ffffff', opacity: 1 } : {}), // override to strict hot white if lit
           }}
         />
       );
     });
-  }, [isSpinning, displayedScore]);
+  }, [isSpinning, displayedScore, isLocked]);
 
   if (!mounted) return null;
 
