@@ -73,7 +73,7 @@ export default function CrystalBall({
       const answer = await onSeekFortune(trimmed);
       setCurrentFortune(answer);
       setReadings((prev) => [
-        { id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, question: trimmed, answer },
+        { id: `${Date.now()}-${prev.length}-${Math.random().toString(36).substring(2, 9)}`, question: trimmed, answer },
         ...prev,
       ]);
       setQuestion('');
