@@ -15,7 +15,7 @@ interface Particle {
   isBurst?: boolean;
 }
 
-const hexToRgb = (hex: string) => {
+// ==========================================
 // CONFIGURATION & CONSTANTS
 // ==========================================
 
@@ -143,12 +143,6 @@ const STATIC_STYLES = `
     align-items: center;
     margin-bottom: 32px;
     z-index: 10;
-  }
-
-  .ritual-header-icon {
-    margin-bottom: 8px;
-    color: var(--sec-color);
-    filter: drop-shadow(0 0 8px var(--pri-color));
   }
 
   .ritual-title {
@@ -1378,7 +1372,7 @@ export default function DailyLuckyMeter() {
 
       {/* Main Activation Control */}
       <button className="activate-btn" onClick={handleActivate} disabled={isLocked || isSpinning}>
-        {isSpinning ? 'RESONATING...' : isLocked ? <>LOCKED (<LockedCountdown loadState={() => loadState()} />)</> : 'ENGAGE METER'}
+        {isSpinning ? 'RESONATING...' : isLocked ? <>LOCKED (<LockedCountdown loadState={loadState} />)</> : 'ENGAGE METER'}
       </button>
 
       {/* Fortune Reading & Sharing (Post-Reveal) */}
