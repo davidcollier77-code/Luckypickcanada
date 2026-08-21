@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 // --- CANVAS PARTICLE SYSTEM ---
 interface Particle {
@@ -15,7 +15,7 @@ interface Particle {
   isBurst?: boolean;
 }
 
-// ==========================================
+const hexToRgb = (hex: string) => {
 // CONFIGURATION & CONSTANTS
 // ==========================================
 
@@ -103,6 +103,7 @@ const CANADIAN_QUOTES: string[] = [
 
 const STORAGE_KEY = 'daily_lucky_meter_v1';
 
+// Extract static CSS to avoid recreating on every render
 const STATIC_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;900&family=Space+Grotesk:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500;1,600&display=swap');
 
@@ -144,6 +145,12 @@ const STATIC_STYLES = `
     z-index: 10;
   }
 
+  .ritual-header-icon {
+    margin-bottom: 8px;
+    color: var(--sec-color);
+    filter: drop-shadow(0 0 8px var(--pri-color));
+  }
+
   .ritual-title {
     font-family: 'Cinzel', serif;
     font-size: 1.25rem;
@@ -166,6 +173,8 @@ const STATIC_STYLES = `
     text-align: center;
     max-width: 280px;
   }
+
+  /* ===== DEEP-SPACE / NEBULA BACKDROP ===== */
 
   .aurora-backdrop {
     position: absolute;
@@ -292,12 +301,15 @@ const STATIC_STYLES = `
     }
   }
 
+  /* ===== HARDWARE BEZEL & DIAL ===== */
+
   .machine-frame {
     position: relative;
     z-index: 10;
     width: 320px;
     height: 320px;
     border-radius: 50%;
+    /* Photorealistic brushed-gold vault bezel: many stops for a machined, faceted sheen */
     background: conic-gradient(from 220deg,
       #241a06 0deg,
       #4a3410 18deg,
@@ -332,11 +344,10 @@ const STATIC_STYLES = `
     align-items: center;
     justify-content: center;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: transform;
-    transform: translateZ(0);
   }
 
   .machine-frame::before {
+    /* Sweeping specular highlight, like light raking across brushed metal */
     content: '';
     position: absolute;
     inset: 0;
@@ -348,6 +359,7 @@ const STATIC_STYLES = `
   }
 
   .machine-frame::after {
+    /* Thin dark contact-shadow ring seating the bezel against the case */
     content: '';
     position: absolute;
     inset: -3px;
@@ -374,6 +386,7 @@ const STATIC_STYLES = `
     width: 8px;
     height: 8px;
     border-radius: 50%;
+    /* Polished, machined brass stud with tight specular highlight */
     background: radial-gradient(circle at 32% 28%, #fffbe8 0%, #f3d572 20%, #b8912f 48%, #6b5220 78%, #2b1d06 100%);
     box-shadow:
       0 2px 3px rgba(0, 0, 0, 0.85),
@@ -389,6 +402,7 @@ const STATIC_STYLES = `
     height: 270px;
     border-radius: 50%;
     background: #030712;
+    /* Deep vault-door recess seating the core */
     box-shadow:
       0 0 0 5px #100b04,
       0 0 0 6px rgba(184, 145, 47, 0.35),
@@ -415,10 +429,10 @@ const STATIC_STYLES = `
     opacity: 0.2;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.1);
     transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
-    will-change: opacity, box-shadow, background;
   }
 
   .led-indicator.idle-orbital, .led-indicator.spinning-chase {
+    /* Continuous chaser animation */
     animation: chaserRing var(--chaser-dur, 7s) infinite linear;
   }
 
@@ -448,6 +462,8 @@ const STATIC_STYLES = `
     animation: none;
   }
 
+  /* ===== PLASMA CORE ===== */
+
   .plasma-vortex-wrapper {
     position: relative;
     width: 200px;
@@ -457,8 +473,6 @@ const STATIC_STYLES = `
     background: #020617;
     box-shadow: var(--vort-glow);
     transition: box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    will-change: transform, box-shadow;
-    transform: translateZ(0);
   }
 
   .plasma-vortex-wrapper.heartbeat-active { animation: heartbeatPulse 1.6s infinite cubic-bezier(0.4, 0, 0.2, 1); }
@@ -493,10 +507,11 @@ const STATIC_STYLES = `
     100% { transform: translate(0, 0) rotate(0deg); }
   }
 
+  /* Disable transitions while spinning to keep flicker sharp */
   .lucky-meter-container.is-spinning .plasma-vortex-wrapper,
   .lucky-meter-container.is-spinning .led-indicator,
   .lucky-meter-container.is-spinning .score-display {
-    transition: all 0.15s ease-out !important;
+    transition: none !important;
   }
 
   .plasma-layer-1 {
@@ -529,6 +544,7 @@ const STATIC_STYLES = `
   }
 
   .plasma-vortex-wrapper::after {
+    /* Hot white flare at the very core, riding the same breathing rhythm */
     content: '';
     position: absolute;
     inset: 38%;
@@ -751,45 +767,12 @@ const formatCountdown = (ms: number) => {
   return `${hours}:${minutes}:${seconds}`;
 };
 
-const Rivets = React.memo(() => (
-  <>
-    {Array.from({ length: RIVET_COUNT }).map((_, i) => {
-      const pos = ringPosition(i, RIVET_COUNT, 46.5);
-      return <div key={`rivet-${i}`} className="rivet" style={{ left: pos.left, top: pos.top }} />;
-    })}
-  </>
-));
-Rivets.displayName = 'Rivets';
+// ==========================================
+// COMPONENT
+// ==========================================
 
-const LEDRing = React.memo(({ isSpinning, displayedScore }: { isSpinning: boolean, displayedScore: number | null }) => (
-  <>
-    {Array.from({ length: LED_COUNT }).map((_, i) => {
-      const pos = ringPosition(i, LED_COUNT, 42);
-      const isChase = isSpinning;
-      const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
 
-      const ratio = 1 - (i / LED_COUNT);
-      const staggerDelay = isLit ? '0s' : `calc(var(--chaser-dur) * -${ratio})`;
-
-      return (
-        <div
-          key={`led-${i}`}
-          className={`led-indicator ${
-            isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
-          }`}
-          style={{
-            left: pos.left,
-            top: pos.top,
-            animationDelay: staggerDelay,
-            ...(isLit ? { backgroundColor: '#ffffff' } : {}),
-          }}
-        />
-      );
-    })}
-  </>
-));
-LEDRing.displayName = 'LEDRing';
-
+// Localized countdown component to prevent parent re-renders every second
 const LockedCountdown = ({ loadState }: { loadState: () => void }) => {
   const [countdown, setCountdown] = useState<string>("");
 
@@ -831,29 +814,41 @@ const LockedCountdown = ({ loadState }: { loadState: () => void }) => {
 };
 
 export default function DailyLuckyMeter() {
+
   const [mounted, setMounted] = useState(false);
+
+
   const [isLocked, setIsLocked] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const [displayedScore, setDisplayedScore] = useState<number | null>(null);
+  // scrambleValue is now only a start/end flag (set once at spin start, cleared once at lock-in) —
+  // it is never updated inside the 50ms tick loop, so it no longer drives per-frame re-renders.
+  const [scrambleValue, setScrambleValue] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
 
+
   const [currentTier, setCurrentTier] = useState<TierConfig>(TIERS[1]);
   const [fortune, setFortune] = useState<string>('');
+
   const [copied, setCopied] = useState(false);
 
   const isMountedRef = useRef(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const machineFrameRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const scoreRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number | null>(null);
   const tierRef = useRef(currentTier);
+  // Guards the 8.5s DOM class toggle so it only fires once per spin — not React state, so
+  // flipping it never triggers a re-render.
+  const finalCrawlAppliedRef = useRef(false);
 
   useEffect(() => {
     tierRef.current = currentTier;
   }, [currentTier]);
 
+  // Canvas render loop
   useEffect(() => {
     let isActive = true;
     const canvas = canvasRef.current;
@@ -867,9 +862,10 @@ export default function DailyLuckyMeter() {
     const renderParticles = (time: number) => {
       if (!isActive) return;
 
-      const dt = (time - lastTime) / 16.66;
+      const dt = (time - lastTime) / 16.66; // Normalize to 60fps
       lastTime = time;
 
+      // Ensure canvas sizing is correct
       if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientHeight;
@@ -881,7 +877,9 @@ export default function DailyLuckyMeter() {
       const cy = canvas.height / 2;
       const particles = particlesRef.current;
 
+      // Spawn ambient/spinning particles
       if (isSpinning) {
+        // High intensity spawning
         if (particles.length < 200 && Math.random() < 0.6 * dt) {
           const angle = Math.random() * Math.PI * 2;
           const speed = 2 + Math.random() * 8;
@@ -897,13 +895,14 @@ export default function DailyLuckyMeter() {
           });
         }
       } else {
+        // Ambient heartbeat spawns
         if (particles.length < 50 && Math.random() < 0.05 * dt) {
           const angle = Math.random() * Math.PI * 2;
           particles.push({
             x: cx + Math.cos(angle) * 120,
             y: cy + Math.sin(angle) * 120,
             vx: Math.cos(angle) * 0.5,
-            vy: Math.sin(angle) * -0.5 - Math.random() * 0.5,
+            vy: Math.sin(angle) * -0.5 - Math.random() * 0.5, // float up slowly
             life: 1,
             maxLife: 60 + Math.random() * 60,
             size: 1 + Math.random() * 1.5,
@@ -912,6 +911,7 @@ export default function DailyLuckyMeter() {
         }
       }
 
+      // Update and draw particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx * dt;
@@ -924,13 +924,18 @@ export default function DailyLuckyMeter() {
         }
 
         const progress = p.life / p.maxLife;
+        // Fade in quickly, then fade out
         let alpha = progress < 0.1 ? progress * 10 : 1 - Math.pow(progress, 2);
 
         ctx.globalAlpha = Math.max(0, alpha);
+        ctx.shadowBlur = p.size * 3;
+        ctx.shadowColor = p.color;
         ctx.fillStyle = p.color;
-        ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        // Optimization: Use fillRect instead of arc
+        ctx.fillRect(p.x - p.size/2, p.y - p.size/2, p.size, p.size);
       }
       ctx.globalAlpha = 1.0;
+      ctx.shadowBlur = 0;
 
       animationId = requestAnimationFrame(renderParticles);
     };
@@ -948,6 +953,7 @@ export default function DailyLuckyMeter() {
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
 
+    // Create explosion burst
     for (let i = 0; i < 80; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = 5 + Math.random() * 15;
@@ -988,6 +994,7 @@ export default function DailyLuckyMeter() {
     }
   }, []);
 
+
   useEffect(() => {
     setMounted(true);
     loadState();
@@ -1022,6 +1029,7 @@ export default function DailyLuckyMeter() {
     }
     if (score === lastScore) score = (lastScore + 37) % 101;
     
+    // Explicitly clamp score between 0 and 100
     score = Math.max(0, Math.min(100, score));
 
     const tier = TIERS.find((t) => score >= t.minScore && score <= t.maxScore) || TIERS[1];
@@ -1043,13 +1051,27 @@ export default function DailyLuckyMeter() {
     setIsSpinning(true);
     setIsRevealing(false);
     setDisplayedScore(null);
+    setScrambleValue(0);
     setFortune('');
+    finalCrawlAppliedRef.current = false;
+
+    // Seed the score display's DOM text directly so it's never blank before the first tick.
+    if (scoreRef.current) {
+      scoreRef.current.innerText = '0%';
+    }
+    // Defensive reset in case a previous spin's class lingered.
+    if (frameRef.current) {
+      frameRef.current.classList.remove('vibrating-intense');
+    }
 
     const { score: finalScore, tier: targetTier, quote: finalQuote } = rollMetrics();
 
     const startTime = performance.now();
     let lastScrambleTime = startTime;
-    let currentScrambleVal = 0;
+    // Tracks the running scrambled value across ticks. This lives in the closure (not React
+    // state), so the 8.5s-10s convergence math always reads the true previous value instead of
+    // a stale render snapshot — and updating it never triggers a re-render.
+    let currentScramble = 0;
 
     const animateDisplay = (now: number) => {
       if (!isMountedRef.current) return;
@@ -1057,66 +1079,68 @@ export default function DailyLuckyMeter() {
       const progress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
 
       if (progress < 1) {
-        let scrambleInterval = 50;
+        // Scrambling logic based on time phases
+        let scrambleInterval = 50; // 0-5s: rapid 50ms
         if (elapsed > 5000 && elapsed <= 8500) {
+           // 5.0s - 8.5s: Deceleration (50ms -> ~300ms)
            const decelProgress = (elapsed - 5000) / 3500;
            scrambleInterval = 50 + (decelProgress * 250);
         } else if (elapsed > 8500) {
+           // 8.5s - 10.0s: Final crawl (~300ms -> ~600ms)
            const crawlProgress = (elapsed - 8500) / 1500;
            scrambleInterval = 300 + (crawlProgress * 300);
+           // One-time direct DOM class toggle into the "final crawl" intense vibration —
+           // bypasses React state entirely, so it never triggers a re-render at the climax
+           // of the spin (which is what was causing the frame drop / stutter).
+           if (!finalCrawlAppliedRef.current) {
+             finalCrawlAppliedRef.current = true;
+             if (frameRef.current) {
+               frameRef.current.classList.remove('vibrating');
+               frameRef.current.classList.add('vibrating-intense');
+             }
+           }
         }
 
         if (now - lastScrambleTime > scrambleInterval) {
           let nextVal;
           if (elapsed > 8500) {
              const timeLeft = 10000 - elapsed;
-             const avgInterval = (300 + 600) / 2;
+             const avgInterval = (300 + 600) / 2; // Use average interval for stable convergence
              const ticksLeft = Math.max(1, Math.floor(timeLeft / avgInterval));
-             const diff = finalScore - currentScrambleVal;
-             nextVal = Math.max(0, Math.min(100, currentScrambleVal + Math.round(diff / ticksLeft)));
+             const diff = finalScore - currentScramble;
+             nextVal = Math.max(0, Math.min(100, currentScramble + Math.round(diff / ticksLeft)));
           } else {
              nextVal = Math.floor(Math.random() * 100);
           }
-          currentScrambleVal = nextVal;
+          currentScramble = nextVal;
 
+          // Direct DOM write — bypasses React entirely, so the 32 LEDs and the rest of the
+          // tree never re-render during the rapid tick loop. Colors/CSS vars are intentionally
+          // left untouched here; they only change once, at lock-in below.
           if (scoreRef.current) {
-            scoreRef.current.innerText = nextVal.toString() + '%';
+            scoreRef.current.innerText = nextVal + '%';
           }
 
-          if (machineFrameRef.current) {
-             if (nextVal % 3 === 0) {
-                machineFrameRef.current.classList.add('vibrating-intense');
-                machineFrameRef.current.classList.remove('vibrating');
-             } else {
-                machineFrameRef.current.classList.add('vibrating');
-                machineFrameRef.current.classList.remove('vibrating-intense');
-             }
-          }
-
-          const randomTier = TIERS[Math.floor(Math.random() * TIERS.length)];
-          tierRef.current = randomTier;
-          if (containerRef.current) {
-            containerRef.current.style.setProperty('--pri-color', randomTier.primaryColor);
-            containerRef.current.style.setProperty('--sec-color', randomTier.secondaryColor);
-            containerRef.current.style.setProperty('--acc-glow', randomTier.accentGlow);
-            containerRef.current.style.setProperty('--vort-glow', randomTier.vortexGlow);
-            containerRef.current.style.setProperty('--plas-g0', randomTier.plasmaGradients[0]);
-            containerRef.current.style.setProperty('--plas-g1', randomTier.plasmaGradients[1]);
-            containerRef.current.style.setProperty('--vib-int', randomTier.vibrationIntensity.toString());
-          }
           lastScrambleTime = now;
         }
         animationFrameRef.current = requestAnimationFrame(animateDisplay);
       } else {
-        if (machineFrameRef.current) {
-           machineFrameRef.current.classList.remove('vibrating');
-           machineFrameRef.current.classList.remove('vibrating-intense');
-        }
+        // Exact 10.0s Lock: Final Reveal
+        setScrambleValue(null);
         setDisplayedScore(finalScore);
-        setCurrentTier(targetTier);
+        setCurrentTier(targetTier); // Set the actual tier at the very end
         setIsSpinning(false);
         setIsLocked(true);
         setIsRevealing(true);
+        // Remove the intense-vibration class at the exact lock-in mark, via direct DOM —
+        // matches how it was applied, so there's no React state round-trip on either end.
+        if (frameRef.current) {
+          frameRef.current.classList.remove('vibrating', 'vibrating-intense');
+        }
+        // Apply the final target tier's colors to the CSS variables exactly once, here at
+        // lock-in — never during the spin. Also explicitly set the DOM styles to ensure they
+        // lock in correctly even if React decides not to re-render the inline style object due
+        // to prop diffing.
         if (containerRef.current) {
           containerRef.current.style.setProperty('--pri-color', targetTier.primaryColor);
           containerRef.current.style.setProperty('--sec-color', targetTier.secondaryColor);
@@ -1127,15 +1151,16 @@ export default function DailyLuckyMeter() {
           containerRef.current.style.setProperty('--vib-int', targetTier.vibrationIntensity.toString());
         }
         if (isMountedRef.current) {
-          triggerBurst(targetTier);
+          triggerBurst(targetTier); // Trigger the canvas particle explosion
         }
 
+        // 10.5s (0.5s after lock): Fade in quote
         setTimeout(() => {
           if (isMountedRef.current) {
             setFortune(finalQuote);
             setIsRevealing(false);
           }
-        }, 500);
+        }, 500); // 0.5s after exact lock
 
         try {
           localStorage.setItem(
@@ -1161,19 +1186,22 @@ export default function DailyLuckyMeter() {
 
     const shareData = {
       title: 'Daily Lucky Meter',
-      text: `⚡ My Daily Resonance: ${displayedScore}% [${currentTier.name}]\\n"${fortune}"\\nCheck your luck today:`,
+      text: `⚡ My Daily Resonance: ${displayedScore}% [${currentTier.name}]\n"${fortune}"\nCheck your luck today:`,
       url: typeof window !== 'undefined' ? window.location.href : '',
     };
 
+    // Defensively check Web Share API availability
     try {
       if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare(shareData)) {
         await navigator.share(shareData);
-        return;
+        return; // Successfully shared natively
       }
     } catch (err) {
+      // Web Share API failed or user cancelled, fallback gracefully
       console.warn('Native share failed, falling back to clipboard.', err);
     }
 
+    // Fallback: copy to clipboard
     try {
       if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
         await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
@@ -1187,12 +1215,44 @@ export default function DailyLuckyMeter() {
          console.warn('Clipboard API not available.');
       }
     } catch (err) {
+      // Clipboard fallback failed
       console.warn('Clipboard fallback failed.', err);
     }
   };
 
+  // LED positions/delays computed statically — only recomputed when isSpinning or
+  // displayedScore actually change (at most a couple of times per spin cycle), never on every
+  // tick. This is what lets the chaser glide continuously instead of resetting.
+  const ledElements = useMemo(() => {
+    return Array.from({ length: LED_COUNT }).map((_, i) => {
+      const pos = ringPosition(i, LED_COUNT, 42);
+      const isChase = isSpinning;
+      const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
+
+      // Calculate staggered delay statically for both spinning and ambient chases
+      const duration = isSpinning ? 2.5 : 7;
+      const staggerDelay = isLit ? '0s' : `-${(duration - (i * duration / LED_COUNT)).toFixed(3)}s`;
+
+      return (
+        <div
+          key={`led-${i}`}
+          className={`led-indicator ${
+            isChase ? 'spinning-chase' : isLit ? 'active' : 'idle-orbital'
+          }`}
+          style={{
+            left: pos.left,
+            top: pos.top,
+            animationDelay: staggerDelay,
+            ...(isLit ? { backgroundColor: '#ffffff' } : {}), // override to hot white core if lit
+          }}
+        />
+      );
+    });
+  }, [isSpinning, displayedScore]);
+
   if (!mounted) return null;
 
+  // Inject dynamic theme values via CSS variables
   const cssVars = {
     '--pri-color': currentTier.primaryColor,
     '--sec-color': currentTier.secondaryColor,
@@ -1204,11 +1264,12 @@ export default function DailyLuckyMeter() {
     '--rot-dur1': isSpinning ? '0.8s' : '9s',
     '--rot-dur2': isSpinning ? '0.6s' : '6s',
     '--breath-dur': isSpinning ? '0.4s' : '1.6s',
-    '--chaser-dur': isSpinning ? '1s' : '7s',
+    '--chaser-dur': isSpinning ? '2.5s' : '7s',
   } as React.CSSProperties;
 
   return (
     <div className={`lucky-meter-container ${isSpinning ? 'is-spinning' : ''}`} style={cssVars} ref={containerRef}>
+      {/* High-Performance Canvas Particles */}
       <canvas
         ref={canvasRef}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 20 }}
@@ -1240,18 +1301,28 @@ export default function DailyLuckyMeter() {
       </div>
 
       {/* Primary Metallic Machine Bezel */}
-      <div ref={machineFrameRef} className={`machine-frame ${isSpinning ? 'vibrating' : ''} ${isRevealing ? 'final-lock-shudder' : ''}`}>
+      <div
+        ref={frameRef}
+        className={`machine-frame ${isSpinning ? 'vibrating' : ''} ${isRevealing ? 'final-lock-shudder' : ''}`}
+      >
+        {/* 'vibrating-intense' is toggled on/off via direct DOM classList calls in
+            handleActivate at the 8.5s and 10.0s marks — not through React state/props. */}
         {/* Bezel Structural Rivets */}
-        <Rivets />
+        {Array.from({ length: RIVET_COUNT }).map((_, i) => {
+          const pos = ringPosition(i, RIVET_COUNT, 46.5);
+          return <div key={`rivet-${i}`} className="rivet" style={{ left: pos.left, top: pos.top }} />;
+        })}
 
         {/* Recessed Internal Well */}
         <div className="recessed-well">
+          {/* Flash Overlay inside well to isolate color */}
           <div className={`flash-overlay ${isRevealing ? 'trigger-flash' : ''}`} />
+          {/* LED Ring Array */}
           <div className="led-ring-container">
-            <LEDRing isSpinning={isSpinning} displayedScore={displayedScore} />
+            {ledElements}
           </div>
 
-          {/* Plasma Vortex Core */}
+          {/* Plasma Vortex Core (with Dynamic Heartbeat before & after reveal) */}
           <div className={`plasma-vortex-wrapper ${!isSpinning ? 'heartbeat-active' : ''} ${isRevealing ? 'reveal-bloom final-lock-bloom' : ''}`}>
             <div className="plasma-layer-1" />
             <div className="plasma-layer-2" />
@@ -1263,15 +1334,17 @@ export default function DailyLuckyMeter() {
               {displayedScore !== null ? (
                 <>
                   <div className="score-display locked">
-                    <span>{displayedScore}</span>
+                    {displayedScore}
                     <span className="score-percent">%</span>
                   </div>
                   <div className="tier-label">{currentTier.name}</div>
                 </>
-              ) : isSpinning ? (
+              ) : scrambleValue !== null ? (
                 <>
-                  <div className="score-display" ref={scoreRef} style={{ filter: 'blur(1px)' }}>
-                    0
+                  {/* Written to directly via scoreRef.current.innerText during the spin —
+                      not driven by React state, so this node never re-renders mid-loop. */}
+                  <div ref={scoreRef} className="score-display" style={{ filter: 'blur(1px)' }}>
+                    0%
                   </div>
                   <div className="tier-label" style={{ opacity: 0.5 }}>CALCULATING...</div>
                 </>
@@ -1305,10 +1378,10 @@ export default function DailyLuckyMeter() {
 
       {/* Main Activation Control */}
       <button className="activate-btn" onClick={handleActivate} disabled={isLocked || isSpinning}>
-        {isSpinning ? 'RESONATING...' : isLocked ? <>LOCKED (<LockedCountdown loadState={loadState} />)</> : 'ENGAGE METER'}
+        {isSpinning ? 'RESONATING...' : isLocked ? <>LOCKED (<LockedCountdown loadState={() => loadState()} />)</> : 'ENGAGE METER'}
       </button>
 
-      {/* Fortune Reading & Sharing */}
+      {/* Fortune Reading & Sharing (Post-Reveal) */}
       {fortune && !isSpinning && (
         <>
           <div className="quote-card">
