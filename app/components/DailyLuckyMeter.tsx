@@ -725,21 +725,21 @@ const STATIC_STYLES = `
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: radial-gradient(circle, #ffffff 0%, var(--sec-color) 40%, transparent 80%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.4) 40%, transparent 80%);
     pointer-events: none;
     z-index: 40;
     opacity: 0;
-    mix-blend-mode: screen;
+    /* mix-blend-mode removed to prevent mobile GPU black-screen crashes */
   }
 
   .flash-overlay.trigger-flash {
-    animation: novaFlash 1.2s cubic-bezier(0.1, 1, 0.3, 1) forwards;
+    animation: novaFlash 0.8s ease-out forwards;
   }
 
   @keyframes novaFlash {
     0% { opacity: 0; transform: scale(0.5); }
-    10% { opacity: 1; transform: scale(1.2); }
-    100% { opacity: 0; transform: scale(2); }
+    15% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1.8); }
   }
 `;
 
@@ -1320,7 +1320,7 @@ export default function DailyLuckyMeter() {
           </div>
 
           {/* Plasma Vortex Core (with Dynamic Heartbeat before & after reveal) */}
-          <div className={`plasma-vortex-wrapper ${!isSpinning ? 'heartbeat-active' : ''} ${isRevealing ? 'reveal-bloom final-lock-bloom' : ''}`}>
+          <div className={`plasma-vortex-wrapper ${!isSpinning && !isRevealing ? 'heartbeat-active' : ''} ${isRevealing ? 'reveal-bloom final-lock-bloom' : ''}`}>
             <div className="plasma-layer-1" />
             <div className="plasma-layer-2" />
             <div className="plasma-breathing-core" />
