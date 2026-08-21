@@ -1080,7 +1080,7 @@ export default function DailyLuckyMeter() {
           currentScrambleVal = nextVal;
 
           if (scoreRef.current) {
-            scoreRef.current.innerText = nextVal.toString();
+            scoreRef.current.innerText = nextVal.toString() + '%';
           }
 
           if (machineFrameRef.current) {
