@@ -426,7 +426,7 @@ const STATIC_STYLES = `
 
   .led-indicator.chase-mode {
     animation: chaserRing var(--chaser-dur, 7s) infinite linear;
-    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / var(--led-count, 32) * -1));
+    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / var(--led-count, 32)));
   }
   @keyframes chaserRing {
     0%, 15%, 100% {
@@ -1265,6 +1265,17 @@ export default function DailyLuckyMeter() {
       />
       <style>{STATIC_STYLES}</style>
 
+      {/* Return to Home Top Navigation */}
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
+        <Link href="/" style={{ color: '#94a3b8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px', fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.85rem' }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          BACK TO HOME
+        </Link>
+      </div>
+
       {/* Ritual Header Branding */}
       <div className="ritual-header">
         <div
@@ -1312,7 +1323,7 @@ export default function DailyLuckyMeter() {
           </div>
 
           {/* Plasma Vortex Core (with Dynamic Heartbeat before & after reveal) */}
-          <div className={`plasma-vortex-wrapper ${!isSpinning && !isRevealing ? 'heartbeat-active' : ''} ${isRevealing ? 'reveal-bloom final-lock-bloom' : ''}`}>
+          <div className={`plasma-vortex-wrapper ${!isSpinning && !isRevealing ? 'heartbeat-active' : ''}`}>
             <div className="plasma-layer-1" />
             <div className="plasma-layer-2" />
             <div className="plasma-breathing-core" />
@@ -1399,12 +1410,6 @@ export default function DailyLuckyMeter() {
         </>
       )}
 
-      <Link
-        href="/"
-        className="mt-8 text-sm text-gray-400 hover:text-white transition-colors underline underline-offset-4 tracking-wider uppercase font-sans z-10"
-      >
-        Return to Home
-      </Link>
     </div>
   );
 }
