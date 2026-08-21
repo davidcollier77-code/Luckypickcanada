@@ -426,7 +426,7 @@ const STATIC_STYLES = `
 
   .led-indicator.chase-mode {
     animation: chaserRing var(--chaser-dur, 7s) infinite linear;
-    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / -32));
+    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / var(--led-count, 32) * -1));
   }
   @keyframes chaserRing {
     0%, 15%, 100% {
