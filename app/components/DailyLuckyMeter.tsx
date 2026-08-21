@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 
 // --- CANVAS PARTICLE SYSTEM ---
 interface Particle {
@@ -424,26 +425,19 @@ const STATIC_STYLES = `
   }
 
   .led-indicator.chase-mode {
-    /* Continuous chaser animation */
     animation: chaserRing var(--chaser-dur, 7s) infinite linear;
-    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / var(--led-count, 32) - 1));
+    animation-delay: calc(var(--chaser-dur, 7s) * (var(--led-index) / var(--led-count, 32) * -1));
   }
-
   @keyframes chaserRing {
-    0% {
-      opacity: 1;
-      background: #ffffff;
-      box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color);
-    }
-    5% {
-      opacity: 0.8;
-      background: var(--sec-color);
-      box-shadow: 0 0 10px var(--sec-color);
-    }
-    15%, 100% {
+    0%, 15%, 100% {
       opacity: 0.2;
       background: #020617;
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+    }
+    2% {
+      opacity: 1;
+      background: #ffffff;
+      box-shadow: 0 0 8px #ffffff;
     }
   }
 
@@ -729,7 +723,6 @@ const STATIC_STYLES = `
     pointer-events: none;
     z-index: 40;
     opacity: 0;
-    /* mix-blend-mode removed to prevent mobile GPU black-screen crashes */
   }
 
   .flash-overlay.trigger-flash {
@@ -1230,7 +1223,6 @@ export default function DailyLuckyMeter() {
     return Array.from({ length: LED_COUNT }).map((_, i) => {
       const pos = ringPosition(i, LED_COUNT, 42);
       const isLit = displayedScore !== null && i / LED_COUNT <= displayedScore / 100;
-
       return (
         <div
           key={`led-${i}`}
@@ -1406,6 +1398,13 @@ export default function DailyLuckyMeter() {
           </button>
         </>
       )}
+
+      <Link
+        href="/"
+        className="mt-8 text-sm text-gray-400 hover:text-white transition-colors underline underline-offset-4 tracking-wider uppercase font-sans z-10"
+      >
+        Return to Home
+      </Link>
     </div>
   );
 }
