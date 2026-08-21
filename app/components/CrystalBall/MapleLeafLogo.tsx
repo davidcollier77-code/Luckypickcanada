@@ -69,7 +69,7 @@ export default function MapleLeafLogo({ className }: { className?: string }) {
           <path transform="rotate(135)" d="M0,0 C -3,-8 -14,-8 -15,-18 C -15.5,-25 -8,-28 0,-20 C 8,-28 15.5,-25 15,-18 C 14,-8 3,-8 0,0 Z" fill={`url(#${cloverFillId})`} stroke="#0f3d22" strokeWidth="1.1" strokeLinejoin="round" />
           <path transform="rotate(225)" d="M0,0 C -3,-8 -14,-8 -15,-18 C -15.5,-25 -8,-28 0,-20 C 8,-28 15.5,-25 15,-18 C 14,-8 3,-8 0,0 Z" fill={`url(#${cloverFillId})`} stroke="#0f3d22" strokeWidth="1.1" strokeLinejoin="round" />
           <path transform="rotate(315)" d="M0,0 C -3,-8 -14,-8 -15,-18 C -15.5,-25 -8,-28 0,-20 C 8,-28 15.5,-25 15,-18 C 14,-8 3,-8 0,0 Z" fill={`url(#${cloverFillId})`} stroke="#0f3d22" strokeWidth="1.1" strokeLinejoin="round" />
-          
+
           <line transform="rotate(45)" x1="0" y1="-3" x2="0" y2="-19" stroke="#0f3d22" strokeWidth="0.7" opacity="0.5" />
           <line transform="rotate(135)" x1="0" y1="-3" x2="0" y2="-19" stroke="#0f3d22" strokeWidth="0.7" opacity="0.5" />
           <line transform="rotate(225)" x1="0" y1="-3" x2="0" y2="-19" stroke="#0f3d22" strokeWidth="0.7" opacity="0.5" />
