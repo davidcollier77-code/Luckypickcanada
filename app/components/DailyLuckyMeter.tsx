@@ -422,7 +422,7 @@ const STATIC_STYLES = `
     background: #020617;
     opacity: 0.2;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.1);
-    transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
+    /* Transition removed from here to prevent keyframe conflict */
   }
 
   .led-indicator.idle-orbital, .led-indicator.spinning-chase {
@@ -436,12 +436,12 @@ const STATIC_STYLES = `
       background: #ffffff;
       box-shadow: 0 0 10px #ffffff, 0 0 20px var(--sec-color), 0 0 35px var(--pri-color), 0 0 50px var(--acc-glow);
     }
-    15% {
+    5% {
       opacity: 0.8;
       background: var(--sec-color);
       box-shadow: 0 0 10px var(--sec-color), 0 0 20px var(--pri-color);
     }
-    40%, 100% {
+    15%, 100% {
       opacity: 0.2;
       background: #020617;
       box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.1);
@@ -459,6 +459,7 @@ const STATIC_STYLES = `
       0 0 62px var(--acc-glow),
       inset 0 0 4px var(--sec-color);
     animation: none;
+    transition: background 0.3s, box-shadow 0.3s, opacity 0.3s;
   }
 
   /* ===== PLASMA CORE ===== */
