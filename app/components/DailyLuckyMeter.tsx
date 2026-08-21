@@ -635,27 +635,36 @@ const STATIC_STYLES = `
     padding: 14px 34px;
     font-family: 'Space Grotesk', system-ui, sans-serif;
     font-size: 0.85rem;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #ffffff;
-    background: linear-gradient(180deg, #3a465c 0%, #0f172a 100%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #030712; /* Deep vault dark for text contrast */
+    background: linear-gradient(180deg, #fff6d0 0%, #f3d572 40%, #cba53c 80%, #8c7335 100%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
     border-radius: 9999px;
     cursor: pointer;
     position: relative;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -8px 14px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 2px 2px rgba(255, 255, 255, 0.6), inset 0 -4px 8px rgba(74, 52, 16, 0.4);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .activate-btn:not(:disabled):hover {
     transform: translateY(-2px);
-    border-color: var(--sec-color);
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6), 0 0 18px var(--acc-glow), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    border-color: #ffffff;
+    background: linear-gradient(180deg, #ffffff 0%, #fff6d0 40%, #f3d572 80%, #cba53c 100%);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6), 0 0 15px rgba(243, 213, 114, 0.4), inset 0 2px 2px rgba(255, 255, 255, 0.8);
   }
 
   .activate-btn:not(:disabled):active { transform: translateY(1px); }
-  .activate-btn:disabled { opacity: 0.75; cursor: not-allowed; }
+
+  .activate-btn:disabled {
+    background: linear-gradient(180deg, #3a280b 0%, #1a1204 100%);
+    color: #8c7335;
+    border: 1px solid #4a3410;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    opacity: 0.85;
+    cursor: not-allowed;
+  }
 
   .quote-card {
     position: relative;
