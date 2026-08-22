@@ -50,12 +50,16 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #fef3c7 0%, #d97706 40%, #78350f 80%, #451a03 100%);
+  background:
+    conic-gradient(from 45deg, #1f1a14 0%, #57462c 25%, #1f1a14 50%, #57462c 75%, #1f1a14 100%),
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.8) 100%);
+  background-blend-mode: overlay;
   padding: 12px;
   box-shadow:
-    0 15px 35px rgba(0, 0, 0, 0.8),
-    inset 0 0 10px rgba(255, 255, 255, 0.3),
-    inset 0 -5px 15px rgba(0, 0, 0, 0.8);
+    0 20px 40px rgba(0, 0, 0, 0.9),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -5px 15px rgba(0, 0, 0, 0.9),
+    inset 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
 .meterBezelInner {
@@ -79,8 +83,12 @@
   margin-left: -4px;
   margin-top: -4px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #fef3c7, #b45309);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.5);
+  background: radial-gradient(circle at 30% 30%, #fff7d6 0%, #ffd700 30%, #b8860b 70%, #6b4c00 100%);
+  box-shadow:
+    1px 2px 4px rgba(0, 0, 0, 0.9),
+    -1px -1px 2px rgba(255, 215, 0, 0.3),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.8),
+    inset -1px -1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .meterRingSvg {
@@ -91,6 +99,7 @@
   height: 100%;
   transform: rotate(-90deg);
   pointer-events: none;
+  filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.8));
 }
 
 .meterRingCircle {
@@ -106,11 +115,12 @@
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, #1e293b, #020617);
+  background: radial-gradient(circle at center, #0f172a, #020617 80%);
   box-shadow:
     0 0 20px rgba(0,0,0,0.9),
-    inset 0 0 0 2px rgba(255,255,255,0.05),
-    inset 0 10px 20px rgba(0,0,0,0.8);
+    inset 0 0 0 2px rgba(255,255,255,0.03),
+    inset 0 20px 40px rgba(0,0,0,0.95),
+    inset 0 -5px 15px rgba(0,0,0,0.6);
   overflow: hidden;
   display: flex;
   align-items: center;
