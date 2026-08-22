@@ -275,31 +275,31 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     }
   };
 
-  const restoreElements = (buttons: NodeListOf<Element>, countdowns: NodeListOf<Element>) => {
-    buttons.forEach(b => (b as HTMLElement).style.display = '');
-    countdowns.forEach(c => (c as HTMLElement).style.display = '');
-  };
-
   const handleShare = async () => {
     if (!score || !tier) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
+
+    const restoreElements = (buttons: NodeListOf<HTMLButtonElement>, countdowns: NodeListOf<Element>) => {
+      buttons.forEach(b => b.style.display = '');
+      countdowns.forEach(c => (c as HTMLElement).style.display = '');
+    };
 
     try {
       if (navigator.share && meterShellRef.current) {
         // Temporarily hide share button and countdown during capture
         const buttons = meterShellRef.current.querySelectorAll('button');
         const countdowns = meterShellRef.current.querySelectorAll('.' + styles.meterCountdownRow);
-        buttons.forEach(b => b.style.display = 'none');
-        countdowns.forEach(c => (c as HTMLElement).style.display = 'none');
 
         try {
+          buttons.forEach(b => b.style.display = 'none');
+          countdowns.forEach(c => (c as HTMLElement).style.display = 'none');
+
           const canvas = await html2canvas(meterShellRef.current, {
             backgroundColor: '#020617', // Match the card background roughly or transparent
             scale: 2,
             useCORS: true,
           });
 
-          // Restore visibility
           restoreElements(buttons, countdowns);
 
           canvas.toBlob(async (blob) => {
@@ -324,12 +324,11 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
               } else {
                 fallbackCopy(text);
               }
-            } catch (blobErr) {
+            } catch (err) {
               fallbackCopy(text);
             }
           }, 'image/png');
-        } catch (canvasErr) {
-          // Restore visibility if html2canvas fails
+        } catch (e) {
           restoreElements(buttons, countdowns);
           fallbackCopy(text);
         }
