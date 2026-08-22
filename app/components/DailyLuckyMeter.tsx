@@ -309,7 +309,7 @@ export default function DailyLuckyMeter() {
 
     animFrameRef.current = requestAnimationFrame(animate);
   };
-
+    const text = `I resonated at ${finalScoreRef.current ?? 0}% (${currentTier.label}) today on Lucky Pick Canada!`;
   const handleShare = async () => {
     const text = `I resonated at ${finalScoreRef.current}% (${currentTier.label}) today on Lucky Pick Canada!`;
     if (navigator.share) {
