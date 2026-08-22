@@ -284,8 +284,8 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     if (!score || !tier) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
 
-    const buttons = meterShellRef.current ? meterShellRef.current.querySelectorAll('button') : [];
-    const countdowns = meterShellRef.current ? meterShellRef.current.querySelectorAll('.' + styles.meterCountdownRow) : [];
+    const buttons = meterShellRef.current ? Array.from(meterShellRef.current.querySelectorAll('button')) : [];
+    const countdowns = meterShellRef.current ? Array.from(meterShellRef.current.querySelectorAll('.' + styles.meterCountdownRow)) : [];
     let styleTag = null;
 
     try {
@@ -296,7 +296,7 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
 
         // Freeze animations to ensure a sharp still snapshot
         styleTag = document.createElement('style');
-        styleTag.innerHTML = '* { animation: none !important; transition: none !important; }';
+        styleTag.innerHTML = '[data-meter-shell] * { animation: none !important; transition: none !important; }';
         document.head.appendChild(styleTag);
 
         const canvas = await html2canvas(meterShellRef.current, {
@@ -334,7 +334,7 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
       await fallbackCopy(text);
     } finally {
       if (meterShellRef.current) {
-        restoreElements(buttons as NodeListOf<Element>, countdowns as NodeListOf<Element>);
+        restoreElements(buttons, countdowns);
       }
       if (styleTag && styleTag.parentNode) {
         styleTag.parentNode.removeChild(styleTag);
@@ -346,7 +346,7 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
 
   return (
     <div className={styles.meterContainer}>
-      <div className={styles.meterShell} ref={meterShellRef}>
+      <div className={styles.meterShell} ref={meterShellRef} data-meter-shell>
         <div className={styles.meterHeader}>
           <span className={styles.meterTitle}>Daily Lucky Meter</span>
 
