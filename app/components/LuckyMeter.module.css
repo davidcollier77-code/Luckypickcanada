@@ -114,15 +114,15 @@
   padding: 13px;
   position: relative;
   background:
-    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.5), transparent 42%),
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.4), transparent 42%),
     conic-gradient(
       from 210deg,
-      #cfd6dc 0deg, #7d848c 16deg, #eef1f3 30deg, #5a6068 46deg,
-      #b7bec5 62deg, #383d43 78deg, #d8dde1 94deg, #6b727a 110deg,
-      #eef1f3 128deg, #454b52 146deg, #c3c9cf 164deg, #22262b 180deg,
-      #a9b0b7 198deg, #eef1f3 216deg, #5a6068 234deg, #cfd6dc 250deg,
-      #383d43 266deg, #d8dde1 282deg, #6b727a 298deg, #eef1f3 316deg,
-      #454b52 332deg, #b7bec5 346deg, #22262b 360deg
+      #d4af37 0deg, #aa8623 16deg, #ffe066 30deg, #8a6c16 46deg,
+      #c5a017 62deg, #594406 78deg, #ebd197 94deg, #997818 110deg,
+      #ffe066 128deg, #7a5e12 146deg, #d3ad35 164deg, #443303 180deg,
+      #bc9514 198deg, #ffe066 216deg, #8a6c16 234deg, #d4af37 250deg,
+      #594406 266deg, #ebd197 282deg, #997818 298deg, #ffe066 316deg,
+      #7a5e12 332deg, #c5a017 346deg, #443303 360deg
     );
   box-shadow:
     0 18px 38px rgba(0, 0, 0, 0.85),
@@ -169,10 +169,10 @@
   margin-left: -4px;
   margin-top: -4px;
   border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #f2feff 0%, var(--conduit) 32%, var(--conduit-dim) 74%, #020a10 100%);
+  background: radial-gradient(circle at 34% 30%, #fff7d6 0%, #d4af37 32%, #8a6c16 74%, #1a1400 100%);
   box-shadow:
-    0 0 5px 1px var(--conduit-glow),
-    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 0 5px 1px rgba(212, 175, 55, 0.55),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
     0 -1px 1px rgba(0, 0, 0, 0.9) inset,
     0 2px 3px rgba(0, 0, 0, 0.75);
 }
@@ -499,8 +499,8 @@
 .meterShareButton {
   position: relative;
   background: transparent;
-  color: var(--conduit);
-  border: 1px solid rgba(45, 212, 238, 0.55);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.55);
   padding: 10px 24px;
   font-size: 0.8rem;
   font-weight: 700;
@@ -508,7 +508,7 @@
   text-transform: uppercase;
   border-radius: 50px;
   cursor: pointer;
-  box-shadow: 0 0 12px rgba(45, 212, 238, 0.18);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.18);
   transition: transform 0.12s ease;
 }
 
@@ -544,7 +544,7 @@
 /* accessible focus states — additive, doesn't touch locked logic */
 .meterEngageButton:focus-visible,
 .meterShareButton:focus-visible {
-  outline: 2px solid var(--conduit);
+  outline: 2px solid #fbbf24;
   outline-offset: 3px;
 }
 
@@ -603,8 +603,8 @@
   }
 
   .meterShareButton:hover {
-    box-shadow: 0 0 18px rgba(45, 212, 238, 0.35);
-    border-color: rgba(45, 212, 238, 0.85);
+    box-shadow: 0 0 18px rgba(251, 191, 36, 0.35);
+    border-color: rgba(251, 191, 36, 0.85);
   }
 
   .meterAttunementBody {
@@ -630,4 +630,20 @@
   .meterResonatingText {
     animation: none;
   }
+}
+
+/* ============================== INFO STYLES ============================== */
+.meterRitualInfo {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: #a0aec0;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 90%;
+}
+.meterRitualInfo p {
+  margin-bottom: 6px;
+}
+.meterRitualInfo p:last-child {
+  margin-bottom: 0;
 }
