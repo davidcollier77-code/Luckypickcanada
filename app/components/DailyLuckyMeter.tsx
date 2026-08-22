@@ -280,64 +280,65 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     countdowns.forEach(c => (c as HTMLElement).style.display = '');
   };
 
-  const handleShare = async () => {
+    const handleShare = async () => {
     if (!score || !tier) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
 
+    const buttons = meterShellRef.current ? meterShellRef.current.querySelectorAll('button') : [];
+    const countdowns = meterShellRef.current ? meterShellRef.current.querySelectorAll('.' + styles.meterCountdownRow) : [];
+    let styleTag = null;
+
     try {
-      if (navigator.share && meterShellRef.current) {
+      if (meterShellRef.current) {
         // Temporarily hide share button and countdown during capture
-        const buttons = meterShellRef.current.querySelectorAll('button');
-        const countdowns = meterShellRef.current.querySelectorAll('.' + styles.meterCountdownRow);
-        buttons.forEach(b => b.style.display = 'none');
+        buttons.forEach(b => (b as HTMLElement).style.display = 'none');
         countdowns.forEach(c => (c as HTMLElement).style.display = 'none');
 
-        try {
-          const canvas = await html2canvas(meterShellRef.current, {
-            backgroundColor: '#020617', // Match the card background roughly or transparent
-            scale: 2,
-            useCORS: true,
-          });
+        // Freeze animations to ensure a sharp still snapshot
+        styleTag = document.createElement('style');
+        styleTag.innerHTML = '* { animation: none !important; transition: none !important; }';
+        document.head.appendChild(styleTag);
 
-          // Restore visibility
-          restoreElements(buttons, countdowns);
+        const canvas = await html2canvas(meterShellRef.current, {
+          backgroundColor: '#020617', // Match the card background roughly or transparent
+          scale: 2,
+          useCORS: true,
+        });
 
-          canvas.toBlob(async (blob) => {
+        const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+
+        if (blob) {
+          const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
-              if (blob) {
-                const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                  try {
-                    await navigator.share({
-                      title: 'Daily Lucky Meter',
-                      text: text,
-                      files: [file]
-                    });
-                  } catch (shareErr: any) {
-                    if (shareErr.name !== 'AbortError') {
-                      fallbackCopy(text);
-                    }
-                  }
-                } else {
-                  fallbackCopy(text);
-                }
-              } else {
-                fallbackCopy(text);
+              await navigator.share({
+                title: 'Daily Lucky Meter',
+                text: text,
+                files: [file]
+              });
+            } catch (shareErr: any) {
+              if (shareErr.name !== 'AbortError') {
+                await fallbackCopy(text);
               }
-            } catch (blobErr) {
-              fallbackCopy(text);
             }
-          }, 'image/png');
-        } catch (canvasErr) {
-          // Restore visibility if html2canvas fails
-          restoreElements(buttons, countdowns);
-          fallbackCopy(text);
+          } else {
+            await fallbackCopy(text);
+          }
+        } else {
+          await fallbackCopy(text);
         }
       } else {
-        fallbackCopy(text);
+        await fallbackCopy(text);
       }
     } catch (e) {
-      fallbackCopy(text);
+      await fallbackCopy(text);
+    } finally {
+      if (meterShellRef.current) {
+        restoreElements(buttons as NodeListOf<Element>, countdowns as NodeListOf<Element>);
+      }
+      if (styleTag && styleTag.parentNode) {
+        styleTag.parentNode.removeChild(styleTag);
+      }
     }
   };
 
