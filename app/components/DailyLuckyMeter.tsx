@@ -275,6 +275,11 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     }
   };
 
+  const restoreElements = (buttons: NodeListOf<Element>, countdowns: NodeListOf<Element>) => {
+    buttons.forEach(b => (b as HTMLElement).style.display = '');
+    countdowns.forEach(c => (c as HTMLElement).style.display = '');
+  };
+
   const handleShare = async () => {
     if (!score || !tier) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
@@ -287,38 +292,47 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
         buttons.forEach(b => b.style.display = 'none');
         countdowns.forEach(c => (c as HTMLElement).style.display = 'none');
 
-        const canvas = await html2canvas(meterShellRef.current, {
-          backgroundColor: '#020617', // Match the card background roughly or transparent
-          scale: 2,
-          useCORS: true,
-        });
+        try {
+          const canvas = await html2canvas(meterShellRef.current, {
+            backgroundColor: '#020617', // Match the card background roughly or transparent
+            scale: 2,
+            useCORS: true,
+          });
 
-        // Restore visibility
-        buttons.forEach(b => b.style.display = '');
-        countdowns.forEach(c => (c as HTMLElement).style.display = '');
+          // Restore visibility
+          restoreElements(buttons, countdowns);
 
-        canvas.toBlob(async (blob) => {
-          if (blob) {
-            const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              try {
-                await navigator.share({
-                  title: 'Daily Lucky Meter',
-                  text: text,
-                  files: [file]
-                });
-              } catch (shareErr: any) {
-                if (shareErr.name !== 'AbortError') {
+          canvas.toBlob(async (blob) => {
+            try {
+              if (blob) {
+                const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                  try {
+                    await navigator.share({
+                      title: 'Daily Lucky Meter',
+                      text: text,
+                      files: [file]
+                    });
+                  } catch (shareErr: any) {
+                    if (shareErr.name !== 'AbortError') {
+                      fallbackCopy(text);
+                    }
+                  }
+                } else {
                   fallbackCopy(text);
                 }
+              } else {
+                fallbackCopy(text);
               }
-            } else {
+            } catch (blobErr) {
               fallbackCopy(text);
             }
-          } else {
-            fallbackCopy(text);
-          }
-        }, 'image/png');
+          }, 'image/png');
+        } catch (canvasErr) {
+          // Restore visibility if html2canvas fails
+          restoreElements(buttons, countdowns);
+          fallbackCopy(text);
+        }
       } else {
         fallbackCopy(text);
       }
