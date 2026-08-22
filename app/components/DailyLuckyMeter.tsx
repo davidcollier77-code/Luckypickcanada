@@ -1,406 +1,417 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, useId } from 'react';
-import styles from '../lucky-meter/LuckyMeter.module.css';
+import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useId, useRef, useState } from "react";
+
+type TierKey = "dormant" | "kindling" | "rising" | "northern" | "peak";
 
 interface TierConfig {
+  key: TierKey;
   name: string;
-  label: string;
-  minScore: number;
-  maxScore: number;
-  primaryColor: string;
-  secondaryColor: string;
-  glowColor: string;
-  description: string;
+  min: number;
+  max: number;
+  color: string;
 }
 
 const TIERS: TierConfig[] = [
-  {
-    name: 'void',
-    label: 'Dormant Void',
-    minScore: 1,
-    maxScore: 15,
-    primaryColor: '#64748b',
-    secondaryColor: '#94a3b8',
-    glowColor: 'rgba(100, 116, 139, 0.4)',
-    description: 'The canvas is clear. Stillness precedes the spark of extraordinary momentum.',
-  },
-  {
-    name: 'spark',
-    label: 'Kindling Spark',
-    minScore: 16,
-    maxScore: 40,
-    primaryColor: '#f97316',
-    secondaryColor: '#fdba74',
-    glowColor: 'rgba(249, 115, 22, 0.45)',
-    description: 'Small embers catch the autumn wind. Take the first intentional step today.',
-  },
-  {
-    name: 'ember',
-    label: 'Rising Current',
-    minScore: 41,
-    maxScore: 70,
-    primaryColor: '#38bdf8',
-    secondaryColor: '#93c5fd',
-    glowColor: 'rgba(56, 189, 248, 0.45)',
-    description: 'Momentum is building across the horizon. Trust the timing of your journey.',
-  },
-  {
-    name: 'aurora',
-    label: 'Northern Resonance',
-    minScore: 71,
-    maxScore: 90,
-    primaryColor: '#4ade80',
-    secondaryColor: '#86efac',
-    glowColor: 'rgba(74, 222, 128, 0.5)',
-    description: 'The northern sky shifts with quiet possibilities. Clarity and fortune are within reach.',
-  },
-  {
-    name: 'solstice',
-    label: 'Peak Radiance',
-    minScore: 91,
-    maxScore: 100,
-    primaryColor: '#facc15',
-    secondaryColor: '#fef08a',
-    glowColor: 'rgba(250, 204, 21, 0.55)',
-    description: 'A day of maximum alignment. Bold actions carry extraordinary resonance.',
-  },
+  { key: "dormant", name: "DORMANT VOID", min: 1, max: 15, color: "#64748b" },
+  { key: "kindling", name: "KINDLING SPARK", min: 16, max: 40, color: "#f97316" },
+  { key: "rising", name: "RISING CURRENT", min: 41, max: 70, color: "#38bdf8" },
+  { key: "northern", name: "NORTHERN RESONANCE", min: 71, max: 90, color: "#4ade80" },
+  { key: "peak", name: "PEAK RADIANCE", min: 91, max: 100, color: "#facc15" },
 ];
 
-const CANADIAN_QUOTES = [
-  'A steady compass and a grounded spirit will navigate any wilderness toward success.',
-  'Like the Canadian Shield, your foundation is immovable—good fortune follows your next move.',
-  'Momentum is building across the horizon. Trust the timing of your journey.',
-  'The northern sky shifts with quiet possibilities. Clarity and fortune are within reach.',
-  'From Pacific tides to Atlantic shores, every small step ripples into extraordinary fortune.',
-  'Even the deepest winter yields to steady light. Keep your fire burning bright.',
-  'Stand tall like the boreal pine; winds of change carry seeds of luck.',
+const QUOTES: string[] = [
+  "Your resonance echoes across the northern lights tonight.",
+  "Today, the maple winds carry fortune in your favour.",
+  "The St. Lawrence whispers: stay bold, stay curious.",
+  "From coast to coast, your luck rides the aurora’s wave.",
+  "The Rockies stand tall behind your choices today.",
+  "A quiet cabin, a warm fire, and fortune at your door.",
+  "Your path glows like fresh snow under moonlight.",
 ];
 
-function getLocalDateString(): string {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+const STORAGE_KEY = "dailyLuckyMeter";
+
+type MeterState = "idle" | "resonating" | "locked";
+
+interface StoredResult {
+  date: string;
+  score: number;
+  quote: string;
 }
 
-function getMsUntilMidnight(): number {
+const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+
+const getTodayKey = () => {
   const now = new Date();
-  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-  return Math.max(0, midnight.getTime() - now.getTime());
-}
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
-function formatCountdown(ms: number): string {
-  const totalSec = Math.floor(ms / 1000);
-  const hours = String(Math.floor(totalSec / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-  const seconds = String(totalSec % 60).padStart(2, '0');
-  return `${hours}h ${minutes}m ${seconds}s`;
-}
-
-const CountdownTimer = React.memo(() => {
-  const [timeLeft, setTimeLeft] = useState(getMsUntilMidnight());
-  const isMountedRef = useRef(true);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    const timer = setInterval(() => {
-      if (isMountedRef.current) {
-        setTimeLeft(getMsUntilMidnight());
-      }
-    }, 1000);
-    return () => {
-      isMountedRef.current = false;
-      clearInterval(timer);
-    };
-  }, []);
-
+const getTierForScore = (score: number): TierConfig => {
   return (
-    <div className={styles.lmCountdownText}>
-      Next Resonance in: <strong>{formatCountdown(timeLeft)}</strong>
-    </div>
+    TIERS.find((tier) => score >= tier.min && score <= tier.max) || TIERS[0]
   );
-});
+};
 
-CountdownTimer.displayName = 'CountdownTimer';
+const getNextMidnight = () => {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(24, 0, 0, 0);
+  return next;
+};
 
-const StaticStuds = React.memo(() => {
-  const uniqueId = useId();
-  return (
-    <div className={styles.lmStudsContainer}>
-      {Array.from({ length: 12 }).map((_, i) => (
-        <div
-          key={`stud-${uniqueId}-${i}`}
-          className={styles.lmStud}
-          style={{ transform: `rotate(${i * 30}deg) translateY(-118px)` }}
-        />
-      ))}
-    </div>
-  );
-});
+const formatCountdown = (msRemaining: number) => {
+  if (msRemaining <= 0) return "00h 00m 00s";
+  const totalSeconds = Math.floor(msRemaining / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(
+    2,
+    "0"
+  )}m ${String(seconds).padStart(2, "0")}s`;
+};
 
-StaticStuds.displayName = 'StaticStuds';
+const loadStoredResult = (): StoredResult | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredResult;
+    if (!parsed || typeof parsed.score !== "number") return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
 
-export default function DailyLuckyMeter() {
-  const [isLocked, setIsLocked] = useState(false);
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [currentTier, setCurrentTier] = useState<TierConfig>(TIERS[0]);
-  const [fortune, setFortune] = useState<string>(CANADIAN_QUOTES[0]);
-  const [copied, setCopied] = useState(false);
+const saveStoredResult = (result: StoredResult) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+  } catch {
+    // ignore
+  }
+};
 
-  // Ref for the final score, bypassing state updates during animation
-  const finalScoreRef = useRef<number | null>(null);
-  const scoreDisplayRef = useRef<HTMLDivElement | null>(null);
+const clearStoredResult = () => {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+};
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const animFrameRef = useRef<number | null>(null);
-  const isMountedRef = useRef(true);
+const getRandomScore = () => {
+  return Math.floor(Math.random() * (100 - 5 + 1)) + 5;
+};
 
-  useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-      if (animFrameRef.current) {
-        cancelAnimationFrame(animFrameRef.current);
-        animFrameRef.current = null;
-      }
-    };
-  }, []);
+const getRandomQuote = () => {
+  const index = Math.floor(Math.random() * QUOTES.length);
+  return QUOTES[index];
+};
 
-  const checkLockState = useCallback(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      const storedDate = localStorage.getItem('lucky_meter_sync_date');
-      const storedScore = localStorage.getItem('lucky_meter_sync_score');
-      const storedQuote = localStorage.getItem('lucky_meter_sync_quote');
-      const today = getLocalDateString();
+const DailyLuckyMeter: React.FC = () => {
+  const ledGlowId = useId();
 
-      if (storedDate === today && storedScore !== null) {
-        const parsedScore = parseInt(storedScore, 10) || 10;
-        finalScoreRef.current = parsedScore;
-        const tier = TIERS.find((t) => parsedScore >= t.minScore && parsedScore <= t.maxScore) || TIERS[0];
-        setCurrentTier(tier);
-        if (storedQuote) setFortune(storedQuote);
-        setIsLocked(true);
-        if (scoreDisplayRef.current) {
-           scoreDisplayRef.current.innerText = `${parsedScore}%`;
-        }
-        return true;
-      }
-    } catch {
-      // Storage unavailable
+  const [meterState, setMeterState] = useState<MeterState>("idle");
+  const [score, setScore] = useState<number | null>(null);
+  const [tier, setTier] = useState<TierConfig | null>(null);
+  const [quote, setQuote] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState<string>("00h 00m 00s");
+
+  const svgCircleRef = useRef<SVGCircleElement | null>(null);
+  const percentageRef = useRef<HTMLDivElement | null>(null);
+  const vortexRef = useRef<HTMLDivElement | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const countdownIntervalRef = useRef<number | null>(null);
+
+  const todayKey = getTodayKey();
+
+  const updateCountdown = () => {
+    const nextMidnight = getNextMidnight();
+  const updateCountdown = useCallback(() => {
+    const diff = nextMidnight.getTime() - now.getTime();
+    setCountdown(formatCountdown(diff));
+    if (diff <= 0) {
+      clearStoredResult();
+      setMeterState("idle");
+      setScore(null);
+      setTier(null);
+      setQuote(null);
     }
-    return false;
-  }, []);
+  };
 
-  useEffect(() => {
-    checkLockState();
-  }, [checkLockState]);
-
-  const handleActivate = () => {
-    if (isLocked || isSpinning) return;
-    setIsSpinning(true);
-
-    let newScore = Math.floor(Math.random() * 95) + 5;
-    let lastQuote = '';
-
-    if (typeof window !== 'undefined') {
-      try {
-        const storedScore = localStorage.getItem('lucky_meter_sync_score');
-        lastQuote = localStorage.getItem('lucky_meter_sync_quote') || '';
-        if (storedScore) {
-          const lastScore = parseInt(storedScore, 10);
-          let attempts = 0;
-          while (newScore === lastScore && attempts < 10) {
-            newScore = Math.floor(Math.random() * 95) + 5;
-            attempts++;
-          }
-          if (newScore === lastScore) {
-            newScore = ((lastScore + 37) % 95) + 5;
-          }
-        }
-      } catch {
-        // Storage unavailable
-      }
+  }, [todayKey]);
+    const stored = loadStoredResult();
+    if (stored && stored.date === todayKey) {
+      setMeterState("locked");
+      setScore(stored.score);
+      const t = getTierForScore(stored.score);
+      setTier(t);
+      setQuote(stored.quote);
+    } else {
+      setMeterState("idle");
     }
 
-    let availableQuotes = CANADIAN_QUOTES.filter((q) => q !== lastQuote);
-    if (availableQuotes.length === 0) availableQuotes = CANADIAN_QUOTES;
-    const selectedQuote = availableQuotes[Math.floor(Math.random() * availableQuotes.length)];
-    setFortune(selectedQuote);
+    updateCountdown();
+    countdownIntervalRef.current = window.setInterval(updateCountdown, 1000);
 
-    const calculatedTier = TIERS.find((t) => newScore >= t.minScore && newScore <= t.maxScore) || TIERS[0];
-    setCurrentTier(calculatedTier);
+    return () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (countdownIntervalRef.current !== null) {
+        clearInterval(countdownIntervalRef.current);
+      }
+    };
+  }, [todayKey, updateCountdown]);
+
+  useEffect(() => {
+    if (!vortexRef.current) return;
+    vortexRef.current.dataset.state = meterState;
+  }, [meterState]);
+
+  useEffect(() => {
+    if (!svgCircleRef.current || !tier) return;
+    svgCircleRef.current.style.stroke = tier.color;
+  }, [tier]);
+
+  const startResonance = () => {
+    if (meterState !== "idle") return;
+
+    const previous = loadStoredResult();
+    let newScore = getRandomScore();
+    let newQuote = getRandomQuote();
+
+    if (previous) {
+      while (newScore === previous.score || newQuote === previous.quote) {
+      let attempts = 0;
+      while ((newScore === previous.score || newQuote === previous.quote) && attempts < 100) {
+        newQuote = getRandomQuote();
+      }
+        attempts++;
+    }
+
+    const targetTier = getTierForScore(newScore);
+    setTier(targetTier);
+    setMeterState("resonating");
 
     const startTime = performance.now();
-    const duration = 2200;
+    const duration = 2400;
 
-    // Canvas animation setup
-    const canvas = canvasRef.current;
-    let particles: {x: number, y: number, vx: number, vy: number, alpha: number, size: number}[] = [];
-    if (canvas) {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-      const particleCount = 12;
-      particles = Array.from({ length: particleCount }, () => ({
-        x: canvas.width / 2,
-        y: canvas.height / 2,
-        vx: (Math.random() - 0.5) * 4,
-        vy: (Math.random() - 0.5) * 4,
-        alpha: 1,
-        size: Math.random() * 2 + 1.5,
-      }));
+    const circle = svgCircleRef.current;
+    const percentageEl = percentageRef.current;
+
+    let circumference = 0;
+    if (circle) {
+      const radius = circle.r.baseVal.value;
+      circumference = 2 * Math.PI * radius;
+      circle.style.strokeDasharray = `${circumference}`;
     }
 
-    let isAnimationActive = true;
-
     const animate = (now: number) => {
-      if (!isMountedRef.current || !isAnimationActive) return;
-
       const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const t = Math.min(elapsed / duration, 1);
+      const eased = easeOutCubic(t);
+      const currentScore = Math.round(newScore * eased);
 
-      const currentVal = Math.round(newScore * easeOut);
-      if (scoreDisplayRef.current) {
-         scoreDisplayRef.current.innerText = `${currentVal}%`;
+      if (percentageEl) {
+        percentageEl.textContent = `${currentScore}%`;
       }
 
-      // Draw canvas particles
-      if (canvas && particles.length > 0) {
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-           ctx.clearRect(0, 0, canvas.width, canvas.height);
-           particles.forEach((p) => {
-             p.x += p.vx;
-             p.y += p.vy;
-             p.alpha -= 0.012;
-             if (p.alpha > 0) {
-               ctx.fillStyle = `rgba(251, 191, 36, ${Math.max(0, p.alpha)})`;
-               ctx.fillRect(p.x - p.size, p.y - p.size, p.size * 2, p.size * 2);
-             }
-           });
-        }
+      if (circle && circumference > 0) {
+        const offset = circumference - (circumference * currentScore) / 100;
+        circle.style.strokeDashoffset = `${offset}`;
       }
 
-      if (progress < 1) {
-        animFrameRef.current = requestAnimationFrame(animate);
+      if (t < 1) {
+        animationFrameRef.current = requestAnimationFrame(animate);
       } else {
-        isAnimationActive = false;
-        finalScoreRef.current = newScore;
-        if (scoreDisplayRef.current) {
-          scoreDisplayRef.current.innerText = `${newScore}%`;
+        setScore(newScore);
+        setQuote(newQuote);
+        setMeterState("locked");
+        if (percentageEl) {
+          percentageEl.textContent = `${newScore}%`;
         }
-        setIsSpinning(false);
-        setIsLocked(true);
-
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.setItem('lucky_meter_sync_date', getLocalDateString());
-            localStorage.setItem('lucky_meter_sync_score', newScore.toString());
-            localStorage.setItem('lucky_meter_sync_quote', selectedQuote);
-          } catch {
-            // Storage unavailable
-          }
+        if (circle && circumference > 0) {
+          const offset = circumference - (circumference * newScore) / 100;
+          circle.style.strokeDashoffset = `${offset}`;
         }
+        saveStoredResult({
+          date: todayKey,
+          score: newScore,
+          quote: newQuote,
+        });
       }
     };
 
-    animFrameRef.current = requestAnimationFrame(animate);
+    animationFrameRef.current = requestAnimationFrame(animate);
   };
-    const text = `I resonated at ${finalScoreRef.current ?? 0}% (${currentTier.label}) today on Lucky Pick Canada!`;
+
   const handleShare = async () => {
-    const text = `I resonated at ${finalScoreRef.current}% (${currentTier.label}) today on Lucky Pick Canada!`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Daily Resonance Ritual', text, url: window.location.href });
-      } catch {
-        // Fallback or cancelled
-        try {
-          await navigator.clipboard.writeText(`${text} ${window.location.href}`);
-          if (isMountedRef.current) {
-            setCopied(true);
-            setTimeout(() => { if (isMountedRef.current) setCopied(false); }, 2000);
-          }
-        } catch {
-           // Clipboard failed
-        }
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(`${text} ${window.location.href}`);
-        if (isMountedRef.current) {
-          setCopied(true);
-          setTimeout(() => { if (isMountedRef.current) setCopied(false); }, 2000);
-        }
-      } catch {
-        // Clipboard failed
-      }
+    if (!score || !tier) return;
+    const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // ignore
     }
   };
 
+  const currentTierName = tier?.name ?? "NORTHERN RESONANCE";
+
   return (
-    <div className={styles.lmMainContainer}>
-      <div className={styles.lmDialWrapper}>
-        <div className={`${styles.lmMeterRing} ${isSpinning ? styles.lmSpinning : ''}`}>
-          <StaticStuds />
+    <div className={styles.meterContainer}>
+      <div className={styles.meterShell}>
+        <div className={styles.meterHeader}>
+          <span className={styles.meterTitle}>Daily Lucky Meter</span>
+          <span className={styles.meterSubtitle}>Canada Resonance Index</span>
+        </div>
 
-          {/* Central Glass Disk */}
-          <div
-            className={styles.lmCenterDisc}
-            style={{
-              boxShadow: isLocked
-                ? `0 0 35px ${currentTier.glowColor}, inset 0 0 25px rgba(0,0,0,0.85)`
-                : 'inset 0 0 25px rgba(0,0,0,0.85)',
-            }}
-          >
-            <canvas ref={canvasRef} className={styles.lmParticleCanvas} />
+        <div className={styles.meterDialWrapper}>
+          <div className={styles.meterBezel}>
+            <div className={styles.meterBezelInner}>
+              {Array.from({ length: 12 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className={styles.meterRivet}
+                  style={{
+                    transform: `rotate(${idx * 30}deg) translateY(-106px)`,
+                  }}
+                />
+              ))}
 
-            {!isLocked && !isSpinning && (
-              <div className={styles.lmInitialContent}>
-                <div className={styles.lmReadyIcon}>⚡</div>
-                <div className={styles.lmReadyLabel}>READY</div>
-              </div>
-            )}
+              <svg
+                className={styles.meterRingSvg}
+                viewBox="0 0 200 200"
+                aria-hidden="true"
+              >
+                <defs>
+                  <filter id="ledGlow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                  <filter id={ledGlowId}>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <circle
+                  ref={svgCircleRef}
+                  className={styles.meterRingCircle}
+                  cx="100"
+                  cy="100"
+                  r="78"
+                  filter="url(#ledGlow)"
+                  style={{ strokeDasharray: 490, strokeDashoffset: 490 }}
+                  filter={`url(#${ledGlowId})`}
+              </svg>
 
-            {(isSpinning || isLocked) && (
-              <div className={styles.lmScoreDisplay}>
-                <div className={styles.lmScoreValue} ref={scoreDisplayRef}>
-                  {finalScoreRef.current !== null ? `${finalScoreRef.current}%` : ''}
+              <div className={styles.meterCenterHub}>
+                <div
+                  ref={vortexRef}
+                  className={styles.meterVortex}
+                  data-state={meterState}
+                >
+                  <div className={styles.meterVortexLayer} />
                 </div>
-                <div className={styles.lmScoreTier} style={{ color: currentTier.primaryColor }}>
-                  {currentTier.label.toUpperCase()}
+
+                <div className={styles.meterCenterContent}>
+                  {meterState === "idle" && (
+                    <>
+                      <div className={styles.meterIconBolt}>⚡</div>
+                      <div className={styles.meterCenterLabel}>READY</div>
+                    </>
+                  )}
+
+                  {meterState === "resonating" && (
+                    <>
+                      <div className={styles.meterCenterLabelResonating}>
+                        RESONATING...
+                      </div>
+                    </>
+                  )}
+
+                  {meterState === "locked" && (
+                    <>
+                      <div
+                        ref={percentageRef}
+                        className={styles.meterCenterPercentage}
+                      >
+                        {score !== null ? `${score}%` : ""}
+                      </div>
+                      <div className={styles.meterCenterTier}>
+                        {currentTierName}
+                      </div>
+                    </>
+                  )}
+
+                  {meterState !== "locked" && meterState !== "resonating" && (
+                    <div
+                      ref={percentageRef}
+                      className={styles.meterCenterPercentageIdle}
+                    >
+                      0%
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.meterFooter}>
+          {meterState === "idle" && (
+            <button
+              type="button"
+              className={styles.meterEngageButton}
+              onClick={startResonance}
+            >
+              ENGAGE METER
+            </button>
+          )}
+
+          {meterState === "resonating" && (
+            <div className={styles.meterResonatingText}>RESONATING...</div>
+          )}
+
+          {meterState === "locked" && (
+            <>
+              <div className={styles.meterAttunementCard}>
+                <div className={styles.meterAttunementHeader}>
+                  Attunement Card
+                </div>
+                <div className={styles.meterAttunementBody}>
+                  {quote}
+                </div>
+              </div>
+              <div className={styles.meterActionsRow}>
+                <button
+                  type="button"
+                  className={styles.meterShareButton}
+                  onClick={handleShare}
+                >
+                  SHARE RESONANCE
+                </button>
+              </div>
+            </>
+          )}
+
+          <div className={styles.meterCountdownRow}>
+            <span className={styles.meterCountdownLabel}>
+              Next Resonance in:
+            </span>
+            <span className={styles.meterCountdownValue}>{countdown}</span>
           </div>
         </div>
       </div>
-
-      {/* Button & Attunement Section */}
-      <div className={styles.lmActionArea}>
-        {!isLocked && !isSpinning && (
-          <button type="button" onClick={handleActivate} className={styles.lmActivateButton}>
-            ENGAGE METER
-          </button>
-        )}
-
-        {isSpinning && (
-          <div className={styles.lmResonatingStatus}>RESONATING...</div>
-        )}
-
-        {isLocked && (
-          <div className={styles.lmResultCard}>
-            <div className={styles.lmCardHeader}>DAILY ATTUNEMENT</div>
-            <p className={styles.lmCardQuote}>"{fortune}"</p>
-            <button type="button" onClick={handleShare} className={styles.lmShareButton}>
-              {copied ? '✓ COPIED LINK' : '🔗 SHARE RESONANCE'}
-            </button>
-            <CountdownTimer />
-          </div>
-        )}
-      </div>
     </div>
   );
-}
+};
+
+export default DailyLuckyMeter;
