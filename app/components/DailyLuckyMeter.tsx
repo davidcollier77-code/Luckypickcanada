@@ -113,7 +113,11 @@ const getRandomQuote = () => {
   return QUOTES[index];
 };
 
-const DailyLuckyMeter: React.FC = () => {
+interface DailyLuckyMeterProps {
+  onStateChange?: (state: MeterState) => void;
+}
+
+const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
   const ledGlowId = useId();
 
   const [meterState, setMeterState] = useState<MeterState>("idle");
@@ -168,6 +172,13 @@ const DailyLuckyMeter: React.FC = () => {
       }
     };
   }, [todayKey]);
+
+
+  useEffect(() => {
+    if (onStateChange) {
+      onStateChange(meterState);
+    }
+  }, [meterState, onStateChange]);
 
   useEffect(() => {
     if (!vortexRef.current) return;
@@ -268,7 +279,13 @@ const DailyLuckyMeter: React.FC = () => {
       <div className={styles.meterShell}>
         <div className={styles.meterHeader}>
           <span className={styles.meterTitle}>Daily Lucky Meter</span>
+
           <span className={styles.meterSubtitle}>Canada Resonance Index</span>
+          <div className={styles.meterRitualInfo}>
+            <p>Every day, the universe hums with a unique frequency.</p>
+            <p>Engage the meter to discover your daily resonance—a moment of digital divination just for fun. Will you reach Peak Radiance?</p>
+          </div>
+
         </div>
 
         <div className={styles.meterDialWrapper}>
