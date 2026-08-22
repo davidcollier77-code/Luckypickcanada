@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
-import styles from "./LuckyMeter.module.css";
+import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 
 type TierKey = "dormant" | "kindling" | "rising" | "northern" | "peak";
 
@@ -117,6 +117,8 @@ const getRandomQuote = () => {
 };
 
 const DailyLuckyMeter: React.FC = () => {
+  const ledGlowId = useId();
+
   const [meterState, setMeterState] = useState<MeterState>("idle");
   const [score, setScore] = useState<number | null>(null);
   const [tier, setTier] = useState<TierConfig | null>(null);
@@ -133,7 +135,7 @@ const DailyLuckyMeter: React.FC = () => {
 
   const updateCountdown = () => {
     const nextMidnight = getNextMidnight();
-    const now = new Date();
+  const updateCountdown = useCallback(() => {
     const diff = nextMidnight.getTime() - now.getTime();
     setCountdown(formatCountdown(diff));
     if (diff <= 0) {
@@ -145,7 +147,7 @@ const DailyLuckyMeter: React.FC = () => {
     }
   };
 
-  useEffect(() => {
+  }, [todayKey]);
     const stored = loadStoredResult();
     if (stored && stored.date === todayKey) {
       setMeterState("locked");
@@ -168,7 +170,7 @@ const DailyLuckyMeter: React.FC = () => {
         clearInterval(countdownIntervalRef.current);
       }
     };
-  }, []);
+  }, [todayKey, updateCountdown]);
 
   useEffect(() => {
     if (!vortexRef.current) return;
@@ -189,9 +191,11 @@ const DailyLuckyMeter: React.FC = () => {
 
     if (previous) {
       while (newScore === previous.score || newQuote === previous.quote) {
-        newScore = getRandomScore();
+      let attempts = 0;
+      while ((newScore === previous.score || newQuote === previous.quote) && attempts < 100) {
         newQuote = getRandomQuote();
       }
+        attempts++;
     }
 
     const targetTier = getTierForScore(newScore);
@@ -291,7 +295,7 @@ const DailyLuckyMeter: React.FC = () => {
                 <defs>
                   <filter id="ledGlow">
                     <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                    <feMerge>
+                  <filter id={ledGlowId}>
                       <feMergeNode in="coloredBlur" />
                       <feMergeNode in="SourceGraphic" />
                     </feMerge>
@@ -305,7 +309,7 @@ const DailyLuckyMeter: React.FC = () => {
                   r="78"
                   filter="url(#ledGlow)"
                   style={{ strokeDasharray: 490, strokeDashoffset: 490 }}
-                />
+                  filter={`url(#${ledGlowId})`}
               </svg>
 
               <div className={styles.meterCenterHub}>
