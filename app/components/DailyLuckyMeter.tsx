@@ -675,6 +675,13 @@ const STATIC_STYLES = `
     animation: fadeIn 0.4s ease-out;
   }
 
+  @media (max-width: 768px) {
+    .quote-card {
+      backdrop-filter: blur(4px) saturate(100%);
+      -webkit-backdrop-filter: blur(4px) saturate(100%);
+    }
+  }
+
   .quote-card::before {
     content: '';
     position: absolute;
@@ -808,6 +815,9 @@ export default function DailyLuckyMeter() {
     let animationId: number;
     let lastTime = performance.now();
 
+    const isMobileOrReducedMotion = typeof window !== 'undefined' &&
+      (window.innerWidth < 768 || window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
     const renderParticles = (time: number) => {
       if (!isActive) return;
 
@@ -828,7 +838,8 @@ export default function DailyLuckyMeter() {
 
       // Spawn ambient/spinning particles
       if (isSpinning) {
-        if (particles.length < 200 && Math.random() < 0.6 * dt) {
+        const maxSpinning = isMobileOrReducedMotion ? 12 : 200;
+        if (particles.length < maxSpinning && Math.random() < 0.6 * dt) {
           const angle = Math.random() * Math.PI * 2;
           const speed = 2 + Math.random() * 8;
           particles.push({
@@ -843,7 +854,8 @@ export default function DailyLuckyMeter() {
           });
         }
       } else {
-        if (particles.length < 50 && Math.random() < 0.05 * dt) {
+        const maxAmbient = isMobileOrReducedMotion ? 12 : 50;
+        if (particles.length < maxAmbient && Math.random() < 0.05 * dt) {
           const angle = Math.random() * Math.PI * 2;
           particles.push({
             x: cx + Math.cos(angle) * 120,
@@ -900,7 +912,11 @@ export default function DailyLuckyMeter() {
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
 
-    for (let i = 0; i < 80; i++) {
+    const isMobileOrReducedMotion = typeof window !== 'undefined' &&
+      (window.innerWidth < 768 || window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const maxBurstParticles = isMobileOrReducedMotion ? 12 : 80;
+
+    for (let i = 0; i < maxBurstParticles; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = 5 + Math.random() * 15;
       particlesRef.current.push({
@@ -1085,6 +1101,8 @@ export default function DailyLuckyMeter() {
             setIsRevealing(false);
           }
         }, 500);
+        if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
 
         try {
           localStorage.setItem(
