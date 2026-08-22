@@ -1,21 +1,14 @@
-.lmRoot {
+.lmMainContainer {
   --bg: #020617;
-  --aurora1: #22c55e;
-  --aurora2: #38bdf8;
   --meter-base: #0f172a;
-  --meter-ring: #1e293b;
-  --meter-glow: #22c55e;
   --text-main: #e5e7eb;
   --text-muted: #9ca3af;
   --danger: #f97373;
   --accent: #38bdf8;
-  --flagship: #22c55e;
-  --premium: #38bdf8;
-  --standard: #64748b;
 
   width: 360px;
   max-width: 100%;
-  padding: 20px;
+  padding: 32px 20px 20px;
   border-radius: 24px;
   background: radial-gradient(circle at top, rgba(34, 197, 94, 0.18), rgba(15, 23, 42, 0.95));
   box-shadow:
@@ -27,181 +20,209 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text-main);
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
 }
 
-.lmAurora {
-  position: absolute;
-  inset: -40%;
-  background:
-    radial-gradient(circle at 10% 0%, rgba(34, 197, 94, 0.35), transparent 55%),
-    radial-gradient(circle at 90% 10%, rgba(56, 189, 248, 0.35), transparent 55%),
-    radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.25), transparent 60%);
-  filter: blur(40px);
-  opacity: 0.8;
-  pointer-events: none;
-  z-index: 0;
-  animation: lmAurora 18s linear infinite alternate;
-  will-change: transform;
-  transform: translateZ(0);
-}
-
-@keyframes lmAurora {
-  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.7; }
-  50% { transform: translate3d(-10px, 8px, 0) scale(1.05); opacity: 0.9; }
-  100% { transform: translate3d(10px, -6px, 0) scale(1.02); opacity: 0.8; }
-}
-
-.lmInner { position: relative; z-index: 1; }
-.lmHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.lmTitle { font-size: 0.9rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
-.lmIndicators { display: flex; gap: 6px; }
-
-.lmIndicator {
-  width: 8px; height: 8px; border-radius: 999px; background: #1f2937;
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9); position: relative; overflow: hidden;
-}
-.lmIndicator::after {
-  content: ""; position: absolute; inset: 1px; border-radius: inherit;
-  background: radial-gradient(circle, #0f172a 0, #020617 100%); opacity: 0.9;
-}
-.lmIndicatorOn {
-  background: radial-gradient(circle, var(--meter-glow) 0, #166534 60%, #020617 100%);
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.9), 0 0 16px rgba(34, 197, 94, 0.6);
-}
-.lmIndicatorWarn {
-  background: radial-gradient(circle, #f97316 0, #c2410c 60%, #020617 100%);
-  box-shadow: 0 0 8px rgba(248, 113, 22, 0.9), 0 0 16px rgba(248, 113, 22, 0.6);
-}
-
-.lmDevice {
-  margin-top: 8px; padding: 16px 12px 14px; border-radius: 20px;
-  background: radial-gradient(circle at top, #020617 0, #0b1120 45%, #020617 100%);
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.9), 0 16px 30px rgba(15, 23, 42, 0.9);
+.lmDialWrapper {
   position: relative;
+  width: 260px;
+  height: 260px;
 }
-.lmDeviceTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.lmDeviceLabel { font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
 
-.lmTierPill {
-  font-size: 0.7rem; padding: 4px 10px; border-radius: 999px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.2), rgba(15, 23, 42, 0.95));
-  color: var(--text-main); border: 1px solid rgba(56, 189, 248, 0.6);
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.lmTierDot { width: 6px; height: 6px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 6px rgba(56, 189, 248, 0.9); }
-
-.lmMeterShell {
-  position: relative; width: 220px; height: 220px; margin: 0 auto; border-radius: 50%;
+.lmMeterRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
   background:
     radial-gradient(circle at 30% 0%, rgba(56, 189, 248, 0.35), transparent 60%),
     radial-gradient(circle at 70% 0%, rgba(34, 197, 94, 0.35), transparent 60%),
     radial-gradient(circle at 50% 100%, rgba(15, 23, 42, 1), rgba(2, 6, 23, 1));
   box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.9), 0 0 40px rgba(34, 197, 94, 0.45), 0 0 60px rgba(56, 189, 248, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.lmSpinning {
+  animation: pulse-ring 2s infinite ease-in-out;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.9), 0 0 40px rgba(34, 197, 94, 0.45), 0 0 60px rgba(56, 189, 248, 0.35); }
+  50% { box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.9), 0 0 60px rgba(34, 197, 94, 0.6), 0 0 90px rgba(56, 189, 248, 0.5); }
+}
+
+.lmStudsContainer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lmStud {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  box-shadow: inset -1px -1px 2px rgba(0,0,0,0.5), 1px 1px 2px rgba(255,255,255,0.2);
+}
+
+.lmCenterDisc {
+  position: absolute;
+  inset: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #020617 0, #0b1120 60%, #020617 100%);
+  box-shadow: inset 0 0 25px rgba(0,0,0,0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  will-change: transform;
-  transform: translateZ(0);
+  transition: box-shadow 0.5s ease;
 }
 
-.lmMeterRing {
-  position: absolute; inset: 10px; border-radius: 50%;
-  border: 2px solid rgba(148, 163, 184, 0.4);
-  box-shadow: 0 0 12px rgba(148, 163, 184, 0.6), inset 0 0 12px rgba(15, 23, 42, 0.9);
-  will-change: transform;
-  transform: translateZ(0);
-}
-.lmMeterRing::before {
-  content: ""; position: absolute; inset: 0; border-radius: inherit;
-  background: conic-gradient(from 220deg, rgba(34, 197, 94, 0.0) 0deg, rgba(34, 197, 94, 0.9) 80deg, rgba(56, 189, 248, 0.9) 160deg, rgba(148, 163, 184, 0.4) 260deg, rgba(34, 197, 94, 0.0) 360deg);
-  mix-blend-mode: screen; opacity: 0.7;
+.lmParticleCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
-.lmMeterGlass {
-  position: absolute; inset: 22px; border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.18), transparent 60%),
-    radial-gradient(circle at 70% 0%, rgba(255, 255, 255, 0.12), transparent 60%),
-    radial-gradient(circle at 50% 100%, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 1));
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.4), inset 0 -20px 40px rgba(15, 23, 42, 0.9);
-  overflow: hidden;
-  will-change: transform;
-  transform: translateZ(0);
+.lmInitialContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
 }
 
-.lmMeterCanvasWrap { position: absolute; inset: 26px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle, #020617 0, #0b1120 60%, #020617 100%); }
-.lmSmokeCanvas { width: 100%; height: 100%; display: block; }
-
-.lmMeterCore {
-  position: absolute; inset: 52px; border-radius: 50%;
-  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.35), transparent 70%), radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.4), rgba(15, 23, 42, 1));
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.7), inset 0 0 20px rgba(15, 23, 42, 0.9);
-  display: flex; align-items: center; justify-content: center;
-  will-change: transform;
-  transform: translateZ(0);
+.lmReadyIcon {
+  font-size: 2rem;
+  margin-bottom: 4px;
 }
 
-.lmPercentageWrap { text-align: center; }
-.lmPercentageValue {
-  font-size: 2.8rem; font-weight: 700; letter-spacing: 0.06em; color: var(--text-main);
-  text-shadow: 0 0 12px rgba(34, 197, 94, 0.9), 0 0 24px rgba(56, 189, 248, 0.7);
-  opacity: 0; transform: translateY(8px) scale(0.96); transition: opacity 0.6s ease, transform 0.6s ease;
+.lmReadyLabel {
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
 }
-.lmPercentageValueVisible { opacity: 1; transform: translateY(0) scale(1); }
 
-.lmPercentageLabel {
-  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-muted);
-  margin-top: 4px; opacity: 0; transform: translateY(4px); transition: opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s;
+.lmScoreDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
 }
-.lmPercentageLabelVisible { opacity: 1; transform: translateY(0); }
 
-.lmTierBadge {
-  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
-  font-size: 0.7rem; padding: 4px 10px; border-radius: 999px;
-  background: radial-gradient(circle, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 1));
-  border: 1px solid rgba(148, 163, 184, 0.6); color: var(--text-muted);
-  display: inline-flex; align-items: center; gap: 6px;
+.lmScoreValue {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 15px rgba(255,255,255,0.3);
 }
-.lmTierBadgeDot { width: 6px; height: 6px; border-radius: 999px; background: var(--standard); box-shadow: 0 0 6px rgba(148, 163, 184, 0.8); }
 
-.lmFooter { margin-top: 16px; }
-.lmStatusRow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.8rem; color: var(--text-muted); }
-.lmStatusLabel { text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.7rem; }
-.lmStatusValue { font-size: 0.8rem; color: var(--text-main); }
-.lmStatusLocked { color: var(--danger); }
-.lmCountdown { font-size: 0.75rem; color: var(--text-muted); text-align: right; }
-
-.lmActions { display: flex; gap: 10px; margin-top: 12px; }
-.lmBtn {
-  flex: 1; border-radius: 999px; border: none; outline: none; padding: 10px 14px;
-  font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+.lmScoreTier {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  margin-top: 8px;
+  text-transform: uppercase;
 }
-.lmBtnPrimary {
+
+.lmActionArea {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 120px;
+}
+
+.lmActivateButton {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: none;
   background: radial-gradient(circle at 30% 0%, rgba(56, 189, 248, 0.35), rgba(34, 197, 94, 0.9));
-  color: #0b1120; box-shadow: 0 0 16px rgba(34, 197, 94, 0.9), 0 0 24px rgba(56, 189, 248, 0.7);
-}
-.lmBtnPrimaryDisabled { opacity: 0.5; cursor: default; box-shadow: none; }
-.lmBtnSecondary {
-  background: radial-gradient(circle, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 1));
-  color: var(--text-main); border: 1px solid rgba(148, 163, 184, 0.6); box-shadow: 0 0 12px rgba(15, 23, 42, 0.9);
-}
-.lmBtnHidden { opacity: 0; pointer-events: none; transform: translateY(4px); }
-
-.lmBtnIcon {
-  width: 14px; height: 14px; border-radius: 999px; border: 1px solid rgba(15, 23, 42, 0.9);
-  background: radial-gradient(circle, #e5e7eb 0, #9ca3af 60%, #4b5563 100%); position: relative;
-}
-.lmBtnIcon::after {
-  content: ""; position: absolute; inset: 3px; border-radius: inherit;
-  border-top: 2px solid #0b1120; border-right: 2px solid #0b1120; transform: rotate(45deg);
+  color: #0b1120;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.9), 0 0 24px rgba(56, 189, 248, 0.7);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-.lmMessage { margin-top: 10px; font-size: 0.75rem; color: var(--text-muted); min-height: 1.2em; }
-.lmMessageAlert { color: var(--danger); }
-.lmMessageSuccess { color: var(--flagship); }
+.lmActivateButton:active {
+  transform: scale(0.97);
+}
 
-@media (max-width: 768px) {
-  .lmAurora {
-    filter: blur(20px);
-  }
+.lmResonatingStatus {
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  animation: pulse-text 1.5s infinite;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; text-shadow: 0 0 10px var(--accent); }
+}
+
+.lmResultCard {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.lmCardHeader {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+.lmCardQuote {
+  font-style: italic;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.lmShareButton {
+  width: 100%;
+  padding: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.8);
+  color: var(--text-main);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.lmShareButton:hover {
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.lmCountdownText {
+  font-size: 0.8rem;
+  color: var(--accent);
+  letter-spacing: 0.05em;
 }
