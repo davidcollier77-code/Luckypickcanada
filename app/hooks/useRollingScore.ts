@@ -29,7 +29,7 @@ export function useRollingScore(targetScore: number, durationMs: number = 1200):
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [targetScore, durationMs]);
+  }, [targetScore, durationMs, displayScore]);
 
   return displayScore;
 }
