@@ -1,19 +1,76 @@
+/* ============================================================
+   DAILY LUCKY METER — "Quantum Resonance Instrument"
+   ============================================================
+   Design language: deep-space instrumentation, brushed titanium
+   housing, holographic plasma core, neon energy conduit.
+   Signature element: the dual-layer counter-rotating holographic
+   chamber under curved glass — everything else stays disciplined
+   so that centerpiece reads clearly.
+
+   PERFORMANCE CONTRACT
+   - Every @keyframes block below animates ONLY transform and/or
+     opacity. box-shadow / filter / backdrop-filter / gradients
+     are applied as STATIC values (computed once, not animated),
+     which is what keeps this cheap on mobile GPUs.
+   - Anything that spins/pulses continuously uses translateZ(0)
+     + will-change: transform to stay on its own compositor layer.
+   - Desktop scale-up uses transform: scale() on the dial wrapper
+     rather than resizing it with new width/height values. This
+     matters because the 32 LED rivets are almost certainly placed
+     with inline trig (rotate + translate) baked to the mobile
+     260px dial in the locked .tsx. A pure visual scale() carries
+     every descendant's coordinate space with it perfectly, so the
+     rivets/ring/hub stay in registration at any zoom level without
+     needing to know that hidden math. Resizing the box directly
+     would risk the rivets drifting off the new bezel radius.
+   ============================================================ */
+
 .meterContainer {
+  /* ---- design tokens, scoped to this instrument ---- */
+  --void-black: #05070a;
+  --deep-space: #0a0e16;
+  --deep-space-2: #0d1420;
+
+  --ti-1: #1c2026; /* titanium — deepest shadow */
+  --ti-2: #454b53;
+  --ti-3: #7c838b;
+  --ti-4: #b9c0c7;
+  --ti-5: #eef1f3; /* titanium — hot specular highlight */
+
+  --conduit: #2dd4ee;
+  --conduit-soft: #7fe8f7;
+  --conduit-dim: #0b4a5c;
+  --conduit-glow: rgba(45, 212, 238, 0.55);
+
+  --hud-panel: rgba(13, 22, 33, 0.62);
+  --hud-border: rgba(140, 210, 228, 0.18);
+  --hud-border-strong: rgba(140, 210, 228, 0.34);
+
   width: 100%;
   max-width: 440px;
   margin: 0 auto;
   padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
 }
 
+/* ============================== SHELL ============================== */
+
 .meterShell {
-  background: linear-gradient(145deg, #1e293b, #0f172a);
-  border-radius: 24px;
+  position: relative;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(120, 200, 220, 0.07), transparent 55%),
+    linear-gradient(145deg, var(--deep-space-2), var(--void-black));
+  border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(120, 200, 220, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(80, 95, 110, 0.35);
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: hidden;
 }
 
 .meterHeader {
@@ -24,42 +81,55 @@
 }
 
 .meterTitle {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: #f8fafc;
-  letter-spacing: 0.1em;
+  color: var(--ti-5);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(140, 210, 228, 0.25);
 }
 
 .meterSubtitle {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  color: var(--ti-3);
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   margin-top: 4px;
 }
+
+/* ============================== DIAL / BEZEL ============================== */
 
 .meterDialWrapper {
   position: relative;
   width: 260px;
   height: 260px;
   margin-bottom: 32px;
+  transform: translateZ(0);
 }
 
 .meterBezel {
   width: 100%;
   height: 100%;
   border-radius: 50%;
+  padding: 13px;
+  position: relative;
   background:
-    conic-gradient(from 45deg, #1f1a14 0%, #57462c 25%, #1f1a14 50%, #57462c 75%, #1f1a14 100%),
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.8) 100%);
-  background-blend-mode: overlay;
-  padding: 12px;
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.5), transparent 42%),
+    conic-gradient(
+      from 210deg,
+      #cfd6dc 0deg, #7d848c 16deg, #eef1f3 30deg, #5a6068 46deg,
+      #b7bec5 62deg, #383d43 78deg, #d8dde1 94deg, #6b727a 110deg,
+      #eef1f3 128deg, #454b52 146deg, #c3c9cf 164deg, #22262b 180deg,
+      #a9b0b7 198deg, #eef1f3 216deg, #5a6068 234deg, #cfd6dc 250deg,
+      #383d43 266deg, #d8dde1 282deg, #6b727a 298deg, #eef1f3 316deg,
+      #454b52 332deg, #b7bec5 346deg, #22262b 360deg
+    );
   box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.9),
-    inset 0 2px 4px rgba(255, 255, 255, 0.4),
-    inset 0 -5px 15px rgba(0, 0, 0, 0.9),
-    inset 0 0 20px rgba(0, 0, 0, 0.8);
+    0 18px 38px rgba(0, 0, 0, 0.85),
+    0 2px 0 rgba(255, 255, 255, 0.05) inset,
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+    inset 0 -10px 24px rgba(0, 0, 0, 0.85),
+    inset 0 8px 16px rgba(255, 255, 255, 0.12);
 }
 
 .meterBezelInner {
@@ -67,11 +137,27 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: #0f172a;
-  box-shadow: inset 0 5px 20px rgba(0,0,0,0.9);
+  background: radial-gradient(circle at 50% 42%, var(--deep-space-2) 0%, var(--void-black) 68%, #000 100%);
+  box-shadow:
+    inset 0 10px 26px rgba(0, 0, 0, 0.95),
+    inset 0 -4px 10px rgba(120, 200, 220, 0.06),
+    inset 0 0 0 1px rgba(120, 200, 220, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+/* faint recessed groove suggesting a track beneath the neon ring */
+.meterBezelInner::before {
+  content: "";
+  position: absolute;
+  inset: 33px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 10px rgba(120, 200, 220, 0.045),
+    inset 0 0 14px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
 }
 
 .meterRivet {
@@ -83,12 +169,12 @@
   margin-left: -4px;
   margin-top: -4px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #fff7d6 0%, #ffd700 30%, #b8860b 70%, #6b4c00 100%);
+  background: radial-gradient(circle at 34% 30%, #f2feff 0%, var(--conduit) 32%, var(--conduit-dim) 74%, #020a10 100%);
   box-shadow:
-    1px 2px 4px rgba(0, 0, 0, 0.9),
-    -1px -1px 2px rgba(255, 215, 0, 0.3),
-    inset 1px 1px 2px rgba(255, 255, 255, 0.8),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.8);
+    0 0 5px 1px var(--conduit-glow),
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 -1px 1px rgba(0, 0, 0, 0.9) inset,
+    0 2px 3px rgba(0, 0, 0, 0.75);
 }
 
 .meterRingSvg {
@@ -99,32 +185,56 @@
   height: 100%;
   transform: rotate(-90deg);
   pointer-events: none;
-  filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.8));
 }
 
 .meterRingCircle {
   fill: none;
-  stroke: #475569;
-  stroke-width: 8;
+  stroke: #3a4048;
+  stroke-width: 9;
   stroke-linecap: round;
+  /* static glow — do not animate; this is the "energy conduit" look */
+  filter:
+    drop-shadow(0 0 5px rgba(255, 255, 255, 0.25))
+    drop-shadow(0 0 14px rgba(45, 212, 238, 0.4));
   transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease;
 }
+
+/* ============================== CENTER HUB ============================== */
 
 .meterCenterHub {
   position: relative;
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, #0f172a, #020617 80%);
+  background: radial-gradient(circle at center, #16202e, #020617 70%);
   box-shadow:
-    0 0 20px rgba(0,0,0,0.9),
-    inset 0 0 0 2px rgba(255,255,255,0.03),
-    inset 0 20px 40px rgba(0,0,0,0.95),
-    inset 0 -5px 15px rgba(0,0,0,0.6);
+    0 0 22px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 2px rgba(140, 210, 228, 0.08),
+    inset 0 10px 22px rgba(0, 0, 0, 0.85),
+    inset 0 -6px 14px rgba(45, 212, 238, 0.06);
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* curved glass dome reflection — static gradient, sits above everything */
+.meterCenterHub::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: linear-gradient(
+    132deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.08) 16%,
+    transparent 34%,
+    transparent 72%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 4;
 }
 
 .meterVortex {
@@ -137,29 +247,77 @@
 }
 
 .meterVortexLayer {
+  position: relative;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, transparent 0%, rgba(56, 189, 248, 0.1) 20%, rgba(56, 189, 248, 0.4) 60%, rgba(56, 189, 248, 0.8) 100%);
-  opacity: 0.6;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.12) 18%,
+    rgba(94, 234, 212, 0.28) 40%,
+    rgba(56, 189, 248, 0.5) 65%,
+    rgba(168, 85, 247, 0.35) 85%,
+    transparent 100%
+  );
+  opacity: 0.65;
+}
+
+/* counter-rotating inner plasma layer — pseudo-element, no new DOM node,
+   so the locked component tree is untouched */
+.meterVortexLayer::after {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 90deg,
+    transparent 0%,
+    rgba(94, 234, 212, 0.3) 30%,
+    transparent 55%,
+    rgba(56, 189, 248, 0.35) 80%,
+    transparent 100%
+  );
+  opacity: 0.55;
+  transform: translateZ(0);
+  will-change: transform;
+  animation: spinVortexReverse 7s linear infinite;
 }
 
 .meterVortex[data-state="idle"] {
   animation: spinVortex 12s linear infinite;
 }
+.meterVortex[data-state="idle"] .meterVortexLayer::after {
+  animation-duration: 9s;
+}
 
 .meterVortex[data-state="resonating"] {
   animation: spinVortex 1s linear infinite;
 }
+.meterVortex[data-state="resonating"] .meterVortexLayer {
+  opacity: 0.9;
+}
+.meterVortex[data-state="resonating"] .meterVortexLayer::after {
+  animation-duration: 0.6s;
+  opacity: 0.75;
+}
 
 .meterVortex[data-state="locked"] {
   animation: spinVortex 20s linear infinite;
-  opacity: 0.3;
+  opacity: 0.32;
+}
+.meterVortex[data-state="locked"] .meterVortexLayer::after {
+  animation-duration: 15s;
 }
 
 @keyframes spinVortex {
   0% { transform: rotate(0deg) translateZ(0); }
   100% { transform: rotate(360deg) translateZ(0); }
+}
+
+@keyframes spinVortexReverse {
+  0% { transform: rotate(0deg) translateZ(0); }
+  100% { transform: rotate(-360deg) translateZ(0); }
 }
 
 .meterCenterContent {
@@ -172,50 +330,57 @@
 }
 
 .meterIconBolt {
-  font-size: 2rem;
-  text-shadow: 0 0 15px rgba(74, 222, 128, 0.8);
+  font-size: 1.9rem;
+  text-shadow: 0 0 16px rgba(94, 234, 212, 0.75);
   margin-bottom: 4px;
 }
 
 .meterCenterLabel {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: #4ade80;
-  text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  color: #5eead4;
+  text-shadow: 0 0 12px rgba(94, 234, 212, 0.5);
 }
 
 .meterCenterLabelResonating {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: #38bdf8;
+  color: var(--conduit);
+  text-shadow: 0 0 12px rgba(45, 212, 238, 0.65);
   animation: pulseNeon 1s ease-in-out infinite;
 }
 
 .meterCenterPercentage {
-  font-size: 2.8rem;
-  font-weight: 800;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 2.7rem;
+  font-weight: 700;
   color: #ffffff;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 22px rgba(255, 255, 255, 0.45), 0 0 44px rgba(45, 212, 238, 0.25);
   line-height: 1;
 }
 
 .meterCenterPercentageIdle {
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #334155;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 2.7rem;
+  font-weight: 700;
+  color: #333c47;
   line-height: 1;
 }
 
 .meterCenterTier {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: #cbd5e1;
+  letter-spacing: 0.16em;
+  color: var(--ti-4);
   margin-top: 8px;
   text-transform: uppercase;
 }
+
+/* ============================== FOOTER / TRIGGER ============================== */
 
 .meterFooter {
   width: 100%;
@@ -226,57 +391,102 @@
 }
 
 .meterEngageButton {
-  background: linear-gradient(135deg, #facc15, #f97316);
-  color: #020617;
-  border: none;
-  padding: 14px 32px;
-  font-size: 1rem;
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(160deg, #1c2632 0%, #0b121b 60%, #05090e 100%);
+  color: var(--conduit-soft);
+  border: 1px solid rgba(140, 210, 228, 0.35);
+  padding: 14px 34px;
+  font-size: 0.95rem;
   font-weight: 800;
-  letter-spacing: 0.15em;
-  border-radius: 50px;
-  box-shadow: 0 10px 20px rgba(249, 115, 22, 0.4), inset 0 -3px 0 rgba(0,0,0,0.2);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow:
+    0 12px 22px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(45, 212, 238, 0.08);
+  transition: transform 0.12s ease;
+  transform: translateZ(0);
+}
+
+/* glow layer — a hover crossfade uses only opacity, never an animated shadow */
+.meterEngageButton::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 10px;
+  box-shadow: 0 0 22px 4px rgba(45, 212, 238, 0.55);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .meterEngageButton:active {
-  transform: translateY(2px);
-  box-shadow: 0 5px 10px rgba(249, 115, 22, 0.4), inset 0 -1px 0 rgba(0,0,0,0.2);
+  transform: translateY(2px) translateZ(0);
 }
 
 .meterResonatingText {
-  font-size: 1rem;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace;
+  font-size: 0.95rem;
   font-weight: 700;
-  letter-spacing: 0.2em;
-  color: #38bdf8;
+  letter-spacing: 0.22em;
+  color: var(--conduit);
   animation: pulseNeon 1s ease-in-out infinite;
   margin-top: 10px;
 }
 
 .meterAttunementCard {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(71, 85, 105, 0.5);
-  border-radius: 12px;
-  padding: 16px;
+  position: relative;
+  background: var(--hud-panel);
+  border: 1px solid var(--hud-border);
+  border-radius: 10px;
+  padding: 16px 18px;
   width: 100%;
   text-align: center;
   margin-bottom: 16px;
   backdrop-filter: blur(10px);
 }
 
+/* tactical HUD corner brackets — pseudo-elements only */
+.meterAttunementCard::before,
+.meterAttunementCard::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--hud-border-strong);
+  pointer-events: none;
+}
+.meterAttunementCard::before {
+  top: 4px;
+  left: 4px;
+  border-right: none;
+  border-bottom: none;
+}
+.meterAttunementCard::after {
+  bottom: 4px;
+  right: 4px;
+  border-left: none;
+  border-top: none;
+}
+
 .meterAttunementHeader {
-  font-size: 0.7rem;
-  color: #94a3b8;
-  letter-spacing: 0.15em;
+  font-size: 0.65rem;
+  color: var(--ti-3);
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 
 .meterAttunementBody {
-  font-size: 0.95rem;
-  color: #f1f5f9;
+  font-size: 0.92rem;
+  color: #eef4f8;
   font-style: italic;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .meterActionsRow {
@@ -287,37 +497,137 @@
 }
 
 .meterShareButton {
+  position: relative;
   background: transparent;
-  color: #38bdf8;
-  border: 1px solid #38bdf8;
+  color: var(--conduit);
+  border: 1px solid rgba(45, 212, 238, 0.55);
   padding: 10px 24px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   border-radius: 50px;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 12px rgba(45, 212, 238, 0.18);
+  transition: transform 0.12s ease;
+}
+
+.meterShareButton:active {
+  transform: translateY(1px);
 }
 
 .meterCountdownRow {
   margin-top: auto;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .meterCountdownLabel {
-  color: #64748b;
+  color: var(--ti-3);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   margin-right: 8px;
 }
 
 .meterCountdownValue {
-  color: #facc15;
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  color: #fbbf24;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
 }
 
 @keyframes pulseNeon {
-  0%, 100% { opacity: 1; text-shadow: 0 0 15px rgba(56, 189, 248, 0.8); }
-  50% { opacity: 0.6; text-shadow: 0 0 5px rgba(56, 189, 248, 0.4); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* accessible focus states — additive, doesn't touch locked logic */
+.meterEngageButton:focus-visible,
+.meterShareButton:focus-visible {
+  outline: 2px solid var(--conduit);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   DESKTOP ENHANCEMENTS (>= 768px)
+   ============================================================ */
+
+@media (min-width: 768px) {
+  .meterContainer {
+    max-width: 560px;
+    padding: 1.5rem;
+  }
+
+  .meterShell {
+    padding: 40px 36px;
+    border-radius: 26px;
+  }
+
+  .meterHeader {
+    margin-bottom: 20px;
+  }
+
+  .meterTitle {
+    font-size: 1.6rem;
+  }
+
+  .meterSubtitle {
+    font-size: 0.85rem;
+  }
+
+  /* scale the whole dial subtree uniformly instead of resizing it —
+     keeps any hidden per-rivet trig in the locked .tsx in registration */
+  .meterDialWrapper {
+    transform: scale(1.38) translateZ(0);
+    transform-origin: 50% 50%;
+    margin-top: 46px;
+    margin-bottom: 92px;
+  }
+
+  .meterFooter {
+    min-height: 150px;
+  }
+
+  .meterEngageButton {
+    padding: 16px 44px;
+    font-size: 1.05rem;
+  }
+
+  /* ambient desktop-only hover states — opacity crossfade only */
+  .meterEngageButton:hover {
+    border-color: rgba(140, 210, 228, 0.6);
+    color: #d6fbff;
+  }
+  .meterEngageButton:hover::after {
+    opacity: 1;
+  }
+
+  .meterShareButton:hover {
+    box-shadow: 0 0 18px rgba(45, 212, 238, 0.35);
+    border-color: rgba(45, 212, 238, 0.85);
+  }
+
+  .meterAttunementBody {
+    font-size: 1.02rem;
+  }
+
+  .meterCenterTier {
+    letter-spacing: 0.2em;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY — respect reduced motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .meterVortex,
+  .meterVortex[data-state="idle"],
+  .meterVortex[data-state="resonating"],
+  .meterVortex[data-state="locked"],
+  .meterVortexLayer::after,
+  .meterCenterLabelResonating,
+  .meterResonatingText {
+    animation: none;
+  }
 }

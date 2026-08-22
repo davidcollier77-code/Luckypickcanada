@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback, useId } from "react";
+import React, { useEffect, useRef, useState, useId } from "react";
 import styles from "./LuckyMeter.module.css";
 
 type TierKey = "dormant" | "kindling" | "rising" | "northern" | "peak";
@@ -70,10 +70,7 @@ const formatCountdown = (msRemaining: number) => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(
-    2,
-    "0"
-  )}m ${String(seconds).padStart(2, "0")}s`;
+  return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
 };
 
 const loadStoredResult = (): StoredResult | null => {
@@ -133,9 +130,9 @@ const DailyLuckyMeter: React.FC = () => {
 
   const todayKey = getTodayKey();
 
-  const updateCountdown = useCallback(() => {
-    const now = new Date();
+  const updateCountdown = () => {
     const nextMidnight = getNextMidnight();
+    const now = new Date();
     const diff = nextMidnight.getTime() - now.getTime();
     setCountdown(formatCountdown(diff));
     if (diff <= 0) {
@@ -145,7 +142,7 @@ const DailyLuckyMeter: React.FC = () => {
       setTier(null);
       setQuote(null);
     }
-  }, []);
+  };
 
   useEffect(() => {
     const stored = loadStoredResult();
@@ -170,7 +167,7 @@ const DailyLuckyMeter: React.FC = () => {
         clearInterval(countdownIntervalRef.current);
       }
     };
-  }, [todayKey, updateCountdown]);
+  }, [todayKey]);
 
   useEffect(() => {
     if (!vortexRef.current) return;
