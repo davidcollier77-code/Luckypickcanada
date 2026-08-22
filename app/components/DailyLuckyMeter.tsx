@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useId } from "react";
+import html2canvas from "html2canvas";
 import styles from "./LuckyMeter.module.css";
 
 type TierKey = "dormant" | "kindling" | "rising" | "northern" | "peak";
@@ -125,12 +126,14 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
   const [tier, setTier] = useState<TierConfig | null>(null);
   const [quote, setQuote] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<string>("00h 00m 00s");
+  const [showToast, setShowToast] = useState(false);
 
   const svgCircleRef = useRef<SVGCircleElement | null>(null);
   const percentageRef = useRef<HTMLDivElement | null>(null);
   const vortexRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
+  const meterShellRef = useRef<HTMLDivElement | null>(null);
 
   const todayKey = getTodayKey();
 
@@ -262,13 +265,65 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     animationFrameRef.current = requestAnimationFrame(animate);
   };
 
+  const fallbackCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch {
+      // ignore
+    }
+  };
+
   const handleShare = async () => {
     if (!score || !tier) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
+
     try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      // ignore
+      if (navigator.share && meterShellRef.current) {
+        // Temporarily hide share button and countdown during capture
+        const buttons = meterShellRef.current.querySelectorAll('button');
+        const countdowns = meterShellRef.current.querySelectorAll('.' + styles.meterCountdownRow);
+        buttons.forEach(b => b.style.display = 'none');
+        countdowns.forEach(c => (c as HTMLElement).style.display = 'none');
+
+        const canvas = await html2canvas(meterShellRef.current, {
+          backgroundColor: '#020617', // Match the card background roughly or transparent
+          scale: 2,
+          useCORS: true,
+        });
+
+        // Restore visibility
+        buttons.forEach(b => b.style.display = '');
+        countdowns.forEach(c => (c as HTMLElement).style.display = '');
+
+        canvas.toBlob(async (blob) => {
+          if (blob) {
+            const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              try {
+                await navigator.share({
+                  title: 'Daily Lucky Meter',
+                  text: text,
+                  files: [file]
+                });
+              } catch (shareErr: any) {
+                if (shareErr.name !== 'AbortError') {
+                  fallbackCopy(text);
+                }
+              }
+            } else {
+              fallbackCopy(text);
+            }
+          } else {
+            fallbackCopy(text);
+          }
+        }, 'image/png');
+      } else {
+        fallbackCopy(text);
+      }
+    } catch (e) {
+      fallbackCopy(text);
     }
   };
 
@@ -276,7 +331,7 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
 
   return (
     <div className={styles.meterContainer}>
-      <div className={styles.meterShell}>
+      <div className={styles.meterShell} ref={meterShellRef}>
         <div className={styles.meterHeader}>
           <span className={styles.meterTitle}>Daily Lucky Meter</span>
 
@@ -424,6 +479,29 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
           </div>
         </div>
       </div>
+
+      {showToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          color: '#fbbf24',
+          padding: '12px 24px',
+          borderRadius: '8px',
+          border: '1px solid rgba(251, 191, 36, 0.3)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          zIndex: 9999,
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          letterSpacing: '0.05em',
+          backdropFilter: 'blur(8px)',
+          animation: 'pulseNeon 1.5s infinite'
+        }}>
+          Copied resonance to clipboard!
+        </div>
+      )}
     </div>
   );
 };
