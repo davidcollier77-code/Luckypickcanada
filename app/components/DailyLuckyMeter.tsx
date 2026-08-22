@@ -275,9 +275,10 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     }
   };
 
-  const restoreElements = (buttons: NodeListOf<Element>, countdowns: NodeListOf<Element>) => {
-    buttons.forEach(b => (b as HTMLElement).style.display = '');
-    countdowns.forEach(c => (c as HTMLElement).style.display = '');
+  const restoreElements = (elements: NodeListOf<Element> | HTMLElement[] | Element[]) => {
+    elements.forEach((el) => {
+      (el as HTMLElement).style.display = '';
+    });
   };
 
     const handleShare = async () => {
@@ -334,7 +335,8 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
       await fallbackCopy(text);
     } finally {
       if (meterShellRef.current) {
-        restoreElements(buttons, countdowns);
+        restoreElements(buttons);
+        restoreElements(countdowns);
       }
       if (styleTag && styleTag.parentNode) {
         styleTag.parentNode.removeChild(styleTag);
