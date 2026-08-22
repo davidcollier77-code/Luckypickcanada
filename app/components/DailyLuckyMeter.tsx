@@ -275,7 +275,7 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     }
   };
 
-  const restoreElements = (elements: NodeListOf<Element> | HTMLElement[] | Element[]) => {
+  const restoreElements = (elements: Element[] | HTMLElement[] | HTMLButtonElement[] | NodeListOf<Element>) => {
     elements.forEach((el) => {
       (el as HTMLElement).style.display = '';
     });
