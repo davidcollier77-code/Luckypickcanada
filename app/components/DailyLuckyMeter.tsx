@@ -16,8 +16,8 @@ interface TierConfig {
 
 const TIERS: TierConfig[] = [
   {
-    name: 'void',
-    label: 'Dormant Void',
+    name: 'dormant',
+    label: 'DORMANT VOID',
     minScore: 1,
     maxScore: 15,
     primaryColor: '#64748b',
@@ -26,8 +26,8 @@ const TIERS: TierConfig[] = [
     description: 'The canvas is clear. Stillness precedes the spark of extraordinary momentum.',
   },
   {
-    name: 'spark',
-    label: 'Kindling Spark',
+    name: 'kindling',
+    label: 'KINDLING SPARK',
     minScore: 16,
     maxScore: 40,
     primaryColor: '#f97316',
@@ -36,8 +36,8 @@ const TIERS: TierConfig[] = [
     description: 'Small embers catch the autumn wind. Take the first intentional step today.',
   },
   {
-    name: 'ember',
-    label: 'Rising Current',
+    name: 'rising',
+    label: 'RISING CURRENT',
     minScore: 41,
     maxScore: 70,
     primaryColor: '#38bdf8',
@@ -46,8 +46,8 @@ const TIERS: TierConfig[] = [
     description: 'Momentum is building across the horizon. Trust the timing of your journey.',
   },
   {
-    name: 'aurora',
-    label: 'Northern Resonance',
+    name: 'northern',
+    label: 'NORTHERN RESONANCE',
     minScore: 71,
     maxScore: 90,
     primaryColor: '#4ade80',
@@ -56,8 +56,8 @@ const TIERS: TierConfig[] = [
     description: 'The northern sky shifts with quiet possibilities. Clarity and fortune are within reach.',
   },
   {
-    name: 'solstice',
-    label: 'Peak Radiance',
+    name: 'peak',
+    label: 'PEAK RADIANCE',
     minScore: 91,
     maxScore: 100,
     primaryColor: '#facc15',
@@ -68,13 +68,13 @@ const TIERS: TierConfig[] = [
 ];
 
 const CANADIAN_QUOTES = [
-  'A steady compass and a grounded spirit will navigate any wilderness toward success.',
-  'Like the Canadian Shield, your foundation is immovable—good fortune follows your next move.',
-  'Momentum is building across the horizon. Trust the timing of your journey.',
-  'The northern sky shifts with quiet possibilities. Clarity and fortune are within reach.',
-  'From Pacific tides to Atlantic shores, every small step ripples into extraordinary fortune.',
-  'Even the deepest winter yields to steady light. Keep your fire burning bright.',
-  'Stand tall like the boreal pine; winds of change carry seeds of luck.',
+  "Your resonance echoes across the northern lights tonight.",
+  "Today, the maple winds carry fortune in your favour.",
+  "The St. Lawrence whispers: stay bold, stay curious.",
+  "From coast to coast, your luck rides the aurora’s wave.",
+  "The Rockies stand tall behind your choices today.",
+  "A quiet cabin, a warm fire, and fortune at your door.",
+  "Your path glows like fresh snow under moonlight.",
 ];
 
 function getLocalDateString(): string {
@@ -153,9 +153,20 @@ export default function DailyLuckyMeter() {
   const finalScoreRef = useRef<number | null>(null);
   const scoreDisplayRef = useRef<HTMLDivElement | null>(null);
 
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const svgCircleRef = useRef<SVGCircleElement | null>(null);
+  const vortexRef = useRef<HTMLDivElement | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    if (!vortexRef.current) return;
+    vortexRef.current.dataset.state = isLocked ? 'locked' : (isSpinning ? 'resonating' : 'idle');
+  }, [isSpinning, isLocked]);
+
+  useEffect(() => {
+    if (!svgCircleRef.current || !currentTier) return;
+    svgCircleRef.current.style.stroke = currentTier.primaryColor;
+  }, [currentTier]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -186,6 +197,12 @@ export default function DailyLuckyMeter() {
         if (scoreDisplayRef.current) {
            scoreDisplayRef.current.innerText = `${parsedScore}%`;
         }
+        if (svgCircleRef.current) {
+           const radius = svgCircleRef.current.r.baseVal.value;
+           const circumference = 2 * Math.PI * radius;
+           svgCircleRef.current.style.strokeDasharray = `${circumference}`;
+           svgCircleRef.current.style.strokeDashoffset = `${circumference - (circumference * parsedScore) / 100}`;
+        }
         return true;
       }
     } catch {
@@ -205,19 +222,19 @@ export default function DailyLuckyMeter() {
     let newScore = Math.floor(Math.random() * 95) + 5;
     let lastQuote = '';
 
+    let availableQuotes = CANADIAN_QUOTES;
+    let selectedQuote = availableQuotes[Math.floor(Math.random() * availableQuotes.length)];
+
     if (typeof window !== 'undefined') {
       try {
         const storedScore = localStorage.getItem('lucky_meter_sync_score');
         lastQuote = localStorage.getItem('lucky_meter_sync_quote') || '';
         if (storedScore) {
           const lastScore = parseInt(storedScore, 10);
-          let attempts = 0;
-          while (newScore === lastScore && attempts < 10) {
-            newScore = Math.floor(Math.random() * 95) + 5;
-            attempts++;
-          }
-          if (newScore === lastScore) {
-            newScore = ((lastScore + 37) % 95) + 5;
+
+          while (newScore === lastScore || selectedQuote === lastQuote) {
+             newScore = Math.floor(Math.random() * 95) + 5;
+             selectedQuote = availableQuotes[Math.floor(Math.random() * availableQuotes.length)];
           }
         }
       } catch {
@@ -225,32 +242,19 @@ export default function DailyLuckyMeter() {
       }
     }
 
-    let availableQuotes = CANADIAN_QUOTES.filter((q) => q !== lastQuote);
-    if (availableQuotes.length === 0) availableQuotes = CANADIAN_QUOTES;
-    const selectedQuote = availableQuotes[Math.floor(Math.random() * availableQuotes.length)];
     setFortune(selectedQuote);
 
     const calculatedTier = TIERS.find((t) => newScore >= t.minScore && newScore <= t.maxScore) || TIERS[0];
     setCurrentTier(calculatedTier);
 
     const startTime = performance.now();
-    const duration = 2200;
+    const duration = 2400;
 
-    // Canvas animation setup
-    const canvas = canvasRef.current;
-    let particles: {x: number, y: number, vx: number, vy: number, alpha: number, size: number}[] = [];
-    if (canvas) {
-      canvas.width = canvas.clientWidth;
-      canvas.height = canvas.clientHeight;
-      const particleCount = 12;
-      particles = Array.from({ length: particleCount }, () => ({
-        x: canvas.width / 2,
-        y: canvas.height / 2,
-        vx: (Math.random() - 0.5) * 4,
-        vy: (Math.random() - 0.5) * 4,
-        alpha: 1,
-        size: Math.random() * 2 + 1.5,
-      }));
+    let circumference = 0;
+    if (svgCircleRef.current) {
+      const radius = svgCircleRef.current.r.baseVal.value;
+      circumference = 2 * Math.PI * radius;
+      svgCircleRef.current.style.strokeDasharray = `${circumference}`;
     }
 
     let isAnimationActive = true;
@@ -267,21 +271,9 @@ export default function DailyLuckyMeter() {
          scoreDisplayRef.current.innerText = `${currentVal}%`;
       }
 
-      // Draw canvas particles
-      if (canvas && particles.length > 0) {
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-           ctx.clearRect(0, 0, canvas.width, canvas.height);
-           particles.forEach((p) => {
-             p.x += p.vx;
-             p.y += p.vy;
-             p.alpha -= 0.012;
-             if (p.alpha > 0) {
-               ctx.fillStyle = `rgba(251, 191, 36, ${Math.max(0, p.alpha)})`;
-               ctx.fillRect(p.x - p.size, p.y - p.size, p.size * 2, p.size * 2);
-             }
-           });
-        }
+      if (svgCircleRef.current && circumference > 0) {
+        const offset = circumference - (circumference * currentVal) / 100;
+        svgCircleRef.current.style.strokeDashoffset = `${offset}`;
       }
 
       if (progress < 1) {
@@ -291,6 +283,10 @@ export default function DailyLuckyMeter() {
         finalScoreRef.current = newScore;
         if (scoreDisplayRef.current) {
           scoreDisplayRef.current.innerText = `${newScore}%`;
+        }
+        if (svgCircleRef.current && circumference > 0) {
+          const offset = circumference - (circumference * newScore) / 100;
+          svgCircleRef.current.style.strokeDashoffset = `${offset}`;
         }
         setIsSpinning(false);
         setIsLocked(true);
@@ -346,6 +342,31 @@ export default function DailyLuckyMeter() {
         <div className={`${styles.lmMeterRing} ${isSpinning ? styles.lmSpinning : ''}`}>
           <StaticStuds />
 
+          <svg
+             className={styles.meterRingSvg}
+             viewBox="0 0 200 200"
+             aria-hidden="true"
+           >
+             <defs>
+               <filter id="ledGlow">
+                 <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                 <feMerge>
+                   <feMergeNode in="coloredBlur" />
+                   <feMergeNode in="SourceGraphic" />
+                 </feMerge>
+               </filter>
+             </defs>
+             <circle
+               ref={svgCircleRef}
+               className={styles.meterRingCircle}
+               cx="100"
+               cy="100"
+               r="78"
+               filter="url(#ledGlow)"
+               style={{ strokeDasharray: 490, strokeDashoffset: 490 }}
+             />
+          </svg>
+
           {/* Central Glass Disk */}
           <div
             className={styles.lmCenterDisc}
@@ -355,7 +376,9 @@ export default function DailyLuckyMeter() {
                 : 'inset 0 0 25px rgba(0,0,0,0.85)',
             }}
           >
-            <canvas ref={canvasRef} className={styles.lmParticleCanvas} />
+            <div ref={vortexRef} className={styles.meterVortex} data-state="idle">
+               <div className={styles.meterVortexLayer} />
+            </div>
 
             {!isLocked && !isSpinning && (
               <div className={styles.lmInitialContent}>
