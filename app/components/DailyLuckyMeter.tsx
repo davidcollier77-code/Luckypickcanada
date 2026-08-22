@@ -203,7 +203,7 @@ const DailyLuckyMeter: React.FC = () => {
     setMeterState("resonating");
 
     const startTime = performance.now();
-    const duration = 2400;
+    const duration = 10000;
 
     const circle = svgCircleRef.current;
     const percentageEl = percentageRef.current;
