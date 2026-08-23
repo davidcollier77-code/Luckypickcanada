@@ -184,6 +184,7 @@ export default function LuckyGenerator() {
       const ms = msUntilLocalMidnight();
       setRemainingMs(ms);
       if (ms <= 1000) {
+        clearInterval(id);
         try {
           window.localStorage.removeItem(STORAGE_KEY);
         } catch {
@@ -193,7 +194,6 @@ export default function LuckyGenerator() {
         setPhase('ready');
         setScore(null);
         setShowClock(false);
-        clearInterval(id);
       }
     }, 1000);
     return () => clearInterval(id);
