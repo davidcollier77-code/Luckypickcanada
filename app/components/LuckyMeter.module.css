@@ -82,12 +82,12 @@
     radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.5), transparent 42%),
     conic-gradient(
       from 210deg,
-      #cfd6dc 0deg, #7d848c 16deg, #eef1f3 30deg, #5a6068 46deg,
-      #b7bec5 62deg, #383d43 78deg, #d8dde1 94deg, #6b727a 110deg,
-      #eef1f3 128deg, #454b52 146deg, #c3c9cf 164deg, #22262b 180deg,
-      #a9b0b7 198deg, #eef1f3 216deg, #5a6068 234deg, #cfd6dc 250deg,
-      #383d43 266deg, #d8dde1 282deg, #6b727a 298deg, #eef1f3 316deg,
-      #454b52 332deg, #b7bec5 346deg, #22262b 360deg
+      #d4af37 0deg, #b8860b 16deg, #f3e5ab 30deg, #8b6508 46deg,
+      #daa520 62deg, #5c4033 78deg, #e8d37a 94deg, #a67c00 110deg,
+      #f3e5ab 128deg, #8b6508 146deg, #cfb53b 164deg, #3b2f2f 180deg,
+      #c5b358 198deg, #f3e5ab 216deg, #8b6508 234deg, #d4af37 250deg,
+      #5c4033 266deg, #e8d37a 282deg, #a67c00 298deg, #f3e5ab 316deg,
+      #8b6508 332deg, #daa520 346deg, #3b2f2f 360deg
     );
   box-shadow:
     0 18px 38px rgba(0, 0, 0, 0.85),
@@ -133,9 +133,9 @@
   margin-left: -4px;
   margin-top: -4px;
   border-radius: 50%;
-  background: radial-gradient(circle at 34% 30%, #f2feff 0%, var(--conduit) 32%, var(--conduit-dim) 74%, #020a10 100%);
+  background: radial-gradient(circle at 34% 30%, #fffbe6 0%, #ffbf00 32%, #b36b00 74%, #2b1a00 100%);
   box-shadow:
-    0 0 5px 1px var(--conduit-glow),
+    0 0 5px 1px rgba(255, 191, 0, 0.55),
     0 1px 0 rgba(255, 255, 255, 0.5) inset,
     0 -1px 1px rgba(0, 0, 0, 0.9) inset,
     0 2px 3px rgba(0, 0, 0, 0.75);
@@ -149,6 +149,12 @@
   height: 100%;
   transform: rotate(-90deg);
   pointer-events: none;
+  animation: breathingRing 3s ease-in-out infinite alternate;
+}
+
+@keyframes breathingRing {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
 }
 
 .meterRingCircle {
@@ -262,7 +268,7 @@
 
 .meterVortex[data-state="locked"] {
   animation: spinVortex 20s linear infinite;
-  opacity: 0.32;
+  opacity: 0.65;
 }
 .meterVortex[data-state="locked"] .meterVortexLayer::after {
   animation-duration: 15s;
@@ -594,5 +600,40 @@
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) rotate(calc(var(--i) * 45deg)) translateY(-75px) scale(0) translateZ(0);
+  }
+}
+
+/* Quantum Sparks */
+.sparkEmitter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.spark {
+  position: absolute;
+  width: 2px;
+  height: 12px;
+  background: #facc15; /* gold/amber */
+  border-radius: 2px;
+  opacity: 0;
+  transform-origin: center -50px; /* Shoot out from center */
+  animation: sparkShoot 0.8s ease-out infinite;
+  animation-delay: calc(var(--i) * 0.1s);
+  transform: rotate(calc(var(--i) * 45deg)) translateY(0);
+}
+
+@keyframes sparkShoot {
+  0% {
+    opacity: 1;
+    transform: rotate(calc(var(--i) * 45deg)) translateY(20px) scaleY(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(calc(var(--i) * 45deg)) translateY(60px) scaleY(1.5);
   }
 }
