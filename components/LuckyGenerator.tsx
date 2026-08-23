@@ -239,7 +239,7 @@ export default function LuckyGenerator() {
       setIsSharing(true);
 
       // Inject temporary styles to freeze animations for a crisp snapshot
-      const style = document.createElement('style');
+      style.innerHTML = '.lg-root * { animation: none !important; transition: none !important; }';
       style.innerHTML = '* { animation: none !important; transition: none !important; }';
       document.head.appendChild(style);
 
@@ -256,9 +256,16 @@ export default function LuckyGenerator() {
           useCORS: true,
         });
       } finally {
-        document.head.removeChild(style);
+        if (document.head.contains(style)) {
+          document.head.removeChild(style);
+        }
+      }
+      if (!canvas) {
+        console.error('Failed to generate canvas');
+        return;
       }
 
+      canvas.toBlob(async (blob) => {
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
@@ -793,6 +800,12 @@ export default function LuckyGenerator() {
             opacity: 0;
           }
         }
+        @media (prefers-reduced-motion: reduce) {
+          .lg-stardust {
+            animation: none !important;
+          }
+        }
+
 
         @media (prefers-reduced-motion: reduce) {
           .lg-stars,
