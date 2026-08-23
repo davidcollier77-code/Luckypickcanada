@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useId } from "react";
-import html2canvas from "html2canvas";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import styles from "./LuckyMeter.module.css";
 
 type TierKey = "dormant" | "kindling" | "rising" | "northern" | "peak";
@@ -114,42 +113,48 @@ const getRandomQuote = () => {
   return QUOTES[index];
 };
 
-interface DailyLuckyMeterProps {
-  onStateChange?: (state: MeterState) => void;
-}
+const MidnightCountdown: React.FC<{ onMidnight: () => void }> = ({ onMidnight }) => {
+  const [countdown, setCountdown] = useState<string>("00h 00m 00s");
 
-const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
-  const ledGlowId = useId();
+  useEffect(() => {
+    const update = () => {
+      const nextMidnight = getNextMidnight();
+      const now = new Date();
+      const diff = nextMidnight.getTime() - now.getTime();
+      setCountdown(formatCountdown(diff));
+      if (diff <= 0) {
+        onMidnight();
+      }
+    };
 
+    update();
+    const interval = window.setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [onMidnight]);
+
+  return <>{countdown}</>;
+};
+
+const DailyLuckyMeter: React.FC = () => {
   const [meterState, setMeterState] = useState<MeterState>("idle");
   const [score, setScore] = useState<number | null>(null);
   const [tier, setTier] = useState<TierConfig | null>(null);
   const [quote, setQuote] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<string>("00h 00m 00s");
-  const [showToast, setShowToast] = useState(false);
 
   const svgCircleRef = useRef<SVGCircleElement | null>(null);
   const percentageRef = useRef<HTMLDivElement | null>(null);
   const vortexRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const countdownIntervalRef = useRef<number | null>(null);
-  const meterShellRef = useRef<HTMLDivElement | null>(null);
 
   const todayKey = getTodayKey();
 
-  const updateCountdown = () => {
-    const nextMidnight = getNextMidnight();
-    const now = new Date();
-    const diff = nextMidnight.getTime() - now.getTime();
-    setCountdown(formatCountdown(diff));
-    if (diff <= 0) {
-      clearStoredResult();
-      setMeterState("idle");
-      setScore(null);
-      setTier(null);
-      setQuote(null);
-    }
-  };
+  const handleMidnight = useCallback(() => {
+    clearStoredResult();
+    setMeterState("idle");
+    setScore(null);
+    setTier(null);
+    setQuote(null);
+  }, []);
 
   useEffect(() => {
     const stored = loadStoredResult();
@@ -163,25 +168,12 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
       setMeterState("idle");
     }
 
-    updateCountdown();
-    countdownIntervalRef.current = window.setInterval(updateCountdown, 1000);
-
     return () => {
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      if (countdownIntervalRef.current !== null) {
-        clearInterval(countdownIntervalRef.current);
-      }
     };
   }, [todayKey]);
-
-
-  useEffect(() => {
-    if (onStateChange) {
-      onStateChange(meterState);
-    }
-  }, [meterState, onStateChange]);
 
   useEffect(() => {
     if (!vortexRef.current) return;
@@ -201,11 +193,9 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     let newQuote = getRandomQuote();
 
     if (previous) {
-      let attempts = 0;
-      while ((newScore === previous.score || newQuote === previous.quote) && attempts < 100) {
+      while (newScore === previous.score || newQuote === previous.quote) {
         newScore = getRandomScore();
         newQuote = getRandomQuote();
-        attempts++;
       }
     }
 
@@ -214,7 +204,7 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     setMeterState("resonating");
 
     const startTime = performance.now();
-    const duration = 10000; // 10 seconds
+    const duration = 10000;
 
     const circle = svgCircleRef.current;
     const percentageEl = percentageRef.current;
@@ -239,6 +229,13 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
       if (circle && circumference > 0) {
         const offset = circumference - (circumference * currentScore) / 100;
         circle.style.strokeDashoffset = `${offset}`;
+
+        if (t < 1) {
+          const colorIndex = Math.floor(elapsed / 120) % TIERS.length;
+          circle.style.stroke = TIERS[colorIndex].color;
+        } else {
+          circle.style.stroke = targetTier.color;
+        }
       }
 
       if (t < 1) {
@@ -265,82 +262,13 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
     animationFrameRef.current = requestAnimationFrame(animate);
   };
 
-  const fallbackCopy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    } catch {
-      // ignore
-    }
-  };
-
-  const restoreElements = (elements: Element[] | HTMLElement[] | HTMLButtonElement[] | NodeListOf<Element>) => {
-    elements.forEach((el) => {
-      (el as HTMLElement).style.display = '';
-    });
-  };
-
-    const handleShare = async () => {
+  const handleShare = async () => {
     if (!score || !tier) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
-
-    const buttons = meterShellRef.current ? Array.from(meterShellRef.current.querySelectorAll('button')) : [];
-    const countdowns = meterShellRef.current ? Array.from(meterShellRef.current.querySelectorAll('.' + styles.meterCountdownRow)) : [];
-    let styleTag = null;
-
     try {
-      if (meterShellRef.current) {
-        // Temporarily hide share button and countdown during capture
-        buttons.forEach(b => (b as HTMLElement).style.display = 'none');
-        countdowns.forEach(c => (c as HTMLElement).style.display = 'none');
-
-        // Freeze animations to ensure a sharp still snapshot
-        styleTag = document.createElement('style');
-        styleTag.innerHTML = '[data-meter-shell] * { animation: none !important; transition: none !important; }';
-        document.head.appendChild(styleTag);
-
-        const canvas = await html2canvas(meterShellRef.current, {
-          backgroundColor: '#020617', // Match the card background roughly or transparent
-          scale: 2,
-          useCORS: true,
-        });
-
-        const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-
-        if (blob) {
-          const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
-          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            try {
-              await navigator.share({
-                title: 'Daily Lucky Meter',
-                text: text,
-                files: [file]
-              });
-            } catch (shareErr: any) {
-              if (shareErr.name !== 'AbortError') {
-                await fallbackCopy(text);
-              }
-            }
-          } else {
-            await fallbackCopy(text);
-          }
-        } else {
-          await fallbackCopy(text);
-        }
-      } else {
-        await fallbackCopy(text);
-      }
-    } catch (e) {
-      await fallbackCopy(text);
-    } finally {
-      if (meterShellRef.current) {
-        restoreElements(buttons);
-        restoreElements(countdowns);
-      }
-      if (styleTag && styleTag.parentNode) {
-        styleTag.parentNode.removeChild(styleTag);
-      }
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // ignore
     }
   };
 
@@ -348,16 +276,10 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
 
   return (
     <div className={styles.meterContainer}>
-      <div className={styles.meterShell} ref={meterShellRef} data-meter-shell>
+      <div className={styles.meterShell}>
         <div className={styles.meterHeader}>
           <span className={styles.meterTitle}>Daily Lucky Meter</span>
-
           <span className={styles.meterSubtitle}>Canada Resonance Index</span>
-          <div className={styles.meterRitualInfo}>
-            <p>Every day, the universe hums with a unique frequency.</p>
-            <p>Engage the meter to discover your daily resonance—a moment of digital divination just for fun. Will you reach Peak Radiance?</p>
-          </div>
-
         </div>
 
         <div className={styles.meterDialWrapper}>
@@ -379,7 +301,7 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
                 aria-hidden="true"
               >
                 <defs>
-                  <filter id={ledGlowId}>
+                  <filter id="ledGlow">
                     <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                     <feMerge>
                       <feMergeNode in="coloredBlur" />
@@ -393,8 +315,8 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
                   cx="100"
                   cy="100"
                   r="78"
+                  filter="url(#ledGlow)"
                   style={{ strokeDasharray: 490, strokeDashoffset: 490 }}
-                  filter={`url(#${ledGlowId})`}
                 />
               </svg>
 
@@ -406,6 +328,18 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
                 >
                   <div className={styles.meterVortexLayer} />
                 </div>
+
+                {meterState === "resonating" && (
+                  <div className={styles.sparkEmitter}>
+                    {Array.from({ length: 8 }).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className={styles.spark}
+                        style={{ "--i": idx } as React.CSSProperties}
+                      />
+                    ))}
+                  </div>
+                )}
 
                 <div className={styles.meterCenterContent}>
                   {meterState === "idle" && (
@@ -438,12 +372,12 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
                   )}
 
                   {meterState !== "locked" && meterState !== "resonating" && (
-                    <div
-                      ref={percentageRef}
-                      className={styles.meterCenterPercentageIdle}
-                    >
-                      0%
-                    </div>
+                        <div
+                          ref={percentageRef}
+                          className={styles.meterCenterPercentageIdle}
+                        >
+                          0%
+                        </div>
                   )}
                 </div>
               </div>
@@ -492,33 +426,12 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
             <span className={styles.meterCountdownLabel}>
               Next Resonance in:
             </span>
-            <span className={styles.meterCountdownValue}>{countdown}</span>
+            <span className={styles.meterCountdownValue}>
+              <MidnightCountdown onMidnight={handleMidnight}/>
+            </span>
           </div>
         </div>
       </div>
-
-      {showToast && (
-        <div style={{
-          position: 'fixed',
-          bottom: '24px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
-          color: '#fbbf24',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          border: '1px solid rgba(251, 191, 36, 0.3)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          zIndex: 9999,
-          fontWeight: 600,
-          fontSize: '0.9rem',
-          letterSpacing: '0.05em',
-          backdropFilter: 'blur(8px)',
-          animation: 'pulseNeon 1.5s infinite'
-        }}>
-          Copied resonance to clipboard!
-        </div>
-      )}
     </div>
   );
 };

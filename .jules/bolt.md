@@ -17,3 +17,7 @@ This journal records critical performance lessons, patterns, and anti-patterns e
 ## 2026-08-16 - Canvas Color Interpolation Optimization
 **Learning:** Using dynamic string interpolation (like \`rgba(..., ${alpha})\`) to set `ctx.fillStyle` inside a `requestAnimationFrame` loop creates massive garbage collection pressure, especially when iterating over thousands of particles per frame. This triggers frequent GC pauses that manifest as animation stutter.
 **Action:** Set a static hex or RGB color (e.g. `ctx.fillStyle = '#fff8df'`) outside the rendering loop or particle iteration. Inside the loop, adjust dynamic transparency solely through floating-point assignments to `ctx.globalAlpha`. Remember to reset `ctx.globalAlpha = 1.0` after the loop to prevent unintentional transparency on subsequent drawing operations.
+
+## 2026-08-22 - Extracted MidnightCountdown Component
+**Learning:** Found an instance of `setInterval` triggering full re-renders in `DailyLuckyMeter.tsx`.
+**Action:** Created `MidnightCountdown` component to isolate the countdown timer interval, thereby preventing unnecessary re-renders of the large parent SVG.
