@@ -162,7 +162,7 @@ export default function LuckyGenerator() {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const stored = JSON.parse(raw) as StoredResult;
-        if (stored && stored.dateKey === localDateKey() && typeof stored.score === 'number') {
+        if (stored && stored.dateKey === localDateKey() && typeof stored.score === 'number' && stored.score >= 0 && stored.score <= 100) {
           setScore(stored.score);
           setPhase('locked');
           setShowClock(true);
@@ -193,6 +193,7 @@ export default function LuckyGenerator() {
         setPhase('ready');
         setScore(null);
         setShowClock(false);
+        clearInterval(id);
       }
     }, 1000);
     return () => clearInterval(id);
