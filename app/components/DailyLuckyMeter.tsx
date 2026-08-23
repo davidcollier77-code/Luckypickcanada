@@ -32,7 +32,6 @@ const QUOTES: string[] = [
 ];
 
 const STORAGE_KEY = "dailyLuckyMeter";
-
 type MeterState = "idle" | "resonating" | "locked";
 
 interface StoredResult {
@@ -52,9 +51,7 @@ const getTodayKey = () => {
 };
 
 const getTierForScore = (score: number): TierConfig => {
-  return (
-    TIERS.find((tier) => score >= tier.min && score <= tier.max) || TIERS[0]
-  );
+  return TIERS.find((t) => score >= t.min && score <= t.max) || TIERS[0];
 };
 
 const getNextMidnight = () => {
@@ -90,27 +87,14 @@ const saveStoredResult = (result: StoredResult) => {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
-  } catch {
-    // ignore
-  }
+  } catch {}
 };
 
 const clearStoredResult = () => {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    // ignore
-  }
-};
-
-const getRandomScore = () => {
-  return Math.floor(Math.random() * (100 - 5 + 1)) + 5;
-};
-
-const getRandomQuote = () => {
-  const index = Math.floor(Math.random() * QUOTES.length);
-  return QUOTES[index];
+  } catch {}
 };
 
 const MidnightCountdown: React.FC<{ onMidnight: () => void }> = ({ onMidnight }) => {
@@ -122,9 +106,7 @@ const MidnightCountdown: React.FC<{ onMidnight: () => void }> = ({ onMidnight })
       const now = new Date();
       const diff = nextMidnight.getTime() - now.getTime();
       setCountdown(formatCountdown(diff));
-      if (diff <= 0) {
-        onMidnight();
-      }
+      if (diff <= 0) onMidnight();
     };
 
     update();
@@ -137,23 +119,21 @@ const MidnightCountdown: React.FC<{ onMidnight: () => void }> = ({ onMidnight })
 
 const DailyLuckyMeter: React.FC = () => {
   const [meterState, setMeterState] = useState<MeterState>("idle");
-  const [score, setScore] = useState<number | null>(null);
+  const [score, setScore] = useState<number>(0);
   const [tier, setTier] = useState<TierConfig | null>(null);
   const [quote, setQuote] = useState<string | null>(null);
+  const [ringColor, setRingColor] = useState<string>("#3a4048");
 
-  const svgCircleRef = useRef<SVGCircleElement | null>(null);
-  const percentageRef = useRef<HTMLDivElement | null>(null);
-  const vortexRef = useRef<HTMLDivElement | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
-
+  const animRef = useRef<number | null>(null);
   const todayKey = getTodayKey();
 
   const handleMidnight = useCallback(() => {
     clearStoredResult();
     setMeterState("idle");
-    setScore(null);
+    setScore(0);
     setTier(null);
     setQuote(null);
+    setRingColor("#3a4048");
   }, []);
 
   useEffect(() => {
@@ -164,104 +144,55 @@ const DailyLuckyMeter: React.FC = () => {
       const t = getTierForScore(stored.score);
       setTier(t);
       setQuote(stored.quote);
+      setRingColor(t.color);
     } else {
       setMeterState("idle");
     }
 
     return () => {
-      if (animationFrameRef.current !== null) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      if (animRef.current !== null) cancelAnimationFrame(animRef.current);
     };
   }, [todayKey]);
-
-  useEffect(() => {
-    if (!vortexRef.current) return;
-    vortexRef.current.dataset.state = meterState;
-  }, [meterState]);
-
-  useEffect(() => {
-    if (!svgCircleRef.current || !tier) return;
-    svgCircleRef.current.style.stroke = tier.color;
-  }, [tier]);
 
   const startResonance = () => {
     if (meterState !== "idle") return;
 
-    const previous = loadStoredResult();
-    let newScore = getRandomScore();
-    let newQuote = getRandomQuote();
+    const finalScore = Math.floor(Math.random() * (100 - 5 + 1)) + 5;
+    const finalQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    const finalTier = getTierForScore(finalScore);
 
-    if (previous) {
-      while (newScore === previous.score || newQuote === previous.quote) {
-        newScore = getRandomScore();
-        newQuote = getRandomQuote();
-      }
-    }
-
-    const targetTier = getTierForScore(newScore);
-    setTier(targetTier);
     setMeterState("resonating");
 
-    const circle = svgCircleRef.current;
-    const percentageEl = percentageRef.current;
-
-    if (!circle || !percentageEl) return;
-
-    let startTimestamp: number | null = null;
+    const startTime = performance.now();
     const duration = 10000;
 
-    let circumference = 0;
-    const radius = circle.r.baseVal.value;
-    circumference = 2 * Math.PI * radius;
-    circle.style.strokeDasharray = `${circumference}`;
-
     const animate = (now: number) => {
-      if (startTimestamp === null) {
-        startTimestamp = now;
-      }
-      const elapsed = now - startTimestamp;
+      const elapsed = now - startTime;
       const t = Math.min(elapsed / duration, 1);
       const eased = easeOutCubic(t);
-      const currentScore = Math.round(newScore * eased);
+      const currentVal = Math.round(finalScore * eased);
 
-      percentageEl.textContent = `${currentScore}%`;
-
-      if (circumference > 0) {
-        const offset = circumference - (circumference * currentScore) / 100;
-        circle.style.strokeDashoffset = `${offset}`;
-
-        if (t < 1) {
-          // Rapidly cycle through the 5 tier colors during resonating state
-          const flickerIndex = Math.floor(elapsed / 100) % TIERS.length;
-          circle.style.stroke = TIERS[flickerIndex].color;
-        } else {
-          // Snap to the final winning color at the end
-          circle.style.stroke = targetTier.color;
-        }
-      }
+      setScore(currentVal);
 
       if (t < 1) {
-        animationFrameRef.current = requestAnimationFrame(animate);
+        const flickerIdx = Math.floor(elapsed / 100) % TIERS.length;
+        setRingColor(TIERS[flickerIdx].color);
+        animRef.current = requestAnimationFrame(animate);
       } else {
-        setScore(newScore);
-        setQuote(newQuote);
+        setScore(finalScore);
+        setTier(finalTier);
+        setQuote(finalQuote);
+        setRingColor(finalTier.color);
         setMeterState("locked");
-        percentageEl.textContent = `${newScore}%`;
-
-        if (circumference > 0) {
-          const offset = circumference - (circumference * newScore) / 100;
-          circle.style.strokeDashoffset = `${offset}`;
-        }
         saveStoredResult({
           date: todayKey,
-          score: newScore,
-          quote: newQuote,
+          score: finalScore,
+          quote: finalQuote,
         });
       }
     };
 
-    animationFrameRef.current = requestAnimationFrame(animate);
+    animRef.current = requestAnimationFrame(animate);
   };
 
   const handleShare = async () => {
@@ -269,20 +200,22 @@ const DailyLuckyMeter: React.FC = () => {
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
     try {
       await navigator.clipboard.writeText(text);
-    } catch {
-      // ignore
-    }
+    } catch {}
   };
 
-  const currentTierName = tier?.name ?? "NORTHERN RESONANCE";
+  const circumference = 490;
+  const strokeDashoffset = meterState === "idle"
+    ? circumference
+    : circumference - (circumference * score) / 100;
 
   return (
     <div className={styles.meterContainer}>
-      <div className={styles.meterNav} style={{ position: "relative", zIndex: 30 }}>
+      <div className={styles.meterNav}>
         <a href="/" className={styles.backHomeButton}>
           ← Back to Home
         </a>
       </div>
+
       <div className={styles.introCard}>
         <div className={styles.introBadge}>DAILY CANADIAN RITUAL</div>
         <h1 className={styles.introHeading}>Canada Resonance Index</h1>
@@ -310,11 +243,7 @@ const DailyLuckyMeter: React.FC = () => {
                 />
               ))}
 
-              <svg
-                className={styles.meterRingSvg}
-                viewBox="0 0 200 200"
-                aria-hidden="true"
-              >
+              <svg className={styles.meterRingSvg} viewBox="0 0 200 200" aria-hidden="true">
                 <defs>
                   <filter id="ledGlow">
                     <feGaussianBlur stdDeviation="3" result="coloredBlur" />
@@ -325,32 +254,31 @@ const DailyLuckyMeter: React.FC = () => {
                   </filter>
                 </defs>
                 <circle
-                  ref={svgCircleRef}
                   className={styles.meterRingCircle}
                   cx="100"
                   cy="100"
                   r="78"
                   filter="url(#ledGlow)"
-                  style={{ strokeDasharray: 490, strokeDashoffset: 490 }}
+                  style={{
+                    strokeDasharray: circumference,
+                    strokeDashoffset: strokeDashoffset,
+                    stroke: ringColor,
+                  }}
                 />
               </svg>
 
               <div className={styles.meterCenterHub}>
-                <div
-                  ref={vortexRef}
-                  className={styles.meterVortex}
-                  data-state={meterState}
-                >
+                <div className={styles.meterVortex} data-state={meterState}>
                   <div className={styles.meterVortexLayer} />
                 </div>
 
                 {meterState === "resonating" && (
                   <div className={styles.sparkEmitter}>
-                    {Array.from({ length: 8 }).map((_, sparkIdx) => (
+                    {Array.from({ length: 8 }).map((_, idx) => (
                       <div
-                        key={sparkIdx}
+                        key={idx}
                         className={styles.spark}
-                        style={{ "--i": sparkIdx } as React.CSSProperties}
+                        style={{ "--i": idx } as React.CSSProperties}
                       />
                     ))}
                   </div>
@@ -361,41 +289,22 @@ const DailyLuckyMeter: React.FC = () => {
                     <>
                       <div className={styles.meterIconBolt}>⚡</div>
                       <div className={styles.meterCenterLabel}>READY</div>
+                      <div className={styles.meterCenterPercentageIdle}>0%</div>
                     </>
                   )}
 
                   {meterState === "resonating" && (
                     <>
-                      <div className={styles.meterCenterLabelResonating}>
-                        RESONATING...
-                      </div>
+                      <div className={styles.meterCenterLabelResonating}>RESONATING...</div>
+                      <div className={styles.meterCenterPercentage}>{score}%</div>
                     </>
                   )}
 
-                  <div
-                    ref={percentageRef}
-                    className={
-                      meterState === "locked" || meterState === "resonating"
-                        ? styles.meterCenterPercentage
-                        : styles.meterCenterPercentageIdle
-                    }
-                    style={{
-                      display: "block"
-                    }}
-                  >
-                    {meterState === "idle"
-                      ? "0%"
-                      : meterState === "resonating"
-                      ? "0%"
-                      : score !== null
-                      ? `${score}%`
-                      : ""}
-                  </div>
-
                   {meterState === "locked" && (
-                    <div className={styles.meterCenterTier}>
-                      {currentTierName}
-                    </div>
+                    <>
+                      <div className={styles.meterCenterPercentage}>{score}%</div>
+                      <div className={styles.meterCenterTier}>{tier?.name ?? "NORTHERN RESONANCE"}</div>
+                    </>
                   )}
                 </div>
               </div>
@@ -421,12 +330,8 @@ const DailyLuckyMeter: React.FC = () => {
           {meterState === "locked" && (
             <>
               <div className={styles.meterAttunementCard}>
-                <div className={styles.meterAttunementHeader}>
-                  Attunement Card
-                </div>
-                <div className={styles.meterAttunementBody}>
-                  {quote}
-                </div>
+                <div className={styles.meterAttunementHeader}>Attunement Card</div>
+                <div className={styles.meterAttunementBody}>{quote}</div>
               </div>
               <div className={styles.meterActionsRow}>
                 <button
@@ -437,19 +342,13 @@ const DailyLuckyMeter: React.FC = () => {
                   SHARE RESONANCE
                 </button>
               </div>
-
+              <div className={styles.meterCountdownRow}>
+                <span className={styles.meterCountdownLabel}>Next Resonance in:</span>
+                <span className={styles.meterCountdownValue}>
+                  <MidnightCountdown onMidnight={handleMidnight} />
+                </span>
+              </div>
             </>
-          )}
-
-          {meterState === "locked" && (
-            <div className={styles.meterCountdownRow}>
-              <span className={styles.meterCountdownLabel}>
-                Next Resonance in:
-              </span>
-              <span className={styles.meterCountdownValue}>
-                <MidnightCountdown onMidnight={handleMidnight}/>
-              </span>
-            </div>
           )}
         </div>
       </div>
