@@ -85,13 +85,13 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
           )}
           {type === 'gift_package' && (
             <>
-              <label>Recipient name<input name="recipientName" required maxLength="80" autoComplete="name" /></label>
-              <label>Recipient email<input name="recipientEmail" type="email" required maxLength="120" autoComplete="email" /></label>
-              <label>Your name<input name="senderName" maxLength="80" autoComplete="name" /></label>
-              <label>Personal message<textarea name="giftMessage" maxLength="500" rows="3" /></label>
+              <label><span className="inline-flex items-center gap-1">Recipient name<span aria-hidden="true" className="text-red-500">*</span></span><input name="recipientName" required maxLength="80" autoComplete="name" /></label>
+              <label><span className="inline-flex items-center gap-1">Recipient email<span aria-hidden="true" className="text-red-500">*</span></span><input name="recipientEmail" type="email" required maxLength="120" autoComplete="email" /></label>
+              <label><span className="inline-flex items-center gap-1">Your name<span className="text-gray-400 font-normal text-[0.85em]">(optional)</span></span><input name="senderName" maxLength="80" autoComplete="name" /></label>
+              <label><span className="inline-flex items-center gap-1">Personal message<span className="text-gray-400 font-normal text-[0.85em]">(optional)</span></span><textarea name="giftMessage" maxLength="500" rows="3" /></label>
             </>
           )}
-          {type === 'tip' && <label>Tip amount (CAD)<input name="tipAmount" type="number" min="0.50" step="0.01" inputMode="decimal" required placeholder="5.00" /></label>}
+          {type === 'tip' && <label><span className="inline-flex items-center gap-1">Tip amount (CAD)<span aria-hidden="true" className="text-red-500">*</span></span><input name="tipAmount" type="number" min="0.50" step="0.01" inputMode="decimal" required placeholder="5.00" /></label>}
           <button type="submit" className="checkout-modal-submit">Continue to secure checkout</button>
         </form>
       </section>
