@@ -149,7 +149,9 @@ export default function LuckyGenerator() {
   const [flickerScore, setFlickerScore] = useState(0);
   const [remainingMs, setRemainingMs] = useState(0);
   const [showClock, setShowClock] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
+  const cardRef = useRef<HTMLDivElement>(null);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clockDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasActivatedRef = useRef(false); // guards against rapid double-click races
@@ -200,12 +202,25 @@ export default function LuckyGenerator() {
   }, [phase]);
 
   // Cosmetic flicker digits during the reveal (decorative only, aria-hidden)
+  // + Haptic feedback pulse
   useEffect(() => {
     if (phase !== 'revealing') return;
     const id = setInterval(() => {
       setFlickerScore(Math.floor(Math.random() * 101));
     }, 110);
-    return () => clearInterval(id);
+
+    const hapticId = setInterval(() => {
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate(30);
+        } catch {}
+      }
+    }, 600);
+
+    return () => {
+      clearInterval(id);
+      clearInterval(hapticId);
+    };
   }, [phase]);
 
   // Cleanup any pending timeouts on unmount
@@ -216,6 +231,66 @@ export default function LuckyGenerator() {
     },
     []
   );
+
+  const handleShare = useCallback(async () => {
+    if (!cardRef.current || !tier || score === null) return;
+
+    try {
+      setIsSharing(true);
+
+      // Inject temporary styles to freeze animations for a crisp snapshot
+      const style = document.createElement('style');
+      style.innerHTML = '* { animation: none !important; transition: none !important; }';
+      document.head.appendChild(style);
+
+      // Wait a tick for styles to apply and UI to hide the share button
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      let canvas;
+      try {
+        const html2canvas = (await import('html2canvas')).default;
+        canvas = await html2canvas(cardRef.current, {
+          backgroundColor: '#05070d', // Match the body background
+          scale: 2,
+          logging: false,
+          useCORS: true,
+        });
+      } finally {
+        document.head.removeChild(style);
+      }
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+
+        const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
+        const text = `The sky answered. I pulled a ${score}% on Lucky Pick Canada today! ✨`;
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: 'Lucky Pick Canada',
+              text: text,
+              files: [file],
+            });
+          } catch (err) {
+            // User aborted or sharing failed
+          }
+        } else {
+          // Fallback
+          try {
+            await navigator.clipboard.writeText(text);
+            alert('Score copied to clipboard!');
+          } catch (err) {
+            // Clipboard failed
+          }
+        }
+      }, 'image/png');
+    } catch (err) {
+      console.error('Error sharing:', err);
+    } finally {
+      setIsSharing(false);
+    }
+  }, [score, tier]);
 
   const handleActivate = useCallback(() => {
     if (phase !== 'ready' || hasActivatedRef.current) return;
@@ -228,6 +303,12 @@ export default function LuckyGenerator() {
     revealTimeoutRef.current = setTimeout(() => {
       setScore(finalScore);
       setPhase('locked');
+
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate([200, 100, 200]);
+        } catch {}
+      }
       try {
         const record: StoredResult = {
           score: finalScore,
@@ -251,6 +332,18 @@ export default function LuckyGenerator() {
       s: pad(total % 60),
     };
   }, [remainingMs]);
+
+  // Ambient Stardust Particles
+  const stardustParticles = useMemo(() => {
+    return Array.from({ length: 8 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      size: `${Math.random() * 3 + 2}px`,
+      duration: `${Math.random() * 4 + 4}s`,
+      delay: `${Math.random() * 4}s`,
+      opacity: Math.random() * 0.4 + 0.3,
+    }));
+  }, []);
 
   return (
     <div
@@ -318,15 +411,36 @@ export default function LuckyGenerator() {
 
       {/* Ritual card */}
       <main className="relative z-10 w-full max-w-md">
-        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-10 shadow-[0_0_90px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:px-10 sm:py-12">
+        <div ref={cardRef} className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-10 shadow-[0_0_90px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:px-10 sm:py-12">
+
+          {/* Ambient Stardust Layer */}
+          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+            {stardustParticles.map((p) => (
+              <div
+                key={p.id}
+                className="lg-stardust absolute bottom-0 rounded-full"
+                style={{
+                  left: p.left,
+                  width: p.size,
+                  height: p.size,
+                  backgroundColor: tier?.glow || '#ffffff',
+                  boxShadow: `0 0 8px ${tier?.glow || '#ffffff'}`,
+                  animationDuration: p.duration,
+                  animationDelay: p.delay,
+                  '--max-opacity': p.opacity,
+                  filter: 'blur(1px)'
+                } as React.CSSProperties}
+              />
+            ))}
+          </div>
           <p
-            className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45"
+            className="relative z-10 mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45"
             style={{ fontFamily: 'var(--font-lg-body)' }}
           >
             Daily Resonance Ritual
           </p>
 
-          <div className="lg-stage-enter flex min-h-[260px] flex-col items-center justify-center text-center" key={phase}>
+          <div className="lg-stage-enter relative z-10 flex min-h-[260px] flex-col items-center justify-center text-center" key={phase}>
             {phase === 'loading' && <div aria-hidden="true" />}
 
             {phase === 'ready' && (
@@ -411,6 +525,24 @@ export default function LuckyGenerator() {
                 >
                   until the sky renews
                 </p>
+
+                {/* Share Button */}
+                {!isSharing && (
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className={`mt-8 flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-xs font-semibold tracking-wide text-white transition-all duration-700 ease-out hover:bg-white/[0.1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B48CFF] ${
+                      showClock ? 'opacity-100' : 'translate-y-1.5 opacity-0'
+                    }`}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                      <polyline points="16 6 12 2 8 6"></polyline>
+                      <line x1="12" y1="2" x2="12" y2="15"></line>
+                    </svg>
+                    Share My Resonance
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -638,6 +770,27 @@ export default function LuckyGenerator() {
           }
           50% {
             opacity: 0.25;
+          }
+        }
+        .lg-stardust {
+          animation: lgStardustDrift linear infinite;
+          will-change: transform, opacity;
+          transform: translateZ(0);
+        }
+        @keyframes lgStardustDrift {
+          0% {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          20% {
+            opacity: var(--max-opacity, 0.8);
+          }
+          80% {
+            opacity: var(--max-opacity, 0.8);
+          }
+          100% {
+            transform: translateY(-400px);
+            opacity: 0;
           }
         }
 
