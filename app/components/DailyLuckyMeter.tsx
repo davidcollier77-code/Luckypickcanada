@@ -231,9 +231,11 @@ const DailyLuckyMeter: React.FC = () => {
         circle.style.strokeDashoffset = `${offset}`;
 
         if (t < 1) {
-          const colorIndex = Math.floor(elapsed / 120) % TIERS.length;
-          circle.style.stroke = TIERS[colorIndex].color;
+          // Rapidly cycle through the 5 tier colors during resonating state
+          const flickerIndex = Math.floor(elapsed / 100) % TIERS.length;
+          circle.style.stroke = TIERS[flickerIndex].color;
         } else {
+          // Snap to the final winning color at the end
           circle.style.stroke = targetTier.color;
         }
       }
@@ -331,11 +333,11 @@ const DailyLuckyMeter: React.FC = () => {
 
                 {meterState === "resonating" && (
                   <div className={styles.sparkEmitter}>
-                    {Array.from({ length: 8 }).map((_, idx) => (
+                    {Array.from({ length: 8 }).map((_, sparkIdx) => (
                       <div
-                        key={idx}
+                        key={sparkIdx}
                         className={styles.spark}
-                        style={{ "--i": idx } as React.CSSProperties}
+                        style={{ "--i": sparkIdx } as React.CSSProperties}
                       />
                     ))}
                   </div>
@@ -419,17 +421,20 @@ const DailyLuckyMeter: React.FC = () => {
                   SHARE RESONANCE
                 </button>
               </div>
-          <div className={styles.meterCountdownRow}>
-            <span className={styles.meterCountdownLabel}>
-              Next Resonance in:
-            </span>
-            <span className={styles.meterCountdownValue}>
-              <MidnightCountdown onMidnight={handleMidnight}/>
-            </span>
-          </div>
+
             </>
           )}
 
+          {meterState === "locked" && (
+            <div className={styles.meterCountdownRow}>
+              <span className={styles.meterCountdownLabel}>
+                Next Resonance in:
+              </span>
+              <span className={styles.meterCountdownValue}>
+                <MidnightCountdown onMidnight={handleMidnight}/>
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
