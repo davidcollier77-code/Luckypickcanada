@@ -239,8 +239,8 @@ export default function LuckyGenerator() {
       setIsSharing(true);
 
       // Inject temporary styles to freeze animations for a crisp snapshot
-      style.innerHTML = '.lg-root * { animation: none !important; transition: none !important; }';
-      style.innerHTML = '* { animation: none !important; transition: none !important; }';
+      const style = document.createElement('style');
+      style.innerHTML = '.lg-root *, .lg-root { animation: none !important; transition: none !important; }';
       document.head.appendChild(style);
 
       // Wait a tick for styles to apply and UI to hide the share button
@@ -260,12 +260,8 @@ export default function LuckyGenerator() {
           document.head.removeChild(style);
         }
       }
-      if (!canvas) {
-        console.error('Failed to generate canvas');
-        return;
-      }
 
-      canvas.toBlob(async (blob) => {
+      if (!canvas) return;
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
@@ -800,12 +796,6 @@ export default function LuckyGenerator() {
             opacity: 0;
           }
         }
-        @media (prefers-reduced-motion: reduce) {
-          .lg-stardust {
-            animation: none !important;
-          }
-        }
-
 
         @media (prefers-reduced-motion: reduce) {
           .lg-stars,
@@ -815,7 +805,8 @@ export default function LuckyGenerator() {
           .lg-button-glow,
           .lg-stage-enter,
           .lg-score-pop,
-          .lg-clock-colon {
+          .lg-clock-colon,
+          .lg-stardust {
             animation: none !important;
           }
           .lg-ribbon-wrap {
