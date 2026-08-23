@@ -40,8 +40,6 @@ interface StoredResult {
   quote: string;
 }
 
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-
 const getTodayKey = () => {
   const now = new Date();
   const year = now.getFullYear();
@@ -124,7 +122,7 @@ const DailyLuckyMeter: React.FC = () => {
   const [quote, setQuote] = useState<string | null>(null);
   const [ringColor, setRingColor] = useState<string>("#3a4048");
 
-  const animRef = useRef<number | null>(null);
+  const timerRef = useRef<number | null>(null);
   const todayKey = getTodayKey();
 
   const handleMidnight = useCallback(() => {
@@ -150,9 +148,20 @@ const DailyLuckyMeter: React.FC = () => {
     }
 
     return () => {
-      if (animRef.current !== null) cancelAnimationFrame(animRef.current);
+      if (timerRef.current !== null) {
+        clearInterval(timerRef.current);
+      }
     };
   }, [todayKey]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
 
   const startResonance = () => {
     if (meterState !== "idle") return;
@@ -163,22 +172,31 @@ const DailyLuckyMeter: React.FC = () => {
 
     setMeterState("resonating");
 
-    const startTime = performance.now();
+    const startTime = Date.now();
     const duration = 10000;
 
-    const animate = (now: number) => {
-      const elapsed = now - startTime;
-      const t = Math.min(elapsed / duration, 1);
-      const eased = easeOutCubic(t);
-      const currentVal = Math.round(finalScore * eased);
+    if (timerRef.current !== null) {
+      clearInterval(timerRef.current);
+    }
+
+    timerRef.current = window.setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const currentVal = Math.min(Math.round(finalScore * eased), finalScore);
 
       setScore(currentVal);
 
-      if (t < 1) {
-        const flickerIdx = Math.floor(elapsed / 100) % TIERS.length;
-        setRingColor(TIERS[flickerIdx].color);
-        animRef.current = requestAnimationFrame(animate);
-      } else {
+      const colorIdx = Math.floor(elapsed / 120) % TIERS.length;
+      if (TIERS[colorIdx]) {
+        setRingColor(TIERS[colorIdx].color);
+      }
+
+      if (progress >= 1) {
+        if (timerRef.current !== null) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
         setScore(finalScore);
         setTier(finalTier);
         setQuote(finalQuote);
@@ -190,13 +208,11 @@ const DailyLuckyMeter: React.FC = () => {
           quote: finalQuote,
         });
       }
-    };
-
-    animRef.current = requestAnimationFrame(animate);
+    }, 40);
   };
 
   const handleShare = async () => {
-    if (!score || !tier) return;
+    if (!tier || score === 0) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
     try {
       await navigator.clipboard.writeText(text);
