@@ -17,6 +17,9 @@ def run_cuj(page):
     page.wait_for_timeout(1000)  # Hold final state for the video
 
 if __name__ == "__main__":
+    os.makedirs("/home/jules/verification/videos", exist_ok=True)
+    os.makedirs("/home/jules/verification/screenshots", exist_ok=True)
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(
