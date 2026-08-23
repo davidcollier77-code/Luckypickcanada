@@ -7,6 +7,7 @@ const heroLinks = [
   { href: '/lucky-meter', label: 'Lucky Meter' },
   { href: '#cards', label: "Today's Lucky Moment" },
   { href: '#community-map', label: 'Community Map' },
+  { href: '#crystal-ball', label: 'Crystal Ball' },
   { href: 'https://www.facebook.com/groups/1060808069624999/', label: 'Facebook Group', external: true },
 ];
 

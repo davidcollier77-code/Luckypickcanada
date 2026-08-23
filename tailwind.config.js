@@ -26,6 +26,7 @@ module.exports = {
         'vortex-spin-reverse': 'vortexSpinReverse 6s linear infinite',
         'spin-slow': 'spin 25s linear infinite',
         'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+        'pulse-scale': 'pulseScale 2s ease-in-out infinite',
         'aurora-1': 'auroraWave 20s ease-in-out infinite alternate',
         'aurora-2': 'auroraWave 25s ease-in-out infinite alternate-reverse',
         'aurora-3': 'auroraWave 30s ease-in-out infinite alternate',
@@ -68,6 +69,10 @@ module.exports = {
         pulseGlow: {
           '0%, 100%': { opacity: 0.6, transform: 'scale(1)' },
           '50%': { opacity: 1, transform: 'scale(1.03)' },
+        },
+        pulseScale: {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.03)' },
         },
         auroraWave: {
           '0%': { transform: 'translateY(0) scaleX(1)', opacity: 0.3 },

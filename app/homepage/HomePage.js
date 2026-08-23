@@ -113,7 +113,7 @@ export default function HomePage() {
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <button type="button" className="cta-glow transition-transform hover:scale-105" onClick={openTipJar}>Open the tip jar</button>
+            <div className="animate-pulse-scale inline-block"><button type="button" className="cta-glow transition-transform hover:scale-105" onClick={openTipJar}>Open the tip jar</button></div>
           </article>
         </div>
       </section>
@@ -125,7 +125,7 @@ export default function HomePage() {
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
           <Link href="/stories" className="cta-glow transition-transform hover:scale-105">See Our Story Section</Link>
         </article>
-        <article className="homepage-community-card">
+        <article id="crystal-ball" className="homepage-community-card">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
           <h2>Consult the Lucky Crystal Ball</h2>
           <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
