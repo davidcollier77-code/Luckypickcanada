@@ -419,9 +419,6 @@ const DailyLuckyMeter: React.FC = () => {
                   SHARE RESONANCE
                 </button>
               </div>
-            </>
-          )}
-
           <div className={styles.meterCountdownRow}>
             <span className={styles.meterCountdownLabel}>
               Next Resonance in:
@@ -430,6 +427,9 @@ const DailyLuckyMeter: React.FC = () => {
               <MidnightCountdown onMidnight={handleMidnight}/>
             </span>
           </div>
+            </>
+          )}
+
         </div>
       </div>
     </div>
