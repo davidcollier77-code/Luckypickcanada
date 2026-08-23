@@ -379,9 +379,6 @@ const DailyLuckyMeter: React.FC = () => {
                         ? styles.meterCenterPercentage
                         : styles.meterCenterPercentageIdle
                     }
-                    style={{
-                      display: "block"
-                    }}
                   >
                     {meterState === "idle"
                       ? "0%"
