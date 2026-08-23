@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useId } from "react";
+import React, { useEffect, useRef, useState, useId, useCallback } from "react";
 import html2canvas from "html2canvas";
 import styles from "./LuckyMeter.module.css";
 
@@ -114,6 +114,144 @@ const getRandomQuote = () => {
   return QUOTES[index];
 };
 
+
+
+interface MidnightCountdownProps {
+  onMidnight: () => void;
+}
+
+// ⚡ Bolt: Extracting the timer isolates state and prevents the main SVG and UI from re-rendering every second.
+const MidnightCountdown: React.FC<MidnightCountdownProps> = ({ onMidnight }) => {
+
+  useEffect(() => {
+    const update = () => {
+      const nextMidnight = getNextMidnight();
+      const now = new Date();
+      const diff = nextMidnight.getTime() - now.getTime();
+      setCountdown(formatCountdown(diff));
+      if (diff <= 0) {
+        onMidnight();
+      }
+    };
+
+    update();
+    const interval = window.setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [onMidnight]);
+
+  return <MidnightCountdown onMidnight={handleMidnight} />;
+};
+
+
+
+interface MidnightCountdownProps {
+  onMidnight: () => void;
+}
+
+// ⚡ Bolt: Extracting the timer isolates state and prevents the main SVG and UI from re-rendering every second.
+const MidnightCountdown: React.FC<MidnightCountdownProps> = ({ onMidnight }) => {
+
+  useEffect(() => {
+    const update = () => {
+      const nextMidnight = getNextMidnight();
+      const now = new Date();
+      const diff = nextMidnight.getTime() - now.getTime();
+      setCountdown(formatCountdown(diff));
+      if (diff <= 0) {
+        onMidnight();
+      }
+    };
+
+    update();
+    const interval = window.setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [onMidnight]);
+
+  return <MidnightCountdown onMidnight={handleMidnight} />;
+};
+
+
+
+interface MidnightCountdownProps {
+  onMidnight: () => void;
+}
+
+// ⚡ Bolt: Extracting the timer isolates state and prevents the main SVG and UI from re-rendering every second.
+const MidnightCountdown: React.FC<MidnightCountdownProps> = ({ onMidnight }) => {
+
+  useEffect(() => {
+    const update = () => {
+      const nextMidnight = getNextMidnight();
+      const now = new Date();
+      const diff = nextMidnight.getTime() - now.getTime();
+      setCountdown(formatCountdown(diff));
+      if (diff <= 0) {
+        onMidnight();
+      }
+    };
+
+    update();
+    const interval = window.setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [onMidnight]);
+
+  return <MidnightCountdown onMidnight={handleMidnight} />;
+};
+
+
+interface MidnightCountdownProps {
+  onMidnight: () => void;
+}
+
+// ⚡ Bolt: Extracting the timer isolates state and prevents the main SVG and UI from re-rendering every second.
+const MidnightCountdown: React.FC<MidnightCountdownProps> = ({ onMidnight }) => {
+
+  useEffect(() => {
+    const update = () => {
+      const nextMidnight = getNextMidnight();
+      const now = new Date();
+      const diff = nextMidnight.getTime() - now.getTime();
+      setCountdown(formatCountdown(diff));
+      if (diff <= 0) {
+        onMidnight();
+      }
+    };
+
+    update();
+    const interval = window.setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [onMidnight]);
+
+  return <MidnightCountdown onMidnight={handleMidnight} />;
+};
+
+
+interface MidnightCountdownProps {
+  onMidnight: () => void;
+}
+
+// ⚡ Bolt: Extracting the timer isolates state and prevents the main SVG and UI from re-rendering every second.
+const MidnightCountdown: React.FC<MidnightCountdownProps> = ({ onMidnight }) => {
+
+  useEffect(() => {
+    const update = () => {
+      const nextMidnight = getNextMidnight();
+      const now = new Date();
+      const diff = nextMidnight.getTime() - now.getTime();
+      setCountdown(formatCountdown(diff));
+      if (diff <= 0) {
+        onMidnight();
+      }
+    };
+
+    update();
+    const interval = window.setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [onMidnight]);
+
+  return <MidnightCountdown onMidnight={handleMidnight} />;
+};
+
 interface DailyLuckyMeterProps {
   onStateChange?: (state: MeterState) => void;
 }
@@ -125,31 +263,23 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
   const [score, setScore] = useState<number | null>(null);
   const [tier, setTier] = useState<TierConfig | null>(null);
   const [quote, setQuote] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState<string>("00h 00m 00s");
   const [showToast, setShowToast] = useState(false);
 
   const svgCircleRef = useRef<SVGCircleElement | null>(null);
   const percentageRef = useRef<HTMLDivElement | null>(null);
   const vortexRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const countdownIntervalRef = useRef<number | null>(null);
   const meterShellRef = useRef<HTMLDivElement | null>(null);
 
   const todayKey = getTodayKey();
 
-  const updateCountdown = () => {
-    const nextMidnight = getNextMidnight();
-    const now = new Date();
-    const diff = nextMidnight.getTime() - now.getTime();
-    setCountdown(formatCountdown(diff));
-    if (diff <= 0) {
-      clearStoredResult();
-      setMeterState("idle");
-      setScore(null);
-      setTier(null);
-      setQuote(null);
-    }
-  };
+  const handleMidnight = useCallback(() => {
+    clearStoredResult();
+    setMeterState("idle");
+    setScore(null);
+    setTier(null);
+    setQuote(null);
+  }, []);
 
   useEffect(() => {
     const stored = loadStoredResult();
@@ -163,15 +293,9 @@ const DailyLuckyMeter: React.FC<DailyLuckyMeterProps> = ({ onStateChange }) => {
       setMeterState("idle");
     }
 
-    updateCountdown();
-    countdownIntervalRef.current = window.setInterval(updateCountdown, 1000);
-
     return () => {
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (countdownIntervalRef.current !== null) {
-        clearInterval(countdownIntervalRef.current);
       }
     };
   }, [todayKey]);
