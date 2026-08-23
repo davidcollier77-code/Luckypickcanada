@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "latest",
+    "@types/node": "26.2.0",
     "@types/react": "^19.2.18",
     "autoprefixer": "^10.4.21",
     "playwright": "^1.62.1",

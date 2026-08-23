@@ -223,7 +223,7 @@ const DailyLuckyMeter: React.FC = () => {
       const currentScore = Math.round(newScore * eased);
 
       if (percentageEl) {
-        percentageEl.textContent = `${currentScore}%`;
+        percentageEl.innerText = `${currentScore}%`;
       }
 
       if (circle && circumference > 0) {
@@ -247,7 +247,7 @@ const DailyLuckyMeter: React.FC = () => {
         setQuote(newQuote);
         setMeterState("locked");
         if (percentageEl) {
-          percentageEl.textContent = `${newScore}%`;
+          percentageEl.innerText = `${newScore}%`;
         }
         if (circle && circumference > 0) {
           const offset = circumference - (circumference * newScore) / 100;
@@ -278,6 +278,19 @@ const DailyLuckyMeter: React.FC = () => {
 
   return (
     <div className={styles.meterContainer}>
+      <div className={styles.meterNav} style={{ position: "relative", zIndex: 30 }}>
+        <a href="/" className={styles.backHomeButton}>
+          ← Back to Home
+        </a>
+      </div>
+      <div className={styles.introCard}>
+        <div className={styles.introBadge}>DAILY CANADIAN RITUAL</div>
+        <h1 className={styles.introHeading}>Canada Resonance Index</h1>
+        <p className={styles.introText}>
+          Calibrate your daily fortune across the northern expanse. Engage the resonance instrument once every 24 hours to measure your energetic alignment from coast to coast, reveal your tier rating, and unlock your daily attunement wisdom.
+        </p>
+      </div>
+
       <div className={styles.meterShell}>
         <div className={styles.meterHeader}>
           <span className={styles.meterTitle}>Daily Lucky Meter</span>
@@ -355,6 +368,12 @@ const DailyLuckyMeter: React.FC = () => {
                     <>
                       <div className={styles.meterCenterLabelResonating}>
                         RESONATING...
+                      </div>
+                      <div
+                        ref={percentageRef}
+                        className={styles.meterCenterPercentage}
+                      >
+                        0%
                       </div>
                     </>
                   )}
