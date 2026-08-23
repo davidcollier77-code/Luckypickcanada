@@ -88,9 +88,11 @@ export default function LuckyCardReveal() {
       
       {/* 1. Countdown & Draw Button */}
       <div className="w-full flex flex-col items-center text-center space-y-2">
-        <div className="text-lg font-bold text-gray-300">
-          Resets in: <MidnightCountdown fallback="--h --m --s"/>
-        </div>
+        {isReady && isRevealed && selectedCard && (
+          <div className="text-lg font-bold text-gray-300">
+            Resets in: <MidnightCountdown fallback="--h --m --s"/>
+          </div>
+        )}
 
         {isReady && !isRevealed && !selectedCard && (
           <button
