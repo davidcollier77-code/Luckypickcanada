@@ -580,34 +580,35 @@
 
 .sparkEmitter {
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 3;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  z-index: 20;
 }
 
 .spark {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 3px;
-  height: 14px;
-  background: #ffffff;
+  top: -6px;
+  left: -2px;
+  width: 4px;
+  height: 16px;
+  background: #fde68a;
   border-radius: 4px;
-  box-shadow: 0 0 10px 2px var(--conduit);
+  box-shadow: 0 0 10px 2px rgba(253, 230, 138, 0.8);
   opacity: 0;
-  will-change: transform, opacity;
-  animation: shootSpark 0.6s ease-out infinite;
-  animation-delay: calc(var(--i) * 0.075s);
+  transform: rotate(calc(var(--i) * 45deg)) translateY(0);
+  animation: sparkFly 1.2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+  animation-delay: calc(var(--i) * 0.1s);
 }
 
-@keyframes shootSpark {
+@keyframes sparkFly {
   0% {
+    transform: rotate(calc(var(--i) * 45deg)) translateY(-20px) scale(1);
     opacity: 1;
-    transform: translate(-50%, -50%) rotate(calc(var(--i) * 45deg)) translateY(-25px) scale(1) translateZ(0);
   }
   100% {
+    transform: rotate(calc(var(--i) * 45deg)) translateY(-90px) scale(0);
     opacity: 0;
-    transform: translate(-50%, -50%) rotate(calc(var(--i) * 45deg)) translateY(-75px) scale(0) translateZ(0);
   }
 }
