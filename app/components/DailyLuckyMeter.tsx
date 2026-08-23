@@ -146,19 +146,12 @@ const DailyLuckyMeter: React.FC = () => {
     } else {
       setMeterState("idle");
     }
-
-    return () => {
-      if (timerRef.current !== null) {
-        clearInterval(timerRef.current);
-      }
-    };
   }, [todayKey]);
 
   useEffect(() => {
     return () => {
       if (timerRef.current !== null) {
         clearInterval(timerRef.current);
-        timerRef.current = null;
       }
     };
   }, []);
