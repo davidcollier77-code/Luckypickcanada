@@ -21,3 +21,7 @@ This journal records critical performance lessons, patterns, and anti-patterns e
 ## 2026-08-22 - Extracted MidnightCountdown Component
 **Learning:** Found an instance of `setInterval` triggering full re-renders in `DailyLuckyMeter.tsx`.
 **Action:** Created `MidnightCountdown` component to isolate the countdown timer interval, thereby preventing unnecessary re-renders of the large parent SVG.
+
+## 2026-08-23 - SVG Array Reallocation in setInterval
+**Learning:** In React components that trigger rapid state updates (e.g., a `setInterval` firing every 40ms to animate a score), inline generation of static arrays (like `Array.from({ length: 12 }).map(...)`) causes the engine to allocate new array objects and JSX elements 25 times a second. This leads to heavy garbage collection pressure and can stutter mobile GPUs.
+**Action:** Always wrap static, programmatically generated arrays of JSX/SVG elements in a `useMemo(() => ..., [])` hook. This caches the array on mount, so subsequent high-frequency renders only re-reference the existing elements, eliminating the allocation overhead.

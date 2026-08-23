@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import styles from "./LuckyMeter.module.css";
 
 type TierKey = "dormant" | "kindling" | "rising" | "northern" | "peak";
@@ -211,6 +211,32 @@ const DailyLuckyMeter: React.FC = () => {
     }, 40);
   };
 
+
+  // Optimization (⚡ Bolt): Cache programmatically generated SVG/DOM elements that never change.
+  // This prevents the allocation of arrays and JSX elements on every 40ms frame during the 10-second resonance phase,
+  // reducing garbage collection pressure and preventing mobile GPU stalls/stutters.
+  const cachedRivets = useMemo(() => {
+    return Array.from({ length: 12 }).map((_, idx) => (
+      <div
+        key={idx}
+        className={styles.meterRivet}
+        style={{
+          transform: `rotate(${idx * 30}deg) translateY(-106px)`,
+        }}
+      />
+    ));
+  }, []);
+
+  const cachedSparks = useMemo(() => {
+    return Array.from({ length: 8 }).map((_, idx) => (
+      <div
+        key={idx}
+        className={styles.spark}
+        style={{ "--i": idx } as React.CSSProperties}
+      />
+    ));
+  }, []);
+
   const handleShare = async () => {
     if (!tier || score === 0) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
@@ -249,15 +275,7 @@ const DailyLuckyMeter: React.FC = () => {
         <div className={styles.meterDialWrapper}>
           <div className={styles.meterBezel}>
             <div className={styles.meterBezelInner}>
-              {Array.from({ length: 12 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className={styles.meterRivet}
-                  style={{
-                    transform: `rotate(${idx * 30}deg) translateY(-106px)`,
-                  }}
-                />
-              ))}
+              {cachedRivets}
 
               <svg className={styles.meterRingSvg} viewBox="0 0 200 200" aria-hidden="true">
                 <defs>
@@ -290,13 +308,7 @@ const DailyLuckyMeter: React.FC = () => {
 
                 {meterState === "resonating" && (
                   <div className={styles.sparkEmitter}>
-                    {Array.from({ length: 8 }).map((_, idx) => (
-                      <div
-                        key={idx}
-                        className={styles.spark}
-                        style={{ "--i": idx } as React.CSSProperties}
-                      />
-                    ))}
+                    {cachedSparks}
                   </div>
                 )}
 
