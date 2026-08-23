@@ -154,6 +154,15 @@ const DailyLuckyMeter: React.FC = () => {
     };
   }, [todayKey]);
 
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
   const startResonance = () => {
     if (meterState !== "idle") return;
 
@@ -203,7 +212,7 @@ const DailyLuckyMeter: React.FC = () => {
   };
 
   const handleShare = async () => {
-    if (!tier) return;
+    if (!tier || score === 0) return;
     const text = `My Daily Lucky Meter resonance: ${score}% — ${tier.name} on luckypickcanada.ca`;
     try {
       await navigator.clipboard.writeText(text);
