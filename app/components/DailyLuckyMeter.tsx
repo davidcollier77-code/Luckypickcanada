@@ -203,30 +203,31 @@ const DailyLuckyMeter: React.FC = () => {
     setTier(targetTier);
     setMeterState("resonating");
 
-    const startTime = performance.now();
-    const duration = 10000;
-
     const circle = svgCircleRef.current;
     const percentageEl = percentageRef.current;
 
+    if (!circle || !percentageEl) return;
+
+    let startTimestamp: number | null = null;
+    const duration = 10000;
+
     let circumference = 0;
-    if (circle) {
-      const radius = circle.r.baseVal.value;
-      circumference = 2 * Math.PI * radius;
-      circle.style.strokeDasharray = `${circumference}`;
-    }
+    const radius = circle.r.baseVal.value;
+    circumference = 2 * Math.PI * radius;
+    circle.style.strokeDasharray = `${circumference}`;
 
     const animate = (now: number) => {
-      const elapsed = now - startTime;
+      if (startTimestamp === null) {
+        startTimestamp = now;
+      }
+      const elapsed = now - startTimestamp;
       const t = Math.min(elapsed / duration, 1);
       const eased = easeOutCubic(t);
       const currentScore = Math.round(newScore * eased);
 
-      if (percentageEl) {
-        percentageEl.innerText = `${currentScore}%`;
-      }
+      percentageEl.textContent = `${currentScore}%`;
 
-      if (circle && circumference > 0) {
+      if (circumference > 0) {
         const offset = circumference - (circumference * currentScore) / 100;
         circle.style.strokeDashoffset = `${offset}`;
 
@@ -246,10 +247,9 @@ const DailyLuckyMeter: React.FC = () => {
         setScore(newScore);
         setQuote(newQuote);
         setMeterState("locked");
-        if (percentageEl) {
-          percentageEl.innerText = `${newScore}%`;
-        }
-        if (circle && circumference > 0) {
+        percentageEl.textContent = `${newScore}%`;
+
+        if (circumference > 0) {
           const offset = circumference - (circumference * newScore) / 100;
           circle.style.strokeDashoffset = `${offset}`;
         }
@@ -369,36 +369,33 @@ const DailyLuckyMeter: React.FC = () => {
                       <div className={styles.meterCenterLabelResonating}>
                         RESONATING...
                       </div>
-                      <div
-                        ref={percentageRef}
-                        className={styles.meterCenterPercentage}
-                      >
-                        0%
-                      </div>
                     </>
                   )}
+
+                  <div
+                    ref={percentageRef}
+                    className={
+                      meterState === "locked" || meterState === "resonating"
+                        ? styles.meterCenterPercentage
+                        : styles.meterCenterPercentageIdle
+                    }
+                    style={{
+                       display: meterState === "idle" ? "block" : "block"
+                    }}
+                  >
+                    {meterState === "idle"
+                      ? "0%"
+                      : meterState === "resonating"
+                      ? "0%"
+                      : score !== null
+                      ? `${score}%`
+                      : ""}
+                  </div>
 
                   {meterState === "locked" && (
-                    <>
-                      <div
-                        ref={percentageRef}
-                        className={styles.meterCenterPercentage}
-                      >
-                        {score !== null ? `${score}%` : ""}
-                      </div>
-                      <div className={styles.meterCenterTier}>
-                        {currentTierName}
-                      </div>
-                    </>
-                  )}
-
-                  {meterState !== "locked" && meterState !== "resonating" && (
-                        <div
-                          ref={percentageRef}
-                          className={styles.meterCenterPercentageIdle}
-                        >
-                          0%
-                        </div>
+                    <div className={styles.meterCenterTier}>
+                      {currentTierName}
+                    </div>
                   )}
                 </div>
               </div>
