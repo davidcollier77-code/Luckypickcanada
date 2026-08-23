@@ -569,41 +569,39 @@
   }
 }
 
-.sparkEmitter {
+
+/* Quantum Sparks */
 .sparkEmitter {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
   pointer-events: none;
   z-index: 10;
 }
 
 .spark {
   position: absolute;
-  top: 50%;
-  left: 50%;
   width: 2px;
   height: 12px;
   background: #facc15; /* gold/amber */
   border-radius: 2px;
   opacity: 0;
-  transform-origin: center -50px; /* Shoot out from center */
   will-change: transform, opacity;
+  transform-origin: center -50px; /* Shoot out from center */
   animation: sparkShoot 0.8s ease-out infinite;
   animation-delay: calc(var(--i) * 0.1s);
-  transform: rotate(calc(var(--i) * 45deg)) translateY(0);
+  transform: rotate(calc(var(--i) * 45deg)) translateY(0) translateZ(0);
 }
 
 @keyframes sparkShoot {
   0% {
     opacity: 1;
-    transform: rotate(calc(var(--i) * 45deg)) translateY(20px) scaleY(0.5);
+    transform: rotate(calc(var(--i) * 45deg)) translateY(20px) scaleY(0.5) translateZ(0);
   }
   100% {
     opacity: 0;
-    transform: rotate(calc(var(--i) * 45deg)) translateY(60px) scaleY(1.5);
+    transform: rotate(calc(var(--i) * 45deg)) translateY(60px) scaleY(1.5) translateZ(0);
   }
 }
