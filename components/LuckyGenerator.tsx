@@ -340,7 +340,19 @@ function playFireworkBoomSFX() {
   noise.connect(noiseFilter);
   noiseFilter.connect(noiseGain);
   noiseGain.connect(ctx.destination);
+
+  osc.onended = () => {
+    osc.disconnect();
+    oscGain.disconnect();
+  };
+
   noise.start(t);
+  noise.onended = () => {
+    noise.disconnect();
+    noiseFilter.disconnect();
+    noiseGain.disconnect();
+  };
+
   noise.stop(t + 0.5);
 }
 
