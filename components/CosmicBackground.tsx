@@ -7,11 +7,11 @@ interface CosmicBackgroundProps {
 }
 
 const CosmicBackground: React.FC<CosmicBackgroundProps> = ({ isRevealed, progress, children }) => {
-  const isTriggered = isRevealed || progress === 100;
+  const isTriggered = isRevealed || Number(progress) === 100;
 
   // Generate meteors statically to avoid unnecessary re-renders or dynamic arrays inside the component.
   // Using an array of 20 meteors for moderate density.
-  const meteors = Array.from({ length: 20 });
+  const meteors = React.useMemo(() => Array.from({ length: 20 }), []);
 
   return (
     <div
