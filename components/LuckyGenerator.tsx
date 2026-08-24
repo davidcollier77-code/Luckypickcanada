@@ -351,13 +351,13 @@ export default function LuckyGenerator() {
   // Explosive Sparkler Particles for top tiers (State C / locked)
   const sparklers = useMemo(() => {
     const randomValues = Array.from({ length: 48 }).map((_, i) => ({
-      angle: Math.random() * 360,
-      distance: 100 + Math.random() * 200, // wider burst radius
+      angle: 210 + Math.random() * 120, // Shoot upwards
+      distance: 300 + Math.random() * 400, // wider burst radius
       delay: Math.random() * 0.3,
       duration: 0.8 + Math.random() * 0.6,
       size: Math.random() * 4 + 2,
-      originX: 20 + Math.random() * 60, // random origin points
-      originY: 30 + Math.random() * 40,
+      originX: 40 + Math.random() * 20, // random origin points
+      originY: 45 + Math.random() * 20,
     }));
     
     return randomValues.map((v, i) => ({
@@ -390,6 +390,9 @@ export default function LuckyGenerator() {
       className={`${cinzel.variable} ${manrope.variable} ${jbMono.variable} lg-root relative flex min-h-dvh w-full flex-col items-center justify-center overflow-hidden bg-[#05070d] px-4 py-10 sm:px-6`}
       style={{ fontFamily: 'var(--font-lg-body), ui-sans-serif, system-ui, sans-serif' }}
     >
+      {/* Full-Screen "Heartbeat" (Make the Environment Breathe) */}
+      <div className="lg-room-breathe pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-white/[0.02] to-transparent" aria-hidden="true" />
+
       {/* Ambient sky — the aurora IS the meter */}
       <div className="lg-sky pointer-events-none absolute inset-0" aria-hidden="true">
         <div className="lg-stars absolute inset-0" />
@@ -471,33 +474,28 @@ export default function LuckyGenerator() {
             } as React.CSSProperties}
           />
         ))}
+        {stardustParticles.map((p) => (
+          <div
+            key={p.id}
+            className="lg-stardust absolute bottom-0 rounded-full"
+            style={{
+              left: p.left,
+              width: p.size,
+              height: p.size,
+              backgroundColor: tier?.glow || '#ffffff',
+              boxShadow: `0 0 8px ${tier?.glow || '#ffffff'}`,
+              animationDuration: p.duration,
+              animationDelay: p.delay,
+              '--max-opacity': p.opacity,
+              filter: 'blur(1px)'
+            } as React.CSSProperties}
+          />
+        ))}
       </div>
 
       {/* Ritual card */}
       <main className={`relative z-10 w-full max-w-md ${(phase === 'ready' || phase === 'locked') ? 'lg-breathe-card' : ''}`}>
         <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-10 shadow-[0_0_90px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:px-10 sm:py-12">
-
-          {/* Ambient Stardust Layer */}
-          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-            {/* Sparklers moved out */}
-            {stardustParticles.map((p) => (
-              <div
-                key={p.id}
-                className="lg-stardust absolute bottom-0 rounded-full"
-                style={{
-                  left: p.left,
-                  width: p.size,
-                  height: p.size,
-                  backgroundColor: tier?.glow || '#ffffff',
-                  boxShadow: `0 0 8px ${tier?.glow || '#ffffff'}`,
-                  animationDuration: p.duration,
-                  animationDelay: p.delay,
-                  '--max-opacity': p.opacity,
-                  filter: 'blur(1px)'
-                } as React.CSSProperties}
-              />
-            ))}
-          </div>
           <p
             className="relative z-10 mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45"
             style={{ fontFamily: 'var(--font-lg-body)' }}
@@ -622,6 +620,14 @@ export default function LuckyGenerator() {
       )}
 
       <style jsx>{`
+
+        .lg-room-breathe {
+          animation: lgRoomBreathe 8s ease-in-out infinite;
+        }
+        @keyframes lgRoomBreathe {
+          0%, 100% { opacity: 0.85; }
+          50% { opacity: 1; }
+        }
 
         .lg-breathe-card {
           animation: lgBreatheCard 6s ease-in-out infinite;
@@ -880,7 +886,7 @@ export default function LuckyGenerator() {
         }
         @keyframes lgStardustDrift {
           0% {
-            transform: translateY(100%);
+            transform: translateY(100vh);
             opacity: 0;
           }
           20% {
@@ -890,7 +896,7 @@ export default function LuckyGenerator() {
             opacity: var(--max-opacity, 0.8);
           }
           100% {
-            transform: translateY(-400px);
+            transform: translateY(-100vh);
             opacity: 0;
           }
         }
