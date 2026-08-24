@@ -150,10 +150,14 @@ export default function LuckyGenerator() {
   const [remainingMs, setRemainingMs] = useState(0);
   const [showClock, setShowClock] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [isTensionBuilding, setIsTensionBuilding] = useState(false);
+  const [showPayoffs, setShowPayoffs] = useState(false);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clockDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tensionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const payoffTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasActivatedRef = useRef(false); // guards against rapid double-click races
 
   const tier = score !== null ? tierForScore(score) : null;
@@ -228,6 +232,8 @@ export default function LuckyGenerator() {
     () => () => {
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (clockDelayRef.current) clearTimeout(clockDelayRef.current);
+      if (tensionTimeoutRef.current) clearTimeout(tensionTimeoutRef.current);
+      if (payoffTimeoutRef.current) clearTimeout(payoffTimeoutRef.current);
     },
     []
   );
@@ -311,12 +317,24 @@ export default function LuckyGenerator() {
     hasActivatedRef.current = true;
     setPhase('revealing');
     setShowClock(false);
+    setIsTensionBuilding(false);
 
     const finalScore = Math.floor(Math.random() * 101);
+
+    if (tensionTimeoutRef.current) clearTimeout(tensionTimeoutRef.current);
+    tensionTimeoutRef.current = setTimeout(() => {
+      setIsTensionBuilding(true);
+    }, 5000);
 
     revealTimeoutRef.current = setTimeout(() => {
       setScore(finalScore);
       setPhase('locked');
+      setIsTensionBuilding(false);
+      setShowPayoffs(true);
+      if (payoffTimeoutRef.current) clearTimeout(payoffTimeoutRef.current);
+      payoffTimeoutRef.current = setTimeout(() => {
+        setShowPayoffs(false);
+      }, 5000); // Remove payoff animations from DOM after 5s to protect device performance
 
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
@@ -348,6 +366,51 @@ export default function LuckyGenerator() {
   }, [remainingMs]);
 
 
+  // Firefly Embers for Kindling
+  const fireflyEmbers = useMemo(() => {
+    return Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      left: `${20 + Math.random() * 60}%`,
+      bottom: `${10 + Math.random() * 20}%`,
+      size: `${Math.random() * 4 + 2}px`,
+      duration: `${Math.random() * 2 + 1.5}s`,
+      delay: `${Math.random() * 0.5}s`,
+    }));
+  }, [score]);
+
+  // Solar Wind for Rising
+  const solarWinds = useMemo(() => {
+    return Array.from({ length: 4 }).map((_, i) => ({
+      id: i,
+      top: `${20 + Math.random() * 60}%`,
+      height: `${Math.random() * 4 + 2}px`,
+      duration: `${Math.random() * 0.6 + 0.4}s`,
+      delay: `${Math.random() * 0.3}s`,
+    }));
+  }, [score]);
+
+  // Cosmic Rain for Northern
+  const cosmicRain = useMemo(() => {
+    return Array.from({ length: 30 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      size: `${Math.random() * 3 + 1}px`,
+      duration: `${Math.random() * 1 + 0.8}s`,
+      delay: `${Math.random() * 0.6}s`,
+    }));
+  }, [score]);
+
+  // Meteor Shower for Peak
+  const meteorShower = useMemo(() => {
+    return Array.from({ length: 6 }).map((_, i) => ({
+      id: i,
+      top: `${Math.random() * 20}%`,
+      left: `${Math.random() * 100}%`,
+      duration: `${Math.random() * 0.5 + 0.3}s`,
+      delay: `${Math.random() * 0.2}s`,
+    }));
+  }, [score]);
+
   // Explosive Sparkler Particles for top tiers (State C / locked)
   const sparklers = useMemo(() => {
     const randomValues = Array.from({ length: 48 }).map((_, i) => ({
@@ -356,8 +419,8 @@ export default function LuckyGenerator() {
       delay: Math.random() * 0.3,
       duration: 0.8 + Math.random() * 0.6,
       size: Math.random() * 4 + 2,
-      originX: 20 + Math.random() * 60, // random origin points
-      originY: 30 + Math.random() * 40,
+      originX: 50,
+      originY: 50,
     }));
     
     return randomValues.map((v, i) => ({
@@ -370,7 +433,7 @@ export default function LuckyGenerator() {
       left: `${v.originX}%`,
       top: `${v.originY}%`,
     }));
-  }, []);
+  }, [score]);
 
   // Ambient Stardust Particles
   const stardustParticles = useMemo(() => {
@@ -378,16 +441,16 @@ export default function LuckyGenerator() {
       id: i,
       left: `${Math.random() * 100}%`,
       size: `${Math.random() * 3 + 2}px`,
-      duration: `${Math.random() * 4 + 4}s`,
+      durationBase: Math.random() * 4 + 4,
       delay: `${Math.random() * 4}s`,
       opacity: Math.random() * 0.4 + 0.3,
     }));
-  }, []);
+  }, [score]);
 
   return (
     <div
       ref={cardRef}
-      className={`${cinzel.variable} ${manrope.variable} ${jbMono.variable} lg-root relative flex min-h-dvh w-full flex-col items-center justify-center overflow-hidden bg-[#05070d] px-4 py-10 sm:px-6`}
+      className={`${cinzel.variable} ${manrope.variable} ${jbMono.variable} lg-root relative flex min-h-dvh w-full flex-col items-center justify-center overflow-hidden bg-transparent px-4 py-10 sm:px-6`}
       style={{ fontFamily: 'var(--font-lg-body), ui-sans-serif, system-ui, sans-serif' }}
     >
       {/* Ambient sky — the aurora IS the meter */}
@@ -451,9 +514,83 @@ export default function LuckyGenerator() {
         </Link>
       )}
 
+      {/* Tier Payoffs Layer */}
+      {phase === 'locked' && showPayoffs && (
+        <div className="lg-tier-payoffs pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+          {tier?.id === 'dormant' && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="lg-payoff-eclipse rounded-full bg-black/40" />
+            </div>
+          )}
+
+          {tier?.id === 'kindling' && fireflyEmbers.map((p) => (
+            <div
+              key={`firefly-${p.id}`}
+              className="lg-payoff-firefly absolute rounded-full bg-[#3DFFB0]"
+              style={{
+                left: p.left,
+                bottom: p.bottom,
+                width: p.size,
+                height: p.size,
+                boxShadow: '0 0 10px #3DFFB0',
+                animationDuration: p.duration,
+                animationDelay: p.delay,
+              }}
+            />
+          ))}
+
+          {tier?.id === 'rising' && solarWinds.map((p) => (
+            <div
+              key={`solar-${p.id}`}
+              className="lg-payoff-solar absolute bg-gradient-to-r from-transparent via-[#38E0FF] to-transparent"
+              style={{
+                top: p.top,
+                height: p.height,
+                width: '60%',
+                animationDuration: p.duration,
+                animationDelay: p.delay,
+              }}
+            />
+          ))}
+
+          {tier?.id === 'northern' && cosmicRain.map((p) => (
+            <div
+              key={`cosmic-${p.id}`}
+              className="lg-payoff-cosmic absolute rounded-full bg-[#B48CFF]"
+              style={{
+                left: p.left,
+                top: '-5%',
+                width: p.size,
+                height: p.size,
+                boxShadow: '0 0 8px #B48CFF',
+                animationDuration: p.duration,
+                animationDelay: p.delay,
+              }}
+            />
+          ))}
+
+          {tier?.id === 'peak' && meteorShower.map((p) => (
+            <div
+              key={`meteor-${p.id}`}
+              className="lg-payoff-meteor absolute bg-white"
+              style={{
+                top: p.top,
+                left: p.left,
+                width: '4px',
+                height: '4px',
+                borderRadius: '50%',
+                boxShadow: '0 0 15px 4px #FFD66B',
+                animationDuration: p.duration,
+                animationDelay: p.delay,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Background Fireworks Layer */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {phase === 'locked' && (tier?.id === 'northern' || tier?.id === 'peak') && sparklers.map((p) => (
+        {phase === 'locked' && showPayoffs && tier?.id === 'peak' && sparklers.map((p) => (
           <div
             key={`sparkler-${p.id}`}
             className="lg-sparkler absolute rounded-full"
@@ -462,8 +599,8 @@ export default function LuckyGenerator() {
               top: p.top,
               width: p.size,
               height: p.size,
-              backgroundColor: tier?.glow || '#ffffff',
-              boxShadow: `0 0 12px ${tier?.glow || '#ffffff'}`,
+              backgroundColor: tier?.glow ?? '#ffffff',
+              boxShadow: `0 0 12px ${tier?.glow ?? '#ffffff'}`,
               animationDuration: p.duration,
               animationDelay: p.delay,
               '--tx': `${Math.cos((p.angle * Math.PI) / 180) * p.distance}px`,
@@ -474,7 +611,7 @@ export default function LuckyGenerator() {
       </div>
 
       {/* Ritual card */}
-      <main className={`relative z-10 w-full max-w-md ${(phase === 'ready' || phase === 'locked') ? 'lg-breathe-card' : ''}`}>
+      <main className={`relative z-10 w-full max-w-md ${phase !== 'loading' ? 'lg-breathe-card' : ''} ${isTensionBuilding ? 'lg-breathe-card--fast' : ''}`}>
         <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-10 shadow-[0_0_90px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:px-10 sm:py-12">
 
           {/* Ambient Stardust Layer */}
@@ -488,9 +625,9 @@ export default function LuckyGenerator() {
                   left: p.left,
                   width: p.size,
                   height: p.size,
-                  backgroundColor: tier?.glow || '#ffffff',
-                  boxShadow: `0 0 8px ${tier?.glow || '#ffffff'}`,
-                  animationDuration: p.duration,
+                  backgroundColor: tier?.glow ?? '#ffffff',
+                  boxShadow: `0 0 8px ${tier?.glow ?? '#ffffff'}`,
+                  animationDuration: isTensionBuilding ? `${p.durationBase * 0.4}s` : `${p.durationBase}s`,
                   animationDelay: p.delay,
                   '--max-opacity': p.opacity,
                   filter: 'blur(1px)'
@@ -611,15 +748,17 @@ export default function LuckyGenerator() {
               </div>
             )}
           </div>
+
+          {/* Share Watermark */}
+          {isSharing && (
+            <div className="absolute bottom-6 left-0 right-0 z-50 text-center text-sm font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-lg-body)' }}>
+              luckypickcanada.ca
+            </div>
+          )}
         </div>
       </main>
 
-      {/* Share Watermark */}
-      {isSharing && (
-        <div className="absolute bottom-6 z-50 text-sm font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-lg-body)' }}>
-          luckypickcanada.ca
-        </div>
-      )}
+
 
       <style jsx>{`
 
@@ -627,12 +766,15 @@ export default function LuckyGenerator() {
           animation: lgBreatheCard 6s ease-in-out infinite;
           will-change: transform;
         }
+        .lg-breathe-card--fast {
+          animation-duration: 2s;
+        }
         @keyframes lgBreatheCard {
           0%, 100% {
-            transform: translateY(0);
+            transform: scale(1);
           }
           50% {
-            transform: translateY(-4px);
+            transform: scale(1.015);
           }
         }
         .lg-stars {
@@ -855,6 +997,123 @@ export default function LuckyGenerator() {
           }
           50% {
             opacity: 0.25;
+          }
+        }
+
+        /* Payoff Keyframes */
+        .lg-payoff-eclipse {
+          width: 200vmax;
+          height: 200vmax;
+          border-radius: 50%;
+          border: 100vmax solid rgba(0,0,0,0.6);
+          opacity: 0;
+          transform: scale(0);
+          animation: lgEclipse 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          will-change: transform, opacity;
+        }
+        @keyframes lgEclipse {
+          0% {
+            opacity: 0;
+            transform: scale(0);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(0.5);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .lg-payoff-firefly {
+          opacity: 0;
+          transform: translateY(0);
+          animation: lgFirefly cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          will-change: transform, opacity;
+        }
+        @keyframes lgFirefly {
+          0% {
+            opacity: 0;
+            transform: translateY(0) scale(0.5);
+          }
+          20% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-100px) scale(1.5);
+          }
+        }
+
+        .lg-payoff-solar {
+          opacity: 0;
+          transform: translateX(-150%) skewX(-45deg);
+          animation: lgSolar linear forwards;
+          will-change: transform, opacity;
+        }
+        @keyframes lgSolar {
+          0% {
+            opacity: 0;
+            transform: translateX(-150%) skewX(-45deg);
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: translateX(150vw) skewX(-45deg);
+          }
+        }
+
+        .lg-payoff-cosmic {
+          opacity: 0;
+          transform: translateY(0);
+          animation: lgCosmic linear forwards;
+          will-change: transform, opacity;
+        }
+        @keyframes lgCosmic {
+          0% {
+            opacity: 0;
+            transform: translateY(0);
+          }
+          10% {
+            opacity: 1;
+          }
+          90% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(110vh);
+          }
+        }
+
+        .lg-payoff-meteor {
+          opacity: 0;
+          transform: translate(0, 0) rotate(45deg) scaleX(1);
+          animation: lgMeteor linear forwards;
+          will-change: transform, opacity;
+        }
+        @keyframes lgMeteor {
+          0% {
+            opacity: 0;
+            transform: translate(0, 0) rotate(45deg) scaleX(0);
+          }
+          10% {
+            opacity: 1;
+            transform: translate(0, 0) rotate(45deg) scaleX(10);
+          }
+          90% {
+            opacity: 1;
+            transform: translate(80vw, 80vh) rotate(45deg) scaleX(10);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(100vw, 100vh) rotate(45deg) scaleX(0);
           }
         }
         .lg-sparkler {
