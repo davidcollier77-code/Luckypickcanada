@@ -238,9 +238,9 @@ export default function LuckyGenerator() {
     try {
       setIsSharing(true);
 
+      const style = document.createElement('style');
       // Inject temporary styles to freeze animations for a crisp snapshot
       style.innerHTML = '.lg-root * { animation: none !important; transition: none !important; }';
-      style.innerHTML = '* { animation: none !important; transition: none !important; }';
       document.head.appendChild(style);
 
       // Wait a tick for styles to apply and UI to hide the share button
@@ -265,7 +265,6 @@ export default function LuckyGenerator() {
         return;
       }
 
-      canvas.toBlob(async (blob) => {
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
