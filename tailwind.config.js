@@ -41,6 +41,7 @@ module.exports = {
         'fade-in-dim': 'fadeInDim 1s ease-out forwards',
         'pop-bright': 'popBright 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'scale-dramatic-neon': 'scaleDramaticNeon 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+        'glow-pulse': 'glowPulse 2s ease-in-out infinite',
       },
       keyframes: {
         breathingPulse: {
@@ -127,7 +128,12 @@ module.exports = {
           '0%': { transform: 'scale(0.1)', opacity: 0, textShadow: '0 0 5px #000' },
           '50%': { transform: 'scale(1.3)', opacity: 1, textShadow: '0 0 20px #4ade80, 0 0 40px #4ade80' },
           '100%': { transform: 'scale(1)', opacity: 1, textShadow: '0 0 15px #4ade80, 0 0 30px #4ade80' },
-        }
+        },
+        glowPulse: {
+          '0%, 100%': { textShadow: '0 0 10px var(--tier-glow-dim), 0 0 20px var(--tier-glow-dim)' },
+          '50%': { textShadow: '0 0 25px var(--tier-glow-bright), 0 0 40px var(--tier-glow-bright)' },
+        },
+
       },
       colors: {
         background: 'var(--lp-bg)',
