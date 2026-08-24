@@ -151,11 +151,13 @@ export default function LuckyGenerator() {
   const [showClock, setShowClock] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isTensionBuilding, setIsTensionBuilding] = useState(false);
+  const [showPayoffs, setShowPayoffs] = useState(false);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clockDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tensionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const payoffTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasActivatedRef = useRef(false); // guards against rapid double-click races
 
   const tier = score !== null ? tierForScore(score) : null;
@@ -231,6 +233,7 @@ export default function LuckyGenerator() {
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (clockDelayRef.current) clearTimeout(clockDelayRef.current);
       if (tensionTimeoutRef.current) clearTimeout(tensionTimeoutRef.current);
+      if (payoffTimeoutRef.current) clearTimeout(payoffTimeoutRef.current);
     },
     []
   );
@@ -318,6 +321,7 @@ export default function LuckyGenerator() {
 
     const finalScore = Math.floor(Math.random() * 101);
 
+    if (tensionTimeoutRef.current) clearTimeout(tensionTimeoutRef.current);
     tensionTimeoutRef.current = setTimeout(() => {
       setIsTensionBuilding(true);
     }, 5000);
@@ -326,6 +330,11 @@ export default function LuckyGenerator() {
       setScore(finalScore);
       setPhase('locked');
       setIsTensionBuilding(false);
+      setShowPayoffs(true);
+      if (payoffTimeoutRef.current) clearTimeout(payoffTimeoutRef.current);
+      payoffTimeoutRef.current = setTimeout(() => {
+        setShowPayoffs(false);
+      }, 5000); // Remove payoff animations from DOM after 5s to protect device performance
 
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
@@ -367,7 +376,7 @@ export default function LuckyGenerator() {
       duration: `${Math.random() * 2 + 1.5}s`,
       delay: `${Math.random() * 0.5}s`,
     }));
-  }, []);
+  }, [score]);
 
   // Solar Wind for Rising
   const solarWinds = useMemo(() => {
@@ -378,7 +387,7 @@ export default function LuckyGenerator() {
       duration: `${Math.random() * 0.6 + 0.4}s`,
       delay: `${Math.random() * 0.3}s`,
     }));
-  }, []);
+  }, [score]);
 
   // Cosmic Rain for Northern
   const cosmicRain = useMemo(() => {
@@ -389,7 +398,7 @@ export default function LuckyGenerator() {
       duration: `${Math.random() * 1 + 0.8}s`,
       delay: `${Math.random() * 0.6}s`,
     }));
-  }, []);
+  }, [score]);
 
   // Meteor Shower for Peak
   const meteorShower = useMemo(() => {
@@ -400,7 +409,7 @@ export default function LuckyGenerator() {
       duration: `${Math.random() * 0.5 + 0.3}s`,
       delay: `${Math.random() * 0.2}s`,
     }));
-  }, []);
+  }, [score]);
 
   // Explosive Sparkler Particles for top tiers (State C / locked)
   const sparklers = useMemo(() => {
@@ -424,7 +433,7 @@ export default function LuckyGenerator() {
       left: `${v.originX}%`,
       top: `${v.originY}%`,
     }));
-  }, []);
+  }, [score]);
 
   // Ambient Stardust Particles
   const stardustParticles = useMemo(() => {
@@ -436,7 +445,7 @@ export default function LuckyGenerator() {
       delay: `${Math.random() * 4}s`,
       opacity: Math.random() * 0.4 + 0.3,
     }));
-  }, []);
+  }, [score]);
 
   return (
     <div
@@ -506,7 +515,7 @@ export default function LuckyGenerator() {
       )}
 
       {/* Tier Payoffs Layer */}
-      {phase === 'locked' && (
+      {phase === 'locked' && showPayoffs && (
         <div className="lg-tier-payoffs pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
           {tier?.id === 'dormant' && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -581,7 +590,7 @@ export default function LuckyGenerator() {
 
       {/* Background Fireworks Layer */}
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {phase === 'locked' && tier?.id === 'peak' && sparklers.map((p) => (
+        {phase === 'locked' && showPayoffs && tier?.id === 'peak' && sparklers.map((p) => (
           <div
             key={`sparkler-${p.id}`}
             className="lg-sparkler absolute rounded-full"
@@ -590,8 +599,8 @@ export default function LuckyGenerator() {
               top: p.top,
               width: p.size,
               height: p.size,
-              backgroundColor: tier?.glow || '#ffffff',
-              boxShadow: `0 0 12px ${tier?.glow || '#ffffff'}`,
+              backgroundColor: tier?.glow ?? '#ffffff',
+              boxShadow: `0 0 12px ${tier?.glow ?? '#ffffff'}`,
               animationDuration: p.duration,
               animationDelay: p.delay,
               '--tx': `${Math.cos((p.angle * Math.PI) / 180) * p.distance}px`,
