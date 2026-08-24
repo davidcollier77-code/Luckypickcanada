@@ -48,7 +48,55 @@ function sanitizeInput(input) {
   return cleaned;
 }
 
+
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const MAX_SUBMISSIONS_PER_WINDOW = 5;
+const rateLimitMap = new Map();
+
+function getClientIp(request) {
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  if (cfConnectingIp) return cfConnectingIp.trim();
+  // Only trust cf-connecting-ip from Cloudflare to prevent IP spoofing
+  // Do not use x-forwarded-for as it can be easily spoofed
+  return 'unknown';
+}
+
+function checkRateLimit(ip) {
+  const currentTime = Date.now();
+
+  // Clean up old entries to prevent memory leak
+  if (rateLimitMap.size > 1000 || Math.random() < 0.1) {
+    for (const [key, bucket] of rateLimitMap.entries()) {
+      if (bucket.resetAt <= currentTime) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+
+  const existing = rateLimitMap.get(ip);
+  const bucket = existing && existing.resetAt > currentTime
+    ? existing
+    : { count: 0, resetAt: currentTime + RATE_LIMIT_WINDOW_MS };
+
+  bucket.count += 1;
+  rateLimitMap.set(ip, bucket);
+  // Fix race condition by incrementing and setting before the check
+  bucket.count += 1;
+  
+  if (!existing || existing.resetAt <= currentTime) {
+    rateLimitMap.set(ip, bucket);
+  }
+}
+
 export async function POST(request) {
+  const ip = getClientIp(request);
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: "Too many requests. Please wait before asking again." }, {
+      status: 429,
+      headers: getCorsHeaders(request)
+    });
+  }
+
   const corsHeaders = getCorsHeaders(request);
   try {
     // Check API Key
@@ -185,8 +233,8 @@ export async function POST(request) {
   } catch (error) {
     console.error('Unhandled Oracle Error:', error);
     return NextResponse.json({ error: "An unexpected disturbance occurred in the ethereal realm." }, {
-      headers: {
       status: 500,
+      headers: {
         ...corsHeaders
       }
     });
