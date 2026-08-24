@@ -255,22 +255,26 @@ export default function LuckyGenerator() {
 
     // Particles for fireworks and meteor shower
     let particles: any[] = [];
+    let rockets: any[] = []; // Used for Tier 4
 
     const initializeParticles = () => {
       particles = [];
+      rockets = [];
       // Initialize fireworks on tier 4
       if (phase === 'locked' && tier?.id === 'tier4') {
-          for(let i=0; i<150; i++) {
-              particles.push({
-                  x: width / 2,
-                  y: height / 2,
-                  vx: (Math.random() - 0.5) * 15,
-                  vy: (Math.random() - 0.5) * 15,
-                  z: Math.random() * 100, // 3D depth
-                  size: Math.random() * 3 + 1,
+          // Launch 5-6 initial rockets from bottom
+          const numRockets = Math.floor(Math.random() * 2) + 5;
+          for(let i=0; i<numRockets; i++) {
+              rockets.push({
+                  x: Math.random() * width,
+                  y: height, // start at bottom
+                  vx: (Math.random() - 0.5) * 4,
+                  vy: - (Math.random() * 6 + 10), // Shoot up
+                  z: Math.random() * 50 + 50,
+                  size: 2,
                   alpha: 1,
-                  decay: Math.random() * 0.015 + 0.005,
-                  color: `hsl(${Math.random() * 60 + 40}, 100%, 60%)` // Gold/Yellow fireworks
+                  color: '#ffffff',
+                  targetY: Math.random() * (height / 2) // explode in upper half
               });
           }
       } else if (phase === 'locked' && tier?.id === 'tier2') {
@@ -359,20 +363,74 @@ export default function LuckyGenerator() {
                 ctx.fillRect(0, 0, width, height);
             }
         } else if (tier.id === 'tier4') {
-            // 3D Grand Fireworks
-            particles.forEach((p, index) => {
-                if (p.alpha <= 0) {
-                    // Respawn a firework batch occasionally instead of individual? Or just individual
-                    if(Math.random() < 0.01) {
-                         p.x = width / 2 + (Math.random() - 0.5) * 200;
-                         p.y = height / 2 + (Math.random() - 0.5) * 200;
-                         p.vx = (Math.random() - 0.5) * 15;
-                         p.vy = (Math.random() - 0.5) * 15;
-                         p.z = Math.random() * 100;
-                         p.alpha = 1;
-                         p.color = `hsl(${Math.random() * 60 + 40}, 100%, 60%)`;
+            // 3D Grand Fireworks (Realistic Bouquets)
+            const colors = ['#ff3366', '#33ccff', '#33ff66', '#cc33ff', '#ffd66b'];
+
+            // Draw & update rockets
+            for (let i = rockets.length - 1; i >= 0; i--) {
+                let r = rockets[i];
+                r.x += r.vx;
+                r.y += r.vy;
+                r.vy += 0.15; // Apply gravity to rockets
+
+                const scale = 100 / (100 + r.z);
+                const px = (r.x - width/2) * scale + width/2;
+                const py = (r.y - height/2) * scale + height/2;
+
+                ctx.globalAlpha = r.alpha;
+                ctx.fillStyle = r.color;
+                ctx.beginPath();
+                ctx.arc(px, py, r.size * scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Explode at target or velocity slowdown
+                if (r.vy >= -2 || r.y <= r.targetY) {
+                    const c = colors[Math.floor(Math.random() * colors.length)];
+                    const sparkCount = 40 + Math.random() * 40;
+                    for(let j=0; j<sparkCount; j++) {
+                        // Spherical bouquet distribution
+                        const theta = Math.random() * 2 * Math.PI;
+                        const phi = Math.acos(Math.random() * 2 - 1);
+                        const speed = Math.random() * 4 + 2;
+                        particles.push({
+                            x: r.x,
+                            y: r.y,
+                            vx: speed * Math.sin(phi) * Math.cos(theta),
+                            vy: speed * Math.sin(phi) * Math.sin(theta),
+                            vz: speed * Math.cos(phi), // 3D velocity
+                            z: r.z,
+                            size: Math.random() * 2 + 1.5,
+                            alpha: 1,
+                            decay: Math.random() * 0.01 + 0.015,
+                            color: c
+                        });
                     }
-                    return;
+                    rockets.splice(i, 1);
+
+                    // Respawn a new rocket to keep 5-6 on screen? Or keep it occasional.
+                    if (rockets.length < 5) {
+                        rockets.push({
+                            x: Math.random() * width,
+                            y: height + 10,
+                            vx: (Math.random() - 0.5) * 4,
+                            vy: - (Math.random() * 6 + 10),
+                            z: Math.random() * 50 + 50,
+                            size: 2,
+                            alpha: 1,
+                            color: '#ffffff',
+                            targetY: Math.random() * (height / 2)
+                        });
+                    }
+                }
+            }
+
+            // Draw & update sparks
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
                 }
 
                 // 3D projection
@@ -389,10 +447,15 @@ export default function LuckyGenerator() {
 
                 p.x += p.vx;
                 p.y += p.vy;
-                p.vy += 0.2; // Gravity
-                p.z += 1; // Move towards camera or away
+                p.z += (p.vz || 0);
+                p.vy += 0.05; // Gravity
                 p.alpha -= p.decay;
-            });
+
+                // Slow down
+                p.vx *= 0.96;
+                p.vy *= 0.96;
+                if(p.vz) p.vz *= 0.96;
+            }
         }
       }
 
@@ -592,8 +655,12 @@ export default function LuckyGenerator() {
 
 
       {/* Ritual card */}
-      <main className={`relative z-10 w-full max-w-md ${phase === 'revealing' ? 'lg-heartbeat-active' : 'lg-heartbeat-idle'}`} aria-label="Daily Resonance Ritual interactive dashboard">
-        <div className="lg-3d-card relative overflow-hidden rounded-[28px] border-t border-white/40 border-l border-white/20 border-r border-white/10 border-b border-white/10 bg-white/[0.045] px-6 py-10 backdrop-blur-xl sm:px-10 sm:py-12" style={{ boxShadow: 'var(--dynamic-shadow, 0 10px 40px -10px rgba(0,255,255,0.2))' }}>
+      <main className={`relative z-10 w-full max-w-sm sm:max-w-md ${
+          phase === 'revealing' ? 'lg-heartbeat-revealing' :
+          phase === 'locked' ? 'lg-heartbeat-locked' :
+          'lg-heartbeat-idle'
+        }`} aria-label="Daily Resonance Ritual interactive dashboard">
+        <div className="lg-3d-card relative overflow-hidden rounded-[28px] border-t border-white/40 border-l border-white/20 border-r border-white/10 border-b border-white/10 bg-white/[0.045] px-5 py-8 backdrop-blur-xl sm:px-10 sm:py-12" style={{ boxShadow: 'var(--dynamic-shadow, 0 10px 40px -10px rgba(0,255,255,0.2))' }}>
           <p
             className="relative z-10 mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45"
             style={{ fontFamily: 'var(--font-lg-body)' }}
@@ -1021,15 +1088,19 @@ export default function LuckyGenerator() {
         }
 
 
-        .lg-heartbeat-active .lg-3d-card {
-          animation: lgHeartbeatActive 0.8s ease-in-out infinite;
+        .lg-heartbeat-revealing .lg-3d-card {
+          animation: lgHeartbeatRevealing 0.8s ease-in-out infinite;
           --dynamic-shadow: 0 0 40px rgba(0, 255, 255, 0.6), 0 20px 50px rgba(0, 0, 0, 0.8);
         }
         .lg-heartbeat-idle .lg-3d-card {
           animation: lgHeartbeatIdle 4s ease-in-out infinite;
           --dynamic-shadow: 0 0 20px rgba(180, 140, 255, 0.3), 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        @keyframes lgHeartbeatActive {
+        .lg-heartbeat-locked .lg-3d-card {
+          animation: lgHeartbeatLocked 7s ease-in-out infinite;
+          --dynamic-shadow: 0 0 25px rgba(255, 214, 107, 0.4), 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+        @keyframes lgHeartbeatRevealing {
           0%, 100% {
             transform: scale(1) translateZ(0);
           }
@@ -1043,6 +1114,14 @@ export default function LuckyGenerator() {
           }
           50% {
             transform: scale(1.005) translateZ(5px);
+          }
+        }
+        @keyframes lgHeartbeatLocked {
+          0%, 100% {
+            transform: scale(1) translateZ(0);
+          }
+          50% {
+            transform: scale(1.003) translateZ(3px);
           }
         }
       `}</style>
