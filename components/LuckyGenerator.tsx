@@ -278,14 +278,21 @@ export default function LuckyGenerator() {
               });
           }
       } else if (phase === 'locked' && tier?.id === 'tier2') {
-          for(let i=0; i<50; i++) {
+          // Increase count to 150
+          for(let i=0; i<150; i++) {
+              // Add depth variation (scale)
+              const scale = Math.random() * 0.8 + 0.2;
               particles.push({
-                  x: Math.random() * width,
-                  y: -10,
-                  vx: -2 - Math.random() * 3,
-                  vy: 5 + Math.random() * 5,
-                  length: Math.random() * 20 + 10,
-                  alpha: Math.random() * 0.5 + 0.5
+                  // Spread across entire canvas and offscreen to avoid popping
+                  x: Math.random() * width * 1.5,
+                  y: Math.random() * height * 1.5 - height,
+                  // Faster, varied speeds based on scale (parallax)
+                  vx: (-4 - Math.random() * 6) * scale,
+                  vy: (8 + Math.random() * 12) * scale,
+                  // Longer tails
+                  length: (Math.random() * 80 + 40) * scale,
+                  alpha: Math.random() * 0.5 + 0.5,
+                  thickness: (Math.random() * 2 + 1) * scale
               });
           }
       } else if (phase === 'locked' && tier?.id === 'tier3') {
@@ -325,21 +332,42 @@ export default function LuckyGenerator() {
             }
         } else if (tier.id === 'tier2') {
             // Meteor Shower
-            ctx.fillStyle = '#3DFFB0';
-            ctx.strokeStyle = '#3DFFB0';
-            ctx.lineWidth = 2;
             particles.forEach((p, i) => {
+                // Calculate tail end point based on velocity direction and length
+                const dx = p.x - (p.vx * (p.length / Math.sqrt(p.vx * p.vx + p.vy * p.vy)));
+                const dy = p.y - (p.vy * (p.length / Math.sqrt(p.vx * p.vx + p.vy * p.vy)));
+
+                // Gradient tail
+                const gradient = ctx.createLinearGradient(p.x, p.y, dx, dy);
+                gradient.addColorStop(0, `rgba(61, 255, 176, ${p.alpha})`); // Neon mint
+                gradient.addColorStop(1, 'rgba(61, 255, 176, 0)');
+
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p.x - p.vx * 3, p.y - p.vy * 3);
+                ctx.lineTo(dx, dy);
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = p.thickness;
                 ctx.stroke();
+
+                // Glowing head
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.thickness * 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 255, 255, ${p.alpha})`; // Cyan glow
+                ctx.fill();
+
+                // Bright core
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.thickness * 0.8, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`; // White core
+                ctx.fill();
 
                 p.x += p.vx;
                 p.y += p.vy;
 
-                if (p.x < 0 || p.y > height) {
-                    p.x = width + Math.random() * 200;
-                    p.y = -Math.random() * 200;
+                // Reset logic - wide bounds to avoid popping
+                if (p.x < -100 || p.y > height + 100) {
+                    p.x = width + Math.random() * 400;
+                    p.y = -Math.random() * 400 - 100;
                 }
             });
         } else if (tier.id === 'tier3') {
