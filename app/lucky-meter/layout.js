@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Daily Resonance Ritual | Discover Your Digital Energy | Lucky Pick Canada",
-  description: "Awaken your Daily Resonance with Lucky Pick Canada. Pull once a day to reveal your unique digital energy reading in this fun, interactive experience."
+  title: 'Interactive Lucky Meter | Lucky Pick Canada',
+  description: 'Test your daily luck! Watch the interactive meter rise and trigger cosmic lightning, meteor showers, or grand fireworks. This is a free digital entertainment project just for fun.'
 };
 
 export default function LuckyMeterLayout({ children }) {

@@ -99,7 +99,7 @@ export default function LuckyCardReveal() {
             type="button"
             onClick={triggerCardDraw}
             disabled={isRevealed || isGenerating}
-            className="mt-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-base shadow-lg hover:brightness-110 active:scale-95 transition-all"
+            className="mt-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-base shadow-lg hover:brightness-110 active:scale-95 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
           >
             {isGenerating ? 'Revealing...' : 'Reveal Today’s Luck'}
           </button>
@@ -112,7 +112,14 @@ export default function LuckyCardReveal() {
           role="button"
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
-          className="relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent]"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (isRevealed) setIsRevealed((s) => !s);
+            }
+          }}
+          className="relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
           style={{ perspective: '1200px' }}
         >
           <div className={`shake-target relative w-full h-full ${isGenerating && selectedCard ? `shake-${selectedCard.tier}` : ''}`}>
