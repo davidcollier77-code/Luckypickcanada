@@ -494,7 +494,7 @@ export default function LuckyGenerator() {
       </div>
 
       {/* Ritual card */}
-      <main className={`relative z-10 w-full max-w-md ${(phase === 'ready' || phase === 'locked') ? 'lg-breathe-card' : ''}`}>
+      <main className={`relative z-10 w-full max-w-md ${(phase === 'ready' || phase === 'locked') ? 'lg-breathe-card' : ''}`} aria-label="Daily Resonance Ritual interactive dashboard">
         <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-10 shadow-[0_0_90px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:px-10 sm:py-12">
           <p
             className="relative z-10 mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45"
@@ -521,6 +521,7 @@ export default function LuckyGenerator() {
                 <button
                   type="button"
                   onClick={handleActivate}
+                  aria-label="Reveal my daily resonance energy level"
                   className="lg-button group relative mt-9 inline-flex min-h-[52px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-8 text-sm font-semibold tracking-wide text-white transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#B48CFF]"
                 >
                   <span className="lg-button-glow pointer-events-none absolute inset-0 rounded-full" aria-hidden="true" />
@@ -557,10 +558,10 @@ export default function LuckyGenerator() {
                   {tier.label}
                 </p>
 
-                <p className="lg-score-pop mt-3 flex items-start leading-none text-white">
+                <p className="lg-score-pop mt-3 flex items-start leading-none text-white animate-glow-pulse" style={{ '--tier-glow-dim': `${tier.glow}55`, '--tier-glow-bright': `${tier.glow}aa` } as React.CSSProperties}>
                   <span
                     className="text-7xl font-bold sm:text-8xl"
-                    style={{ fontFamily: 'var(--font-lg-display)', textShadow: `0 0 34px ${tier.glow}55` }}
+                    style={{ fontFamily: 'var(--font-lg-display)' }}
                   >
                     {score}
                   </span>
@@ -594,6 +595,7 @@ export default function LuckyGenerator() {
                   <button
                     type="button"
                     onClick={handleShare}
+                    aria-label="Share your daily resonance result"
                     className={`mt-8 flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-xs font-semibold tracking-wide text-white transition-all duration-700 ease-out hover:bg-white/[0.1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B48CFF] ${
                       showClock ? 'opacity-100' : 'translate-y-1.5 opacity-0'
                     }`}

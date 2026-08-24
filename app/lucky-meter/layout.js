@@ -3,10 +3,6 @@ export const metadata = {
   description: "Awaken your Daily Resonance with Lucky Pick Canada. Pull once a day to reveal your unique digital energy reading in this fun, interactive experience."
 };
 
-export default function WidgetLayout({ children }) {
-  return (
-    <div className="w-[300px] h-[250px] overflow-hidden m-0 p-0 bg-transparent">
-      {children}
-    </div>
-  );
+export default function LuckyMeterLayout({ children }) {
+  return <>{children}</>;
 }
