@@ -271,15 +271,22 @@ export default function LuckyGenerator() {
         const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
         const text = `The sky answered. I pulled a ${score}% on Lucky Pick Canada today! ✨`;
 
-        try {
-          await navigator.share({
-            title: 'Lucky Pick Canada',
-            text: text,
-            files: [file],
-          });
-        } catch (err) {
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: 'Lucky Pick Canada',
+              text: text,
+              files: [file],
+            });
+          } catch (err) {
+            // User aborted or sharing failed
+          }
+        } else {
+          // Fallback
+          let fallbackSuccess = false;
           try {
             await navigator.clipboard.writeText(text);
+            fallbackSuccess = true;
           } catch (clipboardErr) {
             console.error('Clipboard failed', clipboardErr);
           }
@@ -293,10 +300,13 @@ export default function LuckyGenerator() {
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+            fallbackSuccess = true;
           } catch (downloadErr) {
             console.error('Download failed', downloadErr);
           }
-          alert('Score copied to clipboard and image downloaded!');
+          if (fallbackSuccess) {
+            alert('Score copied to clipboard and image downloaded!');
+          }
         }
       }, 'image/png');
     } catch (err) {
@@ -349,23 +359,24 @@ export default function LuckyGenerator() {
 
 
   // Explosive Sparkler Particles for top tiers (State C / locked)
-  const sparklers = useMemo(() => {
-    const randomValues = Array.from({ length: 24 }).map((_, i) => ({
-      angle: (i * 360) / 24,
-      distance: 80 + Math.random() * 80,
-      delay: Math.random() * 0.15,
-      duration: 0.6 + Math.random() * 0.4,
-      size: Math.random() * 3 + 2,
-    }));
-    
-    return randomValues.map((v, i) => ({
-      id: i,
-      angle: v.angle,
-      distance: v.distance,
-      delay: `${v.delay}s`,
-      duration: `${v.duration}s`,
-      size: `${v.size}px`,
-    }));
+  const [sparklers, setSparklers] = useState<{ id: number; angle: number; distance: number; delay: string; duration: string; size: string; }[]>([]);
+  useEffect(() => {
+    setSparklers(
+      Array.from({ length: 24 }).map((_, i) => {
+        const angle = (i * 360) / 24;
+        const distance = 80 + Math.random() * 80;
+        const delay = Math.random() * 0.15;
+        const duration = 0.6 + Math.random() * 0.4;
+        return {
+          id: i,
+          angle,
+          distance,
+          delay: `${delay}s`,
+          duration: `${duration}s`,
+          size: `${Math.random() * 3 + 2}px`,
+        };
+      })
+    );
   }, []);
 
   // Ambient Stardust Particles
