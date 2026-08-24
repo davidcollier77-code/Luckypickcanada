@@ -150,6 +150,7 @@ function FlickerScore({ phase }: { phase: Phase }) {
   const [flickerScore, setFlickerScore] = useState(0);
   useEffect(() => {
     if (phase !== 'revealing') return;
+    setFlickerScore(Math.floor(Math.random() * 101)); // Update immediately upon entering revealing phase
     const id = setInterval(() => {
       setFlickerScore(Math.floor(Math.random() * 101));
     }, 110);
