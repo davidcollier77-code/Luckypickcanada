@@ -64,7 +64,9 @@ new_draw = """        } else if (tier.id === 'tier2') {
                     p.y = -Math.random() * 400 - 100;
                 }
             });"""
-
+if old_draw not in content:
+    raise ValueError("Pattern not found in file - replacement failed")
+new_content = content.replace(old_draw, new_draw)
 new_content = content.replace(old_draw, new_draw)
 
 with open('./components/LuckyGenerator.tsx', 'w') as f:
