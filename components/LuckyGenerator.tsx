@@ -60,7 +60,7 @@ const TIER1_FALLBACK_COPY =
 function getTier(score: number): Tier {
   if (score < 25) return { id: 1, name: 'GENTLE AURORA' };
   if (score < 50) return { id: 2, name: 'METEOR SHOWER' };
-  if (score < 75) return { id: 3, name: 'COSMIC LIGHTNING' };
+  if (score < 75) return { id: 3, name: 'COSMIC LIGHTNING RESONANCE' };
   return { id: 4, name: 'GRAND FIREWORKS' };
 }
 
@@ -303,6 +303,59 @@ function playClickSFX() {
   osc.stop(t + 0.1);
 }
 
+
+function playLightningStrikeSFX() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+
+  // Thunder rumble
+  const osc = ctx.createOscillator();
+  const oscGain = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(40, t);
+  osc.frequency.exponentialRampToValueAtTime(10, t + 0.8);
+  oscGain.gain.setValueAtTime(0.4, t);
+  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
+  osc.connect(oscGain);
+  oscGain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + 1.2);
+
+  // Electrical crackle
+  const bufferSize = ctx.sampleRate * 0.3;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'highpass';
+  noiseFilter.frequency.value = 2000;
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0.2, t);
+  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(ctx.destination);
+
+  osc.onended = () => {
+    osc.disconnect();
+    oscGain.disconnect();
+  };
+
+  noise.start(t);
+  noise.onended = () => {
+    noise.disconnect();
+    noiseFilter.disconnect();
+    noiseGain.disconnect();
+  };
+  noise.stop(t + 0.3);
+}
+
 function playFireworkBoomSFX() {
   const ctx = getAudioCtx();
   if (!ctx) return;
@@ -448,6 +501,11 @@ function useResonanceCanvas(
     }
 
     function spawnBolt() {
+      try {
+        playLightningStrikeSFX();
+      } catch (e) {
+        // Audio might fail if no interaction has occurred
+      }
       const startX = width * (0.15 + Math.random() * 0.7);
       const endX = startX + (Math.random() - 0.5) * width * 0.3;
       const points: { x: number; y: number }[] = [];
@@ -659,7 +717,8 @@ function useResonanceCanvas(
       // Atmospheric flash
       if (s.flash > 0) {
         ctx!.globalCompositeOperation = 'lighter';
-        ctx!.fillStyle = `rgba(190,170,255,${s.flash * 0.22})`;
+        // Neon-purple atmospheric flash
+        ctx!.fillStyle = `rgba(190,40,255,${s.flash * 0.35})`;
         ctx!.fillRect(0, 0, width, height);
         s.flash = Math.max(0, s.flash - dt * 1.8);
       }
@@ -675,9 +734,9 @@ function useResonanceCanvas(
         }
         const paths = [bolt.points, ...bolt.branches];
         for (const path of paths) {
-          // Wide soft glow pass
-          ctx!.strokeStyle = `rgba(180,140,255,${alpha * 0.35})`;
-          ctx!.lineWidth = 8;
+          // Wide neon-purple soft glow pass
+          ctx!.strokeStyle = `rgba(190,40,255,${alpha * 0.6})`;
+          ctx!.lineWidth = 10;
           ctx!.lineJoin = 'round';
           ctx!.beginPath();
           path.forEach((p, idx) =>
@@ -685,7 +744,7 @@ function useResonanceCanvas(
           );
           ctx!.stroke();
           // Bright core pass
-          ctx!.strokeStyle = `rgba(235,225,255,${alpha})`;
+          ctx!.strokeStyle = `rgba(245,200,255,${alpha})`;
           ctx!.lineWidth = 2;
           ctx!.beginPath();
           path.forEach((p, idx) =>
