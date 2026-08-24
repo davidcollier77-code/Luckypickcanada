@@ -100,13 +100,6 @@ const TIERS: Tier[] = [
   },
 ];
 
-const RIBBON_ORDER: TierId[] = ['tier1', 'tier2', 'tier3', 'tier4'];
-const TIER_INTENSITY: Record<TierId, number> = {
-  tier1: 0.22,
-  tier2: 0.5,
-  tier3: 0.78,
-  tier4: 0.95,
-};
 
 function tierForScore(score: number): Tier {
   return TIERS.find((t) => score >= t.range[0] && score <= t.range[1]) ?? TIERS[0];
@@ -260,44 +253,50 @@ export default function LuckyGenerator() {
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
 
-    const handleResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-    window.addEventListener('resize', handleResize);
-
     // Particles for fireworks and meteor shower
     let particles: any[] = [];
 
-    // Initialize fireworks on tier 4
-    if (phase === 'locked' && tier?.id === 'tier4') {
-        for(let i=0; i<150; i++) {
-            particles.push({
-                x: width / 2,
-                y: height / 2,
-                vx: (Math.random() - 0.5) * 15,
-                vy: (Math.random() - 0.5) * 15,
-                z: Math.random() * 100, // 3D depth
-                size: Math.random() * 3 + 1,
-                alpha: 1,
-                decay: Math.random() * 0.015 + 0.005,
-                color: `hsl(${Math.random() * 60 + 40}, 100%, 60%)` // Gold/Yellow fireworks
-            });
-        }
-    } else if (phase === 'locked' && tier?.id === 'tier2') {
-        for(let i=0; i<50; i++) {
-            particles.push({
-                x: Math.random() * width,
-                y: -10,
-                vx: -2 - Math.random() * 3,
-                vy: 5 + Math.random() * 5,
-                length: Math.random() * 20 + 10,
-                alpha: Math.random() * 0.5 + 0.5
-            });
-        }
-    } else if (phase === 'locked' && tier?.id === 'tier3') {
-        // Lightning points
-    }
+    const initializeParticles = () => {
+      particles = [];
+      // Initialize fireworks on tier 4
+      if (phase === 'locked' && tier?.id === 'tier4') {
+          for(let i=0; i<150; i++) {
+              particles.push({
+                  x: width / 2,
+                  y: height / 2,
+                  vx: (Math.random() - 0.5) * 15,
+                  vy: (Math.random() - 0.5) * 15,
+                  z: Math.random() * 100, // 3D depth
+                  size: Math.random() * 3 + 1,
+                  alpha: 1,
+                  decay: Math.random() * 0.015 + 0.005,
+                  color: `hsl(${Math.random() * 60 + 40}, 100%, 60%)` // Gold/Yellow fireworks
+              });
+          }
+      } else if (phase === 'locked' && tier?.id === 'tier2') {
+          for(let i=0; i<50; i++) {
+              particles.push({
+                  x: Math.random() * width,
+                  y: -10,
+                  vx: -2 - Math.random() * 3,
+                  vy: 5 + Math.random() * 5,
+                  length: Math.random() * 20 + 10,
+                  alpha: Math.random() * 0.5 + 0.5
+              });
+          }
+      } else if (phase === 'locked' && tier?.id === 'tier3') {
+          // Lightning points
+      }
+    };
+
+    initializeParticles();
+
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      initializeParticles();
+    };
+    window.addEventListener('resize', handleResize);
 
     let time = 0;
     const draw = () => {
