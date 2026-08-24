@@ -520,8 +520,8 @@ export default function LuckyGenerator() {
 
                 <button
                   type="button"
-                  onClick={handleActivate}
                   aria-label="Reveal my daily resonance energy level"
+                  onClick={handleActivate}
                   className="lg-button group relative mt-9 inline-flex min-h-[52px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-8 text-sm font-semibold tracking-wide text-white transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#B48CFF]"
                 >
                   <span className="lg-button-glow pointer-events-none absolute inset-0 rounded-full" aria-hidden="true" />
@@ -558,9 +558,9 @@ export default function LuckyGenerator() {
                   {tier.label}
                 </p>
 
-                <p className="lg-score-pop mt-3 flex items-start leading-none text-white animate-glow-pulse" style={{ '--tier-glow-dim': `${tier.glow}55`, '--tier-glow-bright': `${tier.glow}aa` } as React.CSSProperties}>
+                <p className="lg-score-pop mt-3 flex items-start leading-none text-white" style={{ '--tier-glow-dim': `${tier.glow}55`, '--tier-glow-bright': `${tier.glow}aa` } as React.CSSProperties}>
                   <span
-                    className="text-7xl font-bold sm:text-8xl"
+                    className="text-7xl font-bold sm:text-8xl animate-glow-pulse"
                     style={{ fontFamily: 'var(--font-lg-display)' }}
                   >
                     {score}
@@ -594,8 +594,8 @@ export default function LuckyGenerator() {
                 {!isSharing && (
                   <button
                     type="button"
-                    onClick={handleShare}
                     aria-label="Share your daily resonance result"
+                    onClick={handleShare}
                     className={`mt-8 flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-xs font-semibold tracking-wide text-white transition-all duration-700 ease-out hover:bg-white/[0.1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B48CFF] ${
                       showClock ? 'opacity-100' : 'translate-y-1.5 opacity-0'
                     }`}

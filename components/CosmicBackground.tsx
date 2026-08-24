@@ -1,59 +1,71 @@
-import React, { ReactNode } from 'react';
+"use client";
+import React from "react";
 
-interface CosmicBackgroundProps {
-  isRevealed?: boolean;
-  progress?: number;
-  children: ReactNode;
-}
+type CosmicBackgroundProps = {
+  isRevealed: boolean;
+  progress: number | string;
+  children: React.ReactNode;
+};
 
-const CosmicBackground: React.FC<CosmicBackgroundProps> = ({ isRevealed, progress, children }) => {
-  const isTriggered = isRevealed || Number(progress) === 100;
+export default function CosmicBackground({
+  isRevealed,
+  progress,
+  children,
+}: CosmicBackgroundProps) {
+  const numericProgress = Number(progress);
 
-  // Generate meteors statically to avoid unnecessary re-renders or dynamic arrays inside the component.
-  // Using an array of 20 meteors for moderate density.
-  const meteors = React.useMemo(() => Array.from({ length: 20 }), []);
+  const meteors = React.useMemo(
+    () =>
+      Array.from({ length: 20 }).map((_, index) => {
+        const delay = Math.random() * 2;
+        const top = Math.random() * 100;
+        const left = Math.random() * 100;
+        const scale = 0.6 + Math.random() * 0.7;
+
+        return {
+          id: index,
+          style: {
+            top: `${top}vh`,
+            left: `${left}vw`,
+            transform: `scale(${scale}) rotate(215deg)`,
+            animationDelay: `${delay}s`,
+          } as React.CSSProperties,
+        };
+      }),
+    []
+  );
+
+  const shouldShowMeteors = isRevealed || numericProgress === 100;
 
   return (
     <div
-      className={`relative min-h-screen w-full overflow-hidden bg-transparent transition-all duration-1000 ${
-        !isTriggered ? 'animate-breathing-pulse' : ''
+      className={`relative min-h-screen w-full overflow-hidden ${
+        !isRevealed && numericProgress !== 100 ? "animate-breathe" : ""
       }`}
+      aria-label="Daily Resonance Ritual interactive dashboard"
     >
-      {isTriggered && (
-        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-          {meteors.map((_, i) => {
-            // Using a pseudo-random approach for position and delay based on index
-            // so we avoid hydration mismatches if used with SSR
-            const left = `${(i * 13) % 100}%`;
-            const top = `${(i * 17) % 100}%`;
-            const delay = `${(i * 0.3) % 3}s`;
-            const duration = `${1 + ((i * 0.1) % 2)}s`;
-
-            return (
+      {shouldShowMeteors && (
+        <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+          {meteors.map((meteor) => (
+            <div
+              key={meteor.id}
+              className="absolute h-[2px] w-[140px] animate-meteor"
+              style={meteor.style}
+            >
+              <div className="h-[2px] w-[18px] rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)]" />
               <div
-                key={i}
-                className="absolute w-[2px] h-[50px] bg-white opacity-0 animate-meteor-shower"
+                className="h-[2px] w-[140px]"
                 style={{
-                  left,
-                  top,
-                  animationDelay: delay,
-                  animationDuration: duration,
-                  boxShadow: '0 0 10px 2px rgba(167, 243, 208, 0.5), 0 0 20px 2px rgba(253, 230, 138, 0.3)', // Cyan and pale gold glow
-                  background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1))',
-                  borderRadius: '10px'
+                  backgroundImage:
+                    "linear-gradient(90deg, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.7) 40%, rgba(0,255,255,0.9) 100%)",
+                  filter: "blur(0.5px)",
                 }}
               />
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
-
-      {/* Container for children elements */}
-      <div className="relative z-10 w-full h-full flex flex-col min-h-screen">
-        {children}
-      </div>
+      <div className="relative z-10">{children}</div>
     </div>
   );
-};
-
-export default CosmicBackground;
+}

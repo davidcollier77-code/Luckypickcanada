@@ -20,6 +20,10 @@ module.exports = {
         ]
       },
       animation: {
+        'breathe': 'breathe 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'meteor': 'meteor 2s linear infinite',
+        'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
+
         'breathing-pulse': 'breathingPulse 4s ease-in-out infinite',
         'meteor-shower': 'meteorShower 3s linear infinite',
         'pop-out': 'popOut 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
@@ -41,9 +45,22 @@ module.exports = {
         'fade-in-dim': 'fadeInDim 1s ease-out forwards',
         'pop-bright': 'popBright 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'scale-dramatic-neon': 'scaleDramaticNeon 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
-        'glow-pulse': 'glowPulse 2s ease-in-out infinite',
-      },
+              },
       keyframes: {
+        breathe: {
+          '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
+          '50%': { transform: 'scale(1.03)', opacity: '1' },
+        },
+        meteor: {
+          '0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+          '70%': { opacity: '1' },
+          '100%': { transform: 'rotate(215deg) translateX(-1000px)', opacity: '0' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { opacity: '0.8' },
+          '50%': { opacity: '1', filter: 'brightness(1.3)' },
+        },
+
         breathingPulse: {
           '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
           '50%': { transform: 'scale(1.05)', opacity: '1' },
