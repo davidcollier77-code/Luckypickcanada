@@ -129,15 +129,19 @@ function generateTodaysResonance(previous: StoredResonance | null): {
 } {
   let score = randomInt(0, 100);
   if (previous) {
-    while (score === previous.lastScore) {
+    let attempts = 0;
+    while (score === previous.lastScore && attempts < 100) {
       score = randomInt(0, 100);
+      attempts++;
     }
   }
 
   let quoteIndex = randomInt(0, QUOTES.length - 1);
   if (previous && QUOTES.length > 1) {
-    while (quoteIndex === previous.lastQuoteIndex) {
+    let attempts = 0;
+    while (quoteIndex === previous.lastQuoteIndex && attempts < 100) {
       quoteIndex = randomInt(0, QUOTES.length - 1);
+      attempts++;
     }
   }
 
