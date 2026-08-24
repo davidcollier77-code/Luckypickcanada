@@ -404,7 +404,7 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string) {
-      const count = reduced ? 26 : 70;
+      const count = reduced ? 36 : 100; // Multi-colored 3D bursts count
       for (let i = 0; i < count; i++) {
         // Spherical distribution projected to 2D for a pseudo-3D bouquet.
         const theta = Math.random() * Math.PI * 2;
@@ -419,7 +419,7 @@ function useResonanceCanvas(
           color,
           age: 0,
           life: 0.9 + Math.random() * 0.6,
-          size: 1.4 + depth * 1.8,
+          size: 1.6 + depth * 2.2, // Enhanced spark size for 3D bursts
         });
       }
     }
@@ -458,7 +458,7 @@ function useResonanceCanvas(
       const bands = 3;
       for (let b = 0; b < bands; b++) {
         const freq = 0.0016 + b * 0.0006;
-        const amp = 60 + b * 26;
+        const amp = 70 + b * 30; // Enhanced gentle wave amplitude
         const yBase = height * (0.28 + b * 0.14);
         const grad = ctx!.createLinearGradient(0, 0, width, 0);
         const hue = b % 2 === 0 ? '110,230,210' : '170,140,255';
@@ -466,7 +466,7 @@ function useResonanceCanvas(
         grad.addColorStop(0.5, `rgba(${hue},0.16)`);
         grad.addColorStop(1, `rgba(${hue},0)`);
         ctx!.strokeStyle = grad;
-        ctx!.lineWidth = 26 + b * 10;
+        ctx!.lineWidth = 32 + b * 12; // Enhanced gentle aurora width
         ctx!.beginPath();
         for (let x = 0; x <= width; x += 12) {
           const y =
@@ -519,7 +519,7 @@ function useResonanceCanvas(
           const bpt = m.trail[j];
           const alpha = (j / m.trail.length) * 0.5;
           ctx!.strokeStyle = `rgba(180,210,255,${alpha})`;
-          ctx!.lineWidth = m.width * (j / m.trail.length);
+          ctx!.lineWidth = m.width * (j / m.trail.length) * 1.4; // Crisp glowing trails
           ctx!.beginPath();
           ctx!.moveTo(a.x, a.y);
           ctx!.lineTo(bpt.x, bpt.y);
@@ -527,13 +527,13 @@ function useResonanceCanvas(
         }
 
         // Bright head
-        const glow = ctx!.createRadialGradient(m.x, m.y, 0, m.x, m.y, 9);
+        const glow = ctx!.createRadialGradient(m.x, m.y, 0, m.x, m.y, 11);
         glow.addColorStop(0, 'rgba(255,255,255,0.95)');
         glow.addColorStop(0.4, 'rgba(190,220,255,0.6)');
         glow.addColorStop(1, 'rgba(190,220,255,0)');
         ctx!.fillStyle = glow;
         ctx!.beginPath();
-        ctx!.arc(m.x, m.y, 9, 0, Math.PI * 2);
+        ctx!.arc(m.x, m.y, 11, 0, Math.PI * 2); // Enhanced meteor head
         ctx!.fill();
 
         if (m.y > height + 40 || m.x < -60 || m.x > width + 60) {
@@ -551,7 +551,7 @@ function useResonanceCanvas(
       // Atmospheric flash
       if (s.flash > 0) {
         ctx!.globalCompositeOperation = 'lighter';
-        ctx!.fillStyle = `rgba(190,170,255,${s.flash * 0.22})`;
+        ctx!.fillStyle = `rgba(190,170,255,${s.flash * 0.32})`; // Atmospheric flashes
         ctx!.fillRect(0, 0, width, height);
         s.flash = Math.max(0, s.flash - dt * 1.8);
       }
@@ -569,7 +569,7 @@ function useResonanceCanvas(
         for (const path of paths) {
           // Wide soft glow pass
           ctx!.strokeStyle = `rgba(180,140,255,${alpha * 0.35})`;
-          ctx!.lineWidth = 8;
+          ctx!.lineWidth = 12; // Wider soft glow for lightning
           ctx!.lineJoin = 'round';
           ctx!.beginPath();
           path.forEach((p, idx) =>
@@ -742,7 +742,7 @@ export default function LuckyGenerator() {
   ]);
 
   const effectGroup: EffectGroup =
-    phase === 'idle' || !tier ? 'idle' : tier.id;
+    (phase !== 'idle' && tier) ? tier.id : 'idle';
 
   useResonanceCanvas(canvasRef, effectGroup);
 
@@ -818,7 +818,7 @@ export default function LuckyGenerator() {
       : 'card-pulse-locked';
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#05040e] text-white">
+    <div className="relative min-h-screen w-full overflow-hidden bg-transparent text-white">
       {/* Cinematic nebula background */}
       <div
         className="fixed inset-0 -z-20"
