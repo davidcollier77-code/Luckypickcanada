@@ -48,7 +48,51 @@ function sanitizeInput(input) {
   return cleaned;
 }
 
+
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const MAX_SUBMISSIONS_PER_WINDOW = 5;
+const rateLimitMap = new Map();
+
+function getClientIp(request) {
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  if (cfConnectingIp) return cfConnectingIp.trim();
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (forwardedFor) return forwardedFor.split(',')[0].trim();
+  return request.headers.get('x-real-ip') || 'unknown';
+}
+
+function checkRateLimit(ip) {
+  const currentTime = Date.now();
+
+  // Clean up old entries to prevent memory leak
+  if (Math.random() < 0.1) { // Clean up occasionally
+    for (const [key, bucket] of rateLimitMap.entries()) {
+      if (bucket.resetAt <= currentTime) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+
+  const existing = rateLimitMap.get(ip);
+  const bucket = existing && existing.resetAt > currentTime
+    ? existing
+    : { count: 0, resetAt: currentTime + RATE_LIMIT_WINDOW_MS };
+
+  bucket.count += 1;
+  rateLimitMap.set(ip, bucket);
+
+  return bucket.count <= MAX_SUBMISSIONS_PER_WINDOW;
+}
+
 export async function POST(request) {
+  const ip = getClientIp(request);
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: "Too many requests. Please wait before asking again." }, {
+      status: 429,
+      headers: getCorsHeaders(request)
+    });
+  }
+
   const corsHeaders = getCorsHeaders(request);
   try {
     // Check API Key
