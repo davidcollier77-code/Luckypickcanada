@@ -250,7 +250,7 @@ export default function LuckyGenerator() {
       try {
         const html2canvas = (await import('html2canvas')).default;
         canvas = await html2canvas(cardRef.current, {
-          backgroundColor: '#05070d', // Match the body background
+          backgroundColor: null,
           scale: 2,
           logging: false,
           useCORS: true,
@@ -350,12 +350,14 @@ export default function LuckyGenerator() {
 
   // Explosive Sparkler Particles for top tiers (State C / locked)
   const sparklers = useMemo(() => {
-    const randomValues = Array.from({ length: 24 }).map((_, i) => ({
-      angle: (i * 360) / 24,
-      distance: 80 + Math.random() * 80,
-      delay: Math.random() * 0.15,
-      duration: 0.6 + Math.random() * 0.4,
-      size: Math.random() * 3 + 2,
+    const randomValues = Array.from({ length: 48 }).map((_, i) => ({
+      angle: Math.random() * 360,
+      distance: 100 + Math.random() * 200, // wider burst radius
+      delay: Math.random() * 0.3,
+      duration: 0.8 + Math.random() * 0.6,
+      size: Math.random() * 4 + 2,
+      originX: 20 + Math.random() * 60, // random origin points
+      originY: 30 + Math.random() * 40,
     }));
     
     return randomValues.map((v, i) => ({
@@ -365,6 +367,8 @@ export default function LuckyGenerator() {
       delay: `${v.delay}s`,
       duration: `${v.duration}s`,
       size: `${v.size}px`,
+      left: `${v.originX}%`,
+      top: `${v.originY}%`,
     }));
   }, []);
 
@@ -382,6 +386,7 @@ export default function LuckyGenerator() {
 
   return (
     <div
+      ref={cardRef}
       className={`${cinzel.variable} ${manrope.variable} ${jbMono.variable} lg-root relative flex min-h-dvh w-full flex-col items-center justify-center overflow-hidden bg-[#05070d] px-4 py-10 sm:px-6`}
       style={{ fontFamily: 'var(--font-lg-body), ui-sans-serif, system-ui, sans-serif' }}
     >
@@ -427,7 +432,8 @@ export default function LuckyGenerator() {
       </div>
 
       {/* Return to home */}
-      <Link
+      {!isSharing && (
+        <Link
         href="/"
         aria-label="Return to home"
         className="group absolute left-4 top-4 z-20 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white/60 backdrop-blur-md transition-colors hover:border-white/20 hover:text-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#B48CFF] sm:left-6 sm:top-6"
@@ -442,30 +448,38 @@ export default function LuckyGenerator() {
           />
         </svg>
         <span>Home</span>
-      </Link>
+        </Link>
+      )}
+
+      {/* Background Fireworks Layer */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+        {phase === 'locked' && (tier?.id === 'northern' || tier?.id === 'peak') && sparklers.map((p) => (
+          <div
+            key={`sparkler-${p.id}`}
+            className="lg-sparkler absolute rounded-full"
+            style={{
+              left: p.left,
+              top: p.top,
+              width: p.size,
+              height: p.size,
+              backgroundColor: tier?.glow || '#ffffff',
+              boxShadow: `0 0 12px ${tier?.glow || '#ffffff'}`,
+              animationDuration: p.duration,
+              animationDelay: p.delay,
+              '--tx': `${Math.cos((p.angle * Math.PI) / 180) * p.distance}px`,
+              '--ty': `${Math.sin((p.angle * Math.PI) / 180) * p.distance}px`,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
 
       {/* Ritual card */}
-      <main className="relative z-10 w-full max-w-md">
-        <div ref={cardRef} className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-10 shadow-[0_0_90px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:px-10 sm:py-12">
+      <main className={`relative z-10 w-full max-w-md ${(phase === 'ready' || phase === 'locked') ? 'lg-breathe-card' : ''}`}>
+        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-10 shadow-[0_0_90px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:px-10 sm:py-12">
 
           {/* Ambient Stardust Layer */}
           <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-            {phase === 'locked' && (tier?.id === 'northern' || tier?.id === 'peak') && sparklers.map((p) => (
-              <div
-                key={`sparkler-${p.id}`}
-                className="lg-sparkler absolute left-1/2 top-1/2 rounded-full"
-                style={{
-                  width: p.size,
-                  height: p.size,
-                  backgroundColor: tier?.glow || '#ffffff',
-                  boxShadow: `0 0 10px ${tier?.glow || '#ffffff'}`,
-                  animationDuration: p.duration,
-                  animationDelay: p.delay,
-                  '--tx': `${Math.cos((p.angle * Math.PI) / 180) * p.distance}px`,
-                  '--ty': `${Math.sin((p.angle * Math.PI) / 180) * p.distance}px`,
-                } as React.CSSProperties}
-              />
-            ))}
+            {/* Sparklers moved out */}
             {stardustParticles.map((p) => (
               <div
                 key={p.id}
@@ -600,7 +614,27 @@ export default function LuckyGenerator() {
         </div>
       </main>
 
+      {/* Share Watermark */}
+      {isSharing && (
+        <div className="absolute bottom-6 z-50 text-sm font-medium tracking-widest text-white/40 uppercase" style={{ fontFamily: 'var(--font-lg-body)' }}>
+          luckypickcanada.ca
+        </div>
+      )}
+
       <style jsx>{`
+
+        .lg-breathe-card {
+          animation: lgBreatheCard 6s ease-in-out infinite;
+          will-change: transform;
+        }
+        @keyframes lgBreatheCard {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-4px);
+          }
+        }
         .lg-stars {
           background-image: radial-gradient(1.4px 1.4px at 8% 18%, rgba(255, 255, 255, 0.85), transparent 100%),
             radial-gradient(1.2px 1.2px at 22% 8%, rgba(255, 255, 255, 0.6), transparent 100%),
