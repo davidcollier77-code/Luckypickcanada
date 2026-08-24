@@ -350,20 +350,22 @@ export default function LuckyGenerator() {
 
   // Explosive Sparkler Particles for top tiers (State C / locked)
   const sparklers = useMemo(() => {
-    return Array.from({ length: 24 }).map((_, i) => {
-      const angle = (i * 360) / 24;
-      const distance = 80 + Math.random() * 80;
-      const delay = Math.random() * 0.15;
-      const duration = 0.6 + Math.random() * 0.4;
-      return {
-        id: i,
-        angle,
-        distance,
-        delay: `${delay}s`,
-        duration: `${duration}s`,
-        size: `${Math.random() * 3 + 2}px`,
-      };
-    });
+    const randomValues = Array.from({ length: 24 }).map((_, i) => ({
+      angle: (i * 360) / 24,
+      distance: 80 + Math.random() * 80,
+      delay: Math.random() * 0.15,
+      duration: 0.6 + Math.random() * 0.4,
+      size: Math.random() * 3 + 2,
+    }));
+    
+    return randomValues.map((v, i) => ({
+      id: i,
+      angle: v.angle,
+      distance: v.distance,
+      delay: `${v.delay}s`,
+      duration: `${v.duration}s`,
+      size: `${v.size}px`,
+    }));
   }, []);
 
   // Ambient Stardust Particles
