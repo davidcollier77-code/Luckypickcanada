@@ -143,11 +143,60 @@ interface StoredResult {
 // Component
 // ---------------------------------------------------------------------
 
+
+
+
+function FlickerScore({ phase }: { phase: Phase }) {
+  const [flickerScore, setFlickerScore] = useState(0);
+  useEffect(() => {
+    if (phase !== 'revealing') return;
+    setFlickerScore(Math.floor(Math.random() * 101)); // Update immediately upon entering revealing phase
+    const id = setInterval(() => {
+      setFlickerScore(Math.floor(Math.random() * 101));
+    }, 110);
+    return () => clearInterval(id);
+  }, [phase]);
+  return <>{flickerScore}</>;
+}
+function CountdownClock({ onMidnight, phase }: { onMidnight: () => void, phase: Phase }) {
+  const [remainingMs, setRemainingMs] = useState(() => msUntilLocalMidnight());
+
+  useEffect(() => {
+    if (phase !== 'locked') return;
+    setRemainingMs(msUntilLocalMidnight()); // Update immediately upon entering locked phase
+    const id = setInterval(() => {
+      const ms = msUntilLocalMidnight();
+      setRemainingMs(ms);
+      if (ms <= 1000) {
+        onMidnight();
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [onMidnight, phase]);
+
+  const clock = useMemo(() => {
+    const total = Math.max(0, Math.floor(remainingMs / 1000));
+    return {
+      h: pad(Math.floor(total / 3600)),
+      m: pad(Math.floor((total % 3600) / 60)),
+      s: pad(total % 60),
+    };
+  }, [remainingMs]);
+
+  return (
+    <>
+      <span>{clock.h}</span>
+      <span className="lg-clock-colon text-white/40">:</span>
+      <span>{clock.m}</span>
+      <span className="lg-clock-colon text-white/40">:</span>
+      <span>{clock.s}</span>
+    </>
+  );
+}
+
 export default function LuckyGenerator() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [score, setScore] = useState<number | null>(null);
-  const [flickerScore, setFlickerScore] = useState(0);
-  const [remainingMs, setRemainingMs] = useState(0);
   const [showClock, setShowClock] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
 
@@ -168,7 +217,6 @@ export default function LuckyGenerator() {
           setScore(stored.score);
           setPhase('locked');
           setShowClock(true);
-          setRemainingMs(msUntilLocalMidnight());
           return;
         }
         window.localStorage.removeItem(STORAGE_KEY);
@@ -179,36 +227,22 @@ export default function LuckyGenerator() {
     setPhase('ready');
   }, []);
 
-  // Countdown ticker — self-correcting each second, resets state at midnight
-  useEffect(() => {
-    if (phase !== 'locked') return;
-    const id = setInterval(() => {
-      const ms = msUntilLocalMidnight();
-      setRemainingMs(ms);
-      if (ms <= 1000) {
-        try {
-          window.localStorage.removeItem(STORAGE_KEY);
-        } catch {
-          /* noop */
-        }
-        hasActivatedRef.current = false;
-        setPhase('ready');
-        setScore(null);
-        setShowClock(false);
-        clearInterval(id);
-      }
-    }, 1000);
-    return () => clearInterval(id);
-  }, [phase]);
+  // Countdown ticker — resets state at midnight
+  const handleMidnight = useCallback(() => {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* noop */
+    }
+    hasActivatedRef.current = false;
+    setPhase('ready');
+    setScore(null);
+    setShowClock(false);
+  }, []);
 
-  // Cosmetic flicker digits during the reveal (decorative only, aria-hidden)
-  // + Haptic feedback pulse
+  // Haptic feedback pulse
   useEffect(() => {
     if (phase !== 'revealing') return;
-    const id = setInterval(() => {
-      setFlickerScore(Math.floor(Math.random() * 101));
-    }, 110);
-
     const hapticId = setInterval(() => {
       if (typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
@@ -218,7 +252,6 @@ export default function LuckyGenerator() {
     }, 600);
 
     return () => {
-      clearInterval(id);
       clearInterval(hapticId);
     };
   }, [phase]);
@@ -333,20 +366,9 @@ export default function LuckyGenerator() {
       } catch {
         /* noop */
       }
-      setRemainingMs(msUntilLocalMidnight());
       clockDelayRef.current = setTimeout(() => setShowClock(true), CLOCK_REVEAL_DELAY_MS);
     }, REVEAL_DURATION_MS);
   }, [phase]);
-
-  const clock = useMemo(() => {
-    const total = Math.max(0, Math.floor(remainingMs / 1000));
-    return {
-      h: pad(Math.floor(total / 3600)),
-      m: pad(Math.floor((total % 3600) / 60)),
-      s: pad(total % 60),
-    };
-  }, [remainingMs]);
-
 
   // Explosive Sparkler Particles for top tiers (State C / locked)
   const sparklers = useMemo(() => {
@@ -543,7 +565,7 @@ export default function LuckyGenerator() {
                   className="lg-flicker-number mt-6 text-6xl font-bold text-white/25 sm:text-7xl"
                   style={{ fontFamily: 'var(--font-lg-mono)' }}
                 >
-                  {flickerScore}
+                  <FlickerScore phase={phase} />
                   <span className="text-2xl align-top">%</span>
                 </p>
               </div>
@@ -576,11 +598,7 @@ export default function LuckyGenerator() {
                   }`}
                   style={{ fontFamily: 'var(--font-lg-mono)', fontVariantNumeric: 'tabular-nums' }}
                 >
-                  <span>{clock.h}</span>
-                  <span className="lg-clock-colon text-white/40">:</span>
-                  <span>{clock.m}</span>
-                  <span className="lg-clock-colon text-white/40">:</span>
-                  <span>{clock.s}</span>
+<CountdownClock onMidnight={handleMidnight} phase={phase} />
                 </div>
                 <p
                   className={`mt-2 text-[11px] uppercase tracking-[0.2em] text-white/35 transition-all duration-700 ease-out ${
