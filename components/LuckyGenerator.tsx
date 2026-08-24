@@ -247,6 +247,7 @@ interface Spark {
   age: number;
   life: number;
   size: number;
+  trail: { x: number; y: number }[];
 }
 
 interface Rocket {
@@ -266,6 +267,82 @@ const FIREWORK_COLORS = [
   '200,110,255', // purple
   '255,205,90', // gold
 ];
+
+// Audio context singleton to avoid creating multiple contexts
+let audioCtx: AudioContext | null = null;
+function getAudioCtx() {
+  if (typeof window === 'undefined') return null;
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+function playClickSFX() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(800, t);
+  osc.frequency.exponentialRampToValueAtTime(1200, t + 0.05);
+
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.3, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(t);
+  osc.stop(t + 0.1);
+}
+
+function playFireworkBoomSFX() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+
+  // Low frequency boom
+  const osc = ctx.createOscillator();
+  const oscGain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(150, t);
+  osc.frequency.exponentialRampToValueAtTime(40, t + 0.3);
+  oscGain.gain.setValueAtTime(0.5, t);
+  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+  osc.connect(oscGain);
+  oscGain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + 0.6);
+
+  // Noise crackle
+  const bufferSize = ctx.sampleRate * 0.5;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.value = 1000;
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0.3, t);
+  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(ctx.destination);
+  noise.start(t);
+  noise.stop(t + 0.5);
+}
 
 function useResonanceCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -405,21 +482,40 @@ function useResonanceCanvas(
 
     function explode(x: number, y: number, color: string) {
       const count = reduced ? 26 : 70;
+
+      try {
+        playFireworkBoomSFX();
+      } catch (e) {
+        // Audio might fail if no interaction has occurred
+      }
+
       for (let i = 0; i < count; i++) {
-        // Spherical distribution projected to 2D for a pseudo-3D bouquet.
+        // Accurate 3D spherical projection
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
         const speed = 90 + Math.random() * 170;
-        const depth = Math.sin(phi); // 0..1, used to scale for "3D" falloff
+
+        // Spherical to Cartesian coordinates (y is up/down in 2D)
+        const vx3d = speed * Math.sin(phi) * Math.cos(theta);
+        const vy3d = speed * Math.cos(phi);
+        const vz3d = speed * Math.sin(phi) * Math.sin(theta);
+
+        // Depth projection for size and opacity
+        const depth = (vz3d / speed + 1) / 2; // 0..1
+
+        // Mix white randomly for glowing core effect
+        const particleColor = Math.random() > 0.85 ? '255,255,255' : color;
+
         s.sparks.push({
           x,
           y,
-          vx: Math.cos(theta) * depth * speed,
-          vy: Math.sin(theta) * depth * speed * 0.85 + Math.cos(phi) * 40,
-          color,
+          vx: vx3d,
+          vy: vy3d,
+          color: particleColor,
           age: 0,
           life: 0.9 + Math.random() * 0.6,
-          size: 1.4 + depth * 1.8,
+          size: 1.0 + depth * 2.2,
+          trail: [],
         });
       }
     }
@@ -638,25 +734,47 @@ function useResonanceCanvas(
         sp.vy *= 1 - dt * 0.35;
         sp.x += sp.vx * dt;
         sp.y += sp.vy * dt;
+
+        sp.trail.push({ x: sp.x, y: sp.y });
+        if (sp.trail.length > 8) sp.trail.shift();
+
         const lifeRatio = sp.age / sp.life;
         const alpha = Math.max(0, 1 - lifeRatio);
+
         if (alpha <= 0) {
           s.sparks.splice(i, 1);
           continue;
         }
+
+        // Draw trailing path with lighter blending
+        for (let j = 1; j < sp.trail.length; j++) {
+          const a = sp.trail[j - 1];
+          const bpt = sp.trail[j];
+          const pathAlpha = alpha * (j / sp.trail.length) * 0.7;
+          ctx!.strokeStyle = `rgba(${sp.color},${pathAlpha})`;
+          ctx!.lineWidth = sp.size * (j / sp.trail.length);
+          ctx!.lineCap = 'round';
+          ctx!.beginPath();
+          ctx!.moveTo(a.x, a.y);
+          ctx!.lineTo(bpt.x, bpt.y);
+          ctx!.stroke();
+        }
+
+        // Core glow
         const glow = ctx!.createRadialGradient(
           sp.x,
           sp.y,
           0,
           sp.x,
           sp.y,
-          sp.size * 5
+          sp.size * 4
         );
         glow.addColorStop(0, `rgba(${sp.color},${alpha})`);
+        glow.addColorStop(0.3, `rgba(${sp.color},${alpha * 0.6})`);
         glow.addColorStop(1, `rgba(${sp.color},0)`);
         ctx!.fillStyle = glow;
         ctx!.beginPath();
-        ctx!.arc(sp.x, sp.y, sp.size * 5, 0, Math.PI * 2);
+        ctx!.arc(sp.x, sp.y, sp.size * 4, 0, Math.PI * 2);
         ctx!.fill();
       }
     }
@@ -749,6 +867,12 @@ export default function LuckyGenerator() {
   const handleReveal = useCallback(() => {
     if (phase !== 'idle') return;
 
+    try {
+      playClickSFX();
+    } catch (e) {
+      // Ignore if audio context fails
+    }
+
     const previous = readStoredResonance();
     const { score: newScore, quoteIndex: newQuoteIndex } =
       generateTodaysResonance(previous);
@@ -784,6 +908,12 @@ export default function LuckyGenerator() {
   }, [phase]);
 
   const handleShare = useCallback(async () => {
+    try {
+      playClickSFX();
+    } catch (e) {
+      // Ignore
+    }
+
     const text =
       tier && score !== null
         ? `My Daily Resonance today is ${score}% — ${tier.name} ✨ luckypickcanada.ca`
@@ -838,7 +968,7 @@ export default function LuckyGenerator() {
       <div className="relative z-10 flex justify-start p-4">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90 cursor-default"
         >
           <span aria-hidden>←</span> Return to Home
         </Link>
@@ -859,7 +989,7 @@ export default function LuckyGenerator() {
               </h1>
               <button
                 onClick={handleReveal}
-                className="group relative overflow-hidden rounded-full bg-gradient-to-r from-purple-500/80 via-fuchsia-400/70 to-cyan-400/80 px-6 py-3 text-sm font-medium tracking-wide text-white shadow-lg shadow-purple-500/30 transition active:scale-95 btn-pulse"
+                className="group relative overflow-hidden rounded-full bg-gradient-to-r from-purple-500/80 via-fuchsia-400/70 to-cyan-400/80 px-6 py-3 text-sm font-medium tracking-wide text-white shadow-lg shadow-purple-500/30 transition active:scale-95 btn-pulse cursor-default"
               >
                 Reveal My Resonance
               </button>
@@ -871,8 +1001,13 @@ export default function LuckyGenerator() {
               <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/80 animate-pulse">
                 THE SKY IS ANSWERING...
               </p>
-              <div className="text-6xl font-bold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-white to-cyan-200/80">
-                {displayScore}%
+              <div className="relative flex items-center justify-center">
+                <div className="waveform-ripple ripple-1 absolute inset-0 rounded-full border-2 border-cyan-300/40" />
+                <div className="waveform-ripple ripple-2 absolute inset-0 rounded-full border-2 border-fuchsia-400/30" />
+                <div className="waveform-ripple ripple-3 absolute inset-0 rounded-full border-2 border-cyan-200/20" />
+                <div className="text-6xl font-bold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-white to-cyan-200/80 relative z-10">
+                  {displayScore}%
+                </div>
               </div>
               {quoteIndex !== null && (
                 <p className="text-sm italic leading-relaxed text-white/70">
@@ -900,7 +1035,7 @@ export default function LuckyGenerator() {
               </div>
               <button
                 onClick={handleShare}
-                className="mt-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm text-white/85 backdrop-blur-md transition hover:border-white/30 hover:bg-white/10 active:scale-95"
+                className="mt-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm text-white/85 backdrop-blur-md transition hover:border-white/30 hover:bg-white/10 active:scale-95 cursor-default"
               >
                 {shareStatus === 'copied' ? 'Copied ✓' : 'Share My Resonance'}
               </button>
@@ -966,6 +1101,29 @@ export default function LuckyGenerator() {
         }
         .card-pulse-locked {
           animation: pulseLocked 5.6s ease-in-out infinite;
+        }
+        @keyframes waveformRipple {
+          0% {
+            transform: scale(0.8);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(2.5);
+            opacity: 0;
+          }
+        }
+        .waveform-ripple {
+          animation: waveformRipple 2s cubic-bezier(0.1, 0.5, 0.3, 1) infinite;
+          pointer-events: none;
+        }
+        .ripple-1 {
+          animation-delay: 0s;
+        }
+        .ripple-2 {
+          animation-delay: 0.6s;
+        }
+        .ripple-3 {
+          animation-delay: 1.2s;
         }
       `}</style>
     </div>
