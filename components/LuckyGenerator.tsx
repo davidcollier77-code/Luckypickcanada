@@ -301,6 +301,10 @@ function playClickSFX() {
 
   osc.start(t);
   osc.stop(t + 0.1);
+  osc.onended = () => {
+    osc.disconnect();
+    gain.disconnect();
+  };
 }
 
 function playFireworkBoomSFX() {
@@ -320,6 +324,10 @@ function playFireworkBoomSFX() {
   oscGain.connect(ctx.destination);
   osc.start(t);
   osc.stop(t + 0.6);
+  osc.onended = () => {
+    osc.disconnect();
+    oscGain.disconnect();
+  };
 
   // Noise crackle
   const bufferSize = ctx.sampleRate * 0.5;
@@ -340,20 +348,13 @@ function playFireworkBoomSFX() {
   noise.connect(noiseFilter);
   noiseFilter.connect(noiseGain);
   noiseGain.connect(ctx.destination);
-
-  osc.onended = () => {
-    osc.disconnect();
-    oscGain.disconnect();
-  };
-
   noise.start(t);
+  noise.stop(t + 0.5);
   noise.onended = () => {
     noise.disconnect();
     noiseFilter.disconnect();
     noiseGain.disconnect();
   };
-
-  noise.stop(t + 0.5);
 }
 
 function useResonanceCanvas(
