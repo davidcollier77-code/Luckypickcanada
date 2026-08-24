@@ -41,7 +41,7 @@ interface Tier {
 
 const STORAGE_KEY = 'luckyPickCanada:dailyResonance';
 
-const REVEAL_DURATION_MS = 2400;
+const REVEAL_DURATION_MS = 10000;
 
 const QUOTES: string[] = [
   'Like the Northern Lights dancing across the sky, your luck is uniquely yours today.',
@@ -859,7 +859,7 @@ export default function LuckyGenerator() {
               </h1>
               <button
                 onClick={handleReveal}
-                className="group relative overflow-hidden rounded-full bg-gradient-to-r from-purple-500/80 via-fuchsia-400/70 to-cyan-400/80 px-6 py-3 text-sm font-medium tracking-wide text-white shadow-lg shadow-purple-500/30 transition active:scale-95"
+                className="group relative overflow-hidden rounded-full bg-gradient-to-r from-purple-500/80 via-fuchsia-400/70 to-cyan-400/80 px-6 py-3 text-sm font-medium tracking-wide text-white shadow-lg shadow-purple-500/30 transition active:scale-95 btn-pulse"
               >
                 Reveal My Resonance
               </button>
@@ -910,6 +910,18 @@ export default function LuckyGenerator() {
       </main>
 
       <style jsx>{`
+        @keyframes pulseButton {
+          0%,
+          100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.05);
+          }
+        }
+        .btn-pulse {
+          animation: pulseButton 2s ease-in-out infinite;
+        }
         @keyframes pulseIdle {
           0%,
           100% {
