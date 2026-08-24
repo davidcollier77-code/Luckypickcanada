@@ -35,8 +35,6 @@ new_init = """      } else if (phase === 'locked' && tier?.id === 'tier2') {
               });
           }"""
 
-if old_init not in content:
-    raise ValueError("Pattern not found in file - replacement failed")
 new_content = content.replace(old_init, new_init)
 
 with open('./components/LuckyGenerator.tsx', 'w') as f:

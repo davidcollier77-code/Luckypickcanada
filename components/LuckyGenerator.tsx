@@ -334,9 +334,8 @@ export default function LuckyGenerator() {
             // Meteor Shower
             particles.forEach((p, i) => {
                 // Calculate tail end point based on velocity direction and length
-                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy) || 1;
-                const dx = p.x - (p.vx * (p.length / speed));
-                const dy = p.y - (p.vy * (p.length / speed));
+                const dx = p.x - (p.vx * (p.length / Math.sqrt(p.vx * p.vx + p.vy * p.vy)));
+                const dy = p.y - (p.vy * (p.length / Math.sqrt(p.vx * p.vx + p.vy * p.vy)));
 
                 // Gradient tail
                 const gradient = ctx.createLinearGradient(p.x, p.y, dx, dy);
