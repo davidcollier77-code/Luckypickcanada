@@ -20,6 +20,8 @@ module.exports = {
         ]
       },
       animation: {
+        'breathing-pulse': 'breathingPulse 4s ease-in-out infinite',
+        'meteor-shower': 'meteorShower 3s linear infinite',
         'pop-out': 'popOut 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'vortex-spin': 'vortexSpin 4s linear infinite',
         'vortex-spin-fast': 'vortexSpin 0.5s linear infinite',
@@ -41,6 +43,16 @@ module.exports = {
         'scale-dramatic-neon': 'scaleDramaticNeon 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
       },
       keyframes: {
+        breathingPulse: {
+          '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
+          '50%': { transform: 'scale(1.05)', opacity: '1' },
+        },
+        meteorShower: {
+          '0%': { transform: 'translate(0, 0) rotate(45deg)', opacity: '0' },
+          '10%': { opacity: '1' },
+          '20%': { transform: 'translate(-20vw, 20vh) rotate(45deg)', opacity: '0' },
+          '100%': { transform: 'translate(-20vw, 20vh) rotate(45deg)', opacity: '0' },
+        },
         flicker: {
           '0%, 100%': { opacity: '1' },
           '10%': { opacity: '0.8' },
