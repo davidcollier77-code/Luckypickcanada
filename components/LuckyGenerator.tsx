@@ -371,7 +371,7 @@ export default function LuckyGenerator() {
                 let r = rockets[i];
                 r.x += r.vx;
                 r.y += r.vy;
-                r.vy += 0.15; // Apply gravity to rockets
+                r.vy += 0.15; // Gravity to slow them down before explosion
 
                 const scale = 100 / (100 + r.z);
                 const px = (r.x - width/2) * scale + width/2;
