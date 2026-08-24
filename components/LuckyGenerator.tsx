@@ -271,24 +271,32 @@ export default function LuckyGenerator() {
         const file = new File([blob], 'lucky-resonance.png', { type: 'image/png' });
         const text = `The sky answered. I pulled a ${score}% on Lucky Pick Canada today! ✨`;
 
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              title: 'Lucky Pick Canada',
-              text: text,
-              files: [file],
-            });
-          } catch (err) {
-            // User aborted or sharing failed
-          }
-        } else {
-          // Fallback
+        try {
+          await navigator.share({
+            title: 'Lucky Pick Canada',
+            text: text,
+            files: [file],
+          });
+        } catch (err) {
           try {
             await navigator.clipboard.writeText(text);
-            alert('Score copied to clipboard!');
-          } catch (err) {
-            // Clipboard failed
+          } catch (clipboardErr) {
+            console.error('Clipboard failed', clipboardErr);
           }
+
+          try {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'lucky-resonance.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          } catch (downloadErr) {
+            console.error('Download failed', downloadErr);
+          }
+          alert('Score copied to clipboard and image downloaded!');
         }
       }, 'image/png');
     } catch (err) {
@@ -338,6 +346,25 @@ export default function LuckyGenerator() {
       s: pad(total % 60),
     };
   }, [remainingMs]);
+
+
+  // Explosive Sparkler Particles for top tiers (State C / locked)
+  const sparklers = useMemo(() => {
+    return Array.from({ length: 24 }).map((_, i) => {
+      const angle = (i * 360) / 24;
+      const distance = 80 + Math.random() * 80;
+      const delay = Math.random() * 0.15;
+      const duration = 0.6 + Math.random() * 0.4;
+      return {
+        id: i,
+        angle,
+        distance,
+        delay: `${delay}s`,
+        duration: `${duration}s`,
+        size: `${Math.random() * 3 + 2}px`,
+      };
+    });
+  }, []);
 
   // Ambient Stardust Particles
   const stardustParticles = useMemo(() => {
@@ -421,6 +448,22 @@ export default function LuckyGenerator() {
 
           {/* Ambient Stardust Layer */}
           <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+            {phase === 'locked' && (tier?.id === 'northern' || tier?.id === 'peak') && sparklers.map((p) => (
+              <div
+                key={`sparkler-${p.id}`}
+                className="lg-sparkler absolute left-1/2 top-1/2 rounded-full"
+                style={{
+                  width: p.size,
+                  height: p.size,
+                  backgroundColor: tier?.glow || '#ffffff',
+                  boxShadow: `0 0 10px ${tier?.glow || '#ffffff'}`,
+                  animationDuration: p.duration,
+                  animationDelay: p.delay,
+                  '--tx': `${Math.cos((p.angle * Math.PI) / 180) * p.distance}px`,
+                  '--ty': `${Math.sin((p.angle * Math.PI) / 180) * p.distance}px`,
+                } as React.CSSProperties}
+              />
+            ))}
             {stardustParticles.map((p) => (
               <div
                 key={p.id}
@@ -778,6 +821,22 @@ export default function LuckyGenerator() {
             opacity: 0.25;
           }
         }
+        .lg-sparkler {
+          animation: lgSparklerBurst cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+          will-change: transform, opacity;
+          transform: translate3d(-50%, -50%, 0) scale(0);
+          opacity: 0;
+        }
+        @keyframes lgSparklerBurst {
+          0% {
+            transform: translate3d(-50%, -50%, 0) scale(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translate3d(calc(-50% + var(--tx)), calc(-50% + var(--ty)), 0) scale(1);
+            opacity: 0;
+          }
+        }
         .lg-stardust {
           animation: lgStardustDrift linear infinite;
           will-change: transform, opacity;
@@ -814,7 +873,8 @@ export default function LuckyGenerator() {
           .lg-button-glow,
           .lg-stage-enter,
           .lg-score-pop,
-          .lg-clock-colon {
+          .lg-clock-colon,
+          .lg-sparkler {
             animation: none !important;
           }
           .lg-ribbon-wrap {
