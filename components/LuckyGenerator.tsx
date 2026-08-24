@@ -244,6 +244,7 @@ export default function LuckyGenerator() {
   }, [phase]);
 
 
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -252,13 +253,10 @@ export default function LuckyGenerator() {
 
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
-
-    // Particles for fireworks and meteor shower
     let particles: any[] = [];
 
     const initializeParticles = () => {
       particles = [];
-      // Initialize fireworks on tier 4
       if (phase === 'locked' && tier?.id === 'tier4') {
           for(let i=0; i<150; i++) {
               particles.push({
@@ -284,19 +282,17 @@ export default function LuckyGenerator() {
                   alpha: Math.random() * 0.5 + 0.5
               });
           }
-      } else if (phase === 'locked' && tier?.id === 'tier3') {
-          // Lightning points
       }
     };
-
-    initializeParticles();
 
     const handleResize = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
       initializeParticles();
     };
+
     window.addEventListener('resize', handleResize);
+    initializeParticles();
 
     let time = 0;
     const draw = () => {
@@ -362,7 +358,6 @@ export default function LuckyGenerator() {
             // 3D Grand Fireworks
             particles.forEach((p, index) => {
                 if (p.alpha <= 0) {
-                    // Respawn a firework batch occasionally instead of individual? Or just individual
                     if(Math.random() < 0.01) {
                          p.x = width / 2 + (Math.random() - 0.5) * 200;
                          p.y = height / 2 + (Math.random() - 0.5) * 200;
@@ -406,7 +401,6 @@ export default function LuckyGenerator() {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
   }, [phase, tier]);
-
   // Cleanup any pending timeouts on unmount
   useEffect(
     () => () => {
