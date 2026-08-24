@@ -56,16 +56,16 @@ const rateLimitMap = new Map();
 function getClientIp(request) {
   const cfConnectingIp = request.headers.get('cf-connecting-ip');
   if (cfConnectingIp) return cfConnectingIp.trim();
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) return forwardedFor.split(',')[0].trim();
-  return request.headers.get('x-real-ip') || 'unknown';
+  // Only trust cf-connecting-ip from Cloudflare to prevent IP spoofing
+  // Do not use x-forwarded-for as it can be easily spoofed
+  return 'unknown';
 }
 
 function checkRateLimit(ip) {
   const currentTime = Date.now();
 
   // Clean up old entries to prevent memory leak
-  if (Math.random() < 0.1) { // Clean up occasionally
+  if (rateLimitMap.size > 1000 || Math.random() < 0.1) {
     for (const [key, bucket] of rateLimitMap.entries()) {
       if (bucket.resetAt <= currentTime) {
         rateLimitMap.delete(key);
@@ -80,8 +80,12 @@ function checkRateLimit(ip) {
 
   bucket.count += 1;
   rateLimitMap.set(ip, bucket);
-
-  return bucket.count <= MAX_SUBMISSIONS_PER_WINDOW;
+  // Fix race condition by incrementing and setting before the check
+  bucket.count += 1;
+  
+  if (!existing || existing.resetAt <= currentTime) {
+    rateLimitMap.set(ip, bucket);
+  }
 }
 
 export async function POST(request) {
@@ -229,8 +233,8 @@ export async function POST(request) {
   } catch (error) {
     console.error('Unhandled Oracle Error:', error);
     return NextResponse.json({ error: "An unexpected disturbance occurred in the ethereal realm." }, {
-      headers: {
       status: 500,
+      headers: {
         ...corsHeaders
       }
     });
