@@ -58,62 +58,54 @@ const STORAGE_KEY = 'lucky-pick-canada:daily-resonance:v1';
 const REVEAL_DURATION_MS = 10000; // full awakening sequence before lock-in
 const CLOCK_REVEAL_DELAY_MS = 650; // countdown fades in after score locks
 
-type TierId = 'dormant' | 'kindling' | 'rising' | 'northern' | 'peak';
+type TierId = 'tier1' | 'tier2' | 'tier3' | 'tier4';
 type Phase = 'loading' | 'ready' | 'revealing' | 'locked';
 
 interface Tier {
   id: TierId;
   label: string;
   range: [number, number];
-  glow: string; // used for text glow / accent color
+  glow: string;
   copy: string;
 }
 
 const TIERS: Tier[] = [
   {
-    id: 'dormant',
-    label: 'Dormant Void',
-    range: [0, 20],
+    id: 'tier1',
+    label: 'Gentle Aurora',
+    range: [0, 24],
     glow: '#8291BE',
-    copy: "The current sleeps tonight. Rest, and return with the dawn.",
+    copy: "The stars are just realigning for you! Rest up and recharge—tomorrow brings a brand new spark of luck.",
   },
   {
-    id: 'kindling',
-    label: 'Kindling Spark',
-    range: [21, 40],
+    id: 'tier2',
+    label: 'Meteor Shower',
+    range: [25, 49],
     glow: '#3DFFB0',
     copy: 'A thread of light stirs. Something small is beginning.',
   },
   {
-    id: 'rising',
-    label: 'Rising Current',
-    range: [41, 60],
+    id: 'tier3',
+    label: 'Cosmic Lightning',
+    range: [50, 74],
     glow: '#38E0FF',
     copy: 'The current runs strong and true. Momentum is yours.',
   },
   {
-    id: 'northern',
-    label: 'Northern Resonance',
-    range: [61, 80],
-    glow: '#B48CFF',
-    copy: 'The sky bends toward you. Rare resonance, well earned.',
-  },
-  {
-    id: 'peak',
-    label: 'Peak Radiance',
-    range: [81, 100],
+    id: 'tier4',
+    label: '3D Grand Fireworks',
+    range: [75, 100],
     glow: '#FFD66B',
-    copy: 'Full radiance. The rarest pull the aurora can offer.',
+    copy: 'Full radiance. The rarest pull the sky can offer.',
   },
 ];
 
-const RIBBON_ORDER: TierId[] = ['dormant', 'kindling', 'rising', 'northern', 'peak'];
+const RIBBON_ORDER: TierId[] = ['tier1', 'tier2', 'tier3', 'tier4'];
 const TIER_INTENSITY: Record<TierId, number> = {
-  dormant: 0.22,
-  kindling: 0.5,
-  rising: 0.62,
-  northern: 0.78,
-  peak: 0.95,
+  tier1: 0.22,
+  tier2: 0.5,
+  tier3: 0.78,
+  tier4: 0.95,
 };
 
 function tierForScore(score: number): Tier {
@@ -201,6 +193,8 @@ export default function LuckyGenerator() {
   const [isSharing, setIsSharing] = useState(false);
 
   const cardRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animFrameRef = useRef<number>(0);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clockDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasActivatedRef = useRef(false); // guards against rapid double-click races
@@ -255,6 +249,164 @@ export default function LuckyGenerator() {
       clearInterval(hapticId);
     };
   }, [phase]);
+
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Particles for fireworks and meteor shower
+    let particles: any[] = [];
+
+    // Initialize fireworks on tier 4
+    if (phase === 'locked' && tier?.id === 'tier4') {
+        for(let i=0; i<150; i++) {
+            particles.push({
+                x: width / 2,
+                y: height / 2,
+                vx: (Math.random() - 0.5) * 15,
+                vy: (Math.random() - 0.5) * 15,
+                z: Math.random() * 100, // 3D depth
+                size: Math.random() * 3 + 1,
+                alpha: 1,
+                decay: Math.random() * 0.015 + 0.005,
+                color: `hsl(${Math.random() * 60 + 40}, 100%, 60%)` // Gold/Yellow fireworks
+            });
+        }
+    } else if (phase === 'locked' && tier?.id === 'tier2') {
+        for(let i=0; i<50; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: -10,
+                vx: -2 - Math.random() * 3,
+                vy: 5 + Math.random() * 5,
+                length: Math.random() * 20 + 10,
+                alpha: Math.random() * 0.5 + 0.5
+            });
+        }
+    } else if (phase === 'locked' && tier?.id === 'tier3') {
+        // Lightning points
+    }
+
+    let time = 0;
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      time += 0.02;
+
+      if (phase === 'locked' && tier) {
+        if (tier.id === 'tier1') {
+            // Gentle Aurora
+            const cx = width / 2;
+            const cy = height / 2;
+            for(let i=0; i<3; i++) {
+                const waveY = cy + Math.sin(time + i) * 100;
+                ctx.beginPath();
+                ctx.moveTo(0, waveY);
+                for(let x = 0; x < width; x += 20) {
+                    ctx.lineTo(x, waveY + Math.sin(x*0.01 + time + i*0.5) * 50);
+                }
+                ctx.strokeStyle = `rgba(130, 145, 190, ${0.2 - i*0.05})`;
+                ctx.lineWidth = 100;
+                ctx.stroke();
+            }
+        } else if (tier.id === 'tier2') {
+            // Meteor Shower
+            ctx.fillStyle = '#3DFFB0';
+            ctx.strokeStyle = '#3DFFB0';
+            ctx.lineWidth = 2;
+            particles.forEach((p, i) => {
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x - p.vx * 3, p.y - p.vy * 3);
+                ctx.stroke();
+
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.y > height) {
+                    p.x = width + Math.random() * 200;
+                    p.y = -Math.random() * 200;
+                }
+            });
+        } else if (tier.id === 'tier3') {
+            // Cosmic Lightning
+            if (Math.random() < 0.05) { // Occasional strike
+                ctx.beginPath();
+                let x = Math.random() * width;
+                let y = 0;
+                ctx.moveTo(x, y);
+                while(y < height) {
+                    x += (Math.random() - 0.5) * 100;
+                    y += Math.random() * 50 + 20;
+                    ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = `rgba(56, 224, 255, ${Math.random() * 0.5 + 0.3})`;
+                ctx.lineWidth = Math.random() * 3 + 1;
+                ctx.stroke();
+
+                // Flash
+                ctx.fillStyle = `rgba(56, 224, 255, 0.1)`;
+                ctx.fillRect(0, 0, width, height);
+            }
+        } else if (tier.id === 'tier4') {
+            // 3D Grand Fireworks
+            particles.forEach((p, index) => {
+                if (p.alpha <= 0) {
+                    // Respawn a firework batch occasionally instead of individual? Or just individual
+                    if(Math.random() < 0.01) {
+                         p.x = width / 2 + (Math.random() - 0.5) * 200;
+                         p.y = height / 2 + (Math.random() - 0.5) * 200;
+                         p.vx = (Math.random() - 0.5) * 15;
+                         p.vy = (Math.random() - 0.5) * 15;
+                         p.z = Math.random() * 100;
+                         p.alpha = 1;
+                         p.color = `hsl(${Math.random() * 60 + 40}, 100%, 60%)`;
+                    }
+                    return;
+                }
+
+                // 3D projection
+                const scale = 100 / (100 + p.z);
+                const px = (p.x - width/2) * scale + width/2;
+                const py = (p.y - height/2) * scale + height/2;
+
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(px, py, p.size * scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2; // Gravity
+                p.z += 1; // Move towards camera or away
+                p.alpha -= p.decay;
+            });
+        }
+      }
+
+      animFrameRef.current = requestAnimationFrame(draw);
+    };
+
+    animFrameRef.current = requestAnimationFrame(draw);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [phase, tier]);
 
   // Cleanup any pending timeouts on unmount
   useEffect(
@@ -416,45 +568,7 @@ export default function LuckyGenerator() {
       <div className="lg-room-breathe pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-white/[0.02] to-transparent" aria-hidden="true" />
 
       {/* Ambient sky — the aurora IS the meter */}
-      <div className="lg-sky pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="lg-stars absolute inset-0" />
-
-        {RIBBON_ORDER.map((rt, i) => {
-          const isActiveTier = tier?.id === rt;
-          const targetOpacity =
-            phase === 'ready'
-              ? rt === 'dormant'
-                ? 0.22
-                : 0
-              : phase === 'revealing'
-              ? 0.7
-              : isActiveTier
-              ? TIER_INTENSITY[rt]
-              : 0;
-          const breathing = (phase === 'ready' && rt === 'dormant') || (phase === 'locked' && isActiveTier);
-          const surging = phase === 'revealing';
-
-          return (
-            <div
-              key={rt}
-              className="lg-ribbon-wrap absolute inset-0"
-              style={{ opacity: targetOpacity }}
-            >
-              <div
-                data-ribbon={rt}
-                className={`lg-ribbon absolute inset-[-20%] ${breathing ? 'lg-breathe' : ''} ${
-                  surging ? 'lg-surge' : ''
-                }`}
-                style={surging ? { '--led-index': i } as React.CSSProperties : undefined}
-              />
-            </div>
-          );
-        })}
-
-        <div className={`lg-flare lg-flare--1 ${phase === 'revealing' ? 'lg-flare--active' : ''}`} />
-        <div className={`lg-flare lg-flare--2 ${phase === 'revealing' ? 'lg-flare--active' : ''}`} />
-        <div className={`lg-flare lg-flare--3 ${phase === 'revealing' ? 'lg-flare--active' : ''}`} />
-      </div>
+      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 z-0" aria-hidden="true" style={{ width: '100%', height: '100%' }} />
 
       {/* Return to home */}
       {!isSharing && (
@@ -476,48 +590,11 @@ export default function LuckyGenerator() {
         </Link>
       )}
 
-      {/* Background Fireworks Layer */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {phase === 'locked' && (tier?.id === 'northern' || tier?.id === 'peak') && sparklers.map((p) => (
-          <div
-            key={`sparkler-${p.id}`}
-            className="lg-sparkler absolute rounded-full"
-            style={{
-              left: p.left,
-              top: p.top,
-              width: p.size,
-              height: p.size,
-              backgroundColor: tier?.glow || '#ffffff',
-              boxShadow: `0 0 12px ${tier?.glow || '#ffffff'}`,
-              animationDuration: p.duration,
-              animationDelay: p.delay,
-              '--tx': `${Math.cos((p.angle * Math.PI) / 180) * p.distance}px`,
-              '--ty': `${Math.sin((p.angle * Math.PI) / 180) * p.distance}px`,
-            } as React.CSSProperties}
-          />
-        ))}
-        {stardustParticles.map((p) => (
-          <div
-            key={p.id}
-            className="lg-stardust absolute bottom-0 rounded-full"
-            style={{
-              left: p.left,
-              width: p.size,
-              height: p.size,
-              backgroundColor: tier?.glow || '#ffffff',
-              boxShadow: `0 0 8px ${tier?.glow || '#ffffff'}`,
-              animationDuration: p.duration,
-              animationDelay: p.delay,
-              '--max-opacity': p.opacity,
-              filter: 'blur(1px)'
-            } as React.CSSProperties}
-          />
-        ))}
-      </div>
+
 
       {/* Ritual card */}
-      <main className={`relative z-10 w-full max-w-md ${(phase === 'ready' || phase === 'locked') ? 'lg-breathe-card' : ''}`} aria-label="Daily Resonance Ritual interactive dashboard">
-        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-10 shadow-[0_0_90px_-25px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:px-10 sm:py-12">
+      <main className={`relative z-10 w-full max-w-md ${phase === 'revealing' ? 'lg-heartbeat-active' : 'lg-heartbeat-idle'}`} aria-label="Daily Resonance Ritual interactive dashboard">
+        <div className="lg-3d-card relative overflow-hidden rounded-[28px] border-t border-white/40 border-l border-white/20 border-r border-white/10 border-b border-white/10 bg-white/[0.045] px-6 py-10 backdrop-blur-xl sm:px-10 sm:py-12" style={{ boxShadow: 'var(--dynamic-shadow, 0 10px 40px -10px rgba(0,255,255,0.2))' }}>
           <p
             className="relative z-10 mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-white/45"
             style={{ fontFamily: 'var(--font-lg-body)' }}
@@ -941,6 +1018,32 @@ export default function LuckyGenerator() {
           }
           .lg-ribbon-wrap {
             transition-duration: 200ms !important;
+          }
+        }
+
+
+        .lg-heartbeat-active .lg-3d-card {
+          animation: lgHeartbeatActive 0.8s ease-in-out infinite;
+          --dynamic-shadow: 0 0 40px rgba(0, 255, 255, 0.6), 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+        .lg-heartbeat-idle .lg-3d-card {
+          animation: lgHeartbeatIdle 4s ease-in-out infinite;
+          --dynamic-shadow: 0 0 20px rgba(180, 140, 255, 0.3), 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        @keyframes lgHeartbeatActive {
+          0%, 100% {
+            transform: scale(1) translateZ(0);
+          }
+          50% {
+            transform: scale(1.02) translateZ(20px);
+          }
+        }
+        @keyframes lgHeartbeatIdle {
+          0%, 100% {
+            transform: scale(1) translateZ(0);
+          }
+          50% {
+            transform: scale(1.005) translateZ(5px);
           }
         }
       `}</style>
