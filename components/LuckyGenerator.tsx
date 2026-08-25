@@ -42,7 +42,11 @@ interface Tier {
 
 const STORAGE_KEY = 'luckyPickCanada:dailyResonance';
 
-const REVEAL_DURATION_MS = 10000;
+const REVEAL_DURATION_MS = 9000;
+
+const METEOR_SOUNDS = ['/dragon-studio-whoosh-cinematic-376875.mp3'];
+const LIGHTNING_SOUNDS = ['/yodguard-lightning-magic-3-378649.mp3'];
+const FIREWORKS_SOUNDS = ['/freesound_community-fireworks-1-94483.mp3'];
 
 const QUOTES: string[] = [
   'Like the Northern Lights dancing across the sky, your luck is uniquely yours today.',
@@ -55,13 +59,9 @@ const QUOTES: string[] = [
   'No golden tickets needed here, just pure True North energy. Enjoy the ride!',
 ];
 
-const TIER1_FALLBACK_COPY =
-  'The stars are just realigning for you! Rest up and recharge—tomorrow brings a brand new spark of luck.';
-
 function getTier(score: number): Tier {
-  if (score < 25) return { id: 1, name: 'COSMIC DRIFT' };
-  if (score < 50) return { id: 2, name: 'METEOR SHOWER' };
-  if (score < 75) return { id: 3, name: 'COSMIC LIGHTNING RESONANCE' };
+  if (score <= 33) return { id: 2, name: 'METEOR SHOWER' };
+  if (score <= 66) return { id: 3, name: 'COSMIC LIGHTNING RESONANCE' };
   return { id: 4, name: 'GRAND FIREWORKS' };
 }
 
@@ -321,215 +321,19 @@ function playClickSFX() {
 
 
 
-function playCosmicDriftSFX() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  const t = ctx.currentTime;
-
-  const humOsc = ctx.createOscillator();
-  const humGain = ctx.createGain();
-  humOsc.type = 'sine';
-  humOsc.frequency.setValueAtTime(100, t);
-  humGain.gain.setValueAtTime(0, t);
-  humGain.gain.linearRampToValueAtTime(0.2, t + 1);
-  humGain.gain.exponentialRampToValueAtTime(0.01, t + 4);
-  humOsc.connect(humGain);
-  humGain.connect(ctx.destination);
-
-  const chimeOsc = ctx.createOscillator();
-  const chimeGain = ctx.createGain();
-  chimeOsc.type = 'triangle';
-  chimeOsc.frequency.setValueAtTime(600, t);
-  chimeGain.gain.setValueAtTime(0, t);
-  chimeGain.gain.linearRampToValueAtTime(0.1, t + 0.1);
-  chimeGain.gain.exponentialRampToValueAtTime(0.01, t + 3);
-  chimeOsc.connect(chimeGain);
-  chimeGain.connect(ctx.destination);
-
-  humOsc.onended = () => {
-    humOsc.disconnect();
-    humGain.disconnect();
-  };
-
-  chimeOsc.onended = () => {
-    chimeOsc.disconnect();
-    chimeGain.disconnect();
-  };
-
-  humOsc.start(t);
-  humOsc.stop(t + 4);
-  chimeOsc.start(t);
-  chimeOsc.stop(t + 3);
+function playMeteorWhooshSFX() {
+  const path = METEOR_SOUNDS[randomInt(0, METEOR_SOUNDS.length - 1)];
+  new Audio(path).play().catch(() => {});
 }
 
 function playLightningStrikeSFX() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  const t = ctx.currentTime;
-
-  // Thunder rumble
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(40, t);
-  osc.frequency.exponentialRampToValueAtTime(10, t + 0.8);
-  oscGain.gain.setValueAtTime(0.4, t);
-  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
-  osc.connect(oscGain);
-  oscGain.connect(ctx.destination);
-  osc.start(t);
-  osc.stop(t + 1.2);
-
-  // Electrical crackle
-  const bufferSize = ctx.sampleRate * 0.3;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-  const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
-  const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = 'highpass';
-  noiseFilter.frequency.value = 2000;
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.2, t);
-  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
-
-  noise.connect(noiseFilter);
-  noiseFilter.connect(noiseGain);
-  noiseGain.connect(ctx.destination);
-
-  osc.onended = () => {
-    osc.disconnect();
-    oscGain.disconnect();
-  };
-
-  noise.onended = () => {
-    noise.disconnect();
-    noiseFilter.disconnect();
-    noiseGain.disconnect();
-  };
-
-  osc.start(t);
-  osc.stop(t + 1.2);
-
-  noise.start(t);
-  noise.stop(t + 0.3);
+  const path = LIGHTNING_SOUNDS[randomInt(0, LIGHTNING_SOUNDS.length - 1)];
+  new Audio(path).play().catch(() => {});
 }
 
 function playFireworkBoomSFX() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  const t = ctx.currentTime;
-
-  // Low frequency boom
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(150, t);
-  osc.frequency.exponentialRampToValueAtTime(40, t + 0.3);
-  oscGain.gain.setValueAtTime(0.5, t);
-  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
-  osc.connect(oscGain);
-  oscGain.connect(ctx.destination);
-  osc.start(t);
-  osc.stop(t + 0.6);
-
-  // Noise crackle
-  const bufferSize = ctx.sampleRate * 0.5;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-  const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
-  const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = 'bandpass';
-  noiseFilter.frequency.value = 1000;
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.3, t);
-  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
-
-  noise.connect(noiseFilter);
-  noiseFilter.connect(noiseGain);
-  noiseGain.connect(ctx.destination);
-
-  osc.onended = () => {
-    osc.disconnect();
-    oscGain.disconnect();
-  };
-
-  noise.onended = () => {
-    noise.disconnect();
-    noiseFilter.disconnect();
-    noiseGain.disconnect();
-  };
-
-  noise.start(t);
-  noise.stop(t + 0.5);
-}
-
-
-function playMeteorWhooshSFX() {
-  const ctx = getAudioCtx();
-  if (!ctx) return;
-  const t = ctx.currentTime;
-
-  // Low atmospheric whoosh
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(60, t);
-  osc.frequency.exponentialRampToValueAtTime(100, t + 0.3);
-  osc.frequency.exponentialRampToValueAtTime(40, t + 1.2);
-
-  oscGain.gain.setValueAtTime(0, t);
-  oscGain.gain.linearRampToValueAtTime(0.4, t + 0.2);
-  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
-
-  osc.connect(oscGain);
-  oscGain.connect(ctx.destination);
-  osc.start(t);
-  osc.stop(t + 1.2);
-
-  // Soft cosmic tail
-  const bufferSize = ctx.sampleRate * 1.5;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-  const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
-  const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = 'bandpass';
-  noiseFilter.frequency.setValueAtTime(2000, t);
-  noiseFilter.frequency.exponentialRampToValueAtTime(400, t + 1.5);
-
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0, t);
-  noiseGain.gain.linearRampToValueAtTime(0.15, t + 0.3);
-  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 1.5);
-
-  noise.connect(noiseFilter);
-  noiseFilter.connect(noiseGain);
-  noiseGain.connect(ctx.destination);
-
-  osc.onended = () => {
-    osc.disconnect();
-    oscGain.disconnect();
-  };
-
-  noise.onended = () => {
-    noise.disconnect();
-    noiseFilter.disconnect();
-    noiseGain.disconnect();
-  };
-
-  noise.start(t);
-  noise.stop(t + 1.5);
+  const path = FIREWORKS_SOUNDS[randomInt(0, FIREWORKS_SOUNDS.length - 1)];
+  new Audio(path).play().catch(() => {});
 }
 
 function useResonanceCanvas(
@@ -625,7 +429,6 @@ function useResonanceCanvas(
     }
 
     function spawnMeteor() {
-      new Audio('/dragon-studio-whoosh-cinematic-376875.mp3').play().catch(() => {});
       const startX = Math.random() * width * 0.6 + width * 0.2;
       const speed = reduced ? 260 : 420 + Math.random() * 220;
       const angle = (55 + Math.random() * 10) * (Math.PI / 180);
@@ -642,7 +445,6 @@ function useResonanceCanvas(
     }
 
     function spawnBolt() {
-      new Audio('/yodguard-lightning-magic-3-378649.mp3').play().catch(() => {});
       const startX = width * (0.15 + Math.random() * 0.7);
       const endX = startX + (Math.random() - 0.5) * width * 0.3;
       const points: { x: number; y: number }[] = [];
@@ -688,7 +490,6 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string) {
-      new Audio('/freesound_community-fireworks-1-94483.mp3').play().catch(() => {});
       const count = reduced ? 26 : 70;
 
       for (let i = 0; i < count; i++) {
@@ -1177,22 +978,28 @@ export default function LuckyGenerator() {
     function tick(now: number) {
       const elapsed = now - start;
       const t = Math.min(1, elapsed / duration);
-      const eased = 1 - Math.pow(1 - t, 3); // ease-out-cubic
-      setDisplayScore(Math.round(eased * newScore));
+
+      // easeOutBack with overshoot
+      const c1 = 1.70158;
+      const c3 = c1 + 1;
+      const eased = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+
+      const calculatedScore = Math.round(eased * newScore);
+      setDisplayScore(Math.min(100, Math.max(0, calculatedScore)));
+
       if (t < 1) {
         rollRef.current = requestAnimationFrame(tick);
       } else {
         if (buildUpAudioRef.current) {
+          // Instant cut out as per requirements
           buildUpAudioRef.current.pause();
           buildUpAudioRef.current.currentTime = 0;
         }
         rollRef.current = null;
         setPhase('locked');
-        if (newScore < 25) {
-          try { playCosmicDriftSFX(); } catch (e) {}
-        } else if (newScore < 50) {
+        if (newScore <= 33) {
           try { playMeteorWhooshSFX(); } catch (e) {}
-        } else if (newScore < 75) {
+        } else if (newScore <= 66) {
           try { playLightningStrikeSFX(); } catch (e) {}
         } else {
           try { playFireworkBoomSFX(); } catch (e) {}
@@ -1315,11 +1122,6 @@ export default function LuckyGenerator() {
               <div className="text-7xl font-bold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-yellow-100 via-white to-cyan-200">
                 {score}%
               </div>
-              {tier.id === 1 && (
-                <p className="text-sm leading-relaxed text-white/70">
-                  {TIER1_FALLBACK_COPY}
-                </p>
-              )}
               <div className="mt-1 w-full border-t border-white/10 pt-4">
                 <CountdownTimer />
               </div>
