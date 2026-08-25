@@ -336,6 +336,7 @@ export default function DailyResonance() {
 
     loop();
 
+      isActive = false;
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
