@@ -42,8 +42,6 @@ interface Tier {
 
 const STORAGE_KEY = 'luckyPickCanada:dailyResonance';
 
-const REVEAL_DURATION_MS = 9000;
-
 const METEOR_SOUNDS = ['/dragon-studio-whoosh-cinematic-376875.mp3'];
 const LIGHTNING_SOUNDS = ['/yodguard-lightning-magic-3-378649.mp3'];
 const FIREWORKS_SOUNDS = ['/freesound_community-fireworks-1-94483.mp3'];
@@ -490,7 +488,7 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string) {
-      const count = reduced ? 26 : 70;
+      const count = reduced ? 10 : 20;
 
       for (let i = 0; i < count; i++) {
         // Accurate 3D spherical projection
@@ -618,7 +616,7 @@ function useResonanceCanvas(
     function drawMeteors(t: number, dt: number) {
       if (t > s.nextMeteorAt) {
         spawnMeteor();
-        s.nextMeteorAt = t + (reduced ? 0.5 : 0.14 + Math.random() * 0.16);
+        s.nextMeteorAt = t + (reduced ? 2.5 : 1.2 + Math.random() * 1.0);
       }
       ctx!.globalCompositeOperation = 'lighter';
       for (let i = s.meteors.length - 1; i >= 0; i--) {
@@ -718,6 +716,8 @@ function useResonanceCanvas(
     function drawLightning(t: number, dt: number) {
       if (t > s.nextBoltAt) {
         spawnBolt();
+        // playLightningStrikeSFX is a module-level function
+        try { playLightningStrikeSFX(); } catch (e) {}
         s.nextBoltAt = t + (reduced ? 1.4 : 0.6 + Math.random() * 0.7);
       }
 
@@ -941,7 +941,7 @@ export default function LuckyGenerator() {
   ]);
 
   const effectGroup: EffectGroup =
-    phase === 'idle' || !tier ? 'idle' : tier.id;
+    phase === 'idle' || !tier ? 'idle' : phase === 'revealing' ? 1 : tier.id;
 
   useResonanceCanvas(canvasRef, effectGroup);
 
@@ -972,7 +972,14 @@ export default function LuckyGenerator() {
     setPhase('revealing');
 
     const reduced = prefersReducedMotion();
-    const duration = reduced ? 400 : REVEAL_DURATION_MS;
+
+    let dynamicDuration = 8500;
+    if (newScore <= 33) {
+      dynamicDuration = 3000;
+    } else if (newScore <= 66) {
+      dynamicDuration = 5500;
+    }
+    const duration = reduced ? 400 : dynamicDuration;
     const start = performance.now();
 
     function tick(now: number) {
@@ -999,9 +1006,7 @@ export default function LuckyGenerator() {
         setPhase('locked');
         if (newScore <= 33) {
           try { playMeteorWhooshSFX(); } catch (e) {}
-        } else if (newScore <= 66) {
-          try { playLightningStrikeSFX(); } catch (e) {}
-        } else {
+        } else if (newScore > 66) {
           try { playFireworkBoomSFX(); } catch (e) {}
         }
       }
