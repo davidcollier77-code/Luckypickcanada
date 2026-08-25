@@ -625,6 +625,7 @@ function useResonanceCanvas(
     }
 
     function spawnMeteor() {
+      new Audio('/dragon-studio-whoosh-cinematic-376875.mp3').play().catch(() => {});
       const startX = Math.random() * width * 0.6 + width * 0.2;
       const speed = reduced ? 260 : 420 + Math.random() * 220;
       const angle = (55 + Math.random() * 10) * (Math.PI / 180);
@@ -641,6 +642,7 @@ function useResonanceCanvas(
     }
 
     function spawnBolt() {
+      new Audio('/yodguard-lightning-magic-3-378649.mp3').play().catch(() => {});
       const startX = width * (0.15 + Math.random() * 0.7);
       const endX = startX + (Math.random() - 0.5) * width * 0.3;
       const points: { x: number; y: number }[] = [];
@@ -686,6 +688,7 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string) {
+      new Audio('/freesound_community-fireworks-1-94483.mp3').play().catch(() => {});
       const count = reduced ? 26 : 70;
 
       for (let i = 0; i < count; i++) {
@@ -1105,6 +1108,7 @@ function useResonanceCanvas(
 
 export default function LuckyGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const buildUpAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [score, setScore] = useState<number | null>(null);
@@ -1117,6 +1121,8 @@ export default function LuckyGenerator() {
   // Hydrate from localStorage on mount (client only — avoids hydration
   // mismatches since the server has no notion of "today" for this user).
   useEffect(() => {
+    buildUpAudioRef.current = new Audio('/freesound_community-starship-rail-gun-charge-35904.mp3');
+
     const stored = readStoredResonance();
     if (stored && stored.lastSpinDate === getLocalDateKey()) {
       setScore(stored.lastScore);
@@ -1147,6 +1153,8 @@ export default function LuckyGenerator() {
       // Ignore if audio context fails
     }
 
+    buildUpAudioRef.current?.play().catch(() => {});
+
     const previous = readStoredResonance();
     const { score: newScore, quoteIndex: newQuoteIndex } =
       generateTodaysResonance(previous);
@@ -1174,6 +1182,10 @@ export default function LuckyGenerator() {
       if (t < 1) {
         rollRef.current = requestAnimationFrame(tick);
       } else {
+        if (buildUpAudioRef.current) {
+          buildUpAudioRef.current.pause();
+          buildUpAudioRef.current.currentTime = 0;
+        }
         rollRef.current = null;
         setPhase('locked');
         if (newScore < 25) {
