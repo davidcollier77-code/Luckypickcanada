@@ -141,7 +141,9 @@ export default function CrystalBall({
             </p>
           )}
 
+          <label htmlFor="crystal-ball-question" className="sr-only">Your question for the crystal ball</label>
           <textarea
+            id="crystal-ball-question"
             className={styles.input}
             placeholder="Ask the mists…"
             rows={2}
