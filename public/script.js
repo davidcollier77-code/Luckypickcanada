@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (response.status === 429) {
         display.textContent = 'The mists are tired! Please wait a moment before asking again.';
         resetCooldown();
+        if (auroraGlow) auroraGlow.classList.remove('active');
         return;
       }
 

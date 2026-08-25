@@ -61,6 +61,7 @@ export default function CrystalBall({
 }: CrystalBallProps) {
   const [question, setQuestion] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentFortune, setCurrentFortune] = useState<string | null>(null);
   const [readings, setReadings] = useState<Reading[]>([]);
 
@@ -69,6 +70,7 @@ export default function CrystalBall({
     if (!trimmed || status === 'loading') return;
 
     setStatus('loading');
+    setErrorMessage(null);
     try {
       const answer = await onSeekFortune(trimmed);
       setCurrentFortune(answer);
@@ -78,10 +80,11 @@ export default function CrystalBall({
       ]);
       setQuestion('');
       setStatus('idle');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch fortune:', error);
       setCurrentFortune(null);
       setStatus('error');
+      setErrorMessage(error.message || null);
     }
   }, [question, status, onSeekFortune]);
 
@@ -89,7 +92,7 @@ export default function CrystalBall({
     status === 'loading'
       ? 'The mists are stirring…'
       : status === 'error'
-        ? 'The connection to the ethereal realm was lost. Please try again.'
+        ? errorMessage || 'The connection to the ethereal realm was lost. Please try again.'
         : currentFortune
           ? 'Your fortune has been revealed.'
           : 'Awaiting your question…';
