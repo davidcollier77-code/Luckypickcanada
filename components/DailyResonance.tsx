@@ -88,19 +88,18 @@ const playAudioEffect = (ctx: AudioContext, effect: string) => {
     whistle.stop(t + 1);
     whistle.onended = () => { whistle.disconnect(); wGain.disconnect(); };
 
-    // Muffled burst thud
-    setTimeout(() => {
-      const thud = ctx.createOscillator();
-      thud.frequency.setValueAtTime(100, ctx.currentTime);
-      thud.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.8);
-      const tGain = ctx.createGain();
-      tGain.gain.setValueAtTime(0.8, ctx.currentTime);
-      tGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-      thud.connect(tGain).connect(ctx.destination);
-      thud.start(ctx.currentTime);
-      thud.stop(ctx.currentTime + 0.8);
-      thud.onended = () => { thud.disconnect(); tGain.disconnect(); };
-    }, 1000);
+    // Muffled burst thud - schedule with audio clock instead of setTimeout
+    const thud = ctx.createOscillator();
+    thud.frequency.setValueAtTime(100, t + 1);
+    thud.frequency.exponentialRampToValueAtTime(20, t + 1.8);
+    const tGain = ctx.createGain();
+    tGain.gain.setValueAtTime(0, t);
+    tGain.gain.setValueAtTime(0.8, t + 1);
+    tGain.gain.exponentialRampToValueAtTime(0.01, t + 1.8);
+    thud.connect(tGain).connect(ctx.destination);
+    thud.start(t + 1);
+    thud.stop(t + 1.8);
+    thud.onended = () => { thud.disconnect(); tGain.disconnect(); };
   }
 
   // Aurora & Pulse included as ambient beds that can be triggered on init
@@ -164,11 +163,11 @@ export default function DailyResonance() {
     do {
       newPct = Math.floor(Math.random() * 101);
     } while (newPct.toString() === lastPct);
-
+    } while (lastPct !== null && newPct.toString() === lastPct);
     do {
       newQuoteIdx = Math.floor(Math.random() * LUCKY_QUOTES.length);
     } while (newQuoteIdx.toString() === lastQuote);
-
+    } while (lastQuote !== null && newQuoteIdx.toString() === lastQuote);
     localStorage.setItem('lucky_lastPct', newPct.toString());
     localStorage.setItem('lucky_lastQuote', newQuoteIdx.toString());
 
@@ -190,6 +189,7 @@ export default function DailyResonance() {
     // Fluctuating Number Animation
     let startTime: number | null = null;
     const duration = 2500;
+    let animationFrameId: number | null = null;
 
     const animateNumber = (timestamp: number) => {
       if (!startTime) startTime = timestamp; // Capture strictly on first frame
@@ -201,10 +201,18 @@ export default function DailyResonance() {
 
       setDisplayPercentage(Math.round(newPct * easeElasticOut));
 
-      if (progress < duration) {
+        animationFrameId = requestAnimationFrame(animateNumber);
         requestAnimationFrame(animateNumber);
       } else {
+        animationFrameId = null;
         setDisplayPercentage(newPct);
+      }
+    animationFrameId = requestAnimationFrame(animateNumber);
+
+    // Return cleanup function
+    return () => {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
       }
     };
     requestAnimationFrame(animateNumber);
@@ -237,8 +245,11 @@ export default function DailyResonance() {
 
     let particles: any[] = [];
     const MAX_PARTICLES = tier === 'Cosmic Lightning' ? 30 : 150; // Performance cap
+    let isActive = true;
 
     const loop = () => {
+      if (!isActive) return;
+      
       ctx.fillStyle = 'rgba(10, 5, 20, 0.2)'; // Trailing clear
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -252,7 +263,7 @@ export default function DailyResonance() {
             opacity: 1
           });
         }
-        particles.forEach((p, i) => {
+        particles = particles.filter((p, i) => {
           p.x -= p.speed * 0.5;
           p.y += p.speed;
 
@@ -271,7 +282,7 @@ export default function DailyResonance() {
           ctx.shadowBlur = 0; // Reset for performance
 
           if (p.y > canvas.height) particles.splice(i, 1);
-        });
+          return p.y <= canvas.height;
       } else if (tier === 'Cosmic Lightning') {
         if (Math.random() < 0.05 && particles.length < MAX_PARTICLES) {
           const startX = Math.random() * canvas.width;
@@ -285,7 +296,7 @@ export default function DailyResonance() {
           particles.push({ branches, opacity: 1 });
         }
         particles.forEach((p, i) => {
-          ctx.beginPath();
+        particles = particles.filter((p) => {
           ctx.moveTo(p.branches[0].x, p.branches[0].y);
           p.branches.forEach((pt: any) => ctx.lineTo(pt.x, pt.y));
           ctx.strokeStyle = `rgba(200, 150, 255, ${p.opacity})`;
@@ -296,7 +307,7 @@ export default function DailyResonance() {
           ctx.shadowBlur = 0;
           p.opacity -= 0.05;
           if (p.opacity <= 0) particles.splice(i, 1);
-        });
+          return p.opacity > 0;
       } else if (tier === 'Fireworks') {
         if (Math.random() < 0.02 && particles.length < MAX_PARTICLES) {
           const startX = Math.random() * canvas.width;
@@ -316,7 +327,7 @@ export default function DailyResonance() {
             });
           }
         }
-        particles.forEach((p, i) => {
+        particles = particles.filter((p) => {
           p.x += p.vx;
           p.y += p.vy;
           p.vy += 0.05; // gravity decay
@@ -328,7 +339,7 @@ export default function DailyResonance() {
           ctx.fill();
           ctx.globalAlpha = 1.0;
           if (p.opacity <= 0) particles.splice(i, 1);
-        });
+          return p.opacity > 0;
       }
 
       requestRef.current = requestAnimationFrame(loop);
@@ -339,6 +350,7 @@ export default function DailyResonance() {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
+      isActive = false;
   }, [tier]);
 
   useEffect(() => {
