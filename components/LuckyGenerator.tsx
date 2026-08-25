@@ -58,7 +58,7 @@ const TIER1_FALLBACK_COPY =
   'The stars are just realigning for you! Rest up and recharge—tomorrow brings a brand new spark of luck.';
 
 function getTier(score: number): Tier {
-  if (score < 25) return { id: 1, name: 'GENTLE AURORA' };
+  if (score < 25) return { id: 1, name: 'COSMIC DRIFT' };
   if (score < 50) return { id: 2, name: 'METEOR SHOWER' };
   if (score < 75) return { id: 3, name: 'COSMIC LIGHTNING RESONANCE' };
   return { id: 4, name: 'GRAND FIREWORKS' };
@@ -209,6 +209,16 @@ interface Mote {
   hue: 'cyan' | 'purple';
 }
 
+interface Dust {
+  x: number;
+  y: number;
+  r: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+}
+
 interface Ember {
   x: number;
   y: number;
@@ -303,6 +313,48 @@ function playClickSFX() {
   osc.stop(t + 0.1);
 }
 
+
+
+function playCosmicDriftSFX() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+
+  const humOsc = ctx.createOscillator();
+  const humGain = ctx.createGain();
+  humOsc.type = 'sine';
+  humOsc.frequency.setValueAtTime(100, t);
+  humGain.gain.setValueAtTime(0, t);
+  humGain.gain.linearRampToValueAtTime(0.2, t + 1);
+  humGain.gain.exponentialRampToValueAtTime(0.01, t + 4);
+  humOsc.connect(humGain);
+  humGain.connect(ctx.destination);
+
+  const chimeOsc = ctx.createOscillator();
+  const chimeGain = ctx.createGain();
+  chimeOsc.type = 'triangle';
+  chimeOsc.frequency.setValueAtTime(600, t);
+  chimeGain.gain.setValueAtTime(0, t);
+  chimeGain.gain.linearRampToValueAtTime(0.1, t + 0.1);
+  chimeGain.gain.exponentialRampToValueAtTime(0.01, t + 3);
+  chimeOsc.connect(chimeGain);
+  chimeGain.connect(ctx.destination);
+
+  humOsc.onended = () => {
+    humOsc.disconnect();
+    humGain.disconnect();
+  };
+
+  chimeOsc.onended = () => {
+    chimeOsc.disconnect();
+    chimeGain.disconnect();
+  };
+
+  humOsc.start(t);
+  humOsc.stop(t + 4);
+  chimeOsc.start(t);
+  chimeOsc.stop(t + 3);
+}
 
 function playLightningStrikeSFX() {
   const ctx = getAudioCtx();
@@ -480,6 +532,7 @@ function useResonanceCanvas(
 ) {
   const stateRef = useRef({
     motes: [] as Mote[],
+    dust: [] as Dust[],
     embers: [] as Ember[],
     meteors: [] as Meteor[],
     bolts: [] as Bolt[],
@@ -534,6 +587,19 @@ function useResonanceCanvas(
           hue: Math.random() > 0.5 ? 'cyan' : 'purple',
         });
       }
+    }
+
+
+    function spawnDust() {
+      s.dust.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: 0.5 + Math.random() * 1.5,
+        vx: (Math.random() - 0.5) * 10,
+        vy: (Math.random() - 0.5) * 10,
+        life: 0,
+        maxLife: 2 + Math.random() * 3,
+      });
     }
 
     function spawnEmber() {
@@ -686,6 +752,23 @@ function useResonanceCanvas(
         ctx!.beginPath();
         ctx!.arc(x, m.y, m.r * 6, 0, Math.PI * 2);
         ctx!.fill();
+      }
+    }
+
+    function drawCosmicDrift(dt: number) {
+      if (Math.random() < dt * 4) spawnDust();
+      ctx!.globalCompositeOperation = 'lighter';
+      for (let i = s.dust.length - 1; i >= 0; i--) {
+        const d = s.dust[i];
+        d.life += dt;
+        d.x += d.vx * dt;
+        d.y += d.vy * dt;
+        const alpha = Math.max(0, 1 - d.life / d.maxLife) * 0.6;
+        ctx!.fillStyle = `rgba(200, 220, 255, ${alpha})`;
+        ctx!.beginPath();
+        ctx!.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx!.fill();
+        if (d.life > d.maxLife) s.dust.splice(i, 1);
       }
     }
 
@@ -999,7 +1082,7 @@ function useResonanceCanvas(
         case 'idle':
           break;
         case 1:
-          drawAurora(s.elapsed, dt);
+          drawCosmicDrift(dt);
           break;
         case 2:
           drawMeteors(s.elapsed, dt);
@@ -1100,6 +1183,13 @@ export default function LuckyGenerator() {
       } else {
         rollRef.current = null;
         setPhase('locked');
+        if (newScore < 25) {
+          try {
+            playCosmicDriftSFX();
+          } catch (e) {
+            // ignore
+          }
+        }
       }
     }
     rollRef.current = requestAnimationFrame(tick);
