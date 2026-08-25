@@ -322,11 +322,9 @@ export default function DailyResonance() {
           p.y += p.vy;
           p.vy += 0.05; // gravity decay
           p.opacity -= 0.015;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
           ctx.fillStyle = p.color;
           ctx.globalAlpha = Math.max(0, p.opacity);
-          ctx.fill();
+          ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
           ctx.globalAlpha = 1.0;
           if (p.opacity <= 0) particles.splice(i, 1);
         });
