@@ -760,10 +760,10 @@ function useResonanceCanvas(
         d.x += d.vx * dt;
         d.y += d.vy * dt;
         const alpha = Math.max(0, 1 - d.life / d.maxLife) * 0.6;
-        ctx!.fillStyle = `rgba(200, 220, 255, ${alpha})`;
-        ctx!.beginPath();
-        ctx!.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-        ctx!.fill();
+        ctx!.fillStyle = '#c8dcff';
+        ctx!.globalAlpha = alpha;
+        ctx!.fillRect(d.x - d.r, d.y - d.r, d.r * 2, d.r * 2);
+        ctx!.globalAlpha = 1.0;
         if (d.life > d.maxLife) s.dust.splice(i, 1);
       }
     }
