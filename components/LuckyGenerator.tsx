@@ -614,7 +614,7 @@ function useResonanceCanvas(
     }
 
     function drawMeteors(t: number, dt: number) {
-      if (t > s.nextMeteorAt) {
+      if (t > s.nextMeteorAt && s.meteors.length < 20) {
         spawnMeteor();
         s.nextMeteorAt = t + (reduced ? 2.5 : 1.2 + Math.random() * 1.0);
       }
@@ -628,7 +628,7 @@ function useResonanceCanvas(
         if (m.trail.length > 14) m.trail.shift();
 
         // Stardust along tail
-        if (Math.random() < 0.6) {
+        if (Math.random() < 0.6 && s.sparks.length < 20) {
           s.sparks.push({
             x: m.x + (Math.random() - 0.5) * 10,
             y: m.y + (Math.random() - 0.5) * 10,
@@ -954,7 +954,10 @@ export default function LuckyGenerator() {
       // Ignore if audio context fails
     }
 
-    buildUpAudioRef.current?.play().catch(() => {});
+    if (buildUpAudioRef.current) {
+      buildUpAudioRef.current.loop = true;
+      buildUpAudioRef.current.play().catch(() => {});
+    }
 
     const previous = readStoredResonance();
     const { score: newScore, quoteIndex: newQuoteIndex } =
@@ -973,13 +976,7 @@ export default function LuckyGenerator() {
 
     const reduced = prefersReducedMotion();
 
-    let dynamicDuration = 8500;
-    if (newScore <= 33) {
-      dynamicDuration = 3000;
-    } else if (newScore <= 66) {
-      dynamicDuration = 5500;
-    }
-    const duration = reduced ? 400 : dynamicDuration;
+    const duration = 9000;
     const start = performance.now();
 
     function tick(now: number) {
@@ -998,15 +995,17 @@ export default function LuckyGenerator() {
         rollRef.current = requestAnimationFrame(tick);
       } else {
         if (buildUpAudioRef.current) {
-          // Instant cut out as per requirements
+          // Instantly pause and reset audio at 9000ms mark as per requirements
           buildUpAudioRef.current.pause();
           buildUpAudioRef.current.currentTime = 0;
         }
         rollRef.current = null;
-        setPhase('locked');
+        setPhase('locked'); // Setting to 'locked' implicitly switches effectGroup to tier.id due to useMemo
         if (newScore <= 33) {
           try { playMeteorWhooshSFX(); } catch (e) {}
-        } else if (newScore > 66) {
+        } else if (newScore <= 66) {
+          try { playLightningStrikeSFX(); } catch (e) {}
+        } else {
           try { playFireworkBoomSFX(); } catch (e) {}
         }
       }
