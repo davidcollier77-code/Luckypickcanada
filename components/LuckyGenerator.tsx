@@ -309,6 +309,11 @@ function playClickSFX() {
   osc.connect(gain);
   gain.connect(ctx.destination);
 
+  osc.onended = () => {
+    osc.disconnect();
+    gain.disconnect();
+  };
+
   osc.start(t);
   osc.stop(t + 0.1);
 }
@@ -455,13 +460,13 @@ function playFireworkBoomSFX() {
     oscGain.disconnect();
   };
 
-  noise.start(t);
   noise.onended = () => {
     noise.disconnect();
     noiseFilter.disconnect();
     noiseGain.disconnect();
   };
 
+  noise.start(t);
   noise.stop(t + 0.5);
 }
 
@@ -553,7 +558,6 @@ function useResonanceCanvas(
     if (!ctx) return;
 
     const reduced = prefersReducedMotion();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     let width = 0;
     let height = 0;
@@ -561,13 +565,17 @@ function useResonanceCanvas(
     function resize() {
       const c = canvasRef.current;
       if (!c) return;
+      const dpr = window.devicePixelRatio || 1;
       width = window.innerWidth;
       height = window.innerHeight;
       c.width = width * dpr;
       c.height = height * dpr;
       c.style.width = `${width}px`;
       c.style.height = `${height}px`;
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      // Reset transform before scaling to avoid compounding scales on resize
+      ctx!.setTransform(1, 0, 0, 1, 0, 0);
+      ctx!.scale(dpr, dpr);
     }
     resize();
     window.addEventListener('resize', resize);
@@ -616,11 +624,6 @@ function useResonanceCanvas(
     }
 
     function spawnMeteor() {
-      try {
-        playMeteorWhooshSFX();
-      } catch (e) {
-        // Audio might fail if no interaction has occurred
-      }
       const startX = Math.random() * width * 0.6 + width * 0.2;
       const speed = reduced ? 260 : 420 + Math.random() * 220;
       const angle = (55 + Math.random() * 10) * (Math.PI / 180);
@@ -637,11 +640,6 @@ function useResonanceCanvas(
     }
 
     function spawnBolt() {
-      try {
-        playLightningStrikeSFX();
-      } catch (e) {
-        // Audio might fail if no interaction has occurred
-      }
       const startX = width * (0.15 + Math.random() * 0.7);
       const endX = startX + (Math.random() - 0.5) * width * 0.3;
       const points: { x: number; y: number }[] = [];
@@ -688,12 +686,6 @@ function useResonanceCanvas(
 
     function explode(x: number, y: number, color: string) {
       const count = reduced ? 26 : 70;
-
-      try {
-        playFireworkBoomSFX();
-      } catch (e) {
-        // Audio might fail if no interaction has occurred
-      }
 
       for (let i = 0; i < count; i++) {
         // Accurate 3D spherical projection
@@ -1184,11 +1176,13 @@ export default function LuckyGenerator() {
         rollRef.current = null;
         setPhase('locked');
         if (newScore < 25) {
-          try {
-            playCosmicDriftSFX();
-          } catch (e) {
-            // ignore
-          }
+          try { playCosmicDriftSFX(); } catch (e) {}
+        } else if (newScore < 50) {
+          try { playMeteorWhooshSFX(); } catch (e) {}
+        } else if (newScore < 75) {
+          try { playLightningStrikeSFX(); } catch (e) {}
+        } else {
+          try { playFireworkBoomSFX(); } catch (e) {}
         }
       }
     }
@@ -1250,7 +1244,7 @@ export default function LuckyGenerator() {
       />
 
       {/* Interactive canvas layer */}
-      <canvas ref={canvasRef} className="fixed inset-0 -z-10 h-full w-full" />
+      <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none z-0" />
 
       {/* Return to home */}
       <div className="relative z-10 flex justify-start p-4">
