@@ -86,6 +86,7 @@ function checkRateLimit(ip) {
   if (!existing || existing.resetAt <= currentTime) {
     rateLimitMap.set(ip, bucket);
   }
+  return bucket.count <= MAX_SUBMISSIONS_PER_WINDOW;
 }
 
 export async function POST(request) {
