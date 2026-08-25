@@ -325,28 +325,44 @@ function playCosmicDriftSFX() {
   if (!ctx) return;
   const t = ctx.currentTime;
 
+  // Deep sub-bass swell & sweeping celestial hum
   const humOsc = ctx.createOscillator();
   const humGain = ctx.createGain();
   humOsc.type = 'sine';
-  humOsc.frequency.setValueAtTime(100, t);
+  humOsc.frequency.setValueAtTime(50, t); // Deep sub-bass
+  humOsc.frequency.linearRampToValueAtTime(80, t + 2); // Swell
+
+  // Phaser effect for hum
+  const phaser = ctx.createBiquadFilter();
+  phaser.type = 'allpass';
+  phaser.frequency.setValueAtTime(100, t);
+  phaser.frequency.linearRampToValueAtTime(1000, t + 2);
+  phaser.frequency.linearRampToValueAtTime(100, t + 4);
+
   humGain.gain.setValueAtTime(0, t);
-  humGain.gain.linearRampToValueAtTime(0.2, t + 1);
+  humGain.gain.linearRampToValueAtTime(0.3, t + 1);
   humGain.gain.exponentialRampToValueAtTime(0.01, t + 4);
-  humOsc.connect(humGain);
+
+  humOsc.connect(phaser);
+  phaser.connect(humGain);
   humGain.connect(ctx.destination);
 
+  // High-frequency crystalline chimes
   const chimeOsc = ctx.createOscillator();
   const chimeGain = ctx.createGain();
-  chimeOsc.type = 'triangle';
-  chimeOsc.frequency.setValueAtTime(600, t);
+  chimeOsc.type = 'sine'; // Crystalline
+  chimeOsc.frequency.setValueAtTime(1200, t);
+  chimeOsc.frequency.exponentialRampToValueAtTime(2400, t + 3);
+
   chimeGain.gain.setValueAtTime(0, t);
-  chimeGain.gain.linearRampToValueAtTime(0.1, t + 0.1);
-  chimeGain.gain.exponentialRampToValueAtTime(0.01, t + 3);
+  chimeGain.gain.linearRampToValueAtTime(0.05, t + 0.5);
+  chimeGain.gain.exponentialRampToValueAtTime(0.001, t + 3);
   chimeOsc.connect(chimeGain);
   chimeGain.connect(ctx.destination);
 
   humOsc.onended = () => {
     humOsc.disconnect();
+    phaser.disconnect();
     humGain.disconnect();
   };
 
@@ -366,43 +382,41 @@ function playLightningStrikeSFX() {
   if (!ctx) return;
   const t = ctx.currentTime;
 
-  // Thunder rumble
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(40, t);
-  osc.frequency.exponentialRampToValueAtTime(10, t + 0.8);
-  oscGain.gain.setValueAtTime(0.4, t);
-  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
-  osc.connect(oscGain);
-  oscGain.connect(ctx.destination);
-  osc.start(t);
-  osc.stop(t + 1.2);
-
-  // Electrical crackle
-  const bufferSize = ctx.sampleRate * 0.3;
+  // Crisp electrical snap/crackle burst
+  const bufferSize = ctx.sampleRate * 0.5;
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
+    data[i] = (Math.random() * 2 - 1) * (Math.random() > 0.8 ? 1 : 0); // Spiky noise for crackle
   }
   const noise = ctx.createBufferSource();
   noise.buffer = buffer;
+
   const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = 'highpass';
-  noiseFilter.frequency.value = 2000;
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.setValueAtTime(4000, t);
+  noiseFilter.Q.setValueAtTime(1.5, t);
+
   const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.2, t);
-  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+  noiseGain.gain.setValueAtTime(0.6, t);
+  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
 
   noise.connect(noiseFilter);
   noiseFilter.connect(noiseGain);
   noiseGain.connect(ctx.destination);
 
-  osc.onended = () => {
-    osc.disconnect();
-    oscGain.disconnect();
-  };
+  // Subtle distant thunder sub-kick
+  const kickOsc = ctx.createOscillator();
+  const kickGain = ctx.createGain();
+  kickOsc.type = 'sine';
+  kickOsc.frequency.setValueAtTime(80, t);
+  kickOsc.frequency.exponentialRampToValueAtTime(20, t + 0.5);
+
+  kickGain.gain.setValueAtTime(0.5, t);
+  kickGain.gain.exponentialRampToValueAtTime(0.01, t + 1.5); // Long low rumble
+
+  kickOsc.connect(kickGain);
+  kickGain.connect(ctx.destination);
 
   noise.onended = () => {
     noise.disconnect();
@@ -410,11 +424,16 @@ function playLightningStrikeSFX() {
     noiseGain.disconnect();
   };
 
-  osc.start(t);
-  osc.stop(t + 1.2);
+  kickOsc.onended = () => {
+    kickOsc.disconnect();
+    kickGain.disconnect();
+  };
 
   noise.start(t);
-  noise.stop(t + 0.3);
+  noise.stop(t + 0.5);
+
+  kickOsc.start(t);
+  kickOsc.stop(t + 1.5);
 }
 
 function playFireworkBoomSFX() {
@@ -422,42 +441,64 @@ function playFireworkBoomSFX() {
   if (!ctx) return;
   const t = ctx.currentTime;
 
-  // Low frequency boom
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(150, t);
-  osc.frequency.exponentialRampToValueAtTime(40, t + 0.3);
-  oscGain.gain.setValueAtTime(0.5, t);
-  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
-  osc.connect(oscGain);
-  oscGain.connect(ctx.destination);
-  osc.start(t);
-  osc.stop(t + 0.6);
+  // Ascending whistle (rocket launch)
+  const whistleOsc = ctx.createOscillator();
+  const whistleGain = ctx.createGain();
+  whistleOsc.type = 'sine';
+  whistleOsc.frequency.setValueAtTime(400, t);
+  whistleOsc.frequency.exponentialRampToValueAtTime(1200, t + 0.6);
 
-  // Noise crackle
-  const bufferSize = ctx.sampleRate * 0.5;
+  whistleGain.gain.setValueAtTime(0.1, t);
+  whistleGain.gain.linearRampToValueAtTime(0.2, t + 0.3);
+  whistleGain.gain.exponentialRampToValueAtTime(0.01, t + 0.6);
+
+  whistleOsc.connect(whistleGain);
+  whistleGain.connect(ctx.destination);
+
+  // Low-end muffled burst thud (explosion)
+  const thudOsc = ctx.createOscillator();
+  const thudGain = ctx.createGain();
+  thudOsc.type = 'sine';
+  thudOsc.frequency.setValueAtTime(100, t + 0.6); // Starts at the end of the whistle
+  thudOsc.frequency.exponentialRampToValueAtTime(30, t + 1.2);
+
+  thudGain.gain.setValueAtTime(0, t);
+  thudGain.gain.setValueAtTime(0.6, t + 0.6); // Boom!
+  thudGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
+
+  thudOsc.connect(thudGain);
+  thudGain.connect(ctx.destination);
+
+  // Crackling sparkle decay
+  const bufferSize = ctx.sampleRate * 1.2;
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
+    data[i] = (Math.random() * 2 - 1) * (Math.random() > 0.7 ? 1 : 0);
   }
   const noise = ctx.createBufferSource();
   noise.buffer = buffer;
   const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = 'bandpass';
-  noiseFilter.frequency.value = 1000;
+  noiseFilter.type = 'highpass';
+  noiseFilter.frequency.setValueAtTime(3000, t + 0.6);
+
   const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.3, t);
-  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+  noiseGain.gain.setValueAtTime(0, t);
+  noiseGain.gain.setValueAtTime(0.4, t + 0.6);
+  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 1.8);
 
   noise.connect(noiseFilter);
   noiseFilter.connect(noiseGain);
   noiseGain.connect(ctx.destination);
 
-  osc.onended = () => {
-    osc.disconnect();
-    oscGain.disconnect();
+  whistleOsc.onended = () => {
+    whistleOsc.disconnect();
+    whistleGain.disconnect();
+  };
+
+  thudOsc.onended = () => {
+    thudOsc.disconnect();
+    thudGain.disconnect();
   };
 
   noise.onended = () => {
@@ -466,8 +507,14 @@ function playFireworkBoomSFX() {
     noiseGain.disconnect();
   };
 
-  noise.start(t);
-  noise.stop(t + 0.5);
+  whistleOsc.start(t);
+  whistleOsc.stop(t + 0.6);
+
+  thudOsc.start(t + 0.6);
+  thudOsc.stop(t + 1.2);
+
+  noise.start(t + 0.6);
+  noise.stop(t + 1.8);
 }
 
 
@@ -476,50 +523,29 @@ function playMeteorWhooshSFX() {
   if (!ctx) return;
   const t = ctx.currentTime;
 
-  // Low atmospheric whoosh
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(60, t);
-  osc.frequency.exponentialRampToValueAtTime(100, t + 0.3);
-  osc.frequency.exponentialRampToValueAtTime(40, t + 1.2);
-
-  oscGain.gain.setValueAtTime(0, t);
-  oscGain.gain.linearRampToValueAtTime(0.4, t + 0.2);
-  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
-
-  osc.connect(oscGain);
-  oscGain.connect(ctx.destination);
-  osc.start(t);
-  osc.stop(t + 1.2);
-
-  // Soft cosmic tail
-  const bufferSize = ctx.sampleRate * 1.5;
+  // Deep atmospheric re-entry whoosh (filtered noise sweep)
+  const bufferSize = ctx.sampleRate * 2.0;
   const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
+    data[i] = Math.random() * 2 - 1; // White noise
   }
   const noise = ctx.createBufferSource();
   noise.buffer = buffer;
+
   const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = 'bandpass';
-  noiseFilter.frequency.setValueAtTime(2000, t);
-  noiseFilter.frequency.exponentialRampToValueAtTime(400, t + 1.5);
+  noiseFilter.type = 'lowpass';
+  noiseFilter.frequency.setValueAtTime(8000, t);
+  noiseFilter.frequency.exponentialRampToValueAtTime(200, t + 1.5); // Sweep down
 
   const noiseGain = ctx.createGain();
   noiseGain.gain.setValueAtTime(0, t);
-  noiseGain.gain.linearRampToValueAtTime(0.15, t + 0.3);
-  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 1.5);
+  noiseGain.gain.linearRampToValueAtTime(0.3, t + 0.3); // Attack
+  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 1.8); // Decay
 
   noise.connect(noiseFilter);
   noiseFilter.connect(noiseGain);
   noiseGain.connect(ctx.destination);
-
-  osc.onended = () => {
-    osc.disconnect();
-    oscGain.disconnect();
-  };
 
   noise.onended = () => {
     noise.disconnect();
@@ -528,7 +554,7 @@ function playMeteorWhooshSFX() {
   };
 
   noise.start(t);
-  noise.stop(t + 1.5);
+  noise.stop(t + 2.0);
 }
 
 function useResonanceCanvas(
@@ -624,50 +650,59 @@ function useResonanceCanvas(
     }
 
     function spawnMeteor() {
+      // Max active meteors cap for performance
+      if (s.meteors.length > (reduced ? 8 : 18)) return;
       const startX = Math.random() * width * 0.6 + width * 0.2;
-      const speed = reduced ? 260 : 420 + Math.random() * 220;
+      const speed = reduced ? 260 : 500 + Math.random() * 350;
       const angle = (55 + Math.random() * 10) * (Math.PI / 180);
       s.meteors.push({
         x: startX,
         y: -20,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        len: 70 + Math.random() * 60,
-        width: 1.6 + Math.random() * 1.4,
+        len: 120 + Math.random() * 100, // Longer, realistic tails
+        width: 2.5 + Math.random() * 2.0, // Thicker glowing head
         trail: [],
         life: 0,
       });
     }
 
     function spawnBolt() {
+      if (s.bolts.length > (reduced ? 2 : 4)) return; // Cap bolts
+
       const startX = width * (0.15 + Math.random() * 0.7);
-      const endX = startX + (Math.random() - 0.5) * width * 0.3;
-      const points: { x: number; y: number }[] = [];
-      const segments = 9;
-      for (let i = 0; i <= segments; i++) {
-        const t = i / segments;
-        const baseX = startX + (endX - startX) * t;
-        const jitter = (1 - t * 0.4) * (Math.random() - 0.5) * 46;
-        points.push({ x: baseX + jitter, y: height * 0.55 * t });
+      const endX = startX + (Math.random() - 0.5) * width * 0.4;
+
+      // Recursive fractal branching function
+      function createFractalBranch(sx: number, sy: number, ex: number, ey: number, depth: number): { x: number; y: number }[] {
+        if (depth === 0) return [{ x: sx, y: sy }, { x: ex, y: ey }];
+
+        const midX = (sx + ex) / 2 + (Math.random() - 0.5) * (ey - sy) * 0.3;
+        const midY = (sy + ey) / 2 + (Math.random() - 0.5) * (ex - sx) * 0.1;
+
+        const left = createFractalBranch(sx, sy, midX, midY, depth - 1);
+        const right = createFractalBranch(midX, midY, ex, ey, depth - 1);
+
+        return [...left.slice(0, -1), ...right];
       }
+
+      const points = createFractalBranch(startX, 0, endX, height * (0.4 + Math.random() * 0.4), 4);
+
       const branches: { x: number; y: number }[][] = [];
-      const branchCount = randomInt(1, 3);
+      const branchCount = randomInt(2, 5);
       for (let b = 0; b < branchCount; b++) {
-        const originIdx = randomInt(2, segments - 2);
+        const originIdx = randomInt(1, points.length - 3);
         const origin = points[originIdx];
-        const branch: { x: number; y: number }[] = [origin];
-        let bx = origin.x;
-        let by = origin.y;
-        const branchSegs = randomInt(3, 5);
-        for (let i = 0; i < branchSegs; i++) {
-          bx += (Math.random() - 0.3) * 40;
-          by += (height * 0.2) / branchSegs;
-          branch.push({ x: bx, y: by });
-        }
-        branches.push(branch);
+
+        const bEndX = origin.x + (Math.random() - 0.5) * width * 0.25;
+        const bEndY = origin.y + height * (0.1 + Math.random() * 0.2);
+
+        branches.push(createFractalBranch(origin.x, origin.y, bEndX, bEndY, 2));
       }
-      s.bolts.push({ points, branches, age: 0, life: 0.22 + Math.random() * 0.12 });
-      s.flash = 0.35;
+
+      // Multi-stage flicker logic tied to life and age
+      s.bolts.push({ points, branches, age: 0, life: 0.3 + Math.random() * 0.2 });
+      s.flash = 0.5;
     }
 
     function spawnRocket() {
@@ -685,23 +720,24 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string) {
-      const count = reduced ? 26 : 70;
+      const count = reduced ? 30 : 120;
+      // Safety cap on total sparks
+      if (s.sparks.length > (reduced ? 80 : 250)) return;
 
       for (let i = 0; i < count; i++) {
-        // Accurate 3D spherical projection
+        // Bursting radial particle velocities
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
-        const speed = 90 + Math.random() * 170;
 
-        // Spherical to Cartesian coordinates (y is up/down in 2D)
+        // Realistic explosion physics: fast initial burst, rapid drag
+        const speed = 150 + Math.random() * 300;
+
         const vx3d = speed * Math.sin(phi) * Math.cos(theta);
         const vy3d = speed * Math.cos(phi);
         const vz3d = speed * Math.sin(phi) * Math.sin(theta);
 
-        // Depth projection for size and opacity
-        const depth = (vz3d / speed + 1) / 2; // 0..1
+        const depth = (vz3d / speed + 1) / 2;
 
-        // Mix white randomly for glowing core effect
         const particleColor = Math.random() > 0.85 ? '255,255,255' : color;
 
         s.sparks.push({
@@ -711,8 +747,8 @@ function useResonanceCanvas(
           vy: vy3d,
           color: particleColor,
           age: 0,
-          life: 0.9 + Math.random() * 0.6,
-          size: 1.0 + depth * 2.2,
+          life: 1.2 + Math.random() * 1.0, // Longer lingering life
+          size: 1.5 + depth * 2.0,
           trail: [],
         });
       }
@@ -813,7 +849,7 @@ function useResonanceCanvas(
     function drawMeteors(t: number, dt: number) {
       if (t > s.nextMeteorAt) {
         spawnMeteor();
-        s.nextMeteorAt = t + (reduced ? 0.5 : 0.14 + Math.random() * 0.16);
+        s.nextMeteorAt = t + (reduced ? 0.8 : 0.2 + Math.random() * 0.3);
       }
       ctx!.globalCompositeOperation = 'lighter';
       for (let i = s.meteors.length - 1; i >= 0; i--) {
@@ -822,47 +858,58 @@ function useResonanceCanvas(
         m.x += m.vx * dt;
         m.y += m.vy * dt;
         m.trail.push({ x: m.x, y: m.y });
-        if (m.trail.length > 14) m.trail.shift();
+        // Longer tail memory for smooth tapers
+        if (m.trail.length > 25) m.trail.shift();
 
-        // Stardust along tail
-        if (Math.random() < 0.6) {
+        // Stardust along tail, limit sparks to prevent lag
+        if (Math.random() < 0.8 && s.sparks.length < (reduced ? 30 : 80)) {
           s.sparks.push({
-            x: m.x + (Math.random() - 0.5) * 10,
-            y: m.y + (Math.random() - 0.5) * 10,
-            vx: (Math.random() - 0.5) * 40,
-            vy: (Math.random() - 0.5) * 40,
+            x: m.x + (Math.random() - 0.5) * 12,
+            y: m.y + (Math.random() - 0.5) * 12,
+            vx: m.vx * 0.1 + (Math.random() - 0.5) * 50,
+            vy: m.vy * 0.1 + (Math.random() - 0.5) * 50,
             color: '200,240,255',
             age: 0,
-            life: 0.5 + Math.random() * 0.5,
+            life: 0.6 + Math.random() * 0.8,
             size: 1 + Math.random() * 1.5,
             trail: []
           });
         }
 
-        // Tail — fading gradient line built from the trail.
-        for (let j = 1; j < m.trail.length; j++) {
-          const a = m.trail[j - 1];
-          const bpt = m.trail[j];
-          const alpha = (j / m.trail.length) * 0.5;
-          ctx!.strokeStyle = `rgba(180,210,255,${alpha})`;
-          ctx!.lineWidth = m.width * (j / m.trail.length);
-          ctx!.beginPath();
-          ctx!.moveTo(a.x, a.y);
-          ctx!.lineTo(bpt.x, bpt.y);
-          ctx!.stroke();
+        // Tapered, smooth linear gradient tail
+        if (m.trail.length > 1) {
+          const tailEnd = m.trail[0];
+          const tailStart = m.trail[m.trail.length - 1];
+          const dist = Math.hypot(tailStart.x - tailEnd.x, tailStart.y - tailEnd.y);
+
+          if (dist > 0) {
+            const grad = ctx!.createLinearGradient(tailEnd.x, tailEnd.y, tailStart.x, tailStart.y);
+            grad.addColorStop(0, 'rgba(180,210,255,0)');
+            grad.addColorStop(0.8, 'rgba(210,230,255,0.4)');
+            grad.addColorStop(1, 'rgba(255,255,255,0.8)');
+
+            ctx!.strokeStyle = grad;
+            ctx!.lineWidth = m.width;
+            ctx!.lineCap = 'round';
+            ctx!.beginPath();
+            ctx!.moveTo(tailEnd.x, tailEnd.y);
+            // Draw a single smooth line instead of segments for better gradient mapping
+            ctx!.lineTo(tailStart.x, tailStart.y);
+            ctx!.stroke();
+          }
         }
 
-        // Bright head
-        const glow = ctx!.createRadialGradient(m.x, m.y, 0, m.x, m.y, 9);
-        glow.addColorStop(0, 'rgba(255,255,255,0.95)');
-        glow.addColorStop(0.4, 'rgba(190,220,255,0.6)');
+        // Bright glowing core
+        const glow = ctx!.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.width * 4);
+        glow.addColorStop(0, 'rgba(255,255,255,1)');
+        glow.addColorStop(0.3, 'rgba(190,220,255,0.8)');
         glow.addColorStop(1, 'rgba(190,220,255,0)');
         ctx!.fillStyle = glow;
         ctx!.beginPath();
-        ctx!.arc(m.x, m.y, 9, 0, Math.PI * 2);
+        ctx!.arc(m.x, m.y, m.width * 4, 0, Math.PI * 2);
         ctx!.fill();
 
-        if (m.y > height + 40 || m.x < -60 || m.x > width + 60) {
+        if (m.y > height + 100 || m.x < -100 || m.x > width + 100) {
           s.meteors.splice(i, 1);
         }
       }
@@ -871,13 +918,13 @@ function useResonanceCanvas(
       for (let i = s.sparks.length - 1; i >= 0; i--) {
         const sp = s.sparks[i];
         sp.age += dt;
-        sp.vx *= 1 - dt * 0.6; // drag
-        sp.vy *= 1 - dt * 0.6;
+        sp.vx *= 1 - dt * 1.2; // stronger drag
+        sp.vy *= 1 - dt * 1.2;
         sp.x += sp.vx * dt;
         sp.y += sp.vy * dt;
 
         sp.trail.push({ x: sp.x, y: sp.y });
-        if (sp.trail.length > 6) sp.trail.shift();
+        if (sp.trail.length > 5) sp.trail.shift();
 
         const lifeRatio = sp.age / sp.life;
         const alpha = Math.max(0, 1 - lifeRatio);
@@ -890,7 +937,7 @@ function useResonanceCanvas(
         for (let j = 1; j < sp.trail.length; j++) {
           const a = sp.trail[j - 1];
           const bpt = sp.trail[j];
-          const pathAlpha = alpha * (j / sp.trail.length) * 0.5;
+          const pathAlpha = alpha * (j / sp.trail.length) * 0.6;
           ctx!.strokeStyle = `rgba(${sp.color},${pathAlpha})`;
           ctx!.lineWidth = sp.size * (j / sp.trail.length);
           ctx!.lineCap = 'round';
@@ -899,14 +946,6 @@ function useResonanceCanvas(
           ctx!.lineTo(bpt.x, bpt.y);
           ctx!.stroke();
         }
-
-        const sparkGlow = ctx!.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, sp.size * 3);
-        sparkGlow.addColorStop(0, `rgba(${sp.color},${alpha})`);
-        sparkGlow.addColorStop(1, `rgba(${sp.color},0)`);
-        ctx!.fillStyle = sparkGlow;
-        ctx!.beginPath();
-        ctx!.arc(sp.x, sp.y, sp.size * 3, 0, Math.PI * 2);
-        ctx!.fill();
       }
     }
 
@@ -919,32 +958,46 @@ function useResonanceCanvas(
       // Atmospheric flash
       if (s.flash > 0) {
         ctx!.globalCompositeOperation = 'lighter';
-        // Neon-purple atmospheric flash
-        ctx!.fillStyle = `rgba(190,40,255,${s.flash * 0.35})`;
+        ctx!.fillStyle = `rgba(190,40,255,${s.flash * 0.4})`;
         ctx!.fillRect(0, 0, width, height);
-        s.flash = Math.max(0, s.flash - dt * 1.8);
+        s.flash = Math.max(0, s.flash - dt * 2.5);
       }
 
       ctx!.globalCompositeOperation = 'lighter';
       for (let i = s.bolts.length - 1; i >= 0; i--) {
         const bolt = s.bolts[i];
         bolt.age += dt;
-        const alpha = Math.max(0, 1 - bolt.age / bolt.life);
-        if (alpha <= 0) {
+
+        // Multi-stage flicker: rapid on/off pulsing before fade
+        const progress = bolt.age / bolt.life;
+        if (progress >= 1) {
           s.bolts.splice(i, 1);
           continue;
         }
+
+        let alpha = 1;
+        if (progress < 0.2) alpha = progress * 5; // Fast in
+        else if (progress > 0.8) alpha = (1 - progress) * 5; // Fast out
+        else alpha = 0.5 + Math.random() * 0.5; // Flicker in middle
+
         const paths = [bolt.points, ...bolt.branches];
+
+        ctx!.save();
+        // Use shadowBlur for true luminescence
+        ctx!.shadowColor = 'rgba(210, 100, 255, 1)';
+        ctx!.shadowBlur = reduced ? 0 : 25;
+
         for (const path of paths) {
           // Wide neon-purple soft glow pass
-          ctx!.strokeStyle = `rgba(190,40,255,${alpha * 0.6})`;
-          ctx!.lineWidth = 10;
+          ctx!.strokeStyle = `rgba(190,40,255,${alpha * 0.7})`;
+          ctx!.lineWidth = 6;
           ctx!.lineJoin = 'round';
           ctx!.beginPath();
           path.forEach((p, idx) =>
             idx === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y)
           );
           ctx!.stroke();
+
           // Bright core pass
           ctx!.strokeStyle = `rgba(245,200,255,${alpha})`;
           ctx!.lineWidth = 2;
@@ -954,15 +1007,16 @@ function useResonanceCanvas(
           );
           ctx!.stroke();
         }
+        ctx!.restore();
       }
     }
 
     function drawFireworks(t: number, dt: number) {
       if (t > s.nextRocketBatchAt) {
-        s.rocketsQueued = randomInt(5, 6);
-        s.nextRocketBatchAt = t + (reduced ? 5 : 3.4);
+        s.rocketsQueued = randomInt(4, 5);
+        s.nextRocketBatchAt = t + (reduced ? 5 : 3.8); // Slower batches for perf
       }
-      if (s.rocketsQueued > 0 && Math.random() < dt * 2.2) {
+      if (s.rocketsQueued > 0 && Math.random() < dt * 2.0 && s.rockets.length < (reduced ? 3 : 6)) {
         spawnRocket();
         s.rocketsQueued -= 1;
       }
@@ -971,59 +1025,68 @@ function useResonanceCanvas(
 
       for (let i = s.rockets.length - 1; i >= 0; i--) {
         const r = s.rockets[i];
-        r.vy += 260 * dt; // gravity
-        r.vx *= 1 - dt * 0.2; // drag
+        r.vy += 300 * dt; // gravity
+        r.vx *= 1 - dt * 0.3; // drag
         r.x += r.vx * dt;
         r.y += r.vy * dt;
         r.trail.push({ x: r.x, y: r.y });
-        if (r.trail.length > 10) r.trail.shift();
+        if (r.trail.length > 15) r.trail.shift();
 
         for (let j = 1; j < r.trail.length; j++) {
           const a = r.trail[j - 1];
           const bpt = r.trail[j];
-          const alpha = (j / r.trail.length) * 0.6;
+          const alpha = (j / r.trail.length) * 0.8;
           ctx!.strokeStyle = `rgba(${r.color},${alpha})`;
-          ctx!.lineWidth = 2;
+          ctx!.lineWidth = 2.5 * (j / r.trail.length);
+          ctx!.lineCap = 'round';
           ctx!.beginPath();
           ctx!.moveTo(a.x, a.y);
           ctx!.lineTo(bpt.x, bpt.y);
           ctx!.stroke();
         }
 
-        const apex = r.vy >= -30;
-        const highEnough = r.y < height * 0.55;
-        if ((apex && highEnough) || r.y < height * 0.12) {
+        const apex = r.vy >= -40;
+        const highEnough = r.y < height * 0.6;
+        if ((apex && highEnough) || r.y < height * 0.15) {
           explode(r.x, r.y, r.color);
           r.exploded = true;
         }
-        if (r.exploded || r.y < -20) s.rockets.splice(i, 1);
+        if (r.exploded || r.y < -50) s.rockets.splice(i, 1);
       }
 
+      // Sparkle Glitter Rendering
       for (let i = s.sparks.length - 1; i >= 0; i--) {
         const sp = s.sparks[i];
         sp.age += dt;
-        sp.vy += 130 * dt; // gravity
-        sp.vx *= 1 - dt * 0.6; // drag
-        sp.vy *= 1 - dt * 0.35;
+        sp.vy += 180 * dt; // higher gravity for realistic arc
+
+        // Rapid drag (air resistance)
+        sp.vx *= 1 - dt * 2.0;
+        sp.vy *= 1 - dt * 1.5;
+
         sp.x += sp.vx * dt;
         sp.y += sp.vy * dt;
 
         sp.trail.push({ x: sp.x, y: sp.y });
-        if (sp.trail.length > 8) sp.trail.shift();
+        if (sp.trail.length > (reduced ? 4 : 8)) sp.trail.shift();
 
         const lifeRatio = sp.age / sp.life;
         const alpha = Math.max(0, 1 - lifeRatio);
 
-        if (alpha <= 0) {
+        if (alpha <= 0 || sp.y > height + 20) {
           s.sparks.splice(i, 1);
           continue;
         }
 
-        // Draw trailing path with lighter blending
+        // Twinkling effect
+        const twinkle = 0.5 + Math.sin(sp.age * 20 + sp.x) * 0.5;
+        const finalAlpha = alpha * (0.4 + twinkle * 0.6);
+
+        // Draw trailing path
         for (let j = 1; j < sp.trail.length; j++) {
           const a = sp.trail[j - 1];
           const bpt = sp.trail[j];
-          const pathAlpha = alpha * (j / sp.trail.length) * 0.7;
+          const pathAlpha = finalAlpha * (j / sp.trail.length);
           ctx!.strokeStyle = `rgba(${sp.color},${pathAlpha})`;
           ctx!.lineWidth = sp.size * (j / sp.trail.length);
           ctx!.lineCap = 'round';
@@ -1034,20 +1097,9 @@ function useResonanceCanvas(
         }
 
         // Core glow
-        const glow = ctx!.createRadialGradient(
-          sp.x,
-          sp.y,
-          0,
-          sp.x,
-          sp.y,
-          sp.size * 4
-        );
-        glow.addColorStop(0, `rgba(${sp.color},${alpha})`);
-        glow.addColorStop(0.3, `rgba(${sp.color},${alpha * 0.6})`);
-        glow.addColorStop(1, `rgba(${sp.color},0)`);
-        ctx!.fillStyle = glow;
+        ctx!.fillStyle = `rgba(255,255,255,${finalAlpha})`;
         ctx!.beginPath();
-        ctx!.arc(sp.x, sp.y, sp.size * 4, 0, Math.PI * 2);
+        ctx!.arc(sp.x, sp.y, sp.size * 0.8, 0, Math.PI * 2);
         ctx!.fill();
       }
     }
@@ -1141,6 +1193,11 @@ export default function DailyResonance() {
     if (phase !== 'idle') return;
 
     try {
+      // Initialize and resume AudioContext exactly on button click
+      const ctx = getAudioCtx();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
       playClickSFX();
     } catch (e) {
       // Ignore if audio context fails
@@ -1167,6 +1224,9 @@ export default function DailyResonance() {
     const duration = 2400; // 2.4s duration
 
     function tick(now: number) {
+      // Capture startTime on the first animation frame to avoid time-origin bugs.
+      // performance.now() isn't used here because DOMHighResTimeStamp (now) from
+      // requestAnimationFrame may have a different time origin in some environments.
       if (startTime === null) startTime = now;
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
@@ -1209,8 +1269,8 @@ export default function DailyResonance() {
     }
 
     const text =
-      tier && score !== null
-        ? `My Daily Resonance today is ${score}% — ${tier.name} ✨ luckypickcanada.ca`
+      tier && score !== null && quoteIndex !== null
+        ? `My Daily Resonance is ${score}%! '${LUCKY_QUOTES[quoteIndex]}' Discover your daily fortune at luckypickcanada.ca (For entertainment purposes only).`
         : 'luckypickcanada.ca';
     const shareData = {
       title: 'Lucky Pick Canada — Daily Resonance',
@@ -1226,13 +1286,13 @@ export default function DailyResonance() {
       // user cancelled or share failed — fall through to clipboard
     }
     try {
-      await navigator.clipboard.writeText(`${text} ${shareData.url ?? ''}`.trim());
+      await navigator.clipboard.writeText(text);
       setShareStatus('copied');
       window.setTimeout(() => setShareStatus('idle'), 2200);
     } catch {
       // clipboard unavailable — silently no-op, nothing destructive to do
     }
-  }, [tier, score]);
+  }, [tier, score, quoteIndex]);
 
   const pulseClass =
     phase === 'idle'
