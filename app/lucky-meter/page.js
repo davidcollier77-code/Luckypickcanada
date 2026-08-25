@@ -1,7 +1,7 @@
 "use client";
 
-import LuckyGenerator from "../../components/LuckyGenerator";
+import DailyResonance from "../../components/DailyResonance";
 
 export default function LuckyMeterPage() {
-  return <LuckyGenerator />;
+  return <DailyResonance />;
 }
