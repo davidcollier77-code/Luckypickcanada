@@ -1292,7 +1292,7 @@ export default function DailyResonance() {
     } catch {
       // clipboard unavailable — silently no-op, nothing destructive to do
     }
-  }, [tier, score]);
+  }, [tier, score, quoteIndex]);
 
   const pulseClass =
     phase === 'idle'
