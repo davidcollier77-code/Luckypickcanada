@@ -347,16 +347,12 @@ function playLightningStrikeSFX() {
     oscGain.disconnect();
   };
 
+  noise.start(t);
   noise.onended = () => {
     noise.disconnect();
     noiseFilter.disconnect();
     noiseGain.disconnect();
   };
-
-  osc.start(t);
-  osc.stop(t + 1.2);
-
-  noise.start(t);
   noise.stop(t + 0.3);
 }
 
