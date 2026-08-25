@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import ResonanceButton from './ResonanceButton';
 
 const LUCKY_QUOTES = [
   "Deep as the Great Lakes and bright as the winter snow, your resonance is strong.",
@@ -359,12 +360,7 @@ export default function DailyResonance() {
           <>
             <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>
             <h1 className="text-3xl font-light text-white mb-8">AWAKEN TODAY'S RESONANCE</h1>
-            <button
-              onClick={handleReveal}
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-full hover:shadow-[0_0_20px_rgba(0,229,255,0.4)] transition-all duration-300"
-            >
-              Reveal My Resonance
-            </button>
+            <ResonanceButton onClick={handleReveal} />
           </>
         ) : (
           <div className="animate-fade-in flex flex-col items-center">

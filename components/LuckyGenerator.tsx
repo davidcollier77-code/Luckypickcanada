@@ -17,6 +17,7 @@ import React, {
   memo,
 } from 'react';
 import Link from 'next/link';
+import ResonanceButton from './ResonanceButton';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1269,12 +1270,7 @@ export default function LuckyGenerator() {
               <h1 className="text-xl font-semibold tracking-wide text-white/90">
                 AWAKEN TODAY&apos;S RESONANCE
               </h1>
-              <button
-                onClick={handleReveal}
-                className="group relative overflow-hidden rounded-full bg-gradient-to-r from-purple-500/80 via-fuchsia-400/70 to-cyan-400/80 px-6 py-3 text-sm font-medium tracking-wide text-white shadow-lg shadow-purple-500/30 transition active:scale-95 btn-pulse cursor-default"
-              >
-                Reveal My Resonance
-              </button>
+              <ResonanceButton onClick={handleReveal} />
             </div>
           )}
 
