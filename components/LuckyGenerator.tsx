@@ -413,6 +413,67 @@ function playFireworkBoomSFX() {
   noise.stop(t + 0.5);
 }
 
+
+function playMeteorWhooshSFX() {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+
+  // Low atmospheric whoosh
+  const osc = ctx.createOscillator();
+  const oscGain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(60, t);
+  osc.frequency.exponentialRampToValueAtTime(100, t + 0.3);
+  osc.frequency.exponentialRampToValueAtTime(40, t + 1.2);
+
+  oscGain.gain.setValueAtTime(0, t);
+  oscGain.gain.linearRampToValueAtTime(0.4, t + 0.2);
+  oscGain.gain.exponentialRampToValueAtTime(0.01, t + 1.2);
+
+  osc.connect(oscGain);
+  oscGain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + 1.2);
+
+  // Soft cosmic tail
+  const bufferSize = ctx.sampleRate * 1.5;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.setValueAtTime(2000, t);
+  noiseFilter.frequency.exponentialRampToValueAtTime(400, t + 1.5);
+
+  const noiseGain = ctx.createGain();
+  noiseGain.gain.setValueAtTime(0, t);
+  noiseGain.gain.linearRampToValueAtTime(0.15, t + 0.3);
+  noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 1.5);
+
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(ctx.destination);
+
+  osc.onended = () => {
+    osc.disconnect();
+    oscGain.disconnect();
+  };
+
+  noise.onended = () => {
+    noise.disconnect();
+    noiseFilter.disconnect();
+    noiseGain.disconnect();
+  };
+
+  noise.start(t);
+  noise.stop(t + 1.5);
+}
+
 function useResonanceCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
   effectGroup: EffectGroup
@@ -489,6 +550,11 @@ function useResonanceCanvas(
     }
 
     function spawnMeteor() {
+      try {
+        playMeteorWhooshSFX();
+      } catch (e) {
+        // Audio might fail if no interaction has occurred
+      }
       const startX = Math.random() * width * 0.6 + width * 0.2;
       const speed = reduced ? 260 : 420 + Math.random() * 220;
       const angle = (55 + Math.random() * 10) * (Math.PI / 180);
@@ -683,6 +749,21 @@ function useResonanceCanvas(
         m.trail.push({ x: m.x, y: m.y });
         if (m.trail.length > 14) m.trail.shift();
 
+        // Stardust along tail
+        if (Math.random() < 0.6) {
+          s.sparks.push({
+            x: m.x + (Math.random() - 0.5) * 10,
+            y: m.y + (Math.random() - 0.5) * 10,
+            vx: (Math.random() - 0.5) * 40,
+            vy: (Math.random() - 0.5) * 40,
+            color: '200,240,255',
+            age: 0,
+            life: 0.5 + Math.random() * 0.5,
+            size: 1 + Math.random() * 1.5,
+            trail: []
+          });
+        }
+
         // Tail — fading gradient line built from the trail.
         for (let j = 1; j < m.trail.length; j++) {
           const a = m.trail[j - 1];
@@ -709,6 +790,48 @@ function useResonanceCanvas(
         if (m.y > height + 40 || m.x < -60 || m.x > width + 60) {
           s.meteors.splice(i, 1);
         }
+      }
+
+      // Render stardust particles
+      for (let i = s.sparks.length - 1; i >= 0; i--) {
+        const sp = s.sparks[i];
+        sp.age += dt;
+        sp.vx *= 1 - dt * 0.6; // drag
+        sp.vy *= 1 - dt * 0.6;
+        sp.x += sp.vx * dt;
+        sp.y += sp.vy * dt;
+
+        sp.trail.push({ x: sp.x, y: sp.y });
+        if (sp.trail.length > 6) sp.trail.shift();
+
+        const lifeRatio = sp.age / sp.life;
+        const alpha = Math.max(0, 1 - lifeRatio);
+
+        if (alpha <= 0) {
+          s.sparks.splice(i, 1);
+          continue;
+        }
+
+        for (let j = 1; j < sp.trail.length; j++) {
+          const a = sp.trail[j - 1];
+          const bpt = sp.trail[j];
+          const pathAlpha = alpha * (j / sp.trail.length) * 0.5;
+          ctx!.strokeStyle = `rgba(${sp.color},${pathAlpha})`;
+          ctx!.lineWidth = sp.size * (j / sp.trail.length);
+          ctx!.lineCap = 'round';
+          ctx!.beginPath();
+          ctx!.moveTo(a.x, a.y);
+          ctx!.lineTo(bpt.x, bpt.y);
+          ctx!.stroke();
+        }
+
+        const sparkGlow = ctx!.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, sp.size * 3);
+        sparkGlow.addColorStop(0, `rgba(${sp.color},${alpha})`);
+        sparkGlow.addColorStop(1, `rgba(${sp.color},0)`);
+        ctx!.fillStyle = sparkGlow;
+        ctx!.beginPath();
+        ctx!.arc(sp.x, sp.y, sp.size * 3, 0, Math.PI * 2);
+        ctx!.fill();
       }
     }
 
