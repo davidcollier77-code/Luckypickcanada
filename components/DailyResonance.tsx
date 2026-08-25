@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
+
 import ResonanceButton from './ResonanceButton';
 
 const LUCKY_QUOTES = [
@@ -190,7 +192,7 @@ export default function DailyResonance() {
 
     // Fluctuating Number Animation
     let startTime: number | null = null;
-    const duration = 2500;
+    const duration = 5000;
 
     const animateNumber = (timestamp: number) => {
       if (!startTime) startTime = timestamp; // Capture strictly on first frame
@@ -352,6 +354,12 @@ export default function DailyResonance() {
   return (
     <div className="relative w-full h-screen bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
+
+      <div className="absolute top-4 left-4 z-20">
+        <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90">
+          <span aria-hidden>←</span> Return to Home
+        </Link>
+      </div>
 
       <div className="z-10 bg-slate-900/80 backdrop-blur-md p-8 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center max-w-md w-full mx-4">
         {!isRevealed ? (
