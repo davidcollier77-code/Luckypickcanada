@@ -58,9 +58,9 @@ const QUOTES: string[] = [
 ];
 
 function getTier(score: number): Tier {
-  if (score <= 33) return { id: 2, name: 'METEOR SHOWER' };
+  if (score <= 33) return { id: 2, name: 'METEOR SHOWER RESONANCE' };
   if (score <= 66) return { id: 3, name: 'COSMIC LIGHTNING RESONANCE' };
-  return { id: 4, name: 'GRAND FIREWORKS' };
+  return { id: 4, name: 'GRAND FIREWORKS RESONANCE' };
 }
 
 // ---------------------------------------------------------------------------
@@ -116,12 +116,10 @@ function writeStoredResonance(next: StoredResonance) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   } catch {
-    // localStorage unavailable (private mode, quota, etc.) — fail silently,
-    // the ritual still works for this session.
+    // localStorage unavailable — fail silently
   }
 }
 
-/** Generates today's score + quote, guaranteed to differ from yesterday's. */
 function generateTodaysResonance(previous: StoredResonance | null): {
   score: number;
   quoteIndex: number;
@@ -153,7 +151,7 @@ function prefersReducedMotion(): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// CountdownTimer — isolated so its 1s ticks never re-render the parent
+// CountdownTimer
 // ---------------------------------------------------------------------------
 
 const CountdownTimer = memo(function CountdownTimer() {
@@ -190,11 +188,6 @@ const CountdownTimer = memo(function CountdownTimer() {
 
 // ---------------------------------------------------------------------------
 // Canvas VFX engine
-//
-// A single full-viewport canvas rendered behind the card. Particle systems
-// are cheap arrays of plain objects, updated with a delta-time step and
-// drawn with additive ('lighter') blending for glow. The loop is paused on
-// tab-hidden and scaled back under prefers-reduced-motion.
 // ---------------------------------------------------------------------------
 
 type EffectGroup = 'idle' | 1 | 2 | 3 | 4;
@@ -270,14 +263,13 @@ interface Rocket {
 }
 
 const FIREWORK_COLORS = [
-  '255,80,80', // red
-  '90,140,255', // blue
-  '110,255,150', // green
-  '200,110,255', // purple
-  '255,205,90', // gold
+  '255,80,80',
+  '90,140,255',
+  '110,255,150',
+  '200,110,255',
+  '255,205,90',
 ];
 
-// Audio context singleton to avoid creating multiple contexts
 let audioCtx: AudioContext | null = null;
 function getAudioCtx() {
   if (typeof window === 'undefined') return null;
@@ -316,8 +308,6 @@ function playClickSFX() {
   osc.start(t);
   osc.stop(t + 0.1);
 }
-
-
 
 function playMeteorWhooshSFX() {
   const path = METEOR_SOUNDS[randomInt(0, METEOR_SOUNDS.length - 1)];
@@ -376,7 +366,6 @@ function useResonanceCanvas(
       c.style.width = `${width}px`;
       c.style.height = `${height}px`;
 
-      // Reset transform before scaling to avoid compounding scales on resize
       ctx!.setTransform(1, 0, 0, 1, 0, 0);
       ctx!.scale(dpr, dpr);
     }
@@ -385,7 +374,6 @@ function useResonanceCanvas(
 
     const s = stateRef.current;
 
-    // Seed ambient motes once — they persist across every phase.
     if (s.motes.length === 0) {
       const count = reduced ? 14 : 34;
       for (let i = 0; i < count; i++) {
@@ -399,7 +387,6 @@ function useResonanceCanvas(
         });
       }
     }
-
 
     function spawnDust() {
       s.dust.push({
@@ -491,20 +478,15 @@ function useResonanceCanvas(
       const count = reduced ? 10 : 20;
 
       for (let i = 0; i < count; i++) {
-        // Accurate 3D spherical projection
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
         const speed = 90 + Math.random() * 170;
 
-        // Spherical to Cartesian coordinates (y is up/down in 2D)
         const vx3d = speed * Math.sin(phi) * Math.cos(theta);
         const vy3d = speed * Math.cos(phi);
         const vz3d = speed * Math.sin(phi) * Math.sin(theta);
 
-        // Depth projection for size and opacity
-        const depth = (vz3d / speed + 1) / 2; // 0..1
-
-        // Mix white randomly for glowing core effect
+        const depth = (vz3d / speed + 1) / 2;
         const particleColor = Math.random() > 0.85 ? '255,255,255' : color;
 
         s.sparks.push({
@@ -567,52 +549,6 @@ function useResonanceCanvas(
       }
     }
 
-    function drawAurora(t: number, dt: number) {
-      ctx!.globalCompositeOperation = 'lighter';
-      const bands = 3;
-      for (let b = 0; b < bands; b++) {
-        const freq = 0.0016 + b * 0.0006;
-        const amp = 60 + b * 26;
-        const yBase = height * (0.28 + b * 0.14);
-        const grad = ctx!.createLinearGradient(0, 0, width, 0);
-        const hue = b % 2 === 0 ? '110,230,210' : '170,140,255';
-        grad.addColorStop(0, `rgba(${hue},0)`);
-        grad.addColorStop(0.5, `rgba(${hue},0.16)`);
-        grad.addColorStop(1, `rgba(${hue},0)`);
-        ctx!.strokeStyle = grad;
-        ctx!.lineWidth = 26 + b * 10;
-        ctx!.beginPath();
-        for (let x = 0; x <= width; x += 12) {
-          const y =
-            yBase +
-            Math.sin(x * freq + t * 0.6 + b * 2) * amp +
-            Math.sin(x * freq * 2.3 - t * 0.3) * amp * 0.3;
-          if (x === 0) ctx!.moveTo(x, y);
-          else ctx!.lineTo(x, y);
-        }
-        ctx!.stroke();
-      }
-
-      // Embers
-      if (Math.random() < dt * 1.4) spawnEmber();
-      for (let i = s.embers.length - 1; i >= 0; i--) {
-        const e = s.embers[i];
-        e.life += dt;
-        e.y += e.vy * dt;
-        e.wobble += e.wobbleSpeed * dt;
-        const x = e.x + Math.sin(e.wobble) * 10;
-        const alpha = Math.max(0, 1 - e.life / e.maxLife) * 0.7;
-        const glow = ctx!.createRadialGradient(x, e.y, 0, x, e.y, e.r * 5);
-        glow.addColorStop(0, `rgba(255,220,170,${alpha})`);
-        glow.addColorStop(1, 'rgba(255,220,170,0)');
-        ctx!.fillStyle = glow;
-        ctx!.beginPath();
-        ctx!.arc(x, e.y, e.r * 5, 0, Math.PI * 2);
-        ctx!.fill();
-        if (e.life > e.maxLife) s.embers.splice(i, 1);
-      }
-    }
-
     function drawMeteors(t: number, dt: number) {
       if (t > s.nextMeteorAt && s.meteors.length < 20) {
         spawnMeteor();
@@ -627,7 +563,6 @@ function useResonanceCanvas(
         m.trail.push({ x: m.x, y: m.y });
         if (m.trail.length > 14) m.trail.shift();
 
-        // Stardust along tail
         if (Math.random() < 0.6 && s.sparks.length < 20) {
           s.sparks.push({
             x: m.x + (Math.random() - 0.5) * 10,
@@ -642,7 +577,6 @@ function useResonanceCanvas(
           });
         }
 
-        // Tail — fading gradient line built from the trail.
         for (let j = 1; j < m.trail.length; j++) {
           const a = m.trail[j - 1];
           const bpt = m.trail[j];
@@ -655,7 +589,6 @@ function useResonanceCanvas(
           ctx!.stroke();
         }
 
-        // Bright head
         const glow = ctx!.createRadialGradient(m.x, m.y, 0, m.x, m.y, 9);
         glow.addColorStop(0, 'rgba(255,255,255,0.95)');
         glow.addColorStop(0.4, 'rgba(190,220,255,0.6)');
@@ -670,11 +603,10 @@ function useResonanceCanvas(
         }
       }
 
-      // Render stardust particles
       for (let i = s.sparks.length - 1; i >= 0; i--) {
         const sp = s.sparks[i];
         sp.age += dt;
-        sp.vx *= 1 - dt * 0.6; // drag
+        sp.vx *= 1 - dt * 0.6;
         sp.vy *= 1 - dt * 0.6;
         sp.x += sp.vx * dt;
         sp.y += sp.vy * dt;
@@ -716,15 +648,12 @@ function useResonanceCanvas(
     function drawLightning(t: number, dt: number) {
       if (t > s.nextBoltAt) {
         spawnBolt();
-        // playLightningStrikeSFX is a module-level function
         try { playLightningStrikeSFX(); } catch (e) {}
         s.nextBoltAt = t + (reduced ? 1.4 : 0.6 + Math.random() * 0.7);
       }
 
-      // Atmospheric flash
       if (s.flash > 0) {
         ctx!.globalCompositeOperation = 'lighter';
-        // Neon-purple atmospheric flash
         ctx!.fillStyle = `rgba(190,40,255,${s.flash * 0.35})`;
         ctx!.fillRect(0, 0, width, height);
         s.flash = Math.max(0, s.flash - dt * 1.8);
@@ -741,7 +670,6 @@ function useResonanceCanvas(
         }
         const paths = [bolt.points, ...bolt.branches];
         for (const path of paths) {
-          // Wide neon-purple soft glow pass
           ctx!.strokeStyle = `rgba(190,40,255,${alpha * 0.6})`;
           ctx!.lineWidth = 10;
           ctx!.lineJoin = 'round';
@@ -750,7 +678,7 @@ function useResonanceCanvas(
             idx === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y)
           );
           ctx!.stroke();
-          // Bright core pass
+
           ctx!.strokeStyle = `rgba(245,200,255,${alpha})`;
           ctx!.lineWidth = 2;
           ctx!.beginPath();
@@ -776,8 +704,8 @@ function useResonanceCanvas(
 
       for (let i = s.rockets.length - 1; i >= 0; i--) {
         const r = s.rockets[i];
-        r.vy += 260 * dt; // gravity
-        r.vx *= 1 - dt * 0.2; // drag
+        r.vy += 260 * dt;
+        r.vx *= 1 - dt * 0.2;
         r.x += r.vx * dt;
         r.y += r.vy * dt;
         r.trail.push({ x: r.x, y: r.y });
@@ -807,8 +735,8 @@ function useResonanceCanvas(
       for (let i = s.sparks.length - 1; i >= 0; i--) {
         const sp = s.sparks[i];
         sp.age += dt;
-        sp.vy += 130 * dt; // gravity
-        sp.vx *= 1 - dt * 0.6; // drag
+        sp.vy += 130 * dt;
+        sp.vx *= 1 - dt * 0.6;
         sp.vy *= 1 - dt * 0.35;
         sp.x += sp.vx * dt;
         sp.y += sp.vy * dt;
@@ -824,7 +752,6 @@ function useResonanceCanvas(
           continue;
         }
 
-        // Draw trailing path with lighter blending
         for (let j = 1; j < sp.trail.length; j++) {
           const a = sp.trail[j - 1];
           const bpt = sp.trail[j];
@@ -838,7 +765,6 @@ function useResonanceCanvas(
           ctx!.stroke();
         }
 
-        // Core glow
         const glow = ctx!.createRadialGradient(
           sp.x,
           sp.y,
@@ -864,12 +790,11 @@ function useResonanceCanvas(
         return;
       }
       let dt = (now - last) / 1000;
-      dt = Math.min(dt, 1 / 30); // clamp to avoid huge jumps on tab-back
+      dt = Math.min(dt, 1 / 30);
       last = now;
       s.elapsed += dt;
 
       ctx!.globalCompositeOperation = 'source-over';
-      // Soft trailing clear for motion-blur-esque persistence.
       ctx!.fillStyle = 'rgba(5,4,14,0.28)';
       ctx!.fillRect(0, 0, width, height);
 
@@ -919,8 +844,6 @@ export default function LuckyGenerator() {
 
   const rollRef = useRef<number | null>(null);
 
-  // Hydrate from localStorage on mount (client only — avoids hydration
-  // mismatches since the server has no notion of "today" for this user).
   useEffect(() => {
     buildUpAudioRef.current = new Audio('/freesound_community-starship-rail-gun-charge-35904.mp3');
 
@@ -951,11 +874,12 @@ export default function LuckyGenerator() {
     try {
       playClickSFX();
     } catch (e) {
-      // Ignore if audio context fails
+      // Ignore
     }
 
     if (buildUpAudioRef.current) {
       buildUpAudioRef.current.loop = true;
+      buildUpAudioRef.current.currentTime = 0;
       buildUpAudioRef.current.play().catch(() => {});
     }
 
@@ -974,16 +898,13 @@ export default function LuckyGenerator() {
     setDisplayScore(0);
     setPhase('revealing');
 
-    const reduced = prefersReducedMotion();
-
     const duration = 9000;
-    const start = performance.now();
+    const startTime = Date.now();
 
-    function tick(now: number) {
-      const elapsed = now - start;
+    function tick() {
+      const elapsed = Date.now() - startTime;
       const t = Math.min(1, elapsed / duration);
 
-      // easeOutBack with overshoot
       const c1 = 1.70158;
       const c3 = c1 + 1;
       const eased = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
@@ -995,12 +916,13 @@ export default function LuckyGenerator() {
         rollRef.current = requestAnimationFrame(tick);
       } else {
         if (buildUpAudioRef.current) {
-          // Instantly pause and reset audio at 9000ms mark as per requirements
           buildUpAudioRef.current.pause();
           buildUpAudioRef.current.currentTime = 0;
         }
         rollRef.current = null;
-        setPhase('locked'); // Setting to 'locked' implicitly switches effectGroup to tier.id due to useMemo
+        setDisplayScore(newScore);
+        setPhase('locked');
+
         if (newScore <= 33) {
           try { playMeteorWhooshSFX(); } catch (e) {}
         } else if (newScore <= 66) {
@@ -1010,6 +932,7 @@ export default function LuckyGenerator() {
         }
       }
     }
+
     rollRef.current = requestAnimationFrame(tick);
   }, [phase]);
 
@@ -1035,14 +958,14 @@ export default function LuckyGenerator() {
         return;
       }
     } catch {
-      // user cancelled or share failed — fall through to clipboard
+      // Fall through to clipboard
     }
     try {
       await navigator.clipboard.writeText(`${text} ${shareData.url ?? ''}`.trim());
       setShareStatus('copied');
       window.setTimeout(() => setShareStatus('idle'), 2200);
     } catch {
-      // clipboard unavailable — silently no-op, nothing destructive to do
+      // Ignore
     }
   }, [tier, score]);
 
@@ -1055,7 +978,6 @@ export default function LuckyGenerator() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#05040e] text-white">
-      {/* Cinematic nebula background */}
       <div
         className="fixed inset-0 -z-20"
         style={{
@@ -1067,10 +989,8 @@ export default function LuckyGenerator() {
         }}
       />
 
-      {/* Interactive canvas layer */}
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none z-0" />
 
-      {/* Return to home */}
       <div className="relative z-10 flex justify-start p-4">
         <Link
           href="/"
@@ -1080,7 +1000,6 @@ export default function LuckyGenerator() {
         </Link>
       </div>
 
-      {/* Ritual card */}
       <main className="relative z-10 flex min-h-[80vh] items-center justify-center px-4 pb-12">
         <div
           className={`card-pulse ${pulseClass} w-[92%] max-w-sm rounded-2xl border-t border-white/15 bg-black/40 p-6 text-center backdrop-blur-xl motion-reduce:animate-none`}
@@ -1110,11 +1029,6 @@ export default function LuckyGenerator() {
                   {displayScore}%
                 </div>
               </div>
-              {quoteIndex !== null && (
-                <p className="text-sm italic leading-relaxed text-white/70">
-                  &ldquo;{QUOTES[quoteIndex]}&rdquo;
-                </p>
-              )}
             </div>
           )}
 
@@ -1126,6 +1040,11 @@ export default function LuckyGenerator() {
               <div className="text-7xl font-bold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-yellow-100 via-white to-cyan-200">
                 {score}%
               </div>
+              {quoteIndex !== null && (
+                <p className="text-sm italic leading-relaxed text-white/70">
+                  &ldquo;{QUOTES[quoteIndex]}&rdquo;
+                </p>
+              )}
               <div className="mt-1 w-full border-t border-white/10 pt-4">
                 <CountdownTimer />
               </div>
