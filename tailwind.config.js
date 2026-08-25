@@ -20,6 +20,7 @@ module.exports = {
         ]
       },
       animation: {
+        'glow-breathe': 'glow-breathe 3s ease-in-out infinite',
         'breathe': 'breathe 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'meteor': 'meteor 2s linear infinite',
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
@@ -47,6 +48,16 @@ module.exports = {
         'scale-dramatic-neon': 'scaleDramaticNeon 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
               },
       keyframes: {
+        'glow-breathe': {
+          '0%, 100%': {
+            filter: 'brightness(1)',
+            boxShadow: '0 0 4px rgba(56, 189, 248, 0.2)'
+          },
+          '50%': {
+            filter: 'brightness(1.25)',
+            boxShadow: '0 0 20px rgba(56, 189, 248, 0.6)'
+          },
+        },
         breathe: {
           '0%, 100%': { transform: 'scale(1)', opacity: '0.8' },
           '50%': { transform: 'scale(1.03)', opacity: '1' },
