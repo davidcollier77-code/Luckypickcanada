@@ -51,13 +51,19 @@ const preloadAllAudio = async (ctx: AudioContext) => {
   }
 };
 
-const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null) => {
+const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: number = 1.0) => {
   if (!buffer) return;
   const source = ctx.createBufferSource();
   source.buffer = buffer;
-  source.connect(ctx.destination);
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = volume;
+  source.connect(gainNode);
+  gainNode.connect(ctx.destination);
   source.start(0);
-  source.onended = () => source.disconnect();
+  source.onended = () => {
+    source.disconnect();
+    gainNode.disconnect();
+  };
 };
 
 export default function DailyResonance() {
@@ -73,6 +79,7 @@ export default function DailyResonance() {
   const requestRef = useRef<number>(0);
   const sequenceRef = useRef<number>(0);
 
+  const lastAudioTimeRef = useRef<number>(0);
   const initAudio = () => {
     let ctx = audioCtx;
     if (!ctx) {
@@ -212,10 +219,15 @@ export default function DailyResonance() {
     const MAX_PARTICLES = tier === 'Cosmic Lightning' ? 30 : 150; // Performance cap
 
     const loop = () => {
+      const now = Date.now();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (tier === 'Meteor Shower') {
         if (Math.random() < 0.1 && particles.length < MAX_PARTICLES) {
+          if (audioCtx && now - lastAudioTimeRef.current >= 600) {
+            playBuffer(audioCtx, audioBuffers['Meteor Shower'], 0.3);
+            lastAudioTimeRef.current = now;
+          }
           particles.push({
             x: Math.random() * canvas.width,
             y: -50,
@@ -246,6 +258,10 @@ export default function DailyResonance() {
         });
       } else if (tier === 'Cosmic Lightning') {
         if (Math.random() < 0.05 && particles.length < MAX_PARTICLES) {
+          if (audioCtx && now - lastAudioTimeRef.current >= 600) {
+            playBuffer(audioCtx, audioBuffers['Cosmic Lightning'], 0.3);
+            lastAudioTimeRef.current = now;
+          }
           const startX = Math.random() * canvas.width;
           const branches = [{ x: startX, y: 0 }];
           for (let i = 0; i < 10; i++) {
@@ -271,6 +287,10 @@ export default function DailyResonance() {
         });
       } else if (tier === 'Fireworks') {
         if (Math.random() < 0.02 && particles.length < MAX_PARTICLES) {
+          if (audioCtx && now - lastAudioTimeRef.current >= 600) {
+            playBuffer(audioCtx, audioBuffers['Fireworks'], 0.3);
+            lastAudioTimeRef.current = now;
+          }
           const startX = Math.random() * canvas.width;
           const startY = Math.random() * (canvas.height / 2);
           const colors = ['#ff5050', '#5a8cff', '#6eff96', '#c86eff', '#ffcd5a'];
@@ -309,7 +329,7 @@ export default function DailyResonance() {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [tier]);
+  }, [tier, audioCtx]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
