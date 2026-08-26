@@ -214,7 +214,7 @@ function ResonanceButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out active:scale-95 cursor-default"
+      className="btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
     >
       Reveal My Resonance
     </button>
@@ -977,7 +977,7 @@ export default function LuckyGenerator() {
       <div className="relative z-10 flex justify-start p-4 pt-12 sm:pt-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90 cursor-default"
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
         >
           <span aria-hidden>←</span> Return to Home
         </Link>
@@ -1043,7 +1043,7 @@ export default function LuckyGenerator() {
               </div>
               <button
                 onClick={handleShare}
-                className="mt-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm text-white/85 backdrop-blur-md transition hover:border-white/30 hover:bg-white/10 active:scale-95 cursor-default"
+                className="mt-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm text-white/85 backdrop-blur-md transition hover:border-white/30 hover:bg-white/10 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
               >
                 {shareStatus === 'copied' ? 'Copied ✓' : 'Share My Resonance'}
               </button>
