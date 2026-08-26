@@ -16,120 +16,48 @@ const LUCKY_QUOTES = [
   "Like maple sap rising in spring, your potential is ready to sweeten the day."
 ];
 
-// Audio API Synthesizers
-const playAudioEffect = (ctx: AudioContext, effect: string) => {
-  const t = ctx.currentTime;
 
-  if (effect === 'Meteor Shower') {
-    // Deep atmospheric re-entry whoosh (Filtered noise)
-    const bufferSize = ctx.sampleRate * 2;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+// Audio Buffers Cache
+const audioBuffers: Record<string, AudioBuffer | null> = {
+  buildup: null,
+  'Meteor Shower': null,
+  'Cosmic Lightning': null,
+  'Fireworks': null,
+};
 
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(100, t);
-    filter.frequency.exponentialRampToValueAtTime(1200, t + 1);
-    filter.frequency.exponentialRampToValueAtTime(100, t + 2);
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.5, t + 0.5);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 2);
-
-    noise.connect(filter).connect(gain).connect(ctx.destination);
-    noise.start(t);
-    noise.stop(t + 2);
-    noise.onended = () => { noise.disconnect(); filter.disconnect(); gain.disconnect(); };
+const loadAudioBuffer = async (ctx: AudioContext, url: string): Promise<AudioBuffer | null> => {
+  try {
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    return await ctx.decodeAudioData(arrayBuffer);
+  } catch (err) {
+    console.error('Failed to load audio:', url, err);
+    return null;
   }
+};
 
-  else if (effect === 'Cosmic Lightning') {
-    // Electrical snap/crackle + sub-kick
-    const osc = ctx.createOscillator();
-    osc.frequency.setValueAtTime(150, t);
-    osc.frequency.exponentialRampToValueAtTime(40, t + 0.5);
-
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(1, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
-
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t);
-    osc.stop(t + 0.5);
-    osc.onended = () => { osc.disconnect(); gain.disconnect(); };
-
-    // Crackle
-    for(let i=0; i<5; i++) {
-      const crackle = ctx.createOscillator();
-      crackle.type = 'square';
-      crackle.frequency.setValueAtTime(400 + Math.random()*1000, t + i*0.05);
-      const cGain = ctx.createGain();
-      cGain.gain.setValueAtTime(0.1, t + i*0.05);
-      cGain.gain.exponentialRampToValueAtTime(0.001, t + i*0.05 + 0.1);
-      crackle.connect(cGain).connect(ctx.destination);
-      crackle.start(t + i*0.05);
-      crackle.stop(t + i*0.05 + 0.1);
-      crackle.onended = () => { crackle.disconnect(); cGain.disconnect(); };
-    }
+const preloadAllAudio = async (ctx: AudioContext) => {
+  if (!audioBuffers.buildup) {
+    audioBuffers.buildup = await loadAudioBuffer(ctx, '/freesound_community-starship-rail-gun-charge-35904.mp3');
   }
-
-  else if (effect === 'Fireworks') {
-    // Ascending whistle
-    const whistle = ctx.createOscillator();
-    whistle.frequency.setValueAtTime(300, t);
-    whistle.frequency.exponentialRampToValueAtTime(1200, t + 1);
-    const wGain = ctx.createGain();
-    wGain.gain.setValueAtTime(0, t);
-    wGain.gain.linearRampToValueAtTime(0.2, t + 0.5);
-    wGain.gain.linearRampToValueAtTime(0, t + 1);
-    whistle.connect(wGain).connect(ctx.destination);
-    whistle.start(t);
-    whistle.stop(t + 1);
-    whistle.onended = () => { whistle.disconnect(); wGain.disconnect(); };
-
-    // Muffled burst thud
-    setTimeout(() => {
-      const thud = ctx.createOscillator();
-      thud.frequency.setValueAtTime(100, ctx.currentTime);
-      thud.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.8);
-      const tGain = ctx.createGain();
-      tGain.gain.setValueAtTime(0.8, ctx.currentTime);
-      tGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-      thud.connect(tGain).connect(ctx.destination);
-      thud.start(ctx.currentTime);
-      thud.stop(ctx.currentTime + 0.8);
-      thud.onended = () => { thud.disconnect(); tGain.disconnect(); };
-    }, 1000);
+  if (!audioBuffers['Meteor Shower']) {
+    audioBuffers['Meteor Shower'] = await loadAudioBuffer(ctx, '/dragon-studio-whoosh-cinematic-376875.mp3');
   }
-
-  // Aurora & Pulse included as ambient beds that can be triggered on init
-  else if (effect === 'Aurora Borealis') {
-    const osc = ctx.createOscillator();
-    const lfo = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.value = 220;
-    lfo.frequency.value = 0.5;
-
-    const lfoGain = ctx.createGain();
-    lfoGain.gain.value = 50;
-    lfo.connect(lfoGain).connect(osc.frequency);
-
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.1, t + 2);
-
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t);
-    lfo.start(t);
-    osc.stop(t + 5);
-    lfo.stop(t + 5);
-    osc.onended = () => { osc.disconnect(); lfo.disconnect(); lfoGain.disconnect(); gain.disconnect(); };
+  if (!audioBuffers['Cosmic Lightning']) {
+    audioBuffers['Cosmic Lightning'] = await loadAudioBuffer(ctx, '/yodguard-lightning-magic-3-378649.mp3');
   }
+  if (!audioBuffers['Fireworks']) {
+    audioBuffers['Fireworks'] = await loadAudioBuffer(ctx, '/freesound_community-fireworks-1-94483.mp3');
+  }
+};
+
+const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null) => {
+  if (!buffer) return;
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(ctx.destination);
+  source.start(0);
+  source.onended = () => source.disconnect();
 };
 
 export default function DailyResonance() {
@@ -139,9 +67,11 @@ export default function DailyResonance() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [tier, setTier] = useState<string>("");
   const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
+  const sequenceRef = useRef<number>(0);
 
   const initAudio = () => {
     let ctx = audioCtx;
@@ -156,8 +86,17 @@ export default function DailyResonance() {
     return ctx;
   };
 
-  const handleReveal = () => {
+  const handleReveal = async () => {
     const ctx = initAudio();
+    // Prevent concurrent sequences
+    if (isRevealed) return;
+    if (isLoading) return;
+
+    setIsLoading(true);
+
+    // Cancel any previous animation sequence
+    if (sequenceRef.current) cancelAnimationFrame(sequenceRef.current);
+
 
     // Collision Prevention Logic
     const lastPct = localStorage.getItem('lucky_lastPct');
@@ -184,33 +123,64 @@ export default function DailyResonance() {
     else if (newPct <= 66) currentTier = 'Cosmic Lightning';
     else currentTier = 'Fireworks';
 
-    setTier(currentTier);
-    setIsRevealed(true);
+    // Preload audio first
+    try {
+      await preloadAllAudio(ctx);
+    } finally {
+      setIsLoading(false);
+    }
 
-    playAudioEffect(ctx, currentTier);
-    playAudioEffect(ctx, 'Aurora Borealis'); // Background atmospheric hum
+    // Play buildup exactly at 0s
+    playBuffer(ctx, audioBuffers.buildup);
 
-    // Fluctuating Number Animation
+    // Strict 9 second cinematic sequence
+    const SEQUENCE_DURATION = 9000;
+    const IMPACT_TIME = 8800; // 8.8s frame for impact
+    const TENSION_TIME = 7500; // 7.5s tension shift
+
     let startTime: number | null = null;
-    const duration = 5000;
+    let impactPlayed = false;
+    let finalTierSet = false;
 
-    const animateNumber = (timestamp: number) => {
-      if (!startTime) startTime = timestamp; // Capture strictly on first frame
-      const progress = timestamp - startTime;
-      const t = Math.min(progress / duration, 1);
 
-      // Elastic easing (overshoot/undershoot)
-      const easeElasticOut = t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * ((2 * Math.PI) / 3)) + 1;
+    const sequenceLoop = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
 
-      setDisplayPercentage(Math.round(newPct * easeElasticOut));
-
-      if (progress < duration) {
-        requestAnimationFrame(animateNumber);
+      // Update displayed number based on phase
+      if (elapsed < TENSION_TIME) {
+        // Standard score roll build-up (0.0 - 7.5s)
+        setDisplayPercentage(Math.floor(Math.random() * 101));
+      } else if (elapsed < IMPACT_TIME) {
+        // High-speed tension roll (7.5 - 8.8s)
+        setDisplayPercentage(Math.floor(Math.random() * 101));
       } else {
+        // Final locked value
         setDisplayPercentage(newPct);
       }
+
+      // Impact Frame (8.8s)
+      if (elapsed >= IMPACT_TIME && !impactPlayed) {
+        impactPlayed = true;
+        // Trigger exact tier audio instantly without latency
+        playBuffer(ctx, audioBuffers[currentTier]);
+      }
+
+      // Impact Frame UI Transition (8.8s)
+      if (elapsed >= IMPACT_TIME && !finalTierSet) {
+        finalTierSet = true;
+        setTier(currentTier);
+        setIsRevealed(true);
+      }
+
+      if (elapsed < SEQUENCE_DURATION) {
+         sequenceRef.current = requestAnimationFrame(sequenceLoop);
+      } else {
+         setDisplayPercentage(newPct); // Ensure final state
+      }
     };
-    requestAnimationFrame(animateNumber);
+
+    sequenceRef.current = requestAnimationFrame(sequenceLoop);
   };
 
   const handleShare = async () => {
@@ -242,8 +212,7 @@ export default function DailyResonance() {
     const MAX_PARTICLES = tier === 'Cosmic Lightning' ? 30 : 150; // Performance cap
 
     const loop = () => {
-      ctx.fillStyle = 'rgba(10, 5, 20, 0.2)'; // Trailing clear
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (tier === 'Meteor Shower') {
         if (Math.random() < 0.1 && particles.length < MAX_PARTICLES) {
@@ -352,7 +321,7 @@ export default function DailyResonance() {
   }, [isRevealed, animateCanvas]);
 
   return (
-    <div className="relative w-full h-screen bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative w-full h-screen bg-transparent flex flex-col items-center justify-center overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
 
       <div className="absolute top-4 left-4 z-20">
@@ -361,7 +330,7 @@ export default function DailyResonance() {
         </Link>
       </div>
 
-      <div className="z-10 bg-slate-900/80 backdrop-blur-md p-8 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center max-w-md w-full mx-4">
+      <div className="z-10 bg-transparent backdrop-blur-md p-8 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center max-w-md w-full mx-4">
         {!isRevealed ? (
           <>
             <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>
