@@ -74,6 +74,8 @@ export default function DailyResonance() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [isRevealing, setIsRevealing] = useState(false);
   const [tier, setTier] = useState<string>("");
+  const [isLockedOut, setIsLockedOut] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState('');
   const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -99,6 +101,56 @@ export default function DailyResonance() {
     }
     return ctx;
   };
+
+
+  // Check for daily lockout on mount
+  useEffect(() => {
+    const lastDate = localStorage.getItem('lucky_lastDate');
+    const today = new Date().toLocaleDateString();
+
+    if (lastDate === today) {
+      const lastPct = localStorage.getItem('lucky_lastPct');
+      const lastQuoteIdx = localStorage.getItem('lucky_lastQuote');
+
+      if (lastPct && lastQuoteIdx) {
+        setIsLockedOut(true);
+        setPercentage(parseInt(lastPct, 10));
+        setDisplayPercentage(parseInt(lastPct, 10));
+        setQuote(LUCKY_QUOTES[parseInt(lastQuoteIdx, 10)]);
+
+        const pct = parseInt(lastPct, 10);
+        if (pct >= 95) setTier('Cosmic Lightning');
+        else if (pct >= 80) setTier('Fireworks');
+        else setTier('Meteor Shower');
+
+        setIsRevealed(true);
+      }
+    }
+  }, []);
+
+  // Timer logic for countdown until midnight local time
+  useEffect(() => {
+    if (!isLockedOut && !isRevealed) return;
+
+    const calculateTimeRemaining = () => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0); // Midnight tonight
+
+      const diff = midnight.getTime() - now.getTime();
+
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeRemaining(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+    };
+
+    calculateTimeRemaining(); // initial call
+    const timer = setInterval(calculateTimeRemaining, 1000);
+
+    return () => clearInterval(timer);
+  }, [isLockedOut, isRevealed]);
 
   const handleReveal = async () => {
     const ctx = initAudio();
@@ -142,8 +194,14 @@ export default function DailyResonance() {
       newQuoteIdx = Math.floor(Math.random() * LUCKY_QUOTES.length);
     } while (newQuoteIdx.toString() === lastQuote);
 
+    // We set the date to localStorage here to lockout immediately
+    const today = new Date().toLocaleDateString();
+    localStorage.setItem('lucky_lastDate', today);
     localStorage.setItem('lucky_lastPct', newPct.toString());
     localStorage.setItem('lucky_lastQuote', newQuoteIdx.toString());
+    // setIsLockedOut shouldn't be called until the animation sequence finishes,
+    // or we can call it now, and the UI handles it based on isRevealed and isRevealing.
+    // wait, we shouldn't change isLockedOut yet, otherwise the view might jump.
 
     // Store but do not reveal yet
     setPercentage(newPct);
@@ -473,19 +531,28 @@ export default function DailyResonance() {
         ) : (
           <div className="animate-fade-in flex flex-col items-center min-h-[16rem]">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
-            <div className="transition-all duration-1000 my-6 flex items-center justify-center min-w-[200px] border-2 border-transparent bg-transparent rounded-2xl p-6">
+            <div className={`animate-plasma-glow my-6 flex items-center justify-center min-w-[200px]`}>
               <div className="text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                 {displayPercentage}%
               </div>
             </div>
             <p className="text-slate-300 italic mb-8 min-h-[4rem]">"{quote}"</p>
 
-            <button
-              onClick={handleShare}
-              className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200"
-            >
-              Share My Resonance
-            </button>
+            { (isLockedOut || isRevealed) ? (
+              <div className="flex flex-col items-center mt-4">
+                <p className="text-slate-400 text-sm mb-2 uppercase tracking-widest">Next Resonance In</p>
+                <div className="text-3xl font-mono text-cyan-300 tracking-wider shadow-cyan-500/20 drop-shadow-md">
+                  {timeRemaining}
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={handleShare}
+                className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200"
+              >
+                Share My Resonance
+              </button>
+            )}
           </div>
         )}
       </div>
