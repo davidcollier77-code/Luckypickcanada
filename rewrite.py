@@ -245,7 +245,6 @@ function useResonanceCanvas(
   phaseRef: React.MutableRefObject<Phase>,
   pendingTierRef: React.MutableRefObject<Tier | null>,
   revealStartTimeRef: React.MutableRefObject<number>,
-  timeoutIdsRef: React.MutableRefObject<number[]>,
   audioRefs: {
     buildUp: React.MutableRefObject<HTMLAudioElement | null>,
     meteor: React.MutableRefObject<HTMLAudioElement | null>,
@@ -549,8 +548,7 @@ function useResonanceCanvas(
               const a = audioRefs.meteor.current; if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
               const clusterSize = reduced ? 4 : 15;
               for(let i=0; i<clusterSize; i++) {
-                const tid = setTimeout(() => spawnMeteor(true), Math.random() * 400);
-                timeoutIdsRef.current.push(tid);
+                setTimeout(() => spawnMeteor(true), Math.random() * 400); // Small deviation fine here
               }
               const speed = 1800;
               const angle = 45 * (Math.PI / 180);
@@ -563,23 +561,17 @@ function useResonanceCanvas(
             else if (tier.id === 3) {
               const a = audioRefs.lightning.current; if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
               spawnBolt(true);
-              const tid = setTimeout(() => spawnBolt(true), 150);
-              timeoutIdsRef.current.push(tid);
+              setTimeout(() => spawnBolt(true), 150);
               spawnBolt(false);
             }
             else if (tier.id === 4) {
               const a = audioRefs.firework.current; if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
               spawnRocket(true, width * 0.5, 750);
-              const tid1 = setTimeout(() => spawnRocket(true, width * 0.3, 600), 100);
-              const tid2 = setTimeout(() => spawnRocket(true, width * 0.7, 600), 150);
-              const tid3 = setTimeout(() => spawnRocket(true, width * 0.4, 700), 250);
-              const tid4 = setTimeout(() => spawnRocket(true, width * 0.6, 700), 300);
-              const tid5 = setTimeout(() => spawnRocket(true, width * 0.5, 850), 450);
-              timeoutIdsRef.current.push(tid1);
-              timeoutIdsRef.current.push(tid2);
-              timeoutIdsRef.current.push(tid3);
-              timeoutIdsRef.current.push(tid4);
-              timeoutIdsRef.current.push(tid5);
+              setTimeout(() => spawnRocket(true, width * 0.3, 600), 100);
+              setTimeout(() => spawnRocket(true, width * 0.7, 600), 150);
+              setTimeout(() => spawnRocket(true, width * 0.4, 700), 250);
+              setTimeout(() => spawnRocket(true, width * 0.6, 700), 300);
+              setTimeout(() => spawnRocket(true, width * 0.5, 850), 450);
             }
           }
         }
@@ -925,7 +917,7 @@ export default function LuckyGenerator() {
   }, [score]);
 
   useResonanceCanvas(
-      canvasRef, phaseRef, pendingTierRef, revealStartTimeRef, timeoutIds,
+      canvasRef, phaseRef, pendingTierRef, revealStartTimeRef,
       audioRefs, setDisplayScore, setImpactFired, pendingResultRef
   );
 
