@@ -82,6 +82,7 @@ export default function DailyResonance() {
   const sequenceRef = useRef<number>(0);
   const isAnimatingRef = useRef(false);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
+  const preRollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const bgRequestRef = useRef<number>(0);
   const activeAudioNodesRef = useRef<any[]>([]);
 
@@ -119,8 +120,13 @@ export default function DailyResonance() {
 
     // Instant pre-roll visual feedback
     const preRollInterval = setInterval(() => {
+      if (!isAnimatingRef.current) {
+        clearInterval(preRollInterval);
+        return;
+      }
       setDisplayPercentage(Math.floor(Math.random() * 101));
     }, 50);
+    preRollIntervalRef.current = preRollInterval;
 
     // Collision Prevention Logic
     const lastPct = localStorage.getItem('lucky_lastPct');
@@ -351,11 +357,13 @@ export default function DailyResonance() {
       if (!canSpawn && particles.length === 0) {
         // Fade out all active audio smoothly
         if (audioCtx && audioCtx.state === 'running') {
-           activeAudioNodesRef.current.forEach(({ gainNode }) => {
+          activeAudioNodesRef.current.forEach((node) => {
+            if (node?.gainNode) {
               try {
-                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 1.0);
+                node.gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 1.0);
               } catch (e) {}
-           });
+            }
+          });
         }
         return;
       }
@@ -366,6 +374,7 @@ export default function DailyResonance() {
 
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (preRollIntervalRef.current) clearInterval(preRollIntervalRef.current);
     };
   }, [tier, audioCtx]);
 
@@ -415,6 +424,11 @@ export default function DailyResonance() {
     const handleResize = () => {
       bgCanvas.width = window.innerWidth;
       bgCanvas.height = window.innerHeight;
+      // Reposition stars for new canvas dimensions
+      stars.forEach(star => {
+        if (star.x > bgCanvas.width) star.x = Math.random() * bgCanvas.width;
+        if (star.y > bgCanvas.height) star.y = Math.random() * bgCanvas.height;
+      });
     };
     window.addEventListener('resize', handleResize);
 
