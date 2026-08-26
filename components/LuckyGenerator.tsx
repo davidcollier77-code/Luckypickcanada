@@ -248,7 +248,8 @@ function useResonanceCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
   phaseRef: React.MutableRefObject<Phase>,
   pendingTierRef: React.MutableRefObject<Tier | null>,
-  revealStartTimeRef: React.MutableRefObject<number>
+  revealStartTimeRef: React.MutableRefObject<number>,
+  effectTimeoutsRef: React.MutableRefObject<ReturnType<typeof setTimeout>[]>
 ) {
   const stateRef = useRef({
     motes: [] as Mote[],
@@ -434,6 +435,8 @@ function useResonanceCanvas(
         s.impactFired = false;
         s.flash = 0;
         s.meteors = []; s.bolts = []; s.rockets = []; s.sparks = []; s.dust = [];
+        effectTimeoutsRef.current.forEach(clearTimeout);
+        effectTimeoutsRef.current = [];
       }
 
       ctx!.globalCompositeOperation = 'source-over';
@@ -480,10 +483,10 @@ function useResonanceCanvas(
             if (tier.id === 2) {
               const clusterSize = reduced ? 4 : 15;
               for(let i=0; i<clusterSize; i++) {
-                setTimeout(() => spawnMeteor(true), Math.random() * 400);
+                effectTimeoutsRef.current.push(setTimeout(() => spawnMeteor(true), Math.random() * 400));
               }
               // One giant central hero meteor
-              setTimeout(() => {
+              effectTimeoutsRef.current.push(setTimeout(() => {
                 const speed = 1800;
                 const angle = 45 * (Math.PI / 180);
                 s.meteors.push({
@@ -491,21 +494,21 @@ function useResonanceCanvas(
                   vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
                   len: 300, width: 8, trail: [], life: 0, isHero: true
                 });
-              }, 100);
+              }, 100));
             }
             else if (tier.id === 3) {
               spawnBolt(true);
-              setTimeout(() => spawnBolt(true), 150);
+              effectTimeoutsRef.current.push(setTimeout(() => spawnBolt(true), 150));
               spawnBolt(false);
             }
             else if (tier.id === 4) {
               // Staggered massive launch
               spawnRocket(true, width * 0.5, 750); // Central high
-              setTimeout(() => spawnRocket(true, width * 0.3, 600), 100);
-              setTimeout(() => spawnRocket(true, width * 0.7, 600), 150);
-              setTimeout(() => spawnRocket(true, width * 0.4, 700), 250);
-              setTimeout(() => spawnRocket(true, width * 0.6, 700), 300);
-              setTimeout(() => spawnRocket(true, width * 0.5, 850), 450); // Grand finale
+              effectTimeoutsRef.current.push(setTimeout(() => spawnRocket(true, width * 0.3, 600), 100));
+              effectTimeoutsRef.current.push(setTimeout(() => spawnRocket(true, width * 0.7, 600), 150));
+              effectTimeoutsRef.current.push(setTimeout(() => spawnRocket(true, width * 0.4, 700), 250));
+              effectTimeoutsRef.current.push(setTimeout(() => spawnRocket(true, width * 0.6, 700), 300));
+              effectTimeoutsRef.current.push(setTimeout(() => spawnRocket(true, width * 0.5, 850), 450)); // Grand finale
             }
           }
         }
@@ -696,7 +699,7 @@ function useResonanceCanvas(
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [canvasRef, phaseRef, pendingTierRef, revealStartTimeRef]);
+  }, [canvasRef, phaseRef, pendingTierRef, revealStartTimeRef, effectTimeoutsRef]);
 }
 
 // ---------------------------------------------------------------------------
@@ -724,6 +727,8 @@ export default function LuckyGenerator() {
   const spinIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const impactTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const effectTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   
   // Mutable refs to keep canvas decoupled from React render cycle
   const phaseRef = useRef<Phase>('idle');
@@ -756,6 +761,9 @@ export default function LuckyGenerator() {
       if (spinIntervalRef.current) clearInterval(spinIntervalRef.current);
       if (impactTimeoutRef.current) clearTimeout(impactTimeoutRef.current);
       if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
+      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+      effectTimeoutsRef.current.forEach(clearTimeout);
+      effectTimeoutsRef.current = [];
     };
   }, []);
 
@@ -801,15 +809,15 @@ export default function LuckyGenerator() {
     spinIntervalRef.current = setInterval(spinFn, SPIN_INTERVAL_MS);
 
     // Tension point
-    setTimeout(() => {
+    effectTimeoutsRef.current.push(setTimeout(() => {
       if (spinIntervalRef.current && phaseRef.current === 'revealing') {
         clearInterval(spinIntervalRef.current);
         spinIntervalRef.current = setInterval(spinFn, SPIN_INTERVAL_FAST_MS);
       }
-    }, TENSION_TIME_MS);
+    }, TENSION_TIME_MS));
 
     // Audio fade
-    setTimeout(() => {
+    effectTimeoutsRef.current.push(setTimeout(() => {
       if (buildUpAudioRef.current && phaseRef.current === 'revealing') {
          // Create a fade out interval
          const audio = buildUpAudioRef.current;
@@ -819,11 +827,11 @@ export default function LuckyGenerator() {
          const stepTime = fadeDuration / fadeSteps;
          let currentStep = 0;
 
-         const fadeInterval = setInterval(() => {
+         if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
          fadeIntervalRef.current = setInterval(() => {
-            const fadeInterval = fadeIntervalRef.current;
+            currentStep++;
             if (currentStep >= fadeSteps) {
-               clearInterval(fadeInterval);
+               if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
                audio.volume = 0;
                audio.pause();
             } else {
@@ -831,7 +839,7 @@ export default function LuckyGenerator() {
             }
          }, stepTime);
       }
-    }, FADE_START_MS);
+    }, FADE_START_MS));
 
     // IMPACT POINT: Sync Audio, Stop Spin, Flash Number
     impactTimeoutRef.current = setTimeout(() => {
@@ -892,7 +900,7 @@ export default function LuckyGenerator() {
     } catch {}
   }, [score]);
 
-  useResonanceCanvas(canvasRef, phaseRef, pendingTierRef, revealStartTimeRef);
+  useResonanceCanvas(canvasRef, phaseRef, pendingTierRef, revealStartTimeRef, effectTimeoutsRef);
 
   const pulseClass = phase === 'idle'
      ? 'card-pulse-idle'
