@@ -73,6 +73,7 @@ export default function DailyResonance() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
   const sequenceRef = useRef<number>(0);
+  const isAnimatingRef = useRef(false);
 
   const initAudio = () => {
     let ctx = audioCtx;
@@ -88,11 +89,14 @@ export default function DailyResonance() {
   };
 
   const handleReveal = async () => {
+    if (isAnimatingRef.current) return;
+    isAnimatingRef.current = true;
+
     const ctx = initAudio();
     // Prevent concurrent sequences
-    if (isRevealed) return;
-    if (isLoading) return;
-    if (isRevealing) return;
+    if (isRevealed) { isAnimatingRef.current = false; return; }
+    if (isLoading) { isAnimatingRef.current = false; return; }
+    if (isRevealing) { isAnimatingRef.current = false; return; }
 
     setIsLoading(true);
     setIsRevealing(true);
@@ -175,16 +179,16 @@ export default function DailyResonance() {
         setTier(currentTier);
         setQuote(LUCKY_QUOTES[newQuoteIdx]);
         setIsRevealed(true);
-        setIsRevealing(false);
       }
+
       if (elapsed < SEQUENCE_DURATION) {
          sequenceRef.current = requestAnimationFrame(sequenceLoop);
       } else {
          setDisplayPercentage(newPct); // Ensure final state
-      }
-    };
          setIsRevealing(false);
          isAnimatingRef.current = false;
+      }
+    };
 
     sequenceRef.current = requestAnimationFrame(sequenceLoop);
   };
