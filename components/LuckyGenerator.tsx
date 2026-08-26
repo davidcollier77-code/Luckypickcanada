@@ -209,14 +209,15 @@ const CountdownTimer = memo(function CountdownTimer() {
 // Resonance button
 // ---------------------------------------------------------------------------
 
-function ResonanceButton({ onClick }: { onClick: () => void }) {
+function ResonanceButton({ onClick, disabled }: { onClick: () => void, disabled: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out active:scale-95 cursor-default"
+      disabled={disabled}
+      className={`btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out active:scale-95 cursor-default ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
-      Reveal My Resonance
+      {disabled ? 'Loading...' : 'Reveal My Resonance'}
     </button>
   );
 }
@@ -522,11 +523,7 @@ function useResonanceCanvas(
           }
 
           if (buildUpSourceRef.current) {
-             try {
-               buildUpSourceRef.current.stop();
-             } catch {
-               // Source may have already stopped
-             }
+             try { buildUpSourceRef.current.stop(); } catch(e) {}
              buildUpSourceRef.current.disconnect();
              buildUpSourceRef.current = null;
           }
@@ -540,8 +537,12 @@ function useResonanceCanvas(
                 const source = audioCtxRef.current.createBufferSource();
                 source.buffer = audioBuffersRef.current[key];
                 source.connect(audioCtxRef.current.destination);
+                source.onended = () => {
+                  source.disconnect();
+                  const index = activeSourcesRef.current.indexOf(source);
+                  if (index > -1) activeSourcesRef.current.splice(index, 1);
+                };
                 activeSourcesRef.current.push(source);
-                source.onended = () => source.disconnect();
                 source.start(0);
              }
           };
@@ -776,12 +777,12 @@ export default function LuckyGenerator() {
   });
   const buildUpSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const buildUpGainRef = useRef<GainNode | null>(null);
-
   const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
-  const audioLoadingRef = useRef(0);
+
   const scoreTextRef = useRef<HTMLDivElement>(null);
 
   const [phase, setPhase] = useState<Phase>('idle');
+  const [audioLoaded, setAudioLoaded] = useState(false);
   const [score, setScore] = useState<number | null>(null);
     const [quoteIndex, setQuoteIndex] = useState<number | null>(null);
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
@@ -816,7 +817,6 @@ export default function LuckyGenerator() {
     }
 
     const loadAudio = async (url: string, key: string) => {
-      audioLoadingRef.current++;
       try {
         const response = await fetch(url);
         const arrayBuffer = await response.arrayBuffer();
@@ -826,15 +826,17 @@ export default function LuckyGenerator() {
         }
       } catch (e) {
         console.error(`Failed to load audio: ${url}`, e);
-      } finally {
-        audioLoadingRef.current--;
       }
     };
 
-    loadAudio(BUILDUP_SOUND, 'buildUp');
-    loadAudio(METEOR_SOUNDS[0], 'meteor');
-    loadAudio(LIGHTNING_SOUNDS[0], 'lightning');
-    loadAudio(FIREWORKS_SOUNDS[0], 'firework');
+    Promise.all([
+      loadAudio(BUILDUP_SOUND, 'buildUp'),
+      loadAudio(METEOR_SOUNDS[0], 'meteor'),
+      loadAudio(LIGHTNING_SOUNDS[0], 'lightning'),
+      loadAudio(FIREWORKS_SOUNDS[0], 'firework'),
+    ]).then(() => {
+      setAudioLoaded(true);
+    });
 
     const stored = readStoredResonance();
     if (stored && stored.lastSpinDate === getLocalDateKey()) {
@@ -849,15 +851,12 @@ export default function LuckyGenerator() {
 
     return () => {
       if (buildUpSourceRef.current) {
-        try {
-          buildUpSourceRef.current.stop();
-        } catch {
-          // Source may have already stopped
-        }
+        try { buildUpSourceRef.current.stop(); } catch (e) {}
         buildUpSourceRef.current.disconnect();
+        buildUpSourceRef.current = null;
       }
       activeSourcesRef.current.forEach(source => {
-        try { source.stop(); } catch {}
+        try { source.stop(); } catch (e) {}
         source.disconnect();
       });
       activeSourcesRef.current = [];
@@ -870,10 +869,7 @@ export default function LuckyGenerator() {
   }, [clearAllTimers]);
 
   const handleReveal = useCallback(() => {
-    if (phase !== 'idle') return;
-    
-    // Guard against clicking before audio is ready
-    if (audioLoadingRef.current > 0) return;
+    if (phase !== 'idle' || !audioLoaded) return;
 
     if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
       audioCtxRef.current.resume();
@@ -881,9 +877,15 @@ export default function LuckyGenerator() {
 
     if (audioCtxRef.current && audioBuffersRef.current.buildUp) {
       if (buildUpSourceRef.current) {
-        buildUpSourceRef.current.stop();
+        try { buildUpSourceRef.current.stop(); } catch (e) {}
         buildUpSourceRef.current.disconnect();
+        buildUpSourceRef.current = null;
       }
+      activeSourcesRef.current.forEach(source => {
+        try { source.stop(); } catch (e) {}
+        source.disconnect();
+      });
+      activeSourcesRef.current = [];
       const source = audioCtxRef.current.createBufferSource();
       source.buffer = audioBuffersRef.current.buildUp;
       const gainNode = audioCtxRef.current.createGain();
@@ -1000,7 +1002,7 @@ export default function LuckyGenerator() {
               <h1 className="text-xl font-semibold tracking-wide text-white/90">
                 AWAKEN TODAY&apos;S RESONANCE
               </h1>
-              <ResonanceButton onClick={handleReveal} />
+              <ResonanceButton onClick={handleReveal} disabled={!audioLoaded} />
             </div>
           )}
 
