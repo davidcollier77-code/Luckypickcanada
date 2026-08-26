@@ -724,6 +724,8 @@ export default function LuckyGenerator() {
   const spinIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const impactTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   // Mutable refs to keep canvas decoupled from React render cycle
   const phaseRef = useRef<Phase>('idle');
@@ -756,6 +758,8 @@ export default function LuckyGenerator() {
       if (spinIntervalRef.current) clearInterval(spinIntervalRef.current);
       if (impactTimeoutRef.current) clearTimeout(impactTimeoutRef.current);
       if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
     };
   }, []);
 
@@ -809,7 +813,7 @@ export default function LuckyGenerator() {
     }, TENSION_TIME_MS);
 
     // Audio fade
-    setTimeout(() => {
+    fadeTimeoutRef.current = setTimeout(() => {
       if (buildUpAudioRef.current && phaseRef.current === 'revealing') {
          // Create a fade out interval
          const audio = buildUpAudioRef.current;
@@ -819,15 +823,15 @@ export default function LuckyGenerator() {
          const stepTime = fadeDuration / fadeSteps;
          let currentStep = 0;
 
-         const fadeInterval = setInterval(() => {
          fadeIntervalRef.current = setInterval(() => {
             const fadeInterval = fadeIntervalRef.current;
             if (currentStep >= fadeSteps) {
-               clearInterval(fadeInterval);
+               if (fadeInterval) clearInterval(fadeInterval);
                audio.volume = 0;
                audio.pause();
             } else {
                audio.volume = Math.max(0, startVolume * (1 - (currentStep / fadeSteps)));
+               currentStep++;
             }
          }, stepTime);
       }
