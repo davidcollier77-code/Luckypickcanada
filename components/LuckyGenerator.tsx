@@ -17,7 +17,6 @@ import React, {
   memo,
 } from 'react';
 import Link from 'next/link';
-import ResonanceButton from './ResonanceButton';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -42,9 +41,15 @@ interface Tier {
 
 const STORAGE_KEY = 'luckyPickCanada:dailyResonance';
 
+// Strict 9s reveal timer (never shortened for prefers-reduced-motion) and the
+// ~60ms cadence used to rapidly spin the displayed number during the reveal.
+const REVEAL_DURATION_MS = 9000;
+const SPIN_INTERVAL_MS = 60;
+
 const METEOR_SOUNDS = ['/dragon-studio-whoosh-cinematic-376875.mp3'];
 const LIGHTNING_SOUNDS = ['/yodguard-lightning-magic-3-378649.mp3'];
 const FIREWORKS_SOUNDS = ['/freesound_community-fireworks-1-94483.mp3'];
+const BUILDUP_SOUND = '/freesound_community-starship-rail-gun-charge-35904.mp3';
 
 const QUOTES: string[] = [
   'Like the Northern Lights dancing across the sky, your luck is uniquely yours today.',
@@ -55,6 +60,8 @@ const QUOTES: string[] = [
   'Deep as the Great Lakes and bright as the winter snow, your resonance is strong.',
   'Like an Inukshuk guiding the way, good fortune is pointing directly at you.',
   'No golden tickets needed here, just pure True North energy. Enjoy the ride!',
+  'As steadfast as the Rocky Mountains, your patience will bring reward.',
+  'Like maple sap rising in spring, your potential is ready to sweeten the day.',
 ];
 
 function getTier(score: number): Tier {
@@ -187,6 +194,22 @@ const CountdownTimer = memo(function CountdownTimer() {
 });
 
 // ---------------------------------------------------------------------------
+// Resonance button — inlined per spec (breathing pulse + tactile click)
+// ---------------------------------------------------------------------------
+
+function ResonanceButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out active:scale-95 cursor-default"
+    >
+      Reveal My Resonance
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Canvas VFX engine
 // ---------------------------------------------------------------------------
 
@@ -309,24 +332,33 @@ function playClickSFX() {
   osc.stop(t + 0.1);
 }
 
-function playMeteorWhooshSFX() {
-  const path = METEOR_SOUNDS[randomInt(0, METEOR_SOUNDS.length - 1)];
-  new Audio(path).play().catch(() => {});
+// These now play a preloaded, already-unlocked <audio> element (passed in
+// from the refs created on mount) instead of constructing `new Audio(path)`
+// on the fly — the latter is what mobile autoplay policy blocks when the
+// call happens outside a direct user gesture (e.g. from inside a timer or
+// the canvas RAF loop).
+function playMeteorWhooshSFX(audio: HTMLAudioElement | null) {
+  if (!audio) return;
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 }
 
-function playLightningStrikeSFX() {
-  const path = LIGHTNING_SOUNDS[randomInt(0, LIGHTNING_SOUNDS.length - 1)];
-  new Audio(path).play().catch(() => {});
+function playLightningStrikeSFX(audio: HTMLAudioElement | null) {
+  if (!audio) return;
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 }
 
-function playFireworkBoomSFX() {
-  const path = FIREWORKS_SOUNDS[randomInt(0, FIREWORKS_SOUNDS.length - 1)];
-  new Audio(path).play().catch(() => {});
+function playFireworkBoomSFX(audio: HTMLAudioElement | null) {
+  if (!audio) return;
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 }
 
 function useResonanceCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
-  effectGroup: EffectGroup
+  effectGroupRef: React.MutableRefObject<EffectGroup>,
+  lightningAudioRef: React.RefObject<HTMLAudioElement | null>
 ) {
   const stateRef = useRef({
     motes: [] as Mote[],
@@ -475,7 +507,8 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string) {
-      const count = reduced ? 10 : 20;
+      // Rule: max 15-20 sparks per explosion (was a fixed 20).
+      const count = reduced ? 10 : 15 + Math.floor(Math.random() * 6);
 
       for (let i = 0; i < count; i++) {
         const theta = Math.random() * Math.PI * 2;
@@ -648,7 +681,9 @@ function useResonanceCanvas(
     function drawLightning(t: number, dt: number) {
       if (t > s.nextBoltAt) {
         spawnBolt();
-        try { playLightningStrikeSFX(); } catch (e) {}
+        try {
+          playLightningStrikeSFX(lightningAudioRef.current);
+        } catch (e) {}
         s.nextBoltAt = t + (reduced ? 1.4 : 0.6 + Math.random() * 0.7);
       }
 
@@ -800,7 +835,9 @@ function useResonanceCanvas(
 
       drawMotes(dt);
 
-      switch (effectGroup) {
+      // Read from the ref (not a prop) so switching build-up -> finale never
+      // tears down and restarts this effect / the RAF loop below.
+      switch (effectGroupRef.current) {
         case 'idle':
           break;
         case 1:
@@ -825,7 +862,10 @@ function useResonanceCanvas(
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [canvasRef, effectGroup]);
+    // Intentionally NOT depending on the effectGroup value itself — only on
+    // the stable ref/canvas objects — so this setup (listeners + RAF loop)
+    // runs once and never unmounts when the tier/phase changes mid-roll.
+  }, [canvasRef, effectGroupRef, lightningAudioRef]);
 }
 
 // ---------------------------------------------------------------------------
@@ -834,7 +874,11 @@ function useResonanceCanvas(
 
 export default function LuckyGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const buildUpAudioRef = useRef<HTMLAudioElement | null>(null);
+  const meteorAudioRef = useRef<HTMLAudioElement | null>(null);
+  const lightningAudioRef = useRef<HTMLAudioElement | null>(null);
+  const fireworkAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [score, setScore] = useState<number | null>(null);
@@ -842,10 +886,29 @@ export default function LuckyGenerator() {
   const [quoteIndex, setQuoteIndex] = useState<number | null>(null);
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
 
-  const rollRef = useRef<number | null>(null);
+  // Holds the freshly-generated score/quote between click and the moment the
+  // 9s reveal actually completes — kept out of React state so nothing leaks
+  // into the UI (or localStorage) before the animation finishes.
+  const pendingResultRef = useRef<{ score: number; quoteIndex: number } | null>(
+    null
+  );
+  const spinIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    buildUpAudioRef.current = new Audio('/freesound_community-starship-rail-gun-charge-35904.mp3');
+    buildUpAudioRef.current = new Audio(BUILDUP_SOUND);
+    meteorAudioRef.current = new Audio(METEOR_SOUNDS[0]);
+    lightningAudioRef.current = new Audio(LIGHTNING_SOUNDS[0]);
+    fireworkAudioRef.current = new Audio(FIREWORKS_SOUNDS[0]);
+
+    [
+      buildUpAudioRef.current,
+      meteorAudioRef.current,
+      lightningAudioRef.current,
+      fireworkAudioRef.current,
+    ].forEach((a) => {
+      a.preload = 'auto';
+    });
 
     const stored = readStoredResonance();
     if (stored && stored.lastSpinDate === getLocalDateKey()) {
@@ -854,8 +917,27 @@ export default function LuckyGenerator() {
       setQuoteIndex(stored.lastQuoteIndex);
       setPhase('locked');
     }
+
     return () => {
-      if (rollRef.current) cancelAnimationFrame(rollRef.current);
+      // Ghost-audio prevention: if we unmount mid-roll (e.g. the user taps
+      // "Return to Home" during the 9-second reveal), stop everything.
+      [
+        buildUpAudioRef.current,
+        meteorAudioRef.current,
+        lightningAudioRef.current,
+        fireworkAudioRef.current,
+      ].forEach((a) => {
+        if (!a) return;
+        a.pause();
+        a.src = '';
+      });
+      buildUpAudioRef.current = null;
+      meteorAudioRef.current = null;
+      lightningAudioRef.current = null;
+      fireworkAudioRef.current = null;
+
+      if (spinIntervalRef.current) clearInterval(spinIntervalRef.current);
+      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
     };
   }, []);
 
@@ -863,10 +945,25 @@ export default function LuckyGenerator() {
     score,
   ]);
 
+  // 'revealing' always drives effect group 1 (the build-up look) regardless
+  // of tier — tier itself is intentionally still null at this point now that
+  // requirement 2 defers setScore() until the reveal completes, so the
+  // `phase === 'revealing'` check has to come before the `!tier` fallback.
   const effectGroup: EffectGroup =
-    phase === 'idle' || !tier ? 'idle' : phase === 'revealing' ? 1 : tier.id;
+    phase === 'idle'
+      ? 'idle'
+      : phase === 'revealing'
+      ? 1
+      : tier
+      ? tier.id
+      : 'idle';
 
-  useResonanceCanvas(canvasRef, effectGroup);
+  const effectGroupRef = useRef<EffectGroup>('idle');
+  useEffect(() => {
+    effectGroupRef.current = effectGroup;
+  }, [effectGroup]);
+
+  useResonanceCanvas(canvasRef, effectGroupRef, lightningAudioRef);
 
   const handleReveal = useCallback(() => {
     if (phase !== 'idle') return;
@@ -876,6 +973,22 @@ export default function LuckyGenerator() {
     } catch (e) {
       // Ignore
     }
+
+    // Mobile audio unlock: briefly play() then pause() every element inside
+    // this direct click handler so the .play() calls made later (inside the
+    // 9s timeout, and from the ambient lightning-strike loop) aren't blocked
+    // by mobile autoplay policy.
+    [
+      buildUpAudioRef.current,
+      meteorAudioRef.current,
+      lightningAudioRef.current,
+      fireworkAudioRef.current,
+    ].forEach((audio) => {
+      if (!audio) return;
+      audio.play().catch(() => {});
+      audio.pause();
+      audio.currentTime = 0;
+    });
 
     if (buildUpAudioRef.current) {
       buildUpAudioRef.current.loop = true;
@@ -887,53 +1000,63 @@ export default function LuckyGenerator() {
     const { score: newScore, quoteIndex: newQuoteIndex } =
       generateTodaysResonance(previous);
 
-    writeStoredResonance({
-      lastSpinDate: getLocalDateKey(),
-      lastScore: newScore,
-      lastQuoteIndex: newQuoteIndex,
-    });
+    // Calculated now, but NOT written to state/localStorage until the 9s
+    // timer below actually fires — see requirement 2.
+    pendingResultRef.current = { score: newScore, quoteIndex: newQuoteIndex };
 
-    setScore(newScore);
-    setQuoteIndex(newQuoteIndex);
     setDisplayScore(0);
     setPhase('revealing');
 
-    const duration = 9000;
-    const startTime = Date.now();
+    // Rapid slot-machine-style spin of the displayed number while we wait.
+    spinIntervalRef.current = setInterval(() => {
+      setDisplayScore(randomInt(0, 100));
+    }, SPIN_INTERVAL_MS);
 
-    function tick() {
-      const elapsed = Date.now() - startTime;
-      const t = Math.min(1, elapsed / duration);
-
-      const c1 = 1.70158;
-      const c3 = c1 + 1;
-      const eased = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-
-      const calculatedScore = Math.round(eased * newScore);
-      setDisplayScore(Math.min(100, Math.max(0, calculatedScore)));
-
-      if (t < 1) {
-        rollRef.current = requestAnimationFrame(tick);
-      } else {
-        if (buildUpAudioRef.current) {
-          buildUpAudioRef.current.pause();
-          buildUpAudioRef.current.currentTime = 0;
-        }
-        rollRef.current = null;
-        setDisplayScore(newScore);
-        setPhase('locked');
-
-        if (newScore <= 33) {
-          try { playMeteorWhooshSFX(); } catch (e) {}
-        } else if (newScore <= 66) {
-          try { playLightningStrikeSFX(); } catch (e) {}
-        } else {
-          try { playFireworkBoomSFX(); } catch (e) {}
-        }
+    // Strict wall-clock 9000ms via setTimeout — not requestAnimationFrame —
+    // so a throttled/backgrounded mobile tab can't cause this to skip ahead
+    // or resolve early the way the old RAF-delta math did.
+    revealTimeoutRef.current = setTimeout(() => {
+      if (spinIntervalRef.current) {
+        clearInterval(spinIntervalRef.current);
+        spinIntervalRef.current = null;
       }
-    }
 
-    rollRef.current = requestAnimationFrame(tick);
+      const pending = pendingResultRef.current;
+      if (!pending) return;
+
+      if (buildUpAudioRef.current) {
+        buildUpAudioRef.current.pause();
+        buildUpAudioRef.current.currentTime = 0;
+      }
+
+      if (pending.score <= 33) {
+        try {
+          playMeteorWhooshSFX(meteorAudioRef.current);
+        } catch (e) {}
+      } else if (pending.score <= 66) {
+        try {
+          playLightningStrikeSFX(lightningAudioRef.current);
+        } catch (e) {}
+      } else {
+        try {
+          playFireworkBoomSFX(fireworkAudioRef.current);
+        } catch (e) {}
+      }
+
+      writeStoredResonance({
+        lastSpinDate: getLocalDateKey(),
+        lastScore: pending.score,
+        lastQuoteIndex: pending.quoteIndex,
+      });
+
+      setScore(pending.score);
+      setQuoteIndex(pending.quoteIndex);
+      setDisplayScore(pending.score);
+      setPhase('locked');
+
+      pendingResultRef.current = null;
+      revealTimeoutRef.current = null;
+    }, REVEAL_DURATION_MS);
   }, [phase]);
 
   const handleShare = useCallback(async () => {
@@ -1064,13 +1187,17 @@ export default function LuckyGenerator() {
           0%,
           100% {
             transform: scale(1);
+            opacity: 0.88;
+            box-shadow: 0 0 18px 2px rgba(217, 70, 239, 0.35);
           }
           50% {
-            transform: scale(1.05);
+            transform: scale(1.045);
+            opacity: 1;
+            box-shadow: 0 0 34px 8px rgba(103, 232, 249, 0.55);
           }
         }
         .btn-pulse {
-          animation: pulseButton 2s ease-in-out infinite;
+          animation: pulseButton 2.8s ease-in-out infinite;
         }
         @keyframes pulseIdle {
           0%,
