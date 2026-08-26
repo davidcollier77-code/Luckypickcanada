@@ -116,12 +116,13 @@ export default function DailyResonance() {
         setIsLockedOut(true);
         setPercentage(parseInt(lastPct, 10));
         setDisplayPercentage(parseInt(lastPct, 10));
-        setQuote(LUCKY_QUOTES[parseInt(lastQuoteIdx, 10)]);
+        const quoteIdx = parseInt(lastQuoteIdx, 10);
+        setQuote(LUCKY_QUOTES[quoteIdx] || LUCKY_QUOTES[0]);
 
         const pct = parseInt(lastPct, 10);
-        if (pct >= 95) setTier('Cosmic Lightning');
-        else if (pct >= 80) setTier('Fireworks');
-        else setTier('Meteor Shower');
+        if (pct <= 33) setTier('Meteor Shower');
+        else if (pct <= 66) setTier('Cosmic Lightning');
+        else setTier('Fireworks');
 
         setIsRevealed(true);
       }
