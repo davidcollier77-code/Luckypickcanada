@@ -246,6 +246,7 @@ function useResonanceCanvas(
   audioBuffersRef: React.MutableRefObject<Record<string, AudioBuffer | null>>,
   buildUpSourceRef: React.MutableRefObject<AudioBufferSourceNode | null>,
   buildUpGainRef: React.MutableRefObject<GainNode | null>,
+  activeSourcesRef: React.MutableRefObject<AudioBufferSourceNode[]>,
   scoreTextRef: React.RefObject<HTMLDivElement>,
   setImpactFired: React.Dispatch<React.SetStateAction<boolean>>,
   pendingResultRef: React.MutableRefObject<{ score: number; quoteIndex: number; tier: Tier } | null>
@@ -521,7 +522,11 @@ function useResonanceCanvas(
           }
 
           if (buildUpSourceRef.current) {
-             buildUpSourceRef.current.stop();
+             try {
+               buildUpSourceRef.current.stop();
+             } catch {
+               // Source may have already stopped
+             }
              buildUpSourceRef.current.disconnect();
              buildUpSourceRef.current = null;
           }
@@ -535,6 +540,7 @@ function useResonanceCanvas(
                 const source = audioCtxRef.current.createBufferSource();
                 source.buffer = audioBuffersRef.current[key];
                 source.connect(audioCtxRef.current.destination);
+                activeSourcesRef.current.push(source);
                 source.onended = () => source.disconnect();
                 source.start(0);
              }
@@ -750,7 +756,7 @@ ctx!.globalCompositeOperation = 'source-over';
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [canvasRef, phaseRef, pendingTierRef, revealStartTimeRef, audioCtxRef, audioBuffersRef, buildUpSourceRef, buildUpGainRef, scoreTextRef, setImpactFired, pendingResultRef]);
+  }, [canvasRef, phaseRef, pendingTierRef, revealStartTimeRef, audioCtxRef, audioBuffersRef, buildUpSourceRef, buildUpGainRef, activeSourcesRef, scoreTextRef, setImpactFired, pendingResultRef]);
 }
 
 // ---------------------------------------------------------------------------
@@ -771,6 +777,8 @@ export default function LuckyGenerator() {
   const buildUpSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const buildUpGainRef = useRef<GainNode | null>(null);
 
+  const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
+  const audioLoadingRef = useRef(0);
   const scoreTextRef = useRef<HTMLDivElement>(null);
 
   const [phase, setPhase] = useState<Phase>('idle');
@@ -808,6 +816,7 @@ export default function LuckyGenerator() {
     }
 
     const loadAudio = async (url: string, key: string) => {
+      audioLoadingRef.current++;
       try {
         const response = await fetch(url);
         const arrayBuffer = await response.arrayBuffer();
@@ -817,6 +826,8 @@ export default function LuckyGenerator() {
         }
       } catch (e) {
         console.error(`Failed to load audio: ${url}`, e);
+      } finally {
+        audioLoadingRef.current--;
       }
     };
 
@@ -838,11 +849,21 @@ export default function LuckyGenerator() {
 
     return () => {
       if (buildUpSourceRef.current) {
-        buildUpSourceRef.current.stop();
+        try {
+          buildUpSourceRef.current.stop();
+        } catch {
+          // Source may have already stopped
+        }
         buildUpSourceRef.current.disconnect();
       }
+      activeSourcesRef.current.forEach(source => {
+        try { source.stop(); } catch {}
+        source.disconnect();
+      });
+      activeSourcesRef.current = [];
       if (audioCtxRef.current) {
         audioCtxRef.current.close();
+        audioCtxRef.current = null;
       }
       clearAllTimers();
     };
@@ -850,6 +871,9 @@ export default function LuckyGenerator() {
 
   const handleReveal = useCallback(() => {
     if (phase !== 'idle') return;
+    
+    // Guard against clicking before audio is ready
+    if (audioLoadingRef.current > 0) return;
 
     if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
       audioCtxRef.current.resume();
@@ -927,7 +951,7 @@ export default function LuckyGenerator() {
 
   useResonanceCanvas(
       canvasRef, phaseRef, pendingTierRef, revealStartTimeRef,
-      audioCtxRef, audioBuffersRef, buildUpSourceRef, buildUpGainRef, scoreTextRef, setImpactFired, pendingResultRef
+      audioCtxRef, audioBuffersRef, buildUpSourceRef, buildUpGainRef, activeSourcesRef, scoreTextRef, setImpactFired, pendingResultRef
   );
 
   const pulseClass = phase === 'idle'
