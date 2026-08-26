@@ -820,7 +820,8 @@ export default function LuckyGenerator() {
          let currentStep = 0;
 
          const fadeInterval = setInterval(() => {
-            currentStep++;
+         fadeIntervalRef.current = setInterval(() => {
+            const fadeInterval = fadeIntervalRef.current;
             if (currentStep >= fadeSteps) {
                clearInterval(fadeInterval);
                audio.volume = 0;
