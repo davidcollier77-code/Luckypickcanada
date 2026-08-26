@@ -52,7 +52,7 @@ const preloadAllAudio = async (ctx: AudioContext) => {
 };
 
 const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: number = 1.0) => {
-  if (!buffer) return;
+  if (!buffer) return null;
   const source = ctx.createBufferSource();
   source.buffer = buffer;
   const gainNode = ctx.createGain();
@@ -64,6 +64,7 @@ const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: numbe
     source.disconnect();
     gainNode.disconnect();
   };
+  return { source, gainNode };
 };
 
 export default function DailyResonance() {
@@ -80,6 +81,9 @@ export default function DailyResonance() {
   const requestRef = useRef<number>(0);
   const sequenceRef = useRef<number>(0);
   const isAnimatingRef = useRef(false);
+  const bgCanvasRef = useRef<HTMLCanvasElement>(null);
+  const bgRequestRef = useRef<number>(0);
+  const activeAudioNodesRef = useRef<any[]>([]);
 
   const lastAudioTimeRef = useRef<number>(0);
   const initAudio = () => {
@@ -107,9 +111,16 @@ export default function DailyResonance() {
     setIsLoading(true);
     setIsRevealing(true);
 
+    // Clear previous audio nodes
+    activeAudioNodesRef.current = [];
+
     // Cancel any previous animation sequence
     if (sequenceRef.current) cancelAnimationFrame(sequenceRef.current);
 
+    // Instant pre-roll visual feedback
+    const preRollInterval = setInterval(() => {
+      setDisplayPercentage(Math.floor(Math.random() * 101));
+    }, 50);
 
     // Collision Prevention Logic
     const lastPct = localStorage.getItem('lucky_lastPct');
@@ -141,10 +152,12 @@ export default function DailyResonance() {
       await preloadAllAudio(ctx);
     } finally {
       setIsLoading(false);
+      clearInterval(preRollInterval);
     }
 
     // Play buildup exactly at 0s
-    playBuffer(ctx, audioBuffers.buildup);
+    const buildupNode = playBuffer(ctx, audioBuffers.buildup);
+    if (buildupNode) activeAudioNodesRef.current.push(buildupNode);
 
     // Strict 9 second cinematic sequence
     const SEQUENCE_DURATION = 9000;
@@ -176,7 +189,8 @@ export default function DailyResonance() {
       if (elapsed >= IMPACT_TIME && !impactPlayed) {
         impactPlayed = true;
         // Trigger exact tier audio instantly without latency
-        playBuffer(ctx, audioBuffers[currentTier]);
+        const impactNode = playBuffer(ctx, audioBuffers[currentTier]);
+        if (impactNode) activeAudioNodesRef.current.push(impactNode);
       }
 
       // Impact Frame UI Transition (8.8s)
@@ -235,7 +249,8 @@ export default function DailyResonance() {
       if (tier === 'Meteor Shower') {
         if (Math.random() < 0.1 && particles.length < MAX_PARTICLES && canSpawn) {
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
-            playBuffer(audioCtx, audioBuffers['Meteor Shower'], 0.3);
+            const node = playBuffer(audioCtx, audioBuffers['Meteor Shower'], 0.3);
+            if (node) activeAudioNodesRef.current.push(node);
             lastAudioTimeRef.current = now;
           }
           particles.push({
@@ -269,7 +284,8 @@ export default function DailyResonance() {
       } else if (tier === 'Cosmic Lightning') {
         if (Math.random() < 0.05 && particles.length < MAX_PARTICLES && canSpawn) {
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
-            playBuffer(audioCtx, audioBuffers['Cosmic Lightning'], 0.3);
+            const node = playBuffer(audioCtx, audioBuffers['Cosmic Lightning'], 0.3);
+            if (node) activeAudioNodesRef.current.push(node);
             lastAudioTimeRef.current = now;
           }
           const startX = Math.random() * canvas.width;
@@ -298,7 +314,8 @@ export default function DailyResonance() {
       } else if (tier === 'Fireworks') {
         if (Math.random() < 0.02 && particles.length < MAX_PARTICLES && canSpawn) {
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
-            playBuffer(audioCtx, audioBuffers['Fireworks'], 0.3);
+            const node = playBuffer(audioCtx, audioBuffers['Fireworks'], 0.3);
+            if (node) activeAudioNodesRef.current.push(node);
             lastAudioTimeRef.current = now;
           }
           const startX = Math.random() * canvas.width;
@@ -331,7 +348,17 @@ export default function DailyResonance() {
         });
       }
 
-      if (!canSpawn && particles.length === 0) return;
+      if (!canSpawn && particles.length === 0) {
+        // Fade out all active audio smoothly
+        if (audioCtx && audioCtx.state === 'running') {
+           activeAudioNodesRef.current.forEach(({ gainNode }) => {
+              try {
+                gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 1.0);
+              } catch (e) {}
+           });
+        }
+        return;
+      }
       requestRef.current = requestAnimationFrame(loop);
     };
 
@@ -351,9 +378,57 @@ export default function DailyResonance() {
     if (isRevealed) animateCanvas();
   }, [isRevealed, animateCanvas]);
 
+  // Background Starfield Animation
+  useEffect(() => {
+    const bgCanvas = bgCanvasRef.current;
+    if (!bgCanvas) return;
+    const bgCtx = bgCanvas.getContext('2d');
+    if (!bgCtx) return;
+
+    bgCanvas.width = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
+
+    const stars = Array.from({ length: 150 }, () => ({
+      x: Math.random() * bgCanvas.width,
+      y: Math.random() * bgCanvas.height,
+      radius: Math.random() * 1.5 + 0.5,
+      alpha: Math.random(),
+      speed: Math.random() * 0.02 + 0.005,
+    }));
+
+    const drawBg = () => {
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      stars.forEach(star => {
+        star.alpha += star.speed;
+        if (star.alpha > 1 || star.alpha < 0.2) star.speed *= -1;
+
+        bgCtx.beginPath();
+        bgCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        bgCtx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+        bgCtx.fill();
+      });
+      bgRequestRef.current = requestAnimationFrame(drawBg);
+    };
+
+    drawBg();
+
+    const handleResize = () => {
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      if (bgRequestRef.current) cancelAnimationFrame(bgRequestRef.current);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   return (
-    <div className="relative w-full h-screen bg-transparent flex flex-col items-center justify-center overflow-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
+    <div className="relative w-full h-screen bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <canvas ref={bgCanvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
+      <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
 
       <div className="absolute top-4 left-4 z-20">
         <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90">
