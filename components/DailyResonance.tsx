@@ -119,6 +119,7 @@ export default function DailyResonance() {
     if (sequenceRef.current) cancelAnimationFrame(sequenceRef.current);
 
     // Instant pre-roll visual feedback
+    setDisplayPercentage(0);
     const preRollInterval = setInterval(() => {
       if (!isAnimatingRef.current) {
         clearInterval(preRollInterval);
@@ -354,18 +355,22 @@ export default function DailyResonance() {
         });
       }
 
-      if (!canSpawn && particles.length === 0) {
-        // Fade out all active audio smoothly
+      if (!canSpawn) {
+        // Fade out all active audio smoothly as soon as spawning stops
         if (audioCtx && audioCtx.state === 'running') {
           activeAudioNodesRef.current.forEach((node) => {
-            if (node?.gainNode) {
+            if (node?.gainNode && node.gainNode.gain.value > 0.01) {
               try {
-                node.gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 1.0);
+                node.gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5);
               } catch (e) {}
             }
           });
         }
-        return;
+
+        // Only stop the render loop when all particles are actually gone
+        if (particles.length === 0) {
+          return;
+        }
       }
       requestRef.current = requestAnimationFrame(loop);
     };
@@ -459,15 +464,19 @@ export default function DailyResonance() {
           </>
         ) : isRevealing ? (
            <div className="animate-fade-in flex flex-col items-center justify-center min-h-[16rem]">
-              <div className="text-7xl font-bold text-white my-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                {displayPercentage}%
+              <div className="animate-plasma-glow my-6 flex items-center justify-center min-w-[200px]">
+                <div className="text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                  {displayPercentage}%
+                </div>
               </div>
            </div>
         ) : (
           <div className="animate-fade-in flex flex-col items-center min-h-[16rem]">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
-            <div className="text-7xl font-bold text-white my-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-              {displayPercentage}%
+            <div className="transition-all duration-1000 my-6 flex items-center justify-center min-w-[200px] border-2 border-transparent bg-transparent rounded-2xl p-6">
+              <div className="text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                {displayPercentage}%
+              </div>
             </div>
             <p className="text-slate-300 italic mb-8 min-h-[4rem]">"{quote}"</p>
 
