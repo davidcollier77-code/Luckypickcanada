@@ -71,6 +71,7 @@ export default function DailyResonance() {
   const [displayPercentage, setDisplayPercentage] = useState(0);
   const [quote, setQuote] = useState("");
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
   const [tier, setTier] = useState<string>("");
   const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -98,8 +99,10 @@ export default function DailyResonance() {
     // Prevent concurrent sequences
     if (isRevealed) return;
     if (isLoading) return;
+    if (isRevealing) return;
 
     setIsLoading(true);
+    setIsRevealing(true);
 
     // Cancel any previous animation sequence
     if (sequenceRef.current) cancelAnimationFrame(sequenceRef.current);
@@ -121,8 +124,8 @@ export default function DailyResonance() {
     localStorage.setItem('lucky_lastPct', newPct.toString());
     localStorage.setItem('lucky_lastQuote', newQuoteIdx.toString());
 
+    // Store but do not reveal yet
     setPercentage(newPct);
-    setQuote(LUCKY_QUOTES[newQuoteIdx]);
 
     // Determine 3 Tiers
     let currentTier = '';
@@ -177,15 +180,18 @@ export default function DailyResonance() {
       if (elapsed >= IMPACT_TIME && !finalTierSet) {
         finalTierSet = true;
         setTier(currentTier);
+        setQuote(LUCKY_QUOTES[newQuoteIdx]);
         setIsRevealed(true);
+        setIsRevealing(false);
       }
-
       if (elapsed < SEQUENCE_DURATION) {
          sequenceRef.current = requestAnimationFrame(sequenceLoop);
       } else {
          setDisplayPercentage(newPct); // Ensure final state
       }
     };
+         setIsRevealing(false);
+         isAnimatingRef.current = false;
 
     sequenceRef.current = requestAnimationFrame(sequenceLoop);
   };
@@ -351,14 +357,20 @@ export default function DailyResonance() {
       </div>
 
       <div className="z-10 bg-transparent backdrop-blur-md p-8 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center max-w-md w-full mx-4">
-        {!isRevealed ? (
+        {!isRevealed && !isRevealing ? (
           <>
             <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>
             <h1 className="text-3xl font-light text-white mb-8">AWAKEN TODAY'S RESONANCE</h1>
             <ResonanceButton onClick={handleReveal} />
           </>
+        ) : isRevealing ? (
+           <div className="animate-fade-in flex flex-col items-center justify-center min-h-[16rem]">
+              <div className="text-7xl font-bold text-white my-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                {displayPercentage}%
+              </div>
+           </div>
         ) : (
-          <div className="animate-fade-in flex flex-col items-center">
+          <div className="animate-fade-in flex flex-col items-center min-h-[16rem]">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
             <div className="text-7xl font-bold text-white my-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
               {displayPercentage}%
