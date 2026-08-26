@@ -242,13 +242,11 @@ function useResonanceCanvas(
   phaseRef: React.MutableRefObject<Phase>,
   pendingTierRef: React.MutableRefObject<Tier | null>,
   revealStartTimeRef: React.MutableRefObject<number>,
-  audioRefs: {
-    buildUp: React.MutableRefObject<HTMLAudioElement | null>,
-    meteor: React.MutableRefObject<HTMLAudioElement | null>,
-    lightning: React.MutableRefObject<HTMLAudioElement | null>,
-    firework: React.MutableRefObject<HTMLAudioElement | null>,
-  },
-  setDisplayScore: React.Dispatch<React.SetStateAction<number>>,
+  audioCtxRef: React.MutableRefObject<AudioContext | null>,
+  audioBuffersRef: React.MutableRefObject<Record<string, AudioBuffer | null>>,
+  buildUpSourceRef: React.MutableRefObject<AudioBufferSourceNode | null>,
+  buildUpGainRef: React.MutableRefObject<GainNode | null>,
+  scoreTextRef: React.RefObject<HTMLDivElement>,
   setImpactFired: React.Dispatch<React.SetStateAction<boolean>>,
   pendingResultRef: React.MutableRefObject<{ score: number; quoteIndex: number; tier: Tier } | null>
 ) {
@@ -266,6 +264,7 @@ function useResonanceCanvas(
     impactTriggered: false,
     scoreLastUpdate: 0,
     scoreInterval: SPIN_INTERVAL_MS,
+    scheduledEvents: [] as {time: number, action: () => void}[],
     bgGradientCache: null as CanvasGradient | null,
   });
 
@@ -302,20 +301,7 @@ function useResonanceCanvas(
 
     const s = stateRef.current;
 
-    // Initialize stars
-    if (s.stars.length === 0) {
-      const starCount = reduced ? 50 : 200;
-      for (let i = 0; i < starCount; i++) {
-        s.stars.push({
-          x: Math.random() * window.innerWidth,
-          y: Math.random() * window.innerHeight,
-          r: 0.2 + Math.random() * 1.5,
-          phase: Math.random() * Math.PI * 2,
-          speed: 0.5 + Math.random() * 1.5,
-          baseAlpha: 0.2 + Math.random() * 0.8
-        });
-      }
-    }
+
 
     if (s.motes.length === 0) {
       const count = reduced ? 20 : 45;
@@ -467,32 +453,34 @@ function useResonanceCanvas(
         s.flash = 0;
         s.scoreInterval = SPIN_INTERVAL_MS;
         s.scoreLastUpdate = now;
-        s.meteors = []; s.bolts = []; s.rockets = []; s.sparks = []; s.dust = [];
+        s.meteors = []; s.bolts = []; s.rockets = []; s.sparks = []; s.dust = []; s.scheduledEvents = [];
       }
-
-      // Draw Background
-      ctx!.globalCompositeOperation = 'source-over';
-      if (s.bgGradientCache) {
-          ctx!.fillStyle = s.bgGradientCache;
-      } else {
-          ctx!.fillStyle = '#0c102b';
-      }
-      ctx!.fillRect(0, 0, width, height);
 
       const phase = phaseRef.current;
       const tier = pendingTierRef.current;
       let globalIntensity = 0;
-      let tReveal = 0;
+      let tReveal = phase === 'revealing' ? now - currentStart : 0;
+
+      // Execute scheduled events
+      for (let i = s.scheduledEvents.length - 1; i >= 0; i--) {
+        if (tReveal >= s.scheduledEvents[i].time) {
+          s.scheduledEvents[i].action();
+          s.scheduledEvents.splice(i, 1);
+        }
+      }
+
+      // Draw Background
+      ctx!.globalCompositeOperation = 'source-over';
+      ctx!.clearRect(0, 0, width, height);
 
       // Cinematic Timeline Logic
       if (phase === 'revealing') {
-        tReveal = now - currentStart;
         
         // 0 - 7000: Build up
         if (tReveal < TENSION_TIME_MS) {
           globalIntensity = tReveal / TENSION_TIME_MS;
           if (now - s.scoreLastUpdate > s.scoreInterval) {
-             setDisplayScore(randomInt(0, 100));
+             if (scoreTextRef.current) scoreTextRef.current.textContent = `${randomInt(0, 100)}%`;
              s.scoreLastUpdate = now;
           }
           if (tReveal > 5500 && tier && now > s.nextAmbientEffectAt) {
@@ -508,16 +496,14 @@ function useResonanceCanvas(
           s.scoreInterval = SPIN_INTERVAL_FAST_MS;
 
           if (now - s.scoreLastUpdate > s.scoreInterval) {
-             setDisplayScore(randomInt(0, 100));
+             if (scoreTextRef.current) scoreTextRef.current.textContent = `${randomInt(0, 100)}%`;
              s.scoreLastUpdate = now;
           }
 
           // Audio fade
-          const audio = audioRefs.buildUp.current;
-          if (audio) {
-             // Linear fade from 1 to 0 over the 800ms
+          if (buildUpGainRef.current) {
              const fadeProgress = (tReveal - TENSION_TIME_MS) / (IMPACT_TIME_MS - TENSION_TIME_MS);
-             audio.volume = Math.max(0, 1 - fadeProgress);
+             buildUpGainRef.current.gain.value = Math.max(0, 1 - fadeProgress);
           }
 
           // Darken slightly
@@ -531,21 +517,35 @@ function useResonanceCanvas(
           s.flash = 1.0;
 
           if (pendingResultRef.current) {
-             setDisplayScore(pendingResultRef.current.score);
+             if (scoreTextRef.current) scoreTextRef.current.textContent = `${pendingResultRef.current.score}%`;
           }
 
-          const audio = audioRefs.buildUp.current;
-          if (audio) {
-             audio.volume = 0;
-             audio.pause();
+          if (buildUpSourceRef.current) {
+             buildUpSourceRef.current.stop();
+             buildUpSourceRef.current.disconnect();
+             buildUpSourceRef.current = null;
           }
+          if (buildUpGainRef.current) {
+             buildUpGainRef.current.disconnect();
+             buildUpGainRef.current = null;
+          }
+
+          const playAudioBuffer = (key: string) => {
+             if (audioCtxRef.current && audioBuffersRef.current[key]) {
+                const source = audioCtxRef.current.createBufferSource();
+                source.buffer = audioBuffersRef.current[key];
+                source.connect(audioCtxRef.current.destination);
+                source.onended = () => source.disconnect();
+                source.start(0);
+             }
+          };
 
           if (tier) {
             if (tier.id === 2) {
-              const a = audioRefs.meteor.current; if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
+              playAudioBuffer('meteor');
               const clusterSize = reduced ? 4 : 15;
               for(let i=0; i<clusterSize; i++) {
-                setTimeout(() => spawnMeteor(true), Math.random() * 400); // Small deviation fine here
+                s.scheduledEvents.push({ time: tReveal + Math.random() * 400, action: () => spawnMeteor(true) }); // Small deviation fine here
               }
               const speed = 1800;
               const angle = 45 * (Math.PI / 180);
@@ -556,19 +556,19 @@ function useResonanceCanvas(
               });
             }
             else if (tier.id === 3) {
-              const a = audioRefs.lightning.current; if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
+              playAudioBuffer('lightning');
               spawnBolt(true);
-              setTimeout(() => spawnBolt(true), 150);
+              s.scheduledEvents.push({ time: tReveal + 150, action: () => spawnBolt(true) });
               spawnBolt(false);
             }
             else if (tier.id === 4) {
-              const a = audioRefs.firework.current; if (a) { a.currentTime = 0; a.play().catch(()=>{}); }
+              playAudioBuffer('firework');
               spawnRocket(true, width * 0.5, 750);
-              setTimeout(() => spawnRocket(true, width * 0.3, 600), 100);
-              setTimeout(() => spawnRocket(true, width * 0.7, 600), 150);
-              setTimeout(() => spawnRocket(true, width * 0.4, 700), 250);
-              setTimeout(() => spawnRocket(true, width * 0.6, 700), 300);
-              setTimeout(() => spawnRocket(true, width * 0.5, 850), 450);
+              s.scheduledEvents.push({ time: tReveal + 100, action: () => spawnRocket(true, width * 0.3, 600) });
+              s.scheduledEvents.push({ time: tReveal + 150, action: () => spawnRocket(true, width * 0.7, 600) });
+              s.scheduledEvents.push({ time: tReveal + 250, action: () => spawnRocket(true, width * 0.4, 700) });
+              s.scheduledEvents.push({ time: tReveal + 300, action: () => spawnRocket(true, width * 0.6, 700) });
+              s.scheduledEvents.push({ time: tReveal + 450, action: () => spawnRocket(true, width * 0.5, 850) });
             }
           }
         }
@@ -587,20 +587,7 @@ function useResonanceCanvas(
         globalIntensity = 0.2;
       }
 
-      // Draw Stars
-      ctx!.globalCompositeOperation = 'source-over';
-      for (let i = 0; i < s.stars.length; i++) {
-         const star = s.stars[i];
-         star.phase += dt * star.speed;
-         // Twinkle logic
-         const alpha = star.baseAlpha + Math.sin(star.phase) * 0.3;
-         if (alpha > 0) {
-             ctx!.fillStyle = `rgba(255, 255, 255, ${Math.min(1, alpha)})`;
-             ctx!.beginPath();
-             ctx!.arc(star.x | 0, star.y | 0, star.r, 0, Math.PI * 2);
-             ctx!.fill();
-         }
-      }
+ctx!.globalCompositeOperation = 'source-over';
 
       ctx!.globalCompositeOperation = 'lighter';
 
@@ -615,7 +602,7 @@ function useResonanceCanvas(
         const glow = ctx!.createRadialGradient(x, y, 0, x, y, m.r * 6);
         glow.addColorStop(0, `rgba(${m.hue === 'cyan' ? '120,220,255' : '170,120,255'},${baseAlpha})`);
         glow.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(x, y, m.r * 6, 0, Math.PI * 2); ctx!.fill();
+        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(x | 0, y | 0, m.r * 6, 0, Math.PI * 2); ctx!.fill();
       }
 
       // Dust
@@ -652,7 +639,7 @@ function useResonanceCanvas(
         glow.addColorStop(0.2, m.isHero ? 'rgba(200,240,255,1.0)' : 'rgba(220,240,255,0.9)');
         glow.addColorStop(0.5, m.isHero ? 'rgba(100,180,255,0.6)' : 'rgba(150,200,255,0.4)');
         glow.addColorStop(1, 'rgba(100,180,255,0)');
-        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx, cy, coreSize, 0, Math.PI * 2); ctx!.fill();
+        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx | 0, cy | 0, coreSize, 0, Math.PI * 2); ctx!.fill();
         
         if (m.isHero && Math.random() > 0.6) {
            spawnDust(m.x, m.y, true);
@@ -741,7 +728,7 @@ function useResonanceCanvas(
         const glow = ctx!.createRadialGradient(cx, cy, 0, cx, cy, sp.size * 3);
         glow.addColorStop(0, `rgba(${sp.color},${alpha})`); 
         glow.addColorStop(1, 'rgba(0,0,0,0)'); 
-        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx, cy, sp.size * 3, 0, Math.PI * 2); ctx!.fill();
+        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx | 0, cy | 0, sp.size * 3, 0, Math.PI * 2); ctx!.fill();
 
         if (sp.size > 2.5 && Math.random() > 0.8) {
            spawnDust(sp.x, sp.y);
@@ -763,7 +750,7 @@ function useResonanceCanvas(
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [canvasRef, phaseRef, pendingTierRef, revealStartTimeRef, audioRefs, setDisplayScore, setImpactFired, pendingResultRef]);
+  }, [canvasRef, phaseRef, pendingTierRef, revealStartTimeRef, audioCtxRef, audioBuffersRef, buildUpSourceRef, buildUpGainRef, scoreTextRef, setImpactFired, pendingResultRef]);
 }
 
 // ---------------------------------------------------------------------------
@@ -773,22 +760,22 @@ function useResonanceCanvas(
 export default function LuckyGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  const buildUpAudioRef = useRef<HTMLAudioElement | null>(null);
-  const meteorAudioRef = useRef<HTMLAudioElement | null>(null);
-  const lightningAudioRef = useRef<HTMLAudioElement | null>(null);
-  const fireworkAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  const audioRefs = useMemo(() => ({
-      buildUp: buildUpAudioRef,
-      meteor: meteorAudioRef,
-      lightning: lightningAudioRef,
-      firework: fireworkAudioRef
-  }), []);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioBuffersRef = useRef<Record<string, AudioBuffer | null>>({
+    buildUp: null,
+    meteor: null,
+    lightning: null,
+    firework: null,
+  });
+  const buildUpSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const buildUpGainRef = useRef<GainNode | null>(null);
+
+  const scoreTextRef = useRef<HTMLDivElement>(null);
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [score, setScore] = useState<number | null>(null);
-  const [displayScore, setDisplayScore] = useState(0);
-  const [quoteIndex, setQuoteIndex] = useState<number | null>(null);
+    const [quoteIndex, setQuoteIndex] = useState<number | null>(null);
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
   
   const [impactFired, setImpactFired] = useState(false);
@@ -815,18 +802,34 @@ export default function LuckyGenerator() {
   }, []);
 
   useEffect(() => {
-    buildUpAudioRef.current = new Audio(BUILDUP_SOUND);
-    meteorAudioRef.current = new Audio(METEOR_SOUNDS[0]);
-    lightningAudioRef.current = new Audio(LIGHTNING_SOUNDS[0]);
-    fireworkAudioRef.current = new Audio(FIREWORKS_SOUNDS[0]);
+    if (typeof window !== 'undefined' && !audioCtxRef.current) {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) audioCtxRef.current = new AudioCtx();
+    }
 
-    [buildUpAudioRef.current, meteorAudioRef.current, lightningAudioRef.current, fireworkAudioRef.current].forEach(a => { if (a) a.preload = 'auto'; });
+    const loadAudio = async (url: string, key: string) => {
+      try {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        if (audioCtxRef.current) {
+          const audioBuffer = await audioCtxRef.current.decodeAudioData(arrayBuffer);
+          audioBuffersRef.current[key] = audioBuffer;
+        }
+      } catch (e) {
+        console.error(`Failed to load audio: ${url}`, e);
+      }
+    };
+
+    loadAudio(BUILDUP_SOUND, 'buildUp');
+    loadAudio(METEOR_SOUNDS[0], 'meteor');
+    loadAudio(LIGHTNING_SOUNDS[0], 'lightning');
+    loadAudio(FIREWORKS_SOUNDS[0], 'firework');
 
     const stored = readStoredResonance();
     if (stored && stored.lastSpinDate === getLocalDateKey()) {
       const storedTier = getTier(stored.lastScore);
       setScore(stored.lastScore);
-      setDisplayScore(stored.lastScore);
+      if (scoreTextRef.current) scoreTextRef.current.textContent = `${stored.lastScore}%`;
       setQuoteIndex(stored.lastQuoteIndex);
       setPhase('locked');
       phaseRef.current = 'locked';
@@ -834,9 +837,13 @@ export default function LuckyGenerator() {
     }
 
     return () => {
-      [buildUpAudioRef.current, meteorAudioRef.current, lightningAudioRef.current, fireworkAudioRef.current].forEach(a => {
-        if (a) { a.pause(); a.src = ''; }
-      });
+      if (buildUpSourceRef.current) {
+        buildUpSourceRef.current.stop();
+        buildUpSourceRef.current.disconnect();
+      }
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close();
+      }
       clearAllTimers();
     };
   }, [clearAllTimers]);
@@ -844,25 +851,30 @@ export default function LuckyGenerator() {
   const handleReveal = useCallback(() => {
     if (phase !== 'idle') return;
 
-    // Silent Audio Unlock for Android
-    [meteorAudioRef.current, lightningAudioRef.current, fireworkAudioRef.current].forEach(audio => {
-      if (!audio) return;
-      audio.muted = true;
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.muted = false; 
-        }).catch(() => { audio.muted = false; });
-      }
-    });
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
 
-    if (buildUpAudioRef.current) {
-      buildUpAudioRef.current.loop = false; 
-      buildUpAudioRef.current.volume = 1.0;
-      buildUpAudioRef.current.currentTime = 0;
-      buildUpAudioRef.current.play().catch(() => {});
+    if (audioCtxRef.current && audioBuffersRef.current.buildUp) {
+      if (buildUpSourceRef.current) {
+        buildUpSourceRef.current.stop();
+        buildUpSourceRef.current.disconnect();
+      }
+      const source = audioCtxRef.current.createBufferSource();
+      source.buffer = audioBuffersRef.current.buildUp;
+      const gainNode = audioCtxRef.current.createGain();
+      source.connect(gainNode);
+      gainNode.connect(audioCtxRef.current.destination);
+
+      source.onended = () => {
+        source.disconnect();
+        gainNode.disconnect();
+      };
+
+      gainNode.gain.value = 1.0;
+      source.start(0);
+      buildUpSourceRef.current = source;
+      buildUpGainRef.current = gainNode;
     }
 
     const previous = readStoredResonance();
@@ -873,7 +885,7 @@ export default function LuckyGenerator() {
     pendingTierRef.current = newTier;
     revealStartTimeRef.current = performance.now();
     
-    setDisplayScore(0);
+    if (scoreTextRef.current) scoreTextRef.current.textContent = `0%`;
     setPhase('revealing');
     phaseRef.current = 'revealing';
     setImpactFired(false);
@@ -915,7 +927,7 @@ export default function LuckyGenerator() {
 
   useResonanceCanvas(
       canvasRef, phaseRef, pendingTierRef, revealStartTimeRef,
-      audioRefs, setDisplayScore, setImpactFired, pendingResultRef
+      audioCtxRef, audioBuffersRef, buildUpSourceRef, buildUpGainRef, scoreTextRef, setImpactFired, pendingResultRef
   );
 
   const pulseClass = phase === 'idle'
@@ -992,7 +1004,7 @@ export default function LuckyGenerator() {
                       {tierName}
                     </span>
                   )}
-                  {displayScore}%
+                  <span ref={scoreTextRef}>0%</span>
                 </div>
               </div>
             </div>
