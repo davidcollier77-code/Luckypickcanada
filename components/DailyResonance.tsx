@@ -51,13 +51,19 @@ const preloadAllAudio = async (ctx: AudioContext) => {
   }
 };
 
-const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null) => {
+const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: number = 1.0) => {
   if (!buffer) return;
   const source = ctx.createBufferSource();
   source.buffer = buffer;
-  source.connect(ctx.destination);
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = volume;
+  source.connect(gainNode);
+  gainNode.connect(ctx.destination);
   source.start(0);
-  source.onended = () => source.disconnect();
+  source.onended = () => {
+    source.disconnect();
+    gainNode.disconnect();
+  };
 };
 
 export default function DailyResonance() {
@@ -216,6 +222,7 @@ export default function DailyResonance() {
 
       if (tier === 'Meteor Shower') {
         if (Math.random() < 0.1 && particles.length < MAX_PARTICLES) {
+          if (audioCtx) playBuffer(audioCtx, audioBuffers['Meteor Shower'], 0.3);
           particles.push({
             x: Math.random() * canvas.width,
             y: -50,
@@ -246,6 +253,7 @@ export default function DailyResonance() {
         });
       } else if (tier === 'Cosmic Lightning') {
         if (Math.random() < 0.05 && particles.length < MAX_PARTICLES) {
+          if (audioCtx) playBuffer(audioCtx, audioBuffers['Cosmic Lightning'], 0.3);
           const startX = Math.random() * canvas.width;
           const branches = [{ x: startX, y: 0 }];
           for (let i = 0; i < 10; i++) {
@@ -271,6 +279,7 @@ export default function DailyResonance() {
         });
       } else if (tier === 'Fireworks') {
         if (Math.random() < 0.02 && particles.length < MAX_PARTICLES) {
+          if (audioCtx) playBuffer(audioCtx, audioBuffers['Fireworks'], 0.3);
           const startX = Math.random() * canvas.width;
           const startY = Math.random() * (canvas.height / 2);
           const colors = ['#ff5050', '#5a8cff', '#6eff96', '#c86eff', '#ffcd5a'];
@@ -309,7 +318,7 @@ export default function DailyResonance() {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [tier]);
+  }, [tier, audioCtx, audioBuffers]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
