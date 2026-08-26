@@ -177,13 +177,14 @@ export default function DailyResonance() {
         setIsRevealed(true);
         setIsRevealing(false);
       }
-
       if (elapsed < SEQUENCE_DURATION) {
          sequenceRef.current = requestAnimationFrame(sequenceLoop);
       } else {
          setDisplayPercentage(newPct); // Ensure final state
       }
     };
+         setIsRevealing(false);
+         isAnimatingRef.current = false;
 
     sequenceRef.current = requestAnimationFrame(sequenceLoop);
   };
