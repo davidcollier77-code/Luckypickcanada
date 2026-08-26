@@ -79,6 +79,7 @@ export default function DailyResonance() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
   const sequenceRef = useRef<number>(0);
+  const isAnimatingRef = useRef(false);
 
   const lastAudioTimeRef = useRef<number>(0);
   const initAudio = () => {
