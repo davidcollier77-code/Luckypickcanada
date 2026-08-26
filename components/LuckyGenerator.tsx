@@ -957,7 +957,7 @@ export default function LuckyGenerator() {
   const tierName = pendingTierRef.current?.name || '';
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#05040e] text-white">
+    <div className="relative min-h-screen w-full overflow-hidden bg-transparent text-white">
       {/* 1. Deep Space Base Layer is now drawn by canvas directly */}
       
       {/* 2. Ambient Nebula Glows */}
