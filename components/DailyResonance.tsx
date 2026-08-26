@@ -67,9 +67,11 @@ export default function DailyResonance() {
   const [isRevealed, setIsRevealed] = useState(false);
   const [tier, setTier] = useState<string>("");
   const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
+  const sequenceRef = useRef<number>(0);
 
   const initAudio = () => {
     let ctx = audioCtx;
@@ -86,6 +88,15 @@ export default function DailyResonance() {
 
   const handleReveal = async () => {
     const ctx = initAudio();
+    // Prevent concurrent sequences
+    if (isRevealed) return;
+    if (isLoading) return;
+
+    setIsLoading(true);
+
+    // Cancel any previous animation sequence
+    if (sequenceRef.current) cancelAnimationFrame(sequenceRef.current);
+
 
     // Collision Prevention Logic
     const lastPct = localStorage.getItem('lucky_lastPct');
@@ -113,7 +124,11 @@ export default function DailyResonance() {
     else currentTier = 'Fireworks';
 
     // Preload audio first
-    await preloadAllAudio(ctx);
+    try {
+      await preloadAllAudio(ctx);
+    } finally {
+      setIsLoading(false);
+    }
 
     // Play buildup exactly at 0s
     playBuffer(ctx, audioBuffers.buildup);
@@ -127,11 +142,6 @@ export default function DailyResonance() {
     let impactPlayed = false;
     let finalTierSet = false;
 
-    // Use a ref for the request animation frame to easily cancel it if needed
-    // We already have requestRef in the component, but let's use a local one for the sequence
-    // to avoid collision with canvas loop if it starts later, actually canvas loop uses it.
-    // Let's use a closure variable for it so we don't mess with the canvas one before it starts.
-    let seqRequestRef: number;
 
     const sequenceLoop = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
@@ -164,13 +174,13 @@ export default function DailyResonance() {
       }
 
       if (elapsed < SEQUENCE_DURATION) {
-         seqRequestRef = requestAnimationFrame(sequenceLoop);
+         sequenceRef.current = requestAnimationFrame(sequenceLoop);
       } else {
          setDisplayPercentage(newPct); // Ensure final state
       }
     };
 
-    seqRequestRef = requestAnimationFrame(sequenceLoop);
+    sequenceRef.current = requestAnimationFrame(sequenceLoop);
   };
 
   const handleShare = async () => {
