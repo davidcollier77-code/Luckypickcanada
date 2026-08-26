@@ -326,7 +326,7 @@ function playFireworkBoomSFX() {
 
 function useResonanceCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
-  effectGroup: EffectGroup
+  effectGroupRef: React.MutableRefObject<EffectGroup>
 ) {
   const stateRef = useRef({
     motes: [] as Mote[],
@@ -475,7 +475,7 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string) {
-      const count = reduced ? 10 : 20;
+      const count = reduced ? 8 : 15;
 
       for (let i = 0; i < count; i++) {
         const theta = Math.random() * Math.PI * 2;
@@ -563,7 +563,7 @@ function useResonanceCanvas(
         m.trail.push({ x: m.x, y: m.y });
         if (m.trail.length > 14) m.trail.shift();
 
-        if (Math.random() < 0.6 && s.sparks.length < 20) {
+        if (Math.random() < 0.6 && s.sparks.length < 15) {
           s.sparks.push({
             x: m.x + (Math.random() - 0.5) * 10,
             y: m.y + (Math.random() - 0.5) * 10,
@@ -800,7 +800,7 @@ function useResonanceCanvas(
 
       drawMotes(dt);
 
-      switch (effectGroup) {
+      switch (effectGroupRef.current) {
         case 'idle':
           break;
         case 1:
@@ -825,7 +825,7 @@ function useResonanceCanvas(
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [canvasRef, effectGroup]);
+  }, [canvasRef]);
 }
 
 // ---------------------------------------------------------------------------
@@ -835,6 +835,9 @@ function useResonanceCanvas(
 export default function LuckyGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const buildUpAudioRef = useRef<HTMLAudioElement | null>(null);
+  const meteorAudioRef = useRef<HTMLAudioElement | null>(null);
+  const lightningAudioRef = useRef<HTMLAudioElement | null>(null);
+  const fireworksAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [score, setScore] = useState<number | null>(null);
@@ -844,8 +847,13 @@ export default function LuckyGenerator() {
 
   const rollRef = useRef<number | null>(null);
 
+  const effectGroupRef = useRef<EffectGroup>('idle');
+
   useEffect(() => {
     buildUpAudioRef.current = new Audio('/freesound_community-starship-rail-gun-charge-35904.mp3');
+    meteorAudioRef.current = new Audio(METEOR_SOUNDS[0]);
+    lightningAudioRef.current = new Audio(LIGHTNING_SOUNDS[0]);
+    fireworksAudioRef.current = new Audio(FIREWORKS_SOUNDS[0]);
 
     const stored = readStoredResonance();
     if (stored && stored.lastSpinDate === getLocalDateKey()) {
@@ -853,6 +861,7 @@ export default function LuckyGenerator() {
       setDisplayScore(stored.lastScore);
       setQuoteIndex(stored.lastQuoteIndex);
       setPhase('locked');
+      effectGroupRef.current = getTier(stored.lastScore).id;
     }
     return () => {
       if (rollRef.current) cancelAnimationFrame(rollRef.current);
@@ -863,10 +872,15 @@ export default function LuckyGenerator() {
     score,
   ]);
 
-  const effectGroup: EffectGroup =
-    phase === 'idle' || !tier ? 'idle' : phase === 'revealing' ? 1 : tier.id;
+  if (phase === 'revealing') {
+    effectGroupRef.current = 1;
+  } else if (phase === 'idle' || !tier) {
+    effectGroupRef.current = 'idle';
+  } else {
+    effectGroupRef.current = tier.id;
+  }
 
-  useResonanceCanvas(canvasRef, effectGroup);
+  useResonanceCanvas(canvasRef, effectGroupRef);
 
   const handleReveal = useCallback(() => {
     if (phase !== 'idle') return;
@@ -876,6 +890,19 @@ export default function LuckyGenerator() {
     } catch (e) {
       // Ignore
     }
+
+    // Unlock audio for mobile
+    const unlockAudio = (audio: HTMLAudioElement | null) => {
+        if (!audio) return;
+        audio.play().then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+        }).catch(() => {});
+    };
+
+    unlockAudio(meteorAudioRef.current);
+    unlockAudio(lightningAudioRef.current);
+    unlockAudio(fireworksAudioRef.current);
 
     if (buildUpAudioRef.current) {
       buildUpAudioRef.current.loop = true;
@@ -887,14 +914,7 @@ export default function LuckyGenerator() {
     const { score: newScore, quoteIndex: newQuoteIndex } =
       generateTodaysResonance(previous);
 
-    writeStoredResonance({
-      lastSpinDate: getLocalDateKey(),
-      lastScore: newScore,
-      lastQuoteIndex: newQuoteIndex,
-    });
-
-    setScore(newScore);
-    setQuoteIndex(newQuoteIndex);
+    // Defer state updates until animation is done
     setDisplayScore(0);
     setPhase('revealing');
 
@@ -920,15 +940,27 @@ export default function LuckyGenerator() {
           buildUpAudioRef.current.currentTime = 0;
         }
         rollRef.current = null;
+
+        // Write to storage now
+        writeStoredResonance({
+          lastSpinDate: getLocalDateKey(),
+          lastScore: newScore,
+          lastQuoteIndex: newQuoteIndex,
+        });
+
+        // Update real state now
+        setScore(newScore);
+        setQuoteIndex(newQuoteIndex);
         setDisplayScore(newScore);
         setPhase('locked');
 
+        // Play finale sound directly from unlocked ref
         if (newScore <= 33) {
-          try { playMeteorWhooshSFX(); } catch (e) {}
+          meteorAudioRef.current?.play().catch(() => {});
         } else if (newScore <= 66) {
-          try { playLightningStrikeSFX(); } catch (e) {}
+          lightningAudioRef.current?.play().catch(() => {});
         } else {
-          try { playFireworkBoomSFX(); } catch (e) {}
+          fireworksAudioRef.current?.play().catch(() => {});
         }
       }
     }
