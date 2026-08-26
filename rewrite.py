@@ -1,4 +1,8 @@
-'use client';
+with open('components/LuckyGenerator.tsx', 'r') as f:
+    original_code = f.read()
+
+# I will write the new version completely, maintaining the imports and basic structure
+new_code = ''''use client';
 
 /**
  * LuckyGenerator.tsx
@@ -15,7 +19,6 @@ import React, {
   useEffect,
   useRef,
   useState,
-  useMemo,
   memo,
 } from 'react';
 import Link from 'next/link';
@@ -331,7 +334,7 @@ function useResonanceCanvas(
     // -----------------------------------------------------------------------
     // Canvas Generators
     // -----------------------------------------------------------------------
-    
+
     function spawnDust(x: number, y: number, isHero: boolean = false) {
        if (s.dust.length > 150) return; // Strict particle limit
        const count = isHero ? randomInt(2, 5) : 1;
@@ -353,7 +356,7 @@ function useResonanceCanvas(
       const dist = Math.hypot(dx, dy);
       const segments: BoltSegment[] = [];
       let cx = x, cy = y;
-      
+
       const stepSize = depth === 3 ? 15 : 25;
       const steps = Math.max(4, Math.floor(dist / stepSize));
 
@@ -366,7 +369,7 @@ function useResonanceCanvas(
           }
       }
       segments.push({x: tx, y: ty});
-      
+
       const branches: BoltBranch[] = [];
       if (depth > 0) {
           const numBranches = reduced ? 1 : randomInt(2, depth === 3 ? 5 : 3);
@@ -487,7 +490,7 @@ function useResonanceCanvas(
       // Cinematic Timeline Logic
       if (phase === 'revealing') {
         tReveal = now - currentStart;
-        
+
         // 0 - 7000: Build up
         if (tReveal < TENSION_TIME_MS) {
           globalIntensity = tReveal / TENSION_TIME_MS;
@@ -501,7 +504,7 @@ function useResonanceCanvas(
             if (tier.id === 4 && Math.random() > 0.7) spawnRocket(false);
             s.nextAmbientEffectAt = now + 400 + Math.random() * 400;
           }
-        } 
+        }
         // 7000 - 7800: Final Tension
         else if (tReveal >= TENSION_TIME_MS && tReveal < IMPACT_TIME_MS) {
           globalIntensity = 1.5;
@@ -577,10 +580,10 @@ function useResonanceCanvas(
         if (tier && now > s.nextAmbientEffectAt) {
           if (tier.id === 2) { spawnMeteor(false); s.nextAmbientEffectAt = now + (reduced ? 2500 : 1500 + Math.random()*1000); }
           if (tier.id === 3) { spawnBolt(false); s.nextAmbientEffectAt = now + (reduced ? 2000 : 800 + Math.random()*1500); }
-          if (tier.id === 4) { 
+          if (tier.id === 4) {
              const burst = randomInt(1, 3);
              for(let i=0; i<burst; i++) spawnRocket(false);
-             s.nextAmbientEffectAt = now + (reduced ? 4000 : 2500 + Math.random()*2000); 
+             s.nextAmbientEffectAt = now + (reduced ? 4000 : 2500 + Math.random()*2000);
           }
         }
       } else {
@@ -606,8 +609,8 @@ function useResonanceCanvas(
 
       // Draw Motes
       for (const m of s.motes) {
-        m.driftPhase += dt * m.speed * (1 + globalIntensity * 2); 
-        m.y -= dt * (4 + globalIntensity * 10); 
+        m.driftPhase += dt * m.speed * (1 + globalIntensity * 2);
+        m.y -= dt * (4 + globalIntensity * 10);
         if (m.y < -20) m.y = height + 20;
         const x = (m.x + Math.sin(m.driftPhase) * 14) | 0;
         const y = m.y | 0;
@@ -619,21 +622,21 @@ function useResonanceCanvas(
       }
 
       // Dust
-      for (let i = s.dust.length - 1; i >= 0; i--) { 
-        const d = s.dust[i]; d.life += dt; d.x += d.vx * dt; d.y += d.vy * dt; 
-        ctx!.fillStyle = `rgba(200,220,255,${Math.max(0, 1 - d.life / d.maxLife) * 0.6})`; 
+      for (let i = s.dust.length - 1; i >= 0; i--) {
+        const d = s.dust[i]; d.life += dt; d.x += d.vx * dt; d.y += d.vy * dt;
+        ctx!.fillStyle = `rgba(200,220,255,${Math.max(0, 1 - d.life / d.maxLife) * 0.6})`;
         ctx!.fillRect((d.x - d.r) | 0, (d.y - d.r) | 0, (d.r * 2) | 0, (d.r * 2) | 0);
-        if (d.life > d.maxLife) s.dust.splice(i, 1); 
+        if (d.life > d.maxLife) s.dust.splice(i, 1);
       }
 
       // Draw Meteors
-      for (let i = s.meteors.length - 1; i >= 0; i--) { 
-        const m = s.meteors[i]; m.life += dt; m.x += m.vx * dt; m.y += m.vy * dt; 
-        m.trail.unshift({ x: m.x, y: m.y, alpha: 1.0 }); 
+      for (let i = s.meteors.length - 1; i >= 0; i--) {
+        const m = s.meteors[i]; m.life += dt; m.x += m.vx * dt; m.y += m.vy * dt;
+        m.trail.unshift({ x: m.x, y: m.y, alpha: 1.0 });
         if (m.trail.length > (m.isHero ? 35 : 20)) m.trail.pop();
-        
-        ctx!.beginPath(); 
-        m.trail.forEach((t, j) => { 
+
+        ctx!.beginPath();
+        m.trail.forEach((t, j) => {
           t.alpha *= 0.88;
           const progress = j / m.trail.length;
           ctx!.strokeStyle = m.isHero
@@ -642,18 +645,18 @@ function useResonanceCanvas(
           ctx!.lineWidth = m.width * Math.max(0.1, 1 - progress);
           ctx!.lineCap = 'round';
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
-        }); 
-        ctx!.stroke(); 
-        
+        });
+        ctx!.stroke();
+
         const coreSize = m.isHero ? (m.width > 5 ? 24 : 18) : 10;
         const cx = m.x | 0; const cy = m.y | 0;
         const glow = ctx!.createRadialGradient(cx, cy, 0, cx, cy, coreSize);
-        glow.addColorStop(0, 'rgba(255,255,255,1.0)'); 
+        glow.addColorStop(0, 'rgba(255,255,255,1.0)');
         glow.addColorStop(0.2, m.isHero ? 'rgba(200,240,255,1.0)' : 'rgba(220,240,255,0.9)');
         glow.addColorStop(0.5, m.isHero ? 'rgba(100,180,255,0.6)' : 'rgba(150,200,255,0.4)');
         glow.addColorStop(1, 'rgba(100,180,255,0)');
         ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx, cy, coreSize, 0, Math.PI * 2); ctx!.fill();
-        
+
         if (m.isHero && Math.random() > 0.6) {
            spawnDust(m.x, m.y, true);
         }
@@ -674,15 +677,15 @@ function useResonanceCanvas(
          branch.branches.forEach(b => drawBranch(b, alpha, isGlow));
       }
 
-      for (let i = s.bolts.length - 1; i >= 0; i--) { 
-        const bolt = s.bolts[i]; 
-        bolt.age += dt; 
+      for (let i = s.bolts.length - 1; i >= 0; i--) {
+        const bolt = s.bolts[i];
+        bolt.age += dt;
 
-        const alpha = bolt.isHero 
+        const alpha = bolt.isHero
            ? Math.max(0, 1 - (bolt.age / bolt.life)) * (Math.random() > 0.15 ? 1 : 0.1)
-           : Math.max(0, 1 - (bolt.age / bolt.life)); 
-        
-        if (alpha <= 0) { s.bolts.splice(i, 1); continue; } 
+           : Math.max(0, 1 - (bolt.age / bolt.life));
+
+        if (alpha <= 0) { s.bolts.splice(i, 1); continue; }
 
         drawBranch(bolt.main, alpha, true);
         if (bolt.isHero && alpha > 0.3) {
@@ -696,51 +699,51 @@ function useResonanceCanvas(
       }
 
       // Draw Fireworks & Sparks
-      for (let i = s.rockets.length - 1; i >= 0; i--) { 
-        const r = s.rockets[i]; r.vy += 260 * dt; r.vx *= 1 - dt * 0.2; r.x += r.vx * dt; r.y += r.vy * dt; 
+      for (let i = s.rockets.length - 1; i >= 0; i--) {
+        const r = s.rockets[i]; r.vy += 260 * dt; r.vx *= 1 - dt * 0.2; r.x += r.vx * dt; r.y += r.vy * dt;
         r.trail.unshift({ x: r.x, y: r.y }); if (r.trail.length > (r.isHero ? 20 : 15)) r.trail.pop();
-        
-        ctx!.beginPath(); 
-        r.trail.forEach((t, j) => { 
+
+        ctx!.beginPath();
+        r.trail.forEach((t, j) => {
           const progress = j / r.trail.length;
           ctx!.strokeStyle = `rgba(255,200,100,${1 - progress})`;
           ctx!.lineWidth = (r.isHero ? 5 : 3) * (1 - progress);
           ctx!.lineCap = 'round';
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
-        }); 
-        ctx!.stroke(); 
-        
+        });
+        ctx!.stroke();
+
         if (Math.random() > 0.5) spawnDust(r.x, r.y);
 
         if (r.vy >= -50 || r.y < height * (r.isHero ? 0.15 : 0.3)) {
-          explode(r.x, r.y, r.color, r.isHero); 
-          r.exploded = true; 
-        } 
-        if (r.exploded || r.y < -20) s.rockets.splice(i, 1); 
+          explode(r.x, r.y, r.color, r.isHero);
+          r.exploded = true;
+        }
+        if (r.exploded || r.y < -20) s.rockets.splice(i, 1);
       }
 
-      for (let i = s.sparks.length - 1; i >= 0; i--) { 
-        const sp = s.sparks[i]; sp.age += dt; sp.vy += 120 * dt; sp.vx *= 1 - dt * 0.7; sp.vy *= 1 - dt * 0.4; 
-        sp.x += sp.vx * dt; sp.y += sp.vy * dt; sp.trail.unshift({ x: sp.x, y: sp.y }); 
+      for (let i = s.sparks.length - 1; i >= 0; i--) {
+        const sp = s.sparks[i]; sp.age += dt; sp.vy += 120 * dt; sp.vx *= 1 - dt * 0.7; sp.vy *= 1 - dt * 0.4;
+        sp.x += sp.vx * dt; sp.y += sp.vy * dt; sp.trail.unshift({ x: sp.x, y: sp.y });
         if (sp.trail.length > (reduced ? 8 : 12)) sp.trail.pop();
-        
+
         const alpha = Math.max(0, 1 - Math.pow(sp.age / sp.life, 2));
-        if (alpha <= 0) { s.sparks.splice(i, 1); continue; } 
-        
-        ctx!.beginPath(); 
-        sp.trail.forEach((t, j) => { 
+        if (alpha <= 0) { s.sparks.splice(i, 1); continue; }
+
+        ctx!.beginPath();
+        sp.trail.forEach((t, j) => {
           const progress = j / sp.trail.length;
           ctx!.strokeStyle = `rgba(${sp.color},${alpha * (1 - progress)})`;
           ctx!.lineWidth = sp.size * (1 - progress);
           ctx!.lineCap = 'round';
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
-        }); 
-        ctx!.stroke(); 
-        
+        });
+        ctx!.stroke();
+
         const cx = sp.x | 0; const cy = sp.y | 0;
         const glow = ctx!.createRadialGradient(cx, cy, 0, cx, cy, sp.size * 3);
-        glow.addColorStop(0, `rgba(${sp.color},${alpha})`); 
-        glow.addColorStop(1, 'rgba(0,0,0,0)'); 
+        glow.addColorStop(0, `rgba(${sp.color},${alpha})`);
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
         ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx, cy, sp.size * 3, 0, Math.PI * 2); ctx!.fill();
 
         if (sp.size > 2.5 && Math.random() > 0.8) {
@@ -772,7 +775,7 @@ function useResonanceCanvas(
 
 export default function LuckyGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   const buildUpAudioRef = useRef<HTMLAudioElement | null>(null);
   const meteorAudioRef = useRef<HTMLAudioElement | null>(null);
   const lightningAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -790,7 +793,7 @@ export default function LuckyGenerator() {
   const [displayScore, setDisplayScore] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState<number | null>(null);
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
-  
+
   const [impactFired, setImpactFired] = useState(false);
 
   const pendingResultRef = useRef<{ score: number; quoteIndex: number; tier: Tier } | null>(null);
@@ -853,13 +856,13 @@ export default function LuckyGenerator() {
         playPromise.then(() => {
           audio.pause();
           audio.currentTime = 0;
-          audio.muted = false; 
+          audio.muted = false;
         }).catch(() => { audio.muted = false; });
       }
     });
 
     if (buildUpAudioRef.current) {
-      buildUpAudioRef.current.loop = false; 
+      buildUpAudioRef.current.loop = false;
       buildUpAudioRef.current.volume = 1.0;
       buildUpAudioRef.current.currentTime = 0;
       buildUpAudioRef.current.play().catch(() => {});
@@ -872,7 +875,7 @@ export default function LuckyGenerator() {
     pendingResultRef.current = { score: newScore, quoteIndex: newQuoteIndex, tier: newTier };
     pendingTierRef.current = newTier;
     revealStartTimeRef.current = performance.now();
-    
+
     setDisplayScore(0);
     setPhase('revealing');
     phaseRef.current = 'revealing';
@@ -928,7 +931,7 @@ export default function LuckyGenerator() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#05040e] text-white">
       {/* 1. Deep Space Base Layer is now drawn by canvas directly */}
-      
+
       {/* 2. Ambient Nebula Glows */}
       <div
         className="fixed inset-0 -z-10 transition-opacity duration-1000"
@@ -981,9 +984,9 @@ export default function LuckyGenerator() {
                     <div className="waveform-ripple ripple-3 absolute inset-0 rounded-full border-2 border-cyan-200/20" />
                   </>
                 )}
-                
+
                 <div className={`tabular-nums transition-all duration-300 ease-out flex flex-col items-center
-                  ${impactFired 
+                  ${impactFired
                     ? 'text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-cyan-50 scale-110 drop-shadow-[0_0_40px_rgba(255,255,255,1)] brightness-150'
                     : 'text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-cyan-200/80 scale-100'}`}
                 >
@@ -1031,7 +1034,7 @@ export default function LuckyGenerator() {
           50% { transform: scale(1.045); opacity: 1; box-shadow: 0 0 34px 8px rgba(103, 232, 249, 0.55); }
         }
         .btn-pulse { animation: pulseButton 2.8s ease-in-out infinite; }
-        
+
         @keyframes pulseIdle {
           0%, 100% { transform: scale(1); box-shadow: 0 0 30px 6px rgba(139, 92, 246, 0.22); }
           50% { transform: scale(1.012); box-shadow: 0 0 48px 10px rgba(103, 232, 249, 0.28); }
@@ -1053,7 +1056,7 @@ export default function LuckyGenerator() {
         .card-pulse-reveal { animation: pulseReveal 1.5s ease-in-out infinite; }
         .card-pulse-impact { animation: pulseImpact 1.5s ease-out forwards; }
         .card-pulse-locked { animation: pulseLocked 5.6s ease-in-out infinite; }
-        
+
         @keyframes waveformRipple {
           0% { transform: scale(0.8); opacity: 1; }
           100% { transform: scale(2.5); opacity: 0; }
@@ -1068,7 +1071,7 @@ export default function LuckyGenerator() {
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
-        
+
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -1078,3 +1081,7 @@ export default function LuckyGenerator() {
     </div>
   );
 }
+'''
+
+with open('components/LuckyGenerator.tsx', 'w') as f:
+    f.write(new_code)
