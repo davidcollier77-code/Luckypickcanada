@@ -333,3 +333,12 @@ body {
   padding: 1.5rem;
   transition: all 1s ease-out; /* Smooth transition when classes are removed */
 }
+
+.plasma-glow-settled {
+  border: 2px solid rgba(59, 130, 246, 0.4);
+  background-color: rgba(30, 58, 138, 0.1);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  transition: all 1s ease-out;
+  box-shadow: 0 0 15px 2px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.2);
+}

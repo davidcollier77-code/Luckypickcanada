@@ -173,14 +173,17 @@ export default function DailyResonance() {
 
     // Instant pre-roll visual feedback
     setDisplayPercentage(0);
-    const preRollInterval = setInterval(() => {
-      if (!isAnimatingRef.current) {
-        clearInterval(preRollInterval);
-        return;
-      }
-      setDisplayPercentage(Math.floor(Math.random() * 101));
-    }, 50);
-    preRollIntervalRef.current = preRollInterval;
+    setTimeout(() => {
+      if (!isAnimatingRef.current) return;
+      const preRollInterval = setInterval(() => {
+        if (!isAnimatingRef.current) {
+          clearInterval(preRollInterval);
+          return;
+        }
+        setDisplayPercentage(Math.floor(Math.random() * 101));
+      }, 50);
+      preRollIntervalRef.current = preRollInterval;
+    }, 200);
 
     // Collision Prevention Logic
     const lastPct = localStorage.getItem('lucky_lastPct');
@@ -218,7 +221,9 @@ export default function DailyResonance() {
       await preloadAllAudio(ctx);
     } finally {
       setIsLoading(false);
-      clearInterval(preRollInterval);
+      if (preRollIntervalRef.current) {
+        clearInterval(preRollIntervalRef.current);
+      }
     }
 
     // Play buildup exactly at 0s
@@ -532,28 +537,26 @@ export default function DailyResonance() {
         ) : (
           <div className="animate-fade-in flex flex-col items-center min-h-[16rem]">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
-            <div className={`animate-plasma-glow my-6 flex items-center justify-center min-w-[200px]`}>
+            <div className={`plasma-glow-settled my-6 flex items-center justify-center min-w-[200px]`}>
               <div className="text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                 {displayPercentage}%
               </div>
             </div>
             <p className="text-slate-300 italic mb-8 min-h-[4rem]">"{quote}"</p>
 
-            { (isLockedOut || isRevealed) ? (
-              <div className="flex flex-col items-center mt-4">
-                <p className="text-slate-400 text-sm mb-2 uppercase tracking-widest">Next Resonance In</p>
-                <div className="text-3xl font-mono text-cyan-300 tracking-wider shadow-cyan-500/20 drop-shadow-md">
-                  {timeRemaining}
-                </div>
-              </div>
-            ) : (
+            <div className="flex flex-col items-center mt-4">
               <button
                 onClick={handleShare}
-                className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200"
+                className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200 mb-6"
               >
                 Share My Resonance
               </button>
-            )}
+
+              <p className="text-slate-400 text-sm mb-2 uppercase tracking-widest">Next Resonance In</p>
+              <div className="text-3xl font-mono text-cyan-300 tracking-wider shadow-cyan-500/20 drop-shadow-md">
+                {timeRemaining}
+              </div>
+            </div>
           </div>
         )}
       </div>
