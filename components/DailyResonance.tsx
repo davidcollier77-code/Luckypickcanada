@@ -98,10 +98,12 @@ export default function DailyResonance() {
   const handleReveal = async () => {
     const ctx = initAudio();
     // Prevent concurrent sequences
+    if (isAnimatingRef.current) return;
     if (isRevealed) return;
     if (isLoading) return;
     if (isRevealing) return;
 
+    isAnimatingRef.current = true;
     setIsLoading(true);
     setIsRevealing(true);
 
@@ -189,10 +191,9 @@ export default function DailyResonance() {
          sequenceRef.current = requestAnimationFrame(sequenceLoop);
       } else {
          setDisplayPercentage(newPct); // Ensure final state
+         isAnimatingRef.current = false;
       }
     };
-         setIsRevealing(false);
-         isAnimatingRef.current = false;
 
     sequenceRef.current = requestAnimationFrame(sequenceLoop);
   };
@@ -224,13 +225,15 @@ export default function DailyResonance() {
 
     let particles: any[] = [];
     const MAX_PARTICLES = tier === 'Cosmic Lightning' ? 30 : 150; // Performance cap
+    const startTime = Date.now();
 
     const loop = () => {
       const now = Date.now();
+      const canSpawn = (now - startTime) < 4500;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (tier === 'Meteor Shower') {
-        if (Math.random() < 0.1 && particles.length < MAX_PARTICLES) {
+        if (Math.random() < 0.1 && particles.length < MAX_PARTICLES && canSpawn) {
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
             playBuffer(audioCtx, audioBuffers['Meteor Shower'], 0.3);
             lastAudioTimeRef.current = now;
@@ -264,7 +267,7 @@ export default function DailyResonance() {
           if (p.y > canvas.height) particles.splice(i, 1);
         });
       } else if (tier === 'Cosmic Lightning') {
-        if (Math.random() < 0.05 && particles.length < MAX_PARTICLES) {
+        if (Math.random() < 0.05 && particles.length < MAX_PARTICLES && canSpawn) {
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
             playBuffer(audioCtx, audioBuffers['Cosmic Lightning'], 0.3);
             lastAudioTimeRef.current = now;
@@ -293,7 +296,7 @@ export default function DailyResonance() {
           if (p.opacity <= 0) particles.splice(i, 1);
         });
       } else if (tier === 'Fireworks') {
-        if (Math.random() < 0.02 && particles.length < MAX_PARTICLES) {
+        if (Math.random() < 0.02 && particles.length < MAX_PARTICLES && canSpawn) {
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
             playBuffer(audioCtx, audioBuffers['Fireworks'], 0.3);
             lastAudioTimeRef.current = now;
@@ -328,6 +331,7 @@ export default function DailyResonance() {
         });
       }
 
+      if (!canSpawn && particles.length === 0) return;
       requestRef.current = requestAnimationFrame(loop);
     };
 
