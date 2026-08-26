@@ -6,6 +6,8 @@
  *
  * Pure digital entertainment / motivational novelty. No gambling affiliation,
  * no prizes. Deployed on Cloudflare Pages (Next.js + Tailwind).
+ *
+ * Cinematic Upgrade: Synchronized 8-second reveal with deterministic canvas timeline.
  */
 
 import React, {
@@ -31,17 +33,19 @@ interface StoredResonance {
 }
 
 interface Tier {
-  id: 1 | 2 | 3 | 4;
+  id: 2 | 3 | 4;
   name: string;
 }
 
 // ---------------------------------------------------------------------------
-// Constants
+// Constants & Quotes
 // ---------------------------------------------------------------------------
 
 const STORAGE_KEY = 'luckyPickCanada:dailyResonance';
 
-const REVEAL_DURATION_MS = 9000;
+// Cinematic Timing
+const REVEAL_DURATION_MS = 8000;
+const IMPACT_TIME_MS = 7800;
 const SPIN_INTERVAL_MS = 60;
 
 const METEOR_SOUNDS = ['/dragon-studio-whoosh-cinematic-376875.mp3'];
@@ -215,20 +219,21 @@ function ResonanceButton({ onClick }: { onClick: () => void }) {
 }
 
 // ---------------------------------------------------------------------------
-// Canvas VFX engine
+// Canvas VFX engine & Interfaces
 // ---------------------------------------------------------------------------
 
 type EffectGroup = 'idle' | 1 | 2 | 3 | 4;
 
 interface Mote { x: number; y: number; r: number; driftPhase: number; speed: number; hue: 'cyan' | 'purple'; }
 interface Dust { x: number; y: number; r: number; vx: number; vy: number; life: number; maxLife: number; }
-interface Ember { x: number; y: number; r: number; vy: number; wobble: number; wobbleSpeed: number; life: number; maxLife: number; }
-interface Meteor { x: number; y: number; vx: number; vy: number; len: number; width: number; trail: { x: number; y: number }[]; life: number; }
-interface Bolt { points: { x: number; y: number }[]; branches: { x: number; y: number }[][]; age: number; life: number; }
+interface Meteor { x: number; y: number; vx: number; vy: number; len: number; width: number; trail: { x: number; y: number; alpha: number }[]; life: number; isHero?: boolean; }
+interface BoltSegment { x: number; y: number; }
+interface BoltBranch { segments: BoltSegment[]; branches: BoltBranch[]; thickness: number; }
+interface Bolt { main: BoltBranch; age: number; life: number; isHero: boolean; }
 interface Spark { x: number; y: number; vx: number; vy: number; color: string; age: number; life: number; size: number; trail: { x: number; y: number }[]; }
-interface Rocket { x: number; y: number; vx: number; vy: number; color: string; trail: { x: number; y: number }[]; exploded: boolean; }
+interface Rocket { x: number; y: number; vx: number; vy: number; color: string; trail: { x: number; y: number }[]; exploded: boolean; isHero: boolean; }
 
-const FIREWORK_COLORS = ['255,80,80', '90,140,255', '110,255,150', '200,110,255', '255,205,90'];
+const FIREWORK_COLORS = ['255,100,100', '100,150,255', '120,255,160', '220,120,255', '255,220,100'];
 
 function playFinaleSFX(audio: HTMLAudioElement | null) {
   if (!audio) return;
@@ -238,12 +243,21 @@ function playFinaleSFX(audio: HTMLAudioElement | null) {
 
 function useResonanceCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
-  effectGroupRef: React.MutableRefObject<EffectGroup>
+  phaseRef: React.MutableRefObject<Phase>,
+  pendingTierRef: React.MutableRefObject<Tier | null>,
+  revealStartTimeRef: React.MutableRefObject<number>
 ) {
   const stateRef = useRef({
-    motes: [] as Mote[], dust: [] as Dust[], embers: [] as Ember[], meteors: [] as Meteor[],
-    bolts: [] as Bolt[], flash: 0, sparks: [] as Spark[], rockets: [] as Rocket[],
-    nextMeteorAt: 0, nextBoltAt: 0, nextRocketBatchAt: 0, rocketsQueued: 0, elapsed: 0,
+    motes: [] as Mote[],
+    dust: [] as Dust[],
+    meteors: [] as Meteor[],
+    bolts: [] as Bolt[],
+    sparks: [] as Spark[],
+    rockets: [] as Rocket[],
+    flash: 0,
+    impactFired: false,
+    lastStartTime: 0,
+    nextAmbientEffectAt: 0,
   });
 
   useEffect(() => {
@@ -273,21 +287,106 @@ function useResonanceCanvas(
 
     const s = stateRef.current;
     if (s.motes.length === 0) {
-      const count = reduced ? 14 : 34;
+      const count = reduced ? 20 : 45;
       for (let i = 0; i < count; i++) {
         s.motes.push({
           x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
-          r: 0.6 + Math.random() * 1.6, driftPhase: Math.random() * Math.PI * 2,
-          speed: 0.15 + Math.random() * 0.25, hue: Math.random() > 0.5 ? 'cyan' : 'purple',
+          r: 0.6 + Math.random() * 2.0, driftPhase: Math.random() * Math.PI * 2,
+          speed: 0.1 + Math.random() * 0.2, hue: Math.random() > 0.5 ? 'cyan' : 'purple',
         });
       }
     }
 
-    function spawnDust() { s.dust.push({ x: Math.random() * width, y: Math.random() * height, r: 0.5 + Math.random() * 1.5, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, life: 0, maxLife: 2 + Math.random() * 3 }); }
-    function spawnMeteor() { s.meteors.push({ x: Math.random() * width * 0.6 + width * 0.2, y: -20, vx: Math.cos(60 * Math.PI / 180) * (reduced ? 260 : 500), vy: Math.sin(60 * Math.PI / 180) * (reduced ? 260 : 500), len: 70 + Math.random() * 60, width: 1.6 + Math.random() * 1.4, trail: [], life: 0 }); }
-    function spawnBolt() { const startX = width * (0.15 + Math.random() * 0.7); const points = []; for (let i = 0; i <= 9; i++) { points.push({ x: startX + (1 - i / 9 * 0.4) * (Math.random() - 0.5) * 46, y: height * 0.55 * (i / 9) }); } s.bolts.push({ points, branches: [], age: 0, life: 0.22 + Math.random() * 0.12 }); s.flash = 0.35; }
-    function spawnRocket() { s.rockets.push({ x: width * (0.2 + Math.random() * 0.6), y: height, vx: (Math.random() - 0.5) * 30, vy: -(420 + Math.random() * 110), color: FIREWORK_COLORS[randomInt(0, FIREWORK_COLORS.length - 1)], trail: [], exploded: false }); }
-    function explode(x: number, y: number, color: string) { const count = reduced ? 10 : 15 + Math.floor(Math.random() * 6); for (let i = 0; i < count; i++) { const t = Math.random() * Math.PI * 2; const p = Math.acos(Math.random() * 2 - 1); const speed = 90 + Math.random() * 170; s.sparks.push({ x, y, vx: speed * Math.sin(p) * Math.cos(t), vy: speed * Math.cos(p), color: Math.random() > 0.85 ? '255,255,255' : color, age: 0, life: 0.9 + Math.random() * 0.6, size: 1.0 + ((speed * Math.sin(p) * Math.sin(t)) / speed + 1) / 2 * 2.2, trail: [] }); } }
+    // -----------------------------------------------------------------------
+    // Canvas Generators
+    // -----------------------------------------------------------------------
+    
+    function generateBoltBranch(x: number, y: number, tx: number, ty: number, depth: number): BoltBranch {
+      const dx = tx - x, dy = ty - y;
+      const dist = Math.hypot(dx, dy);
+      const segments: BoltSegment[] = [];
+      let cx = x, cy = y;
+      const steps = Math.max(3, Math.floor(dist / (depth === 3 ? 20 : 35))); // Hero is highly jagged
+      
+      for(let i=0; i<=steps; i++) {
+          segments.push({x: cx, y: cy});
+          const jitter = (depth * 8) + 5;
+          cx += (dx/steps) + (Math.random()-0.5) * jitter;
+          cy += (dy/steps) + (Math.random()-0.5) * jitter;
+      }
+      segments.push({x: tx, y: ty});
+      
+      const branches: BoltBranch[] = [];
+      if (depth > 0) {
+          const numBranches = reduced ? 1 : randomInt(1, 3);
+          for(let i=0; i < numBranches; i++) {
+              const idx = randomInt(1, segments.length-2);
+              if(!segments[idx]) continue;
+              const pt = segments[idx];
+              const angle = Math.atan2(dy, dx) + (Math.random()-0.5)*2.0;
+              const len = dist * (0.3 + Math.random() * 0.4);
+              branches.push(generateBoltBranch(pt.x, pt.y, pt.x + Math.cos(angle)*len, pt.y + Math.sin(angle)*len, depth-1));
+          }
+      }
+      return { segments, branches, thickness: depth * 1.5 + 1 };
+    }
+
+    function spawnBolt(isHero: boolean) {
+      const startX = isHero ? width * 0.5 + (Math.random()-0.5)*100 : width * (0.1 + Math.random() * 0.8);
+      const targetX = startX + (Math.random() - 0.5) * width * 0.6;
+      const depth = isHero ? 3 : randomInt(1, 2);
+      const mainBranch = generateBoltBranch(startX, -50, targetX, height * (isHero ? 0.9 : 0.6), depth);
+      s.bolts.push({ main: mainBranch, age: 0, life: isHero ? 0.6 : (0.2 + Math.random() * 0.15), isHero });
+      s.flash = isHero ? 1.0 : (s.flash + 0.3);
+    }
+
+    function spawnMeteor(isHero: boolean) {
+      const startX = Math.random() * width * (isHero ? 1.0 : 1.5);
+      const startY = isHero ? (Math.random() * -200 - 50) : -50;
+      const speed = reduced ? 300 : (isHero ? 900 + Math.random() * 400 : 500 + Math.random() * 300);
+      const angle = (45 + Math.random() * 20) * (Math.PI / 180);
+      s.meteors.push({
+        x: startX, y: startY,
+        vx: Math.cos(angle) * -speed, vy: Math.sin(angle) * speed,
+        len: isHero ? 120 + Math.random() * 100 : 50 + Math.random() * 50,
+        width: isHero ? 3 + Math.random() * 2 : 1.2 + Math.random() * 1.5,
+        trail: [], life: 0, isHero
+      });
+    }
+
+    function spawnRocket(isHero: boolean) {
+      const color = FIREWORK_COLORS[randomInt(0, FIREWORK_COLORS.length - 1)];
+      const x = isHero ? (width * 0.5 + (Math.random()-0.5)*200) : (width * (0.2 + Math.random() * 0.6));
+      s.rockets.push({
+        x, y: height,
+        vx: (Math.random() - 0.5) * (isHero ? 60 : 30),
+        vy: -(isHero ? 500 + Math.random()*150 : 400 + Math.random() * 100),
+        color, trail: [], exploded: false, isHero
+      });
+    }
+
+    function explode(x: number, y: number, color: string, isHero: boolean) {
+      const count = reduced ? 10 : (isHero ? 45 : 15 + Math.floor(Math.random() * 8));
+      for (let i = 0; i < count; i++) {
+        const t = Math.random() * Math.PI * 2;
+        const p = Math.acos(Math.random() * 2 - 1);
+        const speed = (isHero ? 150 : 90) + Math.random() * (isHero ? 300 : 170);
+        s.sparks.push({
+          x, y,
+          vx: speed * Math.sin(p) * Math.cos(t),
+          vy: speed * Math.cos(p),
+          color: Math.random() > (isHero ? 0.7 : 0.85) ? '255,255,255' : color,
+          age: 0,
+          life: (isHero ? 1.2 : 0.9) + Math.random() * 0.8,
+          size: 1.0 + ((speed * Math.sin(p) * Math.sin(t)) / speed + 1) / 2 * (isHero ? 3.0 : 2.0),
+          trail: []
+        });
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Render Loop
+    // -----------------------------------------------------------------------
 
     let raf = 0;
     let last = performance.now();
@@ -298,45 +397,203 @@ function useResonanceCanvas(
     function frame(now: number) {
       raf = requestAnimationFrame(frame);
       if (hidden) { last = now; return; }
-      let dt = Math.min((now - last) / 1000, 1 / 30);
+      const dt = Math.min((now - last) / 1000, 1 / 30);
       last = now;
-      s.elapsed += dt;
+
+      // Handle Reset from React state
+      const currentStart = revealStartTimeRef.current;
+      if (currentStart !== s.lastStartTime) {
+        s.lastStartTime = currentStart;
+        s.impactFired = false;
+        s.flash = 0;
+        s.meteors = []; s.bolts = []; s.rockets = []; s.sparks = []; s.dust = [];
+      }
 
       ctx!.globalCompositeOperation = 'source-over';
-      ctx!.fillStyle = 'rgba(5,4,14,0.28)';
+      ctx!.fillStyle = 'rgba(5,4,14,0.35)';
       ctx!.fillRect(0, 0, width, height);
 
+      const phase = phaseRef.current;
+      const tier = pendingTierRef.current;
+      let globalIntensity = 0;
+      let tReveal = 0;
+
+      // Cinematic Timeline Logic
+      if (phase === 'revealing') {
+        tReveal = Date.now() - currentStart;
+        
+        // 0 - 5500: Build
+        if (tReveal < 5500) {
+          globalIntensity = tReveal / 5500;
+          if (Math.random() < dt * 5 * globalIntensity) {
+            s.dust.push({ x: Math.random() * width, y: Math.random() * height, r: 0.5 + Math.random() * 2, vx: (Math.random() - 0.5) * 15, vy: -(10 + Math.random()*20), life: 0, maxLife: 2 + Math.random() * 2 });
+          }
+        } 
+        // 5500 - 7000: Escalation
+        else if (tReveal >= 5500 && tReveal < 7000) {
+          globalIntensity = 1.0 + ((tReveal - 5500) / 1500) * 0.5;
+          if (tier && now > s.nextAmbientEffectAt) {
+            if (tier.id === 2 && Math.random() > 0.5) spawnMeteor(false);
+            if (tier.id === 3 && Math.random() > 0.6) spawnBolt(false);
+            if (tier.id === 4 && Math.random() > 0.7) spawnRocket(false);
+            s.nextAmbientEffectAt = now + 400 + Math.random() * 400;
+          }
+        } 
+        // 7000 - 7800: Final Tension (Darken slightly, compress)
+        else if (tReveal >= 7000 && tReveal < IMPACT_TIME_MS) {
+          globalIntensity = 1.5;
+          ctx!.fillStyle = `rgba(0,0,0,${((tReveal - 7000) / 800) * 0.4})`;
+          ctx!.fillRect(0, 0, width, height);
+        }
+        // 7800: THE IMPACT
+        else if (tReveal >= IMPACT_TIME_MS && !s.impactFired) {
+          s.impactFired = true;
+          s.flash = 1.0;
+          if (tier) {
+            if (tier.id === 2) { for(let i=0; i<(reduced?3:8); i++) spawnMeteor(true); }
+            else if (tier.id === 3) { spawnBolt(true); spawnBolt(false); }
+            else if (tier.id === 4) { for(let i=0; i<(reduced?2:4); i++) spawnRocket(true); }
+          }
+        }
+      } else if (phase === 'locked') {
+        globalIntensity = 1.0;
+        // Standard ambient looping in locked state
+        if (tier && now > s.nextAmbientEffectAt) {
+          if (tier.id === 2) { spawnMeteor(false); s.nextAmbientEffectAt = now + (reduced ? 2500 : 1500 + Math.random()*1000); }
+          if (tier.id === 3) { spawnBolt(false); s.nextAmbientEffectAt = now + (reduced ? 2000 : 800 + Math.random()*1500); }
+          if (tier.id === 4) { 
+             const burst = randomInt(1, 3);
+             for(let i=0; i<burst; i++) spawnRocket(false);
+             s.nextAmbientEffectAt = now + (reduced ? 4000 : 2500 + Math.random()*2000); 
+          }
+        }
+      } else {
+        // Idle
+        globalIntensity = 0.2;
+      }
+
+      // Draw Motes (Atmosphere)
       ctx!.globalCompositeOperation = 'lighter';
       for (const m of s.motes) {
-        m.driftPhase += dt * m.speed; m.y -= dt * 4; if (m.y < -10) m.y = height + 10;
+        m.driftPhase += dt * m.speed * (1 + globalIntensity * 2); 
+        m.y -= dt * (4 + globalIntensity * 10); 
+        if (m.y < -20) m.y = height + 20;
         const x = m.x + Math.sin(m.driftPhase) * 14;
+        const baseAlpha = phase === 'idle' ? 0.3 : Math.min(0.8, 0.3 + globalIntensity * 0.5);
         const glow = ctx!.createRadialGradient(x, m.y, 0, x, m.y, m.r * 6);
-        glow.addColorStop(0, `rgba(${m.hue === 'cyan' ? '120,220,255' : '170,120,255'},0.55)`);
+        glow.addColorStop(0, `rgba(${m.hue === 'cyan' ? '120,220,255' : '170,120,255'},${baseAlpha})`);
         glow.addColorStop(1, 'rgba(0,0,0,0)');
         ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(x, m.y, m.r * 6, 0, Math.PI * 2); ctx!.fill();
       }
 
-      switch (effectGroupRef.current) {
-        case 1:
-          if (Math.random() < dt * 4) spawnDust();
-          for (let i = s.dust.length - 1; i >= 0; i--) { const d = s.dust[i]; d.life += dt; d.x += d.vx * dt; d.y += d.vy * dt; ctx!.fillStyle = `rgba(200,220,255,${Math.max(0, 1 - d.life / d.maxLife) * 0.6})`; ctx!.fillRect(d.x - d.r, d.y - d.r, d.r * 2, d.r * 2); if (d.life > d.maxLife) s.dust.splice(i, 1); }
-          break;
-        case 2:
-          if (s.elapsed > s.nextMeteorAt && s.meteors.length < 20) { spawnMeteor(); s.nextMeteorAt = s.elapsed + (reduced ? 2.5 : 1.2 + Math.random() * 1.0); }
-          for (let i = s.meteors.length - 1; i >= 0; i--) { const m = s.meteors[i]; m.life += dt; m.x += m.vx * dt; m.y += m.vy * dt; m.trail.push({ x: m.x, y: m.y }); if (m.trail.length > 14) m.trail.shift(); ctx!.beginPath(); m.trail.forEach((t, j) => { ctx!.strokeStyle = `rgba(180,210,255,${(j / m.trail.length) * 0.5})`; ctx!.lineWidth = m.width * (j / m.trail.length); j === 0 ? ctx!.moveTo(t.x, t.y) : ctx!.lineTo(t.x, t.y); }); ctx!.stroke(); const glow = ctx!.createRadialGradient(m.x, m.y, 0, m.x, m.y, 9); glow.addColorStop(0, 'rgba(255,255,255,0.95)'); glow.addColorStop(1, 'rgba(190,220,255,0)'); ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(m.x, m.y, 9, 0, Math.PI * 2); ctx!.fill(); if (m.y > height + 40 || m.x > width + 60) s.meteors.splice(i, 1); }
-          break;
-        case 3:
-          if (s.elapsed > s.nextBoltAt) { spawnBolt(); s.nextBoltAt = s.elapsed + (reduced ? 1.4 : 0.6 + Math.random() * 0.7); }
-          if (s.flash > 0) { ctx!.fillStyle = `rgba(190,40,255,${s.flash * 0.35})`; ctx!.fillRect(0, 0, width, height); s.flash = Math.max(0, s.flash - dt * 1.8); }
-          for (let i = s.bolts.length - 1; i >= 0; i--) { const bolt = s.bolts[i]; bolt.age += dt; const alpha = Math.max(0, 1 - bolt.age / bolt.life); if (alpha <= 0) { s.bolts.splice(i, 1); continue; } ctx!.strokeStyle = `rgba(245,200,255,${alpha})`; ctx!.lineWidth = 2; ctx!.beginPath(); bolt.points.forEach((p, idx) => idx === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y)); ctx!.stroke(); }
-          break;
-        case 4:
-          if (s.elapsed > s.nextRocketBatchAt) { s.rocketsQueued = randomInt(5, 6); s.nextRocketBatchAt = s.elapsed + (reduced ? 5 : 3.4); }
-          if (s.rocketsQueued > 0 && Math.random() < dt * 2.2) { spawnRocket(); s.rocketsQueued -= 1; }
-          for (let i = s.rockets.length - 1; i >= 0; i--) { const r = s.rockets[i]; r.vy += 260 * dt; r.vx *= 1 - dt * 0.2; r.x += r.vx * dt; r.y += r.vy * dt; r.trail.push({ x: r.x, y: r.y }); if (r.trail.length > 10) r.trail.shift(); ctx!.beginPath(); r.trail.forEach((t, j) => { ctx!.strokeStyle = `rgba(${r.color},${(j / r.trail.length) * 0.6})`; ctx!.lineWidth = 2; j === 0 ? ctx!.moveTo(t.x, t.y) : ctx!.lineTo(t.x, t.y); }); ctx!.stroke(); if ((r.vy >= -30 && r.y < height * 0.55) || r.y < height * 0.12) { explode(r.x, r.y, r.color); r.exploded = true; } if (r.exploded || r.y < -20) s.rockets.splice(i, 1); }
-          for (let i = s.sparks.length - 1; i >= 0; i--) { const sp = s.sparks[i]; sp.age += dt; sp.vy += 130 * dt; sp.vx *= 1 - dt * 0.6; sp.vy *= 1 - dt * 0.35; sp.x += sp.vx * dt; sp.y += sp.vy * dt; sp.trail.push({ x: sp.x, y: sp.y }); if (sp.trail.length > 8) sp.trail.shift(); const alpha = Math.max(0, 1 - sp.age / sp.life); if (alpha <= 0) { s.sparks.splice(i, 1); continue; } ctx!.beginPath(); sp.trail.forEach((t, j) => { ctx!.strokeStyle = `rgba(${sp.color},${alpha * (j / sp.trail.length) * 0.7})`; ctx!.lineWidth = sp.size * (j / sp.trail.length); j === 0 ? ctx!.moveTo(t.x, t.y) : ctx!.lineTo(t.x, t.y); }); ctx!.stroke(); const glow = ctx!.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, sp.size * 4); glow.addColorStop(0, `rgba(${sp.color},${alpha})`); glow.addColorStop(1, `rgba(${sp.color},0)`); ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(sp.x, sp.y, sp.size * 4, 0, Math.PI * 2); ctx!.fill(); }
-          break;
+      // Dust
+      for (let i = s.dust.length - 1; i >= 0; i--) { 
+        const d = s.dust[i]; d.life += dt; d.x += d.vx * dt; d.y += d.vy * dt; 
+        ctx!.fillStyle = `rgba(200,220,255,${Math.max(0, 1 - d.life / d.maxLife) * 0.6})`; 
+        ctx!.fillRect(d.x - d.r, d.y - d.r, d.r * 2, d.r * 2); 
+        if (d.life > d.maxLife) s.dust.splice(i, 1); 
       }
+
+      // Draw Meteors
+      for (let i = s.meteors.length - 1; i >= 0; i--) { 
+        const m = s.meteors[i]; m.life += dt; m.x += m.vx * dt; m.y += m.vy * dt; 
+        m.trail.unshift({ x: m.x, y: m.y, alpha: 1.0 }); 
+        if (m.trail.length > (m.isHero ? 25 : 15)) m.trail.pop(); 
+        
+        ctx!.beginPath(); 
+        m.trail.forEach((t, j) => { 
+          t.alpha *= 0.85; // Fade tail naturally
+          ctx!.strokeStyle = `rgba(180,210,255,${t.alpha})`; 
+          ctx!.lineWidth = m.width * Math.max(0.1, 1 - (j / m.trail.length)); 
+          j === 0 ? ctx!.moveTo(t.x, t.y) : ctx!.lineTo(t.x, t.y); 
+        }); 
+        ctx!.stroke(); 
+        
+        const coreSize = m.isHero ? 16 : 9;
+        const glow = ctx!.createRadialGradient(m.x, m.y, 0, m.x, m.y, coreSize); 
+        glow.addColorStop(0, 'rgba(255,255,255,1.0)'); 
+        glow.addColorStop(0.3, m.isHero ? 'rgba(150,200,255,0.8)' : 'rgba(190,220,255,0.6)');
+        glow.addColorStop(1, 'rgba(190,220,255,0)'); 
+        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(m.x, m.y, coreSize, 0, Math.PI * 2); ctx!.fill(); 
+        
+        if (m.y > height + 100 || m.x < -100) s.meteors.splice(i, 1); 
+      }
+
+      // Draw Lightning Bolts (Recursive)
+      function drawBranch(branch: BoltBranch, alpha: number, isGlow: boolean) {
+         ctx!.beginPath();
+         ctx!.lineWidth = isGlow ? branch.thickness * 4 : branch.thickness;
+         ctx!.strokeStyle = isGlow ? `rgba(160,80,255,${alpha * 0.4})` : `rgba(255,255,255,${alpha})`;
+         ctx!.lineJoin = 'miter';
+         branch.segments.forEach((p, idx) => idx === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y));
+         ctx!.stroke();
+         branch.branches.forEach(b => drawBranch(b, alpha, isGlow));
+      }
+
+      for (let i = s.bolts.length - 1; i >= 0; i--) { 
+        const bolt = s.bolts[i]; 
+        bolt.age += dt; 
+        // Hero bolt flashes wildly, normal bolt fades linearly
+        const alpha = bolt.isHero 
+           ? Math.max(0, 1 - (bolt.age / bolt.life)) * (Math.random() > 0.2 ? 1 : 0.2)
+           : Math.max(0, 1 - (bolt.age / bolt.life)); 
+        
+        if (alpha <= 0) { s.bolts.splice(i, 1); continue; } 
+        drawBranch(bolt.main, alpha, true);  // Glow
+        drawBranch(bolt.main, alpha, false); // Core
+      }
+
+      // Draw Fireworks & Sparks
+      for (let i = s.rockets.length - 1; i >= 0; i--) { 
+        const r = s.rockets[i]; r.vy += 260 * dt; r.vx *= 1 - dt * 0.2; r.x += r.vx * dt; r.y += r.vy * dt; 
+        r.trail.unshift({ x: r.x, y: r.y }); if (r.trail.length > 12) r.trail.pop(); 
+        
+        ctx!.beginPath(); 
+        r.trail.forEach((t, j) => { 
+          ctx!.strokeStyle = `rgba(${r.color},${1 - (j / r.trail.length)})`; 
+          ctx!.lineWidth = r.isHero ? 4 : 2; 
+          j === 0 ? ctx!.moveTo(t.x, t.y) : ctx!.lineTo(t.x, t.y); 
+        }); 
+        ctx!.stroke(); 
+        
+        if (r.vy >= -30 || r.y < height * (r.isHero ? 0.2 : 0.4)) { 
+          explode(r.x, r.y, r.color, r.isHero); 
+          r.exploded = true; 
+        } 
+        if (r.exploded || r.y < -20) s.rockets.splice(i, 1); 
+      }
+
+      for (let i = s.sparks.length - 1; i >= 0; i--) { 
+        const sp = s.sparks[i]; sp.age += dt; sp.vy += 120 * dt; sp.vx *= 1 - dt * 0.7; sp.vy *= 1 - dt * 0.4; 
+        sp.x += sp.vx * dt; sp.y += sp.vy * dt; sp.trail.unshift({ x: sp.x, y: sp.y }); 
+        if (sp.trail.length > 8) sp.trail.pop(); 
+        
+        const alpha = Math.max(0, 1 - Math.pow(sp.age / sp.life, 2)); // Ease-out fade
+        if (alpha <= 0) { s.sparks.splice(i, 1); continue; } 
+        
+        ctx!.beginPath(); 
+        sp.trail.forEach((t, j) => { 
+          ctx!.strokeStyle = `rgba(${sp.color},${alpha * (1 - j / sp.trail.length)})`; 
+          ctx!.lineWidth = sp.size * (1 - j / sp.trail.length); 
+          ctx!.lineCap = 'round';
+          j === 0 ? ctx!.moveTo(t.x, t.y) : ctx!.lineTo(t.x, t.y); 
+        }); 
+        ctx!.stroke(); 
+        
+        const glow = ctx!.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, sp.size * 3); 
+        glow.addColorStop(0, `rgba(${sp.color},${alpha})`); 
+        glow.addColorStop(1, 'rgba(0,0,0,0)'); 
+        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(sp.x, sp.y, sp.size * 3, 0, Math.PI * 2); ctx!.fill(); 
+      }
+
+      // Master Flash (Impact overlay)
+      if (s.flash > 0) {
+        ctx!.fillStyle = `rgba(255, 255, 255, ${s.flash * 0.8})`;
+        ctx!.fillRect(0, 0, width, height);
+        // Exponential fade for cinematic afterglow
+        s.flash = Math.max(0, s.flash - dt * (s.flash > 0.5 ? 2.5 : 1.0));
+      }
+
     }
 
     raf = requestAnimationFrame(frame);
@@ -345,15 +602,16 @@ function useResonanceCanvas(
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [canvasRef, effectGroupRef]);
+  }, [canvasRef, phaseRef, pendingTierRef, revealStartTimeRef]);
 }
 
 // ---------------------------------------------------------------------------
-// Main component
+// Main Component
 // ---------------------------------------------------------------------------
 
 export default function LuckyGenerator() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  
   const buildUpAudioRef = useRef<HTMLAudioElement | null>(null);
   const meteorAudioRef = useRef<HTMLAudioElement | null>(null);
   const lightningAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -364,10 +622,19 @@ export default function LuckyGenerator() {
   const [displayScore, setDisplayScore] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState<number | null>(null);
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
+  
+  // Drives the UI impact animation classes seamlessly
+  const [impactFired, setImpactFired] = useState(false);
 
-  const pendingResultRef = useRef<{ score: number; quoteIndex: number } | null>(null);
+  const pendingResultRef = useRef<{ score: number; quoteIndex: number; tier: Tier } | null>(null);
   const spinIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const impactTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Mutable refs to keep canvas decoupled from React render cycle
+  const phaseRef = useRef<Phase>('idle');
+  const pendingTierRef = useRef<Tier | null>(null);
+  const revealStartTimeRef = useRef<number>(0);
 
   useEffect(() => {
     buildUpAudioRef.current = new Audio(BUILDUP_SOUND);
@@ -379,10 +646,13 @@ export default function LuckyGenerator() {
 
     const stored = readStoredResonance();
     if (stored && stored.lastSpinDate === getLocalDateKey()) {
+      const storedTier = getTier(stored.lastScore);
       setScore(stored.lastScore);
       setDisplayScore(stored.lastScore);
       setQuoteIndex(stored.lastQuoteIndex);
       setPhase('locked');
+      phaseRef.current = 'locked';
+      pendingTierRef.current = storedTier;
     }
 
     return () => {
@@ -390,23 +660,17 @@ export default function LuckyGenerator() {
         if (a) { a.pause(); a.src = ''; }
       });
       if (spinIntervalRef.current) clearInterval(spinIntervalRef.current);
-      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+      if (impactTimeoutRef.current) clearTimeout(impactTimeoutRef.current);
+      if (lockTimeoutRef.current) clearTimeout(lockTimeoutRef.current);
     };
   }, []);
-
-  const tier = useMemo(() => (score === null ? null : getTier(score)), [score]);
-  const effectGroup: EffectGroup = phase === 'idle' ? 'idle' : phase === 'revealing' ? 1 : tier ? tier.id : 'idle';
-  
-  const effectGroupRef = useRef<EffectGroup>('idle');
-  useEffect(() => { effectGroupRef.current = effectGroup; }, [effectGroup]);
-
-  useResonanceCanvas(canvasRef, effectGroupRef);
 
   const handleReveal = useCallback(() => {
     if (phase !== 'idle') return;
 
-    // Silent Audio Unlock for Android: Briefly play and pause the finale files 
-    // while completely muted so they don't leak a jarring cacophony of sound.
+    try { playClickSFX(); } catch (e) {}
+
+    // Silent Audio Unlock for Android
     [meteorAudioRef.current, lightningAudioRef.current, fireworkAudioRef.current].forEach(audio => {
       if (!audio) return;
       audio.muted = true;
@@ -415,32 +679,36 @@ export default function LuckyGenerator() {
         playPromise.then(() => {
           audio.pause();
           audio.currentTime = 0;
-          audio.muted = false; // Restore volume for when the 9 seconds finish
-        }).catch(() => {
-          audio.muted = false;
-        });
+          audio.muted = false; 
+        }).catch(() => { audio.muted = false; });
       }
     });
 
-    // Play the rail-gun charge out loud immediately
     if (buildUpAudioRef.current) {
-      buildUpAudioRef.current.loop = true;
+      buildUpAudioRef.current.loop = false; 
       buildUpAudioRef.current.currentTime = 0;
       buildUpAudioRef.current.play().catch(() => {});
     }
 
     const previous = readStoredResonance();
     const { score: newScore, quoteIndex: newQuoteIndex } = generateTodaysResonance(previous);
+    const newTier = getTier(newScore);
 
-    pendingResultRef.current = { score: newScore, quoteIndex: newQuoteIndex };
+    pendingResultRef.current = { score: newScore, quoteIndex: newQuoteIndex, tier: newTier };
+    pendingTierRef.current = newTier;
+    revealStartTimeRef.current = Date.now();
+    
     setDisplayScore(0);
     setPhase('revealing');
+    phaseRef.current = 'revealing';
+    setImpactFired(false);
 
     spinIntervalRef.current = setInterval(() => {
       setDisplayScore(randomInt(0, 100));
     }, SPIN_INTERVAL_MS);
 
-    revealTimeoutRef.current = setTimeout(() => {
+    // IMPACT POINT: Sync Audio, Stop Spin, Flash Number
+    impactTimeoutRef.current = setTimeout(() => {
       if (spinIntervalRef.current) {
         clearInterval(spinIntervalRef.current);
         spinIntervalRef.current = null;
@@ -450,17 +718,23 @@ export default function LuckyGenerator() {
       if (!pending) return;
 
       if (buildUpAudioRef.current) {
+        // Natural stop of buildup rather than hard cut if possible, 
+        // but ensure it doesn't overlap excessively.
         buildUpAudioRef.current.pause();
-        buildUpAudioRef.current.currentTime = 0;
       }
 
-      if (pending.score <= 33) {
-        playFinaleSFX(meteorAudioRef.current);
-      } else if (pending.score <= 66) {
-        playFinaleSFX(lightningAudioRef.current);
-      } else {
-        playFinaleSFX(fireworkAudioRef.current);
-      }
+      if (pending.tier.id === 2) playFinaleSFX(meteorAudioRef.current);
+      else if (pending.tier.id === 3) playFinaleSFX(lightningAudioRef.current);
+      else playFinaleSFX(fireworkAudioRef.current);
+
+      setDisplayScore(pending.score);
+      setImpactFired(true); // Triggers CSS pop
+    }, IMPACT_TIME_MS);
+
+    // LOCK POINT: Write storage, switch UI to full final state seamlessly during the afterglow
+    lockTimeoutRef.current = setTimeout(() => {
+      const pending = pendingResultRef.current;
+      if (!pending) return;
 
       writeStoredResonance({
         lastSpinDate: getLocalDateKey(),
@@ -470,14 +744,15 @@ export default function LuckyGenerator() {
 
       setScore(pending.score);
       setQuoteIndex(pending.quoteIndex);
-      setDisplayScore(pending.score);
       setPhase('locked');
+      phaseRef.current = 'locked';
       pendingResultRef.current = null;
     }, REVEAL_DURATION_MS);
   }, [phase]);
 
   const handleShare = useCallback(async () => {
-    const text = tier && score !== null ? `My Daily Resonance today is ${score}% — ${tier.name} ✨ luckypickcanada.ca` : 'luckypickcanada.ca';
+    const finalTier = pendingTierRef.current;
+    const text = finalTier && score !== null ? `My Daily Resonance today is ${score}% — ${finalTier.name} ✨ luckypickcanada.ca` : 'luckypickcanada.ca';
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share({ title: 'Lucky Pick Canada', text, url: window.location.href });
@@ -489,9 +764,12 @@ export default function LuckyGenerator() {
       setShareStatus('copied');
       window.setTimeout(() => setShareStatus('idle'), 2200);
     } catch {}
-  }, [tier, score]);
+  }, [score]);
+
+  useResonanceCanvas(canvasRef, phaseRef, pendingTierRef, revealStartTimeRef);
 
   const pulseClass = phase === 'idle' ? 'card-pulse-idle' : phase === 'revealing' ? 'card-pulse-reveal' : 'card-pulse-locked';
+  const tierName = pendingTierRef.current?.name || '';
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#05040e] text-white">
@@ -503,8 +781,9 @@ export default function LuckyGenerator() {
       
       {/* 3. Ambient Nebula Glows */}
       <div
-        className="fixed inset-0 -z-10"
+        className="fixed inset-0 -z-10 transition-opacity duration-1000"
         style={{
+          opacity: phase === 'revealing' && !impactFired ? 0.3 : 1, // Dims during build-up tension
           background:
             'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(76,29,149,0.55), transparent 60%), ' +
             'radial-gradient(ellipse 70% 50% at 85% 90%, rgba(8,47,73,0.6), transparent 60%), ' +
@@ -514,7 +793,6 @@ export default function LuckyGenerator() {
 
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none z-0" />
 
-      {/* Added pt-12 to ensure it clears the mobile camera notch on Galaxy A17 */}
       <div className="relative z-10 flex justify-start p-4 pt-12 sm:pt-6">
         <Link
           href="/"
@@ -526,7 +804,7 @@ export default function LuckyGenerator() {
 
       <main className="relative z-10 flex min-h-[80vh] items-center justify-center px-4 pb-12">
         <div
-          className={`card-pulse ${pulseClass} w-[92%] max-w-sm rounded-2xl border-t border-white/15 bg-black/40 p-6 text-center backdrop-blur-xl motion-reduce:animate-none`}
+          className={`card-pulse ${pulseClass} w-[92%] max-w-sm rounded-2xl border-t border-white/15 bg-black/40 p-6 text-center backdrop-blur-xl motion-reduce:animate-none transition-all duration-700 ${impactFired && phase !== 'locked' ? 'scale-105 border-white/50 bg-white/10' : ''}`}
         >
           {phase === 'idle' && (
             <div className="flex flex-col items-center gap-6 py-4">
@@ -541,25 +819,39 @@ export default function LuckyGenerator() {
           )}
 
           {phase === 'revealing' && (
-            <div className="flex flex-col items-center gap-5 py-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-cyan-200/80 animate-pulse">
+            <div className="flex flex-col items-center gap-5 py-4 min-h-[200px] justify-center">
+              <p className={`text-xs uppercase tracking-[0.3em] text-cyan-200/80 transition-opacity duration-300 ${impactFired ? 'opacity-0' : 'animate-pulse'}`}>
                 THE SKY IS ANSWERING...
               </p>
               <div className="relative flex items-center justify-center">
-                <div className="waveform-ripple ripple-1 absolute inset-0 rounded-full border-2 border-cyan-300/40" />
-                <div className="waveform-ripple ripple-2 absolute inset-0 rounded-full border-2 border-fuchsia-400/30" />
-                <div className="waveform-ripple ripple-3 absolute inset-0 rounded-full border-2 border-cyan-200/20" />
-                <div className="text-6xl font-bold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-white to-cyan-200/80 relative z-10">
+                {!impactFired && (
+                  <>
+                    <div className="waveform-ripple ripple-1 absolute inset-0 rounded-full border-2 border-cyan-300/40" />
+                    <div className="waveform-ripple ripple-2 absolute inset-0 rounded-full border-2 border-fuchsia-400/30" />
+                    <div className="waveform-ripple ripple-3 absolute inset-0 rounded-full border-2 border-cyan-200/20" />
+                  </>
+                )}
+                
+                <div className={`tabular-nums transition-all duration-500 ease-out flex flex-col items-center
+                  ${impactFired 
+                    ? 'text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-cyan-100 scale-110 drop-shadow-[0_0_25px_rgba(255,255,255,0.8)]' 
+                    : 'text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-cyan-200/80 scale-100'}`}
+                >
+                  {impactFired && (
+                    <span className="text-[10px] uppercase tracking-[0.35em] text-white/90 mb-2 block animate-fade-in-up">
+                      {tierName}
+                    </span>
+                  )}
                   {displayScore}%
                 </div>
               </div>
             </div>
           )}
 
-          {phase === 'locked' && tier && score !== null && (
-            <div className="flex flex-col items-center gap-4 py-2">
+          {phase === 'locked' && score !== null && (
+            <div className="flex flex-col items-center gap-4 py-2 animate-fade-in">
               <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
-                {tier.name}
+                {tierName}
               </p>
               <div className="text-7xl font-bold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-yellow-100 via-white to-cyan-200">
                 {score}%
@@ -600,13 +892,14 @@ export default function LuckyGenerator() {
           50% { transform: scale(1.045); opacity: 1; box-shadow: 0 0 34px 8px rgba(103, 232, 249, 0.55); }
         }
         .btn-pulse { animation: pulseButton 2.8s ease-in-out infinite; }
+        
         @keyframes pulseIdle {
           0%, 100% { transform: scale(1); box-shadow: 0 0 30px 6px rgba(139, 92, 246, 0.22); }
           50% { transform: scale(1.012); box-shadow: 0 0 48px 10px rgba(103, 232, 249, 0.28); }
         }
         @keyframes pulseReveal {
-          0%, 100% { transform: scale(1.01); box-shadow: 0 0 55px 14px rgba(217, 70, 239, 0.4); }
-          50% { transform: scale(1.045); box-shadow: 0 0 95px 24px rgba(103, 232, 249, 0.5); }
+          0%, 100% { transform: scale(1.01); box-shadow: 0 0 40px 10px rgba(217, 70, 239, 0.3); }
+          50% { transform: scale(1.02); box-shadow: 0 0 60px 15px rgba(103, 232, 249, 0.4); }
         }
         @keyframes pulseLocked {
           0%, 100% { transform: scale(1); box-shadow: 0 0 70px 18px rgba(139, 92, 246, 0.28); }
@@ -614,8 +907,9 @@ export default function LuckyGenerator() {
         }
         .card-pulse { will-change: transform, box-shadow; }
         .card-pulse-idle { animation: pulseIdle 4.2s ease-in-out infinite; }
-        .card-pulse-reveal { animation: pulseReveal 1.1s ease-in-out infinite; }
+        .card-pulse-reveal { animation: pulseReveal 1.5s ease-in-out infinite; }
         .card-pulse-locked { animation: pulseLocked 5.6s ease-in-out infinite; }
+        
         @keyframes waveformRipple {
           0% { transform: scale(0.8); opacity: 1; }
           100% { transform: scale(2.5); opacity: 0; }
@@ -624,6 +918,18 @@ export default function LuckyGenerator() {
         .ripple-1 { animation-delay: 0s; }
         .ripple-2 { animation-delay: 0.6s; }
         .ripple-3 { animation-delay: 1.2s; }
+
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
       `}</style>
     </div>
   );
