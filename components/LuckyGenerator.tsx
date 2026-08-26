@@ -44,9 +44,9 @@ interface Tier {
 const STORAGE_KEY = 'luckyPickCanada:dailyResonance';
 
 // Cinematic Timing
-const REVEAL_DURATION_MS = 9500;
-const TENSION_TIME_MS = 7000;
-const IMPACT_TIME_MS = 7800;
+const REVEAL_DURATION_MS = 9000;
+const TENSION_TIME_MS = 7500;
+const IMPACT_TIME_MS = 8800;
 
 const SPIN_INTERVAL_MS = 60;
 const SPIN_INTERVAL_FAST_MS = 20;
@@ -136,11 +136,11 @@ function generateTodaysResonance(previous: StoredResonance | null): {
   score: number;
   quoteIndex: number;
 } {
-  let score = randomInt(0, 100);
+  let score = Math.floor(Math.random() * 101);
   if (previous) {
     let attempts = 0;
     while (score === previous.lastScore && attempts < 100) {
-      score = randomInt(0, 100);
+      score = Math.floor(Math.random() * 101);
       attempts++;
     }
   }
@@ -481,10 +481,10 @@ function useResonanceCanvas(
         if (tReveal < TENSION_TIME_MS) {
           globalIntensity = tReveal / TENSION_TIME_MS;
           if (now - s.scoreLastUpdate > s.scoreInterval) {
-             if (scoreTextRef.current) scoreTextRef.current.textContent = `${randomInt(0, 100)}%`;
+             if (scoreTextRef.current) scoreTextRef.current.textContent = `${Math.floor(Math.random() * 101)}%`;
              s.scoreLastUpdate = now;
           }
-          if (tReveal > 5500 && tier && now > s.nextAmbientEffectAt) {
+          if (tReveal > 6000 && tier && now > s.nextAmbientEffectAt) {
             if (tier.id === 2 && Math.random() > 0.5) spawnMeteor(false);
             if (tier.id === 3 && Math.random() > 0.6) spawnBolt(false);
             if (tier.id === 4 && Math.random() > 0.7) spawnRocket(false);
@@ -497,7 +497,7 @@ function useResonanceCanvas(
           s.scoreInterval = SPIN_INTERVAL_FAST_MS;
 
           if (now - s.scoreLastUpdate > s.scoreInterval) {
-             if (scoreTextRef.current) scoreTextRef.current.textContent = `${randomInt(0, 100)}%`;
+             if (scoreTextRef.current) scoreTextRef.current.textContent = `${Math.floor(Math.random() * 101)}%`;
              s.scoreLastUpdate = now;
           }
 
@@ -507,9 +507,7 @@ function useResonanceCanvas(
              buildUpGainRef.current.gain.value = Math.max(0, 1 - fadeProgress);
           }
 
-          // Darken slightly
-          ctx!.fillStyle = `rgba(0,0,0,${((tReveal - TENSION_TIME_MS) / (IMPACT_TIME_MS - TENSION_TIME_MS)) * 0.4})`;
-          ctx!.fillRect(0, 0, width, height);
+          // Darken slightly (removed fill to keep transparency)
         }
         // 7800: THE IMPACT
         else if (tReveal >= IMPACT_TIME_MS && !s.impactTriggered) {
@@ -517,9 +515,7 @@ function useResonanceCanvas(
           setImpactFired(true); // Triggers CSS
           s.flash = 1.0;
 
-          if (pendingResultRef.current) {
-             if (scoreTextRef.current) scoreTextRef.current.textContent = `${pendingResultRef.current.score}%`;
-          }
+          // Score locking is moved to the React timeout at 9.0s
 
           if (buildUpSourceRef.current) {
              try {
@@ -592,8 +588,6 @@ function useResonanceCanvas(
       } else {
         globalIntensity = 0.2;
       }
-
-ctx!.globalCompositeOperation = 'source-over';
 
       ctx!.globalCompositeOperation = 'lighter';
 
@@ -924,6 +918,7 @@ export default function LuckyGenerator() {
         lastScore: pending.score,
         lastQuoteIndex: pending.quoteIndex,
       });
+      if (scoreTextRef.current) scoreTextRef.current.textContent = `${pending.score}%`;
 
       setScore(pending.score);
       setQuoteIndex(pending.quoteIndex);
@@ -1023,11 +1018,7 @@ export default function LuckyGenerator() {
                     ? 'text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-cyan-50 scale-110 drop-shadow-[0_0_40px_rgba(255,255,255,1)] brightness-150'
                     : 'text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-cyan-200/80 scale-100'}`}
                 >
-                  {impactFired && (
-                    <span className="text-[10px] uppercase tracking-[0.35em] text-white/90 mb-2 block animate-fade-in-up">
-                      {tierName}
-                    </span>
-                  )}
+                  {/* Tier name is intentionally hidden during reveal, only shown in locked phase */}
                   <span ref={scoreTextRef}>0%</span>
                 </div>
               </div>
