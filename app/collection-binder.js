@@ -178,7 +178,7 @@ export default function CollectionBinder() {
 <img
                                   src={card.image}
                                   alt={card.title}
-                                  className="w-full h-full object-cover transition-all duration-300"
+                                  className={`w-full h-full object-cover transition-all duration-300`}
                                   loading="lazy"
                                 />
 )}
