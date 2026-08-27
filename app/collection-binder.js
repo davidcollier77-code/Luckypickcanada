@@ -2,23 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { LUCKY_CARDS } from './lucky-card-data';
 
 
-const SERIES_1_PLACEHOLDERS = [
-  // 5 Standard Tier
-  { id: 'placeholder-std-1', title: 'Placeholder Standard 1', tier: 'standard', image: '/placeholder1.png' },
-  { id: 'placeholder-std-2', title: 'Placeholder Standard 2', tier: 'standard', image: '/placeholder2.png' },
-  { id: 'placeholder-std-3', title: 'Placeholder Standard 3', tier: 'standard', image: '/placeholder3.png' },
-  { id: 'placeholder-std-4', title: 'Placeholder Standard 4', tier: 'standard', image: '/placeholder4.png' },
-  { id: 'placeholder-std-5', title: 'Placeholder Standard 5', tier: 'standard', image: '/placeholder5.png' },
-  // 3 Premium Tier
-  { id: 'placeholder-prm-1', title: 'Placeholder Premium 1', tier: 'premium', image: '/placeholder6.png' },
-  { id: 'placeholder-prm-2', title: 'Placeholder Premium 2', tier: 'premium', image: '/placeholder7.png' },
-  { id: 'placeholder-prm-3', title: 'Placeholder Premium 3', tier: 'premium', image: '/placeholder8.png' },
-  // 2 Flagship Tier
-  { id: 'placeholder-flg-1', title: 'Placeholder Flagship 1', tier: 'flagship', image: '/placeholder9.png' },
-  { id: 'placeholder-flg-2', title: 'Placeholder Flagship 2', tier: 'flagship', image: '/placeholder10.png' }
-];
 
 export default function CollectionBinder() {
   const [isOpen, setIsOpen] = useState(false);
@@ -122,9 +108,9 @@ export default function CollectionBinder() {
     { id: 'flagship', label: 'Flagship Tier' }
   ];
 
-  const totalCards = SERIES_1_PLACEHOLDERS.length;
+  const totalCards = LUCKY_CARDS.length;
   // unique collected cards count (intersection of LUCKY_CARDS and unlockedCards)
-  const collectedCount = SERIES_1_PLACEHOLDERS.filter(c => unlockedCards.includes(c.id)).length;
+  const collectedCount = LUCKY_CARDS.filter(c => unlockedCards.includes(c.id)).length;
 
   return (
     <>
@@ -173,7 +159,7 @@ export default function CollectionBinder() {
             {/* Scrollable List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-8">
               {tiers.map(tier => {
-                const tierCards = SERIES_1_PLACEHOLDERS.filter(c => c.tier === tier.id);
+                const tierCards = LUCKY_CARDS.filter(c => c.tier === tier.id);
                 if (tierCards.length === 0) return null;
 
                 return (
@@ -188,12 +174,14 @@ export default function CollectionBinder() {
                         return (
                           <div key={card.id} className="flex flex-col items-center group">
                             <div className={`relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 border-2 transition-all ${isUnlocked ? 'border-gray-700 group-hover:border-gray-500' : 'border-gray-800/50'}`}>
-                               <img
+                               {isUnlocked && (
+<img
                                   src={card.image}
-                                  alt={isUnlocked ? card.title : 'Locked Card'}
-                                  className={`w-full h-full object-cover transition-all duration-300 ${!isUnlocked ? 'brightness-0 opacity-40 grayscale blur-[1px]' : ''}`}
+                                  alt={card.title}
+                                  className="w-full h-full object-cover transition-all duration-300"
                                   loading="lazy"
                                 />
+)}
                                 {!isUnlocked && (
                                   <div className="absolute inset-0 flex items-center justify-center">
                                     <svg className="w-8 h-8 text-gray-500 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">

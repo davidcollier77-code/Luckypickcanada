@@ -12,3 +12,4 @@ __pycache__/
 .pytest_cache/
 venv/
 test-venv/
+server.pid
