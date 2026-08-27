@@ -7,7 +7,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const auroraGlow = document.getElementById('aurora-glow');
 
   let cooldownTimer = null;
-  const COOLDOWN_SECONDS = 6;
+  const COOLDOWN_SECONDS = 10;
+  checkCooldownStatus();
+
+  function checkCooldownStatus() {
+    const lastRequest = localStorage.getItem('lastFortuneRequestTime');
+    if (lastRequest) {
+      const elapsed = (Date.now() - parseInt(lastRequest, 10)) / 1000;
+      if (elapsed < COOLDOWN_SECONDS) {
+        startCooldown(Math.ceil(COOLDOWN_SECONDS - elapsed));
+      }
+    }
+  }
 
   // Escape HTML to prevent XSS
   function escapeHtml(text) {
@@ -26,8 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.textContent = 'Seek Fortune';
   }
 
-  function startCooldown() {
-    let secondsLeft = COOLDOWN_SECONDS;
+  function startCooldown(overrideSeconds) {
+    let secondsLeft = overrideSeconds || COOLDOWN_SECONDS;
+    if (!overrideSeconds) {
+      localStorage.setItem('lastFortuneRequestTime', Date.now().toString());
+    }
     submitBtn.disabled = true;
     input.disabled = true;
 
@@ -82,7 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
       const response = await fetch('/api/oracle', {
+        signal: controller.signal,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -90,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ question })
       });
 
+      clearTimeout(timeoutId);
       if (response.status === 429) {
         display.textContent = 'The mists are tired! Please wait a moment before asking again.';
         resetCooldown();
@@ -115,7 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (error) {
       console.error('Oracle fetch error:', error);
-      display.textContent = "The connection to the ethereal realm was lost. Please try again.";
+      if (error.name === 'AbortError') {
+        display.textContent = "The connection to the ethereal realm was lost. Please try again.";
+      } else {
+        display.textContent = "The connection to the ethereal realm was lost. Please try again.";
+      }
     }
       resetCooldown();
       if (auroraGlow) {
