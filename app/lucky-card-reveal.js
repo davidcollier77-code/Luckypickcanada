@@ -114,7 +114,7 @@ export default function LuckyCardReveal() {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
-    }, timing.anticipation + flipDuration);
+    }, timing.anticipation);
   };
 
   return (
