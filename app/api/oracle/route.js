@@ -54,11 +54,7 @@ const MAX_SUBMISSIONS_PER_WINDOW = 10;
 const rateLimitMap = new Map();
 
 function getClientIp(request) {
-  const cfConnectingIp = request.headers.get('cf-connecting-ip');
-  if (cfConnectingIp) return cfConnectingIp.trim();
-  const xForwardedFor = request.headers.get('x-forwarded-for');
-  if (xForwardedFor) return xForwardedFor.split(',')[0].trim();
-  return 'anonymous';
+  return request.headers.get('cf-connecting-ip') || 'anonymous';
 }
 
 function checkRateLimit(ip) {
@@ -80,10 +76,8 @@ function checkRateLimit(ip) {
 
   // Fix race condition by incrementing and setting before the check
   bucket.count += 1;
+  rateLimitMap.set(ip, bucket);
   
-  if (!existing || existing.resetAt <= currentTime) {
-    rateLimitMap.set(ip, bucket);
-  }
   return bucket.count <= MAX_SUBMISSIONS_PER_WINDOW;
 }
 
