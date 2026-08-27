@@ -49,16 +49,12 @@ function sanitizeInput(input) {
 }
 
 
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
-const MAX_SUBMISSIONS_PER_WINDOW = 5;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_SUBMISSIONS_PER_WINDOW = 10;
 const rateLimitMap = new Map();
 
 function getClientIp(request) {
-  const cfConnectingIp = request.headers.get('cf-connecting-ip');
-  if (cfConnectingIp) return cfConnectingIp.trim();
-  // Only trust cf-connecting-ip from Cloudflare to prevent IP spoofing
-  // Do not use x-forwarded-for as it can be easily spoofed
-  return 'unknown';
+  return request.headers.get('cf-connecting-ip') || 'anonymous';
 }
 
 function checkRateLimit(ip) {
@@ -78,21 +74,17 @@ function checkRateLimit(ip) {
     ? existing
     : { count: 0, resetAt: currentTime + RATE_LIMIT_WINDOW_MS };
 
-  bucket.count += 1;
-  rateLimitMap.set(ip, bucket);
   // Fix race condition by incrementing and setting before the check
   bucket.count += 1;
+  rateLimitMap.set(ip, bucket);
   
-  if (!existing || existing.resetAt <= currentTime) {
-    rateLimitMap.set(ip, bucket);
-  }
   return bucket.count <= MAX_SUBMISSIONS_PER_WINDOW;
 }
 
 export async function POST(request) {
   const ip = getClientIp(request);
   if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: "Too many requests. Please wait before asking again." }, {
+    return NextResponse.json({ error: "The mists are tired! Please wait a moment before asking again." }, {
       status: 429,
       headers: getCorsHeaders(request)
     });
@@ -103,7 +95,8 @@ export async function POST(request) {
     // Check API Key
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: "Configuration error: Missing API key" }, {
+      console.error("Missing GROQ_API_KEY");
+      return NextResponse.json({ error: "The oracle's connection to the stars was interrupted. Please try again shortly." }, {
         status: 500,
         headers: {
           ...corsHeaders
@@ -210,7 +203,7 @@ Your core guidelines:
       const errorText = await groqResponse.text();
       // Log only non-sensitive information
       console.error('Groq API Error:', groqResponse.status, errorText);
-      return NextResponse.json({ error: "The oracle is temporarily unavailable." }, {
+      return NextResponse.json({ error: "The oracle's connection to the stars was interrupted. Please try again shortly." }, {
         status: 502,
         headers: {
           ...corsHeaders
@@ -233,7 +226,7 @@ Your core guidelines:
 
   } catch (error) {
     console.error('Unhandled Oracle Error:', error);
-    return NextResponse.json({ error: "An unexpected disturbance occurred in the ethereal realm." }, {
+    return NextResponse.json({ error: "The oracle's connection to the stars was interrupted. Please try again shortly." }, {
       status: 500,
       headers: {
         ...corsHeaders
