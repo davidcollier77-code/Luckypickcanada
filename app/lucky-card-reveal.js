@@ -85,6 +85,19 @@ export default function LuckyCardReveal() {
         cardId: card.id,
         revealDate: localDateKey(),
       }));
+
+      // Update unlocked cards for Binder
+      const unlockedCardsStr = window.localStorage.getItem('unlockedCards');
+      let unlockedCards = [];
+      if (unlockedCardsStr) {
+        unlockedCards = JSON.parse(unlockedCardsStr);
+      }
+      if (!unlockedCards.includes(card.id)) {
+        unlockedCards.push(card.id);
+        window.localStorage.setItem('unlockedCards', JSON.stringify(unlockedCards));
+        // Dispatch custom event to notify binder
+        window.dispatchEvent(new Event('unlockedCardsUpdated'));
+      }
     } catch (e) {}
   }
 

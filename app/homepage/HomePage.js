@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import LuckyCardReveal from '../lucky-card-reveal';
+import CollectionBinder from '../collection-binder';
 import { createLuckyReveal } from '../lucky-reveal';
 
 // PERFORMANCE OPTIMIZATION (Bolt ⚡):
@@ -83,6 +84,7 @@ export default function HomePage() {
           Open one collectible card each day for a calm spark of encouragement. Can you collect all {LUCKY_CARDS.length}?
         </SectionHeading>
         <LuckyCardReveal />
+              <CollectionBinder />
       </section>
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
