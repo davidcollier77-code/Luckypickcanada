@@ -149,7 +149,6 @@ export async function POST(request) {
     const sanitizedQuestion = sanitizeInput(question);
 
     // Groq API Request
-    const currentDateTime = new Date().toLocaleString("en-CA", { timeZone: "America/Halifax" });
 
     const systemPrompt = `You are the Mystic Canadian Oracle for Lucky Pick Canada. Users will ask you all kinds of questions—from love, career, and lottery hopes to completely random, everyday inquiries.
 
