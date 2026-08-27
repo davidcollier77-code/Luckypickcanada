@@ -151,6 +151,7 @@ export default function LuckyCardReveal() {
             type="button"
             onClick={triggerCardDraw}
             disabled={isRevealed || isGenerating}
+            aria-disabled={isRevealed || isGenerating}
             className="mt-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-base shadow-lg hover:brightness-110 active:scale-95 transition-all"
           >
             {isGenerating ? 'Revealing...' : 'Reveal Today’s Luck'}
@@ -162,9 +163,16 @@ export default function LuckyCardReveal() {
       <div className="w-full flex justify-center py-2 flex-shrink-0">
         <div
           role="button"
+          tabIndex={0}
           aria-pressed={isRevealed}
           onClick={() => isRevealed && setIsRevealed((s) => !s)}
-          className="relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent]"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (isRevealed) setIsRevealed((s) => !s);
+            }
+          }}
+          className="relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
           style={{ perspective: '1200px' }}
         >
           <div className={`shake-target relative w-full h-full ${isGenerating && selectedCard ? `shake-${selectedCard.tier}` : ''}`}>

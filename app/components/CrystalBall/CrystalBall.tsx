@@ -160,6 +160,7 @@ export default function CrystalBall({
             className={styles.seekButton}
             onClick={handleSeekFortune}
             disabled={status === 'loading' || !question.trim()}
+            aria-disabled={status === 'loading' || !question.trim()}
           >
             {status === 'loading' ? 'Consulting the Mists…' : 'Seek Fortune'}
           </button>
