@@ -101,7 +101,7 @@ export async function POST(request) {
   const corsHeaders = getCorsHeaders(request);
   try {
     // Check API Key
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: "Configuration error: Missing API key" }, {
         status: 500,
@@ -148,36 +148,36 @@ export async function POST(request) {
     // Sanitize question before embedding in prompt
     const sanitizedQuestion = sanitizeInput(question);
 
-    // Gemini API Request
-    const currentDateTime = new Date().toLocaleString("en-CA", { timeZone: "America/Halifax" });
+    // Groq API Request
+
+    const systemPrompt = `You are the Mystic Canadian Oracle for Lucky Pick Canada. Users will ask you all kinds of questions—from love, career, and lottery hopes to completely random, everyday inquiries.
+
+Your core guidelines:
+1. THE CANADIAN LUCKY PIVOT: No matter what question the user asks (even if it's completely unrelated), playfully spin your answer into an uplifting fortune. Weave in Canadian imagery and luck metaphors (the dancing Northern Lights, maple sweetness, lucky loonies, crisp boreal breezes, or cozy campfires).
+2. TONE & VIBE: Warm, whimsical, encouraging, and mystical. Never sarcastic or robotic.
+3. ENTERTAINMENT ONLY: If asked about lottery jackpots or gambling odds, keep it light and grounded in fun—remind them that real magic is in the daily journey and unexpected smiles. Never guarantee financial outcomes or provide gambling advice.
+4. BREVITY: Keep all fortunes strictly between 2 to 3 concise, punchy sentences so they display cleanly and instantly on mobile screens.
+5. CLEAN OUTPUT: Return only the raw fortune text with no conversational prefixes (e.g., no 'Here is your fortune:'), quotes, or markdown code fences.`;
 
     const apiBody = {
-      systemInstruction: {
-        parts: [{
-          text: `You are the Mystic Crystal Ball of LuckyPickCanada. The current real-world date and time is ${currentDateTime}. You are fully aware of the current date, time, and day of the week, and should seamlessly weave this temporal knowledge into your answers when asked.
-
-    You are a Mystic Canadian Oracle. Your tone is atmospheric, warm, encouraging, and mysterious. Do not use clichés like "Greetings traveler", "Ahoy", or overly formal fantasy prose (no pirate or renaissance fair jargon). Do NOT explicitly mention "three-tier digital cards", "percentage gauge", or "the luck meter" in the readings unless the user directly asks about them.
-    Keep fortunes concise (2 to 4 impactful, poetic sentences max). Focus on intuition, optimism, possibility, and Canadian wilderness/aurora themes. Keep all responses punchy, grounded, and uplifting. Ground the advice in general good fortune, focus, and positive energy for digital entertainment.`
-        }]
-      },
-      contents: [{
-        parts: [{ text: sanitizedQuestion }]
-      }],
-      generationConfig: {
-        temperature: 0.7,
-      }
+      model: "llama-3.1-8b-instant",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: sanitizedQuestion }
+      ],
+      temperature: 0.75,
     };
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-    let geminiResponse;
+    let groqResponse;
     try {
-      geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`, {
+      groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
+          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify(apiBody),
         signal: controller.signal
@@ -197,7 +197,7 @@ export async function POST(request) {
 
     clearTimeout(timeoutId);
 
-    if (geminiResponse.status === 429) {
+    if (groqResponse.status === 429) {
       return NextResponse.json({ error: "The mists are tired! Please wait a moment before asking again." }, {
         status: 429,
         headers: {
@@ -206,10 +206,10 @@ export async function POST(request) {
       });
     }
 
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
+    if (!groqResponse.ok) {
+      const errorText = await groqResponse.text();
       // Log only non-sensitive information
-      console.error('Gemini API Error:', geminiResponse.status, errorText);
+      console.error('Groq API Error:', groqResponse.status, errorText);
       return NextResponse.json({ error: "The oracle is temporarily unavailable." }, {
         status: 502,
         headers: {
@@ -218,11 +218,11 @@ export async function POST(request) {
       });
     }
 
-    const data = await geminiResponse.json();
+    const data = await groqResponse.json();
 
     let fortune = "The mists are silent today.";
-    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
-      fortune = data.candidates[0].content.parts[0].text.trim();
+    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+      fortune = data.choices[0].message.content.trim();
     }
 
     return NextResponse.json({ fortune }, {
