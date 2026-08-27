@@ -149,14 +149,18 @@ async function verifyTurnstile({ token, ip, formName }) {
   }
 
   try {
+    const payload = {
+      secret: secretKey,
+      response: String(token)
+    };
+    if (ip && ip !== 'unknown') {
+      payload.remoteip = ip;
+    }
+
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        secret: secretKey,
-        response: String(token),
-        remoteip: ip === 'unknown' ? '' : ip,
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
