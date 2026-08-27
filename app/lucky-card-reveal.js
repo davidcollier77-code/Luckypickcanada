@@ -33,6 +33,26 @@ export default function LuckyCardReveal() {
   const [imageError, setImageError] = useState(false);
   const revealTimer = useRef(null);
   const announcementTimer = useRef(null);
+  const audioRef = useRef(null);
+  const audioTimeoutRef = useRef(null);
+
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      audioRef.current = new Audio('/freesound_community-shaking-coins-105774.mp3');
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.6;
+    }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      if (audioTimeoutRef.current) {
+        window.clearTimeout(audioTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -71,6 +91,7 @@ export default function LuckyCardReveal() {
   const triggerCardDraw = () => {
     window.clearTimeout(revealTimer.current);
     window.clearTimeout(announcementTimer.current);
+    window.clearTimeout(audioTimeoutRef.current);
     const card = selectWeightedLuckyCard(previousCardId);
     const timing = REVEAL_TIMINGS[card.tier] || REVEAL_TIMINGS.standard;
     setSelectedCard(card);
@@ -78,9 +99,22 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
 
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(err => console.warn('Audio playback error:', err));
+    }
+
     revealTimer.current = window.setTimeout(() => {
       showLuckyCard(card);
     }, timing.anticipation);
+
+    const flipDuration = 700;
+    audioTimeoutRef.current = window.setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }, timing.anticipation + flipDuration);
   };
 
   return (
