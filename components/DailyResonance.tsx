@@ -476,15 +476,21 @@ export default function DailyResonance() {
 
     const drawBg = () => {
       bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      bgCtx.fillStyle = '#ffffff';
       stars.forEach(star => {
         star.alpha += star.speed;
         if (star.alpha > 1 || star.alpha < 0.2) star.speed *= -1;
 
-        bgCtx.beginPath();
-        bgCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        bgCtx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
-        bgCtx.fill();
+        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+        // Replaced expensive path/arc rendering with fillRect for tiny particles.
+        // Bypassing trigonometric curve calculations for particles
+        // keeps main thread execution time low and maintains a smooth 60fps.
+        // Also removed string interpolation for dynamic transparency,
+        // relying on globalAlpha instead to reduce garbage collection pressure.
+        bgCtx.globalAlpha = star.alpha;
+        bgCtx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
       });
+      bgCtx.globalAlpha = 1.0;
       bgRequestRef.current = requestAnimationFrame(drawBg);
     };
 
