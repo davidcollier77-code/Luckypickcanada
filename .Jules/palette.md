@@ -7,3 +7,6 @@
 ## 2026-08-26 - Custom Button Focus Outline
 **Learning:** Custom buttons and links using `cursor-default` without any keyboard focus state are inaccessible to keyboard and screen reader users.
 **Action:** Always provide a clear visual indicator for keyboard focus on interactive elements using tailwind's `focus-visible:` variants (e.g. `focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80`), especially when creating custom stylized buttons that may have removed default browser outlines.
+## 2026-08-27 - Custom Button ARIA states
+**Learning:** Custom interactive elements using `role="button"` need keyboard interactivity (`tabIndex`, `onKeyDown`) and `focus-visible` styles. Also, native disabled buttons improve with `aria-disabled`.
+**Action:** Ensure custom buttons implement full keyboard a11y.

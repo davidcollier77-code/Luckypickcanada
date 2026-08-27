@@ -185,9 +185,9 @@ export default function ShareLuckyPickButton({ reveal }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }} aria-label="Your lucky numbers">
               {reveal.game.numbers.map((number) => (
-                <span key={number} style={{ display: 'inline-grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', background: 'radial-gradient(circle at 30% 25%, #fff7d6, #facc15 48%, #b7791f 100%)', color: '#071225', fontWeight: 950, boxShadow: '0 0 20px rgba(250, 204, 21, 0.54)' }}>
+                <span key={number} aria-label={`Number ${number}`} style={{ display: 'inline-grid', placeItems: 'center', width: 42, height: 42, borderRadius: '50%', background: 'radial-gradient(circle at 30% 25%, #fff7d6, #facc15 48%, #b7791f 100%)', color: '#071225', fontWeight: 950, boxShadow: '0 0 20px rgba(250, 204, 21, 0.54)' }}>
                   {number}
                 </span>
               ))}
