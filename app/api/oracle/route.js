@@ -54,7 +54,9 @@ const MAX_SUBMISSIONS_PER_WINDOW = 10;
 const rateLimitMap = new Map();
 
 function getClientIp(request) {
-  return request.headers.get('cf-connecting-ip') || 'anonymous';
+  const cfConnectingIp = request.headers.get('cf-connecting-ip');
+  if (cfConnectingIp) return cfConnectingIp.trim();
+  return 'anonymous';
 }
 
 function checkRateLimit(ip) {
