@@ -89,13 +89,8 @@ export default function LuckyCardReveal() {
       // Update unlocked cards for Binder
       const unlockedCardsStr = window.localStorage.getItem('unlockedCards');
       let unlockedCards = [];
-      try {
-        if (unlockedCardsStr) {
-          unlockedCards = JSON.parse(unlockedCardsStr);
-        }
-      } catch (parseError) {
-        console.warn('Failed to parse unlocked cards, resetting:', parseError);
-        unlockedCards = [];
+      if (unlockedCardsStr) {
+        unlockedCards = JSON.parse(unlockedCardsStr);
       }
       if (!unlockedCards.includes(card.id)) {
         unlockedCards.push(card.id);
@@ -103,7 +98,9 @@ export default function LuckyCardReveal() {
         // Dispatch custom event to notify binder
         window.dispatchEvent(new Event('unlockedCardsUpdated'));
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Failed to save to localStorage:', e);
+    }
   }
 
   const triggerCardDraw = () => {
