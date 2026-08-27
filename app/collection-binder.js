@@ -177,8 +177,8 @@ export default function CollectionBinder() {
                                {isUnlocked && (
 <img
                                   src={card.image}
-                                  alt={isUnlocked ? card.title : 'Locked Card'}
-                                  className={`w-full h-full object-cover transition-all duration-300 ${!isUnlocked ? 'brightness-0 opacity-40 grayscale blur-[1px]' : ''}`}
+                                  alt={card.title}
+                                  className="w-full h-full object-cover transition-all duration-300"
                                   loading="lazy"
                                 />
 )}
