@@ -12,7 +12,7 @@ export default function FAQSection() {
     },
     {
       question: "What is the Lucky Meter (Daily Resonance Ritual) and how does it work?",
-      answer: "The Lucky Meter—also known as your Daily Resonance Ritual—is an interactive way to check your daily \"luck\" levels just for fun! When you awaken your resonance, the site generates a unique percentage from 0 to 100%, paired with an uplifting, Canadian-themed fortune or daily quote. You can check back every 24 hours for a new reading. Please remember that Lucky Pick Canada is purely a digital entertainment experience designed to bring a little magic to your day, and this feature has no affiliation with real-world gambling or lottery prizes."
+      answer: "The Lucky Meter—also known as your Daily Resonance Ritual—is an interactive way to check your daily \"luck\" levels just for fun! When you awaken your resonance, the site generates a unique percentage from 0 to 100%, paired with an uplifting, Canadian-themed fortune or daily quote. You can check back every 24 hours for a new reading. Lucky Pick Canada is purely a digital entertainment experience designed for fun, with no affiliation with real-world gambling or lottery prizes."
     },
     {
       question: "Is Lucky Pick Canada free to play?",
