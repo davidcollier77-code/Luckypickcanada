@@ -98,7 +98,7 @@ export default function CollectionBinder() {
     reader.onload = (event) => {
       try {
         const result = JSON.parse(event.target.result);
-        if (Array.isArray(result)) {
+        if (Array.isArray(result) && result.every(item => typeof item === 'string')) {
           window.localStorage.setItem('unlockedCards', JSON.stringify(result));
           setUnlockedCards(result);
           alert('Collection restored successfully!');
