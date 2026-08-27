@@ -64,6 +64,7 @@
     "enabled": true
   },
   "vars": {
-    "GIFT_FROM_EMAIL": "gifts@luckypickcanada.ca"
+    "GIFT_FROM_EMAIL": "gifts@luckypickcanada.ca",
+    "TURNSTILE_SECRET_KEY": ""
   }
 }

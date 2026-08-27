@@ -100,6 +100,7 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
         widgetIdRef.current = turnstile.render(containerRef.current, {
           sitekey: siteKey,
           theme: 'auto',
+          'refresh-expired': 'auto',
           callback: (newToken) => {
             setToken(newToken || '');
             setError('');
@@ -108,7 +109,6 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
           'expired-callback': () => {
             setToken('');
             setStatus('loading');
-            setError('The security check expired. Please complete it again.');
           },
           'error-callback': () => {
             setToken('');

@@ -8,7 +8,11 @@ export default function FAQSection() {
   const faqs = [
     {
       question: "How does the daily Lucky Pick card generator work?",
-      answer: "Our daily Lucky Pick card generator allows you to open one collectible digital card every 24 hours. The system uses a specialized randomization algorithm to select your daily card from our digital deck, offering you a unique spark of encouragement and a moment of possibility each day. The cards are tiered with varying rarities to make each draw exciting."
+      answer: "Our daily Lucky Pick generator allows you to reveal one collectible digital card every 24 hours. The system uses a specialized randomization algorithm to select your daily card from our digital deck, offering you a unique spark of encouragement. You can now build your own collection! Every card you reveal is automatically saved to your personal digital binder. The cards feature varying rarities to make each daily draw an exciting piece of digital entertainment—have fun and see if you can collect them all! (Please note: Lucky Pick Canada is purely for fun and has no affiliation with real-world lotteries or gambling)."
+    },
+    {
+      question: "What is the Lucky Meter (Daily Resonance Ritual) and how does it work?",
+      answer: "The Lucky Meter—also known as your Daily Resonance Ritual—is an interactive way to check your daily \"luck\" levels just for fun! When you awaken your resonance, the site generates a unique percentage from 0 to 100%, paired with an uplifting, Canadian-themed fortune or daily quote. You can check back every 24 hours for a new reading. Please remember that Lucky Pick Canada is purely a digital entertainment experience designed to bring a little magic to your day, and this feature has no affiliation with real-world gambling or lottery prizes."
     },
     {
       question: "Is Lucky Pick Canada free to play?",
