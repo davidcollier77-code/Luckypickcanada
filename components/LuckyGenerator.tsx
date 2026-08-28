@@ -965,7 +965,7 @@ export default function LuckyGenerator() {
       phaseRef.current = 'locked';
       pendingResultRef.current = null;
     }, REVEAL_DURATION_MS);
-  }, [phase, trackTimeout]);
+  }, [phase, isAudioReady, trackTimeout]);
 
   const handleShare = useCallback(async () => {
     const finalTier = pendingTierRef.current;
