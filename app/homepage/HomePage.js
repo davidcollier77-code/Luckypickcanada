@@ -99,7 +99,7 @@ export default function HomePage() {
             <p>Create your personal LuckyPickCanada moment with a unique interactive pick experience.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="inline-flex items-center justify-center px-6 py-3 rounded-full backdrop-blur-md bg-white/5 border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
+            <button type="button" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
@@ -107,7 +107,7 @@ export default function HomePage() {
             <h3 className="homepage-offer-title">Gift Experience</h3>
             <p>Send someone special their own LuckyPickCanada experience — a fun digital gift filled with lucky moments.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
-            <button type="button" className="inline-flex items-center justify-center px-6 py-3 rounded-full backdrop-blur-md bg-white/5 border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
+            <button type="button" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
@@ -115,7 +115,7 @@ export default function HomePage() {
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <div className="animate-pulse-scale inline-block"><button type="button" className="inline-flex items-center justify-center px-6 py-3 rounded-full backdrop-blur-md bg-white/5 border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95" onClick={openTipJar}>Open the tip jar</button></div>
+            <div className="inline-block"><button type="button" className="animate-pulse-glow inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openTipJar}>Open the tip jar</button></div>
           </article>
         </div>
       </section>
@@ -125,19 +125,19 @@ export default function HomePage() {
           <p className="homepage-offer-kicker">Lucky Stories</p>
           <h2>Community Stories</h2>
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
-          <Link href="/stories" className="inline-flex items-center justify-center px-6 py-3 rounded-full backdrop-blur-md bg-white/5 border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95">See Our Story Section</Link>
+          <Link href="/stories" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">See Our Story Section</Link>
         </article>
         <article id="crystal-ball" className="homepage-community-card">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
           <h2>Consult the Lucky Crystal Ball</h2>
           <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
-          <Link href="/crystal-ball" className="inline-flex items-center justify-center px-6 py-3 rounded-full backdrop-blur-md bg-white/5 border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95">CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
+          <Link href="/crystal-ball" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
         </article>
         <article id="community-map" className="homepage-community-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Lucky Map</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
-          <Link href="/map" className="inline-flex items-center justify-center px-6 py-3 rounded-full backdrop-blur-md bg-white/5 border border-white/20 text-white font-semibold transition-all duration-300 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-105 active:scale-95">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
+          <Link href="/map" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
         </article>
       </section>
 

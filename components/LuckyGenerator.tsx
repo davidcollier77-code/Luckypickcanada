@@ -385,7 +385,7 @@ function useResonanceCanvas(
       const startX = (Math.random() * 1.5 * width) - (width * 0.2);
       const startY = isHero ? (Math.random() * -300 - 100) : (Math.random() * -100 - 50);
 
-      const speed = reduced ? 400 : (isHero ? 1200 + Math.random() * 600 : 600 + Math.random() * 400);
+      const speed = reduced ? 600 : (isHero ? 1800 + Math.random() * 800 : 900 + Math.random() * 500);
       const angle = (35 + Math.random() * 30) * (Math.PI / 180);
 
       s.meteors.push({
@@ -410,7 +410,7 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string, isHero: boolean) {
-      const count = reduced ? 15 : (isHero ? 80 : 25 + Math.floor(Math.random() * 15));
+      const count = reduced ? 15 : (isHero ? 120 : 37 + Math.floor(Math.random() * 22));
       // Cap sparks if we have too many
       let actualCount = Math.min(count, 150 - s.sparks.length);
       for (let i = 0; i < actualCount; i++) {
@@ -428,7 +428,7 @@ function useResonanceCanvas(
           trail: []
         });
       }
-      if (isHero) s.flash = Math.max(s.flash, 0.4);
+      if (isHero) s.flash = Math.max(s.flash, 0.6);
     }
 
     // -----------------------------------------------------------------------
@@ -634,7 +634,7 @@ function useResonanceCanvas(
       for (let i = s.meteors.length - 1; i >= 0; i--) { 
         const m = s.meteors[i]; m.life += dt; m.x += m.vx * dt; m.y += m.vy * dt; 
         m.trail.unshift({ x: m.x, y: m.y, alpha: 1.0 }); 
-        if (m.trail.length > (m.isHero ? 35 : 20)) m.trail.pop();
+        if (m.trail.length > (m.isHero ? 50 : 30)) m.trail.pop();
         
         ctx!.beginPath(); 
         m.trail.forEach((t, j) => { 
@@ -649,12 +649,13 @@ function useResonanceCanvas(
         }); 
         ctx!.stroke(); 
         
-        const coreSize = m.isHero ? (m.width > 5 ? 24 : 18) : 10;
+        const coreSize = m.isHero ? (m.width > 5 ? 32 : 24) : 14;
         const cx = m.x | 0; const cy = m.y | 0;
         const glow = ctx!.createRadialGradient(cx, cy, 0, cx, cy, coreSize);
-        glow.addColorStop(0, 'rgba(255,255,255,1.0)'); 
-        glow.addColorStop(0.2, m.isHero ? 'rgba(200,240,255,1.0)' : 'rgba(220,240,255,0.9)');
-        glow.addColorStop(0.5, m.isHero ? 'rgba(100,180,255,0.6)' : 'rgba(150,200,255,0.4)');
+        glow.addColorStop(0, 'rgba(255,255,255,1.0)');
+        glow.addColorStop(0.3, 'rgba(255,255,255,1.0)'); // Extended White-hot center
+        glow.addColorStop(0.5, m.isHero ? 'rgba(200,240,255,1.0)' : 'rgba(220,240,255,0.9)');
+        glow.addColorStop(0.8, m.isHero ? 'rgba(100,180,255,0.6)' : 'rgba(150,200,255,0.4)');
         glow.addColorStop(1, 'rgba(100,180,255,0)');
         ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx | 0, cy | 0, coreSize, 0, Math.PI * 2); ctx!.fill();
         
@@ -668,9 +669,9 @@ function useResonanceCanvas(
       // Draw Lightning Bolts
       function drawBranch(branch: BoltBranch, alpha: number, isGlow: boolean) {
          ctx!.beginPath();
-         ctx!.lineWidth = isGlow ? branch.thickness * 5 : branch.thickness;
+         ctx!.lineWidth = isGlow ? branch.thickness * 7 : branch.thickness * 1.5;
          ctx!.strokeStyle = isGlow
-             ? `rgba(160,80,255,${alpha * 0.45})`
+             ? `rgba(200,100,255,${alpha * 0.6})`
              : `rgba(220,240,255,${alpha})`;
          ctx!.lineJoin = 'miter';
          branch.segments.forEach((p, idx) => idx === 0 ? ctx!.moveTo(p.x | 0, p.y | 0) : ctx!.lineTo(p.x | 0, p.y | 0));
@@ -726,7 +727,7 @@ function useResonanceCanvas(
       for (let i = s.sparks.length - 1; i >= 0; i--) { 
         const sp = s.sparks[i]; sp.age += dt; sp.vy += 120 * dt; sp.vx *= 1 - dt * 0.7; sp.vy *= 1 - dt * 0.4; 
         sp.x += sp.vx * dt; sp.y += sp.vy * dt; sp.trail.unshift({ x: sp.x, y: sp.y }); 
-        if (sp.trail.length > (reduced ? 8 : 12)) sp.trail.pop();
+        if (sp.trail.length > (reduced ? 12 : 18)) sp.trail.pop();
         
         const alpha = Math.max(0, 1 - Math.pow(sp.age / sp.life, 2));
         if (alpha <= 0) { s.sparks.splice(i, 1); continue; } 
@@ -910,7 +911,7 @@ export default function LuckyGenerator() {
       };
 
       gainNode.gain.value = 1.0;
-      source.start(0);
+      source.start(0, 0.3);
       buildUpSourceRef.current = source;
       buildUpGainRef.current = gainNode;
     }
