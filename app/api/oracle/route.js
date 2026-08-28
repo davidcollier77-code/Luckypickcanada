@@ -1,3 +1,4 @@
+// NOTE: The edge runtime is explicitly avoided in this route to allow OpenNext bundling to compile correctly.
 import { NextResponse } from 'next/server';
 
 
