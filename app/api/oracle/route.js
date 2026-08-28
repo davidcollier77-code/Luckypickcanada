@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextResponse } from 'next/server';
 
 const ALLOWED_ORIGINS = [
@@ -95,12 +96,10 @@ export async function POST(request) {
     // Check API Key
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      console.error("Missing GROQ_API_KEY");
-      return NextResponse.json({ error: "The oracle's connection to the stars was interrupted. Please try again shortly." }, {
+      console.error('Missing GROQ_API_KEY environment variable');
+      return NextResponse.json({ error: 'Internal server error' }, { 
         status: 500,
-        headers: {
-          ...corsHeaders
-        }
+        headers: corsHeaders
       });
     }
 
@@ -121,11 +120,9 @@ export async function POST(request) {
 
     // Validation
     if (!question || typeof question !== 'string' || question.trim() === '') {
-      return NextResponse.json({ error: "Please ask a question." }, {
+      return NextResponse.json({ error: 'Question is required' }, { 
         status: 400,
-        headers: {
-          ...corsHeaders
-        }
+        headers: corsHeaders
       });
     }
 
@@ -153,12 +150,13 @@ Your core guidelines:
 5. CLEAN OUTPUT: Return only the raw fortune text with no conversational prefixes (e.g., no 'Here is your fortune:'), quotes, or markdown code fences.`;
 
     const apiBody = {
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: sanitizedQuestion }
       ],
-      temperature: 0.75,
+      temperature: 0.7,
+      max_tokens: 150
     };
 
     const controller = new AbortController();
@@ -200,16 +198,18 @@ Your core guidelines:
     }
 
     if (!groqResponse.ok) {
-      const errorText = await groqResponse.text();
-      // Log only non-sensitive information
-      console.error('Groq API Error:', groqResponse.status, errorText);
-      return NextResponse.json({ error: "The oracle's connection to the stars was interrupted. Please try again shortly." }, {
+      let errorData = await groqResponse.text();
+      try {
+        errorData = JSON.parse(errorData);
+      } catch (e) {
+        // keep as text if parsing fails
+      }
+      console.error('Groq API Error:', groqResponse.status, errorData);
+      return NextResponse.json({ error: 'Groq API Error', status: groqResponse.status, details: errorData }, { status: groqResponse.status });
+      return NextResponse.json({ error: 'Service temporarily unavailable' }, { 
         status: 502,
-        headers: {
-          ...corsHeaders
-        }
+        headers: corsHeaders
       });
-    }
 
     const data = await groqResponse.json();
 
@@ -225,12 +225,10 @@ Your core guidelines:
     });
 
   } catch (error) {
-    console.error('Unhandled Oracle Error:', error);
-    return NextResponse.json({ error: "The oracle's connection to the stars was interrupted. Please try again shortly." }, {
+    console.error('Oracle Route Exception:', error);
+    return NextResponse.json({ error: 'Server Exception', message: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { 
       status: 500,
-      headers: {
-        ...corsHeaders
-      }
+      headers: corsHeaders
     });
-  }
 }
