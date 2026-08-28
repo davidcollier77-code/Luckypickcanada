@@ -263,6 +263,7 @@ function useResonanceCanvas(
     lastStartTime: 0,
     nextAmbientEffectAt: 0,
     impactTriggered: false,
+    audioTriggered: false,
     scoreLastUpdate: 0,
     scoreInterval: SPIN_INTERVAL_MS,
     scheduledEvents: [] as {time: number, action: () => void}[],
@@ -451,6 +452,7 @@ function useResonanceCanvas(
       if (currentStart !== s.lastStartTime) {
         s.lastStartTime = currentStart;
         s.impactTriggered = false;
+        s.audioTriggered = false;
         s.flash = 0;
         s.scoreInterval = SPIN_INTERVAL_MS;
         s.scoreLastUpdate = now;
@@ -510,12 +512,8 @@ function useResonanceCanvas(
           // Darken slightly (removed fill to keep transparency)
         }
         // 7800: THE IMPACT
-        else if (tReveal >= IMPACT_TIME_MS && !s.impactTriggered) {
-          s.impactTriggered = true;
-          setImpactFired(true); // Triggers CSS
-          s.flash = 1.0;
-
-          // Score locking is moved to the React timeout at 9.0s
+        else if (tReveal >= IMPACT_TIME_MS - 150 && !s.audioTriggered) {
+          s.audioTriggered = true;
 
           if (buildUpSourceRef.current) {
              try {
@@ -545,6 +543,22 @@ function useResonanceCanvas(
           if (tier) {
             if (tier.id === 2) {
               playAudioBuffer('meteor');
+            } else if (tier.id === 3) {
+              playAudioBuffer('lightning');
+            } else if (tier.id === 4) {
+              playAudioBuffer('firework');
+            }
+          }
+        }
+        else if (tReveal >= IMPACT_TIME_MS && !s.impactTriggered) {
+          s.impactTriggered = true;
+          setImpactFired(true); // Triggers CSS
+          s.flash = 1.0;
+
+          // Score locking is moved to the React timeout at 9.0s
+
+          if (tier) {
+            if (tier.id === 2) {
               const clusterSize = reduced ? 4 : 15;
               for(let i=0; i<clusterSize; i++) {
                 s.scheduledEvents.push({ time: tReveal + Math.random() * 400, action: () => spawnMeteor(true) }); // Small deviation fine here
@@ -558,13 +572,11 @@ function useResonanceCanvas(
               });
             }
             else if (tier.id === 3) {
-              playAudioBuffer('lightning');
               spawnBolt(true);
               s.scheduledEvents.push({ time: tReveal + 150, action: () => spawnBolt(true) });
               spawnBolt(false);
             }
             else if (tier.id === 4) {
-              playAudioBuffer('firework');
               spawnRocket(true, width * 0.5, 750);
               s.scheduledEvents.push({ time: tReveal + 100, action: () => spawnRocket(true, width * 0.3, 600) });
               s.scheduledEvents.push({ time: tReveal + 150, action: () => spawnRocket(true, width * 0.7, 600) });
