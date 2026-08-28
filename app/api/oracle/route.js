@@ -80,7 +80,7 @@ export async function POST(request) {
     }
 
     const body = await request.json().catch(() => null);
-    const rawQuestion = body?.message || body?.prompt || body?.question?.trim();
+    const rawQuestion = body?.message || body?.prompt || body?.question;
 
     let question = '';
     if (rawQuestion) {
