@@ -867,6 +867,9 @@ export default function LuckyGenerator() {
       loadAudio(FIREWORKS_SOUNDS[0], 'firework')
     ]).then(() => {
       setIsAudioReady(true);
+    }).catch((e) => {
+      console.error("Audio preloading failed:", e);
+      setIsAudioReady(true); // Enable button gracefully
     });
 
     const stored = readStoredResonance();
@@ -965,7 +968,7 @@ export default function LuckyGenerator() {
       phaseRef.current = 'locked';
       pendingResultRef.current = null;
     }, REVEAL_DURATION_MS);
-  }, [phase, isAudioReady, trackTimeout]);
+  }, [phase, trackTimeout, isAudioReady]);
 
   const handleShare = useCallback(async () => {
     const finalTier = pendingTierRef.current;
