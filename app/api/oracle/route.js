@@ -76,7 +76,7 @@ export async function POST(request) {
         apiKey = ctx.env.GROQ_API_KEY;
       }
     } catch (e) {
-      console.warn("Could not get Cloudflare context for GROQ_API_KEY", e.message);
+      // console.warn("Could not get Cloudflare context for GROQ_API_KEY", e.message);
     }
 
     const body = await request.json().catch(() => null);
@@ -144,7 +144,7 @@ export async function POST(request) {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'llama-3.1-8b-instant',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userMessage },
