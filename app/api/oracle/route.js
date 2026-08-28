@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+
 
 const ALLOWED_ORIGINS = [
   'https://luckypickcanada.ca',
