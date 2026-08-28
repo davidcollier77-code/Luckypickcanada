@@ -97,9 +97,9 @@ export async function POST(request) {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       console.error('Missing GROQ_API_KEY environment variable');
-      return NextResponse.json({ error: 'Internal server error' }, { 
+      return NextResponse.json({ error: 'Internal server error' }, {
         status: 500,
-        headers: corsHeaders
+        headers: { ...corsHeaders }
       });
     }
 
@@ -120,9 +120,9 @@ export async function POST(request) {
 
     // Validation
     if (!question || typeof question !== 'string' || question.trim() === '') {
-      return NextResponse.json({ error: 'Question is required' }, { 
+      return NextResponse.json({ error: 'Question is required' }, {
         status: 400,
-        headers: corsHeaders
+        headers: { ...corsHeaders }
       });
     }
 
@@ -205,11 +205,11 @@ Your core guidelines:
         // keep as text if parsing fails
       }
       console.error('Groq API Error:', groqResponse.status, errorData);
-      return NextResponse.json({ error: 'Groq API Error', status: groqResponse.status, details: errorData }, { status: groqResponse.status });
-      return NextResponse.json({ error: 'Service temporarily unavailable' }, { 
+      return NextResponse.json({ error: 'Service temporarily unavailable' }, {
         status: 502,
-        headers: corsHeaders
+        headers: { ...corsHeaders }
       });
+    }
 
     const data = await groqResponse.json();
 
@@ -226,9 +226,9 @@ Your core guidelines:
 
   } catch (error) {
     console.error('Oracle Route Exception:', error);
-    return NextResponse.json({ error: 'Server Exception', message: error.message }, { status: 500 });
-    return NextResponse.json({ error: 'Internal server error' }, { 
+    return NextResponse.json({ error: 'Internal server error' }, {
       status: 500,
-      headers: corsHeaders
+      headers: { ...corsHeaders }
     });
+  }
 }
