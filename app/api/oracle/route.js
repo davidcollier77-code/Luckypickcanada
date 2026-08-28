@@ -80,7 +80,7 @@ export async function POST(request) {
     }
 
     const body = await request.json().catch(() => null);
-    const rawQuestion = body?.question?.trim();
+    const rawQuestion = body?.message || body?.prompt || body?.question?.trim();
 
     let question = '';
     if (rawQuestion) {
@@ -120,17 +120,17 @@ export async function POST(request) {
     if (!apiKey) {
       console.error('Oracle Error: GROQ_API_KEY environment variable is missing.');
       return NextResponse.json(
-        { reading: getRandomFallback(), source: 'fallback' },
+        { prediction: getRandomFallback(), fortune: getRandomFallback(), reading: getRandomFallback(), source: 'fallback' },
         { status: 200, headers: corsHeaders }
       );
     }
 
     const systemPrompt =
-      'You are the mystical Canadian Oracle of LuckyPickCanada.ca. Provide brief, engaging, fun, and warm Canadian-themed fortunes (2-4 sentences max). Be playful and positive. Mention things like the Northern Lights, maple syrup, double-doubles, polite encounters, or winter coziness. Strictly act as a digital entertainment project just for fun. Do not provide any gambling advice, and ensure there is absolutely no affiliation with real gambling or real lottery prizes. Only provide fortunes for entertainment.';
+      'You are the Lucky Pick Oracle. Provide fun, positive, and lighthearted daily predictions or lucky insights. Keep responses under 3 sentences. Strictly act as a digital entertainment project just for fun. Do not provide any gambling advice, and ensure there is absolutely no affiliation with real gambling or real lottery prizes. Only provide fortunes for entertainment.';
 
     const userMessage = question
-      ? `The seeker asks: ${question}`
-      : 'The seeker has approached quietly. Please provide a general mystical Canadian fortune.';
+      ? question
+      : "Give me a daily lucky prediction.";
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -150,7 +150,7 @@ export async function POST(request) {
             { role: 'user', content: userMessage },
           ],
           temperature: 0.7,
-          max_tokens: 150,
+          max_tokens: 250,
         }),
         signal: controller.signal,
       });
@@ -158,7 +158,7 @@ export async function POST(request) {
       clearTimeout(timeoutId);
       console.error('Oracle Error:', fetchErr);
       return NextResponse.json(
-        { reading: getRandomFallback(), source: 'fallback' },
+        { prediction: getRandomFallback(), fortune: getRandomFallback(), reading: getRandomFallback(), source: 'fallback' },
         { status: 200, headers: corsHeaders }
       );
     } finally {
@@ -169,7 +169,7 @@ export async function POST(request) {
       const errorText = await groqResponse.text();
       console.error('Oracle Error:', groqResponse.status, errorText);
       return NextResponse.json(
-        { reading: getRandomFallback(), source: 'fallback' },
+        { prediction: getRandomFallback(), fortune: getRandomFallback(), reading: getRandomFallback(), source: 'fallback' },
         { status: 200, headers: corsHeaders }
       );
     }
@@ -180,19 +180,19 @@ export async function POST(request) {
     if (!reading) {
       console.error('Oracle Error: Missing content in Groq API response', data);
       return NextResponse.json(
-        { reading: getRandomFallback(), source: 'fallback' },
+        { prediction: getRandomFallback(), fortune: getRandomFallback(), reading: getRandomFallback(), source: 'fallback' },
         { status: 200, headers: corsHeaders }
       );
     }
 
     return NextResponse.json(
-      { reading, source: 'ai' },
+      { prediction: reading, fortune: reading, reading, source: 'ai' },
       { status: 200, headers: corsHeaders }
     );
   } catch (error) {
     console.error('Oracle Route Exception:', error);
     return NextResponse.json(
-      { reading: getRandomFallback(), source: 'fallback' },
+      { prediction: getRandomFallback(), fortune: getRandomFallback(), reading: getRandomFallback(), source: 'fallback' },
       { status: 200, headers: corsHeaders }
     );
   }
