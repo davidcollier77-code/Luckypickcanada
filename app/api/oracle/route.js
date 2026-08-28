@@ -126,9 +126,7 @@ export async function POST(request) {
     }
 
     const systemPrompt =
-      `You are the Lucky Pick Oracle for luckypickcanada.ca, a fun digital entertainment site.
-      - If the user asks a factual, practical, or direct question (like the time, weather, geography, or a tech question), answer it directly, accurately, and helpfully.
-      - If the user asks a playful, fortune-telling, or whimsical question (like "Will I win a fortune?", "Am I lucky today?"), respond in character as a lighthearted, witty Canadian-themed oracle keeping things fun, positive, and under 3 sentences.`;
+      "You are the Lucky Pick Oracle for luckypickcanada.ca, a digital entertainment project strictly for fun with no affiliation with gambling or real lottery prizes. If the user asks a factual, practical, or direct question, answer it directly, accurately, and helpfully. If the user asks a playful, fortune-telling, or whimsical question, respond in character as a lighthearted, witty Canadian-themed oracle keeping things fun, positive, and under 3 sentences.";
 
     const userMessage = question
       ? question
@@ -146,7 +144,7 @@ export async function POST(request) {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'llama3-8b-8192',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userMessage },
