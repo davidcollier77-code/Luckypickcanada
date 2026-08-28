@@ -209,14 +209,27 @@ const CountdownTimer = memo(function CountdownTimer() {
 // Resonance button
 // ---------------------------------------------------------------------------
 
-function ResonanceButton({ onClick }: { onClick: () => void }) {
+function ResonanceButton({ onClick, isLoading }: { onClick: () => void; isLoading?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80"
+      disabled={isLoading}
+      className={`btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 ${
+        isLoading ? 'opacity-75 cursor-not-allowed' : 'active:scale-95'
+      }`}
     >
-      Reveal My Resonance
+      {isLoading ? (
+        <>
+          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading...
+        </>
+      ) : (
+        "Reveal My Resonance"
+      )}
     </button>
   );
 }
@@ -794,6 +807,7 @@ export default function LuckyGenerator() {
 
   const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const audioLoadingRef = useRef(0);
+  const [isAudioReady, setIsAudioReady] = useState(false);
   const scoreTextRef = useRef<HTMLDivElement>(null);
 
   const [phase, setPhase] = useState<Phase>('idle');
@@ -846,10 +860,14 @@ export default function LuckyGenerator() {
       }
     };
 
-    loadAudio(BUILDUP_SOUND, 'buildUp');
-    loadAudio(METEOR_SOUNDS[0], 'meteor');
-    loadAudio(LIGHTNING_SOUNDS[0], 'lightning');
-    loadAudio(FIREWORKS_SOUNDS[0], 'firework');
+    Promise.all([
+      loadAudio(BUILDUP_SOUND, 'buildUp'),
+      loadAudio(METEOR_SOUNDS[0], 'meteor'),
+      loadAudio(LIGHTNING_SOUNDS[0], 'lightning'),
+      loadAudio(FIREWORKS_SOUNDS[0], 'firework')
+    ]).then(() => {
+      setIsAudioReady(true);
+    });
 
     const stored = readStoredResonance();
     if (stored && stored.lastSpinDate === getLocalDateKey()) {
@@ -888,7 +906,7 @@ export default function LuckyGenerator() {
     if (phase !== 'idle') return;
     
     // Guard against clicking before audio is ready
-    if (audioLoadingRef.current > 0) return;
+    if (!isAudioReady) return;
 
     if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
       audioCtxRef.current.resume();
@@ -947,7 +965,7 @@ export default function LuckyGenerator() {
       phaseRef.current = 'locked';
       pendingResultRef.current = null;
     }, REVEAL_DURATION_MS);
-  }, [phase, trackTimeout]);
+  }, [phase, isAudioReady, trackTimeout]);
 
   const handleShare = useCallback(async () => {
     const finalTier = pendingTierRef.current;
@@ -1016,7 +1034,7 @@ export default function LuckyGenerator() {
               <h1 className="text-xl font-semibold tracking-wide text-white/90">
                 AWAKEN TODAY&apos;S RESONANCE
               </h1>
-              <ResonanceButton onClick={handleReveal} />
+              <ResonanceButton onClick={handleReveal} isLoading={!isAudioReady} />
             </div>
           )}
 
