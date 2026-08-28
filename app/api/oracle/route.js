@@ -1,5 +1,6 @@
 // NOTE: The edge runtime is explicitly avoided in this route to allow OpenNext bundling to compile correctly.
 import { NextResponse } from 'next/server';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 const ALLOWED_ORIGINS = [
   'https://luckypickcanada.ca',
@@ -68,7 +69,17 @@ export async function POST(request) {
       );
     }
 
-    const apiKey = process.env.GROQ_API_KEY;
+    let apiKey = process.env.GROQ_API_KEY;
+    try {
+      const ctx = getCloudflareContext();
+      if (ctx && ctx.env && ctx.env.GROQ_API_KEY) {
+        apiKey = ctx.env.GROQ_API_KEY;
+      }
+    } catch (e) {
+      console.warn("Could not get Cloudflare context for GROQ_API_KEY", e.message);
+    }
+
+    console.log('Key status:', typeof apiKey);
     const body = await request.json().catch(() => null);
     const rawQuestion = body?.question?.trim();
 
