@@ -235,7 +235,7 @@ interface Bolt { main: BoltBranch; age: number; life: number; isHero: boolean; }
 interface Spark { x: number; y: number; vx: number; vy: number; color: string; age: number; life: number; size: number; trail: { x: number; y: number }[]; }
 interface Rocket { x: number; y: number; vx: number; vy: number; color: string; trail: { x: number; y: number }[]; exploded: boolean; isHero: boolean; }
 
-const FIREWORK_COLORS = ['255,100,100', '100,150,255', '120,255,160', '220,120,255', '255,220,100'];
+const FIREWORK_COLORS = ['#ff6464', '#6496ff', '#78ffa0', '#dc78ff', '#ffdc64'];
 
 function useResonanceCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -421,7 +421,7 @@ function useResonanceCanvas(
           x, y,
           vx: speed * Math.sin(p) * Math.cos(t),
           vy: speed * Math.cos(p),
-          color: Math.random() > (isHero ? 0.6 : 0.8) ? '255,255,255' : color,
+          color: Math.random() > (isHero ? 0.6 : 0.8) ? '#ffffff' : color,
           age: 0,
           life: (isHero ? 1.5 : 1.0) + Math.random() * 1.0,
           size: 1.5 + ((speed * Math.sin(p) * Math.sin(t)) / speed + 1) / 2 * (isHero ? 4.0 : 2.5),
@@ -612,16 +612,21 @@ function useResonanceCanvas(
         const y = m.y | 0;
         const baseAlpha = phase === 'idle' ? 0.3 : Math.min(0.8, 0.3 + globalIntensity * 0.5);
         const glow = ctx!.createRadialGradient(x, y, 0, x, y, m.r * 6);
-        glow.addColorStop(0, `rgba(${m.hue === 'cyan' ? '120,220,255' : '170,120,255'},${baseAlpha})`);
+        glow.addColorStop(0, m.hue === 'cyan' ? '#78dcff' : '#aa78ff');
         glow.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(x | 0, y | 0, m.r * 6, 0, Math.PI * 2); ctx!.fill();
+        ctx!.globalAlpha = baseAlpha;
+        ctx!.fillStyle = glow;
+        ctx!.fillRect((x - m.r * 6) | 0, (y - m.r * 6) | 0, (m.r * 12) | 0, (m.r * 12) | 0);
+        ctx!.globalAlpha = 1.0;
       }
 
       // Dust
       for (let i = s.dust.length - 1; i >= 0; i--) { 
         const d = s.dust[i]; d.life += dt; d.x += d.vx * dt; d.y += d.vy * dt; 
-        ctx!.fillStyle = `rgba(200,220,255,${Math.max(0, 1 - d.life / d.maxLife) * 0.6})`; 
+        ctx!.globalAlpha = Math.max(0, 1 - d.life / d.maxLife) * 0.6;
+        ctx!.fillStyle = '#c8dcff';
         ctx!.fillRect((d.x - d.r) | 0, (d.y - d.r) | 0, (d.r * 2) | 0, (d.r * 2) | 0);
+        ctx!.globalAlpha = 1.0;
         if (d.life > d.maxLife) s.dust.splice(i, 1); 
       }
 
@@ -738,9 +743,12 @@ function useResonanceCanvas(
         
         const cx = sp.x | 0; const cy = sp.y | 0;
         const glow = ctx!.createRadialGradient(cx, cy, 0, cx, cy, sp.size * 3);
-        glow.addColorStop(0, `rgba(${sp.color},${alpha})`); 
-        glow.addColorStop(1, 'rgba(0,0,0,0)'); 
-        ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx | 0, cy | 0, sp.size * 3, 0, Math.PI * 2); ctx!.fill();
+        glow.addColorStop(0, sp.color);
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx!.globalAlpha = alpha;
+        ctx!.fillStyle = glow;
+        ctx!.fillRect((cx - sp.size * 3) | 0, (cy - sp.size * 3) | 0, (sp.size * 6) | 0, (sp.size * 6) | 0);
+        ctx!.globalAlpha = 1.0;
 
         if (sp.size > 2.5 && Math.random() > 0.8) {
            spawnDust(sp.x, sp.y);
