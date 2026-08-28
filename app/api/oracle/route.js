@@ -42,7 +42,7 @@ function checkRateLimit(ip) {
 
 export async function OPTIONS(request) {
   return new NextResponse(null, { status: 204, headers: getCorsHeaders(request) });
-};
+}
 
 export async function POST(request) {
   const corsHeaders = getCorsHeaders(request);
@@ -77,7 +77,7 @@ export async function POST(request) {
 
     const question = rawQuestion
       .replace(/["'`\\]/g, '')
-      .replace(/[\r
+      .replace(/[\r\n]+/g, ' ')
       .replace(/[<>]/g, '')
       .trim();
 
