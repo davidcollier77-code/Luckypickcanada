@@ -187,3 +187,5 @@ export async function POST(request) {
     );
   }
 }
+
+// Trigger fresh Cloudflare deployment for GROQ_API_KEY
