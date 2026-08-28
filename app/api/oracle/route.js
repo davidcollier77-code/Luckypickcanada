@@ -79,7 +79,6 @@ export async function POST(request) {
       console.warn("Could not get Cloudflare context for GROQ_API_KEY", e.message);
     }
 
-    console.log('Key status:', typeof apiKey);
     const body = await request.json().catch(() => null);
     const rawQuestion = body?.question?.trim();
 
