@@ -14,7 +14,7 @@ export default function CrystalBallPage() {
     if (!response.ok) {
       throw new Error(data.error || 'API Error');
     }
-    return data.fortune;
+    return data.reading;
   };
 
   return <CrystalBall onSeekFortune={handleSeekFortune} />;
