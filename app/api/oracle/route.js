@@ -96,7 +96,11 @@ export async function POST(request) {
     // Check API Key
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
-      return NextResponse.json({ error: 'Missing GROQ_API_KEY environment variable' }, { status: 500 });
+      console.error('Missing GROQ_API_KEY environment variable');
+      return NextResponse.json({ error: 'Internal server error' }, { 
+        status: 500,
+        headers: corsHeaders
+      });
     }
 
     // Parse JSON body
@@ -116,7 +120,10 @@ export async function POST(request) {
 
     // Validation
     if (!question || typeof question !== 'string' || question.trim() === '') {
-      return NextResponse.json({ error: 'Question is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Question is required' }, { 
+        status: 400,
+        headers: corsHeaders
+      });
     }
 
     if (question.length > 120) {
@@ -145,7 +152,7 @@ Your core guidelines:
     const apiBody = {
       model: "llama-3.3-70b-versatile",
       messages: [
-        { role: "system", content: "You are a mystical Canadian oracle giving brief, fun, engaging fortunes." },
+        { role: "system", content: systemPrompt },
         { role: "user", content: sanitizedQuestion }
       ],
       temperature: 0.7,
@@ -199,7 +206,10 @@ Your core guidelines:
       }
       console.error('Groq API Error:', groqResponse.status, errorData);
       return NextResponse.json({ error: 'Groq API Error', status: groqResponse.status, details: errorData }, { status: groqResponse.status });
-    }
+      return NextResponse.json({ error: 'Service temporarily unavailable' }, { 
+        status: 502,
+        headers: corsHeaders
+      });
 
     const data = await groqResponse.json();
 
@@ -217,5 +227,8 @@ Your core guidelines:
   } catch (error) {
     console.error('Oracle Route Exception:', error);
     return NextResponse.json({ error: 'Server Exception', message: error.message }, { status: 500 });
-  }
+    return NextResponse.json({ error: 'Internal server error' }, { 
+      status: 500,
+      headers: corsHeaders
+    });
 }
