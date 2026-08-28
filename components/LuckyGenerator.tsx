@@ -460,10 +460,12 @@ function useResonanceCanvas(
       const dt = Math.min((now - last) / 1000, 1 / 30);
       last = now;
 
-      // Handle Reset from React state
-      const currentStart = revealStartTimeRef.current;
-      if (currentStart !== s.lastStartTime) {
-        s.lastStartTime = currentStart;
+      const phase = phaseRef.current;
+
+      // Handle Reset from React state (syncing time origin with rAF)
+      if (phase === 'revealing' && revealStartTimeRef.current === -1) {
+        revealStartTimeRef.current = now;
+        s.lastStartTime = now;
         s.impactTriggered = false;
         s.audioTriggered = false;
         s.flash = 0;
@@ -472,10 +474,10 @@ function useResonanceCanvas(
         s.meteors = []; s.bolts = []; s.rockets = []; s.sparks = []; s.dust = []; s.scheduledEvents = [];
       }
 
-      const phase = phaseRef.current;
+      const currentStart = revealStartTimeRef.current;
       const tier = pendingTierRef.current;
       let globalIntensity = 0;
-      let tReveal = phase === 'revealing' ? now - currentStart : 0;
+      let tReveal = (phase === 'revealing' && currentStart !== -1) ? now - currentStart : 0;
 
       // Execute scheduled events
       for (let i = s.scheduledEvents.length - 1; i >= 0; i--) {
@@ -940,7 +942,7 @@ export default function LuckyGenerator() {
 
     pendingResultRef.current = { score: newScore, quoteIndex: newQuoteIndex, tier: newTier };
     pendingTierRef.current = newTier;
-    revealStartTimeRef.current = performance.now();
+    revealStartTimeRef.current = -1;
     
     if (scoreTextRef.current) scoreTextRef.current.textContent = `0%`;
     setPhase('revealing');
