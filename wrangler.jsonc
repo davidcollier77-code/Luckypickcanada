@@ -65,5 +65,7 @@
   },
   "vars": {
     "GIFT_FROM_EMAIL": "gifts@luckypickcanada.ca"
+    // Note: DATABASE_URL and POSTGRES_URL must be configured securely as Cloudflare Secrets
+    // Do not add them as plaintext variables here in version control.
   }
 }
