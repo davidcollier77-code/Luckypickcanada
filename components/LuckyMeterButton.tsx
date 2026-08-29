@@ -10,10 +10,21 @@ export default function LuckyMeterButton({ onUpdateLuck }: { onUpdateLuck?: () =
     // 2. Play audio asynchronously without blocking the UI thread
     // Instantiating a new Audio object per click allows overlapping playback
     if (typeof window !== 'undefined') {
-      const clickAudio = new Audio('/sounds/lucky-click.mp3');
-      clickAudio.play().catch((error) => {
-        console.log("Audio playback blocked or failed:", error);
-      });
+      try {
+        // Try to load the audio file, with a silent base64 fallback if unavailable
+        const audioSrc = '/sounds/lucky-click.mp3';
+        // Fallback: minimal silent audio data-URI (50ms of silence)
+        const fallbackAudio = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+        
+        const clickAudio = new Audio(audioSrc);
+        clickAudio.play().catch((error) => {
+          console.error("Audio playback blocked or failed:", error);
+          // Gracefully handle missing audio by using fallback
+          new Audio(fallbackAudio).play().catch(() => {});
+        });
+      } catch (error) {
+        console.error("Audio initialization failed:", error);
+      }
     }
   };
 
