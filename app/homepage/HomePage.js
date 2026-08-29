@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import LuckyCardReveal from '../lucky-card-reveal';
-import CollectionBinder from '../collection-binder';
 import { createLuckyReveal } from '../lucky-reveal';
 
 // PERFORMANCE OPTIMIZATION (Bolt ⚡):
@@ -21,7 +19,6 @@ import FAQSection from './FAQSection';
 import { LUCKY_CARDS } from '../lucky-card-data';
 
 function SectionHeading({ eyebrow, id, title, children }) {
-  return (
     <div className="homepage-section-heading">
       <p>{eyebrow}</p>
       <h2 id={id}>{title}</h2>
@@ -79,13 +76,38 @@ export default function HomePage() {
     <div className="lucky-site-shell homepage-experience">
       <Hero />
 
-      <section id="cards" className="homepage-section homepage-cards-section" aria-labelledby="cards-heading">
-        <SectionHeading eyebrow="A daily moment of possibility" id="cards-heading" title="Today’s Lucky Moment">
-          Open one collectible card each day for a calm spark of encouragement. Can you collect all {LUCKY_CARDS.length}?
-        </SectionHeading>
-        <LuckyCardReveal />
-              <CollectionBinder />
+      <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
+        <article className="homepage-community-card">
+          <p className="homepage-offer-kicker">Lucky Stories</p>
+          <h2>Community Stories</h2>
+          <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
+          <Link href="/stories" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">See Our Story Section</Link>
+        </article>
+        <article id="crystal-ball" className="homepage-community-card">
+          <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
+          <h2>Consult the Lucky Crystal Ball</h2>
+          <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
+          <Link href="/crystal-ball" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
+        </article>
+        <article id="community-map" className="homepage-community-card">
+          <p className="homepage-offer-kicker">Lucky Map</p>
+          <h2>Lucky Map</h2>
+          <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
+          <Link href="/map" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
+        </article>
       </section>
+
+      <section id="community" className="homepage-community-banner" aria-labelledby="community-heading">
+        <div>
+          <p className="homepage-offer-kicker">The Lucky Pick Canada community</p>
+          <h2 id="community-heading">Keep the good energy moving.</h2>
+          <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
+        </div>
+        <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
+          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" width="769" height="1376" loading="lazy" />
+        </a>
+      </section>
+
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
         <SectionHeading eyebrow="Made for your next moment" id="picks-heading" title="Lucky Pick Experience">
@@ -120,37 +142,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
-        <article className="homepage-community-card">
-          <p className="homepage-offer-kicker">Lucky Stories</p>
-          <h2>Community Stories</h2>
-          <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
-          <Link href="/stories" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">See Our Story Section</Link>
-        </article>
-        <article id="crystal-ball" className="homepage-community-card">
-          <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
-          <h2>Consult the Lucky Crystal Ball</h2>
-          <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
-          <Link href="/crystal-ball" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
-        </article>
-        <article id="community-map" className="homepage-community-card">
-          <p className="homepage-offer-kicker">Lucky Map</p>
-          <h2>Lucky Map</h2>
-          <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
-          <Link href="/map" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
-        </article>
-      </section>
-
-      <section id="community" className="homepage-community-banner" aria-labelledby="community-heading">
-        <div>
-          <p className="homepage-offer-kicker">The Lucky Pick Canada community</p>
-          <h2 id="community-heading">Keep the good energy moving.</h2>
-          <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
-        </div>
-        <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
-          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" width="769" height="1376" loading="lazy" />
-        </a>
-      </section>
 
       <section id="suggestion-box" className="suggestion-box premium-surface" aria-labelledby="suggestion-box-heading">
         <div className="suggestion-box-copy">
