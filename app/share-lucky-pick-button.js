@@ -128,6 +128,18 @@ export default function ShareLuckyPickButton({ reveal }) {
     setStatus('WhatsApp opened for friends and family sharing.');
   }
 
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   return (
     <div style={{ marginTop: '1.4rem', display: 'grid', gap: '0.75rem' }}>
       <style>{`
