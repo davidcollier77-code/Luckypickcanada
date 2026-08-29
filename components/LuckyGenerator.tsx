@@ -905,14 +905,15 @@ export default function LuckyGenerator() {
   }, [clearAllTimers]);
 
   const handleReveal = useCallback(() => {
+    // Move AudioContext resume to absolute top and catch promise rejections
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume().catch(console.error);
+    }
+
     if (phase !== 'idle') return;
     
     // Guard against clicking before audio is ready
     if (!isAudioReady) return;
-
-    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
 
     if (audioCtxRef.current && audioBuffersRef.current.buildUp) {
       if (buildUpSourceRef.current) {
@@ -931,7 +932,7 @@ export default function LuckyGenerator() {
       };
 
       gainNode.gain.value = 1.0;
-      source.start(0, 0.3);
+      source.start(0);
       buildUpSourceRef.current = source;
       buildUpGainRef.current = gainNode;
     }
