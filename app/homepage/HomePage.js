@@ -19,6 +19,7 @@ import FAQSection from './FAQSection';
 import { LUCKY_CARDS } from '../lucky-card-data';
 
 function SectionHeading({ eyebrow, id, title, children }) {
+  return (
     <div className="homepage-section-heading">
       <p>{eyebrow}</p>
       <h2 id={id}>{title}</h2>
