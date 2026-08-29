@@ -319,7 +319,8 @@ export default function DailyResonance() {
         }
 
         ctx.globalCompositeOperation = 'lighter';
-        particles.forEach((p, i) => {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
           p.x -= p.speed * 0.5;
           p.y += p.speed;
 
@@ -339,7 +340,7 @@ export default function DailyResonance() {
           ctx.shadowBlur = 0; // Reset for performance
 
           if (p.y > canvas.height + p.len) particles.splice(i, 1);
-        });
+        }
         ctx.globalCompositeOperation = 'source-over';
       } else if (tier === 'Cosmic Lightning') {
         if (Math.random() < 0.05 && particles.length < MAX_PARTICLES && canSpawn) {
@@ -363,7 +364,7 @@ export default function DailyResonance() {
              if (i === splitIndex) {
                secondaryBranch.push({ x: mainBranch[i].x, y: mainBranch[i].y });
              } else if (i > splitIndex) {
-               let lastSec = secondaryBranch[secondaryBranch.length - 1];
+               let lastSec = secondaryBranch.length > 0 ? secondaryBranch[secondaryBranch.length - 1] : mainBranch[i];
                secondaryBranch.push({
                  x: lastSec.x + (Math.random() - 0.5) * 80,
                  y: lastSec.y + Math.random() * 50 + 10
@@ -374,7 +375,8 @@ export default function DailyResonance() {
         }
 
         ctx.globalCompositeOperation = 'lighter';
-        particles.forEach((p, i) => {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
           // Background flash
           if (p.flash > 0) {
              ctx.fillStyle = `rgba(220, 200, 255, ${p.flash * 0.15})`;
@@ -406,7 +408,7 @@ export default function DailyResonance() {
           p.opacity -= 0.05;
           if (p.opacity <= 0) particles.splice(i, 1);
         });
-        ctx.globalCompositeOperation = 'source-over';
+        }
       } else if (tier === 'Fireworks') {
         if (Math.random() < 0.03 && particles.length < 120 && canSpawn) { // Cap slightly lower than 150 for safety with trails
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
@@ -438,7 +440,8 @@ export default function DailyResonance() {
         }
 
         ctx.globalCompositeOperation = 'lighter';
-        particles.forEach((p, i) => {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
           // Track history for trails
           p.history.push({ x: p.x, y: p.y });
           if (p.history.length > 5) p.history.shift(); // Keep last 5 positions
@@ -471,7 +474,7 @@ export default function DailyResonance() {
           ctx.globalAlpha = 1.0;
           if (p.opacity <= 0) particles.splice(i, 1);
         });
-        ctx.globalCompositeOperation = 'source-over';
+        }
       }
 
       if (!canSpawn) {
