@@ -5,7 +5,7 @@ import TurnstileField from '../turnstile-field';
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import { DEFAULT_MAP_THEME } from '../../themes/default/map-theme';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 
 const provinces = [
   { code: 'YT', name: 'Yukon', x: 14, y: 30 },
@@ -26,6 +26,24 @@ const provinces = [
 const { pageStyle: origPageStyle, cardStyle } = DEFAULT_MAP_THEME;
 const { background: _bg, backgroundColor: _bgc, ...pageStyle } = origPageStyle;
 
+function formatRelativeTime(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+
+  if (diffInSeconds < 60) return 'just now';
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+}
+
 function provinceStories(stories, provinceCode) {
   return stories.filter((story) => story.province === provinceCode);
 }
@@ -33,8 +51,26 @@ function provinceStories(stories, provinceCode) {
 export default function LuckyMapOfCanada({ mapData }) {
   const [liveMapData, setLiveMapData] = useState(mapData);
   const currentMapData = liveMapData || mapData;
-  const stories = currentMapData?.stories || [];
-  const provinceCounts = currentMapData?.provinceCounts || {};
+  const allStories = currentMapData?.stories || [];
+
+  const [timeframeFilter, setTimeframeFilter] = useState('all-time');
+  const [storyFormText, setStoryFormText] = useState('');
+  const storyPanelRef = useRef(null);
+
+  const stories = useMemo(() => {
+    if (timeframeFilter === 'all-time') return allStories;
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    return allStories.filter(story => new Date(story.createdAt) >= twentyFourHoursAgo);
+  }, [allStories, timeframeFilter]);
+
+  const provinceCounts = useMemo(() => {
+    return stories.reduce((counts, story) => {
+      counts[story.province] = (counts[story.province] || 0) + 1;
+      return counts;
+    }, {});
+  }, [stories]);
+
   const firstStoryProvince = stories[0]?.province || 'ON';
   const [selectedProvince, setSelectedProvince] = useState(firstStoryProvince);
   const [selectedStoryId, setSelectedStoryId] = useState('');
@@ -121,6 +157,9 @@ export default function LuckyMapOfCanada({ mapData }) {
     setSelectedProvince(provinceCode);
     setSelectedStoryId('');
     setShareStatus('');
+    setTimeout(() => {
+      storyPanelRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   }
 
   function openStory(story) {
@@ -235,6 +274,26 @@ export default function LuckyMapOfCanada({ mapData }) {
           Explore lucky stories shared by people across Canada. Find yours on the map or share your own lucky moment.
         </p>
 
+
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'inline-flex', background: 'rgba(255, 255, 255, 0.05)', padding: '0.35rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.15)' }}>
+            <button
+              type="button"
+              onClick={() => setTimeframeFilter('all-time')}
+              style={{ padding: '0.65rem 1.25rem', borderRadius: 999, border: 'none', background: timeframeFilter === 'all-time' ? 'rgba(250, 204, 21, 0.2)' : 'transparent', color: timeframeFilter === 'all-time' ? '#facc15' : '#a1a1aa', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              All-Time
+            </button>
+            <button
+              type="button"
+              onClick={() => setTimeframeFilter('24h')}
+              style={{ padding: '0.65rem 1.25rem', borderRadius: 999, border: 'none', background: timeframeFilter === '24h' ? 'rgba(250, 204, 21, 0.2)' : 'transparent', color: timeframeFilter === '24h' ? '#facc15' : '#a1a1aa', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}
+            >
+              Last 24 Hours
+            </button>
+          </div>
+        </div>
+
         <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" className="lucky-story-map" style={{ gap: '1rem', marginTop: '1rem' }}>
           <div className="map-panel" style={{ ...cardStyle }}>
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
@@ -269,12 +328,19 @@ export default function LuckyMapOfCanada({ mapData }) {
                 );
               })}
               {!stories.length ? (
-                <p className="map-empty-state">No community stories with a province are ready for the map yet.</p>
+                <div className="map-empty-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', borderRadius: 16 }}>
+                  <p style={{ margin: 0, color: '#fde68a', fontSize: '1.2rem', fontWeight: 700 }}>{timeframeFilter === '24h' ? "No stories in the last 24 hours yet. Be the first to share!" : "No community stories with a province are ready for the map yet."}</p>
+                  {timeframeFilter === '24h' && (
+                    <button type="button" onClick={() => setIsStoryFormOpen(true)} className="story-link" style={{ color: '#06110d', fontWeight: 950, padding: '0.65rem 1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: 'none', cursor: 'pointer' }}>
+                      Share your lucky story
+                    </button>
+                  )}
+                </div>
               ) : null}
             </div>
           </div>
 
-          <aside className="premium-surface map-story-panel" style={{ ...cardStyle, padding: '1.2rem', position: 'relative', overflow: 'hidden' }}>
+          <aside ref={storyPanelRef} className="premium-surface map-story-panel" style={{ ...cardStyle, padding: '1.2rem', position: 'relative', overflow: 'hidden' }}>
             <p style={{ margin: 0, color: '#facc15', textTransform: 'uppercase', letterSpacing: 2, fontWeight: 900 }}>{selectedProvinceInfo.name}</p>
             <h2 style={{ margin: '0.45rem 0', fontSize: 'clamp(1.85rem, 4vw, 3rem)', lineHeight: 1 }}>
               {selectedStories.length} {selectedStories.length === 1 ? 'lucky story' : 'lucky stories'}
@@ -289,6 +355,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                     </button>
                     <p style={{ display: 'inline-flex', margin: '0.55rem 0 0', padding: '0.28rem 0.55rem', border: '1px solid rgba(250,204,21,0.5)', borderRadius: 999, color: '#fde68a', fontSize: '0.72rem', fontWeight: 900, letterSpacing: 0.8, textTransform: 'uppercase' }}>Community Lucky Story</p>
                     <p style={{ lineHeight: 1.65 }}>{selectedStory?.id === story.id ? story.story : story.preview}</p>
+                    <p style={{ margin: '0.5rem 0 0', color: '#9ca3af', fontSize: '0.85rem' }}>{formatRelativeTime(story.createdAt)}</p>
                     {selectedStory?.id === story.id ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center', margin: '0.65rem 0 0.85rem' }}>
                         <button type="button" onClick={() => shareStory(story)} className="story-link" style={{ color: '#06110d', fontWeight: 950, padding: '0.65rem 0.9rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer' }}>
@@ -333,6 +400,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                       <button key={story.id} type="button" onClick={() => openStory(story)} style={{ display: 'grid', gap: '0.35rem', padding: '0.8rem', border: '1px solid rgba(255,235,160,0.24)', borderRadius: 16, color: '#fff7d6', background: 'rgba(255,255,255,0.055)', cursor: 'pointer', font: 'inherit', textAlign: 'left' }}>
                         <strong>{story.firstName || 'A Lucky Canadian'}</strong>
                         <span style={{ color: 'rgba(255,247,214,0.82)', lineHeight: 1.55 }}>{story.preview}</span>
+                        <span style={{ color: '#9ca3af', fontSize: '0.8rem', marginTop: '0.2rem' }}>{formatRelativeTime(story.createdAt)}</span>
                       </button>
                     ))}
                   </div>
@@ -357,7 +425,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             ))}
           </div>
         </section>
-        {isStoryFormOpen ? <div className="story-modal-backdrop" onMouseDown={() => setIsStoryFormOpen(false)}><section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}><button type="button" aria-label="Close story form" onClick={() => setIsStoryFormOpen(false)} autoFocus><span aria-hidden="true">×</span></button><h2 id="story-form-title">Share your lucky story</h2><form action="/api/lucky-stories" method="post"><input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} /><label>Name<input name="name" required maxLength="40" /></label><label>Province or territory<input name="location" maxLength="80" /></label><label>Your story<textarea name="story" required minLength="20" maxLength="1500" rows="5" /></label><TurnstileField siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} submitButtonId="lucky-story-submit" /><button id="lucky-story-submit" type="submit">Submit story</button></form></section></div> : null}
+        {isStoryFormOpen ? <div className="story-modal-backdrop" onMouseDown={() => setIsStoryFormOpen(false)}><section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}><button type="button" aria-label="Close story form" onClick={() => setIsStoryFormOpen(false)} autoFocus><span aria-hidden="true">×</span></button><h2 id="story-form-title">Share your lucky story</h2><form action="/api/lucky-stories" method="post"><input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} /><label>Name<input name="name" required maxLength="40" /></label><label>Province or territory<input name="location" maxLength="80" /></label><label>Your story<textarea name="story" required minLength="20" maxLength="300" rows="5" onChange={(e) => setStoryFormText(e.target.value)} /><div style={{ textAlign: 'right', fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.2rem' }}>{storyFormText.length}/300 characters</div></label><TurnstileField siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} submitButtonId="lucky-story-submit" /><button id="lucky-story-submit" type="submit">Submit story</button></form></section></div> : null}
       </div>
     </div>
   );

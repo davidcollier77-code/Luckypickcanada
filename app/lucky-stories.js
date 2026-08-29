@@ -60,7 +60,7 @@ export function getStoryProvince(location) {
 }
 
 export function createStoryPreview(story) {
-  const cleanStory = sanitizePlainText(story, 1500);
+  const cleanStory = sanitizePlainText(story, 300);
 
   if (cleanStory.length <= 150) {
     return cleanStory;
@@ -88,7 +88,7 @@ export function validateLuckyStory({ name, location, story }) {
     value: story,
     label: 'Lucky story',
     minLength: 20,
-    maxLength: 1500,
+    maxLength: 300,
     required: true,
     allowUrls: false,
   });
@@ -210,7 +210,7 @@ export async function getLuckyStoryMap() {
           firstName: sanitizeSingleLine(row.display_name, 40).split(' ')[0],
           province: province.code,
           provinceName: province.name,
-          story: sanitizePlainText(row.story, 1500),
+          story: sanitizePlainText(row.story, 300),
           preview: createStoryPreview(row.story),
           createdAt: row.created_at,
         };
