@@ -112,6 +112,18 @@ export default function CollectionBinder() {
   // unique collected cards count (intersection of LUCKY_CARDS and unlockedCards)
   const collectedCount = LUCKY_CARDS.filter(c => unlockedCards.includes(c.id)).length;
 
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   return (
     <>
       {/* Trigger Button */}
