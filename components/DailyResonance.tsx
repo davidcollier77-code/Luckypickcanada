@@ -364,7 +364,7 @@ export default function DailyResonance() {
              if (i === splitIndex) {
                secondaryBranch.push({ x: mainBranch[i].x, y: mainBranch[i].y });
              } else if (i > splitIndex) {
-               let lastSec = secondaryBranch.length > 0 ? secondaryBranch[secondaryBranch.length - 1] : mainBranch[i];
+               let lastSec = secondaryBranch[secondaryBranch.length - 1];
                secondaryBranch.push({
                  x: lastSec.x + (Math.random() - 0.5) * 80,
                  y: lastSec.y + Math.random() * 50 + 10
@@ -394,8 +394,8 @@ export default function DailyResonance() {
           ctx.shadowColor = '#c896ff';
           ctx.stroke();
 
-          // Draw Secondary Branch
-          if (p.secondaryBranch.length > 0) {
+          // Draw Secondary Branch with defensive check
+          if (p.secondaryBranch && p.secondaryBranch.length > 0) {
             ctx.beginPath();
             ctx.moveTo(p.secondaryBranch[0].x, p.secondaryBranch[0].y);
             p.secondaryBranch.forEach((pt: any) => ctx.lineTo(pt.x, pt.y));
@@ -407,8 +407,8 @@ export default function DailyResonance() {
           ctx.shadowBlur = 0;
           p.opacity -= 0.05;
           if (p.opacity <= 0) particles.splice(i, 1);
-        });
         }
+        ctx.globalCompositeOperation = 'source-over';
       } else if (tier === 'Fireworks') {
         if (Math.random() < 0.03 && particles.length < 120 && canSpawn) { // Cap slightly lower than 150 for safety with trails
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
@@ -473,8 +473,8 @@ export default function DailyResonance() {
 
           ctx.globalAlpha = 1.0;
           if (p.opacity <= 0) particles.splice(i, 1);
-        });
         }
+        ctx.globalCompositeOperation = 'source-over';
       }
 
       if (!canSpawn) {
