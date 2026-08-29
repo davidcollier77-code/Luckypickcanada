@@ -755,11 +755,11 @@ function useResonanceCanvas(
         
         ctx!.beginPath();
         ctx!.strokeStyle = `rgb(${sp.color})`;
-        const progress = sp.trail.length > 0 ? (sp.trail.length - 1) / sp.trail.length : 0;
-        ctx!.globalAlpha = alpha * (1 - progress);
-        ctx!.lineWidth = sp.size * (1 - progress);
         ctx!.lineCap = 'round';
         sp.trail.forEach((t, j) => { 
+          const progress = sp.trail.length > 1 ? j / (sp.trail.length - 1) : 0;
+          ctx!.globalAlpha = alpha * (1 - progress);
+          ctx!.lineWidth = sp.size * (1 - progress);
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
         }); 
         ctx!.stroke(); 
