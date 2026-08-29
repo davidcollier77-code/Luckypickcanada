@@ -248,7 +248,7 @@ interface Bolt { main: BoltBranch; age: number; life: number; isHero: boolean; }
 interface Spark { x: number; y: number; vx: number; vy: number; color: string; age: number; life: number; size: number; trail: { x: number; y: number }[]; }
 interface Rocket { x: number; y: number; vx: number; vy: number; color: string; trail: { x: number; y: number }[]; exploded: boolean; isHero: boolean; }
 
-const FIREWORK_COLORS = ['#ff6464', '#6496ff', '#78ffa0', '#dc78ff', '#ffdc64'];
+const FIREWORK_COLORS = ['255, 100, 100', '100, 150, 255', '120, 255, 160', '220, 120, 255', '255, 220, 100'];
 
 function useResonanceCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -434,7 +434,7 @@ function useResonanceCanvas(
           x, y,
           vx: speed * Math.sin(p) * Math.cos(t),
           vy: speed * Math.cos(p),
-          color: Math.random() > (isHero ? 0.6 : 0.8) ? '#ffffff' : color,
+          color: Math.random() > (isHero ? 0.6 : 0.8) ? '255, 255, 255' : color,
           age: 0,
           life: (isHero ? 1.5 : 1.0) + Math.random() * 1.0,
           size: 1.5 + ((speed * Math.sin(p) * Math.sin(t)) / speed + 1) / 2 * (isHero ? 4.0 : 2.5),
@@ -651,18 +651,20 @@ function useResonanceCanvas(
         m.trail.unshift({ x: m.x, y: m.y, alpha: 1.0 }); 
         if (m.trail.length > (m.isHero ? 50 : 30)) m.trail.pop();
         
-        ctx!.beginPath(); 
+        ctx!.beginPath();
+        ctx!.strokeStyle = m.isHero ? '#8cdcff' : '#b4d2ff';
+        const lastIndex = Math.max(0, m.trail.length - 1);
+        const progress = m.trail.length > 0 ? lastIndex / m.trail.length : 0;
+        const lastAlpha = (m.trail[lastIndex]?.alpha || 1.0) * 0.88;
+        ctx!.lineWidth = m.width * Math.max(0.1, 1 - progress);
+        ctx!.globalAlpha = lastAlpha * (1 - progress);
+        ctx!.lineCap = 'round';
         m.trail.forEach((t, j) => { 
           t.alpha *= 0.88;
-          const progress = j / m.trail.length;
-          ctx!.strokeStyle = m.isHero
-             ? `rgba(140,220,255,${t.alpha * (1 - progress)})`
-             : `rgba(180,210,255,${t.alpha * (1 - progress)})`;
-          ctx!.lineWidth = m.width * Math.max(0.1, 1 - progress);
-          ctx!.lineCap = 'round';
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
         }); 
         ctx!.stroke(); 
+        ctx!.globalAlpha = 1.0;
         
         const coreSize = m.isHero ? (m.width > 5 ? 32 : 24) : 14;
         const cx = m.x | 0; const cy = m.y | 0;
@@ -685,12 +687,12 @@ function useResonanceCanvas(
       function drawBranch(branch: BoltBranch, alpha: number, isGlow: boolean) {
          ctx!.beginPath();
          ctx!.lineWidth = isGlow ? branch.thickness * 7 : branch.thickness * 1.5;
-         ctx!.strokeStyle = isGlow
-             ? `rgba(200,100,255,${alpha * 0.6})`
-             : `rgba(220,240,255,${alpha})`;
+         ctx!.strokeStyle = isGlow ? '#c864ff' : '#dcf0ff';
+         ctx!.globalAlpha = isGlow ? alpha * 0.6 : alpha;
          ctx!.lineJoin = 'miter';
          branch.segments.forEach((p, idx) => idx === 0 ? ctx!.moveTo(p.x | 0, p.y | 0) : ctx!.lineTo(p.x | 0, p.y | 0));
          ctx!.stroke();
+         ctx!.globalAlpha = 1.0;
          branch.branches.forEach(b => drawBranch(b, alpha, isGlow));
       }
 
@@ -708,9 +710,11 @@ function useResonanceCanvas(
         if (bolt.isHero && alpha > 0.3) {
             ctx!.beginPath();
             ctx!.lineWidth = bolt.main.thickness * 2;
-            ctx!.strokeStyle = `rgba(100,200,255,${alpha * 0.8})`;
+            ctx!.strokeStyle = '#64c8ff';
+            ctx!.globalAlpha = alpha * 0.8;
             bolt.main.segments.forEach((p, idx) => idx === 0 ? ctx!.moveTo(p.x | 0, p.y | 0) : ctx!.lineTo(p.x | 0, p.y | 0));
             ctx!.stroke();
+            ctx!.globalAlpha = 1.0;
         }
         drawBranch(bolt.main, alpha, false);
       }
@@ -720,15 +724,17 @@ function useResonanceCanvas(
         const r = s.rockets[i]; r.vy += 260 * dt; r.vx *= 1 - dt * 0.2; r.x += r.vx * dt; r.y += r.vy * dt; 
         r.trail.unshift({ x: r.x, y: r.y }); if (r.trail.length > (r.isHero ? 20 : 15)) r.trail.pop();
         
-        ctx!.beginPath(); 
+        ctx!.beginPath();
+        ctx!.strokeStyle = '#ffc864';
+        const progress = r.trail.length > 0 ? (r.trail.length - 1) / r.trail.length : 0;
+        ctx!.lineWidth = (r.isHero ? 5 : 3) * (1 - progress);
+        ctx!.globalAlpha = 1 - progress;
+        ctx!.lineCap = 'round';
         r.trail.forEach((t, j) => { 
-          const progress = j / r.trail.length;
-          ctx!.strokeStyle = `rgba(255,200,100,${1 - progress})`;
-          ctx!.lineWidth = (r.isHero ? 5 : 3) * (1 - progress);
-          ctx!.lineCap = 'round';
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
         }); 
         ctx!.stroke(); 
+        ctx!.globalAlpha = 1.0;
         
         if (Math.random() > 0.5) spawnDust(r.x, r.y);
 
@@ -747,19 +753,21 @@ function useResonanceCanvas(
         const alpha = Math.max(0, 1 - Math.pow(sp.age / sp.life, 2));
         if (alpha <= 0) { s.sparks.splice(i, 1); continue; } 
         
-        ctx!.beginPath(); 
+        ctx!.beginPath();
+        ctx!.strokeStyle = `rgb(${sp.color})`;
+        const progress = sp.trail.length > 0 ? (sp.trail.length - 1) / sp.trail.length : 0;
+        ctx!.globalAlpha = alpha * (1 - progress);
+        ctx!.lineWidth = sp.size * (1 - progress);
+        ctx!.lineCap = 'round';
         sp.trail.forEach((t, j) => { 
-          const progress = j / sp.trail.length;
-          ctx!.strokeStyle = `rgba(${sp.color},${alpha * (1 - progress)})`;
-          ctx!.lineWidth = sp.size * (1 - progress);
-          ctx!.lineCap = 'round';
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
         }); 
         ctx!.stroke(); 
+        ctx!.globalAlpha = 1.0;
         
         const cx = sp.x | 0; const cy = sp.y | 0;
         const glow = ctx!.createRadialGradient(cx, cy, 0, cx, cy, sp.size * 3);
-        glow.addColorStop(0, sp.color);
+        glow.addColorStop(0, `rgb(${sp.color})`);
         glow.addColorStop(1, 'rgba(0,0,0,0)');
         ctx!.globalAlpha = alpha;
         ctx!.fillStyle = glow;
