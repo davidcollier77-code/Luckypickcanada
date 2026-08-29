@@ -84,7 +84,6 @@ export default function DailyResonance() {
   const sequenceRef = useRef<number>(0);
   const isAnimatingRef = useRef(false);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
-  const preRollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const bgRequestRef = useRef<number>(0);
   const activeAudioNodesRef = useRef<any[]>([]);
 
@@ -173,17 +172,6 @@ export default function DailyResonance() {
 
     // Instant pre-roll visual feedback
     setDisplayPercentage(0);
-    setTimeout(() => {
-      if (!isAnimatingRef.current) return;
-      const preRollInterval = setInterval(() => {
-        if (!isAnimatingRef.current) {
-          clearInterval(preRollInterval);
-          return;
-        }
-        setDisplayPercentage(Math.floor(Math.random() * 101));
-      }, 50);
-      preRollIntervalRef.current = preRollInterval;
-    }, 200);
 
     // Collision Prevention Logic
     const lastPct = localStorage.getItem('lucky_lastPct');
@@ -221,9 +209,6 @@ export default function DailyResonance() {
       await preloadAllAudio(ctx);
     } finally {
       setIsLoading(false);
-      if (preRollIntervalRef.current) {
-        clearInterval(preRollIntervalRef.current);
-      }
     }
 
     // Play buildup exactly at 0s
@@ -443,7 +428,6 @@ export default function DailyResonance() {
 
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      if (preRollIntervalRef.current) clearInterval(preRollIntervalRef.current);
     };
   }, [tier, audioCtx]);
 
