@@ -100,7 +100,7 @@ export default function HomePage() {
           <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
           <h2>DAILY LUCKY CARD</h2>
           <p>Reveal today&apos;s digital collectible card from Coast to Coast. Check your fortune tier, unlock daily positive themes, and build your collection.</p>
-          <Link href="/cards" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Reveal Today&apos;s Card <span aria-hidden="true">→</span></Link>
+          <Link href="/reveal" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Reveal Today&apos;s Card <span aria-hidden="true">→</span></Link>
         </article>
       </section>
 
