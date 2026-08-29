@@ -303,7 +303,7 @@ export default function DailyResonance() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (tier === 'Meteor Shower') {
-        if (Math.random() < 0.1 && particles.length < MAX_PARTICLES && canSpawn) {
+        if (Math.random() < 0.1 && particles.length < 50 && canSpawn) { // Cap slightly lower for longer tails
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
             const node = playBuffer(audioCtx, audioBuffers['Meteor Shower'], 0.3);
             if (node) activeAudioNodesRef.current.push(node);
@@ -312,31 +312,35 @@ export default function DailyResonance() {
           particles.push({
             x: Math.random() * canvas.width,
             y: -50,
-            len: Math.random() * 80 + 20,
-            speed: Math.random() * 10 + 5,
+            len: Math.random() * 150 + 80, // Longer tail
+            speed: Math.random() * 15 + 8,  // Slightly faster
             opacity: 1
           });
         }
+
+        ctx.globalCompositeOperation = 'lighter';
         particles.forEach((p, i) => {
           p.x -= p.speed * 0.5;
           p.y += p.speed;
 
           const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.len, p.y - p.len);
           grad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
+          grad.addColorStop(0.2, `rgba(100, 200, 255, ${p.opacity * 0.8})`);
           grad.addColorStop(1, 'rgba(100, 200, 255, 0)');
 
           ctx.beginPath();
           ctx.strokeStyle = grad;
-          ctx.lineWidth = 3;
-          ctx.shadowBlur = 10;
+          ctx.lineWidth = 4; // Slightly thicker core
+          ctx.shadowBlur = 15;
           ctx.shadowColor = '#00e5ff';
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(p.x + p.len, p.y - p.len);
           ctx.stroke();
           ctx.shadowBlur = 0; // Reset for performance
 
-          if (p.y > canvas.height) particles.splice(i, 1);
+          if (p.y > canvas.height + p.len) particles.splice(i, 1);
         });
+        ctx.globalCompositeOperation = 'source-over';
       } else if (tier === 'Cosmic Lightning') {
         if (Math.random() < 0.05 && particles.length < MAX_PARTICLES && canSpawn) {
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
@@ -345,30 +349,66 @@ export default function DailyResonance() {
             lastAudioTimeRef.current = now;
           }
           const startX = Math.random() * canvas.width;
-          const branches = [{ x: startX, y: 0 }];
-          for (let i = 0; i < 10; i++) {
-             branches.push({
-               x: branches[i].x + (Math.random() - 0.5) * 40,
-               y: branches[i].y + Math.random() * 50 + 20
+          const mainBranch = [{ x: startX, y: 0 }];
+          const secondaryBranch = [];
+
+          let splitIndex = Math.floor(Math.random() * 4) + 2; // Split somewhere in the top half
+
+          for (let i = 0; i < 12; i++) {
+             mainBranch.push({
+               x: mainBranch[i].x + (Math.random() - 0.5) * 60,
+               y: mainBranch[i].y + Math.random() * 60 + 20
              });
+
+             if (i === splitIndex) {
+               secondaryBranch.push({ x: mainBranch[i].x, y: mainBranch[i].y });
+             } else if (i > splitIndex) {
+               let lastSec = secondaryBranch[secondaryBranch.length - 1];
+               secondaryBranch.push({
+                 x: lastSec.x + (Math.random() - 0.5) * 80,
+                 y: lastSec.y + Math.random() * 50 + 10
+               });
+             }
           }
-          particles.push({ branches, opacity: 1 });
+          particles.push({ mainBranch, secondaryBranch, opacity: 1, flash: 1 });
         }
+
+        ctx.globalCompositeOperation = 'lighter';
         particles.forEach((p, i) => {
+          // Background flash
+          if (p.flash > 0) {
+             ctx.fillStyle = `rgba(220, 200, 255, ${p.flash * 0.15})`;
+             ctx.fillRect(0, 0, canvas.width, canvas.height);
+             p.flash -= 0.2;
+          }
+
+          // Draw Main Branch
           ctx.beginPath();
-          ctx.moveTo(p.branches[0].x, p.branches[0].y);
-          p.branches.forEach((pt: any) => ctx.lineTo(pt.x, pt.y));
-          ctx.strokeStyle = `rgba(200, 150, 255, ${p.opacity})`;
-          ctx.lineWidth = 2;
-          ctx.shadowBlur = 15;
+          ctx.moveTo(p.mainBranch[0].x, p.mainBranch[0].y);
+          p.mainBranch.forEach((pt: any) => ctx.lineTo(pt.x, pt.y));
+          ctx.strokeStyle = `rgba(220, 180, 255, ${p.opacity})`;
+          ctx.lineWidth = 3;
+          ctx.shadowBlur = 20;
           ctx.shadowColor = '#c896ff';
           ctx.stroke();
+
+          // Draw Secondary Branch
+          if (p.secondaryBranch.length > 0) {
+            ctx.beginPath();
+            ctx.moveTo(p.secondaryBranch[0].x, p.secondaryBranch[0].y);
+            p.secondaryBranch.forEach((pt: any) => ctx.lineTo(pt.x, pt.y));
+            ctx.strokeStyle = `rgba(200, 150, 255, ${p.opacity * 0.7})`; // Slightly dimmer
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          }
+
           ctx.shadowBlur = 0;
           p.opacity -= 0.05;
           if (p.opacity <= 0) particles.splice(i, 1);
         });
+        ctx.globalCompositeOperation = 'source-over';
       } else if (tier === 'Fireworks') {
-        if (Math.random() < 0.02 && particles.length < MAX_PARTICLES && canSpawn) {
+        if (Math.random() < 0.03 && particles.length < 120 && canSpawn) { // Cap slightly lower than 150 for safety with trails
           if (audioCtx && now - lastAudioTimeRef.current >= 600) {
             const node = playBuffer(audioCtx, audioBuffers['Fireworks'], 0.3);
             if (node) activeAudioNodesRef.current.push(node);
@@ -376,32 +416,62 @@ export default function DailyResonance() {
           }
           const startX = Math.random() * canvas.width;
           const startY = Math.random() * (canvas.height / 2);
-          const colors = ['#ff5050', '#5a8cff', '#6eff96', '#c86eff', '#ffcd5a'];
-          const color = colors[Math.floor(Math.random() * colors.length)];
-          for (let i = 0; i < 40; i++) {
+          const colors = ['#ff5050', '#5a8cff', '#6eff96', '#c86eff', '#ffcd5a', '#ffffff'];
+
+          // Mix colors in a single burst occasionally
+          const burstColorPrimary = colors[Math.floor(Math.random() * colors.length)];
+          const burstColorSecondary = colors[Math.floor(Math.random() * colors.length)];
+
+          for (let i = 0; i < 35; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const velocity = Math.random() * 5 + 2;
+            const velocity = Math.random() * 6 + 2;
             particles.push({
               x: startX,
               y: startY,
               vx: Math.cos(angle) * velocity,
               vy: Math.sin(angle) * velocity,
               opacity: 1,
-              color: color
+              color: Math.random() > 0.3 ? burstColorPrimary : burstColorSecondary,
+              history: [] // For trails
             });
           }
         }
+
+        ctx.globalCompositeOperation = 'lighter';
         particles.forEach((p, i) => {
+          // Track history for trails
+          p.history.push({ x: p.x, y: p.y });
+          if (p.history.length > 5) p.history.shift(); // Keep last 5 positions
+
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.05; // gravity decay
+          p.vy += 0.08; // Slightly stronger gravity decay
           p.opacity -= 0.015;
+
+          // Draw trail
+          if (p.history.length > 1) {
+             ctx.beginPath();
+             ctx.moveTo(p.history[0].x, p.history[0].y);
+             for(let j=1; j < p.history.length; j++){
+                ctx.lineTo(p.history[j].x, p.history[j].y);
+             }
+             ctx.strokeStyle = p.color;
+             ctx.lineWidth = 2;
+             ctx.globalAlpha = Math.max(0, p.opacity * 0.5);
+             ctx.stroke();
+          }
+
+          // Draw head
           ctx.fillStyle = p.color;
           ctx.globalAlpha = Math.max(0, p.opacity);
-          ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+
+          // Using fillRect for particle head instead of arc for performance
+          ctx.fillRect((p.x | 0) - 1.5, (p.y | 0) - 1.5, 3, 3);
+
           ctx.globalAlpha = 1.0;
           if (p.opacity <= 0) particles.splice(i, 1);
         });
+        ctx.globalCompositeOperation = 'source-over';
       }
 
       if (!canSpawn) {
@@ -509,7 +579,7 @@ export default function DailyResonance() {
         </Link>
       </div>
 
-      <div className="z-10 bg-transparent backdrop-blur-md p-8 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center max-w-md w-full mx-4">
+      <div className="z-10 bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center max-w-md w-full mx-4">
         {!isRevealed && !isRevealing ? (
           <>
             <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>
@@ -525,16 +595,16 @@ export default function DailyResonance() {
               </div>
            </div>
         ) : (
-          <div className="animate-fade-in flex flex-col items-center min-h-[16rem]">
+          <div className="animate-fade-in flex flex-col items-center h-[26rem]">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
-            <div className={`plasma-glow-settled my-6 flex items-center justify-center min-w-[200px]`}>
+            <div className={`plasma-glow-settled my-2 flex items-center justify-center min-w-[200px]`}>
               <div className="text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                 {displayPercentage}%
               </div>
             </div>
-            <p className="text-slate-300 italic mb-8 min-h-[4rem]">"{quote}"</p>
+            <p className="text-slate-300 italic mb-4 min-h-[4rem]">"{quote}"</p>
 
-            <div className="flex flex-col items-center mt-4">
+            <div className="flex flex-col items-center mt-auto w-full">
               <button
                 onClick={handleShare}
                 className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200 mb-6"
