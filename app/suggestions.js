@@ -104,6 +104,10 @@ async function emailSuggestion(suggestion) {
       to: toEmail,
       reply_to: suggestion.email || 'hello@luckypickcanada.ca',
       subject: 'New Lucky Pick Canada suggestion',
+      headers: {
+        'X-Priority': '1',
+        'Importance': 'high',
+      },
       html: buildSuggestionEmail(suggestion),
       text: [
         'New Lucky Pick Canada suggestion',
