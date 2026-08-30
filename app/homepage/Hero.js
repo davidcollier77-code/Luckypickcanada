@@ -197,19 +197,6 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* CTA Button */}
-        <div className="relative group mt-4">
-          {/* Pulsing Outer Glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-300 to-amber-600 rounded-full blur-xl opacity-60 animate-pulse-glow"></div>
-
-          <a
-            href="/reveal"
-            className="cta-glow relative z-10 inline-flex items-center justify-center px-10 py-4 rounded-full bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 text-slate-950 font-black text-sm md:text-base tracking-widest uppercase shadow-[0_0_30px_rgba(245,158,11,0.8)] transition-transform hover:scale-105 duration-300 active:scale-95"
-          >
-            REVEAL TODAY'S LUCK &gt;
-          </a>
-        </div>
-
       </div>
     </header>
   );
