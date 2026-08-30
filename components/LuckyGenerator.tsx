@@ -215,6 +215,7 @@ function ResonanceButton({ onClick, isLoading }: { onClick: () => void; isLoadin
       type="button"
       onClick={onClick}
       disabled={isLoading}
+      aria-disabled={isLoading}
       className={`btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 ${
         isLoading ? 'opacity-75 cursor-not-allowed' : 'active:scale-95'
       }`}
