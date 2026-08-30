@@ -1,14 +1,17 @@
-🎨 Palette: Mobile Hero Alignment fix
+## What
+Fixed an issue where the homepage hero component was pushed down far below the viewport, leaving a massive blank space at the top of the page.
 
-**What:**
-Removed `pt-4` in `HomePage.js` and `mt-2` in `Hero.js` to eliminate restrictive spacing and enable the main content and maple leaf logo to properly shift up to the top on mobile. Adjusted spacing on the navigation bar.
+## Why
+The viewport-wide background canvas inside `app/homepage/HomePage.js` had a `fixed` Tailwind utility class to stay behind the content. However, `themes/default/homepage.css` included an aggressive global child selector (`.homepage-experience > :not(...)`) that forced `position: relative` onto all immediate children.
 
-**Why:**
-The previous padding and margin explicitly pushed the container down on mobile, preventing it from resting at the top viewport edge.
+Because the canvas is an immediate child, it inherited `position: relative`, entering the normal document flow with a 100% viewport height and erroneously pushing the Hero component down.
 
-**Before/After:**
-Before: The hero section had excessive spacing, restricting the UI vertically.
-After: The hero block (content and logo) naturally moves upward to maximize vertical space, looking better on mobile screens.
+## How
+- Added a specific `homepage-bg-canvas` class to the canvas element.
+- Excluded `.homepage-bg-canvas` from the global `position: relative` CSS override in `themes/default/homepage.css` and `public/themes/default/homepage.css`.
+- The canvas now retains its `position: fixed` behavior, and the Hero correctly starts at the top of the layout structure without unwanted vertical offsets.
 
-**Accessibility:**
-No accessibility changes; visually aligns with intended design specs.
+## Verification
+- Wrote Playwright scripts to verify the computed position of the background canvas is strictly `fixed`.
+- Verified the rendered `top` and `height` dimensions of the Hero element at both Desktop (1280x720) and Mobile (375x812) viewports.
+- Ran a local Next.js build check to verify no regressions were introduced.

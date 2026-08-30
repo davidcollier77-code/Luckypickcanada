@@ -268,7 +268,7 @@ export default function HomePage() {
       {/* 1. & 3. Viewport-Wide Shooting Stars & Constellation Twinkle */}
       <canvas
         ref={backgroundCanvasRef}
-        className="fixed inset-0 w-full h-full pointer-events-none -z-10"
+        className="homepage-bg-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
       />
       <Hero />
 
