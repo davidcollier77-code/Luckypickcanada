@@ -88,9 +88,10 @@ export default function HomePage() {
     };
 
     const spawnShootingStar = (width, height) => {
+      if (shootingStars.length >= 2) return; // Allow 1-2 max
       const startX = Math.random() * (width * 0.9);
       const startY = Math.random() * (height * 0.7) + (height * 0.05); // 5% - 75%
-      const length = Math.random() * 150 + 100; // Trail length
+      const length = Math.random() * 20 + 70; // 70-90px
 
       // Angle: 30 to 60 degrees (in radians)
       const angle = (Math.random() * 30 + 30) * (Math.PI / 180);
@@ -123,7 +124,7 @@ export default function HomePage() {
     // Timers
     let shootingStarTimeout;
     const scheduleShootingStar = () => {
-      const delay = Math.random() * 15000 + 30000; // 30s to 45s
+      const delay = Math.random() * 20000 + 25000; // 25s to 45s
       shootingStarTimeout = setTimeout(() => {
         spawnShootingStar(canvas.width, canvas.height);
         scheduleShootingStar();
@@ -168,11 +169,8 @@ export default function HomePage() {
         }
 
         ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
-        try {
-          spawnShootingStar(canvas.width, canvas.height);
-        } finally {
-          scheduleShootingStar();
-        }
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
       }
 
       // Draw Shooting Stars
@@ -195,10 +193,9 @@ export default function HomePage() {
         const tailY = star.y - Math.sin(star.angle) * star.length * star.life;
 
         const gradient = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
-        // Gold to white
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${star.life})`);
-        gradient.addColorStop(0.2, `rgba(255, 215, 0, ${star.life * 0.8})`);
-        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${star.life})`); // White head
+        gradient.addColorStop(0.3, `rgba(255, 215, 0, ${star.life * 0.8})`); // Golden body
+        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)'); // Dissolve to transparent
 
         ctx.beginPath();
         ctx.moveTo(star.x, star.y);
@@ -259,8 +256,7 @@ export default function HomePage() {
         className="fixed inset-0 pointer-events-none overflow-hidden -z-10 w-full h-full"
       />
 
-      {/* 2. Full-Page Aurora Breathing Pulse */}
-      <div className="fixed inset-0 pointer-events-none -z-10 animate-breathe-aurora" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(24, 185, 120, 0.4) 0%, rgba(191, 139, 255, 0.2) 50%, transparent 100%)' }} />
+
 
       <Hero />
 
