@@ -78,6 +78,12 @@ export default function HomePage() {
       <Hero />
 
       <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
+        <article id="lucky-meter" className="homepage-community-card">
+          <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
+          <h2>LUCKY METER</h2>
+          <p>Discover your daily lucky resonance score from 0–100% and tap into today's positive energy.</p>
+          <Link href="/lucky-meter" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Check Lucky Meter <span aria-hidden="true">→</span></Link>
+        </article>
         <article className="homepage-community-card">
           <p className="homepage-offer-kicker">Lucky Stories</p>
           <h2>Community Stories</h2>
