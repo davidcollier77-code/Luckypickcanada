@@ -169,6 +169,7 @@ export default function HomePage() {
         }
 
         ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
       }
 
