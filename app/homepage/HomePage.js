@@ -125,8 +125,13 @@ export default function HomePage() {
     const scheduleShootingStar = () => {
       const delay = Math.random() * 15000 + 30000; // 30s to 45s
       shootingStarTimeout = setTimeout(() => {
-        spawnShootingStar(canvas.width, canvas.height);
-        scheduleShootingStar();
+        try {
+          spawnShootingStar(canvas.width, canvas.height);
+        } catch (e) {
+          console.error('Error spawning shooting star:', e);
+        } finally {
+          scheduleShootingStar();
+        }
       }, delay);
     };
     scheduleShootingStar();
@@ -145,8 +150,6 @@ export default function HomePage() {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      const currentTime = Date.now();
-
       // Handle Constellation Twinkle Phase
       if (isConstellationTwinkling) {
         constellationTwinklePhase += 0.005; // Adjust for ~3s cycle
@@ -157,10 +160,11 @@ export default function HomePage() {
       }
 
       // Draw Ambient Stars
+      const now = Date.now();
       for (let i = 0; i < ambientStars.length; i++) {
         const star = ambientStars[i];
 
-        let currentAlpha = star.baseAlpha + Math.sin(currentTime * star.twinkleSpeed) * 0.2;
+        let currentAlpha = star.baseAlpha + Math.sin(now * star.twinkleSpeed) * 0.2;
 
         if (star.isCluster && isConstellationTwinkling) {
             // Brighten up during constellation pulse
@@ -168,11 +172,8 @@ export default function HomePage() {
         }
 
         ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
-        try {
-          spawnShootingStar(canvas.width, canvas.height);
-        } finally {
-          scheduleShootingStar();
-        }
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(Math.floor(star.x), Math.floor(star.y), star.radius * 2, star.radius * 2);
       }
 
       // Draw Shooting Stars
