@@ -1,6 +1,0 @@
-🎨 Palette: Reduce excessive Hero height preventing top-offset issues
-
-What: Corrected the intrinsic height of the Hero section by scaling down the logo and typography size, and reducing vertical margins, ensuring the header occupies a logical amount of space without breaking the flow.
-Why: The extremely large logo and typography sizing, combined with oversized margins, pushed the total height of the header close to 800px. This forcefully shifted the \`HomePage\` body lower, looking like an artificial top offset below the fold.
-Before/After: The visual content scales beautifully while taking up roughly 40% less vertical real estate, bringing the homepage content up cleanly without structural hacks or negative margins.
-Accessibility: The logical DOM structure (\`<main>\` -> \`<header>\` -> homepage content) is strictly maintained with natural flow.
