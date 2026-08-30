@@ -55,7 +55,7 @@ export default function Hero() {
               alt="Lucky Pick Canada Logo"
               width={224}
               height={224}
-              className="object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] relative z-10"
+              className="object-cover object-center w-[224px] h-[224px] drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] relative z-10"
               priority
             />
             <span className="absolute inset-0 block w-[200%] h-full bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-20 animate-medallion-sheen mix-blend-overlay"></span>
