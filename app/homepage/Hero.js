@@ -62,8 +62,8 @@ export default function Hero() {
             <Image
               src="/BackgroundEraser_20260724_163638777.png"
               alt="Lucky Pick Canada Logo"
-              width={160}
-              height={160}
+              width={130}
+              height={130}
               className="object-cover object-center w-[130px] h-[130px] md:w-[160px] md:h-[160px] drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] relative z-10"
               priority
             />
