@@ -247,7 +247,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="lucky-site-shell homepage-experience block pt-0 pb-12 px-4 w-full mx-auto">
+    <div className="lucky-site-shell homepage-experience block pt-0 mt-0 pb-12 px-4 w-full mx-auto">
 
       {/* 1. & 3. Viewport-Wide Shooting Stars & Constellation Twinkle */}
       <canvas
