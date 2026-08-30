@@ -13,7 +13,7 @@ const heroLinks = [
 export default function Hero() {
 
   return (
-    <header className="relative w-full flex flex-col items-center pb-2 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
+    <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-2 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
 
       {/* Layer 1 (Background): Full-bleed absolute container */}
       <div className="absolute inset-0 z-0 pointer-events-none">

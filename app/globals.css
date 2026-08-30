@@ -21,6 +21,7 @@
 
 body {
   margin: 0;
+  padding: 0;
   color: var(--lp-text);
   background-color: var(--lp-bg);
   min-height: 100vh;

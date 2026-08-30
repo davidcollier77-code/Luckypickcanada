@@ -44,7 +44,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en-CA">
+    <html lang="en-CA" className="m-0 p-0">
       <head>
         <link rel="stylesheet" href={cssPath} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -65,12 +65,12 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body>
+      <body className="m-0 p-0">
         <div className="fixed-cosmic-background">
           <div className="starfield-layer"></div>
           <div className="aurora-layer"></div>
         </div>
-        <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0">
+        <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0">
           {children}
         </main>
       </body>
