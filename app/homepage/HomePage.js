@@ -45,7 +45,6 @@ export default function HomePage() {
     setSuggestionError(searchParams.get('suggestionError') || '');
   }, []);
 
-
   // Viewport-Wide Shooting Stars & Constellation Twinkle
   const backgroundCanvasRef = useRef(null);
 
@@ -255,9 +254,6 @@ export default function HomePage() {
         ref={backgroundCanvasRef}
         className="fixed inset-0 w-full h-full pointer-events-none -z-10"
       />
-
-
-
       <Hero />
 
       <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
@@ -304,7 +300,6 @@ export default function HomePage() {
         </a>
       </section>
 
-
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
         <SectionHeading eyebrow="Made for your next moment" id="picks-heading" title="Lucky Pick Experience">
           Create a personal LuckyPickCanada moment, send a thoughtful digital gift, or support the experience.
@@ -337,7 +332,6 @@ export default function HomePage() {
           </article>
         </div>
       </section>
-
 
       <section id="suggestion-box" className="suggestion-box premium-surface" aria-labelledby="suggestion-box-heading">
         <div className="suggestion-box-copy">
