@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 
 // Use Next.js build ID for cache-busting, automatically updated on each build
 // This ensures CSS cache invalidation without manual version bumps
-const buildId = process.env.BUILD_ID || process.env.GITHUB_SHA || Date.now().toString();
+const buildId = process.env.CF_PAGES_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.BUILD_ID || `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 const cssPath = `/themes/default/index.css?v=${buildId}`;
 
 const siteUrl = 'https://luckypickcanada.ca';
