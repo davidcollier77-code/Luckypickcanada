@@ -253,7 +253,7 @@ export default function HomePage() {
       {/* 1. & 3. Viewport-Wide Shooting Stars & Constellation Twinkle */}
       <canvas
         ref={backgroundCanvasRef}
-        className="fixed inset-0 pointer-events-none overflow-hidden -z-10 w-full h-full"
+        className="fixed inset-0 w-full h-full pointer-events-none -z-10"
       />
 
 

@@ -13,7 +13,7 @@ const heroLinks = [
 export default function Hero() {
 
   return (
-    <header className="relative w-full flex flex-col items-center justify-between px-4 py-6 md:py-10 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
+    <header className="relative w-full flex flex-col items-center px-4 py-6 md:py-10 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
 
       {/* Layer 1 (Background): Full-bleed absolute container */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -22,7 +22,7 @@ export default function Hero() {
       </div>
 
       {/* Layer 2 (UI Overlay): Relative container for all interactive elements */}
-      <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-between">
+      <div className="relative z-10 w-full flex flex-col items-center">
 
         {/* Top Nav: Glassmorphism pill */}
         <nav className="w-full max-w-3xl mx-auto relative z-20 pointer-events-auto" aria-label="Primary navigation">
@@ -41,7 +41,7 @@ export default function Hero() {
         </nav>
 
         {/* Center Content: Logo and Typography */}
-        <div className="flex flex-col items-center justify-center text-center max-w-2xl mx-auto mt-8 mb-10">
+        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-8 mb-10">
 
           {/* Logo with spark portal and drop shadow */}
           <div className="relative w-48 h-48 md:w-56 md:h-56 mb-8 flex items-center justify-center pointer-events-none">
