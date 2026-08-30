@@ -1,5 +1,5 @@
 .homepage-experience { position: relative; width: 100%; max-width: 1440px; min-width: 0; margin: 0 auto; overflow: hidden; }
-.homepage-experience > :not(.reference-site-header, .checkout-modal-backdrop) { position: relative; z-index: 1; max-width: 100%; min-width: 0; }
+.homepage-experience > :not(.reference-site-header, .checkout-modal-backdrop, .homepage-bg-canvas) { position: relative; z-index: 1; max-width: 100%; min-width: 0; }
 .homepage-hero > *, .homepage-community-banner > *, .homepage-offer-grid > *, .homepage-community-grid > * { min-width: 0; max-width: 100%; }
 .navigation-logo { height: 40px; width: auto; object-fit: contain; }
 .homepage-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(380px, 1.1fr); align-items: center; min-height: 680px; padding: 0 clamp(1rem, 5vw, 5.5rem) clamp(2rem, 7vw, 6rem); }
