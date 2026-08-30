@@ -12,6 +12,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
     "@stripe/stripe-js": "^9.13.0",
+    "@upstash/redis": "^1.38.3",
     "eslint": "^10.8.1",
     "framer-motion": "^13.1.0",
     "html2canvas": "^1.4.1",

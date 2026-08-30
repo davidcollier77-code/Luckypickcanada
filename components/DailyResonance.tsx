@@ -76,6 +76,9 @@ export default function DailyResonance() {
   const [tier, setTier] = useState<string>("");
   const [isLockedOut, setIsLockedOut] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState('');
+
+  const [totalVisits, setTotalVisits] = useState<number | null>(null);
+
   const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -165,6 +168,16 @@ export default function DailyResonance() {
     setIsRevealing(true);
 
     // Clear previous audio nodes
+    // Increment visit counter on explicit user action (spinning the meter)
+    fetch('/api/visits', { method: 'POST' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.visits === 'number') {
+          setTotalVisits(data.visits);
+        }
+      })
+      .catch((err) => console.error("Failed to update visits:", err));
+
     activeAudioNodesRef.current = [];
 
     // Cancel any previous animation sequence
@@ -582,7 +595,17 @@ export default function DailyResonance() {
         </Link>
       </div>
 
-      <div className="z-10 bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center max-w-md w-full mx-4">
+      <div className="z-10 flex flex-col items-center max-w-md w-full mx-4">
+        {totalVisits !== null && (
+          <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/50 border border-slate-700/50 shadow-lg backdrop-blur-sm animate-fade-in text-slate-300 text-sm tracking-widest uppercase">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span>Total Resonance Rituals: <strong className="text-emerald-400 font-bold ml-1">{totalVisits.toLocaleString()}</strong></span>
+          </div>
+        )}
+        <div className="bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full">
         {!isRevealed && !isRevealing ? (
           <>
             <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>
@@ -622,6 +645,7 @@ export default function DailyResonance() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
