@@ -162,9 +162,10 @@ export default function Hero() {
         <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto my-10">
 
           {/* Logo with spark portal and drop shadow */}
-          <div className="relative w-48 h-48 md:w-56 md:h-56 mb-8 flex items-center justify-center">
+          <div className="relative overflow-hidden group w-48 h-48 md:w-56 md:h-56 mb-8 flex items-center justify-center">
             {/* Spark Portal Glow - Radial */}
-            <div className="absolute inset-[-20%] bg-radial-gradient from-amber-500/30 to-transparent blur-2xl rounded-full mix-blend-screen animate-pulse-glow" style={{ backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.4) 0%, transparent 70%)' }}></div>
+            <div className="absolute inset-[-20%] bg-radial-gradient from-amber-500/30 to-transparent blur-2xl rounded-full mix-blend-screen animate-pulse-glow" style={{ backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.4) 0%, transparent 70%)' }}>
+</div>
 
             {/* Spark Portal Glow - Spinning Conic */}
             <div className="absolute inset-[-10%] bg-conic-gradient from-amber-300/0 via-amber-400/20 to-amber-300/0 blur-xl rounded-full animate-spin-slow mix-blend-screen" style={{ backgroundImage: 'conic-gradient(from 0deg, transparent 0deg, rgba(251,191,36,0.3) 180deg, transparent 360deg)' }}></div>
@@ -177,6 +178,7 @@ export default function Hero() {
               className="object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] relative z-10"
               priority
             />
+            <span className="absolute inset-0 block w-[200%] h-full bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none z-20 animate-medallion-sheen mix-blend-overlay"></span>
           </div>
 
           {/* Top Subhead */}
