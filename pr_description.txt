@@ -1,0 +1,14 @@
+🎨 Palette: Mobile Hero Alignment fix
+
+**What:**
+Removed `pt-4` in `HomePage.js` and `mt-2` in `Hero.js` to eliminate restrictive spacing and enable the main content and maple leaf logo to properly shift up to the top on mobile. Adjusted spacing on the navigation bar.
+
+**Why:**
+The previous padding and margin explicitly pushed the container down on mobile, preventing it from resting at the top viewport edge.
+
+**Before/After:**
+Before: The hero section had excessive spacing, restricting the UI vertically.
+After: The hero block (content and logo) naturally moves upward to maximize vertical space, looking better on mobile screens.
+
+**Accessibility:**
+No accessibility changes; visually aligns with intended design specs.
