@@ -25,6 +25,12 @@ module.exports = {
         'meteor': 'meteor 2s linear infinite',
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
 
+        'shimmer': 'shimmer 12s linear infinite',
+        'medallion-sheen': 'medallionSheen 15s linear infinite',
+        'breathe-aurora': 'breatheAurora 14s ease-in-out infinite',
+        'donate-pulse': 'donatePulse 3.5s ease-in-out infinite',
+
+
         'breathing-pulse': 'breathingPulse 4s ease-in-out infinite',
         'meteor-shower': 'meteorShower 3s linear infinite',
         'pop-out': 'popOut 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
@@ -67,6 +73,27 @@ module.exports = {
           '70%': { opacity: '1' },
           '100%': { transform: 'rotate(215deg) translateX(-1000px)', opacity: '0' },
         },
+
+        shimmer: {
+          '0%': { transform: 'translateX(-150%) skewX(-15deg)' },
+          '10%': { transform: 'translateX(200%) skewX(-15deg)' },
+          '100%': { transform: 'translateX(200%) skewX(-15deg)' },
+        },
+        medallionSheen: {
+          '0%': { transform: 'translateX(-150%) skewX(-20deg)', opacity: '0' },
+          '5%': { opacity: '0.6' },
+          '10%': { transform: 'translateX(150%) skewX(-20deg)', opacity: '0' },
+          '100%': { transform: 'translateX(150%) skewX(-20deg)', opacity: '0' },
+        },
+        breatheAurora: {
+          '0%, 100%': { opacity: '0.15' },
+          '50%': { opacity: '0.35' },
+        },
+        donatePulse: {
+          '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 10px rgba(251, 191, 36, 0.3)' },
+          '50%': { transform: 'scale(1.03)', boxShadow: '0 0 25px rgba(251, 191, 36, 0.7)' },
+        },
+
         'glow-pulse': {
           '0%, 100%': { opacity: '0.8' },
           '50%': { opacity: '1', filter: 'brightness(1.3)' },

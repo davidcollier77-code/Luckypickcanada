@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { createLuckyReveal } from '../lucky-reveal';
@@ -45,6 +45,183 @@ export default function HomePage() {
     setSuggestionError(searchParams.get('suggestionError') || '');
   }, []);
 
+
+  // Viewport-Wide Shooting Stars & Constellation Twinkle
+  const backgroundCanvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = backgroundCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    let animationFrameId;
+
+    let ambientStars = [];
+    let shootingStars = [];
+    let isConstellationTwinkling = false;
+    let constellationTwinklePhase = 0; // 0 to 1
+
+    const initAmbientStars = (width, height) => {
+      const numStars = Math.floor((width * height) / 2000); // Moderate density
+      const newStars = [];
+      for (let i = 0; i < numStars; i++) {
+        newStars.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 0.6 + 0.2, // Tiny stars
+          baseAlpha: Math.random() * 0.4 + 0.1, // Dim base alpha
+          alpha: 0, // Current alpha
+          twinkleSpeed: Math.random() * 0.01 + 0.005,
+          twinkleDir: Math.random() > 0.5 ? 1 : -1,
+          isCluster: false // Will mark cluster stars later
+        });
+      }
+
+      // Select 3-4 stars for cluster twinkling
+      const clusterCount = Math.floor(Math.random() * 2) + 3;
+      for (let i = 0; i < clusterCount; i++) {
+        if (newStars.length > 0) {
+          const index = Math.floor(Math.random() * newStars.length);
+          newStars[index].isCluster = true;
+        }
+      }
+      return newStars;
+    };
+
+    const spawnShootingStar = (width, height) => {
+      const startX = Math.random() * (width * 0.9);
+      const startY = Math.random() * (height * 0.7) + (height * 0.05); // 5% - 75%
+      const length = Math.random() * 150 + 100; // Trail length
+
+      // Angle: 30 to 60 degrees (in radians)
+      const angle = (Math.random() * 30 + 30) * (Math.PI / 180);
+      const speed = Math.random() * 15 + 10;
+
+      shootingStars.push({
+        x: startX,
+        y: startY,
+        length: length,
+        angle: angle,
+        speed: speed,
+        alpha: 1,
+        life: 1.0, // 1 to 0
+        decay: Math.random() * 0.02 + 0.015, // Roughly 0.9s-1.3s lifespan
+      });
+    };
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      ambientStars = initAmbientStars(canvas.width, canvas.height);
+    };
+
+    // Initial setup
+    canvas.width = window.innerWidth || 1024;
+    canvas.height = window.innerHeight || 768;
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Timers
+    let shootingStarTimeout;
+    const scheduleShootingStar = () => {
+      const delay = Math.random() * 15000 + 30000; // 30s to 45s
+      shootingStarTimeout = setTimeout(() => {
+        spawnShootingStar(canvas.width, canvas.height);
+        scheduleShootingStar();
+      }, delay);
+    };
+    scheduleShootingStar();
+
+    let twinkleTimeout;
+    const scheduleTwinkle = () => {
+      const delay = Math.random() * 15000 + 45000; // 45s to 60s
+      twinkleTimeout = setTimeout(() => {
+        isConstellationTwinkling = true;
+        constellationTwinklePhase = 0;
+        scheduleTwinkle();
+      }, delay);
+    };
+    scheduleTwinkle();
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const currentTime = Date.now();
+
+      // Handle Constellation Twinkle Phase
+      if (isConstellationTwinkling) {
+        constellationTwinklePhase += 0.005; // Adjust for ~3s cycle
+        if (constellationTwinklePhase >= Math.PI) {
+          isConstellationTwinkling = false;
+          constellationTwinklePhase = 0;
+        }
+      }
+
+      // Draw Ambient Stars
+      for (let i = 0; i < ambientStars.length; i++) {
+        const star = ambientStars[i];
+
+        let currentAlpha = star.baseAlpha + Math.sin(currentTime * star.twinkleSpeed) * 0.2;
+
+        if (star.isCluster && isConstellationTwinkling) {
+            // Brighten up during constellation pulse
+            currentAlpha += Math.sin(constellationTwinklePhase) * 0.6;
+        }
+
+        ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
+        try {
+          spawnShootingStar(canvas.width, canvas.height);
+        } finally {
+          scheduleShootingStar();
+        }
+      }
+
+      // Draw Shooting Stars
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = shootingStars.length - 1; i >= 0; i--) {
+        const star = shootingStars[i];
+
+        // Update position
+        star.x += Math.cos(star.angle) * star.speed;
+        star.y += Math.sin(star.angle) * star.speed;
+        star.life -= star.decay;
+
+        if (star.life <= 0) {
+            shootingStars.splice(i, 1);
+            continue;
+        }
+
+        // Draw tail
+        const tailX = star.x - Math.cos(star.angle) * star.length * star.life;
+        const tailY = star.y - Math.sin(star.angle) * star.length * star.life;
+
+        const gradient = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
+        // Gold to white
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${star.life})`);
+        gradient.addColorStop(0.2, `rgba(255, 215, 0, ${star.life * 0.8})`);
+        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      ctx.globalCompositeOperation = 'source-over'; // Reset
+
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      clearTimeout(shootingStarTimeout);
+      clearTimeout(twinkleTimeout);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   function startLuckyReveal(luckyPickGame) {
     setLuckyReveal(createLuckyReveal(luckyPickGame));
   }
@@ -75,6 +252,16 @@ export default function HomePage() {
 
   return (
     <div className="lucky-site-shell homepage-experience">
+
+      {/* 1. & 3. Viewport-Wide Shooting Stars & Constellation Twinkle */}
+      <canvas
+        ref={backgroundCanvasRef}
+        className="fixed inset-0 pointer-events-none overflow-hidden -z-10 w-full h-full"
+      />
+
+      {/* 2. Full-Page Aurora Breathing Pulse */}
+      <div className="fixed inset-0 pointer-events-none -z-10 animate-breathe-aurora" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(24, 185, 120, 0.4) 0%, rgba(191, 139, 255, 0.2) 50%, transparent 100%)' }} />
+
       <Hero />
 
       <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
@@ -82,31 +269,31 @@ export default function HomePage() {
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2>LUCKY METER</h2>
           <p>Discover your daily lucky resonance score from 0–100% and tap into today's positive energy.</p>
-          <Link href="/lucky-meter" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Check Lucky Meter <span aria-hidden="true">→</span></Link>
+          <Link href="/lucky-meter" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Check Lucky Meter <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article className="homepage-community-card">
           <p className="homepage-offer-kicker">Lucky Stories</p>
           <h2>Community Stories</h2>
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
-          <Link href="/stories" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">See Our Story Section</Link>
+          <Link href="/stories" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">See Our Story Section<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="crystal-ball" className="homepage-community-card">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
           <h2>Consult the Lucky Crystal Ball</h2>
           <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
-          <Link href="/crystal-ball" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
+          <Link href="/crystal-ball" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">CONSULT THE ORACLE <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="community-map" className="homepage-community-card">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Lucky Map</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
-          <Link href="/map" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Visit the Lucky Map <span aria-hidden="true">→</span></Link>
+          <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Visit the Lucky Map <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="lucky-card" className="homepage-community-card">
           <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
           <h2>DAILY LUCKY CARD</h2>
           <p>Reveal today&apos;s digital collectible card from Coast to Coast. Check your fortune tier, unlock daily positive themes, and build your collection.</p>
-          <Link href="/reveal" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Reveal Today&apos;s Card <span aria-hidden="true">→</span></Link>
+          <Link href="/reveal" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Reveal Today&apos;s Card <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
       </section>
 
@@ -134,7 +321,7 @@ export default function HomePage() {
             <p>Create your personal LuckyPickCanada moment with a unique interactive pick experience.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openLuckyPickCheckout}>Choose a Lucky Pick</button>
+            <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openLuckyPickCheckout}>Choose a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
@@ -142,7 +329,7 @@ export default function HomePage() {
             <h3 className="homepage-offer-title">Gift Experience</h3>
             <p>Send someone special their own LuckyPickCanada experience — a fun digital gift filled with lucky moments.</p>
             <p className="homepage-offer-note">Gift package · CAD $4.99</p>
-            <button type="button" className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openGiftCheckout}>Gift a Lucky Pick</button>
+            <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openGiftCheckout}>Gift a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
@@ -150,7 +337,7 @@ export default function HomePage() {
             <h3>Leave a tip for the journey.</h3>
             <p>Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <div className="inline-block"><button type="button" className="animate-pulse-glow inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openTipJar}>Open the tip jar</button></div>
+            <div className="inline-block"><button type="button" className="animate-donate-pulse relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95" onClick={openTipJar}>Open the tip jar<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button></div>
           </article>
         </div>
       </section>
