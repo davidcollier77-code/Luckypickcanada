@@ -79,6 +79,18 @@ export default function DailyResonance() {
 
   const [totalVisits, setTotalVisits] = useState<number | null>(null);
 
+  // Fetch and increment total visits on mount
+  useEffect(() => {
+    fetch('/api/visits', { method: 'POST' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.visits === 'number') {
+          setTotalVisits(data.visits);
+        }
+      })
+      .catch((err) => console.error("Failed to update visits:", err));
+  }, []);
+
   const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -168,16 +180,6 @@ export default function DailyResonance() {
     setIsRevealing(true);
 
     // Clear previous audio nodes
-    // Increment visit counter on explicit user action (spinning the meter)
-    fetch('/api/visits', { method: 'POST' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && typeof data.visits === 'number') {
-          setTotalVisits(data.visits);
-        }
-      })
-      .catch((err) => console.error("Failed to update visits:", err));
-
     activeAudioNodesRef.current = [];
 
     // Cancel any previous animation sequence
