@@ -173,7 +173,7 @@ export default function LuckyCardShare({ card }) {
 
   return (
     <div className="lucky-card-share">
-      <button type="button" className="lucky-card-share-button" onClick={shareCard} disabled={isSharing}>
+      <button type="button" className="lucky-card-share-button" onClick={shareCard} disabled={isSharing} aria-disabled={isSharing}>
         {isSharing ? 'Preparing Your Card…' : 'Share Your Lucky Card'}
       </button>
       {status && <p className="lucky-card-share-status" role="status">{status}</p>}

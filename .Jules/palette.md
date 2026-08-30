@@ -10,3 +10,6 @@
 ## 2026-08-27 - Custom Button ARIA states
 **Learning:** Custom interactive elements using `role="button"` need keyboard interactivity (`tabIndex`, `onKeyDown`) and `focus-visible` styles. Also, native disabled buttons improve with `aria-disabled`.
 **Action:** Ensure custom buttons implement full keyboard a11y.
+## 2025-08-30 - Redundant but helpful aria-disabled
+**Learning:** Adding `aria-disabled` alongside the native `disabled` attribute can sometimes provide better cross-browser/screen-reader support for disabled states when native attributes are stripped by CSS or ignored in complex custom elements, though it is technically redundant on simple native `<button>` tags.
+**Action:** When working on accessibility for disabled buttons, consider adding `aria-disabled` as an extra layer of clarification for AT if requested, but ensure the native `disabled` attribute remains for robust keyboard restriction.
