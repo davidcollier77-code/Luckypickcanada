@@ -268,6 +268,7 @@ export default function HomePage() {
       <canvas
         ref={backgroundCanvasRef}
         className="fixed inset-0 w-full h-full pointer-events-none -z-10"
+        style={{ position: 'fixed' }}
       />
       <section className="homepage-section homepage-community-grid pt-4 mt-0 sm:pt-6" aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
