@@ -90,7 +90,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(255, 226, 136, 0
 
 @media (max-width: 620px) {
   html { font-size: 15px; }
-  .lucky-site-shell { padding-top: 0.55rem !important; }
+  .lucky-site-shell { padding-top: 0 !important; }
   .reference-tableau { min-height: 360px !important; }
   .reference-logo-medallion { width: 112px !important; height: 112px !important; }
   .reference-logo-medallion img { width: 90px !important; height: 90px !important; }
