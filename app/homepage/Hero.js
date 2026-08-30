@@ -25,7 +25,7 @@ export default function Hero() {
       <div className="relative z-10 w-full flex flex-col items-center">
 
           {/* Top Nav: Glassmorphism pill */}
-          <nav className="w-full max-w-3xl mx-auto relative z-20 pointer-events-auto mt-0 mb-4" aria-label="Primary navigation">
+          <nav className="w-full max-w-3xl mx-auto relative z-20 pointer-events-auto mt-0 mb-2 md:mb-4" aria-label="Primary navigation">
           <div className="backdrop-blur-xl bg-white/5 border border-white/20 md:border-amber-400/20 rounded-full px-4 py-3 flex items-center justify-around gap-2 md:gap-4 text-center shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             {heroLinks.map(({ href, label, external }) => (
               <a
@@ -41,7 +41,7 @@ export default function Hero() {
         </nav>
 
         {/* Center Content: Logo and Typography */}
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-2 mb-4">{/* Logo with spark portal and drop shadow */}
+        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-0 mb-4">{/* Logo with spark portal and drop shadow */}
           <div className="relative mb-2 flex items-center justify-center pointer-events-none">
             {/* Spark Portal Glow - Radial (ambient only, no pulse/spin) */}
             <div className="absolute inset-[-20%] bg-radial-gradient from-amber-500/30 to-transparent blur-2xl rounded-full mix-blend-screen" style={{ backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.4) 0%, transparent 70%)' }}>
