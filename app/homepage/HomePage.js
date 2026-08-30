@@ -14,7 +14,6 @@ const LuckyRevealPopup = dynamic(() => import('../lucky-reveal-popup'));
 import { TURNSTILE_SITE_KEY } from '../turnstile-config';
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import TurnstileField from '../turnstile-field';
-import Hero from './Hero';
 import FAQSection from './FAQSection';
 import { LUCKY_CARDS } from '../lucky-card-data';
 
@@ -270,8 +269,6 @@ export default function HomePage() {
         ref={backgroundCanvasRef}
         className="fixed inset-0 w-full h-full pointer-events-none -z-10"
       />
-      <Hero />
-
       <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
