@@ -13,12 +13,12 @@ const heroLinks = [
 export default function Hero() {
 
   return (
-    <header className="relative min-h-screen w-full flex flex-col items-center justify-between px-4 py-6 md:py-10 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
+    <header className="relative w-full flex flex-col items-center justify-between px-4 py-6 md:py-10 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
 
       {/* Layer 1 (Background): Full-bleed absolute container */}
-      <div className="absolute inset-0 z-0 pointer-events-none bg-[#020609]">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         {/* Full-Page Aurora Breathing Pulse */}
-        <div className="absolute inset-0 pointer-events-none -z-10 animate-breathe-aurora opacity-25" style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(24, 185, 120, 0.4) 0%, rgba(191, 139, 255, 0.2) 50%, transparent 80%)' }} />
+        <div className="absolute inset-0 pointer-events-none -z-10 animate-breathe-aurora opacity-25" style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.8) 0%, rgba(139, 92, 246, 0.6) 50%, transparent 80%)' }} />
       </div>
 
       {/* Layer 2 (UI Overlay): Relative container for all interactive elements */}
@@ -41,10 +41,10 @@ export default function Hero() {
         </nav>
 
         {/* Center Content: Logo and Typography */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center max-w-2xl mx-auto my-10">
+        <div className="flex flex-col items-center justify-center text-center max-w-2xl mx-auto mt-8 mb-10">
 
           {/* Logo with spark portal and drop shadow */}
-          <div className="relative overflow-hidden w-48 h-48 md:w-56 md:h-56 mb-8 flex items-center justify-center pointer-events-none">
+          <div className="relative w-48 h-48 md:w-56 md:h-56 mb-8 flex items-center justify-center pointer-events-none">
             {/* Spark Portal Glow - Radial (ambient only, no pulse/spin) */}
             <div className="absolute inset-[-20%] bg-radial-gradient from-amber-500/30 to-transparent blur-2xl rounded-full mix-blend-screen" style={{ backgroundImage: 'radial-gradient(circle, rgba(245,158,11,0.4) 0%, transparent 70%)' }}>
             </div>
@@ -64,7 +64,7 @@ export default function Hero() {
           </div>
 
           {/* Top Subhead */}
-          <p className="text-[#FFF0AC] text-[10px] sm:text-xs md:text-sm tracking-[0.25em] font-semibold uppercase max-w-lg mb-4 leading-relaxed px-2 drop-shadow-md">
+          <p className="text-[#FFF0AC] text-[10px] sm:text-xs md:text-sm tracking-[0.25em] font-semibold uppercase max-w-lg mb-4 leading-relaxed px-2 drop-shadow-lg [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
             A LITTLE CANADIAN MAGIC MADE FOR TODAY — DISCOVER YOUR LUCK & SHARE THE MAGIC.
           </p>
 
@@ -76,7 +76,7 @@ export default function Hero() {
           </h1>
 
           {/* Bottom Subhead */}
-          <p className="text-white text-sm md:text-base font-sans font-medium tracking-wide mt-6 mb-8 drop-shadow-md">
+          <p className="text-white text-sm md:text-base font-sans font-medium tracking-wide mt-6 mb-8 drop-shadow-lg [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
             A Canadian digital entertainment
           </p>
         </div>

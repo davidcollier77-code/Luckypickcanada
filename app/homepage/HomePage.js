@@ -261,31 +261,31 @@ export default function HomePage() {
       <Hero />
 
       <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
-        <article id="lucky-meter" className="homepage-community-card">
+        <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2>LUCKY METER</h2>
           <p>Discover your daily lucky resonance score from 0–100% and tap into today's positive energy.</p>
           <Link href="/lucky-meter" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Check Lucky Meter <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
-        <article className="homepage-community-card">
+        <article className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">Lucky Stories</p>
           <h2>Community Stories</h2>
           <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
           <Link href="/stories" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">See Our Story Section<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
-        <article id="crystal-ball" className="homepage-community-card">
+        <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
           <h2>Consult the Lucky Crystal Ball</h2>
           <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
           <Link href="/crystal-ball" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">CONSULT THE ORACLE <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
-        <article id="community-map" className="homepage-community-card">
+        <article id="community-map" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Lucky Map</h2>
           <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
           <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95">Visit the Lucky Map <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
-        <article id="lucky-card" className="homepage-community-card">
+        <article id="lucky-card" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
           <h2>DAILY LUCKY CARD</h2>
           <p>Reveal today&apos;s digital collectible card from Coast to Coast. Check your fortune tier, unlock daily positive themes, and build your collection.</p>

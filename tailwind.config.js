@@ -86,9 +86,9 @@ module.exports = {
           '100%': { transform: 'translateX(150%) skewX(-20deg)', opacity: '0' },
         },
         breatheAurora: {
-          '0%': { opacity: '0.15', transform: 'translateY(0) scaleX(1)' },
-          '50%': { opacity: '0.35', transform: 'translateY(-2%) scaleX(1.02)' },
-          '100%': { opacity: '0.15', transform: 'translateY(0) scaleX(1)' },
+          '0%': { opacity: '0.30', transform: 'translateY(0) scaleX(1)' },
+          '50%': { opacity: '0.55', transform: 'translateY(-2%) scaleX(1.02)' },
+          '100%': { opacity: '0.30', transform: 'translateY(0) scaleX(1)' },
         },
         donatePulse: {
           '0%, 100%': { transform: 'scale(1)', boxShadow: '0 0 10px rgba(251, 191, 36, 0.3), inset 0 0 0 rgba(255, 255, 255, 0)' },
