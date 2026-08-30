@@ -478,3 +478,14 @@
   50% { opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
 }
+
+/* FORCE CLOSE HERO GAP */
+.homepage-community-grid {
+  margin-top: 0 !important;
+  padding-top: 1rem !important;
+}
+
+.homepage-experience {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}

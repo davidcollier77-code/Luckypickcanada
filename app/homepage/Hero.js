@@ -1,11 +1,9 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Hero() {
   return (
-    <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-2 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
+    <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
       {/* Background layer */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div
@@ -40,16 +38,16 @@ export default function Hero() {
             </Link>
             <span className="text-white/20">•</span>
             <Link
-              href="/reveal"
+              href="/moments"
               className="text-white/80 hover:text-white transition-colors"
             >
-              Today&apos;s Lucky Moment
+              Today's Lucky Moment
             </Link>
           </div>
         </nav>
 
         {/* Hero Center Content */}
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-0 mb-2 px-4">
+        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-0 mb-0 px-4">
           {/* Logo with spark portal */}
           <div className="relative mb-1 flex items-center justify-center pointer-events-none">
             <div

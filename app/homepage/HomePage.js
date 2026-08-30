@@ -269,7 +269,7 @@ export default function HomePage() {
         ref={backgroundCanvasRef}
         className="fixed inset-0 w-full h-full pointer-events-none -z-10"
       />
-      <section className="homepage-section homepage-community-grid" aria-label="Lucky Pick Canada community">
+      <section className="homepage-section homepage-community-grid pt-4 mt-0 sm:pt-6" aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2>LUCKY METER</h2>
