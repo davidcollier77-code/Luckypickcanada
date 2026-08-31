@@ -179,7 +179,7 @@ export default function HomePage() {
 
       auroraTime += reducedMotion ? 0.00002 : 0.0002; // VERY slow, continuous atmospheric movement
       const width = canvas.width;
-      const height = canvas.height;
+      auroraTime += reducedMotion ? 0 : 0.0002; // VERY slow, continuous atmospheric movement
 
       ctx.globalCompositeOperation = 'screen';
 
