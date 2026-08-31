@@ -20,7 +20,7 @@ export default function FAQSection() {
     },
     {
       question: "What are Lucky Stories and the Community Map?",
-      answer: "The Community Map and Lucky Stories sections are places where users across Canada share their uplifting moments and small wins. When someone experiences a lucky moment, they can share it on the map, allowing others to explore these positive stories coast to coast. It's a way to keep the good energy moving and celebrate together."
+      answer: "The Community Map and Community Stories are related but distinct features. Community Stories lets people submit, read, and share positive/lucky experiences. The Community Map lets visitors explore those community lucky moments visually across Canada."
     },
     {
       question: "Are picks intended for gambling or entertainment?",
