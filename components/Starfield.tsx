@@ -19,6 +19,9 @@ export default function Starfield() {
       const width = window.innerWidth;
       const height = window.innerHeight;
 
+      // Reset transform before applying DPR scaling to prevent cumulative transform bug
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = `${width}px`;
@@ -30,8 +33,8 @@ export default function Starfield() {
       const numStars = width < 768 ? 100 : 300;
 
       stars = Array.from({ length: numStars }).map(() => ({
-        x: Math.random() * width | 0,
-        y: Math.random() * height | 0,
+        x: Math.floor(Math.random() * width),
+        y: Math.floor(Math.random() * height),
         r: Math.random() * 1.5 + 0.5,
         alpha: Math.random(),
         twinkleSpeed: Math.random() * 0.02 + 0.005,
@@ -64,6 +67,8 @@ export default function Starfield() {
 
     const handleResize = () => {
       initStars();
+      // Cancel pending animation frame to prevent duplicate animation loops
+      cancelAnimationFrame(animationFrameId);
     };
 
     initStars();

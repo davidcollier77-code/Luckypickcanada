@@ -39,6 +39,9 @@ export default function ShootingStars() {
       const width = window.innerWidth;
       const height = window.innerHeight;
 
+      // Reset transform before applying DPR scaling to prevent cumulative transform bug
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       canvas.style.width = `${width}px`;
@@ -116,6 +119,8 @@ export default function ShootingStars() {
 
     const handleResize = () => {
       initCanvas();
+      // Cancel pending animation frame to prevent duplicate animation loops
+      cancelAnimationFrame(animationFrameId);
     };
 
     initCanvas();
