@@ -305,3 +305,73 @@ body {
 .animate-pulse-glow {
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+
+/* Aurora Core Animation */
+@keyframes aurora-drift {
+  0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.6; }
+  50% { transform: translateY(-5%) scale(1.05) rotate(2deg); opacity: 0.8; }
+  100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.6; }
+}
+
+@keyframes aurora-swirl {
+  0% { transform: translateX(0) scaleX(1); }
+  50% { transform: translateX(5%) scaleX(1.1); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+.aurora-container {
+  position: fixed;
+  inset: 0;
+  z-index: -20;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--lp-bg);
+  /* Very heavy blur to ensure no hard edges ever appear */
+  filter: blur(80px) saturate(1.2);
+}
+
+.aurora-layer {
+  position: absolute;
+  width: 200vw;
+  height: 200vh;
+  top: -50%;
+  left: -50%;
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-layer {
+    animation: none !important;
+    transform: none !important;
+    opacity: 0.4;
+  }
+}
+
+/* Layer 1: Base Teal Glow */
+.aurora-layer-1 {
+  background: radial-gradient(ellipse at 50% 30%, rgba(24, 208, 150, 0.4) 0%, rgba(24, 208, 150, 0) 60%);
+  animation: aurora-drift 45s ease-in-out infinite alternate;
+}
+
+/* Layer 2: Deep Emerald Swirl */
+.aurora-layer-2 {
+  background: radial-gradient(ellipse at 30% 60%, rgba(16, 185, 129, 0.3) 0%, rgba(16, 185, 129, 0) 50%);
+  animation: aurora-swirl 35s ease-in-out infinite alternate-reverse;
+}
+
+/* Layer 3: Cyan Top Band */
+.aurora-layer-3 {
+  background: radial-gradient(ellipse at 70% 20%, rgba(45, 200, 190, 0.35) 0%, rgba(45, 200, 190, 0) 50%);
+  animation: aurora-drift 55s ease-in-out infinite alternate;
+  animation-delay: -10s;
+}
+
+/* Layer 4: Subtle Purple / Violet Accent */
+.aurora-layer-4 {
+  background: radial-gradient(ellipse at 40% 40%, rgba(144, 112, 200, 0.25) 0%, rgba(144, 112, 200, 0) 60%);
+  animation: aurora-swirl 65s ease-in-out infinite alternate;
+  animation-delay: -20s;
+}
