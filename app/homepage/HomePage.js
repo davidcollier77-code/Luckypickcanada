@@ -210,11 +210,16 @@ export default function HomePage() {
         const breath = (Math.sin(time * 0.6 + phase) + 1) / 2; // 0 to 1
         const currentOpacity = maxOpacity * (0.5 + 0.5 * breath);
 
+        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+        // Replaced dynamic `rgba(..., ${currentOpacity})` string interpolation with `ctx.globalAlpha`.
+        // This avoids creating and parsing new strings on every single frame, significantly
+        // reducing garbage collection pressure and keeping animations stutter-free.
+        ctx.globalAlpha = currentOpacity;
         const gradient = ctx.createLinearGradient(0, gradientBottom, 0, gradientTop);
         // Start completely transparent at the bottom
         gradient.addColorStop(0, `rgba(${colorRGB}, 0)`);
         // Soft blend into peak brightness near the curtain edge
-        gradient.addColorStop(0.2, `rgba(${colorRGB}, ${currentOpacity})`);
+        gradient.addColorStop(0.2, `rgb(${colorRGB})`);
         // Extremely long, diffuse fade into the upper sky
         gradient.addColorStop(1, `rgba(${colorRGB}, 0)`);
 
@@ -229,6 +234,7 @@ export default function HomePage() {
         ctx.fill();
 
         ctx.restore();
+        ctx.globalAlpha = 1.0;
       };
 
       // 1. Primary Teal/Green curtain, large and soft, slight diagonal
@@ -290,9 +296,14 @@ export default function HomePage() {
         const tailX = star.x - Math.cos(star.angle) * currentLength;
         const tailY = star.y - Math.sin(star.angle) * currentLength;
 
+        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+        // Replaced string interpolation for `rgba(...)` with static hex colors
+        // and manipulated opacity via `ctx.globalAlpha`.
+        ctx.globalAlpha = Math.max(0, star.life);
+
         const gradient = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${star.life})`);
-        gradient.addColorStop(0.1, `rgba(255, 240, 200, ${star.life * star.coreGlow})`);
+        gradient.addColorStop(0, '#ffffff');
+        gradient.addColorStop(0.1, `rgba(255, 240, 200, ${star.coreGlow})`);
         gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
         ctx.beginPath();
@@ -302,9 +313,10 @@ export default function HomePage() {
         ctx.lineWidth = Math.max(0.5, star.life * 1.5);
         ctx.stroke();
 
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.life})`;
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(star.x - 0.5, star.y - 0.5, 1.5, 1.5);
       }
+      ctx.globalAlpha = 1.0;
       ctx.globalCompositeOperation = 'source-over';
 
       animationFrameId = requestAnimationFrame(draw);
