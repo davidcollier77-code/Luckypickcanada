@@ -70,7 +70,7 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
   return (
     <div className="checkout-modal-backdrop" role="presentation" onMouseDown={onClose}>
       <section className="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title" onMouseDown={(event) => event.stopPropagation()}>
-        <button type="button" className="checkout-modal-close" onClick={onClose} aria-label="Close checkout options" autoFocus>×</button>
+        <button type="button" className="checkout-modal-close focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={onClose} aria-label="Close checkout options" autoFocus>×</button>
         <p className="homepage-offer-kicker">Lucky Pick Canada</p>
         <h2 id="checkout-modal-title">{copy.title}</h2>
         <p>{copy.description}</p>
