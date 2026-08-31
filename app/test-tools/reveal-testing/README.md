@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This isolated development-only control launches the existing Lucky Pick reveal presentation without sending the developer through Stripe. It is limited to the $1 Lucky Pick and $4.99 Gift flows so their 6 Pick and 7 Pick reveal output can be checked repeatedly.
+This isolated development-only control launches the existing Lucky Pick reveal presentation without sending the developer through Stripe. It is limited to the $1 Lucky Pick and $2.99 Gift flows so their 6 Pick and 7 Pick reveal output can be checked repeatedly.
 
 ## Enable test mode
 
@@ -23,5 +23,5 @@ The bypass only evaluates to true in local `next dev` development mode. Producti
 
 ## Scope
 
-- Included: $1 Lucky Pick reveal and $4.99 Gift reveal presentation testing.
+- Included: $1 Lucky Pick reveal and $2.99 Gift reveal presentation testing.
 - Excluded: Lucky Card Reveal, tip jar, all production customer payment flows, and all payment/email/backend systems.
