@@ -12,7 +12,7 @@ const checkoutOptions = {
   gift_package: {
     name: 'Lucky Pick Canada gift package',
     description: 'Send a Lucky Pick reveal by email with a personal greeting.',
-    unitAmount: 499,
+    unitAmount: 299,
   },
 };
 

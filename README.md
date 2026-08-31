@@ -51,7 +51,7 @@ This project is licensed under the MIT License — see LICENSE for details.
 Set these Vercel environment variables before using the payment buttons, gift email delivery, Little Luck Map, and suggestion box:
 
 - `STRIPE_SECRET_KEY`: your Stripe secret key
-- `RESEND_API_KEY`: Resend API key used to send $4.99 gift emails and suggestion notifications
+- `RESEND_API_KEY`: Resend API key used to send $2.99 gift emails and suggestion notifications
 - `GIFT_FROM_EMAIL`: verified sender email address for gift delivery; also used for suggestion notifications unless `SUGGESTIONS_FROM_EMAIL` is set
 - `GIFT_TEST_SECRET`: optional secret for sending protected test gift emails through `/api/admin/test-gift-email`
 - `SUGGESTIONS_FROM_EMAIL`: optional verified sender email address for suggestion notifications
@@ -61,7 +61,7 @@ Set these Vercel environment variables before using the payment buttons, gift em
 - `TURNSTILE_SITE_KEY` or `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Cloudflare Turnstile site key shown on public, non-payment forms
 - `TURNSTILE_SECRET_KEY`: Cloudflare Turnstile secret key used to verify public form submissions server-side
 
-The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions for the $1.00 Lucky Pick, $4.99 gift email package, and a custom tip jar amount. Lucky Pick includes either 6 unique numbers from 1 to 49 or 7 unique numbers from 1 to 50, plus a slow reveal with stars and Aurora, a lucky color, and a lucky day of the week. The gift package sends the selected lucky pick, lucky color, lucky day, and personal greeting to the recipient by email after payment. The gift delivery route accepts either a Checkout Session ID (`session_id=cs_...`) or Payment Intent ID (`payment_id=pi_...`) for resends.
+The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions for the $1.00 Lucky Pick, $2.99 gift email package, and a custom tip jar amount. Lucky Pick includes either 6 unique numbers from 1 to 49 or 7 unique numbers from 1 to 50, plus a slow reveal with stars and Aurora, a lucky color, and a lucky day of the week. The gift package sends the selected lucky pick, lucky color, lucky day, and personal greeting to the recipient by email after payment. The gift delivery route accepts either a Checkout Session ID (`session_id=cs_...`) or Payment Intent ID (`payment_id=pi_...`) for resends.
 
 To send a no-purchase test gift email, make a `POST` request to `/api/admin/test-gift-email` with the `x-gift-test-secret` header set to `GIFT_TEST_SECRET` and a JSON body containing `recipientEmail`. Optional fields are `recipientName`, `senderName`, `giftMessage`, and `luckyPickGame` (`6` or `7`).
 

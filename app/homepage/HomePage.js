@@ -413,10 +413,10 @@ export default function HomePage() {
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
-            <p className="homepage-offer-kicker">$4.99 Gift Experience</p>
+            <p className="homepage-offer-kicker">$2.99 Gift Experience</p>
             <h3 className="homepage-offer-title">Gift Experience</h3>
             <p className="mb-4">Send someone special their own LuckyPickCanada experience — a fun digital gift filled with lucky moments.</p>
-            <p className="homepage-offer-note">Gift package · CAD $4.99</p>
+            <p className="homepage-offer-note">Gift package · CAD $2.99</p>
             <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={openGiftCheckout}>Gift a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
           <article className="homepage-offer">
