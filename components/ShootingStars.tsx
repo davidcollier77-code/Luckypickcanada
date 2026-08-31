@@ -3,6 +3,15 @@ import React, { useEffect, useRef } from "react";
 
 export default function ShootingStars() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const prefersReducedMotion = useRef(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    prefersReducedMotion.current = mediaQuery.matches;
+    const handler = (e: MediaQueryListEvent) => { prefersReducedMotion.current = e.matches; };
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -75,7 +84,7 @@ export default function ShootingStars() {
       stars.forEach((star) => {
         if (!star.active) {
           // Random chance to spawn a new star if inactive
-          if (Math.random() < 0.005) {
+          if (!prefersReducedMotion.current && Math.random() < 0.005) {
             spawnStar(star);
           }
           return;

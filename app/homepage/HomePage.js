@@ -62,6 +62,15 @@ export default function HomePage() {
 
   // Viewport-Wide Shooting Stars & Constellation Twinkle
   const backgroundCanvasRef = useRef(null);
+  const prefersReducedMotion = useRef(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    prefersReducedMotion.current = mediaQuery.matches;
+    const handler = (e) => { prefersReducedMotion.current = e.matches; };
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     const canvas = backgroundCanvasRef.current;
@@ -102,6 +111,7 @@ export default function HomePage() {
     };
 
     const spawnShootingStar = (width, height) => {
+      if (prefersReducedMotion.current) return;
       if (shootingStars.length >= 3) return;
 
       const startX = Math.random() * width;
@@ -175,7 +185,9 @@ export default function HomePage() {
 
       const currentTime = Date.now();
 
-      auroraTime += 0.0002; // VERY slow, continuous atmospheric movement
+      if (!prefersReducedMotion.current) {
+        auroraTime += 0.0002; // VERY slow, continuous atmospheric movement
+      }
       const width = canvas.width;
       const height = canvas.height;
 
@@ -207,8 +219,7 @@ export default function HomePage() {
         const gradientBottom = yBase + (amplitude * 2.5);
 
         // Gentle breathing brightness over time, avoiding flashes
-        const breath = (Math.sin(time * 0.6 + phase) + 1) / 2; // 0 to 1
-        const currentOpacity = maxOpacity * (0.5 + 0.5 * breath);
+        const currentOpacity = maxOpacity;
 
         // PERFORMANCE OPTIMIZATION (Bolt ⚡):
         // Replaced dynamic `rgba(..., ${currentOpacity})` string interpolation with `ctx.globalAlpha`.
@@ -238,16 +249,16 @@ export default function HomePage() {
       };
 
       // 1. Primary Teal/Green curtain, large and soft, slight diagonal
-      drawAuroraCurtain(0, height * 0.45, '24, 208, 150', 0.10, height * 0.25, 0.3, -15);
+      drawAuroraCurtain(0, height * 0.45, '24, 208, 150', 0.25, height * 0.25, 0.3, -15);
 
       // 2. Secondary Emerald curtain, lower, overlapping, opposite diagonal
-      drawAuroraCurtain(2.5, height * 0.55, '16, 185, 129', 0.08, height * 0.3, 0.25, 10);
+      drawAuroraCurtain(2.5, height * 0.55, '16, 185, 129', 0.20, height * 0.3, 0.25, 10);
 
       // 3. Deep Blue/Purple curtain, higher up, very diffuse atmospheric glow
-      drawAuroraCurtain(4.2, height * 0.35, '90, 70, 200', 0.06, height * 0.35, 0.2, -5);
+      drawAuroraCurtain(4.2, height * 0.35, '90, 70, 200', 0.15, height * 0.35, 0.2, -5);
 
       // 4. Cyan highlight band, steeper angle, slightly faster drifting
-      drawAuroraCurtain(1.5, height * 0.6, '45, 200, 190', 0.11, height * 0.2, 0.35, -25);
+      drawAuroraCurtain(1.5, height * 0.6, '45, 200, 190', 0.28, height * 0.2, 0.35, -25);
 
       // Restore default composite operation and ensure globalAlpha is clean
       ctx.globalCompositeOperation = 'source-over';
