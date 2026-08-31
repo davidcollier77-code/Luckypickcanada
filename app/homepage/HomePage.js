@@ -170,86 +170,14 @@ export default function HomePage() {
     };
     scheduleTwinkle();
 
-    let auroraTime = Math.random() * 100;
-
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const currentTime = Date.now();
-
-      auroraTime += reducedMotion ? 0.00002 : 0.0002; // VERY slow, continuous atmospheric movement
       const width = canvas.width;
       const height = canvas.height;
 
       ctx.globalCompositeOperation = 'screen';
-
-      const drawAuroraCurtain = (phase, yBase, colorRGB, maxOpacity, amplitude, speed, tiltAngle) => {
-        const time = auroraTime * speed;
-
-        ctx.save();
-        ctx.translate(width / 2, height / 2);
-        ctx.rotate(tiltAngle * Math.PI / 180);
-        ctx.translate(-width / 2, -height / 2);
-
-        // Expand width to ensure it covers the screen when rotated
-        const span = Math.max(width, height) * 2;
-        const startX = -span * 0.5;
-        const endX = span * 1.5;
-
-        // Very slow organic movement for control points
-        const startY = yBase + Math.sin(time + phase) * amplitude;
-        // Widen the control points to make the wave very broad and soft
-        const cp1X = width * -0.2 + Math.cos(time * 0.5 + phase) * (width * 0.4);
-        const cp1Y = yBase + Math.cos(time * 0.6 + phase) * (amplitude * 1.5);
-        const cp2X = width * 1.2 + Math.sin(time * 0.4 + phase) * (width * 0.4);
-        const cp2Y = yBase + Math.sin(time * 0.7 + phase) * (amplitude * 1.5);
-        const endY = yBase + Math.cos(time * 0.8 + phase) * amplitude;
-
-        const gradientTop = yBase - (span * 0.5);
-        const gradientBottom = yBase + (amplitude * 2.5);
-
-        // Stable, restrained opacity without breathing/flashing
-        const currentOpacity = maxOpacity;
-
-        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
-        // Replaced dynamic `rgba(..., ${currentOpacity})` string interpolation with `ctx.globalAlpha`.
-        // This avoids creating and parsing new strings on every single frame, significantly
-        // reducing garbage collection pressure and keeping animations stutter-free.
-        ctx.globalAlpha = currentOpacity;
-        const gradient = ctx.createLinearGradient(0, gradientBottom, 0, gradientTop);
-        // Start completely transparent at the bottom
-        gradient.addColorStop(0, `rgba(${colorRGB}, 0)`);
-        // Soft blend into peak brightness near the curtain edge
-        gradient.addColorStop(0.2, `rgb(${colorRGB})`);
-        // Extremely long, diffuse fade into the upper sky
-        gradient.addColorStop(1, `rgba(${colorRGB}, 0)`);
-
-        ctx.beginPath();
-        ctx.moveTo(startX, gradientTop);
-        ctx.lineTo(startX, startY);
-        ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
-        ctx.lineTo(endX, gradientTop);
-        ctx.closePath();
-
-        ctx.fillStyle = gradient;
-        ctx.fill();
-
-        ctx.restore();
-        ctx.globalAlpha = 1.0;
-      };
-
-      // 1. Primary Teal/Green curtain, large and soft, slight diagonal
-      drawAuroraCurtain(0, height * 0.45, '24, 208, 150', 0.55, height * 0.25, 0.3, -15);
-
-      // 2. Secondary Emerald curtain, lower, overlapping, opposite diagonal
-      drawAuroraCurtain(2.5, height * 0.55, '16, 185, 129', 0.45, height * 0.3, 0.25, 10);
-
-      // 3. Deep Blue/Purple curtain, higher up, very diffuse atmospheric glow
-      drawAuroraCurtain(4.2, height * 0.35, '90, 70, 200', 0.40, height * 0.35, 0.2, -5);
-
-      // 4. Cyan highlight band, steeper angle, slightly faster drifting
-      drawAuroraCurtain(1.5, height * 0.6, '45, 200, 190', 0.50, height * 0.2, 0.35, -25);
-
       // Restore default composite operation and ensure globalAlpha is clean
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1.0;
@@ -363,6 +291,14 @@ export default function HomePage() {
 
   return (
     <div className="lucky-site-shell homepage-experience block pt-0 mt-0 pb-12 px-4 w-full mx-auto">
+
+      {/* 0. Pure CSS Aurora Layers */}
+      <div className="aurora-container">
+        <div className="aurora-layer aurora-layer-1"></div>
+        <div className="aurora-layer aurora-layer-2"></div>
+        <div className="aurora-layer aurora-layer-3"></div>
+        <div className="aurora-layer aurora-layer-4"></div>
+      </div>
 
       {/* 1. & 3. Viewport-Wide Shooting Stars & Constellation Twinkle */}
       <canvas
