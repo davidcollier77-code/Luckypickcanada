@@ -175,43 +175,64 @@ export default function HomePage() {
 
       const currentTime = Date.now();
 
-      auroraTime += 0.002;
+      auroraTime += 0.0005; // Slower, more atmospheric movement
       const width = canvas.width;
       const height = canvas.height;
 
       ctx.globalCompositeOperation = 'screen';
 
-      const cx1 = width * 0.4 + Math.sin(auroraTime) * (width * 0.2);
-      const cy1 = height * 0.2 + Math.cos(auroraTime * 0.8) * (height * 0.1);
-      const r1 = Math.max(width, height) * 0.7;
-      const grad1 = ctx.createRadialGradient(cx1, cy1, 0, cx1, cy1, r1);
-      grad1.addColorStop(0, "rgba(24, 208, 150, 0.08)");
-      grad1.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.globalAlpha = 0.6 + Math.sin(auroraTime * 2.1) * 0.15;
-      ctx.fillStyle = grad1;
-      ctx.fillRect(0, 0, width, height);
+      const drawAuroraRibbon = (phase, yBase, colorRGB, maxOpacity, amplitude, speed, heightFactor) => {
+        const time = auroraTime * speed;
 
-      const cx2 = width * 0.6 + Math.cos(auroraTime * 1.3) * (width * 0.25);
-      const cy2 = height * 0.3 + Math.sin(auroraTime * 0.9) * (height * 0.15);
-      const r2 = Math.max(width, height) * 0.8;
-      const grad2 = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, r2);
-      grad2.addColorStop(0, "rgba(45, 180, 220, 0.06)");
-      grad2.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.globalAlpha = 0.5 + Math.cos(auroraTime * 1.7) * 0.1;
-      ctx.fillStyle = grad2;
-      ctx.fillRect(0, 0, width, height);
+        // Smooth control points for the top edge of the ribbon
+        const startX = 0;
+        const startY = yBase + Math.sin(time + phase) * amplitude;
+        const cp1X = width * 0.33;
+        const cp1Y = yBase + Math.cos(time * 0.8 + phase) * (amplitude * 1.2);
+        const cp2X = width * 0.66;
+        const cp2Y = yBase + Math.sin(time * 1.2 + phase) * (amplitude * 1.2);
+        const endX = width;
+        const endY = yBase + Math.cos(time * 0.9 + phase) * amplitude;
 
-      const cx3 = width * 0.5 + Math.sin(auroraTime * 0.7) * (width * 0.3);
-      const cy3 = height * 0.1 + Math.cos(auroraTime * 1.1) * (height * 0.1);
-      const r3 = Math.max(width, height) * 0.6;
-      const grad3 = ctx.createRadialGradient(cx3, cy3, 0, cx3, cy3, r3);
-      grad3.addColorStop(0, "rgba(110, 80, 220, 0.05)");
-      grad3.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.globalAlpha = 0.4 + Math.sin(auroraTime * 1.4) * 0.1;
-      ctx.fillStyle = grad3;
-      ctx.fillRect(0, 0, width, height);
+        // We create a vertical linear gradient that spans from the highest potential point
+        // to the lowest, so the fill looks like a soft curtain.
+        const gradientTop = yBase - (amplitude * 1.5);
+        const gradientBottom = yBase + (height * heightFactor);
 
+        const gradient = ctx.createLinearGradient(0, gradientTop, 0, gradientBottom);
+        // Soft blend at the very top edge
+        gradient.addColorStop(0, `rgba(${colorRGB}, 0)`);
+        gradient.addColorStop(0.2, `rgba(${colorRGB}, ${maxOpacity})`);
+        // Fade out downwards to create the curtain effect
+        gradient.addColorStop(1, `rgba(${colorRGB}, 0)`);
+
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+        // Complete the path downwards to the bottom of the bounding area, then back to start
+        ctx.lineTo(endX, gradientBottom);
+        ctx.lineTo(startX, gradientBottom);
+        ctx.closePath();
+
+        ctx.fillStyle = gradient;
+        ctx.fill();
+      };
+
+      // 1. Primary Teal/Green band (highest up, main body of the aurora)
+      drawAuroraRibbon(0, height * 0.25, '24, 208, 150', 0.12, height * 0.12, 0.7, 0.5);
+
+      // 2. Secondary Emerald band (lower, overlapping for depth)
+      drawAuroraRibbon(2.5, height * 0.35, '16, 185, 129', 0.10, height * 0.15, 0.9, 0.45);
+
+      // 3. Restrained Blue/Purple influence (higher up, gentle atmospheric glow)
+      drawAuroraRibbon(4.2, height * 0.2, '90, 70, 200', 0.08, height * 0.1, 0.5, 0.6);
+
+      // 4. Subtle Cyan highlight (thinner, slower moving inner ribbon)
+      drawAuroraRibbon(1.5, height * 0.3, '45, 200, 190', 0.14, height * 0.08, 1.1, 0.35);
+
+      // Restore default composite operation and ensure globalAlpha is clean
       ctx.globalCompositeOperation = 'source-over';
+      ctx.globalAlpha = 1.0;
 
       // Handle Constellation Twinkle Phase
       if (isConstellationTwinkling) {
