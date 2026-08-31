@@ -302,7 +302,7 @@ export default function HomePage() {
         ctx.globalAlpha = Math.max(0, star.life);
 
         const gradient = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
-        gradient.addColorStop(0, '#ffffff');
+        gradient.addColorStop(0.1, 'rgb(255, 240, 200)');
         gradient.addColorStop(0.1, `rgba(255, 240, 200, ${star.coreGlow})`);
         gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
