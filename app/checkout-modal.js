@@ -56,7 +56,7 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
           console.error('[Client] Backend gift email sending failed with status:', res.status);
           console.error('[Client] Response:', await res.text().catch(() => 'Unable to read response'));
         } else {
-          console.log('[Client] Backend gift email sending triggered successfully');
+
         }
       } catch (err) {
         console.error('[Client] Network error when sending gift email:', err);

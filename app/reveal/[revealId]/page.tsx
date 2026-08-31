@@ -114,7 +114,7 @@ function RevealPageContent() {
           <span style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             🎁 Gift Dispatched Successfully: A special gem-tier pick has been emailed to <strong style={{ color: '#fff0ac', textDecoration: 'underline', textUnderlineOffset: '3px' }}>{recipientEmail.replace(/[<>"']/g, '')}</strong>
           </span>
-          <button onClick={() => setShowGiftBanner(false)} style={{
+          <button type="button" onClick={() => setShowGiftBanner(false)} style={{
             background: 'rgba(255, 255, 255, 0.15)',
             border: '1px solid rgba(255, 255, 255, 0.3)',
             borderRadius: '20px',
