@@ -102,24 +102,25 @@ export default function HomePage() {
     };
 
     const spawnShootingStar = (width, height) => {
-      if (shootingStars.length >= 2) return; // Allow 1-2 max
-      const startX = Math.random() * (width * 0.9);
-      const startY = Math.random() * (height * 0.7) + (height * 0.05); // 5% - 75%
-      const length = Math.random() * 20 + 70; // 70-90px
+      if (shootingStars.length >= 3) return;
 
-      // Angle: 30 to 60 degrees (in radians)
-      const angle = (Math.random() * 30 + 30) * (Math.PI / 180);
-      const speed = Math.random() * 15 + 10;
+      const startX = Math.random() * width;
+      const startY = Math.random() * (height * 0.8);
+
+      const length = Math.random() * 40 + 40;
+      const angle = (Math.random() * 90 + 20) * (Math.PI / 180);
+      const finalAngle = Math.random() > 0.5 ? angle : Math.PI - angle;
+      const speed = Math.random() * 10 + 8;
 
       shootingStars.push({
         x: startX,
         y: startY,
         length: length,
-        angle: angle,
+        angle: finalAngle,
         speed: speed,
-        alpha: 1,
-        life: 1.0, // 1 to 0
-        decay: Math.random() * 0.02 + 0.015, // Roughly 0.9s-1.3s lifespan
+        life: 1.0,
+        decay: Math.random() * 0.015 + 0.01,
+        coreGlow: Math.random() * 0.5 + 0.5,
       });
     };
 
@@ -137,10 +138,19 @@ export default function HomePage() {
 
     // Timers
     let shootingStarTimeout;
+    let doubleStarTimeout;
     const scheduleShootingStar = () => {
-      const delay = Math.random() * 20000 + 25000; // 25s to 45s
+      const delay = Math.random() * 30000 + 30000; // 30s to 60s
       shootingStarTimeout = setTimeout(() => {
         spawnShootingStar(canvas.width, canvas.height);
+
+        if (Math.random() < 0.15) {
+          const doubleDelay = Math.random() * 1500 + 500;
+          doubleStarTimeout = setTimeout(() => {
+            spawnShootingStar(canvas.width, canvas.height);
+          }, doubleDelay);
+        }
+
         scheduleShootingStar();
       }, delay);
     };
@@ -157,10 +167,50 @@ export default function HomePage() {
     };
     scheduleTwinkle();
 
+    let auroraTime = Math.random() * 100;
+
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const currentTime = Date.now();
+
+      auroraTime += 0.002;
+      const width = canvas.width;
+      const height = canvas.height;
+
+      ctx.globalCompositeOperation = 'screen';
+
+      const cx1 = width * 0.4 + Math.sin(auroraTime) * (width * 0.2);
+      const cy1 = height * 0.2 + Math.cos(auroraTime * 0.8) * (height * 0.1);
+      const r1 = Math.max(width, height) * 0.7;
+      const grad1 = ctx.createRadialGradient(cx1, cy1, 0, cx1, cy1, r1);
+      grad1.addColorStop(0, "rgba(24, 208, 150, 0.08)");
+      grad1.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.globalAlpha = 0.6 + Math.sin(auroraTime * 2.1) * 0.15;
+      ctx.fillStyle = grad1;
+      ctx.fillRect(0, 0, width, height);
+
+      const cx2 = width * 0.6 + Math.cos(auroraTime * 1.3) * (width * 0.25);
+      const cy2 = height * 0.3 + Math.sin(auroraTime * 0.9) * (height * 0.15);
+      const r2 = Math.max(width, height) * 0.8;
+      const grad2 = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, r2);
+      grad2.addColorStop(0, "rgba(45, 180, 220, 0.06)");
+      grad2.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.globalAlpha = 0.5 + Math.cos(auroraTime * 1.7) * 0.1;
+      ctx.fillStyle = grad2;
+      ctx.fillRect(0, 0, width, height);
+
+      const cx3 = width * 0.5 + Math.sin(auroraTime * 0.7) * (width * 0.3);
+      const cy3 = height * 0.1 + Math.cos(auroraTime * 1.1) * (height * 0.1);
+      const r3 = Math.max(width, height) * 0.6;
+      const grad3 = ctx.createRadialGradient(cx3, cy3, 0, cx3, cy3, r3);
+      grad3.addColorStop(0, "rgba(110, 80, 220, 0.05)");
+      grad3.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.globalAlpha = 0.4 + Math.sin(auroraTime * 1.4) * 0.1;
+      ctx.fillStyle = grad3;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.globalCompositeOperation = 'source-over';
 
       // Handle Constellation Twinkle Phase
       if (isConstellationTwinkling) {
@@ -192,7 +242,6 @@ export default function HomePage() {
       for (let i = shootingStars.length - 1; i >= 0; i--) {
         const star = shootingStars[i];
 
-        // Update position
         star.x += Math.cos(star.angle) * star.speed;
         star.y += Math.sin(star.angle) * star.speed;
         star.life -= star.decay;
@@ -202,23 +251,26 @@ export default function HomePage() {
             continue;
         }
 
-        // Draw tail
-        const tailX = star.x - Math.cos(star.angle) * star.length * star.life;
-        const tailY = star.y - Math.sin(star.angle) * star.length * star.life;
+        const currentLength = star.length * Math.min(1, star.life * 2);
+        const tailX = star.x - Math.cos(star.angle) * currentLength;
+        const tailY = star.y - Math.sin(star.angle) * currentLength;
 
         const gradient = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${star.life})`); // White head
-        gradient.addColorStop(0.3, `rgba(255, 215, 0, ${star.life * 0.8})`); // Golden body
-        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)'); // Dissolve to transparent
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${star.life})`);
+        gradient.addColorStop(0.1, `rgba(255, 240, 200, ${star.life * star.coreGlow})`);
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
         ctx.beginPath();
         ctx.moveTo(star.x, star.y);
         ctx.lineTo(tailX, tailY);
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = Math.max(0.5, star.life * 1.5);
         ctx.stroke();
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.life})`;
+        ctx.fillRect(star.x - 0.5, star.y - 0.5, 1.5, 1.5);
       }
-      ctx.globalCompositeOperation = 'source-over'; // Reset
+      ctx.globalCompositeOperation = 'source-over';
 
       animationFrameId = requestAnimationFrame(draw);
     };
@@ -228,6 +280,7 @@ export default function HomePage() {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       clearTimeout(shootingStarTimeout);
+      clearTimeout(doubleStarTimeout);
       clearTimeout(twinkleTimeout);
       cancelAnimationFrame(animationFrameId);
     };
