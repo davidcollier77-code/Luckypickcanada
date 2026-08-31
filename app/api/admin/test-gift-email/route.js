@@ -20,10 +20,10 @@ function isAuthorized(request) {
     return false;
   }
 
-  const configured = Buffer.from(configuredSecret);
-  const provided = Buffer.from(providedSecret);
+  const expectedHash = crypto.createHash('sha256').update(configuredSecret).digest();
+  const providedHash = crypto.createHash('sha256').update(providedSecret).digest();
 
-  return configured.length === provided.length && crypto.timingSafeEqual(configured, provided);
+  return crypto.timingSafeEqual(expectedHash, providedHash);
 }
 
 export async function POST(request) {

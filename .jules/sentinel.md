@@ -10,3 +10,11 @@
 **Vulnerability:** The `functions/api/oracle.js` Cloudflare function used `Access-Control-Allow-Origin: "*"` which allowed any domain to make cross-origin requests to this endpoint. This could potentially allow malicious sites to interact with the API on behalf of a user.
 **Learning:** Cloudflare Pages functions and other edge functions often have a permissive default or copy-pasted configuration for CORS. It is critical to restrict CORS origins to only trusted domains.
 **Prevention:** Always set `Access-Control-Allow-Origin` to specific, trusted domains rather than using a wildcard (`*`).
+## 2024-08-18 - [Security Fix] Length-Based Timing Leak in Secret Verification
+**Vulnerability:** The test gift email endpoint (`/api/admin/test-gift-email/route.js`) implemented a length equality check (`configured.length === provided.length`) before performing a constant-time comparison (`crypto.timingSafeEqual`). This allows an attacker to deduce the exact length of the `GIFT_TEST_SECRET` via a timing attack.
+**Learning:** Checking lengths before  defeats the purpose of the constant-time check, as it short-circuits and returns early for mismatched lengths, creating measurable timing discrepancies.
+**Prevention:** When comparing secrets of potentially variable lengths, securely hash both the expected and provided secrets to a fixed length (e.g., using SHA-256) before passing them to the constant-time comparison function.
+## 2026-08-31 - [MEDIUM] Length-Based Timing Leak in Secret Verification
+**Vulnerability:** The test gift email endpoint (`/api/admin/test-gift-email/route.js`) implemented a length equality check before performing a constant-time comparison.
+**Learning:** Checking lengths before timingSafeEqual defeats the purpose of the constant-time check, as it short-circuits and returns early for mismatched lengths, creating measurable timing discrepancies.
+**Prevention:** When comparing secrets of potentially variable lengths, securely hash both the expected and provided secrets to a fixed length (e.g., using SHA-256) before passing them to the constant-time comparison function.
