@@ -13,3 +13,6 @@
 ## 2025-08-30 - Redundant but helpful aria-disabled
 **Learning:** Adding `aria-disabled` alongside the native `disabled` attribute can sometimes provide better cross-browser/screen-reader support for disabled states when native attributes are stripped by CSS or ignored in complex custom elements, though it is technically redundant on simple native `<button>` tags.
 **Action:** When working on accessibility for disabled buttons, consider adding `aria-disabled` as an extra layer of clarification for AT if requested, but ensure the native `disabled` attribute remains for robust keyboard restriction.
+## 2026-08-31 - Focus Visible on Modal Close Buttons
+**Learning:** Modal dialogs constructed with custom `<button>` elements (such as `checkout-modal-close`) often miss default browser focus outlines due to custom CSS resets. This creates a critical accessibility issue for keyboard users who cannot see which element has focus when tabbing within a modal.
+**Action:** When inspecting modal dialogs or popups, explicitly verify that the "close" or "X" button has clear, high-contrast `focus-visible:` classes applied (e.g., `focus-visible:outline-amber-400`) to guarantee keyboard navigability.
