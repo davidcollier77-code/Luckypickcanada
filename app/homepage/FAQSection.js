@@ -91,23 +91,24 @@ export default function FAQSection() {
               <button
                 onClick={() => toggleFaq(faq.question)}
                 aria-expanded={isOpen}
+                className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
                 style={{
                   width: '100%',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '16px 20px',
+                  padding: '18px 24px',
                   backgroundColor: 'transparent',
                   border: 'none',
                   color: 'white',
-                  fontSize: '1.05rem',
+                  fontSize: '1.1rem',
                   fontWeight: '600',
                   textAlign: 'left',
                   cursor: 'pointer',
-                  transition: 'background-color 0.2s'
+                  transition: 'background-color 0.2s, color 0.2s'
                 }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(234, 190, 82, 0.1)'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(234, 190, 82, 0.1)'; e.currentTarget.style.color = '#fff0bd'; }}
+                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'white'; }}
               >
                 <span>{faq.question}</span>
                 <span
@@ -132,7 +133,7 @@ export default function FAQSection() {
                   backgroundColor: 'rgba(0, 0, 0, 0.2)'
                 }}
               >
-                <div style={{ padding: '0 20px 20px 20px', color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                <div style={{ padding: '0 24px 24px 24px', color: '#cbd5e1', lineHeight: '1.7', fontSize: '1rem' }}>
                   {faq.answer}
                 </div>
               </div>
