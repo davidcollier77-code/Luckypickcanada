@@ -307,80 +307,81 @@ body {
 }
 
 
-/* Aurora Core Animation */
-@keyframes aurora-drift {
-  0% { transform: perspective(1000px) rotateX(50deg) translateY(0) scale(1) rotate(0deg); opacity: 0.7; }
-  50% { transform: perspective(1000px) rotateX(50deg) translateY(-10%) scale(1.1) rotate(3deg); opacity: 1.0; }
-  100% { transform: perspective(1000px) rotateX(50deg) translateY(0) scale(1) rotate(0deg); opacity: 0.7; }
+/* Aurora Core Animation - 2D Flowing Ribbons */
+@keyframes aurora-1-flow {
+  0% { transform: translate(-10%, -10%) rotate(-5deg) scale(1); }
+  50% { transform: translate(5%, 5%) rotate(2deg) scale(1.05); }
+  100% { transform: translate(-10%, -10%) rotate(-5deg) scale(1); }
 }
 
-@keyframes aurora-swirl {
-  0% { transform: perspective(1000px) rotateX(50deg) translateX(0) scaleX(1) translateY(10%); }
-  50% { transform: perspective(1000px) rotateX(50deg) translateX(10%) scaleX(1.2) translateY(0); }
-  100% { transform: perspective(1000px) rotateX(50deg) translateX(0) scaleX(1) translateY(10%); }
+@keyframes aurora-2-flow {
+  0% { transform: translate(10%, 15%) rotate(5deg) scale(1); }
+  50% { transform: translate(-5%, -5%) rotate(-2deg) scale(1.1); }
+  100% { transform: translate(10%, 15%) rotate(5deg) scale(1); }
+}
+
+@keyframes aurora-3-flow {
+  0% { transform: translate(5%, -20%) rotate(-3deg) scale(1.05); }
+  50% { transform: translate(-15%, 10%) rotate(4deg) scale(1); }
+  100% { transform: translate(5%, -20%) rotate(-3deg) scale(1.05); }
+}
+
+@keyframes aurora-4-flow {
+  0% { transform: translate(-15%, 5%) rotate(4deg) scale(1); }
+  50% { transform: translate(10%, -10%) rotate(-3deg) scale(1.05); }
+  100% { transform: translate(-15%, 5%) rotate(4deg) scale(1); }
 }
 
 .aurora-container {
   position: fixed;
-  inset: 0;
+  inset: -10%; /* Slight bleed to avoid hard edges */
   z-index: -20;
   overflow: hidden;
   pointer-events: none;
   background-color: var(--lp-bg);
-  /* Slightly reduced blur to show the banding characteristic of auroras */
-  filter: blur(60px) saturate(1.4);
-  /* Important: create a 3D context for the children */
-  perspective: 1000px;
+  /* Heavy blur blends the broad gradients into flowing ribbons */
+  filter: blur(80px) saturate(1.4);
 }
 
 .aurora-layer {
   position: absolute;
-  /* Make the layers much larger so they still cover the screen after rotating */
-  width: 300vw;
-  height: 300vh;
-  top: -100%;
-  left: -100%;
-  opacity: 0.8;
+  /* Use oversized elliptical gradients for broad flowing shapes */
+  opacity: 1; /* Stable opacity, NO flashing */
   mix-blend-mode: screen;
-  will-change: transform, opacity;
-  transform-style: preserve-3d;
-  transform-origin: 50% 100%;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .aurora-layer {
     animation: none !important;
-    transform: perspective(1000px) rotateX(50deg) !important;
-    opacity: 0.6;
+    transform: none !important;
   }
 }
 
 /* Layer 1: Base Teal Glow */
 .aurora-layer-1 {
-  /* Using --lp-teal (87, 229, 208) */
-  background: radial-gradient(ellipse at 50% 50%, rgba(87, 229, 208, 0.6) 0%, rgba(87, 229, 208, 0) 50%);
-  animation: aurora-drift 40s ease-in-out infinite alternate;
+  inset: -20% -10% -20% -30%;
+  background: radial-gradient(120% 80% at 30% 40%, rgba(87, 229, 208, 0.4) 0%, rgba(87, 229, 208, 0) 60%);
+  animation: aurora-1-flow 35s ease-in-out infinite alternate;
 }
 
 /* Layer 2: Deep Emerald Swirl */
 .aurora-layer-2 {
-  /* Using --lp-emerald (24, 185, 120) */
-  background: radial-gradient(ellipse at 40% 60%, rgba(24, 185, 120, 0.5) 0%, rgba(24, 185, 120, 0) 60%);
-  animation: aurora-swirl 30s ease-in-out infinite alternate-reverse;
+  inset: -10% -30% -20% -10%;
+  background: radial-gradient(100% 90% at 70% 60%, rgba(24, 185, 120, 0.35) 0%, rgba(24, 185, 120, 0) 55%);
+  animation: aurora-2-flow 45s ease-in-out infinite alternate-reverse;
 }
 
 /* Layer 3: Aurora Blue Band */
 .aurora-layer-3 {
-  /* Using --lp-aurora-blue (105, 184, 255) */
-  background: radial-gradient(ellipse at 60% 40%, rgba(105, 184, 255, 0.6) 0%, rgba(105, 184, 255, 0) 50%);
-  animation: aurora-drift 50s ease-in-out infinite alternate;
-  animation-delay: -10s;
+  inset: 10% -20% -40% -10%;
+  background: radial-gradient(110% 70% at 50% 80%, rgba(105, 184, 255, 0.35) 0%, rgba(105, 184, 255, 0) 60%);
+  animation: aurora-3-flow 50s ease-in-out infinite alternate;
 }
 
 /* Layer 4: Subtle Purple / Violet Accent */
 .aurora-layer-4 {
-  /* Using --lp-aurora-violet (191, 139, 255) */
-  background: radial-gradient(ellipse at 50% 30%, rgba(191, 139, 255, 0.4) 0%, rgba(191, 139, 255, 0) 40%);
-  animation: aurora-swirl 60s ease-in-out infinite alternate;
-  animation-delay: -20s;
+  inset: -30% -10% 10% -20%;
+  background: radial-gradient(90% 100% at 60% 30%, rgba(191, 139, 255, 0.25) 0%, rgba(191, 139, 255, 0) 50%);
+  animation: aurora-4-flow 60s ease-in-out infinite alternate-reverse;
 }
