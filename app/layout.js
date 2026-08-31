@@ -1,8 +1,5 @@
 import './globals.css';
 import { headers } from 'next/headers';
-import Starfield from '../components/Starfield';
-import Aurora from '../components/Aurora';
-import ShootingStars from '../components/ShootingStars';
 
 
 // Use Next.js build ID for cache-busting, automatically updated on each build
@@ -71,9 +68,6 @@ export default function RootLayout({ children }) {
       </head>
       <body className="m-0 p-0">
         <div className="fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
-          <Starfield />
-          <Aurora />
-          <ShootingStars />
         </div>
         <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0">
           {children}
