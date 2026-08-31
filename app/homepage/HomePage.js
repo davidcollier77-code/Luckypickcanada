@@ -146,6 +146,7 @@ export default function HomePage() {
 
         if (Math.random() < 0.15) {
           const doubleDelay = Math.random() * 1500 + 500;
+          clearTimeout(doubleStarTimeout);
           doubleStarTimeout = setTimeout(() => {
             spawnShootingStar(canvas.width, canvas.height);
           }, doubleDelay);
