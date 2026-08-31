@@ -7,6 +7,7 @@ export default function ShootingStars() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
@@ -51,6 +52,7 @@ export default function ShootingStars() {
     };
 
     const spawnStar = (star: ShootingStar) => {
+      if (reducedMotion) return;
       const width = window.innerWidth;
       const height = window.innerHeight;
 
