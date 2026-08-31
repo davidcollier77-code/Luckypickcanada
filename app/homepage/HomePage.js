@@ -175,60 +175,73 @@ export default function HomePage() {
 
       const currentTime = Date.now();
 
-      auroraTime += 0.0005; // Slower, more atmospheric movement
+      auroraTime += 0.0002; // VERY slow, continuous atmospheric movement
       const width = canvas.width;
       const height = canvas.height;
 
       ctx.globalCompositeOperation = 'screen';
 
-      const drawAuroraRibbon = (phase, yBase, colorRGB, maxOpacity, amplitude, speed, heightFactor) => {
+      const drawAuroraCurtain = (phase, yBase, colorRGB, maxOpacity, amplitude, speed, tiltAngle) => {
         const time = auroraTime * speed;
 
-        // Smooth control points for the top edge of the ribbon
-        const startX = 0;
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(tiltAngle * Math.PI / 180);
+        ctx.translate(-width / 2, -height / 2);
+
+        // Expand width to ensure it covers the screen when rotated
+        const span = Math.max(width, height) * 2;
+        const startX = -span * 0.5;
+        const endX = span * 1.5;
+
+        // Very slow organic movement for control points
         const startY = yBase + Math.sin(time + phase) * amplitude;
-        const cp1X = width * 0.33;
-        const cp1Y = yBase + Math.cos(time * 0.8 + phase) * (amplitude * 1.2);
-        const cp2X = width * 0.66;
-        const cp2Y = yBase + Math.sin(time * 1.2 + phase) * (amplitude * 1.2);
-        const endX = width;
-        const endY = yBase + Math.cos(time * 0.9 + phase) * amplitude;
+        // Widen the control points to make the wave very broad and soft
+        const cp1X = width * -0.2 + Math.cos(time * 0.5 + phase) * (width * 0.4);
+        const cp1Y = yBase + Math.cos(time * 0.6 + phase) * (amplitude * 1.5);
+        const cp2X = width * 1.2 + Math.sin(time * 0.4 + phase) * (width * 0.4);
+        const cp2Y = yBase + Math.sin(time * 0.7 + phase) * (amplitude * 1.5);
+        const endY = yBase + Math.cos(time * 0.8 + phase) * amplitude;
 
-        // We create a vertical linear gradient that spans from the highest potential point
-        // to the lowest, so the fill looks like a soft curtain.
-        const gradientTop = yBase - (amplitude * 1.5);
-        const gradientBottom = yBase + (height * heightFactor);
+        const gradientTop = yBase - (span * 0.5);
+        const gradientBottom = yBase + (amplitude * 2.5);
 
-        const gradient = ctx.createLinearGradient(0, gradientTop, 0, gradientBottom);
-        // Soft blend at the very top edge
+        // Gentle breathing brightness over time, avoiding flashes
+        const breath = (Math.sin(time * 0.6 + phase) + 1) / 2; // 0 to 1
+        const currentOpacity = maxOpacity * (0.5 + 0.5 * breath);
+
+        const gradient = ctx.createLinearGradient(0, gradientBottom, 0, gradientTop);
+        // Start completely transparent at the bottom
         gradient.addColorStop(0, `rgba(${colorRGB}, 0)`);
-        gradient.addColorStop(0.2, `rgba(${colorRGB}, ${maxOpacity})`);
-        // Fade out downwards to create the curtain effect
+        // Soft blend into peak brightness near the curtain edge
+        gradient.addColorStop(0.2, `rgba(${colorRGB}, ${currentOpacity})`);
+        // Extremely long, diffuse fade into the upper sky
         gradient.addColorStop(1, `rgba(${colorRGB}, 0)`);
 
         ctx.beginPath();
-        ctx.moveTo(startX, startY);
+        ctx.moveTo(startX, gradientTop);
+        ctx.lineTo(startX, startY);
         ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
-        // Complete the path downwards to the bottom of the bounding area, then back to start
-        ctx.lineTo(endX, gradientBottom);
-        ctx.lineTo(startX, gradientBottom);
+        ctx.lineTo(endX, gradientTop);
         ctx.closePath();
 
         ctx.fillStyle = gradient;
         ctx.fill();
+
+        ctx.restore();
       };
 
-      // 1. Primary Teal/Green band (highest up, main body of the aurora)
-      drawAuroraRibbon(0, height * 0.25, '24, 208, 150', 0.12, height * 0.12, 0.7, 0.5);
+      // 1. Primary Teal/Green curtain, large and soft, slight diagonal
+      drawAuroraCurtain(0, height * 0.45, '24, 208, 150', 0.10, height * 0.25, 0.3, -15);
 
-      // 2. Secondary Emerald band (lower, overlapping for depth)
-      drawAuroraRibbon(2.5, height * 0.35, '16, 185, 129', 0.10, height * 0.15, 0.9, 0.45);
+      // 2. Secondary Emerald curtain, lower, overlapping, opposite diagonal
+      drawAuroraCurtain(2.5, height * 0.55, '16, 185, 129', 0.08, height * 0.3, 0.25, 10);
 
-      // 3. Restrained Blue/Purple influence (higher up, gentle atmospheric glow)
-      drawAuroraRibbon(4.2, height * 0.2, '90, 70, 200', 0.08, height * 0.1, 0.5, 0.6);
+      // 3. Deep Blue/Purple curtain, higher up, very diffuse atmospheric glow
+      drawAuroraCurtain(4.2, height * 0.35, '90, 70, 200', 0.06, height * 0.35, 0.2, -5);
 
-      // 4. Subtle Cyan highlight (thinner, slower moving inner ribbon)
-      drawAuroraRibbon(1.5, height * 0.3, '45, 200, 190', 0.14, height * 0.08, 1.1, 0.35);
+      // 4. Cyan highlight band, steeper angle, slightly faster drifting
+      drawAuroraCurtain(1.5, height * 0.6, '45, 200, 190', 0.11, height * 0.2, 0.35, -25);
 
       // Restore default composite operation and ensure globalAlpha is clean
       ctx.globalCompositeOperation = 'source-over';
