@@ -4,17 +4,6 @@ import Link from 'next/link';
 export default function Hero() {
   return (
     <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
-      {/* Background layer */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div
-          className="absolute inset-0 pointer-events-none -z-10 animate-breathe-aurora opacity-25"
-          style={{
-            background:
-              'radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.8) 0%, rgba(139, 92, 246, 0.6) 50%, transparent 80%)',
-          }}
-        />
-      </div>
-
       {/* Main Content Stack */}
       <div className="relative z-10 w-full flex flex-col items-center">
         {/* Navigation */}
@@ -22,26 +11,40 @@ export default function Hero() {
           className="w-full max-w-3xl mx-auto relative z-20 pointer-events-auto mt-0 mb-2 md:mb-3 px-4"
           aria-label="Primary navigation"
         >
-          <div className="flex items-center justify-center gap-2 sm:gap-4 py-2 px-4 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 text-xs sm:text-sm font-medium">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 py-2 px-4 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 text-xs sm:text-sm font-medium">
             <Link
-              href="/"
+              href="#lucky-meter"
               className="text-amber-400 hover:text-amber-300 transition-colors"
-            >
-              Home
-            </Link>
-            <span className="text-white/20">•</span>
-            <Link
-              href="/lucky-meter"
-              className="text-white/80 hover:text-white transition-colors"
             >
               Lucky Meter
             </Link>
             <span className="text-white/20">•</span>
             <Link
-              href="/moments"
+              href="#community-stories"
               className="text-white/80 hover:text-white transition-colors"
             >
-              Today's Lucky Moment
+              Community Stories
+            </Link>
+            <span className="text-white/20">•</span>
+            <Link
+              href="#crystal-ball"
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              Consult the Crystal Ball
+            </Link>
+            <span className="text-white/20">•</span>
+            <Link
+              href="#lucky-map"
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              Lucky Map
+            </Link>
+            <span className="text-white/20">•</span>
+            <Link
+              href="#daily-card-reveal"
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              Daily Card Reveal
             </Link>
           </div>
         </nav>
