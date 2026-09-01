@@ -45,3 +45,7 @@ This journal records critical performance lessons, patterns, and anti-patterns e
 ## 2026-08-30 - Next.js Layout vs Page components
 **Learning:** Moving a component to a layout file applies it to all routes sharing that layout. To prioritize above-the-fold content for a single route like a homepage, it should be placed at the top of the route-specific `page.js` (Server Component) rather than the global `layout.js`.
 **Action:** Always verify the scope of a layout modification when moving components up the render tree to avoid unintentional global rendering regressions.
+
+## 2026-09-01 - Type-checking Extracted Components
+**Learning:** When extracting plain `.js` React components (like `midnight-countdown.js`) into isolated files to fix performance issues (like `setInterval` re-renders) in a Next.js TypeScript project, failing to type the extracted component properly will cause TypeScript build errors (TS2741) during CI or `pnpm run build`.
+**Action:** Always rename extracted `.js` React files to `.tsx` and define proper TypeScript interfaces for their props, particularly ensuring non-default functional props (like render props) are marked as optional (e.g., `render?: (displayTime: string) => ReactNode`) if they are not always provided by consumers.

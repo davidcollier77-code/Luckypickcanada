@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 
 import ResonanceButton from './ResonanceButton';
+import MidnightCountdown from './midnight-countdown';
 
 const LUCKY_QUOTES = [
   "Deep as the Great Lakes and bright as the winter snow, your resonance is strong.",
@@ -75,7 +76,7 @@ export default function DailyResonance() {
   const [isRevealing, setIsRevealing] = useState(false);
   const [tier, setTier] = useState<string>("");
   const [isLockedOut, setIsLockedOut] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState('');
+  // Removed timeRemaining state to stop interval re-renders
 
   const [totalVisits, setTotalVisits] = useState<number | null>(null);
 
@@ -131,29 +132,7 @@ export default function DailyResonance() {
     }
   }, []);
 
-  // Timer logic for countdown until midnight local time
-  useEffect(() => {
-    if (!isLockedOut && !isRevealed) return;
-
-    const calculateTimeRemaining = () => {
-      const now = new Date();
-      const midnight = new Date();
-      midnight.setHours(24, 0, 0, 0); // Midnight tonight
-
-      const diff = midnight.getTime() - now.getTime();
-
-      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-      setTimeRemaining(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-    };
-
-    calculateTimeRemaining(); // initial call
-    const timer = setInterval(calculateTimeRemaining, 1000);
-
-    return () => clearInterval(timer);
-  }, [isLockedOut, isRevealed]);
+  // Timer logic moved to MidnightCountdown
 
   const handleReveal = async () => {
     const ctx = initAudio();
@@ -640,7 +619,7 @@ export default function DailyResonance() {
 
               <p className="text-slate-400 text-sm mb-2 uppercase tracking-widest">Next Resonance In</p>
               <div className="text-3xl font-mono text-cyan-300 tracking-wider shadow-cyan-500/20 drop-shadow-md">
-                {timeRemaining}
+                <MidnightCountdown fallback="00:00:00" />
               </div>
             </div>
           </div>
