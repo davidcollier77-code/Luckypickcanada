@@ -77,7 +77,7 @@ export default function Hero() {
 
           {/* Main Heading */}
           <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] my-1 text-gold-gradient drop-shadow-3d">
-            Your daily<br /> lucky<br /> moment.
+            Lucky Pick Canada:<br /> Your daily lucky<br /> moment.
           </h1>
 
           {/* Bottom Subhead */}
