@@ -4,7 +4,6 @@ import LuckyMapOfCanada from './lucky-map-of-canada';
 export const revalidate = 3600;
 
 export const metadata = {
-  alternates: { canonical: '/lucky-map-of-canada' },
   description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
   alternates: { canonical: '/map' },
   openGraph: {

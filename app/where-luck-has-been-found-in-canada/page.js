@@ -4,7 +4,6 @@ import LuckyMapOfCanada from '../lucky-map-of-canada/lucky-map-of-canada';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  alternates: { canonical: '/where-luck-has-been-found-in-canada' },
   description: 'See where LuckyPickCanada community stories have been shared across Canada.',
   alternates: { canonical: '/map' },
   openGraph: {
