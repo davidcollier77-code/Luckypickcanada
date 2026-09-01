@@ -336,7 +336,7 @@ body {
   pointer-events: none;
   background-color: var(--lp-bg);
   /* Heavy blur blends the gradients into flowing atmospheric ribbons */
-  filter: blur(120px) saturate(1.5);
+  filter: blur(60px) saturate(2);
   transform: translateZ(0); /* Hardware acceleration */
 }
 
@@ -360,9 +360,9 @@ body {
   background: linear-gradient(
     145deg,
     rgba(24, 185, 120, 0) 20%,
-    rgba(24, 185, 120, 0.15) 35%,
-    rgba(87, 229, 208, 0.25) 50%,
-    rgba(24, 185, 120, 0.15) 65%,
+    rgba(24, 185, 120, 0.35) 35%,
+    rgba(87, 229, 208, 0.45) 50%,
+    rgba(24, 185, 120, 0.35) 65%,
     rgba(24, 185, 120, 0) 80%
   );
   animation: aurora-1-flow 48s ease-in-out infinite alternate;
@@ -373,9 +373,9 @@ body {
   background: linear-gradient(
     -135deg,
     rgba(105, 184, 255, 0) 10%,
-    rgba(105, 184, 255, 0.15) 30%,
+    rgba(105, 184, 255, 0.35) 30%,
     rgba(24, 185, 120, 0.25) 50%,
-    rgba(105, 184, 255, 0.15) 70%,
+    rgba(105, 184, 255, 0.35) 70%,
     rgba(105, 184, 255, 0) 90%
   );
   animation: aurora-2-flow 53s ease-in-out infinite alternate-reverse;
@@ -385,8 +385,8 @@ body {
 .aurora-layer-3 {
   background: radial-gradient(
     ellipse 120% 40% at 50% 40%,
-    rgba(180, 240, 230, 0.2) 0%,
-    rgba(87, 229, 208, 0.1) 40%,
+    rgba(180, 240, 230, 0.4) 0%,
+    rgba(87, 229, 208, 0.2) 40%,
     rgba(87, 229, 208, 0) 70%
   );
   animation: aurora-3-flow 67s ease-in-out infinite alternate;
@@ -396,7 +396,7 @@ body {
 .aurora-layer-4 {
   background: radial-gradient(
     ellipse 140% 35% at 40% 60%,
-    rgba(191, 139, 255, 0.2) 0%,
+    rgba(191, 139, 255, 0.4) 0%,
     rgba(105, 184, 255, 0.1) 40%,
     rgba(105, 184, 255, 0) 70%
   );

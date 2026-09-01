@@ -292,13 +292,7 @@ export default function HomePage() {
   return (
     <div className="lucky-site-shell homepage-experience block pt-0 mt-0 pb-12 px-4 w-full mx-auto">
 
-      {/* 0. Pure CSS Aurora Layers */}
-      <div className="aurora-container">
-        <div className="aurora-layer aurora-layer-1"></div>
-        <div className="aurora-layer aurora-layer-2"></div>
-        <div className="aurora-layer aurora-layer-3"></div>
-        <div className="aurora-layer aurora-layer-4"></div>
-      </div>
+
 
       {/* 1. & 3. Viewport-Wide Shooting Stars & Constellation Twinkle */}
       <canvas
