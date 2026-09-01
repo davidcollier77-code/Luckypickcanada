@@ -43,7 +43,6 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({ children }) {
@@ -83,7 +82,7 @@ export default function RootLayout({ children }) {
               <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors">Crystal Ball</Link>
               <Link href="/reveal" className="hover:text-amber-400 transition-colors">Daily Reveal</Link>
               <Link href="/map" className="hover:text-amber-400 transition-colors">Lucky Map</Link>
-              <Link href="/stories" className="hover:text-amber-400 transition-colors">Stories</Link>
+
             </nav>
             <p>&copy; {new Date().getFullYear()} Lucky Pick Canada. All rights reserved.</p>
           </footer>

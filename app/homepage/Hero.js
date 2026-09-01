@@ -13,7 +13,7 @@ export default function Hero() {
         >
           <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 py-2 px-4 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 text-xs sm:text-sm font-medium">
             <Link
-              href="#lucky-meter"
+              href="/lucky-meter"
               className="text-amber-400 hover:text-amber-300 transition-colors"
             >
               Lucky Meter
@@ -27,21 +27,21 @@ export default function Hero() {
             </Link>
             <span className="text-white/20">•</span>
             <Link
-              href="#crystal-ball"
+              href="/crystal-ball"
               className="text-white/80 hover:text-white transition-colors"
             >
               Consult the Crystal Ball
             </Link>
             <span className="text-white/20">•</span>
             <Link
-              href="#lucky-map"
+              href="/map"
               className="text-white/80 hover:text-white transition-colors"
             >
               Lucky Map
             </Link>
             <span className="text-white/20">•</span>
             <Link
-              href="#daily-card-reveal"
+              href="/reveal"
               className="text-white/80 hover:text-white transition-colors"
             >
               Daily Card Reveal
