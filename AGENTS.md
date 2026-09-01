@@ -104,7 +104,7 @@ Uses a mix of global CSS (`app/globals.css`), component CSS modules, inline styl
 ## Shared Dependencies
 *   **Community**: Data is shared between Map and Stories.
 *   **Themes**: Default theme assets (`themes/default/theme.js`) map to generic identifiers.
-*   **Canvas**: Aurora and Starfield often layer together.
+*   **Canvas**: Starfield and shooting stars use their existing Canvas implementations where applicable.
 Do not break one feature while modifying a shared dependency.
 
 ## Investigation Rules (INVESTIGATION-FIRST RULE)
