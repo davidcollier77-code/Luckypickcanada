@@ -58,7 +58,7 @@ Displays community submissions by province.
 
 ### Homepage
 The central entry point integrating all features.
-*   **Preserve**: The background effects (inline HTML5 Canvas in `HomePage.js`), calls to action, and the connections to all other subsystems.
+*   **Preserve**: The background effects (using a combination of CSS and Canvas), calls to action, and the connections to all other subsystems.
 
 ### Other Current Experiences
 *   **Gifts**: Sending Lucky Picks via email (`$1.99`).
@@ -69,8 +69,9 @@ The site features a premium Canadian identity: maple leaf motifs, Aurora/Norther
 *   **Preserve**: This identity. Future visual work should improve it, not flatten it into a generic dashboard.
 
 ### Aurora & Background Effects
-Implemented via HTML5 Canvas.
-*   **Preserve**: Realistic layering (e.g., `globalCompositeOperation = 'screen'`), ambient stars, shooting stars, and constellation twinkling. Avoid making it a static gradient, an overpowering neon effect, or obscuring content.
+Implemented via a combination of CSS and HTML5 Canvas. The Aurora currently uses layered CSS elements/gradients in `app/globals.css`. Stars and shooting stars use their existing Canvas/component implementations where applicable.
+*   **Preserve**: Realistic layering (e.g., `globalCompositeOperation = 'screen'` for Canvas), ambient stars, shooting stars, and constellation twinkling. Avoid making it a static gradient, an overpowering neon effect, or obscuring content.
+*   **Implementation Check**: Future agents MUST inspect the actual current implementation before assuming whether a visual effect is CSS, Canvas, or a combination. The existing stars, shooting stars, and Aurora must be treated as separate effects unless a task explicitly requests otherwise.
 
 ## Performance
 *   Avoid unnecessary client-side JavaScript, dependencies, and large assets.
