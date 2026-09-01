@@ -76,6 +76,7 @@ export default function DailyResonance() {
   const [tier, setTier] = useState<string>("");
   const [isLockedOut, setIsLockedOut] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState('');
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
 
   const [totalVisits, setTotalVisits] = useState<number | null>(null);
 
@@ -290,12 +291,17 @@ export default function DailyResonance() {
           text: shareText,
           url: 'https://luckypickcanada.ca/lucky-meter'
         });
+        return;
       } catch (err) {
         console.log('Share dismissed or failed', err);
-        try { await navigator.clipboard.writeText(shareText); } catch(e) {}
       }
-    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      try { await navigator.clipboard.writeText(shareText); } catch(e) {}
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        setShareStatus('copied');
+        window.setTimeout(() => setShareStatus('idle'), 2200);
+      } catch(e) {}
     }
   };
 
@@ -635,7 +641,7 @@ export default function DailyResonance() {
                 onClick={handleShare}
                 className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200 mb-6"
               >
-                Share My Resonance
+                {shareStatus === 'copied' ? 'Copied ✓' : 'Share My Resonance'}
               </button>
 
               <p className="text-slate-400 text-sm mb-2 uppercase tracking-widest">Next Resonance In</p>
