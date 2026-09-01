@@ -16,3 +16,6 @@
 ## 2026-08-31 - Focus Visible on Modal Close Buttons
 **Learning:** Modal dialogs constructed with custom `<button>` elements (such as `checkout-modal-close`) often miss default browser focus outlines due to custom CSS resets. This creates a critical accessibility issue for keyboard users who cannot see which element has focus when tabbing within a modal.
 **Action:** When inspecting modal dialogs or popups, explicitly verify that the "close" or "X" button has clear, high-contrast `focus-visible:` classes applied (e.g., `focus-visible:outline-amber-400`) to guarantee keyboard navigability.
+## 2024-05-19 - Share Button Clipboard Fallback
+**Learning:** In desktop environments without `navigator.share` (like standard Chrome/Firefox), silent fallback to clipboard copy leaves the user stranded without confirmation.
+**Action:** Always provide explicit, temporary visual confirmation (e.g., changing button text to "Copied ✓" for a few seconds) when falling back to a clipboard action to ensure a closed feedback loop.
