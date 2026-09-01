@@ -1,21 +1,20 @@
-'use client';
+import CrystalBallClient from '../crystal-ball-client/CrystalBallClient';
 
-import CrystalBall from '../components/CrystalBall/CrystalBall';
+export const metadata = {
+  title: 'Crystal Ball | Lucky Pick Canada',
+  description: 'Ask the Lucky Crystal Ball a question to receive playful, mystical fortunes and daily guidance steeped in Canadian magic.',
+  alternates: { canonical: '/crystal-ball' },
+  openGraph: {
+    title: 'Crystal Ball | Lucky Pick Canada',
+    description: 'Ask the Lucky Crystal Ball a question to receive playful, mystical fortunes and daily guidance steeped in Canadian magic.',
+    url: '/crystal-ball',
+  },
+  twitter: {
+    title: 'Crystal Ball | Lucky Pick Canada',
+    description: 'Ask the Lucky Crystal Ball a question to receive playful, mystical fortunes and daily guidance steeped in Canadian magic.',
+  },
+};
 
 export default function CrystalBallPage() {
-  const handleSeekFortune = async (question) => {
-    const response = await fetch('/api/oracle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question })
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'API Error');
-    }
-    return data.reading;
-  };
-
-  return <CrystalBall onSeekFortune={handleSeekFortune} />;
+  return <CrystalBallClient />;
 }
