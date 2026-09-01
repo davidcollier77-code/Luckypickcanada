@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import './globals.css';
 import { headers } from 'next/headers';
 
@@ -25,11 +26,13 @@ export const metadata = {
     siteName: 'Lucky Pick Canada',
     locale: 'en_CA',
     type: 'website',
+    images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
     description: 'Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.',
+    images: ['/1785347037732.png'],
   },
   icons: {
     icon: '/favicon.ico',
@@ -69,8 +72,21 @@ export default function RootLayout({ children }) {
       <body className="m-0 p-0">
         <div className="fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
         </div>
-        <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0">
-          {children}
+        <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0 flex flex-col min-h-screen">
+          <div className="flex-grow">
+            {children}
+          </div>
+          <footer className="w-full py-4 px-4 bg-slate-950/80 backdrop-blur-md border-t border-white/10 text-center text-xs text-white/60 relative z-20">
+            <nav className="flex flex-wrap justify-center gap-3 md:gap-6 mb-2">
+              <Link href="/" className="hover:text-amber-400 transition-colors">Home</Link>
+              <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors">Lucky Meter</Link>
+              <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors">Crystal Ball</Link>
+              <Link href="/reveal" className="hover:text-amber-400 transition-colors">Daily Reveal</Link>
+              <Link href="/map" className="hover:text-amber-400 transition-colors">Lucky Map</Link>
+              <Link href="/stories" className="hover:text-amber-400 transition-colors">Stories</Link>
+            </nav>
+            <p>&copy; {new Date().getFullYear()} Lucky Pick Canada. All rights reserved.</p>
+          </footer>
         </main>
       </body>
     </html>

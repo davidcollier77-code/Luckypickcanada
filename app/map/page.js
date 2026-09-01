@@ -11,10 +11,12 @@ export const metadata = {
     title: 'Lucky Map | LuckyPickCanada.ca',
     description: 'Explore community Lucky Stories across Canada by province.',
     url: '/map',
+    images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
   },
   twitter: {
     title: 'Lucky Map | LuckyPickCanada.ca',
     description: 'Explore community Lucky Stories across Canada by province.',
+    images: ['/1785347037732.png'],
   },
 };
 

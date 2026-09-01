@@ -9,10 +9,12 @@ export const metadata = {
   openGraph: {
     description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
     url: '/map',
+    images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
   },
   twitter: {
     title: 'Lucky Map of Canada | LuckyPickCanada.ca',
     description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
+    images: ['/1785347037732.png'],
   },
 };
 
