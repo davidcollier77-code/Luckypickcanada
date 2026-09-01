@@ -328,7 +328,29 @@ body {
   100% { transform: translate(-15%, -10%) rotate(-3deg) scale(1.1); }
 }
 
+
+@keyframes aurora-1-color {
+  0% { filter: hue-rotate(-15deg); }
+  100% { filter: hue-rotate(35deg); }
+}
+
+@keyframes aurora-2-color {
+  0% { filter: hue-rotate(-30deg); }
+  100% { filter: hue-rotate(25deg); }
+}
+
+@keyframes aurora-3-color {
+  0% { filter: hue-rotate(-10deg); }
+  100% { filter: hue-rotate(45deg); }
+}
+
+@keyframes aurora-4-color {
+  0% { filter: hue-rotate(-30deg); }
+  100% { filter: hue-rotate(25deg); }
+}
+
 .aurora-container {
+
   position: fixed;
   inset: -30%; /* Large bleed to avoid hard edges during animation */
   z-index: -20;
@@ -363,7 +385,7 @@ body {
     rgba(24, 185, 120, 0.15) 30%,
     rgba(24, 185, 120, 0) 70%
   );
-  animation: aurora-1-flow 88s ease-in-out infinite alternate;
+  animation: aurora-1-flow 88s ease-in-out infinite alternate, aurora-1-color 47s ease-in-out infinite alternate;
 }
 
 /* Layer 2: Deeper Green/Blue Overlay (Slightly offset) */
@@ -374,7 +396,7 @@ body {
     rgba(24, 185, 120, 0.15) 40%,
     rgba(105, 184, 255, 0) 70%
   );
-  animation: aurora-2-flow 93s ease-in-out infinite alternate-reverse;
+  animation: aurora-2-flow 93s ease-in-out infinite alternate-reverse, aurora-2-color 53s ease-in-out infinite alternate;
 }
 
 /* Layer 3: Pale/Whitish Cyan Highlight Ribbons */
@@ -385,7 +407,7 @@ body {
     rgba(87, 229, 208, 0.1) 40%,
     rgba(87, 229, 208, 0) 70%
   );
-  animation: aurora-3-flow 107s ease-in-out infinite alternate;
+  animation: aurora-3-flow 107s ease-in-out infinite alternate, aurora-3-color 61s ease-in-out infinite alternate;
 }
 
 /* Layer 4: Subtle Violet/Purple Accent Band + very subtle pink */
@@ -396,5 +418,5 @@ body {
     rgba(219, 112, 147, 0.05) 30%,
     rgba(191, 139, 255, 0) 70%
   );
-  animation: aurora-4-flow 119s ease-in-out infinite alternate-reverse;
+  animation: aurora-4-flow 119s ease-in-out infinite alternate-reverse, aurora-4-color 71s ease-in-out infinite alternate;
 }
