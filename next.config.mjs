@@ -40,6 +40,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/stories',
+        destination: '/map',
+        permanent: true,
+      },
+      {
         source: '/:path*',
         has: [
           {
