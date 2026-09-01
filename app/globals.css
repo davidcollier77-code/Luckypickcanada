@@ -355,50 +355,46 @@ body {
   }
 }
 
-/* Layer 1: Broad Teal/Emerald Curtains */
+/* Layer 1: Broad Teal/Emerald Curtains - modified for distinct formations */
 .aurora-layer-1 {
-  background: linear-gradient(
-    145deg,
-    rgba(24, 185, 120, 0) 20%,
-    rgba(24, 185, 120, 0.35) 35%,
-    rgba(87, 229, 208, 0.45) 50%,
-    rgba(24, 185, 120, 0.35) 65%,
-    rgba(24, 185, 120, 0) 80%
+  background: radial-gradient(
+    ellipse 60% 40% at 20% 30%,
+    rgba(24, 185, 120, 0.25) 0%,
+    rgba(24, 185, 120, 0.15) 30%,
+    rgba(24, 185, 120, 0) 70%
   );
-  animation: aurora-1-flow 48s ease-in-out infinite alternate;
+  animation: aurora-1-flow 88s ease-in-out infinite alternate;
 }
 
 /* Layer 2: Deeper Green/Blue Overlay (Slightly offset) */
 .aurora-layer-2 {
-  background: linear-gradient(
-    -135deg,
-    rgba(105, 184, 255, 0) 10%,
-    rgba(105, 184, 255, 0.35) 30%,
-    rgba(24, 185, 120, 0.25) 50%,
-    rgba(105, 184, 255, 0.35) 70%,
-    rgba(105, 184, 255, 0) 90%
+  background: radial-gradient(
+    ellipse 50% 50% at 80% 60%,
+    rgba(105, 184, 255, 0.15) 0%,
+    rgba(24, 185, 120, 0.15) 40%,
+    rgba(105, 184, 255, 0) 70%
   );
-  animation: aurora-2-flow 53s ease-in-out infinite alternate-reverse;
+  animation: aurora-2-flow 93s ease-in-out infinite alternate-reverse;
 }
 
 /* Layer 3: Pale/Whitish Cyan Highlight Ribbons */
 .aurora-layer-3 {
   background: radial-gradient(
-    ellipse 120% 40% at 50% 40%,
-    rgba(180, 240, 230, 0.4) 0%,
-    rgba(87, 229, 208, 0.2) 40%,
+    ellipse 55% 35% at 50% 20%,
+    rgba(87, 229, 208, 0.2) 0%,
+    rgba(87, 229, 208, 0.1) 40%,
     rgba(87, 229, 208, 0) 70%
   );
-  animation: aurora-3-flow 67s ease-in-out infinite alternate;
+  animation: aurora-3-flow 107s ease-in-out infinite alternate;
 }
 
-/* Layer 4: Subtle Violet/Purple Accent Band */
+/* Layer 4: Subtle Violet/Purple Accent Band + very subtle pink */
 .aurora-layer-4 {
   background: radial-gradient(
-    ellipse 140% 35% at 40% 60%,
-    rgba(191, 139, 255, 0.4) 0%,
-    rgba(105, 184, 255, 0.1) 40%,
-    rgba(105, 184, 255, 0) 70%
+    ellipse 45% 40% at 35% 70%,
+    rgba(191, 139, 255, 0.15) 0%,
+    rgba(219, 112, 147, 0.05) 30%,
+    rgba(191, 139, 255, 0) 70%
   );
-  animation: aurora-4-flow 59s ease-in-out infinite alternate-reverse;
+  animation: aurora-4-flow 119s ease-in-out infinite alternate-reverse;
 }
