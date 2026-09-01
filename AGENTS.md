@@ -118,9 +118,15 @@ Before modifying code:
 *   **Visual work is NOT permission to change business logic.** (e.g., Do not remove rarity logic when styling Lucky Cards).
 *   **Always verify your work** with read-only tools after modification.
 
-## Library Documentation (Context7)
-*   Use Context7 MCP / documentation search when looking up library APIs (e.g., `/vercel/next.js`).
-*   Include the header `Authorization: Bearer <CTX7_API_KEY>` for authenticated priority rate limits if requested.
+## MCP Integrations & Usage
+
+MCP Decision Rule: Before beginning a task, determine whether a connected MCP would materially improve accuracy or execution. Use an MCP when it is relevant to the task; do not call MCPs merely because they are available.
+
+- Context7: Consider using it when current or version-specific documentation for a third-party library, framework, API, SDK, platform, deployment system, or configuration could materially affect the work. This is particularly relevant for Cloudflare, OpenNext, Wrangler, Cloudflare Pages, Workers, Next.js, React, and similar technologies. Prefer the appropriate official documentation source. Include the header `Authorization: Bearer <CTX7_API_KEY>` for authenticated priority rate limits if requested.
+- Neon: Consider using it when the task involves Neon/Postgres schemas, tables, queries, migrations, branches, database configuration, troubleshooting, or Neon-specific behavior. Do not use it for unrelated tasks.
+- GitHub: Use it when repository, branch, commit, pull request, issue, or GitHub-specific information/actions are required.
+
+The agent should make this MCP relevance assessment as part of its normal task planning, without unnecessarily invoking irrelevant MCPs.
 
 ## Verification Checklist
 *   Check git status.
