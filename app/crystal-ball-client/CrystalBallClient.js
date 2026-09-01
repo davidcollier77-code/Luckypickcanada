@@ -11,8 +11,12 @@ export default function CrystalBallClient() {
     });
 
     if (!response.ok) {
-      const data = await response.json().catch(() => ({ error: 'API Error' }));
-      throw new Error(data.error || 'API Error');
+      try {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'API Error');
+      } catch (e) {
+        throw new Error('API Error');
+      }
     }
     const data = await response.json();
     return data.reading;
