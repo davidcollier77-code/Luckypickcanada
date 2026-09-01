@@ -4,6 +4,206 @@ This is the permanent operating guide for AI coding agents working on the LuckyP
 
 **CRITICAL DIRECTIVE**: This repository is the only source of truth. Current code > old notes > assumptions.
 
+
+## Agent Operating Rules
+
+### 1. Source of Truth
+The current repository and current working tree are authoritative. Agents must inspect current code before relying on old notes, previous conversations, generated documentation, or assumptions.
+
+### 2. Never Fabricate
+Never invent or assume:
+*   file paths
+*   APIs
+*   functions
+*   configuration keys
+*   environment variables
+*   test/build results
+*   deployment results
+*   commit hashes
+*   tool capabilities
+*   implementation details
+
+Unknown information must be inspected, tested, or honestly reported as unknown.
+
+### 3. Baseline Before Changes
+Before modifying files:
+*   inspect git status;
+*   identify pre-existing changes;
+*   never overwrite or discard user changes;
+*   inspect relevant callers/dependencies;
+*   determine the smallest necessary file set.
+
+### 4. Investigation-First
+Use this sequence: Understand the task → inspect implementation → trace usages/dependencies → identify root cause → choose smallest correct fix → implement. Do not make speculative fixes based only on filenames, symptoms, or assumptions.
+
+### 5. Surgical Change Rule
+*   Change only what the task requires.
+*   Avoid unrelated refactors, formatting churn, cleanup, and dependency upgrades.
+*   Do not redesign working architecture merely because another approach looks cleaner.
+*   Supporting changes are allowed only when required for correctness, compatibility, or verification.
+*   Every changed file must have a clear task-related reason.
+
+### 6. Stop Rather Than Guess
+Do not improvise when unexpected repository state, conflicting implementations, missing dependencies, or materially ambiguous requirements make safe continuation uncertain. For minor obvious issues, use normal engineering judgment.
+
+### 7. Protected Systems
+Preserve and strengthen the existing protected-system rule. Protected systems include: Stripe, checkout, gifts, email delivery, authentication, Turnstile, database access, environment variables, secrets, Cloudflare settings, Wrangler configuration, and OpenNext configuration. Default: do not modify protected systems unless explicitly required by the user's task. When explicitly authorized, make the smallest necessary change and do not refactor surrounding protected systems. Never expose secrets or credentials.
+
+### 8. Verification Must Match the Task
+Verification is part of completion.
+*   Logic/functionality: run the narrowest relevant automated check or exercise the affected behavior.
+*   UI/visual work: verify the rendered result, not just source code.
+*   CSS/theme work: verify import, build, delivery, and application of the affected CSS when relevant.
+*   SEO work: verify actual generated/served metadata, sitemap, robots behavior, structured data, and affected routes as applicable.
+*   Build/deployment work: verify the actual relevant build/output/configuration path.
+*   Security-sensitive work: perform appropriate security validation without exposing secrets.
+*   Documentation-only work: verify referenced paths, commands, and links when practical.
+
+Never claim verification that was not actually performed.
+
+### 9. Visual Verification
+LuckyPickCanada is a highly visual product. For UI or visual changes, verify the rendered result where practical, including relevant desktop/mobile viewports and affected interactions. Do not declare a visual change successful from source inspection alone.
+
+### 10. Never Game Verification
+Never make checks pass by:
+*   weakening assertions;
+*   deleting tests/checks;
+*   narrowing scope solely to avoid failure;
+*   disabling validation;
+*   hiding errors;
+*   removing protected functionality;
+*   changing the verification command instead of fixing the underlying issue.
+
+### 11. Final Self-Review
+Before declaring completion:
+*   inspect the final diff;
+*   confirm only intended files changed;
+*   check for accidental refactors or unrelated churn;
+*   check imports and references;
+*   remove debug/temporary code;
+*   confirm protected-system boundaries remain intact;
+*   confirm the requested behavior was actually addressed.
+
+### 12. Completion Report
+Final reports must state:
+*   what changed;
+*   which files changed;
+*   what was actually verified;
+*   which checks passed;
+*   which checks failed, were skipped, or were unavailable;
+*   any remaining uncertainty or risk.
+
+Never state that a check passed unless it was actually run and passed.
+
+### 13. Command Accuracy
+Before requiring a project command, verify that the command actually exists in the current repository/tooling. Do not preserve stale commands merely because they appear in older documentation.
+
+### 14. Architecture-Map Accuracy
+Update the existing architecture map only where current paths can be verified. Do not invent replacement paths. If a path cannot be confidently verified, use a general description rather than fabricating a path.
+
+### 15. Keep AGENTS.md Lean
+Do not add generic programming advice, generic Git tutorials, generic shell tutorials, long AI explanations, or repetitive rules. Every rule should provide practical value for agents working on this repository.
+
+
+## Agent Operating Rules
+
+### 1. Source of Truth
+The current repository and current working tree are authoritative. Agents must inspect current code before relying on old notes, previous conversations, generated documentation, or assumptions.
+
+### 2. Never Fabricate
+Never invent or assume:
+*   file paths
+*   APIs
+*   functions
+*   configuration keys
+*   environment variables
+*   test/build results
+*   deployment results
+*   commit hashes
+*   tool capabilities
+*   implementation details
+
+Unknown information must be inspected, tested, or honestly reported as unknown.
+
+### 3. Baseline Before Changes
+Before modifying files:
+*   inspect git status;
+*   identify pre-existing changes;
+*   never overwrite or discard user changes;
+*   inspect relevant callers/dependencies;
+*   determine the smallest necessary file set.
+
+### 4. Investigation-First
+Use this sequence: Understand the task → inspect implementation → trace usages/dependencies → identify root cause → choose smallest correct fix → implement. Do not make speculative fixes based only on filenames, symptoms, or assumptions.
+
+### 5. Surgical Change Rule
+*   Change only what the task requires.
+*   Avoid unrelated refactors, formatting churn, cleanup, and dependency upgrades.
+*   Do not redesign working architecture merely because another approach looks cleaner.
+*   Supporting changes are allowed only when required for correctness, compatibility, or verification.
+*   Every changed file must have a clear task-related reason.
+
+### 6. Stop Rather Than Guess
+Do not improvise when unexpected repository state, conflicting implementations, missing dependencies, or materially ambiguous requirements make safe continuation uncertain. For minor obvious issues, use normal engineering judgment.
+
+### 7. Protected Systems
+Preserve and strengthen the existing protected-system rule. Protected systems include: Stripe, checkout, gifts, email delivery, authentication, Turnstile, database access, environment variables, secrets, Cloudflare settings, Wrangler configuration, and OpenNext configuration. Default: do not modify protected systems unless explicitly required by the user's task. When explicitly authorized, make the smallest necessary change and do not refactor surrounding protected systems. Never expose secrets or credentials.
+
+### 8. Verification Must Match the Task
+Verification is part of completion.
+*   Logic/functionality: run the narrowest relevant automated check or exercise the affected behavior.
+*   UI/visual work: verify the rendered result, not just source code.
+*   CSS/theme work: verify import, build, delivery, and application of the affected CSS when relevant.
+*   SEO work: verify actual generated/served metadata, sitemap, robots behavior, structured data, and affected routes as applicable.
+*   Build/deployment work: verify the actual relevant build/output/configuration path.
+*   Security-sensitive work: perform appropriate security validation without exposing secrets.
+*   Documentation-only work: verify referenced paths, commands, and links when practical.
+
+Never claim verification that was not actually performed.
+
+### 9. Visual Verification
+LuckyPickCanada is a highly visual product. For UI or visual changes, verify the rendered result where practical, including relevant desktop/mobile viewports and affected interactions. Do not declare a visual change successful from source inspection alone.
+
+### 10. Never Game Verification
+Never make checks pass by:
+*   weakening assertions;
+*   deleting tests/checks;
+*   narrowing scope solely to avoid failure;
+*   disabling validation;
+*   hiding errors;
+*   removing protected functionality;
+*   changing the verification command instead of fixing the underlying issue.
+
+### 11. Final Self-Review
+Before declaring completion:
+*   inspect the final diff;
+*   confirm only intended files changed;
+*   check for accidental refactors or unrelated churn;
+*   check imports and references;
+*   remove debug/temporary code;
+*   confirm protected-system boundaries remain intact;
+*   confirm the requested behavior was actually addressed.
+
+### 12. Completion Report
+Final reports must state:
+*   what changed;
+*   which files changed;
+*   what was actually verified;
+*   which checks passed;
+*   which checks failed, were skipped, or were unavailable;
+*   any remaining uncertainty or risk.
+
+Never state that a check passed unless it was actually run and passed.
+
+### 13. Command Accuracy
+Before requiring a project command, verify that the command actually exists in the current repository/tooling. Do not preserve stale commands merely because they appear in older documentation.
+
+### 14. Architecture-Map Accuracy
+Update the existing architecture map only where current paths can be verified. Do not invent replacement paths. If a path cannot be confidently verified, use a general description rather than fabricating a path.
+
+### 15. Keep AGENTS.md Lean
+Do not add generic programming advice, generic Git tutorials, generic shell tutorials, long AI explanations, or repetitive rules. Every rule should provide practical value for agents working on this repository.
+
 ## Project Identity
 LuckyPickCanada is a digital entertainment experience centered around Canadian luck, mystery, community, and premium visual presentation. It is **not** affiliated with real-world gambling or lottery prizes. It offers free daily interactive rituals (Lucky Meter, Community Map) and premium gift/reveal experiences (Lucky Pick).
 
@@ -23,7 +223,7 @@ The project is built with Next.js (App Router), React, Tailwind CSS, and uses Op
 *   **Lucky Pick Generator**: `app/lucky-reveal.js`, `app/lucky-reveal-popup.js`, `components/LuckyGenerator.tsx`
 *   **Lucky Card Reveal**: `app/lucky-card-data.js`, `app/lucky-card-content.js`, `app/lucky-card-reveal.js`, `app/collection-binder.js`
 *   **Lucky Meter / Daily Resonance**: `app/lucky-meter/page.js`, `components/DailyResonance.tsx`, `components/ResonanceButton.tsx`, `components/midnight-countdown.js`, `app/hooks/useRollingScore.ts`
-*   **Crystal Ball / Oracle**: `app/crystal-ball/page.js`, `app/components/CrystalBall/CrystalBall.tsx`, `app/api/oracle/route.js`
+*   **Crystal Ball / Oracle**: `app/crystal-ball/page.js`, `app/crystal-ball-client/CrystalBallClient.js`, `app/api/oracle/route.js`
 *   **Community Stories & Map**: `app/map/page.js`, `app/stories/page.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`, `app/lucky-stories.js`, `app/api/lucky-stories/route.js`, `app/api/luck-map/route.js`
 *   **Payments / Stripe**: `app/api/checkout/route.js`, `app/api/stripe-webhook/route.js`
 *   **Gifts**: `app/api/gift-delivery/route.js`, `app/api/send-gift/route.ts`, `app/gift-email.js`
@@ -86,12 +286,6 @@ Must work across narrow phones, tablets, and desktops.
 ## Accessibility
 *   **Preserve**: Semantic HTML, accessible labels, keyboard focus states (`focus-visible:`), and `aria-disabled` on interactive elements. Ensure custom modals implement Escape key dismissal (`keydown` listener cleanup).
 
-## Security / Payments / Data Boundaries
-**PROTECTED SYSTEMS**:
-Stripe, checkout, gifts, email delivery, authentication, Turnstile, database access, environment variables, secrets, Cloudflare settings, Wrangler config, OpenNext config.
-
-*   **DEFAULT RULE**: Do not modify protected systems unless explicitly required by the user's task.
-*   **EXPLICIT USER AUTHORIZATION**: If David instructs you to change a protected system (e.g., "Fix the Stripe checkout"), that is explicit authorization. Make the smallest necessary change. Do not refactor surrounding systems or expose secrets.
 
 ## Build & Deployment
 Uses `pnpm`, Next.js, OpenNext, and Cloudflare Pages.
@@ -107,12 +301,7 @@ Uses a mix of global CSS (`app/globals.css`), component CSS modules, inline styl
 *   **Canvas**: Starfield and shooting stars use their existing Canvas implementations where applicable.
 Do not break one feature while modifying a shared dependency.
 
-## Investigation Rules (INVESTIGATION-FIRST RULE)
-Before modifying code:
-1.  Inspect the current implementation and search for usages.
-2.  Identify the root cause of the issue.
-3.  Find the smallest correct change.
-4.  Make surgical changes; do not make speculative refactors or "clean up" unrelated code.
+
 
 ## Change-Safety Rules
 *   **Visual work is NOT permission to change business logic.** (e.g., Do not remove rarity logic when styling Lucky Cards).
@@ -132,4 +321,4 @@ The agent should make this MCP relevance assessment as part of its normal task p
 *   Check git status.
 *   Confirm ONLY intended files changed.
 *   Ensure application code wasn't accidentally refactored.
-*   Verify pre-commit steps (`pnpm run build`, `python3 -m pytest -q`) were executed successfully.
+*   Verify pre-commit steps (`pnpm run build`) were executed successfully.
