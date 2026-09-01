@@ -7,7 +7,6 @@ export const metadata = {
   description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
   alternates: { canonical: '/map' },
   openGraph: {
-    url: '/lucky-map-of-canada',
     description: 'Browse LuckyPickCanada community stories from provinces and territories across Canada.',
     url: '/map',
   },

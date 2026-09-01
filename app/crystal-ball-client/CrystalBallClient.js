@@ -10,10 +10,11 @@ export default function CrystalBallClient() {
       body: JSON.stringify({ question })
     });
 
-    const data = await response.json();
     if (!response.ok) {
+      const data = await response.json().catch(() => ({ error: 'API Error' }));
       throw new Error(data.error || 'API Error');
     }
+    const data = await response.json();
     return data.reading;
   };
 
