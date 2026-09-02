@@ -49,7 +49,9 @@ const FALLBACK_FORTUNES = [
 ];
 
 function getRandomFallback() {
-  const index = Math.floor(Math.random() * FALLBACK_FORTUNES.length);
+  const randomBuffer = new Uint32Array(1);
+  crypto.getRandomValues(randomBuffer);
+  const index = randomBuffer[0] % FALLBACK_FORTUNES.length;
   return FALLBACK_FORTUNES[index];
 }
 

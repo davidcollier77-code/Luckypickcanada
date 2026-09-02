@@ -20,15 +20,15 @@ function isAuthorized(request) {
     return false;
   }
 
-  const configured = Buffer.from(configuredSecret);
-  const provided = Buffer.from(providedSecret);
+  const hashA = crypto.createHash('sha256').update(configuredSecret).digest();
+  const hashB = crypto.createHash('sha256').update(providedSecret).digest();
 
-  return configured.length === provided.length && crypto.timingSafeEqual(configured, provided);
+  return crypto.timingSafeEqual(hashA, hashB);
 }
 
 export async function POST(request) {
   if (!isAuthorized(request)) {
-    return Response.json({ error: 'Not found' }, { status: 404 });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const resendApiKey = process.env.RESEND_API_KEY;
