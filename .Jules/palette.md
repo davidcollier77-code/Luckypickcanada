@@ -22,3 +22,6 @@
 ## 2026-09-02 - Ensure focus-visible outline for checkout modal submit button
 **Learning:** By default, buttons missing explicit focus-visible utility classes can fallback to ambiguous custom outlines or drop-shadows that may not meet contrast ratios for keyboard accessibility, particularly on dark modal backgrounds.
 **Action:** When evaluating forms (like the checkout modal), explicitly add `focus-visible:outline` utility classes (e.g. `focus-visible:outline-2 focus-visible:outline-amber-400`) to the submit `<button>` element rather than relying on global CSS or implicit browser defaults, ensuring a distinct, high-contrast focus indicator.
+## 2026-09-02 - Aurora Rhythmic Opacity Oscillations
+**Learning:** Animating atmospheric effects like auroras with rhythmic opacity oscillations (e.g., using `Math.sin` or `Math.cos` on `ctx.globalAlpha`) can create a jarring "flashing" or "breathing" effect rather than an organic, flowing feel, reducing the premium quality of the visual experience.
+**Action:** When creating high-quality atmospheric background layers, maintain stable opacity values and instead animate properties like shape, position, or phase (e.g., `filter: hue-rotate` combined with prime-number animation durations) to achieve a sophisticated, non-oscillating natural aesthetic.
