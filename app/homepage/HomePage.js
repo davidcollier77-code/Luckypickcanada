@@ -13,8 +13,7 @@ const CheckoutModal = dynamic(() => import('../checkout-modal'));
 const LuckyRevealPopup = dynamic(() => import('../lucky-reveal-popup'));
 import { TURNSTILE_SITE_KEY } from '../turnstile-config';
 import { DEFAULT_THEME } from '../../themes/default/theme';
-import TurnstileField from '../turnstile-field';
-import { LUCKY_CARDS } from '../lucky-card-data';
+const TurnstileField = dynamic(() => import('../turnstile-field'), { ssr: false });
 
 function SectionHeading({ eyebrow, id, title, children }) {
   return (
