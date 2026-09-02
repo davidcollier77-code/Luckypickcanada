@@ -13,3 +13,7 @@
 ## 2026-08-20 - Ensure icon-only buttons have accessible names
 **Learning:** Buttons that rely purely on visual indicators (like SVG icons) for their meaning are inaccessible to screen reader users if they lack an explicit accessible name. For example, a share button featuring only an icon must define what action it performs.
 **Action:** Always verify that icon-only buttons include an `aria-label` attribute (e.g., `aria-label="Share your result"`) to clearly communicate their purpose.
+
+## 2026-08-21 - Provide return navigation on standalone pages
+**Learning:** Standalone pages, stories, editors, features, and other isolated experiences must not leave users at a dead end without a clear way back.
+**Action:** Every newly created standalone page must provide an obvious, functional way for the visitor to return to the homepage/main site. Follow the site's existing navigation and visual design patterns rather than inventing an unrelated navigation style.
