@@ -261,6 +261,9 @@ export default function DailyResonance() {
         // Trigger exact tier audio instantly without latency
         const impactNode = playBuffer(ctx, audioBuffers[currentTier]);
         if (impactNode) activeAudioNodesRef.current.push(impactNode);
+
+        // Trigger visual effect directly synchronously with the audio
+        animateCanvas(currentTier);
       }
 
       // Impact Frame UI Transition (8.8s)
@@ -306,24 +309,37 @@ export default function DailyResonance() {
   };
 
   // Canvas Animation Logic
-  const animateCanvas = useCallback(() => {
+  const animateCanvas = useCallback((forcedTier?: string) => {
+    if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    const activeTier = typeof forcedTier === 'string' ? forcedTier : tier;
     const canvas = canvasRef.current;
-    if (!canvas || !tier) return;
+    if (!canvas || !activeTier) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Ensure canvas is sized correctly before initial draw
+    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
     let particles: any[] = [];
-    const MAX_PARTICLES = tier === 'Cosmic Lightning' ? 30 : 150; // Performance cap
+    const MAX_PARTICLES = activeTier === 'Cosmic Lightning' ? 30 : 150; // Performance cap
     const startTime = Date.now();
+    let initialSpawnDone = false;
 
     const loop = () => {
       const now = Date.now();
       const canSpawn = (now - startTime) < 4500;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (tier === 'Meteor Shower') {
-        if (Math.random() < 0.1 && particles.length < 50 && canSpawn) { // Cap slightly lower for longer tails
-          if (audioCtx && now - lastAudioTimeRef.current >= 600) {
+      if (activeTier === 'Meteor Shower') {
+        const shouldSpawn = !initialSpawnDone || (Math.random() < 0.1 && canSpawn);
+        if (shouldSpawn && particles.length < 50) { // Cap slightly lower for longer tails
+          if (!initialSpawnDone) {
+            lastAudioTimeRef.current = now;
+            initialSpawnDone = true;
+          } else if (audioCtx && now - lastAudioTimeRef.current >= 600) {
             const node = playBuffer(audioCtx, audioBuffers['Meteor Shower'], 0.3);
             if (node) activeAudioNodesRef.current.push(node);
             lastAudioTimeRef.current = now;
@@ -361,9 +377,13 @@ export default function DailyResonance() {
           if (p.y > canvas.height + p.len) particles.splice(i, 1);
         }
         ctx.globalCompositeOperation = 'source-over';
-      } else if (tier === 'Cosmic Lightning') {
-        if (Math.random() < 0.05 && particles.length < MAX_PARTICLES && canSpawn) {
-          if (audioCtx && now - lastAudioTimeRef.current >= 600) {
+      } else if (activeTier === 'Cosmic Lightning') {
+        const shouldSpawn = !initialSpawnDone || (Math.random() < 0.05 && canSpawn);
+        if (shouldSpawn && particles.length < MAX_PARTICLES) {
+          if (!initialSpawnDone) {
+            lastAudioTimeRef.current = now;
+            initialSpawnDone = true;
+          } else if (audioCtx && now - lastAudioTimeRef.current >= 600) {
             const node = playBuffer(audioCtx, audioBuffers['Cosmic Lightning'], 0.3);
             if (node) activeAudioNodesRef.current.push(node);
             lastAudioTimeRef.current = now;
@@ -428,9 +448,13 @@ export default function DailyResonance() {
           if (p.opacity <= 0) particles.splice(i, 1);
         }
         ctx.globalCompositeOperation = 'source-over';
-      } else if (tier === 'Fireworks') {
-        if (Math.random() < 0.03 && particles.length < 120 && canSpawn) { // Cap slightly lower than 150 for safety with trails
-          if (audioCtx && now - lastAudioTimeRef.current >= 600) {
+      } else if (activeTier === 'Fireworks') {
+        const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
+        if (shouldSpawn && particles.length < 120) { // Cap slightly lower than 150 for safety with trails
+          if (!initialSpawnDone) {
+            lastAudioTimeRef.current = now;
+            initialSpawnDone = true;
+          } else if (audioCtx && now - lastAudioTimeRef.current >= 600) {
             const node = playBuffer(audioCtx, audioBuffers['Fireworks'], 0.3);
             if (node) activeAudioNodesRef.current.push(node);
             lastAudioTimeRef.current = now;
@@ -529,7 +553,8 @@ export default function DailyResonance() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-    if (isRevealed) animateCanvas();
+    // Only trigger canvas animation on mount/state-load if not currently in a reveal sequence
+    if (isRevealed && !isAnimatingRef.current) animateCanvas();
   }, [isRevealed, animateCanvas]);
 
   // Background Starfield Animation
