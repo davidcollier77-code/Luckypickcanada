@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import './globals.css';
-import { headers } from 'next/headers';
 
 
 // Use Next.js build ID for cache-busting, automatically updated on each build
