@@ -38,6 +38,9 @@ importers:
       react-dom:
         specifier: latest
         version: 19.2.8(react@19.2.8)
+      react-error-boundary:
+        specifier: ^6.1.4
+        version: 6.1.4(@types/react@19.2.18)(react@19.2.8)
       resend:
         specifier: ^6.21.0
         version: 6.22.0
@@ -2463,6 +2466,15 @@ packages:
     resolution: {integrity: sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==}
     peerDependencies:
       react: ^19.2.8
+
+  react-error-boundary@6.1.4:
+    resolution: {integrity: sha512-7FgvbyjCFhu4dtKSZu807cW1MWG2nWAM4bwGqUByAtHVJXtlzoCJX0SSyZRyFrb+aBd7wtJkcOR4DsxXVEuDsA==}
+    peerDependencies:
+      '@types/react': ^18.0.0 || ^19.0.0
+      react: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   react@19.2.8:
     resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
@@ -5313,6 +5325,12 @@ snapshots:
     dependencies:
       react: 19.2.8
       scheduler: 0.27.0
+
+  react-error-boundary@6.1.4(@types/react@19.2.18)(react@19.2.8):
+    dependencies:
+      react: 19.2.8
+    optionalDependencies:
+      '@types/react': 19.2.18
 
   react@19.2.8: {}
 
