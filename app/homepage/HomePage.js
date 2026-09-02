@@ -317,21 +317,15 @@ export default function HomePage() {
         </article>
         <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">COMMUNITY STORIES</p>
-          <h2>Community Stories</h2>
-          <p>Discover uplifting moments shared by the Lucky Pick Canada community from coast to coast. Explore stories on our interactive Lucky Map, browse by province, see community story counts, and discover what’s been shared in the last 24 hours.</p>
-          <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE COMMUNITY STORIES →<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
+          <h2>Lucky Stories</h2>
+          <p>A community space to share your own experiences of luck and good fortune. From amazing coincidences and unexpected opportunities, to finding money or simply a small everyday moment where you felt unusually lucky—big or small, we want to hear about it! (Please note: these are not business reviews or testimonials.)</p>
+          <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE LUCKY STORIES →<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
           <h2>Crystal Ball</h2>
           <p>Have a question in mind? Focus your intention, ask the Crystal Ball, and see what mysterious answer appears.</p>
           <Link href="/crystal-ball" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">CONSULT THE ORACLE <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
-        </article>
-        <article id="lucky-map" className="homepage-community-card backdrop-blur-sm bg-black/20">
-          <p className="homepage-offer-kicker">Lucky Map</p>
-          <h2>Lucky Map</h2>
-          <p>See what’s been happening across the community in the last 24 hours and come back later to discover what’s new.</p>
-          <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Visit the Lucky Map <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="daily-card-reveal" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
