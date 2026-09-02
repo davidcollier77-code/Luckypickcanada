@@ -92,7 +92,7 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
             </>
           )}
           {type === 'tip' && <label><span className="inline-flex items-center gap-1">Tip amount (CAD)<span aria-hidden="true" className="text-red-500">*</span></span><input name="tipAmount" type="number" min="0.50" step="0.01" inputMode="decimal" required placeholder="5.00" /></label>}
-          <button type="submit" className="checkout-modal-submit">Continue to secure checkout</button>
+          <button type="submit" className="checkout-modal-submit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Continue to secure checkout</button>
         </form>
       </section>
     </div>

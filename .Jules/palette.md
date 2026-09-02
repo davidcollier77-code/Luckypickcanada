@@ -19,3 +19,6 @@
 ## 2024-05-19 - Share Button Clipboard Fallback
 **Learning:** In desktop environments without `navigator.share` (like standard Chrome/Firefox), silent fallback to clipboard copy leaves the user stranded without confirmation.
 **Action:** Always provide explicit, temporary visual confirmation (e.g., changing button text to "Copied ✓" for a few seconds) when falling back to a clipboard action to ensure a closed feedback loop.
+## 2026-09-02 - Ensure focus-visible outline for checkout modal submit button
+**Learning:** By default, buttons missing explicit focus-visible utility classes can fallback to ambiguous custom outlines or drop-shadows that may not meet contrast ratios for keyboard accessibility, particularly on dark modal backgrounds.
+**Action:** When evaluating forms (like the checkout modal), explicitly add `focus-visible:outline` utility classes (e.g. `focus-visible:outline-2 focus-visible:outline-amber-400`) to the submit `<button>` element rather than relying on global CSS or implicit browser defaults, ensuring a distinct, high-contrast focus indicator.
