@@ -426,22 +426,7 @@ export default function HomePage() {
         </Link>
       </section>
 
-      <footer className="homepage-footer">
-        <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
-        <p className="homepage-disclaimer">LuckyPickCanada is a digital entertainment experience created for fun and positive moments. It does not provide lottery or gambling services.</p>
-        <nav className="homepage-social-links" aria-label="Social links">
-          <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" aria-label="Facebook Community Group">Facebook</a>
-          <a href="https://x.com/luckypickcanada" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)">X</a>
-          <a href="https://www.instagram.com/luckypickcanada" target="_blank" rel="noopener noreferrer" aria-label="Instagram">Instagram</a>
-          <a href="https://www.facebook.com/luckypickcanada" target="_blank" rel="noopener noreferrer" aria-label="Facebook Page">Facebook Page</a>
-          <a href="https://www.tiktok.com/@luckypickcanada" target="_blank" rel="noopener noreferrer" aria-label="TikTok">TikTok</a>
-        </nav>
-        <nav className="homepage-legal-links" aria-label="Legal links" style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '16px' }}>
-          <Link href="/crystal-ball">Crystal Ball</Link>
-          <Link href="/privacy">Privacy Policy</Link>
-          <Link href="/terms">Terms of Service</Link>
-        </nav>
-      </footer>
+
       {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onRevealTestStart={(revealType, luckyPickGame) => {
         if (revealType === 'lucky_pick' || revealType === 'gift_package') {
           setCheckoutType(null);

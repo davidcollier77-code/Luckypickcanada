@@ -1,154 +1,146 @@
-import Link from 'next/link';
-
 export const metadata = {
-  title: 'About the Creator | Lucky Pick Canada',
-  description: 'Learn about the creator and the story behind Lucky Pick Canada, a digital entertainment experience designed to bring a little luck and magic to your day.',
+  title: 'About the Creator & Our Story | Lucky Pick Canada',
+  description: 'Learn about the story behind Lucky Pick Canada, a solo creative project built in Nova Scotia to bring everyday positivity and a little fun to the web.',
 };
-
-export const dynamic = 'force-static';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen pt-8 pb-16 px-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <header className="text-center mb-12">
-          <p className="text-amber-400 font-bold text-sm uppercase tracking-wide mb-3">About the Creator</p>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Our Story</h1>
-          <p className="text-lg text-slate-300">The journey behind Lucky Pick Canada</p>
-        </header>
+    <div className="min-h-screen pt-24 pb-16 px-4">
+      <div className="max-w-3xl mx-auto space-y-8 text-white/90">
+        <h1 className="text-3xl md:text-4xl font-playfair font-bold text-amber-400 mb-8 text-center">
+          About the Creator & Our Story
+        </h1>
 
-        {/* Main Content */}
-        <article className="prose prose-invert prose-lg max-w-none">
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 mb-8">
-            <h2 className="text-2xl font-bold text-amber-400 mb-4">Hi, I'm David</h2>
-            <div className="space-y-4 text-slate-200 leading-relaxed">
+        <div className="space-y-6 text-lg leading-relaxed bg-slate-900/50 p-8 rounded-2xl border border-white/10 backdrop-blur-sm">
+          <p>
+            LuckyPickCanada.ca is a solo, one-person creative project built right here in Nova Scotia.
+          </p>
+
+          <p>
+            Behind it is a happily married guy with a beautiful wife, three grown children, and three wonderful grandkids. A lot of this project has been built during late nights, experimenting with digital tools and learning as things went along.
+          </p>
+
+          <p>
+            The goal has always been simple: create something positive, entertaining, and a little different — something that might give people a small reason to smile.
+          </p>
+
+          <h2 className="text-2xl font-playfair font-bold text-amber-400 mt-12 mb-4">How It All Started</h2>
+
+          <p>
+            LuckyPickCanada actually started by accident.
+          </p>
+
+          <p>
+            One night, while talking with Gemini, the idea came up that the world could use a little more positivity. At the time, unemployment had recently become part of the picture, and there was also some thought about finding another source of income.
+          </p>
+
+          <p>
+            The idea started taking shape.
+          </p>
+
+          <p>
+            There was no previous web-building experience. Everything had to be learned along the way — experimenting, figuring things out, breaking things, fixing them, and slowly learning how all of this worked.
+          </p>
+
+          <p>
+            And it was all built from a cell phone. No computer.
+          </p>
+
+          <p>
+            What started out as a simple idea for potentially creating a little income quickly became something much more than that. Somewhere along the way, it became a genuine passion.
+          </p>
+
+          <p>
+            So, in a way, LuckyPickCanada wasn't really planned. It just kind of happened — and I'm pretty glad it did.
+          </p>
+
+          <h2 className="text-2xl font-playfair font-bold text-amber-400 mt-12 mb-4">Why I Created Luckypickcanada.ca</h2>
+
+          <p>
+            The idea behind LuckyPickCanada is simple: everyday positivity, connection, and a little lighthearted fun.
+          </p>
+
+          <p>
+            The internet can sometimes feel pretty heavy. This is meant to be a small, cozy corner of it where people can take a break, have some fun, and maybe discover a little bit of good luck along the way.
+          </p>
+
+          <p>
+            The Lucky Meter, daily cards, numbers, and other experiences are strictly for amusement. They're meant to be playful and entertaining — nothing more.
+          </p>
+
+          <h2 className="text-2xl font-playfair font-bold text-amber-400 mt-12 mb-4">Growing Together Through Community Stories</h2>
+
+          <p>
+            The community stories are at the heart of LuckyPickCanada.
+          </p>
+
+          <p>
+            People have their own experiences, perspectives, lucky moments, challenges, and lessons learned. Sharing those stories can give other people something positive to think about, learn from, or simply enjoy.
+          </p>
+
+          <p>
+            The hope is that the community continues growing into a place where people can share uplifting experiences, learn from one another, and talk about improvement and personal growth.
+          </p>
+
+          <p>
+            It is meant to evolve together with the people who visit.
+          </p>
+
+          <p>
+            Suggestions are reviewed personally, and the goal is to keep listening, improving, and adding things that make the experience better.
+          </p>
+
+          <h2 className="text-2xl font-playfair font-bold text-amber-400 mt-12 mb-4">Reinvesting in the Experience</h2>
+
+          <p>
+            Any support, donations, or revenue generated through LuckyPickCanada goes back into the project.
+          </p>
+
+          <p>
+            That means improving the content, maintaining the site, adding new features, and continuing to make the experience better.
+          </p>
+
+          <p>
+            Every contribution helps keep the lights on and gives the project room to grow and improve in the future.
+          </p>
+
+          <h2 className="text-2xl font-playfair font-bold text-amber-400 mt-12 mb-4">Core Philosophy</h2>
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-bold text-amber-200 mb-2">Just for Fun</h3>
               <p>
-                I'm the creator behind Lucky Pick Canada. This project started as a simple idea: to build something fun, 
-                positive, and uniquely Canadian that could bring a little spark of joy to people's everyday routines.
+                LuckyPickCanada is not gambling and is not a real lottery. There are no real lottery prizes and no financial risks involved.
               </p>
+              <p className="mt-2">
+                It is simply meant to be a playful escape — something fun to visit and enjoy.
+              </p>
+            </div>
+
+            <div className="mt-6">
+              <h3 className="text-xl font-bold text-amber-200 mb-2">Independent & Positive Craft</h3>
               <p>
-                I've always been drawn to the intersection of technology and creativity—finding ways to use code to create 
-                experiences that feel magical, even if they're built on logic and algorithms. Lucky Pick Canada is my way 
-                of combining that passion with a love for optimism, community, and the small moments that make life interesting.
+                LuckyPickCanada has been built entirely from scratch as a solo labor of love.
+              </p>
+              <p className="mt-2">
+                It is an independent project with Canadian digital-culture influences and East Coast roots, created with the hope of bringing a little positivity and entertainment to the web.
               </p>
             </div>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 mb-8">
-            <h2 className="text-2xl font-bold text-amber-400 mb-4">The Journey</h2>
-            <div className="space-y-4 text-slate-200 leading-relaxed">
-              <p>
-                Lucky Pick Canada wasn't born overnight. It started with a lot of late nights, countless iterations, and 
-                a genuine curiosity about what makes an experience feel engaging and meaningful. I wanted to create something 
-                that people would return to—not out of obligation, but because it brought them a moment of lightness or wonder.
-              </p>
-              <p>
-                Along the way, I learned a lot about design, user experience, and the technical challenges of building a 
-                platform that feels smooth and reliable. Every feature—from the Lucky Meter to the Crystal Ball to the 
-                daily card reveals—was crafted with care, tested, refined, and polished until it felt just right.
-              </p>
-              <p>
-                The community aspect was especially important to me. I wanted Lucky Pick Canada to be more than just a 
-                solo experience. The Lucky Stories feature, where people can share their own moments of good fortune, 
-                became a way to connect visitors and build something that felt bigger than just one person's project.
-              </p>
-            </div>
-          </div>
+          <h2 className="text-2xl font-playfair font-bold text-amber-400 mt-12 mb-4">Thank You</h2>
 
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 mb-8">
-            <h2 className="text-2xl font-bold text-amber-400 mb-4">Why Lucky Pick Canada?</h2>
-            <div className="space-y-4 text-slate-200 leading-relaxed">
-              <p>
-                In a world that can sometimes feel heavy or overwhelming, I wanted to create a space that felt light, 
-                hopeful, and fun. Lucky Pick Canada is designed to be a brief escape—a place where you can check your 
-                luck for the day, discover a new card, or read a story that reminds you that good things happen.
-              </p>
-              <p>
-                It's also proudly Canadian. From the maple leaf imagery to the coast-to-coast themes, I wanted this 
-                project to celebrate the spirit of Canada—its optimism, diversity, and sense of community.
-              </p>
-              <p>
-                Most importantly, Lucky Pick Canada is about intention. Every feature is designed to encourage positivity, 
-                mindfulness, and a sense of possibility. Whether you're checking your daily resonance or sharing a lucky 
-                story, the goal is always the same: to bring a little more light into your day.
-              </p>
-            </div>
-          </div>
+          <p>
+            Thanks for stopping by LuckyPickCanada.ca and being part of the journey.
+          </p>
 
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 mb-8">
-            <h2 className="text-2xl font-bold text-amber-400 mb-4">The Technical Side</h2>
-            <div className="space-y-4 text-slate-200 leading-relaxed">
-              <p>
-                For those curious about the technical details, Lucky Pick Canada is built using modern web technologies 
-                including Next.js, React, and is deployed on Cloudflare's edge network for fast, reliable performance 
-                across Canada and beyond.
-              </p>
-              <p>
-                Every aspect of the site—from the animations to the database architecture to the security measures—has 
-                been carefully considered and optimized. I'm constantly learning and improving the platform, adding new 
-                features and refining existing ones based on user feedback and my own vision for what Lucky Pick Canada 
-                can become.
-              </p>
-            </div>
-          </div>
+          <p>
+            Whether someone visits for the numbers, the Lucky Meter, the cards, the stories, the maps, or simply to see what has been created, every visitor is appreciated.
+          </p>
 
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 mb-8">
-            <h2 className="text-2xl font-bold text-amber-400 mb-4">What's Next?</h2>
-            <div className="space-y-4 text-slate-200 leading-relaxed">
-              <p>
-                Lucky Pick Canada is an ongoing project, and I'm excited about what's ahead. I have plans for new features, 
-                expanded community elements, and ways to make the experience even more engaging and delightful.
-              </p>
-              <p>
-                If you have ideas, suggestions, or feedback, I'd love to hear from you. The Suggestion Box on the homepage 
-                is always open, and I genuinely read and consider every submission. This project is as much for the community 
-                as it is a personal creative endeavor.
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8">
-            <h2 className="text-2xl font-bold text-amber-400 mb-4">Thank You</h2>
-            <div className="space-y-4 text-slate-200 leading-relaxed">
-              <p>
-                Thank you for being part of the Lucky Pick Canada community. Whether you're a daily visitor or stumbled 
-                upon this site by chance, I'm grateful you're here. I hope this platform brings you moments of joy, 
-                curiosity, and good fortune.
-              </p>
-              <p className="text-amber-300 font-medium">
-                Here's to luck, magic, and the little moments that make life special.
-              </p>
-              <p className="text-slate-300 italic">
-                — David, Creator of Lucky Pick Canada
-              </p>
-            </div>
-          </div>
-        </article>
-
-        {/* Call to Action */}
-        <div className="mt-12 text-center">
-          <div className="inline-flex flex-col sm:flex-row gap-4">
-            <Link
-              href="/"
-              className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
-            >
-              Back to Homepage
-              <span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span>
-            </Link>
-            <Link
-              href="/lucky-meter"
-              className="inline-flex items-center justify-center px-6 py-3 rounded-full border-2 border-amber-400 text-amber-400 font-bold transition-all duration-300 hover:bg-amber-400/10 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
-            >
-              Check Your Luck Today →
-            </Link>
-          </div>
-        </div>
-
-        {/* Footer Note */}
-        <div className="mt-16 pt-8 border-t border-white/10 text-center text-sm text-slate-400">
-          <p>Lucky Pick Canada is a digital entertainment experience designed for fun and positive moments.</p>
-          <p className="mt-2">Not affiliated with any lottery or gambling services.</p>
+          <p>
+            This little project started unexpectedly, but it has become something genuinely meaningful — and there's still plenty more to come.
+          </p>
         </div>
       </div>
     </div>
