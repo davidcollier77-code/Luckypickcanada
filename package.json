@@ -20,6 +20,7 @@
     "puppeteer": "^25.9.0",
     "react": "latest",
     "react-dom": "latest",
+    "react-error-boundary": "^6.1.4",
     "resend": "^6.21.0",
     "stripe": "^22.5.0"
   },
