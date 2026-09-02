@@ -5,7 +5,9 @@ export function generateLuckyNumbers(count, max) {
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
 
   for (let index = numbers.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
+    const randomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(randomBuffer);
+    const swapIndex = randomBuffer[0] % (index + 1);
     [numbers[index], numbers[swapIndex]] = [numbers[swapIndex], numbers[index]];
   }
 
@@ -13,7 +15,9 @@ export function generateLuckyNumbers(count, max) {
 }
 
 function pickOne(items) {
-  return items[Math.floor(Math.random() * items.length)];
+  const randomBuffer = new Uint32Array(1);
+  crypto.getRandomValues(randomBuffer);
+  return items[randomBuffer[0] % items.length];
 }
 
 export function createLuckyReveal(luckyPickGame) {

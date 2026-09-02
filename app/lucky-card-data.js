@@ -35,12 +35,16 @@ export function selectWeightedLuckyCard(previousCardId = null) {
 
   if (isTestMode) {
     // During test mode, randomly select any card to make testing all states easy
-    const randomIndex = Math.floor(Math.random() * availableCards.length);
+    const randomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(randomBuffer);
+    const randomIndex = randomBuffer[0] % availableCards.length;
     return availableCards[randomIndex];
   }
 
   // Step 1: Select tier based on fixed probabilities
-  const tierRoll = Math.random();
+  const randomBuffer = new Uint32Array(1);
+  crypto.getRandomValues(randomBuffer);
+  const tierRoll = randomBuffer[0] / (0xffffffff + 1);
   let selectedTier = 'standard';
 
   if (tierRoll < 0.70) {
@@ -61,7 +65,9 @@ export function selectWeightedLuckyCard(previousCardId = null) {
 
   // Step 4: Pick randomly among the tier cards based on their relative rarity weight
   const totalWeight = tierCards.reduce((sum, card) => sum + card.rarityWeight, 0);
-  let randomValue = Math.random() * totalWeight;
+  const weightBuffer = new Uint32Array(1);
+  crypto.getRandomValues(weightBuffer);
+  let randomValue = (weightBuffer[0] / (0xffffffff + 1)) * totalWeight;
 
   for (const card of tierCards) {
     if (randomValue < card.rarityWeight) {

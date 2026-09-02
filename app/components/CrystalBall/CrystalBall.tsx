@@ -42,7 +42,9 @@ const PLACEHOLDER_FORTUNES = [
 
 async function defaultFortuneGenerator(question: string): Promise<string> {
   await new Promise((resolve) => setTimeout(resolve, 900));
-  const pick = PLACEHOLDER_FORTUNES[Math.floor(Math.random() * PLACEHOLDER_FORTUNES.length)];
+  const randomBuffer = new Uint32Array(1);
+  crypto.getRandomValues(randomBuffer);
+  const pick = PLACEHOLDER_FORTUNES[randomBuffer[0] % PLACEHOLDER_FORTUNES.length];
   return question.trim() ? pick : 'Ask the mists a question first.';
 }
 
@@ -75,7 +77,7 @@ export default function CrystalBall({
       const answer = await onSeekFortune(trimmed);
       setCurrentFortune(answer);
       setReadings((prev) => [
-        { id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, question: trimmed, answer },
+        { id: crypto.randomUUID(), question: trimmed, answer },
         ...prev,
       ]);
       setQuestion('');
