@@ -754,13 +754,17 @@ function useResonanceCanvas(
         const alpha = Math.max(0, 1 - Math.pow(sp.age / sp.life, 2));
         if (alpha <= 0) { s.sparks.splice(i, 1); continue; } 
         
+        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+        // Extracted context assignments outside the path-building loop to prevent
+        // redundant state mutations per point, using final values to preserve exact visuals.
+        const finalProgress = sp.trail.length > 1 ? 1 : 0;
+        ctx!.globalAlpha = alpha * (1 - finalProgress);
+        ctx!.lineWidth = sp.size * (1 - finalProgress);
+
         ctx!.beginPath();
         ctx!.strokeStyle = `rgb(${sp.color})`;
         ctx!.lineCap = 'round';
         sp.trail.forEach((t, j) => { 
-          const progress = sp.trail.length > 1 ? j / (sp.trail.length - 1) : 0;
-          ctx!.globalAlpha = alpha * (1 - progress);
-          ctx!.lineWidth = sp.size * (1 - progress);
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
         }); 
         ctx!.stroke(); 
