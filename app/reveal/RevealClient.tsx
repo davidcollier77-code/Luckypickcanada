@@ -11,7 +11,7 @@ export default function RevealClient() {
         <div className="homepage-section-heading mb-8">
           <p>A daily moment of possibility</p>
           <h1 id="cards-heading">Today’s Lucky Moment</h1>
-          <span>Open one collectible card each day for a calm spark of encouragement. Can you collect all 10?</span>
+          <span>Every day brings a new card to discover. Take a moment, open today’s Lucky Moment, and see which piece of the collection finds you today.</span>
         </div>
 
         <LuckyCardReveal />

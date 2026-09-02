@@ -5,17 +5,17 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Lucky Map | LuckyPickCanada.ca',
-  description: 'Explore community Lucky Stories across Canada by province.',
+  description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
   alternates: { canonical: '/map' },
   openGraph: {
     title: 'Lucky Map | LuckyPickCanada.ca',
-    description: 'Explore community Lucky Stories across Canada by province.',
+    description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
     url: '/map',
     images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
   },
   twitter: {
     title: 'Lucky Map | LuckyPickCanada.ca',
-    description: 'Explore community Lucky Stories across Canada by province.',
+    description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
     images: ['/1785347037732.png'],
   },
 };

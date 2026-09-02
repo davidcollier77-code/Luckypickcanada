@@ -13,7 +13,7 @@ const socialImage = '/1785347037732.png';
 
 export const metadata = {
   title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
-  description: 'Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.',
+  description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
   keywords: ['luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks', 'canada luck', 'lucky card', 'story map', 'canadian luck'],
   metadataBase: new URL('https://luckypickcanada.ca'),
   alternates: {
@@ -21,7 +21,7 @@ export const metadata = {
   },
   openGraph: {
     title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
-    description: 'Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.',
+    description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
     url: 'https://luckypickcanada.ca',
     siteName: 'Lucky Pick Canada',
     locale: 'en_CA',
@@ -31,7 +31,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
-    description: 'Experience the thrill of true randomness with Lucky Pick Canada. Draw digital cards, settle wagers, and unlock premium luck-themed reveals coast to coast.',
+    description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
     images: ['/1785347037732.png'],
   },
   icons: {

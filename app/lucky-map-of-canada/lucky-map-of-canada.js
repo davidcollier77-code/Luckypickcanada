@@ -243,7 +243,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             Where Luck Has Been Found Across Canada 🍀
           </h1>
           <p style={{ maxWidth: 760, margin: '1rem 0 0', fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.7, color: 'rgba(255, 247, 214, 0.86)' }}>
-            The Lucky Story Map is for discovering and sharing community stories from across Canada.
+            Explore Community Stories from across Canada. Browse by province, see story counts, and discover what’s been happening across the community in the last 24 hours. Come back later to discover what’s new.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.35rem' }}>
             <a href="#lucky-story-map" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>

@@ -110,8 +110,7 @@ export default function CrystalBall({
         <header className={styles.header}>
           <h1 className={styles.title}>Crystal Ball</h1>
           <p className={styles.subtitle}>
-            The northern sky shifts with quiet possibilities tonight. Bring your question to the
-            mist and see what luck has in store for you.
+            Focus on a question, set your intention, and see what the Crystal Ball reveals.
           </p>
         </header>
 
@@ -148,7 +147,7 @@ export default function CrystalBall({
           <textarea
             id="crystal-ball-question"
             className={styles.input}
-            placeholder="Ask the mists…"
+            placeholder="What’s on your mind?"
             rows={2}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}

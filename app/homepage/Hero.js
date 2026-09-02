@@ -82,7 +82,7 @@ export default function Hero() {
 
           {/* Bottom Subhead */}
           <p className="text-white text-xs sm:text-sm md:text-base font-sans font-medium tracking-wide mt-2 mb-2 drop-shadow-lg [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
-            A Canadian digital entertainment
+            A Canadian digital entertainment experience made to bring a little luck and a little magic to your day.
           </p>
         </div>
       </div>
