@@ -739,8 +739,6 @@ function useResonanceCanvas(
       for (let i = s.rockets.length - 1; i >= 0; i--) { 
         const r = s.rockets[i]; r.vy += 260 * dt; r.vx *= 1 - dt * 0.2; r.x += r.vx * dt; r.y += r.vy * dt; 
         r.trail.unshift({ x: r.x, y: r.y }); if (r.trail.length > (r.isHero ? 20 : 15)) r.trail.pop();
-        
-        ctx!.beginPath();
         ctx!.strokeStyle = '#ffc864';
         // FIXED TRAIL LOGIC (Visual Regression Fix)
         const lastIndex = Math.max(0, r.trail.length - 1);
