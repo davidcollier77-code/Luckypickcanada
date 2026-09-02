@@ -1,17 +1,18 @@
+import { revalidatePath } from 'next/cache';
 import { createLuckyStory, getLuckyStoryMap } from '../../lucky-stories';
 import { validatePublicFormSubmission } from '../../spam-protection';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-// 1. GET: Fetch the current map data without CDN or browser caching.
+// 1. GET: Fetch the current map data with edge caching (1 hour revalidation).
 export async function GET() {
   const mapData = await getLuckyStoryMap();
   const status = mapData.isConfigured ? 200 : 500;
 
   return NextResponse.json(mapData, {
     status,
-    headers: { 'Cache-Control': 'no-store, max-age=0' },
+    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
   });
 }
 
@@ -39,6 +40,9 @@ export async function POST(request) {
     redirectUrl.searchParams.set('storyError', result.error);
   } else {
     redirectUrl.searchParams.set('storyShared', '1');
+    revalidatePath('/map');
+    revalidatePath('/where-luck-has-been-found-in-canada');
+    revalidatePath('/lucky-map-of-canada');
   }
 
   return Response.redirect(redirectUrl, 303);

@@ -100,7 +100,7 @@ export default function LuckyMapOfCanada({ mapData }) {
 
     async function refreshMapData() {
       try {
-        const response = await fetch('/api/lucky-stories', { cache: 'no-store' });
+        const response = await fetch('/api/lucky-stories');
 
         if (!response.ok) return;
 
