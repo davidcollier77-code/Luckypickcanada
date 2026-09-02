@@ -13,7 +13,7 @@ const socialImage = '/1785347037732.png';
 
 export const metadata = {
   title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
-  description: 'Lucky Pick Canada: fun digital entertainment with lucky picks, daily moments, collectible cards, crystal ball & community stories.',
+  description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
   keywords: ['luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks', 'canada luck', 'lucky card', 'story map', 'canadian luck'],
   metadataBase: new URL('https://luckypickcanada.ca'),
   alternates: {
@@ -23,7 +23,7 @@ export const metadata = {
     title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
     description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
     url: 'https://luckypickcanada.ca',
-    description: 'Lucky Pick Canada: fun digital entertainment with lucky picks, daily moments, collectible cards, crystal ball & community stories.',
+    siteName: 'Lucky Pick Canada',
     locale: 'en_CA',
     type: 'website',
     images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
@@ -34,7 +34,7 @@ export const metadata = {
     description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
     images: ['/1785347037732.png'],
   },
-    description: 'Lucky Pick Canada: fun digital entertainment with lucky picks, daily moments, collectible cards, crystal ball & community stories.',
+  icons: {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
@@ -54,7 +54,7 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
-        <link rel="preload" href="/BackgroundEraser_20260724_163638777.png" as="image" fetchPriority="high" />
+        <link rel="preload" href="/1785347037732.png" as="image" fetchPriority="high" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -83,7 +83,6 @@ export default function RootLayout({ children }) {
               <Link href="/reveal" className="hover:text-amber-400 transition-colors">Daily Reveal</Link>
               <Link href="/map" className="hover:text-amber-400 transition-colors">Lucky Map</Link>
 
-              <Link href="/about" className="hover:text-amber-400 transition-colors">About</Link>
             </nav>
             <p>&copy; {new Date().getFullYear()} Lucky Pick Canada. All rights reserved.</p>
           </footer>

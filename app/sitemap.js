@@ -9,6 +9,5 @@ export default function sitemap() {
     { url: `${siteUrl}/privacy`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${siteUrl}/terms`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${siteUrl}/reveal`, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${siteUrl}/about`, changeFrequency: 'monthly', priority: 0.7 },
   ];
 }

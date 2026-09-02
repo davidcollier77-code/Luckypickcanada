@@ -14,6 +14,7 @@ const LuckyRevealPopup = dynamic(() => import('../lucky-reveal-popup'));
 import { TURNSTILE_SITE_KEY } from '../turnstile-config';
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import TurnstileField from '../turnstile-field';
+import FAQSection from './FAQSection';
 import { LUCKY_CARDS } from '../lucky-card-data';
 
 function SectionHeading({ eyebrow, id, title, children }) {
@@ -398,32 +399,33 @@ export default function HomePage() {
         </form>
       </section>
 
-      {/* About the Creator teaser */}
+      <FAQSection />
+
+      {/* Low-Profile SEO Text Section */}
       <section
-        className="homepage-about-teaser"
+        className="homepage-seo-section"
         style={{
-          marginTop: '48px',
-          padding: '32px 24px',
-          backgroundColor: 'rgba(234, 190, 82, 0.05)',
-          border: '1px solid rgba(234, 190, 82, 0.2)',
-          borderRadius: '12px',
-          maxWidth: '700px',
+          marginTop: '40px',
+          padding: '24px 16px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          maxWidth: '800px',
           marginInline: 'auto',
-          textAlign: 'center'
+          textAlign: 'left',
+          opacity: '0.9'
         }}
       >
-        <p className="homepage-offer-kicker" style={{ color: '#eabe52', marginBottom: '8px' }}>MEET THE CREATOR</p>
-        <h2 style={{ fontSize: '1.75rem', color: 'white', marginBottom: '12px' }}>About the Creator & Our Story</h2>
-        <p style={{ fontSize: '1rem', lineHeight: '1.6', color: '#cbd5e1', marginBottom: '20px' }}>
-          Discover the story behind Lucky Pick Canada and the journey that brought this digital experience to life.
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '600' }}>
+          About Lucky Pick Canada
+        </h2>
+        <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
+          Welcome to <strong>Lucky Pick Canada</strong>, a Canadian digital entertainment experience made to bring a little luck and a little magic to your day. Whether you are checking your daily luck meter, exploring community stories, or drawing unique cards, our site brings a fun and engaging digital experience directly to your screen.
         </p>
-        <Link 
-          href="/about" 
-          className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
-        >
-          Read Our Story <span aria-hidden="true">→</span>
-          <span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span>
-        </Link>
+        <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
+          Our digital card decks feature tiered card reveals—ranging from standard draws to premium cards like <em>Coast to Coast</em>—designed to make every pick exciting. Use our random pick tool for daily decisions, entertainment, or simply testing your fortune today.
+        </p>
+        <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '16px' }}>
+          Lucky Pick Canada is intended strictly for entertainment purposes. Enjoy your daily draws and see what luck has in store for you!
+        </p>
       </section>
 
       <footer className="homepage-footer">
