@@ -1,7 +1,7 @@
 import { getLuckyStoryMap } from '../lucky-stories';
 import LuckyMapOfCanada from '../lucky-map-of-canada/lucky-map-of-canada';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export const metadata = {
   description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
