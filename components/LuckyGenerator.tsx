@@ -757,7 +757,7 @@ function useResonanceCanvas(
         // PERFORMANCE OPTIMIZATION (Bolt ⚡):
         // Extracted context assignments outside the path-building loop to prevent
         // redundant state mutations per point, using final values to preserve exact visuals.
-        const finalProgress = sp.trail.length > 1 ? 1 : 0;
+        const finalProgress = 0;
         ctx!.globalAlpha = alpha * (1 - finalProgress);
         ctx!.lineWidth = sp.size * (1 - finalProgress);
 
