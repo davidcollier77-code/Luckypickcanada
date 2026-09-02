@@ -7,6 +7,37 @@ This is the permanent operating guide for AI coding agents working on the LuckyP
 
 ## Agent Operating Rules
 
+### Implementation Authorization
+Once the user has explicitly authorized implementation of a defined task, the agent may proceed through the authorized scope without repeatedly asking for permission before each individual low-risk change.
+
+The agent should use normal engineering judgment for minor implementation decisions that are clearly within the approved scope.
+
+The agent must still stop and ask the user when:
+
+- a decision is materially ambiguous;
+- a proposed change is outside the authorized scope;
+- a protected system would need to be changed beyond the existing rules; or
+- proceeding would create a significant or irreversible risk.
+
+### Read-Only Audit vs. Implementation
+Read-only mode applies when the user specifically requests an audit, investigation, review, or other task without authorization to modify the repository.
+
+When the user subsequently authorizes implementation of identified fixes, the agent switches to implementation mode and performs the approved work.
+
+The agent must not remain in read-only mode after implementation has been authorized, and must not repeatedly request permission for each individual approved fix.
+
+### Standard Implementation Workflow
+For an authorized implementation task, follow this sequence:
+
+Understand the task → inspect the current repository state → trace the relevant implementation → identify the root cause → make the smallest correct change → verify/test → inspect the final diff → report the results.
+
+Do not skip repository inspection simply because a previous audit, conversation, or agent response described the issue.
+
+### Authorized Scope
+Once implementation is authorized, complete the approved work as a cohesive task.
+
+Stay strictly within the authorized scope. Do not introduce unrelated refactors, redesigns, dependency changes, architectural changes, or cleanup merely because they appear desirable.
+
 ### 1. Source of Truth
 The current repository and current working tree are authoritative. Agents must inspect current code before relying on old notes, previous conversations, generated documentation, or assumptions.
 
@@ -34,7 +65,7 @@ Before modifying files:
 *   determine the smallest necessary file set.
 
 ### 4. Investigation-First
-Use this sequence: Understand the task → inspect implementation → trace usages/dependencies → identify root cause → choose smallest correct fix → implement. Do not make speculative fixes based only on filenames, symptoms, or assumptions.
+Follow the Standard Implementation Workflow. Do not make speculative fixes based only on filenames, symptoms, or assumptions.
 
 ### 5. Surgical Change Rule
 *   Change only what the task requires.
