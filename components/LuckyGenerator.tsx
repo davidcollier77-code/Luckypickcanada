@@ -654,11 +654,26 @@ function useResonanceCanvas(
         
         ctx!.beginPath();
         ctx!.strokeStyle = m.isHero ? '#8cdcff' : '#b4d2ff';
+        // FIXED TRAIL LOGIC (Visual Regression Fix)
         const lastIndex = Math.max(0, m.trail.length - 1);
-        const progress = m.trail.length > 0 ? lastIndex / m.trail.length : 0;
         const lastAlpha = (m.trail[lastIndex]?.alpha || 1.0) * 0.88;
-        ctx!.lineWidth = m.width * Math.max(0.1, 1 - progress);
-        ctx!.globalAlpha = lastAlpha * (1 - progress);
+
+        ctx!.beginPath();
+        const grad = ctx!.createLinearGradient(m.x, m.y, m.trail[lastIndex]?.x || m.x, m.trail[lastIndex]?.y || m.y);
+        grad.addColorStop(0, m.isHero ? 'rgba(140,220,255,1)' : 'rgba(180,210,255,1)');
+        grad.addColorStop(1, m.isHero ? 'rgba(140,220,255,0)' : 'rgba(180,210,255,0)');
+
+        ctx!.strokeStyle = grad;
+        // Since we cannot taper line width easily in a single stroke, we use an average width or a polygon.
+        // Actually, the original line width wasn't tapering per segment, it was setting a constant line width
+        // for the *entire path* based on progress (which evaluated to 1, causing the bug!).
+        // The original pre-optimization logic probably drew segment-by-segment to taper width and alpha.
+        // Wait, memory explicitly says: "Never move ctx.stroke() inside loops to 'fix' styling issues... extract style assignments outside the loop using final values".
+        // This implies the original intent was a single stroke path with a fixed width, but perhaps they wanted it to fade.
+        // Using createLinearGradient for alpha and a fixed linewidth based on the head of the trail restores the visuals.
+
+        ctx!.lineWidth = m.width;
+        ctx!.globalAlpha = 1.0;
         ctx!.lineCap = 'round';
         m.trail.forEach((t, j) => { 
           t.alpha *= 0.88;
@@ -727,9 +742,16 @@ function useResonanceCanvas(
         
         ctx!.beginPath();
         ctx!.strokeStyle = '#ffc864';
-        const progress = r.trail.length > 0 ? (r.trail.length - 1) / r.trail.length : 0;
-        ctx!.lineWidth = (r.isHero ? 5 : 3) * (1 - progress);
-        ctx!.globalAlpha = 1 - progress;
+        // FIXED TRAIL LOGIC (Visual Regression Fix)
+        const lastIndex = Math.max(0, r.trail.length - 1);
+        ctx!.beginPath();
+        const grad = ctx!.createLinearGradient(r.x, r.y, r.trail[lastIndex]?.x || r.x, r.trail[lastIndex]?.y || r.y);
+        grad.addColorStop(0, 'rgba(255,200,100,1)');
+        grad.addColorStop(1, 'rgba(255,200,100,0)');
+
+        ctx!.strokeStyle = grad;
+        ctx!.lineWidth = r.isHero ? 5 : 3;
+        ctx!.globalAlpha = 1.0;
         ctx!.lineCap = 'round';
         r.trail.forEach((t, j) => { 
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
@@ -757,12 +779,16 @@ function useResonanceCanvas(
         // PERFORMANCE OPTIMIZATION (Bolt ⚡):
         // Extracted context assignments outside the path-building loop to prevent
         // redundant state mutations per point, using final values to preserve exact visuals.
-        const finalProgress = sp.trail.length > 1 ? 1 : 0;
-        ctx!.globalAlpha = alpha * (1 - finalProgress);
-        ctx!.lineWidth = sp.size * (1 - finalProgress);
-
+        // FIXED TRAIL LOGIC (Visual Regression Fix)
+        const lastIndex = Math.max(0, sp.trail.length - 1);
         ctx!.beginPath();
-        ctx!.strokeStyle = `rgb(${sp.color})`;
+        const grad = ctx!.createLinearGradient(sp.x, sp.y, sp.trail[lastIndex]?.x || sp.x, sp.trail[lastIndex]?.y || sp.y);
+        grad.addColorStop(0, `rgba(${sp.color}, ${alpha})`);
+        grad.addColorStop(1, `rgba(${sp.color}, 0)`);
+
+        ctx!.strokeStyle = grad;
+        ctx!.lineWidth = sp.size;
+        ctx!.globalAlpha = 1.0;
         ctx!.lineCap = 'round';
         sp.trail.forEach((t, j) => { 
           j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);

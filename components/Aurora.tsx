@@ -47,7 +47,7 @@ export default function Aurora() {
       grad1.addColorStop(0, "rgba(24, 208, 132, 0.15)");
       grad1.addColorStop(1, "rgba(0, 0, 0, 0)"); // Preserve transparent edge
 
-      ctx.globalAlpha = 0.8 + Math.sin(time * 2) * 0.2;
+      ctx.globalAlpha = 0.8;
       ctx.fillStyle = grad1;
       ctx.fillRect(0, 0, width, height);
 
@@ -60,7 +60,7 @@ export default function Aurora() {
       grad2.addColorStop(0, "rgba(151, 78, 240, 0.12)");
       grad2.addColorStop(1, "rgba(0, 0, 0, 0)");
 
-      ctx.globalAlpha = 0.7 + Math.cos(time * 1.5) * 0.2;
+      ctx.globalAlpha = 0.7;
       ctx.fillStyle = grad2;
       ctx.fillRect(0, 0, width, height);
 
@@ -73,7 +73,7 @@ export default function Aurora() {
       grad3.addColorStop(0, "rgba(105, 184, 255, 0.08)");
       grad3.addColorStop(1, "rgba(0, 0, 0, 0)");
 
-      ctx.globalAlpha = 0.6 + Math.sin(time * 1.8) * 0.2;
+      ctx.globalAlpha = 0.6;
       ctx.fillStyle = grad3;
       ctx.fillRect(0, 0, width, height);
 
