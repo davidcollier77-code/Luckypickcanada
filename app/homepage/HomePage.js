@@ -304,7 +304,7 @@ export default function HomePage() {
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2>LUCKY METER</h2>
-          <p>Discover your daily lucky resonance score from 0–100% and tap into today's positive energy.</p>
+          <p>Take a moment, tune in to today’s energy, and discover what your luck has in store. Your daily resonance is waiting.</p>
           <div className="flex flex-col items-center gap-2">
             <Link href="/lucky-meter" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Check Lucky Meter <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
             {totalVisits !== null && (
@@ -316,27 +316,27 @@ export default function HomePage() {
           </div>
         </article>
         <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20">
-          <p className="homepage-offer-kicker">Lucky Stories</p>
+          <p className="homepage-offer-kicker">COMMUNITY STORIES</p>
           <h2>Community Stories</h2>
-          <p>Read uplifting moments shared by the Lucky Pick Canada community from coast to coast.</p>
-          <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">See Our Story Section<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
+          <p>Discover uplifting moments shared by the Lucky Pick Canada community from coast to coast. Explore stories on our interactive Lucky Map, browse by province, see community story counts, and discover what’s been shared in the last 24 hours.</p>
+          <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE COMMUNITY STORIES →<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
-          <h2>Consult the Lucky Crystal Ball</h2>
-          <p>Ask a question and peer into the mists to reveal your daily fortune powered by Canadian magic and AI wisdom.</p>
+          <h2>Crystal Ball</h2>
+          <p>Have a question in mind? Focus your intention, ask the Crystal Ball, and see what mysterious answer appears.</p>
           <Link href="/crystal-ball" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">CONSULT THE ORACLE <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="lucky-map" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">Lucky Map</p>
           <h2>Lucky Map</h2>
-          <p>Explore the existing Canadian story map and see the community’s lucky moments by province.</p>
+          <p>See what’s been happening across the community in the last 24 hours and come back later to discover what’s new.</p>
           <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Visit the Lucky Map <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="daily-card-reveal" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
-          <h2>DAILY LUCKY CARD</h2>
-          <p>Reveal today&apos;s digital collectible card from Coast to Coast. Check your fortune tier, unlock daily positive themes, and build your collection.</p>
+          <h2>Today’s Lucky Moment</h2>
+          <p>Every day brings a new card to discover. Open today’s Lucky Moment, enjoy the reveal, and keep building your collection.</p>
           <Link href="/reveal" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Reveal Today&apos;s Card <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
       </section>
@@ -361,7 +361,7 @@ export default function HomePage() {
             <img className="homepage-offer-image" src="/1784862459046.png" alt="Personalized Lucky Pick card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">$1 Lucky Pick</p>
             <h3 className="homepage-offer-title">Make your moment personal.</h3>
-            <p className="mb-4">Create your personal LuckyPickCanada moment with a unique interactive pick experience.</p>
+            <p className="mb-4">Ready for today’s pick? Discover a fresh set of lucky numbers and see what combination finds its way to you.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
             <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={openLuckyPickCheckout}>Choose a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
@@ -370,7 +370,7 @@ export default function HomePage() {
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">$2.99 Gift Experience</p>
             <h3 className="homepage-offer-title">Gift Experience</h3>
-            <p className="mb-4">Send someone special their own LuckyPickCanada experience — a fun digital gift filled with lucky moments.</p>
+            <p className="mb-4">Share a little Canadian magic with someone you know. The Gift Experience turns Lucky Pick Canada into a fun surprise made to brighten someone’s day.</p>
             <p className="homepage-offer-note">Gift package · CAD $2.99</p>
             <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={openGiftCheckout}>Gift a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
@@ -378,7 +378,7 @@ export default function HomePage() {
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">Keep the lights glowing</p>
             <h3 className="homepage-offer-title">Leave a tip for the journey.</h3>
-            <p className="mb-4">Support Lucky Pick Canada and help keep the community experience warm, playful, and welcoming.</p>
+            <p className="mb-4">Enjoying Lucky Pick Canada? If you’d like to show a little extra support, the Tip Jar is always here. Completely optional, always appreciated.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
             <div className="inline-block"><button type="button" className="animate-donate-pulse relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={openTipJar}>Open the tip jar<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button></div>
           </article>
@@ -389,7 +389,7 @@ export default function HomePage() {
         <div className="suggestion-box-copy">
           <p className="suggestion-box-kicker">Suggestion Box</p>
           <h2 id="suggestion-box-heading">Help make Lucky Pick Canada better</h2>
-          <p>Share an idea for a new feature, a smoother checkout, a better gift package, or anything that would make the site more fun to use.</p>
+          <p>Have an idea, a suggestion, or something you’d love to see on Lucky Pick Canada? Drop it in the Suggestion Box and help us make the experience even better.</p>
         </div>
         {suggested && <p className="suggestion-box-notice suggestion-box-notice-success" role="status">Thanks for the suggestion. I’ll review it soon.</p>}
         {suggestionError && <p className="suggestion-box-notice suggestion-box-notice-error" role="alert">{suggestionError}</p>}
@@ -424,7 +424,7 @@ export default function HomePage() {
           About Lucky Pick Canada
         </h2>
         <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
-          Welcome to <strong>Lucky Pick Canada</strong>, your interactive destination for daily lucky picks, custom digital card reveals, and random number generation. Whether you are checking your daily luck meter or exploring unique card draws, our site brings a fun and engaging digital experience directly to your screen.
+          Welcome to <strong>Lucky Pick Canada</strong>, a Canadian digital entertainment experience made to bring a little luck and a little magic to your day. Whether you are checking your daily luck meter, exploring community stories, or drawing unique cards, our site brings a fun and engaging digital experience directly to your screen.
         </p>
         <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
           Our digital card decks feature tiered card reveals—ranging from standard draws to premium cards like <em>Coast to Coast</em>—designed to make every pick exciting. Use our random pick tool for daily decisions, entertainment, or simply testing your fortune today.

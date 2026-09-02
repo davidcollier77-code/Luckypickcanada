@@ -8,11 +8,11 @@ export default function FAQSection() {
   const faqs = [
     {
       question: "How does the daily Lucky Pick card generator work?",
-      answer: "Our daily Lucky Pick generator allows you to reveal one collectible digital card every 24 hours. The system uses a specialized randomization algorithm to select your daily card from our digital deck, offering you a unique spark of encouragement. You can now build your own collection! Every card you reveal is automatically saved to your personal digital binder. The cards feature varying rarities to make each daily draw an exciting piece of digital entertainment—have fun and see if you can collect them all! (Please note: Lucky Pick Canada is purely for fun and has no affiliation with real-world lotteries or gambling)."
+      answer: "Our daily card generator lets you reveal one collectible digital card every 24 hours. The system selects your daily card from our digital deck to offer a unique spark of encouragement. You can build your collection over time, as every card you reveal is saved to your personal digital binder. The cards feature varying rarities to make each daily draw a fun piece of digital entertainment! (Please note: Lucky Pick Canada is strictly for entertainment and has no affiliation with real-world lotteries or gambling)."
     },
     {
       question: "What is the Lucky Meter (Daily Resonance Ritual) and how does it work?",
-      answer: "The Lucky Meter—also known as your Daily Resonance Ritual—is an interactive way to check your daily \"luck\" levels just for fun! When you awaken your resonance, the site generates a unique percentage from 0 to 100%, paired with an uplifting, Canadian-themed fortune or daily quote. You can check back every 24 hours for a new reading. Lucky Pick Canada is purely a digital entertainment experience designed for fun, with no affiliation with real-world gambling or lottery prizes."
+      answer: "The Lucky Meter, or Daily Resonance Ritual, is a playful way to check your daily resonance! When you awaken your resonance, the site generates a unique percentage from 0 to 100%, paired with an uplifting, Canadian-themed quote. You can check back every day for a new reading. Lucky Pick Canada is a digital entertainment experience made for fun, with no affiliation with real-world gambling or lottery prizes."
     },
     {
       question: "Is Lucky Pick Canada free to play?",
@@ -23,8 +23,8 @@ export default function FAQSection() {
       answer: "The Community Map and Community Stories are related but distinct features. Community Stories lets people submit, read, and share positive/lucky experiences. The Community Map lets visitors explore those community lucky moments visually across Canada."
     },
     {
-      question: "Are picks intended for gambling or entertainment?",
-      answer: "Lucky Pick Canada is designed strictly for entertainment and positive encouragement. We do not provide lottery services, gambling, or real-money payouts. The generated numbers and card reveals are simply fun digital experiences designed to bring a little everyday magic and optimism to your routine."
+      question: "Is Lucky Pick Canada intended for entertainment?",
+      answer: "Yes! Lucky Pick Canada is designed strictly for entertainment and positive encouragement. We do not provide lottery services, gambling, or real-money payouts. The card reveals and features are simply fun digital experiences designed to bring a little everyday magic and optimism to your routine."
     },
     {
       question: "How do gift experiences work?",
