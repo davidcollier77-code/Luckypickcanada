@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-// 1. GET: Fetch the current map data with edge caching (1 hour revalidation).
+// 1. GET: Fetch the current map data without CDN or browser caching.
 export async function GET() {
   const mapData = await getLuckyStoryMap();
   const status = mapData.isConfigured ? 200 : 500;
