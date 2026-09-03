@@ -200,46 +200,54 @@ export default function LuckyCardReveal() {
 
       const sequence = [];
       // The 8.5s Cinematic Sequence
-      // 0.0s - 4.0s: Early Atmosphere (Aurora fades in, card breathes slowly)
-      sequence.push(['.deep-vortex', { opacity: 0.4, scale: 1.05 }, { duration: 4.0, ease: 'easeOut' }]);
-      sequence.push([cardRef.current, { y: [0, -10, 0] }, { duration: 4.0, ease: 'easeInOut', at: '<' }]);
 
-      // 4.0s - 7.2s: Rising Buildup (Escalating vibration)
-      const buildDuration = 3.2;
-      const buildSteps = 20;
-      const stepTime = buildDuration / buildSteps;
-      const baseShake = card.tier === 'flagship' ? 3 : card.tier === 'premium' ? 2 : 1;
-      const rot = card.tier === 'flagship' ? 1.5 : card.tier === 'premium' ? 1 : 0.5;
+      // 0.0s - 4.0s: Anticipation - Deep Space Atmosphere
+      // Very slow, majestic scaling and rotation to establish a magical field
+      sequence.push(['.deep-vortex', { opacity: 0.5, scale: 1.1 }, { duration: 4.0, ease: 'easeOut' }]);
+      sequence.push([cardRef.current, { y: [0, -15, -5], scale: [1, 1.02, 1.02], rotateZ: [0, 0.5, -0.5] }, { duration: 4.0, ease: 'easeInOut', at: '<' }]);
 
-      for (let i = 1; i <= buildSteps; i++) {
-        const intensity = (i / buildSteps) ** 3; // Exponential tension
-        const xShake = (i % 2 === 0 ? 1 : -1) * baseShake * intensity * 2;
-        const yShake = (i % 2 === 0 ? -1 : 1) * baseShake * intensity * 2;
-        const rShake = (i % 2 === 0 ? 1 : -1) * rot * intensity;
+      // 4.0s - 7.2s: Energy Gathering (Smooth Levitation & Escalation)
+      // Removing the violent shake, replacing with an accelerating, elegant float
+      const gatherDuration = 3.2;
+      const baseIntensity = card.tier === 'flagship' ? 1.5 : card.tier === 'premium' ? 1.2 : 1.0;
 
-        sequence.push([cardRef.current, { x: xShake, y: yShake, rotateZ: rShake }, { duration: stepTime, ease: 'linear', at: i === 1 ? '4.0' : '<' }]);
-        // Aurora brightens with tension
-        sequence.push(['.deep-vortex', { opacity: 0.4 + 0.4 * intensity, scale: 1.05 + 0.1 * intensity }, { duration: stepTime, at: '<' }]);
-      }
+      // We'll use a continuous spring-like motion by defining keyframes
+      sequence.push([cardRef.current, {
+        y: [-5, -20, -5, -25, -10],
+        rotateZ: [-0.5, 1, -1, 1.5, -0.5],
+        scale: [1.02, 1.03, 1.04, 1.05, 1.06]
+      }, { duration: gatherDuration, ease: 'easeInOut', at: '4.0' }]);
 
-      // 7.2s - 8.0s: The Breath / Swell (Complete freeze)
-      sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, scale: 1 }, { duration: 0.05, at: '7.2' }]); // snap to center
-      sequence.push(['.deep-vortex', { opacity: 0.9, scale: 1.2, filter: 'brightness(1.5)' }, { duration: 0.8, at: '7.2' }]); // flare up
+      sequence.push(['.deep-vortex', { opacity: 0.8, scale: 1.3, filter: 'brightness(1.2)' }, { duration: gatherDuration, ease: 'easeIn', at: '4.0' }]);
 
-      // 8.0s: Reveal Climax (Impact & Flip)
-      sequence.push([cardRef.current, { scale: 1.1, z: 100 }, { duration: 0.3, ease: 'easeOut', at: '8.0' }]);
-      sequence.push([cardRef.current, { scale: 1, z: 0 }, { duration: 0.8, ease: 'easeOut', at: '8.3' }]);
-      sequence.push(['.deep-vortex', { opacity: 1, scale: 1.3, filter: 'brightness(1.2)' }, { duration: 0.3, at: '8.0' }]);
+      // 7.2s - 8.0s: The Breath (Tension Before Release)
+      // Card pulls back slightly and freezes, gathering the final energy
+      sequence.push([cardRef.current, { y: 0, rotateZ: 0, scale: 0.95 }, { duration: 0.7, ease: [0.4, 0, 0.2, 1], at: '7.2' }]);
+      sequence.push(['.deep-vortex', { opacity: 1, scale: 1.0, filter: 'brightness(1.5)' }, { duration: 0.7, ease: 'easeIn', at: '7.2' }]);
 
-      // Particles drift inward during tension
+      // 8.0s: Reveal Climax (Impact & Forward Surge)
+      // Elegant, powerful thrust forward
+      sequence.push([cardRef.current, { scale: 1.15, z: 150 }, { duration: 0.4, ease: [0.2, 0.8, 0.2, 1], at: '8.0' }]);
+      sequence.push([cardRef.current, { scale: 1, z: 0 }, { duration: 0.8, ease: 'easeOut', at: '8.4' }]);
+      sequence.push(['.deep-vortex', { opacity: 0.6, scale: 1.5, filter: 'brightness(1.0)' }, { duration: 1.0, ease: 'easeOut', at: '8.0' }]);
+
+      // Particle Choreography
       if (particleParamsRef.current) {
-        sequence.push(['.particle', { opacity: [0, 0.5, 1], x: particleParamsRef.current.map(p => [p.endX * 1.5, p.startX]), y: particleParamsRef.current.map(p => [p.endY * 1.5, p.startY]) }, { duration: 4.0, ease: 'easeIn', at: '3.2' }]);
-        // Burst outwards at climax
-        sequence.push(['.particle', { opacity: [1, 1, 0], x: particleParamsRef.current.map(p => p.endX), y: particleParamsRef.current.map(p => p.endY) }, { duration: 1.5, ease: 'easeOut', at: '8.0' }]);
+        // Particles drift lazily during anticipation
+        sequence.push(['.particle', { opacity: [0, 0.3], x: particleParamsRef.current.map(p => p.startX * 0.5), y: particleParamsRef.current.map(p => p.startY * 0.5) }, { duration: 4.0, ease: 'easeOut', at: '0.0' }]);
+
+        // Particles orbit outward during gathering
+        sequence.push(['.particle', { opacity: 0.6, x: particleParamsRef.current.map(p => p.endX * 0.8), y: particleParamsRef.current.map(p => p.endY * 0.8) }, { duration: gatherDuration, ease: 'easeInOut', at: '4.0' }]);
+
+        // Particles suck into the center during the breath
+        sequence.push(['.particle', { opacity: 1, x: 0, y: 0, scale: 0.5 }, { duration: 0.7, ease: [0.4, 0, 1, 1], at: '7.2' }]);
+
+        // Particles burst elegantly at climax
+        sequence.push(['.particle', { opacity: [1, 0.8, 0], scale: [1, 1.5, 0], x: particleParamsRef.current.map(p => p.endX * 1.5), y: particleParamsRef.current.map(p => p.endY * 1.5) }, { duration: 2.0, ease: [0.2, 0.8, 0.2, 1], at: '8.0' }]);
       }
 
-      // Bright flash at climax
-      sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.5, 2.5, 3.0] }, { duration: 1.5, ease: 'easeOut', at: '8.0' }]);
+      // Restrained, cinematic light bloom
+      sequence.push(['.reveal-flash', { opacity: [0, 0.8, 0], scale: [0.2, 1.5, 2.0] }, { duration: 1.5, ease: [0.2, 0.8, 0.2, 1], at: '8.0' }]);
 
       animationControlsRef.current = animate(sequence);
     }, 0));
@@ -250,80 +258,38 @@ export default function LuckyCardReveal() {
       // 0.0s: Tactile Button Press Confirmation
       playTick({ volume: 0.5 });
 
-      // We use Web Audio API for smooth, sophisticated cinematic tension without arcade/game artifacts.
-      if (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
-        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
-          audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        const ctx = audioCtxRef.current;
-
-        // Mobile requires resume() triggered during user interaction
-        if (ctx.state === 'suspended') {
-          ctx.resume();
-        }
-
-        const now = ctx.currentTime;
-
-        // Layer B: Early Atmosphere Drone (0.5s - 4.0s)
-        const droneOsc = ctx.createOscillator();
-        const droneGain = ctx.createGain();
-        droneOsc.type = 'sine';
-        droneOsc.frequency.setValueAtTime(55, now); // Low A (musical and unobtrusive)
-
-        droneGain.gain.setValueAtTime(0, now);
-        droneGain.gain.setTargetAtTime(0.2, now + 0.5, 1.0); // Gentle fade-in
-        droneGain.gain.setTargetAtTime(0, now + 7.2, 0.2); // Fade out during the breath
-
-        droneOsc.connect(droneGain);
-        droneGain.connect(ctx.destination);
-        droneOsc.start(now);
-        droneOsc.stop(now + 8.0);
-        activeSourcesRef.current.push(droneOsc);
-
-        // Layer C: Rising Buildup (4.0s - 7.2s)
-        const riserOsc = ctx.createOscillator();
-        const riserGain = ctx.createGain();
-        const riserFilter = ctx.createBiquadFilter();
-
-        riserOsc.type = 'triangle';
-        riserOsc.frequency.setValueAtTime(110, now + 4.0);
-        riserOsc.frequency.exponentialRampToValueAtTime(440, now + 7.2); // Smooth pitch bend
-
-        riserFilter.type = 'lowpass';
-        riserFilter.frequency.setValueAtTime(200, now + 4.0);
-        riserFilter.frequency.linearRampToValueAtTime(1500, now + 7.2); // Filter opens up gradually
-
-        riserGain.gain.setValueAtTime(0, now + 4.0);
-        riserGain.gain.linearRampToValueAtTime(0.3, now + 7.2); // Volume swells
-        riserGain.gain.setTargetAtTime(0, now + 7.2, 0.05); // Sharp cut for the breath
-
-        riserOsc.connect(riserFilter);
-        riserFilter.connect(riserGain);
-        riserGain.connect(ctx.destination);
-
-        riserOsc.start(now + 4.0);
-        riserOsc.stop(now + 8.0);
-        activeSourcesRef.current.push(riserOsc);
-
-        // Layer E: Climax Impact (8.0s - 8.5s)
-        // A sophisticated cinematic sub-hit, avoiding cheap game sounds.
-        const impactOsc = ctx.createOscillator();
-        const impactGain = ctx.createGain();
-
-        impactOsc.type = 'sine';
-        impactOsc.frequency.setValueAtTime(150, now + 8.0);
-        impactOsc.frequency.exponentialRampToValueAtTime(30, now + 8.3); // Deep sub drop
-
-        impactGain.gain.setValueAtTime(0, now + 8.0);
-        impactGain.gain.linearRampToValueAtTime(1.0, now + 8.02); // Fast attack
-        impactGain.gain.exponentialRampToValueAtTime(0.01, now + 8.5); // Cinematic decay
+      // Layer B: Early Atmosphere Drone (0.0s - 8.5s)
+      if (audioAssets && audioAssets.drone) {
+        audioAssets.drone.volume(0);
+        audioAssets.drone.play();
+        audioAssets.drone.fade(0, 0.4, 2000); // Fade in over 2s
         
-        impactOsc.connect(impactGain);
-        impactGain.connect(ctx.destination);
+        // Fade out during breath/climax
+        activeTimeoutsRef.current.push(window.setTimeout(() => {
+          audioAssets.drone.fade(0.4, 0, 1000);
+        }, 7200));
+      }
 
-        impactOsc.start(now + 8.0);
-        impactOsc.stop(now + 9.0);
-        activeSourcesRef.current.push(impactOsc);
+      // Layer C: Rising Buildup (4.0s - 7.5s)
+      if (audioAssets && audioAssets.buildup) {
+        activeTimeoutsRef.current.push(window.setTimeout(() => {
+          audioAssets.buildup.volume(0);
+          audioAssets.buildup.play();
+          audioAssets.buildup.fade(0, 0.8, 1000);
+
+          // Cut slightly before impact
+          activeTimeoutsRef.current.push(window.setTimeout(() => {
+             audioAssets.buildup.fade(0.8, 0, 300);
+          }, 3200)); // 4000 + 3200 = 7200
+        }, 4000));
+      }
+
+      // Layer E: Climax Impact (8.0s)
+      if (audioAssets && audioAssets.impact) {
+        activeTimeoutsRef.current.push(window.setTimeout(() => {
+          audioAssets.impact.volume(0.9);
+          audioAssets.impact.play();
+        }, 8000));
       }
 
       // Layer G: Resolution Shimmer (8.2s - 8.5s+)
@@ -376,9 +342,9 @@ export default function LuckyCardReveal() {
         {isGenerating && selectedCard && (
           <div
             className={`deep-vortex absolute inset-[-50%] z-[-1] rounded-full blur-[60px] ${
-              selectedCard.tier === 'standard' ? 'bg-indigo-900/40' :
-              selectedCard.tier === 'premium' ? 'bg-blue-900/40' :
-              'bg-purple-900/40'
+              selectedCard.tier === 'standard' ? 'bg-[radial-gradient(circle,rgba(49,46,129,0.8)_0%,transparent_70%)]' :
+              selectedCard.tier === 'premium' ? 'bg-[radial-gradient(circle,rgba(30,58,138,0.8)_0%,transparent_70%)]' :
+              'bg-[radial-gradient(circle,rgba(88,28,135,0.8)_0%,transparent_70%)]'
             }`}
             style={{ opacity: 0, scale: 0.8 }}
           />
@@ -415,9 +381,9 @@ export default function LuckyCardReveal() {
         {isGenerating && selectedCard && (
           <div
             className={`reveal-flash absolute inset-[-100%] z-10 pointer-events-none mix-blend-screen rounded-full opacity-0 radial-light-burst ${
-              selectedCard.tier === 'standard' ? 'bg-[radial-gradient(circle,rgba(255,255,255,0.8)_0%,transparent_60%)]' :
-              selectedCard.tier === 'premium' ? 'bg-[radial-gradient(circle,rgba(180,220,255,0.9)_0%,transparent_60%)]' :
-              'bg-[radial-gradient(circle,rgba(255,230,150,1)_0%,transparent_60%)]'
+              selectedCard.tier === 'standard' ? 'bg-[radial-gradient(circle,rgba(255,255,255,0.4)_0%,transparent_70%)]' :
+              selectedCard.tier === 'premium' ? 'bg-[radial-gradient(circle,rgba(180,220,255,0.5)_0%,transparent_70%)]' :
+              'bg-[radial-gradient(circle,rgba(255,230,150,0.6)_0%,transparent_70%)]'
             }`}
             style={{ opacity: 0, scale: 0.9 }}
           />
