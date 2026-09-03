@@ -4,12 +4,21 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion, AnimationPlaybackControls } from 'framer-motion';
 import { useSound } from 'react-sounds';
+import { Howl, Howler } from 'howler';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
 
+let audioAssets = null;
+if (typeof window !== 'undefined') {
+  audioAssets = {
+    drone: new Howl({ src: ['/yodguard-lightning-magic-3-378649.mp3'], volume: 0, loop: true }),
+    buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0 }),
+    impact: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 0 })
+  };
+}
 const REVEAL_TIMINGS = {
   standard: { anticipation: 8000, announcement: 0 },
   premium: { anticipation: 8000, announcement: 900 },
@@ -55,6 +64,12 @@ export default function LuckyCardReveal() {
     stopTick();
     stopShimmerStandard();
     stopShimmerPremium();
+    if (audioAssets) {
+      Object.values(audioAssets).forEach(howl => {
+        howl.stop();
+        howl.volume(0);
+      });
+    }
     if (activeSourcesRef.current) {
       activeSourcesRef.current.forEach(source => {
         try {
@@ -175,6 +190,8 @@ export default function LuckyCardReveal() {
 
     const shakeSteps = 10;
     const buildupTime = timing.anticipation / 1000 - 0.5; // Reserve 0.5s for climax
+    const stepTime = buildupTime / shakeSteps;
+
     // We wait 1 tick for React to render the conditional elements
     activeTimeoutsRef.current.push(window.setTimeout(() => {
       if (shouldReduceMotion) return;
@@ -190,7 +207,7 @@ export default function LuckyCardReveal() {
       // 4.0s - 7.2s: Rising Buildup (Escalating vibration)
       const buildDuration = 3.2;
       const buildSteps = 20;
-      const animStepTime = buildDuration / buildSteps;
+      const stepTime = buildDuration / buildSteps;
       const baseShake = card.tier === 'flagship' ? 3 : card.tier === 'premium' ? 2 : 1;
       const rot = card.tier === 'flagship' ? 1.5 : card.tier === 'premium' ? 1 : 0.5;
 
@@ -200,9 +217,9 @@ export default function LuckyCardReveal() {
         const yShake = (i % 2 === 0 ? -1 : 1) * baseShake * intensity * 2;
         const rShake = (i % 2 === 0 ? 1 : -1) * rot * intensity;
 
-        sequence.push([cardRef.current, { x: xShake, y: yShake, rotateZ: rShake }, { duration: animStepTime, ease: 'linear', at: i === 1 ? '4.0' : '<' }]);
+        sequence.push([cardRef.current, { x: xShake, y: yShake, rotateZ: rShake }, { duration: stepTime, ease: 'linear', at: i === 1 ? '4.0' : '<' }]);
         // Aurora brightens with tension
-        sequence.push(['.deep-vortex', { opacity: 0.4 + 0.4 * intensity, scale: 1.05 + 0.1 * intensity }, { duration: animStepTime, at: '<' }]);
+        sequence.push(['.deep-vortex', { opacity: 0.4 + 0.4 * intensity, scale: 1.05 + 0.1 * intensity }, { duration: stepTime, at: '<' }]);
       }
 
       // 7.2s - 8.0s: The Breath / Swell (Complete freeze)
