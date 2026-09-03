@@ -32,7 +32,13 @@ Do not make cosmetic patches to hide a structural problem.
 
 3. MCP / Connected Tool Usage
 
-Use the appropriate connected tool whenever it can establish a fact more reliably than inference.
+MCP and connected-tool usage is mandatory for repository work.
+
+- Always use the available MCPs and connected tools during every task when they provide a relevant capability. Do not skip MCP/tool usage merely because the change appears simple.
+- Use the appropriate MCP or connected tool to establish facts, inspect current repository state, retrieve authoritative information, or verify behavior rather than relying on memory, assumptions, or inference.
+- When multiple relevant MCPs are available, use all relevant MCPs needed to properly investigate, implement, and verify the task.
+- Do not assume that a task is too simple to require MCP/tool usage.
+- Do not claim to have used an MCP, tool, documentation source, test, or verification step unless it was actually used or run.
 
 GitHub
 
@@ -48,7 +54,9 @@ Use GitHub for current repository truth:
 
 Context7
 
-Use Context7 when current, version-specific, or authoritative technical documentation matters, especially for:
+Use Context7 whenever technical documentation, library behavior, framework behavior, API usage, or version-specific information is relevant.
+
+This includes, but is not limited to:
 
 - Next.js
 - React
@@ -62,11 +70,11 @@ Use Context7 when current, version-specific, or authoritative technical document
 - OpenNext
 - third-party libraries and SDKs
 
-Use the repository’s installed versions as the compatibility baseline. Do not rely on remembered or outdated APIs when authoritative documentation is available.
+Use the repository’s installed versions as the compatibility baseline. Use Context7 to verify the correct documentation and APIs for those versions rather than relying on remembered or potentially outdated information.
 
 Neon
 
-Use Neon when the task materially involves PostgreSQL or Neon:
+Use Neon whenever the task involves PostgreSQL or Neon-related functionality, including:
 
 - schema
 - tables
@@ -80,13 +88,16 @@ Use Neon when the task materially involves PostgreSQL or Neon:
 - connection behavior
 - Neon-specific features
 
-Use actual database state when it is relevant. Do not use Neon for unrelated frontend or documentation work.
+Use actual database state when it is relevant.
 
 General Tool Rule
 
-- Prefer evidence from connected tools over assumptions.
-- Use multiple sources when the task crosses repositories, libraries, or database boundaries.
-- Do not invoke tools merely to appear thorough; use them when they improve factual accuracy or reduce uncertainty.
+- MCPs and connected tools are part of the normal development workflow, not an optional last resort.
+- Prefer authoritative evidence from MCPs and connected tools over assumptions or memory.
+- Use multiple relevant MCPs when the task crosses repositories, libraries, APIs, databases, or other system boundaries.
+- If a relevant MCP is available, use it before making technical assumptions that the MCP can verify.
+- If a relevant MCP cannot be used, clearly state that limitation rather than pretending it was used.
+- After implementation, use the appropriate MCPs and connected tools again when they can help verify the resulting work.
 
 4. Implementation Discipline
 
