@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { motion, useAnimate, useReducedMotion } from 'framer-motion';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
@@ -31,6 +32,9 @@ export default function LuckyCardReveal() {
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isFlashing, setIsFlashing] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+  const [scope, animate] = useAnimate();
   const revealTimer = useRef(null);
   const announcementTimer = useRef(null);
   const audioRef = useRef(null);
@@ -79,6 +83,8 @@ export default function LuckyCardReveal() {
 
   function showLuckyCard(card) {
     setIsGenerating(false);
+    setIsFlashing(true);
+    setTimeout(() => setIsFlashing(false), 700);
     setIsRevealed(true);
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -116,6 +122,20 @@ export default function LuckyCardReveal() {
     setIsRevealed(false);
     setIsGenerating(true);
     setImageError(false);
+    setIsFlashing(false);
+
+    // Animate the buildup
+    const buildupDuration = (timing.anticipation / 1000);
+
+    if (!shouldReduceMotion) {
+      if (card.tier === 'standard') {
+        animate(scope.current, { x: [-1, 1, -1, 1, 0], y: [-1, 1, -1, 1, 0] }, { duration: buildupDuration, ease: 'linear' });
+      } else if (card.tier === 'premium') {
+        animate(scope.current, { x: [-2, 2, -2, 2, 0], y: [-1, 2, -2, 1, 0] }, { duration: buildupDuration, ease: 'linear' });
+      } else if (card.tier === 'flagship') {
+        animate(scope.current, { x: [-3, 3, -3, 3, 0], y: [-2, 3, -3, 2, 0], scale: [1, 1.02, 1.04, 1.02, 1] }, { duration: buildupDuration, ease: 'linear' });
+      }
+    }
 
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
@@ -159,9 +179,58 @@ export default function LuckyCardReveal() {
         )}
       </div>
 
+
       {/* 2. 3D Card Stage */}
-      <div className="w-full flex justify-center py-2 flex-shrink-0">
-        <div
+      <div className="w-full flex justify-center py-2 flex-shrink-0 relative">
+        {/* Ambient/Aura Effects */}
+        {isGenerating && selectedCard && !shouldReduceMotion && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1.1 }}
+            transition={{ duration: REVEAL_TIMINGS[selectedCard.tier].anticipation / 1000 }}
+            className={`absolute inset-0 z-[-1] blur-2xl rounded-2xl ${
+              selectedCard.tier === 'standard' ? 'bg-amber-400/30' :
+              selectedCard.tier === 'premium' ? 'bg-blue-400/40 animate-plasma-glow' :
+              'bg-gradient-to-r from-amber-400/50 via-yellow-300/60 to-amber-500/50 animate-pulse-glow'
+            }`}
+          />
+        )}
+
+        {/* Particles */}
+        {isGenerating && selectedCard && !shouldReduceMotion && (
+          <div className="absolute inset-0 z-[-1] pointer-events-none overflow-visible">
+            {[...Array(selectedCard.tier === 'flagship' ? 12 : selectedCard.tier === 'premium' ? 8 : 4)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20, x: (Math.random() - 0.5) * 100 }}
+                animate={{ opacity: [0, 1, 0], y: -50 - Math.random() * 50, x: (Math.random() - 0.5) * 150 }}
+                transition={{ duration: 1 + Math.random(), repeat: Infinity, delay: Math.random() }}
+                className={`absolute bottom-0 left-1/2 w-2 h-2 rounded-full ${
+                  selectedCard.tier === 'standard' ? 'bg-amber-200' :
+                  selectedCard.tier === 'premium' ? 'bg-blue-200' :
+                  'bg-yellow-100 shadow-[0_0_10px_2px_rgba(253,200,48,0.8)]'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Reveal Flash */}
+        {isFlashing && !shouldReduceMotion && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: [0, 1, 0], scale: [0.9, 1.1, 1.2] }}
+            transition={{ duration: 0.7 }}
+            className={`absolute inset-0 z-10 pointer-events-none rounded-2xl mix-blend-screen ${
+              selectedCard?.tier === 'standard' ? 'bg-white' :
+              selectedCard?.tier === 'premium' ? 'bg-blue-200' :
+              'bg-yellow-200'
+            }`}
+          />
+        )}
+
+        <motion.div
+          ref={scope}
           role="button"
           tabIndex={0}
           aria-pressed={isRevealed}
@@ -175,10 +244,7 @@ export default function LuckyCardReveal() {
           className="relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
           style={{ perspective: '1200px' }}
         >
-          <div className={`shake-target relative w-full h-full ${isGenerating && selectedCard ? `shake-${selectedCard.tier}` : ''}`}>
-            {isGenerating && (
-              <div className="absolute -inset-4 z-[-1] blur-2xl bg-amber-400/50 animate-flicker rounded-2xl" />
-            )}
+          <div className="relative w-full h-full">
             <div
               className="w-full h-full relative"
               style={{
@@ -227,7 +293,7 @@ export default function LuckyCardReveal() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* 3. Quote & Share Actions (Strictly Stacked Below) */}
