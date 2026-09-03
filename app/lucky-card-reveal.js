@@ -41,6 +41,7 @@ export default function LuckyCardReveal() {
   const audioTimeoutRef = useRef(null);
   const animationControlsRef = useRef(null);
   const particleParamsRef = useRef(null);
+  const cardRef = useRef(null);
 
 
   useEffect(() => {
@@ -138,9 +139,9 @@ export default function LuckyCardReveal() {
     // Generate stable particle parameters for this reveal
     const particleCount = card.tier === 'flagship' ? 30 : card.tier === 'premium' ? 20 : 12;
     particleParamsRef.current = Array.from({ length: particleCount }, (_, i) => ({
-      randomX: (Math.random() - 0.5) * 200,
-      randomY: -100 - (Math.random() * 150),
-      randomDuration: 0.5 + Math.random() * 0.5,
+      randomX: (i * 0.3 - 0.5) * 200,
+      randomY: -100 - (i * 15),
+      randomDuration: 0.5 + (i * 0.05) % 0.5,
     }));
 
     // We wait 1 tick for React to render the conditional elements
@@ -162,32 +163,37 @@ export default function LuckyCardReveal() {
 
       for (let i = 1; i <= shakeSteps; i++) {
         const intensity = (i / shakeSteps) ** 2; // exponential buildup
-        const xShake = (i % 2 === 0 ? 1 : -1) * baseShake * intensity * (2 + Math.random());
-        const yShake = (i % 2 === 0 ? -1 : 1) * baseShake * intensity * (2 + Math.random());
+        const xShake = (i % 2 === 0 ? 1 : -1) * baseShake * intensity * 2.5;
+        const yShake = (i % 2 === 0 ? -1 : 1) * baseShake * intensity * 2.5;
         const rShake = (i % 2 === 0 ? 1 : -1) * rot * intensity;
 
-        sequence.push(['.card-container', { x: xShake, y: yShake, rotateZ: rShake }, { duration: stepTime, ease: 'easeInOut', at: '<' }]);
+        sequence.push([cardRef.current, { x: xShake, y: yShake, rotateZ: rShake }, { duration: stepTime, ease: 'easeInOut', at: '<' }]);
 
         // Gradually brighten aurora
         sequence.push(['.aurora-glow', { opacity: 0.3 + 0.3 * intensity, scale: 1 + 0.1 * intensity }, { duration: stepTime, at: '<' }]);
       }
 
       // 3. Reveal climax: major flare and strong final shake
-      sequence.push(['.card-container', { x: -baseShake * 4, y: baseShake * 2, rotateZ: -rot * 2, scale: 1.05 }, { duration: 0.1 }]);
-      sequence.push(['.card-container', { x: baseShake * 4, y: -baseShake * 2, rotateZ: rot * 2 }, { duration: 0.1 }]);
-      sequence.push(['.card-container', { x: 0, y: 0, rotateZ: 0, scale: 1 }, { duration: 0.1 }]);
+      sequence.push([cardRef.current, { x: -baseShake * 4, y: baseShake * 2, rotateZ: -rot * 2, scale: 1.05 }, { duration: 0.1 }]);
+      sequence.push([cardRef.current, { x: baseShake * 4, y: -baseShake * 2, rotateZ: rot * 2 }, { duration: 0.1 }]);
+      sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, scale: 1 }, { duration: 0.1 }]);
 
       // Aurora flare
       sequence.push(['.aurora-glow', { opacity: 1, scale: 1.3, filter: 'brightness(1.5)' }, { duration: 0.3, at: '-0.3' }]);
 
       // Particles burst
-      sequence.push(['.particle', { opacity: [0, 1, 0], y: particleParamsRef.current.map(p => p.randomY), x: particleParamsRef.current.map(p => p.randomX) }, { duration: 0.5, at: '-0.3' }]);
+      sequence.push(['.particle', { opacity: [0, 1, 0], y: (particleParamsRef.current || []).map(p => p.randomY), x: (particleParamsRef.current || []).map(p => p.randomX) }, { duration: 0.5, at: '-0.3' }]);
 
       // Bright flash
       sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.9, 1.2, 1.3] }, { duration: 0.5, at: '-0.3' }]);
 
       animationControlsRef.current = animate(sequence);
     }, 0);
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(err => console.warn('Audio playback error:', err));
+    }
 
     revealTimer.current = window.setTimeout(() => {
       showLuckyCard(card);
@@ -291,6 +297,7 @@ export default function LuckyCardReveal() {
               if (isRevealed) setIsRevealed((s) => !s);
             }
           }}
+          ref={cardRef}
           className="card-container relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
           style={{ perspective: '1200px' }}
         >
