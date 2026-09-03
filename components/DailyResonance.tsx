@@ -92,7 +92,6 @@ export default function DailyResonance() {
   const bgRequestRef = useRef<number>(0);
   const activeAudioNodesRef = useRef<any[]>([]);
 
-  const lastAudioTimeRef = useRef<number>(0);
   const initAudio = () => {
     let ctx = audioCtxRef.current;
     if (!ctx) {
