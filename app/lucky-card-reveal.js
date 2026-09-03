@@ -10,9 +10,9 @@ import MidnightCountdown from '../components/midnight-countdown';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
 const REVEAL_TIMINGS = {
-  standard: { anticipation: 1500, announcement: 0 },
-  premium: { anticipation: 2600, announcement: 900 },
-  flagship: { anticipation: 3600, announcement: 1200 },
+  standard: { anticipation: 8000, announcement: 0 },
+  premium: { anticipation: 8000, announcement: 900 },
+  flagship: { anticipation: 8000, announcement: 1200 },
 };
 
 function localDateKey(date = new Date()) {
@@ -41,22 +41,29 @@ export default function LuckyCardReveal() {
   const activeTimeoutsRef = useRef([]);
   const animationControlsRef = useRef(null);
   const particleParamsRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const activeSourcesRef = useRef([]);
   const cardRef = useRef(null);
 
   const { play: playTick, stop: stopTick } = useSound('ui/button_soft');
-  const { play: playWhoosh, stop: stopWhoosh } = useSound('game/hit'); // good for initial reveal
-  const { play: playImpact, stop: stopImpact } = useSound('game/portal_opening'); // good for flip
   const { play: playShimmerStandard, stop: stopShimmerStandard } = useSound('notification/success');
   const { play: playShimmerPremium, stop: stopShimmerPremium } = useSound('notification/completed');
-  const { play: playShimmerFlagship, stop: stopShimmerFlagship } = useSound('arcade/upgrade');
+  // Removed unverified sounds.
 
   const stopAllAudio = () => {
     stopTick();
-    stopWhoosh();
-    stopImpact();
     stopShimmerStandard();
     stopShimmerPremium();
-    stopShimmerFlagship();
+    if (activeSourcesRef.current) {
+      activeSourcesRef.current.forEach(source => {
+        try { source.stop(); } catch (e) {}
+      });
+      activeSourcesRef.current = [];
+    }
+    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+      audioCtxRef.current.close().catch(() => {});
+      audioCtxRef.current = null;
+    }
   };
 
 
@@ -164,76 +171,138 @@ export default function LuckyCardReveal() {
     setTimeout(() => {
       if (shouldReduceMotion) return;
 
-      const baseShake = card.tier === 'flagship' ? 4 : card.tier === 'premium' ? 2 : 1;
-      const rot = card.tier === 'flagship' ? 2 : card.tier === 'premium' ? 1 : 0.5;
+
 
       const sequence = [];
+      // The 8.5s Cinematic Sequence
+      // 0.0s - 4.0s: Early Atmosphere (Aurora fades in, card breathes slowly)
+      sequence.push(['.aurora-glow', { opacity: 0.4, scale: 1.05 }, { duration: 4.0, ease: 'easeOut' }]);
+      sequence.push([cardRef.current, { y: [0, -10, 0] }, { duration: 4.0, ease: 'easeInOut', at: '<' }]);
 
-      // 1. Beginning: Subtle glow begins
-      sequence.push(['.aurora-glow', { opacity: 0.3, scale: 1 }, { duration: 0.4 }]);
+      // 4.0s - 7.2s: Rising Buildup (Escalating vibration)
+      const buildDuration = 3.2;
+      const buildSteps = 20;
+      const stepTime = buildDuration / buildSteps;
+      const baseShake = card.tier === 'flagship' ? 3 : card.tier === 'premium' ? 2 : 1;
+      const rot = card.tier === 'flagship' ? 1.5 : card.tier === 'premium' ? 1 : 0.5;
 
-      // 2. Energy buildup & escalating shake
-
-      for (let i = 1; i <= shakeSteps; i++) {
-        const intensity = (i / shakeSteps) ** 2; // exponential buildup
-        const xShake = (i % 2 === 0 ? 1 : -1) * baseShake * intensity * 2.5;
-        const yShake = (i % 2 === 0 ? -1 : 1) * baseShake * intensity * 2.5;
+      for (let i = 1; i <= buildSteps; i++) {
+        const intensity = (i / buildSteps) ** 3; // Exponential tension
+        const xShake = (i % 2 === 0 ? 1 : -1) * baseShake * intensity * 2;
+        const yShake = (i % 2 === 0 ? -1 : 1) * baseShake * intensity * 2;
         const rShake = (i % 2 === 0 ? 1 : -1) * rot * intensity;
 
-        sequence.push([cardRef.current, { x: xShake, y: yShake, rotateZ: rShake }, { duration: stepTime, ease: 'easeInOut', at: '<' }]);
-
-        // Gradually brighten aurora
-        sequence.push(['.aurora-glow', { opacity: 0.3 + 0.3 * intensity, scale: 1 + 0.1 * intensity }, { duration: stepTime, at: '<' }]);
+        sequence.push([cardRef.current, { x: xShake, y: yShake, rotateZ: rShake }, { duration: stepTime, ease: 'linear', at: i === 1 ? '4.0' : '<' }]);
+        // Aurora brightens with tension
+        sequence.push(['.aurora-glow', { opacity: 0.4 + 0.4 * intensity, scale: 1.05 + 0.1 * intensity }, { duration: stepTime, at: '<' }]);
       }
 
-      // 3. Reveal climax: major flare and strong final shake
-      sequence.push([cardRef.current, { x: -baseShake * 4, y: baseShake * 2, rotateZ: -rot * 2, scale: 1.05 }, { duration: 0.1 }]);
-      sequence.push([cardRef.current, { x: baseShake * 4, y: -baseShake * 2, rotateZ: rot * 2 }, { duration: 0.1 }]);
-      sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, scale: 1 }, { duration: 0.1 }]);
+      // 7.2s - 8.0s: The Breath / Swell (Complete freeze)
+      sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, scale: 1 }, { duration: 0.05, at: '7.2' }]); // snap to center
+      sequence.push(['.aurora-glow', { opacity: 0.9, scale: 1.2, filter: 'brightness(1.5)' }, { duration: 0.8, at: '7.2' }]); // flare up
 
-      // Aurora flare
-      sequence.push(['.aurora-glow', { opacity: 1, scale: 1.3, filter: 'brightness(1.5)' }, { duration: 0.3, at: '-0.3' }]);
+      // 8.0s: Reveal Climax (Impact & Flip)
+      sequence.push([cardRef.current, { scale: 1.05 }, { duration: 0.1, at: '8.0' }]);
+      sequence.push([cardRef.current, { scale: 1 }, { duration: 0.2, at: '8.1' }]);
+      sequence.push(['.aurora-glow', { opacity: 1, scale: 1.3, filter: 'brightness(1.2)' }, { duration: 0.3, at: '8.0' }]);
 
-      // Particles burst
+      // Particles burst at climax
       if (particleParamsRef.current) {
-        sequence.push(['.particle', { opacity: [0, 1, 0], y: particleParamsRef.current.map(p => p.randomY), x: particleParamsRef.current.map(p => p.randomX) }, { duration: 0.5, at: '-0.3' }]);
+        sequence.push(['.particle', { opacity: [0, 1, 0], y: particleParamsRef.current.map(p => p.randomY), x: particleParamsRef.current.map(p => p.randomX) }, { duration: 0.5, at: '8.0' }]);
       }
 
-      // Bright flash
-      sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.9, 1.2, 1.3] }, { duration: 0.5, at: '-0.3' }]);
+      // Bright flash at climax
+      sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.9, 1.2, 1.3] }, { duration: 0.5, at: '8.0' }]);
 
       animationControlsRef.current = animate(sequence);
     }, 0);
 
 
-      // --- AUDIO SEQUENCE ---
-      // 1. Tension building (Tick sounds mapped to shake steps)
-      for (let i = 1; i <= shakeSteps; i++) {
-        activeTimeoutsRef.current.push(window.setTimeout(() => {
-          playTick({ volume: 0.2 + (0.5 * (i / shakeSteps)), rate: 0.8 + (i * 0.05) });
-        }, stepTime * i * 1000));
+      // --- AUDIO SEQUENCE (8.5s total) ---
+
+      // 0.0s: Tactile Button Press Confirmation
+      playTick({ volume: 0.5 });
+
+      // We use Web Audio API for smooth, sophisticated cinematic tension without arcade/game artifacts.
+      if (typeof window !== 'undefined' && window.AudioContext) {
+        if (!audioCtxRef.current) {
+          audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const ctx = audioCtxRef.current;
+        if (ctx.state === 'suspended') ctx.resume();
+        const now = ctx.currentTime;
+
+        // Layer B: Early Atmosphere Drone (0.5s - 4.0s)
+        const droneOsc = ctx.createOscillator();
+        const droneGain = ctx.createGain();
+        droneOsc.type = 'sine';
+        droneOsc.frequency.setValueAtTime(55, now); // Low A (musical and unobtrusive)
+
+        droneGain.gain.setValueAtTime(0, now);
+        droneGain.gain.setTargetAtTime(0.2, now + 0.5, 1.0); // Gentle fade-in
+        droneGain.gain.setTargetAtTime(0, now + 7.2, 0.2); // Fade out during the breath
+
+        droneOsc.connect(droneGain);
+        droneGain.connect(ctx.destination);
+        droneOsc.start(now);
+        droneOsc.stop(now + 8.0);
+        activeSourcesRef.current.push(droneOsc);
+
+        // Layer C: Rising Buildup (4.0s - 7.2s)
+        const riserOsc = ctx.createOscillator();
+        const riserGain = ctx.createGain();
+        const riserFilter = ctx.createBiquadFilter();
+
+        riserOsc.type = 'triangle';
+        riserOsc.frequency.setValueAtTime(110, now + 4.0);
+        riserOsc.frequency.exponentialRampToValueAtTime(440, now + 7.2); // Smooth pitch bend
+
+        riserFilter.type = 'lowpass';
+        riserFilter.frequency.setValueAtTime(200, now + 4.0);
+        riserFilter.frequency.linearRampToValueAtTime(1500, now + 7.2); // Filter opens up gradually
+
+        riserGain.gain.setValueAtTime(0, now + 4.0);
+        riserGain.gain.linearRampToValueAtTime(0.3, now + 7.2); // Volume swells
+        riserGain.gain.setTargetAtTime(0, now + 7.2, 0.05); // Sharp cut for the breath
+
+        riserOsc.connect(riserFilter);
+        riserFilter.connect(riserGain);
+        riserGain.connect(ctx.destination);
+
+        riserOsc.start(now + 4.0);
+        riserOsc.stop(now + 8.0);
+        activeSourcesRef.current.push(riserOsc);
+
+        // Layer E: Climax Impact (8.0s - 8.5s)
+        // A sophisticated cinematic sub-hit, avoiding cheap game sounds.
+        const impactOsc = ctx.createOscillator();
+        const impactGain = ctx.createGain();
+
+        impactOsc.type = 'sine';
+        impactOsc.frequency.setValueAtTime(150, now + 8.0);
+        impactOsc.frequency.exponentialRampToValueAtTime(30, now + 8.3); // Deep sub drop
+
+        impactGain.gain.setValueAtTime(0, now + 8.0);
+        impactGain.gain.linearRampToValueAtTime(1.0, now + 8.02); // Fast attack
+        impactGain.gain.exponentialRampToValueAtTime(0.01, now + 8.5); // Cinematic decay
+
+        impactOsc.connect(impactGain);
+        impactGain.connect(ctx.destination);
+
+        impactOsc.start(now + 8.0);
+        impactOsc.stop(now + 9.0);
+        activeSourcesRef.current.push(impactOsc);
       }
 
-      // 2. Initial movement / anticipation crescendo
+      // Layer G: Resolution Shimmer (8.2s - 8.5s+)
+      // Elegant finish using verified react-sounds success tones as the card settles.
       activeTimeoutsRef.current.push(window.setTimeout(() => {
-        playWhoosh({ volume: 0.6 });
-      }, buildupTime * 1000 - 300));
-
-      // 3. Reveal moment & Impact
-      activeTimeoutsRef.current.push(window.setTimeout(() => {
-        playImpact({ volume: 0.8 });
-      }, timing.anticipation));
-
-      // 4. Shimmer / Reward accent based on tier
-      activeTimeoutsRef.current.push(window.setTimeout(() => {
-        if (card.tier === 'flagship') {
-          playShimmerFlagship({ volume: 0.9 });
-        } else if (card.tier === 'premium') {
-          playShimmerPremium({ volume: 0.8 });
+        if (card.tier === 'flagship' || card.tier === 'premium') {
+          playShimmerPremium({ volume: 0.7 });
         } else {
           playShimmerStandard({ volume: 0.6 });
         }
-      }, timing.anticipation + 400));
+      }, 8200));
       // ----------------------
 
 
