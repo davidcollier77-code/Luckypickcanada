@@ -182,9 +182,7 @@ export default function LuckyCardReveal() {
       sequence.push(['.aurora-glow', { opacity: 1, scale: 1.3, filter: 'brightness(1.5)' }, { duration: 0.3, at: '-0.3' }]);
 
       // Particles burst
-      if (particleParamsRef.current) {
-        sequence.push(['.particle', { opacity: [0, 1, 0], y: particleParamsRef.current.map(p => p.randomY), x: particleParamsRef.current.map(p => p.randomX) }, { duration: 0.5, at: '-0.3' }]);
-      }
+      sequence.push(['.particle', { opacity: [0, 1, 0], y: (particleParamsRef.current || []).map(p => p.randomY), x: (particleParamsRef.current || []).map(p => p.randomX) }, { duration: 0.5, at: '-0.3' }]);
 
       // Bright flash
       sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.9, 1.2, 1.3] }, { duration: 0.5, at: '-0.3' }]);
