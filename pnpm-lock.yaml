@@ -23,6 +23,9 @@ importers:
       framer-motion:
         specifier: ^13.1.0
         version: 13.1.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      howler:
+        specifier: ^2.2.4
+        version: 2.2.4
       html2canvas:
         specifier: ^1.4.1
         version: 1.4.1
@@ -41,12 +44,18 @@ importers:
       react-error-boundary:
         specifier: ^6.1.4
         version: 6.1.4(@types/react@19.2.18)(react@19.2.8)
+      react-sounds:
+        specifier: ^1.0.30
+        version: 1.0.30(howler@2.2.4)(react@19.2.8)
       resend:
         specifier: ^6.21.0
         version: 6.22.0
       stripe:
         specifier: ^22.5.0
         version: 22.5.0(@types/node@26.2.0)
+      use-sound:
+        specifier: ^5.0.0
+        version: 5.0.0(react@19.2.8)
     devDependencies:
       '@opennextjs/cloudflare':
         specifier: latest
@@ -1965,6 +1974,9 @@ packages:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
 
+  howler@2.2.4:
+    resolution: {integrity: sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==}
+
   html2canvas@1.4.1:
     resolution: {integrity: sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA==}
     engines: {node: '>=8.0.0'}
@@ -2476,6 +2488,13 @@ packages:
       '@types/react':
         optional: true
 
+  react-sounds@1.0.30:
+    resolution: {integrity: sha512-Wd+ttb38/GDV9f9kn/CmKcJGjbGffSPKwKPCo2AF0VOq3JPR86zOaK41nxI7ACRuUGPRUrlSwdfHN5+lbDX2Ew==}
+    hasBin: true
+    peerDependencies:
+      howler: ^2.2.3
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   react@19.2.8:
     resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
     engines: {node: '>=0.10.0'}
@@ -2742,6 +2761,11 @@ packages:
 
   urlpattern-polyfill@10.1.0:
     resolution: {integrity: sha512-IGjKp/o0NL3Bso1PymYURCJxMPNAf/ILOpendP9f5B6e1rTJgdgiOvgfoT8VxCAdY+Wisb9uhGaJJf3yZ2V9nw==}
+
+  use-sound@5.0.0:
+    resolution: {integrity: sha512-MNHT3FFC5HxNCrgZtrnpIMJI2cw/0D2xismcrtyht8BTuF5FhFhb57xO/jlQr2xJaFrc/0btzRQvGyHQwB7PVA==}
+    peerDependencies:
+      react: '>=16.8'
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -4893,6 +4917,8 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
+  howler@2.2.4: {}
+
   html2canvas@1.4.1:
     dependencies:
       css-line-break: 2.1.0
@@ -5332,6 +5358,11 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.18
 
+  react-sounds@1.0.30(howler@2.2.4)(react@19.2.8):
+    dependencies:
+      howler: 2.2.4
+      react: 19.2.8
+
   react@19.2.8: {}
 
   read-cache@1.0.2: {}
@@ -5670,6 +5701,11 @@ snapshots:
       punycode: 2.3.1
 
   urlpattern-polyfill@10.1.0: {}
+
+  use-sound@5.0.0(react@19.2.8):
+    dependencies:
+      howler: 2.2.4
+      react: 19.2.8
 
   util-deprecate@1.0.2: {}
 

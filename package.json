@@ -15,14 +15,17 @@
     "@upstash/redis": "^1.38.3",
     "eslint": "^10.8.1",
     "framer-motion": "^13.1.0",
+    "howler": "^2.2.4",
     "html2canvas": "^1.4.1",
     "next": "latest",
     "puppeteer": "^25.9.0",
     "react": "latest",
     "react-dom": "latest",
     "react-error-boundary": "^6.1.4",
+    "react-sounds": "^1.0.30",
     "resend": "^6.21.0",
-    "stripe": "^22.5.0"
+    "stripe": "^22.5.0",
+    "use-sound": "^5.0.0"
   },
   "engines": {
     "node": "22.x"
