@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion, AnimationPlaybackControls } from 'framer-motion';
 import { useSound } from 'react-sounds';
@@ -50,13 +50,16 @@ export default function LuckyCardReveal() {
   const { play: playShimmerPremium, stop: stopShimmerPremium } = useSound('notification/completed');
   // Removed unverified sounds.
 
-  const stopAllAudio = () => {
+  const stopAllAudio = useCallback(() => {
     stopTick();
     stopShimmerStandard();
     stopShimmerPremium();
     if (activeSourcesRef.current) {
       activeSourcesRef.current.forEach(source => {
-        try { source.stop(); } catch (e) {}
+        try {
+          source.stop();
+          source.disconnect();
+        } catch (e) {}
       });
       activeSourcesRef.current = [];
     }
@@ -64,7 +67,7 @@ export default function LuckyCardReveal() {
       audioCtxRef.current.close().catch(() => {});
       audioCtxRef.current = null;
     }
-  };
+  }, [stopTick, stopShimmerStandard, stopShimmerPremium]);
 
 
 
@@ -168,7 +171,7 @@ export default function LuckyCardReveal() {
     const stepTime = buildupTime / shakeSteps;
 
     // We wait 1 tick for React to render the conditional elements
-    setTimeout(() => {
+    activeTimeoutsRef.current.push(window.setTimeout(() => {
       if (shouldReduceMotion) return;
 
 
@@ -215,7 +218,7 @@ export default function LuckyCardReveal() {
       sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.9, 1.2, 1.3] }, { duration: 0.5, at: '8.0' }]);
 
       animationControlsRef.current = animate(sequence);
-    }, 0);
+    }, 0));
 
 
       // --- AUDIO SEQUENCE (8.5s total) ---
@@ -224,12 +227,17 @@ export default function LuckyCardReveal() {
       playTick({ volume: 0.5 });
 
       // We use Web Audio API for smooth, sophisticated cinematic tension without arcade/game artifacts.
-      if (typeof window !== 'undefined' && window.AudioContext) {
-        if (!audioCtxRef.current) {
+      if (typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext)) {
+        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
           audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
         }
         const ctx = audioCtxRef.current;
-        if (ctx.state === 'suspended') ctx.resume();
+
+        // Mobile requires resume() triggered during user interaction
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+
         const now = ctx.currentTime;
 
         // Layer B: Early Atmosphere Drone (0.5s - 4.0s)
@@ -285,8 +293,6 @@ export default function LuckyCardReveal() {
         impactGain.gain.setValueAtTime(0, now + 8.0);
         impactGain.gain.linearRampToValueAtTime(1.0, now + 8.02); // Fast attack
         impactGain.gain.exponentialRampToValueAtTime(0.01, now + 8.5); // Cinematic decay
-
-        impactGain.gain.exponentialRampToValueAtTime(0.001, now + 8.5); // Cinematic decay
         impactGain.connect(ctx.destination);
 
         impactOsc.start(now + 8.0);
