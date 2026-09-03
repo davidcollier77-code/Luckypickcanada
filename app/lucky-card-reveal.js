@@ -286,7 +286,7 @@ export default function LuckyCardReveal() {
         impactGain.gain.linearRampToValueAtTime(1.0, now + 8.02); // Fast attack
         impactGain.gain.exponentialRampToValueAtTime(0.01, now + 8.5); // Cinematic decay
 
-        impactOsc.connect(impactGain);
+        impactGain.gain.exponentialRampToValueAtTime(0.001, now + 8.5); // Cinematic decay
         impactGain.connect(ctx.destination);
 
         impactOsc.start(now + 8.0);
