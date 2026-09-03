@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion, AnimationPlaybackControls } from 'framer-motion';
+import { useSound } from 'react-sounds';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
@@ -37,34 +38,43 @@ export default function LuckyCardReveal() {
   const [scope, animate] = useAnimate();
   const revealTimer = useRef(null);
   const announcementTimer = useRef(null);
-  const audioRef = useRef(null);
-  const audioTimeoutRef = useRef(null);
+  const activeTimeoutsRef = useRef([]);
   const animationControlsRef = useRef(null);
   const particleParamsRef = useRef(null);
   const cardRef = useRef(null);
 
+  const { play: playTick, stop: stopTick } = useSound('ui/button_soft');
+  const { play: playWhoosh, stop: stopWhoosh } = useSound('game/hit'); // good for initial reveal
+  const { play: playImpact, stop: stopImpact } = useSound('game/portal_opening'); // good for flip
+  const { play: playShimmerStandard, stop: stopShimmerStandard } = useSound('notification/success');
+  const { play: playShimmerPremium, stop: stopShimmerPremium } = useSound('notification/completed');
+  const { play: playShimmerFlagship, stop: stopShimmerFlagship } = useSound('arcade/upgrade');
+
+  const stopAllAudio = () => {
+    stopTick();
+    stopWhoosh();
+    stopImpact();
+    stopShimmerStandard();
+    stopShimmerPremium();
+    stopShimmerFlagship();
+  };
+
+
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      audioRef.current = new Audio('/freesound_community-shaking-coins-105774.mp3');
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.6;
-    }
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+      stopAllAudio();
+      if (activeTimeoutsRef.current) {
+        activeTimeoutsRef.current.forEach(window.clearTimeout);
+      activeTimeoutsRef.current = [];
       }
-      if (audioTimeoutRef.current) {
-        window.clearTimeout(audioTimeoutRef.current);
       // Cancel any running animations on unmount
       if (animationControlsRef.current) {
         animationControlsRef.current.stop();
         animationControlsRef.current = null;
       }
-      }
     };
-  }, []);
+}, [stopAllAudio]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -123,7 +133,9 @@ export default function LuckyCardReveal() {
   const triggerCardDraw = () => {
     window.clearTimeout(revealTimer.current);
     window.clearTimeout(announcementTimer.current);
-    window.clearTimeout(audioTimeoutRef.current);
+    activeTimeoutsRef.current.forEach(window.clearTimeout);
+    activeTimeoutsRef.current = [];
+    stopAllAudio();
     // Cancel any previous animation before starting a new one
     if (animationControlsRef.current) {
       animationControlsRef.current.stop();
@@ -144,6 +156,10 @@ export default function LuckyCardReveal() {
       randomDuration: 0.5 + (i * 0.05) % 0.5,
     }));
 
+    const shakeSteps = 10;
+    const buildupTime = timing.anticipation / 1000 - 0.5; // Reserve 0.5s for climax
+    const stepTime = buildupTime / shakeSteps;
+
     // We wait 1 tick for React to render the conditional elements
     setTimeout(() => {
       if (shouldReduceMotion) return;
@@ -157,9 +173,6 @@ export default function LuckyCardReveal() {
       sequence.push(['.aurora-glow', { opacity: 0.3, scale: 1 }, { duration: 0.4 }]);
 
       // 2. Energy buildup & escalating shake
-      const shakeSteps = 10;
-      const buildupTime = timing.anticipation / 1000 - 0.5; // Reserve 0.5s for climax
-      const stepTime = buildupTime / shakeSteps;
 
       for (let i = 1; i <= shakeSteps; i++) {
         const intensity = (i / shakeSteps) ** 2; // exponential buildup
@@ -192,22 +205,43 @@ export default function LuckyCardReveal() {
       animationControlsRef.current = animate(sequence);
     }, 0);
 
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(err => console.warn('Audio playback error:', err));
-    }
+
+      // --- AUDIO SEQUENCE ---
+      // 1. Tension building (Tick sounds mapped to shake steps)
+      for (let i = 1; i <= shakeSteps; i++) {
+        activeTimeoutsRef.current.push(window.setTimeout(() => {
+          playTick({ volume: 0.2 + (0.5 * (i / shakeSteps)), rate: 0.8 + (i * 0.05) });
+        }, stepTime * i * 1000));
+      }
+
+      // 2. Initial movement / anticipation crescendo
+      activeTimeoutsRef.current.push(window.setTimeout(() => {
+        playWhoosh({ volume: 0.6 });
+      }, buildupTime * 1000 - 300));
+
+      // 3. Reveal moment & Impact
+      activeTimeoutsRef.current.push(window.setTimeout(() => {
+        playImpact({ volume: 0.8 });
+      }, timing.anticipation));
+
+      // 4. Shimmer / Reward accent based on tier
+      activeTimeoutsRef.current.push(window.setTimeout(() => {
+        if (card.tier === 'flagship') {
+          playShimmerFlagship({ volume: 0.9 });
+        } else if (card.tier === 'premium') {
+          playShimmerPremium({ volume: 0.8 });
+        } else {
+          playShimmerStandard({ volume: 0.6 });
+        }
+      }, timing.anticipation + 400));
+      // ----------------------
+
 
     revealTimer.current = window.setTimeout(() => {
       showLuckyCard(card);
     }, timing.anticipation);
 
     const flipDuration = 700;
-    audioTimeoutRef.current = window.setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-    }, timing.anticipation);
   };
 
   return (
