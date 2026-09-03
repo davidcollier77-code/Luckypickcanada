@@ -239,7 +239,7 @@ export default function DailyResonance() {
 
     // Pre-schedule the primary tier impact sound exactly at audioStartTime + 8.8s
     const impactTimeSec = audioStartTime + (IMPACT_TIME / 1000);
-    const impactNode = audioBuffers[currentTier] ? playBuffer(ctx, audioBuffers[currentTier], 1.0, impactTimeSec) : null;
+    const impactNode = playBuffer(ctx, audioBuffers[currentTier], 1.0, impactTimeSec);
     if (impactNode) activeAudioNodesRef.current.push(impactNode);
 
     let impactPlayed = false; // We still use this for the visual effect trigger
@@ -247,7 +247,7 @@ export default function DailyResonance() {
 
     const sequenceLoop = (timestamp: number) => {
       // Calculate elapsed time strictly using the audio clock
-      const elapsed = Math.max(0, (ctx.currentTime - audioStartTime) * 1000);
+      const elapsed = (ctx.currentTime - audioStartTime) * 1000;
 
       // Update displayed number based on phase
       if (elapsed < TENSION_TIME) {
@@ -533,11 +533,7 @@ export default function DailyResonance() {
                 node.gainNode.gain.setTargetAtTime(0, activeAudioCtx.currentTime, 0.5);
                 // Also stop the source smoothly to clean up
                 if (node.source) {
-                  try {
-                    node.source.stop(activeAudioCtx.currentTime + 2.0); // Stop after fade
-                  } catch (e) {
-                    // Source may have already stopped naturally
-                  }
+                  node.source.stop(activeAudioCtx.currentTime + 2.0); // Stop after fade
                 }
               } catch (e) {}
             }
