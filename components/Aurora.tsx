@@ -37,46 +37,66 @@ export default function Aurora() {
       const height = window.innerHeight;
 
       ctx.clearRect(0, 0, width, height);
+      ctx.globalCompositeOperation = 'screen';
 
-      // Aurora 1 (Greenish)
-      const cx1 = width * 0.3 + Math.sin(time) * 100;
-      const cy1 = height * 0.2 + Math.cos(time * 0.8) * 50;
-      const r1 = Math.max(width, height) * 0.6;
+      // Performance Optimization (Bolt ⚡): Use bezierCurveTo + createLinearGradient
+      // instead of overlapping full-screen radial gradients for high-performance organic ribbons
 
-      const grad1 = ctx.createRadialGradient(cx1, cy1, 0, cx1, cy1, r1);
-      grad1.addColorStop(0, "rgba(24, 208, 132, 0.15)");
-      grad1.addColorStop(1, "rgba(0, 0, 0, 0)"); // Preserve transparent edge
+      // Layer 1 (Greenish)
+      ctx.beginPath();
+      ctx.moveTo(-width * 0.2, height * 0.4 + Math.sin(time) * 100);
+      ctx.bezierCurveTo(
+        width * 0.3, height * 0.1 + Math.cos(time * 0.8) * 120,
+        width * 0.7, height * 0.6 + Math.sin(time * 1.2) * 80,
+        width * 1.2, height * 0.2 + Math.cos(time * 1.5) * 100
+      );
 
-      ctx.globalAlpha = 0.8;
-      ctx.fillStyle = grad1;
-      ctx.fillRect(0, 0, width, height);
+      const grad1 = ctx.createLinearGradient(0, height * 0.1, 0, height * 0.8);
+      grad1.addColorStop(0, "rgba(24, 208, 132, 0)");
+      grad1.addColorStop(0.5, "rgba(24, 208, 132, 0.25)");
+      grad1.addColorStop(1, "rgba(24, 208, 132, 0)");
 
-      // Aurora 2 (Purplish)
-      const cx2 = width * 0.7 + Math.cos(time * 1.2) * 120;
-      const cy2 = height * 0.8 + Math.sin(time * 0.9) * 60;
-      const r2 = Math.max(width, height) * 0.7;
+      ctx.lineWidth = height * 0.4;
+      ctx.strokeStyle = grad1;
+      ctx.stroke();
 
-      const grad2 = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, r2);
-      grad2.addColorStop(0, "rgba(151, 78, 240, 0.12)");
-      grad2.addColorStop(1, "rgba(0, 0, 0, 0)");
+      // Layer 2 (Purplish)
+      ctx.beginPath();
+      ctx.moveTo(-width * 0.2, height * 0.6 + Math.cos(time * 1.1) * 80);
+      ctx.bezierCurveTo(
+        width * 0.4, height * 0.8 + Math.sin(time * 0.9) * 100,
+        width * 0.6, height * 0.3 + Math.cos(time * 1.3) * 120,
+        width * 1.2, height * 0.5 + Math.sin(time * 1.4) * 90
+      );
 
-      ctx.globalAlpha = 0.7;
-      ctx.fillStyle = grad2;
-      ctx.fillRect(0, 0, width, height);
+      const grad2 = ctx.createLinearGradient(0, height * 0.2, 0, height * 0.9);
+      grad2.addColorStop(0, "rgba(151, 78, 240, 0)");
+      grad2.addColorStop(0.5, "rgba(151, 78, 240, 0.2)");
+      grad2.addColorStop(1, "rgba(151, 78, 240, 0)");
 
-      // Aurora 3 (Bluish)
-      const cx3 = width * 0.5 + Math.sin(time * 0.5) * 150;
-      const cy3 = height * 0.5 + Math.cos(time * 1.1) * 80;
-      const r3 = Math.max(width, height) * 0.5;
+      ctx.lineWidth = height * 0.5;
+      ctx.strokeStyle = grad2;
+      ctx.stroke();
 
-      const grad3 = ctx.createRadialGradient(cx3, cy3, 0, cx3, cy3, r3);
-      grad3.addColorStop(0, "rgba(105, 184, 255, 0.08)");
-      grad3.addColorStop(1, "rgba(0, 0, 0, 0)");
+      // Layer 3 (Bluish)
+      ctx.beginPath();
+      ctx.moveTo(-width * 0.2, height * 0.5 + Math.sin(time * 0.5) * 150);
+      ctx.bezierCurveTo(
+        width * 0.5, height * 0.2 + Math.cos(time * 1.1) * 130,
+        width * 0.8, height * 0.7 + Math.sin(time * 0.7) * 110,
+        width * 1.2, height * 0.4 + Math.cos(time * 1.2) * 140
+      );
 
-      ctx.globalAlpha = 0.6;
-      ctx.fillStyle = grad3;
-      ctx.fillRect(0, 0, width, height);
+      const grad3 = ctx.createLinearGradient(0, height * 0.15, 0, height * 0.85);
+      grad3.addColorStop(0, "rgba(105, 184, 255, 0)");
+      grad3.addColorStop(0.5, "rgba(105, 184, 255, 0.15)");
+      grad3.addColorStop(1, "rgba(105, 184, 255, 0)");
 
+      ctx.lineWidth = height * 0.45;
+      ctx.strokeStyle = grad3;
+      ctx.stroke();
+
+      ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1.0;
 
       animationFrameId = requestAnimationFrame(draw);
