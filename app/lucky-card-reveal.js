@@ -4,11 +4,21 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion, AnimationPlaybackControls } from 'framer-motion';
 import { useSound } from 'react-sounds';
+import { Howl, Howler } from 'howler';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
+
+let audioAssets = null;
+if (typeof window !== 'undefined') {
+  audioAssets = {
+    drone: new Howl({ src: ['/yodguard-lightning-magic-3-378649.mp3'], volume: 0, loop: true }),
+    buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0 }),
+    impact: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 0 })
+  };
+}
 const REVEAL_TIMINGS = {
   standard: { anticipation: 8000, announcement: 0 },
   premium: { anticipation: 8000, announcement: 900 },
@@ -54,6 +64,12 @@ export default function LuckyCardReveal() {
     stopTick();
     stopShimmerStandard();
     stopShimmerPremium();
+    if (audioAssets) {
+      Object.values(audioAssets).forEach(howl => {
+        howl.stop();
+        howl.volume(0);
+      });
+    }
     if (activeSourcesRef.current) {
       activeSourcesRef.current.forEach(source => {
         try {
@@ -160,11 +176,17 @@ export default function LuckyCardReveal() {
     setIsFlashing(false);
     // Generate stable particle parameters for this reveal
     const particleCount = card.tier === 'flagship' ? 30 : card.tier === 'premium' ? 20 : 12;
-    particleParamsRef.current = Array.from({ length: particleCount }, (_, i) => ({
-      randomX: (i * 0.3 - 0.5) * 200,
-      randomY: -100 - (i * 15),
-      randomDuration: 0.5 + (i * 0.05) % 0.5,
-    }));
+    particleParamsRef.current = Array.from({ length: particleCount }, (_, i) => {
+      const angle = (i / particleCount) * Math.PI * 2 + (Math.random() * 0.5);
+      const distance = 150 + Math.random() * 150;
+      return {
+        startX: Math.cos(angle) * (distance * 0.2),
+        startY: Math.sin(angle) * (distance * 0.2),
+        endX: Math.cos(angle) * distance,
+        endY: Math.sin(angle) * distance,
+        randomDuration: 0.8 + Math.random() * 0.4,
+      };
+    });
 
     const shakeSteps = 10;
     const buildupTime = timing.anticipation / 1000 - 0.5; // Reserve 0.5s for climax
@@ -179,7 +201,7 @@ export default function LuckyCardReveal() {
       const sequence = [];
       // The 8.5s Cinematic Sequence
       // 0.0s - 4.0s: Early Atmosphere (Aurora fades in, card breathes slowly)
-      sequence.push(['.aurora-glow', { opacity: 0.4, scale: 1.05 }, { duration: 4.0, ease: 'easeOut' }]);
+      sequence.push(['.deep-vortex', { opacity: 0.4, scale: 1.05 }, { duration: 4.0, ease: 'easeOut' }]);
       sequence.push([cardRef.current, { y: [0, -10, 0] }, { duration: 4.0, ease: 'easeInOut', at: '<' }]);
 
       // 4.0s - 7.2s: Rising Buildup (Escalating vibration)
@@ -197,25 +219,27 @@ export default function LuckyCardReveal() {
 
         sequence.push([cardRef.current, { x: xShake, y: yShake, rotateZ: rShake }, { duration: stepTime, ease: 'linear', at: i === 1 ? '4.0' : '<' }]);
         // Aurora brightens with tension
-        sequence.push(['.aurora-glow', { opacity: 0.4 + 0.4 * intensity, scale: 1.05 + 0.1 * intensity }, { duration: stepTime, at: '<' }]);
+        sequence.push(['.deep-vortex', { opacity: 0.4 + 0.4 * intensity, scale: 1.05 + 0.1 * intensity }, { duration: stepTime, at: '<' }]);
       }
 
       // 7.2s - 8.0s: The Breath / Swell (Complete freeze)
       sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, scale: 1 }, { duration: 0.05, at: '7.2' }]); // snap to center
-      sequence.push(['.aurora-glow', { opacity: 0.9, scale: 1.2, filter: 'brightness(1.5)' }, { duration: 0.8, at: '7.2' }]); // flare up
+      sequence.push(['.deep-vortex', { opacity: 0.9, scale: 1.2, filter: 'brightness(1.5)' }, { duration: 0.8, at: '7.2' }]); // flare up
 
       // 8.0s: Reveal Climax (Impact & Flip)
-      sequence.push([cardRef.current, { scale: 1.05 }, { duration: 0.1, at: '8.0' }]);
-      sequence.push([cardRef.current, { scale: 1 }, { duration: 0.2, at: '8.1' }]);
-      sequence.push(['.aurora-glow', { opacity: 1, scale: 1.3, filter: 'brightness(1.2)' }, { duration: 0.3, at: '8.0' }]);
+      sequence.push([cardRef.current, { scale: 1.1, z: 100 }, { duration: 0.3, ease: 'easeOut', at: '8.0' }]);
+      sequence.push([cardRef.current, { scale: 1, z: 0 }, { duration: 0.8, ease: 'easeOut', at: '8.3' }]);
+      sequence.push(['.deep-vortex', { opacity: 1, scale: 1.3, filter: 'brightness(1.2)' }, { duration: 0.3, at: '8.0' }]);
 
-      // Particles burst at climax
+      // Particles drift inward during tension
       if (particleParamsRef.current) {
-        sequence.push(['.particle', { opacity: [0, 1, 0], y: particleParamsRef.current.map(p => p.randomY), x: particleParamsRef.current.map(p => p.randomX) }, { duration: 0.5, at: '8.0' }]);
+        sequence.push(['.particle', { opacity: [0, 0.5, 1], x: particleParamsRef.current.map(p => [p.endX * 1.5, p.startX]), y: particleParamsRef.current.map(p => [p.endY * 1.5, p.startY]) }, { duration: 4.0, ease: 'easeIn', at: '3.2' }]);
+        // Burst outwards at climax
+        sequence.push(['.particle', { opacity: [1, 1, 0], x: particleParamsRef.current.map(p => p.endX), y: particleParamsRef.current.map(p => p.endY) }, { duration: 1.5, ease: 'easeOut', at: '8.0' }]);
       }
 
       // Bright flash at climax
-      sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.9, 1.2, 1.3] }, { duration: 0.5, at: '8.0' }]);
+      sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.5, 2.5, 3.0] }, { duration: 1.5, ease: 'easeOut', at: '8.0' }]);
 
       animationControlsRef.current = animate(sequence);
     }, 0));
@@ -351,10 +375,10 @@ export default function LuckyCardReveal() {
         {/* Ambient/Aura Effects */}
         {isGenerating && selectedCard && (
           <div
-            className={`aurora-glow absolute inset-0 z-[-1] blur-2xl rounded-2xl ${
-              selectedCard.tier === 'standard' ? 'bg-amber-400/40' :
-              selectedCard.tier === 'premium' ? 'bg-blue-400/60' :
-              'bg-gradient-to-r from-amber-400/70 via-yellow-300/80 to-amber-500/70'
+            className={`deep-vortex absolute inset-[-50%] z-[-1] rounded-full blur-[60px] ${
+              selectedCard.tier === 'standard' ? 'bg-indigo-900/40' :
+              selectedCard.tier === 'premium' ? 'bg-blue-900/40' :
+              'bg-purple-900/40'
             }`}
             style={{ opacity: 0, scale: 0.8 }}
           />
@@ -376,10 +400,10 @@ export default function LuckyCardReveal() {
             {particleParamsRef.current?.map((_, i) => (
               <div
                 key={i}
-                className={`particle absolute bottom-8 left-1/2 w-2 h-2 rounded-full transform -translate-x-1/2 ${
-                  selectedCard.tier === 'standard' ? 'bg-amber-200' :
-                  selectedCard.tier === 'premium' ? 'bg-blue-200 shadow-[0_0_8px_2px_rgba(147,197,253,0.8)]' :
-                  'bg-yellow-100 shadow-[0_0_12px_3px_rgba(253,200,48,0.9)]'
+                className={`particle absolute top-1/2 left-1/2 w-[3px] h-[3px] rounded-full transform -translate-x-1/2 -translate-y-1/2 ${
+                  selectedCard.tier === 'standard' ? 'bg-white shadow-[0_0_8px_2px_rgba(255,255,255,0.8)]' :
+                  selectedCard.tier === 'premium' ? 'bg-blue-100 shadow-[0_0_12px_3px_rgba(147,197,253,0.9)]' :
+                  'bg-yellow-100 shadow-[0_0_12px_3px_rgba(253,200,48,1)]'
                 }`}
                 style={{ opacity: 0 }}
               />
@@ -390,10 +414,10 @@ export default function LuckyCardReveal() {
         {/* Reveal Flash */}
         {isGenerating && selectedCard && (
           <div
-            className={`reveal-flash absolute inset-0 z-10 pointer-events-none rounded-2xl mix-blend-screen ${
-              selectedCard.tier === 'standard' ? 'bg-white' :
-              selectedCard.tier === 'premium' ? 'bg-blue-200' :
-              'bg-yellow-200'
+            className={`reveal-flash absolute inset-[-100%] z-10 pointer-events-none mix-blend-screen rounded-full opacity-0 radial-light-burst ${
+              selectedCard.tier === 'standard' ? 'bg-[radial-gradient(circle,rgba(255,255,255,0.8)_0%,transparent_60%)]' :
+              selectedCard.tier === 'premium' ? 'bg-[radial-gradient(circle,rgba(180,220,255,0.9)_0%,transparent_60%)]' :
+              'bg-[radial-gradient(circle,rgba(255,230,150,1)_0%,transparent_60%)]'
             }`}
             style={{ opacity: 0, scale: 0.9 }}
           />

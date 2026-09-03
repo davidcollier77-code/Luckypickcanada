@@ -7,6 +7,12 @@ import CollectionBinder from '../collection-binder';
 export default function RevealClient() {
   return (
     <div className="lucky-site-shell homepage-experience flex flex-col pt-24 pb-12">
+      <div className="aurora-container">
+        <div className="aurora-layer aurora-layer-1"></div>
+        <div className="aurora-layer aurora-layer-2"></div>
+        <div className="aurora-layer aurora-layer-3"></div>
+        <div className="aurora-layer aurora-layer-4"></div>
+      </div>
       <div className="flex-1 w-full flex flex-col items-center">
         <div className="homepage-section-heading mb-8">
           <p>A daily moment of possibility</p>
