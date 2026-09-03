@@ -293,6 +293,8 @@ export default function LuckyCardReveal() {
         impactGain.gain.setValueAtTime(0, now + 8.0);
         impactGain.gain.linearRampToValueAtTime(1.0, now + 8.02); // Fast attack
         impactGain.gain.exponentialRampToValueAtTime(0.01, now + 8.5); // Cinematic decay
+        
+        impactOsc.connect(impactGain);
         impactGain.connect(ctx.destination);
 
         impactOsc.start(now + 8.0);
@@ -312,9 +314,9 @@ export default function LuckyCardReveal() {
       // ----------------------
 
 
-    revealTimer.current = window.setTimeout(() => {
+    revealTimer.current = activeTimeoutsRef.current[activeTimeoutsRef.current.push(window.setTimeout(() => {
       showLuckyCard(card);
-    }, timing.anticipation);
+    }, timing.anticipation)) - 1];
 
     const flipDuration = 700;
   };
