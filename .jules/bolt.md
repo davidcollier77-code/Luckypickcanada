@@ -9,6 +9,3 @@
 ## 2026-09-03 - Optimize Canvas Gradients for High Performance Effects
 **Learning:** Using `ctx.createRadialGradient` coupled with `ctx.fillRect` over full-screen dimensions in a  loop creates massive fill-rate and rendering overhead on HTML5 canvas. This is a common performance pitfall.
 **Action:** Replace overlapping full-screen radial gradients with bezier curve paths (`ctx.bezierCurveTo`) using simpler linear gradients (`ctx.createLinearGradient`) and `ctx.globalCompositeOperation = 'screen'`. This significantly reduces shaded pixels and computations while enhancing the organic 'ribbon' aesthetic.
-## 2026-09-03 - Optimize Canvas Gradients for High Performance Effects
-**Learning:** Using ctx.createRadialGradient coupled with ctx.fillRect over full-screen dimensions in an animation loop creates massive fill-rate and rendering overhead on HTML5 canvas. This is a common performance pitfall.
-**Action:** Replace overlapping full-screen radial gradients with bezier curve paths (ctx.bezierCurveTo) using simpler linear gradients (ctx.createLinearGradient) and ctx.globalCompositeOperation = 'screen'. This significantly reduces shaded pixels and computations while enhancing the organic 'ribbon' aesthetic.
