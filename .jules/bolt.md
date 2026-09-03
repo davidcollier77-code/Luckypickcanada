@@ -6,3 +6,9 @@
 ## 2025-03-02 - Extract Context Assignments from Single-Stroke Loops
 **Learning:** In canvas rendering for organic effects (like sparks or lightning), updating context state (`ctx.globalAlpha`, `ctx.lineWidth`, etc.) *inside* a point-by-point path-building loop (e.g. `forEach` with `lineTo`) is redundant when a single `ctx.stroke()` is executed *outside* the loop. Only the very last state mutation is applied to the entire path drawn by the `stroke()` call.
 **Action:** Extract the final state evaluation outside the path-building loop and apply it once before calling `stroke()`. This eliminates redundant state mutations that drag down rendering performance at high particle counts (e.g., 60fps frame loops) while perfectly preserving visual output.
+## 2026-09-03 - Optimize Canvas Gradients for High Performance Effects
+**Learning:** Using `ctx.createRadialGradient` coupled with `ctx.fillRect` over full-screen dimensions in a  loop creates massive fill-rate and rendering overhead on HTML5 canvas. This is a common performance pitfall.
+**Action:** Replace overlapping full-screen radial gradients with bezier curve paths (`ctx.bezierCurveTo`) using simpler linear gradients (`ctx.createLinearGradient`) and `ctx.globalCompositeOperation = 'screen'`. This significantly reduces shaded pixels and computations while enhancing the organic 'ribbon' aesthetic.
+## 2026-09-03 - Optimize Canvas Gradients for High Performance Effects
+**Learning:** Using ctx.createRadialGradient coupled with ctx.fillRect over full-screen dimensions in an animation loop creates massive fill-rate and rendering overhead on HTML5 canvas. This is a common performance pitfall.
+**Action:** Replace overlapping full-screen radial gradients with bezier curve paths (ctx.bezierCurveTo) using simpler linear gradients (ctx.createLinearGradient) and ctx.globalCompositeOperation = 'screen'. This significantly reduces shaded pixels and computations while enhancing the organic 'ribbon' aesthetic.
