@@ -41,6 +41,7 @@ export default function LuckyCardReveal() {
   const audioTimeoutRef = useRef(null);
   const animationControlsRef = useRef(null);
   const particleParamsRef = useRef(null);
+  const cardRef = useRef(null);
 
 
   useEffect(() => {
@@ -135,29 +136,61 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
     setIsFlashing(false);
-
     // Generate stable particle parameters for this reveal
-    const particleCount = card.tier === 'flagship' ? 12 : card.tier === 'premium' ? 8 : 4;
+    const particleCount = card.tier === 'flagship' ? 30 : card.tier === 'premium' ? 20 : 12;
     particleParamsRef.current = Array.from({ length: particleCount }, (_, i) => ({
-      randomX: (i * 0.3 - 0.5) * 100,
-      randomY: -50 - (i * 5),
-      randomXEnd: (i * 0.3 - 0.5) * 150,
-      randomDuration: 1 + (i * 0.1),
-      randomDelay: i * 0.1,
+      randomX: (i * 0.3 - 0.5) * 200,
+      randomY: -100 - (i * 15),
+      randomDuration: 0.5 + (i * 0.05) % 0.5,
     }));
 
-    // Animate the buildup
-    const buildupDuration = (timing.anticipation / 1000);
+    // We wait 1 tick for React to render the conditional elements
+    setTimeout(() => {
+      if (shouldReduceMotion) return;
 
-    if (!shouldReduceMotion) {
-      if (card.tier === 'standard') {
-        animationControlsRef.current = animate(scope.current, { x: [-1, 1, -1, 1, 0], y: [-1, 1, -1, 1, 0] }, { duration: buildupDuration, ease: 'linear' });
-      } else if (card.tier === 'premium') {
-        animationControlsRef.current = animate(scope.current, { x: [-2, 2, -2, 2, 0], y: [-1, 2, -2, 1, 0] }, { duration: buildupDuration, ease: 'linear' });
-      } else if (card.tier === 'flagship') {
-        animationControlsRef.current = animate(scope.current, { x: [-3, 3, -3, 3, 0], y: [-2, 3, -3, 2, 0], scale: [1, 1.02, 1.04, 1.02, 1] }, { duration: buildupDuration, ease: 'linear' });
+      const baseShake = card.tier === 'flagship' ? 4 : card.tier === 'premium' ? 2 : 1;
+      const rot = card.tier === 'flagship' ? 2 : card.tier === 'premium' ? 1 : 0.5;
+
+      const sequence = [];
+
+      // 1. Beginning: Subtle glow begins
+      sequence.push(['.aurora-glow', { opacity: 0.3, scale: 1 }, { duration: 0.4 }]);
+
+      // 2. Energy buildup & escalating shake
+      const shakeSteps = 10;
+      const buildupTime = timing.anticipation / 1000 - 0.5; // Reserve 0.5s for climax
+      const stepTime = buildupTime / shakeSteps;
+
+      for (let i = 1; i <= shakeSteps; i++) {
+        const intensity = (i / shakeSteps) ** 2; // exponential buildup
+        const xShake = (i % 2 === 0 ? 1 : -1) * baseShake * intensity * 2.5;
+        const yShake = (i % 2 === 0 ? -1 : 1) * baseShake * intensity * 2.5;
+        const rShake = (i % 2 === 0 ? 1 : -1) * rot * intensity;
+
+        sequence.push([cardRef.current, { x: xShake, y: yShake, rotateZ: rShake }, { duration: stepTime, ease: 'easeInOut', at: '<' }]);
+
+        // Gradually brighten aurora
+        sequence.push(['.aurora-glow', { opacity: 0.3 + 0.3 * intensity, scale: 1 + 0.1 * intensity }, { duration: stepTime, at: '<' }]);
       }
-    }
+
+      // 3. Reveal climax: major flare and strong final shake
+      sequence.push([cardRef.current, { x: -baseShake * 4, y: baseShake * 2, rotateZ: -rot * 2, scale: 1.05 }, { duration: 0.1 }]);
+      sequence.push([cardRef.current, { x: baseShake * 4, y: -baseShake * 2, rotateZ: rot * 2 }, { duration: 0.1 }]);
+      sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, scale: 1 }, { duration: 0.1 }]);
+
+      // Aurora flare
+      sequence.push(['.aurora-glow', { opacity: 1, scale: 1.3, filter: 'brightness(1.5)' }, { duration: 0.3, at: '-0.3' }]);
+
+      // Particles burst
+      if (particleParamsRef.current) {
+        sequence.push(['.particle', { opacity: [0, 1, 0], y: particleParamsRef.current.map(p => p.randomY), x: particleParamsRef.current.map(p => p.randomX) }, { duration: 0.5, at: '-0.3' }]);
+      }
+
+      // Bright flash
+      sequence.push(['.reveal-flash', { opacity: [0, 1, 0], scale: [0.9, 1.2, 1.3] }, { duration: 0.5, at: '-0.3' }]);
+
+      animationControlsRef.current = animate(sequence);
+    }, 0);
 
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
@@ -203,56 +236,59 @@ export default function LuckyCardReveal() {
 
 
       {/* 2. 3D Card Stage */}
-      <div className="w-full flex justify-center py-2 flex-shrink-0 relative">
+      <div ref={scope} className="w-full flex justify-center py-2 flex-shrink-0 relative">
         {/* Ambient/Aura Effects */}
-        {isGenerating && selectedCard && !shouldReduceMotion && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1.1 }}
-            transition={{ duration: REVEAL_TIMINGS[selectedCard.tier].anticipation / 1000 }}
-            className={`absolute inset-0 z-[-1] blur-2xl rounded-2xl ${
-              selectedCard.tier === 'standard' ? 'bg-amber-400/30' :
-              selectedCard.tier === 'premium' ? 'bg-blue-400/40 animate-plasma-glow' :
-              'bg-gradient-to-r from-amber-400/50 via-yellow-300/60 to-amber-500/50 animate-pulse-glow'
+        {isGenerating && selectedCard && (
+          <div
+            className={`aurora-glow absolute inset-0 z-[-1] blur-2xl rounded-2xl ${
+              selectedCard.tier === 'standard' ? 'bg-amber-400/40' :
+              selectedCard.tier === 'premium' ? 'bg-blue-400/60' :
+              'bg-gradient-to-r from-amber-400/70 via-yellow-300/80 to-amber-500/70'
             }`}
+            style={{ opacity: 0, scale: 0.8 }}
           />
         )}
 
-        {/* Particles */}
-        {isGenerating && selectedCard && !shouldReduceMotion && (
+        {/* Energy Wisps (only for premium/flagship) */}
+        {isGenerating && selectedCard && selectedCard.tier !== 'standard' && (
+          <div className="absolute inset-x-0 bottom-0 h-32 z-[-1] overflow-hidden pointer-events-none mix-blend-screen opacity-50">
+            <div className="w-full h-full animate-mote-1 bg-gradient-to-t from-white/20 to-transparent blur-md" />
+            {selectedCard.tier === 'flagship' && (
+              <div className="w-full h-full animate-mote-2 bg-gradient-to-t from-yellow-200/30 to-transparent blur-lg" />
+            )}
+          </div>
+        )}
+
+        {/* Particles Burst Container */}
+        {isGenerating && selectedCard && (
           <div className="absolute inset-0 z-[-1] pointer-events-none overflow-visible">
-            {particleParamsRef.current?.map((params, i) => (
-              <motion.div
+            {particleParamsRef.current?.map((_, i) => (
+              <div
                 key={i}
-                initial={{ opacity: 0, y: 20, x: params.randomX }}
-                animate={{ opacity: [0, 1, 0], y: params.randomY, x: params.randomXEnd }}
-                transition={{ duration: params.randomDuration, repeat: Infinity, delay: params.randomDelay }}
-                className={`absolute bottom-0 left-1/2 w-2 h-2 rounded-full ${
+                className={`particle absolute bottom-8 left-1/2 w-2 h-2 rounded-full transform -translate-x-1/2 ${
                   selectedCard.tier === 'standard' ? 'bg-amber-200' :
-                  selectedCard.tier === 'premium' ? 'bg-blue-200' :
-                  'bg-yellow-100 shadow-[0_0_10px_2px_rgba(253,200,48,0.8)]'
+                  selectedCard.tier === 'premium' ? 'bg-blue-200 shadow-[0_0_8px_2px_rgba(147,197,253,0.8)]' :
+                  'bg-yellow-100 shadow-[0_0_12px_3px_rgba(253,200,48,0.9)]'
                 }`}
+                style={{ opacity: 0 }}
               />
             ))}
           </div>
         )}
 
         {/* Reveal Flash */}
-        {isFlashing && !shouldReduceMotion && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: [0, 1, 0], scale: [0.9, 1.1, 1.2] }}
-            transition={{ duration: 0.7 }}
-            className={`absolute inset-0 z-10 pointer-events-none rounded-2xl mix-blend-screen ${
-              selectedCard?.tier === 'standard' ? 'bg-white' :
-              selectedCard?.tier === 'premium' ? 'bg-blue-200' :
+        {isGenerating && selectedCard && (
+          <div
+            className={`reveal-flash absolute inset-0 z-10 pointer-events-none rounded-2xl mix-blend-screen ${
+              selectedCard.tier === 'standard' ? 'bg-white' :
+              selectedCard.tier === 'premium' ? 'bg-blue-200' :
               'bg-yellow-200'
             }`}
+            style={{ opacity: 0, scale: 0.9 }}
           />
         )}
 
         <motion.div
-          ref={scope}
           role="button"
           tabIndex={0}
           aria-pressed={isRevealed}
@@ -263,7 +299,8 @@ export default function LuckyCardReveal() {
               if (isRevealed) setIsRevealed((s) => !s);
             }
           }}
-          className="relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
+          ref={cardRef}
+          className="card-container relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
           style={{ perspective: '1200px' }}
         >
           <div className="relative w-full h-full">
