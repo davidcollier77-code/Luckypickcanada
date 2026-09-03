@@ -74,7 +74,7 @@ export default function LuckyCardReveal() {
         animationControlsRef.current = null;
       }
     };
-  }, []);
+}, [stopAllAudio]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
