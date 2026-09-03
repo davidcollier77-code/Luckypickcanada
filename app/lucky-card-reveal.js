@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { motion, useAnimate, useReducedMotion } from 'framer-motion';
+import { motion, useAnimate, useReducedMotion, AnimationPlaybackControls } from 'framer-motion';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
@@ -39,6 +39,8 @@ export default function LuckyCardReveal() {
   const announcementTimer = useRef(null);
   const audioRef = useRef(null);
   const audioTimeoutRef = useRef(null);
+  const animationControlsRef = useRef(null);
+  const particleParamsRef = useRef(null);
 
 
   useEffect(() => {
@@ -54,6 +56,11 @@ export default function LuckyCardReveal() {
       }
       if (audioTimeoutRef.current) {
         window.clearTimeout(audioTimeoutRef.current);
+      // Cancel any running animations on unmount
+      if (animationControlsRef.current) {
+        animationControlsRef.current.stop();
+        animationControlsRef.current = null;
+      }
       }
     };
   }, []);
@@ -116,6 +123,11 @@ export default function LuckyCardReveal() {
     window.clearTimeout(revealTimer.current);
     window.clearTimeout(announcementTimer.current);
     window.clearTimeout(audioTimeoutRef.current);
+    // Cancel any previous animation before starting a new one
+    if (animationControlsRef.current) {
+      animationControlsRef.current.stop();
+      animationControlsRef.current = null;
+    }
     const card = selectWeightedLuckyCard(previousCardId);
     const timing = REVEAL_TIMINGS[card.tier] || REVEAL_TIMINGS.standard;
     setSelectedCard(card);
@@ -124,16 +136,26 @@ export default function LuckyCardReveal() {
     setImageError(false);
     setIsFlashing(false);
 
+    // Generate stable particle parameters for this reveal
+    const particleCount = card.tier === 'flagship' ? 12 : card.tier === 'premium' ? 8 : 4;
+    particleParamsRef.current = Array.from({ length: particleCount }, (_, i) => ({
+      randomX: (i * 0.3 - 0.5) * 100,
+      randomY: -50 - (i * 5),
+      randomXEnd: (i * 0.3 - 0.5) * 150,
+      randomDuration: 1 + (i * 0.1),
+      randomDelay: i * 0.1,
+    }));
+
     // Animate the buildup
     const buildupDuration = (timing.anticipation / 1000);
 
     if (!shouldReduceMotion) {
       if (card.tier === 'standard') {
-        animate(scope.current, { x: [-1, 1, -1, 1, 0], y: [-1, 1, -1, 1, 0] }, { duration: buildupDuration, ease: 'linear' });
+        animationControlsRef.current = animate(scope.current, { x: [-1, 1, -1, 1, 0], y: [-1, 1, -1, 1, 0] }, { duration: buildupDuration, ease: 'linear' });
       } else if (card.tier === 'premium') {
-        animate(scope.current, { x: [-2, 2, -2, 2, 0], y: [-1, 2, -2, 1, 0] }, { duration: buildupDuration, ease: 'linear' });
+        animationControlsRef.current = animate(scope.current, { x: [-2, 2, -2, 2, 0], y: [-1, 2, -2, 1, 0] }, { duration: buildupDuration, ease: 'linear' });
       } else if (card.tier === 'flagship') {
-        animate(scope.current, { x: [-3, 3, -3, 3, 0], y: [-2, 3, -3, 2, 0], scale: [1, 1.02, 1.04, 1.02, 1] }, { duration: buildupDuration, ease: 'linear' });
+        animationControlsRef.current = animate(scope.current, { x: [-3, 3, -3, 3, 0], y: [-2, 3, -3, 2, 0], scale: [1, 1.02, 1.04, 1.02, 1] }, { duration: buildupDuration, ease: 'linear' });
       }
     }
 
@@ -199,12 +221,12 @@ export default function LuckyCardReveal() {
         {/* Particles */}
         {isGenerating && selectedCard && !shouldReduceMotion && (
           <div className="absolute inset-0 z-[-1] pointer-events-none overflow-visible">
-            {[...Array(selectedCard.tier === 'flagship' ? 12 : selectedCard.tier === 'premium' ? 8 : 4)].map((_, i) => (
+            {particleParamsRef.current?.map((params, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20, x: (Math.random() - 0.5) * 100 }}
-                animate={{ opacity: [0, 1, 0], y: -50 - Math.random() * 50, x: (Math.random() - 0.5) * 150 }}
-                transition={{ duration: 1 + Math.random(), repeat: Infinity, delay: Math.random() }}
+                initial={{ opacity: 0, y: 20, x: params.randomX }}
+                animate={{ opacity: [0, 1, 0], y: params.randomY, x: params.randomXEnd }}
+                transition={{ duration: params.randomDuration, repeat: Infinity, delay: params.randomDelay }}
                 className={`absolute bottom-0 left-1/2 w-2 h-2 rounded-full ${
                   selectedCard.tier === 'standard' ? 'bg-amber-200' :
                   selectedCard.tier === 'premium' ? 'bg-blue-200' :
