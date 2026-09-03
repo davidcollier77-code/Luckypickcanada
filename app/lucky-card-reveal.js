@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+
+
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion, AnimationPlaybackControls } from 'framer-motion';
 import { useSound } from 'react-sounds';
@@ -50,27 +52,31 @@ export default function LuckyCardReveal() {
   const { play: playShimmerPremium, stop: stopShimmerPremium } = useSound('notification/completed');
   // Removed unverified sounds.
 
-  const stopAllAudio = () => {
+  const stopAllAudio = React.useCallback(() => {
     stopTick();
     stopShimmerStandard();
     stopShimmerPremium();
     if (activeSourcesRef.current) {
       activeSourcesRef.current.forEach(source => {
-        try { source.stop(); } catch (e) {}
+        try { source.stop(); } catch (e) {} // Safely ignore already stopped
       });
       activeSourcesRef.current = [];
     }
-    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-      audioCtxRef.current.close().catch(() => {});
-      audioCtxRef.current = null;
-    }
-  };
+    // We intentionally DO NOT close the AudioContext here.
+    // It should be reused for subsequent clicks, saving memory and avoiding latency.
+    // audioCtxRef.current will persist across renders until the component unmounts.
+  }, [stopTick, stopShimmerStandard, stopShimmerPremium]);
 
 
 
   useEffect(() => {
     return () => {
       stopAllAudio();
+      if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+         audioCtxRef.current.close().catch(() => {});
+         audioCtxRef.current = null;
+      }
+
       if (activeTimeoutsRef.current) {
         activeTimeoutsRef.current.forEach(window.clearTimeout);
       activeTimeoutsRef.current = [];
@@ -240,7 +246,7 @@ export default function LuckyCardReveal() {
 
         droneGain.gain.setValueAtTime(0, now);
         droneGain.gain.setTargetAtTime(0.2, now + 0.5, 1.0); // Gentle fade-in
-        droneGain.gain.setTargetAtTime(0, now + 7.2, 0.2); // Fade out during the breath
+        droneGain.gain.setTargetAtTime(0.001, now + 7.2, 0.2); // Fade out during the breath
 
         droneOsc.connect(droneGain);
         droneGain.connect(ctx.destination);
@@ -263,7 +269,7 @@ export default function LuckyCardReveal() {
 
         riserGain.gain.setValueAtTime(0, now + 4.0);
         riserGain.gain.linearRampToValueAtTime(0.3, now + 7.2); // Volume swells
-        riserGain.gain.setTargetAtTime(0, now + 7.2, 0.05); // Sharp cut for the breath
+        riserGain.gain.setTargetAtTime(0.001, now + 7.2, 0.05); // Sharp cut for the breath
 
         riserOsc.connect(riserFilter);
         riserFilter.connect(riserGain);
@@ -286,7 +292,7 @@ export default function LuckyCardReveal() {
         impactGain.gain.linearRampToValueAtTime(1.0, now + 8.02); // Fast attack
         impactGain.gain.exponentialRampToValueAtTime(0.01, now + 8.5); // Cinematic decay
 
-        impactGain.gain.exponentialRampToValueAtTime(0.001, now + 8.5); // Cinematic decay
+        impactOsc.connect(impactGain);
         impactGain.connect(ctx.destination);
 
         impactOsc.start(now + 8.0);
