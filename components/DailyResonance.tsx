@@ -51,7 +51,7 @@ const preloadAllAudio = async (ctx: AudioContext) => {
   }
 };
 
-const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: number = 1.0) => {
+const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: number = 1.0, when: number = 0, offset: number = 0) => {
   if (!buffer) return null;
   const source = ctx.createBufferSource();
   source.buffer = buffer;
@@ -59,7 +59,7 @@ const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: numbe
   gainNode.gain.value = volume;
   source.connect(gainNode);
   gainNode.connect(ctx.destination);
-  source.start(0);
+  source.start(when, offset);
   source.onended = () => {
     source.disconnect();
     gainNode.disconnect();
@@ -226,23 +226,28 @@ export default function DailyResonance() {
       setIsLoading(false);
     }
 
-    // Play buildup exactly at 0s
-    const buildupNode = playBuffer(ctx, audioBuffers.buildup);
-    if (buildupNode) activeAudioNodesRef.current.push(buildupNode);
-
     // Strict 9 second cinematic sequence
     const SEQUENCE_DURATION = 9000;
     const IMPACT_TIME = 8800; // 8.8s frame for impact
     const TENSION_TIME = 7500; // 7.5s tension shift
 
-    let startTime: number | null = null;
-    let impactPlayed = false;
+    const audioStartTime = ctx.currentTime;
+
+    // Play buildup exactly at 0s (audioStartTime)
+    const buildupNode = playBuffer(ctx, audioBuffers.buildup, 1.0, audioStartTime);
+    if (buildupNode) activeAudioNodesRef.current.push(buildupNode);
+
+    // Pre-schedule the primary tier impact sound exactly at audioStartTime + 8.8s
+    const impactTimeSec = audioStartTime + (IMPACT_TIME / 1000);
+    const impactNode = playBuffer(ctx, audioBuffers[currentTier], 1.0, impactTimeSec);
+    if (impactNode) activeAudioNodesRef.current.push(impactNode);
+
+    let impactPlayed = false; // We still use this for the visual effect trigger
     let finalTierSet = false;
 
-
     const sequenceLoop = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const elapsed = timestamp - startTime;
+      // Calculate elapsed time strictly using the audio clock
+      const elapsed = (ctx.currentTime - audioStartTime) * 1000;
 
       // Update displayed number based on phase
       if (elapsed < TENSION_TIME) {
@@ -259,12 +264,8 @@ export default function DailyResonance() {
       // Impact Frame (8.8s)
       if (elapsed >= IMPACT_TIME && !impactPlayed) {
         impactPlayed = true;
-        // Trigger exact tier audio instantly without latency
-        const impactNode = playBuffer(ctx, audioBuffers[currentTier]);
-        if (impactNode) activeAudioNodesRef.current.push(impactNode);
-
-        // Trigger visual effect directly synchronously with the audio
-        animateCanvas(currentTier, ctx);
+        // Audio was pre-scheduled, so we only trigger the visual effect synchronously with the audio timeline
+        animateCanvas(currentTier, ctx, impactTimeSec);
       }
 
       // Impact Frame UI Transition (8.8s)
@@ -310,7 +311,7 @@ export default function DailyResonance() {
   };
 
   // Canvas Animation Logic
-  const animateCanvas = useCallback((forcedTier?: string, initialAudioContext?: AudioContext | null) => {
+  const animateCanvas = useCallback((forcedTier?: string, initialAudioContext?: AudioContext | null, impactTimeSec?: number) => {
     const activeAudioCtx = initialAudioContext || audioCtxRef.current;
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
     const activeTier = typeof forcedTier === 'string' ? forcedTier : tier;
@@ -327,19 +328,28 @@ export default function DailyResonance() {
 
     let particles: any[] = [];
     const MAX_PARTICLES = activeTier === 'Cosmic Lightning' ? 30 : 150; // Performance cap
-    const startTime = Date.now();
+
+    // If we have an active audio context and an impact time, we sync exactly.
+    // Otherwise (e.g. page reload without reveal sequence), we use the visual clock or disable spawn.
+    const fallbackStartTime = Date.now();
     let initialSpawnDone = false;
+    let fadeOutTriggered = false;
 
     const loop = () => {
-      const now = Date.now();
-      const canSpawn = (now - startTime) < 4500;
+      let elapsedMs = 0;
+      if (activeAudioCtx && typeof impactTimeSec === 'number') {
+         elapsedMs = (activeAudioCtx.currentTime - impactTimeSec) * 1000;
+      } else {
+         elapsedMs = Date.now() - fallbackStartTime;
+      }
+      const canSpawn = elapsedMs < 4500;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (activeTier === 'Meteor Shower') {
         const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
         if (shouldSpawn && particles.length < 50) { // Cap slightly lower for longer tails
           if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
-            const node = playBuffer(activeAudioCtx, audioBuffers['Meteor Shower'], 0.15);
+            const node = playBuffer(activeAudioCtx, audioBuffers['Meteor Shower'], 0.15, activeAudioCtx.currentTime);
             if (node) activeAudioNodesRef.current.push(node);
           }
           initialSpawnDone = true;
@@ -380,7 +390,7 @@ export default function DailyResonance() {
         const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
         if (shouldSpawn && particles.length < MAX_PARTICLES) {
           if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
-            const node = playBuffer(activeAudioCtx, audioBuffers['Cosmic Lightning'], 0.2);
+            const node = playBuffer(activeAudioCtx, audioBuffers['Cosmic Lightning'], 0.2, activeAudioCtx.currentTime);
             if (node) activeAudioNodesRef.current.push(node);
           }
           initialSpawnDone = true;
@@ -448,7 +458,7 @@ export default function DailyResonance() {
         const shouldSpawn = !initialSpawnDone || (Math.random() < 0.02 && canSpawn);
         if (shouldSpawn && particles.length < 120) { // Cap slightly lower than 150 for safety with trails
           if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
-            const node = playBuffer(activeAudioCtx, audioBuffers['Fireworks'], 0.2);
+            const node = playBuffer(activeAudioCtx, audioBuffers['Fireworks'], 0.2, activeAudioCtx.currentTime);
             if (node) activeAudioNodesRef.current.push(node);
           }
           initialSpawnDone = true;
@@ -515,14 +525,23 @@ export default function DailyResonance() {
 
       if (!canSpawn) {
         // Fade out all active audio smoothly as soon as spawning stops
-        if (activeAudioCtx && activeAudioCtx.state === 'running') {
+        if (activeAudioCtx && activeAudioCtx.state === 'running' && !fadeOutTriggered) {
+          fadeOutTriggered = true;
           activeAudioNodesRef.current.forEach((node) => {
             if (node?.gainNode && node.gainNode.gain.value > 0.01) {
               try {
                 node.gainNode.gain.setTargetAtTime(0, activeAudioCtx.currentTime, 0.5);
+                // Also stop the source smoothly to clean up
+                if (node.source) {
+                  node.source.stop(activeAudioCtx.currentTime + 2.0); // Stop after fade
+                }
               } catch (e) {}
             }
           });
+          // After the fade out period, clear the array to free memory
+          setTimeout(() => {
+             activeAudioNodesRef.current = [];
+          }, 2500);
         }
 
         // Only stop the render loop when all particles are actually gone
