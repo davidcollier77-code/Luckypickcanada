@@ -19,6 +19,56 @@ const LUCKY_QUOTES = [
 
 
 
+// Premium ZZFX Sound Configurations
+const SOUNDS = {
+  buildupHum: [0.6, 0, 65, 2.0, 4.0, 3.0, 2, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], // Deep rising hum
+  tensionTick: [0.2, 0.05, 800, 0.01, 0.02, 0.05, 1, 1.5, -20, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], // Sharp electronic tick
+  tensionTickHigh: [0.25, 0.05, 1200, 0.01, 0.02, 0.05, 1, 1.5, -20, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], // Faster tick
+
+  impactMeteor: [1.8, 0.2, 150, 0.05, 0.1, 2.5, 4, 1.5, -20, 0, 0, 0, 0, 1.5, 0, 0, 0.1, 1, 0.2, 0, 0], // Heavy whoosh/thud
+  impactLightning: [1.5, 0.1, 800, 0.01, 0.1, 2.0, 3, 2, -100, 0, 500, 0.02, 0, 2, 0, 0, 0.05, 1, 0.1, 0.2, 0], // Sharp zap
+  impactFireworks: [1.5, 0.2, 400, 0.01, 0.05, 1.5, 4, 1, -50, 0, 0, 0, 0.05, 1, 0, 0, 0, 1, 0.1, 0, 0], // Crackle pop
+
+  fireworksCrackle: [0.5, 0.5, 800, 0.1, 0.5, 1.5, 4, 1, 0, 0, 0, 0, 0.02, 1, 0, 0, 0, 1, 0.2, 0, 0], // Secondary pop
+
+  sparkle: [0.15, 0.05, 1500, 0.05, 0.1, 1.0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 1, 0.1, 0, 0], // Magic chime
+  payoff: [0.6, 0.05, 880, 0.1, 0.5, 4.0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0.2, 1, 0.2, 0.1, 0] // Majestic chord
+};
+
+// We will pre-generate buffers to ensure perfect synchronization
+const audioBuffers: Record<string, AudioBuffer | null> = {
+  buildupHum: null,
+  tensionTick: null,
+  tensionTickHigh: null,
+  impactMeteor: null,
+  impactLightning: null,
+  impactFireworks: null,
+  fireworksCrackle: null,
+  sparkle: null,
+  payoff: null
+};
+
+// Generate buffers securely
+const preloadAllAudio = async (ctx: AudioContext, ZZFX: any) => {
+  // We use ZZFX's buildSamples but need to convert it to an AudioBuffer for exact scheduling
+  const buildToBuffer = (params: number[]) => {
+     const samples = ZZFX.buildSamples(...params);
+     const buffer = ctx.createBuffer(1, samples.length, ZZFX.sampleRate);
+     buffer.getChannelData(0).set(samples);
+     return buffer;
+  };
+
+  if (!audioBuffers.buildupHum) audioBuffers.buildupHum = buildToBuffer(SOUNDS.buildupHum);
+  if (!audioBuffers.tensionTick) audioBuffers.tensionTick = buildToBuffer(SOUNDS.tensionTick);
+  if (!audioBuffers.tensionTickHigh) audioBuffers.tensionTickHigh = buildToBuffer(SOUNDS.tensionTickHigh);
+  if (!audioBuffers.impactMeteor) audioBuffers.impactMeteor = buildToBuffer(SOUNDS.impactMeteor);
+  if (!audioBuffers.impactLightning) audioBuffers.impactLightning = buildToBuffer(SOUNDS.impactLightning);
+  if (!audioBuffers.impactFireworks) audioBuffers.impactFireworks = buildToBuffer(SOUNDS.impactFireworks);
+  if (!audioBuffers.fireworksCrackle) audioBuffers.fireworksCrackle = buildToBuffer(SOUNDS.fireworksCrackle);
+  if (!audioBuffers.sparkle) audioBuffers.sparkle = buildToBuffer(SOUNDS.sparkle);
+  if (!audioBuffers.payoff) audioBuffers.payoff = buildToBuffer(SOUNDS.payoff);
+};
+
 const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: number = 1.0, when: number = 0, offset: number = 0) => {
   if (!buffer) return null;
   const source = ctx.createBufferSource();
@@ -38,74 +88,6 @@ const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: numbe
 export default function DailyResonance() {
 
   const zzfxRef = useRef<any>(null);
-  const audioBuffersRef = useRef<Record<string, AudioBuffer | null>>({
-    buildupHum: null,
-    tensionTick: null,
-    tensionTickHigh: null,
-    impactMeteor: null,
-    impactLightning: null,
-    impactFireworks: null,
-    fireworksCrackle: null,
-    sparkle: null,
-    payoff: null
-  });
-  const audioBufferPromiseRef = useRef<Promise<void> | null>(null);
-
-  // Premium ZZFX Sound Configurations
-  const SOUNDS = {
-    buildupHum: [0.6, 0, 65, 2.0, 4.0, 3.0, 2, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    tensionTick: [0.2, 0.05, 800, 0.01, 0.02, 0.05, 1, 1.5, -20, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    tensionTickHigh: [0.25, 0.05, 1200, 0.01, 0.02, 0.05, 1, 1.5, -20, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-    impactMeteor: [1.8, 0.2, 150, 0.05, 0.1, 2.5, 4, 1.5, -20, 0, 0, 0, 0, 1.5, 0, 0, 0.1, 1, 0.2, 0, 0],
-    impactLightning: [1.5, 0.1, 800, 0.01, 0.1, 2.0, 3, 2, -100, 0, 500, 0.02, 0, 2, 0, 0, 0.05, 1, 0.1, 0.2, 0],
-    impactFireworks: [1.5, 0.2, 400, 0.01, 0.05, 1.5, 4, 1, -50, 0, 0, 0, 0.05, 1, 0, 0, 0, 1, 0.1, 0, 0],
-    fireworksCrackle: [0.5, 0.5, 800, 0.1, 0.5, 1.5, 4, 1, 0, 0, 0, 0, 0.02, 1, 0, 0, 0, 1, 0.2, 0, 0],
-    sparkle: [0.15, 0.05, 1500, 0.05, 0.1, 1.0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 1, 0.1, 0, 0],
-    payoff: [0.6, 0.05, 880, 0.1, 0.5, 4.0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0.2, 1, 0.2, 0.1, 0]
-  };
-
-  // Generate buffers securely with Promise-based cache to prevent race conditions
-  const preloadAllAudio = async (ctx: AudioContext, ZZFX: any) => {
-    // Return cached promise if already loading
-    if (audioBufferPromiseRef.current) return audioBufferPromiseRef.current;
-    
-    // We use ZZFX's buildSamples but need to convert it to an AudioBuffer for exact scheduling
-    const buildToBuffer = (params: number[]) => {
-       const samples = ZZFX.buildSamples(...params);
-       const buffer = ctx.createBuffer(1, samples.length, ZZFX.sampleRate);
-       buffer.getChannelData(0).set(samples);
-       return buffer;
-    };
-
-    audioBufferPromiseRef.current = (async () => {
-      const audioBuffers = audioBuffersRef.current;
-      if (!audioBuffers.buildupHum) audioBuffers.buildupHum = buildToBuffer(SOUNDS.buildupHum);
-      if (!audioBuffers.tensionTick) audioBuffers.tensionTick = buildToBuffer(SOUNDS.tensionTick);
-      if (!audioBuffers.tensionTickHigh) audioBuffers.tensionTickHigh = buildToBuffer(SOUNDS.tensionTickHigh);
-      if (!audioBuffers.impactMeteor) audioBuffers.impactMeteor = buildToBuffer(SOUNDS.impactMeteor);
-      if (!audioBuffers.impactLightning) audioBuffers.impactLightning = buildToBuffer(SOUNDS.impactLightning);
-      if (!audioBuffers.impactFireworks) audioBuffers.impactFireworks = buildToBuffer(SOUNDS.impactFireworks);
-      if (!audioBuffers.fireworksCrackle) audioBuffers.fireworksCrackle = buildToBuffer(SOUNDS.fireworksCrackle);
-      if (!audioBuffers.sparkle) audioBuffers.sparkle = buildToBuffer(SOUNDS.sparkle);
-      if (!audioBuffers.payoff) audioBuffers.payoff = buildToBuffer(SOUNDS.payoff);
-    })();
-    
-    return audioBufferPromiseRef.current;
-  };
-
-  // Cleanup audio buffers on unmount
-  useEffect(() => {
-    return () => {
-      // Reset buffer references on unmount
-      audioBuffersRef.current = {
-        buildupHum: null, tensionTick: null, tensionTickHigh: null,
-        impactMeteor: null, impactLightning: null, impactFireworks: null,
-        fireworksCrackle: null, sparkle: null, payoff: null
-      };
-      audioBufferPromiseRef.current = null;
-    };
-  }, []);
-
   const getZZFX = async () => {
     if (zzfxRef.current) return zzfxRef.current;
     if (typeof window !== 'undefined') {
@@ -283,7 +265,6 @@ export default function DailyResonance() {
     const TENSION_TIME = 7500; // 7.5s tension shift
 
     const audioStartTime = ctx.currentTime;
-    const audioBuffers = audioBuffersRef.current;
 
     // Play buildup exactly at 0s (audioStartTime)
     const buildupNode = playBuffer(ctx, audioBuffers.buildupHum, 1.0, audioStartTime);
@@ -311,7 +292,6 @@ export default function DailyResonance() {
     const sequenceLoop = (timestamp: number) => {
       // Calculate elapsed time strictly using the audio clock
       const currentTime = ctx.currentTime;
-      if (!currentTime) return; // Prevent crash if context not ready
       const elapsed = (currentTime - audioStartTime) * 1000;
 
       // Pulse Sound Generation Logic (Rhythmic Ticks)
@@ -437,7 +417,6 @@ export default function DailyResonance() {
             const node = playBuffer(activeAudioCtx, audioBuffers.impactMeteor, 0.15, activeAudioCtx.currentTime);
             if (node) activeAudioNodesRef.current.push(node);
           }
-    const audioBuffers = audioBuffersRef.current;
           initialSpawnDone = true;
           particles.push({
             x: Math.random() * canvas.width,
