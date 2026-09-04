@@ -177,7 +177,7 @@ export default function LuckyCardReveal() {
       const strikeTime = now + timeOffset;
 
       const intensity = isFinal ? 1.5 : 0.6 + (idx / schedule.length) * 0.4;
-      const rate = isFinal ? 0.8 : 1.0 + (Math.random() * 0.2 - 0.1);
+      const rate = isFinal ? 0.8 : 1.0;
 
       // Lightning crack
       playBuffer(ctx, audioBuffers.lightning, strikeTime, intensity * 0.8, rate);
