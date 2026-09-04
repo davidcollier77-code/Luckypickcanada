@@ -213,9 +213,9 @@ export default function LuckyCardReveal() {
 
       // We'll use a continuous spring-like motion by defining keyframes
       sequence.push([cardRef.current, {
-        y: [-5, -20, -5, -25, -10],
-        rotateZ: [-0.5, 1, -1, 1.5, -0.5],
-        scale: [1.02, 1.03, 1.04, 1.05, 1.06]
+        y: [-5 * baseIntensity, -20 * baseIntensity, -5 * baseIntensity, -25 * baseIntensity, -10 * baseIntensity],
+        rotateZ: [-0.5 * baseIntensity, 1 * baseIntensity, -1 * baseIntensity, 1.5 * baseIntensity, -0.5 * baseIntensity],
+        scale: [1.02, 1.02 + 0.01 * baseIntensity, 1.02 + 0.02 * baseIntensity, 1.02 + 0.03 * baseIntensity, 1.02 + 0.04 * baseIntensity]
       }, { duration: gatherDuration, ease: 'easeInOut', at: '4.0' }]);
 
       sequence.push(['.deep-vortex', { opacity: 0.8, scale: 1.3, filter: 'brightness(1.2)' }, { duration: gatherDuration, ease: 'easeIn', at: '4.0' }]);
@@ -247,7 +247,7 @@ export default function LuckyCardReveal() {
       }
 
       // Restrained, cinematic light bloom
-      sequence.push(['.reveal-flash', { opacity: [0, 0.8, 0], scale: [0.2, 1.5, 2.0] }, { duration: 1.5, ease: [0.2, 0.8, 0.2, 1], at: '8.0' }]);
+      sequence.push(['.reveal-flash', { opacity: [0, 1.0, 0], scale: [0.2, 1.5, 2.0] }, { duration: 1.5, ease: [0.2, 0.8, 0.2, 1], at: '8.0' }]);
 
       animationControlsRef.current = animate(sequence);
     }, 0));
