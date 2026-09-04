@@ -129,7 +129,27 @@ Use every relevant connected MCP for its actual purpose.
 
 ---
 
-7. Choose the Best Implementation Approach
+7. Current Sound Effects Library
+
+ZZFX is currently installed in the project and is the available sound-effects library.
+
+When a task requires sound effects, interactive audio, or reveal sounds, check and use the installed ZZFX library first.
+
+Before implementing sound-related functionality:
+
+- Inspect the installed ZZFX package and its current API/documentation.
+- Understand what ZZFX is designed to do and determine whether it is appropriate for the specific sound requirement.
+- Use ZZFX when it is the relevant solution rather than searching for or assuming another sound-effects library is available.
+- For complex interactions such as the Lucky Card reveal, consider using multiple complementary ZZFX-generated sound effects rather than relying on one generic sound.
+- Synchronize sounds with the actual visual animation/events rather than relying on arbitrary timing delays.
+- Test audio together with the visual animation to verify timing, volume, repetition, and overall user experience.
+- Avoid excessive volume, harsh clipping, repetitive sounds, or audio that becomes irritating during repeated interactions.
+
+This is the current sound-effects source for the project. If the available audio libraries change in the future, inspect the newly available libraries and update this guidance accordingly.
+
+---
+
+8. Choose the Best Implementation Approach
 
 After inspecting the repository, understanding the available technologies, verifying versions, and researching the relevant documentation:
 
@@ -150,7 +170,7 @@ If multiple approaches are viable, select the one that provides the best balance
 
 ---
 
-8. Implement the Requested Changes
+9. Implement the Requested Changes
 
 Once the approach has been established:
 
@@ -166,7 +186,7 @@ For visual, interactive, animation, audio, or UX work, evaluate the complete use
 
 ---
 
-9. Test the Implementation
+10. Test the Implementation
 
 After implementation, test the affected functionality.
 
@@ -188,7 +208,7 @@ Do not consider the task complete merely because the code compiles.
 
 ---
 
-10. Double-Check the Finished Work
+11. Double-Check the Finished Work
 
 Before submitting any fix or change, thoroughly double-check the completed implementation.
 
@@ -211,7 +231,7 @@ Fix problems discovered during this final verification before submitting.
 
 ---
 
-11. Do Not Stop at the First Working Version
+12. Do Not Stop at the First Working Version
 
 A technically functioning implementation is not automatically a finished implementation.
 
@@ -230,7 +250,7 @@ Where appropriate, improve issues discovered during verification before submitti
 
 ---
 
-12. Universal Rule
+13. Universal Rule
 
 These instructions apply to every development task, regardless of feature or technology.
 
