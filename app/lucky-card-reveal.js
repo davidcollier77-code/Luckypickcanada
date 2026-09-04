@@ -59,8 +59,9 @@ export default function LuckyCardReveal() {
         const ctx = new AudioContextClass();
         const files = {
           lightning: '/yodguard-lightning-magic-3-378649.mp3',
-          coin: '/freesound_community-shaking-coins-105774.mp3',
-          whoosh: '/dragon-studio-whoosh-cinematic-376875.mp3'
+          buildup: '/freesound_community-starship-rail-gun-charge-35904.mp3',
+          whoosh: '/dragon-studio-whoosh-cinematic-376875.mp3',
+          firework: '/freesound_community-fireworks-1-94483.mp3'
         };
 
         const buffers = {};
@@ -158,7 +159,7 @@ export default function LuckyCardReveal() {
     return source;
   };
 
-  const playAudioSequence = (tier, schedule) => {
+    const playAudioSequence = (tier, schedule) => {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
 
@@ -177,125 +178,129 @@ export default function LuckyCardReveal() {
 
     const finalStrikeTime = now + schedule[schedule.length - 1];
 
-    // 1. Initial Activation Cue
-    const initOsc = ctx.createOscillator();
-    const initGain = ctx.createGain();
-    initOsc.type = 'triangle';
-    initOsc.frequency.setValueAtTime(440, now);
-    initOsc.frequency.exponentialRampToValueAtTime(880, now + 0.5);
-    initGain.gain.setValueAtTime(0, now);
-    initGain.gain.linearRampToValueAtTime(0.1, now + 0.1);
-    initGain.gain.setTargetAtTime(0, now + 0.2, 0.2);
-    initOsc.connect(initGain);
-    initGain.connect(ctx.destination);
-    initOsc.start(now);
-    initOsc.stop(now + 1.0);
-    activeAudioNodesRef.current.push(initOsc);
+    // 1. Initial Atmospheric Buildup
+    playBuffer(ctx, audioBuffers.buildup, now, 0.4, 0.6, finalStrikeTime + 1.0);
 
-    // 2. Energy Buildup (drone)
+    // Deep sub rumble building up
     const drone = ctx.createOscillator();
     const droneGain = ctx.createGain();
     drone.type = 'sine';
-    drone.frequency.setValueAtTime(45, now);
-    drone.frequency.linearRampToValueAtTime(65, finalStrikeTime);
-    droneGain.gain.setValueAtTime(0, now);
-    droneGain.gain.linearRampToValueAtTime(0.15, now + 1.5);
-    droneGain.gain.linearRampToValueAtTime(0.3, finalStrikeTime - 0.5);
-    droneGain.gain.setTargetAtTime(0, finalStrikeTime, 0.05); // Fade out right on final strike
+    drone.frequency.setValueAtTime(35, now);
+    drone.frequency.exponentialRampToValueAtTime(55, finalStrikeTime);
+
+    // Add some harmonics with a sawtooth
+    const droneHarmonic = ctx.createOscillator();
+    droneHarmonic.type = 'sawtooth';
+    droneHarmonic.frequency.setValueAtTime(35, now);
+    droneHarmonic.frequency.exponentialRampToValueAtTime(55, finalStrikeTime);
+
+    // Lowpass filter for the sawtooth so it's not harsh
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(150, now);
+    filter.frequency.linearRampToValueAtTime(400, finalStrikeTime);
+
+    droneHarmonic.connect(filter);
+    filter.connect(droneGain);
     drone.connect(droneGain);
+
+    droneGain.gain.setValueAtTime(0, now);
+    droneGain.gain.linearRampToValueAtTime(0.2, now + 1.5);
+    droneGain.gain.exponentialRampToValueAtTime(0.4, finalStrikeTime - 0.2);
+    droneGain.gain.setTargetAtTime(0, finalStrikeTime, 0.05); // Snap fade on final strike
+
     droneGain.connect(ctx.destination);
     drone.start(now);
-    drone.stop(finalStrikeTime + 0.2);
-    activeAudioNodesRef.current.push(drone);
+    droneHarmonic.start(now);
+    drone.stop(finalStrikeTime + 0.5);
+    droneHarmonic.stop(finalStrikeTime + 0.5);
+    activeAudioNodesRef.current.push(drone, droneHarmonic);
 
     // Schedule strikes
     schedule.forEach((timeOffset, idx) => {
       const isFinal = idx === schedule.length - 1;
       const strikeTime = now + timeOffset;
 
-      const intensity = isFinal ? (tier === 'flagship' ? 1.5 : 1.2) : 0.4 + (idx / schedule.length) * 0.4;
+      const intensity = isFinal ? (tier === 'flagship' ? 1.4 : 1.2) : 0.5 + (idx / schedule.length) * 0.4;
 
-      // 3. Incoming Energy (sweep before impact matching 0.3s travel time)
-      const sweepOsc = ctx.createOscillator();
-      const sweepGain = ctx.createGain();
-      sweepOsc.type = 'sine';
-      sweepOsc.frequency.setValueAtTime(800, strikeTime - 0.3);
-      sweepOsc.frequency.exponentialRampToValueAtTime(200, strikeTime);
-      sweepGain.gain.setValueAtTime(0, strikeTime - 0.3);
-      sweepGain.gain.linearRampToValueAtTime(0.1 * intensity, strikeTime - 0.1);
-      sweepGain.gain.setTargetAtTime(0, strikeTime, 0.05);
-      sweepOsc.connect(sweepGain);
-      sweepGain.connect(ctx.destination);
-      sweepOsc.start(Math.max(0, strikeTime - 0.3));
-      sweepOsc.stop(strikeTime + 0.1);
-      activeAudioNodesRef.current.push(sweepOsc);
+      // Energy sweep before impact
+      if (idx > 0) {
+          playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.5, intensity * 0.3, 1.5 + (idx * 0.2), 0.6);
+      }
 
-      // 4. Impact
-      // Use negative offset to ensure perceptual sync
-      const impactOffset = -0.03;
-      playBuffer(ctx, audioBuffers.lightning, strikeTime + impactOffset, intensity * 0.7, isFinal ? 0.9 : 1.1);
+      // 4. Impact (Lightning + Firework layering)
+      const impactOffset = -0.02;
+      playBuffer(ctx, audioBuffers.lightning, strikeTime + impactOffset, intensity * 0.6, isFinal ? 0.8 : 1.0 + (idx * 0.1));
 
-      // 5. Card Shake
-      // Exactly constrained to the shake duration
-      const shakeDur = isFinal ? 0.4 : 0.2;
-      playBuffer(ctx, audioBuffers.coin, strikeTime, intensity * 0.5, 1.2, shakeDur);
+      // Add a subtle thump/firework sound to the strike for weight
+      playBuffer(ctx, audioBuffers.firework, strikeTime, intensity * 0.3, 1.2 + (idx * 0.1), 1.0);
+
+      // Sub bass drop on every impact, but huge on the final one
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(isFinal ? 60 : 80, strikeTime);
+      sub.frequency.exponentialRampToValueAtTime(20, strikeTime + (isFinal ? 1.5 : 0.5));
+      subGain.gain.setValueAtTime(0, strikeTime);
+      subGain.gain.setValueAtTime(isFinal ? 0.8 : 0.4 * intensity, strikeTime + 0.02);
+      subGain.gain.exponentialRampToValueAtTime(0.01, strikeTime + (isFinal ? 1.0 : 0.4));
+      sub.connect(subGain);
+      subGain.connect(ctx.destination);
+      sub.start(strikeTime);
+      sub.stop(strikeTime + (isFinal ? 1.5 : 0.5));
+      activeAudioNodesRef.current.push(sub);
 
       // 6. Final Impact Details
       if (isFinal) {
-        // Anticipation whoosh leading directly into strike
-        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.4, 0.8, 1.5, 0.4);
-
-        // Sub bass drop on impact
-        const sub = ctx.createOscillator();
-        const subGain = ctx.createGain();
-        sub.type = 'sine';
-        sub.frequency.setValueAtTime(80, strikeTime);
-        sub.frequency.exponentialRampToValueAtTime(20, strikeTime + 1.0);
-        subGain.gain.setValueAtTime(0, strikeTime);
-        subGain.gain.setValueAtTime(0.6 * (tier === 'flagship' ? 1.2 : 1), strikeTime + 0.05);
-        subGain.gain.setTargetAtTime(0, strikeTime + 0.1, 0.3);
-        sub.connect(subGain);
-        subGain.connect(ctx.destination);
-        sub.start(strikeTime);
-        sub.stop(strikeTime + 1.5);
-        activeAudioNodesRef.current.push(sub);
+        // Anticipation heavy whoosh
+        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.7, 0.9, 0.8, 0.8);
+        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.3, 0.9, 1.2, 0.5);
       }
     });
 
-    // 8 & 9. Card Flip and Reveal
-    // Shake dur = 0.4 on final, plus 0.25 breathing room
+    // 8. Card Flip and Reveal Magic Shimmer
     const flipAt = finalStrikeTime + 0.65;
-
-    // Flip metallic shimmer
-    const flipOsc = ctx.createOscillator();
-    const flipGain = ctx.createGain();
-    flipOsc.type = 'sine';
-    flipOsc.frequency.setValueAtTime(600, flipAt);
-    flipOsc.frequency.linearRampToValueAtTime(1200, flipAt + 0.4);
-    flipGain.gain.setValueAtTime(0, flipAt);
-    flipGain.gain.linearRampToValueAtTime(0.15, flipAt + 0.2);
-    flipGain.gain.setTargetAtTime(0, flipAt + 0.4, 0.1);
-    flipOsc.connect(flipGain);
-    flipGain.connect(ctx.destination);
-    flipOsc.start(flipAt);
-    flipOsc.stop(flipAt + 0.8);
-    activeAudioNodesRef.current.push(flipOsc);
-
-    // Reveal Chime
     const revealTime = flipAt + 0.35; // Face visible
-    const chimeOsc = ctx.createOscillator();
-    const chimeGain = ctx.createGain();
-    chimeOsc.type = 'triangle';
-    chimeOsc.frequency.setValueAtTime(880, revealTime);
-    chimeOsc.frequency.setValueAtTime(1760, revealTime + 0.1);
-    chimeGain.gain.setValueAtTime(0, revealTime);
-    chimeGain.gain.setValueAtTime(0.2, revealTime + 0.05);
-    chimeGain.gain.setTargetAtTime(0, revealTime + 0.1, 0.5);
-    chimeOsc.connect(chimeGain);
-    chimeGain.connect(ctx.destination);
-    chimeOsc.start(revealTime);
-    chimeOsc.stop(revealTime + 2.0);
-    activeAudioNodesRef.current.push(chimeOsc);
+
+    // Play a reversed whoosh for the flip? Or just a soft whoosh
+    playBuffer(ctx, audioBuffers.whoosh, flipAt, 0.5, 1.8, 0.8);
+
+    // Cinematic Reveal Chime/Shimmer built with oscillators
+    const shimmerOsc1 = ctx.createOscillator();
+    const shimmerOsc2 = ctx.createOscillator();
+    const shimmerGain = ctx.createGain();
+
+    shimmerOsc1.type = 'sine';
+    shimmerOsc2.type = 'triangle';
+
+    // Mystical chord (e.g. Major 9th feel)
+    shimmerOsc1.frequency.setValueAtTime(880, revealTime); // A5
+    shimmerOsc2.frequency.setValueAtTime(1318.51, revealTime); // E6
+
+    // Add subtle detune for a chorus effect
+    shimmerOsc1.detune.setValueAtTime(5, revealTime);
+    shimmerOsc2.detune.setValueAtTime(-5, revealTime);
+
+    shimmerGain.gain.setValueAtTime(0, revealTime);
+    shimmerGain.gain.linearRampToValueAtTime(0.15, revealTime + 0.1);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.01, revealTime + 3.0);
+
+    shimmerOsc1.connect(shimmerGain);
+    shimmerOsc2.connect(shimmerGain);
+
+    // Highpass filter for shimmer to keep it ethereal
+    const shimmerFilter = ctx.createBiquadFilter();
+    shimmerFilter.type = 'highpass';
+    shimmerFilter.frequency.value = 600;
+
+    shimmerGain.connect(shimmerFilter);
+    shimmerFilter.connect(ctx.destination);
+
+    shimmerOsc1.start(revealTime);
+    shimmerOsc2.start(revealTime);
+    shimmerOsc1.stop(revealTime + 4.0);
+    shimmerOsc2.stop(revealTime + 4.0);
+    activeAudioNodesRef.current.push(shimmerOsc1, shimmerOsc2);
 
     return ctx;
   };
@@ -332,6 +337,12 @@ export default function LuckyCardReveal() {
     const schedule = STRIKE_SCHEDULES[tier];
     let totalEnergyAbsorbed = 0;
 
+    // Accumulate global effects to render them once per frame
+    let maxFlashOpacity = 0;
+    let flashRgb = '255, 255, 255';
+    let flashGlowColor = '255, 255, 255';
+    let isFinalFlash = false;
+
     // Draw strikes
     schedule.forEach((strikeTime, idx) => {
       const timeSinceStrike = elapsed - strikeTime;
@@ -344,97 +355,181 @@ export default function LuckyCardReveal() {
 
       // Strike animation (starts slightly before impact, travels, hits, fades)
       const travelTime = 0.3;
-      const fadeTime = isFinal ? 1.0 : 0.4;
+      const fadeTime = isFinal ? 1.2 : 0.6;
       const strikeStart = strikeTime - travelTime;
 
       if (elapsed >= strikeStart && elapsed < strikeTime + fadeTime) {
         const side = idx % 2 === 0 ? 'left' : 'right';
-        const startX = side === 'left' ? 0 : w;
+        const startX = side === 'left' ? -w*0.1 : w*1.1; // Start slightly offscreen
 
         let progress = 0;
         let opacity = 0;
 
         if (elapsed < strikeTime) {
-          // Traveling inwards
-          progress = (elapsed - strikeStart) / travelTime;
-          opacity = progress;
+          // Traveling inwards with easing
+          const t = (elapsed - strikeStart) / travelTime;
+          progress = t * t * (3 - 2 * t); // Smoothstep
+          opacity = t * 1.5; // Quick fade in
         } else {
           // Hit and fade
           progress = 1;
           opacity = 1 - (timeSinceStrike / fadeTime);
         }
 
+        opacity = Math.max(0, Math.min(1, opacity));
         const currentX = startX + (cx - startX) * progress;
+
+        // Base color based on tier
+        const rgb = tier === 'standard' ? '255, 245, 230' : (tier === 'premium' ? '140, 210, 255' : '255, 215, 100');
+        const glowColor = tier === 'standard' ? '200, 200, 255' : (tier === 'premium' ? '50, 100, 255' : '255, 150, 0');
 
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
 
-        // Main beam
-        ctx.beginPath();
-        ctx.moveTo(startX, cy + (Math.sin(idx * 13) * 50));
-
-        const cp1x = startX + (currentX - startX) * 0.5;
-        const cp1y = cy + (Math.sin(elapsed * 10 + idx) * 100);
-
-        ctx.bezierCurveTo(cp1x, cp1y, currentX, cy, currentX, cy);
-
-        ctx.lineWidth = isFinal ? 12 + opacity * 8 : 4 + opacity * 6;
-        ctx.lineCap = 'round';
-
-        const baseColor = tier === 'standard' ? '255, 255, 255' : (tier === 'premium' ? '100, 200, 255' : '255, 200, 50');
-
-        ctx.strokeStyle = `rgba(${baseColor}, ${opacity * (isFinal ? 1 : 0.8)})`;
-        ctx.shadowColor = `rgba(${baseColor}, 1)`;
-        ctx.shadowBlur = isFinal ? 30 : 15;
-
-        ctx.stroke();
-
-        // Branches
-        if (isFinal || opacity > 0.5) {
+        // --- Core Beam ---
+        const drawBeam = (thickness, alpha, blur, color) => {
             ctx.beginPath();
-            ctx.moveTo(cp1x, cp1y);
-            const branchEndX = currentX - (currentX - startX) * 0.2;
-            const branchEndY = cy + (Math.cos(elapsed * 15 + idx) * 120);
-            ctx.lineTo(branchEndX, branchEndY);
-            ctx.lineWidth = (isFinal ? 4 : 2) * opacity;
+
+            // Start y oscillates slightly
+            const sy = cy + (Math.sin(idx * 13) * h * 0.1);
+            ctx.moveTo(startX, sy);
+
+            // Control point for arc/wobble
+            const cp1x = startX + (currentX - startX) * 0.6;
+            // Wobble grows as it travels
+            const wobble = Math.sin(elapsed * 15 + idx * 5) * h * 0.15 * progress;
+            const cp1y = cy + wobble;
+
+            ctx.bezierCurveTo(cp1x, cp1y, currentX, cy, currentX, cy);
+
+            ctx.lineWidth = thickness;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = `rgba(${color}, ${alpha})`;
+            ctx.shadowColor = `rgba(${color}, 1)`;
+            ctx.shadowBlur = blur;
             ctx.stroke();
+
+            return { sy, cp1x, cp1y };
+        };
+
+        // Layer 1: Wide faint glow
+        drawBeam(isFinal ? 40 : 20, opacity * 0.2, 30, glowColor);
+        // Layer 2: Medium glow
+        const pts = drawBeam(isFinal ? 15 : 8, opacity * 0.5, 15, glowColor);
+        // Layer 3: Hot core
+        drawBeam(isFinal ? 5 : 2, opacity, 5, rgb);
+
+        // --- Organic Branches / Lightning forks ---
+        if (progress > 0.3 && opacity > 0.1) {
+            const numBranches = isFinal ? 3 : 1;
+            for(let b=0; b<numBranches; b++) {
+                ctx.beginPath();
+                ctx.moveTo(pts.cp1x, pts.cp1y);
+                const dir = side === 'left' ? 1 : -1;
+                // Fork out and back
+                const bx1 = pts.cp1x + (w * 0.1 * dir) + Math.cos(elapsed * 20 + b)*20;
+                const by1 = pts.cp1y + (Math.sin(elapsed * 20 + b) * 80) * (b%2===0?1:-1);
+                const bx2 = currentX - (currentX - startX) * 0.1;
+                const by2 = cy + Math.cos(elapsed * 25)*30;
+
+                ctx.bezierCurveTo(bx1, by1, bx2, by2, currentX, cy);
+                ctx.lineWidth = isFinal ? 2 : 1;
+                ctx.strokeStyle = `rgba(${glowColor}, ${opacity * 0.4})`;
+                ctx.stroke();
+            }
         }
 
         ctx.restore();
 
-        // Impact flash (underneath the card)
-        if (elapsed >= strikeTime && elapsed < strikeTime + 0.2) {
-            const flashOpacity = 1 - (timeSinceStrike / 0.2);
+        // --- Impact Particles & Geometry (Local overdraw is fine, full-screen is not) ---
+        if (elapsed >= strikeTime && timeSinceStrike < fadeTime) {
             ctx.save();
             ctx.globalCompositeOperation = 'screen';
-            const flashGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * (isFinal ? 0.8 : 0.4));
-            flashGrad.addColorStop(0, `rgba(${baseColor}, ${flashOpacity * (isFinal ? 0.9 : 0.5)})`);
-            flashGrad.addColorStop(1, `rgba(${baseColor}, 0)`);
-            ctx.fillStyle = flashGrad;
-            ctx.fillRect(0, 0, w, h);
+
+            // Accumulate flash for the full-screen pass
+            const currentFlashOpacity = Math.max(0, 1 - (timeSinceStrike / (isFinal ? 0.3 : 0.15)));
+            if (currentFlashOpacity > maxFlashOpacity) {
+                maxFlashOpacity = currentFlashOpacity;
+                flashRgb = rgb;
+                flashGlowColor = glowColor;
+                isFinalFlash = isFinal;
+            }
+
+            // 2. Shockwave Ring
+            const ringProgress = timeSinceStrike / (isFinal ? 0.6 : 0.4);
+            if (ringProgress < 1) {
+                const ringRadius = (isFinal ? w * 0.5 : w * 0.3) * Math.pow(ringProgress, 0.5);
+                const ringOpacity = (1 - ringProgress) * 0.5;
+                ctx.beginPath();
+                ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+                ctx.lineWidth = isFinal ? 4 : 2;
+                ctx.strokeStyle = `rgba(${glowColor}, ${ringOpacity})`;
+                ctx.stroke();
+            }
+
+            // 3. Energy Particles exploding outwards
+            if (timeSinceStrike < 0.5) {
+                const pCount = isFinal ? 12 : 5;
+                const pProgress = timeSinceStrike / 0.5;
+                for (let p=0; p<pCount; p++) {
+                    const angle = (Math.PI * 2 / pCount) * p + (idx * 0.5);
+                    const dist = (isFinal ? 150 : 80) * Math.pow(pProgress, 0.4);
+                    const px = cx + Math.cos(angle) * dist;
+                    const py = cy + Math.sin(angle) * dist;
+                    const pAlpha = 1 - pProgress;
+
+                    ctx.beginPath();
+                    ctx.arc(px, py, isFinal ? 3 : 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${rgb}, ${pAlpha})`;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = `rgba(${glowColor}, 1)`;
+                    ctx.fill();
+
+                    // Particle trails
+                    ctx.beginPath();
+                    ctx.moveTo(cx + Math.cos(angle) * dist * 0.5, cy + Math.sin(angle) * dist * 0.5);
+                    ctx.lineTo(px, py);
+                    ctx.strokeStyle = `rgba(${glowColor}, ${pAlpha * 0.5})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+
             ctx.restore();
         }
       }
     });
 
-    // Draw Aura (builds over time behind the card)
-    if (totalEnergyAbsorbed > 0) {
+    // --- Combine Full-Screen Effects (Aura & Flashes) into ONE pass ---
+    if (totalEnergyAbsorbed > 0 || maxFlashOpacity > 0) {
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
 
       const maxEnergy = schedule.length;
       const auraIntensity = Math.min(totalEnergyAbsorbed / maxEnergy, 1);
 
-      // Pulsing effect
-      const pulse = 1 + Math.sin(elapsed * 4) * 0.1;
+      // Organic pulsing effect
+      const pulse1 = Math.sin(elapsed * 2) * 0.05;
+      const pulse2 = Math.cos(elapsed * 3.1) * 0.05;
+      const pulse = 1 + pulse1 + pulse2;
 
-      const auraRadius = (tier === 'flagship' ? 300 : (tier === 'premium' ? 250 : 200)) * pulse * auraIntensity;
-      const baseColor = tier === 'standard' ? '200, 255, 255' : (tier === 'premium' ? '50, 150, 255' : '255, 180, 50');
+      const auraRadius = (tier === 'flagship' ? 350 : (tier === 'premium' ? 280 : 220)) * pulse * auraIntensity;
+      const baseColor = tier === 'standard' ? '180, 200, 255' : (tier === 'premium' ? '50, 150, 255' : '255, 180, 50');
 
+      // More dimensional aura
       const auraGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, auraRadius);
-      auraGrad.addColorStop(0, `rgba(${baseColor}, ${auraIntensity * 0.4})`);
-      auraGrad.addColorStop(0.5, `rgba(${baseColor}, ${auraIntensity * 0.15})`);
-      auraGrad.addColorStop(1, `rgba(${baseColor}, 0)`);
+      // We combine the flash into the aura gradient if there is an active flash
+      if (maxFlashOpacity > 0) {
+          auraGrad.addColorStop(0, `rgba(${flashRgb}, ${maxFlashOpacity * 0.9 + auraIntensity * 0.3})`);
+          auraGrad.addColorStop(0.3, `rgba(${flashGlowColor}, ${maxFlashOpacity * 0.5 + auraIntensity * 0.15})`);
+          auraGrad.addColorStop(0.7, `rgba(${baseColor}, ${auraIntensity * 0.05})`);
+          auraGrad.addColorStop(1, `rgba(${baseColor}, 0)`);
+      } else {
+          auraGrad.addColorStop(0, `rgba(${baseColor}, ${auraIntensity * 0.3})`);
+          auraGrad.addColorStop(0.3, `rgba(${baseColor}, ${auraIntensity * 0.15})`);
+          auraGrad.addColorStop(0.7, `rgba(${baseColor}, ${auraIntensity * 0.05})`);
+          auraGrad.addColorStop(1, `rgba(${baseColor}, 0)`);
+      }
 
       ctx.fillStyle = auraGrad;
       ctx.fillRect(0, 0, w, h);
@@ -476,6 +571,7 @@ export default function LuckyCardReveal() {
       setIsGenerating(false);
     }
   };
+
   const triggerCardDraw = () => {
     stopAll();
 

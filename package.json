@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "NODE_ENV=production next build --webpack",
     "deploy": "RESEND_API_KEY=re_dummy opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "start": "next start",
