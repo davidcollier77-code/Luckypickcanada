@@ -1,14 +1,14 @@
 AGENTS.md
 
-1. Core Operating Rules & Boundaries
+1. CORE OPERATING RULES
 
 - Treat "main" as the source of truth.
 - Read and follow this file before making repository changes.
 - Inspect the existing implementation before changing it.
-- Understand the relevant architecture, dependencies, data flow, and runtime behavior before making changes.
+- Understand the relevant architecture, dependencies, data flow, configuration, and runtime behavior before making changes.
 - Prefer the smallest safe change that fully solves the requested problem.
 - Preserve existing behavior unless the task explicitly requires a change.
-- Use the existing architecture, patterns, components, dependencies, and project capabilities whenever practical.
+- Reuse the existing architecture, patterns, components, dependencies, and project capabilities whenever practical.
 - Do not introduce a new library, framework, service, or dependency when an existing project capability already provides the required functionality.
 - Do not rewrite working systems unnecessarily.
 - Do not invent APIs, configuration, dependencies, routes, database structures, environment variables, or infrastructure.
@@ -16,153 +16,748 @@ AGENTS.md
 - Keep changes focused, intentional, and reviewable.
 - Do not make unrelated cleanup changes simply because they are possible.
 - Do not assume that a successful build means the task is complete.
-- When the requested outcome involves browser behavior, visuals, animation, audio, runtime behavior, data, deployment, or user interaction, verify the actual behavior rather than relying only on static analysis.
+- When the requested outcome involves browser behavior, visuals, animation, audio, runtime behavior, data, deployment, security, performance, or user interaction, verify the actual behavior rather than relying only on static analysis.
 - Before making changes, identify the tools, MCPs, skills, libraries, documentation sources, and project systems that can materially help with the task.
-- Use those capabilities proactively rather than waiting until a problem occurs.
+- Use applicable capabilities proactively.
 
 ---
 
-2. MCP, SKILL, LIBRARY & TOOL USAGE — DEFAULT EXPECTATION
-
-The project has been given MCPs, skills, libraries, documentation tools, and other capabilities for a reason.
+2. TOOL, MCP, SKILL & LIBRARY POLICY
 
 DEFAULT RULE
 
-Use the available MCPs, skills, libraries, and project tooling by default.
+Use applicable MCPs, skills, libraries, documentation, browser tools, testing tools, and project capabilities by default.
 
-Do not treat them as optional conveniences.
+Do not treat an applicable capability as optional merely because the code could be changed without it.
 
 For every task:
 
-1. Identify the available MCPs, skills, libraries, and project tools that apply.
-2. Actively use the applicable ones during investigation, planning, implementation, testing, verification, or optimization.
-3. Prefer using multiple relevant tools together when doing so improves the result.
-4. Do not restrict yourself to the minimum number of tools needed to make the code compile.
-5. If a tool can materially improve correctness, quality, reliability, design, performance, browser behavior, data integrity, deployment safety, or user experience, use it.
-6. Only skip an applicable tool when it genuinely provides no useful value for the specific task, or David explicitly says not to use it.
-7. Never merely connect/configure/acknowledge a tool and then ignore it.
+1. Determine which tools, MCPs, skills, libraries, documentation sources, and project systems apply.
+2. Use the applicable capabilities during investigation, planning, implementation, testing, verification, or optimization.
+3. When multiple task categories apply, combine the applicable toolsets rather than choosing only one.
+4. Use the strongest relevant combination of tools available to you.
+5. Only skip a capability when:
+   - it genuinely provides no useful value for the specific task;
+   - the capability is unavailable in the current Jules session;
+   - or David explicitly says not to use it.
+6. Do not skip an applicable capability simply because using it requires additional investigation.
+7. Do not substitute personal assumptions for information that an available MCP, documentation source, diagnostic tool, or repository inspection can verify.
 
 ACTUAL USE IS REQUIRED
 
-Connecting to an MCP does not count as using it.
+A tool requirement is not satisfied by:
 
-Using a library does not mean merely knowing that it exists.
+- mentioning the tool;
+- identifying the tool;
+- knowing that the tool exists;
+- connecting to the tool;
+- configuring the tool;
+- reading its name from this file;
+- saying that the tool would be useful.
 
-When an applicable MCP, skill, documentation source, or project tool is identified:
+When an applicable tool, MCP, skill, or documentation source is available, actually invoke it and use the result.
 
-- actually call or invoke it;
-- retrieve the relevant information, data, guidance, design output, diagnostics, or other result;
-- apply that information to the work;
-- use the resulting evidence to guide the implementation or verification.
+The result must materially inform the investigation, implementation, testing, verification, or decision-making.
 
-Do not claim an MCP, skill, library, or documentation source was used unless it was actually used.
+Do not claim a tool, MCP, skill, library, or documentation source was used unless it was actually used.
 
-USE MULTIPLE TOOLS WHEN THEY WORK TOGETHER
+PLAN REQUIREMENT
 
-Do not artificially choose only one tool when several are relevant.
+Before implementation, the plan should identify the major task categories involved and the corresponding tools, MCPs, skills, libraries, and verification methods that will be used.
 
-Examples:
+If the task involves multiple categories, the plan must account for all materially relevant categories.
 
-- A UI animation task may require Stitch + Context7 + Framer Motion + Playwright.
-- A database-backed feature may require Neon + Context7 + Next.js + TypeScript + Playwright.
-- An audio reveal may require Context7 + Howler/Tone/use-sound/Pizzicato + Framer Motion + Playwright.
-- A Cloudflare deployment issue may require Context7 + Next.js + OpenNext + Wrangler + Playwright.
-- An image/rendering issue may require Sharp + html2canvas + Playwright.
-- A broader investigation may require several MCPs and libraries at the same time.
+Do not silently omit an applicable toolset from the plan and then proceed as though it was unnecessary.
 
-The goal is not to minimize tool calls.
+JUDGMENT STILL MATTERS
 
-The goal is to use the available toolbox to produce the best correct result.
+Use the routing rules below as defaults, not as a reason to invoke irrelevant tools.
+
+The requirement is to use the tools that materially improve the task.
+
+Do not invoke unrelated tools merely to satisfy a checklist.
 
 ---
 
-3. MCP & SKILL EXPECTATIONS
+3. AGENT SKILLS FOR CONTEXT ENGINEERING — DEFAULT
+
+Use the Agent Skills for Context Engineering capability for every non-trivial engineering task.
+
+Use it to improve:
+
+- repository understanding;
+- task decomposition;
+- context management;
+- implementation planning;
+- information retrieval;
+- execution quality;
+- constraint preservation;
+- reducing context loss;
+- reasoning about complex repository changes;
+- identifying relevant files and systems;
+- maintaining task focus;
+- verification;
+- final review.
+
+This is a default capability for non-trivial engineering work.
+
+Do not skip it merely because the task initially appears straightforward if it can improve understanding, planning, execution, or verification.
+
+---
+
+4. MCP EXPECTATIONS
 
 Context7 MCP
 
-Use Context7 by default when current library, framework, API, dependency, or implementation documentation is relevant.
+Use Context7 whenever current library, framework, API, dependency, or implementation documentation is relevant.
 
-- Consult the relevant project/library documentation rather than relying on memory or assumptions.
-- Use the correct library mapping from the registry in Section 6.
-- When multiple libraries are involved, consult the documentation for the relevant libraries rather than assuming one library's behavior.
-- Use the retrieved documentation to guide implementation and verification.
-- Do not invent Context7 library IDs.
+- Consult current documentation rather than relying on memory or assumptions.
+- Use the correct project mapping in Section 7.
+- When multiple libraries are involved, consult the relevant documentation for each materially relevant library.
+- Apply retrieved documentation to implementation and verification.
+- Do not invent Context7 library IDs or mappings.
 
 Stitch MCP
 
-Use Stitch by default for work involving:
+Use Stitch for work involving:
 
 - UI design;
 - visual design;
-- page layout;
+- layout;
 - screen composition;
-- design exploration;
 - visual hierarchy;
 - responsive design;
 - interaction design;
+- design exploration;
 - visual refinement;
-- translating design concepts into implementation;
-- improving an existing interface where a visual/design reference can materially improve the result.
+- visual polish;
+- translating design concepts into implementation.
 
-Actually call Stitch when it is applicable.
+Actually invoke Stitch when applicable.
 
-Use Stitch output as implementation/design guidance rather than merely acknowledging it.
-
-When Stitch and Context7 are both relevant, use both.
+Use Stitch output as design or implementation guidance.
 
 Neon MCP
 
-Use Neon by default whenever the task involves or depends on:
+Use Neon whenever the task involves or depends on:
 
 - PostgreSQL;
-- database schema or structure;
+- database schema;
 - persisted data;
 - queries;
-- data relationships;
+- relationships;
 - database-backed features;
-- caching or data retrieval behavior;
 - database errors;
 - database performance;
 - backend data flow;
-- verifying assumptions about actual stored data.
+- actual stored data;
+- data integrity.
 
-Use the actual Neon project/database evidence when authorized and applicable.
+Use actual Neon evidence when authorized and applicable.
 
-Do not guess about database structure or behavior when Neon can provide authoritative information.
-
-Agent Skills for Context Engineering
-
-Use the Agent Skills for Context Engineering capability when it can improve:
-
-- task decomposition;
-- context management;
-- repository understanding;
-- implementation planning;
-- information retrieval;
-- agent execution quality;
-- maintaining important constraints;
-- reducing context loss;
-- reasoning about complex repository changes.
-
-Actually use the skill when applicable and incorporate its guidance.
+Do not guess about database structures or behavior when Neon can verify them.
 
 Other MCPs and Skills
 
-Any additional MCP, skill, integration, or project capability available to the agent should be treated the same way:
+Treat every additional available MCP, skill, integration, and project capability the same way:
 
-- identify it;
-- determine whether it can provide value;
-- use it when applicable;
-- incorporate its output;
-- verify the final result.
+1. Identify whether it applies.
+2. Invoke it when it provides material value.
+3. Use its result.
+4. Incorporate the result into the work.
+5. Verify the outcome.
 
-This requirement applies even when the tool is not specifically listed in this file.
+This applies even when the capability is not explicitly named in this file.
 
 ---
 
-4. LIBRARY & PROJECT CAPABILITY USAGE
+5. TASK-BASED TOOL & LIBRARY ROUTING
 
-Use the project's existing libraries and capabilities whenever they are applicable.
+When a task matches a category below, use that category's tools by default.
+
+If multiple categories apply, combine them. Do not choose only one category when several are relevant.
+
+---
+
+A. UI DESIGN / VISUAL DESIGN / FRONT-END POLISH
+
+Use:
+
+- Stitch;
+- Context7;
+- "next";
+- "react";
+- "react-dom";
+- "typescript";
+- "tailwindcss";
+- "autoprefixer";
+- "shadcn/ui";
+- "framer-motion";
+- Playwright;
+- "playwright-chromium" where applicable.
+
+Use Stitch for visual exploration and refinement.
+
+Use Context7 for current framework and library behavior.
+
+Verify the actual interface in a browser.
+
+---
+
+B. RESPONSIVE DESIGN / MOBILE UX
+
+Use:
+
+- Stitch;
+- Playwright;
+- "playwright-chromium";
+- "next";
+- "react";
+- "tailwindcss";
+- "shadcn/ui";
+- "framer-motion";
+- Context7.
+
+Check:
+
+- mobile;
+- tablet;
+- desktop;
+- responsive breakpoints;
+- touch interactions;
+- spacing;
+- overflow;
+- viewport behavior;
+- text wrapping;
+- buttons and controls;
+- visual hierarchy.
+
+Do not assume desktop behavior works correctly on mobile.
+
+---
+
+C. ANIMATION / MOTION / INTERACTIVE EFFECTS
+
+Use:
+
+- "framer-motion";
+- Context7;
+- relevant browser/rendering tools;
+- Playwright;
+- "playwright-chromium".
+
+Verify:
+
+- timing;
+- sequencing;
+- state transitions;
+- interaction behavior;
+- completion;
+- interruption;
+- reduced-motion behavior where applicable;
+- browser/runtime behavior.
+
+Do not rely only on source-code inspection.
+
+---
+
+D. PARTICLES / VISUAL EFFECTS / AMBIENT EFFECTS
+
+Use:
+
+- "tsparticles";
+- "framer-motion";
+- Stitch;
+- Context7;
+- Playwright;
+- "playwright-chromium".
+
+Use Stitch when visual composition or design direction matters.
+
+Verify the rendered result in the browser.
+
+---
+
+E. AUDIO / SOUND / INTERACTIVE AUDIO
+
+Use:
+
+- "howler";
+- "tone";
+- "use-sound";
+- "pizzicato";
+- "framer-motion";
+- Context7;
+- Playwright.
+
+When several complementary sounds improve an interaction or reveal, use multiple appropriate audio capabilities rather than forcing a single library to handle every sound.
+
+Verify:
+
+- triggering;
+- sequencing;
+- timing;
+- volume;
+- lifecycle;
+- cleanup;
+- browser compatibility;
+- user interaction requirements.
+
+---
+
+F. NEXT.JS / REACT / APPLICATION ARCHITECTURE
+
+Use:
+
+- "next";
+- "react";
+- "react-dom";
+- "typescript";
+- "react-error-boundary";
+- Context7;
+- relevant testing/browser tools.
+
+Inspect the existing architecture before changing it.
+
+Prefer existing project patterns over introducing new architectural approaches.
+
+---
+
+G. TYPESCRIPT / STATIC ANALYSIS / CODE QUALITY
+
+Use:
+
+- "typescript";
+- "eslint";
+- "@types/node";
+- "@types/react";
+- Context7 when dependency or framework behavior is relevant.
+
+Run appropriate type checking and linting.
+
+Do not treat static checks as the only verification when runtime behavior matters.
+
+---
+
+H. DATABASE / POSTGRESQL / DATA-BACKED FEATURES
+
+Use:
+
+- Neon MCP;
+- "@neondatabase/serverless";
+- Context7;
+- "next";
+- "typescript";
+- Playwright where browser behavior is involved.
+
+When authorized:
+
+- inspect the actual schema;
+- inspect relevant tables;
+- inspect relationships;
+- inspect actual data when necessary;
+- verify queries;
+- verify data flow;
+- verify persistence.
+
+Do not guess about database behavior when Neon can provide authoritative evidence.
+
+---
+
+I. REDIS / CACHING / STATE
+
+Use:
+
+- "@upstash/redis";
+- relevant backend/data MCPs;
+- Context7;
+- "next";
+- "typescript";
+- appropriate testing/runtime tools.
+
+Verify:
+
+- cache reads;
+- cache writes;
+- invalidation;
+- expiration;
+- fallback behavior;
+- error handling;
+- consistency.
+
+---
+
+J. STRIPE / PAYMENTS
+
+Use:
+
+- "stripe";
+- "@stripe/stripe-js";
+- Context7;
+- appropriate browser/runtime verification.
+
+Payment systems are protected.
+
+Do not modify:
+
+- Stripe configuration;
+- checkout behavior;
+- payment flows;
+- pricing;
+- payment infrastructure;
+
+unless the task explicitly authorizes those changes.
+
+Investigation may be performed when appropriate without modifying protected payment systems.
+
+---
+
+K. EMAIL / TRANSACTIONAL EMAIL
+
+Use:
+
+- "resend";
+- Context7;
+- relevant Next.js/TypeScript tooling;
+- appropriate runtime verification.
+
+Email infrastructure is protected.
+
+Do not modify email infrastructure, delivery configuration, credentials, templates, or flows unless explicitly authorized.
+
+---
+
+L. IMAGE / SVG / CANVAS / RENDERING
+
+Use:
+
+- "sharp";
+- "html2canvas";
+- relevant browser tools;
+- Context7;
+- Playwright.
+
+Verify the actual rendered result where visual correctness matters.
+
+Check:
+
+- dimensions;
+- scaling;
+- quality;
+- SVG validity;
+- transparency;
+- browser rendering;
+- responsive behavior;
+- performance.
+
+---
+
+M. BROWSER TESTING / UI AUDITING
+
+Use:
+
+- Playwright;
+- "playwright-chromium";
+- Puppeteer;
+- Stitch where visual comparison is useful;
+- relevant framework/library documentation;
+- Context7.
+
+Check:
+
+- user flows;
+- interactions;
+- visual state;
+- responsive behavior;
+- loading states;
+- errors;
+- navigation;
+- console/runtime problems;
+- accessibility where relevant.
+
+---
+
+N. TROUBLESHOOTING / BUG INVESTIGATION
+
+Use:
+
+- Agent Skills for Context Engineering;
+- the MCPs relevant to the affected system;
+- Context7;
+- Playwright/Puppeteer for browser issues;
+- Neon for database issues;
+- Wrangler/OpenNext for deployment issues;
+- TypeScript/ESLint for code-quality issues;
+- runtime diagnostics and logs where available.
+
+Do not immediately patch the first suspicious line.
+
+First:
+
+1. reproduce or inspect the failure;
+2. trace the affected flow;
+3. identify the root cause;
+4. gather evidence;
+5. determine the smallest correct fix;
+6. implement it;
+7. verify the actual result.
+
+Do not confuse a symptom with the root cause.
+
+---
+
+O. CLOUDFLARE / OPENNEXT / DEPLOYMENT
+
+Use:
+
+- "@opennextjs/cloudflare";
+- "wrangler";
+- "@opennextjs/aws" where applicable;
+- "next";
+- Context7;
+- Playwright;
+- runtime/deployment diagnostics.
+
+Verify:
+
+- build behavior;
+- generated assets;
+- routes;
+- static assets;
+- runtime behavior;
+- Cloudflare compatibility;
+- deployment configuration;
+- production behavior where applicable.
+
+Do not assume a successful local build proves the deployed application works.
+
+---
+
+P. PERFORMANCE / OPTIMIZATION
+
+Use:
+
+- Agent Skills for Context Engineering;
+- Context7;
+- relevant framework documentation;
+- Playwright;
+- Puppeteer;
+- browser/runtime profiling;
+- relevant MCPs;
+- existing project performance tooling.
+
+Investigate before optimizing.
+
+Measure where practical.
+
+Check for:
+
+- unnecessary rendering;
+- expensive effects;
+- excessive network requests;
+- large assets;
+- blocking operations;
+- animation performance;
+- memory usage;
+- bundle size;
+- image optimization;
+- database/query performance;
+- caching opportunities.
+
+Do not make speculative performance changes without evidence.
+
+---
+
+Q. SECURITY / SECURITY REVIEW
+
+Use:
+
+- Agent Skills for Context Engineering;
+- relevant security tools available in the environment;
+- Context7;
+- dependency/security analysis;
+- TypeScript/ESLint;
+- framework documentation;
+- runtime/browser testing;
+- relevant MCPs.
+
+Review where applicable:
+
+- authentication boundaries;
+- authorization;
+- input validation;
+- data exposure;
+- secret handling;
+- environment variables;
+- API routes;
+- database access;
+- payment boundaries;
+- dependency risks;
+- client/server separation;
+- injection risks;
+- error leakage.
+
+Never expose, print, commit, or invent secrets or credentials.
+
+Do not make unrelated security refactors.
+
+---
+
+R. ACCESSIBILITY
+
+Use:
+
+- Stitch;
+- Playwright;
+- relevant UI/framework documentation;
+- Context7;
+- existing accessibility tooling.
+
+Check where applicable:
+
+- keyboard navigation;
+- focus states;
+- semantic HTML;
+- labels;
+- controls;
+- contrast;
+- screen-reader-relevant structure;
+- reduced motion;
+- touch targets;
+- error messaging.
+
+Verify actual browser behavior where possible.
+
+---
+
+S. SEO / METADATA / DISCOVERABILITY
+
+Use:
+
+- "next";
+- "react";
+- Context7;
+- browser inspection;
+- relevant validation/testing tools.
+
+Check:
+
+- metadata;
+- titles;
+- descriptions;
+- canonical behavior;
+- structured data where applicable;
+- robots behavior;
+- sitemap behavior;
+- social metadata;
+- rendering behavior.
+
+Do not invent SEO configuration or routes.
+
+---
+
+T. TESTING / QA
+
+Use:
+
+- Playwright;
+- "playwright-chromium";
+- Puppeteer;
+- TypeScript;
+- ESLint;
+- relevant framework/library documentation;
+- Context7.
+
+Choose verification appropriate to the change.
+
+Test both the changed behavior and important surrounding behavior that could have been affected.
+
+---
+
+U. DEPENDENCY / LIBRARY UPGRADES
+
+Use:
+
+- Context7;
+- documentation for the relevant dependency;
+- TypeScript;
+- ESLint;
+- existing tests;
+- Playwright where browser behavior is involved.
+
+Before upgrading:
+
+- inspect current usage;
+- check compatibility;
+- check breaking changes;
+- check peer dependencies;
+- check project conventions.
+
+After upgrading:
+
+- run appropriate validation;
+- verify runtime behavior;
+- inspect the final diff.
+
+Do not upgrade dependencies merely because newer versions exist.
+
+---
+
+V. DATA INTEGRITY / BUSINESS LOGIC
+
+Use:
+
+- Agent Skills for Context Engineering;
+- Neon or relevant backend MCPs;
+- Context7;
+- TypeScript;
+- relevant application libraries;
+- appropriate tests;
+- Playwright where user behavior is involved.
+
+Trace the complete flow.
+
+Verify:
+
+- inputs;
+- calculations;
+- state;
+- persistence;
+- retrieval;
+- edge cases;
+- error handling;
+- user-visible results.
+
+Do not assume business logic is correct merely because the code compiles.
+
+---
+
+W. FULL AUDITS / DEEP INVESTIGATION
+
+For a broad audit or deep investigation:
+
+- use Agent Skills for Context Engineering;
+- inspect the complete relevant implementation;
+- trace the user flow end to end;
+- inspect relevant dependencies and configuration;
+- use every materially relevant MCP;
+- use Context7 for applicable documentation;
+- use Stitch for applicable design/UI investigation;
+- use Neon for applicable database/data investigation;
+- use browser/runtime verification where applicable;
+- inspect logs and diagnostics where applicable;
+- identify the root cause rather than stopping at symptoms;
+- use evidence to inform the implementation plan.
+
+Do not perform a pointless audit-only exercise when the actual objective is to understand and fix a problem.
+
+The investigation should produce evidence that informs the implementation.
+
+---
+
+6. PROJECT LIBRARIES & CAPABILITIES
+
+Use existing project libraries whenever applicable.
 
 Core Framework & Language
 
@@ -170,7 +765,7 @@ Core Framework & Language
 - "react" — UI components, state, lifecycle, and rendering.
 - "react-dom" — browser and DOM rendering.
 - "typescript" — type safety and static typing.
-- "react-error-boundary" — React error boundary and failure handling.
+- "react-error-boundary" — React error boundaries and failure handling.
 
 Edge / Deployment / OpenNext
 
@@ -182,7 +777,7 @@ Styling / UI / Motion
 
 - "tailwindcss" — utility-based CSS styling.
 - "autoprefixer" — CSS vendor prefixing.
-- "shadcn/ui" — reusable Radix-based UI components.
+- "shadcn/ui" — reusable UI component system.
 - "framer-motion" — UI animation and motion.
 
 Graphics / Particles / Rendering
@@ -198,8 +793,6 @@ Audio
 - "use-sound" — React sound-trigger hooks.
 - "pizzicato" — audio effects processing.
 
-Use complementary audio libraries when appropriate rather than forcing a single library to handle every sound requirement.
-
 Data / Backend / Services
 
 - "@neondatabase/serverless" — Neon serverless PostgreSQL client.
@@ -211,12 +804,12 @@ Data / Backend / Services
 Testing / Browser / Auditing
 
 - "playwright" — end-to-end browser testing and UI verification.
-- "playwright-chromium" — Chromium runtime for Playwright browser testing.
+- "playwright-chromium" — Chromium runtime for Playwright testing.
 - "puppeteer" — headless browser automation, runtime inspection, and auditing.
 
 Quality / Types
 
-- "eslint" — code-quality and static analysis.
+- "eslint" — code quality and static analysis.
 - "@types/node" — Node.js type definitions.
 - "@types/react" — React type definitions.
 
@@ -227,121 +820,9 @@ Context7 / MCP Integration
 
 ---
 
-5. MANDATORY TOOL & MCP WORKFLOW
+7. CONTEXT7 PROJECT REGISTRY
 
-For any task where documentation, API behavior, dependency behavior, implementation details, design quality, data behavior, browser behavior, or deployment behavior matters:
-
-Step 1 — Understand the task
-
-Identify:
-
-- what is being requested;
-- what existing behavior must be preserved;
-- which systems are involved;
-- what could break;
-- what tools and libraries can help.
-
-Step 2 — Inspect the existing implementation
-
-Review the relevant:
-
-- source code;
-- components;
-- routes;
-- styles;
-- configuration;
-- dependencies;
-- tests;
-- data flow;
-- runtime behavior;
-- browser behavior;
-- deployment configuration.
-
-Do not make assumptions that can be verified.
-
-Step 3 — Use the available toolbox
-
-Actively use the applicable:
-
-- MCPs;
-- Context7;
-- Stitch;
-- Neon;
-- Agent Skills;
-- libraries;
-- documentation;
-- browser tooling;
-- repository tooling;
-- test infrastructure;
-- runtime diagnostics.
-
-When several are relevant, use several.
-
-Step 4 — Apply what was learned
-
-Use the retrieved information and evidence to:
-
-- understand the problem;
-- determine the root cause;
-- choose the correct implementation;
-- avoid unsupported assumptions;
-- preserve compatibility;
-- improve the quality of the result.
-
-Step 5 — Implement the focused solution
-
-Use existing project architecture and dependencies wherever practical.
-
-Avoid:
-
-- unnecessary rewrites;
-- new dependencies without justification;
-- unrelated refactors;
-- speculative changes;
-- changes outside the requested scope.
-
-Step 6 — Verify the actual result
-
-Perform the appropriate verification for the task.
-
-This may include:
-
-- type checking;
-- linting;
-- unit tests;
-- integration tests;
-- build checks;
-- browser testing;
-- visual inspection;
-- responsive testing;
-- animation timing verification;
-- audio verification;
-- runtime verification;
-- data verification;
-- deployment verification.
-
-Step 7 — Double-check before submission
-
-Review the final implementation and diff.
-
-Confirm:
-
-- the requested outcome is actually achieved;
-- relevant MCPs/tools were actually used;
-- documentation was actually consulted when applicable;
-- retrieved guidance was actually applied;
-- existing behavior was preserved;
-- no protected systems were changed without authorization;
-- no unrelated files or functionality were changed;
-- no known errors remain;
-- the final implementation behaves correctly in the relevant runtime;
-- the final result matches the requested design and UX.
-
----
-
-6. CONTEXT7 LIBRARY REGISTRY — CANONICAL PROJECT MAPPINGS
-
-Use these exact project mappings when consulting Context7 or related MCP tooling.
+Use these project mappings when consulting Context7.
 
 Core Framework & Language
 
@@ -361,7 +842,7 @@ Styling / UI / Motion
 
 - "tailwindcss" — Tailwind CSS Styling Engine
 - "autoprefixer" — CSS Vendor Prefixer
-- "shadcn/ui" — Radix-backed Component System
+- "shadcn/ui" — UI Component System
 - "framer-motion" — Motion & Animation Engine
 
 Graphics / Particles / Rendering
@@ -399,328 +880,240 @@ Quality / Types
 
 Context7 / MCP Integration
 
-- "@upstash/context7-mcp" — Context7 MCP Integration Suite
+- "@upstash/context7-mcp" — Context7 MCP Integration
 - "ctx7" — Context7 MCP/Codex Integration
 
+Do not invent Context7 mappings or IDs.
+
 ---
 
-7. TASK-TO-DOCUMENTATION ROUTING
+8. MANDATORY DEVELOPMENT WORKFLOW
 
-Use the relevant documentation and tools for the technologies involved.
+Step 1 — Understand the task
 
-A. Audio / Sound
+Identify:
 
-Use:
+- what is being requested;
+- existing behavior that must be preserved;
+- systems involved;
+- potential risks;
+- applicable task categories;
+- applicable tools, MCPs, skills, libraries, and documentation.
 
-- "howler";
-- "tone";
-- "use-sound";
-- "pizzicato";
-- "framer-motion" when animation timing interacts with audio.
+Step 2 — Inspect the implementation
 
-When a reveal or interaction benefits from multiple complementary sounds, use multiple appropriate audio capabilities rather than limiting the implementation to one effect.
+Review relevant:
 
-B. Animation / Motion
+- source code;
+- components;
+- routes;
+- styles;
+- configuration;
+- dependencies;
+- tests;
+- data flow;
+- runtime behavior;
+- browser behavior;
+- deployment configuration.
 
-Use:
+Verify assumptions whenever the repository or available tools can provide evidence.
 
-- "framer-motion";
-- relevant rendering/browser tools;
-- Context7 documentation.
+Step 3 — Build the plan
 
-C. Particles / Visual Effects
+The plan should identify the materially relevant:
 
-Use:
+- task categories;
+- MCPs;
+- skills;
+- libraries;
+- documentation;
+- testing/verification methods.
 
-- "tsparticles";
-- "framer-motion";
-- Stitch when visual/design exploration can improve the result;
-- browser verification.
+When multiple categories apply, include the corresponding combined toolset.
 
-D. Next.js / React
+Step 4 — Use the toolbox
 
-Use:
+Actually invoke applicable:
 
-- "next";
-- "react";
-- "react-dom";
-- "typescript";
-- "react-error-boundary";
-- Context7.
-
-E. TypeScript / Static Analysis
-
-Use:
-
-- "typescript";
-- "eslint";
-- "@types/node";
-- "@types/react";
-- Context7 when library behavior or current guidance matters.
-
-F. Styling / UI / Design
-
-Use:
-
-- "tailwindcss";
-- "autoprefixer";
-- "shadcn/ui";
-- "react";
-- "framer-motion";
-- Stitch for visual/design work;
-- browser verification.
-
-G. Cloudflare / OpenNext
-
-Use:
-
-- "@opennextjs/cloudflare";
-- "wrangler";
-- "@opennextjs/aws" when applicable;
-- "next";
+- Agent Skills;
+- MCPs;
 - Context7;
-- browser/runtime verification where relevant.
+- Stitch;
+- Neon;
+- libraries;
+- documentation;
+- browser tooling;
+- testing infrastructure;
+- repository tooling;
+- runtime diagnostics.
 
-H. Database / PostgreSQL
+Use the results in the work.
 
-Use:
+Step 5 — Determine the root cause or correct approach
 
-- "@neondatabase/serverless";
-- Neon MCP tooling;
-- Context7 when library behavior or API usage matters.
+Use evidence to:
 
-When authorized, inspect actual database structures and data rather than guessing.
+- identify root cause;
+- determine correct implementation;
+- avoid unsupported assumptions;
+- preserve compatibility;
+- respect project constraints;
+- choose the smallest safe solution.
 
-I. Redis / Caching
+Step 6 — Implement
 
-Use:
+Use existing architecture and dependencies wherever practical.
 
-- "@upstash/redis";
-- relevant data/backend MCPs;
-- Context7.
+Avoid:
 
-J. Stripe / Payments
+- unnecessary rewrites;
+- unnecessary dependencies;
+- unrelated refactors;
+- speculative changes;
+- changes outside the requested scope.
 
-Use:
+Step 7 — Verify
 
-- "stripe";
-- "@stripe/stripe-js";
-- Context7.
+Perform verification appropriate to the task.
 
-Do not modify payment systems unless the task explicitly authorizes it.
+This may include:
 
-K. Email
+- type checking;
+- linting;
+- unit tests;
+- integration tests;
+- end-to-end tests;
+- build checks;
+- browser testing;
+- visual inspection;
+- responsive testing;
+- animation timing verification;
+- audio verification;
+- runtime verification;
+- data verification;
+- security checks;
+- performance checks;
+- deployment verification.
 
-Use:
+Step 8 — Double-check before submission
 
-- "resend";
-- Context7.
+Review the final implementation and diff.
 
-Do not modify email infrastructure unless the task explicitly authorizes it.
+Confirm:
 
-L. Image / Canvas
-
-Use:
-
-- "sharp";
-- "html2canvas";
-- relevant browser tooling;
-- Context7.
-
-M. Browser / UI Auditing
-
-Use:
-
-- "playwright";
-- "playwright-chromium";
-- "puppeteer";
-- Stitch where useful for design comparison;
-- relevant framework documentation.
-
-N. Full Audits / Deep Investigation
-
-For a broad audit or deep investigation:
-
-- inspect the complete relevant implementation;
-- trace the user flow end to end;
-- inspect relevant dependencies and configuration;
-- use applicable MCPs and skills;
-- use Context7 for applicable documentation;
-- use Stitch for applicable design/UI investigation;
-- use Neon for applicable database/data investigation;
-- use browser/runtime verification where applicable;
-- identify the root cause rather than stopping at symptoms;
-- use evidence to inform the implementation plan.
-
-Do not create a pointless audit-only change or report when the actual requested outcome is to identify and fix the problem.
-
-The audit should produce evidence that informs the proposed implementation.
+- the requested outcome is actually achieved;
+- applicable MCPs/tools were actually used;
+- Agent Skills were used for non-trivial work;
+- documentation was consulted when relevant;
+- retrieved guidance was applied;
+- existing behavior was preserved;
+- protected systems were not changed without authorization;
+- no unrelated files or functionality were changed;
+- no known errors remain;
+- relevant runtime behavior is correct;
+- design and UX match the requested outcome;
+- appropriate tests and verification were completed.
 
 ---
 
-8. PROJECT SAFETY BOUNDARIES
+9. PROJECT SAFETY BOUNDARIES
 
 Unless explicitly authorized by the task, do not modify:
 
 - Stripe/payment configuration or payment flows;
-- database schema or production data;
-- authentication;
+- payment pricing or checkout behavior;
+- database schema;
+- database migrations;
 - email infrastructure;
-- environment variables or secrets;
-- Cloudflare account/settings;
-- unrelated production infrastructure;
-- unrelated application systems.
-
-Neon may be used for authorized inspection and investigation even when no database changes are requested.
-
-Using an MCP does not automatically authorize changing the system it can access.
-
-Do not expose, print, commit, log, or hard-code:
-
-- API keys;
-- access tokens;
-- passwords;
+- authentication systems;
+- authentication configuration;
+- environment variables;
 - secrets;
-- private credentials;
-- sensitive environment values.
+- Cloudflare account/settings/infrastructure configuration;
+- unrelated production infrastructure.
 
-Do not weaken security controls merely to make a task easier.
+Investigation of protected systems may be performed when necessary, but protected systems must not be modified without explicit authorization.
 
----
+Never:
 
-9. PRODUCT & DESIGN GUARDRAILS
+- expose secrets;
+- print credentials;
+- commit credentials;
+- invent credentials;
+- invent environment variables;
+- invent APIs;
+- invent database structures;
+- invent infrastructure configuration.
 
-LuckyPickCanada is an entertainment product.
-
-It must not be presented as:
-
-- a gambling product;
-- a lottery operator;
-- a betting service;
-- a prize-based wagering service.
-
-Maintain the established premium Canadian visual identity where applicable:
-
-- Northern Lights / Aurora atmosphere;
-- Canadian visual cues;
-- mystical but polished presentation;
-- elegant typography;
-- realistic depth;
-- lighting and reflections;
-- controlled bloom;
-- clean, intentional UI;
-- premium visual hierarchy;
-- polished responsive behavior.
-
-Prefer custom, intentional design over generic templates.
-
-Avoid unnecessary:
-
-- childish/cartoon styling;
-- cheap arcade styling;
-- casino-style presentation;
-- excessive neon;
-- visual clutter;
-- generic visual effects;
-- excessive animation without purpose;
-- UI elements that compete with the primary experience.
-
-For visual work, use Stitch when it can improve visual direction, composition, hierarchy, or implementation quality.
-
-Feature-specific visual and interaction requirements must be preserved unless the task explicitly changes them.
+When the requested change conflicts with these boundaries, do not make the protected change without authorization.
 
 ---
 
-10. AUDITING & INVESTIGATION
+10. CHANGE DISCIPLINE
 
-When auditing or troubleshooting:
-
-- inspect the complete relevant behavior rather than isolated snippets;
-- trace the flow from user action through state, rendering, dependencies, and runtime behavior;
-- use relevant MCPs and documentation rather than assumptions;
-- use Neon when database/data behavior is relevant and authorized;
-- use Stitch when UI/design investigation is relevant;
-- inspect audio timing and lifecycle when audio is involved;
-- inspect animation state and timing when animation is involved;
-- inspect real data sources when backend/data behavior is relevant;
-- use Playwright/Puppeteer when browser behavior is relevant;
-- determine the root cause with evidence.
-
-Do not stop at a superficial symptom when the underlying cause can be investigated.
-
-When the requested outcome includes fixing the issue, the investigation should feed directly into the proposed implementation plan.
+- Make the smallest safe change that fully solves the requested problem.
+- Preserve working behavior.
+- Reuse existing components and utilities.
+- Reuse existing dependencies.
+- Avoid unnecessary abstractions.
+- Avoid speculative refactoring.
+- Avoid unrelated cleanup.
+- Avoid changing irrelevant files.
+- Keep the final diff focused and reviewable.
+- Do not remove functionality simply because it could be implemented differently.
+- Do not replace a working implementation without evidence that replacement is necessary.
+- Do not assume a rewrite is better than a focused fix.
 
 ---
 
-11. VERIFICATION — MANDATORY BEFORE SUBMISSION
+11. VERIFICATION STANDARD
 
-DOUBLE-CHECK BEFORE SUBMISSION
+Verification must match the risk of the task.
 
-Before submitting any fix or change, double-check the complete result.
+- Code-only changes may require type checking and linting.
+- UI changes should normally include browser verification.
+- Animation changes should include actual animation verification.
+- Audio changes should include actual audio/interaction verification where practical.
+- Database changes should include database verification when authorized.
+- Deployment changes should include build and runtime/deployment verification.
+- Security changes should include security-oriented validation.
+- Performance changes should include evidence or measurement where practical.
+- Broad audits should use the appropriate combination of repository inspection, MCPs, documentation, browser/runtime tools, data inspection, and testing.
 
-Confirm all of the following that apply:
+Do not declare completion solely because:
 
-- the requested problem is actually solved;
-- the requested behavior is present;
-- the relevant user flow works end to end;
-- repository instructions were followed;
-- applicable MCPs were actually called and used;
-- applicable skills were actually used;
-- relevant documentation was actually retrieved and applied;
-- applicable libraries were actually considered and used;
-- existing project architecture was respected;
-- no unnecessary dependency was introduced;
-- existing behavior has not regressed;
-- protected systems were not changed without authorization;
-- the final diff contains only intended changes;
-- no unrelated cleanup or refactoring was included;
-- the application builds successfully where applicable;
-- types pass where applicable;
-- lint passes where applicable;
-- tests pass where applicable;
-- browser behavior was verified where applicable;
-- visual behavior was verified where applicable;
-- responsive behavior was verified where applicable;
-- animations were verified rather than assumed;
-- audio was verified rather than assumed;
-- runtime behavior was verified where applicable;
-- data/database behavior was verified where applicable;
-- deployment behavior was verified where applicable.
+- the code compiles;
+- the build passes;
+- a test passes;
+- a file changed;
+- a tool returned successfully.
 
-A successful compile, build, or lint run alone is not proof that a UI, animation, audio, browser, data, deployment, or runtime problem is fixed.
-
-If verification finds a problem:
-
-fix the problem before submitting the work.
-
-Do not knowingly submit a defective implementation.
+The requested behavior must actually work.
 
 ---
 
-12. FINAL IMPLEMENTATION STANDARD
+12. FINAL SUBMISSION CHECKLIST
 
-The objective is not merely to produce code that compiles.
+Before submitting:
 
-The objective is to produce a solution that is:
-
-- correct;
-- well-integrated with the existing application;
-- visually appropriate;
-- reliable;
-- tested;
-- verified in the relevant runtime;
-- supported by actual documentation and tool evidence;
-- respectful of existing architecture;
-- within the requested scope;
-- safe for protected systems;
-- checked before submission.
-
-Use the available MCPs, skills, libraries, documentation, and project capabilities to maximize the quality of the result.
-
-Do not underuse the toolbox.
-
-Do not merely connect tools. Use them.
-
-Do not guess when the available project tools can provide evidence.
-
-Do not submit until the work has been double-checked.
+- [ ] The requested outcome was understood.
+- [ ] The existing implementation was inspected.
+- [ ] Applicable task categories were identified.
+- [ ] Agent Skills for Context Engineering was used for non-trivial work.
+- [ ] Relevant MCPs were identified.
+- [ ] Applicable MCPs were actually invoked and used.
+- [ ] Context7 was consulted when relevant.
+- [ ] Stitch was used when visual/design work warranted it.
+- [ ] Neon was used when database/data work warranted it.
+- [ ] Relevant project libraries were used appropriately.
+- [ ] Browser verification was performed when browser behavior mattered.
+- [ ] Runtime behavior was verified when runtime behavior mattered.
+- [ ] Security/performance/accessibility checks were performed when relevant.
+- [ ] Appropriate tests/checks were performed.
+- [ ] The root cause was addressed rather than only the symptom.
+- [ ] Existing behavior was preserved unless intentionally changed.
+- [ ] Protected systems were not modified without authorization.
+- [ ] No unrelated changes were introduced.
+- [ ] The final diff was reviewed.
+- [ ] No known errors remain.
+- [ ] The requested outcome was actually verified.
