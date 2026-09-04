@@ -9,3 +9,6 @@
 ## 2026-09-03 - Optimize Canvas Gradients for High Performance Effects
 **Learning:** Using `ctx.createRadialGradient` coupled with `ctx.fillRect` over full-screen dimensions in a  loop creates massive fill-rate and rendering overhead on HTML5 canvas. This is a common performance pitfall.
 **Action:** Replace overlapping full-screen radial gradients with bezier curve paths (`ctx.bezierCurveTo`) using simpler linear gradients (`ctx.createLinearGradient`) and `ctx.globalCompositeOperation = 'screen'`. This significantly reduces shaded pixels and computations while enhancing the organic 'ribbon' aesthetic.
+## 2025-03-02 - Optimize Overlapping Full-Screen Canvas Fills
+**Learning:** Calling `ctx.fillRect(0, 0, canvas.width, canvas.height)` inside a rendering loop for multiple independent particles triggers massive GPU/CPU overdraw (filling the entire screen multiple times per frame). This creates severe performance bottlenecks when multiple particles with global flash effects are active simultaneously.
+**Action:** Extract full-screen operations outside of particle rendering loops. Calculate the maximum effect intensity (e.g., maximum flash) across all active particles first, and perform a single `ctx.fillRect()` per frame before drawing the individual paths.

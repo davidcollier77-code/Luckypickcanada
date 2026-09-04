@@ -420,12 +420,22 @@ export default function DailyResonance() {
         }
 
         ctx.globalCompositeOperation = 'lighter';
+
+        // PERFORMANCE OPTIMIZATION (Bolt ⚡): Extract full-screen background flash
+        // outside the particle loop to prevent massive overdraw (filling the entire screen
+        // multiple times per frame) when several cosmic lightning bolts are active.
+        let maxFlash = 0;
+        particles.forEach((p: any) => {
+          if (p.flash > maxFlash) maxFlash = p.flash;
+        });
+        if (maxFlash > 0) {
+          ctx.fillStyle = `rgba(220, 200, 255, ${maxFlash * 0.15})`;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
         for (let i = particles.length - 1; i >= 0; i--) {
           const p = particles[i];
-          // Background flash
           if (p.flash > 0) {
-             ctx.fillStyle = `rgba(220, 200, 255, ${p.flash * 0.15})`;
-             ctx.fillRect(0, 0, canvas.width, canvas.height);
              p.flash -= 0.2;
           }
 
