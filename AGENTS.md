@@ -17,73 +17,180 @@ AGENTS.md
 - Do not make unrelated cleanup changes simply because they are possible.
 - Do not assume that a successful build means the task is complete.
 - When the requested outcome involves browser behavior, visuals, animation, audio, runtime behavior, data, deployment, security, performance, or user interaction, verify the actual behavior rather than relying only on static analysis.
-- Before making changes, identify the tools, MCPs, skills, libraries, documentation sources, and project systems that can materially help with the task.
-- Use applicable capabilities proactively.
+- Before making changes, determine which tools, MCPs, skills, libraries, documentation sources, and project systems can materially help with the task.
+- Use applicable capabilities proactively and actually use their results.
 
 ---
 
-2. TOOL, MCP, SKILL & LIBRARY POLICY
+2. MANDATORY TOOL & MCP EXECUTION GATE
 
-DEFAULT RULE
+THIS IS A REQUIRED WORKFLOW
 
-Use applicable MCPs, skills, libraries, documentation, browser tools, testing tools, and project capabilities by default.
+For every non-trivial task, before implementation:
 
-Do not treat an applicable capability as optional merely because the code could be changed without it.
+Step 1 — Identify
 
-For every task:
+Determine which tools, MCPs, skills, libraries, documentation sources, browser tools, testing tools, and project systems are materially relevant.
 
-1. Determine which tools, MCPs, skills, libraries, documentation sources, and project systems apply.
-2. Use the applicable capabilities during investigation, planning, implementation, testing, verification, or optimization.
-3. When multiple task categories apply, combine the applicable toolsets rather than choosing only one.
-4. Use the strongest relevant combination of tools available to you.
-5. Only skip a capability when:
-   - it genuinely provides no useful value for the specific task;
-   - the capability is unavailable in the current Jules session;
-   - or David explicitly says not to use it.
-6. Do not skip an applicable capability simply because using it requires additional investigation.
-7. Do not substitute personal assumptions for information that an available MCP, documentation source, diagnostic tool, or repository inspection can verify.
+Step 2 — Invoke
 
-ACTUAL USE IS REQUIRED
+For every capability identified as materially relevant and available in the current Jules session:
 
-A tool requirement is not satisfied by:
+ACTUALLY INVOKE IT.
 
-- mentioning the tool;
-- identifying the tool;
-- knowing that the tool exists;
-- connecting to the tool;
-- configuring the tool;
-- reading its name from this file;
-- saying that the tool would be useful.
+Do not merely:
 
-When an applicable tool, MCP, skill, or documentation source is available, actually invoke it and use the result.
+- mention it;
+- identify it;
+- connect to it;
+- configure it;
+- confirm that it exists;
+- say that it could be useful;
+- list it in the plan.
 
-The result must materially inform the investigation, implementation, testing, verification, or decision-making.
+An applicable MCP/tool is considered used only after an actual tool call has been made.
 
-Do not claim a tool, MCP, skill, library, or documentation source was used unless it was actually used.
+Step 3 — Use the Result
 
-PLAN REQUIREMENT
+The returned information, data, documentation, diagnostics, design output, or other result must be considered and used to inform the investigation, implementation, testing, verification, or decision-making.
 
-Before implementation, the plan should identify the major task categories involved and the corresponding tools, MCPs, skills, libraries, and verification methods that will be used.
+Do not make a tool call and then ignore its result.
 
-If the task involves multiple categories, the plan must account for all materially relevant categories.
+Step 4 — Proceed
 
-Do not silently omit an applicable toolset from the plan and then proceed as though it was unnecessary.
-
-JUDGMENT STILL MATTERS
-
-Use the routing rules below as defaults, not as a reason to invoke irrelevant tools.
-
-The requirement is to use the tools that materially improve the task.
-
-Do not invoke unrelated tools merely to satisfy a checklist.
+Only after the applicable required tools have been invoked and their relevant results considered should implementation proceed.
 
 ---
 
-3. AGENT SKILLS FOR CONTEXT ENGINEERING — DEFAULT
+MCP USE IS NOT OPTIONAL WHEN MATERIAL
 
-Use the Agent Skills for Context Engineering capability for every non-trivial engineering task.
+Do not skip an applicable MCP merely because:
 
-Use it to improve:
+- the task can technically be completed without it;
+- the answer appears obvious;
+- the relevant code is already familiar;
+- using the MCP requires an additional lookup;
+- the MCP is already connected;
+- another source provides a plausible answer.
+
+If the MCP can materially improve correctness, currentness, investigation, implementation, or verification, use it.
+
+The goal is not to invoke tools for the sake of a checklist.
+
+The goal is to actually use the strongest relevant available capabilities.
+
+---
+
+3. CONTEXT7 — REQUIRED WHEN DOCUMENTATION IS RELEVANT
+
+Use Context7 whenever current documentation for a library, framework, API, dependency, SDK, or implementation technique is materially relevant.
+
+This includes, but is not limited to:
+
+- Next.js;
+- React;
+- TypeScript;
+- Tailwind CSS;
+- Framer Motion;
+- Playwright;
+- Puppeteer;
+- Sharp;
+- html2canvas;
+- Howler;
+- Tone;
+- use-sound;
+- Pizzicato;
+- tsParticles;
+- Stripe;
+- Resend;
+- Neon/Postgres libraries;
+- OpenNext;
+- Cloudflare/Wrangler;
+- any other installed or relevant dependency.
+
+Required Context7 workflow
+
+When Context7 applies:
+
+1. Identify the relevant library/framework/dependency.
+2. Resolve the correct library/project through Context7.
+3. Retrieve the relevant current documentation.
+4. Use that documentation to inform the investigation or implementation.
+5. Verify that the implementation is consistent with the retrieved documentation.
+
+Do not invent Context7 library IDs.
+
+Do not claim Context7 was used unless an actual Context7 call was made.
+
+Important
+
+If Context7 is available and relevant, do not begin implementation first and consult Context7 afterward merely as a confirmation step.
+
+The documentation lookup should inform the implementation.
+
+---
+
+4. MCP TROUBLESHOOTING REQUIREMENT
+
+If an applicable MCP or tool is identified but cannot immediately be used:
+
+STOP AND TROUBLESHOOT THE TOOL ACCESS BEFORE SIMPLY CONTINUING WITHOUT IT.
+
+Determine:
+
+1. Is the MCP/tool actually available in this Jules session?
+2. Is the relevant tool/function exposed?
+3. Is the correct capability being selected?
+4. Does the tool require a different invocation or input?
+5. Is there an authentication, connection, permission, configuration, or environment problem?
+6. Is the requested capability supported by the MCP?
+7. Is the MCP returning an error or empty result?
+8. Is there another documented way to invoke the relevant capability?
+
+Make a reasonable troubleshooting attempt.
+
+If the first invocation fails, do not immediately abandon the MCP.
+
+After troubleshooting, make another reasonable attempt when appropriate.
+
+If the MCP genuinely cannot be used
+
+If the capability remains unavailable after reasonable troubleshooting:
+
+- clearly recognize that it could not be used;
+- do not falsely claim that it was used;
+- document the limitation in the work summary;
+- use the strongest remaining available source/tool;
+- continue the task only when doing so is reasonable.
+
+Never silently substitute an assumption for information that an available MCP could have verified.
+
+---
+
+5. PLAN REQUIREMENT
+
+Before implementation, produce a plan that identifies:
+
+- the problem or requested outcome;
+- the relevant task categories;
+- the applicable MCPs/tools;
+- the documentation sources that will be consulted;
+- the testing/verification methods;
+- the major implementation steps.
+
+If a tool or MCP is materially relevant, the plan should explicitly identify it.
+
+The plan must correspond to actual execution.
+
+Do not list tools in the plan and then fail to invoke them.
+
+Do not claim successful tool use when the tool was only connected or mentioned.
+
+---
+
+6. AGENT SKILLS / CONTEXT ENGINEERING
+
+Use relevant Agent Skills and context-engineering capabilities when they are actually available in the current Jules session and materially improve:
 
 - repository understanding;
 - task decomposition;
@@ -92,30 +199,26 @@ Use it to improve:
 - information retrieval;
 - execution quality;
 - constraint preservation;
-- reducing context loss;
 - reasoning about complex repository changes;
 - identifying relevant files and systems;
-- maintaining task focus;
 - verification;
 - final review.
 
-This is a default capability for non-trivial engineering work.
+Do not claim to have used a skill unless the skill was actually available and invoked.
 
-Do not skip it merely because the task initially appears straightforward if it can improve understanding, planning, execution, or verification.
+Availability in this repository's instructions does not guarantee that a particular skill is exposed in every Jules session.
+
+Use it when available and relevant.
 
 ---
 
-4. MCP EXPECTATIONS
+7. MCP EXPECTATIONS
 
 Context7 MCP
 
-Use Context7 whenever current library, framework, API, dependency, or implementation documentation is relevant.
+Use Context7 for current documentation whenever relevant.
 
-- Consult current documentation rather than relying on memory or assumptions.
-- Use the correct project mapping in Section 7.
-- When multiple libraries are involved, consult the relevant documentation for each materially relevant library.
-- Apply retrieved documentation to implementation and verification.
-- Do not invent Context7 library IDs or mappings.
+Actually invoke it and use its returned documentation.
 
 Stitch MCP
 
@@ -161,27 +264,27 @@ Other MCPs and Skills
 
 Treat every additional available MCP, skill, integration, and project capability the same way:
 
-1. Identify whether it applies.
-2. Invoke it when it provides material value.
+1. Determine whether it materially applies.
+2. Invoke it when applicable and available.
 3. Use its result.
 4. Incorporate the result into the work.
-5. Verify the outcome.
-
-This applies even when the capability is not explicitly named in this file.
+5. Verify the resulting implementation.
 
 ---
 
-5. TASK-BASED TOOL & LIBRARY ROUTING
+8. TASK-BASED TOOL & LIBRARY ROUTING
 
-When a task matches a category below, use that category's tools by default.
+When a task matches one or more categories below, use the relevant tools by default.
 
-If multiple categories apply, combine them. Do not choose only one category when several are relevant.
+When multiple categories apply, combine the applicable toolsets.
+
+Do not choose only one category when several are materially relevant.
 
 ---
 
 A. UI DESIGN / VISUAL DESIGN / FRONT-END POLISH
 
-Use:
+Use where applicable:
 
 - Stitch;
 - Context7;
@@ -194,11 +297,11 @@ Use:
 - "shadcn/ui";
 - "framer-motion";
 - Playwright;
-- "playwright-chromium" where applicable.
+- "playwright-chromium".
 
 Use Stitch for visual exploration and refinement.
 
-Use Context7 for current framework and library behavior.
+Use Context7 for current framework/library behavior.
 
 Verify the actual interface in a browser.
 
@@ -206,7 +309,7 @@ Verify the actual interface in a browser.
 
 B. RESPONSIVE DESIGN / MOBILE UX
 
-Use:
+Use where applicable:
 
 - Stitch;
 - Playwright;
@@ -238,7 +341,7 @@ Do not assume desktop behavior works correctly on mobile.
 
 C. ANIMATION / MOTION / INTERACTIVE EFFECTS
 
-Use:
+Use where applicable:
 
 - "framer-motion";
 - Context7;
@@ -263,7 +366,7 @@ Do not rely only on source-code inspection.
 
 D. PARTICLES / VISUAL EFFECTS / AMBIENT EFFECTS
 
-Use:
+Use where applicable:
 
 - "tsparticles";
 - "framer-motion";
@@ -280,7 +383,7 @@ Verify the rendered result in the browser.
 
 E. AUDIO / SOUND / INTERACTIVE AUDIO
 
-Use:
+Use where applicable:
 
 - "howler";
 - "tone";
@@ -307,7 +410,7 @@ Verify:
 
 F. NEXT.JS / REACT / APPLICATION ARCHITECTURE
 
-Use:
+Use where applicable:
 
 - "next";
 - "react";
@@ -325,13 +428,13 @@ Prefer existing project patterns over introducing new architectural approaches.
 
 G. TYPESCRIPT / STATIC ANALYSIS / CODE QUALITY
 
-Use:
+Use where applicable:
 
 - "typescript";
 - "eslint";
 - "@types/node";
 - "@types/react";
-- Context7 when dependency or framework behavior is relevant.
+- Context7 when dependency/framework behavior is relevant.
 
 Run appropriate type checking and linting.
 
@@ -341,7 +444,7 @@ Do not treat static checks as the only verification when runtime behavior matter
 
 H. DATABASE / POSTGRESQL / DATA-BACKED FEATURES
 
-Use:
+Use where applicable:
 
 - Neon MCP;
 - "@neondatabase/serverless";
@@ -366,7 +469,7 @@ Do not guess about database behavior when Neon can provide authoritative evidenc
 
 I. REDIS / CACHING / STATE
 
-Use:
+Use where applicable:
 
 - "@upstash/redis";
 - relevant backend/data MCPs;
@@ -389,7 +492,7 @@ Verify:
 
 J. STRIPE / PAYMENTS
 
-Use:
+Use where applicable:
 
 - "stripe";
 - "@stripe/stripe-js";
@@ -414,7 +517,7 @@ Investigation may be performed when appropriate without modifying protected paym
 
 K. EMAIL / TRANSACTIONAL EMAIL
 
-Use:
+Use where applicable:
 
 - "resend";
 - Context7;
@@ -429,7 +532,7 @@ Do not modify email infrastructure, delivery configuration, credentials, templat
 
 L. IMAGE / SVG / CANVAS / RENDERING
 
-Use:
+Use where applicable:
 
 - "sharp";
 - "html2canvas";
@@ -454,14 +557,14 @@ Check:
 
 M. BROWSER TESTING / UI AUDITING
 
-Use:
+Use where applicable:
 
 - Playwright;
 - "playwright-chromium";
 - Puppeteer;
 - Stitch where visual comparison is useful;
-- relevant framework/library documentation;
-- Context7.
+- Context7;
+- relevant framework/library documentation.
 
 Check:
 
@@ -481,7 +584,7 @@ N. TROUBLESHOOTING / BUG INVESTIGATION
 
 Use:
 
-- Agent Skills for Context Engineering;
+- relevant Agent Skills when available;
 - the MCPs relevant to the affected system;
 - Context7;
 - Playwright/Puppeteer for browser issues;
@@ -497,18 +600,20 @@ First:
 1. reproduce or inspect the failure;
 2. trace the affected flow;
 3. identify the root cause;
-4. gather evidence;
+4. gather evidence using the strongest relevant tools;
 5. determine the smallest correct fix;
 6. implement it;
 7. verify the actual result.
 
 Do not confuse a symptom with the root cause.
 
+If an applicable MCP is available, actually use it during the investigation.
+
 ---
 
 O. CLOUDFLARE / OPENNEXT / DEPLOYMENT
 
-Use:
+Use where applicable:
 
 - "@opennextjs/cloudflare";
 - "wrangler";
@@ -535,9 +640,9 @@ Do not assume a successful local build proves the deployed application works.
 
 P. PERFORMANCE / OPTIMIZATION
 
-Use:
+Use where applicable:
 
-- Agent Skills for Context Engineering;
+- relevant Agent Skills when available;
 - Context7;
 - relevant framework documentation;
 - Playwright;
@@ -570,10 +675,10 @@ Do not make speculative performance changes without evidence.
 
 Q. SECURITY / SECURITY REVIEW
 
-Use:
+Use where applicable:
 
-- Agent Skills for Context Engineering;
-- relevant security tools available in the environment;
+- relevant Agent Skills when available;
+- relevant security tools;
 - Context7;
 - dependency/security analysis;
 - TypeScript/ESLint;
@@ -605,7 +710,7 @@ Do not make unrelated security refactors.
 
 R. ACCESSIBILITY
 
-Use:
+Use where applicable:
 
 - Stitch;
 - Playwright;
@@ -632,7 +737,7 @@ Verify actual browser behavior where possible.
 
 S. SEO / METADATA / DISCOVERABILITY
 
-Use:
+Use where applicable:
 
 - "next";
 - "react";
@@ -658,7 +763,7 @@ Do not invent SEO configuration or routes.
 
 T. TESTING / QA
 
-Use:
+Use where applicable:
 
 - Playwright;
 - "playwright-chromium";
@@ -676,7 +781,7 @@ Test both the changed behavior and important surrounding behavior that could hav
 
 U. DEPENDENCY / LIBRARY UPGRADES
 
-Use:
+Use where applicable:
 
 - Context7;
 - documentation for the relevant dependency;
@@ -705,415 +810,164 @@ Do not upgrade dependencies merely because newer versions exist.
 
 V. DATA INTEGRITY / BUSINESS LOGIC
 
-Use:
+Use where applicable:
 
-- Agent Skills for Context Engineering;
+- relevant Agent Skills when available;
 - Neon or relevant backend MCPs;
 - Context7;
 - TypeScript;
 - relevant application libraries;
-- appropriate tests;
-- Playwright where user behavior is involved.
+- appropriate tests.
 
-Trace the complete flow.
+Trace business logic from input through processing to persisted/output state.
 
-Verify:
+Verify edge cases and existing behavior.
 
-- inputs;
-- calculations;
-- state;
-- persistence;
-- retrieval;
-- edge cases;
-- error handling;
-- user-visible results.
-
-Do not assume business logic is correct merely because the code compiles.
+Do not alter business rules unless explicitly requested.
 
 ---
 
-W. FULL AUDITS / DEEP INVESTIGATION
+9. REPOSITORY INSPECTION
 
-For a broad audit or deep investigation:
+Before changing code:
 
-- use Agent Skills for Context Engineering;
-- inspect the complete relevant implementation;
-- trace the user flow end to end;
-- inspect relevant dependencies and configuration;
-- use every materially relevant MCP;
-- use Context7 for applicable documentation;
-- use Stitch for applicable design/UI investigation;
-- use Neon for applicable database/data investigation;
-- use browser/runtime verification where applicable;
-- inspect logs and diagnostics where applicable;
-- identify the root cause rather than stopping at symptoms;
-- use evidence to inform the implementation plan.
+- inspect the relevant files;
+- inspect related components/modules;
+- inspect configuration;
+- inspect package dependencies;
+- inspect existing tests;
+- inspect relevant routes/API boundaries;
+- inspect relevant data flow;
+- inspect existing patterns.
 
-Do not perform a pointless audit-only exercise when the actual objective is to understand and fix a problem.
+Search the repository rather than guessing where functionality lives.
 
-The investigation should produce evidence that informs the implementation.
+Follow existing architecture unless there is a clear reason to change it.
 
 ---
 
-6. PROJECT LIBRARIES & CAPABILITIES
+10. IMPLEMENTATION RULES
 
-Use existing project libraries whenever applicable.
-
-Core Framework & Language
-
-- "next" — Next.js application framework, routing, rendering, and framework behavior.
-- "react" — UI components, state, lifecycle, and rendering.
-- "react-dom" — browser and DOM rendering.
-- "typescript" — type safety and static typing.
-- "react-error-boundary" — React error boundaries and failure handling.
-
-Edge / Deployment / OpenNext
-
-- "@opennextjs/cloudflare" — Next.js deployment adapter for Cloudflare.
-- "wrangler" — Cloudflare Workers and deployment tooling.
-- "@opennextjs/aws" — OpenNext AWS integration.
-
-Styling / UI / Motion
-
-- "tailwindcss" — utility-based CSS styling.
-- "autoprefixer" — CSS vendor prefixing.
-- "shadcn/ui" — reusable UI component system.
-- "framer-motion" — UI animation and motion.
-
-Graphics / Particles / Rendering
-
-- "tsparticles" — particle systems and ambient visual effects.
-- "sharp" — image processing and optimization.
-- "html2canvas" — DOM-to-canvas rendering.
-
-Audio
-
-- "howler" — audio playback and lifecycle management.
-- "tone" — synthesized audio and Web Audio effects.
-- "use-sound" — React sound-trigger hooks.
-- "pizzicato" — audio effects processing.
-
-Data / Backend / Services
-
-- "@neondatabase/serverless" — Neon serverless PostgreSQL client.
-- "@upstash/redis" — Redis caching and state.
-- "stripe" — Stripe server-side payments integration.
-- "@stripe/stripe-js" — Stripe browser-side payments integration.
-- "resend" — transactional email delivery.
-
-Testing / Browser / Auditing
-
-- "playwright" — end-to-end browser testing and UI verification.
-- "playwright-chromium" — Chromium runtime for Playwright testing.
-- "puppeteer" — headless browser automation, runtime inspection, and auditing.
-
-Quality / Types
-
-- "eslint" — code quality and static analysis.
-- "@types/node" — Node.js type definitions.
-- "@types/react" — React type definitions.
-
-Context7 / MCP Integration
-
-- "@upstash/context7-mcp" — Context7 MCP integration.
-- "ctx7" — Context7/MCP integration and tooling.
+- Make the smallest safe change that fully solves the requested problem.
+- Preserve unrelated behavior.
+- Reuse existing components and utilities where practical.
+- Do not introduce unnecessary dependencies.
+- Do not rewrite working systems.
+- Do not modify protected systems without explicit authorization.
+- Keep the implementation focused and reviewable.
+- Do not make speculative fixes.
+- Do not hide errors to make tests pass.
+- Do not weaken validation or safeguards merely to eliminate an error.
 
 ---
 
-7. CONTEXT7 PROJECT REGISTRY
+11. VERIFICATION REQUIREMENT
 
-Use these project mappings when consulting Context7.
+Verification must match the actual task.
 
-Core Framework & Language
+A successful build is not sufficient by itself.
 
-- "next" — Next.js Core Framework
-- "react" — React Library
-- "react-dom" — React DOM Renderer
-- "typescript" — TypeScript Language Support
-- "react-error-boundary" — React Error Boundary Utility
-
-Edge / Deployment / OpenNext
-
-- "@opennextjs/cloudflare" — OpenNext Cloudflare Adapter
-- "wrangler" — Cloudflare Workers CLI & Tooling
-- "@opennextjs/aws" — OpenNext AWS Adapter
-
-Styling / UI / Motion
-
-- "tailwindcss" — Tailwind CSS Styling Engine
-- "autoprefixer" — CSS Vendor Prefixer
-- "shadcn/ui" — UI Component System
-- "framer-motion" — Motion & Animation Engine
-
-Graphics / Particles / Rendering
-
-- "tsparticles" — Particle and Ambient Visual System
-- "sharp" — Node Image Processing Engine
-- "html2canvas" — DOM-to-Canvas Rendering Utility
-
-Audio
-
-- "howler" — Howler.js Audio Lifecycle Manager
-- "tone" — Tone.js Audio Synthesis Engine
-- "use-sound" — React Hook for Sound Triggers
-- "pizzicato" — Pizzicato.js Audio Effects Library
-
-Data / Backend / Services
-
-- "@neondatabase/serverless" — Neon Serverless PostgreSQL Client
-- "@upstash/redis" — Upstash Redis Client
-- "stripe" — Stripe Server SDK
-- "@stripe/stripe-js" — Stripe Frontend Client SDK
-- "resend" — Transactional Email Delivery SDK
-
-Testing / Auditing
-
-- "playwright" — End-to-End Browser Testing and UI Verification
-- "playwright-chromium" — Chromium Runtime for Playwright Browser Testing
-- "puppeteer" — Headless Browser Automation and Auditing
-
-Quality / Types
-
-- "eslint" — Static Code Analysis & Linting
-- "@types/node" — Node.js Type Definitions
-- "@types/react" — React Type Definitions
-
-Context7 / MCP Integration
-
-- "@upstash/context7-mcp" — Context7 MCP Integration
-- "ctx7" — Context7 MCP/Codex Integration
-
-Do not invent Context7 mappings or IDs.
-
----
-
-8. MANDATORY DEVELOPMENT WORKFLOW
-
-Step 1 — Understand the task
-
-Identify:
-
-- what is being requested;
-- existing behavior that must be preserved;
-- systems involved;
-- potential risks;
-- applicable task categories;
-- applicable tools, MCPs, skills, libraries, and documentation.
-
-Step 2 — Inspect the implementation
-
-Review relevant:
-
-- source code;
-- components;
-- routes;
-- styles;
-- configuration;
-- dependencies;
-- tests;
-- data flow;
-- runtime behavior;
-- browser behavior;
-- deployment configuration.
-
-Verify assumptions whenever the repository or available tools can provide evidence.
-
-Step 3 — Build the plan
-
-The plan should identify the materially relevant:
-
-- task categories;
-- MCPs;
-- skills;
-- libraries;
-- documentation;
-- testing/verification methods.
-
-When multiple categories apply, include the corresponding combined toolset.
-
-Step 4 — Use the toolbox
-
-Actually invoke applicable:
-
-- Agent Skills;
-- MCPs;
-- Context7;
-- Stitch;
-- Neon;
-- libraries;
-- documentation;
-- browser tooling;
-- testing infrastructure;
-- repository tooling;
-- runtime diagnostics.
-
-Use the results in the work.
-
-Step 5 — Determine the root cause or correct approach
-
-Use evidence to:
-
-- identify root cause;
-- determine correct implementation;
-- avoid unsupported assumptions;
-- preserve compatibility;
-- respect project constraints;
-- choose the smallest safe solution.
-
-Step 6 — Implement
-
-Use existing architecture and dependencies wherever practical.
-
-Avoid:
-
-- unnecessary rewrites;
-- unnecessary dependencies;
-- unrelated refactors;
-- speculative changes;
-- changes outside the requested scope.
-
-Step 7 — Verify
-
-Perform verification appropriate to the task.
-
-This may include:
+Where applicable, verify:
 
 - type checking;
 - linting;
-- unit tests;
-- integration tests;
-- end-to-end tests;
-- build checks;
-- browser testing;
-- visual inspection;
-- responsive testing;
-- animation timing verification;
-- audio verification;
-- runtime verification;
-- data verification;
-- security checks;
-- performance checks;
-- deployment verification.
+- unit/integration tests;
+- browser behavior;
+- responsive behavior;
+- visual rendering;
+- animations;
+- audio;
+- database behavior;
+- API behavior;
+- deployment behavior;
+- production behavior;
+- console/runtime errors.
 
-Step 8 — Double-check before submission
-
-Review the final implementation and diff.
-
-Confirm:
-
-- the requested outcome is actually achieved;
-- applicable MCPs/tools were actually used;
-- Agent Skills were used for non-trivial work;
-- documentation was consulted when relevant;
-- retrieved guidance was applied;
-- existing behavior was preserved;
-- protected systems were not changed without authorization;
-- no unrelated files or functionality were changed;
-- no known errors remain;
-- relevant runtime behavior is correct;
-- design and UX match the requested outcome;
-- appropriate tests and verification were completed.
+Use the appropriate MCPs and tools during verification as well as during investigation.
 
 ---
 
-9. PROJECT SAFETY BOUNDARIES
+12. FINAL DOUBLE-CHECK
+
+Before considering the task complete:
+
+1. Re-read the requested task.
+2. Confirm every requested requirement was addressed.
+3. Confirm applicable MCPs/tools were actually invoked.
+4. Confirm their results materially informed the work.
+5. Confirm the implementation follows current relevant documentation.
+6. Review the final diff.
+7. Check for unintended changes.
+8. Run appropriate validation.
+9. Verify actual runtime behavior when applicable.
+10. Confirm protected systems were not modified.
+11. Confirm no secrets or credentials were exposed.
+12. Confirm the final result solves the original problem rather than merely addressing a symptom.
+
+Do not declare the task complete until this final review has been performed.
+
+---
+
+13. TOOL-USE HONESTY
+
+Never state or imply that a tool, MCP, skill, library, documentation source, test, or verification method was used when it was not actually used.
+
+Distinguish between:
+
+- connected;
+- available;
+- identified;
+- invoked;
+- successfully returned a result;
+- result applied;
+- verification completed.
+
+These are different states.
+
+Only report the stronger state when it actually occurred.
+
+---
+
+14. PROTECTED SYSTEMS
 
 Unless explicitly authorized by the task, do not modify:
 
-- Stripe/payment configuration or payment flows;
-- payment pricing or checkout behavior;
-- database schema;
-- database migrations;
+- Stripe/payment infrastructure;
 - email infrastructure;
-- authentication systems;
-- authentication configuration;
-- environment variables;
-- secrets;
-- Cloudflare account/settings/infrastructure configuration;
-- unrelated production infrastructure.
+- authentication;
+- database schema;
+- production data;
+- environment variables/secrets;
+- Cloudflare account/settings;
+- unrelated APIs;
+- unrelated infrastructure.
 
-Investigation of protected systems may be performed when necessary, but protected systems must not be modified without explicit authorization.
+Investigation and read-only verification may be performed when appropriate.
 
-Never:
-
-- expose secrets;
-- print credentials;
-- commit credentials;
-- invent credentials;
-- invent environment variables;
-- invent APIs;
-- invent database structures;
-- invent infrastructure configuration.
-
-When the requested change conflicts with these boundaries, do not make the protected change without authorization.
+If a requested fix appears to require changing a protected system, stop and identify the conflict before making the change.
 
 ---
 
-10. CHANGE DISCIPLINE
+15. COMPLETION STANDARD
 
-- Make the smallest safe change that fully solves the requested problem.
-- Preserve working behavior.
-- Reuse existing components and utilities.
-- Reuse existing dependencies.
-- Avoid unnecessary abstractions.
-- Avoid speculative refactoring.
-- Avoid unrelated cleanup.
-- Avoid changing irrelevant files.
-- Keep the final diff focused and reviewable.
-- Do not remove functionality simply because it could be implemented differently.
-- Do not replace a working implementation without evidence that replacement is necessary.
-- Do not assume a rewrite is better than a focused fix.
+The task is complete only when:
 
----
+- the requested behavior has been implemented;
+- the relevant root cause has been addressed;
+- applicable tools/MCPs were actually used;
+- relevant documentation was consulted;
+- the implementation has been appropriately tested;
+- actual behavior has been verified where applicable;
+- the final diff has been reviewed;
+- no unrelated functionality was changed;
+- protected systems remain protected.
 
-11. VERIFICATION STANDARD
+A connection is not usage.
 
-Verification must match the risk of the task.
+A plan is not execution.
 
-- Code-only changes may require type checking and linting.
-- UI changes should normally include browser verification.
-- Animation changes should include actual animation verification.
-- Audio changes should include actual audio/interaction verification where practical.
-- Database changes should include database verification when authorized.
-- Deployment changes should include build and runtime/deployment verification.
-- Security changes should include security-oriented validation.
-- Performance changes should include evidence or measurement where practical.
-- Broad audits should use the appropriate combination of repository inspection, MCPs, documentation, browser/runtime tools, data inspection, and testing.
+A build passing is not proof of correctness.
 
-Do not declare completion solely because:
+A plausible explanation is not evidence.
 
-- the code compiles;
-- the build passes;
-- a test passes;
-- a file changed;
-- a tool returned successfully.
-
-The requested behavior must actually work.
-
----
-
-12. FINAL SUBMISSION CHECKLIST
-
-Before submitting:
-
-- [ ] The requested outcome was understood.
-- [ ] The existing implementation was inspected.
-- [ ] Applicable task categories were identified.
-- [ ] Agent Skills for Context Engineering was used for non-trivial work.
-- [ ] Relevant MCPs were identified.
-- [ ] Applicable MCPs were actually invoked and used.
-- [ ] Context7 was consulted when relevant.
-- [ ] Stitch was used when visual/design work warranted it.
-- [ ] Neon was used when database/data work warranted it.
-- [ ] Relevant project libraries were used appropriately.
-- [ ] Browser verification was performed when browser behavior mattered.
-- [ ] Runtime behavior was verified when runtime behavior mattered.
-- [ ] Security/performance/accessibility checks were performed when relevant.
-- [ ] Appropriate tests/checks were performed.
-- [ ] The root cause was addressed rather than only the symptom.
-- [ ] Existing behavior was preserved unless intentionally changed.
-- [ ] Protected systems were not modified without authorization.
-- [ ] No unrelated changes were introduced.
-- [ ] The final diff was reviewed.
-- [ ] No known errors remain.
-- [ ] The requested outcome was actually verified.
+Investigate, invoke the relevant tools, use the evidence, implement, verify, and double-check.
