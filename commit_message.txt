@@ -1,8 +1,0 @@
-Implement Lucky Card Reveal premium refinements
-
-Fixes:
-- Audio Regression: Migrated from basic OscillatorNode to premium layered .mp3 synthesis via Howler (`use-sound` Context7 tool recommendation).
-- Visual Engine Refinement: Replaced standard performance-heavy canvas elements with hardware-accelerated @tsparticles for magical convergence sequences.
-- Preserved exactly the existing user-approved visual choreography (`framer-motion`) and intact Lucky Card Artwork UI structures.
-- Performance/Accessibility check included via `useReducedMotion` checking before creating TS particles or playing sound arrays.
-- Tested: `pnpm run build` succeeds completely.

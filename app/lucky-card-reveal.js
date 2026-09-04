@@ -160,28 +160,28 @@ export default function LuckyCardReveal() {
       const sequence = [];
 
       // 0.0s - 4.0s: Anticipation
-      sequence.push([cardRef.current, { y: [0, -10], scale: [1, 1.02] }, { duration: 4.0, ease: 'easeInOut' }]);
+      sequence.push([".card-container", { y: [0, -10], scale: [1, 1.02] }, { duration: 4.0, ease: 'easeInOut' }]);
 
       // 4.0s - 7.5s: Energy Gathering
       const intensity = card.tier === 'flagship' ? 1.5 : (card.tier === 'premium' ? 1.2 : 1.0);
-      sequence.push([cardRef.current, {
+      sequence.push([".card-container", {
         y: [-10, -15, -8, -18, -12],
         rotateZ: [-1, 2, -2, 1, 0],
         scale: [1.02, 1.05]
       }, { duration: 3.5, ease: 'easeInOut', at: '4.0' }]);
 
       // 7.5s - 8.0s: Convergence (Tension)
-      sequence.push([cardRef.current, { y: 0, rotateZ: 0, scale: 0.98 }, { duration: 0.5, ease: 'easeIn', at: '7.5' }]);
+      sequence.push([".card-container", { y: 0, rotateZ: 0, scale: 0.98 }, { duration: 0.5, ease: 'easeIn', at: '7.5' }]);
 
       // 8.0s: IMPACT
-      sequence.push([cardRef.current, { scale: 1.15, z: 100 }, { duration: 0.1, ease: 'easeOut', at: '8.0' }]);
+      sequence.push([".card-container", { scale: 1.15, z: 100 }, { duration: 0.1, ease: 'easeOut', at: '8.0' }]);
 
       // 8.1s - 8.5s: Silence/Freeze (Flagship holds longer)
       const holdTime = card.tier === 'flagship' ? 0.4 : 0.1;
 
       // 8.5s: Card Reveal (Flip)
       const flipAt = 8.0 + holdTime;
-      sequence.push([cardRef.current, { scale: 1, z: 0 }, { duration: 0.7, ease: 'easeInOut', at: flipAt.toString() }]);
+      sequence.push([".card-container", { scale: 1, z: 0 }, { duration: 0.7, ease: 'easeInOut', at: flipAt.toString() }]);
 
       animationControlsRef.current = animate(sequence);
     }, 0));
