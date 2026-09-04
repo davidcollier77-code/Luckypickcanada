@@ -47,6 +47,8 @@ export default function LuckyCardReveal() {
   const rafRef = useRef(null);
   const timelineStartRef = useRef(0);
   const activeTierRef = useRef('standard');
+  const isRevealedRef = useRef(false);
+  const activeCardRef = useRef(null);
 
   // Load Audio Assets
   useEffect(() => {
@@ -294,13 +296,29 @@ export default function LuckyCardReveal() {
     chimeOsc.start(revealTime);
     chimeOsc.stop(revealTime + 2.0);
     activeAudioNodesRef.current.push(chimeOsc);
+
+    return ctx;
   };
 
   const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
 
     if (!timelineStartRef.current) timelineStartRef.current = timestamp;
-    const elapsed = (timestamp - timelineStartRef.current) / 1000;
+
+    const audioCtx = audioCtxRef.current;
+    let elapsed = 0;
+
+    // Master Clock: AudioContext (if running), else requestAnimationFrame timestamp
+    if (audioCtx && audioCtx.state === 'running') {
+      elapsed = audioCtx.currentTime - timelineStartRef.current;
+    } else {
+      elapsed = (timestamp - timelineStartRef.current) / 1000;
+    }
+
+    // Drive Framer Motion sequence manually so it is locked to the Master Clock
+    if (animationControlsRef.current && 'time' in animationControlsRef.current) {
+        animationControlsRef.current.time = Math.max(0, Math.min(elapsed, 12.0));
+    }
 
     const ctx = bgCanvasRef.current.getContext('2d');
     const w = bgCanvasRef.current.width;
@@ -312,7 +330,6 @@ export default function LuckyCardReveal() {
     ctx.clearRect(0, 0, w, h);
 
     const schedule = STRIKE_SCHEDULES[tier];
-
     let totalEnergyAbsorbed = 0;
 
     // Draw strikes
@@ -424,16 +441,49 @@ export default function LuckyCardReveal() {
       ctx.restore();
     }
 
+    const finalStrike = schedule[schedule.length - 1];
+    const flipAt = finalStrike + 0.65;
+
+    // Trigger state change based on Master Clock instead of independent setTimeout
+    if (elapsed >= flipAt && !isRevealedRef.current) {
+        isRevealedRef.current = true;
+        setIsRevealed(true);
+        window.setTimeout(() => {
+          setIsGenerating(false);
+          try {
+            const currentCard = activeCardRef.current;
+            if (currentCard) {
+                window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                  cardId: currentCard.id,
+                  revealDate: localDateKey(),
+                }));
+                const unlockedStr = window.localStorage.getItem('unlockedCards');
+                let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
+                if (!unlocked.includes(currentCard.id)) {
+                  unlocked.push(currentCard.id);
+                  window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
+                  window.dispatchEvent(new Event('unlockedCardsUpdated'));
+                }
+            }
+          } catch (e) {}
+        }, 700);
+    }
+
     if (elapsed < 12.0) {
       rafRef.current = requestAnimationFrame(renderCanvas);
+    } else {
+      // Safety release
+      setIsGenerating(false);
     }
   };
-
   const triggerCardDraw = () => {
     stopAll();
 
     const card = selectWeightedLuckyCard(previousCardId);
     activeTierRef.current = card.tier;
+    activeCardRef.current = card;
+    isRevealedRef.current = false;
+
     setSelectedCard(card);
     setIsRevealed(false);
     setIsGenerating(true);
@@ -444,13 +494,18 @@ export default function LuckyCardReveal() {
       bgCanvasRef.current.height = window.innerHeight;
     }
 
-    timelineStartRef.current = 0;
+    const schedule = STRIKE_SCHEDULES[card.tier];
+    const ctx = playAudioSequence(card.tier, schedule);
+
+    if (ctx) {
+        timelineStartRef.current = 0;
+    } else {
+        timelineStartRef.current = 0;
+    }
+
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     }
-
-    const schedule = STRIKE_SCHEDULES[card.tier];
-    playAudioSequence(card.tier, schedule);
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
     const sequence = [];
@@ -492,33 +547,8 @@ export default function LuckyCardReveal() {
 
     sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0 }, { at: flipAt.toString(), duration: 0.8, ease: 'circOut' }]);
 
-    animationControlsRef.current = animate(sequence);
-
-    // Handle actual state flip
-    const flipStartTime = flipAt * 1000;
-
-    activeTimeoutsRef.current.push(window.setTimeout(() => {
-      setIsRevealed(true);
-    }, flipStartTime));
-
-    activeTimeoutsRef.current.push(window.setTimeout(() => {
-      setIsGenerating(false);
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          cardId: card.id,
-          revealDate: localDateKey(),
-        }));
-        const unlockedStr = window.localStorage.getItem('unlockedCards');
-        let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
-        if (!unlocked.includes(card.id)) {
-          unlocked.push(card.id);
-          window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
-          window.dispatchEvent(new Event('unlockedCardsUpdated'));
-        }
-      } catch (e) {}
-    }, flipStartTime + 700));
+    animationControlsRef.current = animate(sequence, { autoplay: false });
   };
-
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none relative z-10">
       
