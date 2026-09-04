@@ -44,10 +44,10 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
 
     if (!isRevealTestMode) {
       setTimeout(() => setIsSubmitting(false), 8000);
-      // Allow native form submission to proceed
-    } else {
-      event.preventDefault();
+      return;
     }
+
+    event.preventDefault();
 
     if (type === 'gift_package') {
       const formData = new FormData(event.currentTarget);
@@ -84,6 +84,7 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
       }
     }
 
+    setIsSubmitting(false);
     onRevealTestStart?.(type, luckyPickGame);
   }
 
