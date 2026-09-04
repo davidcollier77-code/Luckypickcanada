@@ -1,973 +1,286 @@
-AGENTS.md
+@jules Audit and repair the Lucky Card reveal — both the audio and visual experience — and bring the entire reveal to a polished, cinematic, premium level.
 
-1. CORE OPERATING RULES
+MCP REQUIREMENT — ALL THREE MUST ACTUALLY BE USED
 
-- Treat "main" as the source of truth.
-- Read and follow this file before making repository changes.
-- Inspect the existing implementation before changing it.
-- Understand the relevant architecture, dependencies, data flow, configuration, and runtime behavior before making changes.
-- Prefer the smallest safe change that fully solves the requested problem.
-- Preserve existing behavior unless the task explicitly requires a change.
-- Reuse the existing architecture, patterns, components, dependencies, and project capabilities whenever practical.
-- Do not introduce a new library, framework, service, or dependency when an existing project capability already provides the required functionality.
-- Do not rewrite working systems unnecessarily.
-- Do not invent APIs, configuration, dependencies, routes, database structures, environment variables, or infrastructure.
-- Do not remove existing functionality unless explicitly requested.
-- Keep changes focused, intentional, and reviewable.
-- Do not make unrelated cleanup changes simply because they are possible.
-- Do not assume that a successful build means the task is complete.
-- When the requested outcome involves browser behavior, visuals, animation, audio, runtime behavior, data, deployment, security, performance, or user interaction, verify the actual behavior rather than relying only on static analysis.
-- Before making changes, determine which tools, MCPs, skills, libraries, documentation sources, and project systems can materially help with the task.
-- Use applicable capabilities proactively and actually use their results.
+You have three connected MCPs/tools available to you.
 
----
+You MUST actually call and use ALL THREE during this task.
 
-2. MANDATORY TOOL & MCP EXECUTION GATE
+Do not merely connect them.
+Do not merely mention them.
+Do not make token calls just to satisfy the requirement.
 
-THIS IS A REQUIRED WORKFLOW
+Use each MCP meaningfully for the part of the investigation where it provides the most value.
 
-For every non-trivial task, before implementation:
+For this task, Context7 should be the primary MCP for understanding and validating the code libraries involved in the reveal.
 
-Step 1 — Identify
+Use the MCPs intelligently according to their strengths:
 
-Determine which tools, MCPs, skills, libraries, documentation sources, browser tools, testing tools, and project systems are materially relevant.
+- Context7: library/API/documentation intelligence and validation. This is especially important for the animation, timing, rendering, audio, and framework libraries used by the reveal.
+- Stitch: visual/design inspection and validation of the cinematic reveal experience.
+- The third connected MCP: use it for the part of the implementation it is actually best suited to. If it is Neon, use it only where backend/data verification is relevant rather than forcing Neon into the animation work.
 
-Step 2 — Invoke
-
-For every capability identified as materially relevant and available in the current Jules session:
-
-ACTUALLY INVOKE IT.
-
-Do not merely:
-
-- mention it;
-- identify it;
-- connect to it;
-- configure it;
-- confirm that it exists;
-- say that it could be useful;
-- list it in the plan.
-
-An applicable MCP/tool is considered used only after an actual tool call has been made.
-
-Step 3 — Use the Result
-
-The returned information, data, documentation, diagnostics, design output, or other result must be considered and used to inform the investigation, implementation, testing, verification, or decision-making.
-
-Do not make a tool call and then ignore its result.
-
-Step 4 — Proceed
-
-Only after the applicable required tools have been invoked and their relevant results considered should implementation proceed.
+At the end, explicitly verify that all three MCPs were actually called and used, and explain briefly what each contributed.
 
 ---
 
-MCP USE IS NOT OPTIONAL WHEN MATERIAL
+CONTEXT7 — LIBRARY INTELLIGENCE
 
-Do not skip an applicable MCP merely because:
+Before modifying the reveal, inspect the actual implementation and determine every important library, package, API, and framework that materially controls the Lucky Card reveal.
 
-- the task can technically be completed without it;
-- the answer appears obvious;
-- the relevant code is already familiar;
-- using the MCP requires an additional lookup;
-- the MCP is already connected;
-- another source provides a plausible answer.
+Do not rely on remembered APIs or assumptions.
 
-If the MCP can materially improve correctness, currentness, investigation, implementation, or verification, use it.
+Use Context7 to understand the actual libraries being used.
 
-The goal is not to invoke tools for the sake of a checklist.
+First identify the installed versions from the repository/package configuration.
 
-The goal is to actually use the strongest relevant available capabilities.
+Then, for each important library involved:
 
----
+1. Resolve the correct library in Context7.
+2. Prefer the exact installed version when version-specific documentation is available.
+3. Retrieve focused documentation for the specific functionality being used.
+4. Use that documentation to validate the implementation before changing it.
 
-3. CONTEXT7 — REQUIRED WHEN DOCUMENTATION IS RELEVANT
+Do not use Context7 generically.
 
-Use Context7 whenever current documentation for a library, framework, API, dependency, SDK, or implementation technique is materially relevant.
+Ask targeted questions based on the actual implementation, including where appropriate:
 
-This includes, but is not limited to:
+- How should this animation sequence be synchronized?
+- What is the correct animation-control/sequencing API for this installed version?
+- What is the correct React lifecycle and cleanup pattern?
+- What is the correct Web Audio API scheduling approach?
+- How should "AudioContext.currentTime" be coordinated with animation timing?
+- What is the correct "requestAnimationFrame" timing behavior?
+- What cleanup is required when the component unmounts or the reveal is interrupted?
+- Are there performance considerations for the Canvas/rendering approach being used?
+- Are there version-specific APIs or changes that affect the current implementation?
 
-- Next.js;
-- React;
-- TypeScript;
-- Tailwind CSS;
-- Framer Motion;
-- Playwright;
-- Puppeteer;
-- Sharp;
-- html2canvas;
-- Howler;
-- Tone;
-- use-sound;
-- Pizzicato;
-- tsParticles;
-- Stripe;
-- Resend;
-- Neon/Postgres libraries;
-- OpenNext;
-- Cloudflare/Wrangler;
-- any other installed or relevant dependency.
+If Context7 cannot resolve a particular library, do not pretend it did. Use the library's authoritative documentation/source instead and clearly note that Context7 did not have a suitable entry.
 
-Required Context7 workflow
+The goal is to quickly build an accurate understanding of the actual libraries and versions used by this project before repairing the reveal.
 
-When Context7 applies:
+At the end, identify:
 
-1. Identify the relevant library/framework/dependency.
-2. Resolve the correct library/project through Context7.
-3. Retrieve the relevant current documentation.
-4. Use that documentation to inform the investigation or implementation.
-5. Verify that the implementation is consistent with the retrieved documentation.
-
-Do not invent Context7 library IDs.
-
-Do not claim Context7 was used unless an actual Context7 call was made.
-
-Important
-
-If Context7 is available and relevant, do not begin implementation first and consult Context7 afterward merely as a confirmation step.
-
-The documentation lookup should inform the implementation.
+- important libraries discovered
+- installed versions
+- which libraries were resolved through Context7
+- which documentation was retrieved
+- what implementation decisions were influenced by that documentation
 
 ---
 
-4. MCP TROUBLESHOOTING REQUIREMENT
+VISUAL REVEAL AUDIT
 
-If an applicable MCP or tool is identified but cannot immediately be used:
+Audit the entire Lucky Card reveal from the moment it starts through the completed card flip/reveal.
 
-STOP AND TROUBLESHOOT THE TOOL ACCESS BEFORE SIMPLY CONTINUING WITHOUT IT.
+Make the experience feel:
 
-Determine:
+- cinematic
+- magical
+- premium
+- exciting
+- polished
+- intentional
 
-1. Is the MCP/tool actually available in this Jules session?
-2. Is the relevant tool/function exposed?
-3. Is the correct capability being selected?
-4. Does the tool require a different invocation or input?
-5. Is there an authentication, connection, permission, configuration, or environment problem?
-6. Is the requested capability supported by the MCP?
-7. Is the MCP returning an error or empty result?
-8. Is there another documented way to invoke the relevant capability?
+Pay particular attention to:
 
-Make a reasonable troubleshooting attempt.
+- card movement
+- card shake
+- pulse/strike impacts
+- energy beams
+- aura/bloom
+- particles
+- lighting
+- buildup
+- escalation
+- timing
+- final strike
+- card flip
+- reveal transition
+- post-reveal shimmer
 
-If the first invocation fails, do not immediately abandon the MCP.
+The card must visibly react when the energy strikes hit it.
 
-After troubleshooting, make another reasonable attempt when appropriate.
+It should NOT feel static or barely move.
 
-If the MCP genuinely cannot be used
+The strikes should feel like they are physically impacting the card.
 
-If the capability remains unavailable after reasonable troubleshooting:
+The sequence should progressively build anticipation toward the final strike.
 
-- clearly recognize that it could not be used;
-- do not falsely claim that it was used;
-- document the limitation in the work summary;
-- use the strongest remaining available source/tool;
-- continue the task only when doing so is reasonable.
+The final strike should clearly be the strongest visual moment before the card flips.
 
-Never silently substitute an assumption for information that an available MCP could have verified.
-
----
-
-5. PLAN REQUIREMENT
-
-Before implementation, produce a plan that identifies:
-
-- the problem or requested outcome;
-- the relevant task categories;
-- the applicable MCPs/tools;
-- the documentation sources that will be consulted;
-- the testing/verification methods;
-- the major implementation steps.
-
-If a tool or MCP is materially relevant, the plan should explicitly identify it.
-
-The plan must correspond to actual execution.
-
-Do not list tools in the plan and then fail to invoke them.
-
-Do not claim successful tool use when the tool was only connected or mentioned.
+Do not allow effects to overwhelm the actual card.
 
 ---
 
-6. AGENT SKILLS / CONTEXT ENGINEERING
+AUDIO + VISUAL SYNCHRONIZATION
 
-Use relevant Agent Skills and context-engineering capabilities when they are actually available in the current Jules session and materially improve:
+This is extremely important.
 
-- repository understanding;
-- task decomposition;
-- context management;
-- implementation planning;
-- information retrieval;
-- execution quality;
-- constraint preservation;
-- reasoning about complex repository changes;
-- identifying relevant files and systems;
-- verification;
-- final review.
+The audio and visual reveal must behave as one synchronized event.
 
-Do not claim to have used a skill unless the skill was actually available and invoked.
+Every meaningful visual pulse/strike that actually hits the card must have a corresponding audio impact.
 
-Availability in this repository's instructions does not guarantee that a particular skill is exposed in every Jules session.
+Do NOT create visual strikes without corresponding sounds.
 
-Use it when available and relevant.
+For every pulse/strike, add a short, subtle explosion-like magical impact sound precisely when the strike hits the card.
 
----
+Think:
 
-7. MCP EXPECTATIONS
+energy impact + tiny magical burst + physical hit
 
-Context7 MCP
+—not a huge repetitive explosion.
 
-Use Context7 for current documentation whenever relevant.
+The sound should make the card feel like it was physically struck by magical energy.
 
-Actually invoke it and use its returned documentation.
+Use the sound resources/libraries that are actually available to the project.
 
-Stitch MCP
+Inspect the repository and existing dependencies/assets to determine what audio resources are already available before introducing anything unnecessary.
 
-Use Stitch for work involving:
+Where appropriate, layer complementary sounds such as:
 
-- UI design;
-- visual design;
-- layout;
-- screen composition;
-- visual hierarchy;
-- responsive design;
-- interaction design;
-- design exploration;
-- visual refinement;
-- visual polish;
-- translating design concepts into implementation.
+- sharp impact/transient
+- magical burst
+- subtle energy crack
+- restrained low-end/sub-bass hit
+- short whoosh
 
-Actually invoke Stitch when applicable.
+Do not simply play the exact same sound identically for every strike.
 
-Use Stitch output as design or implementation guidance.
+Subtly vary or scale the impacts so the sequence builds naturally.
 
-Neon MCP
+The intensity should increase as the reveal progresses.
 
-Use Neon whenever the task involves or depends on:
+The final strike should have the strongest and most satisfying audio impact.
 
-- PostgreSQL;
-- database schema;
-- persisted data;
-- queries;
-- relationships;
-- database-backed features;
-- database errors;
-- database performance;
-- backend data flow;
-- actual stored data;
-- data integrity.
-
-Use actual Neon evidence when authorized and applicable.
-
-Do not guess about database structures or behavior when Neon can verify them.
-
-Other MCPs and Skills
-
-Treat every additional available MCP, skill, integration, and project capability the same way:
-
-1. Determine whether it materially applies.
-2. Invoke it when applicable and available.
-3. Use its result.
-4. Incorporate the result into the work.
-5. Verify the resulting implementation.
+The audio should never feel disconnected from what the viewer sees.
 
 ---
 
-8. TASK-BASED TOOL & LIBRARY ROUTING
+TIMING
 
-When a task matches one or more categories below, use the relevant tools by default.
+Audit the complete reveal timeline.
 
-When multiple categories apply, combine the applicable toolsets.
+Make sure:
 
-Do not choose only one category when several are materially relevant.
+- every visual strike has its corresponding audio impact
+- impacts occur at the exact visual hit
+- strike spacing feels intentional
+- the buildup progressively increases
+- the final strike is the climax
+- the strongest impact happens immediately before the flip
+- pre-flip sounds stop/transition cleanly
+- audio does not bleed improperly into the card flip
+- post-flip shimmer/reveal audio is separated appropriately
+- the reveal cannot drift out of synchronization
 
----
+Pay special attention to differences between:
 
-A. UI DESIGN / VISUAL DESIGN / FRONT-END POLISH
+"requestAnimationFrame" timestamps
 
-Use where applicable:
+and
 
-- Stitch;
-- Context7;
-- "next";
-- "react";
-- "react-dom";
-- "typescript";
-- "tailwindcss";
-- "autoprefixer";
-- "shadcn/ui";
-- "framer-motion";
-- Playwright;
-- "playwright-chromium".
+"AudioContext.currentTime"
 
-Use Stitch for visual exploration and refinement.
+Make sure the implementation does not mix milliseconds and seconds incorrectly.
 
-Use Context7 for current framework/library behavior.
-
-Verify the actual interface in a browser.
+Use Context7 to validate the correct timing/scheduling approach for the actual libraries/APIs used.
 
 ---
 
-B. RESPONSIVE DESIGN / MOBILE UX
+CINEMATIC SEQUENCE
 
-Use where applicable:
+The finished reveal should feel like:
 
-- Stitch;
-- Playwright;
-- "playwright-chromium";
-- "next";
-- "react";
-- "tailwindcss";
-- "shadcn/ui";
-- "framer-motion";
-- Context7.
+Strike → card reacts → magical impact sound → energy builds → stronger strike → stronger impact → escalating tension → final massive strike → clean card flip → reveal
 
-Check:
+Every part should support the next.
 
-- mobile;
-- tablet;
-- desktop;
-- responsive breakpoints;
-- touch interactions;
-- spacing;
-- overflow;
-- viewport behavior;
-- text wrapping;
-- buttons and controls;
-- visual hierarchy.
-
-Do not assume desktop behavior works correctly on mobile.
+There should be a clear sense of escalation rather than a collection of unrelated effects.
 
 ---
 
-C. ANIMATION / MOTION / INTERACTIVE EFFECTS
+TIERS
 
-Use where applicable:
+Review Standard, Premium, and Flagship behavior.
 
-- "framer-motion";
-- Context7;
-- relevant browser/rendering tools;
-- Playwright;
-- "playwright-chromium".
+Make sure the tiers still feel meaningfully different while preserving the synchronized strike/audio system.
 
-Verify:
-
-- timing;
-- sequencing;
-- state transitions;
-- interaction behavior;
-- completion;
-- interruption;
-- reduced-motion behavior where applicable;
-- browser/runtime behavior.
-
-Do not rely only on source-code inspection.
+The higher tiers should be able to feel more spectacular without creating unnecessary performance problems.
 
 ---
 
-D. PARTICLES / VISUAL EFFECTS / AMBIENT EFFECTS
+MOBILE + PERFORMANCE
 
-Use where applicable:
+Audit mobile behavior carefully.
 
-- "tsparticles";
-- "framer-motion";
-- Stitch;
-- Context7;
-- Playwright;
-- "playwright-chromium".
+Optimize intelligently for:
 
-Use Stitch when visual composition or design direction matters.
+- Canvas rendering
+- particle counts
+- aura sizes
+- animation complexity
+- audio processing
+- overdraw
+- memory usage
+- frame rate
 
-Verify the rendered result in the browser.
+Do not destroy the cinematic quality simply to optimize.
 
----
-
-E. AUDIO / SOUND / INTERACTIVE AUDIO
-
-Use where applicable:
-
-- "howler";
-- "tone";
-- "use-sound";
-- "pizzicato";
-- "framer-motion";
-- Context7;
-- Playwright.
-
-When several complementary sounds improve an interaction or reveal, use multiple appropriate audio capabilities rather than forcing a single library to handle every sound.
-
-Verify:
-
-- triggering;
-- sequencing;
-- timing;
-- volume;
-- lifecycle;
-- cleanup;
-- browser compatibility;
-- user interaction requirements.
+Preserve the intended visual impact while eliminating unnecessary performance costs.
 
 ---
 
-F. NEXT.JS / REACT / APPLICATION ARCHITECTURE
+EXISTING FUNCTIONALITY
 
-Use where applicable:
+Preserve anything that is already working correctly.
 
-- "next";
-- "react";
-- "react-dom";
-- "typescript";
-- "react-error-boundary";
-- Context7;
-- relevant testing/browser tools.
+Do not introduce unrelated changes.
 
-Inspect the existing architecture before changing it.
+Do NOT modify:
 
-Prefer existing project patterns over introducing new architectural approaches.
+- Stripe/payments
+- database functionality unless genuinely required for verification
+- unrelated APIs
+- email
+- authentication
+- environment variables
+- Cloudflare configuration
+- unrelated site functionality
 
----
-
-G. TYPESCRIPT / STATIC ANALYSIS / CODE QUALITY
-
-Use where applicable:
-
-- "typescript";
-- "eslint";
-- "@types/node";
-- "@types/react";
-- Context7 when dependency/framework behavior is relevant.
-
-Run appropriate type checking and linting.
-
-Do not treat static checks as the only verification when runtime behavior matters.
+Keep the repair focused on the Lucky Card reveal.
 
 ---
 
-H. DATABASE / POSTGRESQL / DATA-BACKED FEATURES
+FINAL VERIFICATION
 
-Use where applicable:
+After making the repairs, thoroughly double-check the finished implementation.
 
-- Neon MCP;
-- "@neondatabase/serverless";
-- Context7;
-- "next";
-- "typescript";
-- Playwright where browser behavior is involved.
+Re-audit:
 
-When authorized:
+- visual timing
+- card movement
+- card shake
+- strike sequence
+- beams
+- aura
+- particles
+- audio timing
+- impact sounds
+- audio/visual synchronization
+- final strike
+- card flip
+- post-flip transition
+- mobile performance
+- cleanup
+- library/API correctness
 
-- inspect the actual schema;
-- inspect relevant tables;
-- inspect relationships;
-- inspect actual data when necessary;
-- verify queries;
-- verify data flow;
-- verify persistence.
+Most importantly, verify that every visual strike that hits the card has a corresponding synchronized audio impact.
 
-Do not guess about database behavior when Neon can provide authoritative evidence.
+Also verify that ALL THREE MCPs were actually called and meaningfully used.
 
----
+Do not simply report that they were available.
 
-I. REDIS / CACHING / STATE
+Actually use them, then confirm what each one contributed.
 
-Use where applicable:
-
-- "@upstash/redis";
-- relevant backend/data MCPs;
-- Context7;
-- "next";
-- "typescript";
-- appropriate testing/runtime tools.
-
-Verify:
-
-- cache reads;
-- cache writes;
-- invalidation;
-- expiration;
-- fallback behavior;
-- error handling;
-- consistency.
-
----
-
-J. STRIPE / PAYMENTS
-
-Use where applicable:
-
-- "stripe";
-- "@stripe/stripe-js";
-- Context7;
-- appropriate browser/runtime verification.
-
-Payment systems are protected.
-
-Do not modify:
-
-- Stripe configuration;
-- checkout behavior;
-- payment flows;
-- pricing;
-- payment infrastructure;
-
-unless the task explicitly authorizes those changes.
-
-Investigation may be performed when appropriate without modifying protected payment systems.
-
----
-
-K. EMAIL / TRANSACTIONAL EMAIL
-
-Use where applicable:
-
-- "resend";
-- Context7;
-- relevant Next.js/TypeScript tooling;
-- appropriate runtime verification.
-
-Email infrastructure is protected.
-
-Do not modify email infrastructure, delivery configuration, credentials, templates, or flows unless explicitly authorized.
-
----
-
-L. IMAGE / SVG / CANVAS / RENDERING
-
-Use where applicable:
-
-- "sharp";
-- "html2canvas";
-- relevant browser tools;
-- Context7;
-- Playwright.
-
-Verify the actual rendered result where visual correctness matters.
-
-Check:
-
-- dimensions;
-- scaling;
-- quality;
-- SVG validity;
-- transparency;
-- browser rendering;
-- responsive behavior;
-- performance.
-
----
-
-M. BROWSER TESTING / UI AUDITING
-
-Use where applicable:
-
-- Playwright;
-- "playwright-chromium";
-- Puppeteer;
-- Stitch where visual comparison is useful;
-- Context7;
-- relevant framework/library documentation.
-
-Check:
-
-- user flows;
-- interactions;
-- visual state;
-- responsive behavior;
-- loading states;
-- errors;
-- navigation;
-- console/runtime problems;
-- accessibility where relevant.
-
----
-
-N. TROUBLESHOOTING / BUG INVESTIGATION
-
-Use:
-
-- relevant Agent Skills when available;
-- the MCPs relevant to the affected system;
-- Context7;
-- Playwright/Puppeteer for browser issues;
-- Neon for database issues;
-- Wrangler/OpenNext for deployment issues;
-- TypeScript/ESLint for code-quality issues;
-- runtime diagnostics and logs where available.
-
-Do not immediately patch the first suspicious line.
-
-First:
-
-1. reproduce or inspect the failure;
-2. trace the affected flow;
-3. identify the root cause;
-4. gather evidence using the strongest relevant tools;
-5. determine the smallest correct fix;
-6. implement it;
-7. verify the actual result.
-
-Do not confuse a symptom with the root cause.
-
-If an applicable MCP is available, actually use it during the investigation.
-
----
-
-O. CLOUDFLARE / OPENNEXT / DEPLOYMENT
-
-Use where applicable:
-
-- "@opennextjs/cloudflare";
-- "wrangler";
-- "@opennextjs/aws" where applicable;
-- "next";
-- Context7;
-- Playwright;
-- runtime/deployment diagnostics.
-
-Verify:
-
-- build behavior;
-- generated assets;
-- routes;
-- static assets;
-- runtime behavior;
-- Cloudflare compatibility;
-- deployment configuration;
-- production behavior where applicable.
-
-Do not assume a successful local build proves the deployed application works.
-
----
-
-P. PERFORMANCE / OPTIMIZATION
-
-Use where applicable:
-
-- relevant Agent Skills when available;
-- Context7;
-- relevant framework documentation;
-- Playwright;
-- Puppeteer;
-- browser/runtime profiling;
-- relevant MCPs;
-- existing project performance tooling.
-
-Investigate before optimizing.
-
-Measure where practical.
-
-Check for:
-
-- unnecessary rendering;
-- expensive effects;
-- excessive network requests;
-- large assets;
-- blocking operations;
-- animation performance;
-- memory usage;
-- bundle size;
-- image optimization;
-- database/query performance;
-- caching opportunities.
-
-Do not make speculative performance changes without evidence.
-
----
-
-Q. SECURITY / SECURITY REVIEW
-
-Use where applicable:
-
-- relevant Agent Skills when available;
-- relevant security tools;
-- Context7;
-- dependency/security analysis;
-- TypeScript/ESLint;
-- framework documentation;
-- runtime/browser testing;
-- relevant MCPs.
-
-Review where applicable:
-
-- authentication boundaries;
-- authorization;
-- input validation;
-- data exposure;
-- secret handling;
-- environment variables;
-- API routes;
-- database access;
-- payment boundaries;
-- dependency risks;
-- client/server separation;
-- injection risks;
-- error leakage.
-
-Never expose, print, commit, or invent secrets or credentials.
-
-Do not make unrelated security refactors.
-
----
-
-R. ACCESSIBILITY
-
-Use where applicable:
-
-- Stitch;
-- Playwright;
-- relevant UI/framework documentation;
-- Context7;
-- existing accessibility tooling.
-
-Check where applicable:
-
-- keyboard navigation;
-- focus states;
-- semantic HTML;
-- labels;
-- controls;
-- contrast;
-- screen-reader-relevant structure;
-- reduced motion;
-- touch targets;
-- error messaging.
-
-Verify actual browser behavior where possible.
-
----
-
-S. SEO / METADATA / DISCOVERABILITY
-
-Use where applicable:
-
-- "next";
-- "react";
-- Context7;
-- browser inspection;
-- relevant validation/testing tools.
-
-Check:
-
-- metadata;
-- titles;
-- descriptions;
-- canonical behavior;
-- structured data where applicable;
-- robots behavior;
-- sitemap behavior;
-- social metadata;
-- rendering behavior.
-
-Do not invent SEO configuration or routes.
-
----
-
-T. TESTING / QA
-
-Use where applicable:
-
-- Playwright;
-- "playwright-chromium";
-- Puppeteer;
-- TypeScript;
-- ESLint;
-- relevant framework/library documentation;
-- Context7.
-
-Choose verification appropriate to the change.
-
-Test both the changed behavior and important surrounding behavior that could have been affected.
-
----
-
-U. DEPENDENCY / LIBRARY UPGRADES
-
-Use where applicable:
-
-- Context7;
-- documentation for the relevant dependency;
-- TypeScript;
-- ESLint;
-- existing tests;
-- Playwright where browser behavior is involved.
-
-Before upgrading:
-
-- inspect current usage;
-- check compatibility;
-- check breaking changes;
-- check peer dependencies;
-- check project conventions.
-
-After upgrading:
-
-- run appropriate validation;
-- verify runtime behavior;
-- inspect the final diff.
-
-Do not upgrade dependencies merely because newer versions exist.
-
----
-
-V. DATA INTEGRITY / BUSINESS LOGIC
-
-Use where applicable:
-
-- relevant Agent Skills when available;
-- Neon or relevant backend MCPs;
-- Context7;
-- TypeScript;
-- relevant application libraries;
-- appropriate tests.
-
-Trace business logic from input through processing to persisted/output state.
-
-Verify edge cases and existing behavior.
-
-Do not alter business rules unless explicitly requested.
-
----
-
-9. REPOSITORY INSPECTION
-
-Before changing code:
-
-- inspect the relevant files;
-- inspect related components/modules;
-- inspect configuration;
-- inspect package dependencies;
-- inspect existing tests;
-- inspect relevant routes/API boundaries;
-- inspect relevant data flow;
-- inspect existing patterns.
-
-Search the repository rather than guessing where functionality lives.
-
-Follow existing architecture unless there is a clear reason to change it.
-
----
-
-10. IMPLEMENTATION RULES
-
-- Make the smallest safe change that fully solves the requested problem.
-- Preserve unrelated behavior.
-- Reuse existing components and utilities where practical.
-- Do not introduce unnecessary dependencies.
-- Do not rewrite working systems.
-- Do not modify protected systems without explicit authorization.
-- Keep the implementation focused and reviewable.
-- Do not make speculative fixes.
-- Do not hide errors to make tests pass.
-- Do not weaken validation or safeguards merely to eliminate an error.
-
----
-
-11. VERIFICATION REQUIREMENT
-
-Verification must match the actual task.
-
-A successful build is not sufficient by itself.
-
-Where applicable, verify:
-
-- type checking;
-- linting;
-- unit/integration tests;
-- browser behavior;
-- responsive behavior;
-- visual rendering;
-- animations;
-- audio;
-- database behavior;
-- API behavior;
-- deployment behavior;
-- production behavior;
-- console/runtime errors.
-
-Use the appropriate MCPs and tools during verification as well as during investigation.
-
----
-
-12. FINAL DOUBLE-CHECK
-
-Before considering the task complete:
-
-1. Re-read the requested task.
-2. Confirm every requested requirement was addressed.
-3. Confirm applicable MCPs/tools were actually invoked.
-4. Confirm their results materially informed the work.
-5. Confirm the implementation follows current relevant documentation.
-6. Review the final diff.
-7. Check for unintended changes.
-8. Run appropriate validation.
-9. Verify actual runtime behavior when applicable.
-10. Confirm protected systems were not modified.
-11. Confirm no secrets or credentials were exposed.
-12. Confirm the final result solves the original problem rather than merely addressing a symptom.
-
-Do not declare the task complete until this final review has been performed.
-
----
-
-13. TOOL-USE HONESTY
-
-Never state or imply that a tool, MCP, skill, library, documentation source, test, or verification method was used when it was not actually used.
-
-Distinguish between:
-
-- connected;
-- available;
-- identified;
-- invoked;
-- successfully returned a result;
-- result applied;
-- verification completed.
-
-These are different states.
-
-Only report the stronger state when it actually occurred.
-
----
-
-14. PROTECTED SYSTEMS
-
-Unless explicitly authorized by the task, do not modify:
-
-- Stripe/payment infrastructure;
-- email infrastructure;
-- authentication;
-- database schema;
-- production data;
-- environment variables/secrets;
-- Cloudflare account/settings;
-- unrelated APIs;
-- unrelated infrastructure.
-
-Investigation and read-only verification may be performed when appropriate.
-
-If a requested fix appears to require changing a protected system, stop and identify the conflict before making the change.
-
----
-
-15. COMPLETION STANDARD
-
-The task is complete only when:
-
-- the requested behavior has been implemented;
-- the relevant root cause has been addressed;
-- applicable tools/MCPs were actually used;
-- relevant documentation was consulted;
-- the implementation has been appropriately tested;
-- actual behavior has been verified where applicable;
-- the final diff has been reviewed;
-- no unrelated functionality was changed;
-- protected systems remain protected.
-
-A connection is not usage.
-
-A plan is not execution.
-
-A build passing is not proof of correctness.
-
-A plausible explanation is not evidence.
-
-Investigate, invoke the relevant tools, use the evidence, implement, verify, and double-check.
+Before submitting the finished work, thoroughly double-check the implementation for regressions, timing problems, synchronization issues, and unnecessary changes.
