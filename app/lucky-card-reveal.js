@@ -380,7 +380,7 @@ export default function LuckyCardReveal() {
         {/* Reveal Flash */}
         {isGenerating && selectedCard && (
           <div
-            className={`reveal-flash absolute inset-[-100%] z-10 pointer-events-none mix-blend-screen rounded-full opacity-0 radial-light-burst ${
+            className={`reveal-flash absolute inset-[-100%] z-0 pointer-events-none mix-blend-screen rounded-full opacity-0 radial-light-burst ${
               selectedCard.tier === 'standard' ? 'bg-[radial-gradient(circle,rgba(255,255,255,0.4)_0%,transparent_70%)]' :
               selectedCard.tier === 'premium' ? 'bg-[radial-gradient(circle,rgba(180,220,255,0.5)_0%,transparent_70%)]' :
               'bg-[radial-gradient(circle,rgba(255,230,150,0.6)_0%,transparent_70%)]'
@@ -401,7 +401,7 @@ export default function LuckyCardReveal() {
             }
           }}
           ref={cardRef}
-          className="card-container relative w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
+          className="card-container relative z-20 w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
           style={{ perspective: '1200px' }}
         >
           <div className="relative w-full h-full">
@@ -440,12 +440,6 @@ export default function LuckyCardReveal() {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
                         Lucky Pick 🍁 Canada.ca
-                      </div>
-                    )}
-                    {/* Cinematic Sweep Effect */}
-                    {isRevealed && (
-                      <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden rounded-2xl">
-                        <div className="absolute top-0 left-0 w-[50%] h-[150%] bg-gradient-to-r from-transparent via-white/40 to-transparent shimmer-sweep -translate-y-[20%]" />
                       </div>
                     )}
                   </div>

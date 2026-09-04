@@ -63,10 +63,10 @@ body {
   box-shadow: 0 0 20px 2px rgba(255, 255, 255, 0.15);
 }
 .tier-glow-premium {
-  box-shadow: 0 0 35px 5px rgba(105, 184, 255, 0.4), inset 0 0 10px rgba(105, 184, 255, 0.2);
+  box-shadow: 0 0 35px 5px rgba(105, 184, 255, 0.4);
 }
 .tier-glow-flagship {
-  box-shadow: 0 0 50px 10px rgba(253, 200, 48, 0.6), inset 0 0 15px rgba(253, 200, 48, 0.3);
+  box-shadow: 0 0 50px 10px rgba(253, 200, 48, 0.6);
 }
 
 /* Cinematic Flicker */
