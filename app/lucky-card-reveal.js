@@ -121,20 +121,38 @@ export default function LuckyCardReveal() {
   }, [stopAll]);
 
   // Audio Playback Helpers
-  const playBuffer = (ctx, buffer, time, vol = 1.0, playbackRate = 1.0) => {
+  const playBuffer = (ctx, buffer, time, vol = 1.0, playbackRate = 1.0, duration = null) => {
     if (!ctx || !buffer) return;
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.playbackRate.value = playbackRate;
 
     const gainNode = ctx.createGain();
-    gainNode.gain.value = vol;
+    gainNode.gain.setValueAtTime(vol, Math.max(0, time));
 
     source.connect(gainNode);
     gainNode.connect(ctx.destination);
 
-    source.start(time);
+    source.start(Math.max(0, time));
+
+    if (duration !== null) {
+        // Apply fade out instead of an abrupt stop
+        const fadeOutTime = 0.05;
+        gainNode.gain.setTargetAtTime(0, Math.max(0, time + duration - fadeOutTime), fadeOutTime / 3);
+        source.stop(Math.max(0, time + duration));
+    }
+
     activeAudioNodesRef.current.push(source);
+
+    // Cleanup reference after it finishes
+    const actualStartTime = Math.max(0, time);
+    const timeoutMs = Math.max(0, (actualStartTime - ctx.currentTime) + cleanupTime + 0.1) * 1000;
+    const timeoutMs = Math.max(0, (time - ctx.currentTime) + cleanupTime + 0.1) * 1000;
+
+    activeTimeoutsRef.current.push(window.setTimeout(() => {
+        activeAudioNodesRef.current = activeAudioNodesRef.current.filter(n => n !== source);
+    }, timeoutMs));
+
     return source;
   };
 
@@ -142,7 +160,7 @@ export default function LuckyCardReveal() {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
 
-    if (audioCtxRef.current) {
+    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
       audioCtxRef.current.close().catch(() => {});
     }
 
@@ -155,20 +173,37 @@ export default function LuckyCardReveal() {
 
     if (!audioBuffers) return;
 
-    // Background low rumble from start to impact
+    const finalStrikeTime = now + schedule[schedule.length - 1];
+
+    // 1. Initial Activation Cue
+    const initOsc = ctx.createOscillator();
+    const initGain = ctx.createGain();
+    initOsc.type = 'triangle';
+    initOsc.frequency.setValueAtTime(440, now);
+    initOsc.frequency.exponentialRampToValueAtTime(880, now + 0.5);
+    initGain.gain.setValueAtTime(0, now);
+    initGain.gain.linearRampToValueAtTime(0.1, now + 0.1);
+    initGain.gain.setTargetAtTime(0, now + 0.2, 0.2);
+    initOsc.connect(initGain);
+    initGain.connect(ctx.destination);
+    initOsc.start(now);
+    initOsc.stop(now + 1.0);
+    activeAudioNodesRef.current.push(initOsc);
+
+    // 2. Energy Buildup (drone)
     const drone = ctx.createOscillator();
     const droneGain = ctx.createGain();
     drone.type = 'sine';
     drone.frequency.setValueAtTime(45, now);
-    drone.frequency.linearRampToValueAtTime(65, now + 8);
+    drone.frequency.linearRampToValueAtTime(65, finalStrikeTime);
     droneGain.gain.setValueAtTime(0, now);
-    droneGain.gain.linearRampToValueAtTime(0.2, now + 2);
-    droneGain.gain.linearRampToValueAtTime(0.4, now + 7);
-    droneGain.gain.exponentialRampToValueAtTime(0.001, now + 8);
+    droneGain.gain.linearRampToValueAtTime(0.15, now + 1.5);
+    droneGain.gain.linearRampToValueAtTime(0.3, finalStrikeTime - 0.5);
+    droneGain.gain.setTargetAtTime(0, finalStrikeTime, 0.05); // Fade out right on final strike
     drone.connect(droneGain);
     droneGain.connect(ctx.destination);
     drone.start(now);
-    drone.stop(now + 8);
+    drone.stop(finalStrikeTime + 0.2);
     activeAudioNodesRef.current.push(drone);
 
     // Schedule strikes
@@ -176,34 +211,89 @@ export default function LuckyCardReveal() {
       const isFinal = idx === schedule.length - 1;
       const strikeTime = now + timeOffset;
 
-      const intensity = isFinal ? 1.5 : 0.6 + (idx / schedule.length) * 0.4;
-      const rate = isFinal ? 0.8 : 1.0;
+      const intensity = isFinal ? (tier === 'flagship' ? 1.5 : 1.2) : 0.4 + (idx / schedule.length) * 0.4;
 
-      // Lightning crack
-      playBuffer(ctx, audioBuffers.lightning, strikeTime, intensity * 0.8, rate);
-      // Coin shake (physical impact)
-      playBuffer(ctx, audioBuffers.coin, strikeTime + 0.05, intensity * 0.6, 1.2);
+      // 3. Incoming Energy (sweep before impact matching 0.3s travel time)
+      const sweepOsc = ctx.createOscillator();
+      const sweepGain = ctx.createGain();
+      sweepOsc.type = 'sine';
+      sweepOsc.frequency.setValueAtTime(800, strikeTime - 0.3);
+      sweepOsc.frequency.exponentialRampToValueAtTime(200, strikeTime);
+      sweepGain.gain.setValueAtTime(0, strikeTime - 0.3);
+      sweepGain.gain.linearRampToValueAtTime(0.1 * intensity, strikeTime - 0.1);
+      sweepGain.gain.setTargetAtTime(0, strikeTime, 0.05);
+      sweepOsc.connect(sweepGain);
+      sweepGain.connect(ctx.destination);
+      sweepOsc.start(Math.max(0, strikeTime - 0.3));
+      sweepOsc.stop(strikeTime + 0.1);
+      activeAudioNodesRef.current.push(sweepOsc);
 
+      // 4. Impact
+      // Use negative offset to ensure perceptual sync
+      const impactOffset = -0.03;
+      playBuffer(ctx, audioBuffers.lightning, strikeTime + impactOffset, intensity * 0.7, isFinal ? 0.9 : 1.1);
+
+      // 5. Card Shake
+      // Exactly constrained to the shake duration
+      const shakeDur = isFinal ? 0.4 : 0.2;
+      playBuffer(ctx, audioBuffers.coin, strikeTime, intensity * 0.5, 1.2, shakeDur);
+
+      // 6. Final Impact Details
       if (isFinal) {
-        // Final massive impact
-        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.2, 1.0, 1.0);
+        // Anticipation whoosh leading directly into strike
+        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.4, 0.8, 1.5, 0.4);
 
-        // Sub bass drop
+        // Sub bass drop on impact
         const sub = ctx.createOscillator();
         const subGain = ctx.createGain();
         sub.type = 'sine';
-        sub.frequency.setValueAtTime(100, strikeTime);
-        sub.frequency.exponentialRampToValueAtTime(20, strikeTime + 1.5);
+        sub.frequency.setValueAtTime(80, strikeTime);
+        sub.frequency.exponentialRampToValueAtTime(20, strikeTime + 1.0);
         subGain.gain.setValueAtTime(0, strikeTime);
-        subGain.gain.setValueAtTime(0.8, strikeTime + 0.05);
-        subGain.gain.exponentialRampToValueAtTime(0.001, strikeTime + 2.0);
+        subGain.gain.setValueAtTime(0.6 * (tier === 'flagship' ? 1.2 : 1), strikeTime + 0.05);
+        subGain.gain.setTargetAtTime(0, strikeTime + 0.1, 0.3);
         sub.connect(subGain);
         subGain.connect(ctx.destination);
         sub.start(strikeTime);
-        sub.stop(strikeTime + 2.0);
+        sub.stop(strikeTime + 1.5);
         activeAudioNodesRef.current.push(sub);
       }
     });
+
+    // 8 & 9. Card Flip and Reveal
+    // Shake dur = 0.4 on final, plus 0.25 breathing room
+    const flipAt = finalStrikeTime + 0.65;
+
+    // Flip metallic shimmer
+    const flipOsc = ctx.createOscillator();
+    const flipGain = ctx.createGain();
+    flipOsc.type = 'sine';
+    flipOsc.frequency.setValueAtTime(600, flipAt);
+    flipOsc.frequency.linearRampToValueAtTime(1200, flipAt + 0.4);
+    flipGain.gain.setValueAtTime(0, flipAt);
+    flipGain.gain.linearRampToValueAtTime(0.15, flipAt + 0.2);
+    flipGain.gain.setTargetAtTime(0, flipAt + 0.4, 0.1);
+    flipOsc.connect(flipGain);
+    flipGain.connect(ctx.destination);
+    flipOsc.start(flipAt);
+    flipOsc.stop(flipAt + 0.8);
+    activeAudioNodesRef.current.push(flipOsc);
+
+    // Reveal Chime
+    const revealTime = flipAt + 0.35; // Face visible
+    const chimeOsc = ctx.createOscillator();
+    const chimeGain = ctx.createGain();
+    chimeOsc.type = 'triangle';
+    chimeOsc.frequency.setValueAtTime(880, revealTime);
+    chimeOsc.frequency.setValueAtTime(1760, revealTime + 0.1);
+    chimeGain.gain.setValueAtTime(0, revealTime);
+    chimeGain.gain.setValueAtTime(0.2, revealTime + 0.05);
+    chimeGain.gain.setTargetAtTime(0, revealTime + 0.1, 0.5);
+    chimeOsc.connect(chimeGain);
+    chimeGain.connect(ctx.destination);
+    chimeOsc.start(revealTime);
+    chimeOsc.stop(revealTime + 2.0);
+    activeAudioNodesRef.current.push(chimeOsc);
   };
 
   const renderCanvas = (timestamp) => {
@@ -397,7 +487,8 @@ export default function LuckyCardReveal() {
     });
 
     const finalStrike = schedule[schedule.length - 1];
-    const flipAt = finalStrike + 0.3; // Flip shortly after final impact
+    // Shake dur = 0.4 on final, plus 0.25 breathing room
+    const flipAt = finalStrike + 0.65;
 
     sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0 }, { at: flipAt.toString(), duration: 0.8, ease: 'circOut' }]);
 
