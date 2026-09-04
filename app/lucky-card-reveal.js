@@ -16,54 +16,10 @@ function localDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-// --- WEB AUDIO SYNTHESIS ENGINE ---
-// Replaces static Howler assets for a premium, perfectly synced soundscape
-
-const playTone = (ctx, type, freq, time, duration, vol, detune = 0) => {
-  if (!ctx || ctx.state === 'closed') return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, time);
-  if (detune) osc.detune.value = detune;
-
-  gain.gain.setValueAtTime(0, time);
-  gain.gain.linearRampToValueAtTime(vol, time + duration * 0.1);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start(time);
-  osc.stop(time + duration);
-  return { osc, gain };
-};
-
-const playNoise = (ctx, time, duration, vol, filterFreq, filterType = 'bandpass') => {
-  if (!ctx || ctx.state === 'closed') return;
-  const bufferSize = ctx.sampleRate * duration;
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = Math.random() * 2 - 1;
-  }
-
-  const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
-  const filter = ctx.createBiquadFilter();
-  filter.type = filterType;
-  filter.frequency.setValueAtTime(filterFreq, time);
-
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0, time);
-  gain.gain.linearRampToValueAtTime(vol, time + duration * 0.1);
-  gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-
-  noise.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
-
-  noise.start(time);
-  return { noise, gain, filter };
+const STRIKE_SCHEDULES = {
+  standard: [3.0, 5.0, 8.0],
+  premium: [2.5, 4.2, 5.6, 6.8, 8.0],
+  flagship: [2.0, 3.5, 4.8, 5.8, 6.6, 7.3, 8.0]
 };
 
 export default function LuckyCardReveal() {
@@ -75,18 +31,57 @@ export default function LuckyCardReveal() {
   const [imageError, setImageError] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
+  // Audio Loading State
+  const [audioBuffers, setAudioBuffers] = useState(null);
+  const [audioLoading, setAudioLoading] = useState(true);
+
   const [scope, animate] = useAnimate();
   const activeTimeoutsRef = useRef([]);
   const animationControlsRef = useRef(null);
   const audioCtxRef = useRef(null);
+  const activeAudioNodesRef = useRef([]);
   const cardRef = useRef(null);
 
   // Canvas refs for visual effects
   const bgCanvasRef = useRef(null);
-  const fgCanvasRef = useRef(null);
   const rafRef = useRef(null);
   const timelineStartRef = useRef(0);
   const activeTierRef = useRef('standard');
+
+  // Load Audio Assets
+  useEffect(() => {
+    let mounted = true;
+    const loadAudio = async () => {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContextClass();
+        const files = {
+          lightning: '/yodguard-lightning-magic-3-378649.mp3',
+          coin: '/freesound_community-shaking-coins-105774.mp3',
+          whoosh: '/dragon-studio-whoosh-cinematic-376875.mp3'
+        };
+
+        const buffers = {};
+        for (const [key, url] of Object.entries(files)) {
+          const response = await fetch(url);
+          const arrayBuffer = await response.arrayBuffer();
+          buffers[key] = await ctx.decodeAudioData(arrayBuffer);
+        }
+
+        if (mounted) {
+          setAudioBuffers(buffers);
+          setAudioLoading(false);
+        }
+        // Don't keep this context alive, we create a fresh one per reveal
+        ctx.close().catch(() => {});
+      } catch (err) {
+        console.error("Failed to preload audio:", err);
+        if (mounted) setAudioLoading(false); // Fail gracefully
+      }
+    };
+    loadAudio();
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     try {
@@ -105,29 +100,45 @@ export default function LuckyCardReveal() {
       }
     } catch (e) {}
     setIsReady(true);
-
-    return () => stopAll();
   }, []);
 
   const stopAll = useCallback(() => {
-    activeTimeoutsRef.current.forEach(window.clearTimeout);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (animationControlsRef.current) animationControlsRef.current.stop();
+    activeTimeoutsRef.current.forEach(clearTimeout);
     activeTimeoutsRef.current = [];
-    if (animationControlsRef.current) {
-      animationControlsRef.current.stop();
-      animationControlsRef.current = null;
-    }
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
+    activeAudioNodesRef.current.forEach(node => {
+      try { node.stop(); } catch (e) {}
+    });
+    activeAudioNodesRef.current = [];
     if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
       audioCtxRef.current.close().catch(() => {});
-      audioCtxRef.current = null;
     }
   }, []);
 
-  // --- AUDIO ORCHESTRATION ---
-  const playAudioSequence = (tier) => {
+  useEffect(() => {
+    return stopAll;
+  }, [stopAll]);
+
+  // Audio Playback Helpers
+  const playBuffer = (ctx, buffer, time, vol = 1.0, playbackRate = 1.0) => {
+    if (!ctx || !buffer) return;
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.playbackRate.value = playbackRate;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = vol;
+
+    source.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    source.start(time);
+    activeAudioNodesRef.current.push(source);
+    return source;
+  };
+
+  const playAudioSequence = (tier, schedule) => {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
 
@@ -140,204 +151,187 @@ export default function LuckyCardReveal() {
     ctx.resume(); // For mobile
 
     const now = ctx.currentTime;
+    activeAudioNodesRef.current = [];
 
-    // 0.0s: Tap / Activation
-    playTone(ctx, 'sine', 880, now, 0.5, 0.1);
-    playTone(ctx, 'sine', 1760, now, 0.5, 0.05);
+    if (!audioBuffers) return;
 
-    // 0.0s - 4.0s: Deep atmospheric drone
+    // Background low rumble from start to impact
     const drone = ctx.createOscillator();
     const droneGain = ctx.createGain();
     drone.type = 'sine';
-    drone.frequency.setValueAtTime(55, now); // Low A
-    drone.frequency.linearRampToValueAtTime(65, now + 4);
+    drone.frequency.setValueAtTime(45, now);
+    drone.frequency.linearRampToValueAtTime(65, now + 8);
     droneGain.gain.setValueAtTime(0, now);
-    droneGain.gain.linearRampToValueAtTime(0.3, now + 2);
-    droneGain.gain.linearRampToValueAtTime(0, now + 8);
+    droneGain.gain.linearRampToValueAtTime(0.2, now + 2);
+    droneGain.gain.linearRampToValueAtTime(0.4, now + 7);
+    droneGain.gain.exponentialRampToValueAtTime(0.001, now + 8);
     drone.connect(droneGain);
     droneGain.connect(ctx.destination);
     drone.start(now);
     drone.stop(now + 8);
+    activeAudioNodesRef.current.push(drone);
 
-    // 4.0s - 7.5s: Energy Gathering (Rising Whoosh + Rumble)
-    const gatherStart = now + 4.0;
-    const { filter: gatherFilter, gain: gatherGain } = playNoise(ctx, gatherStart, 3.5, 0, 400, 'bandpass') || {};
-    if (gatherFilter && gatherGain) {
-      gatherFilter.frequency.exponentialRampToValueAtTime(4000, gatherStart + 3.5);
-      gatherGain.gain.linearRampToValueAtTime(0.5, gatherStart + 3.0);
-      gatherGain.gain.linearRampToValueAtTime(0, gatherStart + 3.5);
-    }
+    // Schedule strikes
+    schedule.forEach((timeOffset, idx) => {
+      const isFinal = idx === schedule.length - 1;
+      const strikeTime = now + timeOffset;
 
-    const rumble = ctx.createOscillator();
-    const rumbleGain = ctx.createGain();
-    rumble.type = 'sawtooth';
-    rumble.frequency.setValueAtTime(40, gatherStart);
-    rumble.frequency.linearRampToValueAtTime(80, gatherStart + 3.5);
-    rumbleGain.gain.setValueAtTime(0, gatherStart);
-    rumbleGain.gain.linearRampToValueAtTime(0.2, gatherStart + 3.0);
-    rumbleGain.gain.linearRampToValueAtTime(0, gatherStart + 3.5);
+      const intensity = isFinal ? 1.5 : 0.6 + (idx / schedule.length) * 0.4;
+      const rate = isFinal ? 0.8 : 1.0;
 
-    const bq = ctx.createBiquadFilter();
-    bq.type = 'lowpass';
-    bq.frequency.setValueAtTime(200, gatherStart);
-    bq.frequency.linearRampToValueAtTime(800, gatherStart + 3.5);
+      // Lightning crack
+      playBuffer(ctx, audioBuffers.lightning, strikeTime, intensity * 0.8, rate);
+      // Coin shake (physical impact)
+      playBuffer(ctx, audioBuffers.coin, strikeTime + 0.05, intensity * 0.6, 1.2);
 
-    rumble.connect(bq);
-    bq.connect(rumbleGain);
-    rumbleGain.connect(ctx.destination);
-    rumble.start(gatherStart);
-    rumble.stop(gatherStart + 3.5);
+      if (isFinal) {
+        // Final massive impact
+        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.2, 1.0, 1.0);
 
-    // 8.0s: Impact
-    const impactTime = now + 8.0;
-    // Sub bass drop
-    const sub = ctx.createOscillator();
-    const subGain = ctx.createGain();
-    sub.type = 'sine';
-    sub.frequency.setValueAtTime(120, impactTime);
-    sub.frequency.exponentialRampToValueAtTime(30, impactTime + 1);
-    subGain.gain.setValueAtTime(0, impactTime);
-    subGain.gain.setValueAtTime(0.8, impactTime + 0.05);
-    subGain.gain.exponentialRampToValueAtTime(0.001, impactTime + 1.5);
-    sub.connect(subGain);
-    subGain.connect(ctx.destination);
-    sub.start(impactTime);
-    sub.stop(impactTime + 1.5);
-
-    // Magic spark (noise burst)
-    const { filter: sparkFilt } = playNoise(ctx, impactTime, 0.5, 0.6, 5000, 'highpass') || {};
-    if (sparkFilt) {
-      sparkFilt.frequency.linearRampToValueAtTime(1000, impactTime + 0.5);
-    }
-
-    // 8.5s: Card Flip starts
-    const flipTime = now + 8.5;
-    const { filter: flipFilt } = playNoise(ctx, flipTime, 0.7, 0.3, 1000, 'bandpass') || {};
-    if (flipFilt) {
-      flipFilt.frequency.exponentialRampToValueAtTime(8000, flipTime + 0.35);
-      flipFilt.frequency.exponentialRampToValueAtTime(1000, flipTime + 0.7);
-    }
-
-    // 9.2s: Chime / Shimmer (Card Face Appears)
-    const chimeTime = now + 9.2;
-    const root = tier === 'flagship' ? 1046.50 : (tier === 'premium' ? 880 : 523.25); // C6, A5, C5
-    playTone(ctx, 'sine', root, chimeTime, 3.0, 0.3);
-    playTone(ctx, 'sine', root * 1.5, chimeTime + 0.1, 2.5, 0.2); // Perfect fifth
-    playTone(ctx, 'sine', root * 2.0, chimeTime + 0.2, 2.0, 0.15); // Octave
-    if (tier !== 'standard') {
-      playTone(ctx, 'sine', root * 1.25, chimeTime + 0.15, 2.5, 0.1); // Major third
-      // Shimmer detune
-      playTone(ctx, 'sine', root * 2.0, chimeTime + 0.2, 2.0, 0.1, 15);
-      playTone(ctx, 'sine', root * 2.0, chimeTime + 0.2, 2.0, 0.1, -15);
-    }
+        // Sub bass drop
+        const sub = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(100, strikeTime);
+        sub.frequency.exponentialRampToValueAtTime(20, strikeTime + 1.5);
+        subGain.gain.setValueAtTime(0, strikeTime);
+        subGain.gain.setValueAtTime(0.8, strikeTime + 0.05);
+        subGain.gain.exponentialRampToValueAtTime(0.001, strikeTime + 2.0);
+        sub.connect(subGain);
+        subGain.connect(ctx.destination);
+        sub.start(strikeTime);
+        sub.stop(strikeTime + 2.0);
+        activeAudioNodesRef.current.push(sub);
+      }
+    });
   };
 
-  // --- CANVAS VISUAL EFFECTS ---
-  const renderCanvas = (time) => {
-    if (!timelineStartRef.current) timelineStartRef.current = time;
-    const elapsed = (time - timelineStartRef.current) / 1000; // in seconds
+  const renderCanvas = (timestamp) => {
+    if (!bgCanvasRef.current || shouldReduceMotion) return;
+
+    if (!timelineStartRef.current) timelineStartRef.current = timestamp;
+    const elapsed = (timestamp - timelineStartRef.current) / 1000;
+
+    const ctx = bgCanvasRef.current.getContext('2d');
+    const w = bgCanvasRef.current.width;
+    const h = bgCanvasRef.current.height;
+    const cx = w / 2;
+    const cy = h / 2;
     const tier = activeTierRef.current;
 
-    // Background Canvas (Atmosphere & Gathering)
-    const bg = bgCanvasRef.current;
-    if (bg && bg.getContext) {
-      const ctx = bg.getContext('2d');
-      const w = bg.width;
-      const h = bg.height;
-      ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, w, h);
 
-      const cx = w / 2;
-      const cy = h / 2;
+    const schedule = STRIKE_SCHEDULES[tier];
 
-      // Phase 1 & 2: Gathering (0 to 7.5s)
-      if (elapsed > 0 && elapsed < 8.0) {
-        let intensity = 0;
-        if (elapsed < 4.0) intensity = elapsed / 4.0 * 0.3; // Slow build
-        else if (elapsed < 7.5) intensity = 0.3 + ((elapsed - 4.0) / 3.5) * 0.7; // Fast gather
-        else intensity = 1.0; // Tension breath
+    let totalEnergyAbsorbed = 0;
 
-        ctx.save();
-        ctx.globalCompositeOperation = 'screen';
+    // Draw strikes
+    schedule.forEach((strikeTime, idx) => {
+      const timeSinceStrike = elapsed - strikeTime;
+      const isFinal = idx === schedule.length - 1;
 
-        // Energy ribbons
-        const ribbonCount = tier === 'flagship' ? 6 : (tier === 'premium' ? 4 : 2);
-        for (let i = 0; i < ribbonCount; i++) {
-          const isLeft = i % 2 === 0;
-          const progress = (elapsed * 0.5 + i * 0.2) % 1.0;
-
-          // Ribbons start from edges and move to center
-          const startX = isLeft ? -50 : w + 50;
-          const endX = cx;
-          const currentX = startX + (endX - startX) * Math.pow(intensity, 2);
-
-          ctx.beginPath();
-          ctx.moveTo(startX, cy + (Math.sin(time*0.001 + i) * 100));
-
-          // Bezier wave to center
-          const cp1x = startX + (currentX - startX) * 0.5;
-          const cp1y = cy + (Math.sin(time*0.002 + i) * 200);
-          const cp2x = currentX;
-          const cp2y = cy + (Math.cos(time*0.0015 + i) * 50);
-
-          ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, currentX, cy);
-
-          // Styling
-          ctx.lineWidth = 2 + (intensity * 10);
-          ctx.lineCap = 'round';
-
-          let grad = ctx.createLinearGradient(startX, cy, currentX, cy);
-          const baseColor = tier === 'standard' ? '255, 255, 255' : (tier === 'premium' ? '100, 200, 255' : '255, 220, 100');
-          grad.addColorStop(0, `rgba(${baseColor}, 0)`);
-          grad.addColorStop(1, `rgba(${baseColor}, ${intensity * 0.6})`);
-
-          ctx.strokeStyle = grad;
-          ctx.filter = `blur(${5 + intensity * 5}px)`;
-          ctx.stroke();
-        }
-        ctx.restore();
+      // Add to accumulated energy
+      if (timeSinceStrike > 0) {
+        totalEnergyAbsorbed += Math.min(timeSinceStrike * 2, 1);
       }
 
-      // Phase 3: Impact Burst (8.0s)
-      if (elapsed >= 8.0 && elapsed < 9.5) {
-        const burstAge = elapsed - 8.0;
-        const burstProgress = Math.min(burstAge / 1.5, 1);
-        const invProgress = 1 - burstProgress;
+      // Strike animation (starts slightly before impact, travels, hits, fades)
+      const travelTime = 0.3;
+      const fadeTime = isFinal ? 1.0 : 0.4;
+      const strikeStart = strikeTime - travelTime;
+
+      if (elapsed >= strikeStart && elapsed < strikeTime + fadeTime) {
+        const side = idx % 2 === 0 ? 'left' : 'right';
+        const startX = side === 'left' ? 0 : w;
+
+        let progress = 0;
+        let opacity = 0;
+
+        if (elapsed < strikeTime) {
+          // Traveling inwards
+          progress = (elapsed - strikeStart) / travelTime;
+          opacity = progress;
+        } else {
+          // Hit and fade
+          progress = 1;
+          opacity = 1 - (timeSinceStrike / fadeTime);
+        }
+
+        const currentX = startX + (cx - startX) * progress;
 
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
 
-        // Radial pulse
-        const radius = burstProgress * w * 1.5;
-        const pulseGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-        const pulseColor = tier === 'flagship' ? '255, 200, 50' : (tier === 'premium' ? '150, 220, 255' : '255, 255, 255');
-        pulseGrad.addColorStop(0, `rgba(${pulseColor}, ${invProgress * 0.8})`);
-        pulseGrad.addColorStop(0.5, `rgba(${pulseColor}, ${invProgress * 0.4})`);
-        pulseGrad.addColorStop(1, `rgba(${pulseColor}, 0)`);
+        // Main beam
+        ctx.beginPath();
+        ctx.moveTo(startX, cy + (Math.sin(idx * 13) * 50));
 
-        ctx.fillStyle = pulseGrad;
-        ctx.fillRect(0, 0, w, h);
+        const cp1x = startX + (currentX - startX) * 0.5;
+        const cp1y = cy + (Math.sin(elapsed * 10 + idx) * 100);
 
-        // Flagship electrical veins
-        if (tier === 'flagship' && burstAge < 0.5) {
-          ctx.filter = 'blur(2px)';
-          for (let j = 0; j < 5; j++) {
+        ctx.bezierCurveTo(cp1x, cp1y, currentX, cy, currentX, cy);
+
+        ctx.lineWidth = isFinal ? 12 + opacity * 8 : 4 + opacity * 6;
+        ctx.lineCap = 'round';
+
+        const baseColor = tier === 'standard' ? '255, 255, 255' : (tier === 'premium' ? '100, 200, 255' : '255, 200, 50');
+
+        ctx.strokeStyle = `rgba(${baseColor}, ${opacity * (isFinal ? 1 : 0.8)})`;
+        ctx.shadowColor = `rgba(${baseColor}, 1)`;
+        ctx.shadowBlur = isFinal ? 30 : 15;
+
+        ctx.stroke();
+
+        // Branches
+        if (isFinal || opacity > 0.5) {
             ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            let px = cx;
-            let py = cy;
-            for (let k = 0; k < 5; k++) {
-              px += (Math.random() - 0.5) * 150;
-              py += (Math.random() - 0.5) * 150;
-              ctx.lineTo(px, py);
-            }
-            ctx.strokeStyle = `rgba(255, 255, 200, ${1 - (burstAge/0.5)})`;
-            ctx.lineWidth = 3;
+            ctx.moveTo(cp1x, cp1y);
+            const branchEndX = currentX - (currentX - startX) * 0.2;
+            const branchEndY = cy + (Math.cos(elapsed * 15 + idx) * 120);
+            ctx.lineTo(branchEndX, branchEndY);
+            ctx.lineWidth = (isFinal ? 4 : 2) * opacity;
             ctx.stroke();
-          }
         }
 
         ctx.restore();
+
+        // Impact flash (underneath the card)
+        if (elapsed >= strikeTime && elapsed < strikeTime + 0.2) {
+            const flashOpacity = 1 - (timeSinceStrike / 0.2);
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+            const flashGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * (isFinal ? 0.8 : 0.4));
+            flashGrad.addColorStop(0, `rgba(${baseColor}, ${flashOpacity * (isFinal ? 0.9 : 0.5)})`);
+            flashGrad.addColorStop(1, `rgba(${baseColor}, 0)`);
+            ctx.fillStyle = flashGrad;
+            ctx.fillRect(0, 0, w, h);
+            ctx.restore();
+        }
       }
+    });
+
+    // Draw Aura (builds over time behind the card)
+    if (totalEnergyAbsorbed > 0) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+
+      const maxEnergy = schedule.length;
+      const auraIntensity = Math.min(totalEnergyAbsorbed / maxEnergy, 1);
+
+      // Pulsing effect
+      const pulse = 1 + Math.sin(elapsed * 4) * 0.1;
+
+      const auraRadius = (tier === 'flagship' ? 300 : (tier === 'premium' ? 250 : 200)) * pulse * auraIntensity;
+      const baseColor = tier === 'standard' ? '200, 255, 255' : (tier === 'premium' ? '50, 150, 255' : '255, 180, 50');
+
+      const auraGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, auraRadius);
+      auraGrad.addColorStop(0, `rgba(${baseColor}, ${auraIntensity * 0.4})`);
+      auraGrad.addColorStop(0.5, `rgba(${baseColor}, ${auraIntensity * 0.15})`);
+      auraGrad.addColorStop(1, `rgba(${baseColor}, 0)`);
+
+      ctx.fillStyle = auraGrad;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
     }
 
     if (elapsed < 12.0) {
@@ -355,7 +349,6 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
 
-    // Setup Canvas
     if (bgCanvasRef.current) {
       bgCanvasRef.current.width = window.innerWidth;
       bgCanvasRef.current.height = window.innerHeight;
@@ -366,50 +359,57 @@ export default function LuckyCardReveal() {
       rafRef.current = requestAnimationFrame(renderCanvas);
     }
 
-    playAudioSequence(card.tier);
+    const schedule = STRIKE_SCHEDULES[card.tier];
+    playAudioSequence(card.tier, schedule);
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
-    // Total sequence ~ 9.2s
-    activeTimeoutsRef.current.push(window.setTimeout(() => {
-      const sequence = [];
+    const sequence = [];
 
-      // 0.0s - 4.0s: Anticipation
-      sequence.push([cardRef.current, { y: [0, -10], scale: [1, 1.02] }, { duration: 4.0, ease: 'easeInOut' }]);
+    // Initial state
+    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0 }, { duration: 0.1 }]);
+    sequence.push([cardRef.current, { y: -10 }, { at: "<", duration: 1.5, ease: 'easeOut' }]);
 
-      // 4.0s - 7.5s: Energy Gathering
-      const intensity = card.tier === 'flagship' ? 1.5 : (card.tier === 'premium' ? 1.2 : 1.0);
-      sequence.push([cardRef.current, {
-        y: [-10, -15, -8, -18, -12],
-        rotateZ: [-1, 2, -2, 1, 0],
-        scale: [1.02, 1.05]
-      }, { duration: 3.5, ease: 'easeInOut', at: '4.0' }]);
+    // Synchronize physical reactions with strikes
+    schedule.forEach((strikeTime, idx) => {
+      const isFinal = idx === schedule.length - 1;
 
-      // 7.5s - 8.0s: Convergence (Tension)
-      sequence.push([cardRef.current, { y: 0, rotateZ: 0, scale: 0.98 }, { duration: 0.5, ease: 'easeIn', at: '7.5' }]);
+      // Reaction intensity scales with index and tier
+      const power = isFinal ? 20 : 5 + (idx * 3);
+      const rotPower = isFinal ? 5 : 2 + idx;
+      const dir = idx % 2 === 0 ? 1 : -1;
 
-      // 8.0s: IMPACT
-      sequence.push([cardRef.current, { scale: 1.15, z: 100 }, { duration: 0.1, ease: 'easeOut', at: '8.0' }]);
+      // The shake hits EXACTLY at the strike time
+      const shakeDur = isFinal ? 0.4 : 0.2;
 
-      // 8.1s - 8.5s: Silence/Freeze (Flagship holds longer)
-      const holdTime = card.tier === 'flagship' ? 0.4 : 0.1;
+      sequence.push([
+        cardRef.current,
+        {
+          x: [0, power * dir, -power * 0.8 * dir, power * 0.4 * dir, 0],
+          rotateZ: [0, rotPower * dir, -rotPower * 0.5 * dir, 0],
+          scale: isFinal ? [1, 1.15, 0.95, 1.05] : [1, 1.05, 1]
+        },
+        {
+          at: strikeTime.toString(),
+          duration: shakeDur,
+          ease: "easeInOut"
+        }
+      ]);
+    });
 
-      // 8.5s: Card Reveal (Flip)
-      const flipAt = 8.0 + holdTime;
-      sequence.push([cardRef.current, { scale: 1, z: 0 }, { duration: 0.7, ease: 'easeInOut', at: flipAt.toString() }]);
+    const finalStrike = schedule[schedule.length - 1];
+    const flipAt = finalStrike + 0.3; // Flip shortly after final impact
 
-      animationControlsRef.current = animate(sequence);
-    }, 0));
+    sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0 }, { at: flipAt.toString(), duration: 0.8, ease: 'circOut' }]);
+
+    animationControlsRef.current = animate(sequence);
 
     // Handle actual state flip
-    const holdTimeMs = card.tier === 'flagship' ? 400 : 100;
-    const flipStartTime = 8000 + holdTimeMs;
+    const flipStartTime = flipAt * 1000;
 
-    // 8.5s: Trigger React state for flip
     activeTimeoutsRef.current.push(window.setTimeout(() => {
       setIsRevealed(true);
     }, flipStartTime));
 
-    // 9.2s: Sequence Complete
     activeTimeoutsRef.current.push(window.setTimeout(() => {
       setIsGenerating(false);
       try {
@@ -431,7 +431,6 @@ export default function LuckyCardReveal() {
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none relative z-10">
       
-      {/* Background Effects Canvas */}
       {isGenerating && (
         <canvas
           ref={bgCanvasRef}
@@ -440,7 +439,6 @@ export default function LuckyCardReveal() {
         />
       )}
 
-      {/* 1. Countdown & Draw Button */}
       <div className="w-full flex flex-col items-center text-center space-y-2">
         {isReady && isRevealed && selectedCard && (
           <div className="text-lg font-bold text-gray-300">
@@ -452,15 +450,16 @@ export default function LuckyCardReveal() {
           <button
             type="button"
             onClick={triggerCardDraw}
-            disabled={isGenerating}
-            className="mt-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold text-base shadow-lg hover:brightness-110 active:scale-95 transition-all"
+            disabled={isGenerating || audioLoading}
+            className={`mt-2 px-6 py-2.5 rounded-full font-bold text-base shadow-lg transition-all ${
+              audioLoading ? 'bg-gray-400 text-gray-700 opacity-70' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 active:scale-95'
+            }`}
           >
-            {isGenerating ? 'Revealing...' : 'Reveal Today’s Luck'}
+            {isGenerating ? 'Revealing...' : audioLoading ? 'Loading Magic...' : 'Reveal Today’s Luck'}
           </button>
         )}
       </div>
 
-      {/* 2. 3D Card Stage */}
       <div ref={scope} className="w-full flex justify-center py-2 flex-shrink-0 relative">
         <motion.div
           ref={cardRef}
@@ -476,7 +475,6 @@ export default function LuckyCardReveal() {
                 transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
               }}
             >
-              {/* Front Face (Card Back Design) */}
               <div
                 className="absolute inset-0"
                 style={{ backfaceVisibility: 'hidden' }}
@@ -486,7 +484,6 @@ export default function LuckyCardReveal() {
                 </div>
               </div>
 
-              {/* Back Face (Revealed Artwork) */}
               <div
                 className={`absolute inset-0 rounded-2xl transition-shadow duration-700 ${isRevealed && selectedCard ? `tier-glow-${selectedCard.tier}` : ''}`}
                 style={{
@@ -509,7 +506,6 @@ export default function LuckyCardReveal() {
         </motion.div>
       </div>
 
-      {/* 3. Quote & Share Actions */}
       {isReady && isRevealed && selectedCard && (
         <div className="w-full flex flex-col items-center space-y-4 pt-2 animate-fade-in">
           <div className="w-full p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
