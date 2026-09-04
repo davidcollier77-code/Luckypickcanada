@@ -45,7 +45,8 @@ export default function LuckyCardReveal() {
   // Canvas refs for visual effects
   const bgCanvasRef = useRef(null);
   const rafRef = useRef(null);
-  const timelineStartRef = useRef(0);
+  const rafStartTimeRef = useRef(0);
+  const audioStartTimeRef = useRef(0);
   const activeTierRef = useRef('standard');
   const isRevealedRef = useRef(false);
   const activeCardRef = useRef(null);
@@ -172,6 +173,7 @@ export default function LuckyCardReveal() {
     ctx.resume(); // For mobile
 
     const now = ctx.currentTime;
+    audioStartTimeRef.current = now;
     activeAudioNodesRef.current = [];
 
     if (!audioBuffers) return;
@@ -308,16 +310,16 @@ export default function LuckyCardReveal() {
   const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
 
-    if (!timelineStartRef.current) timelineStartRef.current = timestamp;
+    if (!rafStartTimeRef.current) rafStartTimeRef.current = timestamp;
 
     const audioCtx = audioCtxRef.current;
     let elapsed = 0;
 
     // Master Clock: AudioContext (if running), else requestAnimationFrame timestamp
     if (audioCtx && audioCtx.state === 'running') {
-      elapsed = audioCtx.currentTime - timelineStartRef.current;
+      elapsed = audioCtx.currentTime - audioStartTimeRef.current;
     } else {
-      elapsed = (timestamp - timelineStartRef.current) / 1000;
+      elapsed = (timestamp - rafStartTimeRef.current) / 1000;
     }
 
     // Drive Framer Motion sequence manually so it is locked to the Master Clock
@@ -359,8 +361,10 @@ export default function LuckyCardReveal() {
       const strikeStart = strikeTime - travelTime;
 
       if (elapsed >= strikeStart && elapsed < strikeTime + fadeTime) {
-        const side = idx % 2 === 0 ? 'left' : 'right';
-        const startX = side === 'left' ? -w*0.1 : w*1.1; // Start slightly offscreen
+        // Alternate between left, right, top for origins
+        const originPos = idx % 3;
+        const startX = originPos === 0 ? -w*0.1 : (originPos === 1 ? w*1.1 : w*0.5);
+        const startY = originPos === 2 ? -h*0.1 : cy + (Math.sin(idx * 13) * h * 0.1);
 
         let progress = 0;
         let opacity = 0;
@@ -378,10 +382,11 @@ export default function LuckyCardReveal() {
 
         opacity = Math.max(0, Math.min(1, opacity));
         const currentX = startX + (cx - startX) * progress;
+        const currentY = startY + (cy - startY) * progress;
 
         // Base color based on tier
-        const rgb = tier === 'standard' ? '255, 245, 230' : (tier === 'premium' ? '140, 210, 255' : '255, 215, 100');
-        const glowColor = tier === 'standard' ? '200, 200, 255' : (tier === 'premium' ? '50, 100, 255' : '255, 150, 0');
+        const rgb = tier === 'standard' ? '200, 255, 252' : (tier === 'premium' ? '77, 238, 234' : '249, 241, 208'); // Primary/Tertiary
+        const glowColor = tier === 'standard' ? '77, 238, 234' : (tier === 'premium' ? '176, 38, 255' : '176, 38, 255'); // Ethereal Blue / Magical Purple
 
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
@@ -390,17 +395,15 @@ export default function LuckyCardReveal() {
         const drawBeam = (thickness, alpha, blur, color) => {
             ctx.beginPath();
 
-            // Start y oscillates slightly
-            const sy = cy + (Math.sin(idx * 13) * h * 0.1);
-            ctx.moveTo(startX, sy);
+            ctx.moveTo(startX, startY);
 
             // Control point for arc/wobble
             const cp1x = startX + (currentX - startX) * 0.6;
             // Wobble grows as it travels
             const wobble = Math.sin(elapsed * 15 + idx * 5) * h * 0.15 * progress;
-            const cp1y = cy + wobble;
+            const cp1y = currentY + wobble;
 
-            ctx.bezierCurveTo(cp1x, cp1y, currentX, cy, currentX, cy);
+            ctx.bezierCurveTo(cp1x, cp1y, currentX, currentY, currentX, currentY);
 
             ctx.lineWidth = thickness;
             ctx.lineCap = 'round';
@@ -409,7 +412,7 @@ export default function LuckyCardReveal() {
             ctx.shadowBlur = blur;
             ctx.stroke();
 
-            return { sy, cp1x, cp1y };
+            return { sy: startY, cp1x, cp1y };
         };
 
         // Layer 1: Wide faint glow
@@ -425,14 +428,14 @@ export default function LuckyCardReveal() {
             for(let b=0; b<numBranches; b++) {
                 ctx.beginPath();
                 ctx.moveTo(pts.cp1x, pts.cp1y);
-                const dir = side === 'left' ? 1 : -1;
+                const dir = originPos === 0 ? 1 : -1;
                 // Fork out and back
                 const bx1 = pts.cp1x + (w * 0.1 * dir) + Math.cos(elapsed * 20 + b)*20;
                 const by1 = pts.cp1y + (Math.sin(elapsed * 20 + b) * 80) * (b%2===0?1:-1);
                 const bx2 = currentX - (currentX - startX) * 0.1;
                 const by2 = cy + Math.cos(elapsed * 25)*30;
 
-                ctx.bezierCurveTo(bx1, by1, bx2, by2, currentX, cy);
+                ctx.bezierCurveTo(bx1, by1, bx2, by2, currentX, currentY);
                 ctx.lineWidth = isFinal ? 2 : 1;
                 ctx.strokeStyle = `rgba(${glowColor}, ${opacity * 0.4})`;
                 ctx.stroke();
@@ -469,7 +472,7 @@ export default function LuckyCardReveal() {
 
             // 3. Energy Particles exploding outwards
             if (timeSinceStrike < 0.5) {
-                const pCount = isFinal ? 12 : 5;
+                const pCount = isFinal ? 15 : 6;
                 const pProgress = timeSinceStrike / 0.5;
                 for (let p=0; p<pCount; p++) {
                     const angle = (Math.PI * 2 / pCount) * p + (idx * 0.5);
@@ -513,8 +516,8 @@ export default function LuckyCardReveal() {
       const pulse2 = Math.cos(elapsed * 3.1) * 0.05;
       const pulse = 1 + pulse1 + pulse2;
 
-      const auraRadius = (tier === 'flagship' ? 350 : (tier === 'premium' ? 280 : 220)) * pulse * auraIntensity;
-      const baseColor = tier === 'standard' ? '180, 200, 255' : (tier === 'premium' ? '50, 150, 255' : '255, 180, 50');
+      const auraRadius = (tier === 'flagship' ? Math.min(400, Math.max(w, h) * 0.8) : (tier === 'premium' ? 280 : 220)) * pulse * auraIntensity;
+      const baseColor = tier === 'standard' ? '77, 238, 234' : (tier === 'premium' ? '176, 38, 255' : '249, 241, 208');
 
       // More dimensional aura
       const auraGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, auraRadius);
@@ -594,9 +597,10 @@ export default function LuckyCardReveal() {
     const ctx = playAudioSequence(card.tier, schedule);
 
     if (ctx) {
-        timelineStartRef.current = 0;
+        // audioStartTimeRef is set in playAudioSequence
+        rafStartTimeRef.current = 0;
     } else {
-        timelineStartRef.current = 0;
+        rafStartTimeRef.current = 0;
     }
 
     if (!shouldReduceMotion) {
@@ -614,9 +618,16 @@ export default function LuckyCardReveal() {
     schedule.forEach((strikeTime, idx) => {
       const isFinal = idx === schedule.length - 1;
 
-      // Reaction intensity scales with index and tier
-      const power = isFinal ? 20 : 5 + (idx * 3);
-      const rotPower = isFinal ? 5 : 2 + idx;
+      // Reaction intensity scales with index and tier, with hard caps for mobile
+      let basePower = 5 + (idx * 3);
+      let baseRot = 2 + idx;
+
+      if (card.tier === 'premium') { basePower *= 1.5; baseRot *= 1.5; }
+      if (card.tier === 'flagship') { basePower *= 2.0; baseRot *= 2.0; }
+
+      // Apply caps
+      const power = isFinal ? Math.min(25, basePower * 1.5) : Math.min(20, basePower);
+      const rotPower = isFinal ? Math.min(8, baseRot * 1.5) : Math.min(5, baseRot);
       const dir = idx % 2 === 0 ? 1 : -1;
 
       // The shake hits EXACTLY at the strike time
