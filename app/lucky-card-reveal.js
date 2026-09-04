@@ -146,8 +146,8 @@ export default function LuckyCardReveal() {
 
     // Cleanup reference after it finishes
     const actualStartTime = Math.max(0, time);
+    const cleanupTime = duration !== null ? duration : (buffer.duration / playbackRate);
     const timeoutMs = Math.max(0, (actualStartTime - ctx.currentTime) + cleanupTime + 0.1) * 1000;
-    const timeoutMs = Math.max(0, (time - ctx.currentTime) + cleanupTime + 0.1) * 1000;
 
     activeTimeoutsRef.current.push(window.setTimeout(() => {
         activeAudioNodesRef.current = activeAudioNodesRef.current.filter(n => n !== source);
