@@ -498,9 +498,9 @@ export default function LuckyCardReveal() {
     const ctx = playAudioSequence(card.tier, schedule);
 
     if (ctx) {
-        timelineStartRef.current = ctx.currentTime;
+        timelineStartRef.current = 0;
     } else {
-        timelineStartRef.current = performance.now();
+        timelineStartRef.current = 0;
     }
 
     if (!shouldReduceMotion) {
