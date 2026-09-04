@@ -235,7 +235,26 @@ export default function LuckyCardReveal() {
       playBuffer(ctx, audioBuffers.lightning, strikeTime + impactOffset, intensity * 0.6, isFinal ? 0.8 : 1.0 + (idx * 0.1));
 
       // Add a subtle thump/firework sound to the strike for weight
-      playBuffer(ctx, audioBuffers.firework, strikeTime, intensity * 0.3, 1.2 + (idx * 0.1), 1.0);
+      playBuffer(ctx, audioBuffers.firework, strikeTime, intensity * 0.4, 1.2 + (idx * 0.1), 1.0);
+
+
+      // Short, subtle magical impact burst
+      const burst = ctx.createOscillator();
+      const burstGain = ctx.createGain();
+      burst.type = 'triangle';
+      burst.frequency.setValueAtTime(isFinal ? 800 : 400 + (idx * 150), strikeTime);
+      burst.frequency.exponentialRampToValueAtTime(isFinal ? 200 : 100, strikeTime + 0.2);
+
+      burstGain.gain.setValueAtTime(0, strikeTime);
+      burstGain.gain.setValueAtTime(intensity * 0.8, strikeTime + 0.01); // sharp attack
+      burstGain.gain.exponentialRampToValueAtTime(0.01, strikeTime + 0.2); // quick decay
+
+      burst.connect(burstGain);
+      burstGain.connect(ctx.destination);
+      burst.start(strikeTime);
+      burst.stop(strikeTime + 0.3);
+      activeAudioNodesRef.current.push(burst);
+
 
       // Sub bass drop on every impact, but huge on the final one
       const sub = ctx.createOscillator();
@@ -353,6 +372,18 @@ export default function LuckyCardReveal() {
       // Add to accumulated energy
       if (timeSinceStrike > 0) {
         totalEnergyAbsorbed += Math.min(timeSinceStrike * 2, 1);
+
+        // Massive flash at the exact moment of impact (fade out over 0.5s)
+        if (timeSinceStrike < 0.5) {
+          const flashIntensity = 1 - (timeSinceStrike / 0.5);
+          const thisFlashMax = isFinal ? 0.9 : 0.4 + (idx * 0.1);
+          if (flashIntensity * thisFlashMax > maxFlashOpacity) {
+             maxFlashOpacity = flashIntensity * thisFlashMax;
+             flashRgb = tier === 'standard' ? '200, 255, 252' : (tier === 'premium' ? '77, 238, 234' : '249, 241, 208');
+             flashGlowColor = tier === 'standard' ? '77, 238, 234' : (tier === 'premium' ? '176, 38, 255' : '176, 38, 255');
+             isFinalFlash = isFinal;
+          }
+        }
       }
 
       // Strike animation (starts slightly before impact, travels, hits, fades)
@@ -634,14 +665,16 @@ export default function LuckyCardReveal() {
       const dir = idx % 2 === 0 ? 1 : -1;
 
       // The shake hits EXACTLY at the strike time
-      const shakeDur = isFinal ? 0.4 : 0.2;
+      const shakeDur = isFinal ? 0.5 : 0.25; // SLIGHTLY LONGER SHAKE
+      const scaleUp = isFinal ? 1.3 : 1.1; // MORE VISIBLE IMPACT
+      const finalScale = isFinal ? 1.1 : 1.0;
 
       sequence.push([
         cardRef.current,
         {
           x: [0, power * dir, -power * 0.8 * dir, power * 0.4 * dir, 0],
           rotateZ: [0, rotPower * dir, -rotPower * 0.5 * dir, 0],
-          scale: isFinal ? [1, 1.15, 0.95, 1.05] : [1, 1.05, 1]
+          scale: [1, scaleUp, finalScale]
         },
         {
           at: strikeTime.toString(),
