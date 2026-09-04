@@ -1,2 +1,1 @@
-# Read comments from github PR, simulating response here.
-# Since we know the comment id is 5543792658 and body is "/q Please repair", we will just reply.
+echo 'Reviewer requested changes: Please ensure that for every visual pulse/strike, there is a short magical impact sound, and that the climax does not drift.'

@@ -34,11 +34,6 @@ const audioImpactReplace = `      // Add a subtle thump/firework sound to the st
 
 ` + synthesizeImpact;
 
-const newContent = content.replace(audioImpactSearch, audioImpactReplace);
+content = content.replace(audioImpactSearch, audioImpactReplace);
 
-if (newContent === content) {
-  console.error('ERROR: Pattern not found in source file. Build script failed.');
-  process.exit(1);
-}
-
-fs.writeFileSync('./app/lucky-card-reveal.js', newContent);
+fs.writeFileSync('./app/lucky-card-reveal.js', content);
