@@ -8,12 +8,12 @@ let content = fs.readFileSync('./app/lucky-card-reveal.js', 'utf-8');
 // Also we need to check if the audio is accurately synchronized. It plays at `strikeTime`.
 // We should make the visual strike have a stronger impact flash.
 
-content = content.replace(
-`      // Add to accumulated energy
+const searchPattern = `      // Add to accumulated energy
       if (timeSinceStrike > 0) {
         totalEnergyAbsorbed += Math.min(timeSinceStrike * 2, 1);
-      }`,
-`      // Add to accumulated energy
+      }`;
+
+const replacement = `      // Add to accumulated energy
       if (timeSinceStrike > 0) {
         totalEnergyAbsorbed += Math.min(timeSinceStrike * 2, 1);
 
@@ -28,7 +28,13 @@ content = content.replace(
              isFinalFlash = isFinal;
           }
         }
-      }`
-);
+      }`;
 
-fs.writeFileSync('./app/lucky-card-reveal.js', content);
+const newContent = content.replace(searchPattern, replacement);
+
+if (newContent === content) {
+  console.error('ERROR: Pattern not found in source file. Build script failed.');
+  process.exit(1);
+}
+
+fs.writeFileSync('./app/lucky-card-reveal.js', newContent);
