@@ -17,9 +17,9 @@ function localDateKey(date = new Date()) {
 }
 
 const STRIKE_SCHEDULES = {
-  standard: [3.0, 5.0, 8.0],
-  premium: [2.5, 4.2, 5.6, 6.8, 8.0],
-  flagship: [2.0, 3.5, 4.8, 5.8, 6.6, 7.3, 8.0]
+  standard: [1.5, 3.0, 4.5, 6.0, 7.5, 8.5],
+  premium: [1.5, 2.8, 4.0, 5.2, 6.3, 7.4, 8.5],
+  flagship: [1.0, 2.2, 3.4, 4.5, 5.5, 6.4, 7.2, 8.0, 8.8]
 };
 
 export default function LuckyCardReveal() {
@@ -170,7 +170,11 @@ export default function LuckyCardReveal() {
 
     const ctx = new AudioContextClass();
     audioCtxRef.current = ctx;
-    ctx.resume(); // For mobile
+
+    // Ensure we resume synchronously on the user interaction
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
 
     const now = ctx.currentTime;
     audioStartTimeRef.current = now;
@@ -179,9 +183,16 @@ export default function LuckyCardReveal() {
     if (!audioBuffers) return;
 
     const finalStrikeTime = now + schedule[schedule.length - 1];
+    const flipAt = finalStrikeTime + 0.65;
+
+    // Helper to calculate max safe duration for pre-flip audio
+    const getMaxDur = (startTime, requestedDur) => {
+        const timeUntilFlip = flipAt - startTime;
+        return Math.max(0.01, Math.min(requestedDur, timeUntilFlip));
+    };
 
     // 1. Initial Atmospheric Buildup
-    playBuffer(ctx, audioBuffers.buildup, now, 0.4, 0.6, finalStrikeTime + 1.0);
+    playBuffer(ctx, audioBuffers.buildup, now, 0.4, 0.6, getMaxDur(now, finalStrikeTime + 1.0));
 
     // Deep sub rumble building up
     const drone = ctx.createOscillator();
@@ -210,12 +221,15 @@ export default function LuckyCardReveal() {
     droneGain.gain.linearRampToValueAtTime(0.2, now + 1.5);
     droneGain.gain.exponentialRampToValueAtTime(0.4, finalStrikeTime - 0.2);
     droneGain.gain.setTargetAtTime(0, finalStrikeTime, 0.05); // Snap fade on final strike
+    droneGain.gain.cancelScheduledValues(flipAt - 0.05);
+    droneGain.gain.setValueAtTime(droneGain.gain.value, flipAt - 0.05);
+    droneGain.gain.linearRampToValueAtTime(0, flipAt);
 
     droneGain.connect(ctx.destination);
     drone.start(now);
     droneHarmonic.start(now);
-    drone.stop(finalStrikeTime + 0.5);
-    droneHarmonic.stop(finalStrikeTime + 0.5);
+    drone.stop(flipAt);
+    droneHarmonic.stop(flipAt);
     activeAudioNodesRef.current.push(drone, droneHarmonic);
 
     // Schedule strikes
@@ -227,41 +241,40 @@ export default function LuckyCardReveal() {
 
       // Energy sweep before impact
       if (idx > 0) {
-          playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.5, intensity * 0.3, 1.5 + (idx * 0.2), 0.6);
+          playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.5, intensity * 0.3, 1.5 + (idx * 0.2), getMaxDur(strikeTime - 0.5, 0.6));
       }
 
       // 4. Impact (Lightning + Firework layering)
       const impactOffset = -0.02;
-      playBuffer(ctx, audioBuffers.lightning, strikeTime + impactOffset, intensity * 0.6, isFinal ? 0.8 : 1.0 + (idx * 0.1));
+      playBuffer(ctx, audioBuffers.lightning, strikeTime + impactOffset, intensity * 0.6, isFinal ? 0.8 : 1.0 + (idx * 0.1), getMaxDur(strikeTime + impactOffset, isFinal ? 0.65 : 1.5));
 
       // Add a subtle thump/firework sound to the strike for weight
-      playBuffer(ctx, audioBuffers.firework, strikeTime, intensity * 0.3, 1.2 + (idx * 0.1), 1.0);
+      playBuffer(ctx, audioBuffers.firework, strikeTime, intensity * 0.3, 1.2 + (idx * 0.1), getMaxDur(strikeTime, 1.0));
 
       // Sub bass drop on every impact, but huge on the final one
       const sub = ctx.createOscillator();
       const subGain = ctx.createGain();
       sub.type = 'sine';
       sub.frequency.setValueAtTime(isFinal ? 60 : 80, strikeTime);
-      sub.frequency.exponentialRampToValueAtTime(20, strikeTime + (isFinal ? 1.5 : 0.5));
+      sub.frequency.exponentialRampToValueAtTime(20, strikeTime + (isFinal ? 0.6 : 0.5));
       subGain.gain.setValueAtTime(0, strikeTime);
       subGain.gain.setValueAtTime(isFinal ? 0.8 : 0.4 * intensity, strikeTime + 0.02);
-      subGain.gain.exponentialRampToValueAtTime(0.01, strikeTime + (isFinal ? 1.0 : 0.4));
+      subGain.gain.exponentialRampToValueAtTime(0.01, strikeTime + (isFinal ? 0.6 : 0.4));
       sub.connect(subGain);
       subGain.connect(ctx.destination);
       sub.start(strikeTime);
-      sub.stop(strikeTime + (isFinal ? 1.5 : 0.5));
+      sub.stop(strikeTime + (isFinal ? 0.63 : 0.5));
       activeAudioNodesRef.current.push(sub);
 
       // 6. Final Impact Details
       if (isFinal) {
         // Anticipation heavy whoosh
-        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.7, 0.9, 0.8, 0.8);
-        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.3, 0.9, 1.2, 0.5);
+        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.7, 0.9, 0.8, getMaxDur(strikeTime - 0.7, 0.8));
+        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.3, 0.9, 1.2, getMaxDur(strikeTime - 0.3, 0.5));
       }
     });
 
     // 8. Card Flip and Reveal Magic Shimmer
-    const flipAt = finalStrikeTime + 0.65;
     const revealTime = flipAt + 0.35; // Face visible
 
     // Play a reversed whoosh for the flip? Or just a soft whoosh
@@ -316,7 +329,9 @@ export default function LuckyCardReveal() {
     let elapsed = 0;
 
     // Master Clock: AudioContext (if running), else requestAnimationFrame timestamp
-    if (audioCtx && audioCtx.state === 'running') {
+    if (audioCtx) {
+      // If we have an AudioContext, we MUST use its time to ensure perfect sync,
+      // even if it's still 'suspended' (it will just return 0 until resumed, which pauses the visual animation until audio is ready).
       elapsed = audioCtx.currentTime - audioStartTimeRef.current;
     } else {
       elapsed = (timestamp - rafStartTimeRef.current) / 1000;
