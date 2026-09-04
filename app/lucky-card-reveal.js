@@ -212,8 +212,7 @@ export default function LuckyCardReveal() {
 
     // 8.5s: Card Flip starts
     const flipTime = now + 8.5;
-    const flipResult = playNoise(ctx, flipTime, 0.7, 0.3, 1000, 'bandpass');
-    const { filter: flipFilt } = flipResult || {};
+    const { filter: flipFilt } = playNoise(ctx, flipTime, 0.7, 0.3, 1000, 'bandpass') || {};
     if (flipFilt) {
       flipFilt.frequency.exponentialRampToValueAtTime(8000, flipTime + 0.35);
       flipFilt.frequency.exponentialRampToValueAtTime(1000, flipTime + 0.7);
