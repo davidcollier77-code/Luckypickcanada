@@ -364,6 +364,7 @@ export default function LuckyCardReveal() {
         // Alternate between left, right, top for origins
         const originPos = idx % 3;
         const startX = originPos === 0 ? -w*0.1 : (originPos === 1 ? w*1.1 : w*0.5);
+        // Explicitly define starting Y based on origin (0=Left, 1=Right, 2=Top)
         const startY = originPos === 2 ? -h*0.1 : cy + (Math.sin(idx * 13) * h * 0.1);
 
         let progress = 0;
@@ -472,7 +473,7 @@ export default function LuckyCardReveal() {
 
             // 3. Energy Particles exploding outwards
             if (timeSinceStrike < 0.5) {
-                const pCount = isFinal ? 15 : 6;
+                const pCount = isFinal ? 12 : 5;
                 const pProgress = timeSinceStrike / 0.5;
                 for (let p=0; p<pCount; p++) {
                     const angle = (Math.PI * 2 / pCount) * p + (idx * 0.5);
@@ -516,7 +517,9 @@ export default function LuckyCardReveal() {
       const pulse2 = Math.cos(elapsed * 3.1) * 0.05;
       const pulse = 1 + pulse1 + pulse2;
 
-      const auraRadius = (tier === 'flagship' ? Math.min(400, Math.max(w, h) * 0.8) : (tier === 'premium' ? 280 : 220)) * pulse * auraIntensity;
+      // Bounded base aura size to prevent severe canvas overdraw
+      const baseAuraRadius = tier === 'flagship' ? Math.min(350, w * 0.8) : (tier === 'premium' ? 280 : 220);
+      const auraRadius = baseAuraRadius * pulse * auraIntensity;
       const baseColor = tier === 'standard' ? '77, 238, 234' : (tier === 'premium' ? '176, 38, 255' : '249, 241, 208');
 
       // More dimensional aura
