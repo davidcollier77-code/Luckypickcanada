@@ -12,13 +12,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm and Node.js
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: true
+
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Install dependencies (npm ci)
-        run: npm ci
+          cache: 'pnpm'
 
       - name: Clear cache directories
         run: rm -rf .next/cache .open-next
@@ -26,7 +29,7 @@ jobs:
       - name: Build Next.js app
         env:
           GITHUB_SHA: ${{ github.sha }}
-        run: NODE_ENV=production npm run build
+        run: NODE_ENV=production pnpm run build
 
       - name: Build OpenNext for Cloudflare
         run: npx opennextjs-cloudflare build
