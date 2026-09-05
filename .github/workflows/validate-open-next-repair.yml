@@ -18,11 +18,11 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install dependencies (npm ci)
-        run: npm ci
+      - name: Install dependencies (pnpm)
+        run: npm install -g pnpm && pnpm install --frozen-lockfile
 
-      - name: Build (npm run build)
-        run: npm run build
+      - name: Build (pnpm run build)
+        run: pnpm run build
 
       - name: Verify .open-next/worker.js exists
         run: |
@@ -45,7 +45,7 @@ jobs:
           fi
 
       - name: Wrangler build validation (no deploy)
-        run: npx wrangler build --config ./wrangler.jsonc
+        run: pnpm exec wrangler build --config ./wrangler.jsonc
 
       - name: Git status
         run: git status --porcelain=2 --branch
