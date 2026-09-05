@@ -267,3 +267,23 @@ Inspect the repository → Check the relevant libraries and tools → Understand
 The goal is not simply to produce code that works.
 
 The goal is to produce the correct implementation using the right technology, the correct version-specific APIs, the appropriate connected tools, and a properly verified result.
+
+---
+
+14. Scientific Debugging & Verification Protocol
+
+For all tasks involving debugging, troubleshooting, or modifying code, adhere strictly to this scientific protocol before finalizing any work:
+
+1. **Investigate Before Changing:** Do not write code immediately. Trace the execution flow and read the relevant source files.
+2. **Identify Symptoms vs. Root Causes:** Clearly separate the observed symptom (what is happening) from the suspected root cause (why it is happening).
+3. **Consider Multiple Plausible Causes:** When appropriate, list multiple potential reasons for the failure before choosing one to test.
+4. **Form a Testable Hypothesis:** State a clear hypothesis (e.g., "If I change X, then Y should happen because Z").
+5. **Gather Evidence:** Use logs, tests, or MCP tools to support or disprove the hypothesis.
+6. **Make the Smallest Appropriate Change:** Apply only the minimal change required to test the hypothesis. Do not refactor unrelated code.
+7. **Test the Change:** Run tests and build checks.
+8. **Change Course on Failure:** If evidence disproves the hypothesis, do not continue patching the symptom. Revert the change and form a new hypothesis based on the new evidence.
+9. **Verify User-Facing Behavior:** Verify the actual user-facing behavior. Never treat a successful build alone as proof that a frontend, runtime, deployment, or user-facing problem is fixed.
+10. **Use Browser/UI Verification:** When the task involves frontend behavior, use available Playwright/browser tooling to verify the visual outcome.
+11. **Check for Regressions:** Ensure related functionality remains intact.
+12. **Perform a Final Self-Review:** Review the diff and ensure it aligns with the hypothesis and task requirements.
+13. **Mandatory Script Verification:** Run `./jules-verify.sh` to validate the build, linting, and types. You must not declare the task complete if this script fails.
