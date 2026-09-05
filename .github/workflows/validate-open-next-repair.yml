@@ -13,16 +13,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Install dependencies (npm ci)
-        run: npm ci
+      - name: Install dependencies (pnpm install --frozen-lockfile)
+        run: pnpm install --frozen-lockfile
 
-      - name: Build (npm run build)
-        run: npm run build
+      - name: Build (pnpm run build)
+        run: pnpm run build
 
       - name: Verify .open-next/worker.js exists
         run: |
