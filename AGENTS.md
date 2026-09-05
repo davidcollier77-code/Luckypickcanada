@@ -86,6 +86,14 @@ If Context7 cannot resolve the required library or technology, use its authorita
 
 ---
 
+
+### Curated Context7 Libraries
+
+When interacting with Context7, you can use these verified library references for specific technologies:
+
+* **Gemini CLI/Agent Tooling**: `/google-gemini/gemini-cli` - Useful for understanding Gemini AI workflows, agent capabilities, and CLI integrations.
+* **Gemini API**: `/websites/ai_google_dev_gemini-api` - Useful for implementing Google's generative AI models for text, multimodal, and streaming features.
+
 5. Context7 Must Be Meaningful
 
 Do not make a token Context7 call simply to satisfy a requirement.
