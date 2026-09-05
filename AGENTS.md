@@ -36,27 +36,7 @@ Playwright CLI generates temporary snapshots, traces, and debug artifacts inside
 * Ensure `.playwright-cli/` remains in `.gitignore`.
 * **Mandatory:** Always check `git status` and the final Git diff before submitting changes to ensure no Playwright artifacts (or any other unintended files) are accidentally staged.
 
-## Context7 Reference Libraries
-Use Context7 for current, version-specific library documentation. Do not create bloated library lists; use only these curated references when relevant:
 
-* `jules.google/docs` — Jules workflows, capabilities, and agent behavior.
-* `developers.google.com/jules/api` — Jules API capabilities and API usage.
-* `/github/docs` — GitHub repositories, branches, pull requests, Actions, and workflows.
-* `/vercel/next.js` — Next.js framework, App Router, rendering, routing, and server/client components.
-* `/reactjs/react.dev` — React components, hooks, state, effects, and rendering.
-* `/microsoft/typescript` — TypeScript language and compiler behavior.
-* `/websites/tailwindcss` — Tailwind CSS utilities and responsive styling.
-* `/opennextjs/opennextjs-cloudflare` — OpenNext deployment of Next.js to Cloudflare.
-* `/opennextjs/docs` — OpenNext architecture and deployment concepts.
-* `/cloudflare/workers-sdk` — Wrangler, Workers tooling, and Cloudflare runtime/deployment.
-* `/neondatabase/neon` — Neon/Postgres serverless integration.
-* `/upstash/docs` — Upstash and Redis.
-* `/stripe/stripe-js` — Stripe client-side/payment integration.
-* `/resend/resend-node` — Resend Node email integration.
-* `/microsoft/playwright-cli` — Playwright CLI browser automation, UI testing, DOM/CSS inspection, and debugging.
-* `/testing-library/react-testing-library` — React component testing.
-
-*(Note: The GitHub MCP Server is explicitly prohibited for this workflow; use the native tools or Context7 GitHub Docs reference if needed).*
 
 ---
 
@@ -150,12 +130,89 @@ If Context7 cannot resolve the required library or technology, use its authorita
 ---
 
 
+
+## Available Libraries/Tools
+
+The following tools and libraries are available for use in this project:
+
+### Core Framework
+* **Next.js**: Core framework (App Router).
+* **React**: UI library.
+* **TypeScript**: Type checking.
+* **Tailwind CSS**: Styling.
+
+### UI / Styling
+* **framer-motion**: Animation library for React.
+* **gsap**: Complex animations and timelines.
+* **lucide-react**: Icon library.
+* **sonner**: Toast notifications.
+* **tailwind-merge / clsx-tailwind-merge**: Class name merging utilities.
+* **cssnano**: CSS minifier.
+* **stylelint**: CSS linter.
+
+### Media / Interaction
+* **howler**: Audio playback and sprite management.
+* **zzfx**: Procedural sound effect generation.
+* **canvas-confetti**: Confetti effects.
+* **html2canvas**: Taking screenshots of DOM elements.
+
+### Forms / Validation
+* **react-hook-form**: Form state management.
+* **zod**: Schema validation and type inference.
+* **@hookform/resolvers**: Zod integration for react-hook-form.
+* **zxcvbn**: Password strength estimation.
+* **dompurify**: XSS sanitizer.
+
+### Testing / Quality
+* **vitest**: Unit testing framework.
+* **@testing-library/react**: React component testing.
+* **@playwright/test**: End-to-end browser testing.
+* **eslint**: Linting, with plugins for React, hooks, Prettier, and accessibility (jsx-a11y).
+* **prettier**: Code formatting.
+* **husky & lint-staged**: Pre-commit hooks for code quality.
+* **axe-core & @axe-core/react**: Accessibility auditing.
+* **jsdom**: DOM implementation for tests.
+
+### Utilities
+* **lodash**: Utility functions.
+* **date-fns**: Date manipulation.
+* **dotenv**: Environment variable management.
+
+### Backend / Infrastructure
+* **@neondatabase/serverless**: Neon PostgreSQL driver.
+* **@upstash/redis**: Redis client.
+* **stripe / @stripe/stripe-js**: Payments processing.
+* **resend**: Email sending API.
+* **@sentry/nextjs**: Error tracking and performance monitoring.
+
+
 ### Curated Context7 Libraries
 
 When interacting with Context7, you can use these verified library references for specific technologies:
 
+* **Jules**: `jules.google/docs` - Jules workflows, capabilities, and agent behavior.
+* **Jules API**: `developers.google.com/jules/api` - Jules API capabilities and API usage.
+* **GitHub**: `/github/docs` - GitHub repositories, branches, pull requests, Actions, and workflows.
+* **Next.js**: `/vercel/next.js` - Next.js framework, App Router, rendering, routing, and server/client components.
+* **React**: `/reactjs/react.dev` - React components, hooks, state, effects, and rendering.
+* **TypeScript**: `/microsoft/typescript` - TypeScript language and compiler behavior.
+* **Tailwind CSS**: `/websites/tailwindcss` - Tailwind CSS utilities and responsive styling.
+* **OpenNext Cloudflare**: `/opennextjs/opennextjs-cloudflare` - OpenNext deployment of Next.js to Cloudflare.
+* **OpenNext Docs**: `/opennextjs/docs` - OpenNext architecture and deployment concepts.
+* **Cloudflare Workers**: `/cloudflare/workers-sdk` - Wrangler, Workers tooling, and Cloudflare runtime/deployment.
+* **Neon**: `/neondatabase/neon` - Neon/Postgres serverless integration.
+* **Upstash**: `/upstash/docs` - Upstash and Redis.
+* **Stripe**: `/stripe/stripe-js` - Stripe client-side/payment integration.
+* **Resend**: `/resend/resend-node` - Resend Node email integration.
+* **React Testing Library**: `/testing-library/react-testing-library` - React component testing.
+* **Playwright**: `/microsoft/playwright-cli` - End-to-end browser testing.
 * **Gemini CLI/Agent Tooling**: `/google-gemini/gemini-cli` - Useful for understanding Gemini AI workflows, agent capabilities, and CLI integrations.
 * **Gemini API**: `/websites/ai_google_dev_gemini-api` - Useful for implementing Google's generative AI models for text, multimodal, and streaming features.
+* **Zod**: `/colinhacks/zod` - Schema validation and type inference.
+* **GSAP**: `/llmstxt/gsap_llms_txt` - Professional-grade JavaScript animation library.
+* **Vitest**: `/vitest-dev/vitest` - Next-generation testing framework powered by Vite.
+
+*(Note: The GitHub MCP Server is explicitly prohibited for this workflow; use the native tools or Context7 GitHub Docs reference if needed).*
 
 5. Context7 Must Be Meaningful
 
