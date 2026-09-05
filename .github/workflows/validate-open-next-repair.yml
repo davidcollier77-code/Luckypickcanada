@@ -13,16 +13,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: false
+
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Install dependencies (npm ci)
-        run: npm ci
+      - name: Install dependencies (pnpm install)
+        run: pnpm install
 
-      - name: Build (npm run build)
-        run: npm run build
+      - name: Build (pnpm run build)
+        run: pnpm run build
 
       - name: Verify .open-next/worker.js exists
         run: |
@@ -45,7 +52,7 @@ jobs:
           fi
 
       - name: Wrangler build validation (no deploy)
-        run: npx wrangler build --config ./wrangler.jsonc
+        run: pnpm dlx wrangler build --config ./wrangler.jsonc
 
       - name: Git status
         run: git status --porcelain=2 --branch
