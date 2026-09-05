@@ -18,7 +18,7 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: npm install -g pnpm && pnpm install --frozen-lockfile
+        run: npm install -g pnpm && pnpm config set ignore-scripts true && pnpm install --frozen-lockfile
 
       - name: Clear cache directories
         run: rm -rf .next/cache .open-next
