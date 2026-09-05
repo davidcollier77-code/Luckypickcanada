@@ -21,18 +21,18 @@ const LUCKY_QUOTES = [
 
 // Premium ZZFX Sound Configurations
 const SOUNDS = {
-  buildupHum: [0.6, 0, 65, 2.0, 4.0, 3.0, 2, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], // Deep rising hum
-  tensionTick: [0.2, 0.05, 800, 0.01, 0.02, 0.05, 1, 1.5, -20, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], // Sharp electronic tick
-  tensionTickHigh: [0.25, 0.05, 1200, 0.01, 0.02, 0.05, 1, 1.5, -20, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], // Faster tick
+  buildupHum: [1.2, 0.05, 60, 2.0, 3.0, 4.0, 2, 2, 40, 0, 0, 0, 0, 0.1, 0.5, 0, 0.2, 0.8, 0.5, 0.2, 500], // Magical, atmospheric, rising energy
+  tensionTick: [0.4, 0, 250, 0.01, 0.02, 0.1, 1, 1, -10, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.05, 0, 2000], // Energetic impact, short tail
+  tensionTickHigh: [0.6, 0, 400, 0.01, 0.02, 0.1, 1, 1, -15, 0, 0, 0, 0, 0.05, 0, 0, 0.05, 0.5, 0.05, 0, 3000], // Faster intensity tick
 
-  impactMeteor: [1.8, 0.2, 150, 0.05, 0.1, 2.5, 4, 1.5, -20, 0, 0, 0, 0, 1.5, 0, 0, 0.1, 1, 0.2, 0, 0], // Heavy whoosh/thud
-  impactLightning: [1.5, 0.1, 800, 0.01, 0.1, 2.0, 3, 2, -100, 0, 500, 0.02, 0, 2, 0, 0, 0.05, 1, 0.1, 0.2, 0], // Sharp zap
-  impactFireworks: [1.5, 0.2, 400, 0.01, 0.05, 1.5, 4, 1, -50, 0, 0, 0, 0.05, 1, 0, 0, 0, 1, 0.1, 0, 0], // Crackle pop
+  impactMeteor: [1.5, 0.1, 800, 0.2, 0.2, 2.0, 2, 1.5, -80, -10, 0, 0, 0, 1.2, 0.2, 0, 0.1, 0.8, 0.3, 0, 0], // Fast atmospheric whoosh + airy movement
+  impactLightning: [1.5, 0.3, 800, 0.01, 0.05, 1.0, 3, 1.5, -50, 10, 300, 0.02, 0.05, 1.5, 0, 0.1, 0.05, 0.8, 0.1, 0, 1000], // Electric crack/arc/energy snap
+  impactFireworks: [1.8, 0.1, 150, 0.02, 0.1, 1.5, 4, 2, -20, 0, 0, 0, 0, 2.0, 0, 0, 0.1, 0.5, 0.2, 0, 0], // Fireworks launch/burst
 
-  fireworksCrackle: [0.5, 0.5, 800, 0.1, 0.5, 1.5, 4, 1, 0, 0, 0, 0, 0.02, 1, 0, 0, 0, 1, 0.2, 0, 0], // Secondary pop
+  fireworksCrackle: [0.8, 0.8, 1200, 0.01, 0.05, 0.8, 4, 1, 0, 0, 0, 0, 0.05, 1.0, 0, 0.2, 0.05, 0.5, 0.1, 0, 0], // Fireworks crackle tail
 
-  sparkle: [0.15, 0.05, 1500, 0.05, 0.1, 1.0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0.1, 1, 0.1, 0, 0], // Magic chime
-  payoff: [0.6, 0.05, 880, 0.1, 0.5, 4.0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0.2, 1, 0.2, 0.1, 0] // Majestic chord
+  sparkle: [0.6, 0.1, 2093, 0.01, 0.1, 1.5, 0, 1, 0, 0, 0, 0, 0.1, 0, 0, 0, 0.2, 0.5, 0.1, 0, 0], // Magic chime/sparkles
+  payoff: [1.5, 0.02, 523.25, 0.1, 0.5, 4.0, 0, 2, 0, 0, 0, 0, 0, 0.1, 2, 0, 0.3, 0.8, 0.2, 0.3, 0] // Majestic chord payoff
 };
 
 // We will pre-generate buffers to ensure perfect synchronization
@@ -298,13 +298,13 @@ export default function DailyResonance() {
       if (currentTime >= nextTickTime && elapsed < IMPACT_TIME) {
          if (elapsed < TENSION_TIME) {
            // Normal build up tick
-           const tickNode = playBuffer(ctx, audioBuffers.tensionTick, 1.0, nextTickTime);
+           const tickNode = playBuffer(ctx, audioBuffers.tensionTick, 0.7, nextTickTime);
            if (tickNode) activeAudioNodesRef.current.push(tickNode);
            nextTickTime += tickInterval;
            tickInterval = Math.max(0.1, tickInterval - 0.02); // Accelerate gradually
          } else {
            // Tension high speed tick
-           const tickNode = playBuffer(ctx, audioBuffers.tensionTickHigh, 1.0, nextTickTime);
+           const tickNode = playBuffer(ctx, audioBuffers.tensionTickHigh, 0.8, nextTickTime);
            if (tickNode) activeAudioNodesRef.current.push(tickNode);
            tickInterval = 0.05; // Very fast
            nextTickTime += tickInterval;
@@ -414,7 +414,7 @@ export default function DailyResonance() {
         const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
         if (shouldSpawn && particles.length < 50) { // Cap slightly lower for longer tails
           if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
-            const node = playBuffer(activeAudioCtx, audioBuffers.impactMeteor, 0.15, activeAudioCtx.currentTime);
+            const node = playBuffer(activeAudioCtx, audioBuffers.impactMeteor, 0.05, activeAudioCtx.currentTime);
             if (node) activeAudioNodesRef.current.push(node);
           }
           initialSpawnDone = true;
@@ -462,7 +462,7 @@ export default function DailyResonance() {
         const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
         if (shouldSpawn && particles.length < MAX_PARTICLES) {
           if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
-            const node = playBuffer(activeAudioCtx, audioBuffers.impactLightning, 0.2, activeAudioCtx.currentTime);
+            const node = playBuffer(activeAudioCtx, audioBuffers.impactLightning, 0.1, activeAudioCtx.currentTime);
             if (node) activeAudioNodesRef.current.push(node);
           }
           initialSpawnDone = true;
@@ -542,8 +542,8 @@ export default function DailyResonance() {
         if (shouldSpawn && particles.length < 120) { // Cap slightly lower than 150 for safety with trails
           if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
 
-            const node = playBuffer(activeAudioCtx, audioBuffers.fireworksCrackle, 0.2, activeAudioCtx.currentTime);
-            const sparkleNode = playBuffer(activeAudioCtx, audioBuffers.sparkle, 0.4, activeAudioCtx.currentTime + 0.1);
+            const node = playBuffer(activeAudioCtx, audioBuffers.fireworksCrackle, 0.15, activeAudioCtx.currentTime);
+            const sparkleNode = playBuffer(activeAudioCtx, audioBuffers.sparkle, 0.2, activeAudioCtx.currentTime + 0.1);
             if (sparkleNode) activeAudioNodesRef.current.push(sparkleNode);
 
             if (node) activeAudioNodesRef.current.push(node);
