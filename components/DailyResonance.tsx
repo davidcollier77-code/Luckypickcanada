@@ -192,7 +192,7 @@ export default function DailyResonance() {
     const IMPACT_TIME = 8800; // 8.8s frame for impact
     const TENSION_TIME = 7500; // 7.5s tension shift
 
-    const audioStartTime = ctx.currentTime;
+    const audioStartTime = Date.now() / 1000;
 
     // Play buildup exactly at 0s (audioStartTime)
     if (sounds.current.buildupHum) sounds.current.buildupHum.play();

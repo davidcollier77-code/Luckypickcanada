@@ -20,6 +20,3 @@ act_output.log
 
 # Playwright CLI artifacts
 .playwright-cli/
-
-# TypeScript build info
-tsconfig.tsbuildinfo

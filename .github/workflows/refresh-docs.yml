@@ -41,19 +41,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const existingIssues = await github.rest.issues.listForRepo({
+            github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'open',
-              labels: 'documentation-refresh'
-            });
-            
-            if (existingIssues.data.length === 0) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: "🤖 Automated Task: Weekly Documentation Refresh",
-                labels: ['documentation-refresh'],
-                body: "This is an automated weekly trigger (Friday 2:00 AM AST). 
-              });
-            }
+              title: "🤖 Automated Task: Weekly Documentation Refresh",
+              body: "This is an automated weekly trigger (Friday 2:00 AM AST). \n\n**Jules:** Please review the current `package.json` inventory. If versions have changed, use Context7 to retrieve the updated documentation and update the markdown files in `.docs/`. Ensure the inventory matches `AGENTS.md`."
+            })
