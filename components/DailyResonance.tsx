@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Howl, Howler } from 'howler';
 import Link from 'next/link';
 
 import ResonanceButton from './ResonanceButton';
@@ -19,85 +20,8 @@ const LUCKY_QUOTES = [
 
 
 
-// Premium ZZFX Sound Configurations
-const SOUNDS = {
-  buildupHum: [1.2, 0.05, 60, 2.0, 3.0, 4.0, 2, 2, 40, 0, 0, 0, 0, 0.1, 0.5, 0, 0.2, 0.8, 0.5, 0.2, 500], // Magical, atmospheric, rising energy
-  tensionTick: [0.4, 0, 250, 0.01, 0.02, 0.1, 1, 1, -10, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 0.05, 0, 2000], // Energetic impact, short tail
-  tensionTickHigh: [0.6, 0, 400, 0.01, 0.02, 0.1, 1, 1, -15, 0, 0, 0, 0, 0.05, 0, 0, 0.05, 0.5, 0.05, 0, 3000], // Faster intensity tick
-
-  impactMeteor: [1.5, 0.1, 800, 0.2, 0.2, 2.0, 2, 1.5, -80, -10, 0, 0, 0, 1.2, 0.2, 0, 0.1, 0.8, 0.3, 0, 0], // Fast atmospheric whoosh + airy movement
-  impactLightning: [1.5, 0.3, 800, 0.01, 0.05, 1.0, 3, 1.5, -50, 10, 300, 0.02, 0.05, 1.5, 0, 0.1, 0.05, 0.8, 0.1, 0, 1000], // Electric crack/arc/energy snap
-  impactFireworks: [1.8, 0.1, 150, 0.02, 0.1, 1.5, 4, 2, -20, 0, 0, 0, 0, 2.0, 0, 0, 0.1, 0.5, 0.2, 0, 0], // Fireworks launch/burst
-
-  fireworksCrackle: [0.8, 0.8, 1200, 0.01, 0.05, 0.8, 4, 1, 0, 0, 0, 0, 0.05, 1.0, 0, 0.2, 0.05, 0.5, 0.1, 0, 0], // Fireworks crackle tail
-
-  sparkle: [0.6, 0.1, 2093, 0.01, 0.1, 1.5, 0, 1, 0, 0, 0, 0, 0.1, 0, 0, 0, 0.2, 0.5, 0.1, 0, 0], // Magic chime/sparkles
-  payoff: [1.5, 0.02, 523.25, 0.1, 0.5, 4.0, 0, 2, 0, 0, 0, 0, 0, 0.1, 2, 0, 0.3, 0.8, 0.2, 0.3, 0] // Majestic chord payoff
-};
-
-// We will pre-generate buffers to ensure perfect synchronization
-const audioBuffers: Record<string, AudioBuffer | null> = {
-  buildupHum: null,
-  tensionTick: null,
-  tensionTickHigh: null,
-  impactMeteor: null,
-  impactLightning: null,
-  impactFireworks: null,
-  fireworksCrackle: null,
-  sparkle: null,
-  payoff: null
-};
-
-// Generate buffers securely
-const preloadAllAudio = async (ctx: AudioContext, ZZFX: any) => {
-  // We use ZZFX's buildSamples but need to convert it to an AudioBuffer for exact scheduling
-  const buildToBuffer = (params: number[]) => {
-     const samples = ZZFX.buildSamples(...params);
-     const buffer = ctx.createBuffer(1, samples.length, ZZFX.sampleRate);
-     buffer.getChannelData(0).set(samples);
-     return buffer;
-  };
-
-  if (!audioBuffers.buildupHum) audioBuffers.buildupHum = buildToBuffer(SOUNDS.buildupHum);
-  if (!audioBuffers.tensionTick) audioBuffers.tensionTick = buildToBuffer(SOUNDS.tensionTick);
-  if (!audioBuffers.tensionTickHigh) audioBuffers.tensionTickHigh = buildToBuffer(SOUNDS.tensionTickHigh);
-  if (!audioBuffers.impactMeteor) audioBuffers.impactMeteor = buildToBuffer(SOUNDS.impactMeteor);
-  if (!audioBuffers.impactLightning) audioBuffers.impactLightning = buildToBuffer(SOUNDS.impactLightning);
-  if (!audioBuffers.impactFireworks) audioBuffers.impactFireworks = buildToBuffer(SOUNDS.impactFireworks);
-  if (!audioBuffers.fireworksCrackle) audioBuffers.fireworksCrackle = buildToBuffer(SOUNDS.fireworksCrackle);
-  if (!audioBuffers.sparkle) audioBuffers.sparkle = buildToBuffer(SOUNDS.sparkle);
-  if (!audioBuffers.payoff) audioBuffers.payoff = buildToBuffer(SOUNDS.payoff);
-};
-
-const playBuffer = (ctx: AudioContext, buffer: AudioBuffer | null, volume: number = 1.0, when: number = 0, offset: number = 0) => {
-  if (!buffer) return null;
-  const source = ctx.createBufferSource();
-  source.buffer = buffer;
-  const gainNode = ctx.createGain();
-  gainNode.gain.value = volume;
-  source.connect(gainNode);
-  gainNode.connect(ctx.destination);
-  source.start(when, offset);
-  source.onended = () => {
-    source.disconnect();
-    gainNode.disconnect();
-  };
-  return { source, gainNode };
-};
-
 export default function DailyResonance() {
 
-  const zzfxRef = useRef<any>(null);
-  const getZZFX = async () => {
-    if (zzfxRef.current) return zzfxRef.current;
-    if (typeof window !== 'undefined') {
-       // Only import on client to avoid SSR crash
-       const mod = await import('zzfx');
-       zzfxRef.current = mod.ZZFX;
-       return mod.ZZFX;
-    }
-    return null;
-  };
 
   const [percentage, setPercentage] = useState(0);
   const [displayPercentage, setDisplayPercentage] = useState(0);
@@ -121,7 +45,18 @@ export default function DailyResonance() {
   const isAnimatingRef = useRef(false);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const bgRequestRef = useRef<number>(0);
-  const activeAudioNodesRef = useRef<any[]>([]);
+  const sounds = useRef<{ [key: string]: Howl }>({});
+
+  useEffect(() => {
+    sounds.current = {
+      buildupHum: new Howl({ src: ['/yodguard-lightning-magic-3-378649.mp3'], volume: 0.5 }),
+      impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 0.8 }),
+      impactLightning: new Howl({ src: ['/yodguard-lightning-magic-3-378649.mp3'], volume: 0.8 }),
+      impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 0.8 }),
+      tensionTick: new Howl({ src: ['/freesound_community-shaking-coins-105774.mp3'], volume: 0.2 }),
+      payoff: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.6 })
+    };
+  }, []);
 
   const initAudio = () => {
     let ctx = audioCtxRef.current;
@@ -211,7 +146,7 @@ export default function DailyResonance() {
       })
       .catch((err) => console.error("Failed to update visits:", err));
 
-    activeAudioNodesRef.current = [];
+
 
     // Cancel any previous animation sequence
     if (sequenceRef.current) cancelAnimationFrame(sequenceRef.current);
@@ -250,25 +185,17 @@ export default function DailyResonance() {
     else if (newPct <= 66) currentTier = 'Cosmic Lightning';
     else currentTier = 'Fireworks';
 
-    // Preload audio first
-    try {
-      const ZZFX = await getZZFX();
-      if (!ZZFX) throw new Error("ZZFX failed to load");
-      await preloadAllAudio(ctx, ZZFX);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(false);
 
     // Strict 9 second cinematic sequence
     const SEQUENCE_DURATION = 9000;
     const IMPACT_TIME = 8800; // 8.8s frame for impact
     const TENSION_TIME = 7500; // 7.5s tension shift
 
-    const audioStartTime = ctx.currentTime;
+    const audioStartTime = Date.now() / 1000;
 
     // Play buildup exactly at 0s (audioStartTime)
-    const buildupNode = playBuffer(ctx, audioBuffers.buildupHum, 1.0, audioStartTime);
-    if (buildupNode) activeAudioNodesRef.current.push(buildupNode);
+    if (sounds.current.buildupHum) sounds.current.buildupHum.play();
 
     // Pre-schedule the primary tier impact sound exactly at audioStartTime + 8.8s
     const impactTimeSec = audioStartTime + (IMPACT_TIME / 1000);
@@ -276,11 +203,12 @@ export default function DailyResonance() {
     let tierAudioKey = 'impactMeteor';
     if (currentTier === 'Cosmic Lightning') tierAudioKey = 'impactLightning';
     if (currentTier === 'Fireworks') tierAudioKey = 'impactFireworks';
-    const impactNode = playBuffer(ctx, audioBuffers[tierAudioKey], 1.0, impactTimeSec);
-    const payoffNode = playBuffer(ctx, audioBuffers.payoff, 1.0, impactTimeSec); // Add payoff chord
-    if (payoffNode) activeAudioNodesRef.current.push(payoffNode);
 
-    if (impactNode) activeAudioNodesRef.current.push(impactNode);
+    setTimeout(() => {
+        if (sounds.current[tierAudioKey]) sounds.current[tierAudioKey].play();
+        if (sounds.current.payoff) sounds.current.payoff.play();
+    }, IMPACT_TIME);
+
 
     let impactPlayed = false; // We still use this for the visual effect trigger
     let finalTierSet = false;
@@ -291,21 +219,25 @@ export default function DailyResonance() {
 
     const sequenceLoop = (timestamp: number) => {
       // Calculate elapsed time strictly using the audio clock
-      const currentTime = ctx.currentTime;
+      const currentTime = Date.now() / 1000;
       const elapsed = (currentTime - audioStartTime) * 1000;
 
       // Pulse Sound Generation Logic (Rhythmic Ticks)
       if (currentTime >= nextTickTime && elapsed < IMPACT_TIME) {
          if (elapsed < TENSION_TIME) {
            // Normal build up tick
-           const tickNode = playBuffer(ctx, audioBuffers.tensionTick, 0.7, nextTickTime);
-           if (tickNode) activeAudioNodesRef.current.push(tickNode);
+           if (sounds.current.tensionTick) {
+              sounds.current.tensionTick.volume(0.7);
+              sounds.current.tensionTick.play();
+           }
            nextTickTime += tickInterval;
            tickInterval = Math.max(0.1, tickInterval - 0.02); // Accelerate gradually
          } else {
            // Tension high speed tick
-           const tickNode = playBuffer(ctx, audioBuffers.tensionTickHigh, 0.8, nextTickTime);
-           if (tickNode) activeAudioNodesRef.current.push(tickNode);
+           if (sounds.current.tensionTick) {
+              sounds.current.tensionTick.volume(0.8);
+              sounds.current.tensionTick.play();
+           }
            tickInterval = 0.05; // Very fast
            nextTickTime += tickInterval;
          }
@@ -414,9 +346,13 @@ export default function DailyResonance() {
         const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
         if (shouldSpawn && particles.length < 50) { // Cap slightly lower for longer tails
           if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
-            const node = playBuffer(activeAudioCtx, audioBuffers.impactMeteor, 0.05, activeAudioCtx.currentTime);
-            if (node) activeAudioNodesRef.current.push(node);
-          }
+
+        if (sounds.current.impactMeteor) {
+            sounds.current.impactMeteor.volume(0.05);
+            sounds.current.impactMeteor.play();
+        }
+    }
+
           initialSpawnDone = true;
           particles.push({
             x: Math.random() * canvas.width,
@@ -461,10 +397,12 @@ export default function DailyResonance() {
       } else if (activeTier === 'Cosmic Lightning') {
         const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
         if (shouldSpawn && particles.length < MAX_PARTICLES) {
-          if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
-            const node = playBuffer(activeAudioCtx, audioBuffers.impactLightning, 0.1, activeAudioCtx.currentTime);
-            if (node) activeAudioNodesRef.current.push(node);
+
+          if (initialSpawnDone && sounds.current.impactLightning) {
+            sounds.current.impactLightning.volume(0.1);
+            sounds.current.impactLightning.play();
           }
+
           initialSpawnDone = true;
           const startX = Math.random() * canvas.width;
           const mainBranch = [{ x: startX, y: 0 }];
@@ -542,12 +480,11 @@ export default function DailyResonance() {
         if (shouldSpawn && particles.length < 120) { // Cap slightly lower than 150 for safety with trails
           if (activeAudioCtx && activeAudioCtx.state === 'running' && initialSpawnDone) {
 
-            const node = playBuffer(activeAudioCtx, audioBuffers.fireworksCrackle, 0.15, activeAudioCtx.currentTime);
-            const sparkleNode = playBuffer(activeAudioCtx, audioBuffers.sparkle, 0.2, activeAudioCtx.currentTime + 0.1);
-            if (sparkleNode) activeAudioNodesRef.current.push(sparkleNode);
-
-            if (node) activeAudioNodesRef.current.push(node);
-          }
+            if (sounds.current.impactFireworks) {
+              sounds.current.impactFireworks.volume(0.15);
+              sounds.current.impactFireworks.play();
+            }
+            }
           initialSpawnDone = true;
           const startX = Math.random() * canvas.width;
           const startY = Math.random() * (canvas.height / 2);
@@ -612,24 +549,22 @@ export default function DailyResonance() {
 
       if (!canSpawn) {
         // Fade out all active audio smoothly as soon as spawning stops
-        if (activeAudioCtx && activeAudioCtx.state === 'running' && !fadeOutTriggered) {
+        if (!fadeOutTriggered) {
           fadeOutTriggered = true;
-          activeAudioNodesRef.current.forEach((node) => {
-            if (node?.gainNode && node.gainNode.gain.value > 0.01) {
-              try {
-                if (node.gainNode.gain.value > 0) {
-                   node.gainNode.gain.cancelScheduledValues(activeAudioCtx.currentTime);
-                   node.gainNode.gain.setTargetAtTime(0, activeAudioCtx.currentTime, 0.5);
-                }
-                if (node.source) {
-                  try { node.source.stop(activeAudioCtx.currentTime + 2.0); } catch(e){}
-                }
-              } catch (e) {}
-            }
+          Object.values(sounds.current).forEach(sound => {
+            sound.fade(sound.volume(), 0, 2000);
           });
-          // After the fade out period, clear the array to free memory
           setTimeout(() => {
-             activeAudioNodesRef.current = [];
+             Object.values(sounds.current).forEach(sound => {
+               sound.stop();
+               // We restore the original volume configuration instead of overriding it to 0.8
+             });
+             if (sounds.current.buildupHum) sounds.current.buildupHum.volume(0.5);
+             if (sounds.current.impactMeteor) sounds.current.impactMeteor.volume(0.8);
+             if (sounds.current.impactLightning) sounds.current.impactLightning.volume(0.8);
+             if (sounds.current.impactFireworks) sounds.current.impactFireworks.volume(0.8);
+             if (sounds.current.tensionTick) sounds.current.tensionTick.volume(0.2);
+             if (sounds.current.payoff) sounds.current.payoff.volume(0.6);
           }, 2500);
         }
 

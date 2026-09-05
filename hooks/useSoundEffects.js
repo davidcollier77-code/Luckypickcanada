@@ -1,11 +1,22 @@
 'use client';
 
-import { zzfx } from 'zzfx';
+import { useEffect, useRef } from 'react';
+import { Howl } from 'howler';
 
 export function useSoundEffects() {
-  const playTick = () => zzfx(...[,,129,.01,,.15,,,,,,,,5]);
-  const playCardFlip = () => zzfx(...[1.5,.5,270,,.1,,1,1.5,,,,,,,,.1,.01]);
-  const playWin = () => zzfx(...[,,537,.02,.02,.22,1,1.59,-6.98,4.97]);
+  const sounds = useRef({});
+
+  useEffect(() => {
+    sounds.current = {
+      tick: new Howl({ src: ['/freesound_community-shaking-coins-105774.mp3'], volume: 0.2 }),
+      cardFlip: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 0.5 }),
+      win: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.6 })
+    };
+  }, []);
+
+  const playTick = () => sounds.current.tick?.play();
+  const playCardFlip = () => sounds.current.cardFlip?.play();
+  const playWin = () => sounds.current.win?.play();
 
   return { playTick, playCardFlip, playWin };
 }

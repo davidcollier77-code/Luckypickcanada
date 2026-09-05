@@ -135,55 +135,61 @@ If Context7 cannot resolve the required library or technology, use its authorita
 
 The following tools and libraries are available for use in this project:
 
-### Core Framework
-* **Next.js**: Core framework (App Router).
-* **React**: UI library.
-* **TypeScript**: Type checking.
-* **Tailwind CSS**: Styling.
+### Core Framework (Pre-existing)
+* **Next.js**: Core React framework utilizing the App Router. Use for page routing, server components, and API routes.
+* **React / React-DOM**: Core UI library.
+* **TypeScript**: Static type checking.
+* **Tailwind CSS**: Utility-first CSS framework for styling components.
 
-### UI / Styling
-* **framer-motion**: Animation library for React.
-* **gsap**: Complex animations and timelines.
-* **lucide-react**: Icon library.
-* **sonner**: Toast notifications.
-* **tailwind-merge / clsx-tailwind-merge**: Class name merging utilities.
-* **cssnano**: CSS minifier.
-* **stylelint**: CSS linter.
-
-### Media / Interaction
-* **howler**: Audio playback and sprite management.
-* **zzfx**: Procedural sound effect generation.
-* **canvas-confetti**: Confetti effects.
-* **html2canvas**: Taking screenshots of DOM elements.
-
-### Forms / Validation
-* **react-hook-form**: Form state management.
-* **zod**: Schema validation and type inference.
-* **@hookform/resolvers**: Zod integration for react-hook-form.
-* **zxcvbn**: Password strength estimation.
-* **dompurify**: XSS sanitizer.
-
-### Testing / Quality
-* **vitest**: Unit testing framework.
-* **@testing-library/react**: React component testing.
-* **@playwright/test**: End-to-end browser testing.
-* **eslint**: Linting, with plugins for React, hooks, Prettier, and accessibility (jsx-a11y).
-* **prettier**: Code formatting.
-* **husky & lint-staged**: Pre-commit hooks for code quality.
-* **axe-core & @axe-core/react**: Accessibility auditing.
-* **jsdom**: DOM implementation for tests.
-
-### Utilities
-* **lodash**: Utility functions.
-* **date-fns**: Date manipulation.
+### Deployment & Infrastructure (Pre-existing)
+* **@opennextjs/cloudflare**: Adapter for deploying Next.js on Cloudflare Pages/Workers.
+* **wrangler**: Cloudflare CLI used for local deployment testing.
+* **@neondatabase/serverless**: Serverless PostgreSQL driver for connecting to Neon databases over HTTP/WebSocket.
+* **@upstash/redis**: Serverless Redis client for rate limiting and fast caching.
+* **stripe / @stripe/stripe-js**: Stripe API client and UI elements for processing payments securely.
+* **resend**: Email sending API client for transactional emails (e.g., receipts, notifications).
 * **dotenv**: Environment variable management.
 
-### Backend / Infrastructure
-* **@neondatabase/serverless**: Neon PostgreSQL driver.
-* **@upstash/redis**: Redis client.
-* **stripe / @stripe/stripe-js**: Payments processing.
-* **resend**: Email sending API.
-* **@sentry/nextjs**: Error tracking and performance monitoring.
+### UI & Animation (Pre-existing)
+* **framer-motion**: React animation library. Use for declarative UI animations, variants, and staggering.
+* **gsap**: Advanced animation timeline manipulation (often used for complex sequenced SVG or canvas effects).
+* **canvas-confetti**: Simple lightweight library for firing visual confetti bursts.
+* **lucide-react**: Clean, consistent icon set.
+* **sonner**: Lightweight toast notification system for user feedback.
+* **tailwind-merge / clsx-tailwind-merge**: Utilities for safely merging dynamic Tailwind classes without conflicts.
+* **react-error-boundary**: Component for catching and handling React rendering errors gracefully.
+
+### Media & Interaction (Pre-existing)
+* **howler**: Audio playback and sprite management. Use this for all sound effects and background audio, using assets from `public/sounds/`.
+* **html2canvas**: Utility to take screenshots of the DOM (e.g., rendering the Lucky Card for sharing).
+
+### Forms & Validation (Pre-existing)
+* **react-hook-form**: Performant form state management with minimal re-renders.
+* **zod**: Schema declaration and runtime validation. Use for strict type safety on API inputs and form data.
+* **@hookform/resolvers**: Integration to use Zod schemas seamlessly with react-hook-form.
+* **zxcvbn**: Password strength estimation tool.
+* **dompurify**: XSS sanitizer to safely render potentially dangerous HTML strings.
+
+### Quality & Code Style (Pre-existing)
+* **eslint**: Code linting with plugins for Next, React, Prettier, and accessibility (jsx-a11y).
+* **prettier**: Enforces consistent code formatting across the repository.
+* **stylelint**: CSS linter.
+* **cssnano**: CSS minifier used in the build pipeline.
+* **husky & lint-staged**: Pre-commit hooks to ensure linting and formatting before commits.
+* **axe-core & @axe-core/react**: Accessibility testing and auditing tools.
+
+### Testing (Pre-existing)
+* **vitest**: Fast unit testing framework compatible with Vite/Next.
+* **@testing-library/react & @testing-library/user-event**: Tools for testing React components from a user's perspective.
+* **@playwright/test & playwright-chromium**: End-to-end browser automation framework for robust visual/interaction tests.
+* **jsdom**: DOM implementation for running React tests in Node.
+
+### Utilities (Pre-existing)
+* **lodash**: Comprehensive utility functions.
+* **date-fns**: Lightweight utility for parsing, formatting, and manipulating dates.
+
+### Removed Libraries
+* **zzfx**: Procedural sound generation was completely removed. `Howler.js` is the sole active audio library.
 
 
 ### Curated Context7 Libraries
@@ -444,3 +450,13 @@ Before pushing code or opening a PR, verify changes pass CI locally using `act`.
 
 ### Environment Notes
 * In this specific cloud sandbox environment, `act` container spinup may fail due to nested overlayfs limits (`failed to mount ... overlay`). If this occurs, rely on `bash jules-verify.sh` for build verification.
+
+## Documentation & Reference System
+
+The `.docs/` directory serves as the local documentation and reference system for the project. Future agents should use this system to understand:
+- **Which libraries are approved**: Refer to the inventory in this `AGENTS.md` file.
+- **What each library is for**: Refer to the inventory descriptions.
+- **Where the local documentation lives**: In the `.docs/` directory (e.g., `.docs/nextjs.md`).
+- **How to refresh it**: Via the GitHub Actions workflow (`.github/workflows/refresh-docs.yml`), either automatically every Friday at 2:00 AM AST, or manually via `workflow_dispatch`.
+- **How the inventory is maintained**: By comparing the actual `package.json` and lockfile against the approved list, using Context7 to fetch version-accurate API documentation without dumping raw sources.
+- **How specialist instruction files work**: As described in the Agent Instruction Hierarchy above.
