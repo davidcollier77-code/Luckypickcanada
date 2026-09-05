@@ -1,3 +1,65 @@
+# LuckyPickCanada Project Instructions
+
+## Repository Architecture & Core Stack
+* **Framework:** Next.js (App Router).
+* **Styling:** Tailwind CSS.
+* **Database:** PostgreSQL (accessed via Neon Serverless driver `@neondatabase/serverless`).
+* **Deployment:** Cloudflare Pages/Workers (via OpenNext `opennextjs-cloudflare`).
+* **Payments:** Stripe Checkout.
+* **Email:** Resend.
+* **Security:** Cloudflare Turnstile.
+* **Audio:** Howler.js (layered audio/SFX using real assets).
+* **Animations:** Framer Motion, HTML5 Canvas.
+
+## Protected Areas
+**DO NOT MODIFY** the following areas unless explicitly instructed by the user:
+* Stripe checkout logic, products, or payment processing endpoints.
+* Database schema, state, or migration scripts.
+* API routes handling sensitive logic (e.g., payments, form submissions, emails, and the Gemini Oracle endpoint).
+* Resend email delivery logic.
+* Authentication and Turnstile configuration.
+* Environment variables or secrets handling.
+* Cloudflare deployment settings (`wrangler.jsonc`, `open-next.config.ts`).
+
+## Development & Coding Conventions
+* **React/Next.js:** Extract complex logic into custom hooks. Use Server Components where appropriate for data fetching. For client-side interactivity, mark components with `"use client"`.
+* **Database Caching:** Do not apply global `fetchOptions: { next: { revalidate: X } }` to the shared `neon()` client instance, as it uses POST requests for all queries and risks caching writes. Use route-level ISR (`export const revalidate = ...`) instead.
+* **On-Demand Revalidation:** Use `revalidatePath` or `revalidateTag` inside Server Actions or API routes when handling user submissions on statically regenerated pages to ensure instant updates.
+* **Audio/Visual Timing:** Synchronize Web Audio directly to HTML5 Canvas visual spawn milestones (using `AudioContext.currentTime`) rather than relying on React state changes or `setTimeout`.
+* **Performance:** Extract full-screen Canvas fill operations outside of particle rendering loops to prevent overdraw. Use `matchMedia('(prefers-reduced-motion: reduce)')` to respect reduced motion settings directly in the animation loop.
+* **Gemini Oracle Integration:** The "Crystal Ball" feature (`functions/api/oracle.js`) calls the Gemini REST API directly (`generativelanguage.googleapis.com`) using `fetch`. Do not install the Gemini Node SDK; maintain the raw REST implementation. Always enforce strict prompt injection sanitization (stripping quotes, brackets, and newlines) before interpolating user input into the prompt.
+
+
+## Playwright CLI Artifact Rule
+Playwright CLI generates temporary snapshots, traces, and debug artifacts inside the `.playwright-cli/` directory.
+* These files are test/debug artifacts and must **NEVER** be committed to version control.
+* Ensure `.playwright-cli/` remains in `.gitignore`.
+* **Mandatory:** Always check `git status` and the final Git diff before submitting changes to ensure no Playwright artifacts (or any other unintended files) are accidentally staged.
+
+## Context7 Reference Libraries
+Use Context7 for current, version-specific library documentation. Do not create bloated library lists; use only these curated references when relevant:
+
+* `jules.google/docs` — Jules workflows, capabilities, and agent behavior.
+* `developers.google.com/jules/api` — Jules API capabilities and API usage.
+* `/github/docs` — GitHub repositories, branches, pull requests, Actions, and workflows.
+* `/vercel/next.js` — Next.js framework, App Router, rendering, routing, and server/client components.
+* `/reactjs/react.dev` — React components, hooks, state, effects, and rendering.
+* `/microsoft/typescript` — TypeScript language and compiler behavior.
+* `/websites/tailwindcss` — Tailwind CSS utilities and responsive styling.
+* `/opennextjs/opennextjs-cloudflare` — OpenNext deployment of Next.js to Cloudflare.
+* `/opennextjs/docs` — OpenNext architecture and deployment concepts.
+* `/cloudflare/workers-sdk` — Wrangler, Workers tooling, and Cloudflare runtime/deployment.
+* `/neondatabase/neon` — Neon/Postgres serverless integration.
+* `/upstash/docs` — Upstash and Redis.
+* `/stripe/stripe-js` — Stripe client-side/payment integration.
+* `/resend/resend-node` — Resend Node email integration.
+* `/microsoft/playwright-cli` — Playwright CLI browser automation, UI testing, DOM/CSS inspection, and debugging.
+* `/testing-library/react-testing-library` — React component testing.
+
+*(Note: The GitHub MCP Server is explicitly prohibited for this workflow; use the native tools or Context7 GitHub Docs reference if needed).*
+
+---
+
 Development Agent Instructions
 
 Core Development Workflow
@@ -7,6 +69,7 @@ For every development task, follow this workflow before submitting any work:
 Inspect → Identify → Understand → Verify → Choose → Research → Implement → Test → Double-check
 
 Do not blindly begin coding based on assumptions or memory.
+Agents must inspect the actual implementation before making assumptions. Agents must test their work and double-check the final result before submitting changes.
 
 ---
 
@@ -131,21 +194,17 @@ Use every relevant connected MCP for its actual purpose.
 
 7. Current Sound Effects Library
 
-ZZFX is currently installed in the project and is the available sound-effects library.
+Howler.js is the preferred library for audio playback and layering in this project, utilizing real audio assets located in the `public/sounds/` directory.
 
-When a task requires sound effects, interactive audio, or reveal sounds, check and use the installed ZZFX library first.
+When a task requires sound effects, interactive audio, or reveal sounds, check the existing audio assets and implement them via Howler.js.
 
 Before implementing sound-related functionality:
 
-- Inspect the installed ZZFX package and its current API/documentation.
-- Understand what ZZFX is designed to do and determine whether it is appropriate for the specific sound requirement.
-- Use ZZFX when it is the relevant solution rather than searching for or assuming another sound-effects library is available.
-- For complex interactions such as the Lucky Card reveal, consider using multiple complementary ZZFX-generated sound effects rather than relying on one generic sound.
+- Inspect the installed Howler package and its current API/documentation.
+- Understand how Howler manages audio sprites, volume, fading, and layering.
 - Synchronize sounds with the actual visual animation/events rather than relying on arbitrary timing delays.
 - Test audio together with the visual animation to verify timing, volume, repetition, and overall user experience.
 - Avoid excessive volume, harsh clipping, repetitive sounds, or audio that becomes irritating during repeated interactions.
-
-This is the current sound-effects source for the project. If the available audio libraries change in the future, inspect the newly available libraries and update this guidance accordingly.
 
 ---
 
@@ -283,7 +342,7 @@ For all tasks involving debugging, troubleshooting, or modifying code, adhere st
 7. **Test the Change:** Run tests and build checks.
 8. **Change Course on Failure:** If evidence disproves the hypothesis, do not continue patching the symptom. Revert the change and form a new hypothesis based on the new evidence.
 9. **Verify User-Facing Behavior:** Verify the actual user-facing behavior. Never treat a successful build alone as proof that a frontend, runtime, deployment, or user-facing problem is fixed.
-10. **Use Browser/UI Verification:** When the task involves frontend behavior, use available Playwright/browser tooling to verify the visual outcome.
+10. **Use Browser/UI Verification:** When the task involves frontend behavior, use available Playwright/browser tooling to verify the visual outcome. Test work thoroughly.
 11. **Check for Regressions:** Ensure related functionality remains intact.
 12. **Perform a Final Self-Review:** Review the diff and ensure it aligns with the hypothesis and task requirements.
 13. **Mandatory Script Verification:** Run `./jules-verify.sh` to validate the build, linting, and types. You must not declare the task complete if this script fails.
