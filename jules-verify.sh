@@ -24,4 +24,3 @@ if [ $? -ne 0 ]; then
 fi
 
 echo -e "
-✅ All verification steps passed. Remember to also verify actual user-facing behavior in the browser if applicable!"
