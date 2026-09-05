@@ -287,3 +287,36 @@ For all tasks involving debugging, troubleshooting, or modifying code, adhere st
 11. **Check for Regressions:** Ensure related functionality remains intact.
 12. **Perform a Final Self-Review:** Review the diff and ensure it aligns with the hypothesis and task requirements.
 13. **Mandatory Script Verification:** Run `./jules-verify.sh` to validate the build, linting, and types. You must not declare the task complete if this script fails.
+
+---
+
+15. Local CI Verification
+
+Before pushing code or opening a PR, verify changes pass CI locally using `act`.
+
+### Prerequisites
+- Docker must be running
+- If `act` is not installed, run: `bash scripts/act/install-act.sh`
+
+### How to Verify
+
+1. Read `.github/workflows/` to find the CI workflow and identify the job ID
+2. Run the verification script:
+   ```bash
+   bash scripts/act/run-act.sh "push -j <JOB_ID>"
+   ```
+   With matrix: `bash scripts/act/run-act.sh "push -j <JOB_ID> --matrix <KEY>:<VALUE>"`
+3. If the run fails, read the log output, fix the code, and re-run
+4. After verification, clean up:
+   ```bash
+   rm -f act_output.log
+   git checkout <any unintended file changes>
+   ```
+
+### Configuration
+- Timeout: `ACT_TIMEOUT=900 bash scripts/act/run-act.sh "..."`  (default: 600s)
+- Poll interval: `ACT_POLL=15 bash scripts/act/run-act.sh "..."`  (default: 10s)
+- Custom image: pass `-P ubuntu-latest=node:20-bookworm` in the arguments for faster pulls
+
+### Environment Notes
+* In this specific cloud sandbox environment, `act` container spinup may fail due to nested overlayfs limits (`failed to mount ... overlay`). If this occurs, rely on `bash jules-verify.sh` for build verification.

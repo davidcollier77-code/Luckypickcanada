@@ -13,3 +13,7 @@ __pycache__/
 venv/
 test-venv/
 server.pid
+
+# act artifacts
+act_output.log
+.secrets
