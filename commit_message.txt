@@ -1,0 +1,3 @@
+fix: Validate OpenNext workflow to use pnpm
+
+Replaces "npm ci" with the repository's established "pnpm install --frozen-lockfile" workflow in both GitHub Actions to resolve peer dependency issues and respect pnpm-lock.yaml. Also replaces npx usage with pnpm exec.
