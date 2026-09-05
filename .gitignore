@@ -17,3 +17,6 @@ server.pid
 # act artifacts
 act_output.log
 .secrets
+
+# Playwright CLI artifacts
+.playwright-cli/
