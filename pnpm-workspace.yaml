@@ -1,0 +1,10 @@
+allowBuilds:
+  '@sentry/cli': set this to true or false
+  esbuild: set this to true or false
+  playwright-chromium: set this to true or false
+  workerd: set this to true or false
+minimumReleaseAgeExclude:
+  - '@playwright/test@1.63.0'
+  - lint-staged@17.5.0
+  - playwright-core@1.63.0
+  - playwright@1.63.0
