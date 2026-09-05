@@ -13,16 +13,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm and Node.js
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: true
+
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'pnpm'
 
-      - name: Install dependencies (npm ci)
-        run: npm ci
-
-      - name: Build (npm run build)
-        run: npm run build
+      - name: Build (pnpm run build)
+        run: pnpm run build
 
       - name: Verify .open-next/worker.js exists
         run: |
