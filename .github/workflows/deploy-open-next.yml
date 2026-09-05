@@ -17,8 +17,11 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install dependencies (npm ci)
-        run: npm ci
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Clear cache directories
         run: rm -rf .next/cache .open-next
@@ -26,10 +29,10 @@ jobs:
       - name: Build Next.js app
         env:
           GITHUB_SHA: ${{ github.sha }}
-        run: NODE_ENV=production npm run build
+        run: NODE_ENV=production pnpm run build
 
       - name: Build OpenNext for Cloudflare
-        run: npx opennextjs-cloudflare build
+        run: pnpm exec opennextjs-cloudflare build
 
       - name: Verify .open-next/worker.js exists
         run: |
@@ -56,4 +59,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           WRANGLER_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npx wrangler deploy --config ./wrangler.jsonc
+        run: pnpm exec wrangler deploy --config ./wrangler.jsonc
