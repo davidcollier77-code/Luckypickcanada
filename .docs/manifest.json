@@ -1,8 +1,12 @@
 {
-  "lastUpdated": "2026-09-06T14:10:48.669Z",
+  "lastUpdated": "2026-09-06T19:22:30.888Z",
   "groups": {
     "creation": [
       "/github/docs",
+      "jules.google/docs",
+      "developers.google.com/jules/api",
+      "/google-gemini/gemini-cli",
+      "/websites/ai_google_dev_gemini-api",
       "/vercel/next.js",
       "/reactjs/react.dev",
       "/microsoft/typescript",
@@ -16,6 +20,10 @@
     ],
     "troubleshooting": [
       "/github/docs",
+      "jules.google/docs",
+      "developers.google.com/jules/api",
+      "/google-gemini/gemini-cli",
+      "/websites/ai_google_dev_gemini-api",
       "/vercel/next.js",
       "/reactjs/react.dev",
       "/microsoft/typescript",
@@ -39,10 +47,18 @@
       "/emilkowalski/sonner",
       "/goldfire/howler.js",
       "/websites/developer_chrome",
-      "/websites/developer_apple_webkit"
+      "/websites/developer_apple_webkit",
+      "jules.google/docs",
+      "developers.google.com/jules/api",
+      "/google-gemini/gemini-cli",
+      "/websites/ai_google_dev_gemini-api"
     ],
     "testing": [
       "/github/docs",
+      "jules.google/docs",
+      "developers.google.com/jules/api",
+      "/google-gemini/gemini-cli",
+      "/websites/ai_google_dev_gemini-api",
       "/vercel/next.js",
       "/reactjs/react.dev",
       "/microsoft/typescript",
@@ -67,15 +83,27 @@
       "/upstash/docs",
       "/github/docs",
       "/websites/developer_chrome",
-      "/websites/developer_apple_webkit"
+      "/websites/developer_apple_webkit",
+      "jules.google/docs",
+      "developers.google.com/jules/api",
+      "/google-gemini/gemini-cli",
+      "/websites/ai_google_dev_gemini-api"
     ],
     "audio": [
       "/goldfire/howler.js",
       "/websites/developer_chrome",
-      "/websites/developer_apple_webkit"
+      "/websites/developer_apple_webkit",
+      "jules.google/docs",
+      "developers.google.com/jules/api",
+      "/google-gemini/gemini-cli",
+      "/websites/ai_google_dev_gemini-api"
     ],
     "deep-dive": [
       "/github/docs",
+      "jules.google/docs",
+      "developers.google.com/jules/api",
+      "/google-gemini/gemini-cli",
+      "/websites/ai_google_dev_gemini-api",
       "/vercel/next.js",
       "/reactjs/react.dev",
       "/microsoft/typescript",
@@ -86,8 +114,6 @@
       "/upstash/docs",
       "/stripe/stripe-js",
       "/resend/resend-node",
-      "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api",
       "/getsentry/sentry-docs",
       "/bvaughn/react-error-boundary",
       "/microsoft/playwright",
@@ -103,11 +129,19 @@
       "/coreyhaines31/marketingskills",
       "/github/docs",
       "/websites/developer_chrome",
-      "/websites/developer_apple_webkit"
+      "/websites/developer_apple_webkit",
+      "jules.google/docs",
+      "developers.google.com/jules/api",
+      "/google-gemini/gemini-cli",
+      "/websites/ai_google_dev_gemini-api"
     ]
   },
   "inventory": [
     "/github/docs",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
+    "/google-gemini/gemini-cli",
+    "/websites/ai_google_dev_gemini-api",
     "/vercel/next.js",
     "/reactjs/react.dev",
     "/microsoft/typescript",
@@ -135,8 +169,6 @@
     "/cure53/dompurify",
     "/stripe/stripe-js",
     "/resend/resend-node",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api",
     "/coreyhaines31/marketingskills"
   ]
 }
