@@ -1,19 +1,23 @@
 # Security Specialist
 
 For all security tasks, consult the following approved Context7 libraries:
-- /vercel/next.js
-- /reactjs/react.dev
-- /microsoft/typescript
-- /colinhacks/zod
-- /cure53/dompurify
-- /getsentry/sentry-docs
-- /stripe/stripe-js
-- /resend/resend-node
-- /neondatabase/neon
-- /upstash/docs
-- /github/docs
-- /websites/developer_chrome
-- /websites/developer_apple_webkit (Deferred in active routing)
+- Next.js "/vercel/next.js"
+- React "/reactjs/react.dev"
+- TypeScript "/microsoft/typescript"
+- Zod "/colinhacks/zod"
+- DOMPurify "/cure53/dompurify"
+- Sentry Docs "/getsentry/sentry-docs"
+- Stripe.js "/stripe/stripe-js"
+- Resend "/resend/resend-node"
+- Neon "/neondatabase/neon"
+- Upstash Docs "/upstash/docs"
+- GitHub Docs "/github/docs"
+- Chrome Developer "/websites/developer_chrome"
+- Apple WebKit Developer "/websites/developer_apple_webkit"
+- Jules Documentation "jules.google/docs"
+- Jules API "developers.google.com/jules/api"
+- Gemini CLI "/google-gemini/gemini-cli"
+- Gemini API "/websites/ai_google_dev_gemini-api"
 
 Local documentation snapshots are available at `.docs/security/`.
 

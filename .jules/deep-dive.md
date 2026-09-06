@@ -1,25 +1,27 @@
 # Deep Dive / Investigation Specialist
 
 For all investigation tasks, consult the following approved Context7 libraries:
-- /github/docs
-- /vercel/next.js
-- /reactjs/react.dev
-- /microsoft/typescript
-- /opennextjs/opennextjs-cloudflare
-- /opennextjs/docs
-- /cloudflare/workers-sdk
-- /neondatabase/neon
-- /upstash/docs
-- /stripe/stripe-js
-- /resend/resend-node
-- /google-gemini/gemini-cli
-- /websites/ai_google_dev_gemini-api
-- /getsentry/sentry-docs
-- /bvaughn/react-error-boundary
-- /microsoft/playwright
-- /vitest-dev/vitest
-- /websites/developer_chrome
-- /websites/developer_apple_webkit (Deferred in active routing)
+- GitHub Docs "/github/docs"
+- Jules Documentation "jules.google/docs"
+- Jules API "developers.google.com/jules/api"
+- Gemini CLI "/google-gemini/gemini-cli"
+- Gemini API "/websites/ai_google_dev_gemini-api"
+- Next.js "/vercel/next.js"
+- React "/reactjs/react.dev"
+- TypeScript "/microsoft/typescript"
+- OpenNext Cloudflare "/opennextjs/opennextjs-cloudflare"
+- OpenNext Docs "/opennextjs/docs"
+- Cloudflare Workers SDK "/cloudflare/workers-sdk"
+- Neon "/neondatabase/neon"
+- Upstash Docs "/upstash/docs"
+- Stripe.js "/stripe/stripe-js"
+- Resend "/resend/resend-node"
+- Sentry Docs "/getsentry/sentry-docs"
+- React Error Boundary "/bvaughn/react-error-boundary"
+- Playwright "/microsoft/playwright"
+- Vitest "/vitest-dev/vitest"
+- Chrome Developer "/websites/developer_chrome"
+- Apple WebKit Developer "/websites/developer_apple_webkit"
 
 Local documentation snapshots are available at `.docs/deep-dive/`.
 

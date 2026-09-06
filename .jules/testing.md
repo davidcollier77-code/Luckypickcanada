@@ -1,17 +1,21 @@
 # Testing Specialist
 
 For all testing tasks, consult the following approved Context7 libraries:
-- /github/docs
-- /vercel/next.js
-- /reactjs/react.dev
-- /microsoft/typescript
-- /testing-library/react-testing-library
-- /microsoft/playwright
-- /vitest-dev/vitest
-- /colinhacks/zod
-- /getsentry/sentry-docs
-- /websites/developer_chrome
-- /websites/developer_apple_webkit (Deferred in active routing)
+- GitHub Docs "/github/docs"
+- Jules Documentation "jules.google/docs"
+- Jules API "developers.google.com/jules/api"
+- Gemini CLI "/google-gemini/gemini-cli"
+- Gemini API "/websites/ai_google_dev_gemini-api"
+- Next.js "/vercel/next.js"
+- React "/reactjs/react.dev"
+- TypeScript "/microsoft/typescript"
+- React Testing Library "/testing-library/react-testing-library"
+- Playwright "/microsoft/playwright"
+- Vitest "/vitest-dev/vitest"
+- Zod "/colinhacks/zod"
+- Sentry Docs "/getsentry/sentry-docs"
+- Chrome Developer "/websites/developer_chrome"
+- Apple WebKit Developer "/websites/developer_apple_webkit"
 
 Local documentation snapshots are available at `.docs/testing/`.
 
