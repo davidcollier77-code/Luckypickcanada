@@ -1,0 +1,79 @@
+name: Refresh Documentation
+
+on:
+  schedule:
+    # Trigger at 05:00 UTC (02:00 ADT) and 06:00 UTC (02:00 AST) on Fridays
+    - cron: '0 5 * * 5'
+    - cron: '0 6 * * 5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check Timezone (Atlantic Time)
+        id: tzcheck
+        run: |
+          # Get current hour in America/Halifax
+          CURRENT_HOUR=$(TZ=America/Halifax date +"%H")
+          CURRENT_DAY=$(TZ=America/Halifax date +"%u") # 1-7, 5 is Friday
+
+          # We want to run exactly at 02:XX AM Atlantic Time on Friday
+          if [ "$CURRENT_HOUR" = "02" ] && [ "$CURRENT_DAY" = "5" ]; then
+            echo "Time matches 02:00 Atlantic Time. Proceeding with refresh."
+            echo "proceed=true" >> $GITHUB_OUTPUT
+          else
+            echo "Current Atlantic Time is $CURRENT_HOUR:XX. This cron trigger does not align with 02:00 AT. Skipping."
+            echo "proceed=false" >> $GITHUB_OUTPUT
+          fi
+        # Allow workflow_dispatch to bypass the time check
+        if: github.event_name == 'schedule'
+
+      - name: Install Dependencies
+        if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
+        run: npm ci
+
+      - name: Run Documentation Refresh
+        if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
+        run: |
+          node scripts/refresh-docs.js
+
+      - name: Check for Changes
+        id: changes
+        if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
+        run: |
+          git add .docs/
+          if git diff --staged --quiet; then
+            echo "No changes detected in documentation."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected in documentation."
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: update Context7 documentation snapshots"
+          title: "docs: weekly Context7 documentation refresh"
+          body: |
+            Automated documentation refresh from Context7 sources.
+
+            This PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved 31-library inventory.
+          branch: auto/docs-refresh
+          delete-branch: true
+          base: main
