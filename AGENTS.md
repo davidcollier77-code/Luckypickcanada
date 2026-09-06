@@ -1,3 +1,17 @@
+
+## Routing and Task Groups
+
+The approved architecture contains exactly these eight task groups. When starting a task, identify the task type, route to the corresponding specialist in `.jules/`, use the approved Context7 libraries, and consult the appropriate `.docs/` snapshots.
+
+1. **Creation** (`.jules/creation.md`)
+2. **Troubleshooting** (`.jules/troubleshooting.md`)
+3. **Polishing** (`.jules/polishing.md`)
+4. **Testing** (`.jules/testing.md`)
+5. **Security** (`.jules/security.md`)
+6. **Audio** (`.jules/audio.md`)
+7. **Deep Dive / Investigation** (`.jules/deep-dive.md`)
+8. **SEO** (`.jules/seo.md`)
+
 # LuckyPickCanada Project Instructions
 
 ## Repository Architecture & Core Stack
