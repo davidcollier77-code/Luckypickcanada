@@ -1,0 +1,128 @@
+{
+  "inventory": [
+    {
+      "name": "GitHub",
+      "id": "/github/docs"
+    },
+    {
+      "name": "Next.js",
+      "id": "/vercel/next.js"
+    },
+    {
+      "name": "React",
+      "id": "/reactjs/react.dev"
+    },
+    {
+      "name": "TypeScript",
+      "id": "/microsoft/typescript"
+    },
+    {
+      "name": "Tailwind CSS",
+      "id": "/websites/tailwindcss"
+    },
+    {
+      "name": "OpenNext Cloudflare",
+      "id": "/opennextjs/opennextjs-cloudflare"
+    },
+    {
+      "name": "OpenNext Docs",
+      "id": "/opennextjs/docs"
+    },
+    {
+      "name": "Cloudflare Workers",
+      "id": "/cloudflare/workers-sdk"
+    },
+    {
+      "name": "Neon",
+      "id": "/neondatabase/neon"
+    },
+    {
+      "name": "Upstash Redis",
+      "id": "/upstash/docs"
+    },
+    {
+      "name": "Stripe",
+      "id": "/stripe/stripe-js"
+    },
+    {
+      "name": "Resend",
+      "id": "/resend/resend-node"
+    },
+    {
+      "name": "React Testing Library",
+      "id": "/testing-library/react-testing-library"
+    },
+    {
+      "name": "Playwright",
+      "id": "/microsoft/playwright"
+    },
+    {
+      "name": "Vitest",
+      "id": "/vitest-dev/vitest"
+    },
+    {
+      "name": "Zod",
+      "id": "/colinhacks/zod"
+    },
+    {
+      "name": "GSAP",
+      "id": "/llmstxt/gsap_llms_txt"
+    },
+    {
+      "name": "Gemini CLI/Agent Tooling",
+      "id": "/google-gemini/gemini-cli"
+    },
+    {
+      "name": "Gemini API",
+      "id": "/websites/ai_google_dev_gemini-api"
+    },
+    {
+      "name": "Framer Motion",
+      "id": "/websites/motion_dev"
+    },
+    {
+      "name": "Howler.js",
+      "id": "/goldfire/howler.js"
+    },
+    {
+      "name": "Lucide React",
+      "id": "/lucide-icons/lucide"
+    },
+    {
+      "name": "React Hook Form",
+      "id": "/react-hook-form/documentation"
+    },
+    {
+      "name": "@hookform/resolvers",
+      "id": "/react-hook-form/resolvers"
+    },
+    {
+      "name": "Sentry Next.js",
+      "id": "/getsentry/sentry-docs"
+    },
+    {
+      "name": "DOMPurify",
+      "id": "/cure53/dompurify"
+    },
+    {
+      "name": "Sonner",
+      "id": "/emilkowalski/sonner"
+    },
+    {
+      "name": "React Error Boundary",
+      "id": "/bvaughn/react-error-boundary"
+    },
+    {
+      "name": "Safari / WebKit",
+      "id": "/websites/developer_apple_webkit"
+    },
+    {
+      "name": "Chrome for Developers",
+      "id": "/websites/developer_chrome"
+    },
+    {
+      "name": "MarketingSkills",
+      "id": "/coreyhaines31/marketingskills"
+    }
+  ]
+}

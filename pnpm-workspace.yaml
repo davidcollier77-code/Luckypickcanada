@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - lint-staged@17.5.0

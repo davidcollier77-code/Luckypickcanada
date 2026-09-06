@@ -188,30 +188,39 @@ The following tools and libraries are available for use in this project:
 
 ### Curated Context7 Libraries
 
-When interacting with Context7, you can use these verified library references for specific technologies:
+When interacting with Context7, you must use these verified library references. Agents must always consult the `.docs/manifest.json` file for the authoritative Context7 ID mapping when investigating code.
 
-* **Jules**: `jules.google/docs` - Jules workflows, capabilities, and agent behavior.
-* **Jules API**: `developers.google.com/jules/api` - Jules API capabilities and API usage.
-* **GitHub**: `/github/docs` - GitHub repositories, branches, pull requests, Actions, and workflows.
-* **Next.js**: `/vercel/next.js` - Next.js framework, App Router, rendering, routing, and server/client components.
-* **React**: `/reactjs/react.dev` - React components, hooks, state, effects, and rendering.
-* **TypeScript**: `/microsoft/typescript` - TypeScript language and compiler behavior.
-* **Tailwind CSS**: `/websites/tailwindcss` - Tailwind CSS utilities and responsive styling.
-* **OpenNext Cloudflare**: `/opennextjs/opennextjs-cloudflare` - OpenNext deployment of Next.js to Cloudflare.
-* **OpenNext Docs**: `/opennextjs/docs` - OpenNext architecture and deployment concepts.
-* **Cloudflare Workers**: `/cloudflare/workers-sdk` - Wrangler, Workers tooling, and Cloudflare runtime/deployment.
-* **Neon**: `/neondatabase/neon` - Neon/Postgres serverless integration.
-* **Upstash**: `/upstash/docs` - Upstash and Redis.
-* **Stripe**: `/stripe/stripe-js` - Stripe client-side/payment integration.
-* **Resend**: `/resend/resend-node` - Resend Node email integration.
-* **React Testing Library**: `/testing-library/react-testing-library` - React component testing.
-* **Playwright**: `/microsoft/playwright-cli` - End-to-end browser testing.
-* **Gemini CLI/Agent Tooling**: `/google-gemini/gemini-cli` - Useful for understanding Gemini AI workflows, agent capabilities, and CLI integrations.
-* **Gemini API**: `/websites/ai_google_dev_gemini-api` - Useful for implementing Google's generative AI models for text, multimodal, and streaming features.
-* **Zod**: `/colinhacks/zod` - Schema validation and type inference.
-* **GSAP**: `/llmstxt/gsap_llms_txt` - Professional-grade JavaScript animation library.
-* **Vitest**: `/vitest-dev/vitest` - Next-generation testing framework powered by Vite.
-
+* **GitHub**: `/github/docs`
+* **Next.js**: `/vercel/next.js`
+* **React**: `/reactjs/react.dev`
+* **TypeScript**: `/microsoft/typescript`
+* **Tailwind CSS**: `/websites/tailwindcss`
+* **OpenNext Cloudflare**: `/opennextjs/opennextjs-cloudflare`
+* **OpenNext Docs**: `/opennextjs/docs`
+* **Cloudflare Workers**: `/cloudflare/workers-sdk`
+* **Neon**: `/neondatabase/neon`
+* **Upstash Redis**: `/upstash/docs`
+* **Stripe**: `/stripe/stripe-js`
+* **Resend**: `/resend/resend-node`
+* **React Testing Library**: `/testing-library/react-testing-library`
+* **Playwright**: `/microsoft/playwright`
+* **Vitest**: `/vitest-dev/vitest`
+* **Zod**: `/colinhacks/zod`
+* **GSAP**: `/llmstxt/gsap_llms_txt`
+* **Gemini CLI/Agent Tooling**: `/google-gemini/gemini-cli`
+* **Gemini API**: `/websites/ai_google_dev_gemini-api`
+* **Framer Motion**: `/websites/motion_dev`
+* **Howler.js**: `/goldfire/howler.js`
+* **Lucide React**: `/lucide-icons/lucide`
+* **React Hook Form**: `/react-hook-form/documentation`
+* **@hookform/resolvers**: `/react-hook-form/resolvers`
+* **Sentry Next.js**: `/getsentry/sentry-docs`
+* **DOMPurify**: `/cure53/dompurify`
+* **Sonner**: `/emilkowalski/sonner`
+* **React Error Boundary**: `/bvaughn/react-error-boundary`
+* **Safari / WebKit**: `/websites/developer_apple_webkit`
+* **Chrome for Developers**: `/websites/developer_chrome`
+* **MarketingSkills**: `/coreyhaines31/marketingskills`
 *(Note: The GitHub MCP Server is explicitly prohibited for this workflow; use the native tools or Context7 GitHub Docs reference if needed).*
 
 5. Context7 Must Be Meaningful

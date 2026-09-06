@@ -1,0 +1,56 @@
+name: Refresh Documentation Inventory
+
+on:
+  schedule:
+    - cron: '0 6 * * 5' # Friday at 2:00 AM AST
+  workflow_dispatch:
+
+jobs:
+  refresh-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check for dependency drift
+        id: check_drift
+        run: |
+          echo "DRIFT_DETECTED=true" >> $GITHUB_ENV
+
+      - name: Create Issue for Jules
+        if: env.DRIFT_DETECTED == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_TITLE="Documentation Refresh: Context7 Inventory Review"
+
+          # Check for existing open issue to prevent duplicates
+          EXISTING_ISSUE=$(gh issue list --search "in:title \"$ISSUE_TITLE\" state:open" --json number --jq '.[0].number')
+
+          if [ -z "$EXISTING_ISSUE" ] || [ "$EXISTING_ISSUE" == "null" ]; then
+            gh issue create \
+              --title "$ISSUE_TITLE" \
+              --body "### Scheduled Documentation Refresh
+
+              Jules, please perform the weekly documentation review.
+
+              **Instructions:**
+              1. Inspect the current dependency/library inventory in \`package.json\`.
+              2. Compare it against the approved inventory in \`.docs/manifest.json\`.
+              3. Use Context7 to retrieve updated documentation where needed.
+              4. Update \`.docs/manifest.json\` if any IDs or versions have changed.
+              5. Synchronize the appropriate agent instructions in \`AGENTS.md\` and \`.jules/\` if new libraries were added.
+              6. Verify the resulting changes.
+
+              Do not pretend to perform Context7 research if Context7 is not actually available. Use the real MCP."
+            echo "Issue created."
+          else
+            echo "An open issue already exists (#$EXISTING_ISSUE). Skipping creation to prevent duplicates."
+          fi

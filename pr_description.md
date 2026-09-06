@@ -1,14 +1,10 @@
-🎨 Palette: [UX improvement]
+docs: establish authoritative library inventory and context7 workflow
 
 **What:**
-Integrated procedural ZzFX audio synthesizers for the Lucky Meter, creating layered, synchronized sound effects that perfectly match the visual timeline. The updates include dynamic, sequenced audio logic utilizing the Web Audio API for exact impact alignment alongside enhanced visual flashes.
+Created `.docs/manifest.json` outlining the 31 exact approved documentation dependencies for LuckyPickCanada. Updated `AGENTS.md` to reference this manifest. Implemented `.github/workflows/refresh-docs.yml` to routinely evaluate drift and create Github Issues requiring contextual updates. Cleaned up typo'd `.jules/sentinel.md.` by merging its historical logs.
 
 **Why:**
-The previous implementation relied on statically-imported audio assets and lacked distinct audio/visual sync checkpoints, resulting in a generic "beep" lacking a premium feel. Implementing custom synthesized sequences offers dynamic, perfectly timed audio while reducing asset load.
+To ensure agents strictly consult verified, approved libraries through Context7 instead of hallucinating packages or versions, and to establish a robust framework for managing documentation drift.
 
-**Before/After:**
-Before: The meter played static sound files at arbitrary intervals lacking cohesion.
-After: The meter features a dynamic hum, a tension-building rhythmic tick, and dramatic, tier-specific synthetic impacts synced strictly to `AudioContext.currentTime` with synchronized on-canvas flash effects.
-
-**Accessibility:**
-Added visual flashes and pulse animations during critical moments, ensuring both audio and visual feedback are simultaneously present.
+**Impact:**
+Increases repository contextual safety and automation. No core applications, files, logic, database, or CSS have been altered.
