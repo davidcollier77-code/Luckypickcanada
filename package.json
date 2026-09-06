@@ -33,6 +33,14 @@
   "overrides": {
     "postcss": "^8.5.10"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@sentry/cli",
+      "esbuild",
+      "playwright-chromium",
+      "workerd"
+    ]
+  },
   "devDependencies": {
     "@axe-core/react": "^4.13.0",
     "@hookform/resolvers": "^5.9.1",
@@ -64,7 +72,7 @@
     "husky": "^9.1.7",
     "jsdom": "^30.0.1",
     "lint-staged": "^17.5.0",
-    "lodash": "^4.18.1",
+    "lodash": "^4.17.21",
     "playwright": "^1.62.1",
     "playwright-chromium": "^1.62.1",
     "prettier": "^3.9.6",

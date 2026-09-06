@@ -18,7 +18,7 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies (pnpm install)
-        run: npm install -g pnpm && pnpm install --frozen-lockfile
+        run: npm install -g pnpm@10.30.3 && pnpm install --frozen-lockfile
 
       - name: Clear cache directories
         run: rm -rf .next/cache .open-next
@@ -38,7 +38,7 @@ jobs:
           else
             echo "WORKER MISSING";
             ls -la .open-next || true;
-            exit 1;
+            /bin/false;
           fi
 
       - name: Verify .open-next/assets directory exists
@@ -48,7 +48,7 @@ jobs:
           else
             echo "ASSETS DIR MISSING";
             ls -la .open-next || true;
-            exit 1;
+            /bin/false;
           fi
 
       - name: Publish to Cloudflare (wrangler)
