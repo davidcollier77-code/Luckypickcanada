@@ -569,7 +569,7 @@ export default function LuckyCardReveal() {
       }
 
       ctx.fillStyle = auraGrad;
-      ctx.fillRect(0, 0, w, h);
+      ctx.fillRect(cx - auraRadius, cy - auraRadius, auraRadius * 2, auraRadius * 2);
       ctx.restore();
     }
 
