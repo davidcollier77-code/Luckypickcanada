@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -180,8 +180,10 @@ async function main() {
          try {
              // In a real environment with credentials, this would fetch actual docs
              // We use "npx --yes ctx7 query"
-             const cmd = `npx --yes ctx7 query "${lib}" "full documentation"`;
-             execSync(cmd + ` > ${docPath}`);
+             const output = execFileSync('npx', ['--yes', 'ctx7', 'query', lib, 'full documentation'], {
+                 encoding: 'utf8'
+             });
+             fs.writeFileSync(docPath, output);
          } catch(e) {
              console.error(`Failed to fetch docs for ${lib}:`, e.message);
              process.exit(1); // Fail clearly on retrieval failure
