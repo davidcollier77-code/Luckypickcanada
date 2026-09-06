@@ -12,3 +12,6 @@
 ## 2025-03-02 - Optimize Overlapping Full-Screen Canvas Fills
 **Learning:** Calling `ctx.fillRect(0, 0, canvas.width, canvas.height)` inside a rendering loop for multiple independent particles triggers massive GPU/CPU overdraw (filling the entire screen multiple times per frame). This creates severe performance bottlenecks when multiple particles with global flash effects are active simultaneously.
 **Action:** Extract full-screen operations outside of particle rendering loops. Calculate the maximum effect intensity (e.g., maximum flash) across all active particles first, and perform a single `ctx.fillRect()` per frame before drawing the individual paths.
+## 2026-09-04 - Optimize Bounding Box for Radial Gradients
+**Learning:** Drawing a localized radial gradient by filling the entire canvas (`ctx.fillRect(0, 0, w, h)`) forces the GPU to process every pixel on the screen, even those far outside the gradient radius which will just end up fully transparent.
+**Action:** Constrain the `fillRect` operation strictly to the bounding box of the radial gradient (`ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2)`). This dramatically reduces fill-rate overdraw and improves FPS for canvas animations.
