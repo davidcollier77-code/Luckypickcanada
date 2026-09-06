@@ -161,11 +161,16 @@ async function main() {
   console.log(`Verified ${inventory.size} unique libraries across ${Object.keys(LIBRARIES).length} groups.`);
 
   // Create manifest for verification
-  fs.writeFileSync(path.join(DOCS_DIR, 'manifest.json'), JSON.stringify({
-    lastUpdated: new Date().toISOString(),
-    groups: LIBRARIES,
-    inventory: Array.from(inventory)
-  }, null, 2));
+  try {
+    fs.writeFileSync(path.join(DOCS_DIR, 'manifest.json'), JSON.stringify({
+      lastUpdated: new Date().toISOString(),
+      groups: LIBRARIES,
+      inventory: Array.from(inventory)
+    }, null, 2));
+  } catch (e) {
+    console.error('Failed to write manifest.json:', e.message);
+    process.exit(1);
+  }
 
   console.log('Documentation refresh complete.');
 }

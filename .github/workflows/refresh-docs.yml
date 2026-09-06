@@ -41,6 +41,10 @@ jobs:
         # Allow workflow_dispatch to bypass the time check
         if: github.event_name == 'schedule'
 
+      - name: Install Dependencies
+        if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
+        run: npm ci
+
       - name: Run Documentation Refresh
         if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
         run: |
