@@ -29,6 +29,9 @@ jobs:
       - name: Build (pnpm run build)
         run: pnpm run build
 
+      - name: Build OpenNext for Cloudflare
+        run: pnpm exec opennextjs-cloudflare build
+
       - name: Verify .open-next/worker.js exists
         run: |
           if [ -f .open-next/worker.js ]; then
