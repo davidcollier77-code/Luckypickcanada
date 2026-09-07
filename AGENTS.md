@@ -392,6 +392,15 @@ Verify:
 - Tests/builds/checks pass where applicable.
 - The final user experience matches the requested result.
 
+**Mandatory Verification of Document/Library Usage**
+As part of the final verification and submission, you must explicitly document your resource usage. You are required to:
+- Consult the appropriate approved document/library resources when relevant.
+- Identify the specific document/library/resource actually consulted.
+- Identify the existing task group that resource belongs to.
+- Verify and report which approved resource(s) informed the work.
+- Never claim a resource was used unless it was actually consulted.
+Make this verification part of the required task workflow/final verification, not optional narrative.
+
 If the task involves UI, animation, audio, or interaction, inspect the finished result rather than relying solely on the source code or build output.
 
 Fix problems discovered during this final verification before submitting.

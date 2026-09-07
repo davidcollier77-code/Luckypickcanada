@@ -140,6 +140,34 @@ const LIBRARIES = {
   ]
 };
 
+const getHalifaxTimestamp = () => {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Halifax',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  // Format the base date/time
+  const parts = formatter.formatToParts(new Date());
+  const d = {};
+  parts.forEach(({ type, value }) => { d[type] = value; });
+
+  // Intl formatToParts doesn't always give ISO offsets perfectly across all Node versions,
+  // so we'll determine the offset mathematically to ensure it's strict ISO 8601 (-04:00 or -03:00)
+  const dateInHalifax = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Halifax' }));
+  const dateInUTC = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
+
+  const diffHours = Math.round((dateInHalifax - dateInUTC) / 3600000);
+  const offsetStr = (diffHours >= 0 ? '+' : '-') + Math.abs(diffHours).toString().padStart(2, '0') + ':00';
+
+  return `${d.year}-${d.month}-${d.day}T${d.hour}:${d.minute}:${d.second}${offsetStr}`;
+};
+
 async function main() {
   console.log('Starting documentation refresh...');
 
@@ -158,7 +186,7 @@ async function main() {
     ctx7Available = true;
   } catch (e) {
     console.error('ctx7 CLI not available locally. Failing.');
-    process.exit(1); // Fail non-zero
+    throw new Error('ctx7 CLI not available locally');
   }
 
 
@@ -186,7 +214,7 @@ async function main() {
              fs.writeFileSync(docPath, output);
          } catch(e) {
              console.error(`Failed to fetch docs for ${lib}:`, e.message);
-             process.exit(1); // Fail clearly on retrieval failure
+             throw e; // Fail clearly on retrieval failure
          }
       }
 
@@ -194,6 +222,8 @@ async function main() {
   }
 
   console.log(`Verified ${inventory.size} unique libraries across ${Object.keys(LIBRARIES).length} groups.`);
+
+  const timestamp = getHalifaxTimestamp();
 
   // Create manifest for verification
   try {
@@ -204,10 +234,18 @@ async function main() {
     }, null, 2));
   } catch (e) {
     console.error('Failed to write manifest.json:', e.message);
+    console.log(`FAILED — [${timestamp}] — VERIFICATION FAILED`);
     process.exit(1);
   }
 
+  console.log(`SUCCESS — [${timestamp}] — VERIFIED`);
   console.log('Documentation refresh complete.');
 }
 
-main().catch(console.error);
+main().catch((e) => {
+  const timestamp = getHalifaxTimestamp();
+
+  console.error(e);
+  console.log(`FAILED — [${timestamp}] — VERIFICATION FAILED`);
+  process.exit(1);
+});
