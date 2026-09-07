@@ -6,7 +6,7 @@
 The following rules form the core governance system for all agents operating in this repository. They are persistent, mandatory, and must be followed for all future tasks.
 
 ### 1. Mandatory AI Collaboration
-For every task, both Jules and Gemini are **mandatory**. They must genuinely participate in the work, not merely serve as documentation references, and their use is not limited to Deep Dive / Investigation. Their actual capabilities must be used where appropriate, and the final report must explicitly detail what each contributed. Never claim an AI or resource was used unless it was genuinely consulted.
+Jules + Gemini are mandatory collaborators for EVERY repository task. This requirement applies regardless of task type, task group, difficulty, whether the task is routine or exceptional, whether it is classified as Miscellaneous / Cross-Cutting, or whether additional documentation or research is required. Task-group routing does not replace the Jules + Gemini requirement. There is no normal repository task for which Jules may simply decide not to use the required Jules + Gemini collaboration. They must genuinely participate in the work, and the final report must explicitly detail what each contributed. Never claim an AI or resource was used unless it was genuinely consulted.
 
 ### 2. Task Group Routing
 Before making any changes, determine which of the existing 8 task groups genuinely applies. You must not create a ninth task group. The groups are:
@@ -23,8 +23,10 @@ Preserve this existing group structure and its resource assignments.
 
 ### 3. Miscellaneous / Cross-Cutting Fallback
 If, and ONLY if, a task genuinely does not fit any of the 8 existing groups, use the **Miscellaneous / Cross-Cutting** fallback.
-- **This is a fallback category, NOT a ninth task group and NOT a general catch-all.**
-- Do not use this to bypass normal task-group routing. If it fits an existing group, use it.
+- **This is a fallback mechanism only. It is NOT a ninth task group and NOT a general convenience category.**
+- Do not use this to bypass normal task-group routing, required resources, security controls, protected systems, documentation requirements, or verification.
+- **Jules + Gemini remain mandatory when using this fallback.**
+- This fallback does not grant permission to use arbitrary tools, libraries, dependencies, MCP services, or external capabilities.
 - The ONLY approved resources for this fallback are:
   - Jules Documentation ("jules.google/docs")
   - Jules API ("developers.google.com/jules/api")
@@ -53,7 +55,30 @@ Do not introduce a new package, library, service, or dependency unless there is 
 - Update the relevant documentation so future agents know it exists and why it was approved.
 - Do not create a new task group for it.
 
-*Note: Context7 provides documentation/library intelligence. It does NOT automatically authorize installing a library.*
+### 5.1 Context7 — Last Resort Only
+Context7 is an approved research resource, but it is a **LAST RESORT**.
+It may be used only when the other approved and available resources have genuinely been exhausted and a specific information or capability gap remains.
+
+Before relying on Context7, determine:
+- exactly what information or capability is missing;
+- what approved resources were already checked;
+- why those resources were insufficient;
+- why Context7 is actually necessary.
+
+If Context7 is genuinely required, the decision must become part of the persistent project system when the resulting knowledge, capability, routing, or procedure is reusable. You must explain:
+- what Context7 contributed;
+- why it was necessary;
+- which existing task group is appropriate;
+- why that group was chosen;
+- whether `.jules` and/or `.docs` should be updated so the knowledge becomes persistent.
+
+Context7 use does NOT:
+- authorize a new dependency;
+- authorize installation of a library;
+- authorize adoption of an external technology;
+- override protected-system rules;
+- override task routing;
+- authorize MCP.
 
 ### 6. MCP Usage (Absolute Last Resort)
 MCPs are completely separate from the Miscellaneous fallback and are the absolute last resort.
@@ -85,11 +110,35 @@ Do not modify protected infrastructure unless the task explicitly requires it. P
 - Database schema, state, and migrations
 - Sensitive API routes
 - Authentication and Turnstile
+- Authorization rules and access controls
 - Resend email delivery
 - Environment variables and secrets
 - Cloudflare deployment configuration (e.g., `wrangler.jsonc`, `open-next.config.ts`)
 - Existing security safeguards
 - Existing application audio behavior. **Do not remove, redesign, tune, replace, or refactor existing Howler/ZZFX application audio as part of unrelated work.**
+
+### 9.1 Payment System Changes
+Any task that requires changing, replacing, restructuring, migrating, or materially modifying the payment system must be treated as an exceptional cross-cutting change. Do not assume that technical necessity automatically grants authorization. Before implementation, determine:
+- what payment capability must change;
+- why it must change;
+- what existing payment behavior could be affected;
+- what protected systems are involved;
+- what authorization is required;
+- whether the task actually grants that authorization;
+- how the resulting payment behavior will be verified.
+Unrelated work must not modify the payment system. Existing payment functionality remains protected unless the task explicitly requires a payment-system change.
+
+### 9.2 Authorization, Permissions, and Privileged Access
+If a task requires creating, changing, expanding, or granting any specific authorization, permission, credential, access-control rule, repository permission, workflow permission, API permission, service authorization, or other privileged capability, identify that requirement explicitly.
+Do not assume authorization. Do not silently broaden permissions to make a task easier.
+Determine:
+- what authorization is required;
+- why it is required;
+- what it provides access to;
+- what scope it has;
+- whether the scope can be minimized;
+- whether the requested task explicitly authorizes the change.
+Use least privilege. When authorization is not clearly granted, do not invent it or silently create it. Stop at the authorization boundary and require the appropriate authorization before proceeding.
 
 ### 10. Implementation Philosophy
 Work surgically. Do not make speculative changes. Do not broaden the scope because another change looks interesting or cleaner.
