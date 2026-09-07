@@ -25,18 +25,6 @@ get_internal_docs
 - **content** (string) - The text content of the requested documentation file or a list of available file paths.
 ```
 
---------------------------------
-
-### View Active Context
-
-Source: https://geminicli.com/docs/cli/tutorials/memory-management
-
-Use the `/memory show` command to inspect the full, concatenated set of instructions currently loaded by the Gemini CLI, useful for debugging.
-
-```bash
-/memory show
-```
-
 ### Documentation contribution process > Documentation structure
 
 Source: https://geminicli.com/docs/contributing
@@ -53,8 +41,16 @@ Documentation contributions should prioritize clarity, accuracy, and completenes
 
 --------------------------------
 
-### Agent Skill best practices > Progressive disclosure
+### Internal documentation tool (`get_internal_docs`) > Usage
 
-Source: https://geminicli.com/docs/cli/skills-best-practices
+Source: https://geminicli.com/docs/tools/internal-docs
 
-Implement progressive disclosure to manage the context window efficiently. This involves a three-level loading system: 1. Metadata (name + description) always in context (~100 words). 2. `SKILL.md` body loaded after the skill triggers (<5k words). 3. Bundled resources loaded only as needed. Keep the `SKILL.md` body focused on core instructions and move detailed reference material to a `references/` directory.
+The `get_internal_docs` tool is exclusively utilized by Gemini CLI and cannot be invoked manually. When Gemini CLI uses this tool, it retrieves and processes the content of the requested documentation file to formulate answers, grounding the AI's information in the most current project documentation.
+
+--------------------------------
+
+### Internal documentation tool (`get_internal_docs`) > Behavior
+
+Source: https://geminicli.com/docs/tools/internal-docs
+
+Gemini CLI employs the `get_internal_docs` tool to maintain technical accuracy. This includes discovering capabilities by looking up feature documentation when unsure, performing reference lookups for slash command sub-commands or specific settings, and enabling self-correction by verifying its understanding of the system logic against the documentation.

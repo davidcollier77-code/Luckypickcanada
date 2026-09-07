@@ -27,14 +27,50 @@ get_internal_docs
 
 --------------------------------
 
-### View Active Context
+### Run the bulk documentation generator script
 
-Source: https://geminicli.com/docs/cli/tutorials/memory-management
+Source: https://geminicli.com/docs/cli/tutorials/automation
 
-Use the `/memory show` command to inspect the full, concatenated set of instructions currently loaded by the Gemini CLI, useful for debugging.
+Execute the `generate_docs.sh` script to create Markdown documentation for all Python files in the current directory.
 
 ```bash
-/memory show
+./generate_docs.sh
+```
+
+```powershell
+.\generate_docs.ps1
+```
+
+--------------------------------
+
+### Generate Markdown documentation for Python files
+
+Source: https://geminicli.com/docs/cli/tutorials/automation
+
+This bash script iterates through all `.py` files in a directory, uses Gemini CLI to generate a Markdown documentation summary for each, and saves the output to a corresponding `.md` file. Ensure Gemini CLI is authenticated and installed.
+
+```bash
+#!/bin/bash
+
+# Loop through all Python files
+for file in *.py; do
+  echo "Generating docs for $file..."
+
+  # Ask Gemini CLI to generate the documentation and print it to stdout
+  gemini -p "Generate a Markdown documentation summary for @$file. Print the
+  result to standard output." > "${file%.py}.md"
+done
+```
+
+```powershell
+# Loop through all Python files
+Get-ChildItem -Filter *.py | ForEach-Object {
+  Write-Host "Generating docs for $($_.Name)..."
+
+  $newName = $_.Name -replace '\.py$', '.md'
+  # Ask Gemini CLI to generate the documentation and print it to stdout
+  gemini -p "Generate a Markdown documentation summary for @$($_.Name). Print the result to standard output." | Out-File -FilePath $newName -Encoding utf8
+}
 ```
 
 ### Documentation contribution process > Documentation structure
@@ -50,11 +86,3 @@ Documentation structure is managed via a sidebar.json file. New markdown files m
 Source: https://geminicli.com/docs/contributing
 
 Documentation contributions should prioritize clarity, accuracy, and completeness. Contributors are encouraged to use simple language, avoid unnecessary jargon, and provide practical examples to assist users.
-
---------------------------------
-
-### Agent Skill best practices > Progressive disclosure
-
-Source: https://geminicli.com/docs/cli/skills-best-practices
-
-Implement progressive disclosure to manage the context window efficiently. This involves a three-level loading system: 1. Metadata (name + description) always in context (~100 words). 2. `SKILL.md` body loaded after the skill triggers (<5k words). 3. Bundled resources loaded only as needed. Keep the `SKILL.md` body focused on core instructions and move detailed reference material to a `references/` directory.

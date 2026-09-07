@@ -166,29 +166,21 @@ The standard JSON structure for a Document object, detailing all available field
 
 --------------------------------
 
-### GET fileSearchStores.documents.get
+### models.list
 
-Source: https://ai.google.dev/api/file-search/documents
+Source: https://ai.google.dev/api/models
 
-Retrieves information about a specific Document.
+Lists all available models.
 
 ```APIDOC
-## GET https://generativelanguage.googleapis.com/v1beta/{name=fileSearchStores/*/documents/*}
+## GET models.list
 
 ### Description
-Gets information about a specific Document.
+Lists all models available for use.
 
 ### Method
 GET
 
 ### Endpoint
-https://generativelanguage.googleapis.com/v1beta/{name=fileSearchStores/*/documents/*}
-
-### Parameters
-#### Path Parameters
-- **name** (string) - Required - The name of the Document to retrieve (e.g., fileSearchStores/my-file-search-store-123/documents/the-doc-abc).
-
-### Response
-#### Success Response (200)
-- **body** (object) - An instance of Document.
+models
 ```
