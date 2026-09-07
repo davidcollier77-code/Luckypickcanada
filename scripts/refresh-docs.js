@@ -234,11 +234,19 @@ async function main() {
     }, null, 2));
   } catch (e) {
     console.error('Failed to write manifest.json:', e.message);
-    console.log(`FAILED — [${timestamp}] — VERIFICATION FAILED`);
+    const failMsg = `FAILED — [${timestamp}] — VERIFICATION FAILED`;
+    console.log(failMsg);
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Documentation Refresh Result\n\n❌ ' + failMsg + '\n');
+    }
     process.exit(1);
   }
 
-  console.log(`SUCCESS — [${timestamp}] — VERIFIED`);
+  const successMsg = `SUCCESS — [${timestamp}] — VERIFIED`;
+  console.log(successMsg);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Documentation Refresh Result\n\n✅ ' + successMsg + '\n');
+  }
   console.log('Documentation refresh complete.');
 }
 
@@ -246,6 +254,10 @@ main().catch((e) => {
   const timestamp = getHalifaxTimestamp();
 
   console.error(e);
-  console.log(`FAILED — [${timestamp}] — VERIFICATION FAILED`);
+  const failMsg = `FAILED — [${timestamp}] — VERIFICATION FAILED`;
+  console.log(failMsg);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Documentation Refresh Result\n\n❌ ' + failMsg + '\n');
+  }
   process.exit(1);
 });
