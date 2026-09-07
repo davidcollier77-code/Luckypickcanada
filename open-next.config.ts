@@ -3,8 +3,11 @@ import r2IncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cac
 import doQueue from "@opennextjs/cloudflare/overrides/queue/do-queue";
 import d1NextTagCache from "@opennextjs/cloudflare/overrides/tag-cache/d1-next-tag-cache";
 
-export default defineCloudflareConfig({
-  incrementalCache: r2IncrementalCache,
-  queue: doQueue,
-  tagCache: d1NextTagCache,
-});
+export default {
+  ...defineCloudflareConfig({
+    incrementalCache: r2IncrementalCache,
+    queue: doQueue,
+    tagCache: d1NextTagCache,
+  }),
+  buildCommand: "npx next build --webpack",
+};
