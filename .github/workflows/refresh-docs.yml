@@ -3,8 +3,10 @@ name: Refresh Documentation
 on:
   schedule:
     # Runs at 2:21 AM local time every Tuesday and Friday
-    - cron: '21 2 * * 2,5'
-      timezone: 'America/Halifax'
+    # Atlantic Time is UTC-3 (ADT) during daylight saving or UTC-4 (AST) during standard time
+    # The tzcheck step below ensures only the correct schedule triggers the workflow
+    - cron: '21 5 * * 2,5'  # 05:21 UTC = 02:21 ADT (Mar-Nov)
+    - cron: '21 6 * * 2,5'  # 06:21 UTC = 02:21 AST (Nov-Mar)
   workflow_dispatch:
 
 permissions:
