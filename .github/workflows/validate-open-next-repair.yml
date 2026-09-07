@@ -26,8 +26,14 @@ jobs:
       - name: Install dependencies (pnpm install)
         run: pnpm install --frozen-lockfile
 
-      - name: Build (pnpm run build)
+      - name: Clear cache directories
+        run: rm -rf .next/cache .open-next
+
+      - name: Build Next.js app
         run: pnpm run build
+
+      - name: Build OpenNext for Cloudflare
+        run: pnpm exec opennextjs-cloudflare build
 
       - name: Verify .open-next/worker.js exists
         run: |
