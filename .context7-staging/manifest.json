@@ -101,24 +101,24 @@
       "status": "SUCCESS"
     },
     "/goldfire/howler.js": {
-      "status": "FAILED",
-      "reason": "Access denied: Non-verified libraries are restricted for this teamspace.",
-      "timestamp": "2026-09-07T21:05:11.148Z"
+      "size": 5616,
+      "timestamp": "2026-09-07T21:39:55.774Z",
+      "status": "SUCCESS"
     },
     "/opennextjs/docs": {
-      "status": "FAILED",
-      "reason": "Access denied: Non-verified libraries are restricted for this teamspace.",
-      "timestamp": "2026-09-07T21:05:11.148Z"
+      "size": 1912,
+      "timestamp": "2026-09-07T21:40:03.746Z",
+      "status": "SUCCESS"
     },
     "/neondatabase/neon": {
-      "status": "FAILED",
-      "reason": "Access denied: Non-verified libraries are restricted for this teamspace.",
-      "timestamp": "2026-09-07T21:05:11.148Z"
+      "size": 5513,
+      "timestamp": "2026-09-07T21:40:12.181Z",
+      "status": "SUCCESS"
     },
     "/coreyhaines31/marketingskills": {
-      "status": "FAILED",
-      "reason": "Access denied: Non-verified libraries are restricted for this teamspace.",
-      "timestamp": "2026-09-07T21:05:11.148Z"
+      "size": 3540,
+      "timestamp": "2026-09-07T21:40:20.309Z",
+      "status": "SUCCESS"
     }
   }
 }

@@ -43,16 +43,25 @@ let initialDocsSize = getDocsDirSize();
 let currentStagingSize = getStagingSize();
 let totalSize = initialDocsSize + currentStagingSize;
 
+const specificTargets = [
+    "/goldfire/howler.js",
+    "/opennextjs/docs",
+    "/neondatabase/neon",
+    "/coreyhaines31/marketingskills"
+];
+
 let toFetchMap = {};
 for (const doc of documents) {
     if (doc.state === "INVALID_PLACEHOLDER" || doc.state === "MISSING") {
-        toFetchMap[doc.rawIdentifier] = doc;
+        if (specificTargets.includes(doc.rawIdentifier)) {
+            toFetchMap[doc.rawIdentifier] = doc;
+        }
     }
 }
 
 let toFetch = Object.values(toFetchMap);
 
-console.log(`Found ${toFetch.length} unique missing/invalid documentation items.`);
+console.log(`Found ${toFetch.length} unique items to retry.`);
 
 let successCount = 0;
 let skippedCount = 0;
@@ -62,8 +71,10 @@ let limitHit = false;
 
 for (const doc of toFetch) {
     const rawId = doc.rawIdentifier;
-    let fetchId = doc.authoritativeSource; // We found out authoritativeSource contains the actual Context7 library ID from my script `fix_ids.js`.
+    let fetchId = doc.authoritativeSource;
 
+    // We already collected them previously, but they were marked as FAILED.
+    // If they were SUCCESS we wouldn't retry, but we want to retry anyway since they failed.
     if (stagingManifest.collected[rawId] && stagingManifest.collected[rawId].status === "SUCCESS") {
         console.log(`Already collected: ${rawId}, skipping.`);
         skippedCount++;
@@ -87,12 +98,26 @@ for (const doc of toFetch) {
             break;
         }
 
+        // Update manifest with failure
+        stagingManifest.collected[rawId] = {
+            status: "FAILED",
+            reason: errStr.substring(0, 200),
+            timestamp: new Date().toISOString()
+        };
+        fs.writeFileSync(stagingManifestPath, JSON.stringify(stagingManifest, null, 2));
+
         failedCount++;
         continue;
     }
 
     if (!result || result.trim() === "") {
         console.error(`Empty result for ${rawId}`);
+        stagingManifest.collected[rawId] = {
+            status: "FAILED",
+            reason: "Empty result",
+            timestamp: new Date().toISOString()
+        };
+        fs.writeFileSync(stagingManifestPath, JSON.stringify(stagingManifest, null, 2));
         failedCount++;
         continue;
     }
