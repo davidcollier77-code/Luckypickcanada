@@ -1,30 +1,53 @@
-# GOVERNANCE REPLACEMENT + ENFORCEMENT
+chore: collect missing documentation to context7 staging
 
-Replaced the repository's governance system by overwriting AGENTS.md with a new mandate and aligning all .jules/ specialist files to enforce it.
+1. Exact files created/changed:
+- `.context7-staging/library.jsonl` (Appended 4 previously failed libraries)
+- `.context7-staging/manifest.json` (Updated 4 statuses from FAILED to SUCCESS)
+- `collect.js` and `verify.js` (Updated to retry only the specified 4 libraries and report accurate final state).
 
-**What Changed:**
-- AGENTS.md was completely rewritten to establish a new authoritative governance mandate (including Jules + Gemini participation, 8 strict task groups, Spec Kit MCP prohibitions, and audio protections).
-- Existing project-specific technical constraints (tech stack, caching rules, canvas rendering logic, CI scripts, Gemini API rules) and Context7 library mappings were manually distilled and preserved in a new "Project Instructions" section to prevent loss of critical technical governance.
-- All 8 .jules/*.md specialist files were updated with enforcing instructions that link directly back to the AGENTS.md authority.
-- Added /android/developers explicitly to .jules/deep-dive.md.
-- jules.md was correctly appended with a consolidated memory note explaining the permanent governance rules, replacing any duplicate entries.
+2. Number of documentation items successfully collected:
+- 24 unique documentation items successfully collected and saved to staging.
 
-**What Did Not Change:**
-- No application functionality, UI, business logic, Stripe integrations, or open-next config files were modified.
-- Build artifacts (tsconfig.tsbuildinfo) were explicitly ignored and reverted from staging.
-- The 8 task groups remain strictly 8 groups.
+3. Number already present/skipped:
+- 0 items already present/skipped from `.docs`.
+- (Note: 20 previously fetched staging items were skipped during the retry run).
 
-**Resource Usage:**
-- **Task Group:** Deep Dive / Investigation (for governance inspection).
-- **Jules Contribution:** Jules successfully inspected the file hierarchy, rewrote AGENTS.md through multiple iterations to ensure explicit prompt rules were adhered to without losing legacy project constraints, executed the validation builds (jules-verify.sh), and stripped out unintended git artifacts.
-- **Gemini Contribution:** Gemini correctly identified blocking failures in initial diffs, preventing the loss of legacy project constraints, blocking the accidental inclusion of tsconfig.tsbuildinfo, and enforcing the Android Developers deep dive rule.
-- **Context7:** No external libraries were fetched as this was purely an internal meta-governance documentation rewrite.
-- **MCP Usage:** None. Explicitly prohibited for this specific scope and respected.
+4. Number still pending/failed:
+- 0 items failed (all 24 are successfully fetched).
 
-**Verification:**
-- Successfully executed ./jules-verify.sh.
-- tsconfig.tsbuildinfo was checked out.
-- git diff confirms changes are strictly limited to .jules/ and AGENTS.md.
+5. Current staging size in bytes and MB:
+- 103204 bytes (0.10 MB).
 
-**Governance Validation Results:**
-PASS
+6. Safe threshold used:
+- 519045120 bytes (495 MB).
+
+7. Current ".docs" size in bytes and MB:
+- 311032 bytes (0.30 MB).
+
+8. Whether the 495 MB guard was exercised:
+- Yes, checked before appending each item, but not hit since total size is well under 1 MB.
+
+9. Whether Context7 quota was encountered:
+- No.
+
+10. Exact resume position:
+- Completed the full iteration of all 24 pending items. Retried the specific 4 failed items, skipping the 20 successfully fetched items. Total pending is now 0.
+
+11. Verification results, including "./jules-verify.sh":
+- Local `verify.js` confirms 24 SUCCESS, 0 FAILED, and sizes within limits.
+- `pnpm run build` passed.
+- `./jules-verify.sh` passed.
+
+12. Exactly what Jules contributed:
+- Modified the Node.js automation script (`collect.js`) to specifically retry only the 4 explicitly requested failed libraries (`/goldfire/howler.js`, `/opennextjs/docs`, `/neondatabase/neon`, `/coreyhaines31/marketingskills`).
+- Refetched the 4 libraries using Context7 CLI and safely appended them to the `.jsonl` while observing the 495 MB limit.
+- Maintained the previous successfully collected 20 libraries.
+- Executed necessary codebase verification checks.
+
+13. Exactly what Gemini contributed:
+- Guided the specific step definitions, ensuring compliance with test requirements (e.g., using `pnpm run build`).
+- Ensure no unmodified original state or non-target libraries were unintentionally disrupted during the partial retry.
+- Drafted the final report accurately confirming the completion of the 24 libraries.
+
+Libraries Consulted / Used:
+None specifically.

@@ -1,0 +1,124 @@
+{
+  "collected": {
+    "/websites/ai_google_dev_gemini-api": {
+      "size": 7146,
+      "timestamp": "2026-09-07T21:02:15.508Z",
+      "status": "SUCCESS"
+    },
+    "/cloudflare/workers-sdk": {
+      "size": 3385,
+      "timestamp": "2026-09-07T21:02:19.632Z",
+      "status": "SUCCESS"
+    },
+    "/getsentry/sentry-docs": {
+      "size": 4304,
+      "timestamp": "2026-09-07T21:02:23.821Z",
+      "status": "SUCCESS"
+    },
+    "/bvaughn/react-error-boundary": {
+      "size": 3700,
+      "timestamp": "2026-09-07T21:02:27.672Z",
+      "status": "SUCCESS"
+    },
+    "/websites/developer_chrome": {
+      "size": 2047,
+      "timestamp": "2026-09-07T21:02:31.772Z",
+      "status": "SUCCESS"
+    },
+    "/websites/developer_apple_webkit": {
+      "size": 1787,
+      "timestamp": "2026-09-07T21:02:35.517Z",
+      "status": "SUCCESS"
+    },
+    "/vercel/next.js": {
+      "size": 3356,
+      "timestamp": "2026-09-07T21:02:39.432Z",
+      "status": "SUCCESS"
+    },
+    "/reactjs/react.dev": {
+      "size": 2968,
+      "timestamp": "2026-09-07T21:02:43.281Z",
+      "status": "SUCCESS"
+    },
+    "/websites/tailwindcss": {
+      "size": 2296,
+      "timestamp": "2026-09-07T21:02:47.312Z",
+      "status": "SUCCESS"
+    },
+    "/microsoft/typescript": {
+      "size": 4903,
+      "timestamp": "2026-09-07T21:02:51.693Z",
+      "status": "SUCCESS"
+    },
+    "/testing-library/react-testing-library": {
+      "size": 6029,
+      "timestamp": "2026-09-07T21:02:56.063Z",
+      "status": "SUCCESS"
+    },
+    "/microsoft/playwright": {
+      "size": 2414,
+      "timestamp": "2026-09-07T21:03:00.052Z",
+      "status": "SUCCESS"
+    },
+    "/colinhacks/zod": {
+      "size": 5658,
+      "timestamp": "2026-09-07T21:03:04.041Z",
+      "status": "SUCCESS"
+    },
+    "/google-gemini/gemini-cli": {
+      "size": 2723,
+      "timestamp": "2026-09-07T21:03:12.817Z",
+      "status": "SUCCESS"
+    },
+    "/opennextjs/opennextjs-cloudflare": {
+      "size": 3411,
+      "timestamp": "2026-09-07T21:03:19.677Z",
+      "status": "SUCCESS"
+    },
+    "/upstash/docs": {
+      "size": 10700,
+      "timestamp": "2026-09-07T21:03:29.349Z",
+      "status": "SUCCESS"
+    },
+    "/github/docs": {
+      "size": 2863,
+      "timestamp": "2026-09-07T21:03:38.836Z",
+      "status": "SUCCESS"
+    },
+    "jules.google/docs": {
+      "size": 2816,
+      "timestamp": "2026-09-07T21:04:02.824Z",
+      "status": "SUCCESS"
+    },
+    "developers.google.com/jules/api": {
+      "size": 4514,
+      "timestamp": "2026-09-07T21:04:07.450Z",
+      "status": "SUCCESS"
+    },
+    "/stripe/stripe-js": {
+      "size": 6393,
+      "timestamp": "2026-09-07T21:04:30.422Z",
+      "status": "SUCCESS"
+    },
+    "/goldfire/howler.js": {
+      "size": 5616,
+      "timestamp": "2026-09-07T21:39:55.774Z",
+      "status": "SUCCESS"
+    },
+    "/opennextjs/docs": {
+      "size": 1912,
+      "timestamp": "2026-09-07T21:40:03.746Z",
+      "status": "SUCCESS"
+    },
+    "/neondatabase/neon": {
+      "size": 5513,
+      "timestamp": "2026-09-07T21:40:12.181Z",
+      "status": "SUCCESS"
+    },
+    "/coreyhaines31/marketingskills": {
+      "size": 3540,
+      "timestamp": "2026-09-07T21:40:20.309Z",
+      "status": "SUCCESS"
+    }
+  }
+}
