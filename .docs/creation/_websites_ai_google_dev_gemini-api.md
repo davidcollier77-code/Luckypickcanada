@@ -73,74 +73,6 @@ https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
 
 --------------------------------
 
-### Summarize PDF Document
-
-Source: https://ai.google.dev/api/generate-content
-
-Uploads a PDF document and streams a summary request to the Gemini model.
-
-```python
-from google import genai
-
-client = genai.Client()
-sample_pdf = client.files.upload(file=media / "test.pdf")
-response = client.models.generate_content_stream(
-    model="gemini-3.7-flash",
-    contents=["Give me a summary of this document:", sample_pdf],
-)
-
-for chunk in response:
-    print(chunk.text)
-    print("_" * 80)
-text_generation.py
-```
-
-```go
-ctx := context.Background()
-client, err := genai.NewClient(ctx, &genai.ClientConfig{
-	APIKey:  os.Getenv("GEMINI_API_KEY"),
-	Backend: genai.BackendGeminiAPI,
-})
-if err != nil {
-	log.Fatal(err)
-}
-
-file, err := client.Files.UploadFromPath(
-	ctx,
-	filepath.Join(getMedia(), "test.pdf"),
-	&genai.UploadFileConfig{
-		MIMEType : "application/pdf",
-	},
-)
-if err != nil {
-	log.Fatal(err)
-}
-
-parts := []*genai.Part{
-	genai.NewPartFromText("Give me a summary of this document:"),
-	genai.NewPartFromURI(file.URI, file.MIMEType),
-}
-
-contents := []*genai.Content{
-	genai.NewContentFromParts(parts, genai.RoleUser),
-}
-
-for result, err := range client.Models.GenerateContentStream(
-	ctx,
-	"gemini-3.7-flash",
-	contents,
-	nil,
-) {
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Print(result.Candidates[0].Content.Parts[0].Text)
-}
-text_generation.go
-```
-
---------------------------------
-
 ### JSON Representation of a Document Resource
 
 Source: https://ai.google.dev/api/file-search/documents
@@ -166,29 +98,35 @@ The standard JSON structure for a Document object, detailing all available field
 
 --------------------------------
 
-### GET fileSearchStores.documents.get
+### GET https://generativelanguage.googleapis.com/v1beta/{name=files/*}
 
-Source: https://ai.google.dev/api/file-search/documents
+Source: https://ai.google.dev/api/files
 
-Retrieves information about a specific Document.
+Retrieves the metadata for a specified file.
 
 ```APIDOC
-## GET https://generativelanguage.googleapis.com/v1beta/{name=fileSearchStores/*/documents/*}
+## GET https://generativelanguage.googleapis.com/v1beta/{name=files/*}
 
 ### Description
-Gets information about a specific Document.
+Gets the metadata for the given File.
 
 ### Method
 GET
 
 ### Endpoint
-https://generativelanguage.googleapis.com/v1beta/{name=fileSearchStores/*/documents/*}
+https://generativelanguage.googleapis.com/v1beta/{name=files/*}
 
 ### Parameters
 #### Path Parameters
-- **name** (string) - Required - The name of the Document to retrieve (e.g., fileSearchStores/my-file-search-store-123/documents/the-doc-abc).
+- **name** (string) - Required - The name of the File to get. It takes the form files/{file}.
 
 ### Response
 #### Success Response (200)
-- **body** (object) - An instance of Document.
+- **File** (object) - The metadata for the requested file.
 ```
+
+### REST Resource: fileSearchStores.documents > Resource: Document > displayName/customMetadata
+
+Source: https://ai.google.dev/api/file-search/documents
+
+The displayName field allows for a human-readable name for the Document, with a maximum length of 512 characters. Users can also attach custom metadata to a Document using key-value pairs, with a limit of 20 entries per Document.

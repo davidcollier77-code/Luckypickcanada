@@ -141,31 +141,6 @@ text_generation.go
 
 --------------------------------
 
-### JSON Representation of a Document Resource
-
-Source: https://ai.google.dev/api/file-search/documents
-
-The standard JSON structure for a Document object, detailing all available fields and their types.
-
-```json
-{
-  "name": string,
-  "displayName": string,
-  "customMetadata": [
-    {
-      object (CustomMetadata)
-    }
-  ],
-  "updateTime": string,
-  "createTime": string,
-  "state": enum (State),
-  "sizeBytes": string,
-  "mimeType": string
-}
-```
-
---------------------------------
-
 ### GET fileSearchStores.documents.get
 
 Source: https://ai.google.dev/api/file-search/documents
@@ -191,4 +166,33 @@ https://generativelanguage.googleapis.com/v1beta/{name=fileSearchStores/*/docume
 ### Response
 #### Success Response (200)
 - **body** (object) - An instance of Document.
+```
+
+--------------------------------
+
+### GET https://generativelanguage.googleapis.com/v1beta/{name=files/*}
+
+Source: https://ai.google.dev/api/files
+
+Retrieves the metadata for a specified file.
+
+```APIDOC
+## GET https://generativelanguage.googleapis.com/v1beta/{name=files/*}
+
+### Description
+Gets the metadata for the given File.
+
+### Method
+GET
+
+### Endpoint
+https://generativelanguage.googleapis.com/v1beta/{name=files/*}
+
+### Parameters
+#### Path Parameters
+- **name** (string) - Required - The name of the File to get. It takes the form files/{file}.
+
+### Response
+#### Success Response (200)
+- **File** (object) - The metadata for the requested file.
 ```

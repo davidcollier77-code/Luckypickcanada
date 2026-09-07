@@ -166,29 +166,29 @@ The standard JSON structure for a Document object, detailing all available field
 
 --------------------------------
 
-### GET fileSearchStores.documents.get
+### GET https://generativelanguage.googleapis.com/v1beta/{name=files/*}
 
-Source: https://ai.google.dev/api/file-search/documents
+Source: https://ai.google.dev/api/files
 
-Retrieves information about a specific Document.
+Retrieves the metadata for a specified file.
 
 ```APIDOC
-## GET https://generativelanguage.googleapis.com/v1beta/{name=fileSearchStores/*/documents/*}
+## GET https://generativelanguage.googleapis.com/v1beta/{name=files/*}
 
 ### Description
-Gets information about a specific Document.
+Gets the metadata for the given File.
 
 ### Method
 GET
 
 ### Endpoint
-https://generativelanguage.googleapis.com/v1beta/{name=fileSearchStores/*/documents/*}
+https://generativelanguage.googleapis.com/v1beta/{name=files/*}
 
 ### Parameters
 #### Path Parameters
-- **name** (string) - Required - The name of the Document to retrieve (e.g., fileSearchStores/my-file-search-store-123/documents/the-doc-abc).
+- **name** (string) - Required - The name of the File to get. It takes the form files/{file}.
 
 ### Response
 #### Success Response (200)
-- **body** (object) - An instance of Document.
+- **File** (object) - The metadata for the requested file.
 ```

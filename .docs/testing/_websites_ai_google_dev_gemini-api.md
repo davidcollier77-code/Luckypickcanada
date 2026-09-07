@@ -141,31 +141,6 @@ text_generation.go
 
 --------------------------------
 
-### JSON Representation of a Document Resource
-
-Source: https://ai.google.dev/api/file-search/documents
-
-The standard JSON structure for a Document object, detailing all available fields and their types.
-
-```json
-{
-  "name": string,
-  "displayName": string,
-  "customMetadata": [
-    {
-      object (CustomMetadata)
-    }
-  ],
-  "updateTime": string,
-  "createTime": string,
-  "state": enum (State),
-  "sizeBytes": string,
-  "mimeType": string
-}
-```
-
---------------------------------
-
 ### GET fileSearchStores.documents.get
 
 Source: https://ai.google.dev/api/file-search/documents
@@ -191,4 +166,29 @@ https://generativelanguage.googleapis.com/v1beta/{name=fileSearchStores/*/docume
 ### Response
 #### Success Response (200)
 - **body** (object) - An instance of Document.
+```
+
+--------------------------------
+
+### JSON Representation of a Document Resource
+
+Source: https://ai.google.dev/api/file-search/documents
+
+The standard JSON structure for a Document object, detailing all available fields and their types.
+
+```json
+{
+  "name": string,
+  "displayName": string,
+  "customMetadata": [
+    {
+      object (CustomMetadata)
+    }
+  ],
+  "updateTime": string,
+  "createTime": string,
+  "state": enum (State),
+  "sizeBytes": string,
+  "mimeType": string
+}
 ```
