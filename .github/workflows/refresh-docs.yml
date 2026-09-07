@@ -30,12 +30,12 @@ jobs:
           CURRENT_HOUR=$(TZ=America/Halifax date +"%H")
           CURRENT_DAY=$(TZ=America/Halifax date +"%u") # 1-7, 5 is Friday
 
-          # We want to run exactly at 02:XX AM Atlantic Time on Friday
+          # We want to run exactly at 02:21 AM Atlantic Time on Friday
           if [ "$CURRENT_HOUR" = "02" ] && [ "$CURRENT_DAY" = "5" ]; then
-            echo "Time matches 02:00 Atlantic Time. Proceeding with refresh."
+            echo "Time matches 02:21 AM Atlantic Time. Proceeding with refresh."
             echo "proceed=true" >> $GITHUB_OUTPUT
           else
-            echo "Current Atlantic Time is $CURRENT_HOUR:XX. This cron trigger does not align with 02:00 AT. Skipping."
+            echo "Current Atlantic Time is $CURRENT_HOUR:XX. This cron trigger does not align with 02:21 AM AT. Skipping."
             echo "proceed=false" >> $GITHUB_OUTPUT
           fi
         # Allow workflow_dispatch to bypass the time check
