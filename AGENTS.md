@@ -52,7 +52,36 @@ Playwright CLI generates temporary snapshots, traces, and debug artifacts inside
 
 
 
+
+## Mandatory AI & Tooling Policy
+
+**1. Gemini & Jules Are Mandatory**
+Gemini and Jules must be explicitly included and used for EVERY repository task, regardless of task type. They are not optional suggestions. Use the existing approved Gemini and Jules resources already in the repository (e.g. `jules.google/docs`, `developers.google.com/jules/api`, `/google-gemini/gemini-cli`, `/websites/ai_google_dev_gemini-api`). Do not replace, recreate, bypass, remove, or substitute them.
+
+**2. Existing Approved Capabilities Come First**
+Before introducing anything new, agents must inspect and make reasonable use of what the repository already has: approved libraries, installed dependencies, existing frameworks, tools, APIs, Gemini/Jules resources, Context7, and the `.jules/` specialists. Do not introduce a new tool simply because it is newer, cleaner, easier, or faster.
+
+**3. New Libraries/Dependencies Are an Absolute Last Resort**
+A new library or dependency must NEVER become the default answer to a problem. Before adding one, the agent must identify:
+- The exact missing capability.
+- What existing resources were considered.
+- Why the existing system cannot provide the capability.
+- Why the new dependency is actually necessary.
+- That it does not duplicate existing functionality.
+- That it is compatible and functional.
+Do not silently introduce new dependencies.
+
+**4. Newly Adopted Libraries Must Be Integrated**
+If a new library is genuinely necessary and adopted, it must become part of the permanent system. It must be added to the appropriate task group(s) in `AGENTS.md` and `.jules/` files, and documented using the repository's existing organization. Do not add a library merely because Context7 mentions it; Context7 provides intelligence, not authorization.
+
+**5. MCPs Are a Genuine Absolute Last Resort**
+The availability of an MCP does NOT authorize its use. Before using an MCP, genuinely exhaust the appropriate existing capabilities (approved libraries, repository tools, Gemini/Jules, Context7). An MCP may only be considered when there is a real capability gap the existing approved system cannot solve.
+
+**6. Context7 Role**
+Context7 remains an approved documentation resource. Use existing Context7 mappings for relevant technologies. It does not replace Gemini or Jules, does not authorize new libraries by itself, and does not override the approved-first policy.
+
 ---
+
 
 Development Agent Instructions
 

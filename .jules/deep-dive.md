@@ -22,6 +22,7 @@ For all investigation tasks, consult the following approved Context7 libraries:
 - Vitest "/vitest-dev/vitest"
 - Chrome Developer "/websites/developer_chrome"
 - Apple WebKit Developer "/websites/developer_apple_webkit"
+- Android Developers "/android/developers"
 
 Local documentation snapshots are available at `.docs/deep-dive/`.
 
