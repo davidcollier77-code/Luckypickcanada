@@ -2,9 +2,11 @@ name: Refresh Documentation
 
 on:
   schedule:
-    # Runs at 2:21 AM local time every Friday
-    - cron: '21 2 * * 5'
-      timezone: 'America/Halifax'
+    # Runs at 2:21 AM local time every Tuesday and Friday
+    # Atlantic Time is UTC-3 (ADT) during daylight saving or UTC-4 (AST) during standard time
+    # The tzcheck step below ensures only the correct schedule triggers the workflow
+    - cron: '21 5 * * 2,5'  # 05:21 UTC = 02:21 ADT (Mar-Nov)
+    - cron: '21 6 * * 2,5'  # 06:21 UTC = 02:21 AST (Nov-Mar)
   workflow_dispatch:
 
 permissions:
@@ -28,10 +30,10 @@ jobs:
         run: |
           # Get current hour in America/Halifax
           CURRENT_HOUR=$(TZ=America/Halifax date +"%H")
-          CURRENT_DAY=$(TZ=America/Halifax date +"%u") # 1-7, 5 is Friday
+          CURRENT_DAY=$(TZ=America/Halifax date +"%u") # 1-7, 2 is Tuesday, 5 is Friday
 
-          # We want to run exactly at 02:21 AM Atlantic Time on Friday
-          if [ "$CURRENT_HOUR" = "02" ] && [ "$CURRENT_DAY" = "5" ]; then
+          # We want to run exactly at 02:21 AM Atlantic Time on Tuesday and Friday
+          if [ "$CURRENT_HOUR" = "02" ] && { [ "$CURRENT_DAY" = "2" ] || [ "$CURRENT_DAY" = "5" ]; }; then
             echo "Time matches 02:21 AM Atlantic Time. Proceeding with refresh."
             echo "proceed=true" >> $GITHUB_OUTPUT
           else
