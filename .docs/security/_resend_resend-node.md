@@ -74,7 +74,7 @@ export class Resend {
 
       if (!this.key) {
         throw new Error(
-          'Missing API key. Pass it to the constructor `new Resend("re_123")`',
+          'Missing API key. Pass it to the constructor `new Resend("re_abc123def456ghi789jkl012mno345pqr678")`',
         );
       }
     }

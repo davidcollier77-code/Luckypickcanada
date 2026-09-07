@@ -5,8 +5,8 @@ Source: https://github.com/stripe/stripe-js/blob/master/_autodocs/configuration.
 Example showing a comprehensive configuration including account, API version, locale, beta flags, and developer tools.
 
 ```ts
-const stripe = await loadStripe('pk_live_your_key', {
-  stripeAccount: 'acct_1234567890',
+const stripe = await loadStripe('pk_test_51Abc123def456ghi789jkl012mno345pqr678stu901vwx234yz', {
+  stripeAccount: 'acct_1Abc123XYZ456',
   apiVersion: '2024-01-01',
   locale: 'fr-CA',
   betas: ['custom_beta_flag'],
