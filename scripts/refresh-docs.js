@@ -159,15 +159,11 @@ const getHalifaxTimestamp = () => {
 
   // Intl formatToParts doesn't always give ISO offsets perfectly across all Node versions,
   // so we'll determine the offset mathematically to ensure it's strict ISO 8601 (-04:00 or -03:00)
-  // Calculate the offset using a more reliable approach
-  const now = new Date();
-  const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-  const hfxDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Halifax' }));
-  const diffMs = hfxDate.getTime() - utcDate.getTime();
-  const diffHours = Math.round(diffMs / 3600000);
-  const offsetSign = diffHours >= 0 ? '+' : '-';
-  const offsetHours = Math.abs(diffHours).toString().padStart(2, '0');
-  const offsetStr = `${offsetSign}${offsetHours}:00`;
+  const dateInHalifax = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Halifax' }));
+  const dateInUTC = new Date(new Date().toLocaleString('en-US', { timeZone: 'UTC' }));
+
+  const diffHours = Math.round((dateInHalifax - dateInUTC) / 3600000);
+  const offsetStr = (diffHours >= 0 ? '+' : '-') + Math.abs(diffHours).toString().padStart(2, '0') + ':00';
 
   return `${d.year}-${d.month}-${d.day}T${d.hour}:${d.minute}:${d.second}${offsetStr}`;
 };
