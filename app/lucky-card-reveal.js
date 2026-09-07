@@ -188,13 +188,13 @@ export default function LuckyCardReveal() {
     const droneGain = ctx.createGain();
     drone.type = 'sine';
     drone.frequency.setValueAtTime(35, now);
-    drone.frequency.exponentialRampToValueAtTime(55, finalStrikeTime);
+    drone.frequency.setTargetAtTime(55, finalStrikeTime, 0.05);
 
     // Add some harmonics with a sawtooth
     const droneHarmonic = ctx.createOscillator();
     droneHarmonic.type = 'sawtooth';
     droneHarmonic.frequency.setValueAtTime(35, now);
-    droneHarmonic.frequency.exponentialRampToValueAtTime(55, finalStrikeTime);
+    droneHarmonic.frequency.setTargetAtTime(55, finalStrikeTime, 0.05);
 
     // Lowpass filter for the sawtooth so it's not harsh
     const filter = ctx.createBiquadFilter();
@@ -208,7 +208,7 @@ export default function LuckyCardReveal() {
 
     droneGain.gain.setValueAtTime(0, now);
     droneGain.gain.linearRampToValueAtTime(0.2, now + 1.5);
-    droneGain.gain.exponentialRampToValueAtTime(0.4, finalStrikeTime - 0.2);
+    droneGain.gain.setTargetAtTime(0.4, finalStrikeTime - 0.2, 0.05);
     droneGain.gain.setTargetAtTime(0, finalStrikeTime, 0.05); // Snap fade on final strike
 
     droneGain.connect(ctx.destination);
@@ -243,11 +243,11 @@ export default function LuckyCardReveal() {
       const burstGain = ctx.createGain();
       burst.type = 'triangle';
       burst.frequency.setValueAtTime(isFinal ? 800 : 400 + (idx * 150), strikeTime);
-      burst.frequency.exponentialRampToValueAtTime(isFinal ? 200 : 100, strikeTime + 0.2);
+      burst.frequency.setTargetAtTime(isFinal ? 200 : 100, strikeTime + 0.2, 0.05);
 
       burstGain.gain.setValueAtTime(0, strikeTime);
       burstGain.gain.setValueAtTime(intensity * 0.8, strikeTime + 0.01); // sharp attack
-      burstGain.gain.exponentialRampToValueAtTime(0.01, strikeTime + 0.2); // quick decay
+      burstGain.gain.setTargetAtTime(0.01, strikeTime + 0.2, 0.05); // quick decay
 
       burst.connect(burstGain);
       burstGain.connect(ctx.destination);
@@ -261,10 +261,10 @@ export default function LuckyCardReveal() {
       const subGain = ctx.createGain();
       sub.type = 'sine';
       sub.frequency.setValueAtTime(isFinal ? 60 : 80, strikeTime);
-      sub.frequency.exponentialRampToValueAtTime(20, strikeTime + (isFinal ? 1.5 : 0.5));
+      sub.frequency.setTargetAtTime(20, strikeTime + (isFinal ? 1.5 : 0.5), 0.05);
       subGain.gain.setValueAtTime(0, strikeTime);
       subGain.gain.setValueAtTime(isFinal ? 0.8 : 0.4 * intensity, strikeTime + 0.02);
-      subGain.gain.exponentialRampToValueAtTime(0.01, strikeTime + (isFinal ? 1.0 : 0.4));
+      subGain.gain.setTargetAtTime(0.01, strikeTime + (isFinal ? 1.0 : 0.4), 0.05);
       sub.connect(subGain);
       subGain.connect(ctx.destination);
       sub.start(strikeTime);
@@ -304,7 +304,7 @@ export default function LuckyCardReveal() {
 
     shimmerGain.gain.setValueAtTime(0, revealTime);
     shimmerGain.gain.linearRampToValueAtTime(0.15, revealTime + 0.1);
-    shimmerGain.gain.exponentialRampToValueAtTime(0.01, revealTime + 3.0);
+    shimmerGain.gain.setTargetAtTime(0.01, revealTime + 3.0, 0.05);
 
     shimmerOsc1.connect(shimmerGain);
     shimmerOsc2.connect(shimmerGain);
