@@ -22,3 +22,6 @@ act_output.log
 
 # Playwright CLI artifacts
 .playwright-cli/
+.jules/cmds/
+.specify/feature.json
+.specify/extensions/*/local-config.yml
