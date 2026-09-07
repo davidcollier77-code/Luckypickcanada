@@ -282,3 +282,20 @@ The verified repository state and explicitly authorized project decisions are au
 The presence of a library or resource in this inventory does NOT automatically authorize its use for every task.
 
 All existing task-group rules, protected-area rules, authorization requirements, resource hierarchy rules, ".docs" requirements, Jules/Gemini requirements, and MCP restrictions remain fully in force.
+
+
+
+## 19. Spec Kit Workflow Integration
+
+GitHub Spec Kit is integrated to serve as the structured planning and orchestration layer for complex tasks. It must be used when a task warrants meaningful specification, planning, decomposition, or multi-step implementation. Trivial changes do not require Spec Kit.
+
+**Execution Mechanism:**
+Jules does not have a native CLI command to execute Spec Kit commands. To invoke a Spec Kit command, Jules must explicitly read the corresponding command file in `.jules/cmds/` (e.g., `cat .jules/cmds/speckit.specify.md`) and strictly follow the instructions contained within it to generate the required artifacts and perform the workflow.
+
+**Workflow Order:**
+1. **Understand/Specify/Plan**: When appropriate, execute the relevant Spec Kit commands (e.g., `speckit.specify`, `speckit.clarify`, `speckit.plan`, `speckit.tasks`, `speckit.analyze`, `speckit.implement`, `speckit.converge`) by reading their markdown files in `.jules/cmds/` and executing their steps.
+2. **Task Group Routing**: After the specification and planning stage, identify the appropriate existing task group (e.g., Creation, Troubleshooting) from Rule 3.
+3. **Resource Selection**: Select the appropriate existing libraries, `.docs` documentation, and approved resources based on the chosen task group.
+4. **Implement/Test/Verify**: Execute the work, run tests, and verify.
+
+Spec Kit helps determine *what* to build and *how* to break it down. The existing repository governance and task groups determine *which resources* to use. Spec Kit does NOT authorize changes to protected systems, introduce new dependencies, or replace any existing governance rules. Jules and Gemini remain mandatory collaborators throughout this workflow.
