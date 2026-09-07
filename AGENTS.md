@@ -1,4 +1,139 @@
 
+
+
+## Permanent Agent-Governance & Operating Rules
+
+The following rules form the core governance system for all agents operating in this repository. They are persistent, mandatory, and must be followed for all future tasks.
+
+### 1. Mandatory AI Collaboration
+For every task, both Jules and Gemini are **mandatory**. They must genuinely participate in the work, not merely serve as documentation references, and their use is not limited to Deep Dive / Investigation. Their actual capabilities must be used where appropriate, and the final report must explicitly detail what each contributed. Never claim an AI or resource was used unless it was genuinely consulted.
+
+### 2. Task Group Routing
+Before making any changes, determine which of the existing 8 task groups genuinely applies. You must not create a ninth task group. The groups are:
+1. Creation (`.jules/creation.md`)
+2. Troubleshooting (`.jules/troubleshooting.md`)
+3. Polishing (`.jules/polishing.md`)
+4. Testing (`.jules/testing.md`)
+5. Security (`.jules/security.md`)
+6. Audio (`.jules/audio.md`)
+7. Deep Dive / Investigation (`.jules/deep-dive.md`)
+8. SEO (`.jules/seo.md`)
+
+Preserve this existing group structure and its resource assignments.
+
+### 3. Miscellaneous / Cross-Cutting Fallback
+If, and ONLY if, a task genuinely does not fit any of the 8 existing groups, use the **Miscellaneous / Cross-Cutting** fallback.
+- **This is a fallback category, NOT a ninth task group and NOT a general catch-all.**
+- Do not use this to bypass normal task-group routing. If it fits an existing group, use it.
+- The ONLY approved resources for this fallback are:
+  - Jules Documentation ("jules.google/docs")
+  - Jules API ("developers.google.com/jules/api")
+  - Gemini CLI ("/google-gemini/gemini-cli")
+  - Gemini API ("/websites/ai_google_dev_gemini-api")
+
+### 4. Approved Resources Hierarchy
+Existing approved libraries, Context7 resources, repository tooling, and capabilities are the default and preferred solutions. Follow this strict order:
+1. Identify the appropriate existing task group.
+2. Consult its approved resources.
+3. Consult the relevant Context7 documentation/library intelligence.
+4. Use existing repository capabilities and tooling.
+5. Use Jules.
+6. Use Gemini.
+7. Consult authoritative/current documentation where necessary.
+8. Only after these resources are genuinely insufficient should a new dependency or external capability be considered.
+
+Do not add technology simply because it is newer, easier, or more convenient.
+
+### 5. New Dependencies (Absolute Last Resort)
+Do not introduce a new package, library, service, or dependency unless there is a demonstrated capability gap. If one genuinely becomes necessary:
+- Identify the exact capability gap.
+- Explain why existing approved resources and repository capabilities cannot solve it.
+- Choose the smallest appropriate addition.
+- Integrate it into the permanent approved library/resource system and place it into the appropriate existing task group(s).
+- Update the relevant documentation so future agents know it exists and why it was approved.
+- Do not create a new task group for it.
+
+*Note: Context7 provides documentation/library intelligence. It does NOT automatically authorize installing a library.*
+
+### 6. MCP Usage (Absolute Last Resort)
+MCPs are completely separate from the Miscellaneous fallback and are the absolute last resort.
+You may only rely upon an MCP after ALL of the following have been exhausted:
+1. Appropriate existing task-group resources.
+2. Approved Context7 resources.
+3. Existing repository capabilities and tooling.
+4. Jules.
+5. Gemini.
+6. Relevant authoritative/current documentation.
+7. Any other already-approved capability available to the repository.
+
+If an MCP is actually required, you must document:
+- The exact capability gap.
+- Why approved resources and existing repository capabilities could not accomplish it.
+- Which MCP capability was required and exactly what it was used for.
+
+Do not use an MCP merely because it is available or convenient. Simply connecting or having access to an MCP does NOT count as relying upon it.
+
+### 7. Android Developers Documentation
+The Context7 resource for Android Developers (`/android/developers`) belongs under the existing **Deep Dive / Investigation** group. Use it when relevant for platform, API, and tooling questions. Do not create an Android-specific task group.
+
+### 8. Use Existing Project Capabilities
+Before changing architecture or adding technology, inspect what the repository already has. Prefer existing libraries, utilities, components, scripts, workflows, testing infrastructure, documentation, deployment infrastructure, security mechanisms, audio infrastructure, and APIs. Do not recreate something that already exists unless there is a demonstrated reason to do so.
+
+### 9. Protected Project Areas
+Do not modify protected infrastructure unless the task explicitly requires it. Preserve existing:
+- Stripe/payment functionality
+- Database schema, state, and migrations
+- Sensitive API routes
+- Authentication and Turnstile
+- Resend email delivery
+- Environment variables and secrets
+- Cloudflare deployment configuration (e.g., `wrangler.jsonc`, `open-next.config.ts`)
+- Existing security safeguards
+- Existing application audio behavior. **Do not remove, redesign, tune, replace, or refactor existing Howler/ZZFX application audio as part of unrelated work.**
+
+### 10. Implementation Philosophy
+Work surgically. Do not make speculative changes. Do not broaden the scope because another change looks interesting or cleaner.
+Follow this flow:
+**Inspect → Identify → Understand → Verify → Choose → Research → Implement → Test → Double-check**
+If you discover an unrelated problem, document it rather than silently expanding the task, unless it is necessary to complete the requested work safely.
+
+### 11. Verification Must Prove Behavior
+Do not treat “the code looks correct” as verification. For anything involving dates, time zones, scheduling, environment variables, deployment, Cloudflare, OpenNext, assets, caching, authentication, security, APIs, build behavior, browser behavior, or platform-specific behavior:
+- **Test the actual behavior where practical.**
+- Use representative cases, edge cases, or environment-specific checks where appropriate.
+- If another AI/reviewer proposes a fix, independently verify that it actually solves the problem (e.g., avoiding the PR #966 timestamp logic error issue).
+
+### 12. Documentation & Library Usage Must Be Genuine
+When approved documentation or library resources are relevant:
+- Actually consult them.
+- Identify the specific resource used and its task group.
+- Use the information appropriately.
+- Report which resources materially informed the implementation.
+- **Never claim a resource was consulted when it was not. Context7 usage should be meaningful, not ceremonial.**
+
+### 13. Documentation Cleanup & Friday Refresh
+When updating governance documentation (like `AGENTS.md`), preserve all unique instructions, safeguards, project-specific requirements, the 8 existing groups, and their resource assignments. You may consolidate duplicate information if it improves clarity, but do not weaken or change the meaning of any instruction.
+- **Friday Documentation Refresh:** The existing GitHub Actions workflow (`.github/workflows/refresh-docs.yml`) must run every Friday at 2:21 AM local time using `America/Halifax` (`cron: '21 2 * * 5'`, `timezone: 'America/Halifax'`). Do not replace this with UTC.
+- **Verification Integrity:** A successful refresh may only report `SUCCESS — [ISO 8601 timestamp with timezone] — VERIFIED`. A failed refresh must report `FAILED — [ISO 8601 timestamp with timezone] — VERIFICATION FAILED` and must never overwrite the last successful refresh record. The timestamp must accurately represent "America/Halifax" with the correct daylight/standard-time offset.
+
+### 14. Verification Requirements (Pre-Submission Checklist)
+Before declaring a task complete, confirm:
+- The original requirements were met.
+- The correct task group was selected and its approved resources were actually consulted.
+- Jules and Gemini participated.
+- No unnecessary dependencies were introduced (and if genuinely required, they are permanently documented).
+- Miscellaneous fallback and MCPs were only used if strictly necessary.
+- Android Developers routes to Deep Dive.
+- Existing safeguards and protected infrastructure (including audio) remain intact.
+- Relevant tests, build/verification checks, and `./jules-verify.sh` were run.
+- `git diff`, `git status`, and generated artifacts (no `tsconfig.tsbuildinfo` committed) were reviewed.
+- Final implementation behaves as intended.
+- Final governance instructions retain all unique requirements.
+
+### 15. Judgment When Instructions Conflict
+Do not blindly follow an instruction if doing so conflicts with the repository's architecture, an existing safeguard, or a technically necessary constraint. If you discover a conflict, architectural limitation, unsafe instruction, redundant governance, or a requirement that cannot safely be satisfied: stop before making a risky change. Explain the issue and use the safest solution that achieves the intended goal. Reliable compliance is the objective, not mechanically reproducing a prescribed patch.
+
+
 ## Routing and Task Groups
 
 The approved architecture contains exactly these eight task groups. When starting a task, identify the task type, route to the corresponding specialist in `.jules/`, use the approved Context7 libraries, and consult the appropriate `.docs/` snapshots.

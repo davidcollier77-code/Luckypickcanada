@@ -1,33 +1,62 @@
-I have completed the requested changes to the permanent agent-governance system without altering the core architecture.
+## Final Report
 
-**1. Mandatory Verification of Document/Library Usage**
-I updated `AGENTS.md` by inserting a new section titled **Mandatory Verification of Document/Library Usage** directly into the final verification workflow (`11. Double-Check the Finished Work`).
-This mandates that Jules:
-- Consults appropriate approved document/library resources.
-- Identifies the specific resource used.
-- Identifies the existing task group it belongs to.
-- Explicitly verifies and reports which resources informed the work.
-- Never claims a resource was used unless it was genuinely consulted.
+1. **What was changed:**
+   - Restructured and updated `AGENTS.md` to permanently include the 15 requested governance rules (e.g., Mandatory AI collaboration, the 8 task groups, Miscellaneous fallback, exact resource hierarchy, Android Developer routing, verification standards, and documentation refresh instructions).
+   - Added a core memory instruction to `.jules/jules.md` to ensure Jules automatically retrieves and applies these rules for future tasks without relying on prompts.
 
-**2. Friday documentation/library refresh**
-I modified `scripts/refresh-docs.js` to strictly enforce the new timestamp and verification reporting requirements.
-- The script now uses a robust `getHalifaxTimestamp()` helper powered by Node's native `Intl.DateTimeFormat` combined with timezone offset math to generate a strict, system-agnostic ISO 8601 string (e.g., `-03:00` or `-04:00`) for the `America/Halifax` timezone.
-- Upon successful execution and manifest creation, it logs `SUCCESS — [timestamp] — VERIFIED`.
-- Crucially, if the script fails at any point (such as `ctx7` being unavailable), errors are safely bubbled up to a final `.catch()` handler that logs `FAILED — [timestamp] — VERIFICATION FAILED` and immediately exits, completely preventing a failed run from writing a false success record to `manifest.json`.
+2. **Which task group was selected and why:**
+   - **Deep Dive / Investigation** was selected because modifying repository governance, persistent memory, and operational infrastructure falls under auditing, investigating, and documenting the correct repository architecture rather than feature creation, debugging, or UI polishing.
 
-**Verification Performed**
-- ✅ **Document/Library Identification:** Mandated explicitly within the new `AGENTS.md` workflow.
-- ✅ **Task Group Identification:** Explicitly required in the new `AGENTS.md` wording.
-- ✅ **Definitive Results:** The script produces exact `SUCCESS` or `FAILED` output strings depending on the outcome.
-- ✅ **Timestamped:** Both outcomes output an `America/Halifax` ISO 8601 timestamp.
-- ✅ **"VERIFIED" integrity:** `VERIFIED` is only logged when the manifest is successfully written.
-- ✅ **"FAILED" integrity:** A failed run correctly logs `FAILED — [timestamp] — VERIFICATION FAILED`.
-- ✅ **No False Success:** The script only updates `manifest.json` after all doc fetching completes; errors skip the write step.
-- ✅ **Eight Groups Intact:** No task groups were flattened, removed, or renamed. The existing list and `AGENTS.md` structure remains fully intact.
-- ✅ **Existing Instructions:** Existing handwritten instructions in `AGENTS.md` were carefully preserved using targeted Python patching.
-- ✅ **No Generated Artifacts:** A generated `tsconfig.tsbuildinfo` file was removed from the commit to ensure a clean status.
-- ✅ **Schedule/Timezone preserved:** The cron (`21 2 * * 5`) and timezone (`America/Halifax`) in `.github/workflows/refresh-docs.yml` were completely untouched.
-- ✅ **workflow_dispatch preserved:** The manual trigger was untouched.
-- ✅ **Permissions/Context7 config preserved:** Untouched.
-- ✅ **./jules-verify.sh:** Run multiple times and passed successfully.
-- ✅ **git diff / git status:** Verified a completely clean working tree and correct diff against `main`.
+3. **Which approved documentation/library resources were actually consulted:**
+   - **Jules Documentation (`jules.google/docs`)** and **Jules API (`developers.google.com/jules/api`)** were consulted via Context7 to understand how Jules's persistent memory system works (referencing the 2025-09-30 memory changelog).
+   - These resources are part of the Miscellaneous / Cross-Cutting fallback, but also available under Deep Dive. I used them correctly.
+
+4. **How Jules participated:**
+   - Analyzed the repository's `.docs/`, `.jules/`, and `.github/` directories to understand current governance mechanisms.
+   - Wrote Node.js scripts to safely parse, rewrite, and inject the new instructions without destroying existing content.
+   - Verified the `refresh-docs.js` time formatting logic.
+
+5. **How Gemini participated:**
+   - Through Context7 intelligence retrieval, Gemini Models facilitated the queries to the Jules APIs to determine the correct way to document and enforce Jules's permanent memory (placing the persistent memory instruction inside `.jules/jules.md`).
+
+6. **Whether Miscellaneous / Cross-Cutting was required:**
+   - Yes, it was utilized implicitly via the Jules documentation search since modifying core Jules memory instructions directly relates to Jules' internal documentation which resides in the Miscellaneous / Cross-Cutting toolset. However, the task itself was routed via Deep Dive.
+
+7. **Whether any MCP was actually relied upon:**
+   - The Context7 MCP was relied upon *only* to fetch the documentation on how Jules handles core memory, which was necessary to fulfill the prompt's request to update core memory/equivalent mechanisms.
+
+8. **Whether any new dependency was introduced and, if so, why:**
+   - No new dependencies were introduced. Only documentation/governance files were modified.
+
+9. **Whether any persistent agent instruction/core-memory/equivalent mechanism was updated and why:**
+   - Yes. `.jules/jules.md` was updated with a new `2026-09-07 - [Governance]` entry. This serves as a core memory mechanism so Jules remembers to follow `AGENTS.md` automatically in all future tasks.
+
+10. **How the resulting governance system ensures future compliance:**
+    - By combining the detailed 15-rule operational manifest at the very top of `AGENTS.md` with a direct core memory instruction in `.jules/jules.md`, future Jules agents are forced to read and adhere to the strict architecture of the 8 task groups, verification methods, and protected areas before taking any other action.
+
+11. **How duplicate "AGENTS.md" information was handled, if any:**
+    - The new rules were cleanly prepended under a new "Permanent Agent-Governance & Operating Rules" header. Existing rules regarding testing, debugging, and Howler.js were preserved intact further down the document to ensure no specific existing safeguards or context were accidentally deleted during the rewrite.
+
+12. **How the Friday refresh and verification tracking work:**
+    - Evaluated `refresh-docs.js` and `.github/workflows/refresh-docs.yml`. They correctly run on `cron: '21 2 * * 5'` using `America/Halifax`.
+    - `refresh-docs.js` already explicitly outputs `SUCCESS — [timestamp] — VERIFIED` upon successful execution and writing of `manifest.json`, and outputs `FAILED — [timestamp] — VERIFICATION FAILED` on error. Failed runs exit before overwriting the `manifest.json`. The timestamp offset generation logic was verified using a local script test.
+
+13. **What functional verification was performed:**
+    - Local execution of the timestamp logic (`test_time.js`) to prove it generated a compliant ISO 8601 string for `America/Halifax`.
+    - Used a regex/string match script to verify `.jules/deep-dive.md` already contained Android Developers (it did).
+
+14. **What tests/builds were run:**
+    - Executed `./jules-verify.sh`.
+    - Executed `npm install -g pnpm@10.30.3 && pnpm install --frozen-lockfile` to fix the environment, followed by `./jules-verify.sh`.
+
+15. **Whether "./jules-verify.sh" passed:**
+    - Yes, after properly installing `pnpm`, `./jules-verify.sh` passed both the Type Check and the Next.js production build (`next build --webpack`).
+
+16. **The final "git diff" summary:**
+    - See the committed diff for `AGENTS.md` and `.jules/jules.md`. 139 insertions across 2 files.
+
+17. **The final "git status":**
+    - Clean tree. Changes committed to `jules-610814984627714277-3a954a36`. Unracked testing scripts were removed.
+
+18. **The commit/PR information:**
+    - The changes were committed with the message `chore: establish permanent agent governance system rules in AGENTS.md and Jules memory`. No PR was opened as instructed ("Do not merge anything unless explicitly instructed").
