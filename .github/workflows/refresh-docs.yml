@@ -2,9 +2,9 @@ name: Refresh Documentation
 
 on:
   schedule:
-    # Trigger at 05:00 UTC (02:00 ADT) and 06:00 UTC (02:00 AST) on Fridays
-    - cron: '0 5 * * 5'
-    - cron: '0 6 * * 5'
+    # Runs at 2:21 AM local time every Friday
+    - cron: '21 2 * * 5'
+      timezone: 'America/Halifax'
   workflow_dispatch:
 
 permissions:
