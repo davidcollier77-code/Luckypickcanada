@@ -49,6 +49,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
         run: |
           node scripts/refresh-docs.js
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > .docs/last-refresh.txt
         env:
           CONTEXT7_API_KEY: ${{ secrets.Context7 }}
 
