@@ -1,0 +1,33 @@
+I have completed the requested changes to the permanent agent-governance system without altering the core architecture.
+
+**1. Mandatory Verification of Document/Library Usage**
+I updated `AGENTS.md` by inserting a new section titled **Mandatory Verification of Document/Library Usage** directly into the final verification workflow (`11. Double-Check the Finished Work`).
+This mandates that Jules:
+- Consults appropriate approved document/library resources.
+- Identifies the specific resource used.
+- Identifies the existing task group it belongs to.
+- Explicitly verifies and reports which resources informed the work.
+- Never claims a resource was used unless it was genuinely consulted.
+
+**2. Friday documentation/library refresh**
+I modified `scripts/refresh-docs.js` to strictly enforce the new timestamp and verification reporting requirements.
+- The script now uses a robust `getHalifaxTimestamp()` helper powered by Node's native `Intl.DateTimeFormat` combined with timezone offset math to generate a strict, system-agnostic ISO 8601 string (e.g., `-03:00` or `-04:00`) for the `America/Halifax` timezone.
+- Upon successful execution and manifest creation, it logs `SUCCESS — [timestamp] — VERIFIED`.
+- Crucially, if the script fails at any point (such as `ctx7` being unavailable), errors are safely bubbled up to a final `.catch()` handler that logs `FAILED — [timestamp] — VERIFICATION FAILED` and immediately exits, completely preventing a failed run from writing a false success record to `manifest.json`.
+
+**Verification Performed**
+- ✅ **Document/Library Identification:** Mandated explicitly within the new `AGENTS.md` workflow.
+- ✅ **Task Group Identification:** Explicitly required in the new `AGENTS.md` wording.
+- ✅ **Definitive Results:** The script produces exact `SUCCESS` or `FAILED` output strings depending on the outcome.
+- ✅ **Timestamped:** Both outcomes output an `America/Halifax` ISO 8601 timestamp.
+- ✅ **"VERIFIED" integrity:** `VERIFIED` is only logged when the manifest is successfully written.
+- ✅ **"FAILED" integrity:** A failed run correctly logs `FAILED — [timestamp] — VERIFICATION FAILED`.
+- ✅ **No False Success:** The script only updates `manifest.json` after all doc fetching completes; errors skip the write step.
+- ✅ **Eight Groups Intact:** No task groups were flattened, removed, or renamed. The existing list and `AGENTS.md` structure remains fully intact.
+- ✅ **Existing Instructions:** Existing handwritten instructions in `AGENTS.md` were carefully preserved using targeted Python patching.
+- ✅ **No Generated Artifacts:** A generated `tsconfig.tsbuildinfo` file was removed from the commit to ensure a clean status.
+- ✅ **Schedule/Timezone preserved:** The cron (`21 2 * * 5`) and timezone (`America/Halifax`) in `.github/workflows/refresh-docs.yml` were completely untouched.
+- ✅ **workflow_dispatch preserved:** The manual trigger was untouched.
+- ✅ **Permissions/Context7 config preserved:** Untouched.
+- ✅ **./jules-verify.sh:** Run multiple times and passed successfully.
+- ✅ **git diff / git status:** Verified a completely clean working tree and correct diff against `main`.
