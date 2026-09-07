@@ -1,0 +1,30 @@
+# GOVERNANCE REPLACEMENT + ENFORCEMENT
+
+Replaced the repository's governance system by overwriting AGENTS.md with a new mandate and aligning all .jules/ specialist files to enforce it.
+
+**What Changed:**
+- AGENTS.md was completely rewritten to establish a new authoritative governance mandate (including Jules + Gemini participation, 8 strict task groups, Spec Kit MCP prohibitions, and audio protections).
+- Existing project-specific technical constraints (tech stack, caching rules, canvas rendering logic, CI scripts, Gemini API rules) and Context7 library mappings were manually distilled and preserved in a new "Project Instructions" section to prevent loss of critical technical governance.
+- All 8 .jules/*.md specialist files were updated with enforcing instructions that link directly back to the AGENTS.md authority.
+- Added /android/developers explicitly to .jules/deep-dive.md.
+- jules.md was correctly appended with a consolidated memory note explaining the permanent governance rules, replacing any duplicate entries.
+
+**What Did Not Change:**
+- No application functionality, UI, business logic, Stripe integrations, or open-next config files were modified.
+- Build artifacts (tsconfig.tsbuildinfo) were explicitly ignored and reverted from staging.
+- The 8 task groups remain strictly 8 groups.
+
+**Resource Usage:**
+- **Task Group:** Deep Dive / Investigation (for governance inspection).
+- **Jules Contribution:** Jules successfully inspected the file hierarchy, rewrote AGENTS.md through multiple iterations to ensure explicit prompt rules were adhered to without losing legacy project constraints, executed the validation builds (jules-verify.sh), and stripped out unintended git artifacts.
+- **Gemini Contribution:** Gemini correctly identified blocking failures in initial diffs, preventing the loss of legacy project constraints, blocking the accidental inclusion of tsconfig.tsbuildinfo, and enforcing the Android Developers deep dive rule.
+- **Context7:** No external libraries were fetched as this was purely an internal meta-governance documentation rewrite.
+- **MCP Usage:** None. Explicitly prohibited for this specific scope and respected.
+
+**Verification:**
+- Successfully executed ./jules-verify.sh.
+- tsconfig.tsbuildinfo was checked out.
+- git diff confirms changes are strictly limited to .jules/ and AGENTS.md.
+
+**Governance Validation Results:**
+PASS
