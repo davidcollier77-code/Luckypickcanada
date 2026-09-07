@@ -299,3 +299,33 @@ Jules does not have a native CLI command to execute Spec Kit commands. To invoke
 4. **Implement/Test/Verify**: Execute the work, run tests, and verify.
 
 Spec Kit helps determine *what* to build and *how* to break it down. The existing repository governance and task groups determine *which resources* to use. Spec Kit does NOT authorize changes to protected systems, introduce new dependencies, or replace any existing governance rules. Jules and Gemini remain mandatory collaborators throughout this workflow.
+
+## 20. Explicit Library Usage Reporting
+
+To ensure strict observability and complement the existing governance (such as mandatory Jules + Gemini collaboration and truthful reporting), agents must explicitly identify the libraries actually consulted and/or used as work progresses.
+
+**Progress Reporting:**
+As a task progresses, when an approved library (from `.docs`, Context7, or the adopted inventory) becomes relevant, clearly identify it in your progress reporting and briefly state what it is being used or consulted for.
+Example: "Library consulted: Howler.js — verifying the existing audio implementation."
+
+**Actual Usage Requirement:**
+Only report a library when it was *actually* consulted or used. Do NOT report a library merely because:
+- it is installed in "package.json";
+- it appears in the repository's adopted-library inventory (Section 18);
+- it is available to Jules;
+- documentation exists for it;
+- an MCP/service connection was established.
+
+A connection or initialization message does NOT count as actual consultation or use. Do not invent or infer usage. This rule does not weaken or replace existing requirements to exhaust local resources before using MCP/Context7 as a last resort.
+
+**Final Report Section:**
+The final task report must include a concise section titled:
+**Libraries Consulted / Used**
+
+For each library actually consulted or used, state:
+1. Library name
+2. Whether it was consulted, used, or both
+3. What it contributed to the task
+
+If no library was specifically consulted or used beyond ordinary repository inspection, explicitly state:
+**Libraries Consulted / Used: None specifically.**
