@@ -158,3 +158,127 @@ Before pushing code or opening a PR, verify changes pass CI locally using `act` 
 * **Audio/Visual Timing:** Synchronize Web Audio directly to HTML5 Canvas visual spawn milestones (using `AudioContext.currentTime`) rather than relying on React state changes or `setTimeout`.
 * **Performance:** Extract full-screen Canvas fill operations outside of particle rendering loops to prevent overdraw. Use `matchMedia('(prefers-reduced-motion: reduce)')` to respect reduced motion settings directly in the animation loop.
 * **Gemini Oracle Integration:** The "Crystal Ball" feature (`functions/api/oracle.js`) calls the Gemini REST API directly (`generativelanguage.googleapis.com`) using `fetch`. Do not install the Gemini Node SDK; maintain the raw REST implementation. Always enforce strict prompt injection sanitization (stripping quotes, brackets, and newlines) before interpolating user input into the prompt.
+
+## 17. Current Site Structure & Feature Map
+
+This section provides a concise orientation map of the current LuckyPickCanada application so agents can quickly understand where major experiences, routes, and supporting code belong.
+
+This is a living governance section. If an explicitly authorized application change materially changes the structure, routes, or relationships described here, this section MUST be updated as part of that same authorized change.
+
+
+**Public Experience**
+
+- "/" — Main homepage and primary LuckyPick experience, including the main number experience, daily lucky content, Lucky Day of the Week, Lucky Color, discovery/community entry points, Suggestion Box, and links to major experiences.
+- "/lucky-meter" — Lucky Meter experience, including daily luck percentage, reveal animation, fortune, sharing, daily reset behavior, and countdown.
+- Lucky Cards — Collectible card experience, including card selection, reveal, artwork, rarity/weighted selection, sharing, collection/binder functionality, and related card logic.
+- "/lucky-map-of-canada" — Lucky Map of Canada experience, including the interactive map and community lucky stories.
+- "/map" — Related map entry point into the Lucky Map experience.
+- "/where-luck-has-been-found-in-canada" — Related map/discovery entry point into the Lucky Map experience.
+- Crystal Ball / Oracle — The Gemini-powered Oracle experience and its supporting client/application areas.
+- "/reveal/[revealId]" — Lucky Pick reveal/result experience.
+- "/about" — About experience.
+
+**Major Application Areas**
+
+- "app/components" — Shared application components.
+- "app/homepage" — Homepage-specific components and functionality.
+- "app/lucky-meter-client" — Lucky Meter implementation and client-side functionality.
+- "app/lucky-map-of-canada" — Lucky Map application area.
+- "app/crystal-ball" — Crystal Ball/Oracle application area.
+- "app/crystal-ball-client" — Crystal Ball client-side functionality.
+- "app/developer-tools" — Developer tooling and supporting utilities.
+- "app/api" — Application API routes and supporting API functionality.
+- "app/admin" — Administrative functionality.
+
+**Shared & Protected Systems**
+
+Major shared or infrastructure systems include global theme/styling, shared layout/navigation, application assets and imagery, audio infrastructure, database/Neon services, APIs, Stripe/payment infrastructure, Resend, authentication/security, Cloudflare Turnstile, environment/secrets, and Cloudflare/OpenNext deployment configuration.
+
+These systems remain subject to all existing protection and authorization rules in this file.
+
+**Structural Change Rule**
+
+When an explicitly authorized change materially alters the application's structure:
+
+1. Identify the affected routes, components, and relationships.
+2. Make only the smallest appropriate structural change.
+3. Verify the resulting repository structure.
+4. Update this Site Structure & Feature Map during the same authorized change.
+5. Verify that the map accurately reflects the resulting repository.
+
+This map is an orientation and governance aid. It does NOT grant permission to restructure or modify any feature.
+
+If the actual repository structure conflicts with this section, do not guess or silently work around the discrepancy. Stop and verify the discrepancy. The verified repository state and explicitly authorized changes are authoritative, and this section must then be corrected to match reality.
+
+## 18. Adopted Libraries & Project Resources
+
+This section is a concise living inventory of the libraries, frameworks, services, development tools, and other permanent technical resources actually adopted by the LuckyPickCanada project.
+
+It is an index, not a replacement for detailed documentation in ".docs".
+
+**Inventory Maintenance Rule**
+
+Whenever Jules introduces a new permanent dependency, library, framework, service, or other technical resource that is actually authorized and adopted by the project:
+
+1. Confirm that it was genuinely necessary and authorized under the existing governance rules.
+2. Add or update the appropriate documentation in ".docs" for the applicable task group.
+3. Document the newly adopted resource here, including its purpose and approved role where useful.
+4. Update this inventory in the SAME authorized change that adopts the resource.
+5. Verify that the inventory matches the actual repository state.
+
+When an adopted dependency or permanent resource is removed, this inventory and its corresponding documentation MUST also be updated.
+
+**Current Adopted Resource Inventory**
+
+*Core Application Stack*
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- PostgreSQL / Neon Serverless
+- OpenNext / "@opennextjs/cloudflare"
+- Cloudflare Pages / Workers
+
+*Application Libraries & Capabilities*
+
+- Howler.js — application audio.
+- Framer Motion — application animation/motion.
+- HTML5 Canvas — graphics/visual rendering where used.
+- Stripe — payment/checkout infrastructure.
+- Resend — email infrastructure.
+- Cloudflare Turnstile — bot/security protection.
+- Gemini API via the project's approved REST integration — Oracle/AI functionality.
+
+*Development & Verification Resources*
+
+- Playwright — browser/application testing.
+- Vitest — automated testing where configured and used.
+- GitHub Actions — repository automation and CI.
+- "act" — local GitHub Actions workflow verification where appropriate.
+- Jules — required development/review collaborator.
+- Gemini — required development/review collaborator.
+
+**Resource Documentation**
+
+- ".docs" is the project's detailed documentation library.
+- Detailed documentation should remain organized according to the existing task-group structure and governance rules.
+- This inventory is a concise index and MUST NOT be treated as a substitute for reading the relevant ".docs" material.
+
+**Inventory Accuracy Rule**
+
+The inventory must reflect verified reality.
+
+If the repository contains a permanently adopted library, dependency, framework, service, or technical resource that is missing from this section, the inventory is out of date and must be corrected through an authorized change.
+
+If an item listed here has been removed or was never actually adopted, it must not remain listed as an active adopted resource.
+
+Do not add a resource merely because it was temporarily tested, mentioned in documentation, connected through an external service, or considered as an option.
+
+The verified repository state and explicitly authorized project decisions are authoritative.
+
+**Important Permission Rule**
+
+The presence of a library or resource in this inventory does NOT automatically authorize its use for every task.
+
+All existing task-group rules, protected-area rules, authorization requirements, resource hierarchy rules, ".docs" requirements, Jules/Gemini requirements, and MCP restrictions remain fully in force.
