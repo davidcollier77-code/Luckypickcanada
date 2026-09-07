@@ -2,8 +2,8 @@ name: Refresh Documentation
 
 on:
   schedule:
-    # Runs at 2:21 AM local time every Friday
-    - cron: '21 2 * * 5'
+    # Runs at 2:21 AM local time every Tuesday and Friday
+    - cron: '21 2 * * 2,5'
       timezone: 'America/Halifax'
   workflow_dispatch:
 
@@ -28,10 +28,10 @@ jobs:
         run: |
           # Get current hour in America/Halifax
           CURRENT_HOUR=$(TZ=America/Halifax date +"%H")
-          CURRENT_DAY=$(TZ=America/Halifax date +"%u") # 1-7, 5 is Friday
+          CURRENT_DAY=$(TZ=America/Halifax date +"%u") # 1-7, 2 is Tuesday, 5 is Friday
 
-          # We want to run exactly at 02:21 AM Atlantic Time on Friday
-          if [ "$CURRENT_HOUR" = "02" ] && [ "$CURRENT_DAY" = "5" ]; then
+          # We want to run exactly at 02:21 AM Atlantic Time on Tuesday and Friday
+          if [ "$CURRENT_HOUR" = "02" ] && { [ "$CURRENT_DAY" = "2" ] || [ "$CURRENT_DAY" = "5" ]; }; then
             echo "Time matches 02:21 AM Atlantic Time. Proceeding with refresh."
             echo "proceed=true" >> $GITHUB_OUTPUT
           else
