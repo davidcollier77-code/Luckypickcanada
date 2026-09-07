@@ -34,14 +34,8 @@ console.log(`Success: ${successCount}`);
 console.log(`Failed: ${failedCount}`);
 
 const MAX_BYTES = 495 * 1024 * 1024;
-let docsSize, stagingSize;
-try {
-    docsSize = parseInt(execSync('du -sb .docs', { encoding: 'utf-8' }).split('\t')[0]);
-    stagingSize = parseInt(execSync('du -sb .context7-staging', { encoding: 'utf-8' }).split('\t')[0]);
-} catch (e) {
-    console.error("Error checking directory sizes:", e.message);
-    process.exit(1);
-}
+const docsSize = parseInt(execSync('du -sb .docs', { encoding: 'utf-8' }).split('\t')[0]);
+const stagingSize = parseInt(execSync('du -sb .context7-staging', { encoding: 'utf-8' }).split('\t')[0]);
 
 console.log(`Docs size: ${docsSize}`);
 console.log(`Staging size: ${stagingSize}`);
