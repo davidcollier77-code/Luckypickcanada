@@ -1,7 +1,6 @@
 const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
 
 const DOCS_DIR = path.join(process.cwd(), '.docs');
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
@@ -180,12 +179,12 @@ function getDirSize(dirPath) {
   return size;
 }
 
-function saveManifest(inventory) {
-  fs.writeFileSync(path.join(DOCS_DIR, 'manifest.json'), JSON.stringify({
+function generateManifestContent(inventory) {
+  return JSON.stringify({
     lastUpdated: new Date().toISOString(),
     groups: LIBRARIES,
     inventory: Array.from(inventory)
-  }, null, 2));
+  }, null, 2);
 }
 
 async function main() {
@@ -202,7 +201,7 @@ async function main() {
     throw new Error('ctx7 CLI not available locally');
   }
 
-  const pendingUpdates = [];
+  let pendingUpdates = [];
   for (const [group, libs] of Object.entries(LIBRARIES)) {
     const groupDir = path.join(DOCS_DIR, group);
     if (!fs.existsSync(groupDir)) {
@@ -238,18 +237,19 @@ async function main() {
 
   const timestamp = getHalifaxTimestamp();
 
-  while (pendingUpdates.length > 0) {
+  // We track if ANY progress was made in the current batch to detect a true deadlock.
+  let madeProgressInBatch = true;
+
+  while (pendingUpdates.length > 0 && madeProgressInBatch) {
     stats.batches++;
     console.log(`Starting Batch ${stats.batches}...`);
+    madeProgressInBatch = false;
 
-    // Independently calculate current docs size
-    let currentDocsSize = getDirSize(DOCS_DIR);
-    console.log(`Current .docs size: ${(currentDocsSize / 1024 / 1024).toFixed(2)} MB`);
+    // We create a new array for items that don't fit in THIS batch
+    const nextBatchPending = [];
 
-    let batchContinues = true;
-
-    while (batchContinues && pendingUpdates.length > 0) {
-      const nextUpdate = pendingUpdates[0];
+    while (pendingUpdates.length > 0) {
+      const nextUpdate = pendingUpdates.shift();
       const lib = nextUpdate.lib;
       const group = nextUpdate.group;
 
@@ -264,11 +264,11 @@ async function main() {
           contentBefore = fs.readFileSync(docPath, 'utf8');
       }
 
-      console.log(`Fetching docs for ${lib} to temp to determine exact size BEFORE downloading into .docs...`);
+      console.log(`Fetching docs for ${lib} to memory...`);
 
       let output;
+      let fetchSuccess = true;
       try {
-        // Fetch into memory first. This acts as our "temp" buffer so we know the EXACT size BEFORE it touches .docs
         output = execFileSync('npx', ['--yes', 'ctx7', 'query', lib, 'full documentation'], {
             encoding: 'utf8'
         });
@@ -276,32 +276,48 @@ async function main() {
         console.error(`Failed to fetch docs for ${lib}:`, e.message);
         stats.failed++;
         stats.errors.push(`Error on ${lib}: ${e.message}`);
-        // If an actual fetch/error condition prevents continuation, halt run.
+        fetchSuccess = false;
+        // If an actual fetch/error condition occurs, we halt the run for safety.
         console.error('Halting run due to fetch error.');
-        batchContinues = false;
         break;
       }
 
       const exactSize = Buffer.byteLength(output, 'utf8');
-      const netSizeIncrease = exactSize - existingSize;
+      const netDocSizeIncrease = exactSize - existingSize;
 
-      if (currentDocsSize + netSizeIncrease > MAX_DOCS_SIZE_BYTES) {
-        console.log(`Library ${lib} (exact size ${exactSize} bytes) would exceed 495 MB limit (current: ${currentDocsSize}, net increase: ${netSizeIncrease}).`);
-        console.log('Capacity full. Breaking batch.');
-        // We do NOT shift it from pendingUpdates, we do NOT save it to .docs. It remains pending.
-        batchContinues = false;
-        break;
+      // Prepare simulated manifest to calculate exact manifest size increase
+      const simulatedInventory = new Set(inventory);
+      simulatedInventory.add(lib);
+      const newManifestContent = generateManifestContent(simulatedInventory);
+      const newManifestSize = Buffer.byteLength(newManifestContent, 'utf8');
+
+      let existingManifestSize = 0;
+      if (fs.existsSync(manifestPath)) {
+          existingManifestSize = fs.statSync(manifestPath).size;
+      }
+      const netManifestSizeIncrease = newManifestSize - existingManifestSize;
+
+      // 3. Race/capacity safety: Re-verify actual .docs size immediately before committing
+      const currentDocsSize = getDirSize(DOCS_DIR);
+      const totalNetIncrease = netDocSizeIncrease + netManifestSizeIncrease;
+
+      if (currentDocsSize + totalNetIncrease > MAX_DOCS_SIZE_BYTES) {
+        console.log(`Library ${lib} would exceed 495 MB limit (current: ${currentDocsSize}, net doc increase: ${netDocSizeIncrease}, net manifest increase: ${netManifestSizeIncrease}).`);
+        console.log('Skipping to see if other pending libraries can shrink the directory.');
+        nextBatchPending.push(nextUpdate); // Save for next batch
+        continue;
       }
 
-      // It fits! We can now safely "download" it into .docs
-      pendingUpdates.shift();
+      // It fits!
+      fs.writeFileSync(docPath, output);
+      fs.writeFileSync(manifestPath, newManifestContent);
+
+      // Update inventory and stats
+      inventory.add(lib);
       stats.pending--;
 
-      fs.writeFileSync(docPath, output);
-
-      if (netSizeIncrease > 0) {
-          stats.bytesAdded += netSizeIncrease;
-      }
+      // 4. Statistics: bytesAdded can be negative
+      stats.bytesAdded += totalNetIncrease;
 
       if (contentBefore === output) {
           stats.unchanged++;
@@ -309,52 +325,23 @@ async function main() {
           stats.updated++;
       }
 
-      inventory.add(lib);
-      saveManifest(inventory);
-
-      // Update current docs size using strict filesystem measurement to be safe
-      currentDocsSize = getDirSize(DOCS_DIR);
+      madeProgressInBatch = true;
     }
 
     if (stats.errors.length > 0) {
-        break; // Halt entire run if there was an error
+        // We halted due to a fetch error, preserve the remaining items to accurately report pending count
+        stats.pending += nextBatchPending.length;
+        break;
     }
 
-    // If we couldn't fit the package, and we are about to start a new batch,
-    // we must wait/poll to give an external process time to clear space,
-    // otherwise we spin endlessly and halt on the boundary.
-    if (pendingUpdates.length > 0) {
-      console.log('Batch ended due to capacity constraint. Polling for space...');
-      
-      // Wait a short period to allow external processes to potentially free space
-      const WAIT_PERIOD_MS = 2000;
-      console.log(`Waiting ${WAIT_PERIOD_MS}ms for potential external cleanup...`);
-      
-      // Sleep to yield to external processes
-      const sleep = (ms) => {
-        const end = Date.now() + ms;
-        while (Date.now() < end) {
-          // Busy wait (in production, consider using a proper sleep mechanism)
-        }
-      };
-      sleep(WAIT_PERIOD_MS);
-      
-      let newSize = getDirSize(DOCS_DIR);
-      console.log(`Size after wait: ${(newSize / 1024 / 1024).toFixed(2)} MB (was ${(currentDocsSize / 1024 / 1024).toFixed(2)} MB)`);
-      
-      if (newSize >= currentDocsSize) {
-         // No space was freed. Check if ANY pending library can possibly fit.
-         const nextLib = pendingUpdates[0].lib;
-         console.error(`Hard ceiling deadlock: No space freed after batch boundary.`);
-         console.error(`Cannot make progress on ${nextLib} - would require space under ${MAX_DOCS_SIZE_BYTES} bytes ceiling.`);
-         console.error(`Current size: ${newSize} bytes, Maximum: ${MAX_DOCS_SIZE_BYTES} bytes`);
-         console.error(`No pending library can fit under the hard ceiling without external intervention.`);
-         stats.errors.push(`Hard ceiling deadlock: No progress possible after batch ${stats.batches}`);
-         break;
-      } else {
-        console.log('Space was freed. Continuing with next batch...');
-        currentDocsSize = newSize;
-      }
+    // Set pendingUpdates to whatever couldn't fit in this batch
+    pendingUpdates.push(...nextBatchPending);
+
+    // 1. Deadlock detection: If we finished the pending array and made NO progress, we are deadlocked.
+    if (pendingUpdates.length > 0 && !madeProgressInBatch) {
+       console.error(`Hard ceiling deadlock: None of the remaining ${pendingUpdates.length} pending libraries could fit.`);
+       stats.errors.push(`Hard ceiling deadlock: ${pendingUpdates.length} libraries cannot fit within the 495 MB limit.`);
+       break;
     }
   }
 
