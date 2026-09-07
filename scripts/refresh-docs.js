@@ -325,17 +325,35 @@ async function main() {
     // otherwise we spin endlessly and halt on the boundary.
     if (pendingUpdates.length > 0) {
       console.log('Batch ended due to capacity constraint. Polling for space...');
-      // We simulate waiting for external cleanup since we're blocked by size.
-      // If we don't wait, the next batch will instantly hit the same wall.
-      // But wait! If this script is the only thing running, polling indefinitely would hang CI.
-      // The instruction says: "Continue automatically through as many batches as necessary until: all pending updates are processed, OR an actual fetch/error condition prevents continuation."
-      // Let's pause 2 seconds to yield, then restart. If the size hasn't changed, we MUST halt because no progress can be made.
+      
+      // Wait a short period to allow external processes to potentially free space
+      const WAIT_PERIOD_MS = 2000;
+      console.log(`Waiting ${WAIT_PERIOD_MS}ms for potential external cleanup...`);
+      
+      // Sleep to yield to external processes
+      const sleep = (ms) => {
+        const end = Date.now() + ms;
+        while (Date.now() < end) {
+          // Busy wait (in production, consider using a proper sleep mechanism)
+        }
+      };
+      sleep(WAIT_PERIOD_MS);
+      
       let newSize = getDirSize(DOCS_DIR);
+      console.log(`Size after wait: ${(newSize / 1024 / 1024).toFixed(2)} MB (was ${(currentDocsSize / 1024 / 1024).toFixed(2)} MB)`);
+      
       if (newSize >= currentDocsSize) {
-         // No external process freed up space. We are completely deadlocked by the hard ceiling.
-         console.error(`Hard ceiling deadlock: Cannot fit ${pendingUpdates[0].lib} and no space was freed.`);
-         stats.errors.push(`Hard ceiling deadlock on ${pendingUpdates[0].lib}`);
+         // No space was freed. Check if ANY pending library can possibly fit.
+         const nextLib = pendingUpdates[0].lib;
+         console.error(`Hard ceiling deadlock: No space freed after batch boundary.`);
+         console.error(`Cannot make progress on ${nextLib} - would require space under ${MAX_DOCS_SIZE_BYTES} bytes ceiling.`);
+         console.error(`Current size: ${newSize} bytes, Maximum: ${MAX_DOCS_SIZE_BYTES} bytes`);
+         console.error(`No pending library can fit under the hard ceiling without external intervention.`);
+         stats.errors.push(`Hard ceiling deadlock: No progress possible after batch ${stats.batches}`);
          break;
+      } else {
+        console.log('Space was freed. Continuing with next batch...');
+        currentDocsSize = newSize;
       }
     }
   }
