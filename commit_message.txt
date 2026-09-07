@@ -1,30 +1,53 @@
-# GOVERNANCE REPLACEMENT + ENFORCEMENT
+chore: collect missing documentation to context7 staging
 
-Replaced the repository's governance system by overwriting AGENTS.md with a new mandate and aligning all .jules/ specialist files to enforce it.
+1. Exact files created/changed:
+- `.context7-staging/library.jsonl` (Created staging library data)
+- `.context7-staging/manifest.json` (Created staging manifest tracking statuses)
+- Scripts used to run the collection locally (`collect.js`, `fix_ids.js`, `finish_manifest.js`, `verify.js`) were created in the local root.
 
-**What Changed:**
-- AGENTS.md was completely rewritten to establish a new authoritative governance mandate (including Jules + Gemini participation, 8 strict task groups, Spec Kit MCP prohibitions, and audio protections).
-- Existing project-specific technical constraints (tech stack, caching rules, canvas rendering logic, CI scripts, Gemini API rules) and Context7 library mappings were manually distilled and preserved in a new "Project Instructions" section to prevent loss of critical technical governance.
-- All 8 .jules/*.md specialist files were updated with enforcing instructions that link directly back to the AGENTS.md authority.
-- Added /android/developers explicitly to .jules/deep-dive.md.
-- jules.md was correctly appended with a consolidated memory note explaining the permanent governance rules, replacing any duplicate entries.
+2. Number of documentation items successfully collected:
+- 20 unique documentation items successfully collected and saved to staging.
 
-**What Did Not Change:**
-- No application functionality, UI, business logic, Stripe integrations, or open-next config files were modified.
-- Build artifacts (tsconfig.tsbuildinfo) were explicitly ignored and reverted from staging.
-- The 8 task groups remain strictly 8 groups.
+3. Number already present/skipped:
+- 0 items already present/skipped from `.docs`.
+- (Note: 20 items were skipped on re-running the script to test resumability).
 
-**Resource Usage:**
-- **Task Group:** Deep Dive / Investigation (for governance inspection).
-- **Jules Contribution:** Jules successfully inspected the file hierarchy, rewrote AGENTS.md through multiple iterations to ensure explicit prompt rules were adhered to without losing legacy project constraints, executed the validation builds (jules-verify.sh), and stripped out unintended git artifacts.
-- **Gemini Contribution:** Gemini correctly identified blocking failures in initial diffs, preventing the loss of legacy project constraints, blocking the accidental inclusion of tsconfig.tsbuildinfo, and enforcing the Android Developers deep dive rule.
-- **Context7:** No external libraries were fetched as this was purely an internal meta-governance documentation rewrite.
-- **MCP Usage:** None. Explicitly prohibited for this specific scope and respected.
+4. Number still pending/failed:
+- 4 items failed (access denied due to non-verified library filters).
 
-**Verification:**
-- Successfully executed ./jules-verify.sh.
-- tsconfig.tsbuildinfo was checked out.
-- git diff confirms changes are strictly limited to .jules/ and AGENTS.md.
+5. Current staging size in bytes and MB:
+- 86907 bytes (0.08 MB).
 
-**Governance Validation Results:**
-PASS
+6. Safe threshold used:
+- 519045120 bytes (495 MB).
+
+7. Current ".docs" size in bytes and MB:
+- 311032 bytes (0.30 MB).
+
+8. Whether the 495 MB guard was exercised:
+- Yes, checked before appending each item, but not hit since limit was far from exceeded.
+
+9. Whether Context7 quota was encountered:
+- No.
+
+10. Exact resume position:
+- Completed the full iteration of all 24 pending items. Script successfully resumes skipping processed files and stopping cleanly.
+
+11. Verification results, including "./jules-verify.sh":
+- Type check passed.
+- Build check passed.
+- All verification steps passed.
+
+12. Exactly what Jules contributed:
+- Wrote Node.js automation scripts (`collect.js`, `verify.js`, `fix_ids.js`, `finish_manifest.js`) to parse the manifest, interact with Context7 CLI, limit size safely, make HTTP calls reliably, construct a valid `.jsonl`, track resumability, and run checks.
+- Performed iterative analysis of Context7 responses and adapted CLI usage dynamically.
+- Verified staging metrics against safe thresholds.
+
+13. Exactly what Gemini contributed:
+- Maintained task constraints mapping out file size computations.
+- Ensured strict compliance with the restriction to keep `docs/manifest.json` unchanged and separating Context7 logic to a staging `.context7-staging` directory.
+- Checked error strings intelligently (`Access denied`) and handled failed state tracking gracefully.
+- Authored the final report adhering precisely to prompt requirements.
+
+Libraries Consulted / Used:
+None specifically.
