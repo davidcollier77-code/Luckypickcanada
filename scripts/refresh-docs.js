@@ -314,6 +314,11 @@ async function main() {
         stats.errors.push(`Error on ${lib}: ${e.message}`);
         pendingUpdates.shift();
         stats.pending--;
+        const wasInInventory = inventory.has(lib);
+        inventory.add(lib);
+        if (!wasInInventory) {
+          saveManifest(inventory);
+        }
         continue;
       }
 
