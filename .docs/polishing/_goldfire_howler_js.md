@@ -83,6 +83,26 @@ N/A
 
 --------------------------------
 
+### Playback Control
+
+Source: https://github.com/goldfire/howler.js/blob/master/README.md
+
+Methods for loading, playing, and unloading audio.
+
+```APIDOC
+## load()
+
+### Description
+This is called by default, but if you set `preload` to false, you must call `load` before you can play any sounds.
+
+## unload()
+
+### Description
+Unload and destroy a Howl object. This will immediately stop all sounds attached to this sound and remove it from the cache.
+```
+
+--------------------------------
+
 ### Global Methods
 
 Source: https://github.com/goldfire/howler.js/blob/master/README.md
@@ -130,26 +150,6 @@ Check supported audio codecs. Returns `true` if the codec is supported in the cu
 
 ### Description
 Unload and destroy all currently loaded Howl objects. This will immediately stop all sounds and remove them from cache.
-```
-
---------------------------------
-
-### Playback Control
-
-Source: https://github.com/goldfire/howler.js/blob/master/README.md
-
-Methods for loading, playing, and unloading audio.
-
-```APIDOC
-## load()
-
-### Description
-This is called by default, but if you set `preload` to false, you must call `load` before you can play any sounds.
-
-## unload()
-
-### Description
-Unload and destroy a Howl object. This will immediately stop all sounds attached to this sound and remove it from the cache.
 ```
 
 --------------------------------

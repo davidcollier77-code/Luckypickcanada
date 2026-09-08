@@ -47,62 +47,24 @@ https://docs.github.com/api/article/body
 - **apiVersion** (string) - Optional - For REST API reference pages, specifies which API version to use.
 ```
 
---------------------------------
+### About GitHub Agentic Workflows
 
-### Search documentation content
+Source: https://github.com/github/docs/blob/main/content/copilot/concepts/agents/about-github-agentic-workflows.md
 
-Source: https://github.com/github/docs/blob/main/content/get-started/using-github-docs/github-docs-api.md
-
-Performs a search across documentation content using query parameters for terms, version, language, and pagination.
-
-```shell
-curl "https://docs.github.com/api/search/v1?query=actions&client_name=docs-api-example&version=free-pro-team&language=en"
-```
+To get started with your first agentic workflow, follow the quickstart guide. For detailed instructions on creating and using agentic workflows, refer to the dedicated documentation. The full reference documentation, including advanced patterns and examples, is available on the GitHub Agentic Workflows documentation site.
 
 --------------------------------
 
-### GET /api/search/v1
+### Finding information in a repository > Internal documentation
 
-Source: https://github.com/github/docs/blob/main/data/llms-txt/docs.md
+Source: https://github.com/github/docs/blob/main/content/get-started/learning-to-code/finding-and-understanding-example-code.md
 
-Performs a search across all documentation content.
-
-```APIDOC
-## GET /api/search/v1
-
-### Description
-Search across all docs content.
-
-### Method
-GET
-
-### Endpoint
-/api/search/v1
-
-### Parameters
-#### Query Parameters
-- **query** (string) - Required - The search term.
-- **language** (string) - Optional - The language code.
-- **version** (string) - Optional - The documentation version.
-```
+You can also look for internal documentation in the repository's contents. This could be a single Markdown file or a directory full of Markdown files. Common names to look for include "docs", "documentation", "wiki", "resources", "help", and "manual".
 
 --------------------------------
 
-### GET https://docs.github.com/api/pagelist/versions
+### About GitHub's documentation fundamentals > Accessible and inclusive
 
-Source: https://github.com/github/docs/blob/main/content/get-started/using-github-docs/github-docs-api.md
+Source: https://github.com/github/docs/blob/main/content/contributing/writing-for-github-docs/about-githubs-documentation-fundamentals.md
 
-Returns all available documentation versions as JSON.
-
-```APIDOC
-## GET https://docs.github.com/api/pagelist/versions
-
-### Description
-Returns all available documentation versions as JSON, including GitHub Enterprise Server version numbers. Use this to find valid values for the :version parameter.
-
-### Method
-GET
-
-### Endpoint
-https://docs.github.com/api/pagelist/versions
-```
+Documentation must be up to date with the latest accessibility standards to ensure it is usable by everyone. Furthermore, content should be written to be inclusive and translation-friendly, which involves adhering to specific screenshot guidelines and following best practices for content that will be localized into other languages.

@@ -10,18 +10,6 @@ func documentSource() -> String!
 
 --------------------------------
 
-### Accessing the doctype property
-
-Source: https://developer.apple.com/documentation/webkit/domdocument/doctype
-
-Retrieves the document type declaration for the DOM document.
-
-```swift
-var doctype: DOMDocumentType! { get }
-```
-
---------------------------------
-
 ### Access the document property
 
 Source: https://developer.apple.com/documentation/webkitjs/domwindow/1633427-document
@@ -50,14 +38,16 @@ Returns the current loading state of the DOMDocument instance.
 `var readyState: String! { get }`
 ```
 
+### WebDocumentRepresentation > Getting document source
+
+Source: https://developer.apple.com/documentation/webkit/webdocumentrepresentation
+
+Implementations of this protocol can provide access to the underlying document source as text and retrieve the document title, provided the class supports source retrieval.
+
 --------------------------------
 
-### Get the document title
+### WebDocumentText > Topics
 
-Source: https://developer.apple.com/documentation/webkit/webdocumentrepresentation/title%28%29
+Source: https://developer.apple.com/documentation/webkit/webdocumenttext
 
-Returns the title associated with the receiving document object.
-
-```swift
-func title() -> String!
-```
+The protocol provides functionality to retrieve the entire document content or only the currently selected text, both as plain strings and as attributed strings. Additionally, it includes methods to select or deselect all text within the document.

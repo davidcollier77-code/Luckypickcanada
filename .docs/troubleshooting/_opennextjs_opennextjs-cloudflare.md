@@ -61,16 +61,16 @@ The documentation covers various aspects of the integration, including Cloudflar
 
 --------------------------------
 
-### Coverage
-
-Source: https://github.com/opennextjs/opennextjs-cloudflare/blob/main/_autodocs/README.md
-
-The documentation provides comprehensive coverage of exported functions, classes, and types, alongside detailed configuration options and environment variables. It also includes practical usage examples, internal implementation details for caches and queues, error handling strategies, and performance optimization advice.
-
---------------------------------
-
 ### Document Access
 
 Source: https://github.com/opennextjs/opennextjs-cloudflare/blob/main/_autodocs/MANIFEST.md
 
 The documentation is organized to support different user needs: new users should begin with the README and index, API lookups are handled via the index, implementation details are found in specific deep-dive sections, and configuration and type references are provided in dedicated files.
+
+--------------------------------
+
+### Coverage
+
+Source: https://github.com/opennextjs/opennextjs-cloudflare/blob/main/_autodocs/README.md
+
+The documentation provides comprehensive coverage of exported functions, classes, and types, alongside detailed configuration options and environment variables. It also includes practical usage examples, internal implementation details for caches and queues, error handling strategies, and performance optimization advice.

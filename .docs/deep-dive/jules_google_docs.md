@@ -10,26 +10,6 @@ jules help
 
 --------------------------------
 
-### Version Command
-
-Source: https://jules.google/docs/cli/reference
-
-Displays the currently installed version of the Jules Tools CLI.
-
-```APIDOC
-## Version
-
-Shows the currently installed version of the Jules Tools CLI.
-
-### Command
-
-```
-jules version
-```
-```
-
---------------------------------
-
 ### Help Commands
 
 Source: https://jules.google/docs/cli/reference
@@ -63,6 +43,26 @@ _Example:_
 
 ```
 jules remote --help
+```
+```
+
+--------------------------------
+
+### Version Command
+
+Source: https://jules.google/docs/cli/reference
+
+Displays the currently installed version of the Jules Tools CLI.
+
+```APIDOC
+## Version
+
+Shows the currently installed version of the Jules Tools CLI.
+
+### Command
+
+```
+jules version
 ```
 ```
 

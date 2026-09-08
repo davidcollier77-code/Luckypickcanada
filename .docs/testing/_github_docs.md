@@ -47,38 +47,19 @@ https://docs.github.com/api/article/body
 - **apiVersion** (string) - Optional - For REST API reference pages, specifies which API version to use.
 ```
 
---------------------------------
-
-### GET /api/search/v1
-
-Source: https://github.com/github/docs/blob/main/data/llms-txt/docs.md
-
-Performs a search across all documentation content.
-
-```APIDOC
-## GET /api/search/v1
-
-### Description
-Search across all docs content.
-
-### Method
-GET
-
-### Endpoint
-/api/search/v1
-
-### Parameters
-#### Query Parameters
-- **query** (string) - Required - The search term.
-- **language** (string) - Optional - The language code.
-- **version** (string) - Optional - The documentation version.
-```
-
 ### About GitHub Agentic Workflows
 
 Source: https://github.com/github/docs/blob/main/content/copilot/concepts/agents/about-github-agentic-workflows.md
 
 To get started with your first agentic workflow, follow the quickstart guide. For detailed instructions on creating and using agentic workflows, refer to the dedicated documentation. The full reference documentation, including advanced patterns and examples, is available on the GitHub Agentic Workflows documentation site.
+
+--------------------------------
+
+### Finding information in a repository > Internal documentation
+
+Source: https://github.com/github/docs/blob/main/content/get-started/learning-to-code/finding-and-understanding-example-code.md
+
+You can also look for internal documentation in the repository's contents. This could be a single Markdown file or a directory full of Markdown files. Common names to look for include "docs", "documentation", "wiki", "resources", "help", and "manual".
 
 --------------------------------
 

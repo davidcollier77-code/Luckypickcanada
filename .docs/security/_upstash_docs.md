@@ -6,6 +6,58 @@ From library maintainers:
 
 
 
+### Fetch Documents by ID Prefix
+
+Source: https://github.com/upstash/docs/blob/main/search/sdks/ts/commands/fetch.mdx
+
+Retrieve documents from the index by providing a prefix that matches the beginning of document IDs.
+
+```APIDOC
+## fetch
+
+### Description
+Used to retrieve documents by their IDs.
+
+### Parameters
+#### Request Body
+- **prefix** (string) - Required - An ID prefix to match document IDs.
+
+### Request Example
+```typescript
+await index.fetch({ prefix: "star-" });
+/*
+[
+  {
+    id: "star-wars"
+    content: { ... },
+    metadata: { ... }
+  },
+  {
+    id: "star-trek",
+    content: { ... },
+    metadata: { ... }
+  }
+]
+*/
+```
+
+### Response
+#### Success Response (200)
+- **FetchResult[]** (Document[]) - Required - An array of documents matching the provided ID prefix. This field is `null` if no document with the specified ID is found.
+  <Expandable defaultOpen="true">
+    <ResponseField name="id" type="string | number" required>
+      The ID of the resulting document.
+    </ResponseField>
+    <ResponseField name="content" type="Record<string, unknown>">
+    </ResponseField>
+    <ResponseField name="metadata" type="Record<string, unknown>">
+    </ResponseField>
+  </Expandable>
+
+```
+
+--------------------------------
+
 ### HSETEX Command Documentation
 
 Source: https://github.com/upstash/docs/blob/main/redis/sdks/py/commands/hash/hsetex.mdx
@@ -289,125 +341,6 @@ const infoResponse = await client.info();
 }
 */
 ```
-```
-
---------------------------------
-
-### DatabaseStats response body schema
-
-Source: https://github.com/upstash/docs/blob/main/devops/developer-api/openapi.yml
-
-Full JSON shape of the response body with all fields including metrics, latency, throughput, billing, etc.
-
-```yaml
-    DatabaseStats:
-      type: object
-      properties:
-        monitor_count:
-          $ref: "#/components/schemas/TimeSeriesData"
-        daily_net_commands:
-          type: integer
-        daily_read_requests:
-          type: integer
-        daily_write_requests:
-          type: integer
-        connection_count:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        keyspace:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        throughput:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        diskusage:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        latencymean:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        latency_99:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        read_latency_mean:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        read_latency_99:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        write_latency_mean:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        write_latency_99:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        hits:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        misses:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        read:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        write:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        dailyrequests:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        days:
-          type: array
-          items:
-            type: string
-        dailybilling:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        dailybandwidth:
-          type: integer
-        bandwidths:
-          type: array
-          items:
-            $ref: "#/components/schemas/TimeSeriesData"
-        total_monthly_bandwidth:
-          type: integer
-        total_monthly_requests:
-          type: integer
-        total_monthly_read_requests:
-          type: integer
-        total_monthly_write_requests:
-          type: integer
-        total_monthly_script_requests:
-          type: integer
-        queue_optimized:
-          type: boolean
-        total_monthly_storage:
-          type: integer
-        current_storage:
-          type: integer
-        total_monthly_billing:
-          type: number
-          format: float
-        command_counts:
-          type: array
-          items:
-            $ref: "#/components/schemas/CommandCount"
 ```
 
 ### Query Options > Controlling Output

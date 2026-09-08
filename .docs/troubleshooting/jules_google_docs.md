@@ -1,3 +1,15 @@
+### Display Jules CLI Help
+
+Source: https://jules.google/docs/changelog/2025-10-02
+
+View all available commands and options for the Jules CLI.
+
+```bash
+jules help
+```
+
+--------------------------------
+
 ### Help Commands
 
 Source: https://jules.google/docs/cli/reference
@@ -36,18 +48,6 @@ jules remote --help
 
 --------------------------------
 
-### Display Jules CLI Help
-
-Source: https://jules.google/docs/changelog/2025-10-02
-
-View all available commands and options for the Jules CLI.
-
-```bash
-jules help
-```
-
---------------------------------
-
 ### Version Command
 
 Source: https://jules.google/docs/cli/reference
@@ -68,59 +68,69 @@ jules version
 
 --------------------------------
 
-### Completion Command
+### Using Your API Key
 
-Source: https://jules.google/docs/cli/reference
+Source: https://jules.google/docs/api/reference/authentication
 
-Generates an autocompletion script for your shell to enable tab completion for jules commands.
+Include the API key in the `x-goog-api-key` header with every request.
 
 ```APIDOC
-## Completion
+## Using Your API Key
 
-Generates an autocompletion script for your shell (e.g., bash, zsh) to enable tab completion for jules commands.
+Include the API key in the `x-goog-api-key` header with every request:
 
-### Command
-
+```bash
+curl -H "x-goog-api-key: YOUR_API_KEY" \
+  https://jules.googleapis.com/v1alpha/sessions
 ```
-jules completion [shell_type]
+
+### Environment Variable (Recommended)
+
+Store your API key in an environment variable:
+
+```bash
+export JULES_API_KEY="your-api-key-here"
 ```
 
-_Example:_
+Then use it in requests:
 
-```
-# Generate completion script for bash
-jules completion bash
+```bash
+curl -H "x-goog-api-key: $JULES_API_KEY" \
+  https://jules.googleapis.com/v1alpha/sessions
 ```
 ```
 
 --------------------------------
 
-### Authentication
+### Get a Session
 
-Source: https://jules.google/docs/cli/reference
+Source: https://jules.google/docs/api/reference/sessions
 
-Commands for logging in and out of your Google account to authenticate with Jules Tools.
+Retrieve a single session by its ID. The response includes the full session object, including outputs if the session has completed.
 
-```APIDOC
-## Login
-
-Logs you into your Google account to authenticate with Jules Tools. This command will open a browser window for the authentication process.
-
-### Command
-
-```
-jules login
-```
+```bash
+curl -H "x-goog-api-key: $JULES_API_KEY" \
+  https://jules.googleapis.com/v1alpha/sessions/1234567
 ```
 
-```APIDOC
-## Logout
-
-Logs you out of your Google account, revoking access for Jules Tools.
-
-### Command
-
-```
-jules logout
-```
+```json
+{
+  "name": "sessions/1234567",
+  "id": "abc123",
+  "prompt": "Add comprehensive unit tests for the authentication module",
+  "title": "Add auth tests",
+  "state": "COMPLETED",
+  "url": "https://jules.google.com/session/abc123",
+  "createTime": "2024-01-15T10:30:00Z",
+  "updateTime": "2024-01-15T11:45:00Z",
+  "outputs": [
+    {
+      "pullRequest": {
+        "url": "https://github.com/myorg/myrepo/pull/42",
+        "title": "Add auth tests",
+        "description": "Added unit tests for authentication module"
+      }
+    }
+  ]
+}
 ```

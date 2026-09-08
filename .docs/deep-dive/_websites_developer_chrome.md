@@ -1,42 +1,29 @@
-### Example HTML Document
+### Check for an active document
 
-Source: https://developer.chrome.com/docs/devtools/dom
+Source: https://developer.chrome.com/docs/extensions/reference/api/offscreen
 
-A basic HTML document structure returned by a server.
+Determines if the extension currently has an active offscreen document.
 
-```html
-<!doctype html>
-<html>
-  <head>
-    <title>Hello, world!</title>
-  </head>
-  <body>
-    <h1>Hello, world!</h1>
-    <p>This is a hypertext document on the World Wide Web.</p>
-    <script src="/script.js" async></script>
-  </body>
-</html>
+```javascript
+chrome.offscreen.hasDocument(): Promise<boolean>
 ```
 
 --------------------------------
 
-### Bootstrap CSS link example
+### chrome.offscreen.hasDocument()
 
-Source: https://developer.chrome.com/docs/devtools/coverage
+Source: https://developer.chrome.com/docs/extensions/reference/api/offscreen
 
-Example of including a full Bootstrap stylesheet in an HTML document, which often results in unused CSS.
+Determines whether the extension has an active document.
 
-```html
-...
-<head>
-  ...
-  <link rel="stylesheet"
-        href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-        crossorigin="anonymous">
-  ...
-</head>
-...
+```APIDOC
+## chrome.offscreen.hasDocument()
+
+### Description
+Determines whether the extension has an active document.
+
+### Returns
+- **Promise<boolean>** - Promise that resolves with the result of whether the extension has an active offscreen document.
 ```
 
 ### Documentation

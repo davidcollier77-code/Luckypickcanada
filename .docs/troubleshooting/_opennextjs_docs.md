@@ -1,48 +1,25 @@
-### @opennextjs/aws to Next.js version compatibility table
+### Basic OpenNext Configuration File
 
-Source: https://github.com/opennextjs/docs/blob/main/pages/aws/compatibility.mdx
+Source: https://github.com/opennextjs/docs/blob/main/pages/aws/config.mdx
 
-Compatibility table mapping each @opennextjs/aws release to the Next.js version it was tested against, directly answering which Next.js versions the AWS adapter supports.
+This is the minimum required content for an `open-next.config.ts` file. The default configuration will be applied if this file is absent.
 
-```mdx
-#### `@opennextjs/aws` Compatibility
-
-| OpenNext Version | Next.js Version |
-| ---------------- | --------------- |
-| 3.6.1 to 3.6.2   | 15.3.2          |
-| 3.5.8 to 3.6.0   | 15.3.1          |
-| 3.5.7            | 15.3.0          |
-| 3.5.6            | 15.2.5          |
-| 3.5.3 to 3.5.5   | 15.2.4          |
-| 3.5.2            | 15.2.2          |
-| 3.5.0 to 3.5.1   | 15.2.0          |
-| 3.4.1 to 3.4.2   | 15.1.6          |
-| 3.4.0            | 15.1.5          |
-| 3.3.1            | 15.1.3          |
-| 3.3.0            | 15.1.0          |
-| 3.2.2            | 15.0.3          |
-| 3.2.1            | 15.0.2          |
-| 3.2.0            | 15.0.1          |
-| 3.1.4 to 3.1.6   | 14.2.15         |
+```typescript
+export default {
+  default: {},
+};
 ```
 
 --------------------------------
 
-### Next.js version support policy for the AWS adapter
+### Enable OpenNext Debug Mode
 
-Source: https://github.com/opennextjs/docs/blob/main/pages/aws/compatibility.mdx
+Source: https://github.com/opennextjs/docs/blob/main/pages/aws/common_issues.mdx
 
-Callout block in the AWS compatibility page that defines which Next.js versions are supported by @opennextjs/aws, including the key limitation that only the latest minor/patch of a major version is aimed for and that versions behind Next 12.3.4 are not supported.
+Set the OPEN_NEXT_DEBUG environment variable to true to enable verbose logging, disable esbuild minifying, and add source maps. Do not use in production as it significantly increases bundle size.
 
-```mdx
-<Callout variant="info">
-  - Earlier versions of Next.js on the same major version should work just fine, if not, please open an [issue
-  with a reproduction](https://github.com/opennextjs/opennextjs-aws/issues/new). - Later versions of Next.js
-  on the same major version **usually** work, but there is no guarantee. - If you run versions of OpenNext on
-  previous major versions of Next.js, we only aim to provide compatibility with the latest minor (and ideally
-  patch) version of that major version. - No versions behind Next 12.3.4 is supported. - The main branch of
-  `@opennextjs/aws` is always tested against the latest version of Next.js.
-</Callout>
+```sh
+OPEN_NEXT_DEBUG=true npx open-next@latest build
 ```
 
 ### OpenNext Components Overview

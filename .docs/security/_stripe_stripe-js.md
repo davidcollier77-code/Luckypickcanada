@@ -1,110 +1,167 @@
-### Full Stripe Configuration
+### PaymentRequestButtonElement Props
 
-Source: https://github.com/stripe/stripe-js/blob/master/_autodocs/configuration.md
+Source: https://docs.stripe.com/js/react_stripe_js/elements/other/payment_request_button_element.md
 
-Example showing a comprehensive configuration including account, API version, locale, beta flags, and developer tools.
+Documentation for the props available on the PaymentRequestButtonElement.
 
-```ts
-const stripe = await loadStripe('pk_test_51Abc123def456ghi789jkl012mno345pqr678stu901vwx234yz', {
-  stripeAccount: 'acct_1Abc123XYZ456',
-  apiVersion: '2024-01-01',
-  locale: 'fr-CA',
-  betas: ['custom_beta_flag'],
-  developerTools: {
-    assistant: {
-      enabled: true
-    }
-  }
-});
+```APIDOC
+## PaymentRequestButtonElement
+
+Use the `PaymentRequestButtonElement` from `@stripe/react-stripe-js` to display Apple Pay, Google Pay,
+Link (also known as Onelink in the UK), and browser-based payment request buttons powered by the Payment Request API.
+
+### Props
+
+- `id`
+  Sets the DOM `id` attribute on the rendered Element container. Use this to
+  target the Element for styling or testing.
+
+- `className`
+  Applies custom CSS classes to the Element container.
+
+- `options`
+  Options for creating a `paymentRequestButton` element.
+    - `classes`
+      Set custom class names on the container DOM element when the Stripe element is in a particular state.
+      - `base`
+        The base class applied to the container.
+Defaults to `StripeElement`.
+      - `complete`
+        The class name to apply when the `Element` is complete.
+Defaults to `StripeElement--complete`.
+      - `empty`
+        The class name to apply when the `Element` is empty.
+Defaults to `StripeElement--empty`.
+      - `focus`
+        The class name to apply when the `Element` is focused.
+Defaults to `StripeElement--focus`.
+      - `invalid`
+        The class name to apply when the `Element` is invalid.
+Defaults to `StripeElement--invalid`.
+      - `webkitAutofill`
+        The class name to apply when the `Element` has its value autofilled by the browser (only on Chrome and Safari).
+Defaults to `StripeElement--webkit-autofill`.
+    - `style`
+      An object used to customize the appearance of the Payment Request Button.
+The object must have a single `paymentRequestButton` field, containing any of the following sub-fields:
+      - `type`
+        Preferred button type to display. Available types, by wallet:
+
+
+Browser card: `default`, `book`, `buy`, or `donate`.
+
+Google Pay: `default`, `buy`, or `donate`.
+
+Apple Pay: `default`, `book`, `buy`, `donate`, `check-out`, `subscribe`, `reload`, `add-money`, `top-up`, `order`, `rent`, `support`, `contribute`, `tip`
+
+
+When a wallet does not support the provided value, `default` is used as a fallback.
+      - `theme`
+        One of `dark`, `light`, or `light-outline`.
+The default is `dark`.
+      - `height`
+        The height of the Payment Request Button. Accepts `px` unit values.
+    - `paymentRequest`
+      A [PaymentRequest](https://docs.stripe.com/js/payment_request.md) object used to configure the element.
+
+- `onClick`
+  Callback called when the customer clicks the Element.
+Receives the [click event payload](https://docs.stripe.com/js/element/events/on_click?type=expressCheckoutElement.md#element_on_click-handler).
+
+- `onReady`
+  Callback called once the Element is fully rendered.
+Recieves the [ready event payload](https://docs.stripe.com/js/element/events/on_ready.md#element_on_ready-handler).
+
+- `onBlur`
+  Callback called when the Element loses focus.
+
+- `onFocus`
+  Callback called when the Element receives focus.
+
+### Example
+
+```title
+Render PaymentRequestButtonElement
+```
+
+```
 ```
 
 --------------------------------
 
-### Complete Payment Form Pattern
+### CardElement
 
-Source: https://github.com/stripe/stripe-js/blob/master/_autodocs/api-reference-elements.md
+Source: https://docs.stripe.com/js/custom_checkout/element_events/on_confirm
 
-A full implementation pattern for creating a payment element and handling form submission with confirmPayment.
+The CardElement component collects full card details with automatic validation.
 
-```ts
-// Create Elements
-const elements = stripe.elements({
-  clientSecret: 'pi_1234567890_secret_abcd'
-});
+```APIDOC
+## CardElement
 
-// Create payment element
-const paymentElement = elements.create('payment');
-paymentElement.mount('#payment-element');
+### Description
+Use the CardElement to collect card details with automatic validation.
 
-// Handle form submission
-document.getElementById('payment-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const result = await stripe.confirmPayment({
-    elements: elements,
-    confirmParams: {
-      return_url: 'https://example.com/checkout/complete'
-    },
-    redirect: 'if_required'
-  });
-
-  if (result?.error) {
-    console.error(result.error.message);
-  }
-});
+### Props
+- **id** (string) - Sets the DOM id attribute on the rendered Element container.
+- **className** (string) - Applies custom CSS classes to the Element container.
+- **options** (object) - Options for creating a card element.
+- **onChange** (function) - Callback called when any value in the change event payload changes.
+- **onNetworksChange** (function) - Callback called when the available card networks change.
+- **onReady** (function) - Callback called once the Element is fully rendered.
+- **onBlur** (function) - Callback called when the Element loses focus.
+- **onFocus** (function) - Callback called when the Element receives focus.
+- **onEscape** (function) - Callback called when the escape key is pressed within the Element.
+- **onLoadError** (function) - Callback called when the Element fails to load.
 ```
 
 --------------------------------
 
-### Concrete usage example prefilling phoneNumber
+### stripe.confirmSetupIntent(clientSecret, element, data)
 
-Source: https://github.com/stripe/stripe-js/blob/master/tests/types/src/valid.ts
+Source: https://docs.stripe.com/js.md
 
-Full example showing how to pass `phoneNumber` under `defaultValues` to `initCheckoutElementsSdk` to prefill the phone field.
+Confirms a SetupIntent using the provided client secret, Stripe Element, and optional data.
 
-```typescript
-stripe.initCheckoutFormSdk({
-  clientSecret: 'cs_test_foo',
-  appearance: {theme: 'stripe'},
-  loader: 'auto',
-  fonts: [{cssSrc: 'https://example.com/font.css'}],
-  savedPaymentMethod: {
-    enableSave: 'auto',
-    enableRedisplay: 'never',
-  },
-  defaultValues: {
-    billingAddress: {
-      name: 'John Doe',
-      address: {
-        country: 'US',
-        line1: '123 Main St',
-        city: 'San Francisco',
-        state: 'CA',
-        postal_code: '94102',
-      },
-    },
-    shippingAddress: {
-      name: 'John Doe',
-      address: {
-        country: 'US',
-      },
-    },
-    email: 'test@example.com',
-    phoneNumber: '+1234567890',
-  },
-});
+```APIDOC
+## stripe.confirmSetupIntent(clientSecret, element, data)
+
+### Description
+Use this method when the customer submits your save payment method form. It gathers payment information from the provided Element and confirms the SetupIntent.
+
+### Parameters
+- **clientSecret** (string) - Required - The client secret of the SetupIntent to confirm.
+- **element** (Element) - Required - An Element used to create a payment method.
+- **data** (object) - Optional - Data to be sent with the request, including payment_method_data and billing_details.
 ```
-
-### Stripe.js Technical Reference Documentation > Documentation Overview
-
-Source: https://github.com/stripe/stripe-js/blob/master/_autodocs/README.md
-
-This technical reference provides comprehensive API documentation, type references, configuration guides, and implementation patterns for @stripe/stripe-js.
 
 --------------------------------
 
-### Stripe.js Documentation
+### Retrieve a SetupIntent
 
-Source: https://github.com/stripe/stripe-js/blob/master/README.md
+Source: https://docs.stripe.com/js/setup_intents/retrieve_setup_intent.md
 
-The Stripe.js documentation provides comprehensive resources for integrating Stripe payments into your web applications. Key resources include the main Stripe.js Docs, the Stripe.js Reference for detailed API information, and specific documentation for using Stripe.js with React.
+Retrieve a SetupIntent using its client secret.
+
+```APIDOC
+## Retrieve a SetupIntent
+
+`stripe.retrieveSetupIntent(clientSecret: string)`
+
+Retrieve a [SetupIntent](https://docs.stripe.com/api/setup_intents.md) using its client secret.
+
+### Parameters
+
+* **clientSecret** (string) - Required - The [client secret](https://docs.stripe.com/api/setup_intents/object.md#setup_intent_object-client_secret) of the `SetupIntent` to retrieve.
+
+### Example
+
+```javascript
+stripe.retrieveSetupIntent('seti_12345_secret_abcdef')
+```
+```
+
+### Elements without an intent > options
+
+Source: https://docs.stripe.com/js/elements_object/update_address_element
+
+Advanced configuration options such as setupFutureUsage, captureMethod, and onBehalfOf allow for fine-tuned control over payment behavior. These settings should align with the corresponding values used on the Intent during payment confirmation to ensure consistency.

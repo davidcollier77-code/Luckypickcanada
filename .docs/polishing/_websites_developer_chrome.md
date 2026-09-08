@@ -1,20 +1,29 @@
-### Bootstrap CSS link example
+### Check for an active document
 
-Source: https://developer.chrome.com/docs/devtools/coverage
+Source: https://developer.chrome.com/docs/extensions/reference/api/offscreen
 
-Example of including a full Bootstrap stylesheet in an HTML document, which often results in unused CSS.
+Determines if the extension currently has an active offscreen document.
 
-```html
-...
-<head>
-  ...
-  <link rel="stylesheet"
-        href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-        crossorigin="anonymous">
-  ...
-</head>
-...
+```javascript
+chrome.offscreen.hasDocument(): Promise<boolean>
+```
+
+--------------------------------
+
+### chrome.offscreen.hasDocument()
+
+Source: https://developer.chrome.com/docs/extensions/reference/api/offscreen
+
+Determines whether the extension has an active document.
+
+```APIDOC
+## chrome.offscreen.hasDocument()
+
+### Description
+Determines whether the extension has an active document.
+
+### Returns
+- **Promise<boolean>** - Promise that resolves with the result of whether the extension has an active offscreen document.
 ```
 
 ### Documentation
@@ -38,11 +47,3 @@ The Document Picture-in-Picture API allows websites to provide richer experience
 Source: https://developer.chrome.com/docs/crux/release-notes
 
 The CrUX API documentation has been updated to include the CrUX API Explorer, allowing users to quickly check API responses directly within the documentation. This tool provides support for generating curl, HTTP, and JavaScript snippets when viewed in full screen.
-
---------------------------------
-
-### Move DOM and window calls to an offscreen document
-
-Source: https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers
-
-Extensions requiring access to DOM or window objects without opening visible tabs can use the Offscreen API. This allows for the creation of undisplayed documents that function as full web pages. These documents do not share APIs with other extension contexts, except for message passing, which is used to communicate with the extension service worker.
