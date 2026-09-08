@@ -1,6 +1,13 @@
 ## Libraries Consulted / Used
 
-* **Libraries Consulted / Used: None specifically.**
+* **Jules Documentation** (jules.google/docs) — Consulted for task orchestration and repository workflow guidance
+* **Jules API Documentation** (developers.google.com/jules/api) — Consulted for understanding available Jules capabilities
+* **Gemini CLI Documentation** (/google-gemini/gemini-cli) — Consulted for AI collaboration requirements
+* **Gemini API Documentation** (/websites/ai_google_dev_gemini-api) — Consulted for AI integration guidance
+* **Repository Instruction Files:**
+  - AGENTS.md — Consulted for governance requirements, task-group routing, resource hierarchy, and documentation provenance rules
+  - .docs/manifest.json — Inspected to understand existing library structure and inventory requirements
+  - scripts/refresh-docs.js — Inspected to verify library mapping consistency
 
 ## Summary of Changes
 
