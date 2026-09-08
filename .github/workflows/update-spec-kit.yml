@@ -1,0 +1,61 @@
+name: Update Spec Kit
+
+on:
+  schedule:
+    - cron: '21 2 * * 2,5' # Scheduled periodically
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-spec-kit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Install pnpm
+        run: npm install -g pnpm@10.30.3
+
+      - name: Upgrade Spec Kit
+        run: |
+          # The official Spec Kit upgrade process for CLI, integrations, and extensions
+          # We must NOT use --force.
+
+          # Upgrading the CLI
+          specify upgrade
+
+          # Upgrading integrations
+          specify integration upgrade
+
+          # Upgrading extensions
+          specify extension upgrade
+
+      - name: Validate Integration Status
+        run: specify integration status --json
+
+      - name: Run Governance Validation
+        run: ./jules-verify.sh
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update GitHub Spec Kit"
+          title: "chore: Update GitHub Spec Kit"
+          body: |
+            Automated update of GitHub Spec Kit CLI, integrations, and extensions.
+
+            This PR was generated automatically by the Spec Kit update workflow.
+            The `specify integration status --json` and `./jules-verify.sh` governance checks have run.
+          branch: "update/spec-kit"
+          base: "main"
+          delete-branch: true
