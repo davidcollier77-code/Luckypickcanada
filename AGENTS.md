@@ -126,7 +126,9 @@ Repository documentation must be genuine, useful, and verifiable. Do not create 
 
 **Tuesday and Friday Documentation Refresh:**
 - The existing GitHub Actions workflow (`.github/workflows/refresh-docs.yml`) must run every Tuesday and Friday at 2:21 AM local time using `America/Halifax` (`cron: '21 2 * * 2,5'`, `timezone: 'America/Halifax'`). Do not replace this with UTC.
-- A failed refresh must not overwrite the last-known-good result.
+- The existing GitHub Actions workflow (`.github/workflows/refresh-docs.yml`) runs every Tuesday and Friday at 2:21 AM Atlantic Time.
+- The workflow uses two UTC cron schedules (`21 5 * * 2,5` for ADT and `21 6 * * 2,5` for AST) with a runtime timezone gate that verifies the current Atlantic Time hour before proceeding.
+- Do not replace the existing UTC schedule + runtime-gate architecture with a timezone-aware cron expression.
 - A successful refresh must report `SUCCESS — [ISO 8601 timestamp with timezone] — VERIFIED`.
 - A failed refresh must report `FAILED — [ISO 8601 timestamp with timezone] — VERIFICATION FAILED`.
 
