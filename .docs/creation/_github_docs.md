@@ -47,24 +47,104 @@ https://docs.github.com/api/article/body
 - **apiVersion** (string) - Optional - For REST API reference pages, specifies which API version to use.
 ```
 
-### About GitHub Agentic Workflows
+--------------------------------
 
-Source: https://github.com/github/docs/blob/main/content/copilot/concepts/agents/about-github-agentic-workflows.md
+### GET /api/search/v1
 
-To get started with your first agentic workflow, follow the quickstart guide. For detailed instructions on creating and using agentic workflows, refer to the dedicated documentation. The full reference documentation, including advanced patterns and examples, is available on the GitHub Agentic Workflows documentation site.
+Source: https://github.com/github/docs/blob/main/data/llms-txt/docs.md
+
+Performs a search across all documentation content.
+
+```APIDOC
+## GET /api/search/v1
+
+### Description
+Search across all docs content.
+
+### Method
+GET
+
+### Endpoint
+/api/search/v1
+
+### Parameters
+#### Query Parameters
+- **query** (string) - Required - The search term.
+- **language** (string) - Optional - The language code.
+- **version** (string) - Optional - The documentation version.
+```
 
 --------------------------------
 
-### Finding information in a repository > Internal documentation
+### GET https://docs.github.com/api/pagelist/versions
 
-Source: https://github.com/github/docs/blob/main/content/get-started/learning-to-code/finding-and-understanding-example-code.md
+Source: https://github.com/github/docs/blob/main/content/get-started/using-github-docs/github-docs-api.md
 
-You can also look for internal documentation in the repository's contents. This could be a single Markdown file or a directory full of Markdown files. Common names to look for include "docs", "documentation", "wiki", "resources", "help", and "manual".
+Returns all available documentation versions as JSON.
+
+```APIDOC
+## GET https://docs.github.com/api/pagelist/versions
+
+### Description
+Returns all available documentation versions as JSON, including GitHub Enterprise Server version numbers. Use this to find valid values for the :version parameter.
+
+### Method
+GET
+
+### Endpoint
+https://docs.github.com/api/pagelist/versions
+```
 
 --------------------------------
 
-### About GitHub's documentation fundamentals > Accessible and inclusive
+### Render a markdown document
 
-Source: https://github.com/github/docs/blob/main/content/contributing/writing-for-github-docs/about-githubs-documentation-fundamentals.md
+Source: https://github.com/github/docs/blob/main/content/rest/markdown/markdown.md
 
-Documentation must be up to date with the latest accessibility standards to ensure it is usable by everyone. Furthermore, content should be written to be inclusive and translation-friendly, which involves adhering to specific screenshot guidelines and following best practices for content that will be localized into other languages.
+This endpoint renders a markdown document as an HTML page or as raw text.
+
+```APIDOC
+## POST /markdown
+
+### Description
+
+This endpoint renders a markdown document as an HTML page or as raw text.
+
+### Method
+
+POST
+
+### Endpoint
+
+/markdown
+
+### Request Body
+
+- **text** (string) - Required - The markdown text to render.
+- **mode** (string) - Optional - The rendering mode. Can be `gfm` for GitHub Flavored Markdown or `markdown` for the original Markdown format. Defaults to `markdown`.
+- **context** (string) - Optional - The repository context, used to render GFM references. For example, `octo-org/octo-repo`.
+
+### Request Example
+
+```json
+{
+  "text": "# Hello World\n\nThis is **bold** text.",
+  "mode": "gfm",
+  "context": "octo-org/octo-repo"
+}
+```
+
+### Response
+
+#### Success Response (200)
+
+- **rendered_output** (string) - The rendered markdown as HTML or raw text.
+
+#### Response Example
+
+```json
+{
+  "rendered_output": "<h1>Hello World</h1>\n<p>This is <strong>bold</strong> text.</p>"
+}
+```
+```
