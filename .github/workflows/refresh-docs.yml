@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Check Timezone (Atlantic Time)
         id: tzcheck
@@ -79,7 +79,7 @@ jobs:
           body: |
             Automated documentation refresh from Context7 sources.
 
-            This PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved 39-library inventory.
+            This PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved 46-library inventory.
           branch: auto/docs-refresh
           delete-branch: true
           base: main
