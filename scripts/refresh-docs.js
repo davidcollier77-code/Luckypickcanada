@@ -125,7 +125,8 @@ const LIBRARIES = {
     "/microsoft/playwright",
     "/vitest-dev/vitest",
     "/websites/developer_chrome",
-    "/websites/developer_apple_webkit"
+    "/websites/developer_apple_webkit",
+    "/android/developers"
   ],
   seo: [
     "/vercel/next.js",
@@ -269,7 +270,7 @@ async function main() {
       let output;
       try {
         // Fetch into memory first. This acts as our "temp" buffer so we know the EXACT size BEFORE it touches .docs
-        output = execFileSync('npx', ['--yes', 'ctx7', 'query', lib, 'full documentation'], {
+        output = execFileSync('npx', ['--yes', 'ctx7', 'docs', lib, 'full documentation'], {
             encoding: 'utf8'
         });
       } catch (e) {
