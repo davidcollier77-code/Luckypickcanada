@@ -1,4 +1,0 @@
-Governance constraints checked:
-- 495 MB local .docs limit not exceeded (no new docs)
-- No top-level zzfx imports used
-- Build passes locally using correct Node/pnpm environments
