@@ -9,8 +9,8 @@ const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
 const LIBRARIES = {
   "creation": [
     "/github/docs",
-    "/websites/jules_google",
-    "/websites/developers_google_jules_api",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
     "/vercel/next.js",
     "/reactjs/react.dev",
     "/microsoft/typescript",
@@ -33,8 +33,8 @@ const LIBRARIES = {
   ],
   "troubleshooting": [
     "/github/docs",
-    "/websites/jules_google",
-    "/websites/developers_google_jules_api",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
     "/vercel/next.js",
     "/reactjs/react.dev",
     "/microsoft/typescript",
@@ -64,8 +64,8 @@ const LIBRARIES = {
     "/goldfire/howler.js",
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
-    "/websites/jules_google",
-    "/websites/developers_google_jules_api",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api",
     "/dequelabs/axe-core",
@@ -79,8 +79,8 @@ const LIBRARIES = {
   ],
   "testing": [
     "/github/docs",
-    "/websites/jules_google",
-    "/websites/developers_google_jules_api",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
     "/vercel/next.js",
     "/reactjs/react.dev",
     "/microsoft/typescript",
@@ -115,8 +115,8 @@ const LIBRARIES = {
     "/github/docs",
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
-    "/websites/jules_google",
-    "/websites/developers_google_jules_api",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api",
     "/dropbox/zxcvbn",
@@ -126,15 +126,15 @@ const LIBRARIES = {
     "/goldfire/howler.js",
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
-    "/websites/jules_google",
-    "/websites/developers_google_jules_api",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api"
   ],
   "deep-dive": [
     "/github/docs",
-    "/websites/jules_google",
-    "/websites/developers_google_jules_api",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
     "/vercel/next.js",
     "/reactjs/react.dev",
     "/microsoft/typescript",
@@ -175,8 +175,8 @@ const LIBRARIES = {
     "/github/docs",
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
-    "/websites/jules_google",
-    "/websites/developers_google_jules_api",
+    "jules.google/docs",
+    "developers.google.com/jules/api",
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api",
     "/google/search-central",
@@ -236,12 +236,7 @@ async function main() {
     fs.mkdirSync(DOCS_DIR, { recursive: true });
   }
 
-  try {
-    execSync('npx --no-install ctx7 --version', { stdio: 'ignore' });
-  } catch (e) {
-    console.error('ctx7 CLI not available locally. Failing.');
-    throw new Error('ctx7 CLI not available locally');
-  }
+
 
   const pendingUpdates = [];
   for (const [group, libs] of Object.entries(LIBRARIES)) {
@@ -317,10 +312,9 @@ async function main() {
         console.error(`Failed to fetch docs for ${lib}:`, e.message);
         stats.failed++;
         stats.errors.push(`Error on ${lib}: ${e.message}`);
-        // If an actual fetch/error condition prevents continuation, halt run.
-        console.error('Halting run due to fetch error.');
-        batchContinues = false;
-        break;
+        pendingUpdates.shift();
+        stats.pending--;
+        continue;
       }
 
       const exactSize = Buffer.byteLength(output, 'utf8');
@@ -364,9 +358,7 @@ async function main() {
       currentDocsSize = getDirSize(DOCS_DIR);
     }
 
-    if (stats.errors.length > 0) {
-        break; // Halt entire run if there was an error
-    }
+
 
     // If we couldn't fit the package, and we are about to start a new batch,
     // we must wait/poll to give an external process time to clear space,
