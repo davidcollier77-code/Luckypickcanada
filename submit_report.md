@@ -1,0 +1,10 @@
+- **Exact file changed**: `AGENTS.md`
+- **Exact section added or modified**: Added subsection `## 21. Documentation Use During Workflow`
+- **Repository-local instruction files actually consulted**: `AGENTS.md` (specifically existing Sections 17-20 for context on structure and formatting), `.jules/jules.md`, `.jules/creation.md`, and `.jules/troubleshooting.md`.
+- **Jules documentation actually consulted**: None specifically beyond instructions provided in `.jules/` routing files, as there was no coding implementation requiring API or framework details.
+- **Gemini documentation actually consulted**: None specifically, for the same reason.
+- **How those resources informed the change**: The local repository instructions provided the tone, formatting constraints, and existing governance rules (like mandatory Jules + Gemini collaboration and explicit library reporting), ensuring the new section seamlessly integrated without overriding existing directives.
+- **Confirmation that the existing governance remains intact**: Verified via `grep` and review of the appended file. No existing lines were removed or altered.
+- **Confirmation that the new workflow-visibility requirement is now present**: Verified via reading the file end. The new requirement explicitly demands documentation consultation, forbids substituting availability for use, and requires final report documentation.
+- **Any ambiguity or conflict you found**: None. The change perfectly complements Section 20 ("Explicit Library Usage Reporting").
+- **Final diff for review**: Available via `git diff --cached` (appended to the bottom of AGENTS.md).

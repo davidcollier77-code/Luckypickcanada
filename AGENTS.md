@@ -329,3 +329,17 @@ For each library actually consulted or used, state:
 
 If no library was specifically consulted or used beyond ordinary repository inspection, explicitly state:
 **Libraries Consulted / Used: None specifically.**
+
+## 21. Documentation Use During Workflow
+
+For every repository task, Jules must genuinely consult and use the applicable Jules documentation and Gemini documentation available in the repository's approved documentation library.
+
+Jules must also inspect and follow applicable repository-local instruction files, including "AGENTS.md", ".jules/" instructions, and other relevant agent or instruction files where they exist.
+
+Jules remains responsible for carrying out the repository work and making the final implementation decisions. Documentation informs the work; it does not transfer responsibility for implementation.
+
+During the active workflow, Jules must record or reflect which applicable documentation and repository instruction files were actually consulted and, where relevant, how they informed the work.
+
+A documentation file merely existing in the library does not constitute actual use. Likewise, an MCP connection, initialization event, or service-availability event does not constitute evidence that documentation was actually consulted or used.
+
+The final task report must explicitly identify the Jules documentation, Gemini documentation, and relevant repository instruction files actually consulted.
