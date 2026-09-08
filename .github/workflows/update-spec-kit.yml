@@ -26,7 +26,6 @@ jobs:
         run: npm install -g pnpm@10.30.3
 
       - name: Upgrade Spec Kit
-        continue-on-error: false
         run: |
           # The official Spec Kit upgrade process for CLI, integrations, and extensions
           # We must NOT use --force.
@@ -41,14 +40,10 @@ jobs:
           specify extension upgrade
 
       - name: Validate Integration Status
-        continue-on-error: false
         run: specify integration status --json
 
       - name: Run Governance Validation
-        continue-on-error: false
-        run: |
-          chmod +x ./jules-verify.sh
-          ./jules-verify.sh
+        run: ./jules-verify.sh
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
