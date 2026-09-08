@@ -299,24 +299,31 @@ async function main() {
         break;
       }
 
-      // It fits! We can now safely "download" it into .docs
+      // It fits! We can now process it into .docs
       pendingUpdates.shift();
       stats.pending--;
 
-      fs.writeFileSync(docPath, output);
-
-      if (netSizeIncrease > 0) {
-          stats.bytesAdded += netSizeIncrease;
-      }
+      let isNewOrUpdated = false;
 
       if (contentBefore === output) {
+          console.log(`CURRENT: ${lib} (no changes)`);
           stats.unchanged++;
       } else {
+          console.log(`UPDATED: ${lib}`);
           stats.updated++;
+          fs.writeFileSync(docPath, output);
+          if (netSizeIncrease > 0) {
+              stats.bytesAdded += netSizeIncrease;
+          }
+          isNewOrUpdated = true;
       }
 
+      const wasInInventory = inventory.has(lib);
       inventory.add(lib);
-      saveManifest(inventory);
+
+      if (isNewOrUpdated || !wasInInventory) {
+          saveManifest(inventory);
+      }
 
       // Update current docs size using strict filesystem measurement to be safe
       currentDocsSize = getDirSize(DOCS_DIR);
