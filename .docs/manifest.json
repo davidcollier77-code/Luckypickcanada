@@ -17,7 +17,6 @@
       "/bvaughn/react-error-boundary",
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
-      "/dropbox/zxcvbn",
       "/dropbox/zxcvbn"
     ],
     "troubleshooting": [
@@ -54,7 +53,6 @@
       "developers.google.com/jules/api",
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
-      "/dequelabs/axe-core",
       "/dequelabs/axe-core"
     ],
     "testing": [
@@ -73,7 +71,6 @@
       "/websites/developer_apple_webkit",
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
-      "/dequelabs/axe-core",
       "/dequelabs/axe-core"
     ],
     "security": [
@@ -94,7 +91,6 @@
       "developers.google.com/jules/api",
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
-      "/dropbox/zxcvbn",
       "/dropbox/zxcvbn"
     ],
     "audio": [
@@ -129,7 +125,6 @@
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "/android/developers",
-      "/dequelabs/axe-core",
       "/dequelabs/axe-core"
     ],
     "seo": [
