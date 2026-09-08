@@ -65,22 +65,21 @@ The main Next.js framework lives in `packages/next/`. This is what gets publishe
 
 --------------------------------
 
-### Configure Agent Guidance in AGENTS.md (Markdown)
+### Inspect Next.js Bundled Documentation Directory Structure
 
 Source: https://github.com/vercel/next.js/blob/canary/docs/01-app/02-guides/ai-agents.mdx
 
-Directs AI coding agents to read bundled docs located in node_modules before generating code. Keep custom instructions outside the managed comment block so they persist across updates.
+Displays the layout of Next.js docs bundled inside node_modules. Agents can access this directory locally to reference version-accurate documentation.
 
-```markdown
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
+```txt
+node_modules/next/dist/docs/
+├── 01-app/
+│   ├── 01-getting-started/
+│   ├── 02-guides/
+│   └── 03-api-reference/
+├── 02-pages/
+├── 03-architecture/
+└── index.mdx
 ```
 
 ### Step 1: Point agents at the bundled docs > Docs over the network

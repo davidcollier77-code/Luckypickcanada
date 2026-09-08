@@ -1,110 +1,20 @@
 ### List Sources
 
-Source: https://developers.google.com/jules/api
+Source: https://developers.google.com/jules/api/reference/rest/v1alpha/sources
 
-Retrieves a list of all sources connected to Jules. This is useful for identifying the name of a source you want to work with.
+Retrieves a list of all configured sources.
 
 ```APIDOC
-## List Sources
+## GET /v1alpha/sources
 
 ### Description
-Retrieves a list of all sources connected to Jules.
+Lists sources.
 
 ### Method
 GET
 
 ### Endpoint
 /v1alpha/sources
-
-### Request Example
-```bash
-curl 'https://jules.googleapis.com/v1alpha/sources' \
-    -H 'X-Goog-Api-Key: YOUR_API_KEY'
-```
-
-### Response Example
-```json
-{
-  "sources": [
-    {
-      "name": "sources/github/bobalover/boba",
-      "id": "github/bobalover/boba",
-      "githubRepo": {
-        "owner": "bobalover",
-        "repo": "boba"
-      }
-    }
-  ],
-  "nextPageToken": "github/bobalover/boba-web"
-}
-```
-```
-
---------------------------------
-
-### Create Session
-
-Source: https://developers.google.com/jules/api
-
-Creates a new session with the Jules API. You need to provide a prompt and the source name.
-
-```APIDOC
-## Create Session
-
-### Description
-Creates a new session within a specified source. Optionally configures automation and titles the session.
-
-### Method
-POST
-
-### Endpoint
-/v1alpha/sessions
-
-### Parameters
-#### Request Body
-- **prompt** (string) - Required - The initial prompt for the session.
-- **sourceContext** (object) - Required - Context about the source.
-  - **source** (string) - Required - The name of the source (e.g., "sources/github/bobalover/boba").
-  - **githubRepoContext** (object) - Optional - Context specific to GitHub repositories.
-    - **startingBranch** (string) - Optional - The branch to start from.
-- **automationMode** (string) - Optional - Specifies the automation mode (e.g., "AUTO_CREATE_PR"). Defaults to no automatic PR creation.
-- **title** (string) - Optional - A title for the session.
-- **requirePlanApproval** (boolean) - Optional - If true, requires explicit plan approval. Defaults to false.
-
-### Request Example
-```bash
-curl 'https://jules.googleapis.com/v1alpha/sessions' \
-    -X POST \
-    -H "Content-Type: application/json" \
-    -H 'X-Goog-Api-Key: YOUR_API_KEY' \
-    -d '{
-      "prompt": "Create a boba app!",
-      "sourceContext": {
-        "source": "sources/github/bobalover/boba",
-        "githubRepoContext": {
-          "startingBranch": "main"
-        }
-      },
-      "automationMode": "AUTO_CREATE_PR",
-      "title": "Boba App"
-    }'
-```
-
-### Response Example
-```json
-{
-  "name": "sessions/31415926535897932384",
-  "id": "31415926535897932384",
-  "title": "Boba App",
-  "sourceContext": {
-    "source": "sources/github/bobalover/boba",
-    "githubRepoContext": {
-      "startingBranch": "main"
-    }
-  },
-  "prompt": "Create a boba app!"
-}
-```
 ```
 
 --------------------------------
@@ -138,23 +48,60 @@ GET
 
 --------------------------------
 
-### Get Source
+### list
 
-Source: https://developers.google.com/jules/api/reference/rest/v1alpha/sources
+Source: https://developers.google.com/jules/api/reference/rest/v1alpha/sessions
 
-Retrieves a single source by its identifier.
+Lists all available sessions.
 
 ```APIDOC
-## GET /v1alpha/sources/{source}
+## list
 
 ### Description
-Gets a single source.
+Lists all sessions.
 
 ### Method
 GET
 
 ### Endpoint
-/v1alpha/sources/{source}
+/v1alpha/sessions
+
+### Response
+#### Success Response (200)
+- **sessions** (array[Session]) - A list of sessions.
+```
+
+--------------------------------
+
+### create
+
+Source: https://developers.google.com/jules/api/reference/rest/v1alpha/sessions
+
+Creates a new session.
+
+```APIDOC
+## create
+
+### Description
+Creates a new session.
+
+### Method
+POST
+
+### Endpoint
+/v1alpha/sessions:create
+
+### Request Body
+```json
+{
+  "name": "string",
+  "description": "string"
+}
+```
+
+### Response
+#### Success Response (200)
+- **session** (Session) - The created session.
 ```
 
 --------------------------------

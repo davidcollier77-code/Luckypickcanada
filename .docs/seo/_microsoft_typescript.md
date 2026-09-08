@@ -105,77 +105,32 @@ get getDocumentationComment(): {
 
 --------------------------------
 
-### Incremental program watcher — watch mode with strategy conventions
+### GetSymbolDocumentationComment — Go backend implementation rendering documentation as plain text
 
-Source: https://github.com/microsoft/typescript/blob/main/tsc/testdata/tests/cases/compiler/APISample_Watch.ts
+Source: https://github.com/microsoft/typescript/blob/main/tsc/internal/ls/jsdoc.go
 
-Official API sample showing watch mode with inline documentation of conventions for program creation strategies: createEmitAndSemanticDiagnosticsBuilderProgram (incremental re-check + emit), createSemanticDiagnosticsBuilderProgram (type-check only), and createAbstractBuilder (full check). Documents when to use each.
+Gathers JSDoc comment text from each unique declaration, deduplicates, and joins with newlines. Backs Symbol.getDocumentationComment.
 
-```typescript
-import ts = require("typescript");
-
-const formatHost: ts.FormatDiagnosticsHost = {
-    getCanonicalFileName: path => path,
-    getCurrentDirectory: ts.sys.getCurrentDirectory,
-    getNewLine: () => ts.sys.newLine,
+```go
+func GetSymbolDocumentationComment(c *checker.Checker, symbol *ast.Symbol) string {
+	if symbol == nil {
+		return ""
+	}
+	var parts []string
+	var seen collections.Set[*ast.Node]
+	for _, decl := range symbol.Declarations {
+		if decl == nil {
+			continue
+		}
+		if !seen.AddIfAbsent(decl) {
+			continue
+		}
+		if doc := getDocumentationFromDeclaration(noMappedLocation, c, symbol, decl, decl, lsproto.MarkupKindPlainText, true /*commentOnly*/); doc != "" && !slices.Contains(parts, doc) {
+			parts = append(parts, doc)
+		}
+	}
+	return strings.Join(parts, "\n")
 }
-
-function watchMain() {
-    const configPath = ts.findConfigFile(/*searchPath*/ "./", ts.sys.fileExists, "tsconfig.json");
-    if (!configPath) {
-        throw new Error("Could not find a valid 'tsconfig.json'.");
-    }
-
-    // TypeScript can use several different program creation "strategies":
-    //  * ts.createEmitAndSemanticDiagnosticsBuilderProgram,
-    //  * ts.createSemanticDiagnosticsBuilderProgram
-    //  * ts.createAbstractBuilder
-    // The first two produce "builder programs". These use an incremental strategy to only re-check and emit files whose
-    // contents may have changed, or whose dependencies may have changes which may impact change the result of prior type-check and emit.
-    // The last uses an ordinary program which does a full type check after every change.
-    // Between `createEmitAndSemanticDiagnosticsBuilderProgram` and `createSemanticDiagnosticsBuilderProgram`, the only difference is emit.
-    // For pure type-checking scenarios, or when another tool/process handles emit, using `createSemanticDiagnosticsBuilderProgram` may be more desirable.
-
-    // Note that there is another overload for `createWatchCompilerHost` that takes a set of root files.
-    const host = ts.createWatchCompilerHost(configPath, {}, ts.sys,
-        ts.createSemanticDiagnosticsBuilderProgram,
-        reportDiagnostic,
-        reportWatchStatusChanged,
-    );
-
-    // You can technically override any given hook on the host, though you probably don't need to.
-    // Note that we're assuming `origCreateProgram` and `origPostProgramCreate` doesn't use `this` at all.
-    const origCreateProgram = host.createProgram;
-    host.createProgram = (rootNames: ReadonlyArray<string> | undefined, options, host, oldProgram) => {
-        console.log("** We're about to create the program! **");
-        return origCreateProgram(rootNames, options, host, oldProgram);
-    }
-    const origPostProgramCreate = host.afterProgramCreate;
-
-    host.afterProgramCreate = program => {
-        console.log("** We finished making the program! **");
-        origPostProgramCreate!(program);
-    };
-
-    // `createWatchProgram` creates an initial program, watches files, and updates the program over time.
-    ts.createWatchProgram(host);
-}
-
-function reportDiagnostic(diagnostic: ts.Diagnostic) {
-    console.error("Error", diagnostic.code, ":",
-        ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine())
-    );
-}
-
-/**
- * Prints a diagnostic every time the watch status changes.
- * This is mainly for messages like "Starting compilation" or "Compilation completed".
- */
-function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
-    console.info(ts.formatDiagnostic(diagnostic, formatHost));
-}
-
-watchMain();
 ```
 
 ### VSDoc

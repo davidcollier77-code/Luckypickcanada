@@ -34,14 +34,14 @@ Use w-full or w-<fraction> utilities like w-1/2 and w-2/5 to set percentage-base
 
 --------------------------------
 
-### Disabling Automatic Detection and Explicitly Registering Sources
+### Percentage-based max-block-size Utilities
 
-Source: https://tailwindcss.com/docs/detecting-classes-in-source-files
+Source: https://tailwindcss.com/docs/max-block-size
 
-Completely disable automatic source detection with source(none) to manually register all desired source paths. Ensures each stylesheet only includes necessary classes.
+Employ `max-block-full` or `max-block-<fraction>` utilities for percentage-based maximum block sizes. Examples include `max-block-9/10`, `max-block-3/4`, `max-block-1/2`, and `max-block-full`.
 
-```css
-@import "tailwindcss" source(none);@source "../admin";@source "../shared";
+```html
+<div class="block-96 ...">  <div class="block-full max-block-9/10 ...">max-block-9/10</div>  <div class="block-full max-block-3/4 ...">max-block-3/4</div>  <div class="block-full max-block-1/2 ...">max-block-1/2</div>  <div class="block-full max-block-full ...">max-block-full</div></div>
 ```
 
 ### Examples > Matching viewport

@@ -1,60 +1,3 @@
-### Symbol.getDocumentationComment — retrieves full documentation comment as plain text
-
-Source: https://github.com/microsoft/typescript/blob/main/packages/typescript/src/api/sync/api.ts
-
-Returns the full JSDoc comment of a symbol (without tags) as a plain string, deduplicated across declarations. Called via `symbol.getDocumentationComment(checker)`.
-
-```typescript
-get getDocumentationComment(): {
-    (checker: Checker): string;
-    gen(checker: Checker): Generator<ProtocolRequest, string, ProtocolResponse["result"]>;
-} {
-    const owner = this;
-    return cacheGeneratorMethod(
-        owner,
-        "getDocumentationComment",
-        function (checker: Checker): string {
-            return checker.getDocumentationCommentOfSymbol(owner);
-        },
-        function* (checker: Checker): Generator<ProtocolRequest, string, ProtocolResponse["result"]> {
-            return yield* checker.getDocumentationCommentOfSymbol.gen(owner);
-        },
-    );
-}
-```
-
---------------------------------
-
-### GetSymbolDocumentationComment — Go backend implementation rendering documentation as plain text
-
-Source: https://github.com/microsoft/typescript/blob/main/tsc/internal/ls/jsdoc.go
-
-Gathers JSDoc comment text from each unique declaration, deduplicates, and joins with newlines. Backs Symbol.getDocumentationComment.
-
-```go
-func GetSymbolDocumentationComment(c *checker.Checker, symbol *ast.Symbol) string {
-	if symbol == nil {
-		return ""
-	}
-	var parts []string
-	var seen collections.Set[*ast.Node]
-	for _, decl := range symbol.Declarations {
-		if decl == nil {
-			continue
-		}
-		if !seen.AddIfAbsent(decl) {
-			continue
-		}
-		if doc := getDocumentationFromDeclaration(noMappedLocation, c, symbol, decl, decl, lsproto.MarkupKindPlainText, true /*commentOnly*/); doc != "" && !slices.Contains(parts, doc) {
-			parts = append(parts, doc)
-		}
-	}
-	return strings.Join(parts, "\n")
-}
-```
-
---------------------------------
-
 ### Exported API with JSDoc documentation
 
 Source: https://github.com/microsoft/typescript/blob/main/tsc/testdata/tests/cases/conformance/jsdoc/declarations/jsDeclarationsFunctionJSDoc.ts
@@ -131,6 +74,63 @@ declare var AbortController: {
     prototype: AbortController;
     new(): AbortController;
 };
+```
+
+--------------------------------
+
+### Symbol.getDocumentationComment — retrieves full documentation comment as plain text
+
+Source: https://github.com/microsoft/typescript/blob/main/packages/typescript/src/api/sync/api.ts
+
+Returns the full JSDoc comment of a symbol (without tags) as a plain string, deduplicated across declarations. Called via `symbol.getDocumentationComment(checker)`.
+
+```typescript
+get getDocumentationComment(): {
+    (checker: Checker): string;
+    gen(checker: Checker): Generator<ProtocolRequest, string, ProtocolResponse["result"]>;
+} {
+    const owner = this;
+    return cacheGeneratorMethod(
+        owner,
+        "getDocumentationComment",
+        function (checker: Checker): string {
+            return checker.getDocumentationCommentOfSymbol(owner);
+        },
+        function* (checker: Checker): Generator<ProtocolRequest, string, ProtocolResponse["result"]> {
+            return yield* checker.getDocumentationCommentOfSymbol.gen(owner);
+        },
+    );
+}
+```
+
+--------------------------------
+
+### GetSymbolDocumentationComment — Go backend implementation rendering documentation as plain text
+
+Source: https://github.com/microsoft/typescript/blob/main/tsc/internal/ls/jsdoc.go
+
+Gathers JSDoc comment text from each unique declaration, deduplicates, and joins with newlines. Backs Symbol.getDocumentationComment.
+
+```go
+func GetSymbolDocumentationComment(c *checker.Checker, symbol *ast.Symbol) string {
+	if symbol == nil {
+		return ""
+	}
+	var parts []string
+	var seen collections.Set[*ast.Node]
+	for _, decl := range symbol.Declarations {
+		if decl == nil {
+			continue
+		}
+		if !seen.AddIfAbsent(decl) {
+			continue
+		}
+		if doc := getDocumentationFromDeclaration(noMappedLocation, c, symbol, decl, decl, lsproto.MarkupKindPlainText, true /*commentOnly*/); doc != "" && !slices.Contains(parts, doc) {
+			parts = append(parts, doc)
+		}
+	}
+	return strings.Join(parts, "\n")
+}
 ```
 
 ### VSDoc

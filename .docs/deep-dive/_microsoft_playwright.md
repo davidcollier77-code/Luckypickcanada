@@ -59,30 +59,20 @@ export default defineConfig({
 
 --------------------------------
 
-### Create Agentic Video Receipts
+### Page.content()
 
-Source: https://github.com/microsoft/playwright/blob/main/docs/src/release-notes-python.md
+Source: https://github.com/microsoft/playwright/blob/main/docs/src/api/class-page.md
 
-Combine recording, annotations, and chapters to generate a documented walkthrough of automated tasks.
+Retrieves the full HTML contents of the page.
 
-```python
-page.screencast.start(path="receipt.webm")
-page.screencast.show_actions(position="top-right")
+```APIDOC
+## Page.content()
 
-page.screencast.show_chapter("Verifying checkout flow",
-    description="Added coupon code support per ticket #1234",
-)
+### Description
+Gets the full HTML contents of the page, including the doctype.
 
-# Agent performs the verification steps...
-page.locator("#coupon").fill("SAVE20")
-page.locator("#apply-coupon").click()
-expect(page.locator(".discount")).to_contain_text("20%")
-
-page.screencast.show_chapter("Done",
-    description="Coupon applied, discount reflected in total",
-)
-
-page.screencast.stop()
+### Returns
+- `Promise<string>` - The full HTML content of the page.
 ```
 
 ### Documentation

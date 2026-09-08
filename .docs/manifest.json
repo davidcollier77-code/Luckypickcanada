@@ -310,7 +310,7 @@
       "rawIdentifier": "/websites/ai_google_dev_gemini-api",
       "authoritativeSource": "/websites/ai_google_dev_api",
       "expectedPath": ".docs/troubleshooting/_websites_ai_google_dev_gemini-api.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "troubleshooting",
@@ -352,7 +352,7 @@
       "rawIdentifier": "/cloudflare/workers-sdk",
       "authoritativeSource": "/cloudflare/workers-sdk",
       "expectedPath": ".docs/troubleshooting/_cloudflare_workers-sdk.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "troubleshooting",
@@ -373,49 +373,49 @@
       "rawIdentifier": "/getsentry/sentry-docs",
       "authoritativeSource": "/getsentry/sentry-docs",
       "expectedPath": ".docs/troubleshooting/_getsentry_sentry-docs.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "troubleshooting",
       "rawIdentifier": "/bvaughn/react-error-boundary",
       "authoritativeSource": "/bvaughn/react-error-boundary",
       "expectedPath": ".docs/troubleshooting/_bvaughn_react-error-boundary.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "troubleshooting",
       "rawIdentifier": "/websites/developer_chrome",
       "authoritativeSource": "/websites/developer_chrome",
       "expectedPath": ".docs/troubleshooting/_websites_developer_chrome.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "troubleshooting",
       "rawIdentifier": "/websites/developer_apple_webkit",
       "authoritativeSource": "/websites/developer_apple_webkit",
       "expectedPath": ".docs/troubleshooting/_websites_developer_apple_webkit.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "polishing",
       "rawIdentifier": "/vercel/next.js",
       "authoritativeSource": "/vercel/next.js",
       "expectedPath": ".docs/polishing/_vercel_next_js.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "polishing",
       "rawIdentifier": "/reactjs/react.dev",
       "authoritativeSource": "/reactjs/react.dev",
       "expectedPath": ".docs/polishing/_reactjs_react_dev.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "polishing",
       "rawIdentifier": "/websites/tailwindcss",
       "authoritativeSource": "/websites/tailwindcss",
       "expectedPath": ".docs/polishing/_websites_tailwindcss.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "polishing",
@@ -534,35 +534,35 @@
       "rawIdentifier": "/vercel/next.js",
       "authoritativeSource": "/vercel/next.js",
       "expectedPath": ".docs/testing/_vercel_next_js.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "testing",
       "rawIdentifier": "/reactjs/react.dev",
       "authoritativeSource": "/reactjs/react.dev",
       "expectedPath": ".docs/testing/_reactjs_react_dev.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "testing",
       "rawIdentifier": "/microsoft/typescript",
       "authoritativeSource": "/microsoft/typescript",
       "expectedPath": ".docs/testing/_microsoft_typescript.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "testing",
       "rawIdentifier": "/testing-library/react-testing-library",
       "authoritativeSource": "/testing-library/react-testing-library",
       "expectedPath": ".docs/testing/_testing-library_react-testing-library.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "testing",
       "rawIdentifier": "/microsoft/playwright",
       "authoritativeSource": "/microsoft/playwright",
       "expectedPath": ".docs/testing/_microsoft_playwright.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "testing",
@@ -583,35 +583,35 @@
       "rawIdentifier": "/getsentry/sentry-docs",
       "authoritativeSource": "/getsentry/sentry-docs",
       "expectedPath": ".docs/testing/_getsentry_sentry-docs.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "testing",
       "rawIdentifier": "/websites/developer_chrome",
       "authoritativeSource": "/websites/developer_chrome",
       "expectedPath": ".docs/testing/_websites_developer_chrome.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "testing",
       "rawIdentifier": "/websites/developer_apple_webkit",
       "authoritativeSource": "/websites/developer_apple_webkit",
       "expectedPath": ".docs/testing/_websites_developer_apple_webkit.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "security",
       "rawIdentifier": "/vercel/next.js",
       "authoritativeSource": "/vercel/next.js",
       "expectedPath": ".docs/security/_vercel_next_js.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "security",
       "rawIdentifier": "/reactjs/react.dev",
       "authoritativeSource": "/reactjs/react.dev",
       "expectedPath": ".docs/security/_reactjs_react_dev.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "security",
@@ -625,7 +625,7 @@
       "rawIdentifier": "/colinhacks/zod",
       "authoritativeSource": "/colinhacks/zod",
       "expectedPath": ".docs/security/_colinhacks_zod.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "security",
@@ -681,63 +681,63 @@
       "rawIdentifier": "/websites/developer_chrome",
       "authoritativeSource": "/websites/developer_chrome",
       "expectedPath": ".docs/security/_websites_developer_chrome.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "security",
       "rawIdentifier": "/websites/developer_apple_webkit",
       "authoritativeSource": "/websites/developer_apple_webkit",
       "expectedPath": ".docs/security/_websites_developer_apple_webkit.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "security",
       "rawIdentifier": "jules.google/docs",
       "authoritativeSource": "/websites/jules_google",
       "expectedPath": ".docs/security/jules_google_docs.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "security",
       "rawIdentifier": "developers.google.com/jules/api",
       "authoritativeSource": "/websites/developers_google_jules_api",
       "expectedPath": ".docs/security/developers_google_com_jules_api.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "security",
       "rawIdentifier": "/google-gemini/gemini-cli",
       "authoritativeSource": "/websites/geminicli",
       "expectedPath": ".docs/security/_google-gemini_gemini-cli.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "security",
       "rawIdentifier": "/websites/ai_google_dev_gemini-api",
       "authoritativeSource": "/websites/ai_google_dev_api",
       "expectedPath": ".docs/security/_websites_ai_google_dev_gemini-api.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "audio",
       "rawIdentifier": "/goldfire/howler.js",
       "authoritativeSource": "/goldfire/howler.js",
       "expectedPath": ".docs/audio/_goldfire_howler_js.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "audio",
       "rawIdentifier": "/websites/developer_chrome",
       "authoritativeSource": "/websites/developer_chrome",
       "expectedPath": ".docs/audio/_websites_developer_chrome.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "audio",
       "rawIdentifier": "/websites/developer_apple_webkit",
       "authoritativeSource": "/websites/developer_apple_webkit",
       "expectedPath": ".docs/audio/_websites_developer_apple_webkit.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "audio",
@@ -751,14 +751,14 @@
       "rawIdentifier": "developers.google.com/jules/api",
       "authoritativeSource": "/websites/developers_google_jules_api",
       "expectedPath": ".docs/audio/developers_google_com_jules_api.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "audio",
       "rawIdentifier": "/google-gemini/gemini-cli",
       "authoritativeSource": "/websites/geminicli",
       "expectedPath": ".docs/audio/_google-gemini_gemini-cli.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "audio",
@@ -814,56 +814,56 @@
       "rawIdentifier": "/reactjs/react.dev",
       "authoritativeSource": "/reactjs/react.dev",
       "expectedPath": ".docs/deep-dive/_reactjs_react_dev.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
       "rawIdentifier": "/microsoft/typescript",
       "authoritativeSource": "/microsoft/typescript",
       "expectedPath": ".docs/deep-dive/_microsoft_typescript.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
       "rawIdentifier": "/opennextjs/opennextjs-cloudflare",
       "authoritativeSource": "/opennextjs/opennextjs-cloudflare",
       "expectedPath": ".docs/deep-dive/_opennextjs_opennextjs-cloudflare.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
       "rawIdentifier": "/opennextjs/docs",
       "authoritativeSource": "/opennextjs/docs",
       "expectedPath": ".docs/deep-dive/_opennextjs_docs.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
       "rawIdentifier": "/cloudflare/workers-sdk",
       "authoritativeSource": "/cloudflare/workers-sdk",
       "expectedPath": ".docs/deep-dive/_cloudflare_workers-sdk.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
       "rawIdentifier": "/neondatabase/neon",
       "authoritativeSource": "/neondatabase/neon",
       "expectedPath": ".docs/deep-dive/_neondatabase_neon.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
       "rawIdentifier": "/upstash/docs",
       "authoritativeSource": "/upstash/docs",
       "expectedPath": ".docs/deep-dive/_upstash_docs.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
       "rawIdentifier": "/stripe/stripe-js",
       "authoritativeSource": "/stripe/stripe-js",
       "expectedPath": ".docs/deep-dive/_stripe_stripe-js.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
@@ -877,14 +877,14 @@
       "rawIdentifier": "/getsentry/sentry-docs",
       "authoritativeSource": "/getsentry/sentry-docs",
       "expectedPath": ".docs/deep-dive/_getsentry_sentry-docs.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
       "rawIdentifier": "/bvaughn/react-error-boundary",
       "authoritativeSource": "/bvaughn/react-error-boundary",
       "expectedPath": ".docs/deep-dive/_bvaughn_react-error-boundary.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "deep-dive",
@@ -912,7 +912,7 @@
       "rawIdentifier": "/websites/developer_apple_webkit",
       "authoritativeSource": "/websites/developer_apple_webkit",
       "expectedPath": ".docs/deep-dive/_websites_developer_apple_webkit.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "seo",
@@ -947,49 +947,49 @@
       "rawIdentifier": "/coreyhaines31/marketingskills",
       "authoritativeSource": "/coreyhaines31/marketingskills",
       "expectedPath": ".docs/seo/_coreyhaines31_marketingskills.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "seo",
       "rawIdentifier": "/github/docs",
       "authoritativeSource": "/github/docs",
       "expectedPath": ".docs/seo/_github_docs.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "seo",
       "rawIdentifier": "/websites/developer_chrome",
       "authoritativeSource": "/websites/developer_chrome",
       "expectedPath": ".docs/seo/_websites_developer_chrome.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "seo",
       "rawIdentifier": "/websites/developer_apple_webkit",
       "authoritativeSource": "/websites/developer_apple_webkit",
       "expectedPath": ".docs/seo/_websites_developer_apple_webkit.md",
-      "state": "INVALID_PLACEHOLDER"
+      "state": "VALID"
     },
     {
       "group": "seo",
       "rawIdentifier": "jules.google/docs",
       "authoritativeSource": "/websites/jules_google",
       "expectedPath": ".docs/seo/jules_google_docs.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "seo",
       "rawIdentifier": "developers.google.com/jules/api",
       "authoritativeSource": "/websites/developers_google_jules_api",
       "expectedPath": ".docs/seo/developers_google_com_jules_api.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "seo",
       "rawIdentifier": "/google-gemini/gemini-cli",
       "authoritativeSource": "/websites/geminicli",
       "expectedPath": ".docs/seo/_google-gemini_gemini-cli.md",
-      "state": "MISSING"
+      "state": "VALID"
     },
     {
       "group": "seo",
