@@ -2,6 +2,97 @@
 
 The following rules form the core, authoritative, and permanent governance system for all agents operating in this repository. They are mandatory and must be followed for all future tasks. There are no competing or secondary governance policies.
 
+```text
+                         ┌──────────────────────┐
+                         │         START        │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ 1. IDENTIFY TASK     │
+                         │        GROUP         │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ 2. READ REPOSITORY   │
+                         │    INSTRUCTIONS +    │
+                         │    LOCAL RESOURCES   │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ 3. READ `.docs`      │
+                         │    LOCAL LIBRARY     │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ 4. CHECK EXISTING    │
+                         │ CAPABILITIES /       │
+                         │ LIBRARIES / SCRIPTS /│
+                         │ TOOLS / WORKFLOWS    │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ 5. JULES + GEMINI    │
+                         │    MANDATORY         │
+                         │    COLLABORATION     │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ 6. AUTHORITATIVE /   │
+                         │    CURRENT DOCS      │
+                         │    WHEN REQUIRED     │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ 7. CONTEXT7          │
+                         │    LAST RESORT ONLY  │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ 8. NEW DEPENDENCY /  │
+                         │    EXTERNAL          │
+                         │    CAPABILITY        │
+                         │    TRUE LAST RESORT  │
+                         │    + AUTHORIZATION   │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │      IMPLEMENT       │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │        TEST          │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │    DOUBLE-CHECK      │
+                         │  ACTUAL REPO STATE   │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+              ┌─────────────────────────────────────────┐
+              │       DOCUMENTATION ACCOUNTABILITY      │
+              │                                         │
+              │ REPORT ONLY RESOURCES ACTUALLY USED:   │
+              │ `.docs` • repo instructions • Jules    │
+              │ docs • Gemini docs • authoritative docs │
+              │ • Context7 • MCP                        │
+              │                                         │
+              │ State WHAT was consulted and WHAT EACH  │
+              │ resource actually contributed.          │
+              └─────────────────────────────────────────┘
+```
+
 ## 1. Mandatory AI Collaboration
 Jules + Gemini are mandatory collaborators for EVERY repository task. This requirement applies regardless of task type, task group, difficulty, whether the task is routine or exceptional, whether it is classified as Miscellaneous / Cross-Cutting, or whether additional documentation or research is required. Task-group routing does not replace the Jules + Gemini requirement. They must genuinely participate in the work, and the final report must explicitly detail what each contributed. Never claim an AI or resource was used unless it was genuinely consulted.
 
@@ -125,7 +216,6 @@ Do not treat successful compilation or build completion as sufficient proof when
 Repository documentation must be genuine, useful, and verifiable. Do not create fabricated, placeholder, empty, or headings-only documentation, or misleading summaries presented as complete documentation.
 
 **Tuesday and Friday Documentation Refresh:**
-- The existing GitHub Actions workflow (`.github/workflows/refresh-docs.yml`) must run every Tuesday and Friday at 2:21 AM local time using `America/Halifax` (`cron: '21 2 * * 2,5'`, `timezone: 'America/Halifax'`). Do not replace this with UTC.
 - The existing GitHub Actions workflow (`.github/workflows/refresh-docs.yml`) runs every Tuesday and Friday at 2:21 AM Atlantic Time.
 - The workflow uses two UTC cron schedules (`21 5 * * 2,5` for ADT and `21 6 * * 2,5` for AST) with a runtime timezone gate that verifies the current Atlantic Time hour before proceeding.
 - Do not replace the existing UTC schedule + runtime-gate architecture with a timezone-aware cron expression.
