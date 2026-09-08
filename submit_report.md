@@ -1,10 +1,11 @@
-- **Exact file changed**: `AGENTS.md`
-- **Exact section added or modified**: Added subsection `## 21. Documentation Use During Workflow`
-- **Repository-local instruction files actually consulted**: `AGENTS.md` (specifically existing Sections 17-20 for context on structure and formatting), `.jules/jules.md`, `.jules/creation.md`, and `.jules/troubleshooting.md`.
-- **Jules documentation actually consulted**: None specifically beyond instructions provided in `.jules/` routing files, as there was no coding implementation requiring API or framework details.
-- **Gemini documentation actually consulted**: None specifically, for the same reason.
-- **How those resources informed the change**: The local repository instructions provided the tone, formatting constraints, and existing governance rules (like mandatory Jules + Gemini collaboration and explicit library reporting), ensuring the new section seamlessly integrated without overriding existing directives.
-- **Confirmation that the existing governance remains intact**: Verified via `grep` and review of the appended file. No existing lines were removed or altered.
-- **Confirmation that the new workflow-visibility requirement is now present**: Verified via reading the file end. The new requirement explicitly demands documentation consultation, forbids substituting availability for use, and requires final report documentation.
-- **Any ambiguity or conflict you found**: None. The change perfectly complements Section 20 ("Explicit Library Usage Reporting").
-- **Final diff for review**: Available via `git diff --cached` (appended to the bottom of AGENTS.md).
+## Libraries Consulted / Used
+
+* **Libraries Consulted / Used: None specifically.**
+
+## Summary of Changes
+
+1. **`.docs/manifest.json`**: Added Context7-compatible library IDs for MDN Web Docs (`/mdn/content`), PixiJS (`/pixijs/pixijs`), Three.js (`/mrdoob/three.js`), React Aria (`/adobe/react-spectrum`), OWASP Web Security Testing Guide (WSTG) (`/OWASP/wstg`), Google Search Central (`/google/search-central`), Storybook (`/storybookjs/storybook`), OpenTelemetry (`/open-telemetry/opentelemetry.io`), Sharp (`/lovell/sharp`), and web.dev (`/GoogleChrome/web.dev`) to their specified target groups, adhering strictly to the Absolute Rules (additions only, no deletion/replacement).
+2. **`scripts/refresh-docs.js`**: Similarly updated the `LIBRARIES` mapping object directly, ensuring the 10 requested documentation libraries were correctly injected into the appropriate arrays (`creation`, `troubleshooting`, `polishing`, `testing`, `security`, `deep-dive`, `seo`) without modifying or removing any existing library string.
+3. Verified the build success of the application locally to ensure `scripts/refresh-docs.js` had no syntax issues that would crash general execution and ensure the `manifest.json` parsing remained structurally valid.
+
+All governance and rules applied correctly. No automation, external codebase, or workflows were modified.
