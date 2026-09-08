@@ -7,7 +7,7 @@ const DOCS_DIR = path.join(process.cwd(), '.docs');
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
 
 const LIBRARIES = {
-  creation: [
+  "creation": [
     "/github/docs",
     "jules.google/docs",
     "developers.google.com/jules/api",
@@ -22,9 +22,10 @@ const LIBRARIES = {
     "/emilkowalski/sonner",
     "/bvaughn/react-error-boundary",
     "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api"
+    "/websites/ai_google_dev_gemini-api",
+    "/dropbox/zxcvbn"
   ],
-  troubleshooting: [
+  "troubleshooting": [
     "/github/docs",
     "jules.google/docs",
     "developers.google.com/jules/api",
@@ -43,7 +44,7 @@ const LIBRARIES = {
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api"
   ],
-  polishing: [
+  "polishing": [
     "/vercel/next.js",
     "/reactjs/react.dev",
     "/websites/tailwindcss",
@@ -57,9 +58,10 @@ const LIBRARIES = {
     "jules.google/docs",
     "developers.google.com/jules/api",
     "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api"
+    "/websites/ai_google_dev_gemini-api",
+    "/dequelabs/axe-core"
   ],
-  testing: [
+  "testing": [
     "/github/docs",
     "jules.google/docs",
     "developers.google.com/jules/api",
@@ -74,9 +76,10 @@ const LIBRARIES = {
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
     "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api"
+    "/websites/ai_google_dev_gemini-api",
+    "/dequelabs/axe-core"
   ],
-  security: [
+  "security": [
     "/vercel/next.js",
     "/reactjs/react.dev",
     "/microsoft/typescript",
@@ -93,9 +96,10 @@ const LIBRARIES = {
     "jules.google/docs",
     "developers.google.com/jules/api",
     "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api"
+    "/websites/ai_google_dev_gemini-api",
+    "/dropbox/zxcvbn"
   ],
-  audio: [
+  "audio": [
     "/goldfire/howler.js",
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
@@ -126,9 +130,10 @@ const LIBRARIES = {
     "/vitest-dev/vitest",
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
-    "/android/developers"
+    "/android/developers",
+    "/dequelabs/axe-core"
   ],
-  seo: [
+  "seo": [
     "/vercel/next.js",
     "/reactjs/react.dev",
     "/microsoft/typescript",

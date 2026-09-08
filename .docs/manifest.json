@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-08T02:31:45.457Z",
+  "lastUpdated": "2026-09-08T03:31:09.710Z",
   "groups": {
     "creation": [
       "/github/docs",
@@ -16,7 +16,9 @@
       "/emilkowalski/sonner",
       "/bvaughn/react-error-boundary",
       "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api"
+      "/websites/ai_google_dev_gemini-api",
+      "/dropbox/zxcvbn",
+      "/dropbox/zxcvbn"
     ],
     "troubleshooting": [
       "/github/docs",
@@ -51,7 +53,9 @@
       "jules.google/docs",
       "developers.google.com/jules/api",
       "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api"
+      "/websites/ai_google_dev_gemini-api",
+      "/dequelabs/axe-core",
+      "/dequelabs/axe-core"
     ],
     "testing": [
       "/github/docs",
@@ -68,7 +72,9 @@
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api"
+      "/websites/ai_google_dev_gemini-api",
+      "/dequelabs/axe-core",
+      "/dequelabs/axe-core"
     ],
     "security": [
       "/vercel/next.js",
@@ -87,7 +93,9 @@
       "jules.google/docs",
       "developers.google.com/jules/api",
       "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api"
+      "/websites/ai_google_dev_gemini-api",
+      "/dropbox/zxcvbn",
+      "/dropbox/zxcvbn"
     ],
     "audio": [
       "/goldfire/howler.js",
@@ -120,7 +128,9 @@
       "/vitest-dev/vitest",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/android/developers"
+      "/android/developers",
+      "/dequelabs/axe-core",
+      "/dequelabs/axe-core"
     ],
     "seo": [
       "/vercel/next.js",
@@ -171,6 +181,8 @@
     "/stripe/stripe-js",
     "/resend/resend-node",
     "/coreyhaines31/marketingskills",
-    "/android/developers"
+    "/android/developers",
+    "/dequelabs/axe-core",
+    "/dropbox/zxcvbn"
   ]
 }
