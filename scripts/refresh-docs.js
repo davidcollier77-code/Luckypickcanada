@@ -23,7 +23,13 @@ const LIBRARIES = {
     "/bvaughn/react-error-boundary",
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api",
-    "/dropbox/zxcvbn"
+    "/dropbox/zxcvbn",
+    "/mdn/content",
+    "/pixijs/pixijs",
+    "/mrdoob/three.js",
+    "/adobe/react-spectrum",
+    "/storybookjs/storybook",
+    "/lovell/sharp"
   ],
   "troubleshooting": [
     "/github/docs",
@@ -42,7 +48,10 @@ const LIBRARIES = {
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
     "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api"
+    "/websites/ai_google_dev_gemini-api",
+    "/mdn/content",
+    "/open-telemetry/opentelemetry.io",
+    "/GoogleChrome/web.dev"
   ],
   "polishing": [
     "/vercel/next.js",
@@ -59,7 +68,14 @@ const LIBRARIES = {
     "/websites/developers_google_jules_api",
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api",
-    "/dequelabs/axe-core"
+    "/dequelabs/axe-core",
+    "/mdn/content",
+    "/pixijs/pixijs",
+    "/mrdoob/three.js",
+    "/adobe/react-spectrum",
+    "/storybookjs/storybook",
+    "/lovell/sharp",
+    "/GoogleChrome/web.dev"
   ],
   "testing": [
     "/github/docs",
@@ -77,7 +93,13 @@ const LIBRARIES = {
     "/websites/developer_apple_webkit",
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api",
-    "/dequelabs/axe-core"
+    "/dequelabs/axe-core",
+    "/mdn/content",
+    "/adobe/react-spectrum",
+    "/OWASP/wstg",
+    "/storybookjs/storybook",
+    "/open-telemetry/opentelemetry.io",
+    "/GoogleChrome/web.dev"
   ],
   "security": [
     "/vercel/next.js",
@@ -97,7 +119,8 @@ const LIBRARIES = {
     "/websites/developers_google_jules_api",
     "/google-gemini/gemini-cli",
     "/websites/ai_google_dev_gemini-api",
-    "/dropbox/zxcvbn"
+    "/dropbox/zxcvbn",
+    "/OWASP/wstg"
   ],
   "audio": [
     "/goldfire/howler.js",
@@ -131,7 +154,17 @@ const LIBRARIES = {
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
     "/android/developers",
-    "/dequelabs/axe-core"
+    "/dequelabs/axe-core",
+    "/mdn/content",
+    "/pixijs/pixijs",
+    "/mrdoob/three.js",
+    "/adobe/react-spectrum",
+    "/OWASP/wstg",
+    "/google/search-central",
+    "/storybookjs/storybook",
+    "/open-telemetry/opentelemetry.io",
+    "/lovell/sharp",
+    "/GoogleChrome/web.dev"
   ],
   "seo": [
     "/vercel/next.js",
@@ -145,7 +178,9 @@ const LIBRARIES = {
     "/websites/jules_google",
     "/websites/developers_google_jules_api",
     "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api"
+    "/websites/ai_google_dev_gemini-api",
+    "/google/search-central",
+    "/GoogleChrome/web.dev"
   ]
 };
 
