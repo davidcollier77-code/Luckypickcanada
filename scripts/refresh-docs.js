@@ -267,9 +267,11 @@ async function main() {
     console.log(`Current .docs size: ${(currentDocsSize / 1024 / 1024).toFixed(2)} MB`);
 
     let batchContinues = true;
+    let deferredUpdates = [];
+    let progressMade = false;
 
     while (batchContinues && pendingUpdates.length > 0) {
-      const nextUpdate = pendingUpdates[0];
+      const nextUpdate = pendingUpdates.shift();
       const lib = nextUpdate.lib;
       const groups = nextUpdate.groups;
 
@@ -291,7 +293,7 @@ async function main() {
       if (upstreamSha && upstreamSha === githubShas[lib]) {
          console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
          stats.skipped++;
-         pendingUpdates.shift();
+         progressMade = true;
          stats.pending--;
 
          const wasInInventory = inventory.has(lib);
@@ -314,7 +316,6 @@ async function main() {
          console.error(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
          stats.failed++;
          stats.errors.push(`Unresolved source for ${lib}`);
-         pendingUpdates.shift();
          stats.pending--;
          continue;
       }
@@ -327,7 +328,7 @@ async function main() {
         console.error(`Failed to fetch docs for ${lib} on first attempt:`, e.message);
         console.log(`Waiting 5 minutes before retrying ${lib}...`);
 
-        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
+        await new Promise(resolve => setTimeout(resolve, 60 * 1000));
 
         try {
             console.log(`Retrying fetch for ${lib}...`);
@@ -337,7 +338,6 @@ async function main() {
             console.error(`Failed to fetch docs for ${lib} on retry:`, retryError.message);
             stats.failed++;
             stats.errors.push(`Error on ${lib}: ${retryError.message} (Retry also failed)`);
-            pendingUpdates.shift();
             stats.pending--;
             continue;
         }
@@ -348,14 +348,20 @@ async function main() {
 
       if (currentDocsSize + netSizeIncrease > MAX_DOCS_SIZE_BYTES) {
         console.log(`Library ${lib} (exact size ${exactSize} bytes) would exceed 495 MB limit (current: ${currentDocsSize}, net increase: ${netSizeIncrease}).`);
-        console.log('Capacity full. Breaking batch.');
-        // We do NOT shift it from pendingUpdates, we do NOT save it to .docs. It remains pending.
-        batchContinues = false;
-        break;
+
+        if (netSizeIncrease > MAX_DOCS_SIZE_BYTES) {
+            console.log(`Library ${lib} itself exceeds the 495 MB limit. Marking as failed.`);
+            stats.failed++;
+            stats.errors.push(`Library ${lib} exceeds 495 MB limit individually.`);
+            stats.pending--;
+        } else {
+            console.log('Deferring to next batch pass.');
+            deferredUpdates.push(nextUpdate);
+        }
+        continue;
       }
 
       // It fits! We can now process it into .docs
-      pendingUpdates.shift();
       stats.pending--;
 
       let isNewOrUpdated = false;
@@ -413,6 +419,7 @@ async function main() {
               stats.bytesAdded += netSizeIncrease;
           }
           isNewOrUpdated = true;
+          progressMade = true;
       }
 
       if (upstreamSha) {
@@ -439,40 +446,17 @@ async function main() {
 
 
 
-    // If we couldn't fit the package, and we are about to start a new batch,
-    // we must wait/poll to give an external process time to clear space,
-    // otherwise we spin endlessly and halt on the boundary.
-    if (pendingUpdates.length > 0) {
-      console.log('Batch ended due to capacity constraint. Polling for space...');
-      
-      // Wait a short period to allow external processes to potentially free space
-      const WAIT_PERIOD_MS = 2000;
-      console.log(`Waiting ${WAIT_PERIOD_MS}ms for potential external cleanup...`);
-      
-      // Sleep to yield to external processes
-      const sleep = (ms) => {
-        const end = Date.now() + ms;
-        while (Date.now() < end) {
-          // Busy wait (in production, consider using a proper sleep mechanism)
-        }
-      };
-      sleep(WAIT_PERIOD_MS);
-      
-      let newSize = getDirSize(DOCS_DIR);
-      console.log(`Size after wait: ${(newSize / 1024 / 1024).toFixed(2)} MB (was ${(currentDocsSize / 1024 / 1024).toFixed(2)} MB)`);
-      
-      if (newSize >= currentDocsSize) {
-         // No space was freed. Check if ANY pending library can possibly fit.
-         const nextLib = pendingUpdates[0].lib;
-         console.error(`Hard ceiling deadlock: No space freed after batch boundary.`);
-         console.error(`Cannot make progress on ${nextLib} - would require space under ${MAX_DOCS_SIZE_BYTES} bytes ceiling.`);
-         console.error(`Current size: ${newSize} bytes, Maximum: ${MAX_DOCS_SIZE_BYTES} bytes`);
-         console.error(`No pending library can fit under the hard ceiling without external intervention.`);
+    if (deferredUpdates.length > 0) {
+      if (!progressMade) {
+         console.error(`Hard ceiling deadlock: No space freed and no pending resources can fit.`);
+         console.error(`Current size: ${currentDocsSize} bytes, Maximum: ${MAX_DOCS_SIZE_BYTES} bytes`);
+         console.error(`No pending library can fit under the hard ceiling.`);
          stats.errors.push(`Hard ceiling deadlock: No progress possible after batch ${stats.batches}`);
          break;
       } else {
-        console.log('Space was freed. Continuing with next batch...');
-        currentDocsSize = newSize;
+        console.log(`Batch finished. ${deferredUpdates.length} resources deferred to next pass.`);
+        // Put deferred updates back into pending for the next batch iteration
+        pendingUpdates.push(...deferredUpdates);
       }
     }
   }

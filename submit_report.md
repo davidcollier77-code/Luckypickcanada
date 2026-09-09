@@ -1,18 +1,27 @@
-## Libraries Consulted / Used
+## Files changed
+- `.docs/manifest.json`
+- `scripts/refresh-docs.js`
+- `fix_refresh_docs.py` (Deleted)
+- `fix_script.js` (Deleted)
 
-* **Jules Documentation** (jules.google/docs) — Consulted for task orchestration and repository workflow guidance
-* **Jules API Documentation** (developers.google.com/jules/api) — Consulted for understanding available Jules capabilities
-* **Gemini CLI Documentation** (/google-gemini/gemini-cli) — Consulted for AI collaboration requirements
-* **Gemini API Documentation** (/websites/ai_google_dev_gemini-api) — Consulted for AI integration guidance
-* **Repository Instruction Files:**
-  - AGENTS.md — Consulted for governance requirements, task-group routing, resource hierarchy, and documentation provenance rules
-  - .docs/manifest.json — Inspected to understand existing library structure and inventory requirements
-  - scripts/refresh-docs.js — Inspected to verify library mapping consistency
+## Documentation actually consulted
+- **Jules documentation:** `jules_google_docs.md`, `developers_google_com_jules_api.md`
+- **Gemini documentation:** `_websites_ai_google_dev_gemini-api.md`, `_google-gemini_gemini-cli.md`
+- **ScepKit AI reasoning / agent-helper documentation:** None. (Not present in repository).
+- **Deep Dive documentation:** `.jules/deep-dive.md`
+- **Troubleshooting/diagnostic documentation:** `.jules/troubleshooting.md`, `AGENTS.md` (to verify governance instructions regarding documentation sources and Context7 restrictions).
+- **Other relevant local ".docs" resources:** None.
 
-## Summary of Changes
+## MCP usage
+- None.
 
-1. **`.docs/manifest.json`**: Added Context7-compatible library IDs for MDN Web Docs (`/mdn/content`), PixiJS (`/pixijs/pixijs`), Three.js (`/mrdoob/three.js`), React Aria (`/adobe/react-spectrum`), OWASP Web Security Testing Guide (WSTG) (`/OWASP/wstg`), Google Search Central (`/google/search-central`), Storybook (`/storybookjs/storybook`), OpenTelemetry (`/open-telemetry/opentelemetry.io`), Sharp (`/lovell/sharp`), and web.dev (`/GoogleChrome/web.dev`) to their specified target groups, adhering strictly to the Absolute Rules (additions only, no deletion/replacement).
-2. **`scripts/refresh-docs.js`**: Similarly updated the `LIBRARIES` mapping object directly, ensuring the 10 requested documentation libraries were correctly injected into the appropriate arrays (`creation`, `troubleshooting`, `polishing`, `testing`, `security`, `deep-dive`, `seo`) without modifying or removing any existing library string.
-3. Verified the build success of the application locally to ensure `scripts/refresh-docs.js` had no syntax issues that would crash general execution and ensure the `manifest.json` parsing remained structurally valid.
+## Context7
+Context7: NOT USED — prohibited for this task.
 
-All governance and rules applied correctly. No automation, external codebase, or workflows were modified.
+## Verification
+- Verified both modified README raw URLs (`react-hook-form/resolvers` and `emilkowalski/sonner`) via `curl` - confirmed HTTP 200 responses.
+- Verified the removal of the 5-minute wait and polling logic, replaced exactly with a single 60-second retry.
+- Verified that a non-fitting resource correctly defers to `deferredUpdates` without blocking the rest of the queue.
+- Verified the capacity remains strictly `495 * 1024 * 1024`.
+- Verified deterministic termination (no infinite loops) if no deferred items can fit.
+- Ran `./jules-verify.sh`, including type checks and Next.js builds. All checks passed.
