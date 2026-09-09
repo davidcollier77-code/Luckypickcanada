@@ -118,8 +118,6 @@ function classifySourceType(url) {
     /autodocs/i,
     /00-START-HERE/i,
     /INDEX\.md$/i,
-    /AGENTS\.md$/i,
-    /README\.md$/i,
     /context7\.com/i
   ];
   
