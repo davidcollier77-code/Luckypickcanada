@@ -8,6 +8,8 @@ Hardened the existing Memory Bank to improve accuracy, usefulness, and maintaina
 2. `memory-bank/activeContext.md`
 3. `memory-bank/progress.md`
 4. `memory-bank/techContext.md`
+5. `FINAL_REPORT.md`
+6. `submit_report.txt`
 
 ## Inaccurate/Stale Statements Discovered & Corrections Made
 - **Stale Statements:**
@@ -54,7 +56,7 @@ Added a "Memory Lifecycle & Maintenance" section to `projectBrief.md` to instruc
 - **Verification Results:** All checks passed. Build size warnings were clean. Unrelated files were NOT changed.
 
 ## Unrelated Files Changed
-None. Only the four Memory Bank files were modified. (Note: `changes.diff` is a temporary artifact generated during reporting, which will not be committed).
+None. All six files modified (four Memory Bank files, plus FINAL_REPORT.md and submit_report.txt) were part of the intended task scope. (Note: `changes.diff` is a temporary artifact generated during reporting, which will not be committed).
 
 ## PR Status
-Will now use the submit tool to push the branch and create a PR.
+PR #1009 has been submitted and is now open for review.
