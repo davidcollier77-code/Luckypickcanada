@@ -169,12 +169,24 @@ Using Context7 does **NOT**:
 - authorize adding an external capability;
 - authorize MCP.
 
-## 7. MCP Usage (Absolute Last Resort)
+## 7. MCP Usage (Absolute Last Resort & Approval Gate)
 MCPs are an **ABSOLUTE LAST RESORT** and must never be treated as a normal documentation mechanism. You may only rely upon an MCP after ALL other resources in the Resource Hierarchy have been exhausted.
 
-Do not connect to or invoke Context7, Cloudflare, Neon, Stitch, or other MCP services merely to read documentation that is already available locally. A connection or initialization event does not by itself constitute meaningful use of an external capability.
+**🚨 ABSOLUTE MCP APPROVAL GATE — HARD STOP**
+This is a blocking rule. There are no exceptions. If you determine that ANY MCP (e.g., Neon, Stitch, Context7, GitHub MCP) needs to be used, you must **STOP IMMEDIATELY**.
+- DO NOT invoke the MCP.
+- DO NOT call the MCP tool.
+- DO NOT proceed with the MCP-dependent part of the task.
 
-If an MCP is ever genuinely required, the reason must be identifiable, and the normal authorization/resource rules must still be followed.
+Instead, you must ask David for explicit approval first. Provide:
+1. **MCP:** Which MCP you want to use.
+2. **Tool:** The specific capability/tool you intend to invoke.
+3. **Purpose:** Exactly what you need it for.
+4. **Impact:** What information, repository data, or action would be involved.
+
+**WAIT FOR EXPLICIT APPROVAL** before proceeding. There is NO implied or automatic approval because an MCP is connected, available, mentioned in documentation, or would make a task easier. Read-only calls also require explicit approval. If you are unsure whether an operation counts as an MCP call, treat it as an MCP call and stop.
+
+Do not connect to or invoke Context7, Cloudflare, Neon, Stitch, or other MCP services merely to read documentation that is already available locally. A connection or initialization event does not by itself constitute meaningful use of an external capability.
 
 ## 8. New Dependencies & Adopted Libraries
 Do not introduce a new package, library, service, tool, API, or dependency when an existing approved capability already satisfies the requirement. New dependencies and external capabilities remain an absolute last resort. Do not interpret documentation research as permission to introduce new technology.
