@@ -119,22 +119,22 @@ The goal is the smallest correct, maintainable, verifiable change that fully sat
 Every task must be classified into one of these task groups:
 
 1. Creation
-2. Troubleshooting
    - Specialist file: `.jules/creation.md`
-3. Polishing
+2. Troubleshooting
    - Specialist file: `.jules/troubleshooting.md`
-4. Testing
+3. Polishing
    - Specialist file: `.jules/polishing.md`
-5. Security
+4. Testing
    - Specialist file: `.jules/testing.md`
-6. Audio
+5. Security
    - Specialist file: `.jules/security.md`
-7. Deep Dive / Investigation
+6. Audio
    - Specialist file: `.jules/audio.md`
-8. SEO
+7. Deep Dive / Investigation
    - Specialist file: `.jules/deep-dive.md`
-
+8. SEO
    - Specialist file: `.jules/seo.md`
+
 Miscellaneous or cross-cutting work may be treated as a fallback category when it genuinely does not fit one of the eight groups.
 
 Do not invent additional permanent task groups without authorization.
