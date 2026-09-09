@@ -1,34 +1,60 @@
-# Task Report: Initialize Memory Bank System
+# Memory Bank Hardening Report
 
-1. **What was changed:**
-   - Created the `memory-bank` directory at the root of the project to maintain state and context across agent sessions.
-   - Initialized the four core files: `projectBrief.md`, `activeContext.md`, `progress.md`, and `techContext.md`.
+## Overview
+Hardened the existing Memory Bank to improve accuracy, usefulness, and maintainability across future sessions.
 
-2. **What files were changed:**
-   - `memory-bank/projectBrief.md` (Created)
-   - `memory-bank/activeContext.md` (Created)
-   - `memory-bank/progress.md` (Created)
-   - `memory-bank/techContext.md` (Created)
+## Exact Files Changed
+1. `memory-bank/projectBrief.md`
+2. `memory-bank/activeContext.md`
+3. `memory-bank/progress.md`
+4. `memory-bank/techContext.md`
 
-3. **What documentation was actually consulted:**
-   - Explored local files `README.md` and `AGENTS.md` using standard CLI tools to gather project scope, disclaimers, and technical stack details to populate the memory bank. No explicit `.docs` files were required to fulfill this structural request.
+## Inaccurate/Stale Statements Discovered & Corrections Made
+- **Stale Statements:**
+  - `activeContext.md` claimed the active focus was initializing the Memory Bank and submitting a PR for initialization. *Correction:* Changed to reflect that initialization is complete, and the focus is now on ongoing maintenance and adhering to governance. Removed completed initialization steps.
+  - `progress.md` had "Initialize Memory Bank core files" and "Submit Memory Bank initialization" in active milestones. *Correction:* Moved to a "Completed Milestones" section and noted the hardening work.
+- **Inaccurate Statements:**
+  - `projectBrief.md`, `progress.md`, and `techContext.md` claimed the local Python script `luckypick.py` and its pytest test suite were present and active. *Correction:* Noted in all files that while these are documented in `README.md`, they do not currently exist in the repository.
 
-4. **What tools/MCPs were actually invoked:**
-   - Used standard bash tools (`mkdir`, `cat`, `ls`, `grep`) via `run_in_bash_session`.
-   - Used `request_plan_review` and `set_plan` to structure the approach.
-   - MCPs (like Context7, Neon, Stripe) were NOT invoked as they were not needed for creating documentation files.
+## Facts Verified Directly From the Repository
+- Inspected the repository tree and verified `luckypick.py` and any `pytest` files/configuration are entirely absent.
+- Verified `pnpm` is explicitly mandated (`package.json`, governance checks).
+- Verified `STRIPE_SECRET_KEY` usage and pricing logic exist in `app/api/checkout/route.js`.
+- Verified `README.md` documents `luckypick.py` and `pytest`, leading to the identified discrepancy.
+- Verified pre-commit check rules via `./jules-verify.sh`.
 
-5. **What tests/checks were actually run:**
-   - `pnpm install --frozen-lockfile` to restore dependencies.
-   - `pnpm run build` to verify the Next.js environment.
-   - `python3 -m pytest -q` to verify the Python environment.
-   - `./jules-verify.sh` to run the repository's strict verification checks.
+## Facts That Remain Unknown/Unverified
+- Why `luckypick.py` is documented in `README.md` but missing from the file tree (documented the discrepancy rather than guessing).
 
-6. **Whether verification succeeded or failed:**
-   - **Succeeded.** The Next.js build completed successfully, and `./jules-verify.sh` passed all checks. The Python test suite ran successfully (0 tests found/ran, which is consistent with the current repository state).
+## Memory Bank File Roles
+- `projectBrief.md`: Long-lived project identity, goals, boundaries, and project constraints (now includes Memory Lifecycle rules).
+- `activeContext.md`: Current working state, recent changes, and immediate next steps.
+- `progress.md`: Durable project progress, completed milestones, and known discrepancies.
+- `techContext.md`: Current technical facts, dependencies, environment variables (names only), and durable technical constraints.
 
-7. **Any limitations or remaining issues:**
-   - None.
+## Ongoing Maintenance & Secret Protection
+Added a "Memory Lifecycle & Maintenance" section to `projectBrief.md` to instruct future Jules sessions to:
+- Inspect the current repository before trusting memory.
+- Update `activeContext.md` when work starts and finishes, removing stale steps.
+- Move completed work to `progress.md`.
+- Explicitly enforce that the Memory Bank MUST NEVER duplicate `AGENTS.md`.
+- Explicitly enforce that secret values/credentials are NEVER stored in the Memory Bank (environment variable NAMES are acceptable). Included a note in `techContext.md` reinforcing this.
 
-8. **Whether any scope boundaries prevented additional changes:**
-   - Scope was strictly limited to initializing the four requested Markdown files based on currently verified project state.
+## Tools / Integrations / MCPs Used
+- Used standard bash commands (`cat`, `ls`, `grep`, `find`) to explore the local codebase.
+- No MCPs (Context7, Neon, etc.) were invoked or utilized.
+- The Next.js build environment was tested directly using local `pnpm run build` and `./jules-verify.sh`.
+
+## Verification Performed & Results
+- Explored the codebase to fact-check claims against reality (e.g., searching for `luckypick.py`).
+- Read back all changes to the 4 Memory Bank files (`git diff`).
+- Checked that NO secret values or credentials were added to the Memory Bank.
+- Checked that no other application files or configurations were accidentally changed.
+- Successfully ran `./pre_commit.sh`, `pnpm run build` (with `pnpm@10.30.3`), and `./jules-verify.sh`, verifying that the Next.js build still compiles correctly and there are no type check errors.
+- **Verification Results:** All checks passed. Build size warnings were clean. Unrelated files were NOT changed.
+
+## Unrelated Files Changed
+None. Only the four Memory Bank files were modified. (Note: `changes.diff` is a temporary artifact generated during reporting, which will not be committed).
+
+## PR Status
+Will now use the submit tool to push the branch and create a PR.
