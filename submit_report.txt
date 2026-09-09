@@ -1,10 +1,8 @@
-Task completed using existing repository documentation and `.jules` instructions only.
+Libraries Consulted / Used:
+- Group: None
+- Documents: None specifically
+- Contribution: The task was strictly terminal configuration (exporting `NODE_OPTIONS`, `CI`, `CF_PAGES`, and `WRANGLER_SEND_METRICS`) and running verification commands.
 
-1.  **Removed Broken Dependency:** Removed the `execSync('npx --no-install ctx7 --version')` block from `scripts/refresh-docs.js` which failed without a local installation.
-2.  **Updated Node Version:** Modified `.github/workflows/refresh-docs.yml` to use `node-version: '22'` matching the repository requirements.
-3.  **Reconciled Inventory Count:** Updated the PR body in `.github/workflows/refresh-docs.yml` from 39 to 46 to reflect the actual canonical inventory count in `.docs/manifest.json`.
-4.  **Normalized Library IDs:** Updated `scripts/refresh-docs.js` `LIBRARIES` object. Changed `"/websites/jules_google"` to `"jules.google/docs"` and `"/websites/developers_google_jules_api"` to `"developers.google.com/jules/api"` to properly match `manifest.json`.
-5.  **Cleaned Up Obsolete Scripts:** Investigated `collect.js`, `verify.js`, and `fix_ids.js`. Found they were part of an obsolete staging-based workflow not used by the current Github Action, so they were safely removed to avoid duplication.
-6.  **Updated AGENTS.md:** Updated AGENTS.md documentation to accurately reflect the correct `Tuesday and Friday` schedule matching the existing cron setting.
-7.  **Made Refresh Resilient:** Modified the `catch` block and loop structure in `scripts/refresh-docs.js` so a single failed library fetch won't break the entire batch but will be logged in `stats.errors` while continuing with other libraries.
-8.  **Maintained Rules:** No MCPs were used. Used the Deep Dive/Investigation group (`.jules/deep-dive.md`). Read the current `.docs/manifest.json`.
+Files Changed:
+- submit.sh: Added executable wrapper script that invokes jules-verify.sh with proper error handling (set -e)
+- submit_report.txt: Updated to accurately document the files changed by this PR
