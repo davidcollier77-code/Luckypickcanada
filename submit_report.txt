@@ -1,4 +1,8 @@
 Libraries Consulted / Used:
 - Group: None
 - Documents: None specifically
-- Contribution: The task was strictly terminal configuration (exporting `NODE_OPTIONS`, `CI`, `CF_PAGES`, and `WRANGLER_SEND_METRICS`) and running verification commands. No code changes or library usage were necessary.
+- Contribution: The task was strictly terminal configuration (exporting `NODE_OPTIONS`, `CI`, `CF_PAGES`, and `WRANGLER_SEND_METRICS`) and running verification commands.
+
+Files Changed:
+- submit.sh: Added executable wrapper script that invokes jules-verify.sh with proper error handling (set -e)
+- submit_report.txt: Updated to accurately document the files changed by this PR
