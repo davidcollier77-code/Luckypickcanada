@@ -412,7 +412,7 @@ async function main() {
         } catch (retryError) {
             console.error(`Failed to fetch docs for ${lib} on retry:`, retryError.message);
             stats.failed++;
-            stats.errors.push(`Error on ${lib}: ${e.message} (Retry failed: ${retryError.message})`);
+            stats.errors.push(`Error on ${lib}: ${retryError.message} (Retry also failed)`);
             pendingUpdates.shift();
             stats.pending--;
             continue;
