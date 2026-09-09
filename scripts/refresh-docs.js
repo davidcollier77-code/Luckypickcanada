@@ -362,19 +362,14 @@ async function main() {
                 fs.writeFileSync(docPath, output);
               }
             } else {
-               try {
-                  fs.unlinkSync(docPath);
-               } catch(e) {
-                  if (e.code !== 'ENOENT') {
-                     throw e;
+               if (!fs.existsSync(docPath)) {
+                  try {
+                    const relativeTarget = path.relative(groupDir, path.join(DOCS_DIR, groups[0], `${safeName}.md`));
+                    fs.symlinkSync(relativeTarget, docPath);
+                  } catch(e) {
+                     // fallback
+                     fs.writeFileSync(docPath, output);
                   }
-               }
-               try {
-                  const relativeTarget = path.relative(groupDir, path.join(DOCS_DIR, groups[0], `${safeName}.md`));
-                  fs.symlinkSync(relativeTarget, docPath);
-               } catch(e) {
-                  // fallback
-                  fs.writeFileSync(docPath, output);
                }
             }
           }
