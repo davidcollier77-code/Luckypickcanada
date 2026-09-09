@@ -1,189 +1,12 @@
 const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
+const https = require('https');
 const path = require('path');
 const os = require('os');
-const https = require('https');
 
 const DOCS_DIR = path.join(process.cwd(), '.docs');
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
 
-const LIBRARIES = {
-  "creation": [
-    "/github/docs",
-    "jules.google/docs",
-    "developers.google.com/jules/api",
-    "/vercel/next.js",
-    "/reactjs/react.dev",
-    "/microsoft/typescript",
-    "/websites/tailwindcss",
-    "/websites/motion_dev",
-    "/lucide-icons/lucide",
-    "/react-hook-form/documentation",
-    "/react-hook-form/resolvers",
-    "/emilkowalski/sonner",
-    "/bvaughn/react-error-boundary",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api",
-    "/dropbox/zxcvbn",
-    "/mdn/content",
-    "/pixijs/pixijs",
-    "/mrdoob/three.js",
-    "/adobe/react-spectrum",
-    "/storybookjs/storybook",
-    "/lovell/sharp"
-  ],
-  "troubleshooting": [
-    "/github/docs",
-    "jules.google/docs",
-    "developers.google.com/jules/api",
-    "/vercel/next.js",
-    "/reactjs/react.dev",
-    "/microsoft/typescript",
-    "/opennextjs/opennextjs-cloudflare",
-    "/opennextjs/docs",
-    "/cloudflare/workers-sdk",
-    "/neondatabase/neon",
-    "/upstash/docs",
-    "/getsentry/sentry-docs",
-    "/bvaughn/react-error-boundary",
-    "/websites/developer_chrome",
-    "/websites/developer_apple_webkit",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api",
-    "/mdn/content",
-    "/open-telemetry/opentelemetry.io",
-    "/GoogleChrome/web.dev"
-  ],
-  "polishing": [
-    "/vercel/next.js",
-    "/reactjs/react.dev",
-    "/websites/tailwindcss",
-    "/llmstxt/gsap_llms_txt",
-    "/websites/motion_dev",
-    "/lucide-icons/lucide",
-    "/emilkowalski/sonner",
-    "/goldfire/howler.js",
-    "/websites/developer_chrome",
-    "/websites/developer_apple_webkit",
-    "jules.google/docs",
-    "developers.google.com/jules/api",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api",
-    "/dequelabs/axe-core",
-    "/mdn/content",
-    "/pixijs/pixijs",
-    "/mrdoob/three.js",
-    "/adobe/react-spectrum",
-    "/storybookjs/storybook",
-    "/lovell/sharp",
-    "/GoogleChrome/web.dev"
-  ],
-  "testing": [
-    "/github/docs",
-    "jules.google/docs",
-    "developers.google.com/jules/api",
-    "/vercel/next.js",
-    "/reactjs/react.dev",
-    "/microsoft/typescript",
-    "/testing-library/react-testing-library",
-    "/microsoft/playwright",
-    "/vitest-dev/vitest",
-    "/colinhacks/zod",
-    "/getsentry/sentry-docs",
-    "/websites/developer_chrome",
-    "/websites/developer_apple_webkit",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api",
-    "/dequelabs/axe-core",
-    "/mdn/content",
-    "/adobe/react-spectrum",
-    "/OWASP/wstg",
-    "/storybookjs/storybook",
-    "/open-telemetry/opentelemetry.io",
-    "/GoogleChrome/web.dev"
-  ],
-  "security": [
-    "/vercel/next.js",
-    "/reactjs/react.dev",
-    "/microsoft/typescript",
-    "/colinhacks/zod",
-    "/cure53/dompurify",
-    "/getsentry/sentry-docs",
-    "/stripe/stripe-js",
-    "/resend/resend-node",
-    "/neondatabase/neon",
-    "/upstash/docs",
-    "/github/docs",
-    "/websites/developer_chrome",
-    "/websites/developer_apple_webkit",
-    "jules.google/docs",
-    "developers.google.com/jules/api",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api",
-    "/dropbox/zxcvbn",
-    "/OWASP/wstg"
-  ],
-  "audio": [
-    "/goldfire/howler.js",
-    "/websites/developer_chrome",
-    "/websites/developer_apple_webkit",
-    "jules.google/docs",
-    "developers.google.com/jules/api",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api"
-  ],
-  "deep-dive": [
-    "/github/docs",
-    "jules.google/docs",
-    "developers.google.com/jules/api",
-    "/vercel/next.js",
-    "/reactjs/react.dev",
-    "/microsoft/typescript",
-    "/opennextjs/opennextjs-cloudflare",
-    "/opennextjs/docs",
-    "/cloudflare/workers-sdk",
-    "/neondatabase/neon",
-    "/upstash/docs",
-    "/stripe/stripe-js",
-    "/resend/resend-node",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api",
-    "/getsentry/sentry-docs",
-    "/bvaughn/react-error-boundary",
-    "/microsoft/playwright",
-    "/vitest-dev/vitest",
-    "/websites/developer_chrome",
-    "/websites/developer_apple_webkit",
-    "/android/developers",
-    "/dequelabs/axe-core",
-    "/mdn/content",
-    "/pixijs/pixijs",
-    "/mrdoob/three.js",
-    "/adobe/react-spectrum",
-    "/OWASP/wstg",
-    "/google/search-central",
-    "/storybookjs/storybook",
-    "/open-telemetry/opentelemetry.io",
-    "/lovell/sharp",
-    "/GoogleChrome/web.dev"
-  ],
-  "seo": [
-    "/vercel/next.js",
-    "/reactjs/react.dev",
-    "/microsoft/typescript",
-    "/websites/tailwindcss",
-    "/coreyhaines31/marketingskills",
-    "/github/docs",
-    "/websites/developer_chrome",
-    "/websites/developer_apple_webkit",
-    "jules.google/docs",
-    "developers.google.com/jules/api",
-    "/google-gemini/gemini-cli",
-    "/websites/ai_google_dev_gemini-api",
-    "/google/search-central",
-    "/GoogleChrome/web.dev"
-  ]
-};
 
 const getHalifaxTimestamp = () => {
   const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -222,6 +45,83 @@ function getDirSize(dirPath) {
   return size;
 }
 
+
+
+
+function updateAgentsInventory(manifest) {
+  const agentsPath = path.join(process.cwd(), 'AGENTS.md');
+  if (!fs.existsSync(agentsPath)) return;
+
+  let agentsContent = fs.readFileSync(agentsPath, 'utf8');
+
+  // We need to strengthen the governance wording as requested
+  agentsContent = agentsContent.replace(
+      /The inventory must reflect verified reality./g,
+      "The inventory MUST reflect verified reality. This managed-library pictogram/inventory is MANDATORY. It is NOT optional, decorative, or merely a suggestion. It is REQUIRED and authoritative."
+  );
+
+  // Now we need to update the list if there are new ones.
+  // The easiest way is to re-render the list based on manifest.groups and the inventory array.
+  // Let's find the section.
+  const inventoryRegex = /\*\*Current Adopted Resource Inventory\*\*[\s\S]*?\*\*Resource Documentation\*\*/;
+
+  const currentInventoryMatch = agentsContent.match(inventoryRegex);
+  if (!currentInventoryMatch) return;
+
+  // We'll just append any library from manifest.inventory that isn't already mentioned in the file.
+  // The instructions said: "derive the required inventory representation from the authoritative manifest. Use the existing pictogram structure and ordering conventions... Make the smallest deterministic change necessary. Do not reorder unrelated entries unnecessarily."
+
+  let newInventorySection = currentInventoryMatch[0];
+
+  // Find where to append new ones. Let's append to 'Application Libraries & Capabilities' or create a new section if we can't parse perfectly, but appending to the end of the existing list is safer.
+  // Actually, wait, let's just do a simple check: is the library ID mentioned in the whole file? If not, append it to a specific spot.
+
+  const newLibraries = manifest.inventory.filter(lib => !agentsContent.includes(lib));
+
+  if (newLibraries.length > 0) {
+      // Find the last list item before **Resource Documentation**
+      const insertionPoint = '\n\n**Resource Documentation**';
+      const librariesList = newLibraries.map(lib => `- ${lib} — Managed documentation resource.`).join('\n');
+
+      newInventorySection = newInventorySection.replace(insertionPoint, '\n' + librariesList + insertionPoint);
+      agentsContent = agentsContent.replace(inventoryRegex, newInventorySection);
+  }
+
+  fs.writeFileSync(agentsPath, agentsContent);
+}
+
+function fetchDocumentation(lib, sourceConfig) {
+  return new Promise((resolve, reject) => {
+    if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
+      return reject(new Error('Invalid or missing source configuration.'));
+    }
+
+    const url = sourceConfig.url;
+    https.get(url, {
+      headers: {
+        'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
+      }
+    }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+         https.get(res.headers.location, (redirectRes) => {
+             let data = '';
+             redirectRes.on('data', chunk => data += chunk);
+             redirectRes.on('end', () => resolve(data));
+             redirectRes.on('error', reject);
+         }).on('error', reject);
+         return;
+      }
+
+      if (res.statusCode !== 200) {
+        return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+      }
+
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(data));
+    }).on('error', reject);
+  });
+}
 
 function getUpstreamSha(lib) {
   return new Promise((resolve) => {
@@ -269,13 +169,23 @@ function getUpstreamSha(lib) {
   });
 }
 
-function saveManifest(inventory, githubShas) {
-  fs.writeFileSync(path.join(DOCS_DIR, 'manifest.json'), JSON.stringify({
-    lastUpdated: new Date().toISOString(),
-    groups: LIBRARIES,
+function saveManifest(inventory, shas, sources, groups) {
+  const timestamp = getHalifaxTimestamp();
+
+  const manifestPath = path.join(DOCS_DIR, 'manifest.json');
+  let currentManifest = {};
+  if (fs.existsSync(manifestPath)) {
+    currentManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  }
+
+  const manifestData = {
+    lastUpdated: timestamp,
+    groups: groups || currentManifest.groups || {},
+    sources: sources || currentManifest.sources || {},
     inventory: Array.from(inventory),
-    githubShas: githubShas
-  }, null, 2));
+    githubShas: shas
+  };
+  fs.writeFileSync(manifestPath, JSON.stringify(manifestData, null, 2));
 }
 
 async function main() {
@@ -287,10 +197,20 @@ async function main() {
 
 
 
+
+  const manifestPath = path.join(DOCS_DIR, 'manifest.json');
+  if (!fs.existsSync(manifestPath)) {
+      console.error('CRITICAL: .docs/manifest.json not found.');
+      process.exit(1);
+  }
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const groupsConfig = manifest.groups || {};
+  const sourcesConfig = manifest.sources || {};
+
   const uniqueLibraries = new Set();
   const libraryToGroups = new Map();
 
-  for (const [group, libs] of Object.entries(LIBRARIES)) {
+  for (const [group, libs] of Object.entries(groupsConfig)) {
     const groupDir = path.join(DOCS_DIR, group);
     if (!fs.existsSync(groupDir)) {
       fs.mkdirSync(groupDir, { recursive: true });
@@ -312,19 +232,16 @@ async function main() {
 
   const inventory = new Set();
   let githubShas = {};
-  const manifestPath = path.join(DOCS_DIR, 'manifest.json');
-  if (fs.existsSync(manifestPath)) {
-    try {
-      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-      if (manifest.inventory && Array.isArray(manifest.inventory)) {
-        manifest.inventory.forEach(lib => inventory.add(lib));
-      }
-      if (manifest.githubShas && typeof manifest.githubShas === 'object') {
-        githubShas = manifest.githubShas;
-      }
-    } catch (e) {
-      console.warn('Failed to parse existing manifest.json. Starting fresh inventory.', e.message);
+
+  try {
+    if (manifest.inventory && Array.isArray(manifest.inventory)) {
+      manifest.inventory.forEach(lib => inventory.add(lib));
     }
+    if (manifest.githubShas && typeof manifest.githubShas === 'object') {
+      githubShas = manifest.githubShas;
+    }
+  } catch (e) {
+      console.warn('Failed to parse existing manifest.json. Starting fresh inventory.', e.message);
   }
 
   let stats = {
@@ -380,34 +297,41 @@ async function main() {
          const wasInInventory = inventory.has(lib);
          inventory.add(lib);
          if (!wasInInventory) {
-             saveManifest(inventory, githubShas);
+             saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+             updateAgentsInventory({ inventory: Array.from(inventory), groups: groupsConfig });
          }
          continue;
       }
 
       console.log(`Fetching docs for ${lib} to temp to determine exact size BEFORE downloading into .docs...`);
 
+
       let output;
       let fetchSuccess = false;
+      const sourceConfig = sourcesConfig[lib];
+
+      if (!sourceConfig) {
+         console.error(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
+         stats.failed++;
+         stats.errors.push(`Unresolved source for ${lib}`);
+         pendingUpdates.shift();
+         stats.pending--;
+         continue;
+      }
+
       try {
-        // Fetch into memory first. This acts as our "temp" buffer so we know the EXACT size BEFORE it touches .docs
-        output = execFileSync('npx', ['--yes', 'ctx7', 'docs', lib, 'full documentation'], {
-            encoding: 'utf8'
-        });
+        console.log(`Fetching docs for ${lib} using configured source to determine exact size BEFORE downloading into .docs...`);
+        output = await fetchDocumentation(lib, sourceConfig);
         fetchSuccess = true;
       } catch (e) {
         console.error(`Failed to fetch docs for ${lib} on first attempt:`, e.message);
         console.log(`Waiting 5 minutes before retrying ${lib}...`);
 
-        // Sleep for 5 minutes (300,000 ms) - using a busy wait to avoid making main loop async if it isn't, but wait, main IS async!
-        // So we can use await!
         await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
 
         try {
             console.log(`Retrying fetch for ${lib}...`);
-            output = execFileSync('npx', ['--yes', 'ctx7', 'docs', lib, 'full documentation'], {
-                encoding: 'utf8'
-            });
+            output = await fetchDocumentation(lib, sourceConfig);
             fetchSuccess = true;
         } catch (retryError) {
             console.error(`Failed to fetch docs for ${lib} on retry:`, retryError.message);
@@ -468,15 +392,14 @@ async function main() {
 
           // Write primary copy to first group
           const firstGroupPath = path.join(DOCS_DIR, groups[0], `${safeName}.md`);
+          try { if (fs.lstatSync(firstGroupPath)) fs.unlinkSync(firstGroupPath); } catch (e) {}
           fs.writeFileSync(firstGroupPath, output);
 
           // Write symlinks for subsequent groups
           for (let i = 1; i < groups.length; i++) {
              const groupDir = path.join(DOCS_DIR, groups[i]);
              const docPath = path.join(groupDir, `${safeName}.md`);
-             if (fs.existsSync(docPath)) {
-                 fs.unlinkSync(docPath);
-             }
+             try { if (fs.lstatSync(docPath)) fs.unlinkSync(docPath); } catch (e) {}
              try {
                 const relativeTarget = path.relative(groupDir, firstGroupPath);
                 fs.symlinkSync(relativeTarget, docPath);
@@ -501,9 +424,14 @@ async function main() {
 
       inventory.add(lib);
 
+
       if (isNewOrUpdated || !wasInInventory) {
-          saveManifest(inventory, githubShas);
+          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+          if (!wasInInventory) {
+              updateAgentsInventory({ inventory: Array.from(inventory), groups: groupsConfig });
+          }
       }
+
 
       // Update current docs size using strict filesystem measurement to be safe
       currentDocsSize = getDirSize(DOCS_DIR);
