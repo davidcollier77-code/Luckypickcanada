@@ -56,7 +56,7 @@ jobs:
           fi
 
       - name: Wrangler build validation (no deploy)
-        run: pnpm exec wrangler build --config ./wrangler.jsonc
+        run: export NODE_OPTIONS=--max-old-space-size=4096 && export CI=true && export CF_PAGES=1 && export WRANGLER_SEND_METRICS=false && pnpm exec wrangler build --config ./wrangler.jsonc
 
       - name: Git status
         run: git status --porcelain=2 --branch

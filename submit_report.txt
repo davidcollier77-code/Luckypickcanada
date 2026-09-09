@@ -1,8 +1,4 @@
 Libraries Consulted / Used:
-- Group: None
-- Documents: None specifically
-- Contribution: The task was strictly terminal configuration (exporting `NODE_OPTIONS`, `CI`, `CF_PAGES`, and `WRANGLER_SEND_METRICS`) and running verification commands.
-
-Files Changed:
-- submit.sh: Added executable wrapper script that invokes jules-verify.sh with proper error handling (set -e)
-- submit_report.txt: Updated to accurately document the files changed by this PR
+- Group: Troubleshooting / Deep Dive
+- Documents: `.docs/manifest.json`, existing PR workflow configs.
+- Contribution: The task required adding `NODE_OPTIONS`, `CI`, `CF_PAGES`, and `WRANGLER_SEND_METRICS` environment variables. I updated both `.github/workflows/deploy-open-next.yml` and `.github/workflows/validate-open-next-repair.yml` to export these specific environment variables before the final `wrangler` deployment and build steps, resolving the deployment configuration issue reported in the pull request comment "/q Please repair".
