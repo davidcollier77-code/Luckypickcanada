@@ -358,19 +358,53 @@ async function main() {
             const docPath = path.join(groupDir, `${safeName}.md`);
 
             if (i === 0) {
-              if (!fs.existsSync(docPath)) {
+              // Check if first group is already a symlink
+              if (fs.existsSync(docPath) && fs.lstatSync(docPath).isSymbolicLink()) {
+                // First group is a symlink - need to reconcile to avoid cycles
+                // Find which group has the actual file
+                let actualFileGroup = null;
+                let actualFilePath = null;
+                
+                for (let j = 1; j < groups.length; j++) {
+                  const checkGroupDir = path.join(DOCS_DIR, groups[j]);
+                  const checkPath = path.join(checkGroupDir, `${safeName}.md`);
+                  if (fs.existsSync(checkPath) && !fs.lstatSync(checkPath).isSymbolicLink()) {
+                    actualFileGroup = groups[j];
+                    actualFilePath = checkPath;
+                    break;
+                  }
+                }
+                
+                if (actualFileGroup) {
+                  // Keep the actual file where it is and recreate all symlinks including first group
+                  for (let k = 0; k < groups.length; k++) {
+                    if (groups[k] === actualFileGroup) continue;
+                    const targetGroupDir = path.join(DOCS_DIR, groups[k]);
+                    const targetPath = path.join(targetGroupDir, `${safeName}.md`);
+                    if (fs.existsSync(targetPath)) {
+                      fs.unlinkSync(targetPath);
+                    }
+                    const relativeTarget = path.relative(targetGroupDir, actualFilePath);
+                    fs.symlinkSync(relativeTarget, targetPath);
+                  }
+                } else {
+                  // No actual file found, write it to first group
+                  fs.unlinkSync(docPath);
+                  fs.writeFileSync(docPath, output);
+                }
+              } else if (!fs.existsSync(docPath)) {
+                // First group doesn't exist, write the file
                 fs.writeFileSync(docPath, output);
               }
             } else {
-               if (!fs.existsSync(docPath)) {
-                  try {
-                    const relativeTarget = path.relative(groupDir, path.join(DOCS_DIR, groups[0], `${safeName}.md`));
-                    fs.symlinkSync(relativeTarget, docPath);
-                  } catch(e) {
-                     // fallback
-                     fs.writeFileSync(docPath, output);
-                  }
-               }
+              // Only create symlinks if first group has been established as regular file
+              if (!fs.existsSync(docPath)) {
+                const firstGroupPath = path.join(DOCS_DIR, groups[0], `${safeName}.md`);
+                if (fs.existsSync(firstGroupPath) && !fs.lstatSync(firstGroupPath).isSymbolicLink()) {
+                  const relativeTarget = path.relative(groupDir, firstGroupPath);
+                  fs.symlinkSync(relativeTarget, docPath);
+                }
+              }
             }
           }
       } else {
