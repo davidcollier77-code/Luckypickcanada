@@ -211,7 +211,7 @@ function getDirSize(dirPath) {
   const files = fs.readdirSync(dirPath);
   for (let i = 0; i < files.length; i++) {
     const filePath = path.join(dirPath, files[i]);
-    const stats = fs.statSync(filePath);
+    const stats = fs.lstatSync(filePath);
     if (stats.isDirectory()) {
       size += getDirSize(filePath);
     } else {
@@ -238,15 +238,26 @@ async function main() {
 
 
 
-  const pendingUpdates = [];
+  const uniqueLibraries = new Set();
+  const libraryToGroups = new Map();
+
   for (const [group, libs] of Object.entries(LIBRARIES)) {
     const groupDir = path.join(DOCS_DIR, group);
     if (!fs.existsSync(groupDir)) {
       fs.mkdirSync(groupDir, { recursive: true });
     }
     for (const lib of libs) {
-      pendingUpdates.push({ group, lib });
+      uniqueLibraries.add(lib);
+      if (!libraryToGroups.has(lib)) {
+        libraryToGroups.set(lib, []);
+      }
+      libraryToGroups.get(lib).push(group);
     }
+  }
+
+  const pendingUpdates = [];
+  for (const lib of uniqueLibraries) {
+    pendingUpdates.push({ lib, groups: libraryToGroups.get(lib) });
   }
 
   const inventory = new Set();
@@ -287,17 +298,19 @@ async function main() {
     while (batchContinues && pendingUpdates.length > 0) {
       const nextUpdate = pendingUpdates[0];
       const lib = nextUpdate.lib;
-      const group = nextUpdate.group;
+      const groups = nextUpdate.groups;
 
       const safeName = lib.replace(/[\/\.]/g, '_');
-      const groupDir = path.join(DOCS_DIR, group);
-      const docPath = path.join(groupDir, `${safeName}.md`);
+      // For size calculation, check the first group's file
+      const firstGroupDir = path.join(DOCS_DIR, groups[0]);
+      const firstDocPath = path.join(firstGroupDir, `${safeName}.md`);
 
       let existingSize = 0;
       let contentBefore = null;
-      if (fs.existsSync(docPath)) {
-          existingSize = fs.statSync(docPath).size;
-          contentBefore = fs.readFileSync(docPath, 'utf8');
+      if (fs.existsSync(firstDocPath)) {
+          // If we had a symlink, lstat or stat size? We use the actual content length if we read it
+          contentBefore = fs.readFileSync(firstDocPath, 'utf8');
+          existingSize = Buffer.byteLength(contentBefore, 'utf8');
       }
 
       console.log(`Fetching docs for ${lib} to temp to determine exact size BEFORE downloading into .docs...`);
@@ -337,10 +350,54 @@ async function main() {
       if (contentBefore === output) {
           console.log(`CURRENT: ${lib} (no changes)`);
           stats.unchanged++;
+
+          // Ensure symlinks/files exist for ALL groups just in case
+          for (let i = 0; i < groups.length; i++) {
+            const group = groups[i];
+            const groupDir = path.join(DOCS_DIR, group);
+            const docPath = path.join(groupDir, `${safeName}.md`);
+
+            if (i === 0) {
+              if (!fs.existsSync(docPath)) {
+                fs.writeFileSync(docPath, output);
+              }
+            } else {
+               if (!fs.existsSync(docPath)) {
+                  try {
+                    const relativeTarget = path.relative(groupDir, path.join(DOCS_DIR, groups[0], `${safeName}.md`));
+                    fs.symlinkSync(relativeTarget, docPath);
+                  } catch(e) {
+                     // fallback
+                     fs.writeFileSync(docPath, output);
+                  }
+               }
+            }
+          }
       } else {
           console.log(`UPDATED: ${lib}`);
           stats.updated++;
-          fs.writeFileSync(docPath, output);
+
+          // Write primary copy to first group
+          const firstGroupPath = path.join(DOCS_DIR, groups[0], `${safeName}.md`);
+          fs.writeFileSync(firstGroupPath, output);
+
+          // Write symlinks for subsequent groups
+          for (let i = 1; i < groups.length; i++) {
+             const groupDir = path.join(DOCS_DIR, groups[i]);
+             const docPath = path.join(groupDir, `${safeName}.md`);
+             if (fs.existsSync(docPath)) {
+                 fs.unlinkSync(docPath);
+             }
+             try {
+                const relativeTarget = path.relative(groupDir, firstGroupPath);
+                fs.symlinkSync(relativeTarget, docPath);
+             } catch(e) {
+                console.warn(`Symlink failed for ${docPath}, falling back to writing file: `, e.message);
+                fs.writeFileSync(docPath, output);
+             }
+          }
+
+          // only add netSizeIncrease once
           if (netSizeIncrease > 0) {
               stats.bytesAdded += netSizeIncrease;
           }
