@@ -120,16 +120,26 @@ Every task must be classified into one of these task groups:
 
 1. Creation
 2. Troubleshooting
+   - Specialist file: `.jules/creation.md`
 3. Polishing
+   - Specialist file: `.jules/troubleshooting.md`
 4. Testing
+   - Specialist file: `.jules/polishing.md`
 5. Security
+   - Specialist file: `.jules/testing.md`
 6. Audio
+   - Specialist file: `.jules/security.md`
 7. Deep Dive / Investigation
+   - Specialist file: `.jules/audio.md`
 8. SEO
+   - Specialist file: `.jules/deep-dive.md`
 
+   - Specialist file: `.jules/seo.md`
 Miscellaneous or cross-cutting work may be treated as a fallback category when it genuinely does not fit one of the eight groups.
 
 Do not invent additional permanent task groups without authorization.
+When working with the Spec Kit workflow, use the applicable Spec Kit command files under `.jules/cmds/speckit.*.md`.
+
 
 ---
 
@@ -658,47 +668,19 @@ Do not assume a route's implementation from its URL alone.
 The `.docs` library is authoritative for repository-maintained technical documentation.
 
 The current adopted documentation inventory includes the libraries and technologies actively identified by the project, including:
+The documentation inventory is maintained in `.docs/manifest.json`, which serves as the single authoritative source of truth for the documentation library.
 
+Before implementing any task, agents must:
+
+1. Inspect `.docs/manifest.json` to identify available documentation;
+2. Read the relevant documentation files referenced in the manifest;
+3. Use that documentation when making implementation decisions;
+4. Report the specific documentation sources actually consulted.
+
+The manifest organizes documentation by task group and provides a complete inventory of all available documentation sources.
+
+Do not maintain a second documentation inventory that can drift from the manifest.
 - Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- OpenNext Cloudflare
-- Cloudflare Workers
-- Neon
-- Upstash
-- Stripe
-- Resend
-- React Testing Library
-- Playwright
-- Gemini CLI
-- Gemini API
-- Zod
-- GSAP
-- Vitest
-- Framer Motion
-- Howler
-- Sentry for Next.js
-- lucide-react
-- react-hook-form
-- DOMPurify
-- html2canvas
-- canvas-confetti
-- ESLint
-- Prettier
-- Husky
-- lint-staged
-- Stylelint
-- Lodash
-- date-fns
-- axe-core
-- @axe-core/react
-- zxcvbn
-- react-error-boundary
-
-This inventory must remain synchronized with actual repository usage and `.docs/manifest.json`.
-
-Do not claim a library was consulted merely because it appears in this inventory.
 
 The final report should identify the documentation actually read or used for the task.
 
