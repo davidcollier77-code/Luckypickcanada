@@ -1,449 +1,918 @@
-# Permanent Agent-Governance & Operating Rules
+# Canonical Agent Governance & Operating Rules
 
-The following rules form the core, authoritative, and permanent governance system for all agents operating in this repository. They are mandatory and must be followed for all future tasks. There are no competing or secondary governance policies.
+This file is the canonical repository-level instruction set for all AI coding agents working on LuckyPickCanada.
 
-```text
-                         ┌──────────────────────┐
-                         │         START        │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ 1. IDENTIFY TASK     │
-                         │        GROUP         │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ 2. READ REPOSITORY   │
-                         │    INSTRUCTIONS +    │
-                         │    LOCAL RESOURCES   │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ 3. READ `.docs`      │
-                         │    LOCAL LIBRARY     │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ 4. CHECK EXISTING    │
-                         │ CAPABILITIES /       │
-                         │ LIBRARIES / SCRIPTS /│
-                         │ TOOLS / WORKFLOWS    │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ 5. JULES + GEMINI    │
-                         │    MANDATORY         │
-                         │    COLLABORATION     │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ 6. AUTHORITATIVE /   │
-                         │    CURRENT DOCS      │
-                         │    WHEN REQUIRED     │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ 7. CONTEXT7          │
-                         │    LAST RESORT ONLY  │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │ 8. NEW DEPENDENCY /  │
-                         │    EXTERNAL          │
-                         │    CAPABILITY        │
-                         │    TRUE LAST RESORT  │
-                         │    + AUTHORIZATION   │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │      IMPLEMENT       │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │        TEST          │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-                         ┌──────────────────────┐
-                         │    DOUBLE-CHECK      │
-                         │  ACTUAL REPO STATE   │
-                         └──────────┬───────────┘
-                                    │
-                                    ▼
-              ┌─────────────────────────────────────────┐
-              │       DOCUMENTATION ACCOUNTABILITY      │
-              │                                         │
-              │ REPORT ONLY RESOURCES ACTUALLY USED:   │
-              │ `.docs` • repo instructions • Jules    │
-              │ docs • Gemini docs • authoritative docs │
-              │ • Context7 • MCP                        │
-              │                                         │
-              │ State WHAT was consulted and WHAT EACH  │
-              │ resource actually contributed.          │
-              └─────────────────────────────────────────┘
-```
+These rules are mandatory unless a higher-priority system instruction or an explicit task-specific instruction overrides them.
 
-## 1. Mandatory AI Collaboration
-Jules + Gemini are mandatory collaborators for EVERY repository task. This requirement applies regardless of task type, task group, difficulty, whether the task is routine or exceptional, whether it is classified as Miscellaneous / Cross-Cutting, or whether additional documentation or research is required. Task-group routing does not replace the Jules + Gemini requirement. They must genuinely participate in the work, and the final report must explicitly detail what each contributed. Never claim an AI or resource was used unless it was genuinely consulted.
+---
 
-## 2. Approved Resources Hierarchy
-Existing approved libraries, Context7 resources, repository tooling, and capabilities are the default and preferred solutions. Before introducing anything new, agents must inspect and make reasonable use of what the repository already has. Follow this strict order:
+# 1. GOVERNANCE FLOW
 
-1. Identify the appropriate existing task group.
-2. Read the relevant repository instructions and existing local resources.
-3. Read the relevant documentation already present in `.docs`.
-4. Use existing project capabilities, libraries, scripts, APIs, tooling, workflows, and other already-approved resources.
-5. Use Jules + Gemini as mandatory collaborators.
-6. Use authoritative/current documentation when genuinely required and permitted.
-7. Use Context7 only when a genuine information or capability gap remains after the approved resources above have been checked.
-8. Consider a new dependency or external capability only as a true last resort, only when genuinely necessary, and only when authorized.
+┌──────────────────────────────────────────────────────────────────────┐
+│                         START TASK                                   │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 1. IDENTIFY TASK                                                     │
+│    Determine the task group and exact requested scope.                │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 2. READ REPOSITORY INSTRUCTIONS                                     │
+│    Read AGENTS.md and all applicable repository-local instructions.  │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 3. INSPECT .docs                                                     │
+│    Inspect the documentation library and manifest.                   │
+│    Identify and actually read the relevant documentation.             │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 4. INSPECT CURRENT REPOSITORY STATE                                 │
+│    Check files, implementation, dependencies, scripts, workflows,    │
+│    tests, existing automation, open PRs, and relevant configuration.  │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 5. CHECK AVAILABLE CAPABILITIES                                     │
+│    Determine whether existing libraries, scripts, tools, MCPs,       │
+│    workflows, or documentation already solve the problem.            │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 6. MCP DECISION                                                      │
+│    Use a connected MCP only when it materially improves accuracy     │
+│    or execution and its approval requirements permit its use.        │
+│                                                                      │
+│    Connection/initialization ≠ usage.                                │
+│    Only an actual invocation/query/retrieval counts as MCP usage.    │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 7. UNDERSTAND                                                        │
+│    Understand the existing architecture and constraints before       │
+│    changing anything.                                                │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 8. IMPLEMENT ONLY AUTHORIZED SCOPE                                  │
+│    Do not perform unrelated cleanup, refactoring, dependency         │
+│    upgrades, redesign, or architectural changes.                     │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 9. TEST AND VERIFY                                                   │
+│    Run the appropriate tests, builds, linting, type checks, and       │
+│    repository verification procedures.                               │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 10. DOUBLE-CHECK ACTUAL STATE                                       │
+│     Verify the actual repository/workflow/PR/file state.             │
+│     Never claim something happened based solely on an intention,      │
+│     connection, plan, or tool availability.                           │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│ 11. DOCUMENTATION ACCOUNTABILITY                                    │
+│     Report what was actually consulted, changed, tested, and        │
+│     verified. Never fabricate tool, MCP, documentation, or test use.  │
+└──────────────────────────────────────────────────────────────────────┘
 
-Do not add technology simply because it is newer, easier, or more convenient.
+---
 
-## 3. Task Group Routing
-Before making any changes, determine which of the existing 8 task groups genuinely applies. You must not create a ninth permanent task group. The exactly 8 groups are:
+# 2. CORE OPERATING PRINCIPLES
 
-1. Creation (`.jules/creation.md`)
-2. Troubleshooting (`.jules/troubleshooting.md`)
-3. Polishing (`.jules/polishing.md`)
-4. Testing (`.jules/testing.md`)
-5. Security (`.jules/security.md`)
-6. Audio (`.jules/audio.md`)
-7. Deep Dive / Investigation (`.jules/deep-dive.md`)
-8. SEO (`.jules/seo.md`)
+1. Inspect before modifying.
+2. Understand before implementing.
+3. Preserve existing behavior unless the task explicitly requires changing it.
+4. Work only within the requested scope.
+5. Prefer existing repository capabilities over adding new ones.
+6. Verify actual results rather than trusting assumptions.
+7. Never fabricate tool usage, MCP usage, documentation consultation, test results, or deployment state.
+8. Never expose secrets, credentials, API tokens, private keys, session tokens, or sensitive environment values.
+9. Do not weaken security controls merely to make a task easier.
+10. Do not bypass repository governance.
+11. Do not duplicate existing automation.
+12. Do not silently expand the scope of a task.
 
-Preserve this exact group structure. The Context7 resource for Android Developers (`/android/developers`) belongs under the existing **Deep Dive / Investigation** group. Use it when relevant for platform, API, and tooling questions. Do not create an Android-specific task group.
+The goal is not maximum code change.
 
-## 4. Miscellaneous / Cross-Cutting Fallback
-If, and ONLY if, a task genuinely does not fit any of the 8 existing groups, use the **Miscellaneous / Cross-Cutting** fallback.
-- **This is a fallback mechanism only. It is NOT a ninth task group and NOT a general convenience category.**
-- Do not use this to bypass normal task-group routing, required resources, security controls, protected systems, documentation requirements, or verification.
-- **Jules + Gemini remain mandatory when using this fallback.**
-- This fallback does not grant permission to use arbitrary tools, libraries, dependencies, MCP services, or external capabilities.
-- The ONLY approved resources for this fallback are:
-  - Jules Documentation ("jules.google/docs")
-  - Jules API ("developers.google.com/jules/api")
-  - Gemini CLI ("/google-gemini/gemini-cli")
-  - Gemini API ("/websites/ai_google_dev_gemini-api")
+The goal is the smallest correct, maintainable, verifiable change that fully satisfies the authorized task.
 
-## 5. Local `.docs` Documentation
-The repository's `.docs` directory is a LOCAL DOCUMENTATION LIBRARY.
-When an agent is told to read, consult, review, verify, or use documentation in `.docs`, this means **read the documentation files already present in the repository.**
+---
 
-It does **NOT** mean:
-- Go to Cloudflare.
-- Connect to Cloudflare.
-- Go to Context7.
-- Connect to Context7.
-- Invoke Context7/MCP merely because the documentation concerns a library, framework, or service.
-- Access an external service simply because its documentation is represented by a file in `.docs`.
+# 3. TASK GROUPS
 
-A `.docs` entry is local documentation, not authorization to access the external service it describes.
+Every task must be classified into one of these task groups:
 
-## 6. Context7 — Last Resort Only
-Context7 is an approved documentation and research resource, but it is a **LAST RESORT**.
-It may be used only when the other approved and available resources have genuinely been exhausted and a specific information or capability gap remains.
+1. Creation
+2. Troubleshooting
+   - Specialist file: `.jules/creation.md`
+3. Polishing
+   - Specialist file: `.jules/troubleshooting.md`
+4. Testing
+   - Specialist file: `.jules/polishing.md`
+5. Security
+   - Specialist file: `.jules/testing.md`
+6. Audio
+   - Specialist file: `.jules/security.md`
+7. Deep Dive / Investigation
+   - Specialist file: `.jules/audio.md`
+8. SEO
+   - Specialist file: `.jules/deep-dive.md`
 
-Before relying on Context7, determine:
-- exactly what information or capability is missing;
-- what approved resources were already checked;
-- why those resources were insufficient;
-- what Context7 is expected to provide;
-- the applicable task group.
+   - Specialist file: `.jules/seo.md`
+Miscellaneous or cross-cutting work may be treated as a fallback category when it genuinely does not fit one of the eight groups.
 
-If the required information already exists in `.docs` or another approved local repository resource, use the local resource instead of Context7.
-
-Using Context7 does **NOT**:
-- authorize installing a dependency;
-- authorize changing the architecture;
-- authorize adding an external capability;
-- authorize MCP.
-
-## 7. MCP Usage (Absolute Last Resort & Approval Gate)
-MCPs are an **ABSOLUTE LAST RESORT** and must never be treated as a normal documentation mechanism. You may only rely upon an MCP after ALL other resources in the Resource Hierarchy have been exhausted.
-
-**🚨 ABSOLUTE MCP APPROVAL GATE — HARD STOP**
-This is a blocking rule. There are no exceptions. If you determine that ANY MCP (e.g., Neon, Stitch, Context7, GitHub MCP) needs to be used, you must **STOP IMMEDIATELY**.
-- DO NOT invoke the MCP.
-- DO NOT call the MCP tool.
-- DO NOT proceed with the MCP-dependent part of the task.
-
-Instead, you must ask David for explicit approval first. Provide:
-1. **MCP:** Which MCP you want to use.
-2. **Tool:** The specific capability/tool you intend to invoke.
-3. **Purpose:** Exactly what you need it for.
-4. **Impact:** What information, repository data, or action would be involved.
-
-**WAIT FOR EXPLICIT APPROVAL** before proceeding. There is NO implied or automatic approval because an MCP is connected, available, mentioned in documentation, or would make a task easier. Read-only calls also require explicit approval. If you are unsure whether an operation counts as an MCP call, treat it as an MCP call and stop.
-
-Do not connect to or invoke Context7, Cloudflare, Neon, Stitch, or other MCP services merely to read documentation that is already available locally. A connection or initialization event does not by itself constitute meaningful use of an external capability.
-
-## 8. New Dependencies & Adopted Libraries
-Do not introduce a new package, library, service, tool, API, or dependency when an existing approved capability already satisfies the requirement. New dependencies and external capabilities remain an absolute last resort. Do not interpret documentation research as permission to introduce new technology.
-
-If a new library is genuinely necessary and adopted:
-- It must become part of the permanent system.
-- It must be integrated into the existing approved library/resource system.
-- It must be placed into the appropriate existing task group(s) in `.jules/`.
-- The relevant documentation must be updated so future agents know it exists and why it was approved.
-
-## 9. Protected Project Areas
-Preserve the existing protections. Do not permit unrelated work to modify protected systems, including:
-- **Stripe/payment functionality**: logic, products, or payment processing endpoints.
-- **Database systems**: schema, state, and migrations.
-- **Sensitive APIs**: routes handling payments, form submissions, emails, and the Gemini Oracle endpoint.
-- **Authentication/Security systems**: authentication, authorization rules, access controls, Turnstile configuration, and security safeguards.
-- **Secrets/Environment variables**.
-- **Cloudflare deployment/configuration settings**: `wrangler.jsonc`, `open-next.config.ts`.
-- **Resend email delivery**.
-- **Other explicitly protected infrastructure**.
-
-Any change involving payments, authorization, permissions, credentials, access control, or other privileged capabilities must explicitly identify what is required, why it is required, whether the task authorizes it, and use least privilege. Stop at an authorization boundary when required authority is unclear. Do not silently broaden permissions.
-
-## 10. Application Audio Protection
-Preserve application-audio protections exactly.
-Howler.js is the preferred library for audio playback and layering, utilizing real audio assets located in the `public/sounds/` directory.
-- **Do not remove, redesign, tune, replace, or refactor existing Lucky Meter, Lucky Card, Howler, or ZZFX application audio behavior as part of unrelated work.**
-- Do not use governance cleanup as justification for changing application audio.
-- Only obsolete infrastructure may be addressed when separately confirmed and genuinely necessary.
-
-## 11. Required Operating Method (Implementation Philosophy)
-For every development task, follow this required reasoning and implementation flow:
-
-**Inspect → Identify → Understand → Verify → Choose → Research → Implement → Test → Double-check**
-
-Do not treat successful compilation or build completion as sufficient proof when actual behavior can be verified. Verification must prove the requested behavior where practical (e.g., using browser/UI verification). Work surgically, make the smallest appropriate change, and do not make unrelated refactors.
-
-## 12. Documentation Quality & Friday Refresh
-Repository documentation must be genuine, useful, and verifiable. Do not create fabricated, placeholder, empty, or headings-only documentation, or misleading summaries presented as complete documentation.
-
-**Tuesday and Friday Documentation Refresh:**
-- The existing GitHub Actions workflow (`.github/workflows/refresh-docs.yml`) runs every Tuesday and Friday at 2:21 AM Atlantic Time.
-- The workflow uses two UTC cron schedules (`21 5 * * 2,5` for ADT and `21 6 * * 2,5` for AST) with a runtime timezone gate that verifies the current Atlantic Time hour before proceeding.
-- Do not replace the existing UTC schedule + runtime-gate architecture with a timezone-aware cron expression.
-- A successful refresh must report `SUCCESS — [ISO 8601 timestamp with timezone] — VERIFIED`.
-- A failed refresh must report `FAILED — [ISO 8601 timestamp with timezone] — VERIFICATION FAILED`.
-
-## 13. Playwright CLI Artifact Rule
-Playwright CLI generates temporary snapshots, traces, and debug artifacts inside the `.playwright-cli/` directory.
-- These files are test/debug artifacts and must **NEVER** be committed to version control as repository content.
-- Ensure `.playwright-cli/` remains ignored.
-
-## 14. Local CI Verification
-Before pushing code or opening a PR, verify changes pass CI locally using `act` when appropriate, or rely on `./jules-verify.sh`.
-- Run the verification script: `bash scripts/act/run-act.sh "push -j <JOB_ID>"`
-- **Mandatory Script Verification:** Run `./jules-verify.sh` to validate the build, linting, and types. You must not declare the task complete if this script fails.
-
-## 15. Repository Architecture & Core Stack
-* **Framework:** Next.js (App Router).
-* **Styling:** Tailwind CSS.
-* **Database:** PostgreSQL (accessed via Neon Serverless driver `@neondatabase/serverless`).
-* **Deployment:** Cloudflare Pages/Workers (via OpenNext `opennextjs-cloudflare`).
-* **Payments:** Stripe Checkout.
-* **Email:** Resend.
-* **Security:** Cloudflare Turnstile.
-* **Audio:** Howler.js (layered audio/SFX using real assets).
-* **Animations:** Framer Motion, HTML5 Canvas.
-
-## 16. Development & Coding Conventions
-* **React/Next.js:** Extract complex logic into custom hooks. Use Server Components where appropriate for data fetching. For client-side interactivity, mark components with `"use client"`.
-* **Database Caching:** Do not apply global `fetchOptions: { next: { revalidate: X } }` to the shared `neon()` client instance, as it uses POST requests for all queries and risks caching writes. Use route-level ISR (`export const revalidate = ...`) instead.
-* **On-Demand Revalidation:** Use `revalidatePath` or `revalidateTag` inside Server Actions or API routes when handling user submissions on statically regenerated pages to ensure instant updates.
-* **Audio/Visual Timing:** Synchronize Web Audio directly to HTML5 Canvas visual spawn milestones (using `AudioContext.currentTime`) rather than relying on React state changes or `setTimeout`.
-* **Performance:** Extract full-screen Canvas fill operations outside of particle rendering loops to prevent overdraw. Use `matchMedia('(prefers-reduced-motion: reduce)')` to respect reduced motion settings directly in the animation loop.
-* **Gemini Oracle Integration:** The "Crystal Ball" feature (`functions/api/oracle.js`) calls the Gemini REST API directly (`generativelanguage.googleapis.com`) using `fetch`. Do not install the Gemini Node SDK; maintain the raw REST implementation. Always enforce strict prompt injection sanitization (stripping quotes, brackets, and newlines) before interpolating user input into the prompt.
-
-## 17. Current Site Structure & Feature Map
-
-This section provides a concise orientation map of the current LuckyPickCanada application so agents can quickly understand where major experiences, routes, and supporting code belong.
-
-This is a living governance section. If an explicitly authorized application change materially changes the structure, routes, or relationships described here, this section MUST be updated as part of that same authorized change.
+Do not invent additional permanent task groups without authorization.
+When working with the Spec Kit workflow, use the applicable Spec Kit command files under `.jules/cmds/speckit.*.md`.
 
 
-**Public Experience**
+---
 
-- "/" — Main homepage and primary LuckyPick experience, including the main number experience, daily lucky content, Lucky Day of the Week, Lucky Color, discovery/community entry points, Suggestion Box, and links to major experiences.
-- "/lucky-meter" — Lucky Meter experience, including daily luck percentage, reveal animation, fortune, sharing, daily reset behavior, and countdown.
-- Lucky Cards — Collectible card experience, including card selection, reveal, artwork, rarity/weighted selection, sharing, collection/binder functionality, and related card logic.
-- "/lucky-map-of-canada" — Lucky Map of Canada experience, including the interactive map and community lucky stories.
-- "/map" — Related map entry point into the Lucky Map experience.
-- "/where-luck-has-been-found-in-canada" — Related map/discovery entry point into the Lucky Map experience.
-- Crystal Ball / Oracle — The Gemini-powered Oracle experience and its supporting client/application areas.
-- "/reveal/[revealId]" — Lucky Pick reveal/result experience.
-- "/about" — About experience.
+# 4. REQUIRED AGENT PARTICIPATION
 
-**Major Application Areas**
+## Jules
 
-- "app/components" — Shared application components.
-- "app/homepage" — Homepage-specific components and functionality.
-- "app/lucky-meter-client" — Lucky Meter implementation and client-side functionality.
-- "app/lucky-map-of-canada" — Lucky Map application area.
-- "app/crystal-ball" — Crystal Ball/Oracle application area.
-- "app/crystal-ball-client" — Crystal Ball client-side functionality.
-- "app/developer-tools" — Developer tooling and supporting utilities.
-- "app/api" — Application API routes and supporting API functionality.
-- "app/admin" — Administrative functionality.
+Jules is the primary implementation agent for repository work.
 
-**Shared & Protected Systems**
+Jules must:
 
-Major shared or infrastructure systems include global theme/styling, shared layout/navigation, application assets and imagery, audio infrastructure, database/Neon services, APIs, Stripe/payment infrastructure, Resend, authentication/security, Cloudflare Turnstile, environment/secrets, and Cloudflare/OpenNext deployment configuration.
+- inspect the repository before acting;
+- follow AGENTS.md;
+- inspect applicable `.docs` material;
+- inspect current repository state;
+- determine whether connected tools/MCPs materially improve the task;
+- implement only authorized changes;
+- run appropriate verification;
+- inspect the final actual state;
+- provide an accurate final report.
 
-These systems remain subject to all existing protection and authorization rules in this file.
+## Gemini
 
-**Structural Change Rule**
+Gemini participation is mandatory for repository tasks where the repository workflow provides Gemini access.
 
-When an explicitly authorized change materially alters the application's structure:
+Gemini must genuinely participate in the task rather than merely being mentioned.
 
-1. Identify the affected routes, components, and relationships.
-2. Make only the smallest appropriate structural change.
-3. Verify the resulting repository structure.
-4. Update this Site Structure & Feature Map during the same authorized change.
-5. Verify that the map accurately reflects the resulting repository.
+The final report must distinguish actual Gemini usage from availability or connection status.
 
-This map is an orientation and governance aid. It does NOT grant permission to restructure or modify any feature.
+A connection or initialization message does not prove Gemini was used.
 
-If the actual repository structure conflicts with this section, do not guess or silently work around the discrepancy. Stop and verify the discrepancy. The verified repository state and explicitly authorized changes are authoritative, and this section must then be corrected to match reality.
+---
 
-## 18. Adopted Libraries & Project Resources
+# 5. DOCUMENTATION-FIRST WORKFLOW
 
-This section is a concise living inventory of the libraries, frameworks, services, development tools, and other permanent technical resources actually adopted by the LuckyPickCanada project.
+The repository's local documentation library is located under:
 
-It is an index, not a replacement for detailed documentation in ".docs".
+    .docs/
 
-**Inventory Maintenance Rule**
+`.docs` is a first-class repository resource.
 
-Whenever Jules introduces a new permanent dependency, library, framework, service, or other technical resource that is actually authorized and adopted by the project:
+It is not optional background material.
 
-1. Confirm that it was genuinely necessary and authorized under the existing governance rules.
-2. Add or update the appropriate documentation in ".docs" for the applicable task group.
-3. Document the newly adopted resource here, including its purpose and approved role where useful.
-4. Update this inventory in the SAME authorized change that adopts the resource.
-5. Verify that the inventory matches the actual repository state.
+For every applicable task, the agent must:
 
-When an adopted dependency or permanent resource is removed, this inventory and its corresponding documentation MUST also be updated.
+1. inspect `.docs`;
+2. inspect `.docs/manifest.json` when present;
+3. identify documentation relevant to the task;
+4. actually read the relevant documentation;
+5. use that information when making implementation decisions;
+6. report the relevant documentation actually consulted.
 
-**Current Adopted Resource Inventory**
+Do not merely state that `.docs` was checked if the relevant documents were not actually read.
 
-*Core Application Stack*
+Do not read every document unnecessarily.
 
-- Next.js
+Read the documents that materially apply to the task.
+
+`.docs` provides documentation and project guidance.
+
+It does not itself authorize use of external services, MCPs, credentials, APIs, or protected systems.
+
+---
+
+# 6. RESOURCE HIERARCHY
+
+When determining how to solve a task, use this general priority order:
+
+1. Explicit task requirements
+2. Higher-priority system/platform instructions
+3. This AGENTS.md
+4. Repository-local instructions
+5. Relevant `.docs` documentation
+6. Existing repository implementation
+7. Existing scripts/workflows/tests
+8. Already-installed dependencies and capabilities
+9. Approved MCPs/tools
+10. External research or new dependencies only when genuinely necessary
+
+Never use external research as an excuse to ignore repository-local documentation.
+
+Never introduce a new dependency when an existing dependency or repository capability is sufficient.
+
+---
+
+# 7. MCP GOVERNANCE
+
+MCPs are governed individually.
+
+A connected MCP is not automatically permission to use it.
+
+The agent must distinguish:
+
+- connection;
+- initialization;
+- availability;
+- actual invocation;
+- actual returned data.
+
+Only an actual invocation/query/retrieval constitutes MCP usage.
+
+## Neon
+
+Neon may be used without additional approval when it is materially applicable to the authorized task.
+
+Use it only within the task's scope.
+
+Do not modify protected database structures without explicit authorization.
+
+## Stitch
+
+Stitch may be used without additional approval when it is materially applicable to the authorized task.
+
+Use it only within the task's scope.
+
+## Context7
+
+Context7 requires explicit approval from the repository owner before any invocation.
+
+Connection or availability does not constitute approval.
+
+Mentioning Context7 in a task does not constitute approval.
+
+A previous Context7 approval does not automatically authorize unrelated future tasks unless that authorization explicitly covers them.
+
+Before invoking Context7, Jules must ask the repository owner for explicit approval and provide:
+
+1. MCP/service being requested;
+2. tool/action that will be invoked;
+3. reason it is materially necessary;
+4. what information it is expected to retrieve;
+5. whether the action is read-only or modifies anything.
+
+Until explicit approval is received, do not invoke Context7.
+
+## Other MCPs
+
+Any other MCP requires explicit approval unless a separate standing authorization for that specific MCP has been established.
+
+Do not infer approval from:
+
+- connection status;
+- initialization;
+- availability;
+- prior unrelated approval;
+- task wording;
+- another agent's use;
+- a recommendation to use the MCP.
+
+---
+
+# 8. ACTUAL MCP USAGE REPORTING
+
+Final reports must accurately distinguish MCP status.
+
+Good:
+
+    Context7 was connected but was not invoked because approval was not granted.
+
+Good:
+
+    Neon was queried to inspect the relevant database state.
+
+Bad:
+
+    Context7 was used.
+
+when only a connection/initialization event occurred.
+
+Never claim an MCP was used unless an actual invocation occurred.
+
+---
+
+# 9. PROTECTED SYSTEMS
+
+The following systems are protected from modification unless the task explicitly authorizes the change.
+
+## Payments
+
+Do not modify:
+
+- Stripe integration;
+- Stripe Checkout;
+- payment processing;
+- pricing;
+- checkout behavior;
+- webhooks;
+- payment-related API routes;
+- payment environment variables.
+
+Do not redesign or refactor payment code during unrelated work.
+
+## Authentication
+
+Do not modify authentication or authorization behavior unless explicitly authorized.
+
+## Database
+
+Do not modify:
+
+- database schema;
+- migrations;
+- protected tables;
+- database functions;
+- production data;
+- database permissions;
+
+unless explicitly authorized.
+
+Neon access does not itself authorize database modification.
+
+## Secrets and Environment
+
+Never expose:
+
+- API keys;
+- access tokens;
+- authentication tokens;
+- private keys;
+- webhook secrets;
+- database credentials;
+- environment variable values;
+- GitHub tokens;
+- Cloudflare tokens;
+- service-account credentials.
+
+Never place secrets into:
+
+- source code;
+- commits;
+- PR descriptions;
+- issues;
+- logs;
+- screenshots;
+- documentation;
+- final responses.
+
+If a secret appears in tool output, do not repeat it.
+
+## Cloudflare
+
+Do not modify Cloudflare configuration unless explicitly authorized.
+
+Protected configuration includes, but is not limited to:
+
+- `wrangler.jsonc`;
+- `open-next.config.ts`;
+- Cloudflare Pages/Workers configuration;
+- deployment configuration;
+- bindings;
+- environment configuration.
+
+---
+
+# 10. AUDIO PROTECTION
+
+Existing audio behavior is protected.
+
+Do not:
+
+- redesign audio;
+- change sound effects;
+- add sounds;
+- remove sounds;
+- change playback sequencing;
+- change timing;
+- change volume;
+- change triggers;
+- change reveal/audio choreography;
+
+unless explicitly authorized.
+
+Howler is the approved audio library for the project's current implementation where applicable.
+
+Removing obsolete library references for inventory/documentation purposes does not authorize changing actual audio behavior.
+
+---
+
+# 11. LAYOUT AND UI SAFETY
+
+When fixing layout or responsive issues:
+
+- do not use negative margins as positioning hacks;
+- do not use transforms as positioning hacks;
+- do not use unnecessary absolute positioning;
+- do not bypass the existing layout system;
+- preserve semantic structure;
+- preserve responsive behavior;
+- prefer fixing the actual parent/container sizing, spacing, flow, or layout constraint causing the problem.
+
+Do not move an element visually without understanding why the existing layout places it incorrectly.
+
+---
+
+# 12. DEPENDENCY GOVERNANCE
+
+Do not add, remove, upgrade, or downgrade dependencies unless the task requires it.
+
+Before introducing a dependency:
+
+1. inspect `package.json`;
+2. inspect the lockfile;
+3. inspect existing imports/usages;
+4. check whether an installed dependency already solves the problem;
+5. check repository documentation;
+6. determine whether the new dependency is genuinely necessary.
+
+Unrelated dependency cleanup is prohibited unless explicitly requested.
+
+Do not upgrade dependencies merely because newer versions exist.
+
+---
+
+# 13. AUTOMATION GOVERNANCE
+
+Before creating any:
+
+- workflow;
+- script;
+- scheduled job;
+- verification process;
+- documentation refresh process;
+- CI check;
+- automation;
+
+inspect existing repository automation first.
+
+Do not duplicate existing automation.
+
+If existing automation already performs the required function, modify or reuse it only when authorized.
+
+Do not create a second workflow that performs substantially the same job.
+
+---
+
+# 14. REQUIRED OPERATING METHOD
+
+Use this sequence:
+
+    INSPECT
+        ↓
+    IDENTIFY
+        ↓
+    UNDERSTAND
+        ↓
+    VERIFY
+        ↓
+    CHOOSE
+        ↓
+    RESEARCH
+        ↓
+    IMPLEMENT
+        ↓
+    TEST
+        ↓
+    DOUBLE-CHECK
+
+Research should happen after local repository inspection, not before.
+
+The agent should first determine what the repository already knows.
+
+---
+
+# 15. VERIFICATION REQUIREMENTS
+
+Verification must reflect the actual change.
+
+Where applicable, use:
+
+    ./jules-verify.sh
+
+This is the primary repository verification command.
+
+When local CI simulation is appropriate, use:
+
+    bash scripts/act/run-act.sh "push -j <JOB_ID>"
+
+Do not claim tests passed if they were not run.
+
+Do not claim a build succeeded if it was not actually executed successfully.
+
+Do not claim a workflow ran because the workflow file exists.
+
+Do not claim deployment succeeded because a build completed locally.
+
+---
+
+# 16. ACTUAL STATE VERIFICATION
+
+Before reporting completion, inspect the actual repository state.
+
+Verify, as applicable:
+
+- changed files;
+- git diff;
+- git status;
+- relevant workflow files;
+- generated artifacts;
+- tests;
+- build output;
+- PR state;
+- commits;
+- branch state;
+- documentation state.
+
+Do not rely solely on an agent's task report.
+
+Do not treat a proposed change as a completed change.
+
+Do not treat a generated commit as proof that the intended behavior works.
+
+---
+
+# 17. SCOPE CONTROL
+
+Do not perform unrelated:
+
+- cleanup;
+- refactoring;
+- formatting;
+- dependency upgrades;
+- architectural changes;
+- UI redesign;
+- API changes;
+- database changes;
+- security changes;
+- performance rewrites.
+
+If an unrelated issue is discovered, report it separately unless it blocks the authorized task.
+
+If fixing the issue is necessary to complete the authorized task, explain why before expanding scope when practical.
+
+---
+
+# 18. CURRENT PROJECT STACK
+
+LuckyPickCanada currently uses the following major technologies and services where applicable:
+
+- Next.js App Router
 - React
 - TypeScript
 - Tailwind CSS
-- PostgreSQL / Neon Serverless
-- OpenNext / "@opennextjs/cloudflare"
+- PostgreSQL / Neon
 - Cloudflare Pages / Workers
+- OpenNext for Cloudflare
+- Stripe Checkout
+- Resend
+- Cloudflare Turnstile
+- Howler
+- Framer Motion
+- Canvas-based visual effects
+- Playwright
+- Vitest
+- Testing Library
+- ESLint
+- Prettier
 
-*Application Libraries & Capabilities*
+Do not assume every listed technology is relevant to every task.
 
-- Howler.js — application audio.
-- Framer Motion — application animation/motion.
-- HTML5 Canvas — graphics/visual rendering where used.
-- Stripe — payment/checkout infrastructure.
-- Resend — email infrastructure.
-- Cloudflare Turnstile — bot/security protection.
-- Gemini API via the project's approved REST integration — Oracle/AI functionality.
+Inspect actual usage before changing anything.
 
-*Development & Verification Resources*
+---
 
-- Playwright — browser/application testing.
-- Vitest — automated testing where configured and used.
-- GitHub Actions — repository automation and CI.
-- "act" — local GitHub Actions workflow verification where appropriate.
-- Jules — required development/review collaborator.
-- Gemini — required development/review collaborator.
+# 19. RUNTIME AND PACKAGE MANAGEMENT
 
-**Resource Documentation**
+The repository uses Node.js 22.x.
 
-- ".docs" is the project's detailed documentation library.
-- Detailed documentation should remain organized according to the existing task-group structure and governance rules.
-- This inventory is a concise index and MUST NOT be treated as a substitute for reading the relevant ".docs" material.
+Respect the repository's Node version configuration.
 
-**Inventory Accuracy Rule**
+The repository uses pnpm.
 
-The inventory must reflect verified reality.
+Use pnpm-compatible commands and respect the existing lockfile.
 
-If the repository contains a permanently adopted library, dependency, framework, service, or technical resource that is missing from this section, the inventory is out of date and must be corrected through an authorized change.
+Do not replace pnpm with npm merely for convenience.
 
-If an item listed here has been removed or was never actually adopted, it must not remain listed as an active adopted resource.
+Do not regenerate or modify the lockfile unless required by the task.
 
-Do not add a resource merely because it was temporarily tested, mentioned in documentation, connected through an external service, or considered as an option.
+When CI is involved, ensure the CI runtime matches the repository's supported Node version.
 
-The verified repository state and explicitly authorized project decisions are authoritative.
+---
 
-**Important Permission Rule**
+# 20. CODING INVARIANTS
 
-The presence of a library or resource in this inventory does NOT automatically authorize its use for every task.
+Preserve existing project conventions.
 
-All existing task-group rules, protected-area rules, authorization requirements, resource hierarchy rules, ".docs" requirements, Jules/Gemini requirements, and MCP restrictions remain fully in force.
+Where applicable:
 
+- use the Next.js App Router architecture already present;
+- preserve server/client boundaries;
+- preserve existing caching strategy;
+- use existing revalidation mechanisms;
+- preserve existing database access patterns;
+- preserve existing API contracts;
+- preserve existing animation timing unless explicitly changing it;
+- preserve existing Web Audio/Canvas timing where applicable;
+- preserve accessibility behavior;
+- preserve responsive behavior;
+- preserve existing security controls.
 
+Do not replace an established architecture with a different pattern simply because another approach is personally preferred.
 
-## 19. Spec Kit Workflow Integration
+---
 
-GitHub Spec Kit is integrated to serve as the structured planning and orchestration layer for complex tasks. It must be used when a task warrants meaningful specification, planning, decomposition, or multi-step implementation. Trivial changes do not require Spec Kit.
+# 21. SITE STRUCTURE
 
-**Execution Mechanism:**
-Jules does not have a native CLI command to execute Spec Kit commands. To invoke a Spec Kit command, Jules must explicitly read the corresponding command file in `.jules/cmds/` (e.g., `cat .jules/cmds/speckit.specify.md`) and strictly follow the instructions contained within it to generate the required artifacts and perform the workflow.
+The project contains major user-facing areas including:
 
-**Workflow Order:**
-1. **Understand/Specify/Plan**: When appropriate, execute the relevant Spec Kit commands (e.g., `speckit.specify`, `speckit.clarify`, `speckit.plan`, `speckit.tasks`, `speckit.analyze`, `speckit.implement`, `speckit.converge`) by reading their markdown files in `.jules/cmds/` and executing their steps.
-2. **Task Group Routing**: After the specification and planning stage, identify the appropriate existing task group (e.g., Creation, Troubleshooting) from Rule 3.
-3. **Resource Selection**: Select the appropriate existing libraries, `.docs` documentation, and approved resources based on the chosen task group.
-4. **Implement/Test/Verify**: Execute the work, run tests, and verify.
+- `/`
+- `/lucky-meter`
+- Lucky Cards
+- `/lucky-map-of-canada`
+- `/map`
+- `/where-luck-has-been-found-in-canada`
+- Crystal Ball / Oracle
+- `/reveal/[revealId]`
+- `/about`
 
-Spec Kit helps determine *what* to build and *how* to break it down. The existing repository governance and task groups determine *which resources* to use. Spec Kit does NOT authorize changes to protected systems, introduce new dependencies, or replace any existing governance rules. Jules and Gemini remain mandatory collaborators throughout this workflow.
+Major project directories and files must be inspected before assuming where functionality lives.
 
-## 20. Explicit Library Usage Reporting
+Do not assume a route's implementation from its URL alone.
 
-To ensure strict observability and complement the existing governance (such as mandatory Jules + Gemini collaboration and truthful reporting), agents must explicitly identify the libraries actually consulted and/or used as work progresses.
+---
 
-**Progress Reporting:**
-As a task progresses, when an approved library (from `.docs`, Context7, or the adopted inventory) becomes relevant, clearly identify it in your progress reporting and briefly state what it is being used or consulted for.
-Example: "Library consulted: Howler.js — verifying the existing audio implementation."
+# 22. DOCUMENTATION LIBRARY INVENTORY
 
-**Actual Usage Requirement:**
-Only report a library when it was *actually* consulted or used. Do NOT report a library merely because:
-- it is installed in "package.json";
-- it appears in the repository's adopted-library inventory (Section 18);
-- it is available to Jules;
-- documentation exists for it;
-- an MCP/service connection was established.
+The `.docs` library is authoritative for repository-maintained technical documentation.
 
-A connection or initialization message does NOT count as actual consultation or use. Do not invent or infer usage. This rule does not weaken or replace existing requirements to exhaust local resources before using MCP/Context7 as a last resort.
+The current adopted documentation inventory includes the libraries and technologies actively identified by the project, including:
+The documentation inventory is maintained in `.docs/manifest.json`, which serves as the single authoritative source of truth for the documentation library.
 
-**Final Report Section:**
-The final task report must include a concise section titled:
-**Libraries Consulted / Used**
+Before implementing any task, agents must:
 
-For each library actually consulted or used, state:
-1. Library name
-2. Whether it was consulted, used, or both
-3. What it contributed to the task
+1. Inspect `.docs/manifest.json` to identify available documentation;
+2. Read the relevant documentation files referenced in the manifest;
+3. Use that documentation when making implementation decisions;
+4. Report the specific documentation sources actually consulted.
 
-If no library was specifically consulted or used beyond ordinary repository inspection, explicitly state:
-**Libraries Consulted / Used: None specifically.**
+The manifest organizes documentation by task group and provides a complete inventory of all available documentation sources.
 
-## 21. Documentation Use During Workflow
+Do not maintain a second documentation inventory that can drift from the manifest.
+- Next.js
 
-For every repository task, Jules must genuinely consult and use the applicable Jules documentation and Gemini documentation available in the repository's approved documentation library.
+The final report should identify the documentation actually read or used for the task.
 
-Jules must also inspect and follow applicable repository-local instruction files, including "AGENTS.md", ".jules/" instructions, and other relevant agent or instruction files where they exist.
+---
 
-Jules remains responsible for carrying out the repository work and making the final implementation decisions. Documentation informs the work; it does not transfer responsibility for implementation.
+# 23. SPEC KIT INTEGRATION
 
-During the active workflow, Jules must record or reflect which applicable documentation and repository instruction files were actually consulted and, where relevant, how they informed the work.
+When a task uses the repository's Spec Kit workflow, follow the existing Spec Kit process and repository-local instructions.
 
-A documentation file merely existing in the library does not constitute actual use. Likewise, an MCP connection, initialization event, or service-availability event does not constitute evidence that documentation was actually consulted or used.
+Do not invent an alternate specification workflow.
 
-The final task report must explicitly identify the Jules documentation, Gemini documentation, and relevant repository instruction files actually consulted.
+Do not bypass an existing specification or approval process.
+
+---
+
+# 24. DOCUMENTATION REFRESH AUTOMATION
+
+The documentation refresh system is scheduled for Tuesday and Friday at 2:21 AM Atlantic time.
+
+The UTC schedules are:
+
+    21 5 * * 2,5
+    21 6 * * 2,5
+
+The workflow uses a runtime timezone gate where applicable.
+
+Documentation refresh automation must preserve existing duplicate-prevention behavior.
+
+The refresh workflow may create a documentation-refresh issue when documentation requires review.
+
+Do not create duplicate documentation-refresh workflows or duplicate issue automation.
+
+When modifying documentation automation, verify the actual workflow configuration and behavior.
+
+---
+
+# 25. PLAYWRIGHT ARTIFACTS
+
+Playwright CLI artifacts under:
+
+    .playwright-cli/
+
+must never be committed to the repository unless a task explicitly changes this rule.
+
+Do not add generated Playwright artifacts to source control.
+
+---
+
+# 26. REPORTING REQUIREMENTS
+
+Every completed repository task should report, accurately and concisely:
+
+1. What was changed.
+2. What files were changed.
+3. What documentation was actually consulted.
+4. What tools/MCPs were actually invoked.
+5. What tests/checks were actually run.
+6. Whether verification succeeded or failed.
+7. Any limitations or remaining issues.
+8. Whether any scope boundaries prevented additional changes.
+
+Never report:
+
+- planned work as completed;
+- connected MCPs as used MCPs;
+- available documentation as consulted documentation;
+- intended tests as executed tests;
+- expected deployment as actual deployment;
+- assumed repository state as verified repository state.
+
+---
+
+# 27. SECURITY AND SECRET-HANDLING RULE
+
+Under no circumstances may an agent reveal, print, copy, commit, paste, summarize, or otherwise disclose a secret credential or authentication material.
+
+This includes, but is not limited to:
+
+- API tokens;
+- access tokens;
+- GitHub tokens;
+- personal access tokens;
+- OAuth tokens;
+- Cloudflare tokens;
+- database credentials;
+- webhook secrets;
+- private keys;
+- signing keys;
+- session tokens;
+- cookies;
+- environment-variable secrets.
+
+If a task requires access to a secret, use the repository's existing secure mechanism without exposing the value.
+
+Never place secret values in:
+
+- source files;
+- logs;
+- issues;
+- PR comments;
+- commit messages;
+- screenshots;
+- documentation;
+- task reports;
+- chat responses.
+
+If a secret is accidentally exposed in tool output, immediately avoid reproducing it and treat it as sensitive.
+
+Never ask the repository owner to paste a secret into chat when a secure credential mechanism already exists.
+
+---
+
+# 28. GITHUB AND PR GOVERNANCE
+
+Before working on an existing PR:
+
+1. inspect the current PR state;
+2. inspect existing commits;
+3. inspect changed files;
+4. inspect existing review comments;
+5. inspect CI status;
+6. determine whether the requested change is already implemented;
+7. avoid duplicating an existing fix.
+
+Jules is the primary implementation agent.
+
+When an existing PR requires a follow-up fix through Amazon Q Developer, address Amazon Q using:
+
+    /q
+
+Do not use unrelated agent commands when the repository workflow specifies `/q`.
+
+After a PR change is made, verify the actual resulting PR state.
+
+---
+
+# 29. NO FABRICATION RULE
+
+The agent must never fabricate:
+
+- tool usage;
+- MCP usage;
+- research;
+- documentation consultation;
+- test results;
+- build results;
+- deployment results;
+- database changes;
+- file changes;
+- PR status;
+- workflow execution;
+- approvals.
+
+If something could not be verified, say so plainly.
+
+Accuracy is more important than producing a confident-looking completion report.
+
+---
+
+# 30. CHANGE MINIMIZATION
+
+When multiple technically valid solutions exist, prefer the solution that:
+
+1. satisfies the task completely;
+2. changes the fewest unrelated files;
+3. preserves existing architecture;
+4. preserves existing behavior;
+5. introduces the fewest new dependencies;
+6. minimizes security and operational risk;
+7. is easiest to verify.
+
+Do not optimize for the largest or most impressive change.
+
+---
+
+# 31. FINAL PRE-COMPLETION CHECK
+
+Before declaring a task complete, ask:
+
+    [ ] Did I inspect the current repository state?
+    [ ] Did I read the applicable repository instructions?
+    [ ] Did I inspect .docs?
+    [ ] Did I actually read the relevant .docs documentation?
+    [ ] Did I check for existing scripts/workflows/automation?
+    [ ] Did I check whether existing dependencies already solve the problem?
+    [ ] Did I respect all protected systems?
+    [ ] Did I stay within the requested scope?
+    [ ] Did I use MCPs only when permitted and materially useful?
+    [ ] Did I distinguish MCP connection from actual MCP usage?
+    [ ] Did I protect all secrets?
+    [ ] Did I run the appropriate verification?
+    [ ] Did I inspect the actual final repository state?
+    [ ] Did I verify the PR/workflow state where applicable?
+    [ ] Did I accurately report what was actually done?
+
+Only after these checks should the task be reported as complete.
+
+---
+
+# 32. GOVERNANCE PRIORITY
+
+These rules exist to protect:
+
+- repository integrity;
+- security;
+- payment systems;
+- authentication;
+- database integrity;
+- deployment configuration;
+- existing user-facing behavior;
+- documentation accuracy;
+- automation reliability;
+- reproducibility;
+- truthful reporting.
+
+When uncertain, stop and inspect.
+
+When an approval is required, ask.
+
+When scope is unclear, do not silently expand it.
+
+When something cannot be verified, do not claim that it was verified.
+
+When a secret is encountered, protect it.
+
+When existing functionality already solves the problem, preserve and reuse it.
+
+The governing principle is:
+
+    INSPECT FIRST.
+    USE EXISTING RESOURCES.
+    CHANGE ONLY WHAT IS AUTHORIZED.
+    PROTECT SENSITIVE SYSTEMS.
+    VERIFY ACTUAL RESULTS.
+    REPORT ONLY WHAT ACTUALLY HAPPENED.

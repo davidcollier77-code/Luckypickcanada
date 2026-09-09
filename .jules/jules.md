@@ -15,17 +15,22 @@ Do not proceed with any task until you have completed this mandatory initializat
 
 ## 🚨 ABSOLUTE MCP APPROVAL GATE — HARD STOP
 
-If you determine that ANY MCP needs to be used (including Context7, Neon, Stitch, GitHub MCP, etc.), you must **STOP IMMEDIATELY**.
+MCP usage is governed per-MCP as defined in AGENTS.md.
 
-- DO NOT invoke the MCP tool.
-- You must ask David for explicit approval first, providing the MCP, tool, purpose, and impact.
-- WAIT FOR EXPLICIT APPROVAL before proceeding.
+**Neon:** May be used without additional approval when materially applicable and within authorized scope.
 
-There is NO automatic approval for MCPs, even for read-only calls or if they are mentioned in documentation.
+**Stitch:** May be used without additional approval when materially applicable and within authorized scope.
 
-## Context7 is NOT Automatic
+**Context7:** Requires explicit repository-owner approval before every invocation. If you determine Context7 is needed, you must **STOP IMMEDIATELY** and ask David for explicit approval first, providing:
+- MCP/service being requested
+- tool/action that will be invoked
+- reason it is materially necessary
+- what information it is expected to retrieve
+- whether the action is read-only or modifies anything
 
-Do not use Context7 simply because it is available. Context7 is an absolute last resort. First exhaust all local resources: the repository itself, `.docs/`, and other approved existing documentation. If you decide Context7 is needed, you must STOP and ask David for approval before invoking it.
+**Other MCPs:** Require explicit approval unless separately authorized.
+
+**Important:** MCP connection/initialization/availability never counts as actual MCP usage. Only an actual invocation/query/retrieval constitutes MCP usage.
 
 ---
 
