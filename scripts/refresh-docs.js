@@ -426,7 +426,7 @@ async function main() {
 
 
       if (isNewOrUpdated || !wasInInventory) {
-          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+             try { if (fs.existsSync(docPath)) fs.unlinkSync(docPath); } catch (e) {}
           if (!wasInInventory) {
               updateAgentsInventory({ inventory: Array.from(inventory), groups: groupsConfig });
           }
