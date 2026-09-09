@@ -224,5 +224,147 @@
     "/open-telemetry/opentelemetry.io",
     "/lovell/sharp",
     "/GoogleChrome/web.dev"
-  ]
+  ],
+  "sources": {
+    "/github/docs": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/github/docs/main/data/llms-txt/docs.md"
+    },
+    "jules.google/docs": {
+      "type": "url",
+      "url": "https://jules.google/docs/changelog/2025-10-02"
+    },
+    "developers.google.com/jules/api": {
+      "type": "url",
+      "url": "https://developers.google.com/jules/api/reference/rest/v1alpha/sources"
+    },
+    "/google-gemini/gemini-cli": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/google-gemini/gemini-cli/main/packages/cli/src/ui/constants/tips.ts"
+    },
+    "/websites/ai_google_dev_gemini-api": {
+      "type": "url",
+      "url": "https://ai.google.dev/gemini-api/docs/deep-research"
+    },
+    "/vercel/next.js": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/vercel/next.js/canary/skills/.claude-plugin/plugin.json"
+    },
+    "/reactjs/react.dev": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/reactjs/react.dev/main/src/content/reference/react-dom/static/prerender.md"
+    },
+    "/microsoft/typescript": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/microsoft/typescript/main/tsc/testdata/tests/cases/conformance/jsdoc/declarations/jsDeclarationsFunctionJSDoc.ts"
+    },
+    "/websites/tailwindcss": {
+      "type": "url",
+      "url": "https://tailwindcss.com/docs/width"
+    },
+    "/websites/motion_dev": {
+      "type": "url",
+      "url": "https://motion.dev/docs/ai-kit-context"
+    },
+    "/lucide-icons/lucide": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/lucide-icons/lucide/main/packages/lucide-react/README.md"
+    },
+    "/react-hook-form/documentation": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/react-hook-form/documentation/master/contentlayer.config.ts"
+    },
+    "/react-hook-form/resolvers": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/react-hook-form/resolvers/master/_autodocs/00-START-HERE.md"
+    },
+    "/emilkowalski/sonner": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/emilkowalski/sonner/main/_autodocs/00-START-HERE.txt"
+    },
+    "/bvaughn/react-error-boundary": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/bvaughn/react-error-boundary/main/lib/index.ts"
+    },
+    "/opennextjs/opennextjs-cloudflare": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/opennextjs/opennextjs-cloudflare/main/AGENTS.md"
+    },
+    "/opennextjs/docs": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/opennextjs/docs/main/pages/aws/config.mdx"
+    },
+    "/cloudflare/workers-sdk": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/STYLEGUIDE.md"
+    },
+    "/neondatabase/neon": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/neondatabase/neon/main/README.md"
+    },
+    "/upstash/docs": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/upstash/docs/main/search/sdks/ts/commands/fetch.mdx"
+    },
+    "/getsentry/sentry-docs": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/getsentry/sentry-docs/master/scripts/generate-llms-txt.mjs"
+    },
+    "/websites/developer_chrome": {
+      "type": "url",
+      "url": "https://developer.chrome.com/docs/extensions/reference/api/offscreen"
+    },
+    "/websites/developer_apple_webkit": {
+      "type": "url",
+      "url": "https://developer.apple.com/documentation/webkit/webdocumentrepresentation/documentsource%28%29"
+    },
+    "/llmstxt/gsap_llms_txt": {
+      "type": "url",
+      "url": "https://gsap.com/docs/v3/GSAP/Timeline"
+    },
+    "/goldfire/howler.js": {
+      "type": "url",
+      "url": "https://context7.com/goldfire/howler.js/llms.txt"
+    },
+    "/testing-library/react-testing-library": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/testing-library/react-testing-library/main/README.md"
+    },
+    "/microsoft/playwright": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/microsoft/playwright/main/packages/playwright-core/src/tools/skills/playwright-cli/references/test-generation.md"
+    },
+    "/vitest-dev/vitest": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/vitest-dev/vitest/main/AGENTS.md"
+    },
+    "/colinhacks/zod": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/colinhacks/zod/main/packages/docs/app/llms-full.txt/route.ts"
+    },
+    "/cure53/dompurify": {
+      "type": "url",
+      "url": "https://github.com/cure53/dompurify/wiki/Attack-Classes-&-Bypass-History"
+    },
+    "/stripe/stripe-js": {
+      "type": "url",
+      "url": "https://docs.stripe.com/js/react_stripe_js/elements/other/payment_request_button_element.md"
+    },
+    "/resend/resend-node": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/resend/resend-node/canary/_autodocs/INDEX.md"
+    },
+    "/coreyhaines31/marketingskills": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/coreyhaines31/marketingskills/main/tools/integrations/strapi.md"
+    },
+    "/dequelabs/axe-core": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/dequelabs/axe-core/develop/doc/API.md"
+    },
+    "/dropbox/zxcvbn": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/dropbox/zxcvbn/master/_autodocs/README.md"
+    }
+  }
 }
