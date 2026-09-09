@@ -90,6 +90,70 @@ function updateAgentsInventory(manifest) {
   fs.writeFileSync(agentsPath, agentsContent);
 }
 
+// Classify source URL to determine if it's likely to be complete documentation
+function classifySourceType(url) {
+  // Patterns that indicate narrow/incomplete sources
+  const narrowPatterns = [
+    /\/test[s]?\//i,
+    /\.test\./i,
+    /\.spec\./i,
+    /config\.(ts|js|mjs|cjs)$/i,
+    /\.config\./i,
+    /plugin\.(ts|js)$/i,
+    /\/examples?\//i,
+    /\/demo[s]?\//i,
+    /contentlayer\.config/i,
+    /package\.json$/i,
+    /tsconfig\.json$/i,
+    /webpack\.config/i,
+    /vite\.config/i,
+    /rollup\.config/i
+  ];
+  
+  // Patterns that indicate complete documentation
+  const completePatterns = [
+    /llms\.txt$/i,
+    /llms-full\.txt/i,
+    /llms-txt/i,
+    /autodocs/i,
+    /00-START-HERE/i,
+    /INDEX\.md$/i,
+    /AGENTS\.md$/i,
+    /README\.md$/i,
+    /context7\.com/i
+  ];
+  
+  for (const pattern of narrowPatterns) {
+    if (pattern.test(url)) {
+      return { type: 'narrow', reason: `URL matches narrow pattern: ${pattern}` };
+    }
+  }
+  
+  for (const pattern of completePatterns) {
+    if (pattern.test(url)) {
+      return { type: 'complete', reason: `URL matches complete pattern: ${pattern}` };
+    }
+  }
+  
+  // Default to unknown - requires content analysis
+  return { type: 'unknown', reason: 'URL pattern not recognized' };
+}
+
+// Check if content appears to be complete documentation
+function isContentComplete(content, existingContent) {
+  if (!existingContent) return true; // No existing content to compare
+  
+  const existingSize = Buffer.byteLength(existingContent, 'utf8');
+  const newSize = Buffer.byteLength(content, 'utf8');
+  
+  // If new content is less than 30% of existing size, it's likely incomplete
+  if (newSize < existingSize * 0.3) {
+    return false;
+  }
+  
+  return true;
+}
+
 function fetchDocumentation(lib, sourceConfig) {
   return new Promise((resolve, reject) => {
     if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
@@ -307,6 +371,39 @@ async function main() {
 
 
       let output;
+      // Validate source type before fetching
+      const sourceClassification = classifySourceType(sourceConfig.url);
+      
+      if (sourceClassification.type === 'narrow') {
+        console.warn(`WARNING: Source for ${lib} appears to be narrow/incomplete: ${sourceClassification.reason}`);
+        console.warn(`         URL: ${sourceConfig.url}`);
+        console.warn(`         This source may not represent complete documentation.`);
+        
+        // Check if we have existing documentation
+        if (contentBefore) {
+          console.warn(`         Existing documentation found (${existingSize} bytes).`);
+          console.warn(`         Skipping update to prevent overwriting complete documentation with narrow source.`);
+          stats.skipped++;
+          pendingUpdates.shift();
+          stats.pending--;
+          
+          // Still add to inventory if not already present
+          const wasInInventory = inventory.has(lib);
+          inventory.add(lib);
+          if (!wasInInventory) {
+              saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+              updateAgentsInventory({ inventory: Array.from(inventory), groups: groupsConfig });
+          }
+          continue;
+        } else {
+          console.warn(`         No existing documentation found. Proceeding with caution.`);
+        }
+      } else if (sourceClassification.type === 'unknown') {
+        console.log(`INFO: Source classification unknown for ${lib}. Will validate content size after fetch.`);
+        console.log(`      URL: ${sourceConfig.url}`);
+      }
+
+
       let fetchSuccess = false;
       const sourceConfig = sourcesConfig[lib];
 
@@ -340,6 +437,27 @@ async function main() {
             pendingUpdates.shift();
             stats.pending--;
             continue;
+        }
+      }
+
+      // Validate content completeness if we have existing documentation
+      if (contentBefore && sourceClassification.type !== 'complete') {
+        if (!isContentComplete(output, contentBefore)) {
+          console.warn(`WARNING: Fetched content for ${lib} appears incomplete compared to existing documentation.`);
+          console.warn(`         Existing: ${existingSize} bytes, New: ${Buffer.byteLength(output, 'utf8')} bytes`);
+          console.warn(`         Skipping update to prevent data loss.`);
+          stats.skipped++;
+          pendingUpdates.shift();
+          stats.pending--;
+          
+          // Still add to inventory if not already present
+          const wasInInventory = inventory.has(lib);
+          inventory.add(lib);
+          if (!wasInInventory) {
+              saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+              updateAgentsInventory({ inventory: Array.from(inventory), groups: groupsConfig });
+          }
+          continue;
         }
       }
 
@@ -427,7 +545,7 @@ async function main() {
 
       if (isNewOrUpdated || !wasInInventory) {
              try { if (fs.existsSync(docPath)) fs.unlinkSync(docPath); } catch (e) {}
-          if (!wasInInventory) {
+          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
               updateAgentsInventory({ inventory: Array.from(inventory), groups: groupsConfig });
           }
       }
