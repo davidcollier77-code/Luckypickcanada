@@ -46,8 +46,8 @@
       "/mdn/content",
       "/open-telemetry/opentelemetry.io",
       "/GoogleChrome/web.dev",
-      "/cloudflare/turnstile",
-      "/cloudflare/pages"
+      "/cloudflare/cloudflare-docs/turnstile",
+      "/cloudflare/cloudflare-docs/pages"
     ],
     "polishing": [
       "/vercel/next.js",
@@ -117,7 +117,7 @@
       "/websites/ai_google_dev_gemini-api",
       "/dropbox/zxcvbn",
       "/OWASP/wstg",
-      "/cloudflare/turnstile"
+      "/cloudflare/cloudflare-docs/turnstile"
     ],
     "audio": [
       "/goldfire/howler.js",
@@ -162,7 +162,7 @@
       "/open-telemetry/opentelemetry.io",
       "/lovell/sharp",
       "/GoogleChrome/web.dev",
-      "/cloudflare/pages"
+      "/cloudflare/cloudflare-docs/pages"
     ],
     "seo": [
       "/vercel/next.js",
@@ -228,8 +228,8 @@
     "/open-telemetry/opentelemetry.io",
     "/lovell/sharp",
     "/GoogleChrome/web.dev",
-    "/cloudflare/turnstile",
-    "/cloudflare/pages"
+    "/cloudflare/cloudflare-docs/turnstile",
+    "/cloudflare/cloudflare-docs/pages"
   ],
   "sources": {
     "/github/docs": {
@@ -372,11 +372,11 @@
       "type": "url",
       "url": "https://raw.githubusercontent.com/dropbox/zxcvbn/master/_autodocs/README.md"
     },
-    "/cloudflare/turnstile": {
+    "/cloudflare/cloudflare-docs/turnstile": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/cloudflare/cloudflare-docs/production/src/content/docs/turnstile/index.mdx"
     },
-    "/cloudflare/pages": {
+    "/cloudflare/cloudflare-docs/pages": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/cloudflare/cloudflare-docs/production/src/content/docs/pages/index.mdx"
     }

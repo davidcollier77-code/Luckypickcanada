@@ -844,6 +844,4 @@ if (result.success) {
 - Have fallback behavior for API failures.
 - Use user-friendly messaging. Do not expose internal error details to users.
 - Properly log errors for debugging without exposing secrets.
-- Rate limit to protect against validation flooding.
-\n## Concepts - Widget Types
 404: Not Found
