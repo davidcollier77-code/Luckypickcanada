@@ -2,6 +2,7 @@ const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const https = require('https');
 
 const DOCS_DIR = path.join(process.cwd(), '.docs');
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
@@ -221,11 +222,59 @@ function getDirSize(dirPath) {
   return size;
 }
 
-function saveManifest(inventory) {
+
+function getUpstreamSha(lib) {
+  return new Promise((resolve) => {
+    if (!lib.startsWith('/')) {
+        resolve(null);
+        return;
+    }
+    const parts = lib.split('/');
+    if (parts.length >= 3) {
+      const org = parts[1];
+      const repo = parts[2];
+
+      const options = {
+        hostname: 'api.github.com',
+        path: `/repos/${org}/${repo}/commits/HEAD`,
+        headers: {
+          'User-Agent': 'Node.js Context7 Refresher',
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      };
+
+      if (process.env.GITHUB_TOKEN) {
+         options.headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+      }
+
+      https.get(options, (res) => {
+        if (res.statusCode === 200) {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => {
+            try {
+              const parsed = JSON.parse(data);
+              resolve(parsed.sha);
+            } catch (e) {
+              resolve(null);
+            }
+          });
+        } else {
+          resolve(null);
+        }
+      }).on('error', () => resolve(null));
+    } else {
+      resolve(null);
+    }
+  });
+}
+
+function saveManifest(inventory, githubShas) {
   fs.writeFileSync(path.join(DOCS_DIR, 'manifest.json'), JSON.stringify({
     lastUpdated: new Date().toISOString(),
     groups: LIBRARIES,
-    inventory: Array.from(inventory)
+    inventory: Array.from(inventory),
+    githubShas: githubShas
   }, null, 2));
 }
 
@@ -260,13 +309,18 @@ async function main() {
     pendingUpdates.push({ lib, groups: libraryToGroups.get(lib) });
   }
 
+
   const inventory = new Set();
+  let githubShas = {};
   const manifestPath = path.join(DOCS_DIR, 'manifest.json');
   if (fs.existsSync(manifestPath)) {
     try {
       const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
       if (manifest.inventory && Array.isArray(manifest.inventory)) {
         manifest.inventory.forEach(lib => inventory.add(lib));
+      }
+      if (manifest.githubShas && typeof manifest.githubShas === 'object') {
+        githubShas = manifest.githubShas;
       }
     } catch (e) {
       console.warn('Failed to parse existing manifest.json. Starting fresh inventory.', e.message);
@@ -276,8 +330,10 @@ async function main() {
   let stats = {
     updated: 0,
     failed: 0,
+    skipped: 0,
     unchanged: 0,
     pending: pendingUpdates.length,
+
     bytesAdded: 0,
     batches: 0,
     errors: []
@@ -313,21 +369,54 @@ async function main() {
           existingSize = Buffer.byteLength(contentBefore, 'utf8');
       }
 
+      // Check upstream SHA if possible
+      const upstreamSha = await getUpstreamSha(lib);
+      if (upstreamSha && upstreamSha === githubShas[lib]) {
+         console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
+         stats.skipped++;
+         pendingUpdates.shift();
+         stats.pending--;
+
+         const wasInInventory = inventory.has(lib);
+         inventory.add(lib);
+         if (!wasInInventory) {
+             saveManifest(inventory, githubShas);
+         }
+         continue;
+      }
+
       console.log(`Fetching docs for ${lib} to temp to determine exact size BEFORE downloading into .docs...`);
 
       let output;
+      let fetchSuccess = false;
       try {
         // Fetch into memory first. This acts as our "temp" buffer so we know the EXACT size BEFORE it touches .docs
         output = execFileSync('npx', ['--yes', 'ctx7', 'docs', lib, 'full documentation'], {
             encoding: 'utf8'
         });
+        fetchSuccess = true;
       } catch (e) {
-        console.error(`Failed to fetch docs for ${lib}:`, e.message);
-        stats.failed++;
-        stats.errors.push(`Error on ${lib}: ${e.message}`);
-        pendingUpdates.shift();
-        stats.pending--;
-        continue;
+        console.error(`Failed to fetch docs for ${lib} on first attempt:`, e.message);
+        console.log(`Waiting 5 minutes before retrying ${lib}...`);
+
+        // Sleep for 5 minutes (300,000 ms) - using a busy wait to avoid making main loop async if it isn't, but wait, main IS async!
+        // So we can use await!
+        await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
+
+        try {
+            console.log(`Retrying fetch for ${lib}...`);
+            output = execFileSync('npx', ['--yes', 'ctx7', 'docs', lib, 'full documentation'], {
+                encoding: 'utf8'
+            });
+            fetchSuccess = true;
+        } catch (retryError) {
+            console.error(`Failed to fetch docs for ${lib} on retry:`, retryError.message);
+            stats.failed++;
+            stats.errors.push(`Error on ${lib}: ${e.message} (Retry failed: ${retryError.message})`);
+            pendingUpdates.shift();
+            stats.pending--;
+            continue;
+        }
       }
 
       const exactSize = Buffer.byteLength(output, 'utf8');
@@ -396,7 +485,6 @@ async function main() {
                 fs.writeFileSync(docPath, output);
              }
           }
-
           // only add netSizeIncrease once
           if (netSizeIncrease > 0) {
               stats.bytesAdded += netSizeIncrease;
@@ -404,11 +492,17 @@ async function main() {
           isNewOrUpdated = true;
       }
 
+      if (upstreamSha) {
+          githubShas[lib] = upstreamSha;
+          isNewOrUpdated = true;
+      }
+
       const wasInInventory = inventory.has(lib);
+
       inventory.add(lib);
 
       if (isNewOrUpdated || !wasInInventory) {
-          saveManifest(inventory);
+          saveManifest(inventory, githubShas);
       }
 
       // Update current docs size using strict filesystem measurement to be safe
@@ -462,6 +556,7 @@ async function main() {
   console.log(`Successfully updated: ${stats.updated}`);
   console.log(`Failed: ${stats.failed}`);
   console.log(`Unchanged: ${stats.unchanged}`);
+  console.log(`Skipped (no upstream change): ${stats.skipped}`);
   console.log(`Pending: ${stats.pending}`);
   console.log(`Bytes added: ${stats.bytesAdded}`);
   console.log(`Final .docs size: ${stats.finalSize} bytes (${(stats.finalSize / 1024 / 1024).toFixed(2)} MB)`);
