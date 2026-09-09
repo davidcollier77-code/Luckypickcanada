@@ -830,7 +830,7 @@ export async function onRequest(context) {
 
 		return Response.json({result: result})
 	} catch (e) {
-		return Response.json({error: e.message, {status: 500}});
+		return Response.json({error: e.message}, {status: 500});
 	}
 }
 ```
