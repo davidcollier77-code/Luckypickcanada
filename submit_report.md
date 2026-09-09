@@ -23,7 +23,5 @@ Context7: NOT USED — prohibited for this task.
 - Verified the removal of the 5-minute wait and polling logic, replaced exactly with a single 60-second retry.
 - Verified that a non-fitting resource correctly defers to `deferredUpdates` without blocking the rest of the queue.
 - Verified the capacity remains strictly `495 * 1024 * 1024`.
-- Verified the new queue logic recalculates the true disk size before moving any deferred items back to the active queue.
 - Verified deterministic termination (no infinite loops) if no deferred items can fit.
 - Ran `./jules-verify.sh`, including type checks and Next.js builds. All checks passed.
-- Inspected the final Git diff to ensure only intended changes were included, and verified `fix_refresh_docs.py` / `fix_script.js` were completely deleted.

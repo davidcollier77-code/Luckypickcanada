@@ -369,7 +369,6 @@ async function main() {
       if (contentBefore === output) {
           console.log(`CURRENT: ${lib} (no changes)`);
           stats.unchanged++;
-          progressMade = true;
 
           // Ensure symlinks/files exist for ALL groups just in case
           for (let i = 0; i < groups.length; i++) {
