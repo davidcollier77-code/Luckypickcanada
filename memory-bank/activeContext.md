@@ -1,15 +1,12 @@
 # Active Context
 
 ## Current Focus
-- Initialize and establish the Memory Bank system to maintain context across agent sessions for the `luckypickcanada.ca` project.
-- Document core files to track progress, project state, and technical architecture.
+- Maintain and enhance the `luckypickcanada.ca` project based on active feature development or bug resolution tasks.
+- Keep the repository governance intact, deferring to `AGENTS.md` for all workflow rules.
 
 ## Recent Changes
-- Initialized `memory-bank/` directory.
-- Created `projectBrief.md` with core goals, scope, and non-gambling disclaimers.
-- Creating `activeContext.md`, `progress.md`, and `techContext.md` as part of the initial Memory Bank setup.
+- Hardened the Memory Bank system (PR #1008 initialized it, and this session refined it for accuracy and maintainability).
+- Corrected discrepancies in technical facts (e.g., noted the absence of `luckypick.py` despite README documentation).
 
 ## Immediate Next Steps
-- Complete the creation of the remaining Memory Bank core files (`progress.md`, `techContext.md`).
-- Run the required verification steps (`pnpm run build` and `python3 -m pytest -q`) to ensure no regressions were introduced.
-- Run pre-commit checks and submit the initial Memory Bank setup via PR.
+- *(Currently awaiting the next user request or active task. When a new task begins, update this section with specific immediate next steps.)*
