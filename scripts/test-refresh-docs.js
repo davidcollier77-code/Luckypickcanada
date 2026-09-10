@@ -271,7 +271,7 @@ async function runTests() {
     await test('fetchDocumentation: sanitize multiple tokens', async () => {
         mockResponses['https://example.com/docs'] = {
             statusCode: 200,
-            data: 'URL1: sealed_token=abc123&other=param
+            data: 'URL1: sealed_token=abc123&other=param\nURL2: sealed_token=xyz789something\n'
         };
         const data = await fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/docs' });
         assert.ok(!data.includes('abc123') && !data.includes('xyz789something'), 'All tokens should be redacted');
