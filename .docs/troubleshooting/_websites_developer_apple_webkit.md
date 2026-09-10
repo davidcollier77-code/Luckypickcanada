@@ -7,25 +7,25 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="/favicon.ico">
 <link rel="mask-icon" href="/apple-logo.svg" color="#333333">
-<title>documentSource() | Apple Developer Documentation</title>
+<title>WebKit | Apple Developer Documentation</title>
 <script>var baseUrl = "/tutorials/"</script><link rel="stylesheet" href="https://www.apple.com/wss/fonts?families=SF+Pro,v3|SF+Mono,v1|SF+Pro+SC,v1|SF+Pro+JP,v1" referrerpolicy="origin-when-cross-origin">
 <script defer src="/tutorials/js/chunk-vendors.15ab7a55.js"></script><script defer src="/tutorials/js/chunk-common.233ff197.js"></script><script defer src="/tutorials/js/index.8342ca55.js"></script><link href="/tutorials/css/chunk-vendors.e84e4a47.css" rel="stylesheet">
 <link href="/tutorials/css/index.6a972d82.css" rel="stylesheet">
-<meta name="description" content="Returns the receiver’s source as text.">
+<meta name="description" content="Integrate web content seamlessly into your app, and customize content interactions to meet your app’s needs.">
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Apple Developer Documentation">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://developer.apple.com/tutorials/developer-og.jpg">
-<meta property="og:title" content="documentSource() | Apple Developer Documentation">
-<meta property="og:description" content="Returns the receiver’s source as text.">
-<meta property="og:url" content="https://developer.apple.com/documentation/webkit/webdocumentrepresentation/documentsource()">
+<meta property="og:title" content="WebKit | Apple Developer Documentation">
+<meta property="og:description" content="Integrate web content seamlessly into your app, and customize content interactions to meet your app’s needs.">
+<meta property="og:url" content="https://developer.apple.com/documentation/webkit">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://developer.apple.com/tutorials/developer-og-twitter.jpg">
-<meta name="twitter:title" content="documentSource() | Apple Developer Documentation">
-<meta name="twitter:description" content="Returns the receiver’s source as text.">
-<meta name="twitter:url" content="https://developer.apple.com/documentation/webkit/webdocumentrepresentation/documentsource()">
-<link rel="alternate" type="text/markdown" href="https://developer.apple.com/documentation/webkit/webdocumentrepresentation/documentsource().md">
-<link rel="canonical" href="https://developer.apple.com/documentation/webkit/webdocumentrepresentation/documentsource()">
+<meta name="twitter:title" content="WebKit | Apple Developer Documentation">
+<meta name="twitter:description" content="Integrate web content seamlessly into your app, and customize content interactions to meet your app’s needs.">
+<meta name="twitter:url" content="https://developer.apple.com/documentation/webkit">
+<link rel="alternate" type="text/markdown" href="https://developer.apple.com/documentation/webkit.md">
+<link rel="canonical" href="https://developer.apple.com/documentation/webkit">
 </head>
 <body data-color-scheme="auto">
 <template id="account-menu-authenticated-template"><div class="account-menu-user-header" role="banner" aria-label="User information" data-aria-label="userInformation">
@@ -46,7 +46,7 @@
 <h1 class="noscript-title">This page requires JavaScript.</h1>
 <p>Please turn on JavaScript in your browser and refresh the page to view its content.</p>
 <h2>Automated tools and assistive tools:</h2>
-<p>A Markdown version of the page content is available: <a href="https://developer.apple.com/documentation/webkit/webdocumentrepresentation/documentsource().md">View Markdown</a></p>
+<p>A Markdown version of the page content is available: <a href="https://developer.apple.com/documentation/webkit.md">View Markdown</a></p>
 </div>
 </noscript>
 <div id="app"></div>
