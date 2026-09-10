@@ -9,7 +9,11 @@ You cannot rely on memory, assumptions, or secondary files to bypass `AGENTS.md`
 
 Once you have read `AGENTS.md`, you must use it to identify the correct task group and read the corresponding specialist file in the `.jules/` directory (e.g., `.jules/troubleshooting.md`, `.jules/creation.md`).
 
+Immediately after reading the repository instructions, you MUST read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` to load the current project context.
+
 Do not proceed with any task until you have completed this mandatory initialization step.
+
+At the conclusion of your work, you MUST update `memory-bank/activeContext.md` to reflect the completed state and move completed milestones into `memory-bank/progress.md` before finalizing your report.
 
 ---
 

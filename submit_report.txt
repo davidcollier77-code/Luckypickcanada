@@ -1,1 +1,17 @@
-Hardened the Memory Bank system by removing stale initialization tasks, correcting factual inaccuracies regarding the missing `luckypick.py` script, establishing a Memory Lifecycle, and enforcing strict rules against storing secrets and duplicating governance.
+I have successfully repaired the Memory Bank system by surgically integrating it into the canonical Jules workflow.
+
+Here is what was changed:
+
+1. **`AGENTS.md` (Canonical Governance)**
+   - Added Step 2.5 ("READ MEMORY BANK") to the **GOVERNANCE FLOW**, requiring the agent to read `projectBrief.md` and `activeContext.md` before inspecting `.docs`.
+   - Added Item 9 to **REPORTING REQUIREMENTS**, requiring the agent to state what Memory Bank files were updated.
+   - Added a checkbox to the **FINAL PRE-COMPLETION CHECK**, reminding the agent to update `activeContext.md` and `progress.md`.
+
+2. **`.jules/jules.md` (Mandatory Initialization Directive)**
+   - Inserted a directive to read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` immediately after reading `AGENTS.md`.
+   - Inserted a directive to update `activeContext.md` and move milestones to `progress.md` before finalizing a report.
+
+**Verification:**
+- Verified via `git diff` that the existing wording, boundaries, and structure of `AGENTS.md` and `.jules/jules.md` remain 100% intact. The insertions were perfectly surgical.
+- Verified that no other unrelated systems, code files, or documentation were modified.
+- Ran `./jules-verify.sh`, Next.js build, and TypeScript type-checks to confirm the codebase remains completely stable and intact.

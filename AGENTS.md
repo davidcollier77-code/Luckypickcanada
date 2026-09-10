@@ -26,6 +26,13 @@ These rules are mandatory unless a higher-priority system instruction or an expl
                                   │
                                   ▼
 ┌──────────────────────────────────────────────────────────────────────┐
+│ 2.5 READ MEMORY BANK                                                 │
+│     Read memory-bank/projectBrief.md and activeContext.md to load    │
+│     current project context.                                         │
+└──────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌──────────────────────────────────────────────────────────────────────┐
 │ 3. INSPECT .docs                                                     │
 │    Inspect the documentation library and manifest.                   │
 │    Identify and actually read the relevant documentation.             │
@@ -741,6 +748,7 @@ Every completed repository task should report, accurately and concisely:
 6. Whether verification succeeded or failed.
 7. Any limitations or remaining issues.
 8. Whether any scope boundaries prevented additional changes.
+9. What Memory Bank files were updated (activeContext.md, progress.md).
 
 Never report:
 
@@ -875,6 +883,7 @@ Before declaring a task complete, ask:
     [ ] Did I inspect the actual final repository state?
     [ ] Did I verify the PR/workflow state where applicable?
     [ ] Did I accurately report what was actually done?
+    [ ] Did I update activeContext.md and progress.md in the Memory Bank?
 
 Only after these checks should the task be reported as complete.
 
