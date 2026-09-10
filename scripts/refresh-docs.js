@@ -48,47 +48,6 @@ function getDirSize(dirPath) {
 
 
 
-function updateAgentsInventory(manifest) {
-  const agentsPath = path.join(process.cwd(), 'AGENTS.md');
-  if (!fs.existsSync(agentsPath)) return;
-
-  let agentsContent = fs.readFileSync(agentsPath, 'utf8');
-
-  // We need to strengthen the governance wording as requested
-  agentsContent = agentsContent.replace(
-      /The inventory must reflect verified reality./g,
-      "The inventory MUST reflect verified reality. This managed-library pictogram/inventory is MANDATORY. It is NOT optional, decorative, or merely a suggestion. It is REQUIRED and authoritative."
-  );
-
-  // Now we need to update the list if there are new ones.
-  // The easiest way is to re-render the list based on manifest.groups and the inventory array.
-  // Let's find the section.
-  const inventoryRegex = /\*\*Current Adopted Resource Inventory\*\*[\s\S]*?\*\*Resource Documentation\*\*/;
-
-  const currentInventoryMatch = agentsContent.match(inventoryRegex);
-  if (!currentInventoryMatch) return;
-
-  // We'll just append any library from manifest.inventory that isn't already mentioned in the file.
-  // The instructions said: "derive the required inventory representation from the authoritative manifest. Use the existing pictogram structure and ordering conventions... Make the smallest deterministic change necessary. Do not reorder unrelated entries unnecessarily."
-
-  let newInventorySection = currentInventoryMatch[0];
-
-  // Find where to append new ones. Let's append to 'Application Libraries & Capabilities' or create a new section if we can't parse perfectly, but appending to the end of the existing list is safer.
-  // Actually, wait, let's just do a simple check: is the library ID mentioned in the whole file? If not, append it to a specific spot.
-
-  const newLibraries = manifest.inventory.filter(lib => !agentsContent.includes(lib));
-
-  if (newLibraries.length > 0) {
-      // Find the last list item before **Resource Documentation**
-      const insertionPoint = '\n\n**Resource Documentation**';
-      const librariesList = newLibraries.map(lib => `- ${lib} — Managed documentation resource.`).join('\n');
-
-      newInventorySection = newInventorySection.replace(insertionPoint, '\n' + librariesList + insertionPoint);
-      agentsContent = agentsContent.replace(inventoryRegex, newInventorySection);
-  }
-
-  fs.writeFileSync(agentsPath, agentsContent);
-}
 
 function fetchDocumentation(lib, sourceConfig) {
   return new Promise((resolve, reject) => {
@@ -305,7 +264,6 @@ async function main() {
          inventory.add(lib);
          if (!wasInInventory) {
              saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
-             updateAgentsInventory({ inventory: Array.from(inventory), groups: groupsConfig });
          }
          continue;
       }
@@ -439,7 +397,6 @@ async function main() {
       if (isNewOrUpdated || !wasInInventory) {
           saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
           if (!wasInInventory) {
-              updateAgentsInventory({ inventory: Array.from(inventory), groups: groupsConfig });
           }
       }
 
