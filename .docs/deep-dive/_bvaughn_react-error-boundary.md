@@ -1,1 +1,1 @@
-../troubleshooting/_bvaughn_react-error-boundary.md
+../creation/_bvaughn_react-error-boundary.md

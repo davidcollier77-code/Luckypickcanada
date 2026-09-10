@@ -1,1 +1,1 @@
-../troubleshooting/_vercel_next_js.md
+../creation/_vercel_next_js.md
