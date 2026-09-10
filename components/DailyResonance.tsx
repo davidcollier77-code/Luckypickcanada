@@ -2,10 +2,23 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { Howl, Howler } from 'howler';
+import { Howl } from 'howler';
 
 import ResonanceButton from './ResonanceButton';
 
+function waitForHowlReady(howl: Howl | null | undefined): Promise<void> {
+  return new Promise((resolve) => {
+    if (!howl || howl.state() !== 'loading') {
+      resolve();
+      return;
+    }
+    howl.once('load', () => resolve());
+    howl.once('loaderror', (_id, err) => {
+      console.error('Failed to load audio for Daily Resonance sequence:', err);
+      resolve();
+    });
+  });
+}
 
 const LUCKY_QUOTES = [
   "Deep as the Great Lakes and bright as the winter snow, your resonance is strong.",
@@ -19,6 +32,8 @@ const LUCKY_QUOTES = [
 ];
 
 export default function DailyResonance() {
+
+  const isMountedRef = useRef(true);
 
   const soundsRef = useRef<Record<string, Howl | null>>({
     buildup: null,
@@ -37,7 +52,8 @@ export default function DailyResonance() {
       crackle: new Howl({ src: ['/freesound_community-shaking-coins-105774.mp3'], volume: 0.3, loop: true })
     };
     return () => {
-       Howler.unload();
+      isMountedRef.current = false;
+      Object.values(soundsRef.current).forEach((sound) => sound?.unload());
     };
   }, []);
 
@@ -180,6 +196,19 @@ export default function DailyResonance() {
     const IMPACT_TIME = 8800; // 8.8s frame for impact
     const TENSION_TIME = 7500; // 7.5s tension shift
 
+    let tierAudioKey = 'impactMeteor';
+    if (currentTier === 'Cosmic Lightning') tierAudioKey = 'impactLightning';
+    if (currentTier === 'Fireworks') tierAudioKey = 'impactFireworks';
+
+    // Wait for the sounds this sequence depends on so impact audio can't
+    // fire late (or on top of a still-loading buildup track).
+    await Promise.all([
+      waitForHowlReady(soundsRef.current.buildup),
+      waitForHowlReady(soundsRef.current[tierAudioKey])
+    ]);
+
+    if (!isMountedRef.current || !isAnimatingRef.current) return;
+
     const audioStartTime = performance.now();
 
     setIsLoading(false);
@@ -188,10 +217,6 @@ export default function DailyResonance() {
     if (soundsRef.current.buildup) {
       soundsRef.current.buildup.play();
     }
-
-    let tierAudioKey = 'impactMeteor';
-    if (currentTier === 'Cosmic Lightning') tierAudioKey = 'impactLightning';
-    if (currentTier === 'Fireworks') tierAudioKey = 'impactFireworks';
 
     let impactPlayed = false; // We still use this for the visual effect trigger
     let finalTierSet = false;
