@@ -204,7 +204,8 @@ export default function DailyResonance() {
     // fire late (or on top of a still-loading buildup track).
     await Promise.all([
       waitForHowlReady(soundsRef.current.buildup),
-      waitForHowlReady(soundsRef.current[tierAudioKey])
+      waitForHowlReady(soundsRef.current[tierAudioKey]),
+      waitForHowlReady(soundsRef.current.crackle)
     ]);
 
     if (!isMountedRef.current || !isAnimatingRef.current) return;
