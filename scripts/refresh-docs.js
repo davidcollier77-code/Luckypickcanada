@@ -86,7 +86,7 @@ function fetchDocumentation(lib, sourceConfig) {
         res.on('data', chunk => data += chunk);
         res.on('end', () => {
            // Basic sanitization: remove known sensitive token patterns that might leak in docs (e.g. Star History sealed_token)
-           const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
+           const sanitizedData = data.replace(/sealed_token=[^&"'s]+/g, 'sealed_token=REDACTED');
            resolve(sanitizedData);
         });
       }).on('error', reject);

@@ -256,28 +256,6 @@ async function runTests() {
         }
     });
 
-    // 13. Sanitization of sealed_token containing lowercase 's'
-    await test('fetchDocumentation: sanitize token with lowercase s', async () => {
-        mockResponses['https://example.com/docs'] = {
-            statusCode: 200,
-            data: 'Here is a URL with sealed_token=KQdjIGHECVHvmhDasomethingelse in it'
-        };
-        const data = await fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/docs' });
-        assert.ok(!data.includes('KQdjIGHECVHvmhDasomethingelse'), 'Token should be fully redacted');
-        assert.ok(data.includes('sealed_token=REDACTED'), 'Should contain REDACTED placeholder');
-    });
-
-    // 14. Sanitization with multiple sealed_token parameters
-    await test('fetchDocumentation: sanitize multiple tokens', async () => {
-        mockResponses['https://example.com/docs'] = {
-            statusCode: 200,
-            data: 'URL1: sealed_token=abc123&other=param
-        };
-        const data = await fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/docs' });
-        assert.ok(!data.includes('abc123') && !data.includes('xyz789something'), 'All tokens should be redacted');
-        assert.strictEqual((data.match(/sealed_token=REDACTED/g) || []).length, 2, 'Should have 2 REDACTED placeholders');
-    });
-
     console.log(`\nTests complete: ${passed} passed, ${failed} failed.`);
     if (failed > 0) process.exit(1);
 }

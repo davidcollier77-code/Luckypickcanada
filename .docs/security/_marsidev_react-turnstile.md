@@ -83,9 +83,9 @@ function LoginForm() {
 
 <a href="https://www.star-history.com/?type=date&repos=marsidev%2Freact-turnstile">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=marsidev/react-turnstile&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=marsidev/react-turnstile&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=marsidev/react-turnstile&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&theme=dark&legend=top-left&sealed_token=REDACTED" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&legend=top-left&sealed_token=REDACTED" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&legend=top-left&sealed_token=REDACTED" />
  </picture>
 </a>
 
