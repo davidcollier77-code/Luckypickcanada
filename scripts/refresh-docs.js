@@ -326,8 +326,17 @@ async function main() {
       }
 
       // Check upstream SHA if possible
+      let allDocsExist = true;
+      for (const group of groups) {
+          const docPath = path.join(DOCS_DIR, group, `${safeName}.md`);
+          if (!fs.existsSync(docPath)) {
+              allDocsExist = false;
+              break;
+          }
+      }
+
       const upstreamSha = await getUpstreamSha(lib, sourceConfig);
-      if (upstreamSha && upstreamSha === githubShas[lib]) {
+      if (upstreamSha && upstreamSha === githubShas[lib] && allDocsExist) {
          console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
          stats.skipped++;
          progressMade = true;
