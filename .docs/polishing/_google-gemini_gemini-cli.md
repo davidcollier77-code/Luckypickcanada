@@ -1,1 +1,1 @@
-../troubleshooting/_google-gemini_gemini-cli.md
+../creation/_google-gemini_gemini-cli.md

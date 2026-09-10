@@ -1,1 +1,1 @@
-../troubleshooting/_github_docs.md
+../creation/_github_docs.md

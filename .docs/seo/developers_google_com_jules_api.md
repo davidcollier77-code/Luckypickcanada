@@ -1,1 +1,1 @@
-../troubleshooting/developers_google_com_jules_api.md
+../creation/developers_google_com_jules_api.md

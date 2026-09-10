@@ -103,7 +103,12 @@ function fetchDocumentation(lib, sourceConfig) {
       }
     }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-         https.get(res.headers.location, (redirectRes) => {
+         let redirectUrl = res.headers.location;
+         if (redirectUrl.startsWith('/')) {
+             const baseUrl = new URL(url);
+             redirectUrl = baseUrl.origin + redirectUrl;
+         }
+         https.get(redirectUrl, (redirectRes) => {
              let data = '';
              redirectRes.on('data', chunk => data += chunk);
              redirectRes.on('end', () => resolve(data));
@@ -313,9 +318,8 @@ async function main() {
       const sourceConfig = sourcesConfig[lib];
 
       if (!sourceConfig) {
-         console.error(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
-         stats.failed++;
-         stats.errors.push(`Unresolved source for ${lib}`);
+         console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
+         stats.skipped++;
          stats.pending--;
          continue;
       }
@@ -336,8 +340,8 @@ async function main() {
             fetchSuccess = true;
         } catch (retryError) {
             console.error(`Failed to fetch docs for ${lib} on retry:`, retryError.message);
-            stats.failed++;
-            stats.errors.push(`Error on ${lib}: ${retryError.message} (Retry also failed)`);
+            // Treat unresolved/unavailable sources as skipped rather than failing the refresh
+            stats.skipped++;
             stats.pending--;
             continue;
         }

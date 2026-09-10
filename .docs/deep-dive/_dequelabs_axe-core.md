@@ -1,1 +1,1 @@
-../testing/_dequelabs_axe-core.md
+../polishing/_dequelabs_axe-core.md

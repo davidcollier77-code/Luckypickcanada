@@ -1,123 +1,167 @@
-### Content Management API
+# Strapi
 
-Source: https://github.com/coreyhaines31/marketingskills/blob/main/tools/integrations/strapi.md
+Open-source headless CMS with self-hosted option, REST and GraphQL APIs, and customizable admin panel. Targets Strapi 5.
 
-Standard CRUD operations for managing content documents in Strapi.
+## Capabilities
 
-```APIDOC
-## GET /api/articles
+| Integration | Available | Notes |
+|-------------|-----------|-------|
+| API | ✓ | REST (default), GraphQL (plugin) |
+| MCP | - | No official MCP server |
+| CLI | ✓ | `strapi` CLI for project setup, content types, plugins |
+| SDK | ✓ | `@strapi/sdk-js`, `@strapi/blocks-react-renderer` |
 
-### Description
-Retrieves a list of articles with optional filtering, sorting, and population.
+## Authentication
 
-### Method
-GET
+- **Type**: API Token or Users & Permissions JWT
+- **Header**: `Authorization: Bearer {api_token}`
+- **Tokens**: Create in Settings → API Tokens (full access, read-only, or custom)
+- **JWT**: `POST /api/auth/local` with identifier + password returns JWT
 
-### Endpoint
-/api/articles
+## Common Agent Operations
 
-### Query Parameters
-- **populate** (string) - Optional - Relations to include (e.g., *)
-- **filters** (object) - Optional - Filter criteria
-- **sort** (string) - Optional - Sorting field and order
-- **pagination** (object) - Optional - Page and pageSize
-- **status** (string) - Optional - Content status (e.g., draft)
-
-## POST /api/articles
-
-### Description
-Creates a new article document.
-
-### Method
-POST
-
-### Endpoint
-/api/articles
-
-### Request Body
-- **data** (object) - Required - The article content fields
-
-## PUT /api/articles/{documentId}
-
-### Description
-Updates an existing article document.
-
-### Method
-PUT
-
-### Endpoint
-/api/articles/{documentId}
-
-### Parameters
-#### Path Parameters
-- **documentId** (string) - Required - The unique identifier of the document
-
-## DELETE /api/articles/{documentId}
-
-### Description
-Deletes an article document.
-
-### Method
-DELETE
-
-### Endpoint
-/api/articles/{documentId}
-
-### Parameters
-#### Path Parameters
-- **documentId** (string) - Required - The unique identifier of the document
-```
-
---------------------------------
-
-### GET /data/doc/{dataset}/{documentId}
-
-Source: https://github.com/coreyhaines31/marketingskills/blob/main/tools/integrations/sanity.md
-
-Retrieve a single document by its unique identifier.
-
-```APIDOC
-## GET /data/doc/{dataset}/{documentId}
-
-### Description
-Fetches a specific document by its ID from the given dataset.
-
-### Method
-GET
-
-### Endpoint
-https://{projectId}.api.sanity.io/v2024-01-01/data/doc/{dataset}/{documentId}
-
-### Parameters
-#### Path Parameters
-- **dataset** (string) - Required - The name of the dataset.
-- **documentId** (string) - Required - The unique ID of the document.
-```
-
---------------------------------
-
-### List Pendo Metadata Schemas
-
-Source: https://github.com/coreyhaines31/marketingskills/blob/main/tools/integrations/pendo.md
-
-Retrieve the schema definitions for visitor, account, and parent account metadata in Pendo. Requires authentication.
+### List documents
 
 ```bash
-GET https://app.pendo.io/api/v1/metadata/schema/visitor
-GET https://app.pendo.io/api/v1/metadata/schema/account
-GET https://app.pendo.io/api/v1/metadata/schema/parentAccount
+GET http://localhost:1337/api/articles?populate=*
+
+Authorization: Bearer {api_token}
 ```
 
-### Documentation
+### Get single document
 
-Source: https://github.com/coreyhaines31/marketingskills/blob/main/skills/ab-testing/SKILL.md
+```bash
+GET http://localhost:1337/api/articles/{documentId}?populate=*
 
-Document every A/B test comprehensively, including the hypothesis, variants with screenshots, results (sample size, metrics, significance), and the final decision with learnings. Templates are available for structured documentation.
+Authorization: Bearer {api_token}
+```
 
---------------------------------
+### Filter and sort
 
-### Writing Style Guidelines
+```bash
+# Filter by field
+GET http://localhost:1337/api/articles?filters[slug][$eq]=my-post
 
-Source: https://github.com/coreyhaines31/marketingskills/blob/main/CLAUDE.md
+# Multiple filters
+GET http://localhost:1337/api/articles?filters[category][name][$eq]=Marketing&filters[publishedAt][$notNull]=true
 
-Documentation should be kept concise by limiting files to 500 lines, using short paragraphs, and employing clear formatting like bold text for key terms. The tone should be direct, instructional, and professional, written in the second person. Clarity is prioritized by focusing on one idea per section and using active voice.
+# Sort
+GET http://localhost:1337/api/articles?sort=publishedAt:desc
+
+# Pagination
+GET http://localhost:1337/api/articles?pagination[page]=1&pagination[pageSize]=10
+```
+
+### Create document
+
+```bash
+POST http://localhost:1337/api/articles
+Content-Type: application/json
+Authorization: Bearer {api_token}
+
+{
+  "data": {
+    "title": "New Article",
+    "slug": "new-article",
+    "body": "Article content here",
+    "category": "{category_documentId}"
+  }
+}
+```
+
+### Update document
+
+```bash
+PUT http://localhost:1337/api/articles/{documentId}
+Content-Type: application/json
+Authorization: Bearer {api_token}
+
+{
+  "data": {
+    "title": "Updated Title"
+  }
+}
+```
+
+### Delete document
+
+```bash
+DELETE http://localhost:1337/api/articles/{documentId}
+
+Authorization: Bearer {api_token}
+```
+
+### Get draft content
+
+```bash
+# Strapi 5 uses status parameter (replaces v4 publicationState)
+GET http://localhost:1337/api/articles?status=draft
+
+Authorization: Bearer {api_token}
+```
+
+Publishing and unpublishing are managed through the Strapi admin panel or Document Service API (server-side). The public REST API does not expose dedicated publish/unpublish endpoints.
+
+### Populate relations and components
+
+```bash
+# Populate all relations
+GET http://localhost:1337/api/articles?populate=*
+
+# Populate specific relations
+GET http://localhost:1337/api/articles?populate[0]=author&populate[1]=category
+
+# Deep populate
+GET http://localhost:1337/api/articles?populate[author][populate]=avatar
+```
+
+## CLI Commands
+
+```bash
+# Create new Strapi project
+npx create-strapi@latest my-project
+
+# Start development server
+strapi develop
+
+# Build admin panel
+strapi build
+
+# Generate content type
+strapi generate content-type
+
+# Generate controller
+strapi generate controller
+
+# Add GraphQL plugin
+npm install @strapi/plugin-graphql
+```
+
+## Key Objects
+
+- **Content Type** — Schema definition (collection type or single type)
+- **Document** — Content item identified by `documentId` (Strapi 5 pattern)
+- **Component** — Reusable field group (e.g., SEO fields, CTA block)
+- **Dynamic Zone** — Flexible content area accepting multiple component types
+- **Media** — Files managed through the Media Library
+- **Locale** — i18n locale for content translation (plugin-based)
+
+## When to Use
+
+- Self-hosted CMS with full data ownership
+- Budget-conscious projects (no per-seat pricing)
+- Custom admin panel or plugin requirements
+- Teams with DevOps capability
+- Projects needing both REST and GraphQL access
+
+## Rate Limits
+
+- Self-hosted: No built-in rate limits (configure via middleware or reverse proxy)
+- Strapi Cloud: Varies by plan
+- Recommended: Add rate limiting middleware for production APIs
+
+## Relevant Skills
+
+- content-strategy (CMS selection, content modeling)
+- programmatic-seo (CMS as data source for generated pages)
+- site-architecture (URL structure from CMS slugs)

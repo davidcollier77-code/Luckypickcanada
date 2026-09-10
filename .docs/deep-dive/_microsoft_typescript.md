@@ -1,1 +1,1 @@
-../troubleshooting/_microsoft_typescript.md
+../creation/_microsoft_typescript.md

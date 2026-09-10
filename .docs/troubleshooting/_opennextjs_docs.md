@@ -1,45 +1,36 @@
-### Basic OpenNext Configuration File
+### Build Arguments
 
-Source: https://github.com/opennextjs/docs/blob/main/pages/aws/config.mdx
+There is two build arguments that you can pass to the `open-next build` command:
 
-This is the minimum required content for an `open-next.config.ts` file. The default configuration will be applied if this file is absent.
+- `--config-path` - This is the path to the configuration file that you want to use. By default, it will look for `open-next.config.ts` in the current working directory. This needs to be relative to the current working directory.
+- `--node-externals` - You can configure externals for the esbuild compilation of the `open-next.config.ts` file (i.e `--node-externals @aws-sdk/*,open-next/dist/queue/*`)
 
-```typescript
+### Configuration File
+
+For personalization you need to create a file `open-next.config.ts` at the same place as your `next.config.js`, and export a default object that satisfies the `OpenNextConfig` interface. It is possible to not have an `open-next.config.ts` file, the default configuration will then be applied automatically.
+
+This file needs to be placed at the same level as your `next.config.js` file.
+
+If you have an `open-next.config.ts` file, make sure you have atleast this:
+
+```ts filename="open-next.config.ts"
 export default {
   default: {},
 };
 ```
 
---------------------------------
+If you want to take a look at some simple configuration examples, you can check the [simple example](/aws/config/simple_example).
 
-### Enable OpenNext Debug Mode
+For more advanced use cases, you can check [how to implement custom overrides](/aws/config/custom_overrides).
 
-Source: https://github.com/opennextjs/docs/blob/main/pages/aws/common_issues.mdx
+If you want to look at a full example, you can check [the full example](/aws/config/full_example).
 
-Set the OPEN_NEXT_DEBUG environment variable to true to enable verbose logging, disable esbuild minifying, and add source maps. Do not use in production as it significantly increases bundle size.
+### Opt out of default poweredByHeader
 
-```sh
-OPEN_NEXT_DEBUG=true npx open-next@latest build
+By default Next.js will add the [`x-powered-by`](https://nextjs.org/docs/app/api-reference/config/next-config-js/poweredByHeader) header. OpenNext will also add a header `x-opennext`. To opt-out of this, open `next.config.js` and disable the poweredByHeader property in the configuration:
+
+```js filename="next.config.js"
+module.exports = {
+  poweredByHeader: false,
+};
 ```
-
-### OpenNext Components Overview
-
-Source: https://github.com/opennextjs/docs/blob/main/pages/aws/inner_workings/components/overview.mdx
-
-This documentation is primarily for advanced use cases such as overriding defaults, supporting alternative cloud providers, or creating custom IAC components. Most users will not need to interact with these advanced features.
-
---------------------------------
-
-### OpenNext Documentation
-
-Source: https://github.com/opennextjs/docs/blob/main/shared/WindowsSupport.mdx
-
-OpenNext can be used on Windows systems, but full support is not guaranteed due to Next.js tooling issues on Windows and limited testing capacity for Windows support by the OpenNext team. Development on Windows is at your own risk.
-
---------------------------------
-
-### Troubleshooting
-
-Source: https://github.com/opennextjs/docs/blob/main/pages/netlify/index.mdx
-
-The OpenNext documentation focuses on Netlify's Next.js adapter v5 and later. For older versions, consult the Netlify documentation. For assistance with any adapter version, visit the Netlify support page.

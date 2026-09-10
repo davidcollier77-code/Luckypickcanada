@@ -1,1 +1,1 @@
-../troubleshooting/jules_google_docs.md
+../creation/jules_google_docs.md

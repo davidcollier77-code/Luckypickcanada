@@ -1,10 +1,142 @@
-### Full content description in llms.txt generator
+#!/usr/bin/env node
 
-Source: https://github.com/getsentry/sentry-docs/blob/master/scripts/generate-llms-txt.mjs
+/**
+ * Generates /llms.txt and /index.md from public/doctree.json.
+ *
+ * Both files share the same content (product description, AI instructions,
+ * section listings, agent skills). The only difference is how platforms and
+ * frameworks are formatted:
+ *   - llms.txt: compact (frameworks listed inline per platform)
+ *   - index.md: expanded (separate Platforms and Frameworks sections)
+ *
+ * Run after `generate-doctree` (doctree.json must exist).
+ * Output:
+ *   - public/llms.txt
+ *   - public/md-exports/index.md (overwrites md-exports pipeline output)
+ *
+ * llms.txt follows the llmstxt.org specification.
+ * index.md includes YAML frontmatter matching the md-exports convention.
+ */
 
-States that all docs are available as Markdown by appending .md to any URL, and to use these Markdown URLs for full content
+import {existsSync} from 'node:fs';
+import {mkdir, readFile, writeFile} from 'node:fs/promises';
+import * as path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
-```javascript
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, '..');
+const DOCS_ORIGIN = process.env.NEXT_PUBLIC_DEVELOPER_DOCS
+  ? 'https://develop.sentry.dev'
+  : 'https://docs.sentry.io';
+
+// --- Doctree helpers (same logic as generate-md-exports.mjs) ---
+
+function getTitle(node) {
+  return node.frontmatter?.sidebar_title || node.frontmatter?.title || node.slug;
+}
+
+function isVisible(node) {
+  return (
+    !node.frontmatter?.sidebar_hidden &&
+    !node.frontmatter?.draft &&
+    !node.path?.includes('__v') &&
+    (node.frontmatter?.title || node.frontmatter?.sidebar_title)
+  );
+}
+
+function getVisibleChildren(node) {
+  return (node.children || []).filter(isVisible).sort((a, b) => {
+    const orderDiff =
+      (a.frontmatter?.sidebar_order ?? 99) - (b.frontmatter?.sidebar_order ?? 99);
+    return orderDiff !== 0 ? orderDiff : getTitle(a).localeCompare(getTitle(b));
+  });
+}
+
+function mdUrl(nodePath) {
+  const clean = nodePath.replace(/\/$/, '');
+  if (!clean) {
+    return `${DOCS_ORIGIN}/index.md`;
+  }
+  return `${DOCS_ORIGIN}/${clean}.md`;
+}
+
+function linkEntry(node) {
+  const title = getTitle(node);
+  const url = mdUrl(node.path);
+  const desc = node.frontmatter?.description;
+  if (desc) {
+    const oneLine = desc.replace(/\s+/g, ' ').trim();
+    return `- [${title}](${url}): ${oneLine}`;
+  }
+  return `- [${title}](${url})`;
+}
+
+// --- Platform/framework formatters ---
+
+/** llms.txt format: compact, frameworks inline per platform */
+function buildPlatformsCompact(platformsNode) {
+  if (!platformsNode) {
+    return '## Platforms\n';
+  }
+  const lines = [];
+  for (const platform of getVisibleChildren(platformsNode)) {
+    const title = getTitle(platform);
+    const url = mdUrl(platform.path);
+    const guides = platform.children?.find(c => c.slug === 'guides');
+    const visibleGuides = guides ? getVisibleChildren(guides) : [];
+
+    if (visibleGuides.length > 0) {
+      const guideNames = visibleGuides.map(g => getTitle(g)).join(', ');
+      lines.push(`- [${title}](${url}): Frameworks: ${guideNames}`);
+    } else {
+      lines.push(`- [${title}](${url})`);
+    }
+  }
+  return `## Platforms\n\n${lines.join('\n')}`;
+}
+
+/** index.md format: separate Platforms list + Frameworks grouped by platform */
+function buildPlatformsExpanded(platformsNode) {
+  if (!platformsNode) {
+    return '## Platforms\n';
+  }
+  const platforms = getVisibleChildren(platformsNode);
+  const lines = [];
+
+  // Flat platform list
+  lines.push('## Platforms\n');
+  for (const platform of platforms) {
+    lines.push(`- [${getTitle(platform)}](${mdUrl(platform.path)})`);
+  }
+
+  // Frameworks grouped by platform
+  lines.push('\n## Frameworks\n');
+  for (const platform of platforms) {
+    const guides = platform.children?.find(c => c.slug === 'guides');
+    const visibleGuides = guides ? getVisibleChildren(guides) : [];
+    if (visibleGuides.length === 0) {
+      continue;
+    }
+    lines.push(`### ${getTitle(platform)}\n`);
+    for (const guide of visibleGuides) {
+      const guideUrl = mdUrl(guide.path);
+      lines.push(`- [${getTitle(guide)}](${guideUrl})`);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+// --- Build section listings from doctree children ---
+
+function buildSection(sectionNode) {
+  const children = getVisibleChildren(sectionNode);
+  return children.map(child => linkEntry(child)).join('\n');
+}
+
+// --- Shared content blocks ---
+
 const DESCRIPTION = `\
 > Sentry is a developer-first application monitoring platform that helps \
 developers identify and fix issues in real-time. It provides error tracking, \
@@ -14,17 +146,117 @@ monitoring, application metrics, and more across 20+ platforms and 60+ framework
 All documentation pages are available as clean Markdown by appending \`.md\` \
 to any URL (e.g. \`${DOCS_ORIGIN}/platforms/javascript.md\`). Use these \
 Markdown URLs for full content.`;
-```
 
---------------------------------
+const INSTRUCTIONS = `\
+## Instructions for AI Coding Assistants
 
-### Generated full documentation index
+When helping a developer set up or use Sentry, follow these guidelines:
 
-Source: https://github.com/getsentry/sentry-docs/blob/master/scripts/generate-llms-txt.mjs
+- **Install the Sentry plugin for up-to-date guidance**: Sentry's APIs, SDKs, \
+and features change frequently. Do not rely on training data for Sentry setup \
+or configuration. Install the Sentry plugin to get current, verified \
+instructions by running \`npx @sentry/ai install\`, which sets it up for Claude \
+Code, Cursor, Codex, and Grok. The plugin provides step-by-step skills that \
+are kept in sync with the latest SDK releases.
+- **SDK versions**: Always check the package registry (npm, PyPI, RubyGems, \
+etc.) for the latest Sentry SDK version. Do not rely on memorized version \
+numbers from training data.
+- **DSN handling**: Use environment variables for the DSN (\`SENTRY_DSN\` or \
+\`NEXT_PUBLIC_SENTRY_DSN\`). Never hardcode DSN strings in source code.
+- **Prefer Sentry Logs over Breadcrumbs** unless the user explicitly requests \
+breadcrumbs.
+- **Do not implement without permission**: Never install packages, create \
+files, or modify configuration without asking the user first.
+- **Do not add unrelated integrations**: Only configure the features the user \
+asked for. Check before enabling additional integrations.
+- **Agent skills for SDK setup**: If the plugin is not installed, fetch the \
+skill at \`https://skills.sentry.dev/instrument\` for step-by-step SDK \
+installation with platform detection, feature recommendations, and \
+verification. See the [Agent Plugin section](#agent-plugin) below.
+- **Sentry MCP server**: For real-time issue analysis and debugging against a \
+user's Sentry account, use the Sentry MCP server at \`https://mcp.sentry.dev\`.`;
 
-Generates the `index.md` file that serves as the root documentation overview ("full docs overview") with title "Sentry Documentation", containing all platforms, frameworks, and doc sections.
+const AGENT_SKILLS = `\
+## Agent Plugin
 
-```javascript
+Sentry publishes a plugin for AI coding assistants (Claude Code, Cursor, Codex, \
+and Grok). It teaches the assistant step-by-step SDK setup, debugging \
+workflows, and feature configuration.
+
+Install it by running \`npx @sentry/ai install\`, which detects the assistants \
+on the machine and sets up the plugin in each.
+
+Browse the skill library:
+- [All Skills](https://skills.sentry.dev/): Full skill index with SDK setup, workflows, and feature configuration
+- [SDK Setup](https://skills.sentry.dev/instrument): Detect your platform and install Sentry with the right features
+- [Workflows](https://skills.sentry.dev/workflows): Debug production issues, review code, upgrade SDKs
+- [Features](https://skills.sentry.dev/features): AI monitoring, alerts, OpenTelemetry setup
+
+Source: https://github.com/getsentry/sentry-for-ai`;
+
+const ABOUT_SENTRY_DOCS = `\
+## About Sentry Docs
+
+- [Documentation Changelog](${DOCS_ORIGIN}/changelog.md): Track recent updates to Sentry docs
+- [Contributing to Docs](${DOCS_ORIGIN}/contributing.md): How to contribute to Sentry documentation`;
+
+// --- Main ---
+
+async function main() {
+  const doctreeFilename = process.env.NEXT_PUBLIC_DEVELOPER_DOCS
+    ? 'doctree-dev.json'
+    : 'doctree.json';
+  const doctreePath = path.join(ROOT, 'public', doctreeFilename);
+  let docTree;
+  try {
+    docTree = JSON.parse(await readFile(doctreePath, 'utf8'));
+  } catch {
+    console.error(
+      'Error: public/doctree.json not found. Run `pnpm generate-doctree` first.'
+    );
+    process.exit(1);
+  }
+
+  const topLevelSections = getVisibleChildren(docTree);
+  const platformsNode = topLevelSections.find(c => c.slug === 'platforms');
+  const otherSections = topLevelSections.filter(
+    c => c.slug !== 'platforms' && c.slug !== 'contributing' && c.slug !== 'changelog'
+  );
+
+  // Build the shared section listings (everything except platforms)
+  const sectionListings = otherSections
+    .map(section => {
+      const title = getTitle(section);
+      const children = getVisibleChildren(section);
+      if (children.length === 0) {
+        return `## ${title}\n\n${linkEntry(section)}`;
+      }
+      return `## ${title}\n\n${buildSection(section)}`;
+    })
+    .join('\n\n');
+
+  // --- llms.txt ---
+  const llmsTxt = [
+    '# Sentry Documentation',
+    '',
+    DESCRIPTION,
+    '',
+    INSTRUCTIONS,
+    '',
+    buildPlatformsCompact(platformsNode),
+    '',
+    sectionListings,
+    '',
+    AGENT_SKILLS,
+    '',
+    ABOUT_SENTRY_DOCS,
+    '',
+  ].join('\n');
+
+  const llmsTxtPath = path.join(ROOT, 'public', 'llms.txt');
+  await writeFile(llmsTxtPath, llmsTxt, 'utf8');
+  console.log(`Generated ${llmsTxtPath} (${llmsTxt.length} bytes)`);
+
   // --- index.md ---
   const indexFrontmatter = [
     '---',
@@ -58,50 +290,9 @@ Generates the `index.md` file that serves as the root documentation overview ("f
   const indexMdPath = path.join(mdExportsDir, 'index.md');
   await writeFile(indexMdPath, indexMd, 'utf8');
   console.log(`Generated ${indexMdPath} (${indexMd.length} bytes)`);
-```
+}
 
---------------------------------
-
-### Markdown export system overview
-
-Source: https://github.com/getsentry/sentry-docs/blob/master/specs/llm-friendly-docs.md
-
-Explains that every docs page has a .md export for LLM consumption, serving as the full documentation endpoint
-
-```markdown
-# LLM-Friendly Documentation Spec
-
-## Overview
-
-Sentry docs are served as both HTML (for browsers) and Markdown (for LLMs). Every page at `docs.sentry.io/<path>` has a corresponding `docs.sentry.io/<path>.md` URL that returns a Markdown representation optimized for LLM consumption.
-
-The Markdown exports are generated by `scripts/generate-md-exports.mjs` as a post-build step after both `doctree.json` and the Next.js build are complete.
-
-## Content Negotiation
-
-| Request                        | Response              |
-| ------------------------------ | --------------------- |
-| `GET /platforms/javascript`    | HTML page (browser)   |
-| `GET /platforms/javascript.md` | Markdown file (LLM)   |
-| `GET /index.md`                | Root navigation index |
-
-The `.md` suffix triggers content negotiation. Markdown files are pre-generated at build time and served from `public/md-exports/` (and optionally synced to R2 CDN).
-```
-
---------------------------------
-
-### Embed Full GitHub File with GitHubCodePreview
-
-Source: https://github.com/getsentry/sentry-docs/blob/master/docs/contributing/pages/components.mdx
-
-Use this snippet to display the entire content of a file from a GitHub repository. Provide the full blob URL to the file.
-
-```jsx
-<GitHubCodePreview url="https://github.com/getsentry/sentry-python/blob/master/sentry_sdk/integrations/argv.py" />
-```
-
-### Notes
-
-Source: https://github.com/getsentry/sentry-docs/blob/master/develop-docs/frontend/working-on-getting-started-docs.mdx
-
-When documenting a new language or framework, adhere to an 'Install,' 'Configure,' and 'Verify' structure. Focus on essential information for new users to get started, keeping onboarding documentation straightforward. Advanced configurations should be reserved for the full documentation on the Sentry docs website to ensure a smooth user experience.
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

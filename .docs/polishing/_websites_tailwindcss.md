@@ -1,1 +1,1 @@
-../seo/_websites_tailwindcss.md
+../creation/_websites_tailwindcss.md
