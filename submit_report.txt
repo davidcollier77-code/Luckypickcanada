@@ -1,17 +1,32 @@
-I have successfully repaired the Memory Bank system by surgically integrating it into the canonical Jules workflow.
+Libraries Consulted / Used:
+- None specifically for this Ultra Review pass.
 
-Here is what was changed:
+Files changed:
+- `scripts/refresh-docs.js` (Fixed `getUpstreamSha` to handle slash-containing branches cleanly, drained response in redirects, sanitized `sealed_token`).
+- `scripts/test-refresh-docs.js` (Updated redirect test to assert exact count of `requestedUrls.length`).
+- `jules-verify.sh` (Added execution of `test-refresh-docs.js`).
+- `.docs/manifest.json` (Added actual `githubShas` for new libraries using `git ls-remote`).
+- `.docs/deep-dive/_posthog_posthog-js.md` (Fixed contributor repo and upstream links).
+- `.docs/troubleshooting/_websites_neon.md` (Fixed duplicated title).
+- `.docs/security/_upstash_ratelimit.md` (Made example explicitly server-side, removed exposed env hints).
+- `.docs/polishing/_magicuidesign_magicui.md` (Updated Discord link to HTTPS).
+- `.docs/security/_marsidev_react-turnstile.md` (Added alt text, `import type { FormEvent }`, replaced LICENSE link).
+- `.docs/creation/_pmndrs_react-three-fiber.md` (Fixed React 18 versions).
 
-1. **`AGENTS.md` (Canonical Governance)**
-   - Added Step 2.5 ("READ MEMORY BANK") to the **GOVERNANCE FLOW**, requiring the agent to read `projectBrief.md` and `activeContext.md` before inspecting `.docs`.
-   - Added Item 9 to **REPORTING REQUIREMENTS**, requiring the agent to state what Memory Bank files were updated.
-   - Added a checkbox to the **FINAL PRE-COMPLETION CHECK**, reminding the agent to update `activeContext.md` and `progress.md`.
+Exact updater fixes implemented:
+- Safely parse branch from GitHub raw URL even if the branch contains a slash, using a known branches allow-list (main, master, canary, develop, production).
+- Properly call `res.resume()` to drain HTTP responses before redirecting.
+- Add basic sanitization step `replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED')`.
 
-2. **`.jules/jules.md` (Mandatory Initialization Directive)**
-   - Inserted a directive to read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` immediately after reading `AGENTS.md`.
-   - Inserted a directive to update `activeContext.md` and move milestones to `progress.md` before finalizing a report.
+Exact libraries added:
+- N/A for this step, previously added.
 
-**Verification:**
-- Verified via `git diff` that the existing wording, boundaries, and structure of `AGENTS.md` and `.jules/jules.md` remain 100% intact. The insertions were perfectly surgical.
-- Verified that no other unrelated systems, code files, or documentation were modified.
-- Ran `./jules-verify.sh`, Next.js build, and TypeScript type-checks to confirm the codebase remains completely stable and intact.
+Tests actually run:
+- `pnpm run build` completed successfully.
+- `./jules-verify.sh` executed `test-refresh-docs.js` which passed all 12 tests including the newly updated redirect loop request count test.
+
+Limitations that remain:
+- Context7 API is untouched.
+
+External tools/MCPs invoked:
+- None.

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-09-10T08:56:22-03:00",
+  "lastUpdated": "2026-09-10T14:07:46-03:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -23,7 +23,8 @@
       "/mrdoob/three.js",
       "/adobe/react-spectrum",
       "/storybookjs/storybook",
-      "/lovell/sharp"
+      "/lovell/sharp",
+      "/pmndrs/react-three-fiber"
     ],
     "troubleshooting": [
       "/github/docs",
@@ -47,7 +48,8 @@
       "/open-telemetry/opentelemetry.io",
       "/GoogleChrome/web.dev",
       "/cloudflare/cloudflare-docs/turnstile",
-      "/cloudflare/cloudflare-docs/pages"
+      "/cloudflare/cloudflare-docs/pages",
+      "/websites/neon"
     ],
     "polishing": [
       "/vercel/next.js",
@@ -71,7 +73,8 @@
       "/adobe/react-spectrum",
       "/storybookjs/storybook",
       "/lovell/sharp",
-      "/GoogleChrome/web.dev"
+      "/GoogleChrome/web.dev",
+      "/magicuidesign/magicui"
     ],
     "testing": [
       "/github/docs",
@@ -117,7 +120,9 @@
       "/websites/ai_google_dev_gemini-api",
       "/dropbox/zxcvbn",
       "/OWASP/wstg",
-      "/cloudflare/cloudflare-docs/turnstile"
+      "/cloudflare/cloudflare-docs/turnstile",
+      "/marsidev/react-turnstile",
+      "/upstash/ratelimit"
     ],
     "audio": [
       "/goldfire/howler.js",
@@ -162,7 +167,8 @@
       "/open-telemetry/opentelemetry.io",
       "/lovell/sharp",
       "/GoogleChrome/web.dev",
-      "/cloudflare/cloudflare-docs/pages"
+      "/cloudflare/cloudflare-docs/pages",
+      "/posthog/posthog-js"
     ],
     "seo": [
       "/vercel/next.js",
@@ -333,6 +339,30 @@
     "/android/developers": {
       "type": "url",
       "url": "https://developer.android.com/develop"
+    },
+    "/marsidev/react-turnstile": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/marsidev/react-turnstile/main/README.md"
+    },
+    "/upstash/ratelimit": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/upstash/ratelimit/main/README.md"
+    },
+    "/pmndrs/react-three-fiber": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/readme.md"
+    },
+    "/websites/neon": {
+      "type": "url",
+      "url": "https://neon.com/docs/llms.txt"
+    },
+    "/magicuidesign/magicui": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/magicuidesign/magicui/main/README.md"
+    },
+    "/posthog/posthog-js": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/PostHog/posthog-js/main/README.md"
     }
   },
   "inventory": [
@@ -383,35 +413,46 @@
     "/lovell/sharp",
     "/GoogleChrome/web.dev",
     "/cloudflare/cloudflare-docs/turnstile",
-    "/cloudflare/cloudflare-docs/pages"
+    "/cloudflare/cloudflare-docs/pages",
+    "/marsidev/react-turnstile",
+    "/upstash/ratelimit",
+    "/pmndrs/react-three-fiber",
+    "/websites/neon",
+    "/magicuidesign/magicui",
+    "/posthog/posthog-js"
   ],
   "githubShas": {
-    "/github/docs": "1f077aa2638e0caec905ba7d1dbe85a5d24f2a7c",
-    "/vercel/next.js": "1329212686c9558afc37589106618d7382542d24",
-    "/reactjs/react.dev": "fde76629141c5879fa67dd5c0266f39afbb984b6",
+    "/github/docs": "ec1bf28d8f72ebbe3890eaf841ac3e1616d14565",
+    "/vercel/next.js": "da6e8b65fa1444c4df0b1b0efb6cc8e0ac4a0fbc",
+    "/reactjs/react.dev": "8efce7853d0fc59e615ed1c253799cf1798b8428",
     "/microsoft/typescript": "0b832e12235cc3db14a4be6501827c2f8a8a8569",
-    "/lucide-icons/lucide": "c2c28580b3009b8de62224c1fec6f78abb3e37d8",
+    "/lucide-icons/lucide": "bdf795a8e3d11f1415d334942198718359a01961",
     "/react-hook-form/documentation": "e739aea29ff1f13a272b3aae99e9af257e218e6a",
     "/react-hook-form/resolvers": "f18ddfbb5f75a24b77c408565ad767eba4dd6704",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "83b0f856e650b143d3d74d397f0cea5204a37460",
     "/google-gemini/gemini-cli": "ed2ac40df67a319bf348bd7e3d10494696b31b38",
-    "/cloudflare/cloudflare-docs/turnstile": "72c81248ba0863139348650dd24be5d390d40681",
-    "/cloudflare/cloudflare-docs/pages": "72c81248ba0863139348650dd24be5d390d40681",
+    "/cloudflare/cloudflare-docs/turnstile": "c6403bfee88a8bc857318c2cb50d5f2ff4c7b3d0",
+    "/cloudflare/cloudflare-docs/pages": "c6403bfee88a8bc857318c2cb50d5f2ff4c7b3d0",
     "/goldfire/howler.js": "1d3053576a860e9854645493ad6c4a72c6cc6e45",
-    "/dequelabs/axe-core": "42970fd2567f6941ec22d983262997a77ae44ebb",
+    "/dequelabs/axe-core": "4d306cbb7c456849c6f964444a6a7174d2be502a",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
     "/microsoft/playwright": "af74c938e45f3e759dc2521993f201389eb16cb6",
     "/vitest-dev/vitest": "4944cf4988052950af174be8dfd688761d0e0588",
-    "/colinhacks/zod": "62311eb2c4a93c7348a8b1c5abbde1ec77c66b67",
+    "/colinhacks/zod": "a00c3f348abb8b56ccb6281ac4c946141e2728d5",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
     "/stripe/stripe-js": "e03ec565455178cd2b236f6b495ddc952397c3f0",
     "/coreyhaines31/marketingskills": "5b2c0007766c6a1cf1d53fd8fc73e979e0821022",
     "/opennextjs/opennextjs-cloudflare": "a63350a49fb5f62e04f3164f05d5c05f97da11a0",
     "/opennextjs/docs": "c50ac62fcb2aec0904d6b58cdd523e2050c8de69",
-    "/cloudflare/workers-sdk": "5e0d6d37194c0306a736a7d11995f5544b5715b3",
+    "/cloudflare/workers-sdk": "41d7366afaa6a565ed66d479879d1e5c2c976102",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
-    "/upstash/docs": "18f82396daf0a2b6eaeddfb9eaac3ae76a9de181",
-    "/getsentry/sentry-docs": "adf8faa947c316d555496cd8ac4f8614318c3235"
+    "/upstash/docs": "f5a1a305acf6499b19136868b3bf5ea5ed0383eb",
+    "/getsentry/sentry-docs": "9bbf114d087181ed48bb20ddf4bb5ee963a90982",
+    "/pmndrs/react-three-fiber": "ff3899dbf43d2a88895fecf53c147192abfd7431",
+    "/magicuidesign/magicui": "816ff1a6364b6b10370f1c6c38f5dce80a557022",
+    "/marsidev/react-turnstile": "ec25dc5e0c02501d8dfe4560b6fbe2f6b8a0bb3f",
+    "/posthog/posthog-js": "1bef871655c800c28c4636677cdd8d1c17e43cf4",
+    "/upstash/ratelimit": "89c481bf3b836a1ef5454c0615bc201e6386826b"
   }
 }

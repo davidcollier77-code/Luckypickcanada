@@ -55,52 +55,116 @@ function fetchDocumentation(lib, sourceConfig) {
       return reject(new Error('Invalid or missing source configuration.'));
     }
 
-    const url = sourceConfig.url;
-    https.get(url, {
-      headers: {
-        'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
-      }
-    }, (res) => {
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-         let redirectUrl = res.headers.location;
-         if (redirectUrl.startsWith('/')) {
-             const baseUrl = new URL(url);
-             redirectUrl = baseUrl.origin + redirectUrl;
-         }
-         https.get(redirectUrl, (redirectRes) => {
-             let data = '';
-             redirectRes.on('data', chunk => data += chunk);
-             redirectRes.on('end', () => resolve(data));
-             redirectRes.on('error', reject);
-         }).on('error', reject);
-         return;
+    const fetchWithRedirects = (currentUrl, redirectCount) => {
+      if (redirectCount <= 0) {
+        return reject(new Error('Too many redirects'));
       }
 
-      if (res.statusCode !== 200) {
-        return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
-      }
+      https.get(currentUrl, {
+        headers: {
+          'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
+        }
+      }, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+           // Drain the response so socket can be closed/reused
+           res.resume();
+           let redirectUrl = res.headers.location;
+           try {
+               redirectUrl = new URL(redirectUrl, currentUrl).href;
+           } catch (e) {
+               return reject(new Error('Invalid redirect URL'));
+           }
+           return fetchWithRedirects(redirectUrl, redirectCount - 1);
+        }
 
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve(data));
-    }).on('error', reject);
+        if (res.statusCode !== 200) {
+          res.resume();
+          return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+        }
+
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+           // Basic sanitization: remove known sensitive token patterns that might leak in docs (e.g. Star History sealed_token)
+           const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
+           resolve(sanitizedData);
+        });
+      }).on('error', reject);
+    };
+
+    fetchWithRedirects(sourceConfig.url, 5);
   });
 }
 
-function getUpstreamSha(lib) {
+function getUpstreamSha(lib, sourceConfig) {
   return new Promise((resolve) => {
     if (!lib.startsWith('/')) {
         resolve(null);
         return;
     }
+    if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
+        resolve(null);
+        return;
+    }
+
+    let branch = 'HEAD';
+    if (sourceConfig.branch || sourceConfig.ref) {
+        branch = sourceConfig.branch || sourceConfig.ref;
+    } else {
+        try {
+            const urlObj = new URL(sourceConfig.url);
+            if (urlObj.hostname === 'raw.githubusercontent.com') {
+                // Path is usually /owner/repo/branch/path...
+                // But branch names can contain slashes (e.g. feature/add-docs)
+                // We should match known standard branches, or return null if it's too ambiguous
+                const pathname = urlObj.pathname.startsWith('/') ? urlObj.pathname.substring(1) : urlObj.pathname;
+                const pathParts = pathname.split('/');
+
+                if (pathParts.length >= 3) {
+                    const owner = pathParts[0];
+                    const repo = pathParts[1];
+                    const remainingPath = pathParts.slice(2).join('/');
+
+                    const knownBranches = ['main/', 'master/', 'canary/', 'develop/', 'production/'];
+                    let foundBranch = null;
+                    for (const kb of knownBranches) {
+                        if (remainingPath.startsWith(kb)) {
+                            foundBranch = kb.substring(0, kb.length - 1); // remove trailing slash
+                            break;
+                        }
+                    }
+
+                    if (foundBranch) {
+                        branch = foundBranch;
+                    } else {
+                        // Branch could have slashes, too ambiguous to guess safely without explicit metadata.
+                        resolve(null);
+                        return;
+                    }
+                } else {
+                    resolve(null);
+                    return;
+                }
+            } else {
+                resolve(null); // Not a github raw url, fall back to comparing bytes
+                return;
+            }
+        } catch (e) {
+            resolve(null);
+            return;
+        }
+    }
+
     const parts = lib.split('/');
     if (parts.length >= 3) {
       const org = parts[1];
       const repo = parts[2];
 
+      // Use encodeURIComponent for branch in case it contains slashes, but the known ones don't. Still good practice.
+      const safeBranch = encodeURIComponent(branch);
       const options = {
         hostname: 'api.github.com',
-        path: `/repos/${org}/${repo}/commits/HEAD`,
+        path: `/repos/${org}/${repo}/commits/${safeBranch}`,
         headers: {
           'User-Agent': 'Node.js Context7 Refresher',
           'Accept': 'application/vnd.github.v3+json'
@@ -252,8 +316,17 @@ async function main() {
           existingSize = Buffer.byteLength(contentBefore, 'utf8');
       }
 
+      const sourceConfig = sourcesConfig[lib];
+
+      if (!sourceConfig) {
+         console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
+         stats.skipped++;
+         stats.pending--;
+         continue;
+      }
+
       // Check upstream SHA if possible
-      const upstreamSha = await getUpstreamSha(lib);
+      const upstreamSha = await getUpstreamSha(lib, sourceConfig);
       if (upstreamSha && upstreamSha === githubShas[lib]) {
          console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
          stats.skipped++;
@@ -273,7 +346,6 @@ async function main() {
 
       let output;
       let fetchSuccess = false;
-      const sourceConfig = sourcesConfig[lib];
 
       if (!sourceConfig) {
          console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
@@ -288,7 +360,7 @@ async function main() {
         fetchSuccess = true;
       } catch (e) {
         console.error(`Failed to fetch docs for ${lib} on first attempt:`, e.message);
-        console.log(`Waiting 5 minutes before retrying ${lib}...`);
+        console.log(`Waiting 60 seconds before retrying ${lib}...`);
 
         await new Promise(resolve => setTimeout(resolve, 60 * 1000));
 
