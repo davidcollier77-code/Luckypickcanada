@@ -49,6 +49,13 @@ function getDirSize(dirPath) {
 
 
 
+/**
+ * Fetches the configured documentation source, following a single redirect.
+ *
+ * @param {string} lib - Library identifier used for the documentation refresh.
+ * @param {{type: string, url: string}} sourceConfig - Verified source configuration.
+ * @returns {Promise<string>} The downloaded documentation content.
+ */
 function fetchDocumentation(lib, sourceConfig) {
   return new Promise((resolve, reject) => {
     if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
@@ -94,6 +101,13 @@ function fetchDocumentation(lib, sourceConfig) {
   });
 }
 
+/**
+ * Gets the current GitHub commit SHA for a supported raw documentation source.
+ *
+ * @param {string} lib - Context7 library identifier in `/owner/repository` form.
+ * @param {{type: string, url: string}} sourceConfig - Documentation source configuration.
+ * @returns {Promise<string | null>} The upstream SHA, or null when unavailable.
+ */
 function getUpstreamSha(lib, sourceConfig) {
   return new Promise((resolve) => {
     // Only use GitHub API for sources actually sourced from a GitHub repository HEAD
@@ -164,6 +178,11 @@ function saveManifest(inventory, shas, sources, groups) {
   fs.writeFileSync(manifestPath, JSON.stringify(manifestData, null, 2));
 }
 
+/**
+ * Refreshes configured documentation snapshots and updates their manifest metadata.
+ *
+ * @returns {Promise<void>}
+ */
 async function main() {
   console.log('Starting continuous documentation refresh...');
 
