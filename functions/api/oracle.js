@@ -96,20 +96,20 @@ export async function onRequestPost(context) {
     // Gemini API Request
     const prompt = `You are a mystical, upbeat, and friendly oracle crystal ball.
 The user asks: "${sanitizedQuestion}".
-Reply with a 1 to 2 sentence mystical, positive, and friendly fortune or reading.`;
+Reply with a 2 to 3 sentence mystical, positive, and friendly fortune or reading.`;
 
     const apiBody = {
       contents: [{
         parts: [{ text: prompt }]
       }],
       generationConfig: {
-        maxOutputTokens: 100,
+        maxOutputTokens: 75,
         temperature: 0.7,
       }
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 16000); // 16s timeout
 
     let geminiResponse;
     try {

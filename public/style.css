@@ -126,6 +126,8 @@ body::after {
   z-index: 0;
   transition: opacity 1s ease-in-out;
   animation: rotateAurora 10s linear infinite;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
 .aurora-glow.active {
@@ -159,6 +161,8 @@ body::after {
   align-items: center;
   overflow: hidden;
   z-index: 10;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .glass-refraction {
@@ -196,6 +200,8 @@ body::after {
     repeating-linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05) 10px, transparent 20px);
   animation: swirl 20s linear infinite;
   opacity: 0.6;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 @keyframes swirl {
@@ -212,6 +218,8 @@ body::after {
   filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
   animation: float 4s ease-in-out infinite;
   transform-style: preserve-3d;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .emblem-img {
