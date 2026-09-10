@@ -55,44 +55,69 @@ function fetchDocumentation(lib, sourceConfig) {
       return reject(new Error('Invalid or missing source configuration.'));
     }
 
-    const url = sourceConfig.url;
-    https.get(url, {
-      headers: {
-        'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
-      }
-    }, (res) => {
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-         let redirectUrl = res.headers.location;
-         if (redirectUrl.startsWith('/')) {
-             const baseUrl = new URL(url);
-             redirectUrl = baseUrl.origin + redirectUrl;
-         }
-         https.get(redirectUrl, (redirectRes) => {
-             let data = '';
-             redirectRes.on('data', chunk => data += chunk);
-             redirectRes.on('end', () => resolve(data));
-             redirectRes.on('error', reject);
-         }).on('error', reject);
-         return;
+    const fetchWithRedirects = (currentUrl, redirectCount) => {
+      if (redirectCount <= 0) {
+        return reject(new Error('Too many redirects'));
       }
 
-      if (res.statusCode !== 200) {
-        return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
-      }
+      https.get(currentUrl, {
+        headers: {
+          'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
+        }
+      }, (res) => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+           let redirectUrl = res.headers.location;
+           try {
+               redirectUrl = new URL(redirectUrl, currentUrl).href;
+           } catch (e) {
+               return reject(new Error('Invalid redirect URL'));
+           }
+           return fetchWithRedirects(redirectUrl, redirectCount - 1);
+        }
 
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve(data));
-    }).on('error', reject);
+        if (res.statusCode !== 200) {
+          return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+        }
+
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => resolve(data));
+      }).on('error', reject);
+    };
+
+    fetchWithRedirects(sourceConfig.url, 5);
   });
 }
 
-function getUpstreamSha(lib) {
+function getUpstreamSha(lib, sourceConfig) {
   return new Promise((resolve) => {
     if (!lib.startsWith('/')) {
         resolve(null);
         return;
     }
+    if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
+        resolve(null);
+        return;
+    }
+
+    let branch = 'HEAD';
+    try {
+        const urlObj = new URL(sourceConfig.url);
+        if (urlObj.hostname === 'raw.githubusercontent.com') {
+            // Path is usually /owner/repo/branch/path...
+            const pathParts = urlObj.pathname.split('/').filter(p => p);
+            if (pathParts.length >= 3) {
+                branch = pathParts[2];
+            }
+        } else {
+            resolve(null); // Not a github raw url, fall back to comparing bytes
+            return;
+        }
+    } catch (e) {
+        resolve(null);
+        return;
+    }
+
     const parts = lib.split('/');
     if (parts.length >= 3) {
       const org = parts[1];
@@ -100,7 +125,7 @@ function getUpstreamSha(lib) {
 
       const options = {
         hostname: 'api.github.com',
-        path: `/repos/${org}/${repo}/commits/HEAD`,
+        path: `/repos/${org}/${repo}/commits/${branch}`,
         headers: {
           'User-Agent': 'Node.js Context7 Refresher',
           'Accept': 'application/vnd.github.v3+json'
@@ -252,8 +277,17 @@ async function main() {
           existingSize = Buffer.byteLength(contentBefore, 'utf8');
       }
 
+      const sourceConfig = sourcesConfig[lib];
+
+      if (!sourceConfig) {
+         console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
+         stats.skipped++;
+         stats.pending--;
+         continue;
+      }
+
       // Check upstream SHA if possible
-      const upstreamSha = await getUpstreamSha(lib);
+      const upstreamSha = await getUpstreamSha(lib, sourceConfig);
       if (upstreamSha && upstreamSha === githubShas[lib]) {
          console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
          stats.skipped++;
@@ -273,7 +307,6 @@ async function main() {
 
       let output;
       let fetchSuccess = false;
-      const sourceConfig = sourcesConfig[lib];
 
       if (!sourceConfig) {
          console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
@@ -288,7 +321,7 @@ async function main() {
         fetchSuccess = true;
       } catch (e) {
         console.error(`Failed to fetch docs for ${lib} on first attempt:`, e.message);
-        console.log(`Waiting 5 minutes before retrying ${lib}...`);
+        console.log(`Waiting 60 seconds before retrying ${lib}...`);
 
         await new Promise(resolve => setTimeout(resolve, 60 * 1000));
 

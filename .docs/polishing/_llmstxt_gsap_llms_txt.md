@@ -14,7 +14,7 @@
 
 
 <link rel="search" type="application/opensearchdescription+xml" title="GSAP | Docs &amp; Learning" href="/opensearch.xml"><link rel="stylesheet" href="/assets/css/styles.da4fe27e.css">
-<script src="/assets/js/runtime~main.4af81495.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.316aa23c.js" defer="defer"></script>
 <script src="/assets/js/main.c4a60ab3.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">

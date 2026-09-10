@@ -1,17 +1,42 @@
-I have successfully repaired the Memory Bank system by surgically integrating it into the canonical Jules workflow.
+Libraries Consulted / Used:
+- None specifically. Evaluated `.docs/manifest.json` and `scripts/refresh-docs.js` based on user guidance to repair existing documentation workflow.
 
-Here is what was changed:
+Files changed:
+- `scripts/refresh-docs.js` (Updated `getUpstreamSha` to extract actual branches, and `fetchDocumentation` to handle redirects with robust URL parsing).
+- `.docs/manifest.json` (Added 6 missing libraries, exactly mapping to requested domains).
+- `.github/workflows/refresh-docs.yml` (Removed hardcoded "46-library").
+- `scripts/test-refresh-docs.js` (Added to provide comprehensive test suite for `refresh-docs.js` logic).
+- Updated internal `.docs/*` structure to correctly map the 6 added libraries.
 
-1. **`AGENTS.md` (Canonical Governance)**
-   - Added Step 2.5 ("READ MEMORY BANK") to the **GOVERNANCE FLOW**, requiring the agent to read `projectBrief.md` and `activeContext.md` before inspecting `.docs`.
-   - Added Item 9 to **REPORTING REQUIREMENTS**, requiring the agent to state what Memory Bank files were updated.
-   - Added a checkbox to the **FINAL PRE-COMPLETION CHECK**, reminding the agent to update `activeContext.md` and `progress.md`.
+Exact updater fixes implemented:
+- Updated `getUpstreamSha` to safely parse branch from `sourceConfig.url` when the domain is `raw.githubusercontent.com`.
+- Updated `fetchDocumentation` to use a `fetchWithRedirects` helper supporting relative and absolute paths while capping infinite loops.
+- Explicitly fail on HTTP response codes 4xx/5xx to avoid saving garbage documentation.
+- Changed "Waiting 5 minutes" retry log to "Waiting 60 seconds" to match the actual sleep time.
 
-2. **`.jules/jules.md` (Mandatory Initialization Directive)**
-   - Inserted a directive to read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` immediately after reading `AGENTS.md`.
-   - Inserted a directive to update `activeContext.md` and move milestones to `progress.md` before finalizing a report.
+Exact libraries added:
+- `/marsidev/react-turnstile`
+- `/upstash/ratelimit`
+- `/pmndrs/react-three-fiber`
+- `/websites/neon`
+- `/magicuidesign/magicui`
+- `/posthog/posthog-js`
 
-**Verification:**
-- Verified via `git diff` that the existing wording, boundaries, and structure of `AGENTS.md` and `.jules/jules.md` remain 100% intact. The insertions were perfectly surgical.
-- Verified that no other unrelated systems, code files, or documentation were modified.
-- Ran `./jules-verify.sh`, Next.js build, and TypeScript type-checks to confirm the codebase remains completely stable and intact.
+Confirmation that Sonner was not duplicated:
+- Verified `/emilkowalski/sonner` exists exactly once in the manifest inventory.
+
+Tests actually run:
+- Executed `scripts/test-refresh-docs.js` covering GitHub source freshness logic, non-GitHub URLs, relative redirects, absolute redirects, 404s, 500s, ordinary errors, and redirect loops.
+- Ran `node test_manifest.js` locally to verify the structure.
+- Executed `pnpm run build` and `./jules-verify.sh`.
+
+Workflow validation:
+- Checked schedule remains correctly set at `21 5` and `21 6` for UTC matching Atlantic 02:21.
+- Checked `America/Halifax` and `workflow_dispatch` remain untouched.
+- Cleaned stale description to "approved library inventory".
+
+Limitations that remain:
+- Context7 API is untouched. No new Context7 requests were dispatched to prevent authorization bypasses.
+
+External tools/MCPs invoked:
+- None (Context7 MCP was not required to complete the repair).
