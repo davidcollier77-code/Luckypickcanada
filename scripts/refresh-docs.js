@@ -341,11 +341,7 @@ async function main() {
         } catch (retryError) {
             console.error(`Failed to fetch docs for ${lib} on retry:`, retryError.message);
             // Treat unresolved/unavailable sources as skipped rather than failing the refresh
-            if (retryError.message.includes('Invalid URL') || retryError.message.includes('missing source configuration')) {
-                stats.skipped++;
-            } else {
-                stats.skipped++; // Requested to treat unavailable source as skipped not failed
-            }
+            stats.skipped++;
             stats.pending--;
             continue;
         }
