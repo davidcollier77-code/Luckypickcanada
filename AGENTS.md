@@ -1,927 +1,617 @@
-# Canonical Agent Governance & Operating Rules
-
-This file is the canonical repository-level instruction set for all AI coding agents working on LuckyPickCanada.
-
-These rules are mandatory unless a higher-priority system instruction or an explicit task-specific instruction overrides them.
-
----
-
-# 1. GOVERNANCE FLOW
-
-┌──────────────────────────────────────────────────────────────────────┐
-│                         START TASK                                   │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 1. IDENTIFY TASK                                                     │
-│    Determine the task group and exact requested scope.                │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 2. READ REPOSITORY INSTRUCTIONS                                     │
-│    Read AGENTS.md and all applicable repository-local instructions.  │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 2.5 READ MEMORY BANK                                                 │
-│     Read memory-bank/projectBrief.md and activeContext.md to load    │
-│     current project context.                                         │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 3. INSPECT .docs                                                     │
-│    Inspect the documentation library and manifest.                   │
-│    Identify and actually read the relevant documentation.             │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 4. INSPECT CURRENT REPOSITORY STATE                                 │
-│    Check files, implementation, dependencies, scripts, workflows,    │
-│    tests, existing automation, open PRs, and relevant configuration.  │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 5. CHECK AVAILABLE CAPABILITIES                                     │
-│    Determine whether existing libraries, scripts, tools, MCPs,       │
-│    workflows, or documentation already solve the problem.            │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 6. MCP DECISION                                                      │
-│    Use a connected MCP only when it materially improves accuracy     │
-│    or execution and its approval requirements permit its use.        │
-│                                                                      │
-│    Connection/initialization ≠ usage.                                │
-│    Only an actual invocation/query/retrieval counts as MCP usage.    │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 7. UNDERSTAND                                                        │
-│    Understand the existing architecture and constraints before       │
-│    changing anything.                                                │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 8. IMPLEMENT ONLY AUTHORIZED SCOPE                                  │
-│    Do not perform unrelated cleanup, refactoring, dependency         │
-│    upgrades, redesign, or architectural changes.                     │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 9. TEST AND VERIFY                                                   │
-│    Run the appropriate tests, builds, linting, type checks, and       │
-│    repository verification procedures.                               │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 10. DOUBLE-CHECK ACTUAL STATE                                       │
-│     Verify the actual repository/workflow/PR/file state.             │
-│     Never claim something happened based solely on an intention,      │
-│     connection, plan, or tool availability.                           │
-└──────────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│ 11. DOCUMENTATION ACCOUNTABILITY                                    │
-│     Report what was actually consulted, changed, tested, and        │
-│     verified. Never fabricate tool, MCP, documentation, or test use.  │
-└──────────────────────────────────────────────────────────────────────┘
-
----
+# AGENTS.md — Jules Repository Instructions
 
-# 2. CORE OPERATING PRINCIPLES
+This is the canonical repository-level instruction set for **Jules** working on LuckyPickCanada.
 
-1. Inspect before modifying.
-2. Understand before implementing.
-3. Preserve existing behavior unless the task explicitly requires changing it.
-4. Work only within the requested scope.
-5. Prefer existing repository capabilities over adding new ones.
-6. Verify actual results rather than trusting assumptions.
-7. Never fabricate tool usage, MCP usage, documentation consultation, test results, or deployment state.
-8. Never expose secrets, credentials, API tokens, private keys, session tokens, or sensitive environment values.
-9. Do not weaken security controls merely to make a task easier.
-10. Do not bypass repository governance.
-11. Do not duplicate existing automation.
-12. Do not silently expand the scope of a task.
+These instructions govern Jules from task intake through implementation, verification, commit/branch work, and PR creation. Jules must follow them unless a higher-priority instruction or an explicit task requirement overrides them.
 
-The goal is not maximum code change.
+# A — UNDERSTAND THE REPOSITORY AND THE TASK
 
-The goal is the smallest correct, maintainable, verifiable change that fully satisfies the authorized task.
+## A1. Identify the Task
 
----
+Before changing anything:
 
-# 3. TASK GROUPS
+- Determine exactly what the task is asking for.
+- Identify the affected area of the repository.
+- Determine whether the task is creation, troubleshooting, polishing, testing, security, audio, investigation, SEO, or another cross-cutting task.
+- Do not turn an implementation or repair request into audit-only work unless the task explicitly asks for an audit.
 
-Every task must be classified into one of these task groups:
+When the task requires investigation, investigate the cause first and then make the authorized repair.
 
-1. Creation
-   - Specialist file: `.jules/creation.md`
-2. Troubleshooting
-   - Specialist file: `.jules/troubleshooting.md`
-3. Polishing
-   - Specialist file: `.jules/polishing.md`
-4. Testing
-   - Specialist file: `.jules/testing.md`
-5. Security
-   - Specialist file: `.jules/security.md`
-6. Audio
-   - Specialist file: `.jules/audio.md`
-7. Deep Dive / Investigation
-   - Specialist file: `.jules/deep-dive.md`
-8. SEO
-   - Specialist file: `.jules/seo.md`
+## A2. Read the Repository Instruction Systems
 
-Miscellaneous or cross-cutting work may be treated as a fallback category when it genuinely does not fit one of the eight groups.
+Use the repository's instruction systems in this order:
 
-Do not invent additional permanent task groups without authorization.
-When working with the Spec Kit workflow, use the applicable Spec Kit command files under `.jules/cmds/speckit.*.md`.
+1. `AGENTS.md`
+2. Relevant Memory Bank files
+3. Relevant `.jules/*.md` task-group instructions
+4. Relevant `.jules/cmds/` instructions when applicable
+5. Relevant `.docs/` documentation
 
+The following systems are part of the repository's established Jules workflow and must be treated as complementary systems rather than competing instruction systems:
 
----
+- Memory Bank
+- `.jules/` Jules instructions
+- `.jules/cmds/` Jules command system
+- GitHub Spec Kit and `.specify/`
+- Playwright CLI/testing
+- Scientific Debugging & Verification Protocol
+- Local Action Verification using `act`
+- `.docs/` documentation library
+- `.docs/manifest.json` and its documentation updater
+- GitHub CLI (`gh`)
+- Existing Context7/MCP routing
 
-# 4. REQUIRED AGENT PARTICIPATION
+Do not assume a file exists or contains something without checking the repository.
 
-## Jules
+## A3. Memory Bank
 
-Jules is the primary implementation agent for repository work.
+Treat the Memory Bank as repository context, not as a substitute for inspecting the actual code.
 
-Jules must:
+Where present and relevant, inspect:
 
-- inspect the repository before acting;
-- follow AGENTS.md;
-- inspect applicable `.docs` material;
-- inspect current repository state;
-- determine whether connected tools/MCPs materially improve the task;
-- implement only authorized changes;
-- run appropriate verification;
-- inspect the final actual state;
-- provide an accurate final report.
+- `memory-bank/projectBrief.md`
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+- `memory-bank/techContext.md`
 
-## Gemini
+Keep `activeContext.md` and `progress.md` accurate when the completed work materially changes the project's current state or progress.
 
-Gemini participation is mandatory for repository tasks where the repository workflow provides Gemini access.
+Do not create a second memory system or replace the established Memory Bank structure.
 
-Gemini must genuinely participate in the task rather than merely being mentioned.
+## A4. Task-Group Routing and Jules Instructions
 
-The final report must distinguish actual Gemini usage from availability or connection status.
+Use the appropriate specialist instructions under `.jules/`:
 
-A connection or initialization message does not prove Gemini was used.
+- `creation.md`
+- `troubleshooting.md`
+- `polishing.md`
+- `testing.md`
+- `security.md`
+- `audio.md`
+- `deep-dive.md`
+- `seo.md`
 
----
+Use only the specialist guidance relevant to the task.
 
-# 5. DOCUMENTATION-FIRST WORKFLOW
+Do not duplicate task-specific rules in `AGENTS.md` when they belong in a specialist file.
 
-The repository's local documentation library is located under:
+The `.jules/` instruction system provides task-specific guidance under this master repository instruction set.
 
-    .docs/
+## A5. Jules Command System
 
-`.docs` is a first-class repository resource.
+The `.jules/cmds/` directory contains repository-specific Jules command instructions.
 
-It is not optional background material.
+When a task requires one of these command workflows, inspect and follow the applicable command instruction before using it.
 
-For every applicable task, the agent must:
+This includes the repository's Spec Kit command instructions such as:
 
-1. inspect `.docs`;
-2. inspect `.docs/manifest.json` when present;
-3. identify documentation relevant to the task;
-4. actually read the relevant documentation;
-5. use that information when making implementation decisions;
-6. report the relevant documentation actually consulted.
+- `.jules/cmds/speckit.specify.md`
+- `.jules/cmds/speckit.plan.md`
+- `.jules/cmds/speckit.tasks.md`
+- `.jules/cmds/speckit.implement.md`
+- `.jules/cmds/speckit.analyze.md`
+- `.jules/cmds/speckit.clarify.md`
 
-Do not merely state that `.docs` was checked if the relevant documents were not actually read.
+Do not invent alternative Jules command workflows when an applicable repository command system already exists.
 
-Do not read every document unnecessarily.
+## A6. GitHub Spec Kit
 
-Read the documents that materially apply to the task.
+When the task uses GitHub Spec Kit, use the repository's existing Spec Kit installation under `.specify/` and its corresponding `.jules/cmds/` instructions.
 
-`.docs` provides documentation and project guidance.
+Follow the established specification, planning, task, analysis, clarification, and implementation process when applicable.
 
-It does not itself authorize use of external services, MCPs, credentials, APIs, or protected systems.
+Do not bypass required specification or approval steps.
 
----
+Do not create a competing planning or specification system.
 
-# 6. RESOURCE HIERARCHY
+## A7. Documentation Library, Manifest, and Updater
 
-When determining how to solve a task, use this general priority order:
+`.docs/` is the repository's local documentation library.
 
-1. Explicit task requirements
-2. Higher-priority system/platform instructions
-3. This AGENTS.md
-4. Repository-local instructions
-5. Relevant `.docs` documentation
-6. Existing repository implementation
-7. Existing scripts/workflows/tests
-8. Already-installed dependencies and capabilities
-9. Approved MCPs/tools
-10. External research or new dependencies only when genuinely necessary
+Use `.docs/manifest.json` as the authoritative record of what documentation is available.
 
-Never use external research as an excuse to ignore repository-local documentation.
+The documentation updater maintains the local documentation library and its manifest.
 
-Never introduce a new dependency when an existing dependency or repository capability is sufficient.
+Generic documentation flow:
 
----
+`TASK
+   ↓
+IDENTIFY NEEDED KNOWLEDGE
+   ↓
+CHECK .docs/manifest.json
+   ↓
+FIND RELEVANT DOCUMENTATION
+   ↓
+READ ONLY WHAT IS RELEVANT
+   ↓
+USE DOCUMENTATION TO INFORM THE WORK
+   ↓
+VERIFY AGAINST THE ACTUAL REPOSITORY`
 
-# 7. MCP GOVERNANCE
+Rules:
 
-MCPs are governed individually.
+- Do not invent documentation that is not present.
+- Do not claim documentation was consulted unless it was actually read.
+- Do not read the entire library unnecessarily.
+- Do not maintain a second hard-coded documentation inventory in `AGENTS.md`.
+- `.docs` provides guidance; the actual repository remains the source of truth for current implementation state.
+- The manifest describes the local documentation state; it does not override the repository source of truth.
+- The documentation updater must preserve the established updater behavior and must not create duplicate documentation systems.
+- Documentation does not authorize access to protected systems, credentials, external services, or unrelated work.
 
-A connected MCP is not automatically permission to use it.
+## A8. Inspect the Actual Repository
 
-The agent must distinguish:
+Before implementation, inspect the current repository state relevant to the task.
 
-- connection;
-- initialization;
-- availability;
-- actual invocation;
-- actual returned data.
+Check the actual:
 
-Only an actual invocation/query/retrieval constitutes MCP usage.
-
-## Neon
-
-Neon may be used without additional approval when it is materially applicable to the authorized task.
-
-Use it only within the task's scope.
-
-Do not modify protected database structures without explicit authorization.
-
-## Stitch
-
-Stitch may be used without additional approval when it is materially applicable to the authorized task.
-
-Use it only within the task's scope.
-
-## Context7
-
-Context7 requires explicit approval from the repository owner before any invocation.
-
-Connection or availability does not constitute approval.
-
-Mentioning Context7 in a task does not constitute approval.
-
-A previous Context7 approval does not automatically authorize unrelated future tasks unless that authorization explicitly covers them.
-
-Before invoking Context7, Jules must ask the repository owner for explicit approval and provide:
-
-1. MCP/service being requested;
-2. tool/action that will be invoked;
-3. reason it is materially necessary;
-4. what information it is expected to retrieve;
-5. whether the action is read-only or modifies anything.
-
-Until explicit approval is received, do not invoke Context7.
-
-## Other MCPs
-
-Any other MCP requires explicit approval unless a separate standing authorization for that specific MCP has been established.
-
-Do not infer approval from:
-
-- connection status;
-- initialization;
-- availability;
-- prior unrelated approval;
-- task wording;
-- another agent's use;
-- a recommendation to use the MCP.
-
----
-
-# 8. ACTUAL MCP USAGE REPORTING
-
-Final reports must accurately distinguish MCP status.
-
-Good:
-
-    Context7 was connected but was not invoked because approval was not granted.
-
-Good:
-
-    Neon was queried to inspect the relevant database state.
-
-Bad:
-
-    Context7 was used.
-
-when only a connection/initialization event occurred.
-
-Never claim an MCP was used unless an actual invocation occurred.
-
----
-
-# 9. PROTECTED SYSTEMS
-
-The following systems are protected from modification unless the task explicitly authorizes the change.
-
-## Payments
-
-Do not modify:
-
-- Stripe integration;
-- Stripe Checkout;
-- payment processing;
-- pricing;
-- checkout behavior;
-- webhooks;
-- payment-related API routes;
-- payment environment variables.
-
-Do not redesign or refactor payment code during unrelated work.
-
-## Authentication
-
-Do not modify authentication or authorization behavior unless explicitly authorized.
-
-## Database
-
-Do not modify:
-
-- database schema;
-- migrations;
-- protected tables;
-- database functions;
-- production data;
-- database permissions;
-
-unless explicitly authorized.
-
-Neon access does not itself authorize database modification.
-
-## Secrets and Environment
-
-Never expose:
-
-- API keys;
-- access tokens;
-- authentication tokens;
-- private keys;
-- webhook secrets;
-- database credentials;
-- environment variable values;
-- GitHub tokens;
-- Cloudflare tokens;
-- service-account credentials.
-
-Never place secrets into:
-
+- files and directories;
 - source code;
-- commits;
-- PR descriptions;
-- issues;
-- logs;
-- screenshots;
-- documentation;
-- final responses.
-
-If a secret appears in tool output, do not repeat it.
-
-## Cloudflare
-
-Do not modify Cloudflare configuration unless explicitly authorized.
-
-Protected configuration includes, but is not limited to:
-
-- `wrangler.jsonc`;
-- `open-next.config.ts`;
-- Cloudflare Pages/Workers configuration;
-- deployment configuration;
-- bindings;
-- environment configuration.
-
----
-
-# 10. AUDIO PROTECTION
-
-Existing audio behavior is protected.
-
-Do not:
-
-- redesign audio;
-- change sound effects;
-- add sounds;
-- remove sounds;
-- change playback sequencing;
-- change timing;
-- change volume;
-- change triggers;
-- change reveal/audio choreography;
-
-unless explicitly authorized.
-
-Howler is the approved audio library for the project's current implementation where applicable.
-
-Removing obsolete library references for inventory/documentation purposes does not authorize changing actual audio behavior.
-
----
-
-# 11. LAYOUT AND UI SAFETY
-
-When fixing layout or responsive issues:
-
-- do not use negative margins as positioning hacks;
-- do not use transforms as positioning hacks;
-- do not use unnecessary absolute positioning;
-- do not bypass the existing layout system;
-- preserve semantic structure;
-- preserve responsive behavior;
-- prefer fixing the actual parent/container sizing, spacing, flow, or layout constraint causing the problem.
-
-Do not move an element visually without understanding why the existing layout places it incorrectly.
-
----
-
-# 12. DEPENDENCY GOVERNANCE
-
-Do not add, remove, upgrade, or downgrade dependencies unless the task requires it.
-
-Before introducing a dependency:
-
-1. inspect `package.json`;
-2. inspect the lockfile;
-3. inspect existing imports/usages;
-4. check whether an installed dependency already solves the problem;
-5. check repository documentation;
-6. determine whether the new dependency is genuinely necessary.
-
-Unrelated dependency cleanup is prohibited unless explicitly requested.
-
-Do not upgrade dependencies merely because newer versions exist.
-
----
-
-# 13. AUTOMATION GOVERNANCE
-
-Before creating any:
-
-- workflow;
-- script;
-- scheduled job;
-- verification process;
-- documentation refresh process;
-- CI check;
-- automation;
-
-inspect existing repository automation first.
-
-Do not duplicate existing automation.
-
-If existing automation already performs the required function, modify or reuse it only when authorized.
-
-Do not create a second workflow that performs substantially the same job.
-
----
-
-# 14. REQUIRED OPERATING METHOD
-
-Use this sequence:
-
-    INSPECT
-        ↓
-    IDENTIFY
-        ↓
-    UNDERSTAND
-        ↓
-    VERIFY
-        ↓
-    CHOOSE
-        ↓
-    RESEARCH
-        ↓
-    IMPLEMENT
-        ↓
-    TEST
-        ↓
-    DOUBLE-CHECK
-
-Research should happen after local repository inspection, not before.
-
-The agent should first determine what the repository already knows.
-
----
-
-# 15. VERIFICATION REQUIREMENTS
-
-Verification must reflect the actual change.
-
-Where applicable, use:
-
-    ./jules-verify.sh
-
-This is the primary repository verification command.
-
-When local CI simulation is appropriate, use:
-
-    bash scripts/act/run-act.sh "push -j <JOB_ID>"
-
-Do not claim tests passed if they were not run.
-
-Do not claim a build succeeded if it was not actually executed successfully.
-
-Do not claim a workflow ran because the workflow file exists.
-
-Do not claim deployment succeeded because a build completed locally.
-
----
-
-# 16. ACTUAL STATE VERIFICATION
-
-Before reporting completion, inspect the actual repository state.
-
-Verify, as applicable:
-
-- changed files;
-- git diff;
-- git status;
-- relevant workflow files;
-- generated artifacts;
+- configuration;
+- dependencies;
+- scripts;
 - tests;
-- build output;
-- PR state;
-- commits;
-- branch state;
-- documentation state.
+- workflows;
+- existing implementation;
+- current branch/diff when relevant.
 
-Do not rely solely on an agent's task report.
+Do not rely solely on a previous task description, an old report, a commit message, or saved assumptions.
 
-Do not treat a proposed change as a completed change.
+## A9. Reuse Existing Capabilities
 
-Do not treat a generated commit as proof that the intended behavior works.
+Before adding something new:
 
----
+- Look for an existing implementation.
+- Look for existing utilities, components, libraries, scripts, workflows, or configuration that already solve the problem.
+- Prefer extending the existing architecture over replacing it.
+- Do not add dependencies or duplicate functionality without a real requirement.
 
-# 17. SCOPE CONTROL
+## A10. Research and External Resources
 
-Do not perform unrelated:
+Local repository resources come first.
 
+External research or external tools should only be used when genuinely necessary after inspecting the repository.
+
+### Context7
+
+Context7 is an approved-but-controlled external documentation resource.
+
+**Jules must never invoke, query, retrieve from, or otherwise use Context7 without explicit approval from the repository owner.**
+
+A Context7 connection, initialization message, availability notice, or visible MCP entry does not constitute approval and does not constitute actual usage.
+
+If Context7 would be useful, Jules must request approval before invoking it.
+
+If approval has not been given, use the repository's existing `.docs` documentation and other available authorized resources instead.
+
+Once explicit approval has been given, Jules may use Context7 only for the approved purpose and must accurately report the actual Context7 operation performed.
+
+### Neon and Stitch
+
+Neon and Stitch may be used by Jules whenever Jules determines they are materially necessary and applicable to the authorized task.
+
+Separate owner approval is not required merely to use Neon or Stitch.
+
+However:
+
+- Use them only when relevant to the task.
+- Follow all protected-system and scope rules.
+- Access to Neon does not authorize database modification.
+- A connection or initialization message is not proof of usage.
+- Only an actual invocation, query, retrieval, or executed operation counts as use.
+- Never claim Neon or Stitch was used unless it was actually invoked.
+
+### Other MCPs and External Capabilities
+
+Other MCPs or external capabilities require appropriate approval unless standing authorization exists.
+
+Never report a connected service as having been used when it was not actually invoked.
+
+# B — BOUNDARIES AND PROTECTED SYSTEMS
+
+## B1. Scope
+
+Change only what the task authorizes.
+
+Do not silently add:
+
+- unrelated refactoring;
 - cleanup;
-- refactoring;
-- formatting;
-- dependency upgrades;
+- dependency upgrades or removals;
 - architectural changes;
 - UI redesign;
 - API changes;
 - database changes;
 - security changes;
-- performance rewrites.
+- performance work;
+- automation changes.
 
-If an unrelated issue is discovered, report it separately unless it blocks the authorized task.
+When additional work is genuinely required to complete the authorized task, explain why it is necessary and keep the expansion as small as possible.
 
-If fixing the issue is necessary to complete the authorized task, explain why before expanding scope when practical.
+## B2. Preserve Existing Behavior
 
----
+Do not change existing behavior merely because another approach is preferred.
 
-# 18. CURRENT PROJECT STACK
+Preserve:
 
-LuckyPickCanada currently uses the following major technologies and services where applicable:
+- established architecture;
+- existing contracts;
+- accessibility;
+- responsive behavior;
+- security controls;
+- current integrations;
+- existing user-facing behavior.
 
-- Next.js App Router
-- React
-- TypeScript
-- Tailwind CSS
-- PostgreSQL / Neon
-- Cloudflare Pages / Workers
-- OpenNext for Cloudflare
-- Stripe Checkout
-- Resend
-- Cloudflare Turnstile
-- Howler
-- Framer Motion
-- Canvas-based visual effects
-- Playwright
-- Vitest
-- Testing Library
-- ESLint
-- Prettier
+Fix the actual root cause rather than masking symptoms with unnecessary hacks.
 
-Do not assume every listed technology is relevant to every task.
+## B3. Protected Systems
 
-Inspect actual usage before changing anything.
+Do not modify protected systems without explicit authorization.
 
----
+This includes:
 
-# 19. RUNTIME AND PACKAGE MANAGEMENT
+### Payments
 
-The repository uses Node.js 22.x.
+Do not change payment processing, Stripe integration, Checkout behavior, pricing, payment routes, webhooks, or related secrets/configuration unless authorized.
 
-Respect the repository's Node version configuration.
+### Authentication
 
-The repository uses pnpm.
+Do not change authentication flows, authorization behavior, identity systems, or protected auth configuration unless authorized.
 
-Use pnpm-compatible commands and respect the existing lockfile.
+### Database
 
-Do not replace pnpm with npm merely for convenience.
+Do not make unauthorized schema changes, migrations, destructive queries, protected table/function changes, production-data changes, or permission changes.
 
-Do not regenerate or modify the lockfile unless required by the task.
+Access to Neon does not itself authorize database modification.
 
-When CI is involved, ensure the CI runtime matches the repository's supported Node version.
+### Deployment
 
----
+Do not change protected Cloudflare, Workers, Pages, OpenNext, deployment, bindings, or environment configuration unless authorized.
 
-# 20. CODING INVARIANTS
+## B4. Secrets and Credentials
 
-Preserve existing project conventions.
+Never expose, print, copy, commit, paste, summarize, or disclose secret credentials or authentication material.
 
-Where applicable:
+This includes, but is not limited to:
 
-- use the Next.js App Router architecture already present;
-- preserve server/client boundaries;
-- preserve existing caching strategy;
-- use existing revalidation mechanisms;
-- preserve existing database access patterns;
-- preserve existing API contracts;
-- preserve existing animation timing unless explicitly changing it;
-- preserve existing Web Audio/Canvas timing where applicable;
-- preserve accessibility behavior;
-- preserve responsive behavior;
-- preserve existing security controls.
+- API keys;
+- access tokens;
+- GitHub tokens;
+- OAuth credentials;
+- Cloudflare credentials;
+- database credentials;
+- webhook secrets;
+- private keys;
+- signing secrets;
+- session secrets;
+- cookies;
+- environment secrets.
 
-Do not replace an established architecture with a different pattern simply because another approach is personally preferred.
+Do not place secrets in source code, logs, issues, PRs, commits, screenshots, documentation, reports, or chat.
 
----
+If a tool unexpectedly exposes a secret, do not reproduce or disclose it.
 
-# 21. SITE STRUCTURE
+Use secure repository or platform mechanisms for secret handling.
 
-The project contains major user-facing areas including:
+## B5. Dependencies
 
-- `/`
-- `/lucky-meter`
-- Lucky Cards
-- `/lucky-map-of-canada`
-- `/map`
-- `/where-luck-has-been-found-in-canada`
-- Crystal Ball / Oracle
-- `/reveal/[revealId]`
-- `/about`
+Do not add, remove, upgrade, or downgrade dependencies unless the task requires it.
 
-Major project directories and files must be inspected before assuming where functionality lives.
+Before changing dependencies, inspect:
 
-Do not assume a route's implementation from its URL alone.
+- `package.json`;
+- lockfile;
+- current imports/usages;
+- existing repository conventions;
+- relevant documentation.
 
----
+Do not perform unrelated dependency maintenance during another task.
 
-# 22. DOCUMENTATION LIBRARY INVENTORY
+## B6. Automation
 
-The `.docs` library is authoritative for repository-maintained technical documentation.
+Before changing a workflow, script, scheduled job, CI process, documentation refresh, or other automation:
 
-The current adopted documentation inventory includes the libraries and technologies actively identified by the project, including:
-The documentation inventory is maintained in `.docs/manifest.json`, which serves as the single authoritative source of truth for the documentation library.
+1. Inspect existing automation.
+2. Determine whether the requested capability already exists.
+3. Reuse or modify existing automation where appropriate.
+4. Do not create duplicate jobs or substantially duplicate workflows.
 
-Before implementing any task, agents must:
+Do not change automation merely for cleanup unless authorized.
 
-1. Inspect `.docs/manifest.json` to identify available documentation;
-2. Read the relevant documentation files referenced in the manifest;
-3. Use that documentation when making implementation decisions;
-4. Report the specific documentation sources actually consulted.
+# C — EXECUTE, VERIFY, AND CREATE THE PR
 
-The manifest organizes documentation by task group and provides a complete inventory of all available documentation sources.
+## C1. Required Work Sequence
 
-Do not maintain a second documentation inventory that can drift from the manifest.
-- Next.js
+Use this sequence:
 
-The final report should identify the documentation actually read or used for the task.
+`INSPECT
+   ↓
+IDENTIFY
+   ↓
+UNDERSTAND
+   ↓
+PLAN
+   ↓
+IMPLEMENT
+   ↓
+TEST
+   ↓
+DOUBLE-CHECK
+   ↓
+REPORT
+   ↓
+CREATE PR`
 
----
+When the Jules workflow requires an implementation plan or approval, present the plan before making changes and wait for the required approval.
 
-# 23. SPEC KIT INTEGRATION
+Do not implement based on an unclear assumption.
 
-When a task uses the repository's Spec Kit workflow, follow the existing Spec Kit process and repository-local instructions.
+## C2. Implement Only the Authorized Solution
 
-Do not invent an alternate specification workflow.
+During implementation:
 
-Do not bypass an existing specification or approval process.
+- Follow the repository architecture.
+- Follow applicable `.jules` instructions.
+- Follow applicable `.jules/cmds/` instructions.
+- Use relevant `.docs`.
+- Reuse existing code and capabilities where practical.
+- Keep the change focused.
+- Do not silently expand the task.
 
----
+For troubleshooting or repair work, fix the identified problem rather than stopping at an audit unless an audit is what was requested.
 
-# 24. DOCUMENTATION REFRESH AUTOMATION
+## C3. Scientific Debugging & Verification Protocol
 
-The documentation refresh system is scheduled for Tuesday and Friday at 2:21 AM Atlantic time.
+When investigating a bug, failure, regression, unexpected behavior, or verification problem, use the repository's Scientific Debugging & Verification Protocol when applicable.
 
-The UTC schedules are:
+The protocol should be used to:
 
-    21 5 * * 2,5
-    21 6 * * 2,5
+- establish observable facts;
+- reproduce the problem when practical;
+- isolate the actual failure;
+- form and test hypotheses;
+- identify the root cause;
+- make the smallest authorized repair;
+- verify that the repair addresses the original failure;
+- check for relevant regressions.
 
-The workflow uses a runtime timezone gate where applicable.
+Do not treat a plausible explanation as proof.
 
-Documentation refresh automation must preserve existing duplicate-prevention behavior.
+Do not declare a root cause without sufficient evidence.
 
-The refresh workflow may create a documentation-refresh issue when documentation requires review.
+Do not stop at symptom-level observations when the task requires a repair.
 
-Do not create duplicate documentation-refresh workflows or duplicate issue automation.
+## C4. Playwright CLI and Testing
 
-When modifying documentation automation, verify the actual workflow configuration and behavior.
+Use the repository's Playwright CLI/testing setup when browser-level verification is relevant to the task.
 
----
+Use Playwright to verify actual user-facing behavior where appropriate, rather than relying only on source inspection or assumptions.
 
-# 25. PLAYWRIGHT ARTIFACTS
+Tests must be targeted to the change.
 
-Playwright CLI artifacts under:
+Do not claim Playwright verification was performed unless the relevant Playwright test or browser verification was actually executed.
 
-    .playwright-cli/
+## C5. Local Action Verification
 
-must never be committed to the repository unless a task explicitly changes this rule.
+When workflow or GitHub Actions behavior needs local verification, use the repository's established `act`-based local Action verification tooling when appropriate.
 
-Do not add generated Playwright artifacts to source control.
+This includes the repository's local verification helpers such as:
 
----
+- `scripts/act/install-act.sh`
+- `scripts/act/run-act.sh`
+- `jules-verify.sh`
 
-# 26. REPORTING REQUIREMENTS
+Local `act` execution is verification tooling. It does not authorize changes to production deployment, GitHub configuration, secrets, or protected systems.
 
-Every completed repository task should report, accurately and concisely:
+Do not claim a GitHub Actions workflow was verified locally unless the relevant local verification was actually performed.
 
-1. What was changed.
-2. What files were changed.
-3. What documentation was actually consulted.
-4. What tools/MCPs were actually invoked.
-5. What tests/checks were actually run.
-6. Whether verification succeeded or failed.
-7. Any limitations or remaining issues.
-8. Whether any scope boundaries prevented additional changes.
-9. What Memory Bank files were updated (activeContext.md, progress.md).
+## C6. GitHub CLI
+
+Use the repository's GitHub CLI (`gh`) workflow when GitHub repository, branch, issue, PR, workflow, or check information needs to be inspected or managed and the task authorizes that work.
+
+Use actual GitHub state rather than relying on stale reports or assumptions.
+
+When using GitHub CLI:
+
+- inspect the relevant repository state before changing it;
+- distinguish local state from GitHub state;
+- verify commands that modify GitHub resources;
+- never expose GitHub credentials or tokens;
+- never claim GitHub state was inspected or changed unless the relevant operation was actually performed.
+
+GitHub CLI is a repository workflow tool, not a substitute for inspecting the local repository.
+
+## C7. Spec Kit
+
+When the task uses Spec Kit:
+
+- Follow the repository's existing Spec Kit process.
+- Use the applicable `.jules/cmds/speckit.*.md` instructions.
+- Use `.specify/` as the repository's established Spec Kit structure.
+- Do not invent an alternative workflow.
+- Do not bypass required specification or approval steps.
+
+## C8. Testing and Verification
+
+Run the appropriate tests and verification for the change.
+
+Where available and applicable, use the repository's verification tooling, including:
+
+`./jules-verify.sh`
+
+Use Playwright for relevant browser/user-facing verification.
+
+Use the Scientific Debugging & Verification Protocol for applicable troubleshooting and repair work.
+
+Use local `act` verification for applicable GitHub Actions/workflow validation.
+
+For workflow/CI validation, use the repository's established local simulation tooling when appropriate.
+
+Never claim that a test, build, workflow, deployment, database check, browser verification, GitHub check, or other verification was performed unless it was actually performed.
+
+## C9. Verify the Final State
+
+Before reporting completion, inspect the actual resulting state.
+
+Verify as applicable:
+
+- changed files;
+- `git diff`;
+- `git status`;
+- tests and results;
+- Playwright results;
+- build results;
+- generated artifacts;
+- workflows;
+- documentation changes;
+- `.docs/manifest.json` when documentation changes;
+- branch/commit state;
+- GitHub state;
+- PR state.
+
+A proposed change is not proof of completion.
+
+A commit is not proof that the behavior works.
+
+A successful-looking report is not proof of the repository's actual state.
+
+## C10. Memory Bank Updates
+
+When the completed work materially affects project context or progress:
+
+- update `memory-bank/activeContext.md`;
+- update `memory-bank/progress.md`.
+
+Do not update Memory Bank files merely to create noise.
+
+## C11. GitHub and PR Work
+
+Before working on an existing PR or branch, inspect its actual state.
+
+Check relevant:
+
+- commits;
+- changed files;
+- comments;
+- checks;
+- current implementation;
+- branch state.
+
+Determine whether the requested work has already been completed before making another change.
+
+When the authorized implementation is complete and verified:
+
+- make the required commit/branch changes;
+- create or update the PR as appropriate;
+- stop this workflow at PR creation.
+
+Do not invent or assume post-PR results.
+
+## C12. Final Report
+
+The completion report must distinguish facts from assumptions.
+
+Report:
+
+1. What changed.
+2. Which files changed.
+3. Documentation and repository instructions actually consulted.
+4. Tools or MCPs actually invoked.
+5. Tests and checks actually run.
+6. Verification status.
+7. Any limitations or unresolved issues.
+8. Any necessary scope expansion and why it was required.
+9. Memory Bank updates, when applicable.
+10. Whether Context7 was used, and if so, the owner approval under which it was invoked.
 
 Never report:
 
 - planned work as completed;
-- connected MCPs as used MCPs;
-- available documentation as consulted documentation;
-- intended tests as executed tests;
+- connected MCPs as used;
+- available documentation as consulted;
+- intended tests as run;
 - expected deployment as actual deployment;
-- assumed repository state as verified repository state.
+- assumed repository state as verified.
 
----
+## C13. Final Jules Check
 
-# 27. SECURITY AND SECRET-HANDLING RULE
+Before declaring the task complete, confirm:
 
-Under no circumstances may an agent reveal, print, copy, commit, paste, summarize, or otherwise disclose a secret credential or authentication material.
+`[ ] I identified the exact task.
+[ ] I read the applicable repository instructions.
+[ ] I checked the relevant Memory Bank files.
+[ ] I used the applicable .jules instructions.
+[ ] I used applicable .jules/cmds instructions.
+[ ] I checked .docs and its manifest where relevant.
+[ ] I respected the documentation updater and manifest system.
+[ ] I inspected the actual repository state.
+[ ] I used Spec Kit when the task required it.
+[ ] I used the Scientific Debugging & Verification Protocol when applicable.
+[ ] I used Playwright when applicable.
+[ ] I used local act verification when applicable.
+[ ] I used GitHub CLI when applicable and authorized.
+[ ] I followed the existing Context7/MCP routing.
+[ ] I obtained explicit owner approval before using Context7.
+[ ] I used Neon or Stitch when materially necessary and applicable.
+[ ] I did not fabricate tool usage, documentation, tests, or results.
+[ ] I stayed within authorized scope.
+[ ] I protected payments, auth, database, deployment, and secrets.
+[ ] I verified the actual final state.
+[ ] I updated Memory Bank files when materially required.
+[ ] I accurately reported what actually happened.
+[ ] I completed the authorized work through PR creation.`
 
-This includes, but is not limited to:
+## A14. Documentation Usage Flow
 
-- API tokens;
-- access tokens;
-- GitHub tokens;
-- personal access tokens;
-- OAuth tokens;
-- Cloudflare tokens;
-- database credentials;
-- webhook secrets;
-- private keys;
-- signing keys;
-- session tokens;
-- cookies;
-- environment-variable secrets.
+The repository's local documentation library should be used in this order:
 
-If a task requires access to a secret, use the repository's existing secure mechanism without exposing the value.
+```text
+             ┌───────────────┐
+             │     TASK      │
+             └───────┬───────┘
+                     │
+                     ▼
+          ┌─────────────────────┐
+          │ What do I need to   │
+          │      know?          │
+          └──────────┬──────────┘
+                     │
+                     ▼
+          ┌─────────────────────┐
+          │ Check the available │
+          │      library        │
+          └──────────┬──────────┘
+                     │
+                     ▼
+          ┌─────────────────────┐
+          │ Find the relevant   │
+          │    information      │
+          └──────────┬──────────┘
+                     │
+                     ▼
+          ┌─────────────────────┐
+          │ Read only what is   │
+          │      needed         │
+          └──────────┬──────────┘
+                     │
+                     ▼
+          ┌─────────────────────┐
+          │ Apply it to the     │
+          │       task          │
+          └──────────┬──────────┘
+                     │
+                     ▼
+          ┌─────────────────────┐
+          │ Verify against the  │
+          │ actual repository   │
+          └─────────────────────┘
 
-Never place secret values in:
+Use the library to inform the work, not to replace repository inspection.
 
-- source files;
-- logs;
-- issues;
-- PR comments;
-- commit messages;
-- screenshots;
-- documentation;
-- task reports;
-- chat responses.
+Check the local library first. Read only what is relevant. Verify the result against the actual repository.
 
-If a secret is accidentally exposed in tool output, immediately avoid reproducing it and treat it as sensitive.
+The governing rule for Jules is:
 
-Never ask the repository owner to paste a secret into chat when a secure credential mechanism already exists.
+INSPECT FIRST. UNDERSTAND BEFORE CHANGING. USE THE REPOSITORY'S EXISTING SYSTEMS. FOLLOW THE ESTABLISHED JULES WORKFLOW. CONTEXT7 REQUIRES EXPLICIT OWNER APPROVAL. USE NEON AND STITCH WHEN MATERIALLY NECESSARY AND APPLICABLE. CHANGE ONLY WHAT IS AUTHORIZED. PROTECT SENSITIVE SYSTEMS. VERIFY THE ACTUAL RESULT. REPORT ONLY WHAT ACTUALLY HAPPENED.
 
----
-
-# 28. GITHUB AND PR GOVERNANCE
-
-Before working on an existing PR:
-
-1. inspect the current PR state;
-2. inspect existing commits;
-3. inspect changed files;
-4. inspect existing review comments;
-5. inspect CI status;
-6. determine whether the requested change is already implemented;
-7. avoid duplicating an existing fix.
-
-Jules is the primary implementation agent.
-
-When an existing PR requires a follow-up fix through Amazon Q Developer, address Amazon Q using:
-
-    /q
-
-Do not use unrelated agent commands when the repository workflow specifies `/q`.
-
-After a PR change is made, verify the actual resulting PR state.
-
----
-
-# 29. NO FABRICATION RULE
-
-The agent must never fabricate:
-
-- tool usage;
-- MCP usage;
-- research;
-- documentation consultation;
-- test results;
-- build results;
-- deployment results;
-- database changes;
-- file changes;
-- PR status;
-- workflow execution;
-- approvals.
-
-If something could not be verified, say so plainly.
-
-Accuracy is more important than producing a confident-looking completion report.
-
----
-
-# 30. CHANGE MINIMIZATION
-
-When multiple technically valid solutions exist, prefer the solution that:
-
-1. satisfies the task completely;
-2. changes the fewest unrelated files;
-3. preserves existing architecture;
-4. preserves existing behavior;
-5. introduces the fewest new dependencies;
-6. minimizes security and operational risk;
-7. is easiest to verify.
-
-Do not optimize for the largest or most impressive change.
-
----
-
-# 31. FINAL PRE-COMPLETION CHECK
-
-Before declaring a task complete, ask:
-
-    [ ] Did I inspect the current repository state?
-    [ ] Did I read the applicable repository instructions?
-    [ ] Did I inspect .docs?
-    [ ] Did I actually read the relevant .docs documentation?
-    [ ] Did I check for existing scripts/workflows/automation?
-    [ ] Did I check whether existing dependencies already solve the problem?
-    [ ] Did I respect all protected systems?
-    [ ] Did I stay within the requested scope?
-    [ ] Did I use MCPs only when permitted and materially useful?
-    [ ] Did I distinguish MCP connection from actual MCP usage?
-    [ ] Did I protect all secrets?
-    [ ] Did I run the appropriate verification?
-    [ ] Did I inspect the actual final repository state?
-    [ ] Did I verify the PR/workflow state where applicable?
-    [ ] Did I accurately report what was actually done?
-    [ ] Did I update activeContext.md and progress.md in the Memory Bank?
-    [ ] Did I update activeContext.md and, when meaningful work was completed, progress.md in the Memory Bank?
-Only after these checks should the task be reported as complete.
-
----
-
-# 32. GOVERNANCE PRIORITY
-
-These rules exist to protect:
-
-- repository integrity;
-- security;
-- payment systems;
-- authentication;
-- database integrity;
-- deployment configuration;
-- existing user-facing behavior;
-- documentation accuracy;
-- automation reliability;
-- reproducibility;
-- truthful reporting.
-
-When uncertain, stop and inspect.
-
-When an approval is required, ask.
-
-When scope is unclear, do not silently expand it.
-
-When something cannot be verified, do not claim that it was verified.
-
-When a secret is encountered, protect it.
-
-When existing functionality already solves the problem, preserve and reuse it.
-
-The governing principle is:
-
-    INSPECT FIRST.
-    USE EXISTING RESOURCES.
-    CHANGE ONLY WHAT IS AUTHORIZED.
-    PROTECT SENSITIVE SYSTEMS.
-    VERIFY ACTUAL RESULTS.
-    REPORT ONLY WHAT ACTUALLY HAPPENED.
+:::
