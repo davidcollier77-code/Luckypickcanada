@@ -225,7 +225,7 @@ export default function DailyResonance() {
           soundsRef.current[tierAudioKey].play();
         }
 
-        animateCanvas(currentTier, performance.now() - IMPACT_TIME); // Pass the starting time for the canvas
+        animateCanvas(currentTier, performance.now()); // Pass the impact timestamp for the canvas
       }
 
       // Impact Frame UI Transition (8.8s)
@@ -286,7 +286,7 @@ export default function DailyResonance() {
 
     let particles: any[] = [];
     const MAX_PARTICLES = activeTier === 'Cosmic Lightning' ? 30 : 150;
-    const fallbackStartTime = typeof animationStartTimeMs === 'number' ? performance.now() - animationStartTimeMs : performance.now();
+    const fallbackStartTime = typeof animationStartTimeMs === 'number' ? animationStartTimeMs : performance.now();
     let initialSpawnDone = false;
     let fadeOutTriggered = false;
 
