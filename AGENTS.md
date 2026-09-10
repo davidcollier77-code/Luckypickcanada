@@ -884,7 +884,7 @@ Before declaring a task complete, ask:
     [ ] Did I verify the PR/workflow state where applicable?
     [ ] Did I accurately report what was actually done?
     [ ] Did I update activeContext.md and progress.md in the Memory Bank?
-
+    [ ] Did I update activeContext.md and, when meaningful work was completed, progress.md in the Memory Bank?
 Only after these checks should the task be reported as complete.
 
 ---
