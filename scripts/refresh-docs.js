@@ -66,6 +66,8 @@ function fetchDocumentation(lib, sourceConfig) {
         }
       }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+           // Drain the response so socket can be closed/reused
+           res.resume();
            let redirectUrl = res.headers.location;
            try {
                redirectUrl = new URL(redirectUrl, currentUrl).href;
@@ -76,12 +78,17 @@ function fetchDocumentation(lib, sourceConfig) {
         }
 
         if (res.statusCode !== 200) {
+          res.resume();
           return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
         }
 
         let data = '';
         res.on('data', chunk => data += chunk);
-        res.on('end', () => resolve(data));
+        res.on('end', () => {
+           // Basic sanitization: remove known sensitive token patterns that might leak in docs (e.g. Star History sealed_token)
+           const sanitizedData = data.replace(/sealed_token=[^&"'s]+/g, 'sealed_token=REDACTED');
+           resolve(sanitizedData);
+        });
       }).on('error', reject);
     };
 
@@ -101,21 +108,51 @@ function getUpstreamSha(lib, sourceConfig) {
     }
 
     let branch = 'HEAD';
-    try {
-        const urlObj = new URL(sourceConfig.url);
-        if (urlObj.hostname === 'raw.githubusercontent.com') {
-            // Path is usually /owner/repo/branch/path...
-            const pathParts = urlObj.pathname.split('/').filter(p => p);
-            if (pathParts.length >= 3) {
-                branch = pathParts[2];
+    if (sourceConfig.branch || sourceConfig.ref) {
+        branch = sourceConfig.branch || sourceConfig.ref;
+    } else {
+        try {
+            const urlObj = new URL(sourceConfig.url);
+            if (urlObj.hostname === 'raw.githubusercontent.com') {
+                // Path is usually /owner/repo/branch/path...
+                // But branch names can contain slashes (e.g. feature/add-docs)
+                // We should match known standard branches, or return null if it's too ambiguous
+                const pathname = urlObj.pathname.startsWith('/') ? urlObj.pathname.substring(1) : urlObj.pathname;
+                const pathParts = pathname.split('/');
+
+                if (pathParts.length >= 3) {
+                    const owner = pathParts[0];
+                    const repo = pathParts[1];
+                    const remainingPath = pathParts.slice(2).join('/');
+
+                    const knownBranches = ['main/', 'master/', 'canary/', 'develop/', 'production/'];
+                    let foundBranch = null;
+                    for (const kb of knownBranches) {
+                        if (remainingPath.startsWith(kb)) {
+                            foundBranch = kb.substring(0, kb.length - 1); // remove trailing slash
+                            break;
+                        }
+                    }
+
+                    if (foundBranch) {
+                        branch = foundBranch;
+                    } else {
+                        // Branch could have slashes, too ambiguous to guess safely without explicit metadata.
+                        resolve(null);
+                        return;
+                    }
+                } else {
+                    resolve(null);
+                    return;
+                }
+            } else {
+                resolve(null); // Not a github raw url, fall back to comparing bytes
+                return;
             }
-        } else {
-            resolve(null); // Not a github raw url, fall back to comparing bytes
+        } catch (e) {
+            resolve(null);
             return;
         }
-    } catch (e) {
-        resolve(null);
-        return;
     }
 
     const parts = lib.split('/');
@@ -123,9 +160,11 @@ function getUpstreamSha(lib, sourceConfig) {
       const org = parts[1];
       const repo = parts[2];
 
+      // Use encodeURIComponent for branch in case it contains slashes, but the known ones don't. Still good practice.
+      const safeBranch = encodeURIComponent(branch);
       const options = {
         hostname: 'api.github.com',
-        path: `/repos/${org}/${repo}/commits/${branch}`,
+        path: `/repos/${org}/${repo}/commits/${safeBranch}`,
         headers: {
           'User-Agent': 'Node.js Context7 Refresher',
           'Accept': 'application/vnd.github.v3+json'

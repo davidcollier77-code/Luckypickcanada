@@ -26,6 +26,7 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
     requestedUrls.push(url);
 
     const res = new EventEmitter();
+    res.resume = () => {};
     const req = new EventEmitter();
 
     setTimeout(() => {
@@ -244,6 +245,14 @@ async function runTests() {
             assert.fail('Should have thrown');
         } catch (e) {
             assert.match(e.message, /Too many redirects/);
+            // It starts at 5, so it makes requests for:
+            // 5 -> loop1
+            // 4 -> loop2
+            // 3 -> loop1
+            // 2 -> loop2
+            // 1 -> loop1
+            // next call has redirectCount 0, which rejects BEFORE making a request
+            assert.strictEqual(requestedUrls.length, 5);
         }
     });
 

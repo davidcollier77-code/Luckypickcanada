@@ -39,6 +39,7 @@
 ### Basic
 
 ```jsx
+import type { FormEvent } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile'
 
 function Widget() {
@@ -49,6 +50,7 @@ function Widget() {
 ### With form and imperative API
 
 ```tsx
+import type { FormEvent } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile'
 import type { TurnstileInstance } from '@marsidev/react-turnstile'
 import { useRef } from 'react'
@@ -81,9 +83,9 @@ function LoginForm() {
 
 <a href="https://www.star-history.com/?type=date&repos=marsidev%2Freact-turnstile">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&theme=dark&legend=top-left&sealed_token=KQdjIGHECVHvmhDa4RwnH3fMkCaF_n21hbERbJPn3mr2iN2BTUntMVwDF0vgTrLcZBAZVsk7PrQJLzvv9S7Sfr6mWDUf3EIQqf8po7tzK1x8CtUsb-_L9y9awseOecUW_cpT-eaNROn_eH-xOzh7TEQDjpj-5oQTttxF9aUCdGvBnhk7VdMKkBIn-73z" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&legend=top-left&sealed_token=KQdjIGHECVHvmhDa4RwnH3fMkCaF_n21hbERbJPn3mr2iN2BTUntMVwDF0vgTrLcZBAZVsk7PrQJLzvv9S7Sfr6mWDUf3EIQqf8po7tzK1x8CtUsb-_L9y9awseOecUW_cpT-eaNROn_eH-xOzh7TEQDjpj-5oQTttxF9aUCdGvBnhk7VdMKkBIn-73z" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&legend=top-left&sealed_token=KQdjIGHECVHvmhDa4RwnH3fMkCaF_n21hbERbJPn3mr2iN2BTUntMVwDF0vgTrLcZBAZVsk7PrQJLzvv9S7Sfr6mWDUf3EIQqf8po7tzK1x8CtUsb-_L9y9awseOecUW_cpT-eaNROn_eH-xOzh7TEQDjpj-5oQTttxF9aUCdGvBnhk7VdMKkBIn-73z" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&theme=dark&legend=top-left&sealed_token=REDACTED" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&legend=top-left&sealed_token=REDACTED" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=marsidev/react-turnstile&type=date&legend=top-left&sealed_token=REDACTED" />
  </picture>
 </a>
 

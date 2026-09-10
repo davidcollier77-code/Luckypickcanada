@@ -60,14 +60,19 @@ const ratelimit = new Ratelimit({
 
 // Use a constant string to limit all requests with a single ratelimit
 // Or use a userID, apiKey or ip address for individual limits.
-const identifier = "api";
-const { success } = await ratelimit.limit(identifier);
+// NOTE: This logic must be executed on the server side (e.g., API Route, Server Action).
+// Upstash credentials (UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN) must remain server-side only.
+export async function myServerHandler(req) {
+  const identifier = "api";
+  const { success } = await ratelimit.limit(identifier);
 
-if (!success) {
-  return "Unable to process at this time";
+  if (!success) {
+    return new Response("Unable to process at this time", { status: 429 });
+  }
+
+  doExpensiveCalculation();
+  return new Response("Here you go!", { status: 200 });
 }
-doExpensiveCalculation();
-return "Here you go!";
 ```
 
 For more information on getting started, you can refer to [our documentation](https://upstash.com/docs/oss/sdks/ts/ratelimit/gettingstarted).

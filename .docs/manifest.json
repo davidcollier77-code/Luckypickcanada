@@ -450,8 +450,9 @@
     "/upstash/docs": "f5a1a305acf6499b19136868b3bf5ea5ed0383eb",
     "/getsentry/sentry-docs": "9bbf114d087181ed48bb20ddf4bb5ee963a90982",
     "/pmndrs/react-three-fiber": "ff3899dbf43d2a88895fecf53c147192abfd7431",
-    "/magicuidesign/magicui": "ec1cce6c4192c0aaac279dd7e53537ccd5c99d44",
+    "/magicuidesign/magicui": "816ff1a6364b6b10370f1c6c38f5dce80a557022",
     "/marsidev/react-turnstile": "ec25dc5e0c02501d8dfe4560b6fbe2f6b8a0bb3f",
-    "/posthog/posthog-js": "39420d893556a64c2514b523dddf00b8044856a4"
+    "/posthog/posthog-js": "1bef871655c800c28c4636677cdd8d1c17e43cf4",
+    "/upstash/ratelimit": "89c481bf3b836a1ef5454c0615bc201e6386826b"
   }
 }

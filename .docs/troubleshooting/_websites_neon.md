@@ -35,7 +35,7 @@ First-time setup: org/project creation, connection strings, driver installation,
 
 - [Build a full backend with Next.js and Neon](https://neon.com/docs/get-started/full-backend-quickstart.md): Postgres, Object Storage, and a Neon Function for AI, declared in one neon.ts
 - [Built to scale](https://neon.com/docs/get-started/built-to-scale.md): Neon supports you from prototype to scale-up
-- [Built to scale](https://neon.com/docs/get-started/production-readiness.md): Neon supports you from prototype to scale-up
+- [Getting ready for production](https://neon.com/docs/get-started/production-readiness.md): Guidelines to optimize price, performance, and reliability
 - [Connecting Neon to your stack](https://neon.com/docs/get-started/connect-neon.md): Learn how to integrate Neon into your application
 - [Database branching workflow primer](https://neon.com/docs/get-started/workflow-primer.md): An introduction to integrating Postgres branching into your development workflow
 - [Get started with your AI agent](https://neon.com/docs/get-started/with-an-agent.md): Set up Neon in your project using your AI coding assistant

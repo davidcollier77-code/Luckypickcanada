@@ -23,5 +23,12 @@ if [ $? -ne 0 ]; then
   return 1 2>/dev/null || builtin exit 1
 fi
 
+echo -e "\n--- Running Refresh Docs Tests ---"
+node scripts/test-refresh-docs.js
+if [ $? -ne 0 ]; then
+  echo "❌ Refresh Docs Tests failed."
+  return 1 2>/dev/null || builtin exit 1
+fi
+
 echo -e "
 ✅ All verification steps passed. Remember to also verify actual user-facing behavior in the browser if applicable!"

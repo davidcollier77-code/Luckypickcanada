@@ -1,46 +1,44 @@
-1. **Fix `getUpstreamSha` to be branch-aware**:
-   - Update `getUpstreamSha(lib, sourceConfig)` to extract the branch from `sourceConfig.url` when the domain is `raw.githubusercontent.com`.
-   - The path is usually `/owner/repo/branch/path/to/file`. We'll split the path to get the branch (the 3rd segment after owner and repo).
-   - Make the GitHub API request to `/repos/${org}/${repo}/commits/${branch}` instead of `/repos/${org}/${repo}/commits/HEAD`.
-   - If not a GitHub raw URL, or if we cannot determine the branch, return `null`.
+1. **Fix `getUpstreamSha` in `scripts/refresh-docs.js`**:
+   - For raw GitHub URLs, strip `/owner/repo/` from the path.
+   - If `sourceConfig.branch` or `sourceConfig.ref` is provided, use it.
+   - Otherwise, check if the remaining path starts with a known standard branch (`main/`, `master/`, `canary/`, `develop/`, `production/`). If so, use that branch.
+   - If it doesn't match a known branch and has no explicit metadata, return `null` to safely fallback to byte comparison.
+   - Fix the duplicate `sourceConfig` validation in `refresh-docs.js`.
+   - In `fetchDocumentation`, before following a redirect, call `res.resume()` to drain the response.
 
-2. **Fix `fetchDocumentation` redirects and HTTP handling**:
-   - Rewrite it to use a helper function to manage redirects with a max count (e.g. 5).
-   - Maintain the `User-Agent: LuckyPickCanada-DocsUpdater/1.0` header on redirects.
-   - For a 3xx response with `Location`, construct the absolute URL properly and retry.
-   - For non-2xx responses, explicitly throw an error (e.g. `reject(new Error(...))`).
+2. **Update Tests (`scripts/test-refresh-docs.js` and `jules-verify.sh`)**:
+   - Update the redirect limit test to assert that `requestedUrls.length` is exactly the max redirects + 1.
+   - Add `node scripts/test-refresh-docs.js` to `./jules-verify.sh` so it runs during normal CI.
+   - Add a `scripts/test-manifest.js` test suite (recreating the lost manifest tests) and wire it into `./jules-verify.sh`.
 
-3. **Fix Retry log**:
-   - Change `Waiting 5 minutes` to `Waiting 60 seconds` (in `scripts/refresh-docs.js`).
+3. **Update `manifest.json` SHAs**:
+   - Fetch the current `main` commit SHAs for the newly added GitHub raw sources (like turnstile, upstash, magicui, posthog) and add them to `githubShas` in `.docs/manifest.json`.
 
-4. **Correct the flow in `refresh-docs.js`**:
-   - Retrieve `const sourceConfig = sourcesConfig[lib];` early.
-   - Update the call `await getUpstreamSha(lib)` to `await getUpstreamSha(lib, sourceConfig)`.
+4. **Fix `.docs/deep-dive/_posthog_posthog-js.md`**:
+   - Fix the contributor badge to point to `posthog/posthog-js` instead of potentially incorrect one.
+   - Fix broken relative links to package files and `CONTRIBUTING.md` using absolute upstream GitHub URLs.
 
-5. **Fix the stale description in the workflow (`.github/workflows/refresh-docs.yml`)**:
-   - Replace "approved 46-library inventory" with "approved library inventory".
+5. **Fix `.docs/troubleshooting/_websites_neon.md`**:
+   - Fix duplicated `production-readiness.md` title/summary.
 
-6. **Add the 6 missing libraries to `.docs/manifest.json`** using verified URLs:
-   - `"/marsidev/react-turnstile"` (security)
-     - `https://raw.githubusercontent.com/marsidev/react-turnstile/main/README.md`
-   - `"/upstash/ratelimit"` (security)
-     - `https://raw.githubusercontent.com/upstash/ratelimit/main/README.md`
-   - `"/pmndrs/react-three-fiber"` (creation - requested ANIMATION / GRAPHICS)
-     - `https://raw.githubusercontent.com/pmndrs/react-three-fiber/master/readme.md`
-   - `"/websites/neon"` (troubleshooting - requested BACKEND / DATABASE)
-     - `https://neon.com/docs/llms.txt`
-   - `"/magicuidesign/magicui"` (polishing - requested FRONTEND / NEXT.JS / REACT)
-     - `https://raw.githubusercontent.com/magicuidesign/magicui/main/README.md`
-   - `"/posthog/posthog-js"` (deep-dive - requested STATE / DATA / ANALYTICS)
-     - `https://raw.githubusercontent.com/PostHog/posthog-js/main/README.md`
+6. **Fix `.docs/security/_upstash_ratelimit.md`**:
+   - Remove client-side guidance exposing the REST token.
+   - Make the example server-side.
+   - Document `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
+   - Fix the TypeScript example (`return` inside a handler).
 
-7. **Verify no Sonner duplication**:
-   - Use `grep -c '"/emilkowalski/sonner"' .docs/manifest.json` to verify the entry exists exactly once in the inventory array (and once in groups/sources/githubShas as appropriate). We will make sure we don't accidentally duplicate it.
+7. **Fix `.docs/polishing/_magicuidesign_magicui.md`**:
+   - Change Discord/community link to HTTPS.
 
-8. **Run Verification and Tests**:
-   - Run `node scripts/refresh-docs.js` to confirm it successfully fetches the new documentation, correctly skips unmodified docs, handles redirects correctly, respects the 495 MB limit, and produces a successful refresh report.
-   - Run local validation `./jules-verify.sh`.
+8. **Fix `.docs/security/_marsidev_react-turnstile.md`**:
+   - Add `alt` text to the npm badge.
+   - Add `import type { FormEvent } from 'react';` to make the TS example compile.
+   - Replace relative LICENSE link with absolute upstream URL.
+   - Remove `sealed_token` in Star History URLs. In `refresh-docs.js`, add a sanitization step to strip `sealed_token=...` from downloaded docs.
 
-9. Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
+9. **Fix `.docs/creation/_pmndrs_react-three-fiber.md`**:
+   - Correct the React Native instructions to use stable React 18 versions instead of prerelease.
 
-10. Submit report and create PR.
+10. **Final Verification**:
+   - Run `./jules-verify.sh`.
+   - Verify all tests pass, limits are respected, and no secrets are exposed.
