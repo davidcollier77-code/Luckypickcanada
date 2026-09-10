@@ -49,6 +49,13 @@ function getDirSize(dirPath) {
 
 
 
+/**
+ * Fetches the configured documentation source, following a single redirect.
+ *
+ * @param {string} lib - Library identifier used for the documentation refresh.
+ * @param {{type: string, url: string}} sourceConfig - Verified source configuration.
+ * @returns {Promise<string>} The downloaded documentation content.
+ */
 function fetchDocumentation(lib, sourceConfig) {
   return new Promise((resolve, reject) => {
     if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
@@ -67,7 +74,14 @@ function fetchDocumentation(lib, sourceConfig) {
              const baseUrl = new URL(url);
              redirectUrl = baseUrl.origin + redirectUrl;
          }
-         https.get(redirectUrl, (redirectRes) => {
+         https.get(redirectUrl, {
+           headers: {
+             'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
+           }
+         }, (redirectRes) => {
+             if (redirectRes.statusCode !== 200) {
+               return reject(new Error(`HTTP ${redirectRes.statusCode}: ${redirectRes.statusMessage} on redirect`));
+             }
              let data = '';
              redirectRes.on('data', chunk => data += chunk);
              redirectRes.on('end', () => resolve(data));
@@ -87,8 +101,20 @@ function fetchDocumentation(lib, sourceConfig) {
   });
 }
 
-function getUpstreamSha(lib) {
+/**
+ * Gets the current GitHub commit SHA for a supported raw documentation source.
+ *
+ * @param {string} lib - Context7 library identifier in `/owner/repository` form.
+ * @param {{type: string, url: string}} sourceConfig - Documentation source configuration.
+ * @returns {Promise<string | null>} The upstream SHA, or null when unavailable.
+ */
+function getUpstreamSha(lib, sourceConfig) {
   return new Promise((resolve) => {
+    // Only use GitHub API for sources actually sourced from a GitHub repository HEAD
+    if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url.includes('raw.githubusercontent.com') || !sourceConfig.url.includes('/main/')) {
+        resolve(null);
+        return;
+    }
     if (!lib.startsWith('/')) {
         resolve(null);
         return;
@@ -152,6 +178,11 @@ function saveManifest(inventory, shas, sources, groups) {
   fs.writeFileSync(manifestPath, JSON.stringify(manifestData, null, 2));
 }
 
+/**
+ * Refreshes configured documentation snapshots and updates their manifest metadata.
+ *
+ * @returns {Promise<void>}
+ */
 async function main() {
   console.log('Starting continuous documentation refresh...');
 
@@ -253,7 +284,8 @@ async function main() {
       }
 
       // Check upstream SHA if possible
-      const upstreamSha = await getUpstreamSha(lib);
+      const sourceConfig = sourcesConfig[lib];
+      const upstreamSha = await getUpstreamSha(lib, sourceConfig);
       if (upstreamSha && upstreamSha === githubShas[lib]) {
          console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
          stats.skipped++;
@@ -273,8 +305,6 @@ async function main() {
 
       let output;
       let fetchSuccess = false;
-      const sourceConfig = sourcesConfig[lib];
-
       if (!sourceConfig) {
          console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
          stats.skipped++;
@@ -288,7 +318,7 @@ async function main() {
         fetchSuccess = true;
       } catch (e) {
         console.error(`Failed to fetch docs for ${lib} on first attempt:`, e.message);
-        console.log(`Waiting 5 minutes before retrying ${lib}...`);
+        console.log(`Waiting 1 minute before retrying ${lib}...`);
 
         await new Promise(resolve => setTimeout(resolve, 60 * 1000));
 
