@@ -1,6 +1,7 @@
 // NOTE: The edge runtime is explicitly avoided in this route to allow OpenNext bundling to compile correctly.
 import { NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { checkApiRateLimit, getClientIp } from '../../spam-protection';
 
 const ALLOWED_ORIGINS = [
   'https://luckypickcanada.ca',
@@ -18,27 +19,7 @@ function getCorsHeaders(request) {
   };
 }
 
-const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS_PER_WINDOW = 10;
 
-function checkRateLimit(ip) {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-
-  if (!record || now > record.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-
-  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
-    return false;
-  }
-
-  record.count += 1;
-  rateLimitMap.set(ip, record);
-  return true;
-}
 
 const FALLBACK_FORTUNES = [
   "The Northern Lights whisper that today brings unexpected luck and double-doubles.",
@@ -63,8 +44,8 @@ export async function POST(request) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const clientIp = request.headers.get('cf-connecting-ip') || 'anonymous';
-    if (!checkRateLimit(clientIp)) {
+    const clientIp = getClientIp(request) || 'anonymous';
+    if (!checkApiRateLimit(clientIp, 'oracle', 10, 60000).ok) {
       return NextResponse.json(
         { error: 'Too many requests. Please wait a moment before consulting the oracle again.' },
         { status: 429, headers: corsHeaders }

@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import { escapeHtml, isValidEmailAddress } from '../../form-security';
+import { getClientIp, checkApiRateLimit } from '../../spam-protection';
 
 // Force dynamic rendering to prevent build-time evaluation
 export const dynamic = 'force-dynamic';
@@ -8,6 +9,12 @@ export const dynamic = 'force-dynamic';
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rateLimit = checkApiRateLimit(ip, 'send_gift', 5, 3600000); // Max 5 gifts per hour per IP
+
+  if (!rateLimit.ok) {
+    return NextResponse.json({ error: 'Too many gift requests from this IP. Please try again later.' }, { status: 429 });
+  }
   try {
     // Ensure fromEmail has a robust fallback
     const fromEmail = process.env.GIFT_FROM_EMAIL?.trim() || 'gifts@luckypickcanada.ca';

@@ -5,6 +5,7 @@
 - Keep the repository governance intact, deferring to `AGENTS.md` for all workflow rules.
 
 ## Recent Changes
+- Implemented centralized rate limiting for public API endpoints (`/api/visits`, `/api/checkout`, `/api/send-gift`, `/api/oracle`) using `app/spam-protection.js` to prevent automated abuse while keeping the site public.
 - Hardened the Memory Bank system (PR #1008 initialized it, and this session refined it for accuracy and maintainability).
 - Corrected discrepancies in technical facts (e.g., noted the absence of `luckypick.py` despite README documentation).
 

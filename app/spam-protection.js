@@ -15,7 +15,7 @@ function now() {
   return Date.now();
 }
 
-function getClientIp(request) {
+export function getClientIp(request) {
   // Prefer cf-connecting-ip as it is trustworthy when running behind Cloudflare
   const cfConnectingIp = request.headers.get('cf-connecting-ip');
   if (cfConnectingIp) {
@@ -215,4 +215,32 @@ export async function validatePublicFormSubmission({ request, formData, formName
   }
 
   return checkDuplicateSubmission({ formName, ip, fields: duplicateFields });
+}
+
+
+export const apiRateLimits = new Map();
+
+export function checkApiRateLimit(ip, action = 'global', limit = 10, windowMs = 60000) {
+  const now = Date.now();
+  const key = `${action}:${ip}`;
+  const record = apiRateLimits.get(key);
+
+  if (Math.random() < 0.01) {
+    for (const [k, v] of apiRateLimits.entries()) {
+      if (now > v.resetAt) apiRateLimits.delete(k);
+    }
+  }
+
+  if (!record || now > record.resetAt) {
+    apiRateLimits.set(key, { count: 1, resetAt: now + windowMs });
+    return { ok: true };
+  }
+
+  if (record.count >= limit) {
+    return { ok: false };
+  }
+
+  record.count += 1;
+  apiRateLimits.set(key, record);
+  return { ok: true };
 }
