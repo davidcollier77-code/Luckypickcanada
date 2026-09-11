@@ -18,4 +18,11 @@
 ## Completed Milestones
 - [x] Initialize Memory Bank core files.
 - [x] Harden Memory Bank for ongoing maintainability and fact-checked accuracy against the current repository state.
-- [x] Repair `scripts/refresh-docs.js` updater to enforce network limits, ref handling, and atomic manifest writes (PR #1031).
+- [x] Repair `scripts/refresh-docs.js` updater (PR #1031):
+  - Fixed `getUpstreamSha` to derive owner/repo/ref from `sourceConfig.url` instead of Context7 library ID
+  - Non-GitHub URLs return `null` for safe byte-comparison fallback
+  - Ambiguous refs without explicit metadata return `null`
+  - Redirect handling with 5-redirect limit and relative redirect resolution
+  - Non-200 HTTP responses are rejected
+  - Atomic manifest saves with error cleanup and re-throw
+  - Hard timeout deadlines for network fetches (15s socket timeout, 45s overall deadline)

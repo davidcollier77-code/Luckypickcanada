@@ -482,12 +482,12 @@ async function main() {
 
         if (netSizeIncrease > MAX_DOCS_SIZE_BYTES) {
             console.log(`Library ${lib} itself exceeds the 495 MB limit. Marking as failed.`);
-            stats.failed++;
+        console.log(`Library ${lib} (exact size ${exactSize} bytes) would exceed 450 MB limit (current: ${currentDocsSize}, net increase: ${netSizeIncrease}).`);
             stats.errors.push(`Library ${lib} exceeds 495 MB limit individually.`);
             stats.pending--;
-        } else {
+            console.log(`Library ${lib} itself exceeds the 450 MB limit. Marking as failed.`);
             console.log('Deferring to next batch pass.');
-            deferredUpdates.push(nextUpdate);
+            stats.errors.push(`Library ${lib} exceeds 450 MB limit individually.`);
         }
         continue;
       }
