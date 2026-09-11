@@ -16,22 +16,22 @@ Please see the main [PostHog docs](https://posthog.com/docs).
 
 ## Packages
 
-- [posthog-js](https://github.com/PostHog/posthog-js/tree/main/packages/browser/README.md)
-- [posthog-js-lite](https://github.com/PostHog/posthog-js/tree/main/packages/web/README.md)
-- [posthog-node](https://github.com/PostHog/posthog-js/tree/main/packages/node/README.md)
-- [posthog-react-native](https://github.com/PostHog/posthog-js/tree/main/packages/react-native/README.md)
-- [@posthog/react](https://github.com/PostHog/posthog-js/tree/main/packages/react/README.md)
-- [@posthog/ai](https://github.com/PostHog/posthog-js/tree/main/packages/ai/README.md)
-- [@posthog/convex](https://github.com/PostHog/posthog-js/tree/main/packages/convex/README.md)
-- [@posthog/nextjs-config](https://github.com/PostHog/posthog-js/tree/main/packages/nextjs-config/README.md)
-- [@posthog/nuxt](https://github.com/PostHog/posthog-js/tree/main/packages/nuxt/README.md)
-- [@posthog/openfeature-node-provider](https://github.com/PostHog/posthog-js/tree/main/packages/openfeature-node-provider/README.md)
-- [@posthog/openfeature-web-provider](https://github.com/PostHog/posthog-js/tree/main/packages/openfeature-web-provider/README.md)
-- [@posthog/plugin-utils](https://github.com/PostHog/posthog-js/tree/main/packages/plugin-utils/README.md)
-- [@posthog/rollup-plugin](https://github.com/PostHog/posthog-js/tree/main/packages/rollup-plugin/README.md)
-- [@posthog/types](https://github.com/PostHog/posthog-js/tree/main/packages/types/README.md)
-- [@posthog/webpack-plugin](https://github.com/PostHog/posthog-js/tree/main/packages/webpack-plugin/README.md)
+- [posthog-js](./packages/browser/README.md)
+- [posthog-js-lite](./packages/web/README.md)
+- [posthog-node](./packages/node/README.md)
+- [posthog-react-native](./packages/react-native/README.md)
+- [@posthog/react](./packages/react/README.md)
+- [@posthog/ai](./packages/ai/README.md)
+- [@posthog/convex](./packages/convex/README.md)
+- [@posthog/nextjs-config](./packages/nextjs-config/README.md)
+- [@posthog/nuxt](./packages/nuxt/README.md)
+- [@posthog/openfeature-node-provider](./packages/openfeature-node-provider/README.md)
+- [@posthog/openfeature-web-provider](./packages/openfeature-web-provider/README.md)
+- [@posthog/plugin-utils](./packages/plugin-utils/README.md)
+- [@posthog/rollup-plugin](./packages/rollup-plugin/README.md)
+- [@posthog/types](./packages/types/README.md)
+- [@posthog/webpack-plugin](./packages/webpack-plugin/README.md)
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/PostHog/posthog-js/blob/main/CONTRIBUTING.md)
+See [CONTRIBUTING.md](./CONTRIBUTING.md)

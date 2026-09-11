@@ -58,7 +58,7 @@
 import * as route0 from "https://motion.dev/assets/root-o9BOtgde.js";
 import * as route1 from "https://motion.dev/assets/SiteLayout-DpbXw4KZ.js";
 import * as route2 from "https://motion.dev/assets/docs.slug-42ifvfLT.js";
-
+  
   window.__reactRouterRouteModules = {"root":route0,"components/SiteLayout":route1,"routes/docs.slug":route2};
 
 import("https://motion.dev/assets/entry.client-Cjj4oQuC.js");</script><script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script><script>var isDev = window.location.host !== "motion.dev" && window.location.host !== "site.motion.dev"

@@ -35,7 +35,7 @@ First-time setup: org/project creation, connection strings, driver installation,
 
 - [Build a full backend with Next.js and Neon](https://neon.com/docs/get-started/full-backend-quickstart.md): Postgres, Object Storage, and a Neon Function for AI, declared in one neon.ts
 - [Built to scale](https://neon.com/docs/get-started/built-to-scale.md): Neon supports you from prototype to scale-up
-- [Getting ready for production](https://neon.com/docs/get-started/production-readiness.md): Guidelines to optimize price, performance, and reliability
+- [Built to scale](https://neon.com/docs/get-started/production-readiness.md): Neon supports you from prototype to scale-up
 - [Connecting Neon to your stack](https://neon.com/docs/get-started/connect-neon.md): Learn how to integrate Neon into your application
 - [Database branching workflow primer](https://neon.com/docs/get-started/workflow-primer.md): An introduction to integrating Postgres branching into your development workflow
 - [Get started with your AI agent](https://neon.com/docs/get-started/with-an-agent.md): Set up Neon in your project using your AI coding assistant
@@ -87,6 +87,7 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: completion](https://neon.com/docs/cli/completion.md): Generate shell completion scripts for neon commands and options
 - [Neon CLI command: config](https://neon.com/docs/cli/config.md): Manage a branch with a neon.ts policy: init, status, plan, and apply
 - [Neon CLI command: connection-string](https://neon.com/docs/cli/connection-string.md): Get Postgres connection strings for branches and databases
+- [Neon CLI command: credentials](https://neon.com/docs/cli/credentials.md): Issue, list, reveal, rotate, and revoke scoped credentials on a branch
 - [Neon CLI command: data-api](https://neon.com/docs/cli/data-api.md): Provision and manage the Neon Data API from the CLI
 - [Neon CLI command: databases](https://neon.com/docs/cli/databases.md): List, create, and delete databases in a Neon project
 - [Neon CLI command: deploy](https://neon.com/docs/cli/deploy.md): Apply a neon.ts policy to a branch
@@ -94,7 +95,7 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: diff](https://neon.com/docs/cli/diff.md): Show a git-style schema diff between two branches
 - [Neon CLI command: env](https://neon.com/docs/cli/env.md): Manage a branch's Neon environment variables locally
 - [Neon CLI command: functions](https://neon.com/docs/cli/functions.md): Deploy, list, inspect, and delete Neon Functions, and manage their custom domains
-- [Neon CLI command: init](https://neon.com/docs/cli/init.md): Set up the current directory for Neon with agent tooling, a linked project, and a neon.ts config
+- [Neon CLI command: init](https://neon.com/docs/cli/init.md): Set up the current directory for Neon with agent tooling, a linked project, and an optional neon.ts config
 - [Neon CLI command: inspect](https://neon.com/docs/cli/inspect.md): Run diagnostic queries against a branch's Postgres to check its health and configuration
 - [Neon CLI command: ip-allow](https://neon.com/docs/cli/ip-allow.md): Manage the IP allowlist: list, add, remove, and reset allowed IPs
 - [Neon CLI command: link](https://neon.com/docs/cli/link.md): Link a directory to a Neon project and write a `.neon` context file
@@ -115,6 +116,7 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: skills](https://neon.com/docs/cli/skills.md): Install and update Neon agent skills in your coding agents
 - [Neon CLI command: snapshots](https://neon.com/docs/cli/snapshots.md): Create, list, restore, and schedule branch snapshots from the terminal
 - [Neon CLI command: status](https://neon.com/docs/cli/status.md): Show the branch's live Neon state
+- [Neon CLI command: triggers](https://neon.com/docs/cli/triggers.md): Create and manage function triggers that invoke a Neon Function on a cron schedule
 - [Neon CLI command: vpc](https://neon.com/docs/cli/vpc.md): Manage Private Networking VPC endpoints and project-level restrictions
 - [Neon CLI quickstart](https://neon.com/docs/cli/quickstart.md): Get set up with the Neon CLI in just a few steps
 - [Neon CLI: Install and connect](https://neon.com/docs/cli/install.md): Install the Neon CLI and connect with web auth or API key
