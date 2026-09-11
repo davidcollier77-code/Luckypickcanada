@@ -94,36 +94,67 @@ function fetchDocumentation(lib, sourceConfig) {
         return reject(new Error('Too many redirects'));
       }
 
-      https.get(currentUrl, {
+      const req = https.get(currentUrl, {
         headers: {
           'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
-        }
+        },
+        timeout: 15000 // 15s socket timeout
       }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-           // Drain the response so socket can be closed/reused
-           res.resume();
+           res.resume(); // drain
            let redirectUrl = res.headers.location;
            try {
                redirectUrl = new URL(redirectUrl, currentUrl).href;
            } catch (e) {
+               clearTimeout(hardTimeout);
                return reject(new Error('Invalid redirect URL'));
            }
+           clearTimeout(hardTimeout);
            return fetchWithRedirects(redirectUrl, redirectCount - 1);
         }
 
         if (res.statusCode !== 200) {
           res.resume();
+          clearTimeout(hardTimeout);
           return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
         }
 
         let data = '';
-        res.on('data', chunk => data += chunk);
+        let bytesDownloaded = 0;
+        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB hard limit per file
+
+        res.on('data', chunk => {
+          bytesDownloaded += chunk.length;
+          if (bytesDownloaded > MAX_FILE_SIZE) {
+             res.destroy();
+             clearTimeout(hardTimeout);
+             return reject(new Error('Response exceeds 50MB limit, aborted.'));
+          }
+          data += chunk;
+        });
+
         res.on('end', () => {
-           // Basic sanitization: remove known sensitive token patterns that might leak in docs (e.g. Star History sealed_token)
+           clearTimeout(hardTimeout);
+           // Basic sanitization: remove known sensitive token patterns that might leak in docs
            const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
            resolve(sanitizedData);
         });
-      }).on('error', reject);
+      });
+
+      // Hard fetch deadline (45s total, independent of socket timeout, aborts the whole process)
+      const hardTimeout = setTimeout(() => {
+          req.destroy();
+          reject(new Error('Hard fetch deadline exceeded'));
+      }, 45000);
+
+      req.on('error', (err) => {
+          clearTimeout(hardTimeout);
+          reject(err);
+      });
+      req.on('timeout', () => {
+          req.destroy();
+          // Timeout is handled by the error or close event emitted by destroy
+      });
     };
 
     fetchWithRedirects(sourceConfig.url, 5);
@@ -232,9 +263,13 @@ function saveManifest(inventory, shas, sources, groups) {
   const timestamp = getHalifaxTimestamp();
 
   const manifestPath = path.join(DOCS_DIR, 'manifest.json');
+  const tempPath = path.join(DOCS_DIR, 'manifest.json.tmp');
+
   let currentManifest = {};
   if (fs.existsSync(manifestPath)) {
-    currentManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    try {
+        currentManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    } catch(e) {}
   }
 
   const manifestData = {
@@ -244,7 +279,16 @@ function saveManifest(inventory, shas, sources, groups) {
     inventory: Array.from(inventory),
     githubShas: shas
   };
-  fs.writeFileSync(manifestPath, JSON.stringify(manifestData, null, 2));
+
+  try {
+    fs.writeFileSync(tempPath, JSON.stringify(manifestData, null, 2));
+    fs.renameSync(tempPath, manifestPath);
+  } catch (e) {
+    console.error('Failed to save manifest atomically:', e.message);
+    if (fs.existsSync(tempPath)) {
+      try { fs.unlinkSync(tempPath); } catch (err) {}
+    }
+  }
 }
 
 async function main() {
