@@ -289,6 +289,22 @@ function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) 
 async function main() {
   console.log('Starting continuous documentation refresh...');
 
+  // Clean up any stale .tmp.* files from previous interrupted runs
+  if (fs.existsSync(DOCS_DIR)) {
+    const docsFiles = fs.readdirSync(DOCS_DIR, { withFileTypes: true });
+    for (const entry of docsFiles) {
+      if (entry.isFile() && entry.name.startsWith('.tmp.')) {
+        const staleTmpFile = path.join(DOCS_DIR, entry.name);
+        try {
+          fs.unlinkSync(staleTmpFile);
+          console.log(`Removed stale temp file: ${entry.name}`);
+        } catch (e) {
+          console.warn(`Could not remove stale temp file ${entry.name}:`, e.message);
+        }
+      }
+    }
+  }
+
   if (!fs.existsSync(DOCS_DIR)) {
     fs.mkdirSync(DOCS_DIR, { recursive: true });
   }
