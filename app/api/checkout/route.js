@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { getClientIp, checkApiRateLimit } from '../../spam-protection';
 
 export const runtime = 'nodejs';
 
@@ -36,6 +37,18 @@ function dollarsToCents(amount) {
 }
 
 export async function POST(request) {
+  const ip = getClientIp(request);
+  const rateLimit = checkApiRateLimit(ip, 'checkout', 10, 60000); // 10 per min
+  if (!rateLimit.ok) {
+    const errorMsg = 'Too many checkout attempts. Please wait a moment.';
+    let origin;
+    try {
+      origin = new URL(request.url).origin;
+    } catch (e) {
+      origin = 'https://luckypickcanada.ca';
+    }
+    return NextResponse.redirect(new URL(`/?payment=error&message=${encodeURIComponent(errorMsg)}`, origin).toString(), 303);
+  }
   let origin;
   try {
     origin = new URL(request.url).origin;
