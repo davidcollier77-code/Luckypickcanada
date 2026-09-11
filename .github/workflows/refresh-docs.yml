@@ -2,11 +2,18 @@ name: Refresh Documentation
 
 on:
   schedule:
-    # Runs at 2:21 AM local time every Tuesday and Friday
-    # Atlantic Time is UTC-3 (ADT) during daylight saving or UTC-4 (AST) during standard time
-    # The tzcheck step below ensures only the correct schedule triggers the workflow
-    - cron: '21 5 * * 2,5'  # 05:21 UTC = 02:21 ADT (Mar-Nov)
-    - cron: '21 6 * * 2,5'  # 06:21 UTC = 02:21 AST (Nov-Mar)
+    # Primary refresh: 2:21 AM Atlantic local time every Tuesday and Friday.
+    # GitHub handles America/Halifax daylight saving time automatically.
+    - cron: '21 2 * * 2,5'
+      timezone: 'America/Halifax'
+
+    # Backup refresh: 6:21 AM Atlantic local time every Tuesday and Friday.
+    # Provides a second independent opportunity if the 2:21 AM scheduled run
+    # was delayed, missed, or otherwise did not complete.
+    - cron: '21 6 * * 2,5'
+      timezone: 'America/Halifax'
+
+  # Manual escape hatch for an immediate refresh.
   workflow_dispatch:
 
 permissions:
@@ -16,6 +23,7 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -25,46 +33,25 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Check Timezone (Atlantic Time)
-        id: tzcheck
-        run: |
-          # Get current hour in America/Halifax
-          CURRENT_HOUR=$(TZ=America/Halifax date +"%H")
-          CURRENT_DAY=$(TZ=America/Halifax date +"%u") # 1-7, 2 is Tuesday, 5 is Friday
-
-          # We want to run exactly at 02:21 AM Atlantic Time on Tuesday and Friday
-          if [ "$CURRENT_HOUR" = "02" ] && { [ "$CURRENT_DAY" = "2" ] || [ "$CURRENT_DAY" = "5" ]; }; then
-            echo "Time matches 02:21 AM Atlantic Time. Proceeding with refresh."
-            echo "proceed=true" >> $GITHUB_OUTPUT
-          else
-            echo "Current Atlantic Time is $CURRENT_HOUR:XX. This cron trigger does not align with 02:21 AM AT. Skipping."
-            echo "proceed=false" >> $GITHUB_OUTPUT
-          fi
-        # Allow workflow_dispatch to bypass the time check
-        if: github.event_name == 'schedule'
-
       - name: Install Dependencies
-        if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
         run: |
           npm install -g pnpm@10.30.3
           pnpm install --frozen-lockfile
 
       - name: Run Documentation Refresh
-        if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
         run: |
           node scripts/refresh-docs.js
 
       - name: Check for Changes
         id: changes
-        if: github.event_name == 'workflow_dispatch' || steps.tzcheck.outputs.proceed == 'true'
         run: |
           git add .docs/
           if git diff --staged --quiet; then
             echo "No changes detected in documentation."
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "Changes detected in documentation."
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create Pull Request
@@ -72,10 +59,10 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "docs: update Context7 documentation snapshots"
-          title: "docs: weekly Context7 documentation refresh"
+          commit-message: "docs: update upstream documentation snapshots"
+          title: "docs: scheduled documentation refresh"
           body: |
-            Automated documentation refresh from Context7 sources.
+            Automated documentation refresh from the configured upstream documentation sources.
 
             This PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory.
           branch: auto/docs-refresh
