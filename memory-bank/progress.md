@@ -1,22 +1,16 @@
 # Progress
 
-## What Works
-- Centralized IP-based rate limiting for public API endpoints to prevent abuse.
-- Next.js App Router architecture is set up.
-- Cloudflare Pages / Workers deployment configured (using OpenNext).
-- Neon PostgreSQL database integration is functional (used for `luck_shares` and `suggestions`).
-- Stripe Checkout is integrated for the $1.00 Lucky Pick, $2.99 gift email package, and custom tip jar.
-- Resend integration is active for delivering gift emails.
-- Cloudflare Turnstile integration is active for public form verification.
-- Local repository workflow integrations (`.specify`, `.docs`, `.jules`) operate cohesively under `AGENTS.md`.
+## Completed Tasks
+- [x] Initial codebase and project structure review.
+- [x] Investigated the network accessibility of the Jules Environment/Initial Setup configuration within the sandbox.
+  - Attempted access to `app.jules.app`, `api.jules.app`, `app.jules.ai`, `api.jules.ai`, `jules.app`, `jules.ai`.
+  - Discovered DNS resolution failures for `.ai` subdomains and `app.jules.app`.
+  - Found that `jules.app` resolves and returns an HTTP 200, but only serves an SPA skeleton requiring JavaScript/browser execution.
+  - Discovered that `api.jules.app` API endpoints (REST and GraphQL) return 404.
+  - Verified local environment does not possess functional auth config files or valid session variables beyond `JULES_SESSION_ID` (which did not grant API access).
 
-## Known Discrepancies
-- **Python Utility:** The local Python utility script (`luckypick.py`) and its active test suite are documented in `README.md`, but these files do not currently exist in the repository.
+## In Progress Tasks
+- N/A
 
-## What is Left to Build
-- *(Future tasks will populate this section with specific feature developments or bug fixes.)*
-
-## Completed Milestones
-- [x] Initialize Memory Bank core files.
-- [x] Harden Memory Bank for ongoing maintainability and fact-checked accuracy against the current repository state.
-- [x] Formalize Spec Kit Constitution (`.specify/memory/constitution.md`) and workflow coherence.
+## Future Milestones
+- N/A (this was an investigation only task).
