@@ -118,7 +118,9 @@ Generic documentation flow:
    ↓
 IDENTIFY NEEDED KNOWLEDGE
    ↓
-CHECK .docs/manifest.json
+CHECK .docs/manifest.json FOR ADDITIONAL DOCS
+   ↓
+CONSULT MANDATORY JULES/GEMINI DOCS
    ↓
 FIND RELEVANT DOCUMENTATION
    ↓

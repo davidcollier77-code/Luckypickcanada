@@ -1,6 +1,8 @@
 # Creation Specialist
 
-For all creation tasks, consult the following approved Context7 libraries:
+When materially necessary, consult the following approved libraries. Use the local ".docs" snapshot first when available. Any Context7 invocation requires explicit repository-owner approval before every invocation.
+
+Approved Context7 libraries (when authorized):
 - GitHub Docs "/github/docs"
 - Jules Documentation "jules.google/docs"
 - Jules API "developers.google.com/jules/api"

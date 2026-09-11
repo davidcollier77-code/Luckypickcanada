@@ -1,7 +1,17 @@
-Libraries Consulted / Used:
-- None specifically for this Ultra Review pass.
+Task Report: Documentation Governance Fixes
 
-Files changed:
+Documentation Actually Consulted:
+- AGENTS.md (mandatory Jules/Gemini documentation)
+- .jules/creation.md (mandatory Jules/Gemini documentation)
+- .jules/testing.md (mandatory Jules/Gemini documentation)
+- No .docs snapshots were required for this surgical documentation repair.
+
+Files Changed:
+- .jules/creation.md
+- .jules/testing.md
+- AGENTS.md
+- submit_report.md
+- submit_report.txt
 - `scripts/refresh-docs.js` (Fixed `getUpstreamSha` to handle slash-containing branches cleanly, drained response in redirects, sanitized `sealed_token`).
 - `scripts/test-refresh-docs.js` (Updated redirect test to assert exact count of `requestedUrls.length`).
 - `jules-verify.sh` (Added execution of `test-refresh-docs.js`).
