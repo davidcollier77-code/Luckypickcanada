@@ -546,12 +546,9 @@ async function main() {
 
 
       if (isNewOrUpdated || !wasInInventory) {
-          const shouldUpdateTimestamp = contentChanged || !wasInInventory;
-          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, shouldUpdateTimestamp);
-      }
-      else if (upstreamSha) {
-          // SHA changed but no content change and already in inventory - preserve lastUpdated
-          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, false);
+          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+          if (!wasInInventory) {
+          }
       }
 
 
