@@ -51,10 +51,10 @@ const IMPACT_TIME_MS = 8800;
 const SPIN_INTERVAL_MS = 60;
 const SPIN_INTERVAL_FAST_MS = 20;
 
-const METEOR_SOUNDS = ['/sounds/mixkit-cinematic-impact.mp3'];
-const LIGHTNING_SOUNDS = ['/sounds/mixkit-magic-sparkles.mp3'];
-const FIREWORKS_SOUNDS = ['/sounds/mixkit-magical-impact.mp3'];
-const BUILDUP_SOUND = '/sounds/mixkit-cinematic-whoosh.mp3';
+const METEOR_SOUNDS = ['/dragon-studio-whoosh-cinematic-376875.mp3'];
+const LIGHTNING_SOUNDS = ['/yodguard-lightning-magic-3-378649.mp3'];
+const FIREWORKS_SOUNDS = ['/freesound_community-fireworks-1-94483.mp3'];
+const BUILDUP_SOUND = '/freesound_community-starship-rail-gun-charge-35904.mp3';
 
 const QUOTES: string[] = [
   'Like the Northern Lights dancing across the sky, your luck is uniquely yours today.',
