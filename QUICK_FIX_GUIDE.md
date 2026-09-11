@@ -42,7 +42,7 @@ PostgreSQL tables `lucky_stories` and `luck_shares` don't exist in Neon database
 4. Click "Run"
 
 # Option B: psql Command Line
-psql "postgresql://neondb_owner:npg_QlcWTjK0my3G@ep-mute-voice-at782k6z-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require" -f create-database-schema.sql
+psql "postgresql://username:password@hostname/database?sslmode=require" -f create-database-schema.sql
 ```
 
 **Step 2: Verify Tables Created**

@@ -35,7 +35,7 @@ DATABASE_URL=postgresql://username:password@hostname/database?sslmode=require
 
 ```bash
 # Connect to your Neon database
-psql "postgresql://neondb_owner:npg_QlcWTjK0my3G@ep-mute-voice-at782k6z-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require"
+psql "postgresql://username:password@hostname/database?sslmode=require"
 
 # Run the schema file
 \i create-database-schema.sql

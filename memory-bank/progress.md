@@ -16,5 +16,7 @@
 - *(Future tasks will populate this section with specific feature developments or bug fixes.)*
 
 ## Completed Milestones
+- [x] Identify and clean up remaining Neon credential exposure from `QUICK_FIX_GUIDE.md` and `DATABASE_SETUP.md`.
+- [x] Analyze CodeQL findings from the primary setup run.
 - [x] Initialize Memory Bank core files.
 - [x] Harden Memory Bank for ongoing maintainability and fact-checked accuracy against the current repository state.
