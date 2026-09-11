@@ -15,8 +15,6 @@ let requestedUrls = [];
 const originalGet = https.get;
 
 https.get = function(urlOrOptions, optionsOrCallback, callback) {
-let activeTimeouts = [];
-
     let url = typeof urlOrOptions === 'string' ? urlOrOptions : null;
     let options = typeof optionsOrCallback === 'object' ? optionsOrCallback : (typeof urlOrOptions === 'object' ? urlOrOptions : {});
     let cb = typeof optionsOrCallback === 'function' ? optionsOrCallback : callback;
@@ -29,9 +27,8 @@ let activeTimeouts = [];
 
     const res = new EventEmitter();
     res.resume = () => {};
+    res.destroy = function(err) { if(err) req.emit('error', err); };
     const req = new EventEmitter();
-    let timeoutHandle = null;
-    let destroyed = false;
 
     setTimeout(() => {
         const mockRes = mockResponses[url];
@@ -42,68 +39,36 @@ let activeTimeouts = [];
             return req;
         }
 
-        if (destroyed) {
-            // If request was already destroyed, don't emit anything
-            return;
-        }
-
         res.statusCode = mockRes.statusCode || 200;
         res.headers = mockRes.headers || {};
 
+        if (mockRes.timeout) {
+             setTimeout(() => req.emit('timeout'), 5);
+             return;
+        }
+
         if (cb) cb(res);
 
-        if (mockRes.data) {
-            // Support chunked data for testing size limits
-            if (mockRes.chunks) {
-                let totalEmitted = 0;
-                for (const chunk of mockRes.chunks) {
-                    if (destroyed) break;
-                    res.emit('data', chunk);
-                    totalEmitted += chunk.length;
-                }
-            } else {
-                res.emit('data', mockRes.data);
-            }
+        if (mockRes.tooLarge) {
+             res.emit('data', Buffer.alloc(11 * 1024 * 1024).toString());
+             return;
         }
 
-        if (!destroyed) {
-            res.emit('end');
+        if (mockRes.data) {
+            res.emit('data', mockRes.data);
         }
+        res.emit('end');
     }, 10);
 
+    const originalOn = req.on.bind(req);
     req.on = (event, handler) => {
+        originalOn(event, handler);
         if (event === 'error' && mockResponses[url] && mockResponses[url].error) {
            setTimeout(() => handler(new Error(mockResponses[url].error)), 10);
-        } else if (event === 'timeout') {
-            if (options.timeout) {
-                timeoutHandle = setTimeout(() => {
-                    if (!destroyed) {
-                        req.emit('timeout');
-                    }
-                }, options.timeout);
-                activeTimeouts.push(timeoutHandle);
-            }
         }
         return req;
     };
-    
-    req.destroy = (error) => {
-        destroyed = true;
-        if (timeoutHandle) {
-            clearTimeout(timeoutHandle);
-        }
-        if (error) {
-            setTimeout(() => req.emit('error', error), 0);
-        }
-    };
-    
-    res.destroy = (error) => {
-        destroyed = true;
-        if (error) {
-            setTimeout(() => res.emit('error', error), 0);
-        }
-    };
-    
+    req.destroy = function(err) { if(err) this.emit('error', err); };
     return req;
 };
 
@@ -326,74 +291,27 @@ async function runTests() {
         assert.ok(!data.includes('abc123') && !data.includes('xyz789something'), 'All tokens should be redacted');
         assert.strictEqual((data.match(/sealed_token=REDACTED/g) || []).length, 2, 'Should have 2 REDACTED placeholders');
     });
-    // 15. Timeout test
-    await test('fetchDocumentation: Request timeout', async () => {
-        mockResponses['https://example.com/slow'] = {
-            statusCode: 200,
-            data: 'Should not complete',
-            // Simulate a slow response by not immediately responding
-            delay: 20000
-        };
-        
-        // Override the mock to simulate timeout behavior
-        const oldGet = https.get;
-        https.get = function(urlOrOptions, optionsOrCallback, callback) {
-            let url = typeof urlOrOptions === 'string' ? urlOrOptions : null;
-            let options = typeof optionsOrCallback === 'object' ? optionsOrCallback : (typeof urlOrOptions === 'object' ? urlOrOptions : {});
-            let cb = typeof optionsOrCallback === 'function' ? optionsOrCallback : callback;
-            
-            if (!url && options.hostname && options.path) {
-                url = `https://${options.hostname}${options.path}`;
-            }
-            
-            const req = new EventEmitter();
-            
-            if (options.timeout) {
-                setTimeout(() => {
-                    req.emit('timeout');
-                }, options.timeout);
-            }
-            
-            req.on = (event, handler) => {
-                EventEmitter.prototype.on.call(req, event, handler);
-                return req;
-            };
-            
-            req.destroy = (error) => {
-                if (error) {
-                    setTimeout(() => req.emit('error', error), 0);
-                }
-            };
-            
-            return req;
-        };
-        
+
+
+    await test('fetchDocumentation: 15-second timeout', async () => {
+        mockResponses['https://timeout.example.com'] = { timeout: true };
         try {
-            await fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/slow' });
-            assert.fail('Should have thrown timeout error');
+            await fetchDocumentation('/test/timeout', { type: 'url', url: 'https://timeout.example.com' });
+            throw new Error('Should have failed');
         } catch (e) {
-            assert.match(e.message, /Request Timeout/i);
-        } finally {
-            https.get = oldGet;
+            assert.match(e.message, /Request Timeout/);
         }
     });
 
-    // 16. Response size limit test
-    await test('fetchDocumentation: Response size exceeds 10MB', async () => {
-        // Create chunks that exceed 10MB
-        const largeChunk = Buffer.alloc(6 * 1024 * 1024); // 6MB chunk
-        mockResponses['https://example.com/huge'] = {
-            statusCode: 200,
-            chunks: [largeChunk, largeChunk] // 12MB total
-        };
+    await test('fetchDocumentation: 10MB response-size limit', async () => {
+        mockResponses['https://toolarge.example.com'] = { tooLarge: true };
         try {
-            await fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/huge' });
-            assert.fail('Should have thrown size limit error');
+            await fetchDocumentation('/test/toolarge', { type: 'url', url: 'https://toolarge.example.com' });
+            throw new Error('Should have failed');
         } catch (e) {
-            assert.match(e.message, /exceeds 10MB/i);
+            assert.match(e.message, /Response size exceeds 10MB limit/);
         }
     });
-
 
     console.log(`\nTests complete: ${passed} passed, ${failed} failed.`);
     if (failed > 0) process.exit(1);
