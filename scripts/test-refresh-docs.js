@@ -53,8 +53,9 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
         if (event === 'error' && mockResponses[url] && mockResponses[url].error) {
            setTimeout(() => handler(new Error(mockResponses[url].error)), 10);
         }
+        return req;
     };
-
+    req.destroy = () => {};
     return req;
 };
 

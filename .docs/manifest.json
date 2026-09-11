@@ -59,7 +59,6 @@
       "/websites/motion_dev",
       "/lucide-icons/lucide",
       "/emilkowalski/sonner",
-      "/goldfire/howler.js",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "jules.google/docs",
@@ -125,7 +124,6 @@
       "/upstash/ratelimit"
     ],
     "audio": [
-      "/goldfire/howler.js",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "jules.google/docs",
@@ -284,10 +282,6 @@
       "type": "url",
       "url": "https://gsap.com/docs/v3/GSAP/Timeline"
     },
-    "/goldfire/howler.js": {
-      "type": "url",
-      "url": "https://context7.com/goldfire/howler.js/llms.txt"
-    },
     "/testing-library/react-testing-library": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/testing-library/react-testing-library/main/README.md"
@@ -390,7 +384,6 @@
     "/websites/developer_chrome",
     "/websites/developer_apple_webkit",
     "/llmstxt/gsap_llms_txt",
-    "/goldfire/howler.js",
     "/testing-library/react-testing-library",
     "/microsoft/playwright",
     "/vitest-dev/vitest",
@@ -434,7 +427,6 @@
     "/google-gemini/gemini-cli": "bfb71fd2b8ed9ed94b0e1d79275b4c911a97fa27",
     "/cloudflare/cloudflare-docs/turnstile": "8e4b2f0b629ed25ca3a9364fcfc40e170a8b9a3d",
     "/cloudflare/cloudflare-docs/pages": "8e4b2f0b629ed25ca3a9364fcfc40e170a8b9a3d",
-    "/goldfire/howler.js": "1d3053576a860e9854645493ad6c4a72c6cc6e45",
     "/dequelabs/axe-core": "4d306cbb7c456849c6f964444a6a7174d2be502a",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
     "/microsoft/playwright": "d78a9e71f2565e474b627baae00b6da71ebc2ea8",
