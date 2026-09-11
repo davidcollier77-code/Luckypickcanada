@@ -11,21 +11,21 @@ Follow-up TODOs: None.
 ## Core Principles
 
 ### I. Single Source of Truth
-`AGENTS.md` is the canonical repository-level authority. All AI agents must read it first. Memory systems, specialist instructions (`.jules/*.md`), and Spec Kit artifacts are complementary and must never override `AGENTS.md`. This Constitution may contain concise summaries of `AGENTS.md` principles, but such summaries must not become a competing or overriding governance system.
+`AGENTS.md` is the canonical repository-level authority. All AI agents must read it first. Memory systems, specialist instructions (`.jules/*.md`), and Spec Kit artifacts are complementary and must never override or duplicate `AGENTS.md`.
 
 ### II. Verify Before Acting
 Never assume repository state, tool availability, or documentation content. Agents MUST independently inspect the actual codebase, run necessary verification commands, and confirm the environment before drafting plans or executing changes.
 
 ### III. The Implementation Sequence
 All work MUST follow the required sequence: INSPECT → IDENTIFY → UNDERSTAND → PLAN → IMPLEMENT → TEST → DOUBLE-CHECK → REPORT → CREATE PR. Plans must be presented for approval before making changes.
-All work MUST follow the required sequence: INSPECT → IDENTIFY → UNDERSTAND → PLAN → IMPLEMENT → TEST → DOUBLE-CHECK → REPORT → CREATE PR. When the workflow requires an implementation plan or approval, plans must be presented before making changes.
+
 ### IV. Protect Core Systems
 Changes to payment processing (Stripe), authentication/authorization, databases (Neon), protected deployments (Cloudflare), and secrets are strictly prohibited unless explicitly authorized by the owner.
 
 ### V. Resource Conservation & Control
 Respect the 495 free-service cap for documentation updates. Context7 MCP usage requires explicit owner approval before EVERY invocation. Local `.docs/` are read-only during normal tasks.
 
-The `.docs` documentation snapshot has a maximum size of 495 MB enforced by the updater (MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024) and is read-only during normal tasks. Context7 MCP usage requires explicit owner approval before EVERY invocation.
+## Technology Stack & Constraints
 
 The primary application is a Next.js App Router project deployed on Cloudflare Pages/Workers using OpenNext. The backend utilizes Neon PostgreSQL. Integrations include Stripe Checkout, Resend for email, and Cloudflare Turnstile. The project must maintain its identity as a Canada-wide, entertainment-only platform (no real-money gambling). Prefer premium, realistic, cinematic Canadian visuals and existing audio assets over synthetic additions.
 
