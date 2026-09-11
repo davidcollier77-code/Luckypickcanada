@@ -51,21 +51,25 @@ function getDirSize(dirPath) {
  */
 function detectLineEnding(content) {
   if (!content || content.length === 0) {
-    return '
+    return '\n';
   }
   
-  const crlfCount = (content.match(/\r
-  const lfCount = (content.match(/(?<!\r)
+  const crlfCount = (content.match(/\r\n/g) || []).length;
+  const lfCount = (content.match(/(?<!\r)\n/g) || []).length;
   
   // If CRLF appears more frequently, use CRLF; otherwise use LF
-  return crlfCount > lfCount ? '\r
+  return crlfCount > lfCount ? '\r\n' : '\n';
 }
 
 /**
  * Normalizes line endings in content to LF for comparison purposes.
  */
 function normalizeLineEndings(content) {
-  return content.replace(/\r
+  return content
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{2,}$/, '\n')
+    .trim() + '\n';
 }
 
 /**
@@ -73,9 +77,9 @@ function normalizeLineEndings(content) {
  */
 function convertLineEndings(content, lineEnding) {
   // First normalize to LF, then convert to target
-  const normalized = content.replace(/\r
-  if (lineEnding === '\r
-    return normalized.replace(/
+  const normalized = normalizeLineEndings(content);
+  if (lineEnding === '\r\n') {
+    return normalized.replace(/\n/g, '\r\n');
   }
   return normalized;
 }
@@ -344,7 +348,7 @@ async function main() {
 
       let existingSize = 0;
       let contentBefore = null;
-      let existingLineEnding = '
+      let existingLineEnding = '\n';
       if (fs.existsSync(firstDocPath)) {
           // If we had a symlink, lstat or stat size? We use the actual content length if we read it
           contentBefore = fs.readFileSync(firstDocPath, 'utf8');
@@ -354,7 +358,7 @@ async function main() {
       
       // For genuinely new files, use LF (repository convention)
       if (!contentBefore) {
-          existingLineEnding = '
+          existingLineEnding = '\n';
       }
 
       const sourceConfig = sourcesConfig[lib];
