@@ -51,31 +51,51 @@ function getDirSize(dirPath) {
  */
 function detectLineEnding(content) {
   if (!content || content.length === 0) {
-    return '
+    return '\n';
   }
   
-  const crlfCount = (content.match(/\r
-  const lfCount = (content.match(/(?<!\r)
+  const crlfCount = (content.match(/\r\n/g) || []).length;
+  const lfCount = (content.match(/(?<!\r)\n/g) || []).length;
   
   // If CRLF appears more frequently, use CRLF; otherwise use LF
-  return crlfCount > lfCount ? '\r
+  return crlfCount > lfCount ? '\r\n' : '\n';
+}
+
+/**
+ * Normalizes volatile Devsite metadata to prevent false documentation differences.
+ */
+function normalizeDevsiteMetadata(content) {
+  if (!content) return content;
+  // Normalize nonce attributes
+  let normalized = content.replace(/nonce="[^"]+"/g, 'nonce="[NONCE]"');
+
+  // Normalize volatile JSON payload arrays that Devsite injects in inline scripts
+  // Specifically the one matching GoogleDevelopersObject
+  normalized = normalized.replace(/(<script nonce="\[NONCE\]">\s*\(function\(d,e,v,s,i,t,E\)\{d\[\'GoogleDevelopersObject\'\]=i;[\s\S]*?)(,\s*'\[[\s\S]*?\]')(.*<\/script>)/g, '$1, \'[NORMALIZED_DEVSITE_METADATA]\'$3');
+
+  return normalized;
 }
 
 /**
  * Normalizes line endings in content to LF for comparison purposes.
+ * It also trims trailing whitespace/newlines for consistency.
  */
 function normalizeLineEndings(content) {
-  return content.replace(/\r
+  return content
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{2,}$/, '\n')
+    .trim() + '\n';
 }
 
 /**
  * Converts content to use the specified line-ending style.
  */
 function convertLineEndings(content, lineEnding) {
-  // First normalize to LF, then convert to target
-  const normalized = content.replace(/\r
-  if (lineEnding === '\r
-    return normalized.replace(/
+  // First normalize ONLY line endings to LF for standard processing
+  const normalized = content.replace(/\r\n/g, '\n');
+  if (lineEnding === '\r\n') {
+    return normalized.replace(/\n/g, '\r\n');
   }
   return normalized;
 }
@@ -344,7 +364,7 @@ async function main() {
 
       let existingSize = 0;
       let contentBefore = null;
-      let existingLineEnding = '
+      let existingLineEnding = '\n';
       if (fs.existsSync(firstDocPath)) {
           // If we had a symlink, lstat or stat size? We use the actual content length if we read it
           contentBefore = fs.readFileSync(firstDocPath, 'utf8');
@@ -354,7 +374,7 @@ async function main() {
       
       // For genuinely new files, use LF (repository convention)
       if (!contentBefore) {
-          existingLineEnding = '
+          existingLineEnding = '\n';
       }
 
       const sourceConfig = sourcesConfig[lib];
@@ -457,8 +477,8 @@ async function main() {
       let isNewOrUpdated = false;
       
       // Compare normalized versions to ignore line-ending differences
-      const normalizedBefore = contentBefore ? normalizeLineEndings(contentBefore) : null;
-      const normalizedOutput = normalizeLineEndings(output);
+      const normalizedBefore = contentBefore ? normalizeDevsiteMetadata(normalizeLineEndings(contentBefore)) : null;
+      const normalizedOutput = normalizeDevsiteMetadata(normalizeLineEndings(output));
       if (normalizedBefore === normalizedOutput) {
           console.log(`CURRENT: ${lib} (no changes)`);
           stats.unchanged++;
