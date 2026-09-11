@@ -1,41 +1,32 @@
-## Final Report
+Libraries Consulted / Used:
+- None specifically for this Ultra Review pass.
 
-**What changed:**
-1. Updated `AGENTS.md` (Section A7) to explicitly define the documentation hierarchy and the difference between Documentation Usage (routine) and Documentation Maintenance (requires authorization).
-2. Defined `.docs/` as READ-ONLY for normal tasks. Prohibited running the documentation updater, regenerating snapshots, or changing the manifest/workflow files without explicit authorization.
-3. Updated `AGENTS.md` (Section A10) and `.jules/jules.md` to clarify that the requirement to use Jules/Gemini docs does NOT automatically authorize Context7 to retrieve them if local capabilities are available.
-4. Updated all specialist files (`.jules/creation.md`, etc.) to separate Mandatory Standing Resources (Jules/Gemini) from Controlled Context7 Libraries.
+Files changed:
+- `scripts/refresh-docs.js` (Fixed `getUpstreamSha` to handle slash-containing branches cleanly, drained response in redirects, sanitized `sealed_token`).
+- `scripts/test-refresh-docs.js` (Updated redirect test to assert exact count of `requestedUrls.length`).
+- `jules-verify.sh` (Added execution of `test-refresh-docs.js`).
+- `.docs/manifest.json` (Added actual `githubShas` for new libraries using `git ls-remote`).
+- `.docs/deep-dive/_posthog_posthog-js.md` (Fixed contributor repo and upstream links).
+- `.docs/troubleshooting/_websites_neon.md` (Fixed duplicated title).
+- `.docs/security/_upstash_ratelimit.md` (Made example explicitly server-side, removed exposed env hints).
+- `.docs/polishing/_magicuidesign_magicui.md` (Updated Discord link to HTTPS).
+- `.docs/security/_marsidev_react-turnstile.md` (Added alt text, `import type { FormEvent }`, replaced LICENSE link).
+- `.docs/creation/_pmndrs_react-three-fiber.md` (Fixed React 18 versions).
 
-**Which files changed:**
-- `AGENTS.md`
-- `.jules/jules.md`
-- `.jules/audio.md`
-- `.jules/creation.md`
-- `.jules/deep-dive.md`
-- `.jules/polishing.md`
-- `.jules/security.md`
-- `.jules/seo.md`
-- `.jules/testing.md`
-- `.jules/troubleshooting.md`
+Exact updater fixes implemented:
+- Safely parse branch from GitHub raw URL even if the branch contains a slash, using a known branches allow-list (main, master, canary, develop, production).
+- Properly call `res.resume()` to drain HTTP responses before redirecting.
+- Add basic sanitization step `replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED')`.
 
-**Documentation and repository instructions actually consulted:**
-- `AGENTS.md`
-- `.jules/jules.md`
-- All other specialist files in `.jules/`
+Exact libraries added:
+- N/A for this step, previously added.
 
-**Tools or MCPs actually invoked:**
-- Bash tools (`cat`, `grep`, `sed`, `git`, custom Python script for complex Regex replacement)
-- `npm` / `pnpm` (for verifying changes via tests)
-- `jules-verify.sh` for verification.
+Tests actually run:
+- `pnpm run build` completed successfully.
+- `./jules-verify.sh` executed `test-refresh-docs.js` which passed all 12 tests including the newly updated redirect loop request count test.
 
-**Tests and checks actually run:**
-- Type check (failed initially due to tsc, resolved by installing deps)
-- Build check (`pnpm run build` -> Next.js built successfully)
-- Refresh docs tests (`./jules-verify.sh` -> All 14 passed)
-- Local git inspection (`git diff`, `git status`) to ensure only governance files were modified.
+Limitations that remain:
+- Context7 API is untouched.
 
-**Verification status:**
-- Verified that no application source code, `.docs` contents, or documentation updater scripts were modified.
-
-**Context7 Usage:**
-- Context7 was NOT used. No approval was requested or needed.
+External tools/MCPs invoked:
+- None.

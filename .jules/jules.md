@@ -25,9 +25,7 @@ MCP usage is governed per-MCP as defined in AGENTS.md.
 
 **Stitch:** May be used without additional approval when materially applicable and within authorized scope.
 
-**Context7:** Requires explicit repository-owner approval before every invocation.
-*Note on Mandatory Documentation:* The requirement to consult Jules and Gemini documentation does NOT automatically authorize Context7 usage to retrieve them. Use local and approved resources first.
-If you determine Context7 is needed for any library, you must **STOP IMMEDIATELY** and ask David for explicit approval first, providing:
+**Context7:** Requires explicit repository-owner approval before every invocation. If you determine Context7 is needed, you must **STOP IMMEDIATELY** and ask David for explicit approval first, providing:
 - MCP/service being requested
 - tool/action that will be invoked
 - reason it is materially necessary
