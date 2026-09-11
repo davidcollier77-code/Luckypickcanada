@@ -62,7 +62,23 @@ function detectLineEnding(content) {
 }
 
 /**
+ * Normalizes volatile Devsite metadata to prevent false documentation differences.
+ */
+function normalizeDevsiteMetadata(content) {
+  if (!content) return content;
+  // Normalize nonce attributes
+  let normalized = content.replace(/nonce="[^"]+"/g, 'nonce="[NONCE]"');
+
+  // Normalize volatile JSON payload arrays that Devsite injects in inline scripts
+  // Specifically the one matching GoogleDevelopersObject
+  normalized = normalized.replace(/(<script nonce="\[NONCE\]">\s*\(function\(d,e,v,s,i,t,E\)\{d\[\'GoogleDevelopersObject\'\]=i;[\s\S]*?)(,\s*'\[[\s\S]*?\]')(.*<\/script>)/g, '$1, \'[NORMALIZED_DEVSITE_METADATA]\'$3');
+
+  return normalized;
+}
+
+/**
  * Normalizes line endings in content to LF for comparison purposes.
+ * It also trims trailing whitespace/newlines for consistency.
  */
 function normalizeLineEndings(content) {
   return content
@@ -76,8 +92,8 @@ function normalizeLineEndings(content) {
  * Converts content to use the specified line-ending style.
  */
 function convertLineEndings(content, lineEnding) {
-  // First normalize to LF, then convert to target
-  const normalized = normalizeLineEndings(content);
+  // First normalize ONLY line endings to LF for standard processing
+  const normalized = content.replace(/\r\n/g, '\n');
   if (lineEnding === '\r\n') {
     return normalized.replace(/\n/g, '\r\n');
   }
@@ -461,8 +477,8 @@ async function main() {
       let isNewOrUpdated = false;
       
       // Compare normalized versions to ignore line-ending differences
-      const normalizedBefore = contentBefore ? normalizeLineEndings(contentBefore) : null;
-      const normalizedOutput = normalizeLineEndings(output);
+      const normalizedBefore = contentBefore ? normalizeDevsiteMetadata(normalizeLineEndings(contentBefore)) : null;
+      const normalizedOutput = normalizeDevsiteMetadata(normalizeLineEndings(output));
       if (normalizedBefore === normalizedOutput) {
           console.log(`CURRENT: ${lib} (no changes)`);
           stats.unchanged++;
