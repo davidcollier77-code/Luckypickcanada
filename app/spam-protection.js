@@ -55,10 +55,14 @@ async function recordSpamAttempt({ formName, ip, reason, forceBlock = false }) {
       const attemptsKey = `spam:attempts:${ip}`;
       const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
 
-      const count = await redis.incr(attemptsKey);
-      if (count === 1) {
-        await redis.expire(attemptsKey, windowSeconds);
-      }
+      const count = await redis.eval(
+        `local current = redis.call("INCR", KEYS[1])
+         if current == 1 then
+           redis.call("EXPIRE", KEYS[1], ARGV[1])
+         end
+         return current`,
+        [attemptsKey], [windowSeconds]
+      );
 
       if (forceBlock || count >= SPAM_BLOCK_THRESHOLD) {
         const blockSeconds = Math.ceil(TEMP_BLOCK_MS / 1000);
@@ -100,10 +104,14 @@ async function checkRateLimit({ formName, ip }) {
     const key = `spam:form:${formName}:${ip}`;
     const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
 
-    const count = await redis.incr(key);
-    if (count === 1) {
-      await redis.expire(key, windowSeconds);
-    }
+    const count = await redis.eval(
+      `local current = redis.call("INCR", KEYS[1])
+       if current == 1 then
+         redis.call("EXPIRE", KEYS[1], ARGV[1])
+       end
+       return current`,
+      [key], [windowSeconds]
+    );
 
     if (count > MAX_SUBMISSIONS_PER_WINDOW) {
       await recordSpamAttempt({ formName, ip, reason: 'rate_limit', forceBlock: true });
@@ -249,11 +257,14 @@ export async function checkApiRateLimit(ip, action = 'global', limit = 10, windo
   const windowSeconds = Math.max(1, Math.ceil(windowMs / 1000));
 
   try {
-    const count = await redis.incr(key);
-
-    if (count === 1) {
-      await redis.expire(key, windowSeconds);
-    }
+    const count = await redis.eval(
+      `local current = redis.call("INCR", KEYS[1])
+       if current == 1 then
+         redis.call("EXPIRE", KEYS[1], ARGV[1])
+       end
+       return current`,
+      [key], [windowSeconds]
+    );
 
     return { ok: count <= limit };
   } catch (error) {
