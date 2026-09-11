@@ -45,8 +45,7 @@ export async function POST(request) {
 
   try {
     const clientIp = getClientIp(request) || 'anonymous';
-    const rateLimit = await checkApiRateLimit(clientIp, 'oracle', 10, 60000);
-    if (!rateLimit.ok) {
+    if (!checkApiRateLimit(clientIp, 'oracle', 10, 60000).ok) {
       return NextResponse.json(
         { error: 'Too many requests. Please wait a moment before consulting the oracle again.' },
         { status: 429, headers: corsHeaders }

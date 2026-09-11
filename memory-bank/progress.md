@@ -1,6 +1,7 @@
 # Progress
 
 ## What Works
+- Centralized IP-based rate limiting for public API endpoints to prevent abuse.
 - Next.js App Router architecture is set up.
 - Cloudflare Pages / Workers deployment configured (using OpenNext).
 - Neon PostgreSQL database integration is functional (used for `luck_shares` and `suggestions`).

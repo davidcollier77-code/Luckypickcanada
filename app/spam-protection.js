@@ -1,4 +1,3 @@
-import { Redis } from '@upstash/redis';
 import { createSubmissionFingerprint } from './form-security';
 import { getTurnstileSiteKey } from './turnstile-config';
 
@@ -8,23 +7,16 @@ const SPAM_BLOCK_THRESHOLD = 3;
 const TEMP_BLOCK_MS = 60 * 60 * 1000;
 const DUPLICATE_SUBMISSION_WINDOW_MS = 10 * 60 * 1000;
 
-let redisClient = null;
+const submissionBuckets = new Map();
+const spamAttempts = new Map();
+const recentSubmissions = new Map();
 
-function getRedisClient() {
-  if (redisClient) {
-    return redisClient;
-  }
-
-  try {
-    redisClient = Redis.fromEnv();
-    return redisClient;
-  } catch (error) {
-    console.error('Redis initialization failed for rate limiting:', error);
-    return null;
-  }
+function now() {
+  return Date.now();
 }
 
 export function getClientIp(request) {
+  // Prefer cf-connecting-ip as it is trustworthy when running behind Cloudflare
   const cfConnectingIp = request.headers.get('cf-connecting-ip');
   if (cfConnectingIp) {
     return cfConnectingIp.trim();
@@ -39,6 +31,28 @@ export function getClientIp(request) {
   return request.headers.get('x-real-ip') || 'unknown';
 }
 
+function pruneExpiredEntries() {
+  const currentTime = now();
+
+  for (const [ip, bucket] of submissionBuckets.entries()) {
+    if (bucket.resetAt <= currentTime) {
+      submissionBuckets.delete(ip);
+    }
+  }
+
+  for (const [ip, attempt] of spamAttempts.entries()) {
+    if (attempt.resetAt <= currentTime && (!attempt.blockedUntil || attempt.blockedUntil <= currentTime)) {
+      spamAttempts.delete(ip);
+    }
+  }
+
+  for (const [fingerprint, expiresAt] of recentSubmissions.entries()) {
+    if (expiresAt <= currentTime) {
+      recentSubmissions.delete(fingerprint);
+    }
+  }
+}
+
 function logSpamAttempt({ formName, ip, reason }) {
   console.warn('Public form spam protection triggered', {
     formName,
@@ -48,83 +62,52 @@ function logSpamAttempt({ formName, ip, reason }) {
   });
 }
 
-async function recordSpamAttempt({ formName, ip, reason, forceBlock = false }) {
-  const redis = getRedisClient();
-  if (redis) {
-    try {
-      const attemptsKey = `spam:attempts:${ip}`;
-      const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+function recordSpamAttempt({ formName, ip, reason, forceBlock = false }) {
+  const currentTime = now();
+  const existing = spamAttempts.get(ip);
+  const attempt = existing && existing.resetAt > currentTime
+    ? existing
+    : { count: 0, resetAt: currentTime + RATE_LIMIT_WINDOW_MS, blockedUntil: 0 };
 
-      const count = await redis.eval(
-        `local current = redis.call("INCR", KEYS[1])
-         if current == 1 then
-           redis.call("EXPIRE", KEYS[1], ARGV[1])
-         end
-         return current`,
-        [attemptsKey], [windowSeconds]
-      );
+  attempt.count += 1;
 
-      if (forceBlock || count >= SPAM_BLOCK_THRESHOLD) {
-        const blockSeconds = Math.ceil(TEMP_BLOCK_MS / 1000);
-        await redis.set(`spam:blocked:${ip}`, '1', { ex: blockSeconds });
-      }
-    } catch (error) {
-      console.error('Failed to record spam attempt in Redis:', error);
-    }
+  if (forceBlock || attempt.count >= SPAM_BLOCK_THRESHOLD) {
+    attempt.blockedUntil = currentTime + TEMP_BLOCK_MS;
   }
 
+  spamAttempts.set(ip, attempt);
   logSpamAttempt({ formName, ip, reason });
 }
 
-async function getBlockedMessage(ip) {
-  const redis = getRedisClient();
-  if (!redis) {
-    return null;
-  }
+function getBlockedMessage(ip) {
+  const attempt = spamAttempts.get(ip);
 
-  try {
-    const blocked = await redis.get(`spam:blocked:${ip}`);
-    if (blocked) {
-      return 'Too many submissions were detected. Please try again in about an hour.';
-    }
-  } catch (error) {
-    console.error('Failed to check blocked status in Redis:', error);
+  if (attempt?.blockedUntil && attempt.blockedUntil > now()) {
+    return 'Too many submissions were detected. Please try again in about an hour.';
   }
 
   return null;
 }
 
-async function checkRateLimit({ formName, ip }) {
-  const redis = getRedisClient();
-  if (!redis) {
-    return { ok: true };
-  }
+function checkRateLimit({ formName, ip }) {
+  const currentTime = now();
+  const existing = submissionBuckets.get(ip);
+  const bucket = existing && existing.resetAt > currentTime
+    ? existing
+    : { count: 0, resetAt: currentTime + RATE_LIMIT_WINDOW_MS };
 
-  try {
-    const key = `spam:form:${formName}:${ip}`;
-    const windowSeconds = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+  bucket.count += 1;
+  submissionBuckets.set(ip, bucket);
 
-    const count = await redis.eval(
-      `local current = redis.call("INCR", KEYS[1])
-       if current == 1 then
-         redis.call("EXPIRE", KEYS[1], ARGV[1])
-       end
-       return current`,
-      [key], [windowSeconds]
-    );
-
-    if (count > MAX_SUBMISSIONS_PER_WINDOW) {
-      await recordSpamAttempt({ formName, ip, reason: 'rate_limit', forceBlock: true });
-      return { ok: false, error: 'Too many submissions. Please try again in about an hour.' };
-    }
-  } catch (error) {
-    console.error('Failed to check form rate limit in Redis:', error);
+  if (bucket.count > MAX_SUBMISSIONS_PER_WINDOW) {
+    recordSpamAttempt({ formName, ip, reason: 'rate_limit', forceBlock: true });
+    return { ok: false, error: 'Too many submissions. Please try again in about an hour.' };
   }
 
   return { ok: true };
 }
 
-async function checkDuplicateSubmission({ formName, ip, fields }) {
+function checkDuplicateSubmission({ formName, ip, fields }) {
   if (!fields?.length) {
     return { ok: true };
   }
@@ -136,26 +119,13 @@ async function checkDuplicateSubmission({ formName, ip, fields }) {
   }
 
   const fingerprint = `${formName}:${ip}:${submissionFingerprint}`;
-  const redis = getRedisClient();
-  if (!redis) {
-    return { ok: true };
+
+  if (recentSubmissions.has(fingerprint)) {
+    recordSpamAttempt({ formName, ip, reason: 'duplicate_submission' });
+    return { ok: false, error: 'This looks like a duplicate submission. Please wait a few minutes before trying again.' };
   }
 
-  try {
-    const dedupKey = `spam:dedup:${fingerprint}`;
-    const dedupSeconds = Math.ceil(DUPLICATE_SUBMISSION_WINDOW_MS / 1000);
-
-    const exists = await redis.get(dedupKey);
-    if (exists) {
-      await recordSpamAttempt({ formName, ip, reason: 'duplicate_submission' });
-      return { ok: false, error: 'This looks like a duplicate submission. Please wait a few minutes before trying again.' };
-    }
-
-    await redis.set(dedupKey, '1', { ex: dedupSeconds });
-  } catch (error) {
-    console.error('Failed to check duplicate submission in Redis:', error);
-  }
-
+  recentSubmissions.set(fingerprint, now() + DUPLICATE_SUBMISSION_WINDOW_MS);
   return { ok: true };
 }
 
@@ -174,7 +144,7 @@ async function verifyTurnstile({ token, ip, formName }) {
   }
 
   if (!token) {
-    await recordSpamAttempt({ formName, ip, reason: 'missing_turnstile_token' });
+    recordSpamAttempt({ formName, ip, reason: 'missing_turnstile_token' });
     return { ok: false, error: 'Complete the spam check and try again.' };
   }
 
@@ -194,14 +164,14 @@ async function verifyTurnstile({ token, ip, formName }) {
     });
 
     if (!response.ok) {
-      await recordSpamAttempt({ formName, ip, reason: 'turnstile_verify_request_failed' });
+      recordSpamAttempt({ formName, ip, reason: 'turnstile_verify_request_failed' });
       return { ok: false, error: 'Unable to verify the spam check. Please try again.' };
     }
 
     const result = await response.json();
 
     if (!result.success) {
-      await recordSpamAttempt({ formName, ip, reason: `turnstile_failed:${(result['error-codes'] || []).join(',')}` });
+      recordSpamAttempt({ formName, ip, reason: `turnstile_failed:${(result['error-codes'] || []).join(',')}` });
       return { ok: false, error: 'Spam check failed. Please try again.' };
     }
   } catch (error) {
@@ -213,8 +183,10 @@ async function verifyTurnstile({ token, ip, formName }) {
 }
 
 export async function validatePublicFormSubmission({ request, formData, formName, duplicateFields = [] }) {
+  pruneExpiredEntries();
+
   const ip = getClientIp(request);
-  const blockedMessage = await getBlockedMessage(ip);
+  const blockedMessage = getBlockedMessage(ip);
 
   if (blockedMessage) {
     logSpamAttempt({ formName, ip, reason: 'temporary_ip_block' });
@@ -222,11 +194,11 @@ export async function validatePublicFormSubmission({ request, formData, formName
   }
 
   if (formData.get('website')) {
-    await recordSpamAttempt({ formName, ip, reason: 'honeypot' });
+    recordSpamAttempt({ formName, ip, reason: 'honeypot' });
     return { ok: false, error: 'Unable to accept this submission.' };
   }
 
-  const rateLimit = await checkRateLimit({ formName, ip });
+  const rateLimit = checkRateLimit({ formName, ip });
 
   if (!rateLimit.ok) {
     return rateLimit;
@@ -245,30 +217,30 @@ export async function validatePublicFormSubmission({ request, formData, formName
   return checkDuplicateSubmission({ formName, ip, fields: duplicateFields });
 }
 
-export async function checkApiRateLimit(ip, action = 'global', limit = 10, windowMs = 60000) {
-  const redis = getRedisClient();
 
-  if (!redis) {
-    console.error('API rate limiting is unavailable: Redis is not configured', { action, ip });
+export const apiRateLimits = new Map();
+
+export function checkApiRateLimit(ip, action = 'global', limit = 10, windowMs = 60000) {
+  const now = Date.now();
+  const key = `${action}:${ip}`;
+  const record = apiRateLimits.get(key);
+
+  if (Math.random() < 0.01) {
+    for (const [k, v] of apiRateLimits.entries()) {
+      if (now > v.resetAt) apiRateLimits.delete(k);
+    }
+  }
+
+  if (!record || now > record.resetAt) {
+    apiRateLimits.set(key, { count: 1, resetAt: now + windowMs });
     return { ok: true };
   }
 
-  const key = `ratelimit:${action}:${ip}`;
-  const windowSeconds = Math.max(1, Math.ceil(windowMs / 1000));
-
-  try {
-    const count = await redis.eval(
-      `local current = redis.call("INCR", KEYS[1])
-       if current == 1 then
-         redis.call("EXPIRE", KEYS[1], ARGV[1])
-       end
-       return current`,
-      [key], [windowSeconds]
-    );
-
-    return { ok: count <= limit };
-  } catch (error) {
-    console.error('API rate limit check failed:', { action, ip, error });
-    return { ok: true };
+  if (record.count >= limit) {
+    return { ok: false };
   }
+
+  record.count += 1;
+  apiRateLimits.set(key, record);
+  return { ok: true };
 }

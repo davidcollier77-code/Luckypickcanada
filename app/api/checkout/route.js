@@ -38,7 +38,7 @@ function dollarsToCents(amount) {
 
 export async function POST(request) {
   const ip = getClientIp(request);
-  const rateLimit = await checkApiRateLimit(ip, 'checkout', 10, 60000); // 10 per min
+  const rateLimit = checkApiRateLimit(ip, 'checkout', 10, 60000); // 10 per min
   if (!rateLimit.ok) {
     const errorMsg = 'Too many checkout attempts. Please wait a moment.';
     let origin;
