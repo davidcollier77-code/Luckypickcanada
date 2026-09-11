@@ -59,10 +59,10 @@ export default function LuckyCardReveal() {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         const ctx = new AudioContextClass();
         const files = {
-          lightning: '/yodguard-lightning-magic-3-378649.mp3',
-          buildup: '/freesound_community-starship-rail-gun-charge-35904.mp3',
-          whoosh: '/dragon-studio-whoosh-cinematic-376875.mp3',
-          firework: '/freesound_community-fireworks-1-94483.mp3'
+          lightning: '/sounds/mixkit-magic-sparkles.mp3',
+          buildup: '/sounds/mixkit-cinematic-whoosh.mp3',
+          whoosh: '/sounds/mixkit-cinematic-impact.mp3',
+          firework: '/sounds/mixkit-magical-impact.mp3'
         };
 
         const buffers = {};

@@ -1,21 +1,28 @@
-## Neon Database Verification Report
+# Lucky Card Reveal Audio Update
 
-**Verification Metrics**
-- **Connection**: PASS
-- **Query**: PASS
-- **Expected tables accessible**: PASS
-- **Stories data access**: PASS
-- **Lucky Map database storage**: CONFIRMED
+## What Changed
+- Replaced the shared audio files in the Lucky Card Reveal component with dedicated, cinematic sound files.
+- The new sound files are sourced from Mixkit (CC0/public domain).
 
-**Details & Verification Methods**
-1. **API Verification**: Checked the live application via the `/api/lucky-stories` endpoint using `curl`. The response returned a `200 OK` with valid JSON data (`isConfigured: true`, total stories count, and payload), proving the rotated credentials are valid and the app connects correctly to the database via its production pathway.
-2. **Neon MCP Verification**:
-   - Used `neon_get_database_tables` on the production Neon project which verified the existence of both `lucky_stories` and `luck_shares` (Lucky Map) tables.
-   - Used `neon_run_sql` to execute a basic test query (`SELECT 1 as test`), which succeeded and returned `[{"test": 1}]`, proving querying functions as expected.
-3. No secrets, credentials, or sensitive strings were exposed or recorded during this task.
+## Files Changed
+- `components/LuckyGenerator.tsx`: Updated `METEOR_SOUNDS`, `LIGHTNING_SOUNDS`, `FIREWORKS_SOUNDS`, and `BUILDUP_SOUND` to point to the new Mixkit assets.
+- `app/lucky-card-reveal.js`: Updated the audio `files` mapping similarly.
+- `public/sounds/`: Added four new `.mp3` files (Mixkit assets).
 
-**Libraries Consulted / Used**
-- **Jules Documentation / AGENTS.md**: Consulted (Task Group: General/Deep Dive) - Used for understanding repository rules, task planning, and constraints regarding database credentials and safe verification.
-- **Neon**: Used (Task Group: Deep Dive/Investigation) - Used the Neon MCP integrations (`neon_get_database_tables`, `neon_run_sql`) to inspect table schemas and execute a harmless test query safely without accessing or handling any credentials directly.
+## New Sound Files Added & Sources
+1. `mixkit-cinematic-whoosh.mp3` - Sourced from Mixkit (asset 1287)
+2. `mixkit-cinematic-impact.mp3` - Sourced from Mixkit (asset 2916)
+3. `mixkit-magic-sparkles.mp3` - Sourced from Mixkit (asset 2407)
+4. `mixkit-magical-impact.mp3` - Sourced from Mixkit (asset 869)
+*All audio files are sourced under Mixkit's Free Sound Effects License.*
 
-*(No codebase changes were made as this was strictly a read-only verification task).*
+## Verifications & Limitations
+- **Lucky Meter Verification**: Confirmed that `components/DailyResonance.tsx` remains completely untouched. It still references the original audio files (`freesound_community-starship...`, etc.) and `Howl`.
+- **ZZFX Verification**: Did not introduce any new `zzfx` or synthetic audio; strictly used `.mp3` assets via the browser's Web Audio API.
+- **Visuals & Logic**: No changes made to card artwork, layout, tier rarity logic, or canvas drawing operations.
+- **Build**: Successfully executed `pnpm run build` and `./jules-verify.sh`. All tests pass.
+
+## Documentation & Routing Consulted
+- Read and adhered to the boundaries specified in `AGENTS.md` (Do not modify Lucky Meter, do not introduce ZZFX, strictly audio task).
+- Consulted `.Jules/palette.md` passively as it mentioned polishing the Lucky Card Reveal Experience.
+- Used no external tools or MCPs other than standard `curl`/`sed` bash operations to download and link the audio files.
