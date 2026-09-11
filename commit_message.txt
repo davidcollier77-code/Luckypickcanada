@@ -1,6 +1,3 @@
-Add workflow documentation visibility requirement to AGENTS.md
+docs: generate neon database verification report
 
-- Added Section 21 "Documentation Use During Workflow"
-- Enforces explicit documentation consultation
-- Clarifies that availability does not equal usage
-- Ensures existing governance remains fully intact
+Generated a verification report for the Neon database connection confirming that the application successfully connects and accesses the necessary tables (lucky_stories, luck_shares) following the credential rotation. Verified via production API endpoint and Neon MCP tools without exposing any secrets.
