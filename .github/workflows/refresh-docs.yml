@@ -16,12 +16,12 @@ on:
   # Manual escape hatch for an immediate refresh.
   workflow_dispatch:
 
-permissions:
 concurrency:
   group: refresh-documentation
   queue: max
   cancel-in-progress: false
 
+permissions:
   contents: write
   pull-requests: write
 
