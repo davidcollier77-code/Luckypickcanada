@@ -10,14 +10,9 @@
 - Corrected discrepancies in technical facts (e.g., noted the absence of `luckypick.py` despite README documentation).
 
 ## Immediate Next Steps
-- *(Currently awaiting the next user request or active task. When a new task begins, update this section with specific immediate next steps.)*
+- Completed Context7 documentation updater repairs in `scripts/refresh-docs.js` (PR #1031). Repaired GitHub ref detection to correctly extract owner/repo/ref from `sourceConfig.url`, fixed network fetch streaming safely (added size limit bounds and true hard deadline timeouts), and implemented an atomic rename for `manifest.json` to prevent corruption.
 
 ### Recent Update
 - Updated Lucky Card Reveal to use its own distinct, high-quality audio files from Mixkit, replacing the old shared sounds.
 - Retained the old Howler instances and audio paths for the Lucky Meter as instructed, ensuring they remain completely separate.
-- Downloaded and placed cinematic audio files under the Mixkit Free Sound Effects License into `public/sounds`.
-- Completed Context7 documentation updater repairs in `scripts/refresh-docs.js` (PR #1031):
-  - Fixed GitHub ref detection to extract owner/repo/ref from `sourceConfig.url`
-  - Added redirect handling with limits and relative redirect resolution
-  - Implemented atomic manifest saves with proper error handling
-  - Added hard timeout deadlines for network fetches
+- Downloaded and placed CC0 cinematic audio files into `public/sounds`.

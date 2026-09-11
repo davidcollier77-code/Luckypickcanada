@@ -89,10 +89,28 @@ function fetchDocumentation(lib, sourceConfig) {
       return reject(new Error('Invalid or missing source configuration.'));
     }
 
-    // Hard fetch deadline (45s total for entire operation including all redirects)
-    let currentReq = null;
+    const fetchWithRedirects = (currentUrl, redirectCount) => {
+      let isSettled = false;
+      let hardTimeout = null;
+
+      const safeReject = (err) => {
+          if (!isSettled) {
+              isSettled = true;
+              clearTimeout(hardTimeout);
+              reject(err);
+          }
+      };
+
+      const safeResolve = (data) => {
+          if (!isSettled) {
+              isSettled = true;
+              clearTimeout(hardTimeout);
+              resolve(data);
+          }
+      };
+
       if (redirectCount <= 0) {
-        if (currentReq) currentReq.destroy();
+        return safeReject(new Error('Too many redirects'));
       }
 
       const req = https.get(currentUrl, {
@@ -105,11 +123,9 @@ function fetchDocumentation(lib, sourceConfig) {
            res.resume(); // drain
            let redirectUrl = res.headers.location;
            try {
-        currentReq = req;
                redirectUrl = new URL(redirectUrl, currentUrl).href;
            } catch (e) {
-               clearTimeout(hardTimeout);
-               return reject(new Error('Invalid redirect URL'));
+               return safeReject(new Error('Invalid redirect URL'));
            }
            clearTimeout(hardTimeout);
            return fetchWithRedirects(redirectUrl, redirectCount - 1);
@@ -117,8 +133,7 @@ function fetchDocumentation(lib, sourceConfig) {
 
         if (res.statusCode !== 200) {
           res.resume();
-          clearTimeout(hardTimeout);
-          return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+          return safeReject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
         }
 
         let data = '';
@@ -128,34 +143,33 @@ function fetchDocumentation(lib, sourceConfig) {
         res.on('data', chunk => {
           bytesDownloaded += chunk.length;
           if (bytesDownloaded > MAX_FILE_SIZE) {
+             // Destroy request and let the error handler catch it safely, or safeReject directly
              res.destroy();
-             clearTimeout(hardTimeout);
-             return reject(new Error('Response exceeds 50MB limit, aborted.'));
+             safeReject(new Error('Response exceeds 50MB limit, aborted.'));
+             return;
           }
           data += chunk;
         });
 
         res.on('end', () => {
-           clearTimeout(hardTimeout);
            // Basic sanitization: remove known sensitive token patterns that might leak in docs
            const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
-           resolve(sanitizedData);
+           safeResolve(sanitizedData);
         });
       });
 
       // Hard fetch deadline (45s total, independent of socket timeout, aborts the whole process)
-      const hardTimeout = setTimeout(() => {
+      hardTimeout = setTimeout(() => {
           req.destroy();
-          reject(new Error('Hard fetch deadline exceeded'));
+          safeReject(new Error('Hard fetch deadline exceeded'));
       }, 45000);
 
       req.on('error', (err) => {
-          clearTimeout(hardTimeout);
-          reject(err);
+          safeReject(err);
       });
       req.on('timeout', () => {
           req.destroy();
-          // Timeout is handled by the error or close event emitted by destroy
+          safeReject(new Error('Socket timeout exceeded'));
       });
     };
 
@@ -484,12 +498,12 @@ async function main() {
 
         if (netSizeIncrease > MAX_DOCS_SIZE_BYTES) {
             console.log(`Library ${lib} itself exceeds the 495 MB limit. Marking as failed.`);
-        console.log(`Library ${lib} (exact size ${exactSize} bytes) would exceed 450 MB limit (current: ${currentDocsSize}, net increase: ${netSizeIncrease}).`);
+            stats.failed++;
             stats.errors.push(`Library ${lib} exceeds 495 MB limit individually.`);
             stats.pending--;
-            console.log(`Library ${lib} itself exceeds the 450 MB limit. Marking as failed.`);
+        } else {
             console.log('Deferring to next batch pass.');
-            stats.errors.push(`Library ${lib} exceeds 450 MB limit individually.`);
+            deferredUpdates.push(nextUpdate);
         }
         continue;
       }
