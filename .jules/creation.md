@@ -1,13 +1,15 @@
 # Creation Specialist
 
-When materially necessary, consult the following approved libraries. Use the local ".docs" snapshot first when available. Any Context7 invocation requires explicit repository-owner approval before every invocation.
-
-Approved Context7 libraries (when authorized):
-- GitHub Docs "/github/docs"
+## Mandatory Standing Resources
+For all tasks, you MUST actually consult the following resources:
 - Jules Documentation "jules.google/docs"
 - Jules API "developers.google.com/jules/api"
 - Gemini CLI "/google-gemini/gemini-cli"
 - Gemini API "/websites/ai_google_dev_gemini-api"
+
+## Controlled Context7 Libraries
+When materially necessary, consult the following approved libraries. (Requires Context7 approval if not available in `.docs/`):
+- GitHub Docs "/github/docs"
 - Next.js "/vercel/next.js"
 - React "/reactjs/react.dev"
 - TypeScript "/microsoft/typescript"
@@ -19,6 +21,6 @@ Approved Context7 libraries (when authorized):
 - Sonner "/emilkowalski/sonner"
 - React Error Boundary "/bvaughn/react-error-boundary"
 
-Local documentation snapshots are available at `.docs/creation/`.
+**Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
 When implementing, ensure you test your changes.

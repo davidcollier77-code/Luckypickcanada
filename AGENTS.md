@@ -104,23 +104,49 @@ Do not bypass required specification or approval steps.
 
 Do not create a competing planning or specification system.
 
-## A7. Documentation Library, Manifest, and Updater
+## A7. Documentation Library, Manifest, and Maintenance
 
+### A7.1 Documentation Hierarchy
+Documentation must be consulted in the following strict hierarchy:
+1. `AGENTS.md` (Governing rules)
+2. Mandatory Jules and Gemini documentation (Standing resources that MUST be actually consulted for repository work)
+3. Relevant repository-local documentation in `.docs/`
+4. Other relevant authorized documentation and libraries
+5. Repository source and implementation state
+
+### A7.2 Documentation Usage vs Documentation Maintenance
+USE DOCUMENTATION → YES, routinely and as required.
+MODIFY DOCUMENTATION → NO, unless explicitly authorized as documentation-maintenance work.
+
+- Jules documentation and Gemini documentation are mandatory standing resources and must actually be consulted, not merely listed, mentioned, or connected.
+- Additional documentation libraries should be consulted whenever materially relevant to the task.
+- `.docs/` is **READ-ONLY** during ordinary repository tasks.
+- Reading `.docs/` and modifying `.docs/` are completely separate permissions.
+
+### A7.3 Explicit Prohibitions for Ordinary Tasks
+During a normal repository task, Jules MUST NOT:
+- run the documentation refresh updater;
+- regenerate `.docs/`;
+- rewrite `.docs/` snapshots;
+- change `.docs/manifest.json`;
+- change documentation updater files (`scripts/refresh-docs.js`, etc.);
+- change documentation-refresh workflow files;
+- update documentation solely because it is stale or newer documentation is available.
+
+If a documentation issue (stale, missing, malformed) is discovered during normal work, Jules must report it and continue using the best available authorized documentation. Jules must NOT repair or refresh the documentation unless that task explicitly authorizes documentation maintenance.
+
+### A7.4 Documentation Usage Flow
 `.docs/` is the repository's local documentation library.
-
-Use `.docs/manifest.json` as the authoritative record of what documentation is available.
-
-The documentation updater maintains the local documentation library and its manifest.
+Use `.docs/manifest.json` as the authoritative record of what local documentation is available.
 
 Generic documentation flow:
-
 `TASK
    ↓
 IDENTIFY NEEDED KNOWLEDGE
    ↓
-CHECK .docs/manifest.json FOR ADDITIONAL DOCS
-   ↓
 CONSULT MANDATORY JULES/GEMINI DOCS
+   ↓
+CHECK .docs/manifest.json FOR ADDITIONAL DOCS
    ↓
 FIND RELEVANT DOCUMENTATION
    ↓
@@ -131,16 +157,13 @@ USE DOCUMENTATION TO INFORM THE WORK
 VERIFY AGAINST THE ACTUAL REPOSITORY`
 
 Rules:
-
 - Do not invent documentation that is not present.
 - Do not claim documentation was consulted unless it was actually read.
 - Do not read the entire library unnecessarily.
 - Do not maintain a second hard-coded documentation inventory in `AGENTS.md`.
 - `.docs` provides guidance; the actual repository remains the source of truth for current implementation state.
 - The manifest describes the local documentation state; it does not override the repository source of truth.
-- The documentation updater must preserve the established updater behavior and must not create duplicate documentation systems.
 - Documentation does not authorize access to protected systems, credentials, external services, or unrelated work.
-
 ## A8. Inspect the Actual Repository
 
 Before implementation, inspect the current repository state relevant to the task.
@@ -182,7 +205,9 @@ Context7 is an approved-but-controlled external documentation resource.
 
 A Context7 connection, initialization message, availability notice, or visible MCP entry does not constitute approval and does not constitute actual usage.
 
-If Context7 would be useful, Jules must request approval before invoking it.
+*Exception for Mandatory Standing Resources:* The mandatory Jules and Gemini documentation requirements do not grant automatic approval to use Context7 to retrieve them if they are not available locally. Existing approved local capabilities must be exhausted first.
+
+If Context7 would be useful for other libraries, Jules must request approval before invoking it.
 
 If approval has not been given, use the repository's existing `.docs` documentation and other available authorized resources instead.
 
@@ -562,58 +587,5 @@ Before declaring the task complete, confirm:
 [ ] I updated Memory Bank files when materially required.
 [ ] I accurately reported what actually happened.
 [ ] I completed the authorized work through PR creation.`
-
-## A14. Documentation Usage Flow
-
-The repository's local documentation library should be used in this order:
-
-```text
-             ┌───────────────┐
-             │     TASK      │
-             └───────┬───────┘
-                     │
-                     ▼
-          ┌─────────────────────┐
-          │ What do I need to   │
-          │      know?          │
-          └──────────┬──────────┘
-                     │
-                     ▼
-          ┌─────────────────────┐
-          │ Check the available │
-          │      library        │
-          └──────────┬──────────┘
-                     │
-                     ▼
-          ┌─────────────────────┐
-          │ Find the relevant   │
-          │    information      │
-          └──────────┬──────────┘
-                     │
-                     ▼
-          ┌─────────────────────┐
-          │ Read only what is   │
-          │      needed         │
-          └──────────┬──────────┘
-                     │
-                     ▼
-          ┌─────────────────────┐
-          │ Apply it to the     │
-          │       task          │
-          └──────────┬──────────┘
-                     │
-                     ▼
-          ┌─────────────────────┐
-          │ Verify against the  │
-          │ actual repository   │
-          └─────────────────────┘
-
-Use the library to inform the work, not to replace repository inspection.
-
-Check the local library first. Read only what is relevant. Verify the result against the actual repository.
-
-The governing rule for Jules is:
-
-INSPECT FIRST. UNDERSTAND BEFORE CHANGING. USE THE REPOSITORY'S EXISTING SYSTEMS. FOLLOW THE ESTABLISHED JULES WORKFLOW. CONTEXT7 REQUIRES EXPLICIT OWNER APPROVAL. USE NEON AND STITCH WHEN MATERIALLY NECESSARY AND APPLICABLE. CHANGE ONLY WHAT IS AUTHORIZED. PROTECT SENSITIVE SYSTEMS. VERIFY THE ACTUAL RESULT. REPORT ONLY WHAT ACTUALLY HAPPENED.
 
 :::
