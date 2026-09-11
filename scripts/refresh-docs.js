@@ -85,7 +85,7 @@ function normalizeLineEndings(content) {
     .replace(/\r\n/g, '\n')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{2,}$/, '\n')
-    .trim() + '\n';
+    .trimEnd() + '\n';
 }
 
 /**
@@ -251,7 +251,7 @@ function getUpstreamSha(lib, sourceConfig) {
   });
 }
 
-function saveManifest(inventory, shas, sources, groups) {
+function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) {
   const timestamp = getHalifaxTimestamp();
 
   const manifestPath = path.join(DOCS_DIR, 'manifest.json');
@@ -261,7 +261,7 @@ function saveManifest(inventory, shas, sources, groups) {
   }
 
   const manifestData = {
-    lastUpdated: timestamp,
+    lastUpdated: updateTimestamp ? timestamp : (currentManifest.lastUpdated || timestamp),
     groups: groups || currentManifest.groups || {},
     sources: sources || currentManifest.sources || {},
     inventory: Array.from(inventory),
@@ -406,7 +406,7 @@ async function main() {
          const wasInInventory = inventory.has(lib);
          inventory.add(lib);
          if (!wasInInventory) {
-             saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+             saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, true);
          }
          continue;
       }
@@ -475,6 +475,7 @@ async function main() {
       stats.pending--;
 
       let isNewOrUpdated = false;
+      let isContentUpdated = false;
       
       // Compare normalized versions to ignore line-ending differences
       const normalizedBefore = contentBefore ? normalizeDevsiteMetadata(normalizeLineEndings(contentBefore)) : null;
@@ -532,6 +533,7 @@ async function main() {
               stats.bytesAdded += netSizeIncrease;
           }
           isNewOrUpdated = true;
+          isContentUpdated = true;
           progressMade = true;
       }
 
@@ -546,7 +548,8 @@ async function main() {
 
 
       if (isNewOrUpdated || !wasInInventory) {
-          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+          const updateTimestamp = isContentUpdated || !wasInInventory;
+          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, updateTimestamp);
           if (!wasInInventory) {
           }
       }
