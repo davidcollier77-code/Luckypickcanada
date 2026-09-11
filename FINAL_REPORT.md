@@ -10,7 +10,7 @@
 **Details & Verification Methods**
 1. **API Verification**: Checked the live application via the `/api/lucky-stories` endpoint using `curl`. The response returned a `200 OK` with valid JSON data (`isConfigured: true`, total stories count, and payload), proving the rotated credentials are valid and the app connects correctly to the database via its production pathway.
 2. **Neon MCP Verification**:
-   - Used `neon_get_database_tables` on the production Neon project (`summer-silence-20834502`) which verified the existence of both `lucky_stories` and `luck_shares` (Lucky Map) tables.
+   - Used `neon_get_database_tables` on the production Neon project which verified the existence of both `lucky_stories` and `luck_shares` (Lucky Map) tables.
    - Used `neon_run_sql` to execute a basic test query (`SELECT 1 as test`), which succeeded and returned `[{"test": 1}]`, proving querying functions as expected.
 3. No secrets, credentials, or sensitive strings were exposed or recorded during this task.
 
