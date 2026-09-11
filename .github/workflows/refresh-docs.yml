@@ -17,6 +17,11 @@ on:
   workflow_dispatch:
 
 permissions:
+concurrency:
+  group: refresh-documentation
+  queue: max
+  cancel-in-progress: false
+
   contents: write
   pull-requests: write
 
