@@ -51,21 +51,21 @@ function getDirSize(dirPath) {
  */
 function detectLineEnding(content) {
   if (!content || content.length === 0) {
-    return '
+    return '\n';
   }
   
-  const crlfCount = (content.match(/\r
-  const lfCount = (content.match(/(?<!\r)
+  const crlfCount = (content.match(/\r\n/g) || []).length;
+  const lfCount = (content.match(/(?<!\r)\n/g) || []).length;
   
   // If CRLF appears more frequently, use CRLF; otherwise use LF
-  return crlfCount > lfCount ? '\r
+  return crlfCount > lfCount ? '\r\n' : '\n';
 }
 
 /**
  * Normalizes line endings in content to LF for comparison purposes.
  */
 function normalizeLineEndings(content) {
-  return content.replace(/\r
+  return content.replace(/\r\n/g, '\n');
 }
 
 /**
@@ -73,9 +73,9 @@ function normalizeLineEndings(content) {
  */
 function convertLineEndings(content, lineEnding) {
   // First normalize to LF, then convert to target
-  const normalized = content.replace(/\r
-  if (lineEnding === '\r
-    return normalized.replace(/
+  const normalized = content.replace(/\r\n/g, '\n');
+  if (lineEnding === '\r\n') {
+    return normalized.replace(/\n/g, '\r\n');
   }
   return normalized;
 }
@@ -132,102 +132,99 @@ function fetchDocumentation(lib, sourceConfig) {
 
 function getUpstreamSha(lib, sourceConfig) {
   return new Promise((resolve) => {
-    if (!lib.startsWith('/')) {
-        resolve(null);
-        return;
-    }
     if (!sourceConfig || sourceConfig.type !== 'url' || !sourceConfig.url) {
-        resolve(null);
-        return;
+        return resolve(null);
     }
 
-    let branch = 'HEAD';
-    if (sourceConfig.branch || sourceConfig.ref) {
-        branch = sourceConfig.branch || sourceConfig.ref;
-    } else {
-        try {
-            const urlObj = new URL(sourceConfig.url);
-            if (urlObj.hostname === 'raw.githubusercontent.com') {
-                // Path is usually /owner/repo/branch/path...
-                // But branch names can contain slashes (e.g. feature/add-docs)
-                // We should match known standard branches, or return null if it's too ambiguous
-                const pathname = urlObj.pathname.startsWith('/') ? urlObj.pathname.substring(1) : urlObj.pathname;
-                const pathParts = pathname.split('/');
+    let owner = null;
+    let repo = null;
+    let ref = null;
 
-                if (pathParts.length >= 3) {
-                    const owner = pathParts[0];
-                    const repo = pathParts[1];
-                    const remainingPath = pathParts.slice(2).join('/');
+    try {
+        const urlObj = new URL(sourceConfig.url);
 
-                    const knownBranches = ['main/', 'master/', 'canary/', 'develop/', 'production/'];
-                    let foundBranch = null;
-                    for (const kb of knownBranches) {
-                        if (remainingPath.startsWith(kb)) {
-                            foundBranch = kb.substring(0, kb.length - 1); // remove trailing slash
-                            break;
-                        }
-                    }
-
-                    if (foundBranch) {
-                        branch = foundBranch;
-                    } else {
-                        // Branch could have slashes, too ambiguous to guess safely without explicit metadata.
-                        resolve(null);
-                        return;
-                    }
-                } else {
-                    resolve(null);
-                    return;
-                }
-            } else {
-                resolve(null); // Not a github raw url, fall back to comparing bytes
-                return;
-            }
-        } catch (e) {
-            resolve(null);
-            return;
+        if (urlObj.hostname !== 'raw.githubusercontent.com') {
+            // Not a GitHub raw URL. Safe fallback to byte-comparison.
+            return resolve(null);
         }
-    }
 
-    const parts = lib.split('/');
-    if (parts.length >= 3) {
-      const org = parts[1];
-      const repo = parts[2];
+        const pathname = urlObj.pathname.startsWith('/') ? urlObj.pathname.substring(1) : urlObj.pathname;
+        const pathParts = pathname.split('/');
 
-      // Use encodeURIComponent for branch in case it contains slashes, but the known ones don't. Still good practice.
-      const safeBranch = encodeURIComponent(branch);
-      const options = {
-        hostname: 'api.github.com',
-        path: `/repos/${org}/${repo}/commits/${safeBranch}`,
-        headers: {
-          'User-Agent': 'Node.js Context7 Refresher',
-          'Accept': 'application/vnd.github.v3+json'
+        if (pathParts.length < 3) {
+            return resolve(null);
         }
-      };
 
-      if (process.env.GITHUB_TOKEN) {
-         options.headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
-      }
+        owner = pathParts[0];
+        repo = pathParts[1];
+        const remainingPath = pathParts.slice(2).join('/');
 
-      https.get(options, (res) => {
-        if (res.statusCode === 200) {
-          let data = '';
-          res.on('data', chunk => data += chunk);
-          res.on('end', () => {
-            try {
-              const parsed = JSON.parse(data);
-              resolve(parsed.sha);
-            } catch (e) {
-              resolve(null);
-            }
-          });
+        if (sourceConfig.branch || sourceConfig.ref) {
+            ref = sourceConfig.branch || sourceConfig.ref;
         } else {
-          resolve(null);
+            // No explicit ref provided. Match standard branch patterns unambiguously.
+            const knownBranches = ['main/', 'master/', 'canary/', 'develop/', 'production/'];
+            let foundBranch = null;
+            for (const kb of knownBranches) {
+                if (remainingPath.startsWith(kb)) {
+                    foundBranch = kb.substring(0, kb.length - 1);
+                    break;
+                }
+            }
+
+            if (foundBranch) {
+                ref = foundBranch;
+            } else {
+                // Do not guess ambiguous refs
+                return resolve(null);
+            }
         }
-      }).on('error', () => resolve(null));
-    } else {
-      resolve(null);
+    } catch (e) {
+        return resolve(null);
     }
+
+    if (!owner || !repo || !ref) {
+        return resolve(null);
+    }
+
+    const safeBranch = encodeURIComponent(ref);
+    const options = {
+      hostname: 'api.github.com',
+      path: `/repos/${owner}/${repo}/commits/${safeBranch}`,
+      headers: {
+        'User-Agent': 'Node.js Context7 Refresher',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      timeout: 10000 // 10s request timeout
+    };
+
+    if (process.env.GITHUB_TOKEN) {
+       options.headers['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const req = https.get(options, (res) => {
+      if (res.statusCode === 200) {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            resolve(parsed.sha || null);
+          } catch (e) {
+            resolve(null);
+          }
+        });
+      } else {
+        res.resume(); // drain
+        resolve(null);
+      }
+    });
+
+    req.on('error', () => resolve(null));
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(null);
+    });
   });
 }
 
@@ -344,7 +341,7 @@ async function main() {
 
       let existingSize = 0;
       let contentBefore = null;
-      let existingLineEnding = '
+      let existingLineEnding = '\n';
       if (fs.existsSync(firstDocPath)) {
           // If we had a symlink, lstat or stat size? We use the actual content length if we read it
           contentBefore = fs.readFileSync(firstDocPath, 'utf8');
@@ -354,7 +351,7 @@ async function main() {
       
       // For genuinely new files, use LF (repository convention)
       if (!contentBefore) {
-          existingLineEnding = '
+          existingLineEnding = '\n';
       }
 
       const sourceConfig = sourcesConfig[lib];

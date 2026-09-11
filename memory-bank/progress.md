@@ -1,20 +1,8 @@
 # Progress
 
-## What Works
-- Centralized IP-based rate limiting for public API endpoints to prevent abuse.
-- Next.js App Router architecture is set up.
-- Cloudflare Pages / Workers deployment configured (using OpenNext).
-- Neon PostgreSQL database integration is functional (used for `luck_shares` and `suggestions`).
-- Stripe Checkout is integrated for the $1.00 Lucky Pick, $2.99 gift email package, and custom tip jar.
-- Resend integration is active for delivering gift emails.
-- Cloudflare Turnstile integration is active for public form verification.
-
-## Known Discrepancies
-- **Python Utility:** The local Python utility script (`luckypick.py`) and its active test suite are documented in `README.md`, but these files do not currently exist in the repository.
-
-## What is Left to Build
-- *(Future tasks will populate this section with specific feature developments or bug fixes.)*
-
-## Completed Milestones
-- [x] Initialize Memory Bank core files.
-- [x] Harden Memory Bank for ongoing maintainability and fact-checked accuracy against the current repository state.
+- Completed deep dive of `scripts/refresh-docs.js` updater.
+- Fixed `getUpstreamSha` to reliably identify GitHub repos directly from `sourceConfig.url`, eliminating hardcoded guessing and fallback parsing of Context7 identifiers. It now returns `null` correctly for non-GitHub URLs (e.g. `/websites/neon`), allowing fallback to safe byte-comparison.
+- Fixed `fetchWithRedirects` by implementing strict request timeouts (15s), limiting redirects (max 5), resolving relative redirect locations correctly, and handling all non-200 HTTP statuses by safely rejecting instead of downloading error HTML.
+- Implemented size protections during the stream downloading phase by rejecting fetches that exceed 50 MB, avoiding memory exhaustion.
+- Enforced atomic manifest saves by saving to a `manifest.json.tmp` file and renaming to prevent corruption during failed or interrupted script execution.
+- Added tests for edge cases like ambiguity, missing configuration, non-GitHub URLs, timeouts, redirects, and atomic saving.
