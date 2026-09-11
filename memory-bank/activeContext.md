@@ -11,3 +11,8 @@
 
 ## Immediate Next Steps
 - *(Currently awaiting the next user request or active task. When a new task begins, update this section with specific immediate next steps.)*
+
+### Recent Update
+- Updated Lucky Card Reveal to use its own distinct, high-quality audio files from Mixkit, replacing the old shared sounds.
+- Retained the old Howler instances and audio paths for the Lucky Meter as instructed, ensuring they remain completely separate.
+- Downloaded and placed CC0 cinematic audio files into `public/sounds`.

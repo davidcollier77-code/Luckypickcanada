@@ -1,21 +1,33 @@
-## Neon Database Verification Report
+# Lucky Card Reveal Audio Update - Review Revisions
 
-**Verification Metrics**
-- **Connection**: PASS
-- **Query**: PASS
-- **Expected tables accessible**: PASS
-- **Stories data access**: PASS
-- **Lucky Map database storage**: CONFIRMED
+## Findings Addressed
+1. **License Verification**: Corrected license claims. The new assets are sourced under the "Mixkit Free Sound Effects License", which permits commercial use in web projects without attribution. They are not strictly CC0.
+2. **Testing Claims**: Removed ambiguous testing claims. The verifications performed were strictly `pnpm run build` and `./jules-verify.sh` (which covers type checking and build verification). No automated E2E browser tests exist for audio node assertion.
+3. **LuckyGenerator.tsx Dead Code**: Confirmed `components/LuckyGenerator.tsx` is an unused legacy component. Reverted changes to this file to prevent modifying inactive architecture.
+4. **Buildup Gap Fixed**: The buildup audio asset (asset 1287) is shorter than the 8.0s reveal schedule. The `app/lucky-card-reveal.js` sequence has been updated to explicitly enable `loop = true` on the buildup buffer source, ensuring continuous atmospheric tension throughout the entire sequence.
+5. **Synthetic Audio Removed**: Removed legacy Web Audio API oscillator synthesis (`drone`, `droneHarmonic`, `burst`, `sub`, `shimmerOsc`) from the Card Reveal sequence. The reveal now relies strictly on the dedicated Mixkit audio buffers, replacing the final shimmer with the `mixkit-magic-sparkles.mp3` asset.
 
-**Details & Verification Methods**
-1. **API Verification**: Checked the live application via the `/api/lucky-stories` endpoint using `curl`. The response returned a `200 OK` with valid JSON data (`isConfigured: true`, total stories count, and payload), proving the rotated credentials are valid and the app connects correctly to the database via its production pathway.
-2. **Neon MCP Verification**:
-   - Used `neon_get_database_tables` on the production Neon project which verified the existence of both `lucky_stories` and `luck_shares` (Lucky Map) tables.
-   - Used `neon_run_sql` to execute a basic test query (`SELECT 1 as test`), which succeeded and returned `[{"test": 1}]`, proving querying functions as expected.
-3. No secrets, credentials, or sensitive strings were exposed or recorded during this task.
+## What Changed
+- Replaced the shared audio files in the active `Lucky Card Reveal` (`app/lucky-card-reveal.js`) with dedicated, cinematic sound files from Mixkit.
+- Looped the buildup sequence to prevent audio drop-off.
+- Stripped oscillator-based synthesized audio from the reveal sequence.
 
-**Libraries Consulted / Used**
-- **Jules Documentation / AGENTS.md**: Consulted (Task Group: General/Deep Dive) - Used for understanding repository rules, task planning, and constraints regarding database credentials and safe verification.
-- **Neon**: Used (Task Group: Deep Dive/Investigation) - Used the Neon MCP integrations (`neon_get_database_tables`, `neon_run_sql`) to inspect table schemas and execute a harmless test query safely without accessing or handling any credentials directly.
+## Files Changed
+- `app/lucky-card-reveal.js`: Updated audio paths, enabled buildup looping, stripped Web Audio API synthesizers.
+- `public/sounds/`: Added four new `.mp3` files (Mixkit assets).
 
-*(No codebase changes were made as this was strictly a read-only verification task).*
+## New Sound Files Added & Sources
+1. `mixkit-cinematic-whoosh.mp3` - Sourced from Mixkit (asset 1287)
+2. `mixkit-cinematic-impact.mp3` - Sourced from Mixkit (asset 2916)
+3. `mixkit-magic-sparkles.mp3` - Sourced from Mixkit (asset 2407)
+4. `mixkit-magical-impact.mp3` - Sourced from Mixkit (asset 869)
+*All audio files are sourced under Mixkit's Free Sound Effects License.*
+
+## Verifications & Limitations
+- **Lucky Meter Verification**: Confirmed that `components/DailyResonance.tsx` remains completely untouched. It still references the original audio files (`freesound_community-starship...`, etc.) and `Howl`.
+- **ZZFX Verification**: Did not introduce any new `zzfx`. Legacy oscillators were removed from the card reveal.
+- **Visuals & Logic**: No changes made to card artwork, layout, tier rarity logic, or canvas drawing operations.
+- **Build**: Successfully executed `pnpm run build` and `./jules-verify.sh`. All tests pass.
+
+## Documentation & Routing Consulted
+- Read and adhered to the boundaries specified in `AGENTS.md`.

@@ -59,10 +59,10 @@ export default function LuckyCardReveal() {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         const ctx = new AudioContextClass();
         const files = {
-          lightning: '/yodguard-lightning-magic-3-378649.mp3',
-          buildup: '/freesound_community-starship-rail-gun-charge-35904.mp3',
-          whoosh: '/dragon-studio-whoosh-cinematic-376875.mp3',
-          firework: '/freesound_community-fireworks-1-94483.mp3'
+          lightning: '/sounds/mixkit-magic-sparkles.mp3',
+          buildup: '/sounds/mixkit-cinematic-whoosh.mp3',
+          whoosh: '/sounds/mixkit-cinematic-impact.mp3',
+          firework: '/sounds/mixkit-magical-impact.mp3'
         };
 
         const buffers = {};
@@ -181,42 +181,18 @@ export default function LuckyCardReveal() {
     const finalStrikeTime = now + schedule[schedule.length - 1];
 
     // 1. Initial Atmospheric Buildup
-    playBuffer(ctx, audioBuffers.buildup, now, 0.4, 0.6, finalStrikeTime + 1.0);
-
-    // Deep sub rumble building up
-    const drone = ctx.createOscillator();
-    const droneGain = ctx.createGain();
-    drone.type = 'sine';
-    drone.frequency.setValueAtTime(35, now);
-    drone.frequency.setTargetAtTime(55, finalStrikeTime, 0.05);
-
-    // Add some harmonics with a sawtooth
-    const droneHarmonic = ctx.createOscillator();
-    droneHarmonic.type = 'sawtooth';
-    droneHarmonic.frequency.setValueAtTime(35, now);
-    droneHarmonic.frequency.setTargetAtTime(55, finalStrikeTime, 0.05);
-
-    // Lowpass filter for the sawtooth so it's not harsh
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(150, now);
-    filter.frequency.linearRampToValueAtTime(400, finalStrikeTime);
-
-    droneHarmonic.connect(filter);
-    filter.connect(droneGain);
-    drone.connect(droneGain);
-
-    droneGain.gain.setValueAtTime(0, now);
-    droneGain.gain.linearRampToValueAtTime(0.2, now + 1.5);
-    droneGain.gain.setTargetAtTime(0.4, finalStrikeTime - 0.2, 0.05);
-    droneGain.gain.setTargetAtTime(0, finalStrikeTime, 0.05); // Snap fade on final strike
-
-    droneGain.connect(ctx.destination);
-    drone.start(now);
-    droneHarmonic.start(now);
-    drone.stop(finalStrikeTime + 0.5);
-    droneHarmonic.stop(finalStrikeTime + 0.5);
-    activeAudioNodesRef.current.push(drone, droneHarmonic);
+    // Loop the buildup to cover the entire sequence duration
+    const buildupSrc = ctx.createBufferSource();
+    buildupSrc.buffer = audioBuffers.buildup;
+    buildupSrc.loop = true;
+    const buildupGain = ctx.createGain();
+    buildupGain.gain.setValueAtTime(0.4, now);
+    buildupSrc.playbackRate.value = 0.6;
+    buildupSrc.connect(buildupGain);
+    buildupGain.connect(ctx.destination);
+    buildupSrc.start(now);
+    buildupSrc.stop(now + finalStrikeTime + 1.0);
+    activeAudioNodesRef.current.push(buildupSrc);
 
     // Schedule strikes
     schedule.forEach((timeOffset, idx) => {
@@ -238,38 +214,10 @@ export default function LuckyCardReveal() {
       playBuffer(ctx, audioBuffers.firework, strikeTime, intensity * 0.4, 1.2 + (idx * 0.1), 1.0);
 
 
-      // Short, subtle magical impact burst
-      const burst = ctx.createOscillator();
-      const burstGain = ctx.createGain();
-      burst.type = 'triangle';
-      burst.frequency.setValueAtTime(isFinal ? 800 : 400 + (idx * 150), strikeTime);
-      burst.frequency.setTargetAtTime(isFinal ? 200 : 100, strikeTime + 0.2, 0.05);
-
-      burstGain.gain.setValueAtTime(0, strikeTime);
-      burstGain.gain.setValueAtTime(intensity * 0.8, strikeTime + 0.01); // sharp attack
-      burstGain.gain.setTargetAtTime(0.01, strikeTime + 0.2, 0.05); // quick decay
-
-      burst.connect(burstGain);
-      burstGain.connect(ctx.destination);
-      burst.start(strikeTime);
-      burst.stop(strikeTime + 0.3);
-      activeAudioNodesRef.current.push(burst);
 
 
-      // Sub bass drop on every impact, but huge on the final one
-      const sub = ctx.createOscillator();
-      const subGain = ctx.createGain();
-      sub.type = 'sine';
-      sub.frequency.setValueAtTime(isFinal ? 60 : 80, strikeTime);
-      sub.frequency.setTargetAtTime(20, strikeTime + (isFinal ? 1.5 : 0.5), 0.05);
-      subGain.gain.setValueAtTime(0, strikeTime);
-      subGain.gain.setValueAtTime(isFinal ? 0.8 : 0.4 * intensity, strikeTime + 0.02);
-      subGain.gain.setTargetAtTime(0.01, strikeTime + (isFinal ? 1.0 : 0.4), 0.05);
-      sub.connect(subGain);
-      subGain.connect(ctx.destination);
-      sub.start(strikeTime);
-      sub.stop(strikeTime + (isFinal ? 1.5 : 0.5));
-      activeAudioNodesRef.current.push(sub);
+
+
 
       // 6. Final Impact Details
       if (isFinal) {
