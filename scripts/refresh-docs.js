@@ -89,9 +89,10 @@ function fetchDocumentation(lib, sourceConfig) {
       return reject(new Error('Invalid or missing source configuration.'));
     }
 
-    const fetchWithRedirects = (currentUrl, redirectCount) => {
+    // Hard fetch deadline (45s total for entire operation including all redirects)
+    let currentReq = null;
       if (redirectCount <= 0) {
-        return reject(new Error('Too many redirects'));
+        if (currentReq) currentReq.destroy();
       }
 
       const req = https.get(currentUrl, {
@@ -104,6 +105,7 @@ function fetchDocumentation(lib, sourceConfig) {
            res.resume(); // drain
            let redirectUrl = res.headers.location;
            try {
+        currentReq = req;
                redirectUrl = new URL(redirectUrl, currentUrl).href;
            } catch (e) {
                clearTimeout(hardTimeout);
