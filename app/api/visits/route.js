@@ -19,7 +19,7 @@ export async function POST(req) {
   try {
     const ip = getClientIp(req);
     // Allow max 5 requests per 10 seconds per IP for visits
-    const rateLimit = checkApiRateLimit(ip, 'visits', 5, 10000);
+    const rateLimit = await checkApiRateLimit(ip, 'visits', 5, 10000);
 
     if (!rateLimit.ok) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
