@@ -286,6 +286,24 @@ function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) 
   }
 }
 
+function cleanupStaleTempFiles(dirPath) {
+  if (!fs.existsSync(dirPath)) return;
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  for (const entry of entries) {
+    const entryPath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      cleanupStaleTempFiles(entryPath);
+    } else if (entry.isFile() && entry.name.includes('.tmp.')) {
+      try {
+        fs.unlinkSync(entryPath);
+        console.log(`Removed stale temp file: ${entryPath}`);
+      } catch (e) {
+        console.warn(`Could not remove stale temp file ${entryPath}:`, e.message);
+      }
+    }
+  }
+}
+
 async function main() {
   console.log('Starting continuous documentation refresh...');
 
@@ -293,8 +311,7 @@ async function main() {
     fs.mkdirSync(DOCS_DIR, { recursive: true });
   }
 
-
-
+  cleanupStaleTempFiles(DOCS_DIR);
 
   const manifestPath = path.join(DOCS_DIR, 'manifest.json');
   if (!fs.existsSync(manifestPath)) {

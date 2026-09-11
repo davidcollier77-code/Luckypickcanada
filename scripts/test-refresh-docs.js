@@ -11,6 +11,7 @@ console.log('Running test suite for refresh-docs.js...');
 
 let mockResponses = {};
 let requestedUrls = [];
+let requestedOptions = [];
 
 const originalGet = https.get;
 
@@ -24,6 +25,7 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
     }
 
     requestedUrls.push(url);
+    requestedOptions.push(options);
 
     const res = new EventEmitter();
     res.resume = () => {};
@@ -102,6 +104,7 @@ async function runTests() {
 
     async function test(name, fn) {
         requestedUrls = [];
+        requestedOptions = [];
         mockResponses = {};
         try {
             await fn();
@@ -301,6 +304,7 @@ async function runTests() {
         } catch (e) {
             assert.match(e.message, /Request Timeout/);
         }
+        assert.strictEqual(requestedOptions[0].timeout, 15000, 'Should request with a 15-second timeout option');
     });
 
     await test('fetchDocumentation: 10MB response-size limit', async () => {
