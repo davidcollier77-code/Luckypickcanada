@@ -476,7 +476,6 @@ async function main() {
 
       let isNewOrUpdated = false;
       
-      let contentChanged = false;
       // Compare normalized versions to ignore line-ending differences
       const normalizedBefore = contentBefore ? normalizeDevsiteMetadata(normalizeLineEndings(contentBefore)) : null;
       const normalizedOutput = normalizeDevsiteMetadata(normalizeLineEndings(output));
@@ -535,11 +534,11 @@ async function main() {
           isNewOrUpdated = true;
           progressMade = true;
       }
-          contentChanged = true;
 
       if (upstreamSha) {
           githubShas[lib] = upstreamSha;
           isNewOrUpdated = true;
+      }
 
       const wasInInventory = inventory.has(lib);
 
@@ -547,13 +546,11 @@ async function main() {
 
 
       if (isNewOrUpdated || !wasInInventory) {
-      if (contentChanged || !wasInInventory) {
-          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, true);
+          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
+          if (!wasInInventory) {
           }
       }
-      } else if (upstreamSha) {
-          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, false);
-      }
+
 
       // Update current docs size using strict filesystem measurement to be safe
       currentDocsSize = getDirSize(DOCS_DIR);
