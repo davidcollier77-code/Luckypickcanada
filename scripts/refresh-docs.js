@@ -547,9 +547,9 @@ async function main() {
 
       if (isNewOrUpdated || !wasInInventory) {
           saveManifest(inventory, githubShas, sourcesConfig, groupsConfig);
-          if (!wasInInventory) {
-          }
-      }
+          // Only update lastUpdated timestamp if content actually changed or it's a new library
+          const shouldUpdateTimestamp = contentChanged || !wasInInventory;
+          saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, shouldUpdateTimestamp);
 
 
       // Update current docs size using strict filesystem measurement to be safe
