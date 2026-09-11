@@ -45,6 +45,40 @@ function getDirSize(dirPath) {
   return size;
 }
 
+/**
+ * Detects the primary line-ending style used in a file.
+ * Returns '\r
+ */
+function detectLineEnding(content) {
+  if (!content || content.length === 0) {
+    return '
+  }
+  
+  const crlfCount = (content.match(/\r
+  const lfCount = (content.match(/(?<!\r)
+  
+  // If CRLF appears more frequently, use CRLF; otherwise use LF
+  return crlfCount > lfCount ? '\r
+}
+
+/**
+ * Normalizes line endings in content to LF for comparison purposes.
+ */
+function normalizeLineEndings(content) {
+  return content.replace(/\r
+}
+
+/**
+ * Converts content to use the specified line-ending style.
+ */
+function convertLineEndings(content, lineEnding) {
+  // First normalize to LF, then convert to target
+  const normalized = content.replace(/\r
+  if (lineEnding === '\r
+    return normalized.replace(/
+  }
+  return normalized;
+}
 
 
 
@@ -310,10 +344,17 @@ async function main() {
 
       let existingSize = 0;
       let contentBefore = null;
+      let existingLineEnding = '
       if (fs.existsSync(firstDocPath)) {
           // If we had a symlink, lstat or stat size? We use the actual content length if we read it
           contentBefore = fs.readFileSync(firstDocPath, 'utf8');
           existingSize = Buffer.byteLength(contentBefore, 'utf8');
+          existingLineEnding = detectLineEnding(contentBefore);
+      }
+      
+      // For genuinely new files, use LF (repository convention)
+      if (!contentBefore) {
+          existingLineEnding = '
       }
 
       const sourceConfig = sourcesConfig[lib];
@@ -387,7 +428,13 @@ async function main() {
       }
 
       const exactSize = Buffer.byteLength(output, 'utf8');
-      const netSizeIncrease = exactSize - existingSize;
+      
+      // Convert output to match existing file's line-ending style
+      const outputWithCorrectLineEndings = convertLineEndings(output, existingLineEnding);
+      const finalSize = Buffer.byteLength(outputWithCorrectLineEndings, 'utf8');
+      const netSizeIncrease = finalSize - existingSize;
+      
+      // Use the converted output for all subsequent operations
 
       if (currentDocsSize + netSizeIncrease > MAX_DOCS_SIZE_BYTES) {
         console.log(`Library ${lib} (exact size ${exactSize} bytes) would exceed 495 MB limit (current: ${currentDocsSize}, net increase: ${netSizeIncrease}).`);
@@ -408,8 +455,11 @@ async function main() {
       stats.pending--;
 
       let isNewOrUpdated = false;
-
-      if (contentBefore === output) {
+      
+      // Compare normalized versions to ignore line-ending differences
+      const normalizedBefore = contentBefore ? normalizeLineEndings(contentBefore) : null;
+      const normalizedOutput = normalizeLineEndings(output);
+      if (normalizedBefore === normalizedOutput) {
           console.log(`CURRENT: ${lib} (no changes)`);
           stats.unchanged++;
 
@@ -421,7 +471,7 @@ async function main() {
 
             if (i === 0) {
               if (!fs.existsSync(docPath)) {
-                fs.writeFileSync(docPath, output);
+                fs.writeFileSync(docPath, outputWithCorrectLineEndings);
               }
             } else {
                if (!fs.existsSync(docPath)) {
@@ -430,7 +480,7 @@ async function main() {
                     fs.symlinkSync(relativeTarget, docPath);
                   } catch(e) {
                      // fallback
-                     fs.writeFileSync(docPath, output);
+                     fs.writeFileSync(docPath, outputWithCorrectLineEndings);
                   }
                }
             }
@@ -442,7 +492,7 @@ async function main() {
           // Write primary copy to first group
           const firstGroupPath = path.join(DOCS_DIR, groups[0], `${safeName}.md`);
           try { if (fs.lstatSync(firstGroupPath)) fs.unlinkSync(firstGroupPath); } catch (e) {}
-          fs.writeFileSync(firstGroupPath, output);
+          fs.writeFileSync(firstGroupPath, outputWithCorrectLineEndings);
 
           // Write symlinks for subsequent groups
           for (let i = 1; i < groups.length; i++) {
@@ -454,7 +504,7 @@ async function main() {
                 fs.symlinkSync(relativeTarget, docPath);
              } catch(e) {
                 console.warn(`Symlink failed for ${docPath}, falling back to writing file: `, e.message);
-                fs.writeFileSync(docPath, output);
+                fs.writeFileSync(docPath, outputWithCorrectLineEndings);
              }
           }
           // only add netSizeIncrease once
