@@ -277,7 +277,6 @@ function useResonanceCanvas(
     lastStartTime: 0,
     nextAmbientEffectAt: 0,
     impactTriggered: false,
-    audioTriggered: false,
     scoreLastUpdate: 0,
     scoreInterval: SPIN_INTERVAL_MS,
     scheduledEvents: [] as {time: number, action: () => void}[],
@@ -500,7 +499,6 @@ function useResonanceCanvas(
         revealStartTimeRef.current = now;
         s.lastStartTime = now;
         s.impactTriggered = false;
-        s.audioTriggered = false;
         s.flash = 0;
         s.scoreInterval = SPIN_INTERVAL_MS;
         s.scoreLastUpdate = now;
@@ -562,7 +560,6 @@ function useResonanceCanvas(
         // 7800: THE IMPACT
         else if (tReveal >= IMPACT_TIME_MS && !s.impactTriggered) {
           s.impactTriggered = true;
-          s.audioTriggered = true;
           setImpactFired(true); // Triggers CSS
           s.flash = 1.0;
 

@@ -5,7 +5,7 @@
    - Changed `REVEAL_DURATION_MS` from `9000` to `8800` (which is `IMPACT_TIME_MS`) to ensure the React UI state transition ("locked" state) completes exactly when the impact visual and audio events trigger.
 2. **Audio and Visual Sync:**
    - Adjusted the main cinematic loop condition to trigger audio at exactly `tReveal >= IMPACT_TIME_MS` rather than 150ms earlier (`IMPACT_TIME_MS - 150`), tightly synchronizing it with the visual flash and locking logic.
-   - Merged the audio and visual `trigger` variables (`s.impactTriggered` and `s.audioTriggered`) to ensure both domains execute in the exact same frame.
+   - Removed the redundant `s.audioTriggered` flag; audio and visual effects now both gate on the single `s.impactTriggered` flag, set in the same impact branch, to ensure both domains execute in the exact same frame.
 3. **Number Lock Accuracy:**
    - Moved the percentage number lock into the animation loop exactly at `tReveal >= IMPACT_TIME_MS`, directly reading `pendingResultRef.current.score`. This prevents the number from cycling further after the impact fires.
 4. **Cosmic Lightning Visual Impact:**
