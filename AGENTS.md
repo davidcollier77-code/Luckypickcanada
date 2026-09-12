@@ -64,7 +64,7 @@ Do not consult unrelated specialist instructions or documentation libraries.
 
 `.docs/` is read-only during ordinary application work.
 
-AI agents must not manually update or maintain the ".docs/" documentation library, documentation refresh scripts, or documentation refresh workflows unless explicitly authorized by the repository owner.
+Do not refresh, regenerate, or modify `.docs/`, `.docs/manifest.json`, documentation refresh scripts, or documentation refresh workflows unless explicitly authorized.
 
 If local documentation is incomplete or stale, use the best available authorized source and report the limitation.
 
