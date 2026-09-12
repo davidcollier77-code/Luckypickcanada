@@ -38,7 +38,7 @@ export function getStoryProvince(location) {
   }
 
   const provinceCodeMatch = storyProvinces.find((province) =>
-    new RegExp(`(^|[^A-Za-z])${province.code}([^A-Za-z]|$)`).test(rawLocation),
+    new RegExp(`(^|[^A-Za-z])${province.code}([^A-Za-z]|$)`, "i").test(rawLocation),
   );
 
   if (provinceCodeMatch) {
