@@ -331,6 +331,29 @@ function useResonanceCanvas(
     }
 
     // -----------------------------------------------------------------------
+    // Audio Helper
+    // -----------------------------------------------------------------------
+    const playAudioBuffer = (key: string, vol: number = 1.0, rate: number = 1.0) => {
+      if (audioCtxRef.current && audioBuffersRef.current[key]) {
+         try {
+           const source = audioCtxRef.current.createBufferSource();
+           source.buffer = audioBuffersRef.current[key];
+           source.playbackRate.value = rate;
+           const gainNode = audioCtxRef.current.createGain();
+           gainNode.gain.value = vol;
+           source.connect(gainNode);
+           gainNode.connect(audioCtxRef.current.destination);
+           activeSourcesRef.current.push(source);
+           source.onended = () => {
+             source.disconnect();
+             gainNode.disconnect();
+           };
+           source.start(0);
+         } catch (e) { /* ignore audio playback errors */ }
+      }
+    };
+
+    // -----------------------------------------------------------------------
     // Canvas Generators
     // -----------------------------------------------------------------------
     
@@ -395,19 +418,21 @@ function useResonanceCanvas(
       s.flash = isHero ? 1.5 : (s.flash + 0.4);
     }
 
-    function spawnMeteor(isHero: boolean) {
-      const startX = (Math.random() * 1.5 * width) - (width * 0.2);
-      const startY = isHero ? (Math.random() * -300 - 100) : (Math.random() * -100 - 50);
+    function spawnMeteor(isHero: boolean, xOverride?: number, speedOverride?: number, lenOverride?: number, widthOverride?: number, yOverride?: number) {
+      const startX = xOverride !== undefined ? xOverride : ((Math.random() * 1.5 * width) - (width * 0.2));
+      const startY = yOverride !== undefined ? yOverride : (isHero ? (Math.random() * -300 - 100) : (Math.random() * -100 - 50));
 
-      const speed = reduced ? 600 : (isHero ? 1800 + Math.random() * 800 : 900 + Math.random() * 500);
+      const speed = reduced ? 600 : (speedOverride !== undefined ? speedOverride : (isHero ? 1800 + Math.random() * 800 : 900 + Math.random() * 500));
       const angle = (35 + Math.random() * 30) * (Math.PI / 180);
+      const len = lenOverride !== undefined ? lenOverride : (isHero ? 150 + Math.random() * 100 : 60 + Math.random() * 60);
+      const w = widthOverride !== undefined ? widthOverride : (isHero ? 4 + Math.random() * 3 : 1.5 + Math.random() * 2);
 
       s.meteors.push({
         x: startX, y: startY,
         vx: Math.cos(angle) * (startX > width * 0.8 ? -1 : 1) * speed,
         vy: Math.sin(angle) * speed,
-        len: isHero ? 150 + Math.random() * 100 : 60 + Math.random() * 60,
-        width: isHero ? 4 + Math.random() * 3 : 1.5 + Math.random() * 2,
+        len: len,
+        width: w,
         trail: [], life: 0, isHero
       });
     }
@@ -424,6 +449,8 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string, isHero: boolean) {
+      // Trigger burst sound dynamically
+      playAudioBuffer('firework', isHero ? 0.8 : 0.4, 0.8 + Math.random() * 0.4);
       const count = reduced ? 15 : (isHero ? 120 : 37 + Math.floor(Math.random() * 22));
       // Cap sparks if we have too many
       let actualCount = Math.min(count, 150 - s.sparks.length);
@@ -497,7 +524,7 @@ function useResonanceCanvas(
         
         // 0 - 7000: Build up
         if (tReveal < TENSION_TIME_MS) {
-          globalIntensity = tReveal / TENSION_TIME_MS;
+          globalIntensity = 0.2 + (tReveal / TENSION_TIME_MS) * 0.8; // Smooth from idle 0.2 to 1.0
           if (now - s.scoreLastUpdate > s.scoreInterval) {
              if (scoreTextRef.current) scoreTextRef.current.textContent = `${Math.floor(Math.random() * 101)}%`;
              s.scoreLastUpdate = now;
@@ -545,16 +572,7 @@ function useResonanceCanvas(
              buildUpGainRef.current = null;
           }
 
-          const playAudioBuffer = (key: string) => {
-             if (audioCtxRef.current && audioBuffersRef.current[key]) {
-                const source = audioCtxRef.current.createBufferSource();
-                source.buffer = audioBuffersRef.current[key];
-                source.connect(audioCtxRef.current.destination);
-                activeSourcesRef.current.push(source);
-                source.onended = () => source.disconnect();
-                source.start(0);
-             }
-          };
+
 
           if (tier) {
             if (tier.id === 2) {
@@ -575,30 +593,75 @@ function useResonanceCanvas(
 
           if (tier) {
             if (tier.id === 2) {
-              const clusterSize = reduced ? 4 : 15;
-              for(let i=0; i<clusterSize; i++) {
-                s.scheduledEvents.push({ time: tReveal + Math.random() * 400, action: () => spawnMeteor(true) }); // Small deviation fine here
+              // First Pass
+              spawnMeteor(true, width * 0.2, 2200, 300, 8, -200);
+              const clusterSize1 = reduced ? 2 : 5;
+              for(let i=0; i<clusterSize1; i++) {
+                s.scheduledEvents.push({ time: tReveal + Math.random() * 150, action: () => spawnMeteor(true, width * 0.2 + (Math.random()-0.5)*200, 1800) });
               }
-              const speed = 1800;
-              const angle = 45 * (Math.PI / 180);
-              s.meteors.push({
-                x: width * 0.2, y: -200,
-                vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-                len: 300, width: 8, trail: [], life: 0, isHero: true
-              });
+
+              // Second Pass (Offset timing & position)
+              s.scheduledEvents.push({ time: tReveal + 300, action: () => {
+                playAudioBuffer('meteor', 0.8, 1.2);
+                spawnMeteor(true, width * 0.6, 2500, 250, 6, -100);
+                const clusterSize2 = reduced ? 2 : 6;
+                for(let i=0; i<clusterSize2; i++) {
+                   s.scheduledEvents.push({ time: tReveal + 300 + Math.random() * 200, action: () => spawnMeteor(true, width * 0.6 + (Math.random()-0.5)*300, 1900) });
+                }
+              }});
+
+              // Final massive hero pass
+              s.scheduledEvents.push({ time: tReveal + 700, action: () => {
+                playAudioBuffer('meteor', 1.0, 0.9);
+                spawnMeteor(true, width * 0.4, 3000, 400, 12, -300);
+                const clusterSize3 = reduced ? 3 : 8;
+                for(let i=0; i<clusterSize3; i++) {
+                   s.scheduledEvents.push({ time: tReveal + 700 + Math.random() * 250, action: () => spawnMeteor(true, width * 0.4 + (Math.random()-0.5)*400, 2000) });
+                }
+              }});
             }
             else if (tier.id === 3) {
+              // Initial Strike
               spawnBolt(true);
-              s.scheduledEvents.push({ time: tReveal + 150, action: () => spawnBolt(true) });
               spawnBolt(false);
+
+              // Secondary volley
+              s.scheduledEvents.push({ time: tReveal + 200, action: () => {
+                 playAudioBuffer('lightning', 0.6, 1.3);
+                 spawnBolt(true);
+                 spawnBolt(false);
+                 spawnBolt(false);
+              }});
+
+              // Final massive crescendo
+              s.scheduledEvents.push({ time: tReveal + 600, action: () => {
+                 playAudioBuffer('lightning', 1.0, 0.8);
+                 spawnBolt(true);
+                 spawnBolt(true);
+                 s.flash = 2.0; // Extra emphasis
+                 spawnBolt(false);
+                 spawnBolt(false);
+                 spawnBolt(false);
+              }});
             }
             else if (tier.id === 4) {
+              // Initial Hero Launch
               spawnRocket(true, width * 0.5, 750);
-              s.scheduledEvents.push({ time: tReveal + 100, action: () => spawnRocket(true, width * 0.3, 600) });
-              s.scheduledEvents.push({ time: tReveal + 150, action: () => spawnRocket(true, width * 0.7, 600) });
-              s.scheduledEvents.push({ time: tReveal + 250, action: () => spawnRocket(true, width * 0.4, 700) });
-              s.scheduledEvents.push({ time: tReveal + 300, action: () => spawnRocket(true, width * 0.6, 700) });
-              s.scheduledEvents.push({ time: tReveal + 450, action: () => spawnRocket(true, width * 0.5, 850) });
+
+              // Secondary outer frame
+              s.scheduledEvents.push({ time: tReveal + 200, action: () => spawnRocket(true, width * 0.2, 650) });
+              s.scheduledEvents.push({ time: tReveal + 250, action: () => spawnRocket(true, width * 0.8, 650) });
+
+              // Mid volley
+              s.scheduledEvents.push({ time: tReveal + 500, action: () => spawnRocket(true, width * 0.35, 700) });
+              s.scheduledEvents.push({ time: tReveal + 550, action: () => spawnRocket(true, width * 0.65, 700) });
+
+              // Final Massive Center Volley
+              s.scheduledEvents.push({ time: tReveal + 800, action: () => {
+                 spawnRocket(true, width * 0.5, 900);
+                 spawnRocket(true, width * 0.45, 850);
+                 spawnRocket(true, width * 0.55, 850);
+              }});
             }
           }
         }
@@ -619,18 +682,18 @@ function useResonanceCanvas(
 
       ctx!.globalCompositeOperation = 'lighter';
 
-      // Draw Motes
+      // Draw Motes (Enhancement: react to flashes)
       for (const m of s.motes) {
         m.driftPhase += dt * m.speed * (1 + globalIntensity * 2); 
         m.y -= dt * (4 + globalIntensity * 10); 
         if (m.y < -20) m.y = height + 20;
         const x = (m.x + Math.sin(m.driftPhase) * 14) | 0;
         const y = m.y | 0;
-        const baseAlpha = phase === 'idle' ? 0.3 : Math.min(0.8, 0.3 + globalIntensity * 0.5);
+        const baseAlpha = phase === 'idle' ? 0.3 : Math.min(0.8, 0.3 + globalIntensity * 0.5) + (s.flash * 0.3);
         const glow = ctx!.createRadialGradient(x, y, 0, x, y, m.r * 6);
         glow.addColorStop(0, m.hue === 'cyan' ? '#78dcff' : '#aa78ff');
         glow.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx!.globalAlpha = baseAlpha;
+        ctx!.globalAlpha = Math.min(1.0, baseAlpha);
         ctx!.fillStyle = glow;
         ctx!.fillRect((x - m.r * 6) | 0, (y - m.r * 6) | 0, (m.r * 12) | 0, (m.r * 12) | 0);
         ctx!.globalAlpha = 1.0;
