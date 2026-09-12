@@ -7,7 +7,7 @@
  * Pure digital entertainment / motivational novelty. No gambling affiliation,
  * no prizes. Deployed on Cloudflare Pages (Next.js + Tailwind).
  *
- * Cinematic Upgrade: Synchronized 8-second reveal with deterministic canvas timeline.
+ * Cinematic Upgrade: Synchronized 11.5-second reveal with deterministic canvas timeline.
  */
 
 import React, {
@@ -69,7 +69,7 @@ const QUOTES: string[] = [
   'Like maple sap rising in spring, your potential is ready to sweeten the day.',
 ];
 
-function getTier(score: number): Tier { return { id: 2, name: 'METEOR SHOWER RESONANCE' };
+function getTier(score: number): Tier {
   if (score <= 33) return { id: 2, name: 'METEOR SHOWER RESONANCE' };
   if (score <= 66) return { id: 3, name: 'COSMIC LIGHTNING RESONANCE' };
   return { id: 4, name: 'GRAND FIREWORKS RESONANCE' };
@@ -575,7 +575,7 @@ function useResonanceCanvas(
              buildUpGainRef.current.disconnect();
              buildUpGainRef.current = null;
           }
-          // Score locking is moved to the React timeout at 9.0s
+          // Score locking is moved to the React timeout at 11.5s
           const pending = pendingResultRef.current;
           if (pending && scoreTextRef.current) scoreTextRef.current.textContent = `${pending.score}%`;
 

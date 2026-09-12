@@ -9,9 +9,9 @@ Troubleshooted and polished the Daily Resonance Ritual cinematic reveal sequence
 3. **Meteor Visual Polish:** Even when spawning properly, the meteors felt a bit small and lacked distinct cinematic trails and intense core glow required to read convincingly as a shower.
 
 ## Changes Made
-- **Extended Reveal Duration:** Increased `REVEAL_DURATION_MS` from `8800` to `11500`. This provides a ~2.7s window after the `8800ms` impact time, allowing all scheduled cinematic multi-pass events (for Meteor Shower, Cosmic Lightning, and Grand Fireworks) to trigger and fully complete their visual lifecycle before locking the state.
+- **Extended Reveal Duration:** Increased `REVEAL_DURATION_MS` from `8800` to `11500`. This provides a ~2.7s window after the `8800ms` impact time, allowing all scheduled cinematic multi-pass events (for Meteor Shower, Cosmic Lightning, and Grand Fireworks) to trigger before the state locks. Note that the lock at 11.5s does not guarantee every tier's particles (e.g. trailing firework sparks) have fully faded out by then; a longer duration would be needed to guarantee full completion.
 - **Enhanced Meteor Visuals:**
-  - Increased particle length and line width, and increased the trailing array depth from 50 to 70 for hero meteors to create longer, more convincing trails.
+  - Increased line width for hero meteors and increased the trailing array depth from 50 to 70 to create longer, more convincing trails.
   - Adjusted the core radial gradient stops to be slightly larger and brighter, fading out into a subtler cinematic blue for an elegant glow effect.
 - **Improved Shower Density:** Increased the sizes of the post-impact meteor clusters, and slightly increased the probability of ambient meteor spawns during the tension build-up phase to provide a more robust shower experience.
 
