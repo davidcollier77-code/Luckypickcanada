@@ -383,10 +383,7 @@ async function main() {
 
     let batchContinues = true;
     let deferredUpdates = [];
-    // Only true when a write actually changes .docs / currentDocsSize, so the
-    // hard-ceiling guard below isn't fooled by unrelated skips/failures into
-    // retrying a capacity-deferred library for an extra batch before reporting deadlock.
-    let capacityProgressMade = false;
+    let progressMade = false;
 
     while (batchContinues && pendingUpdates.length > 0) {
       const nextUpdate = pendingUpdates.shift();
@@ -418,6 +415,7 @@ async function main() {
       if (!sourceConfig) {
          console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
          stats.skipped++;
+         progressMade = true;
          stats.pending--;
          continue;
       }
@@ -436,6 +434,7 @@ async function main() {
       if (upstreamSha && upstreamSha === githubShas[lib] && allDocsExist) {
          console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
          stats.skipped++;
+         progressMade = true;
          stats.pending--;
 
          const wasInInventory = inventory.has(lib);
@@ -471,6 +470,7 @@ async function main() {
             // Record as failed, not skipped
             stats.failed++;
             stats.errors.push(`Failed to fetch ${lib} after 2 attempts: ${retryError.message}`);
+            progressMade = true;
             stats.pending--;
             continue;
         }
@@ -492,6 +492,7 @@ async function main() {
             console.log(`Library ${lib} itself exceeds the 495 MB limit. Marking as failed.`);
             stats.failed++;
             stats.errors.push(`Library ${lib} exceeds 495 MB limit individually.`);
+            progressMade = true;
             stats.pending--;
         } else {
             console.log('Deferring to next batch pass.');
@@ -512,6 +513,7 @@ async function main() {
       if (normalizedBefore === normalizedOutput) {
           console.log(`CURRENT: ${lib} (no changes)`);
           stats.unchanged++;
+          progressMade = true;
 
           // Ensure symlinks/files exist for ALL groups just in case
           for (let i = 0; i < groups.length; i++) {
@@ -551,8 +553,6 @@ async function main() {
           }
       } else {
           console.log(`UPDATED: ${lib}`);
-         // Capture size before write to check if it actually freed capacity
-         const sizeBeforeWrite = currentDocsSize;
           stats.updated++;
 
           // Write primary copy to first group
@@ -594,13 +594,9 @@ async function main() {
           }
           isNewOrUpdated = true;
           isContentUpdated = true;
-         
-         // Update size after write to determine actual capacity impact
-         const sizeAfterWrite = getDirSize(DOCS_DIR);
-         // Only mark capacity progress if the write actually reduced .docs size
-         if (sizeAfterWrite < sizeBeforeWrite) {
-             capacityProgressMade = true;
-         }
+          if (netSizeIncrease < 0) {
+              progressMade = true;
+          }
       }
 
       if (upstreamSha) {
@@ -628,7 +624,7 @@ async function main() {
 
 
     if (deferredUpdates.length > 0) {
-      if (!capacityProgressMade) {
+      if (!progressMade) {
          console.error(`Hard ceiling deadlock: No space freed and no pending resources can fit.`);
          console.error(`Current size: ${currentDocsSize} bytes, Maximum: ${MAX_DOCS_SIZE_BYTES} bytes`);
          console.error(`No pending library can fit under the hard ceiling.`);
