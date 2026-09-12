@@ -15,6 +15,7 @@ __pycache__/
 venv/
 test-venv/
 server.pid
+pnpm_dev.pid
 
 # act artifacts
 act_output.log
