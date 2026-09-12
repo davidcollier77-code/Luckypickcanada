@@ -64,7 +64,7 @@ Do not consult unrelated specialist instructions or documentation libraries.
 
 `.docs/` is read-only during ordinary application work.
 
-Do not refresh, regenerate, or modify `.docs/`, `.docs/manifest.json`, documentation refresh scripts, or documentation refresh workflows unless explicitly authorized.
+AI agents must not manually update or maintain the ".docs/" documentation library unless explicitly authorized by the repository owner.
 
 If local documentation is incomplete or stale, use the best available authorized source and report the limitation.
 
@@ -95,6 +95,7 @@ Current repository commands:
 `pnpm install --frozen-lockfile`
 `pnpm dev`
 `pnpm build`
+`pnpm test`
 `pnpm start`
 
 Package manager: `pnpm@10.30.3`
