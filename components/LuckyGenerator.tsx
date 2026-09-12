@@ -449,8 +449,11 @@ function useResonanceCanvas(
     }
 
     function explode(x: number, y: number, color: string, isHero: boolean) {
-      // Trigger burst sound dynamically
-      playAudioBuffer('firework', isHero ? 0.8 : 0.4, 0.8 + Math.random() * 0.4);
+      // Trigger burst sound dynamically, but only once the reveal impact has
+      // landed — ambient build-up rockets explode silently.
+      if (s.impactTriggered) {
+        playAudioBuffer('firework', isHero ? 0.8 : 0.4, 0.8 + Math.random() * 0.4);
+      }
       const count = reduced ? 15 : (isHero ? 120 : 37 + Math.floor(Math.random() * 22));
       // Cap sparks if we have too many
       let actualCount = Math.min(count, 150 - s.sparks.length);
