@@ -5,3 +5,7 @@
 ## 2026-09-06 - Prevent screen readers from announcing decorative SVGs redundantly
 **Learning:** When using `<svg>` icons alongside text inside `<button>` elements (or as decorative placeholders), screen readers may announce them confusingly or redundantly. This is a common pattern in components like the Collection Binder.
 **Action:** Add `aria-hidden="true"` to all decorative `<svg>` icons inside interactive elements or where text is already present to provide context, so that only the semantic text is announced to assistive technologies.
+
+## 2026-09-12 - Prevent screen readers from announcing loading spinners redundantly
+**Learning:** Decorative SVG elements like loading spinners inside interactive elements (e.g., `<button>`) with text can cause screen readers to announce confusing or redundant information. This is an accessibility issue found in the `LuckyGenerator` loading state.
+**Action:** Always add `aria-hidden="true"` to loading spinners or decorative `<svg>` icons when semantic text like "Loading..." is already present.
