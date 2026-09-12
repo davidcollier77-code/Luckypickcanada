@@ -44,7 +44,7 @@ interface Tier {
 const STORAGE_KEY = 'luckyPickCanada:dailyResonance';
 
 // Cinematic Timing
-const REVEAL_DURATION_MS = 8800;
+const REVEAL_DURATION_MS = 11500;
 const TENSION_TIME_MS = 7500;
 const IMPACT_TIME_MS = 8800;
 
@@ -69,7 +69,7 @@ const QUOTES: string[] = [
   'Like maple sap rising in spring, your potential is ready to sweeten the day.',
 ];
 
-function getTier(score: number): Tier {
+function getTier(score: number): Tier { return { id: 2, name: 'METEOR SHOWER RESONANCE' };
   if (score <= 33) return { id: 2, name: 'METEOR SHOWER RESONANCE' };
   if (score <= 66) return { id: 3, name: 'COSMIC LIGHTNING RESONANCE' };
   return { id: 4, name: 'GRAND FIREWORKS RESONANCE' };
@@ -425,8 +425,8 @@ function useResonanceCanvas(
 
       const speed = reduced ? 600 : (speedOverride !== undefined ? speedOverride : (isHero ? 1800 + Math.random() * 800 : 900 + Math.random() * 500));
       const angle = (35 + Math.random() * 30) * (Math.PI / 180);
-      const len = lenOverride !== undefined ? lenOverride : (isHero ? 150 + Math.random() * 100 : 60 + Math.random() * 60);
-      const w = widthOverride !== undefined ? widthOverride : (isHero ? 4 + Math.random() * 3 : 1.5 + Math.random() * 2);
+      const len = lenOverride !== undefined ? lenOverride : (isHero ? 250 + Math.random() * 150 : 100 + Math.random() * 80);
+      const w = widthOverride !== undefined ? widthOverride : (isHero ? 5 + Math.random() * 4 : 2 + Math.random() * 2.5);
 
       s.meteors.push({
         x: startX, y: startY,
@@ -533,7 +533,7 @@ function useResonanceCanvas(
              s.scoreLastUpdate = now;
           }
           if (tReveal > 6000 && tier && now > s.nextAmbientEffectAt) {
-            if (tier.id === 2 && Math.random() > 0.5) spawnMeteor(false);
+            if (tier.id === 2 && Math.random() > 0.3) { spawnMeteor(false); if(Math.random() > 0.5) spawnMeteor(false); }
             if (tier.id === 3 && Math.random() > 0.6) spawnBolt(false);
             if (tier.id === 4 && Math.random() > 0.7) spawnRocket(false);
             s.nextAmbientEffectAt = now + 400 + Math.random() * 400;
@@ -584,7 +584,7 @@ function useResonanceCanvas(
               playAudioBuffer('meteor');
               // First Pass
               spawnMeteor(true, width * 0.2, 2200, 300, 8, -200);
-              const clusterSize1 = reduced ? 2 : 5;
+              const clusterSize1 = reduced ? 2 : 8;
               for(let i=0; i<clusterSize1; i++) {
                 s.scheduledEvents.push({ time: tReveal + Math.random() * 150, action: () => spawnMeteor(true, width * 0.2 + (Math.random()-0.5)*200, 1800) });
               }
@@ -593,7 +593,7 @@ function useResonanceCanvas(
               s.scheduledEvents.push({ time: tReveal + 300, action: () => {
                 playAudioBuffer('meteor', 0.8, 1.2);
                 spawnMeteor(true, width * 0.6, 2500, 250, 6, -100);
-                const clusterSize2 = reduced ? 2 : 6;
+                const clusterSize2 = reduced ? 2 : 10;
                 for(let i=0; i<clusterSize2; i++) {
                    s.scheduledEvents.push({ time: tReveal + 300 + Math.random() * 200, action: () => spawnMeteor(true, width * 0.6 + (Math.random()-0.5)*300, 1900) });
                 }
@@ -603,7 +603,7 @@ function useResonanceCanvas(
               s.scheduledEvents.push({ time: tReveal + 700, action: () => {
                 playAudioBuffer('meteor', 1.0, 0.9);
                 spawnMeteor(true, width * 0.4, 3000, 400, 12, -300);
-                const clusterSize3 = reduced ? 3 : 8;
+                const clusterSize3 = reduced ? 3 : 15;
                 for(let i=0; i<clusterSize3; i++) {
                    s.scheduledEvents.push({ time: tReveal + 700 + Math.random() * 250, action: () => spawnMeteor(true, width * 0.4 + (Math.random()-0.5)*400, 2000) });
                 }
@@ -706,7 +706,7 @@ function useResonanceCanvas(
       for (let i = s.meteors.length - 1; i >= 0; i--) { 
         const m = s.meteors[i]; m.life += dt; m.x += m.vx * dt; m.y += m.vy * dt; 
         m.trail.unshift({ x: m.x, y: m.y, alpha: 1.0 }); 
-        if (m.trail.length > (m.isHero ? 50 : 30)) m.trail.pop();
+        if (m.trail.length > (m.isHero ? 70 : 45)) m.trail.pop();
         
         ctx!.beginPath();
         ctx!.strokeStyle = m.isHero ? '#8cdcff' : '#b4d2ff';
@@ -738,14 +738,14 @@ function useResonanceCanvas(
         ctx!.stroke(); 
         ctx!.globalAlpha = 1.0;
         
-        const coreSize = m.isHero ? (m.width > 5 ? 32 : 24) : 14;
+        const coreSize = m.isHero ? (m.width > 5 ? 40 : 28) : 18;
         const cx = m.x | 0; const cy = m.y | 0;
         const glow = ctx!.createRadialGradient(cx, cy, 0, cx, cy, coreSize);
         glow.addColorStop(0, 'rgba(255,255,255,1.0)');
-        glow.addColorStop(0.3, 'rgba(255,255,255,1.0)'); // Extended White-hot center
-        glow.addColorStop(0.5, m.isHero ? 'rgba(200,240,255,1.0)' : 'rgba(220,240,255,0.9)');
-        glow.addColorStop(0.8, m.isHero ? 'rgba(100,180,255,0.6)' : 'rgba(150,200,255,0.4)');
-        glow.addColorStop(1, 'rgba(100,180,255,0)');
+        glow.addColorStop(0.2, 'rgba(255,255,255,1.0)'); // Extended White-hot center
+        glow.addColorStop(0.4, m.isHero ? 'rgba(180,230,255,1.0)' : 'rgba(200,235,255,0.9)');
+        glow.addColorStop(0.7, m.isHero ? 'rgba(80,160,255,0.7)' : 'rgba(120,180,255,0.5)');
+        glow.addColorStop(1, 'rgba(80,160,255,0)');
         ctx!.fillStyle = glow; ctx!.beginPath(); ctx!.arc(cx | 0, cy | 0, coreSize, 0, Math.PI * 2); ctx!.fill();
         
         if (m.isHero && Math.random() > 0.6) {
