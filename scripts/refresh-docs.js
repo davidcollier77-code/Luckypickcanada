@@ -117,7 +117,8 @@ function fetchDocumentation(lib, sourceConfig) {
       https.get(currentUrl, {
         headers: {
           'User-Agent': 'LuckyPickCanada-DocsUpdater/1.0'
-        }
+        },
+        timeout: 15000
       }, (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
            // Drain the response so socket can be closed/reused
@@ -137,13 +138,21 @@ function fetchDocumentation(lib, sourceConfig) {
         }
 
         let data = '';
-        res.on('data', chunk => data += chunk);
+        let totalSize = 0;
+        res.on('data', chunk => {
+          totalSize += chunk.length;
+          if (totalSize > 10 * 1024 * 1024) {
+             res.destroy(new Error('Response size exceeds 10MB limit'));
+             return;
+          }
+          data += chunk;
+        });
         res.on('end', () => {
            // Basic sanitization: remove known sensitive token patterns that might leak in docs (e.g. Star History sealed_token)
            const sanitizedData = data.replace(/sealed_token=[^&"'\s]+/g, 'sealed_token=REDACTED');
            resolve(sanitizedData);
         });
-      }).on('error', reject);
+      }).on('error', reject).on('timeout', function() { this.destroy(new Error('Request Timeout')); });
     };
 
     fetchWithRedirects(sourceConfig.url, 5);
@@ -267,7 +276,32 @@ function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) 
     inventory: Array.from(inventory),
     githubShas: shas
   };
-  fs.writeFileSync(manifestPath, JSON.stringify(manifestData, null, 2));
+  const tempManifestPath = manifestPath + '.tmp.' + Date.now();
+  try {
+    fs.writeFileSync(tempManifestPath, JSON.stringify(manifestData, null, 2) + '\n');
+    fs.renameSync(tempManifestPath, manifestPath);
+  } catch(e) {
+    if (fs.existsSync(tempManifestPath)) fs.unlinkSync(tempManifestPath);
+    throw e;
+  }
+}
+
+function cleanupStaleTempFiles(dirPath) {
+  if (!fs.existsSync(dirPath)) return;
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  for (const entry of entries) {
+    const entryPath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      cleanupStaleTempFiles(entryPath);
+    } else if (entry.isFile() && entry.name.includes('.tmp.')) {
+      try {
+        fs.unlinkSync(entryPath);
+        console.log(`Removed stale temp file: ${entryPath}`);
+      } catch (e) {
+        console.warn(`Could not remove stale temp file ${entryPath}:`, e.message);
+      }
+    }
+  }
 }
 
 async function main() {
@@ -277,8 +311,7 @@ async function main() {
     fs.mkdirSync(DOCS_DIR, { recursive: true });
   }
 
-
-
+  cleanupStaleTempFiles(DOCS_DIR);
 
   const manifestPath = path.join(DOCS_DIR, 'manifest.json');
   if (!fs.existsSync(manifestPath)) {
@@ -440,8 +473,9 @@ async function main() {
             fetchSuccess = true;
         } catch (retryError) {
             console.error(`Failed to fetch docs for ${lib} on retry:`, retryError.message);
-            // Treat unresolved/unavailable sources as skipped rather than failing the refresh
-            stats.skipped++;
+            // Record as failed, not skipped
+            stats.failed++;
+            stats.errors.push(`Failed to fetch ${lib} after 2 attempts: ${retryError.message}`);
             stats.pending--;
             continue;
         }
@@ -492,7 +526,14 @@ async function main() {
 
             if (i === 0) {
               if (!fs.existsSync(docPath)) {
-                fs.writeFileSync(docPath, outputWithCorrectLineEndings);
+                const tempPath = docPath + '.tmp.' + Date.now();
+                try {
+                  fs.writeFileSync(tempPath, outputWithCorrectLineEndings);
+                  fs.renameSync(tempPath, docPath);
+                } catch(e) {
+                  if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+                  throw e;
+                }
               }
             } else {
                if (!fs.existsSync(docPath)) {
@@ -501,7 +542,14 @@ async function main() {
                     fs.symlinkSync(relativeTarget, docPath);
                   } catch(e) {
                      // fallback
-                     fs.writeFileSync(docPath, outputWithCorrectLineEndings);
+                     const tempPath = docPath + '.tmp.' + Date.now();
+                     try {
+                        fs.writeFileSync(tempPath, outputWithCorrectLineEndings);
+                        fs.renameSync(tempPath, docPath);
+                     } catch(err) {
+                        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+                        throw err;
+                     }
                   }
                }
             }
@@ -512,20 +560,35 @@ async function main() {
 
           // Write primary copy to first group
           const firstGroupPath = path.join(DOCS_DIR, groups[0], `${safeName}.md`);
-          try { if (fs.lstatSync(firstGroupPath)) fs.unlinkSync(firstGroupPath); } catch (e) {}
-          fs.writeFileSync(firstGroupPath, outputWithCorrectLineEndings);
+          const tempPath1 = firstGroupPath + '.tmp.' + Date.now();
+          try {
+             fs.writeFileSync(tempPath1, outputWithCorrectLineEndings);
+             fs.renameSync(tempPath1, firstGroupPath);
+          } catch(e) {
+             if (fs.existsSync(tempPath1)) fs.unlinkSync(tempPath1);
+             throw e;
+          }
 
           // Write symlinks for subsequent groups
           for (let i = 1; i < groups.length; i++) {
              const groupDir = path.join(DOCS_DIR, groups[i]);
              const docPath = path.join(groupDir, `${safeName}.md`);
-             try { if (fs.lstatSync(docPath)) fs.unlinkSync(docPath); } catch (e) {}
+             const tempSymlinkPath = docPath + '.tmp.' + Date.now();
              try {
                 const relativeTarget = path.relative(groupDir, firstGroupPath);
-                fs.symlinkSync(relativeTarget, docPath);
+                fs.symlinkSync(relativeTarget, tempSymlinkPath);
+                fs.renameSync(tempSymlinkPath, docPath);
              } catch(e) {
+                if (fs.existsSync(tempSymlinkPath)) fs.unlinkSync(tempSymlinkPath);
                 console.warn(`Symlink failed for ${docPath}, falling back to writing file: `, e.message);
-                fs.writeFileSync(docPath, outputWithCorrectLineEndings);
+                const tempDocPath = docPath + '.tmp.' + Date.now();
+                try {
+                  fs.writeFileSync(tempDocPath, outputWithCorrectLineEndings);
+                  fs.renameSync(tempDocPath, docPath);
+                } catch(err) {
+                  if (fs.existsSync(tempDocPath)) fs.unlinkSync(tempDocPath);
+                  throw err;
+                }
              }
           }
           // only add netSizeIncrease once

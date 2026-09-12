@@ -11,6 +11,7 @@ console.log('Running test suite for refresh-docs.js...');
 
 let mockResponses = {};
 let requestedUrls = [];
+let requestedOptions = [];
 
 const originalGet = https.get;
 
@@ -24,9 +25,11 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
     }
 
     requestedUrls.push(url);
+    requestedOptions.push(options);
 
     const res = new EventEmitter();
     res.resume = () => {};
+    res.destroy = function(err) { if(err) req.emit('error', err); };
     const req = new EventEmitter();
 
     setTimeout(() => {
@@ -41,7 +44,17 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
         res.statusCode = mockRes.statusCode || 200;
         res.headers = mockRes.headers || {};
 
+        if (mockRes.timeout) {
+             setTimeout(() => req.emit('timeout'), 5);
+             return;
+        }
+
         if (cb) cb(res);
+
+        if (mockRes.tooLarge) {
+             res.emit('data', Buffer.alloc(11 * 1024 * 1024).toString());
+             return;
+        }
 
         if (mockRes.data) {
             res.emit('data', mockRes.data);
@@ -49,12 +62,15 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
         res.emit('end');
     }, 10);
 
+    const originalOn = req.on.bind(req);
     req.on = (event, handler) => {
+        originalOn(event, handler);
         if (event === 'error' && mockResponses[url] && mockResponses[url].error) {
            setTimeout(() => handler(new Error(mockResponses[url].error)), 10);
         }
+        return req;
     };
-
+    req.destroy = function(err) { if(err) this.emit('error', err); };
     return req;
 };
 
@@ -88,6 +104,7 @@ async function runTests() {
 
     async function test(name, fn) {
         requestedUrls = [];
+        requestedOptions = [];
         mockResponses = {};
         try {
             await fn();
@@ -276,6 +293,28 @@ async function runTests() {
         const data = await fetchDocumentation('/some/lib', { type: 'url', url: 'https://example.com/docs' });
         assert.ok(!data.includes('abc123') && !data.includes('xyz789something'), 'All tokens should be redacted');
         assert.strictEqual((data.match(/sealed_token=REDACTED/g) || []).length, 2, 'Should have 2 REDACTED placeholders');
+    });
+
+
+    await test('fetchDocumentation: 15-second timeout', async () => {
+        mockResponses['https://timeout.example.com'] = { timeout: true };
+        try {
+            await fetchDocumentation('/test/timeout', { type: 'url', url: 'https://timeout.example.com' });
+            throw new Error('Should have failed');
+        } catch (e) {
+            assert.match(e.message, /Request Timeout/);
+        }
+        assert.strictEqual(requestedOptions[0].timeout, 15000, 'Should request with a 15-second timeout option');
+    });
+
+    await test('fetchDocumentation: 10MB response-size limit', async () => {
+        mockResponses['https://toolarge.example.com'] = { tooLarge: true };
+        try {
+            await fetchDocumentation('/test/toolarge', { type: 'url', url: 'https://toolarge.example.com' });
+            throw new Error('Should have failed');
+        } catch (e) {
+            assert.match(e.message, /Response size exceeds 10MB limit/);
+        }
     });
 
     console.log(`\nTests complete: ${passed} passed, ${failed} failed.`);

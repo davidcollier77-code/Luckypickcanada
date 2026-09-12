@@ -20,3 +20,5 @@
 - [x] Initialize Memory Bank core files.
 - [x] Harden Memory Bank for ongoing maintainability and fact-checked accuracy against the current repository state.
 - [x] Formalize Spec Kit Constitution (`.specify/memory/constitution.md`) and workflow coherence.
+- [x] Improved `scripts/refresh-docs.js` updater atomicity and reporting (atomic writes, 15s timeout, 10MB response-size limit, true failure reporting).
+- [x] Removed `/goldfire/howler.js` (Context7 source) from `.docs/manifest.json` automated updates.
