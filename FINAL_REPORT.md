@@ -25,7 +25,7 @@
 
 ## Verifications & Limitations
 - **Lucky Meter Verification**: Confirmed that `components/DailyResonance.tsx` remains completely untouched. It still references the original audio files (`freesound_community-starship...`, etc.) and `Howl`.
-- **ZZFX Verification**: Did not introduce any new `zzfx`. Legacy oscillators were removed from the card reveal.
+
 - **Visuals & Logic**: No changes made to card artwork, layout, tier rarity logic, or canvas drawing operations.
 - **Build**: Successfully executed `pnpm run build` and `./jules-verify.sh`. All tests pass.
 

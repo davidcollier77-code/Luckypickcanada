@@ -1,3 +1,6 @@
-docs: generate neon database verification report
+Clean up ZZFX dependency and residue
 
-Generated a verification report for the Neon database connection confirming that the application successfully connects and accesses the necessary tables (lucky_stories, luck_shares) following the credential rotation. Verified via production API endpoint and Neon MCP tools without exposing any secrets.
+Removed the obsolete `zzfx` dependency along with unused test files,
+scripts (`fix_ssr.js`, `zzfx_params.js`, `hooks/useSoundEffects.js`),
+and documentation references. Validated Howler remains the sole audio
+system.
