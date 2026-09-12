@@ -14,6 +14,11 @@ describe('getStoryProvince', () => {
     expect(getStoryProvince('bc').code).toBe('BC');
     expect(getStoryProvince('AB').code).toBe('AB');
     expect(getStoryProvince('ON').code).toBe('ON');
+    expect(getStoryProvince('MB').code).toBe('MB');
+    expect(getStoryProvince('NB').code).toBe('NB');
+    expect(getStoryProvince('YT').code).toBe('YT');
+    expect(getStoryProvince('NT').code).toBe('NT');
+    expect(getStoryProvince('NU').code).toBe('NU');
   });
 
   it('should match codes with punctuation', () => {
@@ -40,6 +45,10 @@ describe('getStoryProvince', () => {
     expect(getStoryProvince('manitoba').code).toBe('MB');
     expect(getStoryProvince('ont').code).toBe('ON');
     expect(getStoryProvince('nfld').code).toBe('NL');
+    expect(getStoryProvince('new brunswick').code).toBe('NB');
+    expect(getStoryProvince('yukon').code).toBe('YT');
+    expect(getStoryProvince('nwt').code).toBe('NT');
+    expect(getStoryProvince('nunavut').code).toBe('NU');
   });
 
   it('should extract province from a longer location string', () => {
@@ -61,7 +70,6 @@ describe('getStoryProvince', () => {
     // "ns" is in "mons", should not match NS
     expect(getStoryProvince('mons')).toBeNull();
     // "nt" is in "montreal", should not match NT
-    expect(getStoryProvince('montreal')).toBeNull(); // It should match QC if QC was in the string, but here it's just 'montreal'
-    // Actually montreal doesn't have QC in it, so it should be null. Wait, let's test montreal specifically
+    expect(getStoryProvince('montreal')).toBeNull();
   });
 });
