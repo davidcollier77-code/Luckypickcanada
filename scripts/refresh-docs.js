@@ -551,6 +551,8 @@ async function main() {
           }
       } else {
           console.log(`UPDATED: ${lib}`);
+         // Capture size before write to check if it actually freed capacity
+         const sizeBeforeWrite = currentDocsSize;
           stats.updated++;
 
           // Write primary copy to first group
@@ -592,7 +594,13 @@ async function main() {
           }
           isNewOrUpdated = true;
           isContentUpdated = true;
-          capacityProgressMade = true;
+         
+         // Update size after write to determine actual capacity impact
+         const sizeAfterWrite = getDirSize(DOCS_DIR);
+         // Only mark capacity progress if the write actually reduced .docs size
+         if (sizeAfterWrite < sizeBeforeWrite) {
+             capacityProgressMade = true;
+         }
       }
 
       if (upstreamSha) {
