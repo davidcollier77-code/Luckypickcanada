@@ -1,33 +1,27 @@
-# Lucky Card Reveal Audio Update - Review Revisions
+# Implementation Report: Daily Resonance Ritual Reveal Fix
 
-## Findings Addressed
-1. **License Verification**: Corrected license claims. The new assets are sourced under the "Mixkit Free Sound Effects License", which permits commercial use in web projects without attribution. They are not strictly CC0.
-2. **Testing Claims**: Removed ambiguous testing claims. The verifications performed were strictly `pnpm run build` and `./jules-verify.sh` (which covers type checking and build verification). No automated E2E browser tests exist for audio node assertion.
-3. **LuckyGenerator.tsx Dead Code**: Confirmed `components/LuckyGenerator.tsx` is an unused legacy component. Reverted changes to this file to prevent modifying inactive architecture.
-4. **Buildup Gap Fixed**: The buildup audio asset (asset 1287) is shorter than the 8.0s reveal schedule. The `app/lucky-card-reveal.js` sequence has been updated to explicitly enable `loop = true` on the buildup buffer source, ensuring continuous atmospheric tension throughout the entire sequence.
-5. **Synthetic Audio Removed**: Removed legacy Web Audio API oscillator synthesis (`drone`, `droneHarmonic`, `burst`, `sub`, `shimmerOsc`) from the Card Reveal sequence. The reveal now relies strictly on the dedicated Mixkit audio buffers, replacing the final shimmer with the `mixkit-magic-sparkles.mp3` asset.
-
-## What Changed
-- Replaced the shared audio files in the active `Lucky Card Reveal` (`app/lucky-card-reveal.js`) with dedicated, cinematic sound files from Mixkit.
-- Looped the buildup sequence to prevent audio drop-off.
-- Stripped oscillator-based synthesized audio from the reveal sequence.
+## Changes Made
+1. **Timing Alignment:**
+   - Changed `REVEAL_DURATION_MS` from `9000` to `8800` (which is `IMPACT_TIME_MS`) to ensure the React UI state transition ("locked" state) completes exactly when the impact visual and audio events trigger.
+2. **Audio and Visual Sync:**
+   - Adjusted the main cinematic loop condition to trigger audio at exactly `tReveal >= IMPACT_TIME_MS` rather than 150ms earlier (`IMPACT_TIME_MS - 150`), tightly synchronizing it with the visual flash and locking logic.
+   - Merged the audio and visual `trigger` variables (`s.impactTriggered` and `s.audioTriggered`) to ensure both domains execute in the exact same frame.
+3. **Number Lock Accuracy:**
+   - Moved the percentage number lock into the animation loop exactly at `tReveal >= IMPACT_TIME_MS`, directly reading `pendingResultRef.current.score`. This prevents the number from cycling further after the impact fires.
+4. **Cosmic Lightning Visual Impact:**
+   - Boosted the primary flash intensity (`s.flash = 2.0`) specifically for the Cosmic Lightning tier (Tier 3) at the initial strike moment.
+   - Added an extra prominent, centered bolt (`spawnBolt(true)`) during the initial strike to create a punchier, denser burst of lightning at exactly 65%.
 
 ## Files Changed
-- `app/lucky-card-reveal.js`: Updated audio paths, enabled buildup looping, stripped Web Audio API synthesizers.
-- `public/sounds/`: Added four new `.mp3` files (Mixkit assets).
+- `components/LuckyGenerator.tsx`
+- `memory-bank/progress.md`
 
-## New Sound Files Added & Sources
-1. `mixkit-cinematic-whoosh.mp3` - Sourced from Mixkit (asset 1287)
-2. `mixkit-cinematic-impact.mp3` - Sourced from Mixkit (asset 2916)
-3. `mixkit-magic-sparkles.mp3` - Sourced from Mixkit (asset 2407)
-4. `mixkit-magical-impact.mp3` - Sourced from Mixkit (asset 869)
-*All audio files are sourced under Mixkit's Free Sound Effects License.*
+## Verification Performed
+- **Syntax and Type Check:** Run and verified successfully (`./jules-verify.sh`).
+- **Build Check:** Ran `pnpm run build` which compiled successfully with 0 errors.
+- **Git State:** Removed all temporary processing scripts (`fix_timing*.js`).
+- **Diff Inspection:** Checked the diff to confirm that only the cinematic timeline and resonance percentage locking logic were modified, without altering any layout, persistence, component structure, audio engine configuration, or unrelated logic.
 
-## Verifications & Limitations
-- **Lucky Meter Verification**: Confirmed that `components/DailyResonance.tsx` remains completely untouched. It still references the original audio files (`freesound_community-starship...`, etc.) and `Howl`.
+## Documentation Consulted
+- Reviewed `AGENTS.md` for project rules, which enforce minimal disruption, evidence-driven implementation, and explicitly testing only the reported issue.
 
-- **Visuals & Logic**: No changes made to card artwork, layout, tier rarity logic, or canvas drawing operations.
-- **Build**: Successfully executed `pnpm run build` and `./jules-verify.sh`. All tests pass.
-
-## Documentation & Routing Consulted
-- Read and adhered to the boundaries specified in `AGENTS.md`.

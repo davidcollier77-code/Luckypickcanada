@@ -44,7 +44,7 @@ interface Tier {
 const STORAGE_KEY = 'luckyPickCanada:dailyResonance';
 
 // Cinematic Timing
-const REVEAL_DURATION_MS = 9000;
+const REVEAL_DURATION_MS = 8800;
 const TENSION_TIME_MS = 7500;
 const IMPACT_TIME_MS = 8800;
 
@@ -560,14 +560,16 @@ function useResonanceCanvas(
           // Darken slightly (removed fill to keep transparency)
         }
         // 7800: THE IMPACT
-        else if (tReveal >= IMPACT_TIME_MS - 150 && !s.audioTriggered) {
+        else if (tReveal >= IMPACT_TIME_MS && !s.impactTriggered) {
+          s.impactTriggered = true;
           s.audioTriggered = true;
+          setImpactFired(true); // Triggers CSS
+          s.flash = 1.0;
 
           if (buildUpSourceRef.current) {
              try {
                buildUpSourceRef.current.stop();
              } catch {
-               // Source may have already stopped
              }
              buildUpSourceRef.current.disconnect();
              buildUpSourceRef.current = null;
@@ -576,28 +578,13 @@ function useResonanceCanvas(
              buildUpGainRef.current.disconnect();
              buildUpGainRef.current = null;
           }
-
-
+          // Score locking is moved to the React timeout at 9.0s
+          const pending = pendingResultRef.current;
+          if (pending && scoreTextRef.current) scoreTextRef.current.textContent = `${pending.score}%`;
 
           if (tier) {
             if (tier.id === 2) {
               playAudioBuffer('meteor');
-            } else if (tier.id === 3) {
-              playAudioBuffer('lightning');
-            } else if (tier.id === 4) {
-              playAudioBuffer('firework');
-            }
-          }
-        }
-        else if (tReveal >= IMPACT_TIME_MS && !s.impactTriggered) {
-          s.impactTriggered = true;
-          setImpactFired(true); // Triggers CSS
-          s.flash = 1.0;
-
-          // Score locking is moved to the React timeout at 9.0s
-
-          if (tier) {
-            if (tier.id === 2) {
               // First Pass
               spawnMeteor(true, width * 0.2, 2200, 300, 8, -200);
               const clusterSize1 = reduced ? 2 : 5;
@@ -626,7 +613,10 @@ function useResonanceCanvas(
               }});
             }
             else if (tier.id === 3) {
+              playAudioBuffer('lightning');
               // Initial Strike
+              s.flash = 2.0; // Strong flash
+              spawnBolt(true);
               spawnBolt(true);
               spawnBolt(false);
 
@@ -650,6 +640,7 @@ function useResonanceCanvas(
               }});
             }
             else if (tier.id === 4) {
+              playAudioBuffer('firework');
               // Initial Hero Launch
               spawnRocket(true, width * 0.5, 750);
 

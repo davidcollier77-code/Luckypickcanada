@@ -5,6 +5,7 @@
 - Choreographed the Meteor Shower (Standard), Cosmic Lightning (Premium), and Grand Fireworks (Flagship) tiers with multi-pass timings.
 - Enhanced existing motes to faintly flash during hero moments.
 - Maintained existing visual architecture and score boundaries.
+- **Update**: Fixed the climax timing issue so that the visual flash, the percentage lock, and the impact sound fire exactly and synchronously at the `IMPACT_TIME_MS` moment.
 
 ## What Works
 - Centralized IP-based rate limiting for public API endpoints to prevent abuse.
