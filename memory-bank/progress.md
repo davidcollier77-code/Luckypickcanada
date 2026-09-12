@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-09-07 - Cinematic Polish (Daily Resonance Ritual)
+- Refactored `playAudioBuffer` to allow dynamic volume and playback rate mapping.
+- Choreographed the Meteor Shower (Standard), Cosmic Lightning (Premium), and Grand Fireworks (Flagship) tiers with multi-pass timings.
+- Enhanced existing motes to faintly flash during hero moments.
+- Maintained existing visual architecture and score boundaries.
+
 ## What Works
 - Centralized IP-based rate limiting for public API endpoints to prevent abuse.
 - Next.js App Router architecture is set up.

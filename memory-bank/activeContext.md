@@ -1,19 +1,10 @@
 # Active Context
 
-## Current Focus
-- Maintain and enhance the `luckypickcanada.ca` project based on active feature development or bug resolution tasks.
-- Keep the repository governance intact, deferring to `AGENTS.md` for all workflow rules.
+## Current Status
+- Finished polishing the Daily Resonance Ritual in `LuckyGenerator.tsx`.
+- Refactored audio handling and added choreographed waves for Meteor Shower, Cosmic Lightning, and Grand Fireworks tiers.
+- Preserved existing tier architecture and tracker machinery.
+- Added subtle enhancements to background motes to react to visual flashes.
 
-## Recent Changes
-- Implemented centralized rate limiting for public API endpoints (`/api/visits`, `/api/checkout`, `/api/send-gift`, `/api/oracle`) using `app/spam-protection.js` to prevent automated abuse while keeping the site public.
-- Hardened the Memory Bank system (PR #1008 initialized it, and this session refined it for accuracy and maintainability).
-- Corrected discrepancies in technical facts (e.g., noted the absence of `luckypick.py` despite README documentation).
-- Resolved Spec Kit workflow disjointedness by formalizing `.specify/memory/constitution.md` with LuckyPickCanada principles aligned with `AGENTS.md`.
-
-## Immediate Next Steps
-- *(Currently awaiting the next user request or active task. When a new task begins, update this section with specific immediate next steps.)*
-
-### Recent Update
-- Updated Lucky Card Reveal to use its own distinct, high-quality audio files from Mixkit, replacing the old shared sounds.
-- Retained the old Howler instances and audio paths for the Lucky Meter as instructed, ensuring they remain completely separate.
-- Downloaded and placed CC0 cinematic audio files into `public/sounds`.
+## Next Steps
+- Review changes and finalize PR.
