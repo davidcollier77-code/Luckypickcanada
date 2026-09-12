@@ -23,7 +23,6 @@
 - **Lucide React** - Icon library
 - **Canvas Confetti** - Celebration effects
 - **Howler.js** - Audio management
-- **zzfx** - Lightweight sound effects
 - **html2canvas** - Screenshot generation
 
 ## Deployment & Hosting

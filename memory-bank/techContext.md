@@ -3,7 +3,7 @@
 ## Tech Stack Rules & Environment Patterns
 - **Framework:** Next.js App Router (React, TypeScript).
 - **Styling & Animation:** Tailwind CSS, Framer Motion, Canvas-based visual effects.
-- **Audio:** Howler, ZZFX. (Note: ZZFX must not use top-level static imports like `import { zzfx } from 'zzfx'` to avoid SSR crashes. Use dynamic imports or `useEffect`).
+- **Audio:** Howler and the browser Web Audio API (used by the card reveal).
 - **Database:** PostgreSQL / Neon.
 - **Deployment:** Cloudflare Pages / Workers via OpenNext. (Note: `.open-next` directory and `worker.js` require explicitly running `opennextjs-cloudflare build` after Next.js build).
 - **Payments:** Stripe Checkout.
