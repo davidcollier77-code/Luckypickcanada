@@ -415,6 +415,7 @@ async function main() {
       if (!sourceConfig) {
          console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
          stats.skipped++;
+         progressMade = true;
          stats.pending--;
          continue;
       }
@@ -450,13 +451,6 @@ async function main() {
       let output;
       let fetchSuccess = false;
 
-      if (!sourceConfig) {
-         console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
-         stats.skipped++;
-         stats.pending--;
-         continue;
-      }
-
       try {
         console.log(`Fetching docs for ${lib} using configured source to determine exact size BEFORE downloading into .docs...`);
         output = await fetchDocumentation(lib, sourceConfig);
@@ -476,6 +470,7 @@ async function main() {
             // Record as failed, not skipped
             stats.failed++;
             stats.errors.push(`Failed to fetch ${lib} after 2 attempts: ${retryError.message}`);
+            progressMade = true;
             stats.pending--;
             continue;
         }
@@ -497,6 +492,7 @@ async function main() {
             console.log(`Library ${lib} itself exceeds the 495 MB limit. Marking as failed.`);
             stats.failed++;
             stats.errors.push(`Library ${lib} exceeds 495 MB limit individually.`);
+            progressMade = true;
             stats.pending--;
         } else {
             console.log('Deferring to next batch pass.');
@@ -517,6 +513,7 @@ async function main() {
       if (normalizedBefore === normalizedOutput) {
           console.log(`CURRENT: ${lib} (no changes)`);
           stats.unchanged++;
+          progressMade = true;
 
           // Ensure symlinks/files exist for ALL groups just in case
           for (let i = 0; i < groups.length; i++) {

@@ -17,6 +17,7 @@
 - *(Future tasks will populate this section with specific feature developments or bug fixes.)*
 
 ## Completed Milestones
+- [x] Repaired false-deadlock defect in `scripts/refresh-docs.js` updater logic.
 - [x] Initialize Memory Bank core files.
 - [x] Harden Memory Bank for ongoing maintainability and fact-checked accuracy against the current repository state.
 - [x] Formalize Spec Kit Constitution (`.specify/memory/constitution.md`) and workflow coherence.
