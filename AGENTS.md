@@ -166,13 +166,11 @@ The repository currently uses:
 pnpm install --frozen-lockfile
 pnpm dev
 pnpm build
-pnpm deploy
-
 pnpm start
 
 The package manager is "pnpm@10.30.3", and the repository targets Node 22.
 
-The "pnpm deploy" command performs Cloudflare deployment through OpenNext and should only be used when deployment is explicitly authorized. When deployment work is authorized, use the repository's existing OpenNext/Cloudflare deployment configuration rather than creating a new deployment path.
+When deployment work is explicitly authorized, use the repository's existing OpenNext/Cloudflare deployment configuration rather than creating a new deployment path. Use the existing "pnpm deploy" command. Deployment requires explicit authorization.
 
 Do not change build or deployment commands merely for preference or cleanup.
 
