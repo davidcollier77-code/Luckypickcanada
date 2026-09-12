@@ -1,287 +1,168 @@
-Purpose
+# AGENTS.md
 
-This is the repository-level instruction file for AI coding agents working on LuckyPickCanada.
+## Purpose
 
-Keep this file focused on rules and context that should apply to essentially every task. Task-specific procedures belong in the relevant repository instruction files.
+Repository-wide instructions for AI coding agents working on LuckyPickCanada.
 
-Project
+Keep task-specific procedures in `.jules/`.
 
-LuckyPickCanada is a Canadian entertainment web application built with Next.js, React, TypeScript, and deployed through OpenNext/Cloudflare.
+## Project
 
-The repository contains application code, automated tests, repository tooling, Jules instructions, a Memory Bank, local documentation under ".docs/", and GitHub automation.
+LuckyPickCanada is a Canadian entertainment web application built with Next.js, React, TypeScript, and OpenNext/Cloudflare, with GitHub used for source control and repository automation.
 
 The repository is the source of truth for current implementation state.
 
-Start Here
+## Start Here
 
 Before changing code:
 
-1. Read this "AGENTS.md".
+1. Read `AGENTS.md`.
 2. Inspect the actual repository state relevant to the task.
-3. Read the relevant files under "memory-bank/".
-4. Read the applicable instruction files under ".jules/".
-5. Read applicable ".jules/cmds/" instructions when a command workflow is involved.
-6. Consult relevant local documentation in ".docs/", using ".docs/manifest.json" to identify available sources.
-7. Verify assumptions against the current source and configuration.
+3. Read `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, and `memory-bank/techContext.md` as relevant.
+4. Read `.jules/jules.md` and the applicable `.jules/*.md` specialist instruction.
+5. Read the applicable `.jules/cmds/*.md` instruction when a command workflow is involved.
+6. Consult the required Jules Documentation, Jules API, Gemini CLI, and Gemini API documentation.
+7. Consult relevant `.docs/` sources using `.docs/manifest.json`.
+8. Verify important assumptions against the current source and configuration.
 
-Do not rely solely on an old report, commit message, previous agent summary, or remembered repository state.
+Do not rely on old reports, commits, agent summaries, or remembered state.
 
-Do not assume a file, directory, command, workflow, dependency, or instruction exists without checking.
+Do not assume a file, command, dependency, workflow, or instruction exists without checking.
 
-Instruction Precedence
+## Instruction Order
 
-Repository-specific instructions are layered.
+Use the most specific applicable instruction.
 
-Use the nearest and most specific applicable instruction set.
+- `AGENTS.md` — repository-wide rules
+- `.jules/jules.md` — Jules initialization and task routing
+- applicable `.jules/*.md` — specialist guidance
+- applicable `.jules/cmds/*.md` — command workflows
+- `memory-bank/` — project context and history
+- `.docs/` — documentation
 
-- Root "AGENTS.md" provides repository-wide rules.
-- More specific agent instruction files provide narrower guidance for their scope.
-- Relevant ".jules/" files provide task or workflow-specific guidance.
-- ".jules/cmds/" provides command-specific workflows when applicable.
-- Memory Bank provides project context and history; it does not replace inspection of the actual code.
-- ".docs/" provides documentation knowledge; it does not override current repository behavior.
+Specific instructions must not conflict with higher-priority rules.
 
-Do not create a competing instruction system.
+Do not create competing instruction systems or duplicate large manuals.
 
-Do not duplicate large task-specific manuals in this file.
-
-Task Scope
+## Task Scope
 
 Determine exactly what the task authorizes before editing.
 
-For repair or implementation work, perform the required work rather than stopping at an audit unless the task explicitly requests an audit.
+For repair or implementation work, perform the authorized work rather than stopping at an audit unless an audit is requested.
 
-Keep changes focused.
+Keep changes focused. Do not add unrelated refactoring, cleanup, dependencies, architecture, UI, API, database, security, automation, or deployment changes.
 
-Do not silently add unrelated:
+Do not add or change dependencies unless required by the authorized task.
 
-- refactoring or cleanup
-- dependency changes
-- architecture changes
-- UI redesign
-- API changes
-- database changes
-- security changes
-- automation changes
-- deployment changes
-
-When additional work is genuinely required to complete the authorized task, keep the expansion as small as possible.
-
-Existing Repository Systems
-
-Reuse existing project capabilities before creating new ones.
-
-Inspect existing:
-
-- components and utilities
-- scripts
-- tests
-- workflows
-- configuration
-- documentation
-- Jules instructions
-- repository tooling
-
-Prefer extending the existing architecture over introducing duplicate mechanisms.
-
-Do not add a dependency unless it is actually required for the authorized task.
-
-Memory Bank
-
-Use the existing "memory-bank/" system when relevant.
-
-Read only the files needed for the task.
-
-Treat Memory Bank entries as project context, not proof of current implementation state.
-
-Do not redesign, replace, or create a second Memory Bank system.
-
-Update existing Memory Bank files only when the completed work materially changes the information they are intended to record.
-
-Jules Instructions
-
-The ".jules/" directory is the repository's task-specific instruction system.
-
-Inspect the directory and use only the files relevant to the current task.
-
-Do not maintain a hard-coded list of ".jules" files in "AGENTS.md". The contents of ".jules/" may evolve.
-
-When a task requires a command workflow, inspect the applicable ".jules/cmds/" instruction before using that workflow.
-
-Follow more specific applicable repository instructions unless they conflict with this root file or a higher-priority instruction.
-
-Do not claim a repository instruction was followed or consulted unless it was actually read.
-
-Documentation
+## Documentation
 
 Use documentation to inform implementation, but verify important behavior against the repository.
 
-Documentation priority:
+Use the applicable `.jules/*.md` specialist guidance and its relevant documentation sources.
 
-1. Repository instructions
-2. Required standing Jules/Gemini documentation available through the repository's approved workflow
-3. Relevant ".docs/" documentation
-4. Other authorized relevant documentation
-5. Actual repository implementation and configuration
+Do not consult unrelated specialist instructions or documentation libraries.
 
-".docs/" is read-only during ordinary application work.
+`.docs/` is read-only during ordinary application work.
 
-Do not:
+Do not refresh, regenerate, or modify `.docs/`, `.docs/manifest.json`, documentation refresh scripts, or documentation refresh workflows unless explicitly authorized.
 
-- refresh ".docs/"
-- regenerate ".docs/"
-- rewrite documentation snapshots
-- modify ".docs/manifest.json"
-- modify documentation refresh scripts
-- modify documentation refresh workflows
+If local documentation is incomplete or stale, use the best available authorized source and report the limitation.
 
-unless the task explicitly authorizes documentation maintenance.
+## Memory Bank
 
-Use ".docs/manifest.json" as the current inventory of the local documentation library. Do not copy that inventory into this file.
+Use the existing Memory Bank when relevant.
 
-If local documentation is stale or incomplete, report that fact and use the best available authorized source. Do not silently modify the documentation system while performing unrelated work.
+Treat `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, and `memory-bank/techContext.md` as project context and history, not proof of current implementation.
 
-Context7 and External Tools
+Do not redesign, replace, or create another Memory Bank system.
 
-Local repository resources come first.
+Follow the applicable `.jules/jules.md` requirements for updating `memory-bank/activeContext.md` and `memory-bank/progress.md` when completed work changes recorded project state.
 
-Context7 is approval-controlled.
+## External Tools
 
-Do not invoke, query, retrieve from, or otherwise use Context7 without explicit authorization from the repository owner.
+Use repository resources first.
 
-A connection, initialization event, availability message, or MCP listing does not count as approval and does not count as actual use.
+Context7 is the only MCP requiring explicit authorization from the repository owner.
 
-Neon, Stitch, and other external capabilities may be used only when genuinely relevant and permitted by the applicable repository instructions.
+Other permitted MCPs and external capabilities may be used when genuinely relevant to the task.
 
-Never claim a tool or service was used when it was only connected or made available.
+## Commands
 
-Never disclose credentials, tokens, secrets, or authentication material.
+Use commands defined by the current `package.json`.
 
-Project Commands
+Current repository commands:
 
-Use the commands defined by the current "package.json" rather than inventing alternatives.
+`pnpm install --frozen-lockfile`
+`pnpm dev`
+`pnpm build`
+`pnpm start`
 
-The repository currently uses:
+Package manager: `pnpm@10.30.3`
+Node target: `22`
 
-pnpm install --frozen-lockfile
-pnpm dev
-pnpm build
-pnpm start
+For explicitly authorized deployment work, use the existing `pnpm deploy` command and OpenNext/Cloudflare configuration.
 
-The package manager is "pnpm@10.30.3", and the repository targets Node 22.
+Do not change build or deployment commands for preference or cleanup.
 
-When deployment work is explicitly authorized, use the repository's existing OpenNext/Cloudflare deployment configuration rather than creating a new deployment path. Use the existing "pnpm deploy" command. Deployment requires explicit authorization.
+## Verification
 
-Do not change build or deployment commands merely for preference or cleanup.
+Match verification to the change.
 
-Testing and Verification
+For repairs:
 
-Choose verification that matches the change.
-
-Use the repository's existing test and verification tooling where applicable.
-
-Use browser-level verification when user-facing behavior requires it.
-
-Use repository workflow verification tooling when GitHub Actions behavior requires it.
-
-For troubleshooting and repair work:
-
-1. establish observable facts
+1. establish the facts
 2. reproduce the failure when practical
 3. isolate the cause
-4. make the smallest authorized repair
+4. make the smallest authorized change
 5. verify the original failure is resolved
-6. check for relevant regressions
+6. check relevant regressions
 
-Do not present a hypothesis as a verified root cause.
+Use appropriate tests, builds, browser checks, workflow checks, or deployment checks.
 
-Do not claim that a test, build, browser check, workflow check, deployment check, or other verification was performed unless it actually was.
+Do not present a hypothesis as a verified cause.
 
-Protected Systems
+Do not claim a check was performed unless it was actually performed.
 
-Treat these as protected unless the task explicitly authorizes changes:
+Before reporting completion, inspect the changed file, resulting diff, and repository status.
 
-- Stripe/payment processing and pricing
+## Protected Systems
+
+These require explicit authorization to modify:
+
+- Stripe, payments, and pricing
 - payment and webhook routes
 - Cloudflare/OpenNext deployment configuration
 - production bindings and environment configuration
 - database schema, migrations, production data, and permissions
-- authentication and authorization systems
+- authentication and authorization
 - security controls
 - secrets and credentials
 
-The presence of access to a service does not authorize modification of that service.
+Access to a service does not authorize changing it.
 
-Inspect the existing implementation before making changes to protected systems.
+## Secrets
 
-Secrets and Credentials
+Never expose, print, commit, paste, summarize, or disclose secrets, credentials, tokens, private keys, cookies, or authentication material.
 
-Never expose, print, commit, paste, summarize, or disclose:
+Never place secrets in source code, logs, commits, issues, PRs, screenshots, documentation, or reports.
 
-- API keys
-- access tokens
-- OAuth credentials
-- database credentials
-- webhook secrets
-- private keys
-- signing secrets
-- session secrets
-- cookies
-- environment secrets
+## Git and Pull Requests
 
-Do not place secrets in source code, logs, commits, issues, PRs, screenshots, documentation, or reports.
+Preserve unrelated work.
 
-If a tool reveals a secret unexpectedly, do not reproduce it.
+Inspect actual GitHub state before branch, commit, issue, workflow, or PR operations.
 
-Dependencies
+Do not discard unrelated changes.
 
-Before changing dependencies, inspect:
+Do not create a PR or push changes when the task workflow requires approval first.
 
-- "package.json"
-- the lockfile
-- existing imports and usage
-- repository conventions
-- relevant documentation
-
-Do not upgrade, downgrade, remove, or add dependencies unless the authorized task requires it.
-
-Verification of Final State
-
-Before reporting completion:
-
-- inspect the changed files
-- inspect the resulting diff
-- inspect repository status
-- run appropriate tests/checks
-- verify generated files when applicable
-- verify relevant workflow/configuration changes
-- confirm the requested behavior actually works
-
-A successful commit is not proof that the implementation works.
-
-A plausible agent report is not proof of repository state.
-
-Report what was actually changed and what was actually verified.
-
-Git and Pull Requests
-
-Preserve unrelated existing changes.
-
-Do not overwrite or discard work that is outside the authorized task.
-
-When branch, commit, issue, workflow, or PR operations are part of the authorized task, inspect the actual GitHub state before modifying it.
-
-Do not create a PR or push changes merely because the implementation is technically complete if the task workflow requires an approval step first.
-
-General Rule
-
-Be evidence-driven.
+## General Rule
 
 Inspect first.
 
-Use the existing repository architecture and instruction systems.
+Use the existing repository architecture and instruction system.
 
-Make the smallest change that correctly completes the authorized task.
+Make the smallest authorized change.
 
 Verify the result against the actual repository state.
 
