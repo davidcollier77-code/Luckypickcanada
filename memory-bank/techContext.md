@@ -3,7 +3,7 @@
 ## Tech Stack Rules & Environment Patterns
 - **Framework:** Next.js App Router (React, TypeScript).
 - **Styling & Animation:** Tailwind CSS, Framer Motion, Canvas-based visual effects.
-- **Audio:** Howler and the browser Web Audio API (used by the card reveal).
+- **Audio:** Howler.
 - **Database:** PostgreSQL / Neon.
 - **Deployment:** Cloudflare Pages / Workers via OpenNext. (Note: `.open-next` directory and `worker.js` require explicitly running `opennextjs-cloudflare build` after Next.js build).
 - **Payments:** Stripe Checkout.
