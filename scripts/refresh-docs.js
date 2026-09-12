@@ -383,7 +383,10 @@ async function main() {
 
     let batchContinues = true;
     let deferredUpdates = [];
-    let progressMade = false;
+    // Only true when a write actually changes .docs / currentDocsSize, so the
+    // hard-ceiling guard below isn't fooled by unrelated skips/failures into
+    // retrying a capacity-deferred library for an extra batch before reporting deadlock.
+    let capacityProgressMade = false;
 
     while (batchContinues && pendingUpdates.length > 0) {
       const nextUpdate = pendingUpdates.shift();
@@ -433,7 +436,6 @@ async function main() {
       if (upstreamSha && upstreamSha === githubShas[lib] && allDocsExist) {
          console.log(`SKIPPED: ${lib} (upstream SHA ${upstreamSha} has not changed)`);
          stats.skipped++;
-         progressMade = true;
          stats.pending--;
 
          const wasInInventory = inventory.has(lib);
@@ -449,13 +451,6 @@ async function main() {
 
       let output;
       let fetchSuccess = false;
-
-      if (!sourceConfig) {
-         console.log(`UNRESOLVED SOURCE: No verified source configuration for ${lib}. Skipping.`);
-         stats.skipped++;
-         stats.pending--;
-         continue;
-      }
 
       try {
         console.log(`Fetching docs for ${lib} using configured source to determine exact size BEFORE downloading into .docs...`);
@@ -556,6 +551,8 @@ async function main() {
           }
       } else {
           console.log(`UPDATED: ${lib}`);
+         // Capture size before write to check if it actually freed capacity
+         const sizeBeforeWrite = currentDocsSize;
           stats.updated++;
 
           // Write primary copy to first group
@@ -597,7 +594,13 @@ async function main() {
           }
           isNewOrUpdated = true;
           isContentUpdated = true;
-          progressMade = true;
+         
+         // Update size after write to determine actual capacity impact
+         const sizeAfterWrite = getDirSize(DOCS_DIR);
+         // Only mark capacity progress if the write actually reduced .docs size
+         if (sizeAfterWrite < sizeBeforeWrite) {
+             capacityProgressMade = true;
+         }
       }
 
       if (upstreamSha) {
@@ -625,7 +628,7 @@ async function main() {
 
 
     if (deferredUpdates.length > 0) {
-      if (!progressMade) {
+      if (!capacityProgressMade) {
          console.error(`Hard ceiling deadlock: No space freed and no pending resources can fit.`);
          console.error(`Current size: ${currentDocsSize} bytes, Maximum: ${MAX_DOCS_SIZE_BYTES} bytes`);
          console.error(`No pending library can fit under the hard ceiling.`);
