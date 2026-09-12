@@ -347,6 +347,8 @@ function useResonanceCanvas(
            source.onended = () => {
              source.disconnect();
              gainNode.disconnect();
+             const idx = activeSourcesRef.current.indexOf(source);
+             if (idx !== -1) activeSourcesRef.current.splice(idx, 1);
            };
            source.start(0);
          } catch (e) { /* ignore audio playback errors */ }
