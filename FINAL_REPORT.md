@@ -13,15 +13,14 @@
 - `components/ResonanceButton.tsx`
 
 ### Exact Repository Documentation Files Used:
-- `AGENTS.md`: Instructed on the rules for modifying and testing the repository, the strict use of existing memory vs codebase, the non-gambling rules, and how to record changes.
-- `memory-bank/projectBrief.md`: Reminded me of the project goal and entertainment-only nature.
-- `.jules/jules.md`: Explicitly required that context update and memory bank modification were done after the work, and how MCPs work for this repo.
+- `AGENTS.md`: Instructed on the rules for modifying and testing the repository and the strict use of existing memory vs codebase.
+- `memory-bank/projectBrief.md`: Reminded me of the project goal, entertainment-only nature, and the non-gambling disclaimers.
+- `.jules/jules.md`: Explicitly required that context update and memory bank modification were done after the work, how MCPs work for this repo, and how to record completed work in the memory bank.
 
 ### What Each Relevant Document Informed:
-- `components/DailyResonance.tsx`: Confirmed how `Howler` was used (via `soundsRef.current.buildup.play()` and `soundsRef.current.buildup.stop()`), how timing relied on `performance.now()` in `requestAnimationFrame`, and how persistence was locked into `localStorage`. This file directed my execution plan.
-- `AGENTS.md`: Reminded me to leave `localStorage` entirely unchanged to guarantee the daily reset functionality remained unharmed.
+- `components/DailyResonance.tsx`: Confirmed how `Howler` was used (via `soundsRef.current.buildup.play()` and `soundsRef.current.buildup.stop()`), how timing relied on `performance.now()` in `requestAnimationFrame`, and how persistence was locked into `localStorage`. This file directed my execution plan and confirmed that `localStorage` needed to remain entirely unchanged to guarantee the daily reset functionality remained unharmed.
 
-### Exact Files Changed:
+### Primary Implementation File:
 - `components/DailyResonance.tsx`
 
 ### Existing Lucky Meter Functions Preserved:

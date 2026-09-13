@@ -175,10 +175,10 @@ export default function DailyResonance() {
 
 
 
-    // Strict 9 second cinematic sequence
+    // Shortened 4.5 second cinematic sequence
     const SEQUENCE_DURATION = 4500;
-    const IMPACT_TIME = 4200; // 8.8s frame for impact
-    const TENSION_TIME = 3500; // 7.5s tension shift
+    const IMPACT_TIME = 4200; // 4.2s frame for impact
+    const TENSION_TIME = 3500; // 3.5s tension shift
 
     const audioStartTime = performance.now();
 
@@ -229,7 +229,7 @@ export default function DailyResonance() {
         setDisplayPercentage(newPct);
       }
 
-      // Impact Frame (8.8s)
+      // Impact Frame (4.2s)
       if (elapsed >= IMPACT_TIME && !impactPlayed) {
         impactPlayed = true;
 
@@ -244,7 +244,7 @@ export default function DailyResonance() {
         animateCanvas(currentTier, performance.now() - IMPACT_TIME); // Pass the starting time for the canvas
       }
 
-      // Impact Frame UI Transition (8.8s)
+      // Impact Frame UI Transition (4.2s)
       if (elapsed >= IMPACT_TIME && !finalTierSet) {
         finalTierSet = true;
         setTier(currentTier);
