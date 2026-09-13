@@ -65,7 +65,8 @@ async function createShareImage(card) {
   glow.addColorStop(0, 'rgba(250, 204, 21, 0.34)');
   glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
   context.fillStyle = glow;
-  context.fillRect(0, 0, width, height);
+  // Constrain fillRect to the radial gradient's bounding box to reduce overdraw
+  context.fillRect(width * 0.78 - 600, height * 0.06 - 600, 1200, 1200);
 
   context.strokeStyle = 'rgba(255, 235, 160, 0.32)';
   context.lineWidth = 3;
