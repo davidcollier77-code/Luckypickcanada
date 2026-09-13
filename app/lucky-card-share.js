@@ -65,7 +65,11 @@ async function createShareImage(card) {
   glow.addColorStop(0, 'rgba(250, 204, 21, 0.34)');
   glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
   context.fillStyle = glow;
-  context.fillRect(0, 0, width, height);
+  // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+  // Constrain the fillRect operation strictly to the bounding box of the radial gradient
+  // rather than filling the entire canvas. This significantly reduces GPU/CPU overdraw
+  // and improves rendering performance by not processing fully transparent pixels outside the radius.
+  context.fillRect(width * 0.78 - 600, height * 0.06 - 600, 1200, 1200);
 
   context.strokeStyle = 'rgba(255, 235, 160, 0.32)';
   context.lineWidth = 3;
