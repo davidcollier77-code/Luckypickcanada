@@ -61,12 +61,13 @@ async function createShareImage(card) {
   context.fillStyle = background;
   context.fillRect(0, 0, width, height);
 
-  const glow = context.createRadialGradient(width * 0.78, height * 0.06, 0, width * 0.78, height * 0.06, 600);
+  const glowRadius = 600;
+  const glow = context.createRadialGradient(width * 0.78, height * 0.06, 0, width * 0.78, height * 0.06, glowRadius);
   glow.addColorStop(0, 'rgba(250, 204, 21, 0.34)');
   glow.addColorStop(1, 'rgba(250, 204, 21, 0)');
   context.fillStyle = glow;
   // Constrain fillRect to the radial gradient's bounding box to reduce overdraw
-  context.fillRect(width * 0.78 - 600, height * 0.06 - 600, 1200, 1200);
+  context.fillRect(width * 0.78 - glowRadius, height * 0.06 - glowRadius, glowRadius * 2, glowRadius * 2);
 
   context.strokeStyle = 'rgba(255, 235, 160, 0.32)';
   context.lineWidth = 3;
