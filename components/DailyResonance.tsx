@@ -18,7 +18,11 @@ const LUCKY_QUOTES = [
   "Like maple sap rising in spring, your potential is ready to sweeten the day."
 ];
 
-export default function DailyResonance() {
+interface DailyResonanceProps {
+  isCompact?: boolean;
+}
+
+export default function DailyResonance({ isCompact = false }: DailyResonanceProps) {
 
   const soundsRef = useRef<Record<string, Howl | null>>({
     buildup: null,
@@ -594,16 +598,20 @@ export default function DailyResonance() {
   }, []);
 
   return (
-    <div className="relative w-full flex-1 min-h-[500px] flex flex-col items-center justify-center overflow-hidden">
+    <div className={`relative w-full flex-1 ${
+      isCompact ? 'min-h-[200px]' : 'min-h-[500px]'
+    } flex flex-col items-center justify-center overflow-hidden`}>
       <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
       <canvas ref={bgCanvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
 
-      <div className="absolute top-4 left-4 z-20">
-        <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90">
-          <span aria-hidden>←</span> Return to Home
-        </Link>
-      </div>
+      {!isCompact && (
+        <div className="absolute top-4 left-4 z-20">
+          <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90">
+            <span aria-hidden>←</span> Return to Home
+          </Link>
+        </div>
+      )}
 
       <div className="z-10 flex flex-col items-center max-w-md w-full mx-4">
         {totalVisits !== null && (
@@ -615,7 +623,7 @@ export default function DailyResonance() {
             <span>Total Resonance Rituals: <strong className="text-emerald-400 font-bold ml-1">{totalVisits.toLocaleString()}</strong></span>
           </div>
         )}
-        <div className="bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full flex flex-col">
+        <div className="bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full flex flex-col items-center">
           {!isRevealed && !isRevealing ? (
           <>
             <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>

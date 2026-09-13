@@ -27,17 +27,17 @@
 - Also removed the downloaded/generated `screenshots/` directory used during visual verification.
 
 **5. Visual changes retained or corrected**
-- The accelerating sine-wave anticipation pulse on the numerical jitter was retained.
+- The accelerating ease-in-out cubic anticipation jitter on the numerical display was retained.
 - The enhanced canvas drawing logic for all three tiers was implemented and verified.
 - The pre-existing CSS `plasma-glow` classes were kept intact.
 
 **6. How Tier 1, Tier 2, and Tier 3 now visually escalate**
-- **Tier 1 (Meteor Shower)**: Majestic diagonal trails with thicker stroke width and fading glowing heads, backed by smaller falling "stardust" particles.
-- **Tier 2 (Cosmic Lightning)**: Thicker jagged strikes with a deep purple outer aura and white-hot cores, accompanied by a massive cinematic screen bloom radial gradient upon impact.
-- **Tier 3 (Fireworks)**: True spherical distribution of bursts (using sine/cosine math) from a central flash radius, utilizing premium colors (`#f59e0b`, `#38bdf8`, `#c084fc`, etc.), and possessing gravity deceleration.
+- **Tier 1 (Meteor Shower)**: Diagonal trails with thicker stroke width, linear gradients from white to cyan, and shadow blur effects.
+- **Tier 2 (Cosmic Lightning)**: Jagged purple strikes with a radial screen-bloom gradient on impact.
+- **Tier 3 (Fireworks)**: 2D radial bursts from random positions in the upper half, using the configured six-color palette and downward gravity.
 
 **7. How Tier 1 was kept spectacular rather than basic**
-- Added secondary particles (stardust) and cinematic radial glow heads to the meteors. It looks dense and magical on its own, not cheap or sparse.
+- Meteor Shower uses longer tails (100-300px), thicker stroke width (4px), diagonal motion, and cyan shadow blur to create a premium visual effect.
 
 **8. Build/verification result**
 - `pnpm run build` ran successfully, generating static pages (21/21) in ~730ms.
@@ -60,7 +60,7 @@
 - Verified `localStorage.getItem('lucky_lastDate')` logic and `calculateTimeRemaining` logic is completely untouched.
 
 **14. Confirmation that existing Lucky Meter functionality remains intact**
-- The underlying Tier assignment (`getTier`/`setTier` logic based on percentage <= 33/66) remains unchanged.
+- The active tier assignment still uses inline `newPct <= 33` / `newPct <= 66` branches for the three labels.
 
 **15. Confirmation that audio was not modified**
 - `soundsRef.current` and Howler instantiation/playback remain perfectly intact. None of the audio logic or sequencing was altered.
