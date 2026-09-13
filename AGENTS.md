@@ -114,15 +114,15 @@ Use commands defined by the current "package.json".
 
 Current repository commands:
 
-"pnpm install --frozen-lockfile"
-"pnpm dev"
-"pnpm build"
-"pnpm start"
+`pnpm install --frozen-lockfile`
+`pnpm dev`
+`pnpm build`
+`pnpm start`
 
-Package manager: "pnpm@10.30.3"
-Node target: "22"
+Package manager: `pnpm@10.30.3`
+Node target: `22`
 
-For explicitly authorized deployment work, use the existing "pnpm deploy" command and OpenNext/Cloudflare configuration.
+For explicitly authorized deployment work, use the existing `pnpm deploy` command and OpenNext/Cloudflare configuration.
 
 Do not change build or deployment commands for preference or cleanup.
 
