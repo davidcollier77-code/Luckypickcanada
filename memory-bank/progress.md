@@ -43,3 +43,6 @@
 - [x] Improved `scripts/refresh-docs.js` updater atomicity and reporting (atomic writes, 15s timeout, 10MB response-size limit, true failure reporting).
 - [x] Removed `/goldfire/howler.js` (Context7 source) from `.docs/manifest.json` automated updates.
 - [x] Shortened the Lucky Meter reveal sequence to 4.5s with a quadratic easing convergence effect.
+
+## 2026-09-13 - Documentation Mapping Fix
+- Corrected broken source mappings for `/dropbox/zxcvbn` and `/resend/resend-node` in the `.docs/` inventory. Documentation updater successfully fetched and linked both repositories with 0 failures.

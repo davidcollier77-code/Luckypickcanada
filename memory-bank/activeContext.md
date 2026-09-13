@@ -8,3 +8,7 @@
 
 ## Next Steps
 - Finalize PR and wrap up work.
+
+## 2026-09-13 - Documentation Mapping Fix
+- **Completed Task:** Corrected source mappings in `.docs/manifest.json` for `/dropbox/zxcvbn` and `/resend/resend-node`.
+- **Status:** Verified with `scripts/refresh-docs.js` resulting in 0 failures.
