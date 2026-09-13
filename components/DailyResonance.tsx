@@ -176,9 +176,9 @@ export default function DailyResonance() {
 
 
     // Strict 9 second cinematic sequence
-    const SEQUENCE_DURATION = 9000;
-    const IMPACT_TIME = 8800; // 8.8s frame for impact
-    const TENSION_TIME = 7500; // 7.5s tension shift
+    const SEQUENCE_DURATION = 4500;
+    const IMPACT_TIME = 4200; // 8.8s frame for impact
+    const TENSION_TIME = 3500; // 7.5s tension shift
 
     const audioStartTime = performance.now();
 
@@ -203,11 +203,27 @@ export default function DailyResonance() {
 
       // Update displayed number based on phase
       if (elapsed < TENSION_TIME) {
-        // Standard score roll build-up (0.0 - 7.5s)
-        setDisplayPercentage(Math.floor(Math.random() * 101));
+        // Ease out quadratic: fast at first, then slows down, approaching newPct
+        // Map elapsed from 0 to TENSION_TIME to a progress 0.0 to 1.0
+        let progress = elapsed / TENSION_TIME;
+        // Simple easeOutQuad: t * (2 - t)
+        let ease = progress * (2 - progress);
+
+        // Let's add a bit of noise (jitter) that decreases as we get closer to the end
+        let jitter = Math.floor((Math.random() - 0.5) * 40 * (1 - ease));
+
+        // Interpolate between a random start and newPct
+        let currentVal = Math.floor(ease * newPct + jitter);
+
+        // Keep it bounded 0-100
+        currentVal = Math.max(0, Math.min(100, currentVal));
+
+        setDisplayPercentage(currentVal);
       } else if (elapsed < IMPACT_TIME) {
-        // High-speed tension roll (7.5 - 8.8s)
-        setDisplayPercentage(Math.floor(Math.random() * 101));
+        // High-speed tension roll (very short, converging tightly)
+        let jitter = Math.floor((Math.random() - 0.5) * 5); // tiny jitter
+        let currentVal = Math.max(0, Math.min(100, newPct + jitter));
+        setDisplayPercentage(currentVal);
       } else {
         // Final locked value
         setDisplayPercentage(newPct);

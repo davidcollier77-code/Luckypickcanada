@@ -1,0 +1,13 @@
+Ah, I understand. I will ensure I adhere strictly to the rules outlined in `AGENTS.md`.
+
+My plan remains the same regarding the technical implementation of the code inside `components/DailyResonance.tsx`:
+1. **Shorten Reveal Sequence**: Reduce the sequence from 9 seconds to 4.5 seconds (`TENSION_TIME` to ~3.5s and `IMPACT_TIME` to ~4.2s).
+2. **Audio/Visual Synching**: Make sure the buildup audio stops perfectly and the impact sound triggers precisely at the new `IMPACT_TIME`.
+3. **Number Convergence (Instead of Randomizing)**: Rather than displaying completely random values (0-100) until the final frame, we will create an easing effect where the displayed number rolls fast at the start and gradually slows down, smoothly converging toward the final generated percentage `newPct`.
+4. **Preserve Functionality Strictness**: The existing `localStorage` keys (`lucky_lastDate`, `lucky_lastPct`, `lucky_lastQuote`), collision prevention logic, tier boundaries, and daily lockouts will remain absolutely untouched.
+
+To satisfy the governance requirements, my work flow moving forward will be:
+- Update `components/DailyResonance.tsx` directly.
+- Test the changes thoroughly.
+- Report all file modifications clearly and confirm the daily reset logic is preserved.
+- When finishing, I will append my work status into the `memory-bank` as requested by `.jules/jules.md`.
