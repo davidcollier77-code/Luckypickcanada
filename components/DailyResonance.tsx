@@ -234,7 +234,7 @@ export default function DailyResonance() {
         impactPlayed = true;
 
         // Stop buildup
-        if (soundsRef.current.buildup) soundsRef.current.buildup.stop();
+        if (soundsRef.current.buildup) { soundsRef.current.buildup.fade(0.8, 0, 500); setTimeout(() => { if (soundsRef.current.buildup) soundsRef.current.buildup.stop(); }, 500); }
 
         // Play impact sound exactly as visual reveals
         if (soundsRef.current[tierAudioKey]) {
@@ -594,7 +594,7 @@ export default function DailyResonance() {
   }, []);
 
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative w-full flex-1 min-h-[500px] flex flex-col items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
       <canvas ref={bgCanvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
@@ -616,7 +616,7 @@ export default function DailyResonance() {
           </div>
         )}
         <div className="bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full">
-        {!isRevealed && !isRevealing ? (
+        <div className="bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full flex flex-col">
           <>
             <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>
             <h1 className="text-3xl font-light text-white mb-8">AWAKEN TODAY'S RESONANCE</h1>
@@ -631,7 +631,7 @@ export default function DailyResonance() {
               </div>
            </div>
         ) : (
-          <div className="animate-fade-in flex flex-col items-center h-[26rem]">
+          <div className="animate-fade-in flex flex-col items-center flex-1 py-8">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
             <div className={`plasma-glow-settled my-2 flex items-center justify-center min-w-[200px]`}>
               <div className="text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
