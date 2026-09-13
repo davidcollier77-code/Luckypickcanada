@@ -1,6 +1,0 @@
-Clean up ZZFX dependency and residue
-
-Removed the obsolete `zzfx` dependency along with unused test files,
-scripts (`fix_ssr.js`, `zzfx_params.js`, `hooks/useSoundEffects.js`),
-and documentation references. Validated Howler remains the sole audio
-system.
