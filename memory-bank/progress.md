@@ -1,5 +1,12 @@
 # Progress
 
+## 2026-09-15 - Enhanced Cinematic Pacing for Lucky Meter
+- Extended the Lucky Meter ritual sequence to 6.5s to improve the "Awaken -> Gather -> Anticipate -> Reveal -> Afterglow" flow.
+- Replaced the simple easeOut quadratic curve with an `easeInOutCubic` tension curve, adding a heartbeat-like pulse and a tightly focused jitter that smoothly decays toward the 5.5s impact moment.
+- Improved `animateCanvas` particle rendering across all three tiers (longer tails for Meteor Shower, deeper flashes and denser particles for Cosmic Lightning, and voluminous soft decay for Fireworks).
+- Audio buildup length fits comfortably; the impact sound and final percentage lock synchronously at 5.5s.
+- Preserved negative margins and component architectures strictly, modifying only internal pacing variables and render loops.
+
 ## 2026-09-13 - Lucky Meter Reveal Pacing
 - Shortened the Lucky Meter reveal sequence from 9s to 4.5s for snappier pacing.
 - Replaced jittery 0-100 random rolls with a smooth quadratic easing convergence logic towards the final percentage `newPct`.
