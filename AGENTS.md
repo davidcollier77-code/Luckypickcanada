@@ -1,50 +1,50 @@
-# AGENTS.md
+AGENTS.md
 
-## Purpose
+Purpose
 
 Repository-wide instructions for AI coding agents working on LuckyPickCanada.
 
-Keep task-specific procedures in `.jules/`.
+Keep task-specific procedures in ".jules/".
 
-## Project
+Project
 
 LuckyPickCanada is a Canadian entertainment web application built with Next.js, React, TypeScript, and OpenNext/Cloudflare, with GitHub used for source control and repository automation.
 
 The repository is the source of truth for current implementation state.
 
-## Start Here
+Start Here
 
 Before changing code:
 
-1. Read `AGENTS.md`.
+1. Read "AGENTS.md".
 2. Inspect the actual repository state relevant to the task.
-3. Read `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, and `memory-bank/techContext.md` as relevant.
-4. Read `.jules/jules.md` and the applicable `.jules/*.md` specialist instruction.
-5. Read the applicable `.jules/cmds/*.md` instruction when a command workflow is involved.
+3. Read "memory-bank/projectBrief.md", "memory-bank/activeContext.md", "memory-bank/progress.md", and "memory-bank/techContext.md" as relevant.
+4. Read ".jules/jules.md" and the applicable ".jules/*.md" specialist instruction.
+5. Read the applicable ".jules/cmds/*.md" instruction when a command workflow is involved.
 6. Consult the required Jules Documentation, Jules API, Gemini CLI, and Gemini API documentation.
-7. Consult relevant `.docs/` sources using `.docs/manifest.json`.
+7. Consult relevant ".docs/" sources using ".docs/manifest.json".
 8. Verify important assumptions against the current source and configuration.
 
 Do not rely on old reports, commits, agent summaries, or remembered state.
 
 Do not assume a file, command, dependency, workflow, or instruction exists without checking.
 
-## Instruction Order
+Instruction Order
 
 Use the most specific applicable instruction.
 
-- `AGENTS.md` — repository-wide rules
-- `.jules/jules.md` — Jules initialization and task routing
-- applicable `.jules/*.md` — specialist guidance
-- applicable `.jules/cmds/*.md` — command workflows
-- `memory-bank/` — project context and history
-- `.docs/` — documentation
+- "AGENTS.md" — repository-wide rules
+- ".jules/jules.md" — Jules initialization and task routing
+- applicable ".jules/*.md" — specialist guidance
+- applicable ".jules/cmds/*.md" — command workflows
+- "memory-bank/" — project context and history
+- ".docs/" — documentation
 
 Specific instructions must not conflict with higher-priority rules.
 
 Do not create competing instruction systems or duplicate large manuals.
 
-## Task Scope
+Task Scope
 
 Determine exactly what the task authorizes before editing.
 
@@ -54,57 +54,79 @@ Keep changes focused. Do not add unrelated refactoring, cleanup, dependencies, a
 
 Do not add or change dependencies unless required by the authorized task.
 
-## Documentation
+Documentation
 
 Use documentation to inform implementation, but verify important behavior against the repository.
 
-Use the applicable `.jules/*.md` specialist guidance and its relevant documentation sources.
+Use the applicable ".jules/*.md" specialist guidance and its relevant documentation sources.
 
 Do not consult unrelated specialist instructions or documentation libraries.
 
-`.docs/` is read-only during ordinary application work.
+".docs/" is read-only during ordinary application work.
 
-Do not refresh, regenerate, or modify `.docs/`, `.docs/manifest.json`, documentation refresh scripts, or documentation refresh workflows unless explicitly authorized.
+Do not refresh, regenerate, or modify ".docs/", ".docs/manifest.json", documentation refresh scripts, or documentation refresh workflows unless explicitly authorized.
 
 If local documentation is incomplete or stale, use the best available authorized source and report the limitation.
 
-## Memory Bank
+Memory Bank
 
 Use the existing Memory Bank when relevant.
 
-Treat `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, and `memory-bank/techContext.md` as project context and history, not proof of current implementation.
+Treat "memory-bank/projectBrief.md", "memory-bank/activeContext.md", "memory-bank/progress.md", and "memory-bank/techContext.md" as project context and history, not proof of current implementation.
 
 Do not redesign, replace, or create another Memory Bank system.
 
-Follow the applicable `.jules/jules.md` requirements for updating `memory-bank/activeContext.md` and `memory-bank/progress.md` when completed work changes recorded project state.
+Follow the applicable ".jules/jules.md" requirements for updating "memory-bank/activeContext.md" and "memory-bank/progress.md" when completed work changes recorded project state.
 
-## External Tools
+External Tools
 
 Use repository resources first.
 
-Context7 is the only MCP requiring explicit authorization from the repository owner.
+Use of the Context7 MCP requires explicit authorization from the repository owner.
 
 Other permitted MCPs and external capabilities may be used when genuinely relevant to the task.
 
-## Commands
+Documentation and MCP Decision Rule
 
-Use commands defined by the current `package.json`.
+Use the repository's documentation hierarchy and external tools deliberately; do not invoke a tool merely because it is available.
+
+1. Read and apply "AGENTS.md" first, then the applicable ".jules/" specialist guidance, required Memory Bank files, and relevant ".docs/" sources.
+2. For any task involving a library, framework, API, SDK, platform, or other documented external technology, inspect the repository's relevant documentation references and determine whether a corresponding Context7 library/resource could materially improve accuracy or execution.
+3. If Context7 would materially improve the task, stop before invoking the Context7 MCP and obtain explicit repository-owner authorization. State:
+   - the MCP/service being requested;
+   - the exact library/resource or tool/action to be invoked;
+   - why it is materially relevant;
+   - what information it is expected to retrieve; and
+   - whether the operation is read-only or modifies anything.
+4. After authorization, invoke the Context7 MCP only for the relevant library/resource and only within the approved scope.
+5. If Context7 would not materially improve the task, do not invoke the Context7 MCP merely because the library exists in the repository inventory. When traceability is required, state that this determination was made.
+6. A connection, initialization, availability check, or "connect..." event does not constitute MCP usage. Only an actual invocation, query, retrieval, or returned result constitutes MCP usage.
+7. Never claim that an MCP, documentation source, library reference, or external capability was used unless the actual invocation, consultation, retrieval, or result can be identified.
+8. The mandatory Jules Documentation, Jules API, Gemini CLI, and Gemini API documentation requirements remain separate from the Context7 MCP authorization requirement. Those required documentation sources must be actually consulted according to the applicable ".jules/" specialist instructions.
+9. When a task concerns documentation-source mappings or the documentation updater itself, treat the relevant ".docs/" manifest, updater implementation, and corresponding external library or documentation source as part of the evidence chain. Do not infer correctness from HTTP availability alone when a more authoritative source can verify the mapping.
+10. Preserve the repository's existing instruction hierarchy. Do not create competing tool-selection rules in other files.
+
+Access to a service does not authorize changing it.
+
+Commands
+
+Use commands defined by the current "package.json".
 
 Current repository commands:
 
-`pnpm install --frozen-lockfile`
-`pnpm dev`
-`pnpm build`
-`pnpm start`
+"pnpm install --frozen-lockfile"
+"pnpm dev"
+"pnpm build"
+"pnpm start"
 
-Package manager: `pnpm@10.30.3`
-Node target: `22`
+Package manager: "pnpm@10.30.3"
+Node target: "22"
 
-For explicitly authorized deployment work, use the existing `pnpm deploy` command and OpenNext/Cloudflare configuration.
+For explicitly authorized deployment work, use the existing "pnpm deploy" command and OpenNext/Cloudflare configuration.
 
 Do not change build or deployment commands for preference or cleanup.
 
-## Verification
+Verification
 
 Match verification to the change.
 
@@ -125,7 +147,7 @@ Do not claim a check was performed unless it was actually performed.
 
 Before reporting completion, inspect the changed file, resulting diff, and repository status.
 
-## Protected Systems
+Protected Systems
 
 These require explicit authorization to modify:
 
@@ -140,13 +162,13 @@ These require explicit authorization to modify:
 
 Access to a service does not authorize changing it.
 
-## Secrets
+Secrets
 
 Never expose, print, commit, paste, summarize, or disclose secrets, credentials, tokens, private keys, cookies, or authentication material.
 
 Never place secrets in source code, logs, commits, issues, PRs, screenshots, documentation, or reports.
 
-## Git and Pull Requests
+Git and Pull Requests
 
 Preserve unrelated work.
 
@@ -156,7 +178,7 @@ Do not discard unrelated changes.
 
 Do not create a PR or push changes when the task workflow requires approval first.
 
-## General Rule
+General Rule
 
 Inspect first.
 
