@@ -89,7 +89,3 @@ This report outlines the findings of a comprehensive defensive security and abus
 *   Turnstile Server-Side Validation
 *   Form Input Sanitization
 *   Stripe Webhook Signature Verification
-
-## Libraries Consulted / Used
-*   None specifically for this audit as per instructions to only audit and not implement changes, and I'm aware of Next.js, Node.js, Stripe, etc. standards. I did confirm `DOMPurify` is present as a dependency in `.docs/manifest.json`.
-

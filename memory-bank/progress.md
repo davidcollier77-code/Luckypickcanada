@@ -8,7 +8,7 @@
 - **Update**: Fixed the climax timing issue so that the visual flash, the percentage lock, and the impact sound fire exactly and synchronously at the `IMPACT_TIME_MS` moment.
 
 ## What Works
-- Centralized IP-based rate limiting for public API endpoints to prevent abuse.
+- Centralized IP-based rate limiting for public API endpoints to prevent abuse (though identified as needing a move to Redis for serverless support).
 - Next.js App Router architecture is set up.
 - Cloudflare Pages / Workers deployment configured (using OpenNext).
 - Neon PostgreSQL database integration is functional (used for `luck_shares` and `suggestions`).
@@ -21,9 +21,10 @@
 - **Python Utility:** The local Python utility script (`luckypick.py`) and its active test suite are documented in `README.md`, but these files do not currently exist in the repository.
 
 ## What is Left to Build
-- *(Future tasks will populate this section with specific feature developments or bug fixes.)*
+- Implement the prioritized remediation plan from the security audit (IDOR in gift delivery, weak admin auth, distributed rate limiting).
 
 ## Completed Milestones
+- [x] Completed comprehensive defensive security and abuse-resilience audit and generated `security_audit_report.md`.
 - [x] Repaired false-deadlock defect in `scripts/refresh-docs.js` updater logic.
 - [x] Initialize Memory Bank core files.
 - [x] Harden Memory Bank for ongoing maintainability and fact-checked accuracy against the current repository state.
