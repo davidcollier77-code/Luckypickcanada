@@ -1,7 +1,9 @@
 # Active Context
 
 ## Current Status
-- Finished implementing the Lucky Meter reveal experience improvements in `components/DailyResonance.tsx`.
+- Finished implementing the enhanced Lucky Meter reveal pacing and cinematic polish in `components/DailyResonance.tsx`.
+- The sequence duration is now 6.5s, the tension phase lasts 4.8s using `easeInOutCubic` easing, and the final impact fires at 5.5s.
+- Differentiated the particle configurations to make higher tiers slightly more impactful without touching layout logic, negative margins, audio sequencing, or the tier business logic.
 - Ensured daily lockout, exact tiers, random logic, quote rotation, and visual presentation limits were strictly preserved.
 
 ## Next Steps

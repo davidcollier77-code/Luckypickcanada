@@ -176,9 +176,9 @@ export default function DailyResonance() {
 
 
     // Shortened 4.5 second cinematic sequence
-    const SEQUENCE_DURATION = 4500;
-    const IMPACT_TIME = 4200; // 4.2s frame for impact
-    const TENSION_TIME = 3500; // 3.5s tension shift
+    const SEQUENCE_DURATION = 6500;
+    const IMPACT_TIME = 5500; // 4.2s frame for impact
+    const TENSION_TIME = 4800; // 3.5s tension shift
 
     const audioStartTime = performance.now();
 
@@ -203,16 +203,16 @@ export default function DailyResonance() {
 
       // Update displayed number based on phase
       if (elapsed < TENSION_TIME) {
-        // Ease out quadratic: fast at first, then slows down, approaching newPct
-        // Map elapsed from 0 to TENSION_TIME to a progress 0.0 to 1.0
+        // Awaken -> Gather -> Anticipate (easeInOutCubic)
         let progress = elapsed / TENSION_TIME;
-        // Simple easeOutQuad: t * (2 - t)
-        let ease = progress * (2 - progress);
+        let ease = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
-        // Let's add a bit of noise (jitter) that decreases as we get closer to the end
-        let jitter = Math.floor((Math.random() - 0.5) * 40 * (1 - ease));
+        // Smoothly decaying jitter that tightens focus toward the reveal
+        let jitterMag = 40 * (1 - progress);
+        let jitter = Math.floor((Math.random() - 0.5) * jitterMag);
 
-        // Interpolate between a random start and newPct
         let currentVal = Math.floor(ease * newPct + jitter);
 
         // Keep it bounded 0-100
@@ -221,7 +221,7 @@ export default function DailyResonance() {
         setDisplayPercentage(currentVal);
       } else if (elapsed < IMPACT_TIME) {
         // High-speed tension roll (very short, converging tightly)
-        let jitter = Math.floor((Math.random() - 0.5) * 5); // tiny jitter
+        let jitter = Math.floor((Math.random() - 0.5) * 3); // tiny jitter
         let currentVal = Math.max(0, Math.min(100, newPct + jitter));
         setDisplayPercentage(currentVal);
       } else {
@@ -301,7 +301,7 @@ export default function DailyResonance() {
     }
 
     let particles: any[] = [];
-    const MAX_PARTICLES = activeTier === 'Cosmic Lightning' ? 30 : 150;
+    const MAX_PARTICLES = activeTier === "Cosmic Lightning" ? 45 : 150;
     const fallbackStartTime = typeof animationStartTimeMs === 'number' ? performance.now() - animationStartTimeMs : performance.now();
     let initialSpawnDone = false;
     let fadeOutTriggered = false;
@@ -318,7 +318,7 @@ export default function DailyResonance() {
           particles.push({
             x: Math.random() * canvas.width,
             y: -50,
-            len: Math.random() * 150 + 80, // Longer tail
+            len: Math.random() * 200 + 100, // Longer tail, lingering afterglow
             speed: Math.random() * 15 + 8,  // Slightly faster
             opacity: 1
           });
@@ -433,7 +433,7 @@ export default function DailyResonance() {
         ctx.globalCompositeOperation = 'source-over';
       } else if (activeTier === 'Fireworks') {
         const shouldSpawn = !initialSpawnDone || (Math.random() < 0.02 && canSpawn);
-        if (shouldSpawn && particles.length < 120) {
+        if (shouldSpawn && particles.length < 180) {
           if (initialSpawnDone && canSpawn && !soundsRef.current.crackle?.playing()) {
             soundsRef.current.crackle?.play();
           }
@@ -446,7 +446,7 @@ export default function DailyResonance() {
           const burstColorPrimary = colors[Math.floor(Math.random() * colors.length)];
           const burstColorSecondary = colors[Math.floor(Math.random() * colors.length)];
 
-          for (let i = 0; i < 35; i++) {
+          for (let i = 0; i < 55; i++) {
             const angle = Math.random() * Math.PI * 2;
             const velocity = Math.random() * 6 + 2;
             particles.push({
@@ -470,8 +470,8 @@ export default function DailyResonance() {
 
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.08; // Slightly stronger gravity decay
-          p.opacity -= 0.015;
+          p.vy += 0.06; // Softer gravity decay for voluminous explosion
+          p.opacity -= 0.012;
 
           // Draw trail
           if (p.history.length > 1) {
