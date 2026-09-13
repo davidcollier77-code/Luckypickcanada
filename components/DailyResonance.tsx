@@ -623,13 +623,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             <span>Total Resonance Rituals: <strong className="text-emerald-400 font-bold ml-1">{totalVisits.toLocaleString()}</strong></span>
           </div>
         )}
-        <div className="bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full flex flex-col items-center">
+        <div className="bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full flex flex-col items-center min-h-[460px] justify-center">
           {!isRevealed && !isRevealing ? (
-          <>
+          <div className="flex flex-col items-center justify-center flex-1 w-full py-8">
             <h2 className="text-sm tracking-widest text-slate-400 uppercase mb-4">Daily Resonance Ritual</h2>
             <h1 className="text-3xl font-light text-white mb-8">AWAKEN TODAY'S RESONANCE</h1>
             <ResonanceButton onClick={handleReveal} />
-          </>
+          </div>
         ) : isRevealing ? (
            <div className="animate-fade-in flex flex-col items-center justify-center min-h-[16rem]">
               <div className="animate-plasma-glow my-6 flex items-center justify-center min-w-[200px]">
