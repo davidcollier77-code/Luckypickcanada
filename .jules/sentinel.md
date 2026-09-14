@@ -10,3 +10,7 @@
 **Vulnerability:** The `functions/api/oracle.js` Cloudflare function used `Access-Control-Allow-Origin: "*"` which allowed any domain to make cross-origin requests to this endpoint. This could potentially allow malicious sites to interact with the API on behalf of a user.
 **Learning:** Cloudflare Pages functions and other edge functions often have a permissive default or copy-pasted configuration for CORS. It is critical to restrict CORS origins to only trusted domains.
 **Prevention:** Always set `Access-Control-Allow-Origin` to specific, trusted domains rather than using a wildcard (`*`).
+## 2024-09-14 - [Security Enhancement] Error Message Information Leakage in Suggestions API
+**Vulnerability:** The suggestion form error handling in `app/suggestions.js` exposed raw database and Resend API exception details to the client when a submission failed.
+**Learning:** Similar to checkout failures, passing `saveResult.reason?.message` and `emailResult.reason?.message` back in the `{ error: ... }` response leaked internal system states (like database connection issues or specific third-party API errors) which were then reflected in the URL via `?suggestionError=...`.
+**Prevention:** Always replace unhandled internal exceptions with generic, secure error messages (e.g. "Unable to save your suggestion right now.") when communicating failures to the client. Keep the detailed technical errors isolated in server logs.
