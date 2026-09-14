@@ -148,19 +148,20 @@ After completing substantive work, verify:
 3. Changes were within explicitly authorized scope
 4. Protected resources were not modified without authorization (or were explicitly authorized when modified)
 5. Validation appropriate to the task
-- Specific repository guidance files actually read and used, including applicable ".jules/", ".jules/cmds/", "memory-bank/", or ".specify/" files when relevant
-- Specific documentation actually read and applied, including relevant ".docs/" reference files when they materially informed the work
+6. Specific repository guidance files actually read and used, including applicable ".jules/", ".jules/cmds/", "memory-bank/", or ".specify/" files when relevant
+7. Specific documentation actually read and applied, including relevant ".docs/" reference files when they materially informed the work
+
+### Reporting
 
 Report only evidence-supported results.
+
+Include:
+
+- What was actually changed
 - Validation performed
 - Final verified state
-- Relevant repository guidance actually used
-- Relevant documentation actually read and applied
-- Specific ".docs/" files actually read and used when applicable
+- Specific repository guidance files actually read and used when applicable
+- Specific documentation actually read and applied when applicable
 - Any unresolved limitations or failures
-
-When documentation materially informs a task, identify the specific documentation actually used.
-
-When ".docs/" references materially inform a task, identify the specific ".docs/" files actually read and used.
 
 Never claim something was read, used, applied, checked, or verified unless it actually was.
