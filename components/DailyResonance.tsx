@@ -630,7 +630,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             <span>Total Resonance Rituals: <strong className="text-emerald-400 font-bold ml-1">{totalVisits.toLocaleString()}</strong></span>
           </div>
         )}
-          isCompact ? 'min-h-[200px]' : ''
+        <div className={`bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full flex flex-col items-center justify-center ${
           isCompact ? 'min-h-[200px]' : 'mt-[35vh]'
         }`}>
           {!isRevealed && !isRevealing ? (

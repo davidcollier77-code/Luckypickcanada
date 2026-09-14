@@ -1,21 +1,5 @@
 LuckyPickCanada — Amazon Q Rules
 
-Investigation and Review Process:
-
-A — Analyze the actual current repository/PR state and establish verified facts.
-
-B — Boundaries: identify what is relevant and in scope and avoid unrelated work.
-
-C — Check/Conclude: trace and validate the relevant code/configuration, confirm findings, and reach a conclusion before acting.
-
-Reporting Work and Review:
-
-A — Analysis: what you found and verified.
-
-B — Boundaries: what was in scope and what you deliberately left unchanged.
-
-C — Completion: what you changed, what verification you performed, and the resulting status.
-
 Make only changes required by the assigned task or PR fix.
 
 Do not perform unrelated cleanup, refactoring, dependency upgrades, or architectural changes.
