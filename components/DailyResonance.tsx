@@ -65,6 +65,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const isAnimatingRef = useRef(false);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const bgRequestRef = useRef<number>(0);
+  const starsRef = useRef<Array<{x: number, y: number, radius: number, alpha: number, speed: number}>>([]);
 
 
   // Check for daily lockout on mount
@@ -550,13 +551,19 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     bgCanvas.width = window.innerWidth;
     bgCanvas.height = window.innerHeight;
 
-    const stars = Array.from({ length: 150 }, () => ({
-      x: Math.random() * bgCanvas.width,
-      y: Math.random() * bgCanvas.height,
-      radius: Math.random() * 1.5 + 0.5,
-      alpha: Math.random(),
-      speed: Math.random() * 0.02 + 0.005,
-    }));
+    // PERFORMANCE OPTIMIZATION (Bolt ⚡):
+    // Moved star initialization outside of the render/resize cycle to prevent
+    // recreating the array and objects on every mount. We only initialize if empty.
+    if (!starsRef.current || starsRef.current.length === 0) {
+      starsRef.current = Array.from({ length: 150 }, () => ({
+        x: Math.random() * bgCanvas.width,
+        y: Math.random() * bgCanvas.height,
+        radius: Math.random() * 1.5 + 0.5,
+        alpha: Math.random(),
+        speed: Math.random() * 0.02 + 0.005,
+      }));
+    }
+    const stars = starsRef.current;
 
     const drawBg = () => {
       bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
