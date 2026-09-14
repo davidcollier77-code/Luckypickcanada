@@ -631,7 +631,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           </div>
         )}
         <div className={`bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full flex flex-col items-center justify-center ${
-          isCompact ? 'min-h-[200px]' : 'mt-[35vh]'
+          isCompact ? 'min-h-[200px]' : ''
         }`}>
           {!isRevealed && !isRevealing ? (
           <div className="flex flex-col items-center justify-center flex-1 w-full py-8">
@@ -648,7 +648,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               </div>
            </div>
         ) : (
-          <div className="animate-fade-in flex flex-col items-center flex-1 pt-6 pb-2">
+          <div className="animate-fade-in flex flex-col items-center flex-1 pt-32 pb-4">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
             <div className={`plasma-glow-settled my-2 flex items-center justify-center min-w-[200px]`}>
               <div className="text-7xl font-bold text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]">
@@ -657,7 +657,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             </div>
             <p className="text-slate-300 italic mb-4 min-h-[4rem]">"{quote}"</p>
 
-            <div className="flex flex-col items-center mt-auto w-full pt-4">
+            <div className="flex flex-col items-center mt-auto w-full">
               <button
                 onClick={handleShare}
                 className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200 mb-6"
