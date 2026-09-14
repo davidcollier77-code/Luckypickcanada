@@ -1,4 +1,4 @@
-LuckyPickCanada — Final AGENTS.md Documentation Workflow Update
+LuckyPickCanada — AGENTS.md Repository Workflow
 
 Use the repository’s actual current state as the source of truth.
 
@@ -53,9 +53,9 @@ Never treat a previous agent report, PR description, memory entry, cached docume
 B — BOUNDARIES AND PLAN
 
 This task is limited to the documentation-usage wording in "AGENTS.md".
-
+Every substantive task must work within the repository's governance and authorization requirements.
 The objective is to make the repository workflow explicitly require Jules to read, use, and apply the applicable documentation and repository guidance, while making the Jules/Gemini documentation requirement mandatory for every substantive task.
-
+Jules must read, use, and apply the applicable documentation and repository guidance, with the Jules/Gemini documentation mandatory for every substantive task.
 Preserve the existing repository governance and behavior, including:
 
 - the ABC operating model
@@ -74,7 +74,7 @@ Preserve the existing repository governance and behavior, including:
 Do not redesign or broadly restructure "AGENTS.md".
 
 For this task, do not modify:
-
+The following files and systems are normally read-only and must not be modified unless explicitly authorized by the specific task:
 - ".docs/"
 - ".docs/manifest.json"
 - documentation sources or library mappings
@@ -85,21 +85,18 @@ For this task, do not modify:
 - ".specify/"
 - "memory-bank/*"
 - application code
-- dependencies
-- unrelated files
-
 Reading and using these resources when applicable is permitted and required; modifying them is not authorized.
-
+Reading and using these resources when applicable is always permitted and required by the workflow.
 For this task, ".docs/" is reference-only. Applicable ".docs/" files may be read and used, and the specific files actually referenced must be reported, but ".docs/" and its documentation system must not be updated, refreshed, regenerated, or modified.
-
+".docs/" is normally reference-only. Applicable ".docs/" files may be read and used, and the specific files actually referenced must be reported, but ".docs/" and its documentation system must not be updated, refreshed, regenerated, or modified unless a future task explicitly authorizes such changes.
 Make the smallest wording change necessary to establish the intended behavior.
-
+Make minimal, targeted changes necessary to complete the authorized work.
 Do not introduce new workflow concepts unless they are necessary to express the requested documentation-usage requirements.
-
+Do not introduce unrelated changes or new concepts outside the scope of the authorized task.
 C — EXECUTE, VERIFY, AND REPORT
 
 Update only the authorized documentation-usage wording in "AGENTS.md".
-
+Execute only the work authorized by the specific task.
 The resulting workflow must clearly establish this sequence:
 
 Read and follow "AGENTS.md" first → always read and use the four required Jules/Gemini documentation sources → identify all other applicable repository guidance and context → identify relevant library/reference documentation → read, use, and apply those sources → verify against the current repository.
@@ -133,7 +130,7 @@ Do not weaken any existing higher-priority repository instruction.
 
 Verification
 
-After editing:
+After completing any substantive task:
 
 1. Review the complete "AGENTS.md".
 2. Confirm the existing governance and instruction hierarchy remain intact.
@@ -147,17 +144,16 @@ After editing:
 10. Confirm ".docs/", ".docs/manifest.json", documentation refresh scripts, and documentation workflows were not modified.
 11. Confirm ".jules/", ".jules/cmds/", ".specify/", and "memory-bank/*" were not modified.
 12. Confirm no unrelated files were modified.
-13. Run appropriate validation for this documentation-only change.
-14. Double-check the final repository state and report only verified results.
-
-Reporting
-
+10. Confirm no normally read-only files were modified without authorization.
+11. Confirm no files outside the task scope were modified.
+12. Run appropriate validation for the changes made.
+13. Double-check the final repository state and report only verified results.
 Report only evidence-supported results.
 
 Include:
 
 - the exact file changed
-- the exact section or wording changed
+- the nature and scope of changes made
 - validation performed
 - final repository state
 - the specific ".docs/" library/reference files actually read and used
@@ -169,5 +165,3 @@ Do not claim a documentation source was used unless it was actually read and app
 Do not claim a repository file was inspected unless it was actually inspected.
 
 Do not claim validation passed unless it was actually performed.
-
-Do not modify any file outside the authorized "AGENTS.md" wording change.
