@@ -1,1 +1,1 @@
-# Final check of the state
+./jules-verify.sh
