@@ -121,6 +121,7 @@ B — BOUNDARIES / CONSTRAINTS / PLAN
 Before modifying anything, establish:
 
 - Exact requested outcome.
+- Exact repository files planned for inspection/use (with full paths) and exact files planned for modification (distinguished separately).
 - Exact files/directories in scope.
 - Applicable specialist file(s).
 - Relevant libraries and documentation.
