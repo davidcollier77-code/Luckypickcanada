@@ -43,7 +43,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     };
     return () => {
        Howler.unload();
-       if (timelineRef.current) timelineRef.current.kill();
+       if (timelineRef.current) {
+         timelineRef.current.kill();
+         timelineRef.current = null;
+         isAnimatingRef.current = false;
+         setIsLoading(false);
+         setIsRevealing(false);
+       }
     };
   }, []);
 
