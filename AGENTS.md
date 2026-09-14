@@ -1,8 +1,8 @@
-AGENTS.md — LuckyPickCanada Repository Workflow
+# AGENTS.md — LuckyPickCanada Repository Workflow
 
 This file defines the authoritative workflow Jules must follow when working in the LuckyPickCanada repository.
 
-Instruction Hierarchy
+## Instruction Hierarchy
 
 When instructions conflict, follow this precedence order:
 
@@ -15,11 +15,11 @@ When instructions conflict, follow this precedence order:
 
 Higher-level instructions take precedence over lower-level context.
 
-A — ANALYZE
+## A — ANALYZE
 
 Before beginning substantive work, establish the current verified repository state.
 
-Required Documentation
+### Required Documentation
 
 For every substantive task, Jules must actually read and use these official sources:
 
@@ -38,7 +38,7 @@ When the repository contains a corresponding local reference under ".docs/", Jul
 
 Do not substitute unofficial articles, third-party summaries, cached explanations, or assumptions for the required official documentation.
 
-Repository Guidance
+### Repository Guidance
 
 Before substantive work, Jules must read and follow the repository guidance applicable to the task, including:
 
@@ -52,7 +52,7 @@ The specialist/task-group structure under ".jules/" is authoritative.
 
 Do not replace that structure with a hard-coded task-group count.
 
-Memory Bank
+### Memory Bank
 
 The Memory Bank is agent-maintained project context and history.
 
@@ -73,7 +73,7 @@ Do not rewrite unrelated history.
 
 Never store secrets, credentials, tokens, private keys, or other sensitive authentication material in Memory Bank.
 
-Repository Reference Documentation
+### Repository Reference Documentation
 
 Use ".docs/manifest.json" to identify relevant repository-local documentation.
 
@@ -83,7 +83,7 @@ When a task depends on a library or reference, Jules must inspect the manifest a
 
 Do not assume a library, mapping, or documentation entry exists solely because it appeared in a previous report, prompt, or memory entry.
 
-Current Repository State
+### Current Repository State
 
 Inspect the actual current repository before making substantive changes.
 
@@ -93,11 +93,11 @@ Do not treat previous agent reports, PR descriptions, memory entries, cached doc
 
 Clearly distinguish verified facts from assumptions.
 
-B — BOUNDARIES AND PLAN
+## B — BOUNDARIES AND PLAN
 
 Before making substantive changes, determine what the task authorizes and what must remain unchanged.
 
-Scope and Authorization
+### Scope and Authorization
 
 Make only the changes required to complete the authorized task.
 
@@ -105,7 +105,7 @@ Do not expand the task into unrelated work.
 
 Access to a repository, tool, service, or integration does not by itself authorize Jules to modify it.
 
-Protected Repository Resources
+### Protected Repository Resources
 
 The following are protected and must not be changed unless the task explicitly authorizes the change:
 
@@ -123,7 +123,7 @@ The inventory must be derived from the actual ".docs/manifest.json".
 
 Do not hard-code a library count.
 
-Context7
+### Context7
 
 Context7 requires explicit repository-owner approval before every invocation.
 
@@ -133,7 +133,7 @@ Jules must not invoke Context7 unless that explicit approval has been given for 
 
 When normal designated documentation sources or repository-local references provide what is needed, use those sources instead of Context7.
 
-Documentation Update Work
+### Documentation Update Work
 
 Documentation-mapping or documentation-refresh work is separate from ordinary application development.
 
@@ -141,7 +141,7 @@ Jules must not modify documentation mappings, the documentation inventory, or do
 
 When such work is explicitly authorized, Jules must inspect and use the actual repository implementation of the documentation workflow rather than relying on assumptions or previous reports.
 
-Plan Before Execution
+### Plan Before Execution
 
 Before making substantive changes, establish:
 
@@ -152,13 +152,13 @@ Before making substantive changes, establish:
 - the smallest viable implementation
 - the validation required to establish completion
 
-C — EXECUTE, VERIFY, AND REPORT
+## C — EXECUTE, VERIFY, AND REPORT
 
 Execute only the authorized work.
 
 Make minimal, targeted changes necessary to complete it.
 
-Implementation
+### Implementation
 
 Follow the applicable specialist and command/workflow guidance.
 
@@ -166,7 +166,7 @@ Use Spec Kit commands and workflows when the task or repository guidance require
 
 Do not introduce new workflow behavior, dependencies, architectural changes, or unrelated cleanup merely because they appear useful.
 
-Review and Verification
+### Review and Verification
 
 Before reporting completion, Jules must review his own work and verify:
 
@@ -181,7 +181,7 @@ Before reporting completion, Jules must review his own work and verify:
 
 Verification must distinguish confirmed facts from assumptions.
 
-Reporting
+### Reporting
 
 Report only evidence-supported results.
 
@@ -199,7 +199,7 @@ Never claim that documentation, guidance, commands, tests, or other validation w
 
 Never represent an assumption as a verified repository fact.
 
-Final State
+### Final State
 
 Before finalizing the task:
 
