@@ -199,23 +199,23 @@ export async function getLuckyStoryMap() {
       ? await cached(cfEnv, cfCtx, cacheKey('lucky-stories-map'), fetcher)
       : await fetcher();
 
-    const stories = rows
-      .map((row) => {
-        const province = getStoryProvince(row.location);
+    const stories = rows.reduce((acc, row) => {
+      const province = getStoryProvince(row.location);
 
-        if (!province) return null;
+      if (!province) return acc;
 
-        return {
-          id: String(row.id),
-          firstName: sanitizeSingleLine(row.display_name, 40).split(' ')[0],
-          province: province.code,
-          provinceName: province.name,
-          story: sanitizePlainText(row.story, 600),
-          preview: createStoryPreview(row.story),
-          createdAt: row.created_at,
-        };
-      })
-      .filter(Boolean);
+      acc.push({
+        id: String(row.id),
+        firstName: sanitizeSingleLine(row.display_name, 40).split(' ')[0],
+        province: province.code,
+        provinceName: province.name,
+        story: sanitizePlainText(row.story, 600),
+        preview: createStoryPreview(row.story),
+        createdAt: row.created_at,
+      });
+
+      return acc;
+    }, []);
     const provinceCounts = locations.reduce((counts, row) => {
       const province = getStoryProvince(row.location);
 
