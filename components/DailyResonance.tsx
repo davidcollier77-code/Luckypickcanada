@@ -1,4 +1,5 @@
 'use client';
+import Aurora, { AuroraHandle } from "./Aurora";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -68,12 +69,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const [isLoading, setIsLoading] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const auroraRef = useRef<AuroraHandle>(null);
   const requestRef = useRef<number>(0);
   const sequenceRef = useRef<number>(0);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const isAnimatingRef = useRef(false);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const bgRequestRef = useRef<number>(0);
+  useEffect(() => { if (auroraRef.current && !isRevealing && !isRevealed) auroraRef.current.setPhase('idle'); }, [isRevealing, isRevealed]);
   const starsRef = useRef<Array<{x: number, y: number, radius: number, alpha: number, speed: number}>>([]);
 
 
@@ -204,12 +207,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
     // 0. Play buildup sound at start
     tl.call(() => {
+      if (auroraRef.current) auroraRef.current.setPhase('awaken');
       if (soundsRef.current.buildup) {
         soundsRef.current.buildup.play();
       }
     });
 
-    // 1. Awaken -> Gather -> Anticipate (Tension Phase, 4.8s)
+    // 1. Gather (Tension Phase, 4.8s)
+    tl.call(() => { if (auroraRef.current) auroraRef.current.setPhase('gather'); }, undefined, 1.0);
     const proxy = { val: 0, jitterMag: 40 };
     tl.to(proxy, {
       val: newPct,
@@ -241,6 +246,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
     // 3. Impact Frame (at 5.5s)
     tl.call(() => {
+      if (auroraRef.current) auroraRef.current.setPhase('impact', currentTier);
+      setTimeout(() => {
+        if (auroraRef.current) auroraRef.current.setPhase('settled', currentTier);
+      }, 800);
+
       setDisplayPercentage(newPct);
 
       // Stop buildup
@@ -306,7 +316,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     }
 
     let particles: any[] = [];
-    const MAX_PARTICLES = activeTier === "Cosmic Lightning" ? 45 : 150;
+    const MAX_PARTICLES = activeTier === "Cosmic Lightning" ? 45 : (activeTier === 'Fireworks' ? 200 : 150);
     const fallbackStartTime = typeof animationStartTimeMs === 'number' ? performance.now() - animationStartTimeMs : performance.now();
     let initialSpawnDone = false;
     let fadeOutTriggered = false;
@@ -451,18 +461,23 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           const burstColorPrimary = colors[Math.floor(Math.random() * colors.length)];
           const burstColorSecondary = colors[Math.floor(Math.random() * colors.length)];
 
-          for (let i = 0; i < 55; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const velocity = Math.random() * 6 + 2;
-            particles.push({
-              x: startX,
-              y: startY,
-              vx: Math.cos(angle) * velocity,
-              vy: Math.sin(angle) * velocity,
-              opacity: 1,
-              color: Math.random() > 0.3 ? burstColorPrimary : burstColorSecondary,
-              history: [] // For trails
-            });
+          const burstCount = Math.floor(Math.random() * 2) + 1; // 1 to 2 simultaneous bursts
+          for (let b = 0; b < burstCount; b++) {
+            const bx = startX + (Math.random() - 0.5) * 100;
+            const by = startY + (Math.random() - 0.5) * 100;
+            for (let i = 0; i < 65; i++) {
+              const angle = Math.random() * Math.PI * 2;
+              const velocity = Math.random() * 8 + 3;
+              particles.push({
+                x: bx,
+                y: by,
+                vx: Math.cos(angle) * velocity,
+                vy: Math.sin(angle) * velocity,
+                opacity: 1,
+                color: Math.random() > 0.3 ? burstColorPrimary : burstColorSecondary,
+                history: []
+              });
+            }
           }
         }
 
@@ -609,6 +624,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       isCompact ? 'min-h-[200px]' : 'min-h-[500px]'
     } flex flex-col items-center justify-center overflow-hidden`}>
       <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <Aurora ref={auroraRef} />
       <canvas ref={bgCanvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
 
@@ -630,7 +646,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             <span>Total Resonance Rituals: <strong className="text-emerald-400 font-bold ml-1">{totalVisits.toLocaleString()}</strong></span>
           </div>
         )}
-        <div className={`bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-slate-800 text-center w-full flex flex-col items-center justify-center ${
+        <div className={`bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-white/5 text-center w-full flex flex-col items-center justify-center ${
           isCompact ? 'min-h-[200px]' : 'mt-[35vh]'
         }`}>
           {!isRevealed && !isRevealing ? (
@@ -641,8 +657,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           </div>
         ) : isRevealing ? (
            <div className="animate-fade-in flex flex-col items-center justify-center min-h-[16rem]">
-              <div className="animate-plasma-glow my-6 flex items-center justify-center min-w-[200px]">
-                <div className="text-7xl font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] animate-flicker">
+              <div className="animate-plasma-glow my-6 flex items-center justify-center min-w-[200px] mix-blend-screen relative">
+                <div className="absolute inset-0 bg-cyan-400/20 blur-xl rounded-full"></div>
+                <div className="text-7xl font-bold text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.8)] animate-flicker relative z-10" style={{ textShadow: "0 0 40px rgba(100, 255, 255, 0.8), 0 0 80px rgba(50, 200, 255, 0.6)" }}>
                   {displayPercentage}%
                 </div>
               </div>
@@ -650,8 +667,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         ) : (
           <div className="animate-fade-in flex flex-col items-center flex-1 pt-6 pb-2">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
-            <div className={`plasma-glow-settled my-2 flex items-center justify-center min-w-[200px]`}>
-              <div className="text-7xl font-bold text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]">
+            <div className={`plasma-glow-settled my-2 flex items-center justify-center min-w-[200px] mix-blend-screen relative`}>
+              <div className="absolute inset-0 bg-cyan-500/10 blur-2xl rounded-full"></div>
+              <div className="text-7xl font-bold text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.9)] relative z-10" style={{ textShadow: "0 0 30px rgba(100, 255, 255, 0.6), 0 0 60px rgba(50, 150, 255, 0.4)" }}>
                 {displayPercentage}%
               </div>
             </div>
