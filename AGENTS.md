@@ -13,10 +13,11 @@ A — ANALYZE / VERIFIED FACTS
 Before doing any work:
 
 1. Read "AGENTS.md" first.
-2. Establish the applicable official Jules/Gemini documentation baseline.
-3. Inspect the actual current repository and task.
-4. Read the applicable repository guidance and specialist files.
-5. Identify the exact libraries, tools, documentation, files, and constraints relevant to the task.
+2. Select the correct task group (creation, troubleshooting, polishing, testing, security, audio, deep-dive, or seo).
+3. Establish the applicable official Jules/Gemini documentation baseline.
+4. Inspect the actual current repository and task.
+5. Read the materially applicable repository guidance and specialist files.
+6. Identify the exact libraries, tools, documentation, files, and constraints relevant to the task.
 
 Never replace current repository evidence with memory, previous Jules reports, PR descriptions, task summaries, or assumptions.
 
@@ -52,7 +53,7 @@ Official documentation governs documented Jules/Gemini behavior. The current rep
 
 3. Repository files to inspect
 
-After establishing the official documentation baseline, inspect the files actually relevant to the task.
+After establishing the official documentation baseline, inspect the files actually relevant to the task. These are working project systems, not merely references to acknowledge. Use the systems that are materially applicable to the task (do not require irrelevant systems just to satisfy a checklist).
 
 Always use:
 
@@ -60,7 +61,7 @@ Always use:
 - ".jules/jules.md"
 - ".docs/manifest.json"
 
-Use the applicable specialist file:
+Use the applicable specialist file for the selected task group:
 
 - ".jules/creation.md"
 - ".jules/troubleshooting.md"
@@ -94,6 +95,7 @@ For every library, framework, platform, or tool materially relevant to the task:
 - Identify the exact documentation entry.
 - Identify the exact ".docs/" filename/path.
 - Actually consult the documentation when it materially applies.
+- Apply that information when it materially contributes to analysis, planning, implementation, or verification.
 
 Do not claim documentation was used merely because it exists.
 
@@ -251,13 +253,17 @@ Report the important current repository facts established during the task.
 
 B — Boundaries / Plan
 
-Report:
+Report, as applicable:
 
 - Approved scope.
-- Applicable specialist file(s).
+- Selected task group.
+- Applicable ".jules/" specialist.
+- Applicable ".jules/cmds/" / Spec Kit guidance.
 - Important constraints.
-- Relevant documentation.
-- Relevant tools/MCPs.
+- Memory Bank files consulted.
+- ".docs" documentation consulted.
+- Relevant libraries/frameworks/tools.
+- MCPs/tools actually invoked.
 
 C — Executed / Verified
 
@@ -288,6 +294,8 @@ For each relevant library/framework/tool, report:
 - Useful: Yes/No.
 - Used/Applied: Yes/No.
 - What it contributed.
+
+Distinguish clearly in the report: Consulted means actually read/reviewed; Used/Applied means it materially influenced the task.
 
 If no library documentation was required for the task, state exactly:
 
