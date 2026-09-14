@@ -559,7 +559,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           }
         }
 
-        if (particles.length === 0 && rockets.length === 0) {
+        // Only stop the render loop when all particles are actually gone
         if (particles.length === 0) {
           return;
         }

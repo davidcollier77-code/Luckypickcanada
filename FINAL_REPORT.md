@@ -28,9 +28,9 @@
   - **Tier 1 (Meteor Shower, 0-33%):** A restrained sequence consisting of three centralized rockets launched sequentially. Relaxed pace.
   - **Tier 2 (Cosmic Lightning, 34-66%):** A broader sequence consisting of seven rockets launched in three waves, utilizing the 10% to 90% width of the screen.
   - **Tier 3 (Fireworks, 67-100%):** A spectacular 12-rocket crescendo. It begins with sweeping cross-screen launches from the bottom corners, moves to a central barrage, and concludes with a massive 5-rocket staggered grand finale spanning the full screen width.
-  - Replaced the entire particle loop with a smooth static radial gradient `fillRect` that fades in and out if `window.matchMedia('(prefers-reduced-motion: reduce)').matches` is true. The glow color adapts to the active tier.
+- **Accessibility / Reduced-Motion:**
   - Replaced the entire particle loop with a smooth, pulsing, static radial gradient `fillRect` if `window.matchMedia('(prefers-reduced-motion: reduce)').matches` is true. The glow color adapts to the active tier.
-  - Removed `arc` calls and retained `fillRect` for particle and rocket heads while keeping short path-based trails for rockets and particles.
+- **Performance Verification:**
   - Bypassed expensive path rendering, maintaining the `fillRect` approach for all particles.
 - **Tests / Build / Checks:**
   - Ran `pnpm run build` — Passed (0 failures).
