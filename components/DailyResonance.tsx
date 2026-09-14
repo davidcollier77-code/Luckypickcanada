@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Howl, Howler } from 'howler';
+import gsap from 'gsap';
 
 import ResonanceButton from './ResonanceButton';
 
@@ -42,6 +43,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     };
     return () => {
        Howler.unload();
+       if (timelineRef.current) {
+         timelineRef.current.kill();
+         timelineRef.current = null;
+         isAnimatingRef.current = false;
+         setIsLoading(false);
+         setIsRevealing(false);
+       }
     };
   }, []);
 
@@ -62,6 +70,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(0);
   const sequenceRef = useRef<number>(0);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const isAnimatingRef = useRef(false);
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const bgRequestRef = useRef<number>(0);
@@ -141,8 +150,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       .catch((err) => console.error("Failed to update visits:", err));
 
 
-    // Cancel any previous animation sequence
-    if (sequenceRef.current) cancelAnimationFrame(sequenceRef.current);
+    // Cancel any previous GSAP timeline
+    if (timelineRef.current) {
+      timelineRef.current.kill();
+    }
 
     // Instant pre-roll visual feedback
     setDisplayPercentage(0);
@@ -165,9 +176,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     localStorage.setItem('lucky_lastDate', today);
     localStorage.setItem('lucky_lastPct', newPct.toString());
     localStorage.setItem('lucky_lastQuote', newQuoteIdx.toString());
-    // setIsLockedOut shouldn't be called until the animation sequence finishes,
-    // or we can call it now, and the UI handles it based on isRevealed and isRevealing.
-    // wait, we shouldn't change isLockedOut yet, otherwise the view might jump.
 
     // Store but do not reveal yet
     setPercentage(newPct);
@@ -178,94 +186,86 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     else if (newPct <= 66) currentTier = 'Cosmic Lightning';
     else currentTier = 'Fireworks';
 
-
-
-    // Shortened 4.5 second cinematic sequence
-    const SEQUENCE_DURATION = 6500;
-    const IMPACT_TIME = 5500; // 4.2s frame for impact
-    const TENSION_TIME = 4800; // 3.5s tension shift
-
-    const audioStartTime = performance.now();
-
     setIsLoading(false);
 
-    // Play buildup exactly at 0s
-    if (soundsRef.current.buildup) {
-      soundsRef.current.buildup.play();
-    }
-
+    // Setup timeline
     let tierAudioKey = 'impactMeteor';
     if (currentTier === 'Cosmic Lightning') tierAudioKey = 'impactLightning';
     if (currentTier === 'Fireworks') tierAudioKey = 'impactFireworks';
 
-    let impactPlayed = false; // We still use this for the visual effect trigger
-    let finalTierSet = false;
+    const tl = gsap.timeline({
+      onComplete: () => {
+        isAnimatingRef.current = false;
+      }
+    });
+    timelineRef.current = tl;
 
+    // Build the GSAP sequence
 
-    const sequenceLoop = (timestamp: number) => {
-      const elapsed = performance.now() - audioStartTime;
+    // 0. Play buildup sound at start
+    tl.call(() => {
+      if (soundsRef.current.buildup) {
+        soundsRef.current.buildup.play();
+      }
+    });
 
-
-      // Update displayed number based on phase
-      if (elapsed < TENSION_TIME) {
-        // Awaken -> Gather -> Anticipate (easeInOutCubic)
-        let progress = elapsed / TENSION_TIME;
-        let ease = progress < 0.5
-          ? 4 * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-        // Smoothly decaying jitter that tightens focus toward the reveal
-        let jitterMag = 40 * (1 - progress);
-        let jitter = Math.floor((Math.random() - 0.5) * jitterMag);
-
-        let currentVal = Math.floor(ease * newPct + jitter);
-
-        // Keep it bounded 0-100
+    // 1. Awaken -> Gather -> Anticipate (Tension Phase, 4.8s)
+    const proxy = { val: 0, jitterMag: 40 };
+    tl.to(proxy, {
+      val: newPct,
+      duration: 4.8,
+      ease: "power3.inOut",
+      onUpdate: () => {
+        let jitter = Math.floor((Math.random() - 0.5) * proxy.jitterMag);
+        let currentVal = Math.floor(proxy.val + jitter);
         currentVal = Math.max(0, Math.min(100, currentVal));
-
         setDisplayPercentage(currentVal);
-      } else if (elapsed < IMPACT_TIME) {
-        // High-speed tension roll (very short, converging tightly)
-        let jitter = Math.floor((Math.random() - 0.5) * 3); // tiny jitter
+      }
+    }, 0);
+    // Decay jitter over the same period
+    tl.to(proxy, {
+      jitterMag: 0,
+      duration: 4.8,
+      ease: "power2.in"
+    }, 0);
+
+    // 2. High-speed tension roll (very short, converging tightly - 0.7s)
+    tl.to(proxy, {
+      duration: 0.7,
+      onUpdate: () => {
+        let jitter = Math.floor((Math.random() - 0.5) * 3);
         let currentVal = Math.max(0, Math.min(100, newPct + jitter));
         setDisplayPercentage(currentVal);
-      } else {
-        // Final locked value
-        setDisplayPercentage(newPct);
+      }
+    }, 4.8);
+
+    // 3. Impact Frame (at 5.5s)
+    tl.call(() => {
+      setDisplayPercentage(newPct);
+
+      // Stop buildup
+      if (soundsRef.current.buildup) {
+        soundsRef.current.buildup.fade(0.8, 0, 500);
+        setTimeout(() => { if (soundsRef.current.buildup) soundsRef.current.buildup.stop(); }, 500);
       }
 
-      // Impact Frame (4.2s)
-      if (elapsed >= IMPACT_TIME && !impactPlayed) {
-        impactPlayed = true;
-
-        // Stop buildup
-        if (soundsRef.current.buildup) { soundsRef.current.buildup.fade(0.8, 0, 500); setTimeout(() => { if (soundsRef.current.buildup) soundsRef.current.buildup.stop(); }, 500); }
-
-        // Play impact sound exactly as visual reveals
-        if (soundsRef.current[tierAudioKey]) {
-          soundsRef.current[tierAudioKey].play();
-        }
-
-        animateCanvas(currentTier, performance.now() - IMPACT_TIME); // Pass the starting time for the canvas
+      // Play impact sound
+      if (soundsRef.current[tierAudioKey]) {
+        soundsRef.current[tierAudioKey].play();
       }
 
-      // Impact Frame UI Transition (4.2s)
-      if (elapsed >= IMPACT_TIME && !finalTierSet) {
-        finalTierSet = true;
-        setTier(currentTier);
-        setQuote(LUCKY_QUOTES[newQuoteIdx]);
-        setIsRevealed(true);
-        setIsRevealing(false);
-      }
-      if (elapsed < SEQUENCE_DURATION) {
-         sequenceRef.current = requestAnimationFrame(sequenceLoop);
-      } else {
-         setDisplayPercentage(newPct); // Ensure final state
-         isAnimatingRef.current = false;
-      }
-    };
+      // Start canvas animation
+      animateCanvas(currentTier, 0);
 
-    sequenceRef.current = requestAnimationFrame(sequenceLoop);
+      // Update state for UI transition
+      setTier(currentTier);
+      setQuote(LUCKY_QUOTES[newQuoteIdx]);
+      setIsRevealed(true);
+      setIsRevealing(false);
+    }, undefined, 5.5);
+
+    // Optional 4. Final lingering buffer
+    tl.to({}, { duration: 1.0 });
   };
 
   const handleShare = async () => {
@@ -642,7 +642,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         ) : isRevealing ? (
            <div className="animate-fade-in flex flex-col items-center justify-center min-h-[16rem]">
               <div className="animate-plasma-glow my-6 flex items-center justify-center min-w-[200px]">
-                <div className="text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] animate-flicker">
+                <div className="text-7xl font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] animate-flicker">
                   {displayPercentage}%
                 </div>
               </div>
@@ -651,7 +651,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           <div className="animate-fade-in flex flex-col items-center flex-1 py-8">
             <h2 className="text-sm tracking-widest text-cyan-400 uppercase mb-2">{tier} Resonance</h2>
             <div className={`plasma-glow-settled my-2 flex items-center justify-center min-w-[200px]`}>
-              <div className="text-7xl font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+              <div className="text-7xl font-bold text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]">
                 {displayPercentage}%
               </div>
             </div>
