@@ -116,7 +116,7 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       ctx.globalCompositeOperation = 'screen';
 
       // Greatly reduce the base opacity so it's a subtle atmospheric effect over the photograph
-      const baseOpacity = p.brightness * 0.15;
+      const baseOpacity = p.brightness * 0.12;
 
       // Wisp 1: Green/Teal (Subtle, wide band near bottom/mid)
       drawWisp(ctx,
