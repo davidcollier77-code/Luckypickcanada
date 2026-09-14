@@ -12,24 +12,27 @@ const API_CHECK_TIMEOUT = 2000;
 
 let turnstileScriptPromise;
 
-function loadTurnstileScript(retryCount = 0) {
-  if (typeof window === 'undefined') {
-    return Promise.resolve(null);
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function waitForTurnstileApi(startTime = Date.now()) {
+  if (window.turnstile && typeof window.turnstile.render === 'function') {
+    return window.turnstile;
   }
 
-  if (window.turnstile) {
-    return Promise.resolve(window.turnstile);
+  if (Date.now() - startTime > API_CHECK_TIMEOUT) {
+    throw new Error('Turnstile API not available after timeout');
   }
 
-  if (turnstileScriptPromise) {
-    return turnstileScriptPromise;
-  }
+  await sleep(50);
+  return waitForTurnstileApi(startTime);
+}
 
-  turnstileScriptPromise = new Promise((resolve, reject) => {
+function injectScript() {
+  return new Promise((resolve, reject) => {
     let existingScript = document.getElementById(TURNSTILE_SCRIPT_ID);
 
     if (existingScript) {
-      existingScript.addEventListener('load', () => resolve(window.turnstile), { once: true });
+      existingScript.addEventListener('load', resolve, { once: true });
       existingScript.addEventListener('error', reject, { once: true });
       return;
     }
@@ -39,37 +42,42 @@ function loadTurnstileScript(retryCount = 0) {
     script.src = TURNSTILE_SCRIPT_URL;
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-      setTimeout(() => {
-        if (window.turnstile && typeof window.turnstile.render === 'function') {
-          resolve(window.turnstile);
-        } else {
-          const startTime = Date.now();
-          const checkInterval = setInterval(() => {
-            if (window.turnstile && typeof window.turnstile.render === 'function') {
-              clearInterval(checkInterval);
-              resolve(window.turnstile);
-            } else if (Date.now() - startTime > API_CHECK_TIMEOUT) {
-              clearInterval(checkInterval);
-              reject(new Error('Turnstile API not available after timeout'));
-            }
-          }, 50);
-        }
-      }, API_CHECK_DELAY);
-    };
-    script.onerror = () => {
-      if (retryCount < MAX_RETRIES) {
-        setTimeout(() => {
-          document.getElementById(TURNSTILE_SCRIPT_ID)?.remove();
-          turnstileScriptPromise = null;
-          resolve(loadTurnstileScript(retryCount + 1));
-        }, RETRY_DELAY);
-      } else {
-        reject(new Error('Failed to load Turnstile script after retries'));
-      }
-    };
+    script.onload = resolve;
+    script.onerror = reject;
     document.head.appendChild(script);
   });
+}
+
+async function attemptLoadScript(retryCount = 0) {
+  try {
+    await injectScript();
+    await sleep(API_CHECK_DELAY);
+    return await waitForTurnstileApi();
+  } catch (error) {
+    if (retryCount < MAX_RETRIES) {
+      document.getElementById(TURNSTILE_SCRIPT_ID)?.remove();
+      await sleep(RETRY_DELAY);
+      return attemptLoadScript(retryCount + 1);
+    }
+    throw new Error('Failed to load Turnstile script after retries');
+  }
+}
+
+function loadTurnstileScript() {
+  if (typeof window === 'undefined') {
+    return Promise.resolve(null);
+  }
+
+  if (window.turnstile && typeof window.turnstile.render === 'function') {
+    return Promise.resolve(window.turnstile);
+  }
+
+  if (!turnstileScriptPromise) {
+    turnstileScriptPromise = attemptLoadScript().catch((err) => {
+      turnstileScriptPromise = null;
+      throw err;
+    });
+  }
 
   return turnstileScriptPromise;
 }
