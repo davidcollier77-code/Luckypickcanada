@@ -287,16 +287,14 @@ State:
 Documentation and library intelligence
 
 For each relevant Jules/Gemini documentation source, report:
-For each relevant Jules/Gemini documentation source used during the task, report:
-- Exact repository filename/path, or exact official source/page identifier when no verified repository file exists.
 - Exact repository filename/path when the documentation is stored in the repository.
 - Exact official source/page identifier when no verified repository file exists.
+- Consulted: Yes/No.
 - Useful: Yes/No.
 - Used/Applied: Yes/No.
 - What it contributed.
 
 For each relevant library/framework, report:
-For each relevant library/framework used during the task, report:
 - Exact library name and version.
 - Exact documentation filename/path from ".docs/manifest.json".
 - Consulted: Yes/No.
