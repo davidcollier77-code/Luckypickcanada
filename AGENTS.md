@@ -10,14 +10,21 @@ When instructions conflict, follow this precedence order:
 2. ".jules/jules.md"
 3. Applicable specialist files under ".jules/*.md"
 4. Applicable command/workflow files under ".jules/cmds/*.md"
-5. "memory-bank/*"
-6. ".docs/*" reference documentation
+5. ".docs/*" reference documentation
+6. "memory-bank/*" and other repository-specific knowledge resources
 
 Higher-level instructions take precedence over lower-level context.
 
 ## A — ANALYZE
 
-Before beginning substantive work, establish the current verified repository state.
+Before beginning substantive work, establish the current verified repository state by following this workflow order:
+
+1. Read "AGENTS.md" first.
+2. Establish the applicable official Jules and Gemini documentation baseline.
+3. Assess the actual task and current repository.
+4. Apply applicable ".jules/" and Spec Kit guidance.
+5. Actively use applicable ".docs/" technical/library documentation.
+6. Then use relevant project-knowledge resources, including Memory Bank.
 
 ### Required Documentation
 
@@ -82,6 +89,8 @@ The actual ".docs/manifest.json" is the authority for the current documentation/
 When a task depends on a library or reference, Jules must inspect the manifest and use the corresponding actual ".docs/" reference when available.
 
 Do not assume a library, mapping, or documentation entry exists solely because it appeared in a previous report, prompt, or memory entry.
+
+".docs/" is an active engineering resource, not a checklist. "Use" means its information materially informs analysis, decisions, implementation, testing, or verification. Do not require every library or knowledge resource on every task.
 
 ### Current Repository State
 
