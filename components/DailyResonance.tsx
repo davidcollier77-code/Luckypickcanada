@@ -582,7 +582,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, [isRevealed, animateCanvas]);
 
   return (
-    <div className={`isolate relative w-full flex-1 ${
+    <div className={`relative w-full flex-1 ${
       isCompact ? 'min-h-[200px]' : 'min-h-[500px]'
     } flex flex-col items-center justify-center overflow-hidden`}>
       <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
