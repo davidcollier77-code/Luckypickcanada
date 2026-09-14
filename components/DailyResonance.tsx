@@ -598,27 +598,29 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     // Moved star initialization outside of the render/resize cycle to prevent
     // recreating the array and objects on every mount. We only initialize if empty.
     const isReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
-    const isMobile = window.innerWidth < 768;
-    const starCount = isMobile ? 150 : 350;
+    const getStarCountForWidth = (width: number) => (width < 768 ? 150 : 350);
+    const createStar = () => {
+      const depth = Math.random();
+      // size mapped to depth. distant = smaller, foreground = slightly larger.
+      let radius = 0.4 + Math.random() * 0.5;
+      if (depth > 0.95) radius = 1.2 + Math.random() * 0.8; // rare foreground accent stars
+      else if (depth > 0.8) radius = 0.8 + Math.random() * 0.4; // mid-field
+
+      return {
+        x: Math.random() * bgCanvas.width,
+        y: Math.random() * bgCanvas.height,
+        radius,
+        baseAlpha: depth > 0.9 ? 0.7 + Math.random() * 0.3 : 0.2 + Math.random() * 0.4,
+        phase: Math.random() * Math.PI * 2, // organic asynchronous start phase
+        speed: (Math.random() * 0.015 + 0.005) * (isReducedMotion ? 0.1 : 1), // slower if reduced motion
+        twinkleRange: depth > 0.9 ? 0.3 : 0.15, // brighter stars twinkle more noticeably
+      };
+    };
+
+    const starCount = getStarCountForWidth(window.innerWidth);
 
     if (!starsRef.current || starsRef.current.length === 0) {
-      starsRef.current = Array.from({ length: starCount }, () => {
-        const depth = Math.random();
-        // size mapped to depth. distant = smaller, foreground = slightly larger.
-        let radius = 0.4 + Math.random() * 0.5;
-        if (depth > 0.95) radius = 1.2 + Math.random() * 0.8; // rare foreground accent stars
-        else if (depth > 0.8) radius = 0.8 + Math.random() * 0.4; // mid-field
-
-        return {
-          x: Math.random() * bgCanvas.width,
-          y: Math.random() * bgCanvas.height,
-          radius,
-          baseAlpha: depth > 0.9 ? 0.7 + Math.random() * 0.3 : 0.2 + Math.random() * 0.4,
-          phase: Math.random() * Math.PI * 2, // organic asynchronous start phase
-          speed: (Math.random() * 0.015 + 0.005) * (isReducedMotion ? 0.1 : 1), // slower if reduced motion
-          twinkleRange: depth > 0.9 ? 0.3 : 0.15, // brighter stars twinkle more noticeably
-        };
-      });
+      starsRef.current = Array.from({ length: starCount }, createStar);
     }
     const stars = starsRef.current;
 
@@ -654,6 +656,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     const handleResize = () => {
       bgCanvas.width = window.innerWidth;
       bgCanvas.height = window.innerHeight;
+
+      // Adapt star count to the current breakpoint, preserving existing
+      // stars' state (position/phase/speed) rather than regenerating them.
+      const desiredCount = getStarCountForWidth(window.innerWidth);
+      if (stars.length > desiredCount) {
+        stars.length = desiredCount;
+      } else if (stars.length < desiredCount) {
+        for (let i = stars.length; i < desiredCount; i++) {
+          stars.push(createStar());
+        }
+      }
+
       // Reposition stars for new canvas dimensions
       stars.forEach(star => {
         if (star.x > bgCanvas.width) star.x = Math.random() * bgCanvas.width;
@@ -661,10 +675,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       });
     };
     window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
 
     return () => {
       if (bgRequestRef.current) cancelAnimationFrame(bgRequestRef.current);
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
     };
   }, []);
 
@@ -674,7 +690,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     } flex flex-col items-center justify-center overflow-hidden`}>
       <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
-      <canvas ref={bgCanvasRef} className="absolute inset-0 z-0 pointer-events-none" />
+      <canvas ref={bgCanvasRef} className="absolute inset-0 -z-10 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
 
       {!isCompact && (
