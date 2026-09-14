@@ -315,209 +315,237 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       canvas.height = window.innerHeight;
     }
 
+    const isReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
     let particles: any[] = [];
-    const MAX_PARTICLES = activeTier === "Cosmic Lightning" ? 45 : (activeTier === 'Fireworks' ? 200 : 150);
+    let rockets: any[] = [];
     const fallbackStartTime = typeof animationStartTimeMs === 'number' ? performance.now() - animationStartTimeMs : performance.now();
-    let initialSpawnDone = false;
     let fadeOutTriggered = false;
+    const isMobile = window.innerWidth < 768;
+
+    // Scripted Fireworks Logic
+    const scriptPhase1Done = { current: false };
+    const scriptPhase2Done = { current: false };
+    const scriptPhase3Done = { current: false };
+    const scriptPhase4Done = { current: false };
+
+    const colors = ['#ff5050', '#5a8cff', '#6eff96', '#c86eff', '#ffcd5a', '#ffffff', '#ff9cee'];
+
+    const spawnBurst = (x: number, y: number, color1: string, color2: string, sizeMultiplier: number) => {
+      const burstCount = Math.floor(Math.random() * 2) + 1;
+      for (let b = 0; b < burstCount; b++) {
+        const bx = x + (Math.random() - 0.5) * 50 * sizeMultiplier;
+        const by = y + (Math.random() - 0.5) * 50 * sizeMultiplier;
+        const pCount = Math.floor(60 * sizeMultiplier);
+        for (let i = 0; i < pCount; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const velocity = (Math.random() * 8 + 3) * sizeMultiplier;
+          particles.push({
+            x: bx,
+            y: by,
+            vx: Math.cos(angle) * velocity,
+            vy: Math.sin(angle) * velocity,
+            opacity: 1,
+            color: Math.random() > 0.3 ? color1 : color2,
+            history: []
+          });
+        }
+      }
+    };
+
+    const spawnRocket = (startX: number, startY: number, targetX: number, targetY: number, sizeMultiplier: number, speedMultiplier: number) => {
+       const dx = targetX - startX;
+       const dy = targetY - startY;
+       const distance = Math.sqrt(dx * dx + dy * dy);
+       const speed = 12 * speedMultiplier;
+
+       rockets.push({
+          x: startX,
+          y: startY,
+          targetX,
+          targetY,
+          vx: (dx / distance) * speed,
+          vy: (dy / distance) * speed,
+          color1: colors[Math.floor(Math.random() * colors.length)],
+          color2: colors[Math.floor(Math.random() * colors.length)],
+          sizeMultiplier,
+          history: []
+       });
+    };
 
     const loop = () => {
       const elapsedMs = performance.now() - fallbackStartTime;
       const canSpawn = elapsedMs < 4500;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (activeTier === 'Meteor Shower') {
-        const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
-        if (shouldSpawn && particles.length < 50) {
-          initialSpawnDone = true;
-          particles.push({
-            x: Math.random() * canvas.width,
-            y: -50,
-            len: Math.random() * 200 + 100, // Longer tail, lingering afterglow
-            speed: Math.random() * 15 + 8,  // Slightly faster
-            opacity: 1
-          });
-        }
-
-        // Add a strong flash for the meteor shower on initial impact
-        if (elapsedMs < 1000) {
-            const meteorFlash = Math.max(0, 1 - (elapsedMs / 1000));
-            ctx.fillStyle = `rgba(255, 100, 100, ${meteorFlash * 0.25})`;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        ctx.globalCompositeOperation = 'lighter';
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          p.x -= p.speed * 0.5;
-          p.y += p.speed;
-
-          const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.len, p.y - p.len);
-          grad.addColorStop(0, `rgba(255, 255, 255, ${p.opacity})`);
-          grad.addColorStop(0.2, `rgba(100, 200, 255, ${p.opacity * 0.8})`);
-          grad.addColorStop(1, 'rgba(100, 200, 255, 0)');
-
-          ctx.beginPath();
-          ctx.strokeStyle = grad;
-          ctx.lineWidth = 4; // Slightly thicker core
-          ctx.shadowBlur = 15;
-          ctx.shadowColor = '#00e5ff';
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p.x + p.len, p.y - p.len);
-          ctx.stroke();
-          ctx.shadowBlur = 0; // Reset for performance
-
-          if (p.y > canvas.height + p.len) particles.splice(i, 1);
-        }
-        ctx.globalCompositeOperation = 'source-over';
-      } else if (activeTier === 'Cosmic Lightning') {
-        const shouldSpawn = !initialSpawnDone || (Math.random() < 0.03 && canSpawn);
-        if (shouldSpawn && particles.length < MAX_PARTICLES) {
-
-          initialSpawnDone = true;
-          const startX = Math.random() * canvas.width;
-          const mainBranch = [{ x: startX, y: 0 }];
-          const secondaryBranch = [];
-
-          let splitIndex = Math.floor(Math.random() * 4) + 2; // Split somewhere in the top half
-
-          for (let i = 0; i < 12; i++) {
-             mainBranch.push({
-               x: mainBranch[i].x + (Math.random() - 0.5) * 60,
-               y: mainBranch[i].y + Math.random() * 60 + 20
-             });
-
-             if (i === splitIndex) {
-               secondaryBranch.push({ x: mainBranch[i].x, y: mainBranch[i].y });
-             } else if (i > splitIndex) {
-               let lastSec = secondaryBranch[secondaryBranch.length - 1];
-               secondaryBranch.push({
-                 x: lastSec.x + (Math.random() - 0.5) * 80,
-                 y: lastSec.y + Math.random() * 50 + 10
-               });
-             }
-          }
-          particles.push({ mainBranch, secondaryBranch, opacity: 1, flash: 1 });
-        }
-
-        ctx.globalCompositeOperation = 'lighter';
-
-        let maxFlash = 0;
-        particles.forEach((p: any) => {
-          if (p.flash > maxFlash) maxFlash = p.flash;
-        });
-        if (maxFlash > 0) {
-          // Stronger energy pulse / screen flash for Cosmic Lightning impact
-          const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
-          grad.addColorStop(0, `rgba(150, 200, 255, ${maxFlash * 0.4})`);
-          grad.addColorStop(1, `rgba(100, 0, 255, 0)`);
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          if (p.flash > 0) {
-             p.flash -= 0.2;
-          }
-
-          // Draw Main Branch
-          ctx.beginPath();
-          ctx.moveTo(p.mainBranch[0].x, p.mainBranch[0].y);
-          p.mainBranch.forEach((pt: any) => ctx.lineTo(pt.x, pt.y));
-          ctx.strokeStyle = `rgba(220, 180, 255, ${p.opacity})`;
-          ctx.lineWidth = 3;
-          ctx.shadowBlur = 20;
-          ctx.shadowColor = '#c896ff';
-          ctx.stroke();
-
-          // Draw Secondary Branch with defensive check
-          if (p.secondaryBranch && p.secondaryBranch.length > 0) {
-            ctx.beginPath();
-            ctx.moveTo(p.secondaryBranch[0].x, p.secondaryBranch[0].y);
-            p.secondaryBranch.forEach((pt: any) => ctx.lineTo(pt.x, pt.y));
-            ctx.strokeStyle = `rgba(200, 150, 255, ${p.opacity * 0.7})`; // Slightly dimmer
-            ctx.lineWidth = 2;
-            ctx.stroke();
-          }
-
-          ctx.shadowBlur = 0;
-          p.opacity -= 0.05;
-          if (p.opacity <= 0) particles.splice(i, 1);
-        }
-        ctx.globalCompositeOperation = 'source-over';
-      } else if (activeTier === 'Fireworks') {
-        const shouldSpawn = !initialSpawnDone || (Math.random() < 0.02 && canSpawn);
-        if (shouldSpawn && particles.length < 180) {
-          if (initialSpawnDone && canSpawn && !soundsRef.current.crackle?.playing()) {
-            soundsRef.current.crackle?.play();
-          }
-          initialSpawnDone = true;
-          const startX = Math.random() * canvas.width;
-          const startY = Math.random() * (canvas.height / 2);
-          const colors = ['#ff5050', '#5a8cff', '#6eff96', '#c86eff', '#ffcd5a', '#ffffff'];
-
-          // Mix colors in a single burst occasionally
-          const burstColorPrimary = colors[Math.floor(Math.random() * colors.length)];
-          const burstColorSecondary = colors[Math.floor(Math.random() * colors.length)];
-
-          const burstCount = Math.floor(Math.random() * 2) + 1; // 1 to 2 simultaneous bursts
-          for (let b = 0; b < burstCount; b++) {
-            const bx = startX + (Math.random() - 0.5) * 100;
-            const by = startY + (Math.random() - 0.5) * 100;
-            for (let i = 0; i < 65; i++) {
-              const angle = Math.random() * Math.PI * 2;
-              const velocity = Math.random() * 8 + 3;
-              particles.push({
-                x: bx,
-                y: by,
-                vx: Math.cos(angle) * velocity,
-                vy: Math.sin(angle) * velocity,
-                opacity: 1,
-                color: Math.random() > 0.3 ? burstColorPrimary : burstColorSecondary,
-                history: []
-              });
+      if (isReducedMotion) {
+         if (canSpawn || particles.length > 0) {
+            // Simplified glowing aura for reduced motion
+            const alpha = Math.min(1, Math.max(0, canSpawn ? elapsedMs / 1000 : 1 - (elapsedMs - 4500) / 1000));
+            if (alpha > 0) {
+              const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/4, 0, canvas.width/2, canvas.height/4, Math.max(canvas.width, canvas.height)/2);
+              const color = activeTier === 'Fireworks' ? '255, 205, 90' : (activeTier === 'Cosmic Lightning' ? '200, 150, 255' : '100, 200, 255');
+              grad.addColorStop(0, `rgba(${color}, ${alpha * 0.4})`);
+              grad.addColorStop(1, `rgba(${color}, 0)`);
+              ctx.fillStyle = grad;
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              particles = [1]; // keep alive
+            } else {
+              particles = [];
             }
-          }
-        }
+         }
+      } else {
 
-        ctx.globalCompositeOperation = 'lighter';
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          // Track history for trails
-          p.history.push({ x: p.x, y: p.y });
-          if (p.history.length > 5) p.history.shift(); // Keep last 5 positions
-
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.06; // Softer gravity decay for voluminous explosion
-          p.opacity -= 0.012;
-
-          // Draw trail
-          if (p.history.length > 1) {
-             ctx.beginPath();
-             ctx.moveTo(p.history[0].x, p.history[0].y);
-             for(let j=1; j < p.history.length; j++){
-                ctx.lineTo(p.history[j].x, p.history[j].y);
-             }
-             ctx.strokeStyle = p.color;
-             ctx.lineWidth = 2;
-             ctx.globalAlpha = Math.max(0, p.opacity * 0.5);
-             ctx.stroke();
-          }
-
-          // Draw head
-          ctx.fillStyle = p.color;
-          ctx.globalAlpha = Math.max(0, p.opacity);
-
-          // Using fillRect for particle head instead of arc for performance
-          ctx.fillRect((p.x | 0) - 1.5, (p.y | 0) - 1.5, 3, 3);
-
-          ctx.globalAlpha = 1.0;
-          if (p.opacity <= 0) particles.splice(i, 1);
-        }
-        ctx.globalCompositeOperation = 'source-over';
+      // Tier 1: 0-33% Lower Luck (Restrained)
+      if (activeTier === 'Meteor Shower' && canSpawn) {
+         if (elapsedMs > 500 && !scriptPhase1Done.current) {
+            scriptPhase1Done.current = true;
+            spawnRocket(canvas.width / 2, canvas.height, canvas.width / 2, canvas.height * 0.3, 0.7, 1);
+         }
+         if (elapsedMs > 2000 && !scriptPhase2Done.current) {
+            scriptPhase2Done.current = true;
+            spawnRocket(canvas.width / 2 - 50, canvas.height, canvas.width / 2 - 100, canvas.height * 0.4, 0.6, 1);
+            spawnRocket(canvas.width / 2 + 50, canvas.height, canvas.width / 2 + 100, canvas.height * 0.35, 0.6, 1);
+         }
       }
+
+      // Tier 2: 34-66% Medium Luck (Broader)
+      else if (activeTier === 'Cosmic Lightning' && canSpawn) {
+         if (elapsedMs > 200 && !scriptPhase1Done.current) {
+            scriptPhase1Done.current = true;
+            const w = canvas.width;
+            const h = canvas.height;
+            spawnRocket(w * 0.3, h, w * 0.3, h * 0.3, 0.9, 1);
+            spawnRocket(w * 0.7, h, w * 0.7, h * 0.35, 0.9, 1);
+         }
+         if (elapsedMs > 1500 && !scriptPhase2Done.current) {
+            scriptPhase2Done.current = true;
+            const w = canvas.width;
+            const h = canvas.height;
+            spawnRocket(w * 0.1, h, w * 0.2, h * 0.25, 0.8, 1);
+            spawnRocket(w * 0.5, h, w * 0.5, h * 0.2, 1.0, 1.2);
+            spawnRocket(w * 0.9, h, w * 0.8, h * 0.3, 0.8, 1);
+         }
+         if (elapsedMs > 3000 && !scriptPhase3Done.current) {
+            scriptPhase3Done.current = true;
+            const w = canvas.width;
+            const h = canvas.height;
+            spawnRocket(w * 0.4, h, w * 0.35, h * 0.4, 0.7, 1);
+            spawnRocket(w * 0.6, h, w * 0.65, h * 0.35, 0.7, 1);
+         }
+      }
+
+      // Tier 3: 67-100% High Luck (Spectacular)
+      else if (activeTier === 'Fireworks' && canSpawn) {
+         if (elapsedMs > 100 && !scriptPhase1Done.current) {
+            scriptPhase1Done.current = true;
+            const w = canvas.width;
+            const h = canvas.height;
+            // Sweeping from sides
+            spawnRocket(0, h * 0.8, w * 0.3, h * 0.2, 1.1, 1.2);
+            spawnRocket(w, h * 0.8, w * 0.7, h * 0.2, 1.1, 1.2);
+         }
+         if (elapsedMs > 1200 && !scriptPhase2Done.current) {
+            scriptPhase2Done.current = true;
+            const w = canvas.width;
+            const h = canvas.height;
+            // Center barrage
+            spawnRocket(w * 0.4, h, w * 0.4, h * 0.25, 1.0, 1.1);
+            spawnRocket(w * 0.5, h, w * 0.5, h * 0.15, 1.3, 1.3);
+            spawnRocket(w * 0.6, h, w * 0.6, h * 0.25, 1.0, 1.1);
+         }
+         if (elapsedMs > 2500 && !scriptPhase3Done.current) {
+            scriptPhase3Done.current = true;
+            const w = canvas.width;
+            const h = canvas.height;
+            // Cross fire
+            spawnRocket(w * 0.1, h * 0.6, w * 0.6, h * 0.1, 0.9, 1.2);
+            spawnRocket(w * 0.9, h * 0.6, w * 0.4, h * 0.1, 0.9, 1.2);
+         }
+         if (elapsedMs > 3800 && !scriptPhase4Done.current) {
+             scriptPhase4Done.current = true;
+             const w = canvas.width;
+             const h = canvas.height;
+             // Grand Finale
+             spawnRocket(w * 0.3, h, w * 0.3, h * 0.2, 1.2, 1.1);
+             spawnRocket(w * 0.5, h, w * 0.5, h * 0.1, 1.5, 1.4);
+             spawnRocket(w * 0.7, h, w * 0.7, h * 0.2, 1.2, 1.1);
+             spawnRocket(w * 0.2, h, w * 0.2, h * 0.3, 1.0, 1.1);
+             spawnRocket(w * 0.8, h, w * 0.8, h * 0.3, 1.0, 1.1);
+         }
+      }
+
+      ctx.globalCompositeOperation = 'lighter';
+
+      // Draw and update rockets
+      for (let i = rockets.length - 1; i >= 0; i--) {
+         const r = rockets[i];
+         r.history.push({x: r.x, y: r.y});
+         if (r.history.length > 5) r.history.shift();
+
+         r.x += r.vx;
+         r.y += r.vy;
+
+         // Trail
+         if (r.history.length > 1) {
+             ctx.beginPath();
+             ctx.moveTo(r.history[0].x, r.history[0].y);
+             for(let j=1; j < r.history.length; j++){
+                ctx.lineTo(r.history[j].x, r.history[j].y);
+             }
+             ctx.strokeStyle = '#fff';
+             ctx.lineWidth = 2;
+             ctx.stroke();
+         }
+
+         // Head
+         ctx.fillStyle = '#fff';
+         ctx.fillRect(r.x - 2, r.y - 2, 4, 4);
+
+         // Explode if reached target
+         if (r.vy < 0 && r.y <= r.targetY) {
+            spawnBurst(r.x, r.y, r.color1, r.color2, r.sizeMultiplier);
+            if (activeTier === 'Fireworks' && !soundsRef.current.crackle?.playing()) {
+               soundsRef.current.crackle?.play();
+            }
+            rockets.splice(i, 1);
+         } else if (r.vy > 0 && r.y >= r.targetY) {
+            spawnBurst(r.x, r.y, r.color1, r.color2, r.sizeMultiplier);
+            rockets.splice(i, 1);
+         }
+      }
+
+      // Draw and update particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.history.push({ x: p.x, y: p.y });
+        if (p.history.length > 5) p.history.shift();
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.06;
+        p.opacity -= 0.012;
+
+        if (p.history.length > 1) {
+           ctx.beginPath();
+           ctx.moveTo(p.history[0].x, p.history[0].y);
+           for(let j=1; j < p.history.length; j++){
+              ctx.lineTo(p.history[j].x, p.history[j].y);
+           }
+           ctx.strokeStyle = p.color;
+           ctx.lineWidth = 2;
+           ctx.globalAlpha = Math.max(0, p.opacity * 0.5);
+           ctx.stroke();
+        }
+
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillRect((p.x | 0) - 1.5, (p.y | 0) - 1.5, 3, 3);
+        ctx.globalAlpha = 1.0;
+
+        if (p.opacity <= 0) particles.splice(i, 1);
+      }
+      ctx.globalCompositeOperation = 'source-over';
+      } // End !isReducedMotion
 
       if (!canSpawn) {
         // Stop audio smoothly
