@@ -132,6 +132,8 @@ Do not expand the task without authorization.
 
 Access to a file, repository, service, MCP, or tool does not itself authorize modification.
 
+Before modifying anything, list the exact repository files you will inspect or use for this task, including their full paths, and distinguish those files from the exact files planned for modification.
+
 2. Approval
 
 Present the verified analysis and concrete implementation plan before modification unless the task explicitly authorizes autonomous execution.
