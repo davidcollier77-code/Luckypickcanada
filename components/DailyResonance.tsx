@@ -77,7 +77,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const bgCanvasRef = useRef<HTMLCanvasElement>(null);
   const bgRequestRef = useRef<number>(0);
   useEffect(() => { if (auroraRef.current && !isRevealing && !isRevealed) auroraRef.current.setPhase('idle'); }, [isRevealing, isRevealed]);
-  const starsRef = useRef<Array<{x: number, y: number, radius: number, alpha: number, speed: number}>>([]);
+  const starsRef = useRef<Array<{x: number, y: number, radius: number, baseAlpha: number, phase: number, speed: number, twinkleRange: number}>>([]);
 
 
   // Check for daily lockout on mount
@@ -597,33 +597,54 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     // PERFORMANCE OPTIMIZATION (Bolt ⚡):
     // Moved star initialization outside of the render/resize cycle to prevent
     // recreating the array and objects on every mount. We only initialize if empty.
+    const isReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+    const isMobile = window.innerWidth < 768;
+    const starCount = isMobile ? 150 : 350;
+
     if (!starsRef.current || starsRef.current.length === 0) {
-      starsRef.current = Array.from({ length: 150 }, () => ({
-        x: Math.random() * bgCanvas.width,
-        y: Math.random() * bgCanvas.height,
-        radius: Math.random() * 1.5 + 0.5,
-        alpha: Math.random(),
-        speed: Math.random() * 0.02 + 0.005,
-      }));
+      starsRef.current = Array.from({ length: starCount }, () => {
+        const depth = Math.random();
+        // size mapped to depth. distant = smaller, foreground = slightly larger.
+        let radius = 0.4 + Math.random() * 0.5;
+        if (depth > 0.95) radius = 1.2 + Math.random() * 0.8; // rare foreground accent stars
+        else if (depth > 0.8) radius = 0.8 + Math.random() * 0.4; // mid-field
+
+        return {
+          x: Math.random() * bgCanvas.width,
+          y: Math.random() * bgCanvas.height,
+          radius,
+          baseAlpha: depth > 0.9 ? 0.7 + Math.random() * 0.3 : 0.2 + Math.random() * 0.4,
+          phase: Math.random() * Math.PI * 2, // organic asynchronous start phase
+          speed: (Math.random() * 0.015 + 0.005) * (isReducedMotion ? 0.1 : 1), // slower if reduced motion
+          twinkleRange: depth > 0.9 ? 0.3 : 0.15, // brighter stars twinkle more noticeably
+        };
+      });
     }
     const stars = starsRef.current;
 
+    let bgTime = 0;
     const drawBg = () => {
-      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-      bgCtx.fillStyle = '#ffffff';
-      stars.forEach(star => {
-        star.alpha += star.speed;
-        if (star.alpha > 1 || star.alpha < 0.2) star.speed *= -1;
+      bgTime += 1;
 
-        // PERFORMANCE OPTIMIZATION (Bolt ⚡):
-        // Replaced expensive path/arc rendering with fillRect for tiny particles.
-        // Bypassing trigonometric curve calculations for particles
-        // keeps main thread execution time low and maintains a smooth 60fps.
-        // Also removed string interpolation for dynamic transparency,
-        // relying on globalAlpha instead to reduce garbage collection pressure.
-        bgCtx.globalAlpha = star.alpha;
+      // Deep Space Base Gradient
+      const grad = bgCtx.createLinearGradient(0, 0, 0, bgCanvas.height);
+      grad.addColorStop(0, '#030510');   // near-black / deep navy
+      grad.addColorStop(0.5, '#050a1f'); // subtle midnight blue
+      grad.addColorStop(1, '#020612');   // back to near-black
+
+      bgCtx.fillStyle = grad;
+      bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+      bgCtx.fillStyle = '#ffffff';
+
+      stars.forEach(star => {
+        // Natural Scintillation (Sine wave offset by random phase)
+        const currentAlpha = star.baseAlpha + Math.sin(bgTime * star.speed + star.phase) * star.twinkleRange;
+        bgCtx.globalAlpha = Math.max(0.05, Math.min(1, currentAlpha));
+
         bgCtx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
       });
+
       bgCtx.globalAlpha = 1.0;
       bgRequestRef.current = requestAnimationFrame(drawBg);
     };
@@ -653,7 +674,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     } flex flex-col items-center justify-center overflow-hidden`}>
       <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
-      <canvas ref={bgCanvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />
+      <canvas ref={bgCanvasRef} className="absolute inset-0 z-0 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
 
       {!isCompact && (
