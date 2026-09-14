@@ -1,8 +1,8 @@
-AGENTS.md — LuckyPickCanada Repository Workflow
+# AGENTS.md — LuckyPickCanada Repository Workflow
 
 This file defines the authoritative repository workflow for LuckyPickCanada.
 
-Instruction Hierarchy
+## Instruction Hierarchy
 
 When instructions conflict, this precedence order applies:
 
@@ -15,11 +15,11 @@ When instructions conflict, this precedence order applies:
 
 Higher-level instructions take precedence over lower-level context.
 
-A — ANALYZE
+## A — ANALYZE
 
 Before beginning substantive work, establish verified facts.
 
-Required Documentation
+### Required Documentation
 
 Every substantive task must use these four official sources:
 
@@ -32,7 +32,7 @@ These four sources are mandatory.
 
 They must be actually read and used to inform and shape the work, not merely acknowledged, listed, cited, or mentioned.
 
-Repository Guidance
+### Repository Guidance
 
 Identify and use the repository guidance applicable to the task, including:
 
@@ -46,7 +46,7 @@ Applicable guidance must be actually read, used, and applied, including its inst
 
 The established specialist/task-group structure under ".jules/" is authoritative. Do not replace it with a hard-coded task-group count or duplicate its contents in this file.
 
-Project Context
+### Project Context
 
 Identify and use applicable project context and repository guidance, including:
 
@@ -62,7 +62,7 @@ Memory Bank provides project context and history. It is not proof of current imp
 
 Current repository state is authoritative for implementation facts.
 
-Reference Documentation
+### Reference Documentation
 
 Use ".docs/manifest.json" to identify relevant library and reference documentation.
 
@@ -70,7 +70,7 @@ Read the relevant ".docs/" files and use that documentation to inform and shape 
 
 Do not assume that documentation exists, is current, or applies solely because it appears in a prior report or memory entry. Verify the relevant repository references and current state.
 
-Current Repository State
+### Current Repository State
 
 Inspect the actual current repository state before making substantive changes.
 
@@ -78,11 +78,11 @@ Verify important implementation facts against the current source code, configura
 
 Never treat a previous agent report, PR description, memory entry, cached documentation, or prior task result as authoritative when the current repository can establish the fact.
 
-B — BOUNDARIES AND PLAN
+## B — BOUNDARIES AND PLAN
 
 Before changing files or external systems, determine authorization, identify protected resources, define scope, and resolve applicable constraints.
 
-Authorization
+### Authorization
 
 Substantive changes require explicit authorization.
 
@@ -97,7 +97,7 @@ Service access does not itself constitute authorization to modify that service.
 
 Read-only access, repository visibility, connected tools, installed integrations, or available credentials do not by themselves authorize changes.
 
-Protected Resources
+### Protected Resources
 
 The following resources are read-only unless the specific task explicitly authorizes changes:
 
@@ -114,7 +114,7 @@ Reading and using these resources when applicable is permitted and required.
 
 When a task explicitly authorizes a protected-resource change, the change must remain within the authorized scope and must be verified as part of the final repository state.
 
-Documentation-Mapping and Documentation-Updater Work
+### Documentation-Mapping and Documentation-Updater Work
 
 Documentation-mapping or documentation-updater behavior applies only when that work is explicitly authorized.
 
@@ -129,7 +129,7 @@ When explicitly authorized:
 
 Ordinary application work must not be forced through documentation-refresh behavior.
 
-Inventory Validation
+### Inventory Validation
 
 The authoritative documentation inventory is defined by the actual ".docs/manifest.json".
 
@@ -144,7 +144,7 @@ Do not hard-code a permanent library count in workflow rules.
 
 Do not modify ".docs/manifest.json" unless explicitly authorized.
 
-Plan Before Execution
+### Plan Before Execution
 
 Before making substantive changes, determine:
 
@@ -157,13 +157,13 @@ Before making substantive changes, determine:
 
 Do not introduce new workflow behavior merely to satisfy a local preference or speculative concern.
 
-C — EXECUTE, VERIFY, AND REPORT
+## C — EXECUTE, VERIFY, AND REPORT
 
 Execute only the work authorized by the specific task.
 
 Make minimal, targeted changes necessary to complete the authorized work.
 
-Checker, Review, and Validation Layers
+### Checker, Review, and Validation Layers
 
 Use the repository's applicable checker, review, testing, and validation layers according to their actual repository configuration and documentation.
 
@@ -177,7 +177,7 @@ Reviewer findings identify potential issues; the agent performing the work must 
 
 Do not blindly implement reviewer suggestions that are unsupported, contradictory, out of scope, or purely stylistic.
 
-Verification
+### Verification
 
 After completing substantive work, verify:
 
@@ -193,7 +193,7 @@ Verification must distinguish confirmed facts from assumptions.
 
 Verification requirements must respect legitimate authorization exceptions for protected resources.
 
-Reporting
+### Reporting
 
 Report only evidence-supported results.
 
@@ -211,7 +211,7 @@ Never claim that something was read, used, applied, checked, validated, or verif
 
 Never represent an assumption as a verified repository fact.
 
-Final State
+### Final State
 
 Before finalizing work:
 
