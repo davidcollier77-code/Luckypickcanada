@@ -1,8 +1,8 @@
-AGENTS.md — LuckyPickCanada Repository Workflow
+# AGENTS.md — LuckyPickCanada Repository Workflow
 
 This file defines the authoritative repository workflow for LuckyPickCanada.
 
-Instruction Hierarchy
+## Instruction Hierarchy
 
 When instructions conflict, this precedence order applies:
 
@@ -16,11 +16,11 @@ When instructions conflict, this precedence order applies:
 Higher-level instructions take precedence over lower-level context.
 
 A — ANALYZE
-
+## A — ANALYZE
 Before beginning substantive work, establish verified facts.
 
 Required Documentation
-
+### Required Documentation
 Every substantive task must use these four official sources:
 
 1. Official Jules Documentation
@@ -41,7 +41,7 @@ When an official documentation source has a repository-local documentation/refer
 Do not substitute unofficial articles, third-party summaries, cached explanations, or assumptions for the required official sources.
 
 Repository Guidance
-
+### Repository Guidance
 Identify and use the repository guidance applicable to the task, including:
 
 - ".jules/jules.md"
@@ -55,7 +55,7 @@ Applicable guidance must be actually read, used, and applied, including its inst
 The established specialist/task-group structure under ".jules/" is authoritative. Do not replace it with a hard-coded task-group count or duplicate its contents in this file.
 
 Project Context
-
+### Project Context
 Identify and use applicable project context and repository guidance, including:
 
 - "memory-bank/projectBrief.md"
@@ -93,7 +93,7 @@ Do not rewrite unrelated historical context.
 
 Never store secrets, credentials, private keys, tokens, or other sensitive authentication material in Memory Bank.
 
-Reference Documentation
+### Reference Documentation
 
 Use ".docs/manifest.json" to identify relevant library and reference documentation.
 
@@ -107,7 +107,7 @@ Do not treat ".docs/" as a substitute for the four mandatory official documentat
 
 When a task depends on a specific library or reference, identify and use the corresponding actual repository-local ".docs/" file or entry and report the specific path used.
 
-Current Repository State
+### Current Repository State
 
 Inspect the actual current repository state before making substantive changes.
 
@@ -117,11 +117,11 @@ Never treat a previous agent report, PR description, memory entry, cached docume
 
 Distinguish verified facts from assumptions.
 
-B — BOUNDARIES AND PLAN
+## B — BOUNDARIES AND PLAN
 
 Before changing files or external systems, determine authorization, identify protected resources, define scope, and resolve applicable constraints.
 
-Authorization
+### Authorization
 
 Substantive changes require explicit authorization.
 
@@ -138,7 +138,7 @@ Read-only access, repository visibility, connected tools, installed integrations
 
 Routine maintenance of "memory-bank/*" required by the repository workflow is authorized as part of normal task completion and is not considered an unrelated substantive scope expansion.
 
-Protected Resources
+### Protected Resources
 
 The following resources are read-only unless the specific task explicitly authorizes changes:
 
@@ -158,7 +158,7 @@ When a task explicitly authorizes a protected-resource change, the change must r
 
 Updating "memory-bank/*" as required by the normal task lifecycle does not constitute authorization to modify unrelated repository files.
 
-Documentation-Mapping and Documentation-Updater Work
+### Documentation-Mapping and Documentation-Updater Work
 
 Documentation-mapping or documentation-updater behavior applies only when that work is explicitly authorized.
 
@@ -179,7 +179,7 @@ Do not automatically substitute Context7 for the repository's designated upstrea
 
 Ordinary application work must not be forced through documentation-refresh behavior.
 
-Inventory Validation
+### Inventory Validation
 
 The authoritative documentation inventory is defined by the actual ".docs/manifest.json".
 
@@ -194,7 +194,7 @@ Do not hard-code a permanent library count in workflow rules.
 
 Do not modify ".docs/manifest.json" unless explicitly authorized.
 
-Plan Before Execution
+### Plan Before Execution
 
 Before making substantive changes, determine:
 
@@ -207,14 +207,14 @@ Before making substantive changes, determine:
 
 Do not introduce new workflow behavior merely to satisfy a local preference or speculative concern.
 
-C — EXECUTE, VERIFY, AND REPORT
+## C — EXECUTE, VERIFY, AND REPORT
 
 Execute only the work authorized by the specific task.
 
 Make minimal, targeted changes necessary to complete the authorized work.
 
 Checker, Review, and Validation Layers
-
+### Checker, Review, and Validation Layers
 Use the repository's applicable checker, review, testing, and validation layers according to their actual repository configuration and documentation.
 
 Where Amazon Q, Cubic, Skepkit, or another checker/reviewer is actually configured or otherwise available for the repository, use it according to its verified capabilities and applicable workflow guidance.
@@ -231,7 +231,7 @@ Do not blindly implement reviewer suggestions that are unsupported, contradictor
 
 When work is being performed on an existing pull request and the repository workflow assigns that corrective work to Amazon Q, follow that workflow rather than starting an unrelated parallel implementation through another agent.
 
-Verification
+### Verification
 
 After completing substantive work, verify:
 
@@ -248,7 +248,7 @@ Verification must distinguish confirmed facts from assumptions.
 
 Verification requirements must respect legitimate authorization exceptions for protected resources.
 
-Reporting
+### Reporting
 
 Report only evidence-supported results.
 
@@ -268,7 +268,7 @@ Never claim that something was read, used, applied, checked, validated, or verif
 
 Never represent an assumption as a verified repository fact.
 
-Final State
+### Final State
 
 Before finalizing work:
 
