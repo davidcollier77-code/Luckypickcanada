@@ -13,10 +13,12 @@
 - **Agent Work Scope**: Validated via `AGENTS.md` and `memory-bank` that this task belongs to general Polishing constraints, confirming we did not override other optimization constraints.
 
 ## Documentation Consulted
-- `.jules/polishing.md` (checked for constraints)
+- `AGENTS.md` (repository workflow/documentation requirements)
+- `.jules/polishing.md` (task-specific constraints for polishing work)
+- `.docs/manifest.json` and `.docs/polishing/_llmstxt_gsap_llms_txt.md` (official GSAP Timeline reference used to sequence the Aurora phase transitions)
 - `memory-bank/activeContext.md`
 - `memory-bank/projectBrief.md`
-- Standard repository initialization completed via reading `AGENTS.md`.
+- No official Jules or Gemini documentation (`jules.google/docs`, `developers.google.com/jules/api`, `/google-gemini/gemini-cli`, `/websites/ai_google_dev_gemini-api`) was applicable to this Canvas/GSAP visual task, so it was not consulted.
 
 ## Unresolved Issues / Limitations
 - None.

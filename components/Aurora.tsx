@@ -87,6 +87,7 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       if (p.targetSpeed !== undefined) p.speedMultiplier += (p.targetSpeed - p.speedMultiplier) * 0.05;
       if (p.targetPull !== undefined) p.centerPull += (p.targetPull - p.centerPull) * 0.02; // Slower gather
       if (p.targetBrightness !== undefined) p.brightness += (p.targetBrightness - p.brightness) * 0.05;
+      if (p.targetGlow !== undefined) p.glow += (p.targetGlow - p.glow) * 0.05;
 
       time += 0.003 * p.speedMultiplier;
 
@@ -97,6 +98,10 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
 
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'screen';
+
+      // Apply glow as a soft canvas shadow blur that intensifies with phase (e.g. impact)
+      ctx.shadowBlur = p.glow * 60;
+      ctx.shadowColor = `rgba(180, 220, 255, ${Math.min(1, p.glow)})`;
 
       // Layer 1 (Greenish/Teal)
       ctx.beginPath();
@@ -175,14 +180,17 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
 
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1.0;
+      ctx.shadowBlur = 0;
 
       animationFrameId = requestAnimationFrame(draw);
     };
 
     const handleResize = () => {
       initCanvas();
-      // Cancel pending animation frame to prevent duplicate animation loops
+      // Cancel the pending animation frame to prevent duplicate animation loops,
+      // then restart the draw loop so the Aurora keeps rendering after resize.
       cancelAnimationFrame(animationFrameId);
+      draw();
     };
 
     initCanvas();
