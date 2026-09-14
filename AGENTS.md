@@ -10,7 +10,7 @@ A — ANALYZE / VERIFIED FACTS
 
 1. Establish the documentation baseline
 
-Before analyzing implementation details, establish the applicable official Jules/Gemini documentation baseline.
+Before analyzing the repository or making implementation decisions, establish the applicable official Jules/Gemini documentation baseline first.
 
 Consult the applicable official sources:
 
@@ -27,7 +27,7 @@ Known Jules documentation files include:
 - ".docs/deep-dive/jules_google_docs.md"
 - ".docs/troubleshooting/jules_google_docs.md"
 
-Do not invent filenames for Jules API, Jules CLI, Gemini CLI, or Gemini API documentation. If the relevant documentation is not stored in the repository, identify the exact official documentation page/source instead.
+Do not invent filenames for official documentation that do not exist in the repository. If relevant documentation is not stored in the repository, identify the exact official documentation page/source instead.
 
 2. Inspect the current repository
 
@@ -66,6 +66,8 @@ Do not claim a library was used merely because it exists in "package.json" or ".
 
 4. Actually consult relevant documentation
 
+Documentation must be actually used when it materially applies to the task, not merely acknowledged as available.
+
 Jules must determine which documentation is relevant to the specific task, then actually consult the relevant sources.
 
 For each relevant source, distinguish:
@@ -77,11 +79,11 @@ For each relevant source, distinguish:
 Availability, connection, initialization, or listing does not count as consultation or use.
 
 Use documentation as a source of practical project intelligence.
-
-If no library documentation was needed, state exactly:
-
+Report exactly what documentation was consulted, what was useful, and what was used/applied. Do not report documentation merely because it was available.
 «No library documentation was required for this task.»
+When documentation is missing, insufficient, outdated, unclear, incomplete, or otherwise inadequate, state that explicitly and explain the practical impact.
 
+When no library documentation was required for the task, report exactly:
 5. Record evidence quality
 
 Classify important findings as:
@@ -150,7 +152,7 @@ Do not modify "AGENTS.md" during ordinary implementation unless explicitly autho
 
 5. MCP and documentation tools
 
-Context7 is a fallback, not the normal documentation source. Use it only when genuinely needed and permitted by ".jules/jules.md".
+Context7 is a controlled fallback, not the normal documentation source. Use it only when genuinely needed and permitted by repository governance and ".jules/jules.md".
 
 When explicitly requesting Context7 libraries, provide only the required plain-text library identifiers.
 
@@ -167,7 +169,7 @@ Do not invoke a tool merely to claim usage. Report actual invocations and their 
 Preserve the established 46-library inventory. Do not impose a different numerical limit.
 
 The normal documentation refresh mechanism is the repository's designated upstream documentation update mechanism, not Context7.
-
+The normal documentation refresh mechanism is the repository's designated upstream documentation mechanism, not Context7.
 Preserve these rules:
 
 - Unchanged upstream SHA → skip.
@@ -175,11 +177,11 @@ Preserve these rules:
 - New/missing documentation → use that mechanism when it can provide the required material.
 - Context7 → permitted fallback only.
 - Preserve last-known-good documentation.
-- Update SHA/state only after successful validated update.
-- Respect the 495 MB batching ceiling.
+- Preserve last-known-good documentation when an update fails.
+- Do not persist a new upstream SHA/state until the documentation update has successfully validated.
 - Preserve the existing five-minute retry-once behavior on refresh failure.
 - Preserve the Friday 02:00 Atlantic schedule, DST-safe handling, and "America/Halifax" runtime gate where implemented.
-- Report exact entries updated, skipped, unchanged, or failed.
+- Preserve the Friday 02:00 Atlantic / "America/Halifax" DST-safe schedule.
 
 ---
 
@@ -197,7 +199,7 @@ Do not silently broaden the task.
 
 Use the package manager and versions declared by the repository.
 
-Use pnpm where the repository declares pnpm.
+The repository uses pnpm.
 
 Never use "npm ci".
 
@@ -237,11 +239,7 @@ Run the relevant real checks after implementation.
 
 Re-check "package.json" before using scripts.
 
-Previously verified repository scripts include:
-
-- "pnpm test"
-- "pnpm build"
-
+Inspect "package.json" for available scripts. Do not rely on historical lists.
 Verify:
 
 - Intended behavior.
@@ -289,15 +287,16 @@ State:
 Documentation and library intelligence
 
 For each relevant Jules/Gemini documentation source, report:
-
+For each relevant Jules/Gemini documentation source used during the task, report:
 - Exact repository filename/path, or exact official source/page identifier when no verified repository file exists.
-- Consulted: Yes/No.
+- Exact repository filename/path when the documentation is stored in the repository.
+- Exact official source/page identifier when no verified repository file exists.
 - Useful: Yes/No.
 - Used/Applied: Yes/No.
 - What it contributed.
 
 For each relevant library/framework, report:
-
+For each relevant library/framework used during the task, report:
 - Exact library name and version.
 - Exact documentation filename/path from ".docs/manifest.json".
 - Consulted: Yes/No.
@@ -305,14 +304,16 @@ For each relevant library/framework, report:
 - Used/Applied: Yes/No.
 - What it contributed.
 
-If documentation or a library appears insufficient, outdated, unclear, incomplete, or otherwise needs improvement, say so explicitly and explain why.
+When documentation is missing, insufficient, outdated, unclear, incomplete, or otherwise inadequate, state that explicitly and explain the practical impact rather than pretending the documentation was sufficient.
 
-Actual MCP/tool invocations must also be reported, including what each contributed.
+If no library documentation was required for the task, state exactly:
 
-Do not report documentation merely because it was available. Report what was actually consulted, what proved useful, and what was actually used/applied.
+«No library documentation was required for this task.»
+
+MCP/tool invocations must be reported with what each contributed. Do not report documentation or tools merely because they were available. Report only what was actually consulted, what was useful, and what was used/applied.
 
 ---
 
 CORE RULE
-
+Establish the applicable official Jules/Gemini documentation baseline first. Assess the actual current repository. Use "AGENTS.md" as the authoritative repository workflow and governance source. Identify exact documentation filenames/paths and relevant libraries. Actually use relevant documentation when it materially applies to the task. Report what was consulted, what was useful, what was used/applied, and what it contributed. When documentation is insufficient, report that explicitly. Use verified evidence, not assumptions. Stay within the approved scope, execute the plan, verify the result, and report the exact evidence.
 Establish the applicable official Jules/Gemini documentation baseline first. Assess the current repository. Follow "AGENTS.md". Identify exact documentation filenames/paths and relevant libraries. Actually consult the relevant documentation. Report what was consulted, what was useful, what was used/applied, and what it contributed. Identify documentation or library gaps that need improvement. Use verified evidence, not assumptions. Stay within the approved scope, execute the plan, verify the result, and report the exact evidence.
