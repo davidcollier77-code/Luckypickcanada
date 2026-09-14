@@ -74,10 +74,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const sequenceRef = useRef<number>(0);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const isAnimatingRef = useRef(false);
-  const bgCanvasRef = useRef<HTMLCanvasElement>(null);
-  const bgRequestRef = useRef<number>(0);
   useEffect(() => { if (auroraRef.current && !isRevealing && !isRevealed) auroraRef.current.setPhase('idle'); }, [isRevealing, isRevealed]);
-  const starsRef = useRef<Array<{x: number, y: number, radius: number, baseAlpha: number, phase: number, speed: number, twinkleRange: number}>>([]);
 
 
   // Check for daily lockout on mount
@@ -584,113 +581,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (isRevealed && !isAnimatingRef.current) animateCanvas();
   }, [isRevealed, animateCanvas]);
 
-  // Background Starfield Animation
-  useEffect(() => {
-    const bgCanvas = bgCanvasRef.current;
-    if (!bgCanvas) return;
-    const bgCtx = bgCanvas.getContext('2d');
-    if (!bgCtx) return;
-
-    bgCanvas.width = window.innerWidth;
-    bgCanvas.height = window.innerHeight;
-
-    // PERFORMANCE OPTIMIZATION (Bolt ⚡):
-    // Moved star initialization outside of the render/resize cycle to prevent
-    // recreating the array and objects on every mount. We only initialize if empty.
-    const isReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
-    const getStarCountForWidth = (width: number) => (width < 768 ? 150 : 350);
-    const createStar = () => {
-      const depth = Math.random();
-      // size mapped to depth. distant = smaller, foreground = slightly larger.
-      let radius = 0.4 + Math.random() * 0.5;
-      if (depth > 0.95) radius = 1.2 + Math.random() * 0.8; // rare foreground accent stars
-      else if (depth > 0.8) radius = 0.8 + Math.random() * 0.4; // mid-field
-
-      return {
-        x: Math.random() * bgCanvas.width,
-        y: Math.random() * bgCanvas.height,
-        radius,
-        baseAlpha: depth > 0.9 ? 0.7 + Math.random() * 0.3 : 0.2 + Math.random() * 0.4,
-        phase: Math.random() * Math.PI * 2, // organic asynchronous start phase
-        speed: (Math.random() * 0.015 + 0.005) * (isReducedMotion ? 0.1 : 1), // slower if reduced motion
-        twinkleRange: depth > 0.9 ? 0.3 : 0.15, // brighter stars twinkle more noticeably
-      };
-    };
-
-    const starCount = getStarCountForWidth(window.innerWidth);
-
-    if (!starsRef.current || starsRef.current.length === 0) {
-      starsRef.current = Array.from({ length: starCount }, createStar);
-    }
-    const stars = starsRef.current;
-
-    let bgTime = 0;
-    const drawBg = () => {
-      bgTime += 1;
-
-      // Deep Space Base Gradient
-      const grad = bgCtx.createLinearGradient(0, 0, 0, bgCanvas.height);
-      grad.addColorStop(0, '#030510');   // near-black / deep navy
-      grad.addColorStop(0.5, '#050a1f'); // subtle midnight blue
-      grad.addColorStop(1, '#020612');   // back to near-black
-
-      bgCtx.fillStyle = grad;
-      bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
-
-      bgCtx.fillStyle = '#ffffff';
-
-      stars.forEach(star => {
-        // Natural Scintillation (Sine wave offset by random phase)
-        const currentAlpha = star.baseAlpha + Math.sin(bgTime * star.speed + star.phase) * star.twinkleRange;
-        bgCtx.globalAlpha = Math.max(0.05, Math.min(1, currentAlpha));
-
-        bgCtx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
-      });
-
-      bgCtx.globalAlpha = 1.0;
-      bgRequestRef.current = requestAnimationFrame(drawBg);
-    };
-
-    drawBg();
-
-    const handleResize = () => {
-      bgCanvas.width = window.innerWidth;
-      bgCanvas.height = window.innerHeight;
-
-      // Adapt star count to the current breakpoint, preserving existing
-      // stars' state (position/phase/speed) rather than regenerating them.
-      const desiredCount = getStarCountForWidth(window.innerWidth);
-      if (stars.length > desiredCount) {
-        stars.length = desiredCount;
-      } else if (stars.length < desiredCount) {
-        for (let i = stars.length; i < desiredCount; i++) {
-          stars.push(createStar());
-        }
-      }
-
-      // Reposition stars for new canvas dimensions
-      stars.forEach(star => {
-        if (star.x > bgCanvas.width) star.x = Math.random() * bgCanvas.width;
-        if (star.y > bgCanvas.height) star.y = Math.random() * bgCanvas.height;
-      });
-    };
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-
-    return () => {
-      if (bgRequestRef.current) cancelAnimationFrame(bgRequestRef.current);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-    };
-  }, []);
-
   return (
     <div className={`relative w-full flex-1 ${
       isCompact ? 'min-h-[200px]' : 'min-h-[500px]'
     } flex flex-col items-center justify-center overflow-hidden`}>
       <div className="absolute inset-0 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
-      <canvas ref={bgCanvasRef} className="absolute inset-0 -z-10 pointer-events-none" />
+      <img src="/images/lucky-meter-night-sky.webp" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" alt="" style={{ objectPosition: "center 30%" }} />
+      <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
 
       {!isCompact && (

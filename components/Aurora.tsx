@@ -105,7 +105,7 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       if (p.targetBrightness !== undefined) p.brightness += (p.targetBrightness - p.brightness) * 0.05;
       if (p.targetGlow !== undefined) p.glow += (p.targetGlow - p.glow) * 0.05;
 
-      time += (isReducedMotion ? 0.0005 : 0.002) * p.speedMultiplier;
+      time += (isReducedMotion ? 0.0005 : 0.001) * p.speedMultiplier;
 
       const width = window.innerWidth;
       const height = window.innerHeight;
@@ -115,51 +115,52 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'screen';
 
-      const baseOpacity = p.brightness * 0.35;
+      // Greatly reduce the base opacity so it's a subtle atmospheric effect over the photograph
+      const baseOpacity = p.brightness * 0.15;
 
-      // Wisp 1: Deep Teal/Cyan
+      // Wisp 1: Green/Teal (Subtle, wide band near bottom/mid)
       drawWisp(ctx,
-        cx + Math.sin(time * 0.8) * width * 0.3,
-        cy + Math.cos(time * 0.5) * height * 0.1,
-        Math.PI * -0.15 + Math.sin(time * 0.4) * 0.1,
-        width * 0.8 * (1 - p.centerPull * 0.4),
-        height * 1.5,
-        '20, 180, 200',
+        cx + Math.sin(time * 0.5) * width * 0.2,
+        cy + height * 0.2 + Math.cos(time * 0.3) * height * 0.1,
+        Math.PI * -0.05 + Math.sin(time * 0.2) * 0.05,
+        width * 1.2 * (1 - p.centerPull * 0.2),
+        height * 0.6,
+        '40, 200, 150', // Teal/Green
         baseOpacity * 0.8
       );
 
-      // Wisp 2: Cool Violet
+      // Wisp 2: Cyan (Soft layered band)
       drawWisp(ctx,
-        cx + Math.cos(time * 0.6) * width * 0.25,
-        cy + Math.sin(time * 0.7) * height * 0.2,
-        Math.PI * 0.1 + Math.cos(time * 0.5) * 0.1,
-        width * 0.7 * (1 - p.centerPull * 0.5),
-        height * 1.6,
-        '70, 50, 180',
-        baseOpacity * 0.6
-      );
-
-      // Wisp 3: Subtle Navy/Blue
-      drawWisp(ctx,
-        cx + Math.sin(time * 0.9) * width * 0.4,
-        cy + Math.cos(time * 0.8) * height * 0.15,
-        Math.PI * -0.05 + Math.sin(time * 0.6) * 0.1,
-        width * 0.9 * (1 - p.centerPull * 0.3),
-        height * 1.4,
-        '30, 100, 220',
+        cx + Math.cos(time * 0.4) * width * 0.15,
+        cy + height * 0.1 + Math.sin(time * 0.5) * height * 0.15,
+        Math.PI * 0.05 + Math.cos(time * 0.3) * 0.05,
+        width * 1.0 * (1 - p.centerPull * 0.3),
+        height * 0.5,
+        '20, 220, 255', // Cyan
         baseOpacity * 0.7
       );
 
-      // Wisp 4: Anchor glow for gather/impact
+      // Wisp 3: Subtle Violet (High atmosphere)
+      drawWisp(ctx,
+        cx + Math.sin(time * 0.6) * width * 0.25,
+        cy - height * 0.1 + Math.cos(time * 0.4) * height * 0.1,
+        Math.PI * -0.02 + Math.sin(time * 0.5) * 0.05,
+        width * 0.9 * (1 - p.centerPull * 0.2),
+        height * 0.7,
+        '120, 80, 220', // Violet
+        baseOpacity * 0.5
+      );
+
+      // Wisp 4: Anchor glow (Center pull / impact effect)
       if (p.centerPull > 0) {
         drawWisp(ctx,
           cx,
-          cy,
+          cy + height * 0.1, // slightly lower center
           0,
-          width * 0.6 * p.centerPull,
-          height * 0.8 * p.centerPull,
-          '100, 220, 255',
-          p.glow * 0.5
+          width * 0.5 * p.centerPull,
+          height * 0.6 * p.centerPull,
+          '100, 255, 200',
+          (p.glow * 0.3) // constrained glow
         );
       }
 
