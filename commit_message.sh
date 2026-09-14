@@ -1,1 +1,1 @@
-git commit -F commit_message.txt
+echo "I have completed the task but there is no PR comment file for me to read."
