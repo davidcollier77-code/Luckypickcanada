@@ -304,16 +304,15 @@ For each relevant library/framework used during the task, report:
 - Used/Applied: Yes/No.
 - What it contributed.
 
-When documentation is missing, insufficient, outdated, unclear, incomplete, or otherwise inadequate, state that explicitly and explain the practical impact rather than pretending the documentation was sufficient.
-
 If no library documentation was required for the task, state exactly:
 
-«No library documentation was required for this task.»
+No library documentation was required for this task.
+
+When documentation is missing, insufficient, outdated, unclear, incomplete, or otherwise inadequate, state that explicitly and explain the practical impact rather than pretending the documentation was sufficient.
 
 MCP/tool invocations must be reported with what each contributed. Do not report documentation or tools merely because they were available. Report only what was actually consulted, what was useful, and what was used/applied.
 
 ---
 
 CORE RULE
-Establish the applicable official Jules/Gemini documentation baseline first. Assess the actual current repository. Use "AGENTS.md" as the authoritative repository workflow and governance source. Identify exact documentation filenames/paths and relevant libraries. Actually use relevant documentation when it materially applies to the task. Report what was consulted, what was useful, what was used/applied, and what it contributed. When documentation is insufficient, report that explicitly. Use verified evidence, not assumptions. Stay within the approved scope, execute the plan, verify the result, and report the exact evidence.
 Establish the applicable official Jules/Gemini documentation baseline first. Assess the current repository. Follow "AGENTS.md". Identify exact documentation filenames/paths and relevant libraries. Actually consult the relevant documentation. Report what was consulted, what was useful, what was used/applied, and what it contributed. Identify documentation or library gaps that need improvement. Use verified evidence, not assumptions. Stay within the approved scope, execute the plan, verify the result, and report the exact evidence.
