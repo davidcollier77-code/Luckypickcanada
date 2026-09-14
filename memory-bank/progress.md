@@ -54,3 +54,7 @@
 
 ## 2026-09-13 - Documentation Mapping Fix
 - Corrected broken source mappings for `/dropbox/zxcvbn` and `/resend/resend-node` in the `.docs/` inventory. Documentation updater successfully fetched and linked both repositories with 0 failures.
+
+## 2026-09-17 - Cinematic Fireworks Polish
+- **Completed Task:** Completely redesigned the fireworks visual effect across all three Lucky Meter tiers (Lower, Medium, High). Replaced generic random spawning with a cohesive, scripted "rocket and burst" sequence. High Luck now features a true visual crescendo with sweeping left/right converging trajectories. Added `prefers-reduced-motion` support.
+- **Status:** Verified. Audio and underlying logic remained untouched.
