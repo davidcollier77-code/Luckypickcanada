@@ -1,220 +1,318 @@
-# AGENTS.md — LuckyPickCanada Repository Workflow
+LuckyPickCanada — Jules Governance
 
-This file defines the authoritative workflow Jules must follow when working in the LuckyPickCanada repository.
+Scope: These instructions apply to Jules only when working in this repository.
 
-## Instruction Hierarchy
+"AGENTS.md" is the authoritative repository workflow and governance source.
 
-When instructions conflict, follow this precedence order:
+---
 
-1. "AGENTS.md" (this file)
-2. ".jules/jules.md"
-3. Applicable specialist files under ".jules/*.md"
-4. Applicable command/workflow files under ".jules/cmds/*.md"
-5. ".docs/*" reference documentation
-6. "memory-bank/*" and other repository-specific knowledge resources
+A — ANALYZE / VERIFIED FACTS
 
-Higher-level instructions take precedence over lower-level context.
+1. Establish the documentation baseline
 
-## A — ANALYZE
+Before analyzing implementation details, establish the applicable official Jules/Gemini documentation baseline.
 
-Before beginning substantive work, establish the current verified repository state by following this workflow order:
+Consult the applicable official sources:
 
-1. Read "AGENTS.md" first.
-2. Establish the applicable official Jules and Gemini documentation baseline.
-3. Assess the actual task and current repository.
-4. Apply applicable ".jules/" and Spec Kit guidance.
-5. Actively use applicable ".docs/" technical/library documentation.
-6. Then use relevant project-knowledge resources, including Memory Bank.
+- Jules Getting started documentation.
+- Jules CLI Jules Tools Reference.
+- Jules API Quickstart and API Reference when API work is relevant.
+- Gemini CLI documentation when Gemini CLI behavior is relevant.
+- Gemini API documentation when Gemini API behavior is relevant.
 
-### Required Documentation
+When official documentation is stored in this repository, use its exact repository filename/path.
 
-For every substantive task, Jules must actually read and use these official sources:
+Known Jules documentation files include:
 
-1. Official Jules Documentation
-   - "https://jules.google/docs"
-2. Official Jules API Documentation
-   - "https://jules.google/docs/api/reference/"
-3. Official Gemini CLI Documentation
-   - Repository-local documentation identifier, when applicable: "/google-gemini/gemini-cli"
-4. Official Gemini API Documentation
-   - Repository-local documentation identifier, when applicable: "/websites/ai_google_dev_gemini-api"
+- ".docs/deep-dive/jules_google_docs.md"
+- ".docs/troubleshooting/jules_google_docs.md"
 
-These sources must be used to inform the work. They must not be merely acknowledged, listed, or cited.
+Do not invent filenames for Jules API, Jules CLI, Gemini CLI, or Gemini API documentation. If the relevant documentation is not stored in the repository, identify the exact official documentation page/source instead.
 
-When the repository contains a corresponding local reference under ".docs/", Jules must also use that repository-local reference when applicable and report the specific file used.
+2. Inspect the current repository
 
-Do not substitute unofficial articles, third-party summaries, cached explanations, or assumptions for the required official documentation.
+After establishing the documentation baseline, inspect the actual current repository.
 
-### Repository Guidance
+Read, as applicable:
 
-Before substantive work, Jules must read and follow the repository guidance applicable to the task, including:
-
+- "AGENTS.md"
 - ".jules/jules.md"
-- Applicable specialist files under ".jules/*.md"
-- Applicable command/workflow files under ".jules/cmds/*.md"
-- Applicable "memory-bank/*" files
-- Applicable ".specify/*" and ".specify/memory/*" files
-
-The specialist/task-group structure under ".jules/" is authoritative.
-
-Do not replace that structure with a hard-coded task-group count.
-
-### Memory Bank
-
-The Memory Bank is agent-maintained project context and history.
-
-It provides context about project goals, current work, completed work, technical facts, and relevant history. It does not override "AGENTS.md" and does not establish the current implementation state.
-
-The current repository is authoritative for implementation facts.
-
-Jules must maintain the applicable Memory Bank files as part of normal task completion:
-
-- "memory-bank/activeContext.md" — maintain important current project/task state.
-- "memory-bank/progress.md" — record completed milestones when applicable.
-- "memory-bank/techContext.md" — update when durable technical facts or architecture change.
-- "memory-bank/projectBrief.md" — update when stable project identity, scope, or goals materially change.
-
-Memory Bank updates must be based on verified information, relevant to the work, and limited to durable project context.
-
-Do not rewrite unrelated history.
-
-Never store secrets, credentials, tokens, private keys, or other sensitive authentication material in Memory Bank.
-
-### Repository Reference Documentation
-
-Use ".docs/manifest.json" to identify relevant repository-local documentation.
-
-The actual ".docs/manifest.json" is the authority for the current documentation/library inventory.
-
-When a task depends on a library or reference, Jules must inspect the manifest and use the corresponding actual ".docs/" reference when available.
-
-Do not assume a library, mapping, or documentation entry exists solely because it appeared in a previous report, prompt, or memory entry.
-
-".docs/" is an active engineering resource, not a checklist. "Use" means its information materially informs analysis, decisions, implementation, testing, or verification. Do not require every library or knowledge resource on every task.
-
-### Current Repository State
-
-Inspect the actual current repository before making substantive changes.
-
-Verify important implementation facts against the current source, configuration, dependencies, workflows, and other relevant repository files.
-
-Do not treat previous agent reports, PR descriptions, memory entries, cached documentation, or previous task results as authoritative when the current repository can establish the fact.
-
-Clearly distinguish verified facts from assumptions.
-
-## B — BOUNDARIES AND PLAN
-
-Before making substantive changes, determine what the task authorizes and what must remain unchanged.
-
-### Scope and Authorization
-
-Make only the changes required to complete the authorized task.
-
-Do not expand the task into unrelated work.
-
-Access to a repository, tool, service, or integration does not by itself authorize Jules to modify it.
-
-### Protected Repository Resources
-
-The following are protected and must not be changed unless the task explicitly authorizes the change:
-
+- Relevant ".jules/*.md"
+- Relevant ".jules/cmds/*.md"
+- Relevant Memory Bank files
 - ".docs/manifest.json"
-- ".docs/"
-- Documentation sources and mappings
-- Documentation refresh scripts and workflows
-- ".jules/"
-- ".jules/cmds/"
-- ".specify/"
+- Relevant source files
+- Relevant tests
+- Relevant configuration
+- Relevant scripts and workflows
 
-In particular, Jules must not add, remove, rename, remap, or otherwise change the repository's documentation/library inventory without explicit authorization.
+Memory Bank is supporting project context, not primary technical authority.
 
-The inventory must be derived from the actual ".docs/manifest.json".
+Never substitute a prior Jules report, PR description, task summary, memory, or assumption for current repository evidence.
 
-Do not hard-code a library count.
+3. Identify relevant libraries and exact documentation files
 
-### Context7
+For every library, framework, or tool relevant to the task:
 
-Context7 requires explicit repository-owner approval before every invocation.
+- Identify the exact name.
+- Identify the actual repository version.
+- Use ".docs/manifest.json" to locate its documentation when applicable.
+- Identify the exact documentation filename/path.
+- Use that exact path in the plan, implementation notes, verification, and final report.
 
-A Context7 connection, installation, availability, or prior use does not constitute permission to invoke it.
+Do not use vague references such as “React docs,” “Jules docs,” “Gemini docs,” or “library docs” when an exact source is known.
 
-Jules must not invoke Context7 unless that explicit approval has been given for the invocation.
+Do not claim a library was used merely because it exists in "package.json" or ".docs/manifest.json".
 
-When normal designated documentation sources or repository-local references provide what is needed, use those sources instead of Context7.
+4. Actually consult relevant documentation
 
-### Documentation Update Work
+Jules must determine which documentation is relevant to the specific task, then actually consult the relevant sources.
 
-Documentation-mapping or documentation-refresh work is separate from ordinary application development.
+For each relevant source, distinguish:
 
-Jules must not modify documentation mappings, the documentation inventory, or documentation-refresh infrastructure unless that work is explicitly authorized.
+- Consulted — actually read, queried, or invoked.
+- Useful — materially helped understand, decide, troubleshoot, implement, or verify.
+- Used/Applied — directly affected a decision, constraint, implementation, test, verification step, or workflow.
 
-When such work is explicitly authorized, Jules must inspect and use the actual repository implementation of the documentation workflow rather than relying on assumptions or previous reports.
+Availability, connection, initialization, or listing does not count as consultation or use.
 
-### Plan Before Execution
+Use documentation as a source of practical project intelligence.
 
-Before making substantive changes, establish:
+If no library documentation was needed, state exactly:
 
-- the task scope
-- the applicable repository guidance
-- the required documentation
-- the protected resources involved
-- the smallest viable implementation
-- the validation required to establish completion
+«No library documentation was required for this task.»
 
-## C — EXECUTE, VERIFY, AND REPORT
+5. Record evidence quality
 
-Execute only the authorized work.
+Classify important findings as:
 
-Make minimal, targeted changes necessary to complete it.
+- Verified
+- Assumption
+- Hypothesis
+- Unknown
 
-### Implementation
+Never present assumptions or hypotheses as verified facts.
 
-Follow the applicable specialist and command/workflow guidance.
+---
 
-Use Spec Kit commands and workflows when the task or repository guidance requires them.
+B — BOUNDARIES / CONSTRAINTS / PLAN
 
-Do not introduce new workflow behavior, dependencies, architectural changes, or unrelated cleanup merely because they appear useful.
+1. Use the applicable specialist guidance
 
-### Review and Verification
+Use the existing specialist file(s) relevant to the task:
 
-Before reporting completion, Jules must review his own work and verify:
+1. ".jules/creation.md"
+2. ".jules/troubleshooting.md"
+3. ".jules/polishing.md"
+4. ".jules/testing.md"
+5. ".jules/security.md"
+6. ".jules/audio.md"
+7. ".jules/deep-dive.md"
+8. ".jules/seo.md"
 
-1. The actual final repository state.
-2. The implementation matches the requested task.
-3. Changes remain within authorized scope.
-4. Protected resources were not changed without authorization.
-5. Required Memory Bank maintenance was completed when applicable.
-6. Appropriate tests, checks, builds, or other validation were actually performed.
-7. The relevant repository guidance was actually read and followed.
-8. The relevant official and repository-local documentation was actually read and used.
+For overlapping work, identify the primary and secondary specialist groups and avoid conflicting or duplicated work.
 
-Verification must distinguish confirmed facts from assumptions.
+2. Define the task boundary
 
-### Reporting
+Before making changes, establish:
 
-Report only evidence-supported results.
+- Exact requested outcome.
+- Exact files/directories in scope.
+- Protected areas.
+- Relevant documentation and libraries.
+- Required verification.
+- Dependency, database, deployment, security, accessibility, or performance implications.
 
-Include:
+Do not expand the scope without authorization.
 
-- What was actually changed.
-- Validation actually performed.
-- Final verified repository state.
-- Relevant guidance files actually read and used.
-- Relevant documentation actually read and used.
-- Relevant Memory Bank updates actually made.
-- Any unresolved limitations or failures.
+3. Approval boundary
 
-Never claim that documentation, guidance, commands, tests, or other validation were used unless they were actually used.
+Present the verified analysis and concrete implementation plan before modification unless the task explicitly authorizes autonomous execution.
 
-Never represent an assumption as a verified repository fact.
+The plan must be based on current repository evidence.
 
-### Final State
+4. Preserve existing repository behavior
 
-Before finalizing the task:
+Unless explicitly authorized, preserve:
 
-- confirm the final repository state
-- confirm the work stayed within authorized scope
-- confirm protected resources were handled correctly
-- confirm required Memory Bank maintenance was completed when applicable
-- confirm required validation was actually performed
-- report any unresolved issue accurately
+- Stripe/payment behavior.
+- Database behavior and schema.
+- Authentication and security controls.
+- API routes and existing functionality.
+- Cloudflare/Vercel/deployment configuration.
+- Environment variables and secrets.
+- Accessibility and responsive behavior.
+- Existing approved visual/product behavior.
+
+Do not perform unrelated dependency upgrades, refactors, redesigns, backend/database/deployment changes, or governance changes.
+
+Do not modify "AGENTS.md" during ordinary implementation unless explicitly authorized.
+
+5. MCP and documentation tools
+
+Context7 is a fallback, not the normal documentation source. Use it only when genuinely needed and permitted by ".jules/jules.md".
+
+When explicitly requesting Context7 libraries, provide only the required plain-text library identifiers.
+
+Use Neon only when database access is genuinely required.
+
+Use Stitch only when UI/design work genuinely requires it.
+
+Do not invoke a tool merely to claim usage. Report actual invocations and their purpose.
+
+6. Documentation inventory and refresh system
+
+".docs/manifest.json" is the documentation inventory authority.
+
+Preserve the established 46-library inventory. Do not impose a different numerical limit.
+
+The normal documentation refresh mechanism is the repository's designated upstream documentation update mechanism, not Context7.
+
+Preserve these rules:
+
+- Unchanged upstream SHA → skip.
+- Changed SHA → update through the normal upstream mechanism.
+- New/missing documentation → use that mechanism when it can provide the required material.
+- Context7 → permitted fallback only.
+- Preserve last-known-good documentation.
+- Update SHA/state only after successful validated update.
+- Respect the 495 MB batching ceiling.
+- Preserve the existing five-minute retry-once behavior on refresh failure.
+- Preserve the Friday 02:00 Atlantic schedule, DST-safe handling, and "America/Halifax" runtime gate where implemented.
+- Report exact entries updated, skipped, unchanged, or failed.
+
+---
+
+C — CONCRETE EXECUTION / VERIFICATION / REPORTING
+
+1. Execute only the approved plan
+
+Make only the changes required by the approved scope.
+
+Use the repository's existing architecture and conventions.
+
+Do not silently broaden the task.
+
+2. Package management
+
+Use the package manager and versions declared by the repository.
+
+Use pnpm where the repository declares pnpm.
+
+Never use "npm ci".
+
+Inspect the current "package.json" before claiming a script exists.
+
+3. Security
+
+Never expose or commit secrets.
+
+Do not weaken environment-variable handling, authentication, authorization, validation, CAPTCHA/Turnstile, rate limiting, or other existing security controls.
+
+4. UI, audio, and performance
+
+For UI work, verify actual behavior as well as source changes.
+
+Respect accessibility, responsive behavior, keyboard interaction, and "prefers-reduced-motion".
+
+For audio work, follow ".jules/audio.md".
+
+Howler.js remains the primary audio playback technology unless explicitly changed.
+
+Do not introduce public MP3 assets or unrelated audio systems without authorization.
+
+For performance work, use evidence from measurements, profiling, build output, or runtime behavior.
+
+5. Database and external systems
+
+Use live Neon/database access only when genuinely required.
+
+Do not alter production data or schema without authorization.
+
+Verify external-service changes using the repository's actual configuration and available tests.
+
+6. Verification
+
+Run the relevant real checks after implementation.
+
+Re-check "package.json" before using scripts.
+
+Previously verified repository scripts include:
+
+- "pnpm test"
+- "pnpm build"
+
+Verify:
+
+- Intended behavior.
+- Relevant tests.
+- Build success when applicable.
+- No unrelated behavior changes.
+- No unintended files.
+- Final diff matches the approved scope.
+
+7. Final inspection
+
+Inspect the final diff and every changed file.
+
+Remove unintended temporary artifacts.
+
+Confirm protected areas were not changed unintentionally.
+
+8. Required final report
+
+Report the work using the same A-B-C structure.
+
+A — Verified
+
+State the important current repository facts established during the task.
+
+B — Boundaries / Plan
+
+State:
+
+- Approved scope.
+- Applicable specialist group(s).
+- Important constraints.
+- Relevant documentation decisions.
+
+C — Executed / Verified
+
+State:
+
+- Exact files changed.
+- Exact tests/builds/checks run.
+- Results.
+- Remaining issues.
+- Unresolved assumptions or unknowns.
+
+Documentation and library intelligence
+
+For each relevant Jules/Gemini documentation source, report:
+
+- Exact repository filename/path, or exact official source/page identifier when no verified repository file exists.
+- Consulted: Yes/No.
+- Useful: Yes/No.
+- Used/Applied: Yes/No.
+- What it contributed.
+
+For each relevant library/framework, report:
+
+- Exact library name and version.
+- Exact documentation filename/path from ".docs/manifest.json".
+- Consulted: Yes/No.
+- Useful: Yes/No.
+- Used/Applied: Yes/No.
+- What it contributed.
+
+If documentation or a library appears insufficient, outdated, unclear, incomplete, or otherwise needs improvement, say so explicitly and explain why.
+
+Actual MCP/tool invocations must also be reported, including what each contributed.
+
+Do not report documentation merely because it was available. Report what was actually consulted, what proved useful, and what was actually used/applied.
+
+---
+
+CORE RULE
+
+Establish the applicable official Jules/Gemini documentation baseline first. Assess the current repository. Follow "AGENTS.md". Identify exact documentation filenames/paths and relevant libraries. Actually consult the relevant documentation. Report what was consulted, what was useful, what was used/applied, and what it contributed. Identify documentation or library gaps that need improvement. Use verified evidence, not assumptions. Stay within the approved scope, execute the plan, verify the result, and report the exact evidence.
