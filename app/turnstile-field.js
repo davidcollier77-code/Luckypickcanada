@@ -74,6 +74,10 @@ function loadTurnstileScript() {
 
   if (!turnstileScriptPromise) {
     turnstileScriptPromise = attemptLoadScript().catch((err) => {
+      const isApiTimeout = err instanceof TurnstileApiTimeoutError;
+      if (!isApiTimeout) {
+        document.getElementById(TURNSTILE_SCRIPT_ID)?.remove();
+      }
       turnstileScriptPromise = null;
       throw err;
     });
