@@ -15,8 +15,8 @@ State:
 C — Verified
 
 State:
-- Exact file changed: `AGENTS.md`.
-- Confirmed via `git show` that only `AGENTS.md` changed.
+- Exact files changed: `AGENTS.md` and `report.md`.
+- Confirmed via `git show` that both files changed.
 - Verified that the final diff represents surgical additions exactly matching the ABC requirements.
 - Confirmed the 8 task groups remain unchanged.
 - Confirmed the 53-library inventory remains unchanged.
