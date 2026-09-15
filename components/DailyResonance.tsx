@@ -210,12 +210,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       }
     });
 
-    // 1. Gather (Tension Phase, 3.0s)
-    tl.call(() => { if (auroraRef.current) auroraRef.current.setPhase('gather'); }, undefined, 0.5);
+    // 1. Gather (Tension Phase, 1.5s)
+    tl.call(() => { if (auroraRef.current) auroraRef.current.setPhase('gather'); }, undefined, 1.5);
     const proxy = { val: 0, jitterMag: 40 };
     tl.to(proxy, {
       val: newPct,
-      duration: 3.0,
+      duration: 1.0,
       ease: "power3.inOut",
       onUpdate: () => {
         let jitter = Math.floor((Math.random() - 0.5) * proxy.jitterMag);
@@ -223,23 +223,23 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         currentVal = Math.max(0, Math.min(100, currentVal));
         setDisplayPercentage(currentVal);
       }
-    }, 0);
+    }, 1.5);
     // Decay jitter over the same period
     tl.to(proxy, {
       jitterMag: 0,
-      duration: 3.0,
+      duration: 1.0,
       ease: "power2.in"
-    }, 0);
+    }, 1.5);
 
-    // 2. High-speed tension roll (very short, converging tightly - 0.5s)
+    // 2. High-speed tension roll (very short, converging tightly - 1.0s)
     tl.to(proxy, {
-      duration: 0.5,
+      duration: 1.0,
       onUpdate: () => {
         let jitter = Math.floor((Math.random() - 0.5) * 3);
         let currentVal = Math.max(0, Math.min(100, newPct + jitter));
         setDisplayPercentage(currentVal);
       }
-    }, 3.0);
+    }, 2.5);
 
     // 3. Impact Frame (at 3.5s)
     tl.call(() => {
@@ -272,6 +272,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     }, undefined, 3.5);
 
     // 4. Final lingering buffer to ensure ~8.5s total cinematic duration
+    // Canvas animation is built to span this remaining 5.0s beautifully.
     tl.to({}, { duration: 5.0 });
   };
 
@@ -347,102 +348,146 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             opacity: 0, // fade in
             state: 'in', // 'in', 'steady', 'out'
             life: 0,
-            maxLife: 60 + Math.random() * 40
+            maxLife: 60 + Math.random() * 40,
+            gravity: 0.05 + Math.random() * 0.05, // unique gravity curve
+            drag: 0.99 // slight air resistance
         });
     };
 
     const spawnLightning = (x: number, y: number, scale: number) => {
-        // Recursive branching structure
         const segments: any[] = [];
-        const buildBranch = (startX: number, startY: number, angle: number, length: number, generation: number) => {
-            if (generation > 5 || length < 10) return;
-            const endX = startX + Math.cos(angle) * length;
-            const endY = startY + Math.sin(angle) * length;
-            segments.push({ startX, startY, endX, endY, generation });
 
-            // Branch 1 (main)
-            buildBranch(endX, endY, angle + (Math.random() - 0.5) * 0.5, length * (0.6 + Math.random() * 0.3), generation + 1);
-            // Branch 2 (side)
-            if (Math.random() > 0.4) {
-                buildBranch(endX, endY, angle + (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 0.6), length * (0.4 + Math.random() * 0.3), generation + 1);
+        // Build a jagged path by segmenting a straight line with random offsets
+        const buildJaggedBranch = (startX: number, startY: number, endX: number, endY: number, roughness: number, generation: number) => {
+            if (generation > 5) return;
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const length = Math.sqrt(dx*dx + dy*dy);
+
+            if (length < 15) {
+                segments.push({ startX, startY, endX, endY, generation });
+                return;
+            }
+
+            // Midpoint displacement
+            const midX = (startX + endX) / 2 + (Math.random() - 0.5) * roughness * scale;
+            const midY = (startY + endY) / 2 + (Math.random() - 0.5) * roughness * scale;
+
+            buildJaggedBranch(startX, startY, midX, midY, roughness * 0.7, generation + 1);
+            buildJaggedBranch(midX, midY, endX, endY, roughness * 0.7, generation + 1);
+
+            // Occasionally branch off
+            if (Math.random() > 0.6) {
+                const branchAngle = Math.atan2(dy, dx) + (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.6);
+                const branchLength = length * (0.4 + Math.random() * 0.4);
+                const bEndX = midX + Math.cos(branchAngle) * branchLength;
+                const bEndY = midY + Math.sin(branchAngle) * branchLength;
+                buildJaggedBranch(midX, midY, bEndX, bEndY, roughness * 0.8, generation + 1);
             }
         };
-        // Start downwards, somewhat jaggy
-        buildBranch(x, y, Math.PI / 2 + (Math.random() - 0.5) * 0.2, 100 * scale, 0);
+
+        const targetX = x + (Math.random() - 0.5) * 300 * scale;
+        const targetY = y + 400 * scale + Math.random() * 200 * scale;
+        buildJaggedBranch(x, y, targetX, targetY, 150, 0);
 
         lightningStrikes.push({
             segments,
-            life: 1.0, // goes 1 -> 0
+            life: 1.0,
             flashOpacity: 1.0
         });
     };
 
     const spawnBurst = (x: number, y: number, type: string, color1: string, color2: string, sizeMultiplier: number) => {
         if (type === 'willow') {
-            const pCount = Math.floor(150 * sizeMultiplier);
+            const pCount = Math.floor(250 * sizeMultiplier);
             for (let i = 0; i < pCount; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const velocity = (Math.random() * 6 + 1) * sizeMultiplier;
+                const velocity = (Math.random() * 8 + 1) * sizeMultiplier;
                 particles.push({
                     x, y,
                     vx: Math.cos(angle) * velocity,
                     vy: Math.sin(angle) * velocity,
-                    opacity: 1.5, // Start higher for longer life
+                    opacity: 1.8, // Start very high for long life
                     color: '#ffffff',
                     history: [],
                     type: 'willow',
-                    gravityMultiplier: 1.0,
-                    friction: 0.96
+                    gravityMultiplier: 1.2, // Stronger gravity for willow descent
+                    friction: 0.95
                 });
             }
-        } else if (type === 'ring') {
-            const pCount = Math.floor(80 * sizeMultiplier);
-            for (let i = 0; i < pCount; i++) {
-                const angle = (i / pCount) * Math.PI * 2;
-                const velocity = 5 * sizeMultiplier + (Math.random() * 0.5);
-                particles.push({
-                    x, y,
-                    vx: Math.cos(angle) * velocity,
-                    vy: Math.sin(angle) * velocity,
-                    opacity: 1,
-                    color: color1,
-                    history: [],
-                    type: 'normal',
-                    gravityMultiplier: 0.5,
-                    friction: 0.94
-                });
-            }
-        } else if (type === 'palm') {
-            const branches = 6;
-            for (let b = 0; b < branches; b++) {
-                const angle = (b / branches) * Math.PI * 2 + (Math.random() * 0.2);
-                for (let i = 0; i < 15; i++) {
-                    const velocity = (i * 0.4 + 2) * sizeMultiplier;
+        } else if (type === 'layered_ring') {
+            const rings = [
+                { count: Math.floor(80 * sizeMultiplier), speed: 6, color: color1 },
+                { count: Math.floor(50 * sizeMultiplier), speed: 3.5, color: color2 }
+            ];
+            rings.forEach(ring => {
+                for (let i = 0; i < ring.count; i++) {
+                    const angle = (i / ring.count) * Math.PI * 2;
+                    const velocity = ring.speed * sizeMultiplier + (Math.random() * 0.4);
                     particles.push({
                         x, y,
-                        vx: Math.cos(angle) * velocity + (Math.random()-0.5),
-                        vy: Math.sin(angle) * velocity + (Math.random()-0.5),
+                        vx: Math.cos(angle) * velocity,
+                        vy: Math.sin(angle) * velocity,
                         opacity: 1.2,
-                        color: '#ffcd5a',
+                        color: ring.color,
                         history: [],
                         type: 'normal',
-                        gravityMultiplier: 0.7,
-                        friction: 0.97
+                        gravityMultiplier: 0.4,
+                        friction: 0.94
+                    });
+                }
+            });
+        } else if (type === 'palm') {
+            const branches = 7;
+            for (let b = 0; b < branches; b++) {
+                const angle = (b / branches) * Math.PI * 2 + (Math.random() * 0.2);
+                for (let i = 0; i < 25; i++) {
+                    const velocity = (i * 0.35 + 2) * sizeMultiplier;
+                    particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * velocity + (Math.random()-0.5)*0.5,
+                        vy: Math.sin(angle) * velocity + (Math.random()-0.5)*0.5,
+                        opacity: 1.3,
+                        color: '#ffcd5a', // Golden palm
+                        history: [],
+                        type: 'normal',
+                        gravityMultiplier: 0.8,
+                        friction: 0.96
                     });
                 }
             }
+        } else if (type === 'strobe') {
+             const pCount = Math.floor(120 * sizeMultiplier);
+             for (let i = 0; i < pCount; i++) {
+                 const angle = Math.random() * Math.PI * 2;
+                 const velocity = (Math.random() * 9 + 2) * sizeMultiplier;
+                 particles.push({
+                     x, y,
+                     vx: Math.cos(angle) * velocity,
+                     vy: Math.sin(angle) * velocity,
+                     opacity: 1.1,
+                     color: color1,
+                     history: [],
+                     type: 'strobe',
+                     gravityMultiplier: 0.5,
+                     friction: 0.92,
+                     strobePhase: Math.random() * Math.PI * 2
+                 });
+             }
         } else {
-            // Chrysanthemum / default
-            const pCount = Math.floor(100 * sizeMultiplier);
+            // Peony / default (dense spherical)
+            const pCount = Math.floor(150 * sizeMultiplier);
             for (let i = 0; i < pCount; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const velocity = (Math.random() * 8 + 2) * sizeMultiplier;
+                // Tighter clustering for peony
+                const r = Math.random();
+                const velocity = (r * r * 8 + 2) * sizeMultiplier;
                 particles.push({
                     x, y,
                     vx: Math.cos(angle) * velocity,
                     vy: Math.sin(angle) * velocity,
-                    opacity: 1,
-                    color: Math.random() > 0.3 ? color1 : color2,
+                    opacity: 1.0,
+                    color: Math.random() > 0.4 ? color1 : color2,
                     history: [],
                     type: 'normal',
                     gravityMultiplier: 0.6,
@@ -547,23 +592,23 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       else if (activeTier === 'Fireworks' && canSpawn) {
          if (elapsedMs > 100 && !scriptPhase1Done.current) {
             scriptPhase1Done.current = true;
-            // Launch from far left
-            spawnRocket(w * 0.1, h, w * 0.25, h * 0.3, 0.9, 1.1, 'chrysanthemum');
+            // Launch from far left, Type: Peony
+            spawnRocket(w * 0.1, h, w * 0.25, h * 0.3, 1.0, 1.1, 'peony');
          }
-         if (elapsedMs > 900 && !scriptPhase2Done.current) {
+         if (elapsedMs > 1000 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
-            // Launch from far right
-            spawnRocket(w * 0.9, h, w * 0.7, h * 0.2, 1.1, 1.2, 'ring');
+            // Launch from far right, Type: Layered Ring
+            spawnRocket(w * 0.9, h, w * 0.7, h * 0.2, 1.1, 1.2, 'layered_ring');
          }
-         if (elapsedMs > 1800 && !scriptPhase3Done.current) {
+         if (elapsedMs > 1900 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
-            // Mid left, high altitude
+            // Mid left, high altitude, Type: Palm
             spawnRocket(w * 0.3, h, w * 0.4, h * 0.15, 1.0, 1.3, 'palm');
          }
-         if (elapsedMs > 2700 && !scriptPhase4Done.current) {
+         if (elapsedMs > 2800 && !scriptPhase4Done.current) {
              scriptPhase4Done.current = true;
-             // Mid right
-             spawnRocket(w * 0.75, h, w * 0.6, h * 0.25, 1.0, 1.0, 'chrysanthemum');
+             // Mid right, Type: Strobe
+             spawnRocket(w * 0.75, h, w * 0.6, h * 0.25, 1.0, 1.0, 'strobe');
          }
          if (elapsedMs > 3800 && !scriptPhase5Done.current) {
              scriptPhase5Done.current = true;
@@ -578,6 +623,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       // --- UPDATE & DRAW METEORS ---
       for (let i = meteors.length - 1; i >= 0; i--) {
           const m = meteors[i];
+          m.vx *= m.drag;
+          m.vy += m.gravity;
           m.x += m.vx;
           m.y += m.vy;
           m.life++;
@@ -722,18 +769,39 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         if (p.type === 'willow') {
             const dx = p.x - centerX;
             const dy = p.y - centerY;
-            const distSq = dx*dx + dy*dy;
-            const effectRadius = isMobile ? 120 : 180;
+            // Use an elliptical distance to better match the text box shape
+            // Squish the y distance to make the horizontal bounds wider
+            const distSq = (dx * dx) + (dy * dy * 2.5);
+            const effectRadius = isMobile ? 140 : 220;
             const effectRadiusSq = effectRadius * effectRadius;
 
             if (distSq < effectRadiusSq) {
                 // Inside the interaction sphere
                 const dist = Math.sqrt(distSq);
-                const force = (1 - dist / effectRadius) * 0.15; // Soft force
-                // Push outwards radially
-                p.vx += (dx / dist) * force;
-                // Add a slight tangential force to curve around
-                p.vy += (dy / dist) * force * 0.5;
+                // Non-linear force based on distance
+                const forceMag = Math.pow(1 - dist / effectRadius, 2) * 0.4;
+
+                // Add varied particle-specific noise (using history length or position as simple seed)
+                const noise = ((p.x * 0.1 + p.y * 0.1) % 1) - 0.5;
+
+                // True tangent vector is (-dy, dx) or (dy, -dx)
+                // We want them to curve around, typically outwards and downwards
+                // dx > 0 means right of center, dy > 0 means below center
+                const tangentX = -dy * Math.sign(dx || 1);
+                const tangentY = dx * Math.sign(dx || 1);
+                const tangentLen = Math.sqrt(tangentX*tangentX + tangentY*tangentY) || 1;
+
+                // Push outwards radially (soft bounce/deflect)
+                p.vx += (dx / dist) * forceMag * (1 + noise * 0.5);
+                p.vy += (dy / dist) * forceMag * 0.5; // less direct Y push
+
+                // Apply Tangential flow (curve around)
+                p.vx += (tangentX / tangentLen) * forceMag * 0.8;
+                p.vy += (tangentY / tangentLen) * forceMag * 0.8;
+
+                // Additional drag/scattering inside the field
+                p.vx *= 0.92;
+                p.vy *= 0.92;
             }
         }
 
@@ -744,9 +812,15 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         p.vy += 0.06 * (p.gravityMultiplier || 1.0);
 
         if (p.type === 'willow') {
-            p.opacity -= 0.006; // Live longer
+            p.opacity -= 0.005; // Live even longer
         } else {
             p.opacity -= 0.012;
+        }
+
+        let renderOpacity = p.opacity;
+        if (p.type === 'strobe') {
+             p.strobePhase += 0.4;
+             renderOpacity = p.opacity * (Math.sin(p.strobePhase) > 0 ? 1 : 0);
         }
 
         if (p.history.length > 1) {
@@ -757,12 +831,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
            }
            ctx.strokeStyle = p.color;
            ctx.lineWidth = p.type === 'willow' ? 1.5 : 2;
-           ctx.globalAlpha = Math.max(0, p.opacity * 0.5);
+           ctx.globalAlpha = Math.max(0, renderOpacity * 0.5);
            ctx.stroke();
         }
 
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.globalAlpha = Math.max(0, renderOpacity);
         ctx.fillRect((p.x | 0) - 1.5, (p.y | 0) - 1.5, 3, 3);
         ctx.globalAlpha = 1.0;
 
