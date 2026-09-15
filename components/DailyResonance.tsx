@@ -604,11 +604,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             spawnLightning(w * 0.85, -50, 1.5, true);
 
             // Add a sympathetic branch that spawns almost instantly after the main strike
-            setTimeout(() => {
+            // Add a sympathetic branch that spawns almost instantly after the main strike
+            const timeoutId = setTimeout(() => {
                if (isAnimatingRef.current) {
                   spawnLightning(w * 0.7, -50, 0.9, false);
                }
             }, 100);
+            // Store timeout for cleanup
+            return () => clearTimeout(timeoutId);
          }
       }
 
