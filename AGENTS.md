@@ -67,7 +67,7 @@ Use applicable specialist(s):
 - ".jules/deep-dive.md" — complex investigation and cross-system diagnosis
 - ".jules/seo.md" — SEO, metadata, structured data, indexing, discoverability
 
-If multiple groups apply, use all materially applicable specialists; if one is considered but not applicable, state why.
+If multiple groups apply, use all materially applicable specialists; do not load unrelated specialists merely to satisfy a checklist; before execution, summarize in 1–2 sentences the core constraints found in each selected specialist.
 
 Use applicable ".jules/cmds/" Spec Kit guidance for specification, clarification, planning, analysis, task decomposition, implementation, convergence, checklists, constitution, or issue generation. Spec Kit is mandatory when applicable; otherwise state why it was not applicable.
 
@@ -167,7 +167,7 @@ Do not modify "AGENTS.md" during ordinary implementation.
 
 Use MCPs/tools only when materially applicable and authorized.
 
-Context7 is controlled fallback documentation, not the normal documentation source. Every invocation requires fresh explicit developer/user approval. Connection, availability, initialization, or discovery does not count as invocation. Do not invoke it merely to claim use. If it is necessary, stop and obtain approval before invoking it.
+Context7 is controlled fallback documentation, not the normal documentation source. Every invocation requires fresh explicit developer/user approval. Connection, availability, initialization, or discovery does not count as invocation. Do not invoke it merely to claim use. If it is necessary, output exactly "PAUSING FOR AUTHORIZATION: [Tool Name]" and halt until fresh explicit approval is provided; do not invoke or assume approval.
 
 When explicitly requesting Context7 libraries, provide only the required plain-text library identifiers.
 
@@ -225,7 +225,7 @@ Do not claim a check was run when it was not. Inspect the final diff and every c
 
 4. Required final report
 
-Use A/B/C.
+Use A/B/C exactly; at minimum include A — Verified, B — Boundaries / Plan, C — Executed / Verified, and Documentation Usage with Exact source/path | Consulted: Yes/No | Useful: Yes/No | Used/Applied: Yes/No | Contribution.
 
 A — Verified
 
