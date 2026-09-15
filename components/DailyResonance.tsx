@@ -354,50 +354,57 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         });
     };
 
-    const spawnLightning = (x: number, y: number, scale: number) => {
+    const spawnLightning = (x: number, y: number, scale: number, isPrimary = false) => {
         const segments: any[] = [];
+        const maxGenerations = isMobile ? 6 : (isPrimary ? 8 : 7);
 
-        // Build a jagged path by segmenting a straight line with random offsets
-        const buildJaggedBranch = (startX: number, startY: number, endX: number, endY: number, roughness: number, generation: number) => {
-            if (generation > 7) return; // Increased generations for denser branching
+        const buildJaggedBranch = (startX: number, startY: number, endX: number, endY: number, roughness: number, generation: number, branchProb: number) => {
             const dx = endX - startX;
             const dy = endY - startY;
-            const length = Math.sqrt(dx*dx + dy*dy);
+            const length = Math.sqrt(dx * dx + dy * dy);
 
-            if (length < 8) { // Allow smaller final segments
-                segments.push({ startX, startY, endX, endY, generation });
+            // If we've reached the generation limit or the segment is very short,
+            // push the segment so the bolt remains a continuous connected path.
+            if (generation >= maxGenerations || length < (isMobile ? 12 : 8)) {
+                segments.push({ startX, startY, endX, endY, generation, isPrimaryBranch: generation === 0 });
                 return;
             }
 
-            // Midpoint displacement with extreme chaotic variance for cinematic feel
-            const varianceX = (Math.random() - 0.5) * roughness * scale;
-            const varianceY = (Math.random() - 0.5) * roughness * scale;
+            // Controlled irregularity: variance perpendicular to the segment
+            const normalX = -dy / length;
+            const normalY = dx / length;
 
-            // Bias downwards slightly to simulate ground-seeking
-            const midX = (startX + endX) / 2 + varianceX;
-            const midY = (startY + endY) / 2 + varianceY + (roughness * 0.1);
+            // Bias downwards to ensure it seeks ground
+            const varianceAmt = (Math.random() - 0.5) * roughness * scale;
+            const midX = (startX + endX) / 2 + normalX * varianceAmt;
+            const midY = (startY + endY) / 2 + normalY * varianceAmt + (roughness * 0.15 * scale);
 
-            buildJaggedBranch(startX, startY, midX, midY, roughness * 0.6, generation + 1);
-            buildJaggedBranch(midX, midY, endX, endY, roughness * 0.6, generation + 1);
+            buildJaggedBranch(startX, startY, midX, midY, roughness * 0.55, generation + 1, branchProb);
+            buildJaggedBranch(midX, midY, endX, endY, roughness * 0.55, generation + 1, branchProb);
 
-            // Frequent aggressive branching
-            if (Math.random() > 0.4) {
-                const branchAngle = Math.atan2(dy, dx) + (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 0.8);
-                const branchLength = length * (0.5 + Math.random() * 0.5);
+            // Natural branching: sparse, deliberate branches rather than noise
+            if (Math.random() < branchProb) {
+                const branchAngle = Math.atan2(dy, dx) + (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.6);
+                const branchLength = length * (0.4 + Math.random() * 0.4);
                 const bEndX = midX + Math.cos(branchAngle) * branchLength;
                 const bEndY = midY + Math.sin(branchAngle) * branchLength;
-                buildJaggedBranch(midX, midY, bEndX, bEndY, roughness * 0.75, generation + 1);
+
+                // Secondary branches have drastically reduced branching probability
+                buildJaggedBranch(midX, midY, bEndX, bEndY, roughness * 0.7, generation + 1, branchProb * 0.2);
             }
         };
 
-        const targetX = x + (Math.random() - 0.5) * 400 * scale; // Wider spread
-        const targetY = y + 500 * scale + Math.random() * 300 * scale; // Deeper strikes
-        buildJaggedBranch(x, y, targetX, targetY, 200, 0); // Higher initial roughness
+        const targetX = x + (Math.random() - 0.5) * (isMobile ? 250 : 500) * scale;
+        // Deep strikes that reach into the composition
+        const targetY = y + (isMobile ? 400 : 700) * scale + Math.random() * (isMobile ? 200 : 300) * scale;
+
+        buildJaggedBranch(x, y, targetX, targetY, isMobile ? 120 : 180, 0, isPrimary ? 0.35 : 0.15);
 
         lightningStrikes.push({
             segments,
             life: 1.0,
-            flashOpacity: 1.0
+            isPrimary,
+            scale
         });
     };
 
@@ -578,19 +585,33 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       else if (activeTier === 'Cosmic Lightning' && canSpawn) {
          if (elapsedMs > 300 && !scriptPhase1Done.current) {
             scriptPhase1Done.current = true;
-            spawnLightning(w * 0.2, 0, 1.0);
+            // Anticipation - distant or secondary strike
+            spawnLightning(w * 0.2, -50, 0.8, false);
          }
          if (elapsedMs > 1200 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
-            spawnLightning(w * 0.7, 0, 1.2);
+            // First strong strike
+            spawnLightning(w * 0.65, -50, 1.2, true);
          }
          if (elapsedMs > 2400 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
-            spawnLightning(w * 0.4, -50, 0.8);
+            // Secondary flicker
+            spawnLightning(w * 0.4, -50, 0.7, false);
          }
          if (elapsedMs > 3500 && !scriptPhase4Done.current) {
             scriptPhase4Done.current = true;
-            spawnLightning(w * 0.85, 0, 1.5); // Big final strike
+            // Big final cinematic strike
+            spawnLightning(w * 0.85, -50, 1.5, true);
+
+            // Add a sympathetic branch that spawns almost instantly after the main strike
+            // Add a sympathetic branch that spawns almost instantly after the main strike
+            const timeoutId = setTimeout(() => {
+               if (isAnimatingRef.current) {
+                  spawnLightning(w * 0.7, -50, 0.9, false);
+               }
+            }, 100);
+            // Store timeout for cleanup
+            return () => clearTimeout(timeoutId);
          }
       }
 
@@ -705,23 +726,55 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       let maxLightningOpacity = 0;
       for (let i = lightningStrikes.length - 1; i >= 0; i--) {
           const l = lightningStrikes[i];
-          l.life -= 0.02; // decay
+          l.life -= 0.025; // Snappy cinematic decay
           if (l.life <= 0) {
               lightningStrikes.splice(i, 1);
               continue;
           }
 
-          // Chaotic cinematic flicker
-          const flicker = Math.random() > 0.6 ? 0.3 : 1;
+          // Chaotic cinematic flicker based on life phase
+          let flicker = 1;
+          if (l.life < 0.8 && l.life > 0.3) {
+             flicker = Math.random() > 0.5 ? 0.4 : 1;
+          } else if (l.life <= 0.3) {
+             flicker = Math.random() > 0.7 ? 0 : 0.8;
+          }
           const opacity = l.life * flicker;
-          maxLightningOpacity = Math.max(maxLightningOpacity, opacity);
+
+          if (l.isPrimary) {
+             maxLightningOpacity = Math.max(maxLightningOpacity, opacity);
+          } else if (maxLightningOpacity === 0) {
+             // Secondary strikes still give a tiny bit of environmental flash
+             maxLightningOpacity = Math.max(maxLightningOpacity, opacity * 0.3);
+          }
 
           if (opacity > 0) {
-              // Outer glow
+              const baseWidth = l.isPrimary ? (isMobile ? 1.5 : 2.5) : (isMobile ? 1.0 : 1.5);
+
+              ctx.lineCap = 'round';
+              ctx.lineJoin = 'round';
+
+              // Multi-pass lighting
+
+              // 1. Broad atmospheric glow (skipped on mobile for performance or kept minimal)
+              if (!isMobile || l.isPrimary) {
+                  ctx.shadowColor = 'rgba(160, 190, 255, 1)';
+                  ctx.shadowBlur = (isMobile ? 15 : 30) * opacity;
+                  ctx.strokeStyle = `rgba(100, 150, 255, ${opacity * 0.4})`;
+                  ctx.lineWidth = baseWidth * 6;
+                  ctx.beginPath();
+                  for (const seg of l.segments) {
+                      ctx.moveTo(seg.startX, seg.startY);
+                      ctx.lineTo(seg.endX, seg.endY);
+                  }
+                  ctx.stroke();
+              }
+
+              // 2. Medium luminous body
               ctx.shadowColor = 'rgba(200, 220, 255, 1)';
-              ctx.shadowBlur = 20 * opacity;
-              ctx.strokeStyle = `rgba(180, 200, 255, ${opacity * 0.8})`;
-              ctx.lineWidth = 3;
+              ctx.shadowBlur = (isMobile ? 10 : 20) * opacity;
+              ctx.strokeStyle = `rgba(180, 210, 255, ${opacity * 0.8})`;
+              ctx.lineWidth = baseWidth * 2.5;
               ctx.beginPath();
               for (const seg of l.segments) {
                   ctx.moveTo(seg.startX, seg.startY);
@@ -729,10 +782,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               }
               ctx.stroke();
 
-              // Intense core
-              ctx.shadowBlur = 0;
+              // 3. Crisp white-hot core
+              ctx.shadowBlur = (isMobile ? 2 : 5) * opacity;
               ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-              ctx.lineWidth = 1.5;
+              ctx.lineWidth = baseWidth;
               ctx.beginPath();
               for (const seg of l.segments) {
                   ctx.moveTo(seg.startX, seg.startY);
@@ -743,12 +796,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       }
 
       if (maxLightningOpacity > 0) {
-          // Environmental illumination flash
-          const grad = ctx.createRadialGradient(w/2, h/4, 0, w/2, h/4, h);
-          grad.addColorStop(0, `rgba(200, 220, 255, ${maxLightningOpacity * 0.15})`);
+          // Cinematic environmental flash/bloom
+          const flashRadius = isMobile ? h * 0.7 : h;
+          const grad = ctx.createRadialGradient(w/2, h/3, 0, w/2, h/3, flashRadius);
+          grad.addColorStop(0, `rgba(200, 220, 255, ${maxLightningOpacity * (isMobile ? 0.2 : 0.25)})`);
           grad.addColorStop(1, 'transparent');
           ctx.fillStyle = grad;
-          ctx.fillRect((w/2) - h, (h/4) - h, h * 2, h * 2);
+          // Bounded fill to prevent massive GPU overdraw
+          ctx.fillRect((w/2) - flashRadius, (h/3) - flashRadius, flashRadius * 2, flashRadius * 2);
       }
 
 
