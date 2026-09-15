@@ -2,7 +2,7 @@ LuckyPickCanada — Jules Governance
 
 Scope: These instructions apply to Jules only when working in this repository.
 
-"AGENTS.md" is the single, absolute, mandatory, and authoritative repository workflow and governance file. Jules MUST read it first and follow it throughout the task. No memory, report, PR, specialist file, runbook, library documentation, MCP output, external guidance, or prior instruction may override it. Conditional rules below are mandatory whenever their applicability condition is met.
+"AGENTS.md" is the single, mandatory, and authoritative repository workflow and governance file for Jules working in this repository. Jules MUST read it first and follow it throughout the task. Repository-local guidance and task artifacts may supplement these rules but must not bypass or supersede the governance requirements in this file; higher-priority instructions remain controlling.
 
 ---
 
@@ -309,7 +309,3 @@ Before finalizing:
 - Confirm "activeContext.md" and "progress.md" were updated when applicable.
 - Confirm the final report contains Consulted/Useful/Used-Applied status and contribution.
 - Remove any unsupported completion or usage claims.
-
-7. Governance maintenance
-
-This file is the authoritative governance system. During authorized governance updates, preserve valid requirements, integrate new ones here, and do not create parallel governance. Keep finished "AGENTS.md" within 175–300 lines with 300 as the hard ceiling. Before finalizing governance updates, audit for contradictions, duplicate/superseded wording, missing filenames/task groups/routing/reporting/rules, incorrect library count, and unsupported assumptions.
