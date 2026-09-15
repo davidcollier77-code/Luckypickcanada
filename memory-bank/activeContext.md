@@ -1,16 +1,15 @@
 # Active Context
 
 ## Current Status
-- Replaced the procedural Lucky Meter background with a realistic Milky Way photograph sourced via CLI from Wikimedia Commons.
-- Refined the Aurora overlay in `Aurora.tsx` to use subtle, atmospheric gradients (green, teal, cyan, violet) and eliminated the oversized wave/oval effects.
-- Maintained all existing Lucky Meter functionality (timers, visits, persistence, tier calculations, quote engine, sound, interactive reveal fireworks).
-- Redesigned the Lucky Meter fireworks visual presentation in `DailyResonance.tsx`.
-- Replaced the disparate particle generation scripts for the three tiers with a unified HTML5 Canvas "Rocket and Burst" system.
-- Tier 1 (0-33%) now uses a restrained 3-rocket sequence.
-- Tier 2 (34-66%) now uses a broader 7-rocket sequence.
-- Tier 3 (67-100%) now uses a spectacular 12-rocket crescendo featuring sweeping edge launches, center barrages, and a massive staggered finale.
-- Added a `prefers-reduced-motion` accessibility safeguard that replaces all moving particles with a static, pulsing, tier-colored radial gradient glow.
-- Maintained strict performance boundaries by rendering particles with `fillRect` instead of `arc`.
+- Upgraded the Lucky Meter reveal experience in `components/DailyResonance.tsx` to a cinematic visual system.
+- Refined Tier boundaries to: 0–35% (Meteor Shower), 36–74% (Lightning), 75–100% (Flagship Fireworks).
+- Removed the visible box backdrop-blur UI container around the result percentage, allowing the text to breathe organically within the environment.
+- Rewrote the GSAP timeline in `DailyResonance.tsx` to purposefully stretch to approximately 8.5 seconds. Impact happens at 3.5s, allowing a 5s climax.
+- **Tier 1 (Meteor Shower):** Created a visual engine spawning exactly 5 distinct meteors with varied velocities, trails, glow, and staggered timing to represent atmospheric phenomena instead of rigid lines.
+- **Tier 2 (Lightning):** Created a fractal recursive branching algorithm that draws exactly 4 distinct, irregular lightning strikes featuring staggered timing, flickering alpha, and global illumination flashes.
+- **Tier 3 (Flagship Fireworks):** Overhauled firework logic to spawn 5 distinct fireworks from both sides of the bottom viewport. Integrated 4 varied shell styles (chrysanthemum, palm, ring) and a massive 5th "white willow" climax.
+- Implemented organic soft-force repulsive interactions allowing the falling willow trails to scatter and curve around the central percentage text naturally, avoiding hard rectangular mask collisions.
+- Verified all constraints: duplicated percentage/quote protection is maintained, lockout persists normally, and audio / `prefers-reduced-motion` fallbacks remain untouched.
 - Verified build and performance.
 
 ## Next Steps
@@ -18,12 +17,7 @@
 - Submit final report and PR for the cinematic fireworks enhancement.
 - Submit PR for Lucky Meter photographic background polish.
 
-
 ## Previous Context
-- Integrated `Aurora.tsx` into the `DailyResonance.tsx` Lucky Meter experience.
-- Choreographed the Aurora to react dynamically to the reveal sequence via GSAP (awaken, gather, impact, settled).
-- Enhanced the visual presentation of the percentage reveal with `mix-blend-screen` and glowing text shadows so the number feels born from the light.
-- Polished top-tier fireworks with multi-burst 2.5D logic.
-- Shifted Daily Resonance container layout downward to restore background/stairs visibility.
-- Migrated the custom `requestAnimationFrame` timing logic to a cohesive GSAP timeline (`gsap.timeline()`) for better choreographing of the "buildup -> tension -> result lock -> tier impact -> aftermath".
-- Synchronized visual timeline and audio seamlessly.
+- Replaced the procedural Lucky Meter background with a realistic Milky Way photograph.
+- Refined the Aurora overlay in `Aurora.tsx` to use subtle, atmospheric gradients.
+- Maintained all existing Lucky Meter functionality (timers, visits, persistence, tier calculations, quote engine, sound, interactive reveal fireworks).

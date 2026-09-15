@@ -94,8 +94,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         setQuote(LUCKY_QUOTES[quoteIdx] || LUCKY_QUOTES[0]);
 
         const pct = parseInt(lastPct, 10);
-        if (pct <= 33) setTier('Meteor Shower');
-        else if (pct <= 66) setTier('Cosmic Lightning');
+        if (pct <= 35) setTier('Meteor Shower');
+        else if (pct <= 74) setTier('Cosmic Lightning');
         else setTier('Fireworks');
 
         setIsRevealed(true);
@@ -182,8 +182,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
     // Determine 3 Tiers
     let currentTier = '';
-    if (newPct <= 33) currentTier = 'Meteor Shower';
-    else if (newPct <= 66) currentTier = 'Cosmic Lightning';
+    if (newPct <= 35) currentTier = 'Meteor Shower';
+    else if (newPct <= 74) currentTier = 'Cosmic Lightning';
     else currentTier = 'Fireworks';
 
     setIsLoading(false);
@@ -210,12 +210,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       }
     });
 
-    // 1. Gather (Tension Phase, 4.8s)
-    tl.call(() => { if (auroraRef.current) auroraRef.current.setPhase('gather'); }, undefined, 1.0);
+    // 1. Gather (Tension Phase, 3.0s)
+    tl.call(() => { if (auroraRef.current) auroraRef.current.setPhase('gather'); }, undefined, 0.5);
     const proxy = { val: 0, jitterMag: 40 };
     tl.to(proxy, {
       val: newPct,
-      duration: 4.8,
+      duration: 3.0,
       ease: "power3.inOut",
       onUpdate: () => {
         let jitter = Math.floor((Math.random() - 0.5) * proxy.jitterMag);
@@ -227,26 +227,26 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     // Decay jitter over the same period
     tl.to(proxy, {
       jitterMag: 0,
-      duration: 4.8,
+      duration: 3.0,
       ease: "power2.in"
     }, 0);
 
-    // 2. High-speed tension roll (very short, converging tightly - 0.7s)
+    // 2. High-speed tension roll (very short, converging tightly - 0.5s)
     tl.to(proxy, {
-      duration: 0.7,
+      duration: 0.5,
       onUpdate: () => {
         let jitter = Math.floor((Math.random() - 0.5) * 3);
         let currentVal = Math.max(0, Math.min(100, newPct + jitter));
         setDisplayPercentage(currentVal);
       }
-    }, 4.8);
+    }, 3.0);
 
-    // 3. Impact Frame (at 5.5s)
+    // 3. Impact Frame (at 3.5s)
     tl.call(() => {
       if (auroraRef.current) auroraRef.current.setPhase('impact', currentTier);
       setTimeout(() => {
         if (auroraRef.current) auroraRef.current.setPhase('settled', currentTier);
-      }, 800);
+      }, 1000);
 
       setDisplayPercentage(newPct);
 
@@ -269,10 +269,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setQuote(LUCKY_QUOTES[newQuoteIdx]);
       setIsRevealed(true);
       setIsRevealing(false);
-    }, undefined, 5.5);
+    }, undefined, 3.5);
 
-    // Optional 4. Final lingering buffer
-    tl.to({}, { duration: 1.0 });
+    // 4. Final lingering buffer to ensure ~8.5s total cinematic duration
+    tl.to({}, { duration: 5.0 });
   };
 
   const handleShare = async () => {
@@ -315,41 +315,144 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     const isReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
     let particles: any[] = [];
     let rockets: any[] = [];
+    let lightningStrikes: any[] = [];
+    let meteors: any[] = [];
     const fallbackStartTime = typeof animationStartTimeMs === 'number' ? performance.now() - animationStartTimeMs : performance.now();
     let fadeOutTriggered = false;
     const isMobile = window.innerWidth < 768;
+    const w = canvas.width;
+    const h = canvas.height;
 
-    // Scripted Fireworks Logic
+    // Scripted Logic Flags
     const scriptPhase1Done = { current: false };
     const scriptPhase2Done = { current: false };
     const scriptPhase3Done = { current: false };
     const scriptPhase4Done = { current: false };
+    const scriptPhase5Done = { current: false };
 
+    // Firework Colors
     const colors = ['#ff5050', '#5a8cff', '#6eff96', '#c86eff', '#ffcd5a', '#ffffff', '#ff9cee'];
 
-    const spawnBurst = (x: number, y: number, color1: string, color2: string, sizeMultiplier: number) => {
-      const burstCount = Math.floor(Math.random() * 2) + 1;
-      for (let b = 0; b < burstCount; b++) {
-        const bx = x + (Math.random() - 0.5) * 50 * sizeMultiplier;
-        const by = y + (Math.random() - 0.5) * 50 * sizeMultiplier;
-        const pCount = Math.floor(60 * sizeMultiplier);
-        for (let i = 0; i < pCount; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const velocity = (Math.random() * 8 + 3) * sizeMultiplier;
-          particles.push({
-            x: bx,
-            y: by,
-            vx: Math.cos(angle) * velocity,
-            vy: Math.sin(angle) * velocity,
-            opacity: 1,
-            color: Math.random() > 0.3 ? color1 : color2,
-            history: []
-          });
-        }
-      }
+    // --- EFFECT SPAWNERS ---
+
+    const spawnMeteor = (startX: number, startY: number, angle: number, speed: number, length: number, thickness: number, color: string) => {
+        meteors.push({
+            x: startX,
+            y: startY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            length: length,
+            thickness: thickness,
+            color: color,
+            opacity: 0, // fade in
+            state: 'in', // 'in', 'steady', 'out'
+            life: 0,
+            maxLife: 60 + Math.random() * 40
+        });
     };
 
-    const spawnRocket = (startX: number, startY: number, targetX: number, targetY: number, sizeMultiplier: number, speedMultiplier: number) => {
+    const spawnLightning = (x: number, y: number, scale: number) => {
+        // Recursive branching structure
+        const segments: any[] = [];
+        const buildBranch = (startX: number, startY: number, angle: number, length: number, generation: number) => {
+            if (generation > 5 || length < 10) return;
+            const endX = startX + Math.cos(angle) * length;
+            const endY = startY + Math.sin(angle) * length;
+            segments.push({ startX, startY, endX, endY, generation });
+
+            // Branch 1 (main)
+            buildBranch(endX, endY, angle + (Math.random() - 0.5) * 0.5, length * (0.6 + Math.random() * 0.3), generation + 1);
+            // Branch 2 (side)
+            if (Math.random() > 0.4) {
+                buildBranch(endX, endY, angle + (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 0.6), length * (0.4 + Math.random() * 0.3), generation + 1);
+            }
+        };
+        // Start downwards, somewhat jaggy
+        buildBranch(x, y, Math.PI / 2 + (Math.random() - 0.5) * 0.2, 100 * scale, 0);
+
+        lightningStrikes.push({
+            segments,
+            life: 1.0, // goes 1 -> 0
+            flashOpacity: 1.0
+        });
+    };
+
+    const spawnBurst = (x: number, y: number, type: string, color1: string, color2: string, sizeMultiplier: number) => {
+        if (type === 'willow') {
+            const pCount = Math.floor(150 * sizeMultiplier);
+            for (let i = 0; i < pCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = (Math.random() * 6 + 1) * sizeMultiplier;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * velocity,
+                    vy: Math.sin(angle) * velocity,
+                    opacity: 1.5, // Start higher for longer life
+                    color: '#ffffff',
+                    history: [],
+                    type: 'willow',
+                    gravityMultiplier: 1.0,
+                    friction: 0.96
+                });
+            }
+        } else if (type === 'ring') {
+            const pCount = Math.floor(80 * sizeMultiplier);
+            for (let i = 0; i < pCount; i++) {
+                const angle = (i / pCount) * Math.PI * 2;
+                const velocity = 5 * sizeMultiplier + (Math.random() * 0.5);
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * velocity,
+                    vy: Math.sin(angle) * velocity,
+                    opacity: 1,
+                    color: color1,
+                    history: [],
+                    type: 'normal',
+                    gravityMultiplier: 0.5,
+                    friction: 0.94
+                });
+            }
+        } else if (type === 'palm') {
+            const branches = 6;
+            for (let b = 0; b < branches; b++) {
+                const angle = (b / branches) * Math.PI * 2 + (Math.random() * 0.2);
+                for (let i = 0; i < 15; i++) {
+                    const velocity = (i * 0.4 + 2) * sizeMultiplier;
+                    particles.push({
+                        x, y,
+                        vx: Math.cos(angle) * velocity + (Math.random()-0.5),
+                        vy: Math.sin(angle) * velocity + (Math.random()-0.5),
+                        opacity: 1.2,
+                        color: '#ffcd5a',
+                        history: [],
+                        type: 'normal',
+                        gravityMultiplier: 0.7,
+                        friction: 0.97
+                    });
+                }
+            }
+        } else {
+            // Chrysanthemum / default
+            const pCount = Math.floor(100 * sizeMultiplier);
+            for (let i = 0; i < pCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = (Math.random() * 8 + 2) * sizeMultiplier;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * velocity,
+                    vy: Math.sin(angle) * velocity,
+                    opacity: 1,
+                    color: Math.random() > 0.3 ? color1 : color2,
+                    history: [],
+                    type: 'normal',
+                    gravityMultiplier: 0.6,
+                    friction: 0.93
+                });
+            }
+        }
+    };
+
+    const spawnRocket = (startX: number, startY: number, targetX: number, targetY: number, sizeMultiplier: number, speedMultiplier: number, type: string = 'chrysanthemum') => {
        const dx = targetX - startX;
        const dy = targetY - startY;
        const distance = Math.sqrt(dx * dx + dy * dy);
@@ -365,19 +468,24 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           color1: colors[Math.floor(Math.random() * colors.length)],
           color2: colors[Math.floor(Math.random() * colors.length)],
           sizeMultiplier,
+          type,
           history: []
        });
     };
 
+    // Organic Willow Interaction Vector Field
+    // Text is roughly centered, we can approximate the center.
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height * (isMobile ? 0.45 : 0.5);
+
     const loop = () => {
       const elapsedMs = performance.now() - fallbackStartTime;
-      const canSpawn = elapsedMs < 4500;
+      const canSpawn = elapsedMs < 5000;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (isReducedMotion) {
-         if (canSpawn || particles.length > 0) {
-            // Simplified glowing aura for reduced motion
-            const alpha = Math.min(1, Math.max(0, canSpawn ? elapsedMs / 1000 : 1 - (elapsedMs - 4500) / 1000));
+         if (canSpawn || particles.length > 0 || lightningStrikes.length > 0) {
+            const alpha = Math.min(1, Math.max(0, canSpawn ? elapsedMs / 1000 : 1 - (elapsedMs - 5000) / 1000));
             if (alpha > 0) {
               const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/4, 0, canvas.width/2, canvas.height/4, Math.max(canvas.width, canvas.height)/2);
               const color = activeTier === 'Fireworks' ? '255, 205, 90' : (activeTier === 'Cosmic Lightning' ? '200, 150, 255' : '100, 200, 255');
@@ -392,88 +500,181 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
          }
       } else {
 
-      // Tier 1: 0-33% Lower Luck (Restrained)
-      if (activeTier === 'Meteor Shower' && canSpawn) {
-         if (elapsedMs > 500 && !scriptPhase1Done.current) {
-            scriptPhase1Done.current = true;
-            spawnRocket(canvas.width / 2, canvas.height, canvas.width / 2, canvas.height * 0.3, 0.7, 1);
-         }
-         if (elapsedMs > 2000 && !scriptPhase2Done.current) {
-            scriptPhase2Done.current = true;
-            spawnRocket(canvas.width / 2 - 50, canvas.height, canvas.width / 2 - 100, canvas.height * 0.4, 0.6, 1);
-            spawnRocket(canvas.width / 2 + 50, canvas.height, canvas.width / 2 + 100, canvas.height * 0.35, 0.6, 1);
-         }
-      }
+      // --- TIER SCRIPTING ---
 
-      // Tier 2: 34-66% Medium Luck (Broader)
-      else if (activeTier === 'Cosmic Lightning' && canSpawn) {
+      if (activeTier === 'Meteor Shower' && canSpawn) {
          if (elapsedMs > 200 && !scriptPhase1Done.current) {
             scriptPhase1Done.current = true;
-            const w = canvas.width;
-            const h = canvas.height;
-            spawnRocket(w * 0.3, h, w * 0.3, h * 0.3, 0.9, 1);
-            spawnRocket(w * 0.7, h, w * 0.7, h * 0.35, 0.9, 1);
+            spawnMeteor(w * 0.8, -50, Math.PI * 0.7, 15, 120, 2, '#a0e8ff');
          }
-         if (elapsedMs > 1500 && !scriptPhase2Done.current) {
+         if (elapsedMs > 800 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
-            const w = canvas.width;
-            const h = canvas.height;
-            spawnRocket(w * 0.1, h, w * 0.2, h * 0.25, 0.8, 1);
-            spawnRocket(w * 0.5, h, w * 0.5, h * 0.2, 1.0, 1.2);
-            spawnRocket(w * 0.9, h, w * 0.8, h * 0.3, 0.8, 1);
+            spawnMeteor(w * 0.4, -50, Math.PI * 0.65, 20, 80, 1.5, '#ffffff');
          }
-         if (elapsedMs > 3000 && !scriptPhase3Done.current) {
+         if (elapsedMs > 1600 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
-            const w = canvas.width;
-            const h = canvas.height;
-            spawnRocket(w * 0.4, h, w * 0.35, h * 0.4, 0.7, 1);
-            spawnRocket(w * 0.6, h, w * 0.65, h * 0.35, 0.7, 1);
+            spawnMeteor(w + 50, h * 0.1, Math.PI * 0.8, 12, 150, 2.5, '#6eff96');
+         }
+         if (elapsedMs > 2200 && !scriptPhase4Done.current) {
+            scriptPhase4Done.current = true;
+            spawnMeteor(w * 0.6, -50, Math.PI * 0.75, 18, 100, 1.8, '#a0e8ff');
+         }
+         if (elapsedMs > 3200 && !scriptPhase5Done.current) {
+            scriptPhase5Done.current = true;
+            spawnMeteor(w * 0.9, h * 0.2, Math.PI * 0.7, 25, 200, 3, '#ffcd5a'); // final brightest
          }
       }
 
-      // Tier 3: 67-100% High Luck (Spectacular)
-      else if (activeTier === 'Fireworks' && canSpawn) {
-         if (elapsedMs > 100 && !scriptPhase1Done.current) {
+      else if (activeTier === 'Cosmic Lightning' && canSpawn) {
+         if (elapsedMs > 300 && !scriptPhase1Done.current) {
             scriptPhase1Done.current = true;
-            const w = canvas.width;
-            const h = canvas.height;
-            // Sweeping from sides
-            spawnRocket(0, h * 0.8, w * 0.3, h * 0.2, 1.1, 1.2);
-            spawnRocket(w, h * 0.8, w * 0.7, h * 0.2, 1.1, 1.2);
+            spawnLightning(w * 0.2, 0, 1.0);
          }
          if (elapsedMs > 1200 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
-            const w = canvas.width;
-            const h = canvas.height;
-            // Center barrage
-            spawnRocket(w * 0.4, h, w * 0.4, h * 0.25, 1.0, 1.1);
-            spawnRocket(w * 0.5, h, w * 0.5, h * 0.15, 1.3, 1.3);
-            spawnRocket(w * 0.6, h, w * 0.6, h * 0.25, 1.0, 1.1);
+            spawnLightning(w * 0.7, 0, 1.2);
          }
-         if (elapsedMs > 2500 && !scriptPhase3Done.current) {
+         if (elapsedMs > 2400 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
-            const w = canvas.width;
-            const h = canvas.height;
-            // Cross fire
-            spawnRocket(w * 0.1, h * 0.6, w * 0.6, h * 0.1, 0.9, 1.2);
-            spawnRocket(w * 0.9, h * 0.6, w * 0.4, h * 0.1, 0.9, 1.2);
+            spawnLightning(w * 0.4, -50, 0.8);
          }
-         if (elapsedMs > 3800 && !scriptPhase4Done.current) {
+         if (elapsedMs > 3500 && !scriptPhase4Done.current) {
+            scriptPhase4Done.current = true;
+            spawnLightning(w * 0.85, 0, 1.5); // Big final strike
+         }
+      }
+
+      else if (activeTier === 'Fireworks' && canSpawn) {
+         if (elapsedMs > 100 && !scriptPhase1Done.current) {
+            scriptPhase1Done.current = true;
+            // Launch from far left
+            spawnRocket(w * 0.1, h, w * 0.25, h * 0.3, 0.9, 1.1, 'chrysanthemum');
+         }
+         if (elapsedMs > 900 && !scriptPhase2Done.current) {
+            scriptPhase2Done.current = true;
+            // Launch from far right
+            spawnRocket(w * 0.9, h, w * 0.7, h * 0.2, 1.1, 1.2, 'ring');
+         }
+         if (elapsedMs > 1800 && !scriptPhase3Done.current) {
+            scriptPhase3Done.current = true;
+            // Mid left, high altitude
+            spawnRocket(w * 0.3, h, w * 0.4, h * 0.15, 1.0, 1.3, 'palm');
+         }
+         if (elapsedMs > 2700 && !scriptPhase4Done.current) {
              scriptPhase4Done.current = true;
-             const w = canvas.width;
-             const h = canvas.height;
-             // Grand Finale
-             spawnRocket(w * 0.3, h, w * 0.3, h * 0.2, 1.2, 1.1);
-             spawnRocket(w * 0.5, h, w * 0.5, h * 0.1, 1.5, 1.4);
-             spawnRocket(w * 0.7, h, w * 0.7, h * 0.2, 1.2, 1.1);
-             spawnRocket(w * 0.2, h, w * 0.2, h * 0.3, 1.0, 1.1);
-             spawnRocket(w * 0.8, h, w * 0.8, h * 0.3, 1.0, 1.1);
+             // Mid right
+             spawnRocket(w * 0.75, h, w * 0.6, h * 0.25, 1.0, 1.0, 'chrysanthemum');
+         }
+         if (elapsedMs > 3800 && !scriptPhase5Done.current) {
+             scriptPhase5Done.current = true;
+             // The White Willow Climax
+             // Center launch, very high
+             spawnRocket(w * 0.5, h, w * 0.5, h * 0.1, 2.5, 1.5, 'willow');
          }
       }
 
       ctx.globalCompositeOperation = 'lighter';
 
-      // Draw and update rockets
+      // --- UPDATE & DRAW METEORS ---
+      for (let i = meteors.length - 1; i >= 0; i--) {
+          const m = meteors[i];
+          m.x += m.vx;
+          m.y += m.vy;
+          m.life++;
+
+          if (m.state === 'in') {
+              m.opacity += 0.05;
+              if (m.opacity >= 1) m.state = 'steady';
+          } else if (m.state === 'steady') {
+              if (m.life > m.maxLife * 0.6) m.state = 'out';
+          } else if (m.state === 'out') {
+              m.opacity -= 0.02;
+          }
+
+          if (m.opacity <= 0 || m.x < -200 || m.y > h + 200) {
+              meteors.splice(i, 1);
+              continue;
+          }
+
+          const trailEndX = m.x - Math.cos(Math.atan2(m.vy, m.vx)) * m.length;
+          const trailEndY = m.y - Math.sin(Math.atan2(m.vy, m.vx)) * m.length;
+
+          const grad = ctx.createLinearGradient(m.x, m.y, trailEndX, trailEndY);
+          grad.addColorStop(0, `rgba(255, 255, 255, ${m.opacity})`);
+          grad.addColorStop(0.1, `${m.color.replace(')', `, ${m.opacity * 0.8})`).replace('rgb', 'rgba')}`); // Approximating if hex, but we handle hex manually
+
+          // Hex to rgba helper for gradient
+          let r = 255, g = 255, b = 255;
+          if (m.color.startsWith('#')) {
+              r = parseInt(m.color.slice(1,3), 16);
+              g = parseInt(m.color.slice(3,5), 16);
+              b = parseInt(m.color.slice(5,7), 16);
+          }
+          grad.addColorStop(0.1, `rgba(${r},${g},${b}, ${m.opacity * 0.8})`);
+          grad.addColorStop(1, `rgba(${r},${g},${b}, 0)`);
+
+          ctx.beginPath();
+          ctx.moveTo(m.x, m.y);
+          ctx.lineTo(trailEndX, trailEndY);
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = m.thickness;
+          ctx.stroke();
+
+          // Head glow
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.thickness * 2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,255,255,${m.opacity})`;
+          ctx.fill();
+      }
+
+      // --- UPDATE & DRAW LIGHTNING ---
+      let maxLightningOpacity = 0;
+      for (let i = lightningStrikes.length - 1; i >= 0; i--) {
+          const l = lightningStrikes[i];
+          l.life -= 0.02; // decay
+          if (l.life <= 0) {
+              lightningStrikes.splice(i, 1);
+              continue;
+          }
+
+          // Flicker
+          const flicker = Math.random() > 0.8 ? 0 : 1;
+          const opacity = l.life * flicker;
+          maxLightningOpacity = Math.max(maxLightningOpacity, l.life);
+
+          if (opacity > 0) {
+              ctx.strokeStyle = `rgba(200, 220, 255, ${opacity})`;
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              for (const seg of l.segments) {
+                  ctx.moveTo(seg.startX, seg.startY);
+                  ctx.lineTo(seg.endX, seg.endY);
+              }
+              ctx.stroke();
+
+              // Core
+              ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              for (const seg of l.segments) {
+                  ctx.moveTo(seg.startX, seg.startY);
+                  ctx.lineTo(seg.endX, seg.endY);
+              }
+              ctx.stroke();
+          }
+      }
+
+      if (maxLightningOpacity > 0) {
+          // Environmental illumination flash
+          const grad = ctx.createRadialGradient(w/2, h/4, 0, w/2, h/4, h);
+          grad.addColorStop(0, `rgba(200, 220, 255, ${maxLightningOpacity * 0.15})`);
+          grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, w, h);
+      }
+
+
+      // --- UPDATE & DRAW ROCKETS ---
       for (let i = rockets.length - 1; i >= 0; i--) {
          const r = rockets[i];
          r.history.push({x: r.x, y: r.y});
@@ -500,27 +701,53 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
          // Explode if reached target
          if (r.vy < 0 && r.y <= r.targetY) {
-            spawnBurst(r.x, r.y, r.color1, r.color2, r.sizeMultiplier);
+            spawnBurst(r.x, r.y, r.type, r.color1, r.color2, r.sizeMultiplier);
             if (activeTier === 'Fireworks' && !soundsRef.current.crackle?.playing()) {
                soundsRef.current.crackle?.play();
             }
             rockets.splice(i, 1);
          } else if (r.vy > 0 && r.y >= r.targetY) {
-            spawnBurst(r.x, r.y, r.color1, r.color2, r.sizeMultiplier);
+            spawnBurst(r.x, r.y, r.type, r.color1, r.color2, r.sizeMultiplier);
             rockets.splice(i, 1);
          }
       }
 
-      // Draw and update particles
+      // --- UPDATE & DRAW PARTICLES ---
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.history.push({ x: p.x, y: p.y });
-        if (p.history.length > 5) p.history.shift();
+        if (p.history.length > (p.type === 'willow' ? 12 : 5)) p.history.shift();
 
+        // Willow organic interaction with text area
+        if (p.type === 'willow') {
+            const dx = p.x - centerX;
+            const dy = p.y - centerY;
+            const distSq = dx*dx + dy*dy;
+            const effectRadius = isMobile ? 120 : 180;
+            const effectRadiusSq = effectRadius * effectRadius;
+
+            if (distSq < effectRadiusSq) {
+                // Inside the interaction sphere
+                const dist = Math.sqrt(distSq);
+                const force = (1 - dist / effectRadius) * 0.15; // Soft force
+                // Push outwards radially
+                p.vx += (dx / dist) * force;
+                // Add a slight tangential force to curve around
+                p.vy += (dy / dist) * force * 0.5;
+            }
+        }
+
+        p.vx *= p.friction || 0.95;
+        p.vy *= p.friction || 0.95;
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.06;
-        p.opacity -= 0.012;
+        p.vy += 0.06 * (p.gravityMultiplier || 1.0);
+
+        if (p.type === 'willow') {
+            p.opacity -= 0.006; // Live longer
+        } else {
+            p.opacity -= 0.012;
+        }
 
         if (p.history.length > 1) {
            ctx.beginPath();
@@ -529,7 +756,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               ctx.lineTo(p.history[j].x, p.history[j].y);
            }
            ctx.strokeStyle = p.color;
-           ctx.lineWidth = 2;
+           ctx.lineWidth = p.type === 'willow' ? 1.5 : 2;
            ctx.globalAlpha = Math.max(0, p.opacity * 0.5);
            ctx.stroke();
         }
@@ -557,16 +784,22 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         }
 
         // Only stop the render loop when all particles are actually gone
-        if (particles.length === 0) {
+        if (particles.length === 0 && meteors.length === 0 && lightningStrikes.length === 0) {
           return;
         }
       }
       requestRef.current = requestAnimationFrame(loop);
     };
 
+
     loop();
 
     return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
+  }, [tier]);
+
+  useEffect(() => {return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
   }, [tier]);
@@ -609,7 +842,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             <span>Total Resonance Rituals: <strong className="text-emerald-400 font-bold ml-1">{totalVisits.toLocaleString()}</strong></span>
           </div>
         )}
-        <div className={`bg-transparent backdrop-blur-md p-6 rounded-2xl shadow-[0_0_40px_rgba(100,100,255,0.1)] border border-white/5 text-center w-full flex flex-col items-center justify-center ${
+        <div className={`text-center w-full flex flex-col items-center justify-center ${
           isCompact ? 'min-h-[200px]' : 'mt-[35vh]'
         }`}>
           {!isRevealed && !isRevealing ? (
