@@ -51,8 +51,8 @@ const IMPACT_TIME_MS = 8800;
 const SPIN_INTERVAL_MS = 60;
 const SPIN_INTERVAL_FAST_MS = 20;
 
-const METEOR_SOUNDS = ['/dragon-studio-whoosh-cinematic-376875.mp3'];
-const LIGHTNING_SOUNDS = ['/yodguard-lightning-magic-3-378649.mp3'];
+const METEOR_SOUNDS = ['/sounds/mixkit-cinematic-whoosh.mp3'];
+const LIGHTNING_SOUNDS = ['/sounds/mixkit-cinematic-impact.mp3'];
 const FIREWORKS_SOUNDS = ['/freesound_community-fireworks-1-94483.mp3'];
 const BUILDUP_SOUND = '/freesound_community-starship-rail-gun-charge-35904.mp3';
 
@@ -451,7 +451,7 @@ function useResonanceCanvas(
 
     function explode(x: number, y: number, color: string, isHero: boolean) {
       if (s.impactTriggered) {
-        playAudioBuffer('firework', isHero ? 0.8 : 0.4, 0.8 + Math.random() * 0.4);
+        playAudioBuffer('firework', isHero ? 0.8 : 0.4 + Math.random() * 0.3, 0.8 + Math.random() * 0.4);
       }
       const count = reduced ? 25 : (isHero ? 180 : 60 + Math.floor(Math.random() * 30));
       let actualCount = Math.min(count, 300 - s.sparks.length);
@@ -652,7 +652,8 @@ function useResonanceCanvas(
               }});
             }
             else if (tier.id === 4) {
-              playAudioBuffer('firework');
+              playAudioBuffer('fireworkFinale', 0.8, 1.0);
+              setTimeout(() => { playAudioBuffer('crackle', 0.6, 1.0) }, 200);
               // Initial Hero Launch
               spawnRocket(true, width * 0.5, 750);
 
@@ -839,6 +840,8 @@ function useResonanceCanvas(
         }
       }
 
+      // We use crackle in DailyResonance for the big finale.
+      // LuckyGenerator just uses the short 'firework' burst we already updated.
       for (let i = s.sparks.length - 1; i >= 0; i--) { 
         const sp = s.sparks[i];
         sp.age += dt;
@@ -906,6 +909,8 @@ export default function LuckyGenerator() {
     meteor: null,
     lightning: null,
     firework: null,
+    fireworkFinale: null,
+    crackle: null,
   });
   const buildUpSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const buildUpGainRef = useRef<GainNode | null>(null);
@@ -969,7 +974,9 @@ export default function LuckyGenerator() {
       loadAudio(BUILDUP_SOUND, 'buildUp'),
       loadAudio(METEOR_SOUNDS[0], 'meteor'),
       loadAudio(LIGHTNING_SOUNDS[0], 'lightning'),
-      loadAudio(FIREWORKS_SOUNDS[0], 'firework')
+      loadAudio(FIREWORKS_SOUNDS[0], 'firework'),
+      loadAudio('/sounds/mixkit-magical-impact.mp3', 'fireworkFinale'),
+      loadAudio('/sounds/mixkit-magic-sparkles.mp3', 'crackle')
     ]).then(() => {
       setIsAudioReady(true);
     });

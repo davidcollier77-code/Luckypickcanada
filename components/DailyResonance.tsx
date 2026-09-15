@@ -31,16 +31,18 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     impactMeteor: null,
     impactLightning: null,
     impactFireworks: null,
+    fireworkBurst: null,
     crackle: null
   });
 
   useEffect(() => {
     soundsRef.current = {
       buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 }),
-      impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 1.0 }),
-      impactLightning: new Howl({ src: ['/yodguard-lightning-magic-3-378649.mp3'], volume: 1.0 }),
+      impactMeteor: new Howl({ src: ['/sounds/mixkit-cinematic-whoosh.mp3'], volume: 1.0 }),
+      impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
       impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
-      crackle: new Howl({ src: ['/freesound_community-shaking-coins-105774.mp3'], volume: 0.3, loop: true })
+      fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
+      crackle: new Howl({ src: ['/sounds/mixkit-magic-sparkles.mp3'], volume: 0.3, loop: true })
     };
     return () => {
        Howler.unload();
@@ -835,12 +837,23 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
          // Explode if reached target
          if (r.vy < 0 && r.y <= r.targetY) {
             spawnBurst(r.x, r.y, r.type, r.color1, r.color2, r.sizeMultiplier);
-            if (activeTier === 'Fireworks' && !soundsRef.current.crackle?.playing()) {
+            if (activeTier === 'Fireworks' && soundsRef.current.fireworkBurst) {
+               const id = soundsRef.current.fireworkBurst.play();
+               soundsRef.current.fireworkBurst.rate(0.8 + Math.random() * 0.4, id);
+               soundsRef.current.fireworkBurst.volume(0.4 + Math.random() * 0.3, id);
+            }
+            if (activeTier === 'Fireworks' && r.type === 'willow' && !soundsRef.current.crackle?.playing()) {
                soundsRef.current.crackle?.play();
+               soundsRef.current.crackle?.volume(0.3); // Initial volume
             }
             rockets.splice(i, 1);
          } else if (r.vy > 0 && r.y >= r.targetY) {
             spawnBurst(r.x, r.y, r.type, r.color1, r.color2, r.sizeMultiplier);
+            if (activeTier === 'Fireworks' && soundsRef.current.fireworkBurst) {
+               const id = soundsRef.current.fireworkBurst.play();
+               soundsRef.current.fireworkBurst.rate(0.8 + Math.random() * 0.4, id);
+               soundsRef.current.fireworkBurst.volume(0.4 + Math.random() * 0.3, id);
+            }
             rockets.splice(i, 1);
          }
       }
@@ -850,6 +863,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         const p = particles[i];
         p.history.push({ x: p.x, y: p.y });
         if (p.history.length > (p.type === 'willow' ? 12 : 5)) p.history.shift();
+
+        // Crackle volume based on willow particle opacity
+        if (p.type === 'willow' && p.opacity > 0 && soundsRef.current.crackle?.playing() && i % 10 === 0) {
+            // Very roughly map highest opacity to volume
+            soundsRef.current.crackle.volume(Math.min(0.5, p.opacity * 0.2));
+        }
 
         // Willow organic interaction with text area
         if (p.type === 'willow') {
@@ -935,8 +954,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         // Stop audio smoothly
         if (!fadeOutTriggered) {
           fadeOutTriggered = true;
-          if (soundsRef.current.crackle) {
-            soundsRef.current.crackle.fade(0.3, 0, 1000);
+          if (soundsRef.current.crackle && soundsRef.current.crackle.playing()) {
+            const currentVol = soundsRef.current.crackle.volume();
+            soundsRef.current.crackle.fade(currentVol, 0, 1000);
             setTimeout(() => {
               if (soundsRef.current.crackle) soundsRef.current.crackle.stop();
             }, 1000);
