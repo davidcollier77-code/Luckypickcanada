@@ -53,7 +53,7 @@ Official documentation governs documented Jules/Gemini behavior. The current rep
 
 3. Repository files to inspect
 
-After establishing the official documentation baseline, inspect the files actually relevant to the task. These are working project systems, not merely references to acknowledge. Use the systems that are materially applicable to the task (do not require irrelevant systems just to satisfy a checklist).
+After establishing the official documentation baseline, inspect the files actually relevant to the task. These are working project systems, not merely references to acknowledge. Refer to and use the systems according to their documented or established purpose when they are materially applicable to the task; do not assume undocumented internal behavior or require irrelevant systems merely to satisfy a checklist.
 
 Always use:
 
@@ -74,7 +74,7 @@ Use the applicable specialist file for the selected task group:
 
 Use applicable command files under ".jules/cmds/".
 
-Use applicable Memory Bank files:
+Refer to applicable Memory Bank files as supporting project context:
 
 - "memory-bank/projectBrief.md"
 - "memory-bank/activeContext.md"
