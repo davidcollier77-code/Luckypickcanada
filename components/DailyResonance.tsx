@@ -215,7 +215,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     const proxy = { val: 0, jitterMag: 40 };
     tl.to(proxy, {
       val: newPct,
-      duration: 1.0,
+      duration: 3.0,
       ease: "power3.inOut",
       onUpdate: () => {
         let jitter = Math.floor((Math.random() - 0.5) * proxy.jitterMag);
@@ -227,21 +227,21 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     // Decay jitter over the same period
     tl.to(proxy, {
       jitterMag: 0,
-      duration: 1.0,
+      duration: 3.0,
       ease: "power2.in"
     }, 1.5);
 
-    // 2. High-speed tension roll (very short, converging tightly - 1.0s)
+    // 2. High-speed tension roll (converging tightly - 3.0s)
     tl.to(proxy, {
-      duration: 1.0,
+      duration: 3.0,
       onUpdate: () => {
         let jitter = Math.floor((Math.random() - 0.5) * 3);
         let currentVal = Math.max(0, Math.min(100, newPct + jitter));
         setDisplayPercentage(currentVal);
       }
-    }, 2.5);
+    }, 4.5);
 
-    // 3. Impact Frame (at 3.5s)
+    // 3. Impact Frame (at 7.5s)
     tl.call(() => {
       if (auroraRef.current) auroraRef.current.setPhase('impact', currentTier);
       setTimeout(() => {
@@ -269,11 +269,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       setQuote(LUCKY_QUOTES[newQuoteIdx]);
       setIsRevealed(true);
       setIsRevealing(false);
-    }, undefined, 3.5);
+    }, undefined, 7.5);
 
-    // 4. Final lingering buffer to ensure ~8.5s total cinematic duration
-    // Canvas animation is built to span this remaining 5.0s beautifully.
-    tl.to({}, { duration: 5.0 });
+    // 4. Final lingering buffer to ensure ~12s total cinematic duration
+    // Canvas animation is built to span this remaining 4.5s beautifully.
+    tl.to({}, { duration: 4.5 });
   };
 
   const handleShare = async () => {
@@ -359,36 +359,40 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
         // Build a jagged path by segmenting a straight line with random offsets
         const buildJaggedBranch = (startX: number, startY: number, endX: number, endY: number, roughness: number, generation: number) => {
-            if (generation > 5) return;
+            if (generation > 7) return; // Increased generations for denser branching
             const dx = endX - startX;
             const dy = endY - startY;
             const length = Math.sqrt(dx*dx + dy*dy);
 
-            if (length < 15) {
+            if (length < 8) { // Allow smaller final segments
                 segments.push({ startX, startY, endX, endY, generation });
                 return;
             }
 
-            // Midpoint displacement
-            const midX = (startX + endX) / 2 + (Math.random() - 0.5) * roughness * scale;
-            const midY = (startY + endY) / 2 + (Math.random() - 0.5) * roughness * scale;
+            // Midpoint displacement with extreme chaotic variance for cinematic feel
+            const varianceX = (Math.random() - 0.5) * roughness * scale;
+            const varianceY = (Math.random() - 0.5) * roughness * scale;
 
-            buildJaggedBranch(startX, startY, midX, midY, roughness * 0.7, generation + 1);
-            buildJaggedBranch(midX, midY, endX, endY, roughness * 0.7, generation + 1);
+            // Bias downwards slightly to simulate ground-seeking
+            const midX = (startX + endX) / 2 + varianceX;
+            const midY = (startY + endY) / 2 + varianceY + (roughness * 0.1);
 
-            // Occasionally branch off
-            if (Math.random() > 0.6) {
-                const branchAngle = Math.atan2(dy, dx) + (Math.random() > 0.5 ? 1 : -1) * (0.3 + Math.random() * 0.6);
-                const branchLength = length * (0.4 + Math.random() * 0.4);
+            buildJaggedBranch(startX, startY, midX, midY, roughness * 0.6, generation + 1);
+            buildJaggedBranch(midX, midY, endX, endY, roughness * 0.6, generation + 1);
+
+            // Frequent aggressive branching
+            if (Math.random() > 0.4) {
+                const branchAngle = Math.atan2(dy, dx) + (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 0.8);
+                const branchLength = length * (0.5 + Math.random() * 0.5);
                 const bEndX = midX + Math.cos(branchAngle) * branchLength;
                 const bEndY = midY + Math.sin(branchAngle) * branchLength;
-                buildJaggedBranch(midX, midY, bEndX, bEndY, roughness * 0.8, generation + 1);
+                buildJaggedBranch(midX, midY, bEndX, bEndY, roughness * 0.75, generation + 1);
             }
         };
 
-        const targetX = x + (Math.random() - 0.5) * 300 * scale;
-        const targetY = y + 400 * scale + Math.random() * 200 * scale;
-        buildJaggedBranch(x, y, targetX, targetY, 150, 0);
+        const targetX = x + (Math.random() - 0.5) * 400 * scale; // Wider spread
+        const targetY = y + 500 * scale + Math.random() * 300 * scale; // Deeper strikes
+        buildJaggedBranch(x, y, targetX, targetY, 200, 0); // Higher initial roughness
 
         lightningStrikes.push({
             segments,
@@ -411,8 +415,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                     color: '#ffffff',
                     history: [],
                     type: 'willow',
-                    gravityMultiplier: 1.2, // Stronger gravity for willow descent
-                    friction: 0.95
+                    gravityMultiplier: 1.05, // Refined cinematic float
+                    friction: 0.96 // Smoother deceleration
                 });
             }
         } else if (type === 'layered_ring') {
@@ -525,19 +529,20 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
     const loop = () => {
       const elapsedMs = performance.now() - fallbackStartTime;
-      const canSpawn = elapsedMs < 5000;
+      const canSpawn = elapsedMs < 4500;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (isReducedMotion) {
          if (canSpawn || particles.length > 0 || lightningStrikes.length > 0) {
-            const alpha = Math.min(1, Math.max(0, canSpawn ? elapsedMs / 1000 : 1 - (elapsedMs - 5000) / 1000));
+            const alpha = Math.min(1, Math.max(0, canSpawn ? elapsedMs / 1000 : 1 - (elapsedMs - 4500) / 1000));
             if (alpha > 0) {
-              const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/4, 0, canvas.width/2, canvas.height/4, Math.max(canvas.width, canvas.height)/2);
+              const radius = Math.max(canvas.width, canvas.height)/2;
+              const grad = ctx.createRadialGradient(canvas.width/2, canvas.height/4, 0, canvas.width/2, canvas.height/4, radius);
               const color = activeTier === 'Fireworks' ? '255, 205, 90' : (activeTier === 'Cosmic Lightning' ? '200, 150, 255' : '100, 200, 255');
               grad.addColorStop(0, `rgba(${color}, ${alpha * 0.4})`);
               grad.addColorStop(1, `rgba(${color}, 0)`);
               ctx.fillStyle = grad;
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.fillRect((canvas.width/2) - radius, (canvas.height/4) - radius, radius * 2, radius * 2);
               particles = [1]; // keep alive
             } else {
               particles = [];
@@ -636,6 +641,21 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               if (m.life > m.maxLife * 0.6) m.state = 'out';
           } else if (m.state === 'out') {
               m.opacity -= 0.02;
+              // Fragmentation effect when breaking up
+              if (Math.random() > 0.7 && m.opacity > 0.1) {
+                  particles.push({
+                      x: m.x + (Math.random() - 0.5) * 10,
+                      y: m.y + (Math.random() - 0.5) * 10,
+                      vx: m.vx * 0.8 + (Math.random() - 0.5) * 2,
+                      vy: m.vy * 0.8 + (Math.random() - 0.5) * 2,
+                      opacity: m.opacity,
+                      color: m.color,
+                      history: [],
+                      type: 'fragment',
+                      gravityMultiplier: 0.8,
+                      friction: 0.98
+                  });
+              }
           }
 
           if (m.opacity <= 0 || m.x < -200 || m.y > h + 200) {
@@ -647,8 +667,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           const trailEndY = m.y - Math.sin(Math.atan2(m.vy, m.vx)) * m.length;
 
           const grad = ctx.createLinearGradient(m.x, m.y, trailEndX, trailEndY);
-          grad.addColorStop(0, `rgba(255, 255, 255, ${m.opacity})`);
-          grad.addColorStop(0.1, `${m.color.replace(')', `, ${m.opacity * 0.8})`).replace('rgb', 'rgba')}`); // Approximating if hex, but we handle hex manually
 
           // Hex to rgba helper for gradient
           let r = 255, g = 255, b = 255;
@@ -657,20 +675,29 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               g = parseInt(m.color.slice(3,5), 16);
               b = parseInt(m.color.slice(5,7), 16);
           }
-          grad.addColorStop(0.1, `rgba(${r},${g},${b}, ${m.opacity * 0.8})`);
-          grad.addColorStop(1, `rgba(${r},${g},${b}, 0)`);
+
+          // Intense atmospheric entry gradient (white -> hot color -> red/dark)
+          grad.addColorStop(0, `rgba(255, 255, 255, ${m.opacity})`);
+          grad.addColorStop(0.1, `rgba(${r},${g},${b}, ${m.opacity * 0.9})`);
+          grad.addColorStop(0.4, `rgba(${Math.floor(r*0.8)},${Math.floor(g*0.4)},${Math.floor(b*0.2)}, ${m.opacity * 0.5})`);
+          grad.addColorStop(1, `rgba(255,50,0, 0)`);
 
           ctx.beginPath();
           ctx.moveTo(m.x, m.y);
           ctx.lineTo(trailEndX, trailEndY);
           ctx.strokeStyle = grad;
-          ctx.lineWidth = m.thickness;
+          ctx.lineWidth = m.thickness * (1 + Math.random() * 0.5); // Flickering thickness
           ctx.stroke();
 
-          // Head glow
+          // Intense Heated core glow
           ctx.beginPath();
-          ctx.arc(m.x, m.y, m.thickness * 2, 0, Math.PI * 2);
+          ctx.arc(m.x, m.y, m.thickness * 1.5, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255,255,255,${m.opacity})`;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.thickness * 3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r},${g},${b},${m.opacity * 0.4})`;
           ctx.fill();
       }
 
@@ -684,14 +711,17 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               continue;
           }
 
-          // Flicker
-          const flicker = Math.random() > 0.8 ? 0 : 1;
+          // Chaotic cinematic flicker
+          const flicker = Math.random() > 0.6 ? 0.3 : 1;
           const opacity = l.life * flicker;
-          maxLightningOpacity = Math.max(maxLightningOpacity, l.life);
+          maxLightningOpacity = Math.max(maxLightningOpacity, opacity);
 
           if (opacity > 0) {
-              ctx.strokeStyle = `rgba(200, 220, 255, ${opacity})`;
-              ctx.lineWidth = 2;
+              // Outer glow
+              ctx.shadowColor = 'rgba(200, 220, 255, 1)';
+              ctx.shadowBlur = 20 * opacity;
+              ctx.strokeStyle = `rgba(180, 200, 255, ${opacity * 0.8})`;
+              ctx.lineWidth = 3;
               ctx.beginPath();
               for (const seg of l.segments) {
                   ctx.moveTo(seg.startX, seg.startY);
@@ -699,9 +729,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               }
               ctx.stroke();
 
-              // Core
+              // Intense core
+              ctx.shadowBlur = 0;
               ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-              ctx.lineWidth = 1;
+              ctx.lineWidth = 1.5;
               ctx.beginPath();
               for (const seg of l.segments) {
                   ctx.moveTo(seg.startX, seg.startY);
@@ -717,7 +748,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           grad.addColorStop(0, `rgba(200, 220, 255, ${maxLightningOpacity * 0.15})`);
           grad.addColorStop(1, 'transparent');
           ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, w, h);
+          ctx.fillRect((w/2) - h, (h/4) - h, h * 2, h * 2);
       }
 
 
