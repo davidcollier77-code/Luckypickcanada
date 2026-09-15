@@ -9,7 +9,7 @@
 <link rel="mask-icon" href="/apple-logo.svg" color="#333333">
 <title>WebKit | Apple Developer Documentation</title>
 <script>var baseUrl = "/tutorials/"</script><link rel="stylesheet" href="https://www.apple.com/wss/fonts?families=SF+Pro,v3|SF+Mono,v1|SF+Pro+SC,v1|SF+Pro+JP,v1" referrerpolicy="origin-when-cross-origin">
-<script defer src="/tutorials/js/chunk-vendors.15ab7a55.js"></script><script defer src="/tutorials/js/chunk-common.233ff197.js"></script><script defer src="/tutorials/js/index.8342ca55.js"></script><link href="/tutorials/css/chunk-vendors.e84e4a47.css" rel="stylesheet">
+<script defer src="/tutorials/js/chunk-vendors.d2411331.js"></script><script defer src="/tutorials/js/chunk-common.a8aed958.js"></script><script defer src="/tutorials/js/index.5f627f11.js"></script><link href="/tutorials/css/chunk-vendors.e84e4a47.css" rel="stylesheet">
 <link href="/tutorials/css/index.6a972d82.css" rel="stylesheet">
 <meta name="description" content="Integrate web content seamlessly into your app, and customize content interactions to meet your app’s needs.">
 <meta property="og:locale" content="en_US">
@@ -26,6 +26,15 @@
 <meta name="twitter:url" content="https://developer.apple.com/documentation/webkit">
 <link rel="alternate" type="text/markdown" href="https://developer.apple.com/documentation/webkit.md">
 <link rel="canonical" href="https://developer.apple.com/documentation/webkit">
+<link rel="alternate" hreflang="de-DE" href="https://developer.apple.com/de/documentation/webkit">
+<link rel="alternate" hreflang="en-US" href="https://developer.apple.com/documentation/webkit">
+<link rel="alternate" hreflang="es-419" href="https://developer.apple.com/la/documentation/webkit">
+<link rel="alternate" hreflang="fr-FR" href="https://developer.apple.com/fr/documentation/webkit">
+<link rel="alternate" hreflang="it-IT" href="https://developer.apple.com/it/documentation/webkit">
+<link rel="alternate" hreflang="ja-JP" href="https://developer.apple.com/jp/documentation/webkit">
+<link rel="alternate" hreflang="ko-KR" href="https://developer.apple.com/kr/documentation/webkit">
+<link rel="alternate" hreflang="pt-BR" href="https://developer.apple.com/br/documentation/webkit">
+<link rel="alternate" hreflang="zh-CN" href="https://developer.apple.com/cn/documentation/webkit">
 </head>
 <body data-color-scheme="auto">
 <template id="account-menu-authenticated-template"><div class="account-menu-user-header" role="banner" aria-label="User information" data-aria-label="userInformation">
