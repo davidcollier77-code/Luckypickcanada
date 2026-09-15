@@ -1,0 +1,21 @@
+A — Verified
+The `AGENTS.md` file contained a redundant `CORE ABC RULE` section at the bottom, which unnecessarily duplicated the main `A — ANALYZE`, `B — BOUNDARIES`, and `C — CONCRETE EXECUTION` governance sections defined earlier in the file.
+
+B — Boundaries / Plan
+* Approved scope: Remove only the redundant `CORE ABC RULE` section from the end of `AGENTS.md`.
+* Selected task group: `deep-dive` (repository governance and documentation structure).
+* Applicable `.jules/` specialist: `.jules/deep-dive.md`.
+* Memory Bank files consulted: `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, `memory-bank/techContext.md`.
+* `.docs` documentation consulted: No library documentation was required for this task.
+
+C — Executed / Verified
+* Exact files changed: `AGENTS.md`.
+* Removed the redundant `CORE ABC RULE` section at the end of `AGENTS.md`.
+* Verified that the primary A/B/C governance sections remain intact.
+* Exact tests/builds/checks run: Ran `./jules-verify.sh` to ensure build and lightweight tests pass without issue.
+* Results: Build and docs tests passed; diff verified to contain only the intended deletion.
+* Remaining issues: None.
+* Assumptions and unknowns: None.
+* Scope deviations: None.
+
+Documentation report: No library documentation was required for this task.

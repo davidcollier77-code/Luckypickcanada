@@ -313,14 +313,3 @@ For each MCP/tool actually invoked, report:
 
 Never claim consultation, use, or invocation that did not actually occur.
 
----
-
-CORE ABC RULE
-
-A — Analyze: Read "AGENTS.md" first, establish the official Jules/Gemini documentation baseline, then inspect the current repository and identify verified facts, relevant files, libraries, tools, and documentation.
-
-B — Boundaries: Follow "AGENTS.md", ".jules/jules.md", the applicable ".jules/*.md" specialist file, applicable ".jules/cmds/*.md" files, relevant ".docs/" documentation, and supporting Memory Bank context. Define the exact scope, constraints, approvals, and plan before modification.
-
-C — Concrete execution: Execute only the approved plan, use the actual relevant documentation and tools, protect existing behavior, verify the real result, inspect the final diff, and report exact evidence.
-
-The goal is not to merely acknowledge documentation or tools. The goal is to actually use the relevant documentation and tools to produce better, evidence-based work.
