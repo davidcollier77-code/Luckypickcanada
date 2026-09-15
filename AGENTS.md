@@ -312,8 +312,4 @@ Before finalizing:
 
 7. Governance maintenance
 
-This file is the authoritative governance system. During authorized governance updates, preserve valid requirements and integrate new ones here; do not create parallel governance.
-
-Keep the finished "AGENTS.md" within 175–300 lines, with 300 lines as the hard ceiling. Do not pad it to reach the range; clarity, completeness, and zero ambiguity take priority.
-
-For every authorized governance update, perform a final audit for contradictions, duplicate/superseded wording, missing filenames/task groups, missing conditional routing, missing reporting, missing security/MCP/verification rules, incorrect library count, and unsupported assumptions.
+This file is the authoritative governance system. During authorized governance updates, preserve valid requirements, integrate new ones here, and do not create parallel governance. Keep finished "AGENTS.md" within 175–300 lines with 300 as the hard ceiling. Before finalizing governance updates, audit for contradictions, duplicate/superseded wording, missing filenames/task groups/routing/reporting/rules, incorrect library count, and unsupported assumptions.
