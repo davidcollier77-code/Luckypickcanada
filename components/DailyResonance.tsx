@@ -873,11 +873,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     };
   }, [tier]);
 
-  useEffect(() => {return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-    };
-  }, [tier]);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
