@@ -1,16 +1,14 @@
 # Active Context
 
 ## Current Status
-- Enhanced fireworks audio in `components/DailyResonance.tsx` and `components/LuckyGenerator.tsx` with pitch/volume variation for believable pops.
-- Synchronized the grand finale crackle sound with visual spark particle opacity for a cohesive cinematic finish.
-- Upgraded Meteor and Lightning audio to high-quality cinematic assets from the public sounds library.
-- Fixed a long-standing fragmentation bug in the lightning generator where base-case recursive segments were discarded.
-- Implemented a multi-pass renderer (broad glow, medium body, crisp core) for high-fidelity lighting.
-- Tailored the recursive branching depth and glow passes based on `isMobile` to guarantee smooth 60fps performance on smaller devices.
-- Kept all core tier generation, lockouts, reduced motion, and audio logic completely intact.
+- Cinematic reveal logic updated to `0 -> 100 -> 0 -> final -> STOP`. The visual animation accurately follows this exact conceptual sequence while decelerating to the genuinely randomized tier.
+- Kept all overall timing exactly equal to 12s, keeping pre-existing buildup/linger timing consistent.
+- Applied new physical UI click CC0 mp3 file using `Howler.js` and wired it into `DailyResonance.tsx`.
+- Ensured the UI click plays immediately upon any interaction with the main reveal button or the share button.
 
 ## Next Steps
-- Monitor production deployment for audio variation and sync correctness across devices.
+- Verify visual consistency on slow devices.
+- Confirm click effect volume feels appropriate on actual physical hardware.
 
 ## Previous Context
 - Enhanced cinematic pacing for Lucky Meter ritual in `components/DailyResonance.tsx`. Stretched anticipation phase to 7.5s, trigger impact at 7.5s, with a 4.5s reveal/payoff (total ~12s duration).

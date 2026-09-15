@@ -28,6 +28,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   const soundsRef = useRef<Record<string, Howl | null>>({
     buildup: null,
+    uiClick: null,
     impactMeteor: null,
     impactLightning: null,
     impactFireworks: null,
@@ -38,6 +39,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   useEffect(() => {
     soundsRef.current = {
       buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 }),
+      uiClick: new Howl({ src: ['/sounds/ui-click.mp3'], volume: 0.8 }),
       impactMeteor: new Howl({ src: ['/sounds/mixkit-cinematic-whoosh.mp3'], volume: 1.0 }),
       impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
       impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
@@ -130,6 +132,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, [isLockedOut, isRevealed]);
 
   const handleReveal = async () => {
+    if (soundsRef.current.uiClick) soundsRef.current.uiClick.play();
     // Prevent concurrent sequences
     if (isAnimatingRef.current) return;
     if (isRevealed) return;
@@ -215,33 +218,52 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     // 1. Gather (Tension Phase, 1.5s)
     tl.call(() => { if (auroraRef.current) auroraRef.current.setPhase('gather'); }, undefined, 1.5);
     const proxy = { val: 0, jitterMag: 40 };
+
+    const updatePercentage = () => {
+      let jitter = Math.floor((Math.random() - 0.5) * proxy.jitterMag);
+      let currentVal = Math.floor(proxy.val + jitter);
+      currentVal = Math.max(0, Math.min(100, currentVal));
+      setDisplayPercentage(currentVal);
+    };
+
+    // Phase 1: 0 -> 100 (1.5s to 3.0s)
     tl.to(proxy, {
-      val: newPct,
-      duration: 3.0,
-      ease: "power3.inOut",
-      onUpdate: () => {
-        let jitter = Math.floor((Math.random() - 0.5) * proxy.jitterMag);
-        let currentVal = Math.floor(proxy.val + jitter);
-        currentVal = Math.max(0, Math.min(100, currentVal));
-        setDisplayPercentage(currentVal);
-      }
+      val: 100,
+      duration: 1.5,
+      ease: "power2.inOut",
+      onUpdate: updatePercentage
     }, 1.5);
-    // Decay jitter over the same period
+
+    // Phase 2: 100 -> 0 (3.0s to 4.5s)
     tl.to(proxy, {
-      jitterMag: 0,
+      val: 0,
+      duration: 1.5,
+      ease: "power2.inOut",
+      onUpdate: updatePercentage
+    }, 3.0);
+
+    // Decay initial large jitter by 4.5s
+    tl.to(proxy, {
+      jitterMag: 3,
       duration: 3.0,
       ease: "power2.in"
     }, 1.5);
 
-    // 2. High-speed tension roll (converging tightly - 3.0s)
+    // Phase 3: 0 -> finalPct (4.5s to 7.5s)
+    // Decelerate naturally into the actual result
     tl.to(proxy, {
+      val: newPct,
       duration: 3.0,
-      onUpdate: () => {
-        let jitter = Math.floor((Math.random() - 0.5) * 3);
-        let currentVal = Math.max(0, Math.min(100, newPct + jitter));
-        setDisplayPercentage(currentVal);
-      }
+      ease: "power3.out",
+      onUpdate: updatePercentage
     }, 4.5);
+
+    // Settle jitter fully
+    tl.to(proxy, {
+      jitterMag: 0,
+      duration: 1.0,
+      ease: "power2.in"
+    }, 6.5);
 
     // 3. Impact Frame (at 7.5s)
     tl.call(() => {
@@ -279,6 +301,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   };
 
   const handleShare = async () => {
+    if (soundsRef.current.uiClick) soundsRef.current.uiClick.play();
     const shareText = `My Daily Resonance is ${percentage}%! '${quote}' Discover your daily fortune at luckypickcanada.ca (For entertainment purposes only).`;
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
