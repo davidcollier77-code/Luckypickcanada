@@ -1,33 +1,48 @@
-A — Verified
+A — VERIFIED ANALYSIS
 
-- exact root cause(s): A duplicate `useEffect` block in `DailyResonance.tsx` depending on `[tier]` returned a cleanup function containing `cancelAnimationFrame(requestRef.current)`. This hook canceled the Canvas animation frame instantly when `tier` state was updated (at 3.5s in the timeline), thereby preventing the tier-specific effect from running.
-- exact timing relationship discovered: When `animateCanvas()` runs, it relies on a recursive `requestAnimationFrame` loop. Concurrently, `setTier()` is called to update UI text. This update triggered the duplicate `useEffect` unmount logic immediately, killing the animation frame that had just started.
-- relevant current repository facts: `DailyResonance.tsx` handles complex cinematic timing with GSAP `timeline` and standard React hooks.
-- facts vs hypotheses vs unknowns: Verified fact: the extra `useEffect` was present and causing the animation loop cancellation. Verified fact: removing the extra cancel restores the effect while retaining proper unmount cleanup via the original `useEffect`.
+1. **Current Lightning Generation Algorithm:** `spawnLightning` built a jagged branch by subdividing a straight line. Crucially, the base case `if (generation > 7) return;` and `if (length < 8)` did *not* push the final segment, causing the lightning to render as disconnected fragments (a cloud of lines) rather than a continuous electrical path.
+2. **Current Lightning Positioning:** Used a somewhat narrow spread. Target Y was `y + 500 * scale + Math.random() * 300 * scale`.
+3. **Current Strike Timings:** Strikes triggered at 300ms, 1200ms, 2400ms, and 3500ms.
+4. **Current Lifetime/Fade Behavior:** Used a linear decay `l.life -= 0.02`, with chaotic flicker applied over the entire lifetime.
+5. **Current Glow/Core Rendering:** Used a single pass for a broad blue glow (`lineWidth = 3`) and a single pass for a white core (`lineWidth = 1.5`).
+6. **Current Environmental Flash:** Rendered a large radial gradient fill on the whole canvas if `maxLightningOpacity > 0`.
+7. **Current Reduced-Motion Behavior:** Draws a simplified bounded radial gradient that pulses once.
+8. **Mobile/Desktop Branching:** The animation uses `isMobile = window.innerWidth < 768`.
 
-B — Boundaries / Plan
+B — BOUNDARIES AND PLAN
 
-- exact files inspected: `components/DailyResonance.tsx`, `AGENTS.md`, `.jules/jules.md`.
-- exact files changed: `components/DailyResonance.tsx`
-- why each change was necessary: Removing the duplicate `useEffect` prevented the animation cancellation when `tier` state changed, ensuring the tier-specific canvas reveals occur.
-- protected systems confirmed: Checked `pnpm` usage, `Node 22`, audio integration (`Howler.js`), and daily lockout remain uncompromised.
+Scope: Polish the "Cosmic Lightning" visual effect in `components/DailyResonance.tsx`. No changes to thresholds, percentage logic, lockout, APIs, layout, etc.
 
-C — Executed / Verified
+Implementation Plan:
+1.  **Refactor `spawnLightning`:** Fix the fragmentation bug by ensuring segments are pushed in the base cases (`generation >= maxGenerations` or `length < threshold`).
+2.  **Differentiate Primary vs. Secondary Strikes:** Add an `isPrimary` flag to allow the final strike (and one earlier strike) to be thicker, deeper, and more heavily branched, while keeping others as secondary flickers.
+3.  **Implement Multi-Pass Renderer:** Replace the two-pass render with a three-pass cinematic render:
+    - Broad atmospheric glow (skipped on mobile for performance).
+    - Medium luminous body.
+    - Crisp white-hot core.
+4.  **Cinematic Decay:** Adjust the fade to `0.025` for a snappier decay and concentrate the chaotic flicker toward the end of the strike's life.
+5.  **Refine Flash and Branching:** Bound the environmental flash to prevent massive overdraw on desktop. Optimize the recursive branching to use `maxGenerations` which adapts to `isMobile`.
 
-- exact changes made: Removed lines 876-879 in `components/DailyResonance.tsx` containing the duplicate `useEffect(() => {return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); }; }, [tier]);`.
-- exact verification performed: Ran `pnpm run build`, `pnpm test`, and `./jules-verify.sh`. All tests and compilation passed perfectly.
-- tier-by-tier verification: Code is restored to original visual tier intent (Meteor Shower, Cosmic Lightning, Fireworks) triggered continuously at hand-off.
-- timing verification: Final percentage stops, tier is locked, and immediately `animateCanvas()` proceeds because its requestAnimationFrame is no longer killed.
-- remaining issues, assumptions, or unknowns: None.
-- final diff/scope review: Clean 5-line deletion of the redundant unmount hook. No other scope drift.
+C — EXECUTION, VERIFICATION, AND FINAL STATE
 
-Documentation/resource usage
+1.  **Exact files inspected:** `AGENTS.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `components/DailyResonance.tsx`, `.jules/polishing.md`, `.jules/testing.md`, `.jules/deep-dive.md`, `package.json`.
+2.  **Exact files changed:** `components/DailyResonance.tsx`.
+3.  **Exact Lightning rendering problem discovered:** The recursive `buildJaggedBranch` function exited early without pushing the segment data if the recursion limit or minimum length was hit, resulting in fragmented rendering.
+4.  **Exact implementation used to correct it:**
+    - Updated `spawnLightning` to push segments in the base case, fixing the fragmentation.
+    - Introduced `isPrimary` to control scale, glow intensity, and generation depth.
+    - Reduced `maxGenerations` on mobile to maintain performance.
+    - Added a three-pass renderer (Glow, Body, Core) using `ctx.lineCap = 'round'` for high-fidelity rendering.
+    - Adjusted the script timeline to feature anticipation strikes and a massive sympathetic branch on the final 3500ms strike.
+5.  **Exact verification commands run:** `pnpm run build`, `pnpm test`, `./jules-verify.sh`.
+6.  **Actual results:** All builds, tests, and verifications passed.
+7.  **Mobile/responsive verification:** The algorithm dynamically adapts `maxGenerations` (6 on mobile, 8 on desktop primary), `lineWidth` multipliers, and disables the broadest glow pass on mobile to protect frame rates while keeping the cinematic impact.
+8.  **Reduced-motion verification:** The `isReducedMotion` code block was entirely untouched and remains functionally identical.
+9.  **Tier/percentage verification:** `setTier` logic, thresholds, and duplication checks were not altered.
+10. **Protected systems:** No changes to Stripe, Neon, Turnstile, or any external integrations.
 
-Exact source/path | Consulted: Yes/No | Useful: Yes/No | Used/Applied: Yes/No | Contribution
---- | --- | --- | --- | ---
-AGENTS.md | Yes | Yes | Yes | Adherence to reporting rules, bounds checking, and tool procedures.
-.jules/jules.md | Yes | Yes | Yes | Kept the change tight and verified the state of the component without full rewrites.
-.jules/polishing.md | Yes | Yes | Yes | Ensured cinematic timing was kept in place as expected.
-.docs/manifest.json | Yes | No | No | Checked for GSAP documentation; didn't need to consult further.
-
-No library documentation was required for this task.
+Exact source/path | Consulted | Useful | Used/Applied | Contribution
+------------------|-----------|--------|--------------|-------------
+`.jules/polishing.md` | Yes | Yes | Yes | Confirmed boundaries and requirements for visual effects work.
+`.jules/testing.md` | Yes | Yes | Yes | Ensured rigorous testing via `pnpm build` and `./jules-verify.sh`.
+`.jules/deep-dive.md` | Yes | Yes | Yes | Guided the evidence-driven investigation of the canvas rendering fragmentation bug.
