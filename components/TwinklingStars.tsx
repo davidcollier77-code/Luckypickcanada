@@ -55,7 +55,7 @@ const TwinklingStars: React.FC = () => {
       for (let i = 0; i < numStars; i++) {
         stars.push({
           x: Math.random() * width,
-          y: Math.random() * (height * 0.55), // Keep stars in top 55%
+          y: Math.random() * height, // Stars span full height, masked by CSS
           size: Math.random() * 1.0 + 0.5, // Star sizes: 0.5 to 1.5
           baseAlpha: Math.random() * 0.5 + 0.4, // Base opacity: 0.4 to 0.9
           currentAlpha: 0,
@@ -119,7 +119,7 @@ const TwinklingStars: React.FC = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none mix-blend-screen"
-      style={{ zIndex: -15 }} // Positioned between background image (-20) and overlay (-10)
+      style={{ zIndex: -15, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent 50%)', maskImage: 'linear-gradient(to bottom, black 30%, transparent 50%)' }} // Positioned between background image (-20) and overlay (-10)
       aria-hidden="true"
     />
   );
