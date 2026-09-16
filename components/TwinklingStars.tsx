@@ -10,11 +10,25 @@ const TwinklingStars: React.FC = () => {
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId: number = 0;
     let width = window.innerWidth;
     let height = window.innerHeight;
 
-    const isReducedMotion = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+    const mediaQuery = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    let isReducedMotion = mediaQuery?.matches ?? false;
+
+    const handleMotionPreferenceChange = (e: MediaQueryListEvent) => {
+      isReducedMotion = e.matches;
+      if (isReducedMotion && animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+        draw(); // Draw once when motion is disabled
+      } else if (!isReducedMotion && animationFrameId === 0) {
+        draw(); // Resume animation loop
+      }
+    };
+
+    mediaQuery?.addEventListener?.('change', handleMotionPreferenceChange);
 
     // We only want stars in the upper part of the sky (e.g. top 60%),
     // to avoid overlapping mountains and foreground elements in the photograph.
@@ -96,6 +110,7 @@ const TwinklingStars: React.FC = () => {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      mediaQuery?.removeEventListener?.('change', handleMotionPreferenceChange);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
