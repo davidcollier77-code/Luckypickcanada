@@ -1,7 +1,7 @@
 import { getSql } from './lib/db-init';
 import { escapeHtml, hasHeaderInjection, isValidEmailAddress, sanitizeSingleLine, validatePlainTextField } from './form-security';
 
-function validateSuggestion({ name, email, message }) {
+export function validateSuggestion({ name, email, message }) {
   const cleanName = validatePlainTextField({
     value: name,
     label: 'Name',
