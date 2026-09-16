@@ -1,5 +1,7 @@
 'use client';
 import Aurora, { AuroraHandle } from "./Aurora";
+import TwinklingStars from "./TwinklingStars";
+
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -1108,6 +1110,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
       <img src="/images/lucky-meter-night-sky.webp" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" alt="" style={{ objectPosition: "center 40%" }} />
+      <TwinklingStars />
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
 
