@@ -191,12 +191,12 @@ export async function createSuggestion({ name, email, message, website }) {
 
   if (saveResult.status === 'rejected') {
     console.error('Suggestion box save failed', saveResult.reason);
-    return { error: `Suggestion box save failed: ${saveResult.reason?.message || saveResult.reason}` };
+    return { error: 'Unable to save your suggestion right now. Please try again later.' };
   }
 
   if (emailResult.status === 'rejected') {
     console.error('Suggestion box email failed', emailResult.reason);
-    return { error: `Suggestion box email failed: ${emailResult.reason?.message || emailResult.reason}` };
+    return { error: 'Unable to send your suggestion email right now. Please try again later.' };
   }
 
   if (!saved && !emailed) {
