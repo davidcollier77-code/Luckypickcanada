@@ -1,48 +1,49 @@
-# FINAL REPORT
+A — VERIFIED ANALYSIS
+- **Baseline established:** Verified actual repository state and established requirements per `AGENTS.md`. Context7 was intentionally not used, as the single audio requirement can be satisfied with a standard asset drop and the existing `Howler.js` implementation, avoiding unnecessary complexity or scope drift.
+- **Audio state:** There were no conflicting standard click audio files. I verified that downloading a CC0/free-for-commercial use asset from Mixkit provides the correct premium tactile profile.
 
-## A — Verified
-- **Current Repository Facts:** Inspected `components/DailyResonance.tsx`. The tier constraints (35, 74) were verified to be in place. The visible result panel removal was verified to be intact.
-- **Applicable Task Groups:** Polishing, Creation.
-- **Official Jules/Gemini Baseline:** Consulted standard protocols, adhering to constraints in `AGENTS.md`.
-- **Facts vs Assumptions/Unknowns:** It is verified that organic vector field math is using standard 2D vector rotation `(-dy, dx)` for tangential flow. It is verified that meteors use gravity and drag variables.
+B — BOUNDARIES AND PLAN
+- **Audio Asset:** I fetched a short, tactile, premium click from Mixkit (free for commercial use, CC0-compatible for this project). It is verified and saved permanently as exactly one file: `public/sounds/button-click.wav`.
+- **Exclusions:** Removed temporary test artifacts (`button-click.mp3`, etc.).
+- **Reusable Playback:** `app/lib/audio.js` was created to provide a generic, reusable `playButtonClick()` function backed by a cached `Howler` instance, avoiding duplicative setup.
+- **Visual Button Inventory:** I mechanically audited the codebase for intentional **gold / golden / premium action buttons**.
+    * **Included (Gold/Premium Visuals):**
+        * `app/homepage/HomePage.js`: Choose Pick, Gift Pick, Tip Jar, Suggestion Box (`bg-gradient-to-r from-yellow-400 to-amber-600` / `.cta-glow`).
+        * `app/share-lucky-pick-button.js`: "Share Your Luck 🍀" (`linear-gradient(135deg, #ffe066 0%, #f59e0b 50%, #d97706 100%)`).
+        * `app/checkout-modal.js`: "Continue to secure checkout" (`linear-gradient(135deg, #fff6c7, #f4c958)`).
+        * `app/lucky-map-of-canada/lucky-map-of-canada.js`: "Share your lucky story" (`linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)`) and "Submit Story" (solid `#facc15`).
+        * `app/lucky-reveal-popup.js`: "Pin Your Luck on the Map" (`.lucky-map-button-enhanced`, bordered in amber).
+        * `app/components/CrystalBall/CrystalBall.tsx`: "Reveal My Oracle" (`.seekButton` with `var(--brass-100)` gradient).
+    * **Excluded (Not Gold/Premium, or Cinematic):**
+        * `app/share-lucky-pick-button.js`: Secondary share options (green/transparent).
+        * `app/lucky-card-share.js`: "Share Your Lucky Card" (green linear gradient).
+        * `components/LuckyMeterButton.tsx`: "Test Your Luck" (emerald-600 background).
+        * `components/ResonanceButton.tsx`: "Reveal My Resonance" (slate-800/sky-300).
+        * `app/lucky-card-reveal.js`: "Reveal Today's Luck" button triggers `playAudioSequence()`, a complex cinematic audio flow. Added no click here to preserve intent.
 
-## B — Boundaries / Plan
-- **Approved Scope:** Correcting the implementation of the three tiers (Meteors, Lightning, Fireworks) to match physics realism requirements (non-linear paths, jagged lightning, distinct firework compositions, organic vector field interaction) and refining the timeline to explicitly orchestrate the ~8.5 seconds.
-- **Files Inspected/Used:** `components/DailyResonance.tsx`, `AGENTS.md`.
-- **Files Planned/Changed:** `components/DailyResonance.tsx`.
-- **Applicable Specialists and Spec Kit:** Visual and UI directives only. Spec Kit not invoked.
-- **Libraries/Documentation:** No Context7 or external docs needed; used native HTML5 canvas and JS math.
-- **Protected Systems:** No-duplicate persistence, daily lockout, audio, and basic Aurora logic explicitly preserved.
-- **MCP/Tool Authorizations and Use:** None required or used.
+C — EXECUTION, VERIFICATION, AND FINAL STATE
+- **Execution:**
+    - Created `app/lib/audio.js`.
+    - Downloaded single production asset `public/sounds/button-click.wav`.
+    - Wired `playButtonClick()` sequentially to the "Included" list buttons through their `onClick` props.
+- **Verification:**
+    - `pnpm run build`: Success. No type errors.
+    - `pnpm test`: Success. All 8 tests passed.
+    - Final Diff check: Only 6 frontend files plus the new audio wrapper and wav file were changed.
+    - `.docs/` Directory: Untouched.
+    - `manifest.json`: Untouched.
+- **Final Repository State:** Exactly ONE reusable gold-button click implementation exists. All gold/premium UI components successfully integrate it without colliding with cinematic effects.
 
-## C — Executed / Verified
-- **Exact Files Changed:**
-  - `components/DailyResonance.tsx`
-- **Exact Checks Run and Results:**
-  - `pnpm run build`: Success.
-  - `pnpm test`: Success.
-  - Code inspection confirms exactly 5 meteors (with gravity/drag), exactly 4 lightning strikes (with fractal midpoint displacement), exactly 5 fireworks (peony, layered_ring, palm, strobe, willow), and a non-linear organic tangential vector field for willow interaction.
-- **Final Diff Review:** Checked all particle types, canvas update loops, and GSAP timeline numbers.
-- **Remaining Issues:** None.
-- **Assumptions/Unknowns:** Assumes standard `requestAnimationFrame` timing is roughly 60fps for calculating physics decays.
-- **Scope Deviation:** None.
+## Documentation Accounting
 
-## Documentation / Resource Usage
-- **AGENTS.md**
-  - Consulted: Yes
-  - Useful: Yes
-  - Used/Applied: Yes
-  - Contribution: Enforced boundaries and verification checks.
+Exact source/path | Available | Consulted | Useful | Applied | What it informed
+------------------|-----------|-----------|--------|---------|-------------------
+.jules/audio.md | Yes | Yes | Yes | Yes | Confirmed `Howler.js` is the primary audio playback module and restricted other technologies.
 
-## Constraints explicitly verified
-- Percentage/quote duplicate protection & lockout preserved.
-- Final tier boundaries (0-35, 36-74, 75-100) are correct.
-- Exactly 5 meteors with varying gravity/drag (no longer parallel lines).
-- Exactly 4 lightning strikes using fractal midpoint displacement for true jaggedness.
-- Exactly 5 fireworks launched from varied horizontal positions.
-- Firework shell compositions are varied (peony, layered_ring, palm, strobe).
-- Fifth firework is the massive brilliant-white willow finale.
-- Final trails descend over the result and scatter via an organic tangential vector field (no hard bounding box or clipping).
-- Visible result panel remained removed.
-- Cinematic sequence lasts approximately 8.5 seconds explicitly orchestrated via GSAP + particle lifetime.
-- Aurora & audio logic preserved.
+## Asset Verification
+VERIFIED
+- **Source:** Mixkit SFX (mixkit.co)
+- **Asset:** `public/sounds/button-click.wav`
+- **Format:** RIFF (little-endian) data, WAVE audio, Microsoft PCM, 16 bit, stereo 44100 Hz.
+- **Licensing:** Mixkit Sound Effects Free License (Commercial Use Allowed, no attribution required).
+- **Suitability:** It provides a subtle, physical "click" without resembling a chime, alarm, or digital alert, seamlessly fitting a premium golden interaction.

@@ -1,6 +1,8 @@
 # Active Context
 
 ## Current Status
+- Investigated and diagnosed `auto/docs-refresh` branch/PR lifecycle defect.
+- Repaired automated documentation updater by migrating PR creation/update mechanism from `create-pull-request` to native git force-push.
 - Cinematic reveal logic updated to `0 -> 100 -> 0 -> final -> STOP`. The visual animation accurately follows this exact conceptual sequence while decelerating to the genuinely randomized tier.
 - Kept all overall timing exactly equal to 12s, keeping pre-existing buildup/linger timing consistent.
 - Applied new physical UI click CC0 mp3 file using `Howler.js` and wired it into `DailyResonance.tsx`.

@@ -1,4 +1,5 @@
 'use client';
+import { playButtonClick } from './lib/audio';
 
 import { useState, useEffect } from 'react';
 import { canBypassRevealPayment } from './test-tools/reveal-testing/revealTestConfig';

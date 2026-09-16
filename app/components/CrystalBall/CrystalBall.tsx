@@ -1,4 +1,5 @@
 'use client';
+import { playButtonClick } from '../../lib/audio';
 
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
@@ -159,7 +160,7 @@ export default function CrystalBall({
           <button
             type="button"
             className={`${styles.seekButton} inline-flex items-center justify-center`}
-            onClick={handleSeekFortune}
+            onClick={() => { playButtonClick(); handleSeekFortune(); }}
             disabled={status === 'loading' || !question.trim()}
             aria-disabled={status === 'loading' || !question.trim()}
           >

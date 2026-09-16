@@ -61,15 +61,34 @@ jobs:
 
       - name: Create Pull Request
         if: steps.changes.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "docs: update upstream documentation snapshots"
-          title: "docs: scheduled documentation refresh"
-          body: |
-            Automated documentation refresh from the configured upstream documentation sources.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configure git identity for the automated commit
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-            This PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory.
-          branch: auto/docs-refresh
-          delete-branch: true
-          base: main
+          # Stage all modified documentation files produced by the updater
+          git add .docs/
+
+          # Commit the changes. If there's nothing to commit despite the earlier check, skip push.
+          if git commit -m "docs: update upstream documentation snapshots"; then
+            # Force push the absolute desired state to the PR branch.
+            # This explicitly overwrites any stale previous run and perfectly mirrors main + docs,
+            # bypassing the rebase/stash-pop timestamp merge conflict that previously stalled the PR lifecycle.
+            git push --force origin HEAD:refs/heads/auto/docs-refresh
+
+            # Verify if the PR already exists
+            PR_EXISTS=$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number' || echo "")
+
+            if [ -z "$PR_EXISTS" ] || [ "$PR_EXISTS" = "null" ]; then
+              # Create the PR if it does not exist
+              gh pr create \
+                --title "docs: scheduled documentation refresh" \
+                --body "Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local \`.docs/\` snapshots to reflect the latest upstream documentation for the approved library inventory." \
+                --base main \
+                --head auto/docs-refresh
+            else
+              echo "PR #$PR_EXISTS already exists and has been successfully updated via force-push."
+            fi
+          fi
