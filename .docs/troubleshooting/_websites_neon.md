@@ -62,6 +62,7 @@ Drivers, connection strings, pooling, local dev tooling, and troubleshooting.
 - [Connect to Neon securely](https://neon.com/docs/connect/connect-securely.md): Learn how to connect to Neon securely when using a connection string
 - [Connect with pgcli](https://neon.com/docs/connect/connect-pgcli.md): Learn how to connect to Neon using the interactive pgcli client
 - [Connect with psql](https://neon.com/docs/connect/query-with-psql-editor.md): Learn how to connect to Neon using psql
+- [Connect your app](https://neon.com/docs/connect/connect-hub.md): Connect your app to Lakebase Postgres and other backend services
 - [Connection errors](https://neon.com/docs/connect/connection-errors.md): Learn how to resolve connection errors
 - [Connection latency and timeouts](https://neon.com/docs/connect/connection-latency.md): Learn about strategies to manage connection latencies and timeouts
 - [Connection pooling](https://neon.com/docs/connect/connection-pooling.md): Learn how connection pooling works in Neon
@@ -230,6 +231,7 @@ Access frontier and open-source models through a single API.
 
 - [AI Gateway authentication](https://neon.com/docs/ai-gateway/authentication.md): How Neon credentials work with AI Gateway
 - [AI Gateway models](https://neon.com/docs/ai-gateway/models.md): Available models and how to specify them
+- [AI Gateway prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits.md): Buy credits, understand pricing and limits, and manage your balance for the Neon AI Gateway
 - [AI Gateway troubleshooting](https://neon.com/docs/ai-gateway/troubleshooting.md): Common errors and how to fix them
 - [Anthropic Messages API](https://neon.com/docs/ai-gateway/anthropic-messages.md): Use the Anthropic SDK with Neon AI Gateway
 - [Chat completions](https://neon.com/docs/ai-gateway/chat-completions.md): The OpenAI-compatible unified endpoint
@@ -273,7 +275,7 @@ Instant copy-on-write database environments for dev, CI, previews, and recovery.
 
 Projects, branches, computes, roles, databases, and organization settings.
 
-- [All 29 Manage pages](https://neon.com/docs/manage/llms.txt) — key pages below
+- [All 28 Manage pages](https://neon.com/docs/manage/llms.txt) — key pages below
 
 - [Manage projects](https://neon.com/docs/manage/projects.md): Learn how to manage Neon projects from the Neon Console or the Neon API.
 - [Manage branches](https://neon.com/docs/manage/branches.md)
@@ -379,6 +381,11 @@ Contributor guides, component architecture, and documentation standards.
 
 - [Docs contribution guide](https://neon.com/docs/community/contribution-guide.md): Learn how to contribute to the Neon documentation
 - [Getting Neon docs as Markdown](https://neon.com/docs/community/llms-markdown-guide.md): How to get our documentation as plain Markdown for LLMs, tools, and scripts
+
+## Concepts
+
+- [Credentials & access](https://neon.com/docs/concepts/credentials-access.md): How API keys, scoped credentials, permissions, and network controls govern access to your backend
+- [The Neon object model](https://neon.com/docs/concepts/the-object-model.md): How the Neon backend is structured
 
 ## Postgres
 
