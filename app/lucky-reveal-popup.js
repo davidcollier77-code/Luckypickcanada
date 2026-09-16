@@ -1,7 +1,7 @@
 'use client';
 import { playButtonClick } from './lib/audio';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import ShareLuckyPickButton from './share-lucky-pick-button';
 
 const colorDescriptions = {
