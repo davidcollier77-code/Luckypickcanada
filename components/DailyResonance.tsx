@@ -211,7 +211,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     tl.call(() => {
       if (auroraRef.current) auroraRef.current.setPhase('awaken');
       if (soundsRef.current.buildup) {
-        soundsRef.current.buildup.play();
+        // Delay the cinematic buildup slightly so the click sound breathes
+        setTimeout(() => {
+          if (soundsRef.current.buildup && isAnimatingRef.current) {
+            soundsRef.current.buildup.play();
+          }
+        }, 300);
       }
     });
 
@@ -280,10 +285,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         setTimeout(() => { if (soundsRef.current.buildup) soundsRef.current.buildup.stop(); }, 500);
       }
 
-      // Play impact sound
-      if (soundsRef.current[tierAudioKey]) {
-        soundsRef.current[tierAudioKey].play();
-      }
+      // Impact sounds are now triggered per-event in the canvas render loop
 
       // Start canvas animation
       animateCanvas(currentTier, 0);
@@ -296,8 +298,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     }, undefined, 7.5);
 
     // 4. Final lingering buffer to ensure ~12s total cinematic duration
-    // Canvas animation is built to span this remaining 4.5s beautifully.
-    tl.to({}, { duration: 4.5 });
+    // Canvas animation is built to span this remaining 5.5s beautifully.
+    tl.to({}, { duration: 5.5 });
   };
 
   const handleShare = async () => {
@@ -588,22 +590,47 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
          if (elapsedMs > 200 && !scriptPhase1Done.current) {
             scriptPhase1Done.current = true;
             spawnMeteor(w * 0.8, -50, Math.PI * 0.7, 15, 120, 2, '#a0e8ff');
+            if (soundsRef.current.impactMeteor) {
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(1.2, id);
+               soundsRef.current.impactMeteor.volume(0.6, id);
+            }
          }
          if (elapsedMs > 800 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
             spawnMeteor(w * 0.4, -50, Math.PI * 0.65, 20, 80, 1.5, '#ffffff');
+            if (soundsRef.current.impactMeteor) {
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(1.5, id);
+               soundsRef.current.impactMeteor.volume(0.6, id);
+            }
          }
          if (elapsedMs > 1600 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
             spawnMeteor(w + 50, h * 0.1, Math.PI * 0.8, 12, 150, 2.5, '#6eff96');
+            if (soundsRef.current.impactMeteor) {
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(0.9, id);
+               soundsRef.current.impactMeteor.volume(0.7, id);
+            }
          }
          if (elapsedMs > 2200 && !scriptPhase4Done.current) {
             scriptPhase4Done.current = true;
             spawnMeteor(w * 0.6, -50, Math.PI * 0.75, 18, 100, 1.8, '#a0e8ff');
+            if (soundsRef.current.impactMeteor) {
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(1.3, id);
+               soundsRef.current.impactMeteor.volume(0.7, id);
+            }
          }
          if (elapsedMs > 3200 && !scriptPhase5Done.current) {
             scriptPhase5Done.current = true;
             spawnMeteor(w * 0.9, h * 0.2, Math.PI * 0.7, 25, 200, 3, '#ffcd5a'); // final brightest
+            if (soundsRef.current.impactMeteor) {
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(0.7, id);
+               soundsRef.current.impactMeteor.volume(1, id);
+            } // deeper and louder for the finale
          }
       }
 
@@ -612,31 +639,56 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             scriptPhase1Done.current = true;
             // Anticipation - distant or secondary strike
             spawnLightning(w * 0.2, -50, 0.8, false);
+            if (soundsRef.current.impactLightning) {
+               const id = soundsRef.current.impactLightning.play();
+               soundsRef.current.impactLightning.rate(1.3, id);
+               soundsRef.current.impactLightning.volume(0.5, id);
+            }
          }
          if (elapsedMs > 1200 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
             // First strong strike
             spawnLightning(w * 0.65, -50, 1.2, true);
+            if (soundsRef.current.impactLightning) {
+               const id = soundsRef.current.impactLightning.play();
+               soundsRef.current.impactLightning.rate(1, id);
+               soundsRef.current.impactLightning.volume(0.8, id);
+            }
          }
          if (elapsedMs > 2400 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
             // Secondary flicker
             spawnLightning(w * 0.4, -50, 0.7, false);
+            if (soundsRef.current.impactLightning) {
+               const id = soundsRef.current.impactLightning.play();
+               soundsRef.current.impactLightning.rate(1.5, id);
+               soundsRef.current.impactLightning.volume(0.4, id);
+            }
          }
          if (elapsedMs > 3500 && !scriptPhase4Done.current) {
             scriptPhase4Done.current = true;
             // Big final cinematic strike
             spawnLightning(w * 0.85, -50, 1.5, true);
+            if (soundsRef.current.impactLightning) {
+               const id = soundsRef.current.impactLightning.play();
+               soundsRef.current.impactLightning.rate(0.8, id);
+               soundsRef.current.impactLightning.volume(1, id);
+            }
 
-            // Add a sympathetic branch that spawns almost instantly after the main strike
             // Add a sympathetic branch that spawns almost instantly after the main strike
             const timeoutId = setTimeout(() => {
                if (isAnimatingRef.current) {
                   spawnLightning(w * 0.7, -50, 0.9, false);
+                  if (soundsRef.current.impactLightning) {
+                     const id = soundsRef.current.impactLightning.play();
+                     soundsRef.current.impactLightning.rate(1.6, id);
+                     soundsRef.current.impactLightning.volume(0.3, id);
+                  }
                }
             }, 100);
-            // Store timeout for cleanup
-            return () => clearTimeout(timeoutId);
+            // Track timeouts for cleanup if unmounted
+            if (!(canvas as any).timeouts) (canvas as any).timeouts = [];
+            (canvas as any).timeouts.push(timeoutId);
          }
       }
 
@@ -645,27 +697,52 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             scriptPhase1Done.current = true;
             // Launch from far left, Type: Peony
             spawnRocket(w * 0.1, h, w * 0.25, h * 0.3, 1.0, 1.1, 'peony');
+            if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(1.5, id);
+               soundsRef.current.impactMeteor.volume(0.4, id);
+            }
          }
          if (elapsedMs > 1000 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
             // Launch from far right, Type: Layered Ring
             spawnRocket(w * 0.9, h, w * 0.7, h * 0.2, 1.1, 1.2, 'layered_ring');
+            if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(1.3, id);
+               soundsRef.current.impactMeteor.volume(0.4, id);
+            }
          }
          if (elapsedMs > 1900 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
             // Mid left, high altitude, Type: Palm
             spawnRocket(w * 0.3, h, w * 0.4, h * 0.15, 1.0, 1.3, 'palm');
+            if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(1.1, id);
+               soundsRef.current.impactMeteor.volume(0.5, id);
+            }
          }
          if (elapsedMs > 2800 && !scriptPhase4Done.current) {
              scriptPhase4Done.current = true;
              // Mid right, Type: Strobe
              spawnRocket(w * 0.75, h, w * 0.6, h * 0.25, 1.0, 1.0, 'strobe');
+             if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(1.4, id);
+               soundsRef.current.impactMeteor.volume(0.4, id);
+            }
          }
          if (elapsedMs > 3800 && !scriptPhase5Done.current) {
              scriptPhase5Done.current = true;
              // The White Willow Climax
              // Center launch, very high
              spawnRocket(w * 0.5, h, w * 0.5, h * 0.1, 2.5, 1.5, 'willow');
+             if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
+               const id = soundsRef.current.impactMeteor.play();
+               soundsRef.current.impactMeteor.rate(0.8, id);
+               soundsRef.current.impactMeteor.volume(0.7, id);
+            } // Deeper, louder launch
          }
       }
 
@@ -978,16 +1055,24 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         if (!fadeOutTriggered) {
           fadeOutTriggered = true;
           if (soundsRef.current.crackle && soundsRef.current.crackle.playing()) {
+            // Short fade for hard stop
             const currentVol = soundsRef.current.crackle.volume();
-            soundsRef.current.crackle.fade(currentVol, 0, 1000);
+            soundsRef.current.crackle.fade(currentVol, 0, 300);
             setTimeout(() => {
               if (soundsRef.current.crackle) soundsRef.current.crackle.stop();
-            }, 1000);
+            }, 300);
           }
         }
 
-        // Only stop the render loop when all particles are actually gone
-        if (particles.length === 0 && meteors.length === 0 && lightningStrikes.length === 0) {
+        // Allow particles to fade, but enforce an absolute hard stop at 5500ms
+        const isHardStop = elapsedMs > 5500;
+
+        if (isHardStop || (particles.length === 0 && meteors.length === 0 && lightningStrikes.length === 0)) {
+          // Absolute hard stop: kill all audio and exit loop
+          if (soundsRef.current.crackle) soundsRef.current.crackle.stop();
+          if (soundsRef.current.fireworkBurst) soundsRef.current.fireworkBurst.stop();
+          if (soundsRef.current.impactMeteor) soundsRef.current.impactMeteor.stop();
+          if (soundsRef.current.impactLightning) soundsRef.current.impactLightning.stop();
           return;
         }
       }
@@ -999,6 +1084,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if ((canvas as any).timeouts) {
+        (canvas as any).timeouts.forEach((id: any) => clearTimeout(id));
+        (canvas as any).timeouts = [];
+      }
     };
   }, [tier]);
 
