@@ -1,1 +1,0 @@
-docs(governance): remove redundant ABC rule section from AGENTS.md

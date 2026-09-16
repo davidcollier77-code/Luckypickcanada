@@ -1,4 +1,5 @@
 'use client';
+import { playButtonClick } from './lib/audio';
 
 import Image from 'next/image';
 
@@ -178,7 +179,7 @@ export default function ShareLuckyPickButton({ reveal }) {
       `}</style>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-        <button type="button" onClick={() => setIsOpen((current) => !current)} className="share-lucky-button-main" style={buttonStyle} aria-expanded={isOpen}>
+        <button type="button" onClick={() => { playButtonClick(); setIsOpen((current) => !current); }} className="share-lucky-button-main" style={buttonStyle} aria-expanded={isOpen}>
           Share Your Luck 🍀
         </button>
         <p style={{ margin: 0, color: 'rgba(255, 245, 203, 0.78)', lineHeight: 1.5 }}>

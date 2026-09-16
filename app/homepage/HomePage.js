@@ -1,4 +1,5 @@
 'use client';
+import { playButtonClick } from '../lib/audio';
 
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
@@ -356,7 +357,7 @@ export default function HomePage() {
             <p className="mb-4">Ready for today’s pick? Discover a fresh set of lucky numbers and see what combination finds its way to you.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={openLuckyPickCheckout}>Choose a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
+            <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyPickCheckout(e); }}>Choose a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
@@ -364,7 +365,7 @@ export default function HomePage() {
             <h3 className="homepage-offer-title">Gift Experience</h3>
             <p className="mb-4">Share a little Canadian magic with someone you know. The Gift Experience turns Lucky Pick Canada into a fun surprise made to brighten someone’s day.</p>
             <p className="homepage-offer-note">Gift package · CAD $2.99</p>
-            <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={openGiftCheckout}>Gift a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
+            <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}>Gift a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
@@ -372,7 +373,7 @@ export default function HomePage() {
             <h3 className="homepage-offer-title">Leave a tip for the journey.</h3>
             <p className="mb-4">Enjoying Lucky Pick Canada? If you’d like to show a little extra support, the Tip Jar is always here. Completely optional, always appreciated.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <div className="inline-block"><button type="button" className="animate-donate-pulse relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={openTipJar}>Open the tip jar<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button></div>
+            <div className="inline-block"><button type="button" className="animate-donate-pulse relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-gradient-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openTipJar(e); }}>Open the tip jar<span className="absolute inset-0 block w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button></div>
           </article>
         </div>
       </section>
@@ -393,7 +394,7 @@ export default function HomePage() {
           <label>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required /></label>
           <label aria-hidden="true" className="suggestion-box-honeypot">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField siteKey={TURNSTILE_SITE_KEY} submitButtonId="suggestion-box-submit" />
-          <button id="suggestion-box-submit" type="submit" className="cta-glow transition-transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Send suggestion <span aria-hidden="true">→</span></button>
+          <button id="suggestion-box-submit" type="submit" onClick={playButtonClick} className="cta-glow transition-transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Send suggestion <span aria-hidden="true">→</span></button>
         </form>
       </section>
 
