@@ -1,17 +1,21 @@
 # Active Context
 
 ## Current Status
+- Fixed premature cinematic termination in `DailyResonance.tsx` by removing the arbitrary 5500ms hard stop.
+- Implemented true visual-completion logic where audio cleanup and loop termination strictly await particle dissipation.
+- Introduced `mixkit-firework-crackle.mp3` as a distinct White Willow firework sound, separated from ordinary firework burst sounds.
+- Synchronized the White Willow crackle volume/fade directly to the opacity of the White Willow particles.
+
+## Next Steps
+- None, cinematic repair task completed successfully.
+
+## Previous Context
 - Created and implemented a `TwinklingStars` canvas component for the Lucky Meter.
 - Positioned it between the background image and foreground overlays in `components/DailyResonance.tsx`.
 - Included logic to render static stars but disable the twinkling animation when `prefers-reduced-motion` is enabled.
 - Fixed Lucky Meter star visibility by adjusting radius and alpha to survive anti-aliasing and the `-z-10` dark overlay.
 - Polished audio flow to prevent duplicate clicks by moving playback past the GSAP state guards in `DailyResonance.tsx`.
 - Adjusted cinematic buildup separation delay down to 150ms for a more responsive and realistic click transition.
-
-## Next Steps
-- Consider tweaking star density or twinkle speed if further refinement is desired.
-
-## Previous Context
 - Identified and fixed retry timing bug in the documentation updater (changed 60 seconds to exactly 180 seconds to match intended 3 minute delay).
 - Added test coverage in `test-refresh-docs.js` specifically asserting the new 180s delay behavior using a mocked `setTimeout`.
 - Cleaned up the `.github/workflows/refresh-docs.yml` by removing the invalid `queue: max` property under `concurrency`.

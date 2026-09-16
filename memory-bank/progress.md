@@ -1,15 +1,11 @@
 # Progress
 
-## 2026-09-16 - Cinematic Audio Polish
-- **Status:** Verified.
-- Completed final cinematic polish pass for the Daily Resonance Lucky Meter effects (Meteor Shower, Cosmic Lightning, Fireworks).
-- Introduced a 300ms delay for the cinematic buildup after the button click to give the UI interaction breathing room.
-- Replaced monolithic event sounds with per-event sound playback. Each meteor, lightning strike, and firework launch/burst now has independently triggered, synchronized audio with slight pitch/volume variation.
-- Implemented the Fireworks final crackle effect using the `willow` particles. The `crackle` sound plays based on the final firework's opacity and stops cleanly when the cinematic completes.
-- Enforced a hard stop on the cinematic reveal loop after 5.5s (GSAP timeline completion). This stops all audio loops/instances and ensures no orphaned animation loops or trailing audio tails.
+## Milestones Achieved
+- Integrated `willowCrackle` exclusively for the "White Willow" firework tier in `components/DailyResonance.tsx`.
+- Removed the arbitrary 5500ms hard stop that cut off visuals early.
+- Made visual tracking arrays (`particles`, `meteors`, `lightningStrikes`) the strict source of truth for cinematic termination and audio cleanup.
+- Tied the `willowCrackle` audio fade directly to the fading opacity of the "White Willow" particles for perfect synchronization.
+- Successfully downloaded and integrated Mixkit's "Firework Crackle" effect under a commercial-use free license without attribution.
 
-## 2026-09-16 - PR #1107 Repair
-- **Status:** Verified.
-- Cleaned up PR #1107 by manually resolving the `memory-bank/activeContext.md` merge conflict, retaining both original intent from the PR (180s doc update retry delay) and the latest cinematic audio polish status from `main`.
-- Verified and preserved the 180s delay behavior and test in `test-refresh-docs.js`.
-- Cleaned up extraneous `fix_*.js` debugging files left on the PR branch.
+## Pending Work
+- None remaining for this cinematic issue.
