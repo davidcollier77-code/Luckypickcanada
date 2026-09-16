@@ -458,9 +458,9 @@ async function main() {
         fetchSuccess = true;
       } catch (e) {
         console.error(`Failed to fetch docs for ${lib} on first attempt:`, e.message);
-        console.log(`Waiting 60 seconds before retrying ${lib}...`);
+        console.log(`Waiting 180 seconds before retrying ${lib}...`);
 
-        await new Promise(resolve => setTimeout(resolve, 60 * 1000));
+        await new Promise(resolve => setTimeout(resolve, 180 * 1000));
 
         try {
             console.log(`Retrying fetch for ${lib}...`);

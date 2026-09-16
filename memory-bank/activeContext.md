@@ -1,6 +1,10 @@
 # Active Context
 
 ## Current Status
+- Identified and fixed retry timing bug in the documentation updater (changed 60 seconds to exactly 180 seconds to match intended 3 minute delay).
+- Added test coverage in `test-refresh-docs.js` specifically asserting the new 180s delay behavior using a mocked `setTimeout`.
+- Cleaned up the `.github/workflows/refresh-docs.yml` by removing the invalid `queue: max` property under `concurrency`.
+- Cleaned up all temporary files and artifacts left over from previous archived runs.
 - Cinematic reveal audio polished for Daily Resonance Lucky Meter.
 - Button click and cinematic buildup have a 300ms separation for clearer audio feedback.
 - Meteor, Lightning, and Fireworks now use per-event synchronized audio triggers.
@@ -8,6 +12,8 @@
 - A hard stop is enforced at the end of the cinematic sequence (5.5s), terminating all audio, animations, and cleanup loops accurately.
 
 ## Next Steps
+- Verify visual consistency on slow devices.
+- Confirm click effect volume feels appropriate on actual physical hardware.
 - Finalize and submit the task.
 
 ## Previous Context
