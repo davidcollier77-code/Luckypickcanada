@@ -6,16 +6,23 @@ Do not replace repository evidence with memory, prior reports, PR descriptions, 
 
 1. REQUIRED STARTING ORDER
 
-1. Read "AGENTS.md" first.
-2. Identify applicable task group(s): "creation", "troubleshooting", "polishing", "testing", "security", "audio", "deep-dive", "seo".
-3. Establish the applicable official Jules/Gemini documentation baseline.
-4. Inspect the actual current repository, branch, files, configuration, code, tests, and task path.
-5. Read materially applicable repository guidance, specialist files, Spec Kit commands, runbooks, Memory Bank, source/configuration, and tests.
-6. Identify exact relevant libraries, frameworks, platforms, tools, documentation, protected systems, files, and constraints.
-7. Separate verified facts from assumptions, hypotheses, and unknowns.
-8. Do not begin implementation from a prior agent report or inferred state; current repository state is the source of truth.
+2. Read "AGENTS.md" first.
 
-2. MANDATORY OFFICIAL JULES/GEMINI BASELINE
+3. Identify applicable task group(s): "creation", "troubleshooting", "polishing", "testing", "security", "audio", "deep-dive", "seo".
+
+4. Establish the applicable official Jules/Gemini documentation baseline.
+
+5. Inspect the actual current repository, branch, files, configuration, code, tests, and task path.
+
+6. Read materially applicable repository guidance, specialist files, Spec Kit commands, runbooks, Memory Bank, source/configuration, and tests.
+
+7. Identify exact relevant libraries, frameworks, platforms, tools, documentation, protected systems, files, and constraints.
+
+8. Separate verified facts from assumptions, hypotheses, and unknowns.
+
+9. Do not begin implementation from a prior agent report or inferred state; current repository state is the source of truth.
+
+10. MANDATORY OFFICIAL JULES/GEMINI BASELINE
 
 For every task, consult the applicable documents from this mandatory Jules/Gemini baseline; do not skip the baseline because the task appears simple.
 Required official sources as applicable:
@@ -101,16 +108,20 @@ The established inventory is 53 libraries; preserve the existing inventory and g
 For every materially relevant library/framework/platform/tool:
 
 1. Identify exact name and version in use or relevant.
+
 2. Check ".docs/manifest.json".
+
 3. Identify the exact existing documentation entry/path.
+
 4. Actually consult relevant existing documentation when materially applicable.
+
 5. Apply relevant information when it materially affects the task.
    Every task must identify its most relevant existing library group/library.
    If consulted but not useful, report: "Consulted: Yes | Useful: No | Used/Applied: No".
    Never claim a library was used merely because it appears in "package.json", "node_modules", the manifest, or tooling.
    Report only actual consultation and actual contribution.
 
-7. CONTEXT7 CONTROLLED FALLBACK
+6. CONTEXT7 CONTROLLED FALLBACK
 
 Context7 is documentation fallback, not the normal documentation source.
 Use repository-authoritative documentation first.
@@ -122,6 +133,7 @@ Do not modify the approved library inventory because Context7 lacks a library or
 Without authorization, state exactly: "PAUSING FOR AUTHORIZATION: Context7" and halt the Context7-dependent step.
 Every actual MCP/tool invocation must report: action | reason | authorization | result | contribution.
 Neon and Stitch remain task-specific resources when materially applicable under repository policy; other MCPs require explicit approval unless separately authorized. Connection does not prove actual use.
+Unless explicitly directed otherwise by the user, Firecrawl may be used only after all applicable current library documentation files (the ".docs/" library documentation files) and approved project reference sources have been exhausted and are insufficient to resolve the task.
 
 8. ACTUAL REPOSITORY ANALYSIS
 
@@ -239,7 +251,7 @@ Exact source/path| Consulted| Useful| Used/Applied| Contribution
 
 For every relevant library/framework/platform/tool include exact name/version and exact ".docs" manifest path when available, plus actual consultation and contribution.
 For every actual MCP/tool invocation include action, reason, authorization, result, and contribution.
-Name exact files. Never report vague labels such as “Spec Kit”; report exact ".jules/cmds/*.md" filename(s).
+Name exact files. Never report vague labels such as "Spec Kit"; report exact ".jules/cmds/*.md" filename(s).
 
 14. FINAL GOVERNANCE AUDIT
 
