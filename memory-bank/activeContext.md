@@ -1,15 +1,20 @@
 # Active Context
 
 ## Current Status
+- Investigated `Julesfirecrawl` environment variable availability for MCP POC.
+- Determined that environment variables must be explicitly enabled at task creation time via the UI to be available in the task environment.
+- Verified that `Julesfirecrawl` is not accessible in the current session.
+- Concluded that the CLI method (`@modelcontextprotocol/inspector`) is technically supported but cannot work in this specific task session without the prerequisite environment variable toggle being enabled.
+
+## Next Steps
+- Provide the final troubleshooting report.
+- A new task must be created with the `Julesfirecrawl` environment variable explicitly enabled to proceed with any Firecrawl MCP POC.
+
+## Previous Context
 - Fixed premature cinematic termination in `DailyResonance.tsx` by removing the arbitrary 5500ms hard stop.
 - Implemented true visual-completion logic where audio cleanup and loop termination strictly await particle dissipation.
 - Introduced `mixkit-firework-crackle.mp3` as a distinct White Willow firework sound, separated from ordinary firework burst sounds.
 - Synchronized the White Willow crackle volume/fade directly to the opacity of the White Willow particles.
-
-## Next Steps
-- None, cinematic repair task completed successfully.
-
-## Previous Context
 - Created and implemented a `TwinklingStars` canvas component for the Lucky Meter.
 - Positioned it between the background image and foreground overlays in `components/DailyResonance.tsx`.
 - Included logic to render static stars but disable the twinkling animation when `prefers-reduced-motion` is enabled.
