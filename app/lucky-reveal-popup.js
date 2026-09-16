@@ -1,4 +1,5 @@
 'use client';
+import { playButtonClick } from './lib/audio';
 
 import { useState, useEffect } from 'react';
 import ShareLuckyPickButton from './share-lucky-pick-button';
@@ -423,7 +424,7 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
 
           <button
             type="button"
-            onClick={closeReveal}
+            onClick={() => { playButtonClick(); closeReveal(); }}
             className="lucky-map-button-enhanced"
             style={{
               marginTop: '1.8rem',
