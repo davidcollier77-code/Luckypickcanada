@@ -35,7 +35,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     impactLightning: null,
     impactFireworks: null,
     fireworkBurst: null,
-    crackle: null
+    crackle: null,
+    willowCrackle: null
   });
 
   useEffect(() => {
@@ -46,7 +47,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
       impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
       fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
-      crackle: new Howl({ src: ['/sounds/mixkit-magic-sparkles.mp3'], volume: 0.3, loop: true })
+      crackle: new Howl({ src: ['/sounds/mixkit-magic-sparkles.mp3'], volume: 0.3, loop: true }),
+      willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0 })
     };
     return () => {
        Howler.unload();
@@ -940,22 +942,36 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
          // Explode if reached target
          if (r.vy < 0 && r.y <= r.targetY) {
             spawnBurst(r.x, r.y, r.type, r.color1, r.color2, r.sizeMultiplier);
-            if (activeTier === 'Fireworks' && soundsRef.current.fireworkBurst) {
-               const id = soundsRef.current.fireworkBurst.play();
-               soundsRef.current.fireworkBurst.rate(0.8 + Math.random() * 0.4, id);
-               soundsRef.current.fireworkBurst.volume(0.4 + Math.random() * 0.3, id);
-            }
-            if (activeTier === 'Fireworks' && r.type === 'willow' && !soundsRef.current.crackle?.playing()) {
-               soundsRef.current.crackle?.play();
-               soundsRef.current.crackle?.volume(0.3); // Initial volume
+            if (activeTier === 'Fireworks') {
+               if (r.type === 'willow') {
+                 if (soundsRef.current.willowCrackle) {
+                   const id = soundsRef.current.willowCrackle.play();
+                   soundsRef.current.willowCrackle.volume(1.0, id);
+                 }
+               } else {
+                 if (soundsRef.current.fireworkBurst) {
+                   const id = soundsRef.current.fireworkBurst.play();
+                   soundsRef.current.fireworkBurst.rate(0.8 + Math.random() * 0.4, id);
+                   soundsRef.current.fireworkBurst.volume(0.4 + Math.random() * 0.3, id);
+                 }
+               }
             }
             rockets.splice(i, 1);
          } else if (r.vy > 0 && r.y >= r.targetY) {
             spawnBurst(r.x, r.y, r.type, r.color1, r.color2, r.sizeMultiplier);
-            if (activeTier === 'Fireworks' && soundsRef.current.fireworkBurst) {
-               const id = soundsRef.current.fireworkBurst.play();
-               soundsRef.current.fireworkBurst.rate(0.8 + Math.random() * 0.4, id);
-               soundsRef.current.fireworkBurst.volume(0.4 + Math.random() * 0.3, id);
+            if (activeTier === 'Fireworks') {
+               if (r.type === 'willow') {
+                 if (soundsRef.current.willowCrackle) {
+                   const id = soundsRef.current.willowCrackle.play();
+                   soundsRef.current.willowCrackle.volume(1.0, id);
+                 }
+               } else {
+                 if (soundsRef.current.fireworkBurst) {
+                   const id = soundsRef.current.fireworkBurst.play();
+                   soundsRef.current.fireworkBurst.rate(0.8 + Math.random() * 0.4, id);
+                   soundsRef.current.fireworkBurst.volume(0.4 + Math.random() * 0.3, id);
+                 }
+               }
             }
             rockets.splice(i, 1);
          }
@@ -967,10 +983,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         p.history.push({ x: p.x, y: p.y });
         if (p.history.length > (p.type === 'willow' ? 12 : 5)) p.history.shift();
 
-        // Crackle volume based on willow particle opacity
-        if (p.type === 'willow' && p.opacity > 0 && soundsRef.current.crackle?.playing() && i % 10 === 0) {
-            // Very roughly map highest opacity to volume
-            soundsRef.current.crackle.volume(Math.min(0.5, p.opacity * 0.2));
+        // Willow crackle volume based on willow particle opacity
+        if (p.type === 'willow' && p.opacity > 0 && soundsRef.current.willowCrackle?.playing() && i % 10 === 0) {
+            // Map highest opacity to volume to ensure we hear it all the way down
+            soundsRef.current.willowCrackle.volume(Math.min(1.0, p.opacity));
         }
 
         // Willow organic interaction with text area
@@ -1054,25 +1070,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       } // End !isReducedMotion
 
       if (!canSpawn) {
-        // Stop audio smoothly
-        if (!fadeOutTriggered) {
-          fadeOutTriggered = true;
-          if (soundsRef.current.crackle && soundsRef.current.crackle.playing()) {
-            // Short fade for hard stop
-            const currentVol = soundsRef.current.crackle.volume();
-            soundsRef.current.crackle.fade(currentVol, 0, 300);
-            setTimeout(() => {
-              if (soundsRef.current.crackle) soundsRef.current.crackle.stop();
-            }, 300);
-          }
-        }
-
-        // Allow particles to fade, but enforce an absolute hard stop at 5500ms
-        const isHardStop = elapsedMs > 5500;
-
-        if (isHardStop || (particles.length === 0 && meteors.length === 0 && lightningStrikes.length === 0)) {
-          // Absolute hard stop: kill all audio and exit loop
-          if (soundsRef.current.crackle) soundsRef.current.crackle.stop();
+        // Only stop when all particles have truly dissipated visually
+        if (particles.length === 0 && meteors.length === 0 && lightningStrikes.length === 0) {
+          if (soundsRef.current.willowCrackle) soundsRef.current.willowCrackle.stop();
           if (soundsRef.current.fireworkBurst) soundsRef.current.fireworkBurst.stop();
           if (soundsRef.current.impactMeteor) soundsRef.current.impactMeteor.stop();
           if (soundsRef.current.impactLightning) soundsRef.current.impactLightning.stop();

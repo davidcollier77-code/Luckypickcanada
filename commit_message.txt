@@ -1,8 +1,6 @@
-feat: Add subtle twinkling stars to Lucky Meter background
+fix: cinematic termination and white willow audio
 
-- Created a lightweight HTML5 `<canvas>` React component (`TwinklingStars`) to render a sparse, subtle layer of twinkling stars.
-- Stars only render in the upper 55% of the viewport, avoiding the mountain/foreground silhouette in the existing `lucky-meter-night-sky.webp` image.
-- A maximum of ~30% of generated stars animate gently with sinusoidal math, resulting in a restrained, photorealistic twinkle effect.
-- Rendered precisely at `-z-15`, placing it between the background image (`-z-20`) and dark overlay (`-z-10`).
-- Integrated effectively into `components/DailyResonance.tsx`.
-- Handled `prefers-reduced-motion` cleanly by disabling the `requestAnimationFrame` loop, resulting in a completely static, unmoving starfield.
+- Removed premature 5500ms cinematic hard stop in DailyResonance.tsx.
+- Made visual tracking arrays the authoritative termination condition.
+- Added mixkit-firework-crackle.mp3 for White Willow exclusively.
+- Synced White Willow audio fade with visual particle opacity.

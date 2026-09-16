@@ -1,21 +1,26 @@
-A — Verified
-The `AGENTS.md` file contained a redundant `CORE ABC RULE` section at the bottom, which unnecessarily duplicated the main `A — ANALYZE`, `B — BOUNDARIES`, and `C — CONCRETE EXECUTION` governance sections defined earlier in the file.
+## 🔴 LUCKYPICKCANADA — LUCKY METER CINEMATIC FINALE REPAIR
 
-B — Boundaries / Plan
-* Approved scope: Remove only the redundant `CORE ABC RULE` section from the end of `AGENTS.md`.
-* Selected task group: `deep-dive` (repository governance and documentation structure).
-* Applicable `.jules/` specialist: `.jules/deep-dive.md`.
-* Memory Bank files consulted: `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, `memory-bank/techContext.md`.
-* `.docs` documentation consulted: No library documentation was required for this task.
+This PR implements the requested surgical fix for premature cinematic termination across the Lucky Meter tiers in `components/DailyResonance.tsx`.
 
-C — Executed / Verified
-* Exact files changed: `AGENTS.md`.
-* Removed the redundant `CORE ABC RULE` section at the end of `AGENTS.md`.
-* Verified that the primary A/B/C governance sections remain intact.
-* Exact tests/builds/checks run: Ran `./jules-verify.sh` to ensure build and lightweight tests pass without issue.
-* Results: Build and docs tests passed; diff verified to contain only the intended deletion.
-* Remaining issues: None.
-* Assumptions and unknowns: None.
-* Scope deviations: None.
+### A — Verified Root Cause
+The canvas animation loop was previously hard-coded to terminate unconditionally via `const isHardStop = elapsedMs > 5500;`. This abruptly aborted the visual decay and forcefully stopped all audio streams (including the long-running White Willow particles), regardless of whether the particles had finished dissipating on screen. Furthermore, the White Willow effect incorrectly shared standard audio loops instead of having a distinct, dedicated firework audio profile.
 
-Documentation report: No library documentation was required for this task.
+### B — Approved Scope & Execution
+- **Removed Premature Cutoffs:** The 5500ms hard stop has been removed. The loop will now cleanly terminate only once the tracking arrays (`particles`, `meteors`, `lightningStrikes`) are demonstrably empty, allowing effects to finish naturally.
+- **Dedicated White Willow Audio:** Integrated a properly licensed "Firework Crackle" asset (`mixkit-firework-crackle.mp3` from Mixkit under the Free Commercial-Use License) as a distinct audio stream exclusively for the White Willow tier.
+- **Audio/Visual Synchronization:** Bound the volume/fade behavior of `willowCrackle` strictly to the tracking opacity values of active `willow` particles. As the particles visually fade, the crackle audio smoothly decreases synchronously.
+- **Protected Behaviors Preserved:** All existing Howler.js implementation specifics, normal tier sounds (meteors, lightning, standard fireworks bursts), structural animations, and accessibility features (`prefers-reduced-motion`) have been strictly preserved.
+
+### Verification Results
+1. Build `pnpm run build` succeeds completely.
+2. `vitest` tests pass with no regressions.
+3. `./jules-verify.sh` automated checks pass.
+4. Diff verified to ensure no external, unauthorized systems were touched.
+
+### Documentation & Libraries Consulted
+| Exact source/path | Consulted | Useful | Used/Applied | Contribution |
+| :--- | :--- | :--- | :--- | :--- |
+| `AGENTS.md` | Yes | Yes | Yes | Provided governance over repository workflow, task routing, and boundaries. |
+| `.jules/jules.md` | Yes | Yes | Yes | Explicitly required initialization and verification workflows. |
+| `.jules/audio.md` | Yes | Yes | Yes | Confirmed `Howler.js` is the primary playback target and public MP3s must be licensed. |
+| `/goldfire/howler.js` | Yes | Yes | Yes | Confirmed Howler usage syntax and standard implementation methods via local usage patterns. |
