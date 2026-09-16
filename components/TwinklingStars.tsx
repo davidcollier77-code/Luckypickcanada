@@ -56,8 +56,8 @@ const TwinklingStars: React.FC = () => {
         stars.push({
           x: Math.random() * width,
           y: Math.random() * (height * 0.55), // Keep stars in top 55%
-          size: Math.random() * 0.8 + 0.2, // Tiny sizes: 0.2 to 1.0
-          baseAlpha: Math.random() * 0.5 + 0.2, // Base opacity: 0.2 to 0.7
+          size: Math.random() * 1.0 + 0.5, // Star sizes: 0.5 to 1.5
+          baseAlpha: Math.random() * 0.5 + 0.4, // Base opacity: 0.4 to 0.9
           currentAlpha: 0,
           twinkleSpeed: Math.random() * 0.01 + 0.005, // Slow twinkle
           twinklePhase: Math.random() * Math.PI * 2,

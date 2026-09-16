@@ -134,12 +134,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   }, [isLockedOut, isRevealed]);
 
   const handleReveal = async () => {
-    if (soundsRef.current.uiClick) soundsRef.current.uiClick.play();
     // Prevent concurrent sequences
     if (isAnimatingRef.current) return;
     if (isRevealed) return;
     if (isLoading) return;
     if (isRevealing) return;
+
+    if (soundsRef.current.uiClick) soundsRef.current.uiClick.play();
 
     isAnimatingRef.current = true;
     setIsLoading(true);
@@ -218,7 +219,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           if (soundsRef.current.buildup && isAnimatingRef.current) {
             soundsRef.current.buildup.play();
           }
-        }, 300);
+        }, 150);
       }
     });
 

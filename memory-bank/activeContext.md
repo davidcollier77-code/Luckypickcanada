@@ -4,6 +4,9 @@
 - Created and implemented a `TwinklingStars` canvas component for the Lucky Meter.
 - Positioned it between the background image and foreground overlays in `components/DailyResonance.tsx`.
 - Included logic to render static stars but disable the twinkling animation when `prefers-reduced-motion` is enabled.
+- Fixed Lucky Meter star visibility by adjusting radius and alpha to survive anti-aliasing and the `-z-10` dark overlay.
+- Polished audio flow to prevent duplicate clicks by moving playback past the GSAP state guards in `DailyResonance.tsx`.
+- Adjusted cinematic buildup separation delay down to 150ms for a more responsive and realistic click transition.
 
 ## Next Steps
 - Consider tweaking star density or twinkle speed if further refinement is desired.
