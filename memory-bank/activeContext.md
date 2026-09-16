@@ -1,15 +1,18 @@
 # Active Context
 
 ## Current Status
+- Investigated Jules environment variable injection mechanisms.
+- Confirmed `Julesfirecrawl` is not present in the default task environment.
+- Verified from `.docs/creation/jules_google_docs.md` that environment variables must be explicitly enabled at task creation.
+
+## Next Steps
+- User to create a new Jules task and explicitly enable the required environment variables in the task creation UI.
+
+## Previous Context
 - Fixed premature cinematic termination in `DailyResonance.tsx` by removing the arbitrary 5500ms hard stop.
 - Implemented true visual-completion logic where audio cleanup and loop termination strictly await particle dissipation.
 - Introduced `mixkit-firework-crackle.mp3` as a distinct White Willow firework sound, separated from ordinary firework burst sounds.
 - Synchronized the White Willow crackle volume/fade directly to the opacity of the White Willow particles.
-
-## Next Steps
-- None, cinematic repair task completed successfully.
-
-## Previous Context
 - Created and implemented a `TwinklingStars` canvas component for the Lucky Meter.
 - Positioned it between the background image and foreground overlays in `components/DailyResonance.tsx`.
 - Included logic to render static stars but disable the twinkling animation when `prefers-reduced-motion` is enabled.
