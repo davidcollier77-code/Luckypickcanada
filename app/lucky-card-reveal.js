@@ -291,7 +291,8 @@ export default function LuckyCardReveal() {
 
     // Drive Framer Motion sequence manually so it is locked to the Master Clock
     if (animationControlsRef.current && 'time' in animationControlsRef.current) {
-        animationControlsRef.current.time = Math.max(0, Math.min(elapsed, 12.0));
+        const sequenceDuration = STRIKE_SCHEDULES[activeTierRef.current][STRIKE_SCHEDULES[activeTierRef.current].length - 1] + 1.5;
+        animationControlsRef.current.time = Math.max(0, Math.min(elapsed, sequenceDuration));
     }
 
     const ctx = bgCanvasRef.current.getContext('2d');
@@ -549,7 +550,8 @@ export default function LuckyCardReveal() {
         }, 700);
     }
 
-    if (elapsed < 12.0) {
+    const maxLifetime = flipAt + 3.0;
+    if (elapsed < maxLifetime) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     } else {
       // Safety release

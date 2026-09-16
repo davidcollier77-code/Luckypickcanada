@@ -35,6 +35,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     impactLightning: null,
     impactFireworks: null,
     fireworkBurst: null,
+    fireworkBurstAlt: null,
     crackle: null,
     willowCrackle: null
   });
@@ -47,6 +48,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
       impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
       fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
+      fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'] }),
       crackle: new Howl({ src: ['/sounds/mixkit-magic-sparkles.mp3'], volume: 0.3, loop: true }),
       willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0 })
     };
@@ -949,10 +951,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                    soundsRef.current.willowCrackle.volume(1.0, id);
                  }
                } else {
-                 if (soundsRef.current.fireworkBurst) {
-                   const id = soundsRef.current.fireworkBurst.play();
-                   soundsRef.current.fireworkBurst.rate(0.8 + Math.random() * 0.4, id);
-                   soundsRef.current.fireworkBurst.volume(0.4 + Math.random() * 0.3, id);
+                 const soundObj = r.type === 'strobe' ? soundsRef.current.fireworkBurstAlt : soundsRef.current.fireworkBurst;
+                 if (soundObj) {
+                   const id = soundObj.play();
+                   soundObj.rate(0.8 + Math.random() * 0.4, id);
+                   soundObj.volume(0.4 + Math.random() * 0.3, id);
                  }
                }
             }
@@ -966,10 +969,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                    soundsRef.current.willowCrackle.volume(1.0, id);
                  }
                } else {
-                 if (soundsRef.current.fireworkBurst) {
-                   const id = soundsRef.current.fireworkBurst.play();
-                   soundsRef.current.fireworkBurst.rate(0.8 + Math.random() * 0.4, id);
-                   soundsRef.current.fireworkBurst.volume(0.4 + Math.random() * 0.3, id);
+                 const soundObj = r.type === 'strobe' ? soundsRef.current.fireworkBurstAlt : soundsRef.current.fireworkBurst;
+                 if (soundObj) {
+                   const id = soundObj.play();
+                   soundObj.rate(0.8 + Math.random() * 0.4, id);
+                   soundObj.volume(0.4 + Math.random() * 0.3, id);
                  }
                }
             }
@@ -1071,11 +1075,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
       if (!canSpawn) {
         // Only stop when all particles have truly dissipated visually
-        if (particles.length === 0 && meteors.length === 0 && lightningStrikes.length === 0) {
-          if (soundsRef.current.willowCrackle) soundsRef.current.willowCrackle.stop();
-          if (soundsRef.current.fireworkBurst) soundsRef.current.fireworkBurst.stop();
-          if (soundsRef.current.impactMeteor) soundsRef.current.impactMeteor.stop();
-          if (soundsRef.current.impactLightning) soundsRef.current.impactLightning.stop();
+        if (particles.length === 0 && meteors.length === 0 && lightningStrikes.length === 0 && rockets.length === 0) {
+          // Let sounds naturally tail off. They handle their own cleanup.
           return;
         }
       }

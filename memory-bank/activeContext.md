@@ -1,10 +1,14 @@
 # Active Context
 
 ## Current Status
-- Fixed premature cinematic termination in `DailyResonance.tsx` by removing the arbitrary 5500ms hard stop.
+- Replaced the arbitrary 12.0s hard stop in `LuckyCardReveal` with a dynamic `maxLifetime` calculation based directly on `STRIKE_SCHEDULES`.
+- Fixed premature cinematic termination in `DailyResonance.tsx` by including `rockets.length === 0` in the completion check, ensuring flight states don't bypass cleanup.
 - Implemented true visual-completion logic where audio cleanup and loop termination strictly await particle dissipation.
 - Introduced `mixkit-firework-crackle.mp3` as a distinct White Willow firework sound, separated from ordinary firework burst sounds.
+- Added `fireworkBurstAlt` (`mixkit-magical-impact.mp3`) alongside `fireworkBurst` (`freesound_community-fireworks-1-94483.mp3`) in `DailyResonance.tsx` to provide genuinely distinct audio sources for 'strobe' and 'peony' fireworks.
+- Removed artificial `.stop()` calls from `DailyResonance.tsx` clean-up phase to allow sounds to decay organically.
 - Synchronized the White Willow crackle volume/fade directly to the opacity of the White Willow particles.
+- Added a CSS `linear-gradient` mask to `TwinklingStars` to guarantee stars fade entirely into the sky, stopping them from overlapping the landscape mountain imagery.
 
 ## Next Steps
 - None, cinematic repair task completed successfully.
