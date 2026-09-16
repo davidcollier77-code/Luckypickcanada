@@ -32,7 +32,7 @@ const TwinklingStars: React.FC = () => {
 
     // We only want stars in the upper part of the sky (e.g. top 60%),
     // to avoid overlapping mountains and foreground elements in the photograph.
-    const STAR_DENSITY = 0.0001; // sparse
+    const STAR_DENSITY = 0.0003; // slightly more visible but subtle
     const maxStars = Math.floor(width * height * STAR_DENSITY);
     const stars: { x: number; y: number; size: number; baseAlpha: number; currentAlpha: number; twinkleSpeed: number; twinklePhase: number; isTwinkling: boolean }[] = [];
 
@@ -56,7 +56,7 @@ const TwinklingStars: React.FC = () => {
         stars.push({
           x: Math.random() * width,
           y: Math.random() * height, // Stars span full height, masked by CSS
-          size: Math.random() * 1.0 + 0.5, // Star sizes: 0.5 to 1.5
+          size: Math.random() * 1.5 + 0.8, // Star sizes: 0.8 to 2.3 to survive anti-aliasing
           baseAlpha: Math.random() * 0.5 + 0.4, // Base opacity: 0.4 to 0.9
           currentAlpha: 0,
           twinkleSpeed: Math.random() * 0.01 + 0.005, // Slow twinkle
@@ -118,8 +118,8 @@ const TwinklingStars: React.FC = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full pointer-events-none mix-blend-screen"
-      style={{ zIndex: -15, WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent 50%)', maskImage: 'linear-gradient(to bottom, black 30%, transparent 50%)' }} // Positioned between background image (-20) and overlay (-10)
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ zIndex: -15, WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 70%)', maskImage: 'linear-gradient(to bottom, black 50%, transparent 70%)' }} // Positioned between background image (-20) and overlay (-10)
       aria-hidden="true"
     />
   );
