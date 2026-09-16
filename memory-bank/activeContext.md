@@ -1,15 +1,20 @@
 # Active Context
 
 ## Current Status
+- Identified that `impactMeteor` was being reused for firework rocket launches, causing a cinematic whoosh instead of a firework whistle/launch sound.
+- Downloaded `mixkit-firework-whistle.mp3` as the new dedicated firework launch sound, matching the project's CC0/Mixkit licensing.
+- Added `fireworkLaunch` to `soundsRef` and initialized it using Howler.js.
+- Modified `Fireworks` tier logic in `DailyResonance.tsx` to use `soundsRef.current.fireworkLaunch` for rocket launches, retaining Howler's `.play()` ID for overlapping asynchronous playback.
+- Verified meteors remain unaffected and use `impactMeteor`.
+
+## Next Steps
+- Submit surgical fix PR for the rocket launch sound.
+
+## Previous Context
 - Increased `STAR_DENSITY` in `TwinklingStars` to 0.0003 and star sizes to `1.5 + 0.8` to survive anti-aliasing.
 - Lowered the CSS `linear-gradient` mask fade start from 30% to 50% and end from 50% to 70% in `TwinklingStars`, so stars are visible further down into the sky without overlapping the mountains.
 - Removed `mix-blend-screen` from `TwinklingStars` canvas to ensure stars are not washed out by the dark overlay.
 - Verified that the `uiClick` audio plays exactly after the state guards, and the cinematic buildup retains its 150ms delay in `DailyResonance.tsx`.
-
-## Next Steps
-- Submit fix PR for Lucky Meter updates.
-
-## Previous Context
 - Replaced the arbitrary 12.0s hard stop in `LuckyCardReveal` with a dynamic `maxLifetime` calculation based directly on `STRIKE_SCHEDULES`.
 - Fixed premature cinematic termination in `DailyResonance.tsx` by including `rockets.length === 0` in the completion check, ensuring flight states don't bypass cleanup.
 - Implemented true visual-completion logic where audio cleanup and loop termination strictly await particle dissipation.

@@ -37,7 +37,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     fireworkBurst: null,
     fireworkBurstAlt: null,
     crackle: null,
-    willowCrackle: null
+    willowCrackle: null,
+    fireworkLaunch: null
   });
 
   useEffect(() => {
@@ -50,7 +51,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
       fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'] }),
       crackle: new Howl({ src: ['/sounds/mixkit-magic-sparkles.mp3'], volume: 0.3, loop: true }),
-      willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0 })
+      willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0 }),
+      fireworkLaunch: new Howl({ src: ['/sounds/mixkit-firework-whistle.mp3'], volume: 0.5 })
     };
     return () => {
        Howler.unload();
@@ -704,40 +706,40 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             scriptPhase1Done.current = true;
             // Launch from far left, Type: Peony
             spawnRocket(w * 0.1, h, w * 0.25, h * 0.3, 1.0, 1.1, 'peony');
-            if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
-               const id = soundsRef.current.impactMeteor.play();
-               soundsRef.current.impactMeteor.rate(1.5, id);
-               soundsRef.current.impactMeteor.volume(0.4, id);
+            if (soundsRef.current.fireworkLaunch) {
+               const id = soundsRef.current.fireworkLaunch.play();
+               soundsRef.current.fireworkLaunch.rate(1.5, id);
+               soundsRef.current.fireworkLaunch.volume(0.4, id);
             }
          }
          if (elapsedMs > 1000 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
             // Launch from far right, Type: Layered Ring
             spawnRocket(w * 0.9, h, w * 0.7, h * 0.2, 1.1, 1.2, 'layered_ring');
-            if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
-               const id = soundsRef.current.impactMeteor.play();
-               soundsRef.current.impactMeteor.rate(1.3, id);
-               soundsRef.current.impactMeteor.volume(0.4, id);
+            if (soundsRef.current.fireworkLaunch) {
+               const id = soundsRef.current.fireworkLaunch.play();
+               soundsRef.current.fireworkLaunch.rate(1.3, id);
+               soundsRef.current.fireworkLaunch.volume(0.4, id);
             }
          }
          if (elapsedMs > 1900 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
             // Mid left, high altitude, Type: Palm
             spawnRocket(w * 0.3, h, w * 0.4, h * 0.15, 1.0, 1.3, 'palm');
-            if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
-               const id = soundsRef.current.impactMeteor.play();
-               soundsRef.current.impactMeteor.rate(1.1, id);
-               soundsRef.current.impactMeteor.volume(0.5, id);
+            if (soundsRef.current.fireworkLaunch) {
+               const id = soundsRef.current.fireworkLaunch.play();
+               soundsRef.current.fireworkLaunch.rate(1.1, id);
+               soundsRef.current.fireworkLaunch.volume(0.5, id);
             }
          }
          if (elapsedMs > 2800 && !scriptPhase4Done.current) {
              scriptPhase4Done.current = true;
              // Mid right, Type: Strobe
              spawnRocket(w * 0.75, h, w * 0.6, h * 0.25, 1.0, 1.0, 'strobe');
-             if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
-               const id = soundsRef.current.impactMeteor.play();
-               soundsRef.current.impactMeteor.rate(1.4, id);
-               soundsRef.current.impactMeteor.volume(0.4, id);
+             if (soundsRef.current.fireworkLaunch) {
+               const id = soundsRef.current.fireworkLaunch.play();
+               soundsRef.current.fireworkLaunch.rate(1.4, id);
+               soundsRef.current.fireworkLaunch.volume(0.4, id);
             }
          }
          if (elapsedMs > 3800 && !scriptPhase5Done.current) {
@@ -745,10 +747,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
              // The White Willow Climax
              // Center launch, very high
              spawnRocket(w * 0.5, h, w * 0.5, h * 0.1, 2.5, 1.5, 'willow');
-             if (soundsRef.current.impactMeteor) { // Reusing whoosh for launch
-               const id = soundsRef.current.impactMeteor.play();
-               soundsRef.current.impactMeteor.rate(0.8, id);
-               soundsRef.current.impactMeteor.volume(0.7, id);
+             if (soundsRef.current.fireworkLaunch) {
+               const id = soundsRef.current.fireworkLaunch.play();
+               soundsRef.current.fireworkLaunch.rate(0.8, id);
+               soundsRef.current.fireworkLaunch.volume(0.7, id);
             } // Deeper, louder launch
          }
       }

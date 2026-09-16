@@ -1,6 +1,7 @@
 # Progress
 
 ## Completed Features
+- Firework Rocket launch audio correction
 - Lucky Meter Star Visibility fix
 - Verified cinematic audio timing in `DailyResonance.tsx` matches 150ms delay
 - Lucky Meter Cinematic Termination Fix
