@@ -18,7 +18,6 @@ on:
 
 concurrency:
   group: refresh-documentation
-  queue: max
   cancel-in-progress: false
 
 permissions:

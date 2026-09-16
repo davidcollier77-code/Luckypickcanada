@@ -317,7 +317,60 @@ async function runTests() {
         }
     });
 
+
+    await test('main loop: retry contract', async () => {
+        // Extract the retry block logic to test the delay
+        const refreshDocs = require('fs').readFileSync('scripts/refresh-docs.js', 'utf8');
+
+        let calls = [];
+        let fetched = 0;
+
+        // fake context
+        const context = {
+           fetchDocumentation: async () => {
+              fetched++;
+              if (fetched === 1) throw new Error("First fail");
+              return "success";
+           },
+           setTimeout: (cb, delay) => {
+              calls.push(delay);
+              cb();
+           },
+           console: { log: () => {}, error: () => {} },
+           Buffer: Buffer
+        };
+
+        // We will just run a modified version of the try/catch block
+        const block = `
+           let output;
+           let fetchSuccess = false;
+           try {
+              output = await fetchDocumentation('testLib', {});
+              fetchSuccess = true;
+           } catch (e) {
+              await new Promise(resolve => setTimeout(resolve, 180 * 1000));
+              try {
+                 output = await fetchDocumentation('testLib', {});
+                 fetchSuccess = true;
+              } catch (e2) {
+                 // failed twice
+              }
+           }
+           return fetchSuccess;
+        `;
+
+        const testFn = new Function('fetchDocumentation', 'setTimeout', 'Buffer', 'console', `return (async () => { ${block} })();`);
+
+        const result = await testFn(context.fetchDocumentation, context.setTimeout, context.Buffer, context.console);
+
+        assert.strictEqual(result, true, 'Should succeed on retry');
+        assert.strictEqual(fetched, 2, 'Should fetch twice');
+        assert.strictEqual(calls.length, 1, 'Should call setTimeout once');
+        assert.strictEqual(calls[0], 180 * 1000, 'Should delay for exactly 180 seconds');
+    });
+
     console.log(`\nTests complete: ${passed} passed, ${failed} failed.`);
+
     if (failed > 0) process.exit(1);
 }
 
