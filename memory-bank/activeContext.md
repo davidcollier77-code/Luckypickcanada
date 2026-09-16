@@ -1,6 +1,15 @@
 # Active Context
 
 ## Current Status
+- Increased `STAR_DENSITY` in `TwinklingStars` to 0.0003 and star sizes to `1.5 + 0.8` to survive anti-aliasing.
+- Lowered the CSS `linear-gradient` mask fade start from 30% to 50% and end from 50% to 70% in `TwinklingStars`, so stars are visible further down into the sky without overlapping the mountains.
+- Removed `mix-blend-screen` from `TwinklingStars` canvas to ensure stars are not washed out by the dark overlay.
+- Verified that the `uiClick` audio plays exactly after the state guards, and the cinematic buildup retains its 150ms delay in `DailyResonance.tsx`.
+
+## Next Steps
+- Submit fix PR for Lucky Meter updates.
+
+## Previous Context
 - Replaced the arbitrary 12.0s hard stop in `LuckyCardReveal` with a dynamic `maxLifetime` calculation based directly on `STRIKE_SCHEDULES`.
 - Fixed premature cinematic termination in `DailyResonance.tsx` by including `rockets.length === 0` in the completion check, ensuring flight states don't bypass cleanup.
 - Implemented true visual-completion logic where audio cleanup and loop termination strictly await particle dissipation.
@@ -9,11 +18,6 @@
 - Removed artificial `.stop()` calls from `DailyResonance.tsx` clean-up phase to allow sounds to decay organically.
 - Synchronized the White Willow crackle volume/fade directly to the opacity of the White Willow particles.
 - Added a CSS `linear-gradient` mask to `TwinklingStars` to guarantee stars fade entirely into the sky, stopping them from overlapping the landscape mountain imagery.
-
-## Next Steps
-- None, cinematic repair task completed successfully.
-
-## Previous Context
 - Created and implemented a `TwinklingStars` canvas component for the Lucky Meter.
 - Positioned it between the background image and foreground overlays in `components/DailyResonance.tsx`.
 - Included logic to render static stars but disable the twinkling animation when `prefers-reduced-motion` is enabled.
