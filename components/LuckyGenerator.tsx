@@ -51,9 +51,10 @@ const IMPACT_TIME_MS = 8800;
 const SPIN_INTERVAL_MS = 60;
 const SPIN_INTERVAL_FAST_MS = 20;
 
-const METEOR_SOUNDS = ['/sounds/mixkit-cinematic-whoosh.mp3'];
+const METEOR_SOUNDS = ['/dragon-studio-whoosh-cinematic-376875.mp3'];
 const LIGHTNING_SOUNDS = ['/sounds/mixkit-cinematic-impact.mp3'];
 const FIREWORKS_SOUNDS = ['/freesound_community-fireworks-1-94483.mp3'];
+const FIREWORK_LAUNCH_SOUND = '/sounds/mixkit-firework-whistle.mp3';
 const BUILDUP_SOUND = '/freesound_community-starship-rail-gun-charge-35904.mp3';
 
 const QUOTES: string[] = [
@@ -409,6 +410,10 @@ function useResonanceCanvas(
     }
 
     function spawnBolt(isHero: boolean) {
+      if (s.impactTriggered) {
+        playAudioBuffer('lightning', isHero ? 0.8 + Math.random() * 0.2 : 0.4 + Math.random() * 0.3, isHero ? 0.9 + Math.random() * 0.2 : 1.2 + Math.random() * 0.4);
+      }
+
       const startX = isHero ? width * 0.5 + (Math.random() - 0.5) * 200 : width * (0.1 + Math.random() * 0.8);
       const targetX = startX + (Math.random() - 0.5) * width * (isHero ? 0.9 : 0.7);
       const depth = isHero ? randomInt(3, 4) : randomInt(1, 3);
@@ -420,6 +425,10 @@ function useResonanceCanvas(
     }
 
     function spawnMeteor(isHero: boolean, xOverride?: number, speedOverride?: number, lenOverride?: number, widthOverride?: number, yOverride?: number) {
+      if (s.impactTriggered) {
+        playAudioBuffer('meteor', isHero ? 0.7 + Math.random() * 0.3 : 0.3 + Math.random() * 0.2, isHero ? 0.8 + Math.random() * 0.4 : 1.2 + Math.random() * 0.6);
+      }
+
       const startX = xOverride !== undefined ? xOverride : ((Math.random() * 1.5 * width) - (width * 0.2));
       const startY = yOverride !== undefined ? yOverride : (isHero ? (Math.random() * -300 - 100) : (Math.random() * -100 - 50));
 
@@ -451,7 +460,10 @@ function useResonanceCanvas(
 
     function explode(x: number, y: number, color: string, isHero: boolean) {
       if (s.impactTriggered) {
-        playAudioBuffer('firework', isHero ? 0.8 : 0.4 + Math.random() * 0.3, 0.8 + Math.random() * 0.4);
+        playAudioBuffer(isHero && Math.random() > 0.5 ? 'fireworkFinale' : 'firework', isHero ? 0.8 : 0.4 + Math.random() * 0.3, 0.8 + Math.random() * 0.4);
+        if (isHero && Math.random() > 0.3) {
+           setTimeout(() => { playAudioBuffer('crackle', 0.4 + Math.random() * 0.3, 0.9 + Math.random() * 0.2); }, 100 + Math.random() * 200);
+        }
       }
       const count = reduced ? 25 : (isHero ? 180 : 60 + Math.floor(Math.random() * 30));
       let actualCount = Math.min(count, 300 - s.sparks.length);
@@ -548,7 +560,7 @@ function useResonanceCanvas(
              s.scoreLastUpdate = now;
           }
           if (tReveal > 6000 && tier && now > s.nextAmbientEffectAt) {
-            if (tier.id === 2 && Math.random() > 0.3) { spawnMeteor(false); if(Math.random() > 0.5) spawnMeteor(false); }
+            if (tier.id === 2 && Math.random() > 0.3) { spawnMeteor(false); if(Math.random() > 0.5) { spawnMeteor(false); } }
             if (tier.id === 3 && Math.random() > 0.6) spawnBolt(false);
             if (tier.id === 4 && Math.random() > 0.7) spawnRocket(false);
             s.nextAmbientEffectAt = now + 400 + Math.random() * 400;
@@ -596,7 +608,6 @@ function useResonanceCanvas(
 
           if (tier) {
             if (tier.id === 2) {
-              playAudioBuffer('meteor');
               // First Pass
               spawnMeteor(true, width * 0.2, 2200, 300, 8, -200);
               const clusterSize1 = reduced ? 2 : 8;
@@ -606,7 +617,6 @@ function useResonanceCanvas(
 
               // Second Pass (Offset timing & position)
               s.scheduledEvents.push({ time: tReveal + 300, action: () => {
-                playAudioBuffer('meteor', 0.8, 1.2);
                 spawnMeteor(true, width * 0.6, 2500, 250, 6, -100);
                 const clusterSize2 = reduced ? 2 : 10;
                 for(let i=0; i<clusterSize2; i++) {
@@ -616,7 +626,6 @@ function useResonanceCanvas(
 
               // Final massive hero pass
               s.scheduledEvents.push({ time: tReveal + 700, action: () => {
-                playAudioBuffer('meteor', 1.0, 0.9);
                 spawnMeteor(true, width * 0.4, 3000, 400, 12, -300);
                 const clusterSize3 = reduced ? 3 : 15;
                 for(let i=0; i<clusterSize3; i++) {
@@ -625,7 +634,6 @@ function useResonanceCanvas(
               }});
             }
             else if (tier.id === 3) {
-              playAudioBuffer('lightning');
               // Initial Strike
               s.flash = 2.0; // Strong flash
               spawnBolt(true);
@@ -634,7 +642,6 @@ function useResonanceCanvas(
 
               // Secondary volley
               s.scheduledEvents.push({ time: tReveal + 200, action: () => {
-                 playAudioBuffer('lightning', 0.6, 1.3);
                  spawnBolt(true);
                  spawnBolt(false);
                  spawnBolt(false);
@@ -642,7 +649,6 @@ function useResonanceCanvas(
 
               // Final massive crescendo
               s.scheduledEvents.push({ time: tReveal + 600, action: () => {
-                 playAudioBuffer('lightning', 1.0, 0.8);
                  spawnBolt(true);
                  spawnBolt(true);
                  s.flash = 2.0; // Extra emphasis
@@ -652,8 +658,6 @@ function useResonanceCanvas(
               }});
             }
             else if (tier.id === 4) {
-              playAudioBuffer('fireworkFinale', 0.8, 1.0);
-              setTimeout(() => { playAudioBuffer('crackle', 0.6, 1.0) }, 200);
               // Initial Hero Launch
               spawnRocket(true, width * 0.5, 750);
 
@@ -975,6 +979,7 @@ export default function LuckyGenerator() {
       loadAudio(METEOR_SOUNDS[0], 'meteor'),
       loadAudio(LIGHTNING_SOUNDS[0], 'lightning'),
       loadAudio(FIREWORKS_SOUNDS[0], 'firework'),
+      loadAudio(FIREWORK_LAUNCH_SOUND, 'fireworkLaunch'),
       loadAudio('/sounds/mixkit-magical-impact.mp3', 'fireworkFinale'),
       loadAudio('/sounds/mixkit-magic-sparkles.mp3', 'crackle')
     ]).then(() => {
