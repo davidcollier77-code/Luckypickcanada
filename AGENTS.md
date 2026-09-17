@@ -1,51 +1,37 @@
-🔴 AGENTS.md — MANDATORY — READ FIRST — AUTHORITATIVE GOVERNANCE
+🔴 AGENTS.md — MANDATORY JULES GOVERNANCE
 
-🔴 MANDATORY: "AGENTS.md" MUST be read first and followed completely for every Jules task. It is the authoritative repository governance and workflow source. No task may proceed, be finalized, or be approved unless the requirements of "AGENTS.md" have been followed and accurately demonstrated.
+🔴 READ FIRST. FOLLOW COMPLETELY. DO NOT ASSUME. VERIFY. DO NOT CLAIM. DEMONSTRATE.
 
-🔴 This includes all mandatory repository workflows, task-group requirements, official Jules/Gemini documentation requirements, library/documentation checks, ".docs/manifest.json" consultation, actual use of applicable library documentation, and accurate reporting of whether each consulted source was useful and whether it was used/applied.
-
-🔴 DO NOT ASSUME. VERIFY. DO NOT CLAIM. DEMONSTRATE.
-
-Failure to follow, verify, document, and accurately report these requirements means the task is not approvable and must not be considered complete.
-
-"AGENTS.md" does not replace, override, or weaken itself. It is the controlling authority for Jules work in this repository.
+- "AGENTS.md" is authoritative repository governance.
+- No task may proceed, be finalized, or be approved unless this file is followed.
+- Current repository state is the source of truth.
 
 ---
+
+🔴 ABC WORKFLOW
+
+🔴 A — ANALYZE
 
 1. REQUIRED STARTING ORDER
 
+MUST follow this order:
+
 1. Read "AGENTS.md" first.
+2. Identify applicable task group(s): ".jules/creation.md", ".jules/troubleshooting.md", ".jules/polishing.md", ".jules/testing.md", ".jules/security.md", ".jules/audio.md", ".jules/deep-dive.md", ".jules/seo.md".
+3. Read the applicable ".docs/.../jules_google_docs.md" file.
+4. Establish the applicable official Jules/Gemini documentation baseline.
+5. Inspect the actual current repository, branch, files, configuration, code, tests, and task path.
+6. Read ".jules/jules.md".
+7. Read "memory-bank/projectBrief.md" and "memory-bank/activeContext.md".
+8. Read other materially applicable exact repository guidance, ".jules/cmds/*.md" files, runbooks, source, configuration, and tests.
+9. Identify exact relevant library/framework/platform/tool name, version, and documentation path.
+10. Label findings "Verified", "Assumption", "Hypothesis", or "Unknown".
 
-2. Identify applicable task group(s): "creation", "troubleshooting", "polishing", "testing", "security", "audio", "deep-dive", "seo".
+2. JULES/GEMINI DOCUMENTATION
 
-3. Establish the applicable official Jules/Gemini documentation baseline.
+For every task, MUST identify, read, and follow the applicable Jules/Gemini documentation.
 
-4. Inspect the actual current repository, branch, files, configuration, code, tests, and task path.
-
-5. Read materially applicable repository guidance, specialist files, Spec Kit commands, runbooks, Memory Bank, source/configuration, and tests.
-
-6. Identify exact relevant libraries, frameworks, platforms, tools, documentation, protected systems, files, and constraints.
-
-7. Separate verified facts from assumptions, hypotheses, and unknowns.
-
-8. Do not begin implementation from a prior agent report or inferred state; current repository state is the source of truth.
-
----
-
-2. MANDATORY OFFICIAL JULES/GEMINI BASELINE
-
-For every task, consult the applicable documents from this mandatory Jules/Gemini baseline; do not skip the baseline because the task appears simple.
-
-Required official sources as applicable:
-
-- Jules Getting Started: "https://jules.google/docs"
-- Jules Tools Reference: "https://jules.google/docs/cli/reference"
-- Jules API: "https://jules.google/docs/api/reference/"
-- Gemini CLI official docs: "google-gemini/gemini-cli"
-- Gemini API docs: "https://ai.google.dev/gemini-api/docs"
-- Gemini API reference: "https://ai.google.dev/api"
-
-Repository copies:
+Repository files:
 
 - ".docs/deep-dive/jules_google_docs.md"
 - ".docs/troubleshooting/jules_google_docs.md"
@@ -56,185 +42,106 @@ Repository copies:
 - ".docs/audio/jules_google_docs.md"
 - ".docs/seo/jules_google_docs.md"
 
-The final report must identify actual official sources consulted and their contribution.
+Official sources:
 
-Never claim documentation was consulted unless it was actually consulted.
+- "https://jules.google/docs"
 
----
+- "https://jules.google/docs/cli/reference"
 
-3. TASK GROUPS AND SPECIALISTS
+- "https://jules.google/docs/api/reference/"
 
-Use all materially applicable specialists; do not load unrelated specialists merely to satisfy a checklist.
+- "google-gemini/gemini-cli"
 
-Exact specialist files:
+- "https://ai.google.dev/gemini-api/docs"
 
-- ".jules/creation.md"
-- ".jules/troubleshooting.md"
-- ".jules/polishing.md"
-- ".jules/testing.md"
-- ".jules/security.md"
-- ".jules/audio.md"
-- ".jules/deep-dive.md"
-- ".jules/seo.md"
+- "https://ai.google.dev/api"
 
-".jules/jules.md" is always required.
+- Applicable repository Jules/Gemini files MUST be read before execution.
 
-Immediately after repository instructions, read:
+- Applicable official Jules/Gemini sources MUST be consulted and followed.
 
-- "memory-bank/projectBrief.md"
-- "memory-bank/activeContext.md"
+- Report exact files/sources actually consulted. Never claim consultation that did not occur.
 
-When multiple groups apply, use every materially applicable specialist and state each selected specialist's core constraint in 1–2 sentences before execution.
+3. SPECIALISTS / SPEC KIT
 
-At conclusion, update "memory-bank/activeContext.md" and move completed milestones into "memory-bank/progress.md".
+- ".jules/jules.md" MUST be followed.
+- Applicable task-group ".jules/*.md" files MUST be followed.
+- When applicable, follow the exact ".jules/cmds/*.md" file(s).
+- Report exact ".jules/cmds/*.md" filenames used.
 
-Report actual changes, verification, remaining issues, and final state.
+4. MEMORY BANK / RUNBOOKS
 
----
-
-4. SPEC KIT — CONDITIONAL, EXACT FILENAMES
-
-Spec Kit is separate from the eight task-group specialists.
-
-Use it when the task materially requires its structured workflow; do not force it for small fixes suited to normal issue/implementation/test/PR workflow.
-
-Exact current command files:
-
-- ".jules/cmds/speckit.specify.md"
-- ".jules/cmds/speckit.clarify.md"
-- ".jules/cmds/speckit.plan.md"
-- ".jules/cmds/speckit.tasks.md"
-- ".jules/cmds/speckit.implement.md"
-- ".jules/cmds/speckit.analyze.md"
-- ".jules/cmds/speckit.checklist.md"
-- ".jules/cmds/speckit.constitution.md"
-- ".jules/cmds/speckit.converge.md"
-- ".jules/cmds/speckit.taskstoissues.md"
-
-When reporting Spec Kit usage, name the exact ".jules/cmds/*.md" file(s) used.
-
----
-
-5. MEMORY BANK AND RUNBOOKS
-
-Memory Bank is supporting project context, never primary technical authority.
-
-Required supporting files:
+Read applicable exact files:
 
 - "memory-bank/projectBrief.md"
 - "memory-bank/activeContext.md"
 - "memory-bank/progress.md"
 - "memory-bank/techContext.md"
-
-Conditional root runbooks:
-
 - "CSS_FIX_GUIDE.md"
 - "DATABASE_SETUP.md"
 - "DEPLOYMENT_CHECKLIST.md"
 - "QUICK_FIX_GUIDE.md"
-- "FINAL_REPORT.md" — historical context only, never authority.
 
-Historical ".jules/bolt.md", ".jules/ci.md", ".jules/palette.md", ".jules/sentinel.md", ".jules/sentinel.md." are supporting context only, not mandatory groups.
+"FINAL_REPORT.md" is historical context only and never authority.
 
 ---
 
-6. MANDATORY LIBRARY/DOCUMENTATION CHECK
+🔴 B — BOUNDARIES + PLAN
 
-For every task, check the existing approved library inventory. Never add, remove, rename, regroup, or cap it.
+Before modification MUST establish:
 
-The established inventory is 53 libraries; preserve the existing inventory and group structure.
+- exact requested outcome
+- exact scope and files/directories
+- exact files planned for modification
+- exact applicable ".jules/*.md" files
+- exact applicable ".jules/cmds/*.md" files
+- exact applicable ".docs/.../jules_google_docs.md" files
+- exact relevant libraries/versions and ".docs/manifest.json" paths
+- protected systems/files
+- verification requirements
+
+MUST use the smallest appropriate change.
+
+MUST NOT perform unrelated refactoring, redesign, dependency changes, upgrades, backend/database/deployment changes, or scope expansion.
+
+Unless autonomous execution is authorized, present verified analysis and the plan before modification.
+
+---
+
+🔴 C — EXECUTE + VERIFY
+
+5. LIBRARY/DOCUMENTATION FLOW
 
 For every materially relevant library/framework/platform/tool:
 
-1. Identify exact name and version in use or relevant.
-
+1. Identify exact name and version.
 2. Check ".docs/manifest.json".
+3. Identify the exact existing ".docs/..." documentation path.
+4. Actually consult that documentation.
+5. Apply relevant information.
+6. Determine "USEFUL: YES" or "USEFUL: NO".
 
-3. Identify the exact existing documentation entry/path.
+- Identify the most relevant existing library group/library.
+- The approved inventory is currently 53 libraries.
+- Preserve the inventory and group structure.
+- New libraries MUST enter through the approved documentation workflow.
+- Do not add, remove, rename, or regroup libraries merely because they are relevant.
+- "package.json", "node_modules", ".docs/manifest.json", or tooling alone does not prove documentation use.
 
-4. Actually consult relevant existing documentation when materially applicable.
+6. CONTEXT7
 
-5. Apply relevant information when it materially affects the task.
+🔴 CONTEXT7 REQUIRES EXPLICIT AUTHORIZATION AND A REASON BEFORE EVERY USE.
 
-Every task must identify its most relevant existing library group/library.
+🔴 DO NOT INVOKE CONTEXT7 WITHOUT BOTH.
 
-If consulted but not useful, report:
+7. PROTECTED SYSTEMS
 
-"Consulted: Yes | Useful: No | Used/Applied: No"
-
-Never claim a library was used merely because it appears in "package.json", "node_modules", the manifest, or tooling.
-
-Report only actual consultation and actual contribution.
-
----
-
-7. CONTEXT7 CONTROLLED FALLBACK
-
-Context7 is documentation fallback, not the normal documentation source.
-
-Use repository-authoritative documentation first.
-
-Use Context7 only when required information is genuinely absent or stale and only after fresh, explicit owner/developer authorization for that specific invocation.
-
-Connection, initialization, discovery, or availability does not count as Context7 usage.
-
-Never invoke Context7 without fresh authorization.
-
-When explicitly requesting Context7 libraries, output only required plain-text library identifiers.
-
-Do not modify the approved library inventory because Context7 lacks a library or returns different naming.
-
-Without authorization, state exactly:
-
-"PAUSING FOR AUTHORIZATION: Context7"
-
-and halt the Context7-dependent step.
-
-Every actual MCP/tool invocation must report:
-
-"action | reason | authorization | result | contribution"
-
-Neon and Stitch remain task-specific resources when materially applicable under repository policy; other MCPs require explicit approval unless separately authorized.
-
-Connection does not prove actual use.
-
-Unless explicitly directed otherwise by the user, Firecrawl may be used only after all applicable current library documentation files (the ".docs/" library documentation files) and approved project reference sources have been exhausted and are insufficient to resolve the task.
-
----
-
-8. ACTUAL REPOSITORY ANALYSIS
-
-Before modifying anything, establish:
-
-- exact requested outcome
-- exact files/directories in scope
-- applicable specialists
-- applicable exact Spec Kit command file(s), if any
-- relevant libraries/documentation
-- protected systems/files
-- verification requirements
-- security, database, deployment, accessibility, responsive, and performance implications
-
-List exact files to inspect/use and exact files planned for modification.
-
-Cross-reference actual current repository files/state before relying on any prior report.
-
-Label findings "Verified", "Assumption", "Hypothesis", or "Unknown" as appropriate.
-
-Never present an assumption or hypothesis as verified.
-
----
-
-9. SCOPE AND PROTECTED AREAS
-
-Execute only the approved task. Do not expand scope without authorization.
-
-Protected:
+MUST NOT modify without explicit authorization:
 
 - Stripe/payment
 - database/schema
 - authentication/security
-- API routes and existing functionality
+- API routes/existing functionality
 - Cloudflare/Vercel/deployment configuration
 - environment variables/secrets
 - accessibility/responsive behavior
@@ -242,146 +149,115 @@ Protected:
 - documentation updater/refresh system
 - "AGENTS.md"
 
-No unrelated upgrades, dependency changes, refactors, redesigns, backend changes, database changes, deployment changes, or governance changes.
+MUST NOT expose or commit secrets.
 
-Do not modify "AGENTS.md" during ordinary implementation unless explicitly authorized.
+MUST NOT weaken validation, sanitization, authentication, authorization, Turnstile/CAPTCHA, rate limiting, duplicate protection, or environment handling.
 
----
+8. DOCUMENTATION UPDATER
 
-10. DOCUMENTATION UPDATER
+MUST preserve the documentation updater/refresh system, current 53-library inventory, future growth capability, task-group structure, updater workflow/source, freshness, safety, and scheduling.
 
-Do not modify or rework the documentation updater unless explicitly authorized.
+MUST NOT modify or rework it without explicit authorization.
 
-Preserve:
+9. EXECUTION
 
-- 53-library inventory
-- eight task-group structure
-- updater workflow/source
-- batching and size limits
-- freshness/SHA logic
-- retry behavior
-- safety and last-known-good protections
-- existing scheduling
+- Follow applicable exact ".jules/*.md" files.
+- Follow applicable exact ".docs/.../jules_google_docs.md" files and official Jules/Gemini sources.
+- Follow existing architecture and conventions.
+- Use "pnpm"; never use "npm ci".
+- Inspect "package.json" before using or claiming a script.
+- Audio work MUST follow ".jules/audio.md"; Howler is primary; no public MP3s.
+- Preserve accessibility, keyboard, responsive, and "prefers-reduced-motion" behavior.
 
-Normal documentation refresh uses the repository's designated normal upstream documentation mechanism.
+10. VERIFICATION
 
-Context7 remains fallback-only under the authorization rules above.
+Verification is mandatory. Run every check applicable to the task: runtime/manual, unit/integration, build, lint/type, accessibility, security, API/database, responsive/browser, performance/regression, and task-specific automated checks.
 
----
-
-11. EXECUTION RULES
-
-Unless autonomous execution is explicitly authorized, present verified analysis and a concrete plan before modification.
-
-Follow existing architecture, conventions, and approved product behavior.
-
-Use "pnpm"; never use "npm ci".
-
-Inspect "package.json" before claiming or using a script.
-
-Security
-
-- never expose or commit secrets
-- never weaken validation, sanitization, authentication, authorization, Turnstile/CAPTCHA, rate limiting, duplicate-entry protection, or environment handling
-- never bypass security controls for convenience
-
-UI
-
-- preserve accessibility, keyboard behavior, responsive behavior, and "prefers-reduced-motion"
-- do not alter approved visual/product behavior outside scope
-
-Audio
-
-- route audio work through ".jules/audio.md"
-- Howler is primary audio playback
-- no public MP3s
-- no unrelated audio technology without authorization
-- preserve reduced-motion/accessibility behavior
+- Never claim a check was run unless actually run.
+- Resolve failures or report them unresolved.
+- Inspect the final diff and every changed file.
+- Confirm no unintended files, dependencies, secrets, or scope drift.
+- Confirm protected systems/files were untouched unless authorized.
+- Confirm the finished implementation matches the approved plan.
+- State anything that cannot be verified.
 
 ---
 
-12. VERIFICATION IS MANDATORY
+🔴 FINAL REPORT
 
-Verify completed work before submitting/finalizing.
-
-Run checks relevant to the task, including as applicable:
-
-- runtime/manual verification
-- unit/integration tests
-- build
-- lint/type checking
-- accessibility
-- security
-- API/database
-- responsive/browser
-- performance/regression
-- task-specific automated verification
-
-Never claim a check was run unless actually run.
-
-If a check fails, resolve it or clearly report the unresolved failure before submission.
-
-Inspect the final diff and every changed file.
-
-Confirm no unintended files, dependencies, secrets, or scope drift.
-
-Confirm protected systems/docs updater were untouched unless explicitly authorized.
-
-Confirm final code matches the approved plan.
-
----
-
-13. FINAL REPORT
-
-The final report must use exactly three sections.
+The final report MUST contain exactly:
 
 A — VERIFIED ANALYSIS
 
-State verified repository/task facts, applicable groups, exact files inspected, official Jules/Gemini baseline, relevant library group/libraries, applicable guidance, and facts versus assumptions/hypotheses/unknowns.
+- verified facts
+- exact applicable ".jules/*.md" files
+- exact ".docs/.../jules_google_docs.md" files
+- exact official Jules/Gemini sources
+- exact repository files inspected
+- exact relevant libraries/versions
+- exact ".docs/manifest.json" paths
+- exact ".jules/cmds/*.md" files
+- "Verified / Assumption / Hypothesis / Unknown"
 
-B — BOUNDARIES AND PLAN
+B — BOUNDARIES + PLAN
 
-State approved scope, exact files to change, protected areas, applicable specialists/Spec Kit, relevant documentation, verification plan, and authorization gates.
+- requested outcome
+- exact scope/files
+- protected files/systems
+- exact guidance/documentation followed
+- verification plan
+- authorization requirements
+- intentional non-changes
 
-C — EXECUTION, VERIFICATION, AND FINAL STATE
+C — EXECUTION + VERIFICATION + FINAL STATE
 
-State exact files changed, exact implementation, exact commands/checks run, actual results, final diff review, remaining issues, and final repository state.
-
-After A/B/C include:
-
-"Exact source/path | Consulted | Useful | Used/Applied | Contribution"
-
-For every relevant library/framework/platform/tool include exact name/version and exact ".docs" manifest path when available, plus actual consultation and contribution.
-
-For every actual MCP/tool invocation include action, reason, authorization, result, and contribution.
-
-Name exact files. Never report vague labels such as "Spec Kit"; report exact ".jules/cmds/*.md" filename(s).
+- exact files changed
+- exact implementation
+- exact checks/commands run
+- actual results
+- final diff
+- remaining issues
+- final state
 
 ---
 
-14. FINAL GOVERNANCE AUDIT
+🔴 PR REPORT — MANDATORY
 
-Before submission, confirm:
+The PR report MUST contain exactly:
 
-- "AGENTS.md" was read first and treated as authoritative.
-- Applicable specialists were identified and followed.
-- Applicable exact ".jules/cmds/*.md" files were identified and used when required.
-- Official Jules/Gemini baseline was actually consulted.
-- Actual current repository state was inspected.
-- Exact inspected and changed files are accurately reported.
-- Relevant existing library group/library was identified.
-- Relevant existing ".docs" documentation was actually consulted.
-- No library inventory/group was changed.
-- Context7 was never invoked without fresh explicit authorization.
-- Every actual MCP/tool invocation is accurately reported.
-- Protected systems and documentation updater were not changed without authorization.
+"USEFUL RESULT: YES" or "USEFUL RESULT: NO"
+
+- "YES" is prohibited unless the requested result was actually verified.
+- Report every exact Jules/Gemini documentation file/source used and mark "USEFUL: YES/NO".
+- Report every relevant library with exact name/version, exact ".docs" path, and "USEFUL: YES/NO".
+- Never claim "USEFUL: YES" unless the source materially contributed to the task.
+- Report exact files changed, verification performed, actual results, remaining issues, and final state.
+- Never use generic labels where an exact filename/path is available.
+
+---
+
+🔴 FINAL GOVERNANCE AUDIT
+
+Before submission, MUST confirm:
+
+- "AGENTS.md" was read first.
+- Exact applicable ".jules/*.md" files were followed.
+- Exact applicable ".docs/.../jules_google_docs.md" files were followed.
+- Applicable official Jules/Gemini sources were actually consulted.
+- Current repository state was inspected.
+- Exact relevant libraries/versions were identified.
+- ".docs/manifest.json" was checked.
+- Exact library documentation paths were consulted.
+- Library usefulness was reported YES/NO.
+- Context7 was not used without explicit authorization and a stated reason.
+- Protected systems/files were untouched unless authorized.
 - "pnpm" was used; "npm ci" was not used.
-- No secrets or sensitive material were exposed or committed.
-- Real verification was completed and accurately reported.
+- No secrets were exposed or committed.
+- Required verification was actually performed.
 - Final diff and every changed file were inspected.
 - "memory-bank/activeContext.md" was updated.
-- Completed milestones were moved into "memory-bank/progress.md" where applicable.
-- Consulted/Useful/Used-Applied reporting matches actual actions.
-- No scope drift or unsupported claims remain.
+- Completed milestones were moved to "memory-bank/progress.md" where applicable.
+- PR YES/NO reporting matches actual actions.
+- No unsupported claims or scope drift remain.
 
-DO NOT CLAIM COMPLIANCE; DEMONSTRATE IT THROUGH ACTUAL WORK, VERIFICATION, AND ACCURATE REPORTING.
+🔴 DO NOT CLAIM COMPLIANCE. DEMONSTRATE IT.
