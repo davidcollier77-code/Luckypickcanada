@@ -1,4 +1,4 @@
-## A — VERIFIED ANALYSIS
+A — VERIFIED ANALYSIS
 
 1.  **Verified Facts:**
     *   **Button Latency:** `soundsRef.current.uiClick.play()` triggers immediately on button press in `handleReveal`, but the cinematic `buildup` sound is delayed by exactly `150ms`. The visual percentage buildup starts at 1.5s into the timeline. The perceived "pause after the click" is governed by this `150ms` delay on the `buildup` audio.
@@ -10,7 +10,7 @@
     *   *Fact:* While 150ms is a delay, the visual "generator/rev" (aurora phase 'awaken') starts immediately at `0ms` on the timeline. If the click feels separated from the rev, reducing this delay to ~50-75ms will tighten the feeling without overlapping transients.
     *   *Fact:* `tierAudioKey` is set during GSAP initialization but never actually used to play sound in the GSAP timeline. All impact sounds are triggered directly inside the `requestAnimationFrame` loop (`animateCanvas`).
 
-## B — BOUNDARIES AND PLAN
+B — BOUNDARIES AND PLAN
 
 1.  **Approved Scope:**
     *   **Latency:** Reduce the `buildup` audio delay from `150ms` to `75ms` to tighten the separation between the physical click and the generator rev, making it "very, very brief".
@@ -24,4 +24,4 @@
     *   Do not change the 3-tier percentage thresholds (`<=35`, `<=74`, `>74`).
     *   Preserve existing GSAP visual timing.
 
-🔴 **STOP HERE AND WAIT FOR MY EXPLICIT APPROVAL BEFORE EXECUTING THE PLAN.**
+🔴 STOP HERE AND WAIT FOR MY EXPLICIT APPROVAL BEFORE EXECUTING THE PLAN.
