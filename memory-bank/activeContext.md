@@ -1,6 +1,11 @@
 # Active Context
 
 ## Current Status
+- Identified a bug where stars in `TwinklingStars.tsx` rendered over the mountain background of the Lucky Meter due to mismatched image proportions (`object-fit: cover`, `object-position: center 40%`) vs the static CSS mask and full-height star generation.
+- Dynamically calculated the true horizon Y position in `TwinklingStars.tsx` and `Aurora.tsx` relative to the viewport size.
+- Restricted random star Y generation so stars physically cannot exist below the calculated skyline, while updating the density math to keep star counts consistent.
+- Re-tightened the CSS alpha mask to strictly fade stars right before the calculated dynamic horizon line.
+
 - Fixed Lucky Meter immediate button response by removing the deferred Howler trigger and wiring it to the synchronized playButtonClick path from app/lib/audio.js.
 - Corrected Meteor Shower audio presentation by placing mixkit-cinematic-impact at the 7.5s visual reveal/impact point, fulfilling the required cinematic character without displacing the dedicated mixkit-meteor atmospheric entry sound.
 - Eliminated a severe animation-restart lifecycle regression (for Meteor Shower, Cosmic Lightning, Fireworks) by introducing hasAnimatedRef to lock out unintended animateCanvas executions fired by React state renders after timeline completion.

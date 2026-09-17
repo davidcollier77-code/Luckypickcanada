@@ -50,12 +50,26 @@ const TwinklingStars: React.FC = () => {
 
       // Re-initialize stars on significant resize
       stars.length = 0;
-      const numStars = Math.floor(width * height * STAR_DENSITY);
+
+      // Calculate horizon dynamically based on object-position: center 40% and object-fit: cover
+      // Image dimensions
+      const imgW = 1400;
+      const imgH = 2559;
+      const scale = Math.max(width / imgW, height / imgH);
+      const scaledH = imgH * scale;
+      const offset_Y = (height * 0.40) - (scaledH * 0.40);
+
+      // The mountain line is approximately 53.6% down the image (y=1373/2559)
+      const horizon_Y = offset_Y + (scaledH * 0.536);
+
+      // Limit physical generation to strictly above the calculated horizon
+      const safeMaxY = Math.min(height * 0.2, horizon_Y);
+      const numStars = Math.floor(width * safeMaxY * STAR_DENSITY);
 
       for (let i = 0; i < numStars; i++) {
         stars.push({
           x: Math.random() * width,
-          y: Math.random() * height, // Stars span full height, masked by CSS
+          y: Math.random() * safeMaxY, // Limit physical generation to the sky region
           size: Math.random() * 1.5 + 0.8, // Star sizes: 0.8 to 2.3 to survive anti-aliasing
           baseAlpha: Math.random() * 0.5 + 0.4, // Base opacity: 0.4 to 0.9
           currentAlpha: 0,
@@ -119,7 +133,7 @@ const TwinklingStars: React.FC = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ zIndex: -15, WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 70%)', maskImage: 'linear-gradient(to bottom, black 50%, transparent 70%)' }} // Positioned between background image (-20) and overlay (-10)
+      style={{ zIndex: -15, WebkitMaskImage: 'linear-gradient(to bottom, black 40%, transparent 60%)', maskImage: 'linear-gradient(to bottom, black 40%, transparent 60%)' }} // Tighter mask to keep stars strictly out of the mountains
       aria-hidden="true"
     />
   );

@@ -110,7 +110,18 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       const width = window.innerWidth;
       const height = window.innerHeight;
       const cx = width / 2;
-      const cy = height / 2;
+
+      // Dynamically calculate the visual center (cy) based on the image horizon
+      const imgW = 1400;
+      const imgH = 2559;
+      const scale = Math.max(width / imgW, height / imgH);
+      const scaledH = imgH * scale;
+      const offset_Y = (height * 0.40) - (scaledH * 0.40);
+
+      // The mountain line is approximately 53.6% down the image
+      const horizon_Y = offset_Y + (scaledH * 0.536);
+
+      const cy = Math.min(height / 2, horizon_Y * 0.7); // Keep Aurora anchored relative to the sky
 
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = 'screen';
