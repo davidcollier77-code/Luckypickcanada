@@ -1172,6 +1172,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
             <div className="flex flex-col items-center mt-auto w-full pt-4">
               <button
+                type="button"
                 onClick={handleShare}
                 className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200 mb-6"
               >

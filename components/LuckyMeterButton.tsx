@@ -30,6 +30,7 @@ export default function LuckyMeterButton({ onUpdateLuck }: { onUpdateLuck?: () =
 
   return (
     <button
+      type="button"
       onClick={handleLuckyClick}
       style={{ touchAction: 'manipulation' }}
       className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg active:scale-95 transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
