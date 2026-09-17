@@ -696,14 +696,13 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             // Add a sympathetic branch that spawns almost instantly after the main strike
             const timeoutId = setTimeout(() => {
                if (isAnimatingRef.current) {
-                  spawnLightning(w * 0.7, -50, 0.9, false);
                   if (soundsRef.current.impactLightning) {
                      const id = soundsRef.current.impactLightning.play();
-                     soundsRef.current.impactLightning.rate(1.6, id);
-                     soundsRef.current.impactLightning.volume(0.3, id);
+                     soundsRef.current.impactLightning.rate(0.7, id);
+                     soundsRef.current.impactLightning.volume(0.2, id);
                   }
                }
-            }, 100);
+            }, 250);
             // Track timeouts for cleanup if unmounted
             if (!(canvas as any).timeouts) (canvas as any).timeouts = [];
             (canvas as any).timeouts.push(timeoutId);
@@ -840,6 +839,19 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           ctx.arc(m.x, m.y, m.thickness * 3, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(${r},${g},${b},${m.opacity * 0.4})`;
           ctx.fill();
+
+          // Subtle lens flare cross
+          if (!isMobile) {
+              const flareLen = m.thickness * 6;
+              ctx.beginPath();
+              ctx.moveTo(m.x - flareLen, m.y);
+              ctx.lineTo(m.x + flareLen, m.y);
+              ctx.moveTo(m.x, m.y - flareLen);
+              ctx.lineTo(m.x, m.y + flareLen);
+              ctx.strokeStyle = `rgba(255, 255, 255, ${m.opacity * 0.5})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+          }
       }
 
       // --- UPDATE & DRAW LIGHTNING ---
@@ -903,7 +915,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
               ctx.stroke();
 
               // 3. Crisp white-hot core
-              ctx.shadowBlur = (isMobile ? 2 : 5) * opacity;
+              ctx.shadowBlur = 0; // Remove shadow to keep core crisp and bright
               ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
               ctx.lineWidth = baseWidth;
               ctx.beginPath();
@@ -917,9 +929,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
       if (maxLightningOpacity > 0) {
           // Cinematic environmental flash/bloom
-          const flashRadius = isMobile ? h * 0.7 : h;
+          const flashRadius = isMobile ? h * 0.7 : h * 1.2;
           const grad = ctx.createRadialGradient(w/2, h/3, 0, w/2, h/3, flashRadius);
-          grad.addColorStop(0, `rgba(200, 220, 255, ${maxLightningOpacity * (isMobile ? 0.2 : 0.25)})`);
+          grad.addColorStop(0, `rgba(220, 235, 255, ${maxLightningOpacity * (isMobile ? 0.3 : 0.4)})`);
+          grad.addColorStop(0.3, `rgba(180, 210, 255, ${maxLightningOpacity * (isMobile ? 0.15 : 0.2)})`);
           grad.addColorStop(1, 'transparent');
           ctx.fillStyle = grad;
           // Bounded fill to prevent massive GPU overdraw
@@ -1074,10 +1087,20 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
            ctx.stroke();
         }
 
+        if (p.opacity > 0 && !isMobile && p.type !== 'willow') {
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = p.color;
+        } else {
+            ctx.shadowBlur = 0;
+        }
         ctx.fillStyle = p.color;
         ctx.globalAlpha = Math.max(0, renderOpacity);
-        ctx.fillRect((p.x | 0) - 1.5, (p.y | 0) - 1.5, 3, 3);
+        // Draw as an arc for higher CGI quality instead of strict rect
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, isMobile ? 1.5 : 2, 0, Math.PI * 2);
+        ctx.fill();
         ctx.globalAlpha = 1.0;
+        ctx.shadowBlur = 0;
 
         if (p.opacity <= 0) particles.splice(i, 1);
       }

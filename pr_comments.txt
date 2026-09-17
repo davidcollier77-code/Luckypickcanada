@@ -1,1 +1,0 @@
-I do not have the `read_pr_comments` tool. Could you please paste the PR comments here so I can address them?
