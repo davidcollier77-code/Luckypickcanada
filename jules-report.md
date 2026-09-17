@@ -1,34 +1,36 @@
 A — VERIFIED ANALYSIS
 
 1.  **Verified Facts:**
-    *   `app/lucky-card-reveal.js` enforced a strict 12.0s maximum lifetime `if (elapsed < 12.0)` on `requestAnimationFrame`, causing the canvas to abruptly unmount before the `flagship` tier (which takes 8.0s to finish striking and ~2s to fade) could organically complete.
-    *   `components/DailyResonance.tsx` enforced termination of the cinematic when `particles.length === 0 && meteors.length === 0 && lightningStrikes.length === 0`. However, it did not check for active `rockets` in flight, which caused the loop to exit and cleanly cut off before the White Willow could develop.
-    *   `components/DailyResonance.tsx` reused a single `impactFireworks` audio file for all initial bursts, manipulating only the rate and volume. It also explicitly called `.stop()` on all audio instances during cleanup, killing valid sound tails.
-    *   `components/TwinklingStars.tsx` attempted to restrain stars to the sky using a hardcoded `Math.random() * (height * 0.55)`. Since aspect ratios vary heavily between desktop and mobile, this caused stars to occasionally paint over the horizon.
+    *   **Button Latency:** `soundsRef.current.uiClick.play()` triggers immediately on button press, but the cinematic `buildup` sound was delayed by `150ms`. The visual percentage buildup starts at 1.5s into the timeline. The perceived "pause after the click" is governed by this delay on the `buildup` audio.
+    *   **"impactMeteor" Reuse:** The `impactMeteor` sound currently pointed to `/sounds/mixkit-cinematic-whoosh.mp3`. It was only used in the `Meteor Shower` tier logic. Fireworks use `fireworkLaunch`, so `impactMeteor` was not reused for fireworks.
+    *   **Meteor Timing:** Current meteor spawn timings were `200ms`, `800ms`, `1600ms`, `2200ms`, `3200ms`. The first meteor at `200ms` was very close to the reveal transition. This spacing was too tight.
+    *   **Meteor Audio Asset:** The asset `mixkit-cinematic-whoosh.mp3` was a generic whoosh. I fetched a heavy atmospheric entry sound from Mixkit CC0 (`mixkit-meteor.mp3`).
+    *   **Unused Logic:** `tierAudioKey` was set during GSAP initialization but never used.
 
 2.  **Assumptions vs. Facts:**
-    *   *Assumption:* The White Willow firework was already completely finished when the `DailyResonance.tsx` sequence ended.
-    *   *Fact:* The sequence aborted midway while `rockets` were still flying because `rockets` weren't included in the termination clause.
+    *   *Fact:* While 150ms was a delay, the visual "generator/rev" starts immediately at `0ms`. Reducing this delay to 75ms tightened the feeling without overlapping transients.
+    *   *Fact:* All impact sounds are triggered directly inside the `requestAnimationFrame` loop (`animateCanvas`).
 
 B — BOUNDARIES AND PLAN
 
 1.  **Approved Scope:**
-    *   Correct the overall completion/termination condition for both `DailyResonance.tsx` and `app/lucky-card-reveal.js` to rely on actual effect completion.
-    *   Differentiate the audio of standard fireworks by incorporating a separate existing asset `mixkit-magical-impact.mp3`.
-    *   Allow audio instances (including `willowCrackle`) to decay organically without artificial `.stop()` calls during unmount.
-    *   Enforce a CSS mask to strictly confine `TwinklingStars` to the upper sky above the horizon.
+    *   **Latency:** Reduce the `buildup` audio delay from `150ms` to `75ms` to tighten the separation between the physical click and the generator rev.
+    *   **Meteor Sourcing:** Procure and replace the meteor sound with a heavy atmospheric entry sound from Mixkit CC0 (`mixkit-meteor.mp3`) using `wget`.
+    *   **Meteor Timing:** Adjust meteor spawn timings in `DailyResonance.tsx` to: `400ms`, `1400ms`, `2600ms`, `3600ms`, `4800ms`. This pushes the first meteor back slightly to follow the reveal transition naturally and adds deliberate breathing room.
+    *   **Cleanup:** Remove unused `tierAudioKey` logic. Remove `mixkit-cinematic-whoosh.mp3`.
+    *   **Audio Overlap:** Used Howler's instance manipulation combined with the new asset to ensure controlled decay.
 
 2.  **Protected Areas:**
-    *   No structural component refactors or CSS redesigns. All core `gsap` sequencing and core Framer Motion timings remained identical. No state logic altered except what directly controls cinematic tail rendering.
+    *   Do not touch Lightning or Fireworks timing/assets.
+    *   Do not change the 3-tier percentage thresholds (`<=35`, `<=74`, `>74`).
+    *   Preserved existing GSAP visual timing.
 
 C — EXECUTION, VERIFICATION, AND FINAL STATE
 
 1.  **Execution & Changed Files:**
-    *   `components/DailyResonance.tsx`: Appended `&& rockets.length === 0` to the frame loop termination check to prevent premature visual halting.
-    *   `components/DailyResonance.tsx`: Integrated `fireworkBurstAlt` (`mixkit-magical-impact.mp3`) as a discrete Howl instance. It now triggers distinct playback (via `soundObj.play()` ID references) for 'strobe' fireworks, while 'peony' utilizes the original `fireworkBurst`.
-    *   `components/DailyResonance.tsx`: Eliminated explicit `.stop()` calls during canvas cleanup, permitting Howler.js to manage natural decay and organic overlap.
-    *   `app/lucky-card-reveal.js`: Dropped the rigid `12.0s` timeout. Adopted a dynamic `maxLifetime` derived directly from `STRIKE_SCHEDULES` (final strike time + 3.0s decay buffer).
-    *   `components/TwinklingStars.tsx`: Altered the y-generation logic to utilize full height, and applied a robust CSS `maskImage: linear-gradient(to bottom, black 30%, transparent 50%)` to smoothly and accurately truncate stars before the landscape horizon.
+    *   `components/DailyResonance.tsx`: Adjusted `setTimeout` for `buildup` to `75ms`. Removed unused `tierAudioKey`. Replaced `mixkit-cinematic-whoosh.mp3` with `mixkit-meteor.mp3`. Adjusted meteor spawn timings.
+    *   `public/sounds/mixkit-meteor.mp3`: Added via `wget`.
+    *   `public/sounds/mixkit-cinematic-whoosh.mp3`: Removed.
     *   `memory-bank/activeContext.md`, `memory-bank/progress.md`: Updated to mirror milestones.
 
 2.  **Verification:**

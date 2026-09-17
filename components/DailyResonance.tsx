@@ -45,7 +45,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     soundsRef.current = {
       buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 }),
       uiClick: new Howl({ src: ['/sounds/ui-click.mp3'], volume: 0.8 }),
-      impactMeteor: new Howl({ src: ['/sounds/mixkit-cinematic-whoosh.mp3'], volume: 1.0 }),
+      impactMeteor: new Howl({ src: ['/sounds/mixkit-meteor.mp3'], volume: 1.0 }),
       impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
       impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
       fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
@@ -203,9 +203,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     setIsLoading(false);
 
     // Setup timeline
-    let tierAudioKey = 'impactMeteor';
-    if (currentTier === 'Cosmic Lightning') tierAudioKey = 'impactLightning';
-    if (currentTier === 'Fireworks') tierAudioKey = 'impactFireworks';
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -225,7 +222,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           if (soundsRef.current.buildup && isAnimatingRef.current) {
             soundsRef.current.buildup.play();
           }
-        }, 150);
+        }, 75);
       }
     });
 
@@ -596,7 +593,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       // --- TIER SCRIPTING ---
 
       if (activeTier === 'Meteor Shower' && canSpawn) {
-         if (elapsedMs > 200 && !scriptPhase1Done.current) {
+         if (elapsedMs > 400 && !scriptPhase1Done.current) {
             scriptPhase1Done.current = true;
             spawnMeteor(w * 0.8, -50, Math.PI * 0.7, 15, 120, 2, '#a0e8ff');
             if (soundsRef.current.impactMeteor) {
@@ -605,7 +602,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                soundsRef.current.impactMeteor.volume(0.6, id);
             }
          }
-         if (elapsedMs > 800 && !scriptPhase2Done.current) {
+         if (elapsedMs > 1400 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
             spawnMeteor(w * 0.4, -50, Math.PI * 0.65, 20, 80, 1.5, '#ffffff');
             if (soundsRef.current.impactMeteor) {
@@ -614,7 +611,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                soundsRef.current.impactMeteor.volume(0.6, id);
             }
          }
-         if (elapsedMs > 1600 && !scriptPhase3Done.current) {
+         if (elapsedMs > 2600 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
             spawnMeteor(w + 50, h * 0.1, Math.PI * 0.8, 12, 150, 2.5, '#6eff96');
             if (soundsRef.current.impactMeteor) {
@@ -623,7 +620,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                soundsRef.current.impactMeteor.volume(0.7, id);
             }
          }
-         if (elapsedMs > 2200 && !scriptPhase4Done.current) {
+         if (elapsedMs > 3600 && !scriptPhase4Done.current) {
             scriptPhase4Done.current = true;
             spawnMeteor(w * 0.6, -50, Math.PI * 0.75, 18, 100, 1.8, '#a0e8ff');
             if (soundsRef.current.impactMeteor) {
@@ -632,7 +629,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                soundsRef.current.impactMeteor.volume(0.7, id);
             }
          }
-         if (elapsedMs > 3200 && !scriptPhase5Done.current) {
+         if (elapsedMs > 4800 && !scriptPhase5Done.current) {
             scriptPhase5Done.current = true;
             spawnMeteor(w * 0.9, h * 0.2, Math.PI * 0.7, 25, 200, 3, '#ffcd5a'); // final brightest
             if (soundsRef.current.impactMeteor) {
