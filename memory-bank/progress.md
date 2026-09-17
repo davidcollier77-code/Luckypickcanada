@@ -1,6 +1,9 @@
 # Progress
 
 ## Completed Features
+- Synchronized Cosmic Lightning audio to strictly mirror visual lifetime with a natural decay.
+- Implemented dynamic tapered polygon trails for Meteor Shower visuals.
+- Smoothed Cosmic Lightning visual decay for improved cinematic feel.
 - Refined Meteor Shower audio and timing for the Daily Resonance Lucky Meter.
 - Firework Rocket launch audio correction
 - Lucky Meter Star Visibility fix

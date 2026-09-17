@@ -443,11 +443,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         buildJaggedBranch(x, y, targetX, targetY, isMobile ? 120 : 180, 0, isPrimary ? 0.35 : 0.15);
 
         lightningStrikes.push({
+
             segments,
             life: 1.0,
             isPrimary,
             scale
+
         });
+        return lightningStrikes.length - 1;
     };
 
     const spawnBurst = (x: number, y: number, type: string, color1: string, color2: string, sizeMultiplier: number) => {
@@ -653,52 +656,72 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
          if (elapsedMs > 300 && !scriptPhase1Done.current) {
             scriptPhase1Done.current = true;
             // Anticipation - distant or secondary strike
-            spawnLightning(w * 0.2, -50, 0.8, false);
+            const strikeIdx = spawnLightning(w * 0.2, -50, 0.8, false);
             if (soundsRef.current.impactLightning) {
                const id = soundsRef.current.impactLightning.play();
                soundsRef.current.impactLightning.rate(1.3, id);
                soundsRef.current.impactLightning.volume(0.5, id);
+               if (lightningStrikes[strikeIdx]) {
+                   lightningStrikes[strikeIdx].audioId = id;
+                   lightningStrikes[strikeIdx].audioVolume = 0.5;
+               }
             }
          }
          if (elapsedMs > 1200 && !scriptPhase2Done.current) {
             scriptPhase2Done.current = true;
             // First strong strike
-            spawnLightning(w * 0.65, -50, 1.2, true);
+            const strikeIdx = spawnLightning(w * 0.65, -50, 1.2, true);
             if (soundsRef.current.impactLightning) {
                const id = soundsRef.current.impactLightning.play();
                soundsRef.current.impactLightning.rate(1, id);
                soundsRef.current.impactLightning.volume(0.8, id);
+               if (lightningStrikes[strikeIdx]) {
+                   lightningStrikes[strikeIdx].audioId = id;
+                   lightningStrikes[strikeIdx].audioVolume = 0.8;
+               }
             }
          }
          if (elapsedMs > 2400 && !scriptPhase3Done.current) {
             scriptPhase3Done.current = true;
             // Secondary flicker
-            spawnLightning(w * 0.4, -50, 0.7, false);
+            const strikeIdx = spawnLightning(w * 0.4, -50, 0.7, false);
             if (soundsRef.current.impactLightning) {
                const id = soundsRef.current.impactLightning.play();
                soundsRef.current.impactLightning.rate(1.5, id);
                soundsRef.current.impactLightning.volume(0.4, id);
+               if (lightningStrikes[strikeIdx]) {
+                   lightningStrikes[strikeIdx].audioId = id;
+                   lightningStrikes[strikeIdx].audioVolume = 0.4;
+               }
             }
          }
          if (elapsedMs > 3500 && !scriptPhase4Done.current) {
             scriptPhase4Done.current = true;
             // Big final cinematic strike
-            spawnLightning(w * 0.85, -50, 1.5, true);
+            const strikeIdx = spawnLightning(w * 0.85, -50, 1.5, true);
             if (soundsRef.current.impactLightning) {
                const id = soundsRef.current.impactLightning.play();
                soundsRef.current.impactLightning.rate(0.8, id);
                soundsRef.current.impactLightning.volume(1, id);
+               if (lightningStrikes[strikeIdx]) {
+                   lightningStrikes[strikeIdx].audioId = id;
+                   lightningStrikes[strikeIdx].audioVolume = 1;
+               }
             }
 
             // Add a sympathetic branch that spawns almost instantly after the main strike
             const timeoutId = setTimeout(() => {
                if (isAnimatingRef.current) {
-                  spawnLightning(w * 0.7, -50, 0.9, false);
-                  if (soundsRef.current.impactLightning) {
-                     const id = soundsRef.current.impactLightning.play();
-                     soundsRef.current.impactLightning.rate(1.6, id);
-                     soundsRef.current.impactLightning.volume(0.3, id);
-                  }
+                  const strikeIdx = spawnLightning(w * 0.7, -50, 0.9, false);
+            if (soundsRef.current.impactLightning) {
+               const id = soundsRef.current.impactLightning.play();
+               soundsRef.current.impactLightning.rate(1.6, id);
+               soundsRef.current.impactLightning.volume(0.3, id);
+               if (lightningStrikes[strikeIdx]) {
+                   lightningStrikes[strikeIdx].audioId = id;
+                   lightningStrikes[strikeIdx].audioVolume = 0.3;
+               }
+            }
                }
             }, 100);
             // Track timeouts for cleanup if unmounted
@@ -820,12 +843,22 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
           grad.addColorStop(0.4, `rgba(${Math.floor(r*0.8)},${Math.floor(g*0.4)},${Math.floor(b*0.2)}, ${m.opacity * 0.5})`);
           grad.addColorStop(1, `rgba(255,50,0, 0)`);
 
+          // Replaced simple lineTo with a tapering polygon for cinematic realism
+          const meteorAngle = Math.atan2(m.vy, m.vx);
+          const currentThickness = m.thickness * (1 + Math.random() * 0.5); // Flickering thickness
+
+          // Orthogonal angles for width
+          const leftX = m.x + Math.cos(meteorAngle - Math.PI / 2) * currentThickness;
+          const leftY = m.y + Math.sin(meteorAngle - Math.PI / 2) * currentThickness;
+          const rightX = m.x + Math.cos(meteorAngle + Math.PI / 2) * currentThickness;
+          const rightY = m.y + Math.sin(meteorAngle + Math.PI / 2) * currentThickness;
+
           ctx.beginPath();
-          ctx.moveTo(m.x, m.y);
-          ctx.lineTo(trailEndX, trailEndY);
-          ctx.strokeStyle = grad;
-          ctx.lineWidth = m.thickness * (1 + Math.random() * 0.5); // Flickering thickness
-          ctx.stroke();
+          ctx.moveTo(leftX, leftY);     // Head left
+          ctx.lineTo(rightX, rightY);   // Head right
+          ctx.lineTo(trailEndX, trailEndY); // Tapering to a point at the tail
+          ctx.fillStyle = grad;
+          ctx.fill();
 
           // Intense Heated core glow
           ctx.beginPath();
@@ -843,8 +876,24 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       let maxLightningOpacity = 0;
       for (let i = lightningStrikes.length - 1; i >= 0; i--) {
           const l = lightningStrikes[i];
-          l.life -= 0.025; // Snappy cinematic decay
+          // Slightly non-linear decay for visual polish (lingers slightly, then fades out smoothly)
+          l.life -= (l.life * 0.04 + 0.015);
           if (l.life <= 0) {
+              // Gracefully fade the synchronized audio to provide a natural echo
+              if (l.audioId !== undefined && soundsRef.current.impactLightning) {
+                  // A 400ms fade ensures the tail is audible but doesn't linger as a new strike
+                  soundsRef.current.impactLightning.fade(l.audioVolume || 1, 0, 400, l.audioId);
+
+                  // Clean up the instance after fade to prevent memory leaks
+                  const aId = l.audioId;
+                  const timeoutId = setTimeout(() => {
+                      if (soundsRef.current.impactLightning) {
+                          soundsRef.current.impactLightning.stop(aId);
+                      }
+                  }, 400);
+                  if (!(canvas as any).timeouts) (canvas as any).timeouts = [];
+                  (canvas as any).timeouts.push(timeoutId);
+              }
               lightningStrikes.splice(i, 1);
               continue;
           }
