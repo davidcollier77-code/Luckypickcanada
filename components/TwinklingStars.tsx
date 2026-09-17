@@ -63,7 +63,7 @@ const TwinklingStars: React.FC = () => {
       const horizon_Y = offset_Y + (scaledH * 0.536);
 
       // Limit physical generation to strictly above the calculated horizon
-      const safeMaxY = Math.max(height * 0.2, horizon_Y);
+      const safeMaxY = Math.min(height * 0.2, horizon_Y);
       const numStars = Math.floor(width * safeMaxY * STAR_DENSITY);
 
       for (let i = 0; i < numStars; i++) {
