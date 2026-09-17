@@ -8,9 +8,13 @@
 - Verified meteors remain unaffected and use `impactMeteor`.
 
 ## Next Steps
-- Submit surgical fix PR for the rocket launch sound.
+- None at this time.
 
 ## Previous Context
+- Reduced UI click to generator/rev buildup audio delay from 150ms to 75ms for a tighter, more immediate cinematic initiation.
+- Replaced the generic meteor audio `mixkit-cinematic-whoosh.mp3` with a heavier atmospheric tearing asset `mixkit-meteor.mp3` from Mixkit.
+- Adjusted Meteor Shower sequence spawn timings to provide deliberate spacing (400ms, 1400ms, 2600ms, 3600ms, 4800ms) ensuring the initial meteor hits immediately post-transition without causing overlapping audio mud.
+- Removed unused `tierAudioKey` variable assignment left over from earlier GSAP logic.
 - Increased `STAR_DENSITY` in `TwinklingStars` to 0.0003 and star sizes to `1.5 + 0.8` to survive anti-aliasing.
 - Lowered the CSS `linear-gradient` mask fade start from 30% to 50% and end from 50% to 70% in `TwinklingStars`, so stars are visible further down into the sky without overlapping the mountains.
 - Removed `mix-blend-screen` from `TwinklingStars` canvas to ensure stars are not washed out by the dark overlay.

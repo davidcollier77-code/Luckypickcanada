@@ -1,6 +1,7 @@
 # Progress
 
 ## Completed Features
+- Refined Meteor Shower audio and timing for the Daily Resonance Lucky Meter.
 - Firework Rocket launch audio correction
 - Lucky Meter Star Visibility fix
 - Verified cinematic audio timing in `DailyResonance.tsx` matches 150ms delay
