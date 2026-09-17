@@ -62,3 +62,4 @@
 - Applied tasteful polish to Fireworks (gravity/friction tweaks for smoother feel).
 - Optimized Canvas overdraw by strictly bounding the radial gradients for `isReducedMotion` and Lightning environmental flash to their specific dimensions using valid multiplication syntax (`radius * 2`).
 - Preserved existing tier logic, architecture, Lucky Card, accessibility, and protected systems.
+- Resolved the Lucky Meter predictability issue by converting Phase 3 GSAP timeline to continuously roll past 100 via modulo 101, decelerating aggressively at the final moment (7.5s) using 'power4.inOut'.
