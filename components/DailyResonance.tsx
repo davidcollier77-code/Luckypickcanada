@@ -717,7 +717,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                const id = soundsRef.current.impactLightning.play();
                soundsRef.current.impactLightning.rate(1.6, id);
                soundsRef.current.impactLightning.volume(0.3, id);
-               if (lightningStrikes[strikeIdx]) {
+               if (strikeIdx !== -1 && lightningStrikes[strikeIdx]) {
                    lightningStrikes[strikeIdx].audioId = id;
                    lightningStrikes[strikeIdx].audioVolume = 0.3;
                }
