@@ -1,6 +1,8 @@
 # Active Context
 
 ## Current Status
+- Polished the CGI quality of the Lucky Meter visuals (lightning bloom, lightning core, meteor flares, and firework glow arcs).
+- Addressed the phantom lightning issue by removing the sympathetic visual branch from the Cosmic Lightning tier and converted its accompanying audio to a true 250ms delayed acoustic echo with a lower pitch and volume.
 - Identified a bug where stars in `TwinklingStars.tsx` rendered over the mountain background of the Lucky Meter due to mismatched image proportions (`object-fit: cover`, `object-position: center 40%`) vs the static CSS mask and full-height star generation.
 - Dynamically calculated the true horizon Y position in `TwinklingStars.tsx` and `Aurora.tsx` relative to the viewport size.
 - Restricted random star Y generation so stars physically cannot exist below the calculated skyline, while updating the density math to keep star counts consistent.
