@@ -45,7 +45,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   useEffect(() => {
     soundsRef.current = {
       buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 }),
-      impactMeteor: new Howl({ src: ['/sounds/mixkit-meteor.mp3'], volume: 1.0 }),
+      impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 1.0 }),
       impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
       impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
       fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
