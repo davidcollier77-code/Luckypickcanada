@@ -174,6 +174,19 @@ MUST preserve the documentation updater/refresh system, current 53-library inven
 
 MUST NOT modify or rework it without explicit authorization.
 
+🔴 DOCUMENTATION CAP — HARD STOP
+
+- 495 MB is the hard documentation safety cap.
+- MUST NOT exceed 495 MB.
+- If a build/refresh reaches or would exceed the cap:
+  - 🔴 STOP immediately.
+  - DO NOT bypass, raise, or ignore the cap.
+  - Preserve completed work and leave the repository in a safe, resumable state.
+  - MUST report: completed tasks, remaining tasks, current size, changed files, and exact next step.
+  - MUST update "memory-bank" progress/context for continuation.
+- MUST NOT claim full completion unless the requested result was actually verified.
+- The final report MUST explicitly state the cap caused the stop and provide the continuation handoff.
+
 9. EXECUTION
 
 - Follow applicable exact ".jules/*.md" files.
