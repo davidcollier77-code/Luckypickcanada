@@ -17,17 +17,32 @@
 MUST follow this order:
 
 1. Read "AGENTS.md" first.
-2. Identify applicable task group(s): ".jules/creation.md", ".jules/troubleshooting.md", ".jules/polishing.md", ".jules/testing.md", ".jules/security.md", ".jules/audio.md", ".jules/deep-dive.md", ".jules/seo.md".
-3. Read the applicable ".docs/.../jules_google_docs.md" file.
-4. Establish the applicable official Jules/Gemini documentation baseline.
-5. Inspect the actual current repository, branch, files, configuration, code, tests, and task path.
-6. Read ".jules/jules.md".
-7. Read "memory-bank/projectBrief.md" and "memory-bank/activeContext.md".
-8. Read other materially applicable exact repository guidance, ".jules/cmds/*.md" files, runbooks, source, configuration, and tests.
-9. Identify exact relevant library/framework/platform/tool name, version, and documentation path.
-10. Label findings "Verified", "Assumption", "Hypothesis", or "Unknown".
 
-2. JULES/GEMINI DOCUMENTATION
+2. Identify applicable task group(s): ".jules/creation.md", ".jules/troubleshooting.md", ".jules/polishing.md", ".jules/testing.md", ".jules/security.md", ".jules/audio.md", ".jules/deep-dive.md", ".jules/seo.md".
+
+3. For each applicable task group identified:
+   
+   - MUST identify the applicable library document(s) assigned to that task group in ".docs/manifest.json".
+   - MUST read/consult the applicable document(s) before execution.
+   - MUST use the applicable guidance from those document(s).
+
+4. Read the applicable ".docs/.../jules_google_docs.md" file.
+
+5. Establish the applicable official Jules/Gemini documentation baseline.
+
+6. Inspect the actual current repository, branch, files, configuration, code, tests, and task path.
+
+7. Read ".jules/jules.md".
+
+8. Read "memory-bank/projectBrief.md" and "memory-bank/activeContext.md".
+
+9. Read other materially applicable exact repository guidance, ".jules/cmds/*.md" files, runbooks, source, configuration, and tests.
+
+10. Identify exact relevant library/framework/platform/tool name, version, and documentation path.
+
+11. Label findings "Verified", "Assumption", "Hypothesis", or "Unknown".
+
+12. JULES/GEMINI DOCUMENTATION
 
 For every task, MUST identify, read, and follow the applicable Jules/Gemini documentation.
 
