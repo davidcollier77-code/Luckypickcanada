@@ -48,11 +48,6 @@ contentGen = contentGen.replace(
   `if (tier.id === 2 && Math.random() > 0.3) { spawnMeteor(false); if(Math.random() > 0.5) { spawnMeteor(false); } }`
 );
 
-contentGen = contentGen.replace(
-  `if (tier.id === 2) { spawnMeteor(false); s.nextAmbientEffectAt = now + (reduced ? 2500 : 1500 + Math.random()*1000); }`,
-  `if (tier.id === 2) { spawnMeteor(false); s.nextAmbientEffectAt = now + (reduced ? 2500 : 1500 + Math.random()*1000); }`
-);
-
 
 const spawnBoltStart = "function spawnBolt(isHero: boolean) {";
 const spawnBoltReplace = spawnBoltStart + `
