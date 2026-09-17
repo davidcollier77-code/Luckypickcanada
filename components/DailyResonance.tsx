@@ -9,6 +9,7 @@ import { Howl, Howler } from 'howler';
 import gsap from 'gsap';
 
 import ResonanceButton from './ResonanceButton';
+import { playButtonClick } from '../app/lib/audio';
 
 
 const LUCKY_QUOTES = [
@@ -30,7 +31,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   const soundsRef = useRef<Record<string, Howl | null>>({
     buildup: null,
-    uiClick: null,
     impactMeteor: null,
     impactLightning: null,
     impactFireworks: null,
@@ -44,7 +44,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   useEffect(() => {
     soundsRef.current = {
       buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 }),
-      uiClick: new Howl({ src: ['/sounds/ui-click.mp3'], volume: 0.8 }),
       impactMeteor: new Howl({ src: ['/sounds/mixkit-meteor.mp3'], volume: 1.0 }),
       impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
       impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
@@ -86,6 +85,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const sequenceRef = useRef<number>(0);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const isAnimatingRef = useRef(false);
+  const hasAnimatedRef = useRef(false);
   useEffect(() => { if (auroraRef.current && !isRevealing && !isRevealed) auroraRef.current.setPhase('idle'); }, [isRevealing, isRevealed]);
 
 
@@ -146,7 +146,8 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (isLoading) return;
     if (isRevealing) return;
 
-    if (soundsRef.current.uiClick) soundsRef.current.uiClick.play();
+    // Play immediate physical button click sound
+    playButtonClick();
 
     isAnimatingRef.current = true;
     setIsLoading(true);
@@ -291,6 +292,12 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         setTimeout(() => { if (soundsRef.current.buildup) soundsRef.current.buildup.stop(); }, 500);
       }
 
+      // Play cinematic impact sound for the visual reveal
+      if (soundsRef.current.impactLightning) {
+        const id = soundsRef.current.impactLightning.play();
+        soundsRef.current.impactLightning.volume(0.8, id);
+      }
+
       // Impact sounds are now triggered per-event in the canvas render loop
 
       // Start canvas animation
@@ -309,7 +316,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   };
 
   const handleShare = async () => {
-    if (soundsRef.current.uiClick) soundsRef.current.uiClick.play();
+    playButtonClick();
     const shareText = `My Daily Resonance is ${percentage}%! '${quote}' Discover your daily fortune at luckypickcanada.ca (For entertainment purposes only).`;
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
@@ -334,6 +341,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
   // Canvas Animation Logic
   const animateCanvas = useCallback((forcedTier?: string, animationStartTimeMs?: number) => {
+    hasAnimatedRef.current = true;
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
     const activeTier = typeof forcedTier === 'string' ? forcedTier : tier;
     const canvas = canvasRef.current;
@@ -1101,7 +1109,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       canvas.height = window.innerHeight;
     }
     // Only trigger canvas animation on mount/state-load if not currently in a reveal sequence
-    if (isRevealed && !isAnimatingRef.current) animateCanvas();
+    if (isRevealed && !isAnimatingRef.current && !hasAnimatedRef.current) animateCanvas();
   }, [isRevealed, animateCanvas]);
 
   return (
