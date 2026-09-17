@@ -1,6 +1,9 @@
 # Active Context
 
 ## Current Status
+- Fixed Cosmic Lightning audio synchronization by associating Howler playback IDs directly with spawned visual lightning strikes, allowing graceful audio fade-outs when the visual strike decays.
+- Polished Meteor Shower visuals by replacing static trails with dynamically tapering polygon trails, enhancing realism at zero performance cost.
+- Polished Cosmic Lightning visuals by introducing a slightly non-linear decay (lingering longer, fading smoother) to match the new natural audio tail.
 - Identified a bug where stars in `TwinklingStars.tsx` rendered over the mountain background of the Lucky Meter due to mismatched image proportions (`object-fit: cover`, `object-position: center 40%`) vs the static CSS mask and full-height star generation.
 - Dynamically calculated the true horizon Y position in `TwinklingStars.tsx` and `Aurora.tsx` relative to the viewport size.
 - Restricted random star Y generation so stars physically cannot exist below the calculated skyline, while updating the density math to keep star counts consistent.
