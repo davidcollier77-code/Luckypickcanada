@@ -5,6 +5,7 @@ import TwinklingStars from "./TwinklingStars";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Howl, Howler } from 'howler';
 import gsap from 'gsap';
 
@@ -1118,7 +1119,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     } flex flex-col items-center justify-center overflow-hidden z-0`}>
       <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
-      <img src="/images/lucky-meter-night-sky.webp" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" alt="" style={{ objectPosition: "center 40%" }} />
+      <Image src="/images/lucky-meter-night-sky.webp" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" alt="" style={{ objectPosition: "center 40%" }} fill priority />
       <TwinklingStars />
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
