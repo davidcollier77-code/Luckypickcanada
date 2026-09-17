@@ -693,19 +693,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
                soundsRef.current.impactLightning.volume(1, id);
             }
 
-            // Add a sympathetic branch that spawns almost instantly after the main strike
-            const timeoutId = setTimeout(() => {
-               if (isAnimatingRef.current) {
-                  if (soundsRef.current.impactLightning) {
-                     const id = soundsRef.current.impactLightning.play();
-                     soundsRef.current.impactLightning.rate(0.7, id);
-                     soundsRef.current.impactLightning.volume(0.2, id);
-                  }
-               }
-            }, 250);
-            // Track timeouts for cleanup if unmounted
-            if (!(canvas as any).timeouts) (canvas as any).timeouts = [];
-            (canvas as any).timeouts.push(timeoutId);
          }
       }
 
