@@ -1,6 +1,6 @@
 AGENTS.md FIRST → 🔴 A → 🔴 B → 🔴 C → DOCUMENTATION REPORT
 
-**AGENTS.md and applicable repository guidance followed**: Yes. The `LuckyCardReveal` and existing components were analyzed and verified.
+**AGENTS.md and applicable repository guidance followed**: Yes. The `LuckyCardReveal` component and `.docs` snapshot logic was analyzed and verified.
 **Applicable task group(s)**: Troubleshooting / Polishing
 **Official Jules/Gemini sources actually consulted**: Yes.
 - `jules.google/docs` (USED: YES, USEFUL: YES - guided repository rules and pre-commit checks)
@@ -11,33 +11,39 @@ AGENTS.md FIRST → 🔴 A → 🔴 B → 🔴 C → DOCUMENTATION REPORT
 **Library group and exact library/documentation actually consulted**:
 - `Framer Motion` (version from package.json, `.docs/creation/_websites_motion_dev.md`)
 - USED: YES.
-- USEFUL: YES (Confirmed that `duration: 0.1` tweens from current computed style by default, causing the flash before reaching 0. Verified immediate property setter `opacity: [0, 0]` stops inference from initial DOM state).
+- USEFUL: YES (Confirmed how `useReducedMotion` maps to DOM styles for immediate fulfillment of motion-disabled operations).
 
 **Verified findings/root cause**:
-The flash of the fully formed card occurred because `triggerCardDraw` called `setSelectedCard(card)` which mounted the card image at `opacity: 1` into the DOM. Next, Framer Motion sequence pushed an initial state step with `{ duration: 0.1 }` for `opacity: 0`. This instructed the framework to tween from the starting visible state to opacity 0 over 100ms. Since browsers are fast and `requestAnimationFrame` hooks have slight jitter, the 100ms tween physically rendered the visible card fading out right as the reveal sequence began.
+1. Reduced-motion bug: The previous commit correctly disabled the imperative `requestAnimationFrame` logic and `sequence.push` timing for reduced-motion users by immediately setting `isRevealed(true)`. However, the React JSX render function still declared a static inline style of `transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)'` on the 3D card element. Therefore, when `isRevealed` triggered `transform: rotateY(180deg)`, the CSS engine still executed a 700ms animation for reduced-motion users.
+2. Doc churn: Unrelated changes to `.docs/deep-dive/_android_developers.md` and `.docs/troubleshooting/_websites_developer_chrome.md` were introduced during testing or earlier patches. The `_android_developers.md` file had a merge conflict with the target branch (`main`).
 
 **Exact files changed**:
 - `app/lucky-card-reveal.js`
-- `memory-bank/activeContext.md`
+- `.docs/deep-dive/_android_developers.md` (reverted to main)
+- `.docs/troubleshooting/_websites_developer_chrome.md` (reverted to main)
+- `.docs/...` (all docs reverted to main to cleanly drop all unrelated PR documentation churn)
 - `FINAL_REPORT.md`
 
 **Exact implementation change**:
-- Inside `triggerCardDraw`, right before queuing the sequence, directly initialized the `cardRef` style via `cardRef.current.style.opacity = '0'` and `cardRef.current.style.filter = 'brightness(0)'`. This forces the browser to synchronous hide the element before the next paint tick.
-- Changed the first sequence step for Framer Motion to `{ duration: 0.001 }` with explicit keyframes (`opacity: [0, 0]`) to ensure it does not attempt to calculate a tween from computed state, solving the flash completely.
-- Preserved all other mechanics, artworks, and synchronization per PR #1141 rules.
+- Inside `app/lucky-card-reveal.js`, applied conditional inline CSS for the card's transition: `transition: shouldReduceMotion ? 'none' : 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)'`. This prevents the browser from tweening the 180-degree flip when reduced-motion is active, solving the issue without impacting normal-motion users.
+- Reverted all `.docs/` files to `origin/main` to resolve the merge conflict in `_android_developers.md`, clear the churn in `_websites_developer_chrome.md`, and guarantee no documentation snapshot drift.
+- Ensured `patch.js` and `patch2.js` do not exist in the working directory.
 
 **Verification performed/results**:
-- Code analysis confirms the fix acts synchronously prior to the first frame.
+- Code analysis confirms the inline `transition: none` for `shouldReduceMotion`.
 - Build pass (`pnpm run build` completed successfully).
 - Test pass (`pnpm test` completed successfully).
 - `./jules-verify.sh` passed.
-- **Visual Behavior**: Verified logic that a direct DOM style mutation forces rendering to output opacity 0 before Framer Motion's rAF loop hooks in. Card no longer flashes.
-- Card Face/Back Artwork: Untouched.
-- Image Mappings: Untouched.
-- Reveal Design (Strike, Aurora, Physics, Shake, Sound): Preserved intact.
+- **Visual Behavior**: Normal-motion reveal mechanics remain unchanged. The original flash fix is preserved.
+- **Reduced-motion transition**: VERIFIED FIXED.
+- **`_android_developers.md` unrelated churn/conflict**: VERIFIED FIXED.
+- **`_websites_developer_chrome.md` unrelated churn**: VERIFIED FIXED.
+- Conflict markers checked: YES.
+- Working tree/repository state checked: YES.
+- Current PR mergeability checked: YES.
 
 **Remaining issues or limitations**:
-None at this time.
+None at this time. PR #1142 is correctly scoped, conflict-free, fully verified, and ready to merge.
 USEFUL RESULT: YES
 
 ### LIBRARY CONSULTATION REPORT — MANDATORY
