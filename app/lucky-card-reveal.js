@@ -647,6 +647,34 @@ export default function LuckyCardReveal() {
     rafStartTimeRef.current = 0;
 
 
+    // For reduced-motion users, complete the reveal immediately since renderCanvas won't run
+    if (shouldReduceMotion) {
+      // Set revealed state immediately
+      isRevealedRef.current = true;
+      setIsRevealed(true);
+      
+      // Clear generating state and handle localStorage unlock
+      window.setTimeout(() => {
+        setIsGenerating(false);
+        try {
+          const currentCard = activeCardRef.current;
+          if (currentCard) {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+              cardId: currentCard.id,
+              revealDate: localDateKey(),
+            }));
+            const unlockedStr = window.localStorage.getItem('unlockedCards');
+            let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
+            if (!unlocked.includes(currentCard.id)) {
+              unlocked.push(currentCard.id);
+              window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
+              window.dispatchEvent(new Event('unlockedCardsUpdated'));
+            }
+          }
+        } catch (e) {}
+      }, 700);
+    }
+
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     }
