@@ -18,8 +18,9 @@
 MUST follow this order:
 
 1. Read "AGENTS.md" first.
-2. Read ".jules/jules.md" and follow its initialization requirements.
-3. Identify every applicable task group:
+
+2. Identify every applicable TASK GROUP:
+   
    - ".jules/creation.md"
    - ".jules/troubleshooting.md"
    - ".jules/polishing.md"
@@ -28,64 +29,53 @@ MUST follow this order:
    - ".jules/audio.md"
    - ".jules/deep-dive.md"
    - ".jules/seo.md"
-4. For each applicable task group:
-   - Check ".docs/manifest.json".
-   - Identify the exact library document(s) assigned to that task group.
-   - MUST read/consult those document(s) before execution.
-   - MUST use applicable guidance from those document(s).
-5. Read the exact applicable Jules/Gemini repository documentation:
+
+3. For every applicable TASK GROUP, read and use the mandatory Jules and Gemini documentation:
+   
    - ".docs/<task-group>/jules_google_docs.md"
    - ".docs/<task-group>/_google-gemini_gemini-cli.md"
    - ".docs/<task-group>/_websites_ai_google_dev_gemini-api.md"
-6. Consult the applicable current official Jules/Gemini sources required by those repository entries.
-7. Inspect the actual current branch, files, configuration, code, tests, dependencies, and task path.
-8. Read "memory-bank/projectBrief.md" and "memory-bank/activeContext.md".
-9. Read other materially applicable repository guidance, including relevant ".jules/*.md", ".jules/cmds/*.md", runbooks, source, configuration, and tests.
-10. For any applicable Spec Kit workflow, use the exact ".jules/cmds/speckit.*.md" command file(s) required by the task.
-11. Identify exact relevant library/framework/platform/tool name, version, manifest entry, and ".docs" path.
-12. Label findings: "Verified", "Assumption", "Hypothesis", or "Unknown".
+     These Jules/Gemini documents are mandatory assessment/context sources for every task. They must be consulted before library selection, modification, or execution.
 
-2. JULES/GEMINI SOURCES
+4. Consult the applicable current official Jules/Gemini sources required by the repository documentation:
+   
+   - "https://jules.google/docs"
+   - "https://jules.google/docs/cli/reference"
+   - "https://jules.google/docs/api/reference/"
+   - "google-gemini/gemini-cli"
+   - "https://ai.google.dev/gemini-api/docs"
+   - "https://ai.google.dev/api"
+     Consult only sources materially applicable to the task. Never claim a source was consulted unless it was actually used.
 
-Repository documentation is mandatory; it does not replace current official sources.
+5. For each applicable TASK GROUP:
+   a. Read the exact ".jules/<task-group>.md" file.
+   b. Check ".docs/manifest.json".
+   c. Identify the exact library documentation assigned to that TASK GROUP.
+   d. Read/consult the exact assigned library documentation before execution.
+   e. Apply the applicable guidance from that documentation.
 
-Official baseline:
+6. Identify and use every other materially applicable repository component required by the task, including:
+   
+   - "memory-bank/projectBrief.md"
+   - "memory-bank/activeContext.md"
+   - "memory-bank/progress.md"
+   - "memory-bank/techContext.md"
+   - "CSS_FIX_GUIDE.md"
+   - "DATABASE_SETUP.md"
+   - "DEPLOYMENT_CHECKLIST.md"
+   - "QUICK_FIX_GUIDE.md"
+   - exact applicable ".jules/*.md" specialist files
+   - exact applicable ".jules/cmds/*.md" command files
+   - runbooks, source, configuration, and tests
+   - other exact repository guidance routed by "AGENTS.md"
 
-- "https://jules.google/docs"
+7. For any applicable Spec Kit workflow, use the exact required ".jules/cmds/speckit.*.md" command file(s).
 
-- "https://jules.google/docs/cli/reference"
+8. Inspect the actual current branch, files, configuration, code, tests, dependencies, and task path.
 
-- "https://jules.google/docs/api/reference/"
+9. Identify the exact relevant library/framework/platform/tool name, version, manifest entry, and ".docs" path.
 
-- "google-gemini/gemini-cli"
-
-- "https://ai.google.dev/gemini-api/docs"
-
-- "https://ai.google.dev/api"
-
-- Consult only sources materially applicable to the task.
-
-- Report the exact files and sources actually consulted.
-
-- Never claim a source was consulted unless it was actually used.
-
-3. PROJECT CONTEXT
-
-Consult materially applicable exact files/components identified by repository governance, including:
-
-- "memory-bank/projectBrief.md"
-- "memory-bank/activeContext.md"
-- "memory-bank/progress.md"
-- "memory-bank/techContext.md"
-- "CSS_FIX_GUIDE.md"
-- "DATABASE_SETUP.md"
-- "DEPLOYMENT_CHECKLIST.md"
-- "QUICK_FIX_GUIDE.md"
-- relevant ".jules/*.md" specialists
-- relevant ".jules/cmds/*.md" commands
-- other exact repository guidance required by "AGENTS.md"
-
-"FINAL_REPORT.md" is historical context only; never authority.
+10. Label findings: "Verified", "Assumption", "Hypothesis", or "Unknown".
 
 ---
 
@@ -97,7 +87,7 @@ Before modification, MUST establish:
 - exact scope and affected files/directories
 - exact files planned for modification
 - exact applicable ".jules/*.md" and ".jules/cmds/*.md"
-- exact applicable ".docs/..." Jules/Gemini files
+- exact applicable ".docs/.../jules_google_docs.md", "_google-gemini_gemini-cli.md", and "_websites_ai_google_dev_gemini-api.md" files
 - exact relevant libraries, versions, manifest entries, and ".docs" paths
 - protected systems/files
 - verification requirements
@@ -260,6 +250,14 @@ For each relevant source or library actually evaluated:
 - "USED: YES/NO"
 - "USEFUL: YES/NO"
 
+REQUIRED COMPONENT STATUS
+
+For each other materially applicable repository component actually evaluated, including memory-bank files, task-group specialists, Spec Kit command files, runbooks, guides, configuration, and tests:
+
+- exact file/path
+- "USED: YES/NO"
+- "USEFUL: YES/NO"
+
 ---
 
 🔴 PR REPORT
@@ -269,6 +267,7 @@ MUST contain:
 - "USEFUL RESULT: YES" or "USEFUL RESULT: NO"
 - exact Jules/Gemini files/sources used + "USEFUL: YES/NO"
 - exact relevant libraries + name/version/".docs" path + "USED: YES/NO" + "USEFUL: YES/NO"
+- exact other materially applicable components + "USED: YES/NO" + "USEFUL: YES/NO"
 - exact files changed
 - verification performed and actual results
 - remaining issues and final state
@@ -282,10 +281,12 @@ MUST contain:
 Before submission, MUST confirm:
 
 - "AGENTS.md" was read first.
+- Mandatory Jules/Gemini documentation was used before task-specific routing.
 - All applicable routed guidance was followed.
 - Exact Jules/Gemini repository files and official sources actually used were reported.
 - ".docs/manifest.json" was checked.
 - Relevant libraries were identified and status-reported; inventory was not changed merely because they were used.
+- All other materially applicable repository components were identified and status-reported.
 - Context7 was not used without approval and reason.
 - Protected systems/files were untouched unless authorized.
 - "pnpm" was used; "npm ci" was not used.
