@@ -22,5 +22,12 @@ const replace = `    // --- FRAMER MOTION CHOREOGRAPHY ---
     sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, opacity: [0, 0], filter: ["brightness(0)", "brightness(0)"] }, { duration: 0.001 }]);
     sequence.push([cardRef.current, { y: -10 }, { at: "<", duration: 1.5, ease: 'easeOut' }]);`;
 
+// Verify the expected source block exists before patching
+if (!code.includes(search)) {
+  console.error('ERROR: Expected source block not found in app/lucky-card-reveal.js');
+  console.error('The file may have already been patched or modified.');
+  process.exit(1);
+}
+
 code = code.replace(search, replace);
 fs.writeFileSync('app/lucky-card-reveal.js', code);

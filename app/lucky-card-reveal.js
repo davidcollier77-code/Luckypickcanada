@@ -656,9 +656,12 @@ export default function LuckyCardReveal() {
 
     // Defensive initialization to prevent Flash of Fully-Formed Card
     // Ensure the browser synchronously hides the element before the next paint
-    if (cardRef.current) {
-      cardRef.current.style.opacity = '0';
-      cardRef.current.style.filter = 'brightness(0)';
+    // Skip for reduced-motion users since renderCanvas won't run to restore visibility
+    if (!shouldReduceMotion) {
+      if (cardRef.current) {
+        cardRef.current.style.opacity = '0';
+        cardRef.current.style.filter = 'brightness(0)';
+      }
     }
 
     // Initial state (duration: 0.001 to prevent tweening from visible state)
