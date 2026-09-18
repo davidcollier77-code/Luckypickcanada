@@ -620,14 +620,19 @@ export default function LuckyCardReveal() {
     // Apply the progressive mask to the card front
     if (cardFrontRef.current) {
         if (!isRevealedRef.current) {
-            // Combine masks, default to completely hidden if no layers yet
+            // Only update mask if it has changed to avoid excessive style recalculations
             const maskVal = maskLayers.length > 0 ? maskLayers.join(', ') : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
-            cardFrontRef.current.style.maskImage = maskVal;
-            cardFrontRef.current.style.WebkitMaskImage = maskVal;
+            const currentMask = cardFrontRef.current.style.maskImage;
+            if (currentMask !== maskVal) {
+                cardFrontRef.current.style.maskImage = maskVal;
+                cardFrontRef.current.style.WebkitMaskImage = maskVal;
+            }
         } else if (isRevealedRef.current) {
             // Clear mask once fully revealed
-            cardFrontRef.current.style.maskImage = 'none';
-            cardFrontRef.current.style.WebkitMaskImage = 'none';
+            if (cardFrontRef.current.style.maskImage !== 'none') {
+                cardFrontRef.current.style.maskImage = 'none';
+                cardFrontRef.current.style.WebkitMaskImage = 'none';
+            }
         }
     }
 
