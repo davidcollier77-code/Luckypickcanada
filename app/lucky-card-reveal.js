@@ -144,9 +144,11 @@ export default function LuckyCardReveal() {
       soundsRef.current.buildup.rate(0.6, id);
 
       const finalStrikeTime = schedule[schedule.length - 1];
+      const finalStrikeTime = schedule[schedule.length - 1];
+      const buildupSound = soundsRef.current.buildup;
       activeTimeoutsRef.current.push(setTimeout(() => {
-        soundsRef.current.buildup.fade(0.4, 0, 1000, id);
-        setTimeout(() => soundsRef.current.buildup.stop(id), 1000);
+        buildupSound.fade(0.4, 0, 1000, id);
+        setTimeout(() => buildupSound.stop(id), 1000);
       }, (finalStrikeTime + 1.0) * 1000));
     }
 
