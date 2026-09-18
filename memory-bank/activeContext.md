@@ -33,3 +33,6 @@
 - Verified meteors remain unaffected and use `impactMeteor`.
 
 - Fixed card reveal animation to build up visually on hits rather than lingering beam effect.
+
+
+Focus is currently on fixing the Lucky Card Reveal initialization timing issue (preventing the card from flashing on screen at the start of generation).

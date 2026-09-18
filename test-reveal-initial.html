@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reveal Visual Test</title>
+<style>
+  #target {
+     opacity: 1;
+     transition: opacity 0.1s;
+  }
+</style>
+</head>
+<body>
+  <div id="target">Card Is Fully Visible Initial</div>
+  <script>
+    const el = document.getElementById('target');
+
+    // Simulate what we did
+    el.style.opacity = '0'; // Imperative fix!
+
+    // Animate via Web Animations API representing Framer Motion
+    el.animate([
+       { opacity: 0, offset: 0 },
+       { opacity: 0, offset: 1 }
+    ], { duration: 1 });
+  </script>
+</body>
+</html>
