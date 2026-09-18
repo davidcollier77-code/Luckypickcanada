@@ -1,6 +1,7 @@
 # Progress
 
 ## Completed Features
+- [x] Fixed a reduced-motion bug in the Lucky Card reveal sequence.
 - [x] Enhanced Lucky Card Reveal visuals (strikes, impacts, foreground effects).
 - [x] Enhanced Lucky Card Reveal audio (tiered scaling, resonance).
 - [x] Enhanced Lucky Card Reveal physical reactions (directional recoil).

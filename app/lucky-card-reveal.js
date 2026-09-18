@@ -765,7 +765,7 @@ export default function LuckyCardReveal() {
               className="w-full h-full relative"
               style={{
                 transformStyle: 'preserve-3d',
-                transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+                transition: shouldReduceMotion ? 'none' : 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
                 transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
               }}
             >
