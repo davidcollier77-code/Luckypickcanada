@@ -1,17 +1,20 @@
 # Active Context
 
 ## Current Status
+- Fixed a reduced-motion bug in the Lucky Card reveal sequence.
+- Verified `shouldReduceMotion` correctly disables the 700ms CSS transform transition.
+- Ensured normal-motion users retain the existing 700ms transition.
+
+## Next Steps
+- None at this time.
+
+## Previous Context
 - Upgraded Lucky Card reveal visuals and audio to enhance the "forging" aspect.
 - Separated card-local visual effects onto a foreground canvas (fgCanvasRef).
 - Improved Framer Motion physical reactions to sync directionally with strikes.
 - Implemented targeted impacts around the card perimeter.
 - Added tiered audio scaling and ethereal resonance tails.
 - Ensured card artwork and basic functionality remain untouched.
-
-## Next Steps
-- None at this time.
-
-## Previous Context
 - Fixed ONLY the unwanted lingering/echo-like audio tail that occurred after the Cosmic Lightning strike in the Lucky Meter.
 - Removed the delayed `soundsRef.current.impactLightning.play()` calls from the script phases (Phase 1, 2, 3, and 4) within the `animateCanvas` render loop in `components/DailyResonance.tsx`.
 - Preserved the primary cinematic `impactLightning` playback at the 7.5s reveal mark.
@@ -31,5 +34,4 @@
 - Added `fireworkLaunch` to `soundsRef` and initialized it using Howler.js.
 - Modified `Fireworks` tier logic in `DailyResonance.tsx` to use `soundsRef.current.fireworkLaunch` for rocket launches, retaining Howler's `.play()` ID for overlapping asynchronous playback.
 - Verified meteors remain unaffected and use `impactMeteor`.
-
 - Fixed card reveal animation to build up visually on hits rather than lingering beam effect.

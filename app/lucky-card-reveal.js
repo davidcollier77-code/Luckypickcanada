@@ -649,6 +649,27 @@ export default function LuckyCardReveal() {
 
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
+    } else {
+      // Reduced motion fallback path
+      setIsRevealed(true);
+      setIsGenerating(false);
+      isRevealedRef.current = true;
+      try {
+        const currentCard = activeCardRef.current;
+        if (currentCard) {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+              cardId: currentCard.id,
+              revealDate: localDateKey(),
+            }));
+            const unlockedStr = window.localStorage.getItem('unlockedCards');
+            let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
+            if (!unlocked.includes(currentCard.id)) {
+              unlocked.push(currentCard.id);
+              window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
+              window.dispatchEvent(new Event('unlockedCardsUpdated'));
+            }
+        }
+      } catch (e) {}
     }
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
@@ -765,7 +786,7 @@ export default function LuckyCardReveal() {
               className="w-full h-full relative"
               style={{
                 transformStyle: 'preserve-3d',
-                transition: 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
+                transition: shouldReduceMotion ? 'none' : 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
                 transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
               }}
             >
