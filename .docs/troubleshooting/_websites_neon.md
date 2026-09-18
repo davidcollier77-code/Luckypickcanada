@@ -41,7 +41,6 @@ First-time setup: org/project creation, connection strings, driver installation,
 - [Get started with your AI agent](https://neon.com/docs/get-started/with-an-agent.md): Set up Neon in your project using your AI coding assistant
 - [Getting ready for production](https://neon.com/docs/get-started/production-checklist.md): Guidelines to optimize price, performance, and reliability
 - [How a Neon backend fits together](https://neon.com/docs/get-started/backend-overview.md): Postgres, Object Storage, Functions, the AI Gateway, Auth, and the Data API, declared in one neon.ts and branched together
-- [Neon backend beta guide](https://neon.com/docs/get-started/backend-beta.md): Get started with Neon Functions, Object Storage, and AI Gateway
 - [Neon framework guides](https://neon.com/docs/get-started/frameworks.md): Find detailed instructions for connecting to Neon from various frameworks
 - [Neon language guides](https://neon.com/docs/get-started/languages.md): Find detailed instructions for connecting to Neon from various languages
 - [Neon ORM guides](https://neon.com/docs/get-started/orms.md): Find detailed instructions for connecting to Neon from various ORMs
@@ -117,7 +116,7 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: skills](https://neon.com/docs/cli/skills.md): Install and update Neon agent skills in your coding agents
 - [Neon CLI command: snapshots](https://neon.com/docs/cli/snapshots.md): Create, list, restore, and schedule branch snapshots from the terminal
 - [Neon CLI command: status](https://neon.com/docs/cli/status.md): Show the branch's live Neon state
-- [Neon CLI command: triggers](https://neon.com/docs/cli/triggers.md): Create and manage function triggers that invoke a Neon Function on a cron schedule
+- [Neon CLI command: triggers](https://neon.com/docs/cli/triggers.md): Create and manage function triggers that invoke a Neon Function on a cron schedule or when an object is created
 - [Neon CLI command: vpc](https://neon.com/docs/cli/vpc.md): Manage Private Networking VPC endpoints and project-level restrictions
 - [Neon CLI quickstart](https://neon.com/docs/cli/quickstart.md): Get set up with the Neon CLI in just a few steps
 - [Neon CLI: Install and connect](https://neon.com/docs/cli/install.md): Install the Neon CLI and connect with web auth or API key
@@ -200,7 +199,9 @@ Managed authentication built on Better Auth that branches with your database.
 Long-running serverless compute, close to your database.
 
 - [AI agents on Neon Functions](https://neon.com/docs/compute/functions/agents.md): Run streaming, tool-calling agents on Neon Functions.
+- [Custom domains for Neon Functions](https://neon.com/docs/compute/functions/custom-domains.md): Serve a Neon Function from a domain you own.
 - [Deploy and manage Neon Functions](https://neon.com/docs/compute/functions/deploy.md): CLI and API reference for deploying and managing Neon Functions.
+- [Function Triggers](https://neon.com/docs/compute/functions/triggers/overview.md): Let Neon invoke a function for you.
 - [Get started with Neon Functions](https://neon.com/docs/compute/functions/get-started.md): Deploy your first Neon Function and call it over HTTP.
 - [How to host a Discord bot on Neon Functions](https://neon.com/docs/compute/functions/discord-bot.md): Receive slash commands at a public function URL with no Gateway connection
 - [How to host a Telegram bot on Neon Functions](https://neon.com/docs/compute/functions/telegram-bot.md): Receive Telegram messages, run bot commands and store data in Postgres
@@ -210,6 +211,8 @@ Long-running serverless compute, close to your database.
 - [Neon Functions environment variables](https://neon.com/docs/compute/functions/environment-variables.md): Neon-injected variables and how to set your own secrets.
 - [Neon Functions logs](https://neon.com/docs/compute/functions/logs.md): View, search, and download logs for a deployed function.
 - [Neon Functions runtime limits](https://neon.com/docs/compute/functions/reference/runtime-limits.md): Hard constraints for Neon Functions.
+- [Schedule a function](https://neon.com/docs/compute/functions/triggers/schedule.md): Create and manage scheduled Function Triggers.
+- [Trigger on an object upload](https://neon.com/docs/compute/functions/triggers/object-storage.md): Run a function when an object is created in a bucket.
 - [WebSockets and SSE on Neon Functions](https://neon.com/docs/compute/functions/websockets.md): Hold long-lived connections open for real-time apps.
 
 ## Object Storage
@@ -237,7 +240,7 @@ Access frontier and open-source models through a single API.
 - [Chat completions](https://neon.com/docs/ai-gateway/chat-completions.md): The OpenAI-compatible unified endpoint
 - [Gemini API](https://neon.com/docs/ai-gateway/gemini.md): Use the Google Gemini API with Neon AI Gateway
 - [Get started with Neon AI Gateway](https://neon.com/docs/ai-gateway/get-started.md): Make your first inference request in minutes
-- [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview.md): One API for frontier and open-source models from OpenAI, Google, and more. Built into your Neon project.
+- [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview.md): One API for open-weight and foundation models from OpenAI, Google, and more. Built into your Neon project.
 - [OpenAI Responses API](https://neon.com/docs/ai-gateway/openai-responses.md): Use the OpenAI Responses API with Neon AI Gateway
 
 ## Data API
@@ -287,7 +290,7 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 171 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 170 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Set up a Neon project in seconds and connect from a Next.js application
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
@@ -384,6 +387,7 @@ Contributor guides, component architecture, and documentation standards.
 
 ## Concepts
 
+- [Branch your backend](https://neon.com/docs/concepts/branch-your-backend.md): How branching works across the backend
 - [Credentials & access](https://neon.com/docs/concepts/credentials-access.md): How API keys, scoped credentials, permissions, and network controls govern access to your backend
 - [The Neon object model](https://neon.com/docs/concepts/the-object-model.md): How the Neon backend is structured
 
