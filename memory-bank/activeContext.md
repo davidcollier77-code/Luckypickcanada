@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current Status
-- Upgraded Lucky Card reveal from raw Web Audio to Howler.js playback, scheduling cinematic sounds via timed setTimeout offsets rather than an AudioContext master clock.
+- Upgraded Lucky Card reveal to use Howler.js for precise cinematic audio scheduling.
 - Added aurora beam sound (`mixkit-firework-crackle.mp3`) and synchronized it with existing strikes.
 - Replaced synthetic `OscillatorNode` logic with high-quality Howler.js cinematic shimmer sound.
 
