@@ -273,10 +273,12 @@ export default function LuckyCardReveal() {
     let cardH = 405;
     if (cardRef.current) {
         const rect = cardRef.current.getBoundingClientRect();
-        cardCX = rect.left + rect.width / 2;
-        cardCY = rect.top + rect.height / 2;
-        cardW = rect.width;
-        cardH = rect.height;
+        if (rect) {
+            cardCX = rect.left + rect.width / 2;
+            cardCY = rect.top + rect.height / 2;
+            cardW = rect.width;
+            cardH = rect.height;
+        }
     }
     const cx = cardCX;
     const cy = cardCY;
