@@ -650,39 +650,26 @@ export default function LuckyCardReveal() {
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     } else {
-      // Reduced motion: skip canvas effects but complete the reveal
-      const schedule = STRIKE_SCHEDULES[card.tier];
-      const finalStrike = schedule[schedule.length - 1];
-      const flipAt = finalStrike + 0.65;
-      
-      // Trigger reveal at the same time as the animation would
-      activeTimeoutsRef.current.push(setTimeout(() => {
-        if (!isRevealedRef.current) {
-          isRevealedRef.current = true;
-          setIsRevealed(true);
-          
-          // Complete the draw and save state
-          setTimeout(() => {
-            setIsGenerating(false);
-            try {
-              const currentCard = activeCardRef.current;
-              if (currentCard) {
-                window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                  cardId: currentCard.id,
-                  revealDate: localDateKey(),
-                }));
-                const unlockedStr = window.localStorage.getItem('unlockedCards');
-                let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
-                if (!unlocked.includes(currentCard.id)) {
-                  unlocked.push(currentCard.id);
-                  window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
-                  window.dispatchEvent(new Event('unlockedCardsUpdated'));
-                }
-              }
-            } catch (e) {}
-          }, 700);
+      // Reduced motion fallback path
+      setIsRevealed(true);
+      setIsGenerating(false);
+      isRevealedRef.current = true;
+      try {
+        const currentCard = activeCardRef.current;
+        if (currentCard) {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+              cardId: currentCard.id,
+              revealDate: localDateKey(),
+            }));
+            const unlockedStr = window.localStorage.getItem('unlockedCards');
+            let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
+            if (!unlocked.includes(currentCard.id)) {
+              unlocked.push(currentCard.id);
+              window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
+              window.dispatchEvent(new Event('unlockedCardsUpdated'));
+            }
         }
-      }, flipAt * 1000));
+      } catch (e) {}
     }
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
