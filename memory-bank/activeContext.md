@@ -4,6 +4,8 @@
 - Fixed a reduced-motion bug in the Lucky Card reveal sequence.
 - Verified `shouldReduceMotion` correctly disables the 700ms CSS transform transition.
 - Ensured normal-motion users retain the existing 700ms transition.
+- Successfully implemented the progressive materialization effect for the Lucky Card Reveal.
+- Visuals (strikes), audio (impacts), and physical card reactions (shake/jolt/recoil) are now perfectly synchronized to the single master timeline (`STRIKE_SCHEDULES`).
 
 ## Next Steps
 - None at this time.

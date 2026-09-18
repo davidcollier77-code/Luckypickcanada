@@ -39,6 +39,7 @@ export default function LuckyCardReveal() {
   const activeTimeoutsRef = useRef([]);
   const animationControlsRef = useRef(null);
   const cardRef = useRef(null);
+  const cardFrontRef = useRef(null);
 
   // Canvas refs for visual effects
   const bgCanvasRef = useRef(null);
@@ -292,10 +293,15 @@ export default function LuckyCardReveal() {
       fgCtx.clearRect(0, 0, w, h);
     }
 
+
     const schedule = STRIKE_SCHEDULES[tier];
     let totalEnergyAbsorbed = 0;
 
+    // --- Progressive Materialization Masks ---
+    let maskLayers = [];
+
     // Accumulate global effects to render them once per frame
+
     let maxFlashOpacity = 0;
     let flashRgb = '255, 255, 255';
     let flashGlowColor = '255, 255, 255';
@@ -321,6 +327,30 @@ export default function LuckyCardReveal() {
              isFinalFlash = isFinal;
           }
         }
+      }
+
+      // --- Materialization Mask Calculation ---
+      // We want the mask to grow starting from the impact point over time
+      if (timeSinceStrike >= 0) {
+        // Target deterministic points around the card
+        const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
+        const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
+        const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.45;
+
+        // Relative coordinates for the CSS mask (0% to 100%)
+        const relX = 50 + (Math.cos(targetAngle) * targetRadius / cardW) * 100;
+        const relY = 50 + (Math.sin(targetAngle) * targetRadius / cardH) * 100;
+
+        // Grow the mask from 0 to full coverage
+        const matProgress = Math.min(1, timeSinceStrike / (isFinal ? 1.0 : 1.5));
+
+        // Exponential easing for explosive initial growth, then slow spread
+        const easedProg = 1 - Math.pow(1 - matProgress, 3);
+
+        // At final strike, reveal everything
+        const maskSize = isFinal ? 150 * easedProg : 40 + (30 * easedProg);
+
+        maskLayers.push(`radial-gradient(circle ${maskSize}% at ${relX}% ${relY}%, rgba(0,0,0,1) ${isFinal ? 50 : 20}%, rgba(0,0,0,0) 100%)`);
       }
 
       // Strike animation (starts slightly before impact, travels, hits, fades)
@@ -583,8 +613,29 @@ export default function LuckyCardReveal() {
       }
     }
 
+
     const finalStrike = schedule[schedule.length - 1];
     const flipAt = finalStrike + 0.65;
+
+    // Apply the progressive mask to the card front
+    if (cardFrontRef.current) {
+        if (!isRevealedRef.current) {
+            // Only update mask if it has changed to avoid excessive style recalculations
+            const maskVal = maskLayers.length > 0 ? maskLayers.join(', ') : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
+            const currentMask = cardFrontRef.current.style.maskImage;
+            if (currentMask !== maskVal) {
+                cardFrontRef.current.style.maskImage = maskVal;
+                cardFrontRef.current.style.WebkitMaskImage = maskVal;
+            }
+        } else if (isRevealedRef.current) {
+            // Clear mask once fully revealed
+            if (cardFrontRef.current.style.maskImage !== 'none') {
+                cardFrontRef.current.style.maskImage = 'none';
+                cardFrontRef.current.style.WebkitMaskImage = 'none';
+            }
+        }
+    }
+
 
     // Trigger state change based on Master Clock instead of independent setTimeout
     if (elapsed >= flipAt && !isRevealedRef.current) {
@@ -677,6 +728,7 @@ export default function LuckyCardReveal() {
 
     // Initial state
     sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
+    sequence.push([cardRef.current, { opacity: 1, filter: "brightness(1)" }, { at: 1.0, duration: 1.0, ease: 'easeIn' }]);
     sequence.push([cardRef.current, { y: -10 }, { at: "<", duration: 1.5, ease: 'easeOut' }]);
 
     // Synchronize physical reactions with strikes
@@ -718,8 +770,8 @@ export default function LuckyCardReveal() {
           y: [0, recoilY, -recoilY * 0.3, 0],
           rotateZ: [0, recoilRot, -recoilRot * 0.4, 0],
           scale: [1, scaleUp, finalScale],
-          opacity: isFinal ? 1 : (idx + 1) / schedule.length,
-          filter: isFinal ? ["brightness(2)", "brightness(1)"] : ["brightness(1.5)", "brightness(" + ((idx + 1) / schedule.length) + ")"]
+
+          filter: isFinal ? ["brightness(2)", "brightness(1)"] : ["brightness(1.5)", "brightness(1)"]
         },
         {
           at: strikeTime.toString(),
@@ -800,6 +852,7 @@ export default function LuckyCardReveal() {
               </div>
 
               <div
+                ref={cardFrontRef}
                 className={`absolute inset-0 rounded-2xl transition-shadow duration-700 ${isRevealed && selectedCard ? `tier-glow-${selectedCard.tier}` : ''}`}
                 style={{
                   backfaceVisibility: 'hidden',
