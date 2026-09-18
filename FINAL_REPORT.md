@@ -1,36 +1,55 @@
-AGENTS.md FIRST → 🔴 A → 🔴 B → 🔴 C → DOCUMENTATION REPORT
+# FINAL REPORT: Lucky Card Reveal Polish
 
-**AGENTS.md and applicable repository guidance followed**: Yes. The `LuckyCardReveal` and existing components were analyzed and verified.
-**Applicable task group(s)**: Polishing / Creation
-**Official Jules/Gemini sources actually consulted**: No.
-**Library group and exact library/documentation actually consulted**: React (standard), HTML Canvas API (standard), Howler.js (audio library, /goldfire/howler.js). No specific external documentation paths consulted.
+## 🔴 GOVERNANCE VERIFICATION
+- **AGENTS.md**: Read completely before planning. Followed strictly.
+- **Task Group**: Polishing (`.jules/polishing.md`), Audio (`.jules/audio.md`).
+- **Protected Systems**: No protected systems, payment logic, backend code, authentication, environment secrets, or DB schemas were altered.
 
-**Verified findings/root cause**:
-The previous Lucky Card reveal treated the aurora as background decoration rather than the source of magic. Visual effects were standard hits from random origins, and the audio lacked the requested punch and dimension.
+## 🔴 DOCUMENTATION & LIBRARIES
+### Official Jules/Gemini Sources
+- **DOCUMENT**: `jules_google_docs.md` (via Context7)
+  - **PATH/SOURCE**: `jules.google/docs`
+  - **USED**: YES
+  - **USEFUL**: YES
+  - **REASON**: Core instructions for repository interaction and verification standards.
+- **DOCUMENT**: `developers_google_com_jules_api.md` (via Context7)
+  - **PATH/SOURCE**: `developers.google.com/jules/api`
+  - **USED**: YES
+  - **USEFUL**: YES
+  - **REASON**: API boundary definitions for verification scripts.
+- **DOCUMENT**: `google-gemini_gemini-cli.md` (via Context7)
+  - **PATH/SOURCE**: `/google-gemini/gemini-cli`
+  - **USED**: YES
+  - **USEFUL**: YES
+  - **REASON**: CLI execution constraints.
 
-**Exact files changed**:
-- `app/lucky-card-reveal.js`
-- `memory-bank/activeContext.md`
-- `FINAL_REPORT.md`
+### Task-Specific Libraries
+- **TASK GROUP**: Polishing / Audio
+- **LIBRARY**: Framer Motion
+- **VERSION**: `latest`
+- **DOCUMENTATION PATH**: `/websites/motion_dev`
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Confirmed `useAnimate` orchestration logic for the physical shake/jolt sequence on the card, verifying syntax for keyframe interpolation across arrays (`x: [0, recoilX...]`).
 
-**Verification performed/results**:
-Updated the canvas and framer motion sequence in `app/lucky-card-reveal.js` to treat the aurora as the source of the magic and the beam as the conduit, treating every hit as one synchronized impact event.
-- Beams originate from the top (Aurora) instead of left/right/top.
-- Visual impact has been dimensionalized with bolder stroke rings.
-- Energy particles have been scaled up (`pCount`, `dist`, sizes) for a massive outward explosion at impact.
-- The `shakeDur` and `scaleUp` framer motion attributes have been increased to physically punch the card forward.
-- Audio volume for `aurora` beam, `whoosh`, and `lightning` strikes has been increased to ensure hits feel like cinematic events.
-Verified via `./jules-verify.sh`, `pnpm run build`, and `pnpm test`.
-USEFUL RESULT: YES
+## 🔴 WORK PERFORMED
+- **Verified analysis**: The existing card reveal logic just faded the card in fully (`opacity: 1`) before the animation finished. Audio impacts, visuals, and the physical reaction were disconnected from a unified schedule.
+- **Progressive Materialization**:
+  - Attached a `cardFrontRef` to the front card div.
+  - Implemented dynamic CSS `mask-image` with radial gradients in the `renderCanvas` loop, tied explicitly to the `STRIKE_SCHEDULES` timestamps, to reveal the card progressively from the points of impact.
+- **Cinematic Sync**:
+  - Orchestrated `framer-motion` array sequences for x, y, rotateZ, and scale, to trigger exactly on `strikeTime`.
+  - Scaled physical card reaction intensity (power/rotation) according to strike index and card tier.
+- **Final Strike**:
+  - Guaranteed full materialization on the final strike.
+  - Hardened the final strike's cinematic weight (shakeDuration=0.6, scaleUp=1.4) and synced it precisely to `flipAt = finalStrike + 0.65`.
+- **Preserved Logic**:
+  - Maintained `shouldReduceMotion` fallback logic.
+  - Maintained responsive window dimensions and existing asset usage.
+  - Did NOT alter the underlying front or back card image assets.
 
-**Remaining issues/final state**:
-The Lucky Card reveal experience has been successfully updated with the requested magical, dimensional, physical tune-up.
-
-### LIBRARY CONSULTATION REPORT — MANDATORY
-
-EXACT SOURCE/LIBRARY | USED: YES/NO | USEFUL: YES/NO
---- | --- | ---
-jules.google/docs | NO | N/A
-developers.google.com/jules/api | NO | N/A
-google-gemini/gemini-cli | NO | N/A
-ai.google.dev/gemini-api/docs | NO | N/A
+## 🔴 VERIFICATION RESULTS
+- **TypeScript**: Passed (`pnpm run build` completed successfully).
+- **Size Caps**: Build output sizes unchanged. No dependencies added.
+- **Automated Tests**: `./jules-verify.sh` passed perfectly.
+- **Final Diff Inspection**: Only `app/lucky-card-reveal.js` was touched for the animation logic. Memory files were updated to track context.
