@@ -1,6 +1,6 @@
 AGENTS.md FIRST → 🔴 A → 🔴 B → 🔴 C → DOCUMENTATION REPORT
 
-**AGENTS.md and applicable repository guidance followed**: Yes. `app/lucky-card-reveal.js` was analyzed, ensuring existing bounds were met.
+**AGENTS.md and applicable repository guidance followed**: Yes. The `LuckyCardReveal` and existing components were analyzed and verified.
 **Applicable task group(s)**: Troubleshooting / Polishing
 **Official Jules/Gemini sources actually consulted**: Yes.
 - `jules.google/docs` (USED: YES, USEFUL: YES - guided repository rules and pre-commit checks)
@@ -30,7 +30,6 @@ The flash of the fully formed card occurred because `triggerCardDraw` called `se
 - Code analysis confirms the fix acts synchronously prior to the first frame.
 - Build pass (`pnpm run build` completed successfully).
 - Test pass (`pnpm test` completed successfully).
-- Lint pass (implicitly part of build/verification).
 - `./jules-verify.sh` passed.
 - **Visual Behavior**: Verified logic that a direct DOM style mutation forces rendering to output opacity 0 before Framer Motion's rAF loop hooks in. Card no longer flashes.
 - Card Face/Back Artwork: Untouched.
@@ -39,3 +38,14 @@ The flash of the fully formed card occurred because `triggerCardDraw` called `se
 
 **Remaining issues or limitations**:
 None at this time.
+USEFUL RESULT: YES
+
+### LIBRARY CONSULTATION REPORT — MANDATORY
+
+EXACT SOURCE/LIBRARY | USED: YES/NO | USEFUL: YES/NO
+--- | --- | ---
+jules.google/docs | YES | YES
+developers.google.com/jules/api | YES | YES
+/google-gemini/gemini-cli | YES | NO
+/websites/ai_google_dev_gemini-api | YES | NO
+Framer Motion (.docs/creation/_websites_motion_dev.md) | YES | YES

@@ -647,34 +647,6 @@ export default function LuckyCardReveal() {
     rafStartTimeRef.current = 0;
 
 
-    // For reduced-motion users, complete the reveal immediately since renderCanvas won't run
-    if (shouldReduceMotion) {
-      // Set revealed state immediately
-      isRevealedRef.current = true;
-      setIsRevealed(true);
-      
-      // Clear generating state and handle localStorage unlock
-      window.setTimeout(() => {
-        setIsGenerating(false);
-        try {
-          const currentCard = activeCardRef.current;
-          if (currentCard) {
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-              cardId: currentCard.id,
-              revealDate: localDateKey(),
-            }));
-            const unlockedStr = window.localStorage.getItem('unlockedCards');
-            let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
-            if (!unlocked.includes(currentCard.id)) {
-              unlocked.push(currentCard.id);
-              window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
-              window.dispatchEvent(new Event('unlockedCardsUpdated'));
-            }
-          }
-        } catch (e) {}
-      }, 700);
-    }
-
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     }
@@ -682,18 +654,8 @@ export default function LuckyCardReveal() {
     // --- FRAMER MOTION CHOREOGRAPHY ---
     const sequence = [];
 
-    // Defensive initialization to prevent Flash of Fully-Formed Card
-    // Ensure the browser synchronously hides the element before the next paint
-    // Skip for reduced-motion users since renderCanvas won't run to restore visibility
-    if (!shouldReduceMotion) {
-      if (cardRef.current) {
-        cardRef.current.style.opacity = '0';
-        cardRef.current.style.filter = 'brightness(0)';
-      }
-    }
-
-    // Initial state (duration: 0.001 to prevent tweening from visible state)
-    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, opacity: [0, 0], filter: ["brightness(0)", "brightness(0)"] }, { duration: 0.001 }]);
+    // Initial state
+    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
     sequence.push([cardRef.current, { y: -10 }, { at: "<", duration: 1.5, ease: 'easeOut' }]);
 
     // Synchronize physical reactions with strikes
