@@ -86,7 +86,7 @@ Before modification, MUST establish:
 - exact requested outcome
 - exact scope and affected files/directories
 - exact files planned for modification
-- exact applicable ".jules/*.md" and ".jules/cmds/*.md"
+- exact applicable ".jules/.md" and ".jules/cmds/.md"
 - exact applicable ".docs/.../jules_google_docs.md", "_google-gemini_gemini-cli.md", and "_websites_ai_google_dev_gemini-api.md" files
 - exact relevant libraries, versions, manifest entries, and ".docs" paths
 - protected systems/files
@@ -129,6 +129,9 @@ Rules:
 - New libraries follow the approved documentation workflow.
 - "package.json", "node_modules", tooling, or manifest presence alone does not prove documentation use.
 - Library reporting is status-only; do not modify the inventory just to record usage.
+- The final report MUST identify the exact library documentation/source file or path actually consulted. A package name alone is insufficient.
+- Every applicable library documentation/source must be individually status-reported. Do not collapse multiple libraries or sources into one generic entry.
+- If an applicable library source was not consulted, report "USED: NO" and explain why. Do not claim usefulness for a source that was not consulted.
 
 2. MCP / CONTEXT7
 
@@ -172,7 +175,7 @@ MUST:
 
 5. EXECUTION RULES
 
-- Follow the applicable exact ".jules/*.md", ".jules/cmds/*.md", and ".docs" guidance.
+- Follow the applicable exact ".jules/.md", ".jules/cmds/.md", and ".docs" guidance.
 - Use "pnpm"; never use "npm ci".
 - Inspect "package.json" before using or claiming a script.
 - Audio tasks MUST follow ".jules/audio.md"; Howler is primary; no public MP3s.
@@ -243,20 +246,45 @@ C — EXECUTION + VERIFICATION + FINAL STATE
 
 REQUIRED SOURCE / LIBRARY STATUS
 
-For each relevant source or library actually evaluated:
+For EVERY applicable Jules/Gemini documentation file, official Jules/Gemini source, library documentation/source file, or other materially relevant source/library evaluated:
 
-- exact file/source/path
+- exact file name
+- exact repository path or exact source URL/location
 - library name/version where applicable
 - "USED: YES/NO"
 - "USEFUL: YES/NO"
+- brief reason
+
+Rules:
+
+- Each applicable Jules/Gemini documentation file MUST be reported individually by exact filename and path.
+- Each applicable library documentation/source MUST be reported individually by exact filename/path or exact source location.
+- Do not replace exact filenames/paths with generic labels such as "Jules/Gemini docs", "documentation", or "library".
+- Do not combine multiple files/sources into a single generic entry.
+- Every applicable routed source must be accounted for, even when it was not used.
+- "USED: YES" means the source was actually read, consulted, invoked, or retrieved for the task.
+- "USED: NO" means it was not actually consulted.
+- "USEFUL: YES" means the consulted source materially informed the analysis, plan, implementation, or verification.
+- "USEFUL: NO" means it did not materially contribute, or it was not consulted.
+- Never claim "USED: YES" from availability, existence, package presence, or assumed knowledge alone.
+- Never claim "USEFUL: YES" without an actual demonstrated contribution.
 
 REQUIRED COMPONENT STATUS
 
-For each other materially applicable repository component actually evaluated, including memory-bank files, task-group specialists, Spec Kit command files, runbooks, guides, configuration, and tests:
+For EVERY other materially applicable repository component actually evaluated or required by the routed governance, including memory-bank files, task-group specialists, Spec Kit command files, runbooks, guides, configuration, source files, and tests:
 
-- exact file/path
+- exact file name
+- exact repository path
 - "USED: YES/NO"
 - "USEFUL: YES/NO"
+- brief reason
+
+Rules:
+
+- Report each materially applicable component individually.
+- Do not use a generic label such as "components" without identifying the exact file/path.
+- If an applicable component was not consulted, report "USED: NO" and explain why.
+- Do not claim usefulness for a component that was not consulted.
 
 ---
 
@@ -265,7 +293,7 @@ For each other materially applicable repository component actually evaluated, in
 MUST contain:
 
 - "USEFUL RESULT: YES" or "USEFUL RESULT: NO"
-- exact Jules/Gemini files/sources used + "USEFUL: YES/NO"
+- exact Jules/Gemini files/sources used + "USED: YES/NO" + "USEFUL: YES/NO"
 - exact relevant libraries + name/version/".docs" path + "USED: YES/NO" + "USEFUL: YES/NO"
 - exact other materially applicable components + "USED: YES/NO" + "USEFUL: YES/NO"
 - exact files changed
@@ -283,7 +311,10 @@ Before submission, MUST confirm:
 - "AGENTS.md" was read first.
 - Mandatory Jules/Gemini documentation was used before task-specific routing.
 - All applicable routed guidance was followed.
-- Exact Jules/Gemini repository files and official sources actually used were reported.
+- Every applicable Jules/Gemini repository documentation file and official source was individually identified and status-reported with exact filename/path or source location.
+- Every applicable library documentation/source was individually identified and status-reported with exact filename/path or source location.
+- Every materially applicable repository component was individually identified and status-reported with exact filename/path.
+- Every applicable source/component/library has explicit "USED: YES/NO" and "USEFUL: YES/NO" status.
 - ".docs/manifest.json" was checked.
 - Relevant libraries were identified and status-reported; inventory was not changed merely because they were used.
 - All other materially applicable repository components were identified and status-reported.
