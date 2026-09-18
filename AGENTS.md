@@ -86,7 +86,7 @@ Before modification, MUST establish:
 - exact requested outcome
 - exact scope and affected files/directories
 - exact files planned for modification
-- exact applicable ".jules/.md" and ".jules/cmds/.md"
+- exact applicable ".jules/*.md" and ".jules/cmds/*.md"
 - exact applicable ".docs/.../jules_google_docs.md", "_google-gemini_gemini-cli.md", and "_websites_ai_google_dev_gemini-api.md" files
 - exact relevant libraries, versions, manifest entries, and ".docs" paths
 - protected systems/files
@@ -172,7 +172,7 @@ MUST:
 
 5. EXECUTION RULES
 
-- Follow the applicable exact ".jules/.md", ".jules/cmds/.md", and ".docs" guidance.
+- Follow the applicable exact ".jules/*.md", ".jules/cmds/*.md", and ".docs" guidance.
 - Use "pnpm"; never use "npm ci".
 - Inspect "package.json" before using or claiming a script.
 - Audio tasks MUST follow ".jules/audio.md"; Howler is primary; no public MP3s.
