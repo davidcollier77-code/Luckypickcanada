@@ -325,7 +325,7 @@ export default function LuckyCardReveal() {
 
       // Strike animation (starts slightly before impact, travels, hits, fades)
       const travelTime = 0.3;
-      const fadeTime = isFinal ? 1.2 : 0.6;
+      const fadeTime = isFinal ? 0.6 : 0.3;
       const strikeStart = strikeTime - travelTime;
 
       if (elapsed >= strikeStart && elapsed < strikeTime + fadeTime) {
@@ -655,7 +655,7 @@ export default function LuckyCardReveal() {
     const sequence = [];
 
     // Initial state
-    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0 }, { duration: 0.1 }]);
+    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
     sequence.push([cardRef.current, { y: -10 }, { at: "<", duration: 1.5, ease: 'easeOut' }]);
 
     // Synchronize physical reactions with strikes
@@ -696,7 +696,9 @@ export default function LuckyCardReveal() {
           x: [0, recoilX, -recoilX * 0.5, recoilX * 0.2, 0],
           y: [0, recoilY, -recoilY * 0.3, 0],
           rotateZ: [0, recoilRot, -recoilRot * 0.4, 0],
-          scale: [1, scaleUp, finalScale]
+          scale: [1, scaleUp, finalScale],
+          opacity: isFinal ? 1 : (idx + 1) / schedule.length,
+          filter: isFinal ? ["brightness(2)", "brightness(1)"] : ["brightness(1.5)", "brightness(" + ((idx + 1) / schedule.length) + ")"]
         },
         {
           at: strikeTime.toString(),
@@ -710,7 +712,7 @@ export default function LuckyCardReveal() {
     // Shake dur = 0.4 on final, plus 0.25 breathing room
     const flipAt = finalStrike + 0.65;
 
-    sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0 }, { at: flipAt.toString(), duration: 0.8, ease: 'circOut' }]);
+    sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: 'circOut' }]);
 
     animationControlsRef.current = animate(sequence, { autoplay: false });
   };

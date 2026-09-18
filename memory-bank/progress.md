@@ -27,3 +27,5 @@
 
 ## Remaining Features
 - None at this time.
+
+- Updated lucky-card-reveal.js to make card forge over time instead of appearing fully formed from the start. Shortened beam linger effect.
