@@ -31,3 +31,5 @@
 - Added `fireworkLaunch` to `soundsRef` and initialized it using Howler.js.
 - Modified `Fireworks` tier logic in `DailyResonance.tsx` to use `soundsRef.current.fireworkLaunch` for rocket launches, retaining Howler's `.play()` ID for overlapping asynchronous playback.
 - Verified meteors remain unaffected and use `impactMeteor`.
+
+- Fixed card reveal animation to build up visually on hits rather than lingering beam effect.
