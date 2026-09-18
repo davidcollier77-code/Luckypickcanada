@@ -1,6 +1,9 @@
 # Progress
 
 ## Completed Features
+- [x] Enhanced Lucky Card Reveal visuals (strikes, impacts, foreground effects).
+- [x] Enhanced Lucky Card Reveal audio (tiered scaling, resonance).
+- [x] Enhanced Lucky Card Reveal physical reactions (directional recoil).
 - Polished the CGI quality of the Lucky Meter visuals (lightning bloom, lightning core, meteor flares, and firework glow arcs) without modifying the background.
 - Removed a redundant visual sympathetic lightning branch from the "Cosmic Lightning" tier that caused phantom lightning strikes, while converting its audio into a deeper, delayed acoustic rumble.
 - Refined Meteor Shower audio and timing for the Daily Resonance Lucky Meter.

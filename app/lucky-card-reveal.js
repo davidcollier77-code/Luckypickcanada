@@ -42,6 +42,7 @@ export default function LuckyCardReveal() {
 
   // Canvas refs for visual effects
   const bgCanvasRef = useRef(null);
+  const fgCanvasRef = useRef(null);
   const rafRef = useRef(null);
   const rafStartTimeRef = useRef(0);
   const activeTierRef = useRef('standard');
@@ -161,8 +162,8 @@ export default function LuckyCardReveal() {
         activeTimeoutsRef.current.push(setTimeout(() => {
           if (soundsRef.current.whoosh) {
             const id = soundsRef.current.whoosh.play();
-            soundsRef.current.whoosh.volume(intensity * 0.5, id); // Stronger pre-impact energy
-            soundsRef.current.whoosh.rate(1.5 + (idx * 0.2), id);
+            soundsRef.current.whoosh.volume(intensity * (tier === 'flagship' ? 0.7 : 0.5), id); // Stronger pre-impact energy
+            soundsRef.current.whoosh.rate(1.5 + (idx * 0.1), id);
           }
         }, Math.max(0, (strikeTime - 0.5) * 1000)));
       }
@@ -171,7 +172,7 @@ export default function LuckyCardReveal() {
       activeTimeoutsRef.current.push(setTimeout(() => {
         if (soundsRef.current.aurora) {
           const id = soundsRef.current.aurora.play();
-          soundsRef.current.aurora.volume(intensity * 0.8, id); // Increased aurora beam volume
+          soundsRef.current.aurora.volume(intensity * (tier === 'standard' ? 0.6 : 0.8), id); // Increased aurora beam volume
           soundsRef.current.aurora.rate(1.2 + (idx * 0.1), id);
         }
       }, Math.max(0, (strikeTime - 0.3) * 1000))); // travelTime is 0.3
@@ -190,6 +191,17 @@ export default function LuckyCardReveal() {
           soundsRef.current.firework.rate(1.2 + (idx * 0.1), id);
         }
       }, Math.max(0, (strikeTime + impactOffset) * 1000)));
+
+      // Ethereal Resonance Tail (on premium/flagship)
+      if (tier !== 'standard') {
+          activeTimeoutsRef.current.push(setTimeout(() => {
+            if (soundsRef.current.shimmer) {
+              const id = soundsRef.current.shimmer.play();
+              soundsRef.current.shimmer.volume(intensity * (tier === 'flagship' ? 0.3 : 0.15), id);
+              soundsRef.current.shimmer.rate(1.5 - (idx * 0.1), id);
+            }
+          }, Math.max(0, (strikeTime + 0.1) * 1000)));
+      }
 
       // Final Impact Details
       if (isFinal) {
@@ -250,13 +262,35 @@ export default function LuckyCardReveal() {
     }
 
     const ctx = bgCanvasRef.current.getContext('2d');
+
     const w = bgCanvasRef.current.width;
     const h = bgCanvasRef.current.height;
-    const cx = w / 2;
-    const cy = h / 2;
+
+    // Find precise card DOM center
+    let cardCX = w / 2;
+    let cardCY = h / 2;
+    let cardW = 280;
+    let cardH = 405;
+    if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect();
+        if (rect) {
+            cardCX = rect.left + rect.width / 2;
+            cardCY = rect.top + rect.height / 2;
+            cardW = rect.width;
+            cardH = rect.height;
+        }
+    }
+    const cx = cardCX;
+    const cy = cardCY;
     const tier = activeTierRef.current;
 
+
     ctx.clearRect(0, 0, w, h);
+
+    const fgCtx = fgCanvasRef.current ? fgCanvasRef.current.getContext('2d') : null;
+    if (fgCtx) {
+      fgCtx.clearRect(0, 0, w, h);
+    }
 
     const schedule = STRIKE_SCHEDULES[tier];
     let totalEnergyAbsorbed = 0;
@@ -316,8 +350,16 @@ export default function LuckyCardReveal() {
         }
 
         opacity = Math.max(0, Math.min(1, opacity));
-        const currentX = startX + (cx - startX) * progress;
-        const currentY = startY + (cy - startY) * progress;
+        // Target deterministic points around the card
+        const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
+        const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
+        const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.45;
+
+        const impactX = cx + Math.cos(targetAngle) * targetRadius;
+        const impactY = cy + Math.sin(targetAngle) * targetRadius;
+
+        const currentX = startX + (impactX - startX) * progress;
+        const currentY = startY + (impactY - startY) * progress;
 
         // Base color based on tier
         const rgb = tier === 'standard' ? '200, 255, 252' : (tier === 'premium' ? '77, 238, 234' : '249, 241, 208'); // Primary/Tertiary
@@ -393,47 +435,85 @@ export default function LuckyCardReveal() {
                 isFinalFlash = isFinal;
             }
 
-            // 2. Shockwave Ring
+            // 2. Shockwave Ring (Background)
             const ringProgress = timeSinceStrike / (isFinal ? 0.6 : 0.4);
             if (ringProgress < 1) {
-                const ringRadius = (isFinal ? w * 0.5 : w * 0.3) * Math.pow(ringProgress, 0.5);
+                const ringRadius = (isFinal ? Math.max(cardW, cardH) * 1.5 : Math.max(cardW, cardH) * 0.8) * Math.pow(ringProgress, 0.5);
                 const ringOpacity = (1 - ringProgress) * 0.5;
                 ctx.beginPath();
-                ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+                ctx.arc(impactX, impactY, ringRadius, 0, Math.PI * 2);
                 ctx.lineWidth = isFinal ? 8 : 4;
                 ctx.strokeStyle = `rgba(${glowColor}, ${ringOpacity})`;
                 ctx.stroke();
             }
-
-            // 3. Energy Particles exploding outwards
-            if (timeSinceStrike < 0.5) {
-                const pCount = isFinal ? 36 : 12;
-                const pProgress = timeSinceStrike / 0.5;
-                for (let p=0; p<pCount; p++) {
-                    const angle = (Math.PI * 2 / pCount) * p + (idx * 0.5);
-                    const dist = (isFinal ? 250 : 120) * Math.pow(pProgress, 0.3); // More explosive
-                    const px = cx + Math.cos(angle) * dist;
-                    const py = cy + Math.sin(angle) * dist;
-                    const pAlpha = 1 - pProgress;
-
-                    ctx.beginPath();
-                    ctx.arc(px, py, isFinal ? 4 : 2, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${rgb}, ${pAlpha})`;
-                    ctx.shadowBlur = 5;
-                    ctx.shadowColor = `rgba(${glowColor}, 1)`;
-                    ctx.fill();
-
-                    // Particle trails
-                    ctx.beginPath();
-                    ctx.moveTo(cx + Math.cos(angle) * dist * 0.5, cy + Math.sin(angle) * dist * 0.5);
-                    ctx.lineTo(px, py);
-                    ctx.strokeStyle = `rgba(${glowColor}, ${pAlpha * 0.5})`;
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-                }
-            }
-
             ctx.restore();
+
+            // FOREGROUND EFFECTS (Drawn on fgCtx to appear over the card)
+            if (fgCtx) {
+                fgCtx.save();
+                fgCtx.globalCompositeOperation = 'screen';
+
+                // Localized Impact Flare on Card
+                if (timeSinceStrike < 0.4) {
+                    const flareProg = timeSinceStrike / 0.4;
+                    const flareRadius = (isFinal ? cardW * 0.8 : cardW * 0.3) * (1 + flareProg);
+                    const flareGrad = fgCtx.createRadialGradient(impactX, impactY, 0, impactX, impactY, flareRadius);
+                    flareGrad.addColorStop(0, `rgba(${rgb}, ${(1-flareProg) * 0.8})`);
+                    flareGrad.addColorStop(0.3, `rgba(${glowColor}, ${(1-flareProg) * 0.4})`);
+                    flareGrad.addColorStop(1, `rgba(${glowColor}, 0)`);
+
+                    fgCtx.fillStyle = flareGrad;
+                    fgCtx.beginPath();
+                    fgCtx.arc(impactX, impactY, flareRadius, 0, Math.PI * 2);
+                    fgCtx.fill();
+                }
+
+                // Foreground Energy Particles
+                if (timeSinceStrike < 0.5) {
+                    const baseParticles = tier === 'flagship' ? 40 : (tier === 'premium' ? 24 : 16);
+                    const pCount = isFinal ? baseParticles * 2 : baseParticles;
+                    const pProgress = timeSinceStrike / 0.5;
+                    for (let p=0; p<pCount; p++) {
+                        const angle = (Math.PI * 2 / pCount) * p + (idx * 0.5);
+                        const dist = (isFinal ? 300 : 150) * Math.pow(pProgress, 0.3);
+                        const px = impactX + Math.cos(angle) * dist;
+                        const py = impactY + Math.sin(angle) * dist;
+                        const pAlpha = 1 - pProgress;
+
+                        fgCtx.beginPath();
+                        fgCtx.arc(px, py, isFinal ? 4 : 2, 0, Math.PI * 2);
+                        fgCtx.fillStyle = `rgba(${rgb}, ${pAlpha})`;
+                        fgCtx.shadowBlur = 5;
+                        fgCtx.shadowColor = `rgba(${glowColor}, 1)`;
+                        fgCtx.fill();
+
+                        // Particle trails
+                        fgCtx.beginPath();
+                        fgCtx.moveTo(impactX + Math.cos(angle) * dist * 0.3, impactY + Math.sin(angle) * dist * 0.3);
+                        fgCtx.lineTo(px, py);
+                        fgCtx.strokeStyle = `rgba(${glowColor}, ${pAlpha * 0.7})`;
+                        fgCtx.lineWidth = isFinal ? 2 : 1;
+                        fgCtx.stroke();
+                    }
+                }
+
+                // Edge Tracing / Energy accumulation running along card perimeter
+                if (timeSinceStrike < 0.6) {
+                    const edgeProg = timeSinceStrike / 0.6;
+                    const edgeAlpha = (1 - edgeProg);
+                    fgCtx.lineWidth = isFinal ? 4 : 2;
+                    fgCtx.strokeStyle = `rgba(${glowColor}, ${edgeAlpha})`;
+                    fgCtx.shadowBlur = 10;
+                    fgCtx.shadowColor = `rgba(${glowColor}, 1)`;
+
+                    const cw2 = cardW/2;
+                    const ch2 = cardH/2;
+
+                    fgCtx.strokeRect(cx - cw2, cy - ch2, cardW, cardH);
+                }
+
+                fgCtx.restore();
+            }
         }
       }
     });
@@ -474,6 +554,33 @@ export default function LuckyCardReveal() {
       ctx.fillStyle = auraGrad;
       ctx.fillRect(cx - auraRadius, cy - auraRadius, auraRadius * 2, auraRadius * 2);
       ctx.restore();
+
+      // Post-flip Residual Ethereal Particles (Draws on foreground)
+      if (elapsed > flipAt && fgCtx) {
+          const postFlipElapsed = elapsed - flipAt;
+          // Slowly fades out over the remaining 2.35s
+          const residualAlpha = Math.max(0, 1 - (postFlipElapsed / 2.35));
+          if (residualAlpha > 0) {
+              fgCtx.save();
+              fgCtx.globalCompositeOperation = 'screen';
+              const pCount = tier === 'flagship' ? 24 : (tier === 'premium' ? 16 : 8);
+              for (let i = 0; i < pCount; i++) {
+                  const angle = (Math.PI * 2 / pCount) * i + (elapsed * 0.2);
+                  // Gentle floating radius
+                  const r = Math.max(cardW, cardH) * 0.5 + Math.sin(elapsed * 2 + i) * 20;
+                  const px = cx + Math.cos(angle) * r;
+                  const py = cy + Math.sin(angle) * r - (postFlipElapsed * 30); // Float upwards
+
+                  fgCtx.beginPath();
+                  fgCtx.arc(px, py, 2, 0, Math.PI * 2);
+                  fgCtx.fillStyle = `rgba(${baseColor}, ${residualAlpha * 0.6})`;
+                  fgCtx.shadowBlur = 8;
+                  fgCtx.shadowColor = `rgba(${baseColor}, 1)`;
+                  fgCtx.fill();
+              }
+              fgCtx.restore();
+          }
+      }
     }
 
     const finalStrike = schedule[schedule.length - 1];
@@ -530,6 +637,10 @@ export default function LuckyCardReveal() {
       bgCanvasRef.current.width = window.innerWidth;
       bgCanvasRef.current.height = window.innerHeight;
     }
+    if (fgCanvasRef.current) {
+      fgCanvasRef.current.width = window.innerWidth;
+      fgCanvasRef.current.height = window.innerHeight;
+    }
 
     const schedule = STRIKE_SCHEDULES[card.tier];
     playAudioSequence(card.tier, schedule);
@@ -561,18 +672,30 @@ export default function LuckyCardReveal() {
       // Apply caps
       const power = isFinal ? Math.min(25, basePower * 1.5) : Math.min(20, basePower);
       const rotPower = isFinal ? Math.min(8, baseRot * 1.5) : Math.min(5, baseRot);
-      const dir = idx % 2 === 0 ? 1 : -1;
+
+      // Determine direction of strike based on angle Map used in renderCanvas
+      const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
+      const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
+
+      const dirX = isFinal ? 0 : Math.cos(targetAngle);
+      const dirY = isFinal ? 1 : Math.sin(targetAngle); // Hit pushes it down/back slightly
+      const rotDir = isFinal ? 0 : (dirX > 0 ? 1 : -1);
 
       // The shake hits EXACTLY at the strike time
       const shakeDur = isFinal ? 0.6 : 0.4; // More dramatic cinematic shake
       const scaleUp = isFinal ? 1.4 : 1.15; // Physically punch the card forward
       const finalScale = isFinal ? 1.1 : 1.0;
 
+      const recoilX = power * dirX;
+      const recoilY = (power * 0.5) * dirY;
+      const recoilRot = rotPower * rotDir;
+
       sequence.push([
         cardRef.current,
         {
-          x: [0, power * dir, -power * 0.8 * dir, power * 0.4 * dir, 0],
-          rotateZ: [0, rotPower * dir, -rotPower * 0.5 * dir, 0],
+          x: [0, recoilX, -recoilX * 0.5, recoilX * 0.2, 0],
+          y: [0, recoilY, -recoilY * 0.3, 0],
+          rotateZ: [0, recoilRot, -recoilRot * 0.4, 0],
           scale: [1, scaleUp, finalScale]
         },
         {
@@ -599,6 +722,12 @@ export default function LuckyCardReveal() {
           ref={bgCanvasRef}
           className="fixed inset-0 w-full h-full pointer-events-none z-[-10]"
           style={{ mixBlendMode: 'screen' }}
+        />
+      )}
+      {isGenerating && (
+        <canvas
+          ref={fgCanvasRef}
+          className="fixed inset-0 w-full h-full pointer-events-none z-[30]"
         />
       )}
 

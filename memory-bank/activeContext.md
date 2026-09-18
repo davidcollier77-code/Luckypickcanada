@@ -1,10 +1,12 @@
 # Active Context
 
 ## Current Status
-- Upgraded Lucky Card reveal to use Howler.js for precise cinematic audio scheduling.
-- Added aurora beam sound (`mixkit-firework-crackle.mp3`) and synchronized it with existing strikes.
-- Replaced synthetic `OscillatorNode` logic with high-quality Howler.js cinematic shimmer sound.
-- Re-engineered Lucky Card reveal to make the Aurora the source of the magic, with deeper impacts, stronger particles, dimensional rings, and bolder audio.
+- Upgraded Lucky Card reveal visuals and audio to enhance the "forging" aspect.
+- Separated card-local visual effects onto a foreground canvas (fgCanvasRef).
+- Improved Framer Motion physical reactions to sync directionally with strikes.
+- Implemented targeted impacts around the card perimeter.
+- Added tiered audio scaling and ethereal resonance tails.
+- Ensured card artwork and basic functionality remain untouched.
 
 ## Next Steps
 - None at this time.
