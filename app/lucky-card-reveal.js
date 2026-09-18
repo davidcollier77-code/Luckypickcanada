@@ -564,7 +564,7 @@ export default function LuckyCardReveal() {
       const dir = idx % 2 === 0 ? 1 : -1;
 
       // The shake hits EXACTLY at the strike time
-      const shakeDur = isFinal ? 0.7 : 0.4; // More dramatic cinematic shake
+      const shakeDur = isFinal ? 0.6 : 0.4; // More dramatic cinematic shake
       const scaleUp = isFinal ? 1.4 : 1.15; // Physically punch the card forward
       const finalScale = isFinal ? 1.1 : 1.0;
 
