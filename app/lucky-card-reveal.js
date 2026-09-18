@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion } from 'framer-motion';
+import { Howl } from 'howler';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
@@ -32,58 +33,61 @@ export default function LuckyCardReveal() {
   const shouldReduceMotion = useReducedMotion();
 
   // Audio Loading State
-  const [audioBuffers, setAudioBuffers] = useState(null);
   const [audioLoading, setAudioLoading] = useState(true);
 
   const [scope, animate] = useAnimate();
   const activeTimeoutsRef = useRef([]);
   const animationControlsRef = useRef(null);
-  const audioCtxRef = useRef(null);
-  const activeAudioNodesRef = useRef([]);
   const cardRef = useRef(null);
 
   // Canvas refs for visual effects
   const bgCanvasRef = useRef(null);
   const rafRef = useRef(null);
   const rafStartTimeRef = useRef(0);
-  const audioStartTimeRef = useRef(0);
   const activeTierRef = useRef('standard');
   const isRevealedRef = useRef(false);
   const activeCardRef = useRef(null);
 
-  // Load Audio Assets
+    // Load Audio Assets with Howler
+  const soundsRef = useRef({});
+
   useEffect(() => {
     let mounted = true;
-    const loadAudio = async () => {
-      try {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioContextClass();
-        const files = {
-          lightning: '/sounds/mixkit-magic-sparkles.mp3',
-          buildup: '/sounds/mixkit-cinematic-whoosh.mp3',
-          whoosh: '/sounds/mixkit-cinematic-impact.mp3',
-          firework: '/sounds/mixkit-magical-impact.mp3'
-        };
 
-        const buffers = {};
-        for (const [key, url] of Object.entries(files)) {
-          const response = await fetch(url);
-          const arrayBuffer = await response.arrayBuffer();
-          buffers[key] = await ctx.decodeAudioData(arrayBuffer);
-        }
+    // Using existing project mixkit sounds
+    const files = {
+      lightning: '/sounds/mixkit-magic-sparkles.mp3', // impact pulse
+      buildup: '/sounds/mixkit-cinematic-whoosh.mp3',
+      whoosh: '/sounds/mixkit-cinematic-impact.mp3',
+      firework: '/sounds/mixkit-magical-impact.mp3',
+      aurora: '/sounds/mixkit-firework-crackle.mp3', // aurora beam sound
+      shimmer: '/sounds/mixkit-magic-sparkles.mp3' // replace oscillator with a shimmering sound
+    };
 
-        if (mounted) {
-          setAudioBuffers(buffers);
-          setAudioLoading(false);
-        }
-        // Don't keep this context alive, we create a fresh one per reveal
-        ctx.close().catch(() => {});
-      } catch (err) {
-        console.error("Failed to preload audio:", err);
-        if (mounted) setAudioLoading(false); // Fail gracefully
+    let loadedCount = 0;
+    const totalFiles = Object.keys(files).length;
+
+    const onLoad = () => {
+      loadedCount++;
+      if (loadedCount >= totalFiles && mounted) {
+        setAudioLoading(false);
       }
     };
-    loadAudio();
+
+    const onLoadError = () => {
+      console.error("Failed to preload audio");
+      if (mounted) setAudioLoading(false); // Fail gracefully
+    };
+
+    for (const [key, url] of Object.entries(files)) {
+      soundsRef.current[key] = new Howl({
+        src: [url],
+        preload: true,
+        onload: onLoad,
+        onloaderror: onLoadError
+      });
+    }
+
     return () => { mounted = false; };
   }, []);
 
@@ -111,12 +115,12 @@ export default function LuckyCardReveal() {
     if (animationControlsRef.current) animationControlsRef.current.stop();
     activeTimeoutsRef.current.forEach(clearTimeout);
     activeTimeoutsRef.current = [];
-    activeAudioNodesRef.current.forEach(node => {
-      try { node.stop(); } catch (e) {}
-    });
-    activeAudioNodesRef.current = [];
-    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-      audioCtxRef.current.close().catch(() => {});
+    if (soundsRef.current) {
+      Object.values(soundsRef.current).forEach(sound => {
+        if (sound && sound.stop) {
+           sound.stop();
+        }
+      });
     }
   }, []);
 
@@ -125,169 +129,119 @@ export default function LuckyCardReveal() {
   }, [stopAll]);
 
   // Audio Playback Helpers
-  const playBuffer = (ctx, buffer, time, vol = 1.0, playbackRate = 1.0, duration = null) => {
-    if (!ctx || !buffer) return;
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.playbackRate.value = playbackRate;
 
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(vol, Math.max(0, time));
+  // We remove playBuffer and use a simplified schedule system for Howler
+  // We'll use a visual-driven or timeout-driven scheduling.
+  // Actually, keeping the audio scheduled ahead of time is possible via setTimeout,
+  // but it's more accurate to link it to the RAF loop or calculate precise timeouts.
 
-    source.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    source.start(Math.max(0, time));
-
-    if (duration !== null) {
-        // Apply fade out instead of an abrupt stop
-        const fadeOutTime = 0.05;
-        gainNode.gain.setTargetAtTime(0, Math.max(0, time + duration - fadeOutTime), fadeOutTime / 3);
-        source.stop(Math.max(0, time + duration));
-    }
-
-    activeAudioNodesRef.current.push(source);
-
-    // Cleanup reference after it finishes
-    const actualStartTime = Math.max(0, time);
-    const cleanupTime = duration !== null ? duration : (buffer.duration / playbackRate);
-    const timeoutMs = Math.max(0, (actualStartTime - ctx.currentTime) + cleanupTime + 0.1) * 1000;
-
-    activeTimeoutsRef.current.push(window.setTimeout(() => {
-        activeAudioNodesRef.current = activeAudioNodesRef.current.filter(n => n !== source);
-    }, timeoutMs));
-
-    return source;
-  };
-
-    const playAudioSequence = (tier, schedule) => {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
-
-    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-      audioCtxRef.current.close().catch(() => {});
-    }
-
-    const ctx = new AudioContextClass();
-    audioCtxRef.current = ctx;
-    ctx.resume(); // For mobile
-
-    const now = ctx.currentTime;
-    audioStartTimeRef.current = now;
-    activeAudioNodesRef.current = [];
-
-    if (!audioBuffers) return;
-
-    const finalStrikeTime = now + schedule[schedule.length - 1];
-
+  const playAudioSequence = (tier, schedule) => {
     // 1. Initial Atmospheric Buildup
-    // Loop the buildup to cover the entire sequence duration
-    const buildupSrc = ctx.createBufferSource();
-    buildupSrc.buffer = audioBuffers.buildup;
-    buildupSrc.loop = true;
-    const buildupGain = ctx.createGain();
-    buildupGain.gain.setValueAtTime(0.4, now);
-    buildupSrc.playbackRate.value = 0.6;
-    buildupSrc.connect(buildupGain);
-    buildupGain.connect(ctx.destination);
-    buildupSrc.start(now);
-    buildupSrc.stop(now + finalStrikeTime + 1.0);
-    activeAudioNodesRef.current.push(buildupSrc);
+    if (soundsRef.current.buildup) {
+      const id = soundsRef.current.buildup.play();
+      soundsRef.current.buildup.loop(true, id);
+      soundsRef.current.buildup.volume(0.4, id);
+      soundsRef.current.buildup.rate(0.6, id);
+
+      const finalStrikeTime = schedule[schedule.length - 1];
+      activeTimeoutsRef.current.push(setTimeout(() => {
+        soundsRef.current.buildup.fade(0.4, 0, 1000, id);
+        setTimeout(() => soundsRef.current.buildup.stop(id), 1000);
+      }, (finalStrikeTime + 1.0) * 1000));
+    }
 
     // Schedule strikes
     schedule.forEach((timeOffset, idx) => {
       const isFinal = idx === schedule.length - 1;
-      const strikeTime = now + timeOffset;
-
+      const strikeTime = timeOffset;
       const intensity = isFinal ? (tier === 'flagship' ? 1.4 : 1.2) : 0.5 + (idx / schedule.length) * 0.4;
 
       // Energy sweep before impact
       if (idx > 0) {
-          playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.5, intensity * 0.3, 1.5 + (idx * 0.2), 0.6);
+        activeTimeoutsRef.current.push(setTimeout(() => {
+          if (soundsRef.current.whoosh) {
+            const id = soundsRef.current.whoosh.play();
+            soundsRef.current.whoosh.volume(intensity * 0.3, id);
+            soundsRef.current.whoosh.rate(1.5 + (idx * 0.2), id);
+          }
+        }, Math.max(0, (strikeTime - 0.5) * 1000)));
       }
 
-      // 4. Impact (Lightning + Firework layering)
+      // Aurora beam sound starting slightly before impact
+      activeTimeoutsRef.current.push(setTimeout(() => {
+        if (soundsRef.current.aurora) {
+          const id = soundsRef.current.aurora.play();
+          soundsRef.current.aurora.volume(intensity * 0.4, id);
+          soundsRef.current.aurora.rate(1.2 + (idx * 0.1), id);
+        }
+      }, Math.max(0, (strikeTime - 0.3) * 1000))); // travelTime is 0.3
+
+      // Impact (Lightning + Firework layering)
       const impactOffset = -0.02;
-      playBuffer(ctx, audioBuffers.lightning, strikeTime + impactOffset, intensity * 0.6, isFinal ? 0.8 : 1.0 + (idx * 0.1));
+      activeTimeoutsRef.current.push(setTimeout(() => {
+        if (soundsRef.current.lightning) {
+          const id = soundsRef.current.lightning.play();
+          soundsRef.current.lightning.volume(intensity * 0.6, id);
+          soundsRef.current.lightning.rate(isFinal ? 0.8 : 1.0 + (idx * 0.1), id);
+        }
+        if (soundsRef.current.firework) {
+          const id = soundsRef.current.firework.play();
+          soundsRef.current.firework.volume(intensity * 0.4, id);
+          soundsRef.current.firework.rate(1.2 + (idx * 0.1), id);
+        }
+      }, Math.max(0, (strikeTime + impactOffset) * 1000)));
 
-      // Add a subtle thump/firework sound to the strike for weight
-      playBuffer(ctx, audioBuffers.firework, strikeTime, intensity * 0.4, 1.2 + (idx * 0.1), 1.0);
-
-
-
-
-
-
-
-      // 6. Final Impact Details
+      // Final Impact Details
       if (isFinal) {
-        // Anticipation heavy whoosh
-        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.7, 0.9, 0.8, 0.8);
-        playBuffer(ctx, audioBuffers.whoosh, strikeTime - 0.3, 0.9, 1.2, 0.5);
+        activeTimeoutsRef.current.push(setTimeout(() => {
+          if (soundsRef.current.whoosh) {
+            const id = soundsRef.current.whoosh.play();
+            soundsRef.current.whoosh.volume(0.9, id);
+            soundsRef.current.whoosh.rate(0.8, id);
+          }
+        }, Math.max(0, (strikeTime - 0.7) * 1000)));
+
+        activeTimeoutsRef.current.push(setTimeout(() => {
+          if (soundsRef.current.whoosh) {
+            const id = soundsRef.current.whoosh.play();
+            soundsRef.current.whoosh.volume(0.9, id);
+            soundsRef.current.whoosh.rate(1.2, id);
+          }
+        }, Math.max(0, (strikeTime - 0.3) * 1000)));
       }
     });
 
-    // 8. Card Flip and Reveal Magic Shimmer
+    const finalStrikeTime = schedule[schedule.length - 1];
     const flipAt = finalStrikeTime + 0.65;
     const revealTime = flipAt + 0.35; // Face visible
 
-    // Play a reversed whoosh for the flip? Or just a soft whoosh
-    playBuffer(ctx, audioBuffers.whoosh, flipAt, 0.5, 1.8, 0.8);
+    // Play a reversed whoosh for the flip
+    activeTimeoutsRef.current.push(setTimeout(() => {
+      if (soundsRef.current.whoosh) {
+        const id = soundsRef.current.whoosh.play();
+        soundsRef.current.whoosh.volume(0.5, id);
+        soundsRef.current.whoosh.rate(1.8, id);
+      }
+    }, flipAt * 1000));
 
-    // Cinematic Reveal Chime/Shimmer built with oscillators
-    const shimmerOsc1 = ctx.createOscillator();
-    const shimmerOsc2 = ctx.createOscillator();
-    const shimmerGain = ctx.createGain();
-
-    shimmerOsc1.type = 'sine';
-    shimmerOsc2.type = 'triangle';
-
-    // Mystical chord (e.g. Major 9th feel)
-    shimmerOsc1.frequency.setValueAtTime(880, revealTime); // A5
-    shimmerOsc2.frequency.setValueAtTime(1318.51, revealTime); // E6
-
-    // Add subtle detune for a chorus effect
-    shimmerOsc1.detune.setValueAtTime(5, revealTime);
-    shimmerOsc2.detune.setValueAtTime(-5, revealTime);
-
-    shimmerGain.gain.setValueAtTime(0, revealTime);
-    shimmerGain.gain.linearRampToValueAtTime(0.15, revealTime + 0.1);
-    shimmerGain.gain.setTargetAtTime(0.01, revealTime + 3.0, 0.05);
-
-    shimmerOsc1.connect(shimmerGain);
-    shimmerOsc2.connect(shimmerGain);
-
-    // Highpass filter for shimmer to keep it ethereal
-    const shimmerFilter = ctx.createBiquadFilter();
-    shimmerFilter.type = 'highpass';
-    shimmerFilter.frequency.value = 600;
-
-    shimmerGain.connect(shimmerFilter);
-    shimmerFilter.connect(ctx.destination);
-
-    shimmerOsc1.start(revealTime);
-    shimmerOsc2.start(revealTime);
-    shimmerOsc1.stop(revealTime + 4.0);
-    shimmerOsc2.stop(revealTime + 4.0);
-    activeAudioNodesRef.current.push(shimmerOsc1, shimmerOsc2);
-
-    return ctx;
+    // Cinematic Reveal Chime/Shimmer
+    activeTimeoutsRef.current.push(setTimeout(() => {
+      if (soundsRef.current.shimmer) {
+        const id = soundsRef.current.shimmer.play();
+        soundsRef.current.shimmer.volume(0.4, id);
+        soundsRef.current.shimmer.rate(0.8, id);
+      }
+    }, revealTime * 1000));
   };
+
 
   const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
 
     if (!rafStartTimeRef.current) rafStartTimeRef.current = timestamp;
 
-    const audioCtx = audioCtxRef.current;
-    let elapsed = 0;
-
-    // Master Clock: AudioContext (if running), else requestAnimationFrame timestamp
-    if (audioCtx && audioCtx.state === 'running') {
-      elapsed = audioCtx.currentTime - audioStartTimeRef.current;
-    } else {
-      elapsed = (timestamp - rafStartTimeRef.current) / 1000;
-    }
+    // Master Clock: requestAnimationFrame timestamp
+    let elapsed = (timestamp - rafStartTimeRef.current) / 1000;
 
     // Drive Framer Motion sequence manually so it is locked to the Master Clock
     if (animationControlsRef.current && 'time' in animationControlsRef.current) {
@@ -578,14 +532,9 @@ export default function LuckyCardReveal() {
     }
 
     const schedule = STRIKE_SCHEDULES[card.tier];
-    const ctx = playAudioSequence(card.tier, schedule);
+    playAudioSequence(card.tier, schedule);
+    rafStartTimeRef.current = 0;
 
-    if (ctx) {
-        // audioStartTimeRef is set in playAudioSequence
-        rafStartTimeRef.current = 0;
-    } else {
-        rafStartTimeRef.current = 0;
-    }
 
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
