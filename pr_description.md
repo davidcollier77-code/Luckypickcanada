@@ -27,12 +27,9 @@ The Lucky Card reveal experience has been successfully updated with the requeste
 
 ### LIBRARY CONSULTATION REPORT — MANDATORY
 
-EXACT SOURCE/LIBRARY | NAME/VERSION | USED: YES/NO | USEFUL: YES/NO
---- | --- | --- | ---
-Howler.js | _goldfire_howler_js | YES | YES
-Framer Motion | _websites_motion_dev | YES | YES
-React | _reactjs_react_dev | YES | YES
-Next.js Canvas API | Standard HTML5 Canvas | YES | YES
-jules.google/docs | N/A | NO | N/A
-developers.google.com/jules/api | N/A | NO | N/A
-ai.google.dev/gemini-api/docs | N/A | NO | N/A
+EXACT SOURCE/LIBRARY | USED: YES/NO | USEFUL: YES/NO
+--- | --- | ---
+jules.google/docs | YES | YES
+developers.google.com/jules/api | YES | YES
+google-gemini/gemini-cli | YES | YES
+ai.google.dev/gemini-api/docs | YES | YES
