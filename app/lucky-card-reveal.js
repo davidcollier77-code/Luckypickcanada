@@ -649,6 +649,25 @@ export default function LuckyCardReveal() {
 
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
+    } else {
+      // Reduced-motion completion path: immediately reveal the card without animation
+      setIsRevealed(true);
+      setIsGenerating(false);
+      try {
+        if (card) {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            cardId: card.id,
+            revealDate: localDateKey(),
+          }));
+          const unlockedStr = window.localStorage.getItem('unlockedCards');
+          let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
+          if (!unlocked.includes(card.id)) {
+            unlocked.push(card.id);
+            window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
+            window.dispatchEvent(new Event('unlockedCardsUpdated'));
+          }
+        }
+      } catch (e) {}
     }
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
