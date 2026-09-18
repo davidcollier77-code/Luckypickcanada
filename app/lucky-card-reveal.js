@@ -161,7 +161,7 @@ export default function LuckyCardReveal() {
         activeTimeoutsRef.current.push(setTimeout(() => {
           if (soundsRef.current.whoosh) {
             const id = soundsRef.current.whoosh.play();
-            soundsRef.current.whoosh.volume(intensity * 0.3, id);
+            soundsRef.current.whoosh.volume(intensity * 0.5, id); // Stronger pre-impact energy
             soundsRef.current.whoosh.rate(1.5 + (idx * 0.2), id);
           }
         }, Math.max(0, (strikeTime - 0.5) * 1000)));
@@ -171,7 +171,7 @@ export default function LuckyCardReveal() {
       activeTimeoutsRef.current.push(setTimeout(() => {
         if (soundsRef.current.aurora) {
           const id = soundsRef.current.aurora.play();
-          soundsRef.current.aurora.volume(intensity * 0.4, id);
+          soundsRef.current.aurora.volume(intensity * 0.8, id); // Increased aurora beam volume
           soundsRef.current.aurora.rate(1.2 + (idx * 0.1), id);
         }
       }, Math.max(0, (strikeTime - 0.3) * 1000))); // travelTime is 0.3
@@ -297,9 +297,9 @@ export default function LuckyCardReveal() {
       if (elapsed >= strikeStart && elapsed < strikeTime + fadeTime) {
         // Alternate between left, right, top for origins
         const originPos = idx % 3;
-        const startX = originPos === 0 ? -w*0.1 : (originPos === 1 ? w*1.1 : w*0.5);
+        const startX = w * (0.2 + (idx % 4) * 0.2); // Aurora source across the sky
         // Explicitly define starting Y based on origin (0=Left, 1=Right, 2=Top)
-        const startY = originPos === 2 ? -h*0.1 : cy + (Math.sin(idx * 13) * h * 0.1);
+        const startY = -h * 0.1; // Coming from the aurora above
 
         let progress = 0;
         let opacity = 0;
@@ -400,24 +400,24 @@ export default function LuckyCardReveal() {
                 const ringOpacity = (1 - ringProgress) * 0.5;
                 ctx.beginPath();
                 ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
-                ctx.lineWidth = isFinal ? 4 : 2;
+                ctx.lineWidth = isFinal ? 8 : 4;
                 ctx.strokeStyle = `rgba(${glowColor}, ${ringOpacity})`;
                 ctx.stroke();
             }
 
             // 3. Energy Particles exploding outwards
             if (timeSinceStrike < 0.5) {
-                const pCount = isFinal ? 12 : 5;
+                const pCount = isFinal ? 36 : 12;
                 const pProgress = timeSinceStrike / 0.5;
                 for (let p=0; p<pCount; p++) {
                     const angle = (Math.PI * 2 / pCount) * p + (idx * 0.5);
-                    const dist = (isFinal ? 150 : 80) * Math.pow(pProgress, 0.4);
+                    const dist = (isFinal ? 250 : 120) * Math.pow(pProgress, 0.3); // More explosive
                     const px = cx + Math.cos(angle) * dist;
                     const py = cy + Math.sin(angle) * dist;
                     const pAlpha = 1 - pProgress;
 
                     ctx.beginPath();
-                    ctx.arc(px, py, isFinal ? 3 : 1.5, 0, Math.PI * 2);
+                    ctx.arc(px, py, isFinal ? 4 : 2, 0, Math.PI * 2);
                     ctx.fillStyle = `rgba(${rgb}, ${pAlpha})`;
                     ctx.shadowBlur = 5;
                     ctx.shadowColor = `rgba(${glowColor}, 1)`;
@@ -564,8 +564,8 @@ export default function LuckyCardReveal() {
       const dir = idx % 2 === 0 ? 1 : -1;
 
       // The shake hits EXACTLY at the strike time
-      const shakeDur = isFinal ? 0.5 : 0.25; // SLIGHTLY LONGER SHAKE
-      const scaleUp = isFinal ? 1.3 : 1.1; // MORE VISIBLE IMPACT
+      const shakeDur = isFinal ? 0.7 : 0.4; // More dramatic cinematic shake
+      const scaleUp = isFinal ? 1.4 : 1.15; // Physically punch the card forward
       const finalScale = isFinal ? 1.1 : 1.0;
 
       sequence.push([
