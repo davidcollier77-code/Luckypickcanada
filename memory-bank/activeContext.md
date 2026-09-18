@@ -4,6 +4,7 @@
 - Upgraded Lucky Card reveal to use Howler.js for precise cinematic audio scheduling.
 - Added aurora beam sound (`mixkit-firework-crackle.mp3`) and synchronized it with existing strikes.
 - Replaced synthetic `OscillatorNode` logic with high-quality Howler.js cinematic shimmer sound.
+- Re-engineered Lucky Card reveal to make the Aurora the source of the magic, with deeper impacts, stronger particles, dimensional rings, and bolder audio.
 
 ## Next Steps
 - None at this time.
