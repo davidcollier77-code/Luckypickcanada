@@ -96,7 +96,7 @@ C — EXECUTE + VERIFY
 Follow every applicable ".jules/*.md", ".jules/cmds/*.md", ".docs" requirement,
 repository runbook, library requirement, and verification requirement.
 
-🔴 DOCUMENTATION + LIBRARY REPORTING
+🔴 DOCUMENTATION + LIBRARY CONSULTATION REPORTING
 
 For EVERY identified document, library, official source, or materially applicable
 repository component, report:
@@ -104,29 +104,48 @@ repository component, report:
 USED: YES/NO
 USEFUL: YES/NO
 WHAT WAS USEFUL: <brief concrete value when useful>
-REASON: <brief reason when not used or not useful>
+EVIDENCE: <specific, auditable consultation/use evidence>
+REASON: <brief reason when not used, not useful, or not applicable>
 
-🔴 USED: YES requires actual consultation or use.
+🔴 FINAL PR REPORT = CANONICAL GOVERNANCE AUDIT RECORD
+
+The FINAL / PR REPORT is the canonical consolidated record of governance,
+consultation, implementation, and verification for the task.
+
+Intermediate run logs, tool traces, plan messages, MCP connection messages,
+and agent progress comments are supporting evidence only. They do not replace
+the required final PR report.
+
+Before reporting completion, Jules MUST gather the required governance evidence
+from the run into the FINAL / PR REPORT. A fact that exists only in an
+intermediate log or comment is not sufficient final-report evidence.
+
+🔴 USED: YES requires actual consultation or use AND a corresponding EVIDENCE
+entry in the FINAL / PR REPORT.
 
 🔴 USEFUL: YES requires an actual contribution to analysis, planning, execution,
-verification, or the final result.
+verification, or the final result AND a concrete WHAT WAS USEFUL entry.
+
+🔴 A tool/server connection alone does NOT demonstrate consultation or useful use.
+For example, connecting Context7, Stitch, Neon, or another MCP service is not
+library/documentation evidence by itself.
 
 🔴 Never silently omit an identified item.
 
 🔴 If applicable but not used, report USED: NO and why.
 
-🔴 If used, confirm USED: YES.
+🔴 If used, confirm USED: YES and provide EVIDENCE.
 
-🔴 If useful, state specifically WHAT WAS USEFUL.
+🔴 If useful, state specifically WHAT WAS USEFUL and how it contributed.
 
 🔴 If not useful, state why.
 
 🔴 Jules/Gemini documents and official sources are reported individually with:
-DOCUMENT, PATH/SOURCE, APPLICABLE, USED, USEFUL, WHAT WAS USEFUL, REASON.
+DOCUMENT, PATH/SOURCE, APPLICABLE, USED, USEFUL, WHAT WAS USEFUL, EVIDENCE, REASON.
 
 🔴 Libraries are reported individually for EACH applicable task group:
 TASK GROUP, LIBRARY, VERSION, DOCUMENTATION PATH, APPLICABLE, USED, USEFUL,
-WHAT WAS USEFUL, REASON.
+WHAT WAS USEFUL, EVIDENCE, REASON.
 
 🔴 Libraries must come from that group's documented inventory.
 
@@ -191,6 +210,13 @@ Resolve in-scope failures; report unresolved failures.
 
 Inspect the final diff and every changed file.
 
+🔴 The FINAL / PR REPORT must reconcile exactly to the final Git diff:
+every changed file must be listed exactly once, no changed file may be omitted,
+and no file may be listed as changed if it is not in the final diff.
+
+🔴 For each verification command, report:
+COMMAND, RESULT, and EVIDENCE/OUTPUT SUMMARY.
+
 Verify:
 
 - no unintended files or dependencies
@@ -212,17 +238,45 @@ FINAL / PR REPORT
 - every applicable Jules/Gemini document
 - every listed official Jules/Gemini source
 - every applicable library from each applicable group
-- APPLICABLE / USED / USEFUL / WHAT WAS USEFUL / REASON
+- APPLICABLE / USED / USEFUL / WHAT WAS USEFUL / EVIDENCE / REASON
 - exact other materially applicable repository components and status
 - requested outcome and scope
 - protected systems and authorization status
-- exact changed files
+- exact changed files reconciled against the final Git diff
 - implementation performed
-- verification actually run and results
+- verification actually run, results, and evidence/output summary
 - final diff inspection
 - build size status
 - remaining issues
 - final repository state
+
+🔴 Include a clearly labeled:
+LIBRARY CONSULTATION REPORT
+
+For every applicable library, include:
+TASK GROUP
+LIBRARY
+VERSION
+EXACT ".docs" DOCUMENTATION PATH
+APPLICABLE
+USED
+USEFUL
+WHAT WAS USEFUL
+EVIDENCE
+REASON
+
+🔴 Include a clearly labeled:
+OFFICIAL SOURCE / DOCUMENT CONSULTATION REPORT
+
+For every applicable Jules/Gemini document or official source, include:
+DOCUMENT / SOURCE
+EXACT PATH / SOURCE
+APPLICABLE
+USED
+USEFUL
+WHAT WAS USEFUL
+EVIDENCE
+REASON
 
 🔴 For EACH materially applicable repository component report:
 COMPONENT: <name>
@@ -233,6 +287,7 @@ CHANGED: YES/NO
 VERIFIED: YES/NO
 USEFUL: YES/NO
 WHAT WAS USEFUL: <brief concrete value>
+EVIDENCE: <specific verification/use evidence>
 REASON: <brief reason>
 
 🔴 Include:
@@ -248,21 +303,25 @@ Before reporting completion, verify:
 - Governance was followed completely.
 - Every applicable task group was identified.
 - Every applicable routed document was evaluated and reported.
-- Every applicable library was consulted and reported.
-- Every listed Jules/Gemini source was reported.
+- Every applicable library was consulted and reported with evidence.
+- Every listed Jules/Gemini source was reported with evidence.
 - ".jules/jules.md" was followed.
 - ".docs/manifest.json" was checked.
 - Spec Kit applicability was evaluated and reported.
-- Every applicable item has APPLICABLE, USED, USEFUL, WHAT WAS USEFUL, and REASON.
+- Every applicable item has APPLICABLE, USED, USEFUL, WHAT WAS USEFUL, EVIDENCE,
+  and REASON.
 - Context7 permission was obtained before every invocation.
+- A tool/server connection was not counted as consultation evidence by itself.
 - Protected systems were not changed without authorization.
 - pnpm was used and npm ci was not used.
 - No secrets were exposed or committed.
 - The 495 MB ceiling was measured and respected.
-- Required verification was actually performed.
+- Required verification was actually performed and documented with results.
 - Final diff was inspected.
+- Final report changed-file list exactly matches the final Git diff.
 - Required Memory Bank updates were completed.
 - Report statements match the actual work.
+- Final / PR Report contains the consolidated governance audit record.
 - No unsupported compliance claim or scope drift occurred.
 
 🔴 DO NOT CLAIM COMPLIANCE. DEMONSTRATE IT.
