@@ -40,6 +40,7 @@ export default function LuckyCardReveal() {
   const animationControlsRef = useRef(null);
   const cardRef = useRef(null);
   const cardFrontRef = useRef(null);
+  const cardFlipRef = useRef(null);
 
   // Canvas refs for visual effects
   const bgCanvasRef = useRef(null);
@@ -717,7 +718,7 @@ export default function LuckyCardReveal() {
     const finalStrikeTime = schedule[schedule.length - 1];
     fallbackTimerRef.current = setTimeout(() => {
         executeRevealState();
-    }, (finalStrikeTime + 0.65 + 0.2) * 1000); // 200ms grace period after expected flipAt
+    }, (finalStrikeTime + 0.65 + 0.8 + 0.2) * 1000); // 200ms grace period after the 0.8s flip completes
 
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
@@ -730,7 +731,8 @@ export default function LuckyCardReveal() {
     const sequence = [];
 
     // Initial state
-    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, rotateY: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
+    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
+    sequence.push([cardFlipRef.current, { rotateY: 0 }, { duration: 0 }]);
     sequence.push([cardRef.current, { opacity: 1, filter: "brightness(1)" }, { at: 1.0, duration: 1.0, ease: 'easeIn' }]);
     sequence.push([cardRef.current, { y: -10 }, { at: "<", duration: 1.5, ease: 'easeOut' }]);
 
@@ -788,7 +790,8 @@ export default function LuckyCardReveal() {
     // Shake dur = 0.4 on final, plus 0.25 breathing room
     const flipAt = finalStrike + 0.65;
 
-    sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, rotateY: 180, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
+    sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
+    sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
 
     animationControlsRef.current = animate(sequence, { autoplay: false });
   };
@@ -830,19 +833,21 @@ export default function LuckyCardReveal() {
         )}
       </div>
 
-      <div ref={scope} className="w-full flex justify-center py-2 flex-shrink-0 relative">
+      <div
+        ref={scope}
+        className="w-full flex justify-center py-2 flex-shrink-0 relative"
+        style={{ perspective: '1200px' }}
+      >
         <motion.div
           ref={cardRef}
           className="card-container relative z-20 w-[280px] h-[405px] cursor-pointer mx-auto flex-shrink-0 [WebkitTapHighlightColor:transparent] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-400 rounded-2xl"
-          style={{ perspective: '1200px' }}
         >
           <div className="relative w-full h-full">
             <div
+              ref={cardFlipRef}
               className="w-full h-full relative"
               style={{
                 transformStyle: 'preserve-3d',
-                transition: shouldReduceMotion ? 'none' : 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-                // transform is now handled by framer-motion
               }}
             >
               <div
