@@ -656,7 +656,7 @@ export default function LuckyCardReveal() {
         }
     }
 
-    if (elapsed >= flipAt) {
+    if (elapsed >= flipAt + 0.8) {
         executeRevealState();
     }
 
@@ -704,6 +704,8 @@ export default function LuckyCardReveal() {
                 cy: rect.top + rect.height / 2,
                 w: rect.width,
                 h: rect.height
+            };
+        }
     }
     lastMaskValRef.current = '';
 
@@ -724,7 +726,7 @@ export default function LuckyCardReveal() {
     const sequence = [];
 
     // Initial state
-    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
+    sequence.push([cardRef.current, { y: 0, scale: 1, rotateZ: 0, rotateY: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
     sequence.push([cardRef.current, { opacity: 1, filter: "brightness(1)" }, { at: 1.0, duration: 1.0, ease: 'easeIn' }]);
     sequence.push([cardRef.current, { y: -10 }, { at: "<", duration: 1.5, ease: 'easeOut' }]);
 
@@ -782,7 +784,7 @@ export default function LuckyCardReveal() {
     // Shake dur = 0.4 on final, plus 0.25 breathing room
     const flipAt = finalStrike + 0.65;
 
-    sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: 'circOut' }]);
+    sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, rotateY: 180, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
 
     animationControlsRef.current = animate(sequence, { autoplay: false });
   };
@@ -836,7 +838,7 @@ export default function LuckyCardReveal() {
               style={{
                 transformStyle: 'preserve-3d',
                 transition: shouldReduceMotion ? 'none' : 'transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-                transform: isRevealed ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                // transform is now handled by framer-motion
               }}
             >
               <div
