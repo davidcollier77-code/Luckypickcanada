@@ -49,6 +49,9 @@ export default function LuckyCardReveal() {
   const activeTierRef = useRef('standard');
   const isRevealedRef = useRef(false);
   const activeCardRef = useRef(null);
+  const lastMaskValRef = useRef('');
+  const cardMetricsRef = useRef({ cx: 140, cy: 202.5, w: 280, h: 405 });
+  const fallbackTimerRef = useRef(null);
 
     // Load Audio Assets with Howler
   const soundsRef = useRef({});
@@ -115,6 +118,7 @@ export default function LuckyCardReveal() {
   const stopAll = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (animationControlsRef.current) animationControlsRef.current.stop();
+    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     activeTimeoutsRef.current.forEach(clearTimeout);
     activeTimeoutsRef.current = [];
     if (soundsRef.current) {
@@ -129,6 +133,45 @@ export default function LuckyCardReveal() {
   useEffect(() => {
     return stopAll;
   }, [stopAll]);
+
+
+  const executeRevealState = useCallback(() => {
+    if (isRevealedRef.current) return;
+    isRevealedRef.current = true;
+    setIsRevealed(true);
+
+    if (fallbackTimerRef.current) {
+        clearTimeout(fallbackTimerRef.current);
+        fallbackTimerRef.current = null;
+    }
+
+    window.setTimeout(() => {
+      setIsGenerating(false);
+      try {
+        const currentCard = activeCardRef.current;
+        if (currentCard) {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+              cardId: currentCard.id,
+              revealDate: localDateKey(),
+            }));
+            const unlockedStr = window.localStorage.getItem('unlockedCards');
+            let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
+            if (!unlocked.includes(currentCard.id)) {
+              unlocked.push(currentCard.id);
+              window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
+              window.dispatchEvent(new Event('unlockedCardsUpdated'));
+            }
+        }
+      } catch (e) {}
+    }, 700);
+
+    if (cardFrontRef.current) {
+        cardFrontRef.current.style.maskImage = 'none';
+        cardFrontRef.current.style.WebkitMaskImage = 'none';
+        lastMaskValRef.current = 'none';
+    }
+  }, []);
+
 
   // Audio Playback Helpers
 
@@ -267,22 +310,8 @@ export default function LuckyCardReveal() {
     const w = bgCanvasRef.current.width;
     const h = bgCanvasRef.current.height;
 
-    // Find precise card DOM center
-    let cardCX = w / 2;
-    let cardCY = h / 2;
-    let cardW = 280;
-    let cardH = 405;
-    if (cardRef.current) {
-        const rect = cardRef.current.getBoundingClientRect();
-        if (rect) {
-            cardCX = rect.left + rect.width / 2;
-            cardCY = rect.top + rect.height / 2;
-            cardW = rect.width;
-            cardH = rect.height;
-        }
-    }
-    const cx = cardCX;
-    const cy = cardCY;
+    // Use cached card metrics to avoid DOM reads in hot path
+    const { cx, cy, w: cardW, h: cardH } = cardMetricsRef.current;
     const tier = activeTierRef.current;
 
 
@@ -618,48 +647,17 @@ export default function LuckyCardReveal() {
     const flipAt = finalStrike + 0.65;
 
     // Apply the progressive mask to the card front
-    if (cardFrontRef.current) {
-        if (!isRevealedRef.current) {
-            // Only update mask if it has changed to avoid excessive style recalculations
-            const maskVal = maskLayers.length > 0 ? maskLayers.join(', ') : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
-            const currentMask = cardFrontRef.current.style.maskImage;
-            if (currentMask !== maskVal) {
-                cardFrontRef.current.style.maskImage = maskVal;
-                cardFrontRef.current.style.WebkitMaskImage = maskVal;
-            }
-        } else if (isRevealedRef.current) {
-            // Clear mask once fully revealed
-            if (cardFrontRef.current.style.maskImage !== 'none') {
-                cardFrontRef.current.style.maskImage = 'none';
-                cardFrontRef.current.style.WebkitMaskImage = 'none';
-            }
+    if (cardFrontRef.current && !isRevealedRef.current) {
+        const maskVal = maskLayers.length > 0 ? maskLayers.join(', ') : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
+        if (lastMaskValRef.current !== maskVal) {
+            cardFrontRef.current.style.maskImage = maskVal;
+            cardFrontRef.current.style.WebkitMaskImage = maskVal;
+            lastMaskValRef.current = maskVal;
         }
     }
 
-
-    // Trigger state change based on Master Clock instead of independent setTimeout
-    if (elapsed >= flipAt && !isRevealedRef.current) {
-        isRevealedRef.current = true;
-        setIsRevealed(true);
-        window.setTimeout(() => {
-          setIsGenerating(false);
-          try {
-            const currentCard = activeCardRef.current;
-            if (currentCard) {
-                window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                  cardId: currentCard.id,
-                  revealDate: localDateKey(),
-                }));
-                const unlockedStr = window.localStorage.getItem('unlockedCards');
-                let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
-                if (!unlocked.includes(currentCard.id)) {
-                  unlocked.push(currentCard.id);
-                  window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
-                  window.dispatchEvent(new Event('unlockedCardsUpdated'));
-                }
-            }
-          } catch (e) {}
-        }, 700);
+    if (elapsed >= flipAt) {
+        executeRevealState();
     }
 
     const maxLifetime = flipAt + 3.0;
@@ -697,30 +695,31 @@ export default function LuckyCardReveal() {
     playAudioSequence(card.tier, schedule);
     rafStartTimeRef.current = 0;
 
+    // Cache card geometry for render loop
+    if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect();
+        if (rect && rect.width > 0 && rect.height > 0) {
+            cardMetricsRef.current = {
+                cx: rect.left + rect.width / 2,
+                cy: rect.top + rect.height / 2,
+                w: rect.width,
+                h: rect.height
+            };
+        }
+    }
+    lastMaskValRef.current = '';
+
+    // Fallback timer to ensure reveal state is reached
+    const finalStrikeTime = schedule[schedule.length - 1];
+    fallbackTimerRef.current = setTimeout(() => {
+        executeRevealState();
+    }, (finalStrikeTime + 0.65 + 0.2) * 1000); // 200ms grace period after expected flipAt
 
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     } else {
       // Reduced motion fallback path
-      setIsRevealed(true);
-      setIsGenerating(false);
-      isRevealedRef.current = true;
-      try {
-        const currentCard = activeCardRef.current;
-        if (currentCard) {
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-              cardId: currentCard.id,
-              revealDate: localDateKey(),
-            }));
-            const unlockedStr = window.localStorage.getItem('unlockedCards');
-            let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
-            if (!unlocked.includes(currentCard.id)) {
-              unlocked.push(currentCard.id);
-              window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
-              window.dispatchEvent(new Event('unlockedCardsUpdated'));
-            }
-        }
-      } catch (e) {}
+      executeRevealState();
     }
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
