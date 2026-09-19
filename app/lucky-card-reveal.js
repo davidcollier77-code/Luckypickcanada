@@ -329,6 +329,9 @@ export default function LuckyCardReveal() {
 
 
     const schedule = STRIKE_SCHEDULES[tier];
+    const finalStrike = schedule[schedule.length - 1];
+    const flipAt = finalStrike + 0.65;
+    const maxLifetime = flipAt + 3.0;
     let totalEnergyAbsorbed = 0;
 
     // --- Progressive Materialization Masks ---
@@ -648,9 +651,6 @@ export default function LuckyCardReveal() {
     }
 
 
-    const finalStrike = schedule[schedule.length - 1];
-    const flipAt = finalStrike + 0.65;
-
     // Apply the progressive mask to the card front
     if (cardFrontRef.current && !isRevealedRef.current) {
         const maskVal = maskLayers.length > 0 ? maskLayers.join(', ') : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
@@ -665,7 +665,6 @@ export default function LuckyCardReveal() {
         executeRevealState();
     }
 
-    const maxLifetime = flipAt + 3.0;
     if (elapsed < maxLifetime) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     } else {
