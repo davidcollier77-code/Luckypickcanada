@@ -136,8 +136,6 @@ verification, or the final result AND a concrete WHAT WAS USEFUL entry.
 
 🔴 If useful, state specifically WHAT WAS USEFUL and how it contributed.
 
-🔴 If not useful, state why.
-
 🔴 Jules/Gemini documents and official sources are reported individually with:
 DOCUMENT, PATH/SOURCE, USED, USEFUL, WHAT WAS USEFUL, EVIDENCE, REASON.
 
