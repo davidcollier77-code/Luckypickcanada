@@ -48,6 +48,7 @@ export default function LuckyCardReveal() {
   const rafStartTimeRef = useRef(0);
   const activeTierRef = useRef('standard');
   const isRevealedRef = useRef(false);
+  const lastMaskValRef = useRef('');
   const activeCardRef = useRef(null);
 
     // Load Audio Assets with Howler
@@ -274,7 +275,7 @@ export default function LuckyCardReveal() {
     let cardH = 405;
     if (cardRef.current) {
         const rect = cardRef.current.getBoundingClientRect();
-        if (rect) {
+        if (rect && rect.width > 0 && rect.height > 0) {
             cardCX = rect.left + rect.width / 2;
             cardCY = rect.top + rect.height / 2;
             cardW = rect.width;
@@ -338,8 +339,10 @@ export default function LuckyCardReveal() {
         const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.45;
 
         // Relative coordinates for the CSS mask (0% to 100%)
-        const relX = 50 + (Math.cos(targetAngle) * targetRadius / cardW) * 100;
-        const relY = 50 + (Math.sin(targetAngle) * targetRadius / cardH) * 100;
+        const safeW = cardW > 0 ? cardW : 280;
+        const safeH = cardH > 0 ? cardH : 405;
+        const relX = 50 + (Math.cos(targetAngle) * targetRadius / safeW) * 100;
+        const relY = 50 + (Math.sin(targetAngle) * targetRadius / safeH) * 100;
 
         // Grow the mask from 0 to full coverage
         const matProgress = Math.min(1, timeSinceStrike / (isFinal ? 1.0 : 1.5));
@@ -620,18 +623,19 @@ export default function LuckyCardReveal() {
     // Apply the progressive mask to the card front
     if (cardFrontRef.current) {
         if (!isRevealedRef.current) {
-            // Only update mask if it has changed to avoid excessive style recalculations
+            // Combine masks, default to completely hidden if no layers yet
             const maskVal = maskLayers.length > 0 ? maskLayers.join(', ') : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
-            const currentMask = cardFrontRef.current.style.maskImage;
-            if (currentMask !== maskVal) {
+            if (lastMaskValRef.current !== maskVal) {
                 cardFrontRef.current.style.maskImage = maskVal;
                 cardFrontRef.current.style.WebkitMaskImage = maskVal;
+                lastMaskValRef.current = maskVal;
             }
         } else if (isRevealedRef.current) {
             // Clear mask once fully revealed
-            if (cardFrontRef.current.style.maskImage !== 'none') {
+            if (lastMaskValRef.current !== 'none') {
                 cardFrontRef.current.style.maskImage = 'none';
                 cardFrontRef.current.style.WebkitMaskImage = 'none';
+                lastMaskValRef.current = 'none';
             }
         }
     }
