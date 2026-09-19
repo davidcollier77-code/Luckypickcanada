@@ -1,6 +1,8 @@
 # Active Context
 
 ## Current Status
+- Fixed a performance regression where the Lucky Card Reveal rendering loop performed synchronous `getBoundingClientRect()` calls every frame, stalling the UI and preventing the reveal state transition.
+- Decoupled the deterministic `isRevealed` React state transition from the visual `requestAnimationFrame` loop to ensure robust reveal completion even under heavy rendering load or dropped frames.
 - Fixed a reduced-motion bug in the Lucky Card reveal sequence.
 - Verified `shouldReduceMotion` correctly disables the 700ms CSS transform transition.
 - Ensured normal-motion users retain the existing 700ms transition.

@@ -704,6 +704,8 @@ export default function LuckyCardReveal() {
                 cy: rect.top + rect.height / 2,
                 w: rect.width,
                 h: rect.height
+            };
+        }
     }
     lastMaskValRef.current = '';
 
