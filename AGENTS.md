@@ -35,19 +35,16 @@ Use ALL applicable routed guidance.
 🔴 3. Read ".jules/jules.md" after AGENTS.md and follow its initialization,
 working, Memory Bank, and completion requirements.
 
-🔴 4. Identify ALL materially applicable repository requirements, including:
-memory-bank files; CSS_FIX_GUIDE.md; DATABASE_SETUP.md;
-DEPLOYMENT_CHECKLIST.md; QUICK_FIX_GUIDE.md; applicable ".jules/*.md";
-applicable ".jules/cmds/*.md"; Spec Kit; runbooks; source; configuration;
-tests; dependencies; and other routed guidance.
+🔴 4. REQUIRED REPOSITORY SYSTEMS — USE ALL.
+For EVERY task, Jules MUST use and report on ALL of these:
+memory-bank files; CSS_FIX_GUIDE.md; DATABASE_SETUP.md; DEPLOYMENT_CHECKLIST.md;
+QUICK_FIX_GUIDE.md; all ".jules/*.md"; all ".jules/cmds/*.md"; Spec Kit; runbooks;
+source; configuration; tests; dependencies; and other routed guidance.
+Do not choose, rank, skip, or label a listed system N/A to avoid using it.
+Every listed item must be reported with USED: YES/NO, USEFUL: YES/NO,
+WHAT WAS USEFUL, EVIDENCE, and REASON.
 
-🔴 Every identified requirement receives an applicability decision.
-If applicable, follow it completely.
-If not applicable, report APPLICABLE: NO and why.
-No applicable item may be silently omitted.
-
-🔴 5. Apply every applicable ".jules/cmds/*.md" workflow, including Spec Kit
-workflows when their routing or task scope makes them applicable.
+🔴 5. Run every ".jules/cmds/*.md" workflow and Spec Kit workflow on every task.
 
 🔴 6. Consult ALL listed official Jules/Gemini sources:
 
