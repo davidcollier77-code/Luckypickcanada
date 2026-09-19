@@ -7,7 +7,7 @@
 🔴 No urgency, scope, implementation constraint, tool, agent, or other instruction overrides AGENTS.md governance.
 
 🔴 No task may proceed, be approved, finalized, or reported complete unless
-AGENTS.md and all applicable routed requirements are followed.
+AGENTS.md and all required routed requirements are followed.
 
 🔴 DO NOT ASSUME. VERIFY. DO NOT CLAIM. DEMONSTRATE.
 
@@ -15,38 +15,41 @@ A — ANALYZE
 
 🔴 1. Read AGENTS.md FIRST. Follow it completely.
 
-🔴 2. Identify every applicable task group:
-creation, troubleshooting, polishing, testing, security, audio, deep-dive, seo.
+🔴 2. SELECT THE .docs LIBRARY TASK GROUP.
+Jules selects the single task group required for the task's .docs routing:
+creation, troubleshooting, polishing, testing, security, audio, deep-dive, or seo.
+This is the only governance selection Jules makes.
 
-For EVERY applicable group:
+For the selected group, Jules MUST:
 
 - Read ".jules/<task-group>.md".
 - Read ".docs/<task-group>/jules_google_docs.md".
 - Read ".docs/<task-group>/_google-gemini_gemini-cli.md".
 - Read ".docs/<task-group>/_websites_ai_google_dev_gemini-api.md".
 - Check ".docs/manifest.json".
-- Identify ALL applicable libraries in that group's documented inventory.
-- Consult ALL applicable library documentation from that inventory.
+- Use the required documents and libraries in that group's documented inventory.
 - Record group, library, version, and exact ".docs" path.
 
-🔴 Do not select only the source or library that appears sufficient.
-Use ALL applicable routed guidance.
+🔴 Do not select, rank, or skip documents or libraries within the selected group.
+Use ALL required routed guidance in that group.
 
 🔴 3. Read ".jules/jules.md" after AGENTS.md and follow its initialization,
 working, Memory Bank, and completion requirements.
 
 🔴 4. REQUIRED REPOSITORY SYSTEMS — USE ALL.
-For EVERY task, Jules MUST use and report on ALL of these:
+For EVERY task, Jules MUST use every listed repository system and report:
 memory-bank files; CSS_FIX_GUIDE.md; DATABASE_SETUP.md; DEPLOYMENT_CHECKLIST.md;
 QUICK_FIX_GUIDE.md; all ".jules/*.md"; all ".jules/cmds/*.md"; Spec Kit; runbooks;
 source; configuration; tests; dependencies; and other routed guidance.
-Do not choose, rank, skip, or label a listed system N/A to avoid using it.
-Every listed item must be reported with USED: YES/NO, USEFUL: YES/NO,
+No Jules decision is permitted to skip, rank, or mark a listed system N/A.
+Every listed system must be reported with USED: YES/NO, USEFUL: YES/NO,
 WHAT WAS USEFUL, EVIDENCE, and REASON.
 
-🔴 5. Jules MUST consult and attempt to use every ".jules/cmds/*.md" workflow
-and Spec Kit workflow on every task. Report USED and USEFUL with evidence for
-each. Usefulness depends on the specific task context.
+🔴 5. Jules MUST consult and use every ".jules/cmds/*.md" workflow and
+Spec Kit workflow on every task. Report USED and USEFUL with evidence for each.
+If execution is blocked or fails, report USED: NO with exact evidence and reason;
+this is a verification failure, not permission to skip the workflow.
+Usefulness is assessed only after use.
 
 🔴 6. Consult ALL listed official Jules/Gemini sources:
 
@@ -58,7 +61,7 @@ each. Usefulness depends on the specific task context.
 - https://ai.google.dev/api
 
 🔴 7. Inspect the actual branch, task path, files, configuration, code, tests,
-dependencies, and relevant history before deciding scope.
+dependencies, and relevant history before execution.
 
 🔴 8. Classify findings:
 VERIFIED / ASSUMPTION / HYPOTHESIS / UNKNOWN.
@@ -69,8 +72,8 @@ B — BOUNDARIES + PLAN
 
 - exact requested outcome and scope
 - affected and planned files
-- applicable ".jules/*.md" and ".jules/cmds/*.md"
-- applicable ".docs" documents and libraries
+- required ".jules/*.md" and ".jules/cmds/*.md"
+- required ".docs" documents and libraries from the selected task group
 - library versions and paths
 - protected systems/files
 - verification requirements
@@ -92,19 +95,19 @@ C — EXECUTE + VERIFY
 
 🔴 ROUTED GOVERNANCE
 
-Follow every applicable ".jules/*.md", ".jules/cmds/*.md", ".docs" requirement,
+Follow every required ".jules/*.md", ".jules/cmds/*.md", ".docs" requirement,
 repository runbook, library requirement, and verification requirement.
 
 🔴 DOCUMENTATION + LIBRARY CONSULTATION REPORTING
 
-For EVERY identified document, library, official source, or materially applicable
-repository component, report:
+For EVERY required document, library, official source, or repository component
+listed by this governance, report:
 
 USED: YES/NO
 USEFUL: YES/NO
 WHAT WAS USEFUL: <brief concrete value when useful>
 EVIDENCE: <specific, auditable consultation/use evidence>
-REASON: <brief reason when not used, not useful, or not applicable>
+REASON: <brief reason for failed/non-use, or for USEFUL: NO>
 
 🔴 FINAL PR REPORT = CANONICAL GOVERNANCE AUDIT RECORD
 
@@ -133,18 +136,16 @@ verification, or the final result AND a concrete WHAT WAS USEFUL entry.
 
 🔴 If useful, state specifically WHAT WAS USEFUL and how it contributed.
 
-🔴 If not useful, state why.
-
 🔴 Jules/Gemini documents and official sources are reported individually with:
 DOCUMENT, PATH/SOURCE, USED, USEFUL, WHAT WAS USEFUL, EVIDENCE, REASON.
 
-🔴 Libraries are reported individually for EACH applicable task group:
+🔴 Libraries are reported individually for the selected task group:
 TASK GROUP, LIBRARY, VERSION, DOCUMENTATION PATH, USED, USEFUL, WHAT WAS USEFUL,
 EVIDENCE, REASON.
 
 🔴 Libraries must come from that group's documented inventory.
 
-🔴 No repository component that materially applies may be silently omitted.
+🔴 No required repository component may be silently omitted.
 
 🔴 MCP GOVERNANCE
 
@@ -169,14 +170,14 @@ Turnstile/CAPTCHA, rate limiting, duplicate protection, or environment handling.
 
 Jules safety ceiling: 495 MB.
 
-Measure applicable build/documentation output before completion.
+Measure build/documentation output before completion.
 Verified result must be <= 495 MB.
 
 If output reaches or would exceed 495 MB:
 STOP.
 Do not bypass or raise the ceiling.
 Preserve safe/resumable work.
-Update Memory Bank as applicable.
+Update Memory Bank as required.
 Report completed work, remaining work, measured size, and continuation point.
 Do not claim full completion.
 
@@ -197,7 +198,7 @@ Cap triggered: YES/NO
 
 🔴 VERIFICATION
 
-Run every applicable verification check.
+Run every required verification check.
 
 Never claim a check was run if it was not run.
 
@@ -227,11 +228,11 @@ FINAL / PR REPORT
 🔴 Report:
 
 - VERIFIED / ASSUMPTION / HYPOTHESIS / UNKNOWN findings
-- every applicable task group
-- every applicable ".jules/*.md"
-- every applicable ".jules/cmds/*.md"
-- APPLICABLE / USED / USEFUL / WHAT WAS USEFUL / EVIDENCE / REASON
-- exact other materially applicable repository components and status
+- the selected .docs task group
+- every required ".jules/*.md"
+- every required ".jules/cmds/*.md"
+- USED / USEFUL / WHAT WAS USEFUL / EVIDENCE / REASON
+- exact required repository components and status
 - requested outcome and scope
 - protected systems and authorization status
 - exact changed files reconciled against the final Git diff
@@ -245,12 +246,11 @@ FINAL / PR REPORT
 🔴 Include a clearly labeled:
 LIBRARY CONSULTATION REPORT
 
-For every applicable library, include:
+For every library document in the selected task group's documented inventory, include:
 TASK GROUP
 LIBRARY
 VERSION
 EXACT ".docs" DOCUMENTATION PATH
-APPLICABLE
 USED
 USEFUL
 WHAT WAS USEFUL
@@ -260,17 +260,16 @@ REASON
 🔴 Include a clearly labeled:
 OFFICIAL SOURCE / DOCUMENT CONSULTATION REPORT
 
-For every applicable Jules/Gemini document or official source, include:
+For every listed Jules/Gemini document or official source, include:
 DOCUMENT / SOURCE
 EXACT PATH / SOURCE
-APPLICABLE
 USED
 USEFUL
 WHAT WAS USEFUL
 EVIDENCE
 REASON
 
-🔴 For EACH materially applicable repository component report:
+🔴 For EACH required repository component report:
 COMPONENT: <name>
 PATH: <exact path>
 USED: YES/NO
@@ -292,15 +291,15 @@ Before reporting completion, verify:
 
 - AGENTS.md was read FIRST.
 - Governance was followed completely.
-- Every applicable task group was identified.
-- Every applicable routed document was evaluated and reported.
-- Every applicable library was consulted and reported with evidence.
-- Every listed Jules/Gemini source was reported with evidence.
+- The .docs library task group was selected and reported.
+- Every required routed document was used and reported.
+- Every library document in the selected group was used and reported with evidence.
+- Every listed Jules/Gemini source was used and reported with evidence.
 - ".jules/jules.md" was followed.
 - ".docs/manifest.json" was checked.
-- Spec Kit applicability was evaluated and reported.
 - Spec Kit workflows were used and reported.
-- Every item has USED, USEFUL, WHAT WAS USEFUL, EVIDENCE, and REASON.
+- Context7 permission was obtained before every invocation.
+- Every required item has USED, USEFUL, WHAT WAS USEFUL, EVIDENCE, and REASON.
 - Protected systems were not changed without authorization.
 - pnpm was used and npm ci was not used.
 - No secrets were exposed or committed.
