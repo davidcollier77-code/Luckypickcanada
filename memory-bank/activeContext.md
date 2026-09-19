@@ -1,16 +1,20 @@
 # Active Context
 
 ## Current Status
+- Fixed a visual/audio lifecycle synchronization defect in the Lucky Card reveal sequence.
+- Verified that `executeRevealState()` had a premature `setIsGenerating(false)` invocation (700ms) that was causing the canvas to unmount, interrupting the visual sequence while audio was still playing.
+- Increased the `setIsGenerating(false)` delay to 2500ms, safely covering the 3.0s `maxLifetime` post-flip padding from `renderCanvas`. This ensures visuals complete their intended duration alongside the corresponding audio trail.
+- Ensured no unintended visual or audio changes were introduced; only the timing issue was patched.
+
+## Next Steps
+- Submit PR for final review.
+
+## Previous Context
 - Fixed a reduced-motion bug in the Lucky Card reveal sequence.
 - Verified `shouldReduceMotion` correctly disables the 700ms CSS transform transition.
 - Ensured normal-motion users retain the existing 700ms transition.
 - Successfully implemented the progressive materialization effect for the Lucky Card Reveal.
 - Visuals (strikes), audio (impacts), and physical card reactions (shake/jolt/recoil) are now perfectly synchronized to the single master timeline (`STRIKE_SCHEDULES`).
-
-## Next Steps
-- None at this time.
-
-## Previous Context
 - Upgraded Lucky Card reveal visuals and audio to enhance the "forging" aspect.
 - Separated card-local visual effects onto a foreground canvas (fgCanvasRef).
 - Improved Framer Motion physical reactions to sync directionally with strikes.
