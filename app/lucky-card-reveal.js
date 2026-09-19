@@ -145,6 +145,9 @@ export default function LuckyCardReveal() {
         fallbackTimerRef.current = null;
     }
 
+    // We wait 2500ms after the reveal state triggers before we unmount the canvas
+    // This safely covers the 3.0s `maxLifetime` post-flip padding from `renderCanvas`
+    // while ensuring the UI interaction loop completes cleanly.
     window.setTimeout(() => {
       setIsGenerating(false);
       try {
@@ -163,7 +166,7 @@ export default function LuckyCardReveal() {
             }
         }
       } catch (e) {}
-    }, 700);
+    }, 2500);
 
     if (cardFrontRef.current) {
         cardFrontRef.current.style.maskImage = 'none';
