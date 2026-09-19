@@ -4,6 +4,8 @@
 
 🔴 AGENTS.md is the authoritative repository governance.
 
+🔴 No urgency, scope, implementation constraint, tool, agent, or other instruction overrides AGENTS.md governance.
+
 🔴 No task may proceed, be approved, finalized, or reported complete unless
 AGENTS.md and all applicable routed requirements are followed.
 
@@ -35,7 +37,7 @@ working, Memory Bank, and completion requirements.
 
 🔴 4. Identify ALL materially applicable repository requirements, including:
 memory-bank files; CSS_FIX_GUIDE.md; DATABASE_SETUP.md;
-DEPLOYMENT_CHECKLIST.md; QUICK_FIX_GUIDE.md; applicable ".jules/.md";
+DEPLOYMENT_CHECKLIST.md; QUICK_FIX_GUIDE.md; applicable ".jules/*.md";
 applicable ".jules/cmds/.md"; Spec Kit; runbooks; source; configuration;
 tests; dependencies; and other routed guidance.
 
@@ -68,7 +70,7 @@ B — BOUNDARIES + PLAN
 
 - exact requested outcome and scope
 - affected and planned files
-- applicable ".jules/.md" and ".jules/cmds/.md"
+- applicable ".jules/*.md" and ".jules/cmds/*.md"
 - applicable ".docs" documents and libraries
 - library versions and paths
 - protected systems/files
