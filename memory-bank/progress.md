@@ -9,3 +9,6 @@
 
 ## 2024-10-31
 - **Lucky Card Reveal Synchronization:** Diagnosed and fixed a synchronization issue where the visual canvas would unmount while the audio reveal tail was still playing. Increased the `setIsGenerating(false)` cleanup delay from 700ms to 2500ms in `executeRevealState()`, ensuring the canvas stays mounted for the intended post-flip `maxLifetime` of 3.0s.
+
+## Next Steps
+- Submit PR for final review.

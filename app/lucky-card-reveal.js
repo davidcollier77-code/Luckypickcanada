@@ -52,6 +52,7 @@ export default function LuckyCardReveal() {
   const activeCardRef = useRef(null);
   const lastMaskValRef = useRef('');
   const cardMetricsRef = useRef({ cx: 140, cy: 202.5, w: 280, h: 405 });
+  const strikeTargetsRef = useRef({});
   const fallbackTimerRef = useRef(null);
 
     // Load Audio Assets with Howler
@@ -423,8 +424,23 @@ export default function LuckyCardReveal() {
         const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
         const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.45;
 
-        const impactX = cx + Math.cos(targetAngle) * targetRadius;
-        const impactY = cy + Math.sin(targetAngle) * targetRadius;
+        // Fetch dynamic coordinates once per strike exactly when it begins, avoiding stale data
+        // after CSS transforms have kicked in, but without polling every frame.
+        if (!strikeTargetsRef.current[idx] && cardRef.current) {
+             const rect = cardRef.current.getBoundingClientRect();
+             if (rect && rect.width > 0 && rect.height > 0) {
+                 strikeTargetsRef.current[idx] = {
+                     x: rect.left + rect.width / 2,
+                     y: rect.top + rect.height / 2
+                 };
+             }
+        }
+
+        // Use the dynamically fetched target or fallback to cached metrics
+        const strikeTarget = strikeTargetsRef.current[idx] || { x: cx, y: cy };
+
+        const impactX = strikeTarget.x + Math.cos(targetAngle) * targetRadius;
+        const impactY = strikeTarget.y + Math.sin(targetAngle) * targetRadius;
 
         const currentX = startX + (impactX - startX) * progress;
         const currentY = startY + (impactY - startY) * progress;
@@ -437,54 +453,69 @@ export default function LuckyCardReveal() {
         ctx.globalCompositeOperation = 'screen';
 
         // --- Core Beam ---
-        const drawBeam = (thickness, alpha, blur, color) => {
-            ctx.beginPath();
+        const drawBeam = (thickness, alpha, blur, color, targetCtx) => {
+            targetCtx.beginPath();
+            targetCtx.moveTo(startX, startY);
 
-            ctx.moveTo(startX, startY);
+            // Calculate elegant curve rather than straight line
+            // Bow out horizontally depending on origin, then converge
+            const bowDir = originPos === 0 ? -1 : (originPos === 1 ? 1 : (idx % 2 === 0 ? -1 : 1));
+            const bowAmount = w * 0.4 * (1 - progress);
 
-            // Control point for arc/wobble
-            const cp1x = startX + (currentX - startX) * 0.6;
+            const cp1x = startX + (bowDir * bowAmount);
+            const cp1y = startY + (currentY - startY) * 0.2;
+
             // Wobble grows as it travels
-            const wobble = Math.sin(elapsed * 15 + idx * 5) * h * 0.15 * progress;
-            const cp1y = currentY + wobble;
+            const wobble = Math.sin(elapsed * 15 + idx * 5) * h * 0.05 * progress;
 
-            ctx.bezierCurveTo(cp1x, cp1y, currentX, currentY, currentX, currentY);
+            const cp2x = currentX + wobble;
+            const cp2y = currentY - (h * 0.1);
 
-            ctx.lineWidth = thickness;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = `rgba(${color}, ${alpha})`;
-            ctx.shadowColor = `rgba(${color}, 1)`;
-            ctx.shadowBlur = blur;
-            ctx.stroke();
+            targetCtx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, currentX, currentY);
 
-            return { sy: startY, cp1x, cp1y };
+            targetCtx.lineWidth = thickness;
+            targetCtx.lineCap = 'round';
+            targetCtx.strokeStyle = `rgba(${color}, ${alpha})`;
+            targetCtx.shadowColor = `rgba(${color}, 1)`;
+            targetCtx.shadowBlur = blur;
+            targetCtx.stroke();
+
+            return { sy: startY, cp1x, cp1y, cp2x, cp2y };
         };
 
-        // Layer 1: Wide faint glow
-        drawBeam(isFinal ? 40 : 20, opacity * 0.2, 30, glowColor);
-        // Layer 2: Medium glow
-        const pts = drawBeam(isFinal ? 15 : 8, opacity * 0.5, 15, glowColor);
-        // Layer 3: Hot core
-        drawBeam(isFinal ? 5 : 2, opacity, 5, rgb);
+        // Draw the beam on the foreground so it layers correctly over the card
+        const targetCtx = fgCtx || ctx;
+        if (targetCtx) {
+            targetCtx.save();
+            targetCtx.globalCompositeOperation = 'screen';
+            // Layer 1: Wide faint glow
+            drawBeam(isFinal ? 40 : 20, opacity * 0.2, 30, glowColor, targetCtx);
+            // Layer 2: Medium glow
+            const pts = drawBeam(isFinal ? 15 : 8, opacity * 0.5, 15, glowColor, targetCtx);
+            // Layer 3: Hot core
+            drawBeam(isFinal ? 5 : 2, opacity, 5, rgb, targetCtx);
 
-        // --- Organic Branches / Lightning forks ---
-        if (progress > 0.3 && opacity > 0.1) {
-            const numBranches = isFinal ? 3 : 1;
-            for(let b=0; b<numBranches; b++) {
-                ctx.beginPath();
-                ctx.moveTo(pts.cp1x, pts.cp1y);
-                const dir = originPos === 0 ? 1 : -1;
-                // Fork out and back
-                const bx1 = pts.cp1x + (w * 0.1 * dir) + Math.cos(elapsed * 20 + b)*20;
-                const by1 = pts.cp1y + (Math.sin(elapsed * 20 + b) * 80) * (b%2===0?1:-1);
-                const bx2 = currentX - (currentX - startX) * 0.1;
-                const by2 = cy + Math.cos(elapsed * 25)*30;
+            // --- Organic Branches / Lightning forks ---
+            if (progress > 0.3 && opacity > 0.1) {
+                const numBranches = isFinal ? 3 : 1;
+                for(let b=0; b<numBranches; b++) {
+                    targetCtx.beginPath();
+                    targetCtx.moveTo(pts.cp1x, pts.cp1y);
+                    const dir = originPos === 0 ? 1 : -1;
+                    // Fork out and back
+                    const bx1 = pts.cp1x + (w * 0.1 * dir) + Math.cos(elapsed * 20 + b)*20;
+                    const by1 = pts.cp1y + (Math.sin(elapsed * 20 + b) * 80) * (b%2===0?1:-1);
+                    const bx2 = currentX - (currentX - startX) * 0.1;
+                    const by2 = strikeTarget.y + Math.cos(elapsed * 25)*30;
 
-                ctx.bezierCurveTo(bx1, by1, bx2, by2, currentX, currentY);
-                ctx.lineWidth = isFinal ? 2 : 1;
-                ctx.strokeStyle = `rgba(${glowColor}, ${opacity * 0.4})`;
-                ctx.stroke();
+                    targetCtx.bezierCurveTo(bx1, by1, bx2, by2, currentX, currentY);
+                    targetCtx.lineWidth = isFinal ? 2 : 1;
+                    targetCtx.strokeStyle = `rgba(${glowColor}, ${opacity * 0.4})`;
+                    targetCtx.stroke();
+                }
             }
+
+            targetCtx.restore();
         }
 
         ctx.restore();
@@ -503,16 +534,23 @@ export default function LuckyCardReveal() {
                 isFinalFlash = isFinal;
             }
 
-            // 2. Shockwave Ring (Background)
+            // 2. Shockwave Ring (Drawn on fgCtx to appear over the card)
             const ringProgress = timeSinceStrike / (isFinal ? 0.6 : 0.4);
             if (ringProgress < 1) {
                 const ringRadius = (isFinal ? Math.max(cardW, cardH) * 1.5 : Math.max(cardW, cardH) * 0.8) * Math.pow(ringProgress, 0.5);
                 const ringOpacity = (1 - ringProgress) * 0.5;
-                ctx.beginPath();
-                ctx.arc(impactX, impactY, ringRadius, 0, Math.PI * 2);
-                ctx.lineWidth = isFinal ? 8 : 4;
-                ctx.strokeStyle = `rgba(${glowColor}, ${ringOpacity})`;
-                ctx.stroke();
+
+                const targetShockwaveCtx = fgCtx || ctx;
+                targetShockwaveCtx.save();
+                targetShockwaveCtx.globalCompositeOperation = 'screen';
+
+                targetShockwaveCtx.beginPath();
+                targetShockwaveCtx.arc(impactX, impactY, ringRadius, 0, Math.PI * 2);
+                targetShockwaveCtx.lineWidth = isFinal ? 8 : 4;
+                targetShockwaveCtx.strokeStyle = `rgba(${glowColor}, ${ringOpacity})`;
+                targetShockwaveCtx.stroke();
+
+                targetShockwaveCtx.restore();
             }
             ctx.restore();
 
@@ -713,6 +751,7 @@ export default function LuckyCardReveal() {
         }
     }
     lastMaskValRef.current = '';
+    strikeTargetsRef.current = {};
 
     // Fallback timer to ensure reveal state is reached
     const finalStrikeTime = schedule[schedule.length - 1];
