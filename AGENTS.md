@@ -231,9 +231,6 @@ FINAL / PR REPORT
 - every applicable task group
 - every applicable ".jules/*.md"
 - every applicable ".jules/cmds/*.md"
-- every applicable Jules/Gemini document
-- every listed official Jules/Gemini source
-- every applicable library from each applicable group
 - APPLICABLE / USED / USEFUL / WHAT WAS USEFUL / EVIDENCE / REASON
 - exact other materially applicable repository components and status
 - requested outcome and scope
