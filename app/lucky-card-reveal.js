@@ -840,8 +840,19 @@ export default function LuckyCardReveal() {
     sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
 
-    // Play the animation automatically to ensure the card actually shakes
-    animationControlsRef.current = animate(sequence, { autoplay: true });
+    // Guard animation for reduced-motion users
+    if (!shouldReduceMotion) {
+      animationControlsRef.current = animate(sequence, { autoplay: true });
+    } else {
+      // Apply revealed static card state without animation
+      if (cardRef.current) {
+        cardRef.current.style.opacity = '1';
+        cardRef.current.style.filter = 'brightness(1)';
+      }
+      if (cardFlipRef.current) {
+        cardFlipRef.current.style.transform = 'rotateY(180deg)';
+      }
+    }
   };
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none relative z-10">
