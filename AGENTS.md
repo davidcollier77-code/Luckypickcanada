@@ -38,7 +38,7 @@ working, Memory Bank, and completion requirements.
 🔴 4. Identify ALL materially applicable repository requirements, including:
 memory-bank files; CSS_FIX_GUIDE.md; DATABASE_SETUP.md;
 DEPLOYMENT_CHECKLIST.md; QUICK_FIX_GUIDE.md; applicable ".jules/*.md";
-applicable ".jules/cmds/.md"; Spec Kit; runbooks; source; configuration;
+applicable ".jules/cmds/*.md"; Spec Kit; runbooks; source; configuration;
 tests; dependencies; and other routed guidance.
 
 🔴 Every identified requirement receives an applicability decision.
@@ -93,7 +93,7 @@ C — EXECUTE + VERIFY
 
 🔴 ROUTED GOVERNANCE
 
-Follow every applicable ".jules/.md", ".jules/cmds/.md", ".docs" requirement,
+Follow every applicable ".jules/*.md", ".jules/cmds/*.md", ".docs" requirement,
 repository runbook, library requirement, and verification requirement.
 
 🔴 DOCUMENTATION + LIBRARY REPORTING
