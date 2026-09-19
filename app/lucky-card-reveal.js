@@ -19,8 +19,8 @@ function localDateKey(date = new Date()) {
 
 const STRIKE_SCHEDULES = {
   standard: [3.0, 5.0, 8.0],
-  premium: [2.5, 4.2, 5.6, 6.8, 8.0],
-  flagship: [2.0, 3.5, 4.8, 5.8, 6.6, 7.3, 8.0]
+  premium: [2.5, 4.2, 5.6, 6.8, 8.0, 9.5],
+  flagship: [2.0, 3.5, 4.8, 5.8, 6.6, 7.3, 8.0, 9.5, 11.5]
 };
 
 export default function LuckyCardReveal() {
@@ -229,19 +229,19 @@ export default function LuckyCardReveal() {
       }, Math.max(0, (strikeTime - 0.3) * 1000))); // travelTime is 0.3
 
       // Impact (Lightning + Firework layering)
-      const impactOffset = -0.02;
+      // Distinct Impact sound synced exactly on strike
       activeTimeoutsRef.current.push(setTimeout(() => {
         if (soundsRef.current.lightning) {
           const id = soundsRef.current.lightning.play();
-          soundsRef.current.lightning.volume(intensity * 0.6, id);
-          soundsRef.current.lightning.rate(isFinal ? 0.8 : 1.0 + (idx * 0.1), id);
+          soundsRef.current.lightning.volume(intensity * 0.8, id);
+          soundsRef.current.lightning.rate(isFinal ? 0.7 : 1.0 + (idx * 0.1), id);
         }
         if (soundsRef.current.firework) {
           const id = soundsRef.current.firework.play();
-          soundsRef.current.firework.volume(intensity * 0.4, id);
-          soundsRef.current.firework.rate(1.2 + (idx * 0.1), id);
+          soundsRef.current.firework.volume(intensity * 0.6, id);
+          soundsRef.current.firework.rate(isFinal ? 0.9 : 1.2 + (idx * 0.1), id);
         }
-      }, Math.max(0, (strikeTime + impactOffset) * 1000)));
+      }, Math.max(0, strikeTime * 1000)));
 
       // Ethereal Resonance Tail (on premium/flagship)
       if (tier !== 'standard') {
@@ -306,11 +306,7 @@ export default function LuckyCardReveal() {
     // Master Clock: requestAnimationFrame timestamp
     let elapsed = (timestamp - rafStartTimeRef.current) / 1000;
 
-    // Drive Framer Motion sequence manually so it is locked to the Master Clock
-    if (animationControlsRef.current && 'time' in animationControlsRef.current) {
-        const sequenceDuration = STRIKE_SCHEDULES[activeTierRef.current][STRIKE_SCHEDULES[activeTierRef.current].length - 1] + 1.5;
-        animationControlsRef.current.time = Math.max(0, Math.min(elapsed, sequenceDuration));
-    }
+    // Framer Motion sequence is now driven automatically to prevent static card issues
 
     const ctx = bgCanvasRef.current.getContext('2d');
 
@@ -374,7 +370,8 @@ export default function LuckyCardReveal() {
         // Target deterministic points around the card
         const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
         const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
-        const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.45;
+        // Make beams strike closer to the center to visually hit the card
+        const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.25;
 
         // Relative coordinates for the CSS mask (0% to 100%)
         const relX = 50 + (Math.cos(targetAngle) * targetRadius / cardW) * 100;
@@ -422,7 +419,7 @@ export default function LuckyCardReveal() {
         // Target deterministic points around the card
         const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
         const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
-        const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.45;
+        const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.25;
 
         // Fetch coordinates dynamically during the strike sequence to ensure the beam
         // tracking remains perfectly locked to the card even while Framer Motion
@@ -488,11 +485,12 @@ export default function LuckyCardReveal() {
             targetCtx.save();
             targetCtx.globalCompositeOperation = 'screen';
             // Layer 1: Wide faint glow
-            drawBeam(isFinal ? 40 : 20, opacity * 0.2, 30, glowColor, targetCtx);
+            const tierMultiplier = tier === 'flagship' ? 1.5 : (tier === 'premium' ? 1.2 : 1.0);
+            drawBeam(isFinal ? 40 * tierMultiplier : 20 * tierMultiplier, opacity * 0.2, 30, glowColor, targetCtx);
             // Layer 2: Medium glow
-            const pts = drawBeam(isFinal ? 15 : 8, opacity * 0.5, 15, glowColor, targetCtx);
+            const pts = drawBeam(isFinal ? 15 * tierMultiplier : 8 * tierMultiplier, opacity * 0.5, 15, glowColor, targetCtx);
             // Layer 3: Hot core
-            drawBeam(isFinal ? 5 : 2, opacity, 5, rgb, targetCtx);
+            drawBeam(isFinal ? 5 * tierMultiplier : 2 * tierMultiplier, opacity, 5, rgb, targetCtx);
 
             // --- Organic Branches / Lightning forks ---
             if (progress > 0.3 && opacity > 0.1) {
@@ -797,8 +795,8 @@ export default function LuckyCardReveal() {
       if (card.tier === 'flagship') { basePower *= 2.0; baseRot *= 2.0; }
 
       // Apply caps
-      const power = isFinal ? Math.min(25, basePower * 1.5) : Math.min(20, basePower);
-      const rotPower = isFinal ? Math.min(8, baseRot * 1.5) : Math.min(5, baseRot);
+      const power = isFinal ? Math.min(40, basePower * 2.0) : Math.min(30, basePower * 1.5);
+      const rotPower = isFinal ? Math.min(15, baseRot * 2.5) : Math.min(10, baseRot * 1.5);
 
       // Determine direction of strike based on angle Map used in renderCanvas
       const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
@@ -810,8 +808,8 @@ export default function LuckyCardReveal() {
 
       // The shake hits EXACTLY at the strike time
       const shakeDur = isFinal ? 0.6 : 0.4; // More dramatic cinematic shake
-      const scaleUp = isFinal ? 1.4 : 1.15; // Physically punch the card forward
-      const finalScale = isFinal ? 1.1 : 1.0;
+      const scaleUp = isFinal ? 1.6 : 1.25; // Physically punch the card forward
+      const finalScale = isFinal ? 1.15 : 1.0;
 
       const recoilX = power * dirX;
       const recoilY = (power * 0.5) * dirY;
@@ -842,7 +840,19 @@ export default function LuckyCardReveal() {
     sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
 
-    animationControlsRef.current = animate(sequence, { autoplay: false });
+    // Guard animation for reduced-motion users
+    if (!shouldReduceMotion) {
+      animationControlsRef.current = animate(sequence, { autoplay: true });
+    } else {
+      // Apply revealed static card state without animation
+      if (cardRef.current) {
+        cardRef.current.style.opacity = '1';
+        cardRef.current.style.filter = 'brightness(1)';
+      }
+      if (cardFlipRef.current) {
+        cardFlipRef.current.style.transform = 'rotateY(180deg)';
+      }
+    }
   };
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none relative z-10">
