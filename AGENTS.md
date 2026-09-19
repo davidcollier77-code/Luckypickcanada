@@ -5,9 +5,11 @@
 🔴 AGENTS.md is the authoritative repository governance.
 
 🔴 No urgency, scope, implementation constraint, tool, agent, or other instruction overrides AGENTS.md governance.
+🔴 AGENTS.md is mandatory. Jules does not choose which mandatory requirements to follow.
+🔴 The only discretionary choices are the .docs task group and the required libraries from that group's documented inventory.
 
 🔴 No task may proceed, be approved, finalized, or reported complete unless
-AGENTS.md and all required routed requirements are followed.
+AGENTS.md and all required routed requirements are followed and demonstrated.
 
 🔴 DO NOT ASSUME. VERIFY. DO NOT CLAIM. DEMONSTRATE.
 
@@ -51,8 +53,8 @@ If execution is blocked or fails, report USED: NO with exact evidence and reason
 this is a verification failure, not permission to skip the workflow.
 Usefulness is assessed only after use.
 
-🔴 6. Consult ALL listed official Jules/Gemini sources:
-
+🔴 6. CONSULT AND USE ALL LISTED OFFICIAL JULES/GEMINI SOURCES.
+Every listed source is mandatory. Jules MUST consult and use every listed source and report the result.
 - https://jules.google/docs
 - https://jules.google/docs/cli/reference
 - https://jules.google/docs/api/reference/
@@ -169,22 +171,24 @@ Turnstile/CAPTCHA, rate limiting, duplicate protection, or environment handling.
 🔴 BUILD SAFETY
 
 Jules safety ceiling: 495 MB.
+The 495 MB ceiling is a hard safety limit. Do not bypass or raise it.
 
-Measure build/documentation output before completion.
-Verified result must be <= 495 MB.
+Normal case:
+Verify the output is within the 495 MB safety ceiling and report that it is within the limit.
+Routine reports do not require an exact MB measurement.
 
 If output reaches or would exceed 495 MB:
 STOP.
-Do not bypass or raise the ceiling.
+Do not continue past the ceiling.
 Preserve safe/resumable work.
 Update Memory Bank as required.
 Report completed work, remaining work, measured size, and continuation point.
 Do not claim full completion.
 
-🔴 Report:
+🔴 If the ceiling is triggered or would be exceeded, report:
 Verified size: <actual measured size>
-Within 495 MB ceiling: YES/NO
-Cap triggered: YES/NO
+Within 495 MB ceiling: NO
+Cap triggered: YES
 
 🔴 EXECUTION
 
@@ -222,6 +226,10 @@ Verify:
 - implementation matches plan
 - result matches requested outcome
 - unverifiable items are identified
+
+🔴 PRE-SUBMISSION DOUBLE-CHECK
+Before submitting or finalizing the PR, Jules MUST double-check the completed work against the requested outcome, scope, implementation, and final diff.
+Jules MUST explicitly confirm in the FINAL / PR REPORT that this pre-submission double-check was completed.
 
 FINAL / PR REPORT
 
@@ -303,7 +311,7 @@ Before reporting completion, verify:
 - Protected systems were not changed without authorization.
 - pnpm was used and npm ci was not used.
 - No secrets were exposed or committed.
-- The 495 MB ceiling was measured and respected.
+- The 495 MB safety ceiling was respected. If triggered, the measured size and continuation point were reported.
 - Required verification was actually performed and documented with results.
 - Final diff was inspected.
 - Final report changed-file list exactly matches the final Git diff.
