@@ -667,6 +667,17 @@ export default function LuckyCardReveal() {
           // Slowly fades out over the remaining 2.35s
           const residualAlpha = Math.max(0, 1 - (postFlipElapsed / 2.35));
           if (residualAlpha > 0) {
+              // Re-measure card position for post-flip particles
+              let postFlipCx = cx;
+              let postFlipCy = cy;
+              if (cardRef.current) {
+                  const rect = cardRef.current.getBoundingClientRect();
+                  if (rect && rect.width > 0 && rect.height > 0) {
+                      postFlipCx = rect.left + rect.width / 2;
+                      postFlipCy = rect.top + rect.height / 2;
+                  }
+              }
+
               fgCtx.save();
               fgCtx.globalCompositeOperation = 'screen';
               const pCount = tier === 'flagship' ? 24 : (tier === 'premium' ? 16 : 8);
@@ -674,8 +685,8 @@ export default function LuckyCardReveal() {
                   const angle = (Math.PI * 2 / pCount) * i + (elapsed * 0.2);
                   // Gentle floating radius
                   const r = Math.max(cardW, cardH) * 0.5 + Math.sin(elapsed * 2 + i) * 20;
-                  const px = cx + Math.cos(angle) * r;
-                  const py = cy + Math.sin(angle) * r - (postFlipElapsed * 30); // Float upwards
+                  const px = postFlipCx + Math.cos(angle) * r;
+                  const py = postFlipCy + Math.sin(angle) * r - (postFlipElapsed * 30); // Float upwards
 
                   fgCtx.beginPath();
                   fgCtx.arc(px, py, 2, 0, Math.PI * 2);

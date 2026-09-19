@@ -105,7 +105,7 @@
 - **Spec Kit applicability and result:** N/A (Not used, workflow purely frontend logic).
 - **Memory Bank actions completed:** YES
 - **protected-system authorization status:** N/A (no protected systems altered).
-- **exact changed files:** `app/lucky-card-reveal.js`, `memory-bank/activeContext.md`
+- **exact changed files:** `app/lucky-card-reveal.js`, `memory-bank/activeContext.md`, `pr_description.md`
 - **verification actually performed and results:** YES, completed `./jules-verify.sh`.
 - **final diff inspection:** YES, matches changes.
 - **495 MB ceiling status:** Passed.
