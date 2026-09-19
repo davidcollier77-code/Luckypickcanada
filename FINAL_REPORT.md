@@ -88,7 +88,7 @@ This change acts purely on the existing timing state without introducing new dep
 
 ## Verification
 - Verified by checking the Git Diff.
-- Verified syntax integrity by running `npm run build` and ensuring Next.js builds flawlessly.
+- Verified syntax integrity by running `pnpm run build` and ensuring Next.js builds flawlessly.
 - Verified test suite by running `./jules-verify.sh`.
 - Result: **All checks passed.**
 

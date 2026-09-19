@@ -145,28 +145,30 @@ export default function LuckyCardReveal() {
         fallbackTimerRef.current = null;
     }
 
-    // We wait 2500ms after the reveal state triggers before we unmount the canvas
+    // Persist the card immediately to localStorage
+    try {
+      const currentCard = activeCardRef.current;
+      if (currentCard) {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            cardId: currentCard.id,
+            revealDate: localDateKey(),
+          }));
+          const unlockedStr = window.localStorage.getItem('unlockedCards');
+          let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
+          if (!unlocked.includes(currentCard.id)) {
+            unlocked.push(currentCard.id);
+            window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
+            window.dispatchEvent(new Event('unlockedCardsUpdated'));
+          }
+      }
+    } catch (e) {}
+
+    // We wait 3000ms after the reveal state triggers before we unmount the canvas
     // This safely covers the 3.0s `maxLifetime` post-flip padding from `renderCanvas`
     // while ensuring the UI interaction loop completes cleanly.
     window.setTimeout(() => {
       setIsGenerating(false);
-      try {
-        const currentCard = activeCardRef.current;
-        if (currentCard) {
-            window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-              cardId: currentCard.id,
-              revealDate: localDateKey(),
-            }));
-            const unlockedStr = window.localStorage.getItem('unlockedCards');
-            let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
-            if (!unlocked.includes(currentCard.id)) {
-              unlocked.push(currentCard.id);
-              window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
-              window.dispatchEvent(new Event('unlockedCardsUpdated'));
-            }
-        }
-      } catch (e) {}
-    }, 2500);
+    }, 3000);
 
     if (cardFrontRef.current) {
         cardFrontRef.current.style.maskImage = 'none';
