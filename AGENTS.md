@@ -126,10 +126,6 @@ entry in the FINAL / PR REPORT.
 🔴 USEFUL: YES requires an actual contribution to analysis, planning, execution,
 verification, or the final result AND a concrete WHAT WAS USEFUL entry.
 
-🔴 A tool/server connection alone does NOT demonstrate consultation or useful use.
-For example, connecting Context7, Stitch, Neon, or another MCP service is not
-library/documentation evidence by itself.
-
 🔴 Never silently omit an identified item.
 
 🔴 If applicable but not used, report USED: NO and why.
@@ -311,7 +307,6 @@ Before reporting completion, verify:
 - Every applicable item has APPLICABLE, USED, USEFUL, WHAT WAS USEFUL, EVIDENCE,
   and REASON.
 - Context7 permission was obtained before every invocation.
-- A tool/server connection was not counted as consultation evidence by itself.
 - Protected systems were not changed without authorization.
 - pnpm was used and npm ci was not used.
 - No secrets were exposed or committed.
