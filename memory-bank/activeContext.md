@@ -41,3 +41,8 @@
 - Modified `Fireworks` tier logic in `DailyResonance.tsx` to use `soundsRef.current.fireworkLaunch` for rocket launches, retaining Howler's `.play()` ID for overlapping asynchronous playback.
 - Verified meteors remain unaffected and use `impactMeteor`.
 - Fixed card reveal animation to build up visually on hits rather than lingering beam effect.
+
+- Addressed Aurora-beam synchronization defect in Lucky Card Reveal.
+- Introduced dynamic card coordinate capturing using `strikeTargetsRef` without polling every frame.
+- Implemented curved Bezier rendering for beams to eliminate linear/straight laser aesthetics.
+- Drew beams and shockwaves directly on the foreground context (`fgCtx`) to ensure they visibly strike over the card rather than appearing underneath it.
