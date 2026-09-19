@@ -713,7 +713,7 @@ export default function LuckyCardReveal() {
     const finalStrikeTime = schedule[schedule.length - 1];
     fallbackTimerRef.current = setTimeout(() => {
         executeRevealState();
-    }, (finalStrikeTime + 0.65 + 0.2) * 1000); // 200ms grace period after expected flipAt
+    }, (finalStrikeTime + 0.65 + 0.8 + 0.2) * 1000); // 200ms grace period after flip completes
 
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
