@@ -35,19 +35,18 @@ Use ALL applicable routed guidance.
 🔴 3. Read ".jules/jules.md" after AGENTS.md and follow its initialization,
 working, Memory Bank, and completion requirements.
 
-🔴 4. Identify ALL materially applicable repository requirements, including:
-memory-bank files; CSS_FIX_GUIDE.md; DATABASE_SETUP.md;
-DEPLOYMENT_CHECKLIST.md; QUICK_FIX_GUIDE.md; applicable ".jules/*.md";
-applicable ".jules/cmds/*.md"; Spec Kit; runbooks; source; configuration;
-tests; dependencies; and other routed guidance.
+🔴 4. REQUIRED REPOSITORY SYSTEMS — USE ALL.
+For EVERY task, Jules MUST use and report on ALL of these:
+memory-bank files; CSS_FIX_GUIDE.md; DATABASE_SETUP.md; DEPLOYMENT_CHECKLIST.md;
+QUICK_FIX_GUIDE.md; all ".jules/*.md"; all ".jules/cmds/*.md"; Spec Kit; runbooks;
+source; configuration; tests; dependencies; and other routed guidance.
+Do not choose, rank, skip, or label a listed system N/A to avoid using it.
+Every listed item must be reported with USED: YES/NO, USEFUL: YES/NO,
+WHAT WAS USEFUL, EVIDENCE, and REASON.
 
-🔴 Every identified requirement receives an applicability decision.
-If applicable, follow it completely.
-If not applicable, report APPLICABLE: NO and why.
-No applicable item may be silently omitted.
-
-🔴 5. Apply every applicable ".jules/cmds/*.md" workflow, including Spec Kit
-workflows when their routing or task scope makes them applicable.
+🔴 5. Jules MUST consult and attempt to use every ".jules/cmds/*.md" workflow
+and Spec Kit workflow on every task. Report USED and USEFUL with evidence for
+each. Usefulness depends on the specific task context.
 
 🔴 6. Consult ALL listed official Jules/Gemini sources:
 
@@ -128,7 +127,7 @@ verification, or the final result AND a concrete WHAT WAS USEFUL entry.
 
 🔴 Never silently omit an identified item.
 
-🔴 If applicable but not used, report USED: NO and why.
+🔴 If not useful for the task, report USEFUL: NO and why.
 
 🔴 If used, confirm USED: YES and provide EVIDENCE.
 
@@ -137,11 +136,11 @@ verification, or the final result AND a concrete WHAT WAS USEFUL entry.
 🔴 If not useful, state why.
 
 🔴 Jules/Gemini documents and official sources are reported individually with:
-DOCUMENT, PATH/SOURCE, APPLICABLE, USED, USEFUL, WHAT WAS USEFUL, EVIDENCE, REASON.
+DOCUMENT, PATH/SOURCE, USED, USEFUL, WHAT WAS USEFUL, EVIDENCE, REASON.
 
 🔴 Libraries are reported individually for EACH applicable task group:
-TASK GROUP, LIBRARY, VERSION, DOCUMENTATION PATH, APPLICABLE, USED, USEFUL,
-WHAT WAS USEFUL, EVIDENCE, REASON.
+TASK GROUP, LIBRARY, VERSION, DOCUMENTATION PATH, USED, USEFUL, WHAT WAS USEFUL,
+EVIDENCE, REASON.
 
 🔴 Libraries must come from that group's documented inventory.
 
@@ -274,7 +273,6 @@ REASON
 🔴 For EACH materially applicable repository component report:
 COMPONENT: <name>
 PATH: <exact path>
-APPLICABLE: YES/NO
 USED: YES/NO
 CHANGED: YES/NO
 VERIFIED: YES/NO
@@ -301,9 +299,8 @@ Before reporting completion, verify:
 - ".jules/jules.md" was followed.
 - ".docs/manifest.json" was checked.
 - Spec Kit applicability was evaluated and reported.
-- Every applicable item has APPLICABLE, USED, USEFUL, WHAT WAS USEFUL, EVIDENCE,
-  and REASON.
-- Context7 permission was obtained before every invocation.
+- Spec Kit workflows were used and reported.
+- Every item has USED, USEFUL, WHAT WAS USEFUL, EVIDENCE, and REASON.
 - Protected systems were not changed without authorization.
 - pnpm was used and npm ci was not used.
 - No secrets were exposed or committed.
