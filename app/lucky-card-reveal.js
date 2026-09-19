@@ -424,20 +424,19 @@ export default function LuckyCardReveal() {
         const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
         const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.45;
 
-        // Fetch dynamic coordinates once per strike exactly when it begins, avoiding stale data
-        // after CSS transforms have kicked in, but without polling every frame.
-        if (!strikeTargetsRef.current[idx] && cardRef.current) {
-             const rect = cardRef.current.getBoundingClientRect();
-             if (rect && rect.width > 0 && rect.height > 0) {
-                 strikeTargetsRef.current[idx] = {
-                     x: rect.left + rect.width / 2,
-                     y: rect.top + rect.height / 2
-                 };
-             }
+        // Fetch coordinates dynamically during the strike sequence to ensure the beam
+        // tracking remains perfectly locked to the card even while Framer Motion
+        // applies layout-shifting shakes and scales to it.
+        let strikeTarget = { x: cx, y: cy };
+        if (cardRef.current) {
+            const rect = cardRef.current.getBoundingClientRect();
+            if (rect && rect.width > 0 && rect.height > 0) {
+                strikeTarget = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
+            }
         }
-
-        // Use the dynamically fetched target or fallback to cached metrics
-        const strikeTarget = strikeTargetsRef.current[idx] || { x: cx, y: cy };
 
         const impactX = strikeTarget.x + Math.cos(targetAngle) * targetRadius;
         const impactY = strikeTarget.y + Math.sin(targetAngle) * targetRadius;
@@ -615,7 +614,7 @@ export default function LuckyCardReveal() {
                     const cw2 = cardW/2;
                     const ch2 = cardH/2;
 
-                    fgCtx.strokeRect(cx - cw2, cy - ch2, cardW, cardH);
+                    fgCtx.strokeRect(strikeTarget.x - cw2, strikeTarget.y - ch2, cardW, cardH);
                 }
 
                 fgCtx.restore();

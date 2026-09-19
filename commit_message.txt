@@ -1,0 +1,3 @@
+Fix: Synchronize Aurora beam target with moving card
+
+Removes stale cached coordinate fetching during the Lucky Card reveal sequence, allowing the Aurora beam impact target to track dynamically with the Framer Motion-driven shakes and scales. Audio synchronization and existing behavior are perfectly preserved.
