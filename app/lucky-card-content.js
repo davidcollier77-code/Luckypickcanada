@@ -7,6 +7,7 @@ export const LUCKY_CARD_IMAGES = {
   'cosmic-flow': '/standard-card-cosmic-flow.png',
   'northern-lights': '/premium-card-northern-lights.png',
   'coast-to-coast-tale': '/premium-card-coast-to-coast-tale.png',
+  'lucky-canadian-moose': '/a_polished_high_detail_card_illustration_poster_i.png',
   'flagship-card': '/flagship-card-golden-maple-clover.png',
   'lucky-golden-pick': '/flagship-card-lucky-golden-pick.png',
 };
@@ -20,6 +21,7 @@ export const LUCKY_CARD_QUOTES = {
   'cosmic-flow': 'Align with the currents of the universe where every motion bends toward fortune.',
   'northern-lights': 'Underneath the dancing skies, true fortune finds those who dare to look up.',
   'coast-to-coast-tale': 'From sea to sea, every journey holds a story of unexpected fortune waiting to unfold.',
+  'lucky-canadian-moose': 'Stand tall, keep moving forward, and let good fortune find you.',
   'flagship-card': 'Some find luck by searching for it. Others create the moment where luck finds them. This rare card marks a journey where possibility, timing, and fortune align.',
   'lucky-golden-pick': 'Strike gold in the moments you least expect.',
 };
@@ -33,6 +35,7 @@ export const LUCKY_CARD_RARITY_WEIGHTS = {
   'guiding-star': 10.0,
   'northern-lights': 10.0,
   'coast-to-coast-tale': 10.0,
+  'lucky-canadian-moose': 10.0,
   'flagship-card': 5.0,
   'lucky-golden-pick': 5.0,
 };
