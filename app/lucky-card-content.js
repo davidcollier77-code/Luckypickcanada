@@ -1,14 +1,14 @@
 export const LUCKY_CARD_IMAGES = {
-  'number-seeker': '/IMG_20260728_222536_078566.png',
-  'iron-horseshoe': '/IMG_20260728_232807_958705.png',
-  'emerald-clover': '/IMG_20260728_232716_825894.png',
-  'guiding-star': '/IMG_20260729_082610_857839.png',
-  'optimists-path': '/optimists-path.png',
-  'cosmic-flow': '/IMG_20260811_110751_562871.png',
-  'northern-lights': '/IMG_20260730_181802_670354.png',
-  'coast-to-coast-tale': '/IMG_20260811_112327_703192.png',
-  'flagship-card': '/IMG_20260729_125426_781846.png',
-  'lucky-golden-pick': '/IMG_20260811_121330_480019.png',
+  'number-seeker': '/standard-card-number-seeker.png',
+  'iron-horseshoe': '/standard-card-iron-horseshoe.png',
+  'emerald-clover': '/standard-card-emerald-four-leaf.png',
+  'guiding-star': '/standard-card-guiding-star.png',
+  'optimists-path': '/standard-card-optimists-path.png',
+  'cosmic-flow': '/standard-card-cosmic-flow.png',
+  'northern-lights': '/premium-card-northern-lights.png',
+  'coast-to-coast-tale': '/premium-card-coast-to-coast-tale.png',
+  'flagship-card': '/flagship-card-golden-maple-clover.png',
+  'lucky-golden-pick': '/flagship-card-lucky-golden-pick.png',
 };
 
 export const LUCKY_CARD_QUOTES = {
