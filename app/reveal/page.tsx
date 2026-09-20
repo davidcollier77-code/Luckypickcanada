@@ -1,5 +1,7 @@
 import RevealClient from './RevealClient';
 
+export const revalidate = 0;
+
 export const metadata = {
   title: 'Daily Card Reveal | Lucky Pick Canada',
   description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
