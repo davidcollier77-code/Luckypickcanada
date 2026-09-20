@@ -11,3 +11,8 @@
 - Enhanced the `renderCanvas` sequence by injecting branching electrical filaments (CGI proton-style beam) for preliminary impacts.
 - Verified impacts alternate between blue/pink colors using existing `tierColors` array configuration, correctly resolving to tier-specific metallic colors on the final strike.
 - Verified that these layout changes don't interfere with Framer Motion `scope` scaling bounds.
+
+## 2026-09-20 - Lucky Card Reveal Logic Fixes
+- Fixed Lucky Card Tier randomization weights (standard: 39%, premium: 36%, flagship: 25%).
+- Decoupled quotes from fixed cards and implemented independent randomized quote selection with consecutive day protection.
+- Synchronized visual cinematic reveal timing with final beam impact.
