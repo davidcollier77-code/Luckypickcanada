@@ -426,16 +426,26 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
 
-    if (bgCanvasRef.current) {
-      bgCanvasRef.current.width = window.innerWidth;
-      bgCanvasRef.current.height = window.innerHeight;
-    }
-    if (fgCanvasRef.current) {
-      fgCanvasRef.current.width = window.innerWidth;
-      fgCanvasRef.current.height = window.innerHeight;
-    }
-
     const schedule = STRIKE_SCHEDULES[card.tier];
+
+    // Size both canvases after their conditional mount and before scheduling the render loop.
+    // This ensures the canvas backing dimensions are established before the first render frame,
+    // preventing the default 300×150 backing size from clipping beam/particle effects.
+    requestAnimationFrame(() => {
+      if (bgCanvasRef.current) {
+        bgCanvasRef.current.width = window.innerWidth;
+        bgCanvasRef.current.height = window.innerHeight;
+      }
+      if (fgCanvasRef.current) {
+        fgCanvasRef.current.width = window.innerWidth;
+        fgCanvasRef.current.height = window.innerHeight;
+      }
+
+      // Now schedule the render loop with properly sized canvases
+      if (!shouldReduceMotion) {
+        rafRef.current = requestAnimationFrame(renderCanvas);
+      }
+    });
     rafStartTimeRef.current = 0;
 
     // Cache card geometry for render loop
@@ -459,12 +469,6 @@ export default function LuckyCardReveal() {
         executeRevealState();
     }, (finalStrikeTime + 0.1 + 0.8 + 0.2) * 1000); // 200ms grace period after the 0.8s flip completes
 
-    if (!shouldReduceMotion) {
-      rafRef.current = requestAnimationFrame(renderCanvas);
-    } else {
-      // Reduced motion fallback path
-      executeRevealState();
-    }
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
     const sequence = [];
@@ -545,8 +549,12 @@ export default function LuckyCardReveal() {
       if (cardFlipRef.current) {
         cardFlipRef.current.style.transform = 'rotateY(180deg)';
       }
+
+      // Reduced motion fallback path
+      executeRevealState();
     }
   };
+
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none relative z-10">
       
