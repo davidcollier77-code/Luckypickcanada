@@ -150,6 +150,7 @@ export default function LuckyCardReveal() {
       fgCtx.clearRect(0, 0, w, h);
     }
 
+
     const schedule = STRIKE_SCHEDULES[tier];
     const finalStrike = schedule[schedule.length - 1];
     const flipAt = finalStrike + 0.1;
