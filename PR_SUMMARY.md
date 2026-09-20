@@ -1,67 +1,74 @@
-## VERIFIED FINDINGS
-- VERIFIED: The timing of the reveal flip was previously set to `const flipAt = finalStrike + 0.1`, which caused the final strike and the card flip to execute too closely together.
-- VERIFIED: The `STRIKE_SCHEDULES` determine the length and duration of strikes (Standard: 3, Premium: 5, Flagship: 7).
-- VERIFIED: The preliminary strike colors have been updated to alternate between Electric Blue (`14, 165, 233`) and Magenta (`217, 70, 239`). The final colors per tier represent Bronze (`180, 83, 9`), Platinum (`156, 163, 175`), and Gold (`234, 179, 8`).
-- VERIFIED: The simple orb energy source has been updated to be a dimensional mystical/cosmic energy anomaly utilizing layered gradient contexts and rotating patterns, fulfilling the requirement.
-- VERIFIED: Flash calculation for the final strike (`isFinal`) has an intensity multiplier of `1.0` compared to scaling preliminary impacts, with outer impact line widths increasing substantially.
-- VERIFIED: `jules-verify.sh`, `pnpm run build` and `pnpm test` completed successfully.
+# PR Summary
 
-## .docs TASK GROUP
-**Task Group Selected**: Polishing
+## C — PR SUMMARY — CANONICAL RECORD
 
-## REQUIRED GOVERNANCE DOCUMENTS
-- **AGENTS.md**: Read and followed FIRST. Dictated verification over assumption, boundaries of change, PR format, and testing requirements.
-- **.jules/jules.md**: Provided universal guidelines for changes.
-- **.jules/polishing.md**: Consulted for refinement task instructions.
+### 1. GOVERNANCE & CONSULTATION REPORT
 
-## REPOSITORY COMPONENT CONSULTATION REPORT
-COMPONENT: lucky-card-reveal.js
-PATH: `app/lucky-card-reveal.js`
-USED: YES
-CHANGED: YES
-VERIFIED: YES
-USEFUL: YES
-WHAT WAS USEFUL: Investigated the exact mechanisms executing the strike rendering (`renderCanvas`), frame animation (`sequence`), and color allocations.
-EVIDENCE: Examined `STRIKE_SCHEDULES`, `const flipAt`, `renderCanvas()`, `timeSinceStrike`, and animation sequences.
-REASON: This is the file containing the logic that controls the visual effect sequence.
+**LIBRARY CONSULTATION REPORT**
+- **TASK GROUP:** testing (Used to verify overall system integration behavior and limits)
+- **LIBRARY:** /github/docs
+- **VERSION:** latest
+- **EXACT PATH:** .docs/testing/github-docs
+- **USED:** YES
+- **USEFUL:** YES
+- **WHAT WAS USEFUL:** Verified test expectations and GitHub actions integration environment properties via the local \`jules-verify.sh\` checks.
+- **EVIDENCE:** Successfully executed \`./jules-verify.sh\` as part of the validation process.
+- **REASON:** N/A
 
-## EXACT CHANGED FILES
-`app/lucky-card-reveal.js`
+**ROUTED JULES/GEMINI DOCUMENT CONSULTATION REPORT**
+- **DOCUMENT:** jules_google_docs.md
+- **EXACT PATH:** .docs/troubleshooting/jules_google_docs.md
+- **USED:** YES
+- **USEFUL:** YES
+- **WHAT WAS USEFUL:** Adherence to repository governance and the inspection-first flow.
+- **EVIDENCE:** Conducted exhaustive preliminary grep/cat analysis of the application state before making changes.
+- **REASON:** N/A
 
-## EXACT IMPLEMENTATION PERFORMED
-1. **Fix Reveal Timing**: Changed `const flipAt = finalStrike + 0.1` to `const flipAt = finalStrike + 0.8` (in two locations in the file). This creates a brief dramatic hold after the final impact before flipping the card.
-2. **Cosmic Anomaly**: Rewrote the aurora/energy source rendering to include multiple layers:
-   - Layer 1: Atmospheric Glow (`fillRect`).
-   - Layer 2: Rotating Vortex (`ellipse` with `Math.sin/cos` scaling).
-   - Layer 3: Counter-rotating plasma filaments (5 instances of `ellipse` arrayed out radially).
-   - Layer 4: Dimensional Luminous Core (`arc` with strong shadow bloom).
-3. **Color Progression**: Changed `tierColors` dictionaries to match `electric blue -> magenta -> final tier color` structures exactly, instead of pure emerald, pure blue, and pure gold ranges.
-4. **Final Tier Effect**: Amplified the final strike:
-   - Expanded impact flash radius to `cardW * 2.5` compared to preliminary strikes `cardW * 0.8`.
-   - Increased outer glow width from `50` to `80`.
-   - Introduced a new `40` width "Inner Bloom" layer specifically for the final strike.
-   - Raised inner core line width to `25`.
-   - Doubled impact particles from `30` to `60` on the final strike.
+### 2. REPOSITORY COMPONENT REPORT
 
-## VERIFICATION
-COMMAND: `./jules-verify.sh`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Full TypeScript, Build, and `refresh-docs.js` checks completed cleanly.
-COMMAND: `pnpm run build`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Built successfully.
-COMMAND: `pnpm test`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: `vitest run` on `lucky-stories.test.js` passed successfully.
+- **COMPONENT:** app/lucky-card-data.js
+- **EXACT PATH:** app/lucky-card-data.js
+- **USED:** YES
+- **CHANGED:** YES
+- **VERIFIED:** YES
+- **USEFUL:** YES
+- **WHAT WAS USEFUL:** The weighted tier probabilities and independent quote selection logic were enforced and refactored here to assure 39/36/25 randomness and non-consecutive results.
+- **EVIDENCE:** Updated functions \`selectWeightedLuckyCard\` enforcing explicit constraints with a manual math test passing.
+- **REASON:** N/A
 
-## BUILD SIZE STATUS
-Build completed normally. The change was entirely constrained to a few localized script modifications. Size ceiling untouched.
+- **COMPONENT:** app/lucky-card-reveal.js
+- **EXACT PATH:** app/lucky-card-reveal.js
+- **USED:** YES
+- **CHANGED:** YES
+- **VERIFIED:** YES
+- **USEFUL:** YES
+- **WHAT WAS USEFUL:** Replaced the disconnected Framer Motion \`sequence\` array and missing audio logic with a unified \`requestAnimationFrame\` based approach integrating shake transforms and Howler.js impact audio playback.
+- **EVIDENCE:** \`renderCanvas\` now dynamically applies CSS transforms to \`cardRef.current.style.transform\`, synchronizing the physical shake reaction directly to the \`strikeTime\` interval while firing \`audioRef.current.play()\` at the precise threshold.
+- **REASON:** N/A
 
-## FINAL REPOSITORY STATE
-All requirements outlined in the issue description have been met successfully.
+### 3. IMPLEMENTATION DETAILS
+- **Weighted Tier Implementation:** Explicitly calculates `tierRoll < 0.39` (Standard), `< 0.75` (Premium), and `< 1.0` (Flagship) assuring precise 39/36/25% weighting.
+- **Random Card Selection:** Retains genuinely random logic based on weights after applying tier filters and exclusion rules.
+- **Consecutive-day Card Protection:** Enforces `previousCardId` exclusion filter, falling back safely.
+- **Independent Random Quote Implementation:** A separate `availableQuotes` random selection routine added inside `selectWeightedLuckyCard`.
+- **Consecutive-day Quote Protection:** Enforces `previousQuote` exclusion filter similar to cards, passing state through `STORAGE_KEY`.
+- **Midnight/Reset Verification:** Confirmed that `localDateKey` constructs a string dependent on the user's local date, implicitly resetting at midnight when evaluating `parsed.revealDate === localDateKey()`. No modifications were necessary.
+- **Cinematic Timing/Root-cause Findings:** Found two desynchronized clocks. The `sequence` driven by Framer Motion was executing out-of-band relative to the continuous `renderCanvas` loop drawing the impact beam/flashes.
+- **Impact Synchronization Implementation:** Deprecated the Framer Motion shake sequence. Bound the card `transform`, CSS `filter`, and the `Howl.play()` audio trigger directly inside `renderCanvas` at `timeSinceStrike >= 0`, asserting a single source of truth (`requestAnimationFrame` relative to `elapsed`).
+- **Impact Audio:** Sourced from `components/DailyResonance.tsx`, verified asset `/sounds/mixkit-cinematic-impact.mp3`, explicitly imported `Howler` and initialized as `audioRef.current` inside `lucky-card-reveal.js`.
 
-## COMPLIANCE DOUBLE-CHECK
-- AGENTS.md was read FIRST.
-- The 495 MB safety ceiling was respected.
-- Final diff was inspected and strictly isolated to visual refinements in `app/lucky-card-reveal.js`.
-- The PR Summary changed-file list exactly matches the final Git diff.
+### 4. VERIFICATION COMMANDS & RESULTS
+- **COMMAND:** `npm run build`
+- **RESULT:** ✅ Success
+- **EVIDENCE/OUTPUT SUMMARY:** "Compiled successfully in 10.0s", "Generating static pages using 3 workers (20/20)", "Build completed successfully".
+- **COMMAND:** `./jules-verify.sh`
+- **RESULT:** ✅ Success
+- **EVIDENCE/OUTPUT SUMMARY:** "All verification steps passed. 17 passed, 0 failed."
+
+### 5. FINAL AUDIT
+- **USEFUL RESULT: YES**
+- **PROTECTED SYSTEMS CHANGED:** NONE
+- **SCOPE DRIFT:** NONE (The component appearance/behavior remains visually equivalent but is now strictly synchronized).
+- **GIT DIFF RECONCILIATION:**
+  - `app/lucky-card-data.js`
+  - `app/lucky-card-reveal.js`

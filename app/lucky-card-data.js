@@ -25,57 +25,74 @@ export const LUCKY_CARDS = CARD_DEFINITIONS.map(([id, title, isReveal, tier]) =>
   rarityWeight: LUCKY_CARD_RARITY_WEIGHTS[id]
 }));
 
-export function selectWeightedLuckyCard(previousCardId = null) {
+export function selectWeightedLuckyCard(previousCardId = null, previousQuote = null) {
   const isTestMode = isLuckyCardTestModeEnabled();
-
-  let availableCards = LUCKY_CARDS;
-  // Strict Anti-Repeat Protection: Exclude yesterday's card so users never receive duplicates back-to-back.
-  if (previousCardId && availableCards.length > 1) {
-    availableCards = availableCards.filter(card => card.id !== previousCardId);
-  }
 
   if (isTestMode) {
     // During test mode, randomly select any card to make testing all states easy
     const randomBuffer = new Uint32Array(1);
     crypto.getRandomValues(randomBuffer);
-    const randomIndex = randomBuffer[0] % availableCards.length;
-    return availableCards[randomIndex];
+    const randomIndex = randomBuffer[0] % LUCKY_CARDS.length;
+    return LUCKY_CARDS[randomIndex];
   }
 
-  // Step 1: Select tier based on fixed probabilities
+  // 1. SELECT TIER EXACTLY AS REQUIRED: Standard: 39%, Premium: 36%, Flagship: 25%
   const randomBuffer = new Uint32Array(1);
   crypto.getRandomValues(randomBuffer);
   const tierRoll = randomBuffer[0] / (0xffffffff + 1);
-  let selectedTier = 'standard';
 
-  if (tierRoll < 0.70) {
+  let selectedTier = 'standard';
+  if (tierRoll < 0.39) {
     selectedTier = 'standard';
-  } else if (tierRoll < 0.95) {
+  } else if (tierRoll < 0.75) { // 0.39 + 0.36 = 0.75
     selectedTier = 'premium';
   } else {
     selectedTier = 'flagship';
   }
 
-  // Step 2: Filter available cards by the selected tier
-  let tierCards = availableCards.filter((card) => card.tier === selectedTier);
+  // 2. FILTER CARDS BY TIER
+  let tierCards = LUCKY_CARDS.filter((card) => card.tier === selectedTier);
 
-  // Step 3: Fallback if no cards are available in that tier (e.g., all were excluded by anti-repeat)
-  if (tierCards.length === 0) {
-    tierCards = availableCards;
+  // 3. APPLY ANTI-REPEAT FOR CARDS
+  if (previousCardId && tierCards.length > 1) {
+    tierCards = tierCards.filter(card => card.id !== previousCardId);
   }
 
-  // Step 4: Pick randomly among the tier cards based on their relative rarity weight
+  // Fallback if no cards are available in that tier (extremely unlikely with current data)
+  if (tierCards.length === 0) {
+    tierCards = LUCKY_CARDS.filter((card) => card.tier === selectedTier);
+  }
+
+  // 4. RANDOM CARD SELECTION WITHIN TIER BASED ON WEIGHT
   const totalWeight = tierCards.reduce((sum, card) => sum + card.rarityWeight, 0);
   const weightBuffer = new Uint32Array(1);
   crypto.getRandomValues(weightBuffer);
   let randomValue = (weightBuffer[0] / (0xffffffff + 1)) * totalWeight;
 
+  let selectedCard = tierCards[0];
   for (const card of tierCards) {
     if (randomValue < card.rarityWeight) {
-      return card;
+      selectedCard = card;
+      break;
     }
     randomValue -= card.rarityWeight;
   }
 
-  return tierCards[0]; // Fallback to first card if something goes wrong
+  // 5. INDEPENDENT RANDOM QUOTE SELECTION
+  let availableQuotes = Object.values(LUCKY_CARD_QUOTES);
+
+  // Anti-Repeat for Quotes
+  if (previousQuote && availableQuotes.length > 1) {
+    availableQuotes = availableQuotes.filter(quote => quote !== previousQuote);
+  }
+
+  const quoteBuffer = new Uint32Array(1);
+  crypto.getRandomValues(quoteBuffer);
+  const quoteIndex = quoteBuffer[0] % availableQuotes.length;
+
+  // Clone the card and assign the independent quote
+  return {
+    ...selectedCard,
+    quote: availableQuotes[quoteIndex]
+  };
 }

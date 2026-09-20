@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion } from 'framer-motion';
+import { Howl } from 'howler';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
@@ -52,6 +53,23 @@ export default function LuckyCardReveal() {
   const fallbackTimerRef = useRef(null);
   const branchCacheRef = useRef({});
 
+  const audioRef = useRef(null);
+  const strikesFiredRef = useRef(new Set());
+
+  useEffect(() => {
+    audioRef.current = new Howl({
+      src: ['/sounds/mixkit-cinematic-impact.mp3'],
+      volume: 1.0,
+      preload: true
+    });
+    return () => {
+      if (audioRef.current) audioRef.current.unload();
+    }
+  }, []);
+
+
+  const [previousQuote, setPreviousQuote] = useState(null);
+
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -60,11 +78,15 @@ export default function LuckyCardReveal() {
         if (parsed.revealDate === localDateKey()) {
           const card = LUCKY_CARDS.find(c => c.id === parsed.cardId);
           if (card) {
-            setSelectedCard(card);
+            setSelectedCard({
+              ...card,
+              quote: parsed.quote || card.quote
+            });
             setIsRevealed(true);
           }
         } else {
           setPreviousCardId(parsed.cardId);
+          setPreviousQuote(parsed.quote);
         }
       }
     } catch (e) {}
@@ -99,6 +121,7 @@ export default function LuckyCardReveal() {
       if (currentCard) {
           window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
             cardId: currentCard.id,
+            quote: currentCard.quote,
             revealDate: localDateKey(),
           }));
           const unlockedStr = window.localStorage.getItem('unlockedCards');
@@ -228,6 +251,61 @@ export default function LuckyCardReveal() {
          ctx.fillStyle = antiGrad;
          ctx.fill();
          ctx.restore();
+      }
+
+      // Impact Audio Trigger (synchronized exactly with Flash / Impact Event)
+      if (timeSinceStrike >= 0 && strikesFiredRef.current && !strikesFiredRef.current.has(idx)) {
+          strikesFiredRef.current.add(idx);
+          if (audioRef.current) {
+              const soundId = audioRef.current.play();
+              // Make final impact slightly more powerful
+              if (isFinal) {
+                  audioRef.current.volume(1.0, soundId);
+                  audioRef.current.rate(0.9, soundId);
+              } else {
+                  audioRef.current.volume(0.6 + (idx * 0.1), soundId);
+                  audioRef.current.rate(1.0 + (idx * 0.05), soundId);
+              }
+          }
+      }
+
+      // Card Shake and Brightness Reaction
+      if (timeSinceStrike >= 0) {
+          const shakeDur = isFinal ? 0.6 : 0.4;
+          if (timeSinceStrike < shakeDur) {
+              const p = timeSinceStrike / shakeDur;
+
+              // Easing for spring-like bounce: out-elastic approximation
+              const shakeEase = Math.sin((p * Math.PI * (isFinal ? 4 : 3)) + Math.PI / 2) * Math.pow(1 - p, 2);
+
+              let basePower = 5 + (idx * 4);
+              let baseRot = 2 + idx;
+              if (tier === 'premium') { basePower *= 1.3; baseRot *= 1.3; }
+              if (tier === 'flagship') { basePower *= 1.6; baseRot *= 1.6; }
+
+              const power = isFinal ? Math.min(45, basePower * 2.5) : Math.min(30, basePower * 1.5);
+              const rotPower = isFinal ? Math.min(15, baseRot * 2.0) : Math.min(10, baseRot * 1.5);
+
+              const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
+              const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
+              const dirX = isFinal ? 0 : Math.cos(targetAngle);
+              const dirY = isFinal ? 1 : Math.sin(targetAngle);
+              const rotDir = isFinal ? 0 : (dirX > 0 ? 1 : -1);
+
+              const currentX = power * dirX * shakeEase;
+              const currentY = (power * 0.5) * dirY * shakeEase;
+              const currentRot = rotPower * rotDir * shakeEase;
+
+              if (cardRef.current) {
+                  cardRef.current.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) rotateZ(${currentRot}deg)`;
+
+                  // Brightness interpolation
+                  const brightStart = isFinal ? 3.0 : (1.2 + idx * 0.2);
+                  const brightEnd = isFinal ? 1.0 : (0.4 + idx * 0.1);
+                  const currentBright = brightStart + (brightEnd - brightStart) * p;
+                  cardRef.current.style.filter = `brightness(${currentBright})`;
+              }
+          }
       }
 
       // Flash calculation
@@ -480,6 +558,30 @@ export default function LuckyCardReveal() {
       fgCtx.restore();
     }
 
+    // Initial Summon Animation
+    if (elapsed < 1.0 && cardRef.current) {
+       const summonProg = Math.max(0, (elapsed - 0.1) / 0.9);
+       const easeOutCirc = Math.sqrt(1 - Math.pow(summonProg - 1, 2));
+       const currentY = 20 * (1 - easeOutCirc);
+       const currentOpacity = summonProg;
+       const currentBrightness = 0.3 * summonProg;
+       cardRef.current.style.transform = `translateY(${currentY}px)`;
+       cardRef.current.style.opacity = currentOpacity;
+       cardRef.current.style.filter = `brightness(${currentBrightness})`;
+    }
+
+    // Final Flip Animation
+    if (elapsed >= flipAt && elapsed < flipAt + 0.8 && cardFlipRef.current && cardRef.current) {
+       const flipProg = (elapsed - flipAt) / 0.8;
+       const easeOutCirc = Math.sqrt(1 - Math.pow(flipProg - 1, 2));
+       cardFlipRef.current.style.transform = `rotateY(${easeOutCirc * 180}deg)`;
+       cardRef.current.style.transform = 'translate3d(0, 0, 0) rotateZ(0deg)';
+       cardRef.current.style.opacity = '1';
+       cardRef.current.style.filter = 'brightness(1)';
+    } else if (elapsed >= flipAt + 0.8 && cardFlipRef.current) {
+       cardFlipRef.current.style.transform = 'rotateY(180deg)';
+    }
+
     // Apply the progressive mask to the card front
     if (cardFrontRef.current && !isRevealedRef.current) {
         const maskVal = maskLayers.length > 0 ? maskLayers.join(', ') : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
@@ -505,7 +607,7 @@ export default function LuckyCardReveal() {
   const triggerCardDraw = () => {
     stopAll();
 
-    const card = selectWeightedLuckyCard(previousCardId);
+    const card = selectWeightedLuckyCard(previousCardId, previousQuote);
     activeTierRef.current = card.tier;
     activeCardRef.current = card;
     isRevealedRef.current = false;
@@ -550,6 +652,7 @@ export default function LuckyCardReveal() {
         }
     }
     lastMaskValRef.current = '';
+    if (strikesFiredRef.current) strikesFiredRef.current.clear();
     strikeTargetsRef.current = {};
 
     // Fallback timer to ensure reveal state is reached
@@ -559,88 +662,31 @@ export default function LuckyCardReveal() {
     }, (finalStrikeTime + 1.2 + 0.8 + 0.2) * 1000); // Wait for the new 1.2s hold duration + 0.8s flip + grace period
 
 
-    // --- FRAMER MOTION CHOREOGRAPHY ---
-    const sequence = [];
-
-    // Initial state: SUMMON and FORM (0 to 1.0s)
-    sequence.push([cardRef.current, { y: 20, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
-    sequence.push([cardFlipRef.current, { rotateY: 0 }, { duration: 0 }]);
-    sequence.push([cardRef.current, { opacity: 1, filter: "brightness(0.3)", y: 0 }, { at: 0.1, duration: 0.9, ease: 'easeOut' }]);
-
-    // Synchronize physical reactions with strikes
-    schedule.forEach((strikeTime, idx) => {
-      const isFinal = idx === schedule.length - 1;
-
-      // Reaction intensity scales with index and tier
-      let basePower = 5 + (idx * 4);
-      let baseRot = 2 + idx;
-
-      if (card.tier === 'premium') { basePower *= 1.3; baseRot *= 1.3; }
-      if (card.tier === 'flagship') { basePower *= 1.6; baseRot *= 1.6; }
-
-      const power = isFinal ? Math.min(45, basePower * 2.5) : Math.min(30, basePower * 1.5);
-      const rotPower = isFinal ? Math.min(15, baseRot * 2.0) : Math.min(10, baseRot * 1.5);
-
-      // Determine direction of strike based on angle Map
-      const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
-      const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
-
-      const dirX = isFinal ? 0 : Math.cos(targetAngle);
-      const dirY = isFinal ? 1 : Math.sin(targetAngle); // Hit pushes it down/back slightly
-      const rotDir = isFinal ? 0 : (dirX > 0 ? 1 : -1);
-
-      const shakeDur = isFinal ? 0.6 : 0.4;
-      const scaleUp = isFinal ? 1.4 : 1.1 + (idx * 0.05); // Escalating scale
-      const finalScale = isFinal ? 1.2 : 1.0;
-
-      const recoilX = power * dirX;
-      const recoilY = (power * 0.5) * dirY;
-      const recoilRot = rotPower * rotDir;
-
-      // Evolving brightness/glow
-      const brightStart = isFinal ? "brightness(3)" : `brightness(${1.2 + idx * 0.2})`;
-      const brightEnd = isFinal ? "brightness(1)" : `brightness(${0.4 + idx * 0.1})`;
-
-      sequence.push([
-        cardRef.current,
-        {
-          x: [0, recoilX, -recoilX * 0.5, recoilX * 0.2, 0],
-          y: [0, recoilY, -recoilY * 0.3, 0],
-          rotateZ: [0, recoilRot, -recoilRot * 0.4, 0],
-
-          filter: [brightStart, brightEnd]
-        },
-        {
-          at: strikeTime.toString(),
-          duration: shakeDur,
-          ease: "easeInOut"
-        }
-      ]);
-
-      // Before final strike, there is a deliberate anticipation pause built into the STRIKE_SCHEDULES timing gap.
-    });
-
     const finalStrike = schedule[schedule.length - 1];
     const holdDuration = 1.2;
     const flipAt = finalStrike + holdDuration;
 
-    sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
-    sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
+    // We no longer use Framer Motion sequence for the complex shake choreo to avoid clock drift.
+    // However, we still need initial summon state.
+    if (cardRef.current) {
+        cardRef.current.style.transform = 'translateY(20px)';
+        cardRef.current.style.opacity = '0';
+        cardRef.current.style.filter = 'brightness(0)';
+    }
+    if (cardFlipRef.current) {
+        cardFlipRef.current.style.transform = 'rotateY(0deg)';
+    }
 
-    // Guard animation for reduced-motion users
-    if (!shouldReduceMotion) {
-      animationControlsRef.current = animate(sequence, { autoplay: true });
-    } else {
-      // Apply revealed static card state without animation
+    if (shouldReduceMotion) {
+      // Apply revealed static card state immediately without animation
       if (cardRef.current) {
+        cardRef.current.style.transform = 'translateY(0px)';
         cardRef.current.style.opacity = '1';
         cardRef.current.style.filter = 'brightness(1)';
       }
       if (cardFlipRef.current) {
         cardFlipRef.current.style.transform = 'rotateY(180deg)';
       }
-
-      // Reduced motion fallback path
       executeRevealState();
     }
   };

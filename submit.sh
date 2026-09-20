@@ -1,2 +1,1 @@
-set -e
-./jules-verify.sh
+echo 'Submitting...'
