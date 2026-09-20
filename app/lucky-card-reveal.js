@@ -209,10 +209,18 @@ export default function LuckyCardReveal() {
       const intensity = isFinal ? (tier === 'flagship' ? 1.5 : 1.2) : 0.4 + (idx / schedule.length) * 0.4;
 
       activeTimeoutsRef.current.push(setTimeout(() => {
-        if (soundsRef.current.impact) {
-          const id = soundsRef.current.impact.play();
-          soundsRef.current.impact.volume(Math.min(intensity, 1.0), id);
-          soundsRef.current.impact.rate(isFinal ? 0.8 : 0.9 + (idx * 0.1), id);
+        // Use firework as the primary impact sound since it is magical-impact.mp3
+        if (soundsRef.current.firework) {
+          const id = soundsRef.current.firework.play();
+          soundsRef.current.firework.volume(Math.min(intensity, 1.0), id);
+          soundsRef.current.firework.rate(isFinal ? 0.8 : 0.9 + (idx * 0.1), id);
+
+          // Layer lightning (magic sparkles) on top for texture
+          if (soundsRef.current.lightning) {
+            const lId = soundsRef.current.lightning.play();
+            soundsRef.current.lightning.volume(Math.min(intensity * 0.5, 0.5), lId);
+            soundsRef.current.lightning.rate(isFinal ? 0.9 : 1.0 + (idx * 0.05), lId);
+          }
         }
       }, strikeTime * 1000));
     });
