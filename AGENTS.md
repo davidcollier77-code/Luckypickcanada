@@ -111,22 +111,22 @@ WHAT WAS USEFUL: <brief concrete value when useful>
 EVIDENCE: <specific, auditable consultation/use evidence>
 REASON: <brief reason for failed/non-use, or for USEFUL: NO>
 
-🔴 FINAL PR REPORT = CANONICAL GOVERNANCE AUDIT RECORD
+🔴 PR SUMMARY = CANONICAL GOVERNANCE AUDIT RECORD
 
-The `FINAL / PR REPORT` is the canonical consolidated record of governance,
-consultation, implementation, and verification for the task.
-`FINAL_REPORT.md` is the repository document that contains this canonical report.
+The PR Summary MUST contain the complete detailed governance, implementation, consultation, and verification record required by AGENTS.md.
+A short summary is NOT sufficient; the PR Summary MUST reconcile exactly to the final Git diff.
+If uncertain, scope drifts, or instructions conflict, STOP, return to AGENTS.md, re-read applicable requirements, verify, and continue only from the required governance path.
 
 Intermediate run logs, tool traces, plan messages, MCP connection messages,
 and agent progress comments are supporting evidence only. They do not replace
-the required final PR report.
+the required PR Summary.
 
 Before reporting completion, Jules MUST gather the required governance evidence
-from the run into the FINAL / PR REPORT. A fact that exists only in an
-intermediate log or comment is not sufficient final-report evidence.
+from the run into the PR Summary. A fact that exists only in an
+intermediate log or comment is not sufficient PR Summary evidence.
 
 🔴 USED: YES requires actual consultation or use AND a corresponding EVIDENCE
-entry in the FINAL / PR REPORT.
+entry in the PR Summary.
 
 🔴 USEFUL: YES requires an actual contribution to analysis, planning, execution,
 verification, or the final result AND a concrete WHAT WAS USEFUL entry.
@@ -210,7 +210,7 @@ Resolve in-scope failures; report unresolved failures.
 
 Inspect the final diff and every changed file.
 
-🔴 The FINAL / PR REPORT must reconcile exactly to the final Git diff:
+🔴 The PR Summary MUST reconcile exactly to the final Git diff:
 every changed file must be listed exactly once, no changed file may be omitted,
 and no file may be listed as changed if it is not in the final diff.
 
@@ -229,9 +229,9 @@ Verify:
 
 🔴 PRE-SUBMISSION DOUBLE-CHECK
 Before submitting or finalizing the PR, Jules MUST double-check the completed work against the requested outcome, scope, implementation, and final diff.
-Jules MUST explicitly confirm in the FINAL / PR REPORT that this pre-submission double-check was completed.
+Jules MUST explicitly confirm in the PR Summary that this pre-submission double-check was completed.
 
-FINAL / PR REPORT
+PR SUMMARY
 
 🔴 Report:
 
@@ -314,10 +314,10 @@ Before reporting completion, verify:
 - The 495 MB safety ceiling was respected. If triggered, the measured size and continuation point were reported.
 - Required verification was actually performed and documented with results.
 - Final diff was inspected.
-- Final report changed-file list exactly matches the final Git diff.
+- PR Summary changed-file list exactly matches the final Git diff.
 - Required Memory Bank updates were completed.
 - Report statements match the actual work.
-- Final / PR Report contains the consolidated governance audit record.
+- PR Summary contains the consolidated governance audit record.
 - No unsupported compliance claim or scope drift occurred.
 
 🔴 DO NOT CLAIM COMPLIANCE. DEMONSTRATE IT.
