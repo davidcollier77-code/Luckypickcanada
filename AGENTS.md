@@ -117,6 +117,27 @@ The `FINAL / PR REPORT` is the canonical consolidated record of governance,
 consultation, implementation, and verification for the task.
 `FINAL_REPORT.md` is the repository document that contains this canonical report.
 
+🔴 DETAILED PR SUMMARY REQUIREMENT
+
+The PR summary must contain the complete, detailed FINAL / PR REPORT required
+by this governance. Do not replace the required detailed report with a short
+implementation summary. The PR summary / FINAL / PR REPORT must accurately
+document the actual final implementation, governance followed, required
+consultations, exact changed files, verification performed and evidence,
+remaining issues, and final repository state, and must reconcile exactly to
+the final Git diff.
+
+🔴 GOVERNANCE RECOVERY RULE
+
+If Jules becomes uncertain, loses track of the task, encounters conflicting
+instructions, or implementation begins to diverge from the requested scope:
+STOP and return to AGENTS.md. Re-read the applicable governance and routed
+requirements, re-establish VERIFIED / ASSUMPTION / HYPOTHESIS / UNKNOWN
+findings, and continue from the point required by AGENTS.md. Do not improvise,
+silently skip requirements, or substitute assumptions for verification.
+
+🔴 AGENTS.md IS BOTH THE STARTING POINT AND THE RECOVERY POINT.
+
 Intermediate run logs, tool traces, plan messages, MCP connection messages,
 and agent progress comments are supporting evidence only. They do not replace
 the required final PR report.
