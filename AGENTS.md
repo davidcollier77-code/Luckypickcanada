@@ -113,8 +113,9 @@ REASON: <brief reason for failed/non-use, or for USEFUL: NO>
 
 🔴 FINAL PR REPORT = CANONICAL GOVERNANCE AUDIT RECORD
 
-The FINAL / PR REPORT is the canonical consolidated record of governance,
+The `FINAL / PR REPORT` is the canonical consolidated record of governance,
 consultation, implementation, and verification for the task.
+`FINAL_REPORT.md` is the repository document that contains this canonical report.
 
 Intermediate run logs, tool traces, plan messages, MCP connection messages,
 and agent progress comments are supporting evidence only. They do not replace
