@@ -509,8 +509,8 @@ export default function LuckyCardReveal() {
 
     const card = selectWeightedLuckyCard(previousCardId);
     card.quote = selectRandomQuote(previousQuote);
-    activeTierRef.current = card.tier;
-    activeCardRef.current = card;
+    const card = { ...selectWeightedLuckyCard(previousCardId) };
+    card.quote = selectRandomQuote(previousQuote);
     isRevealedRef.current = false;
 
     setSelectedCard(card);
