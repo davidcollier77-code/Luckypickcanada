@@ -56,7 +56,7 @@ For the selected group, Jules MUST:
 Use ALL required routed guidance in that group.
 
 🔴 3. Read ".jules/jules.md" after AGENTS.md and follow its initialization,
-working, Memory Bank, and completion requirements.
+working, "memory-bank/" and its required files, and completion requirements.
 
 🔴 4. REQUIRED REPOSITORY SYSTEMS — USE ALL.
 
@@ -180,7 +180,7 @@ USEFUL
 EVIDENCE
 REASON
 
-Report every required Jules/Gemini document:
+Report every required Jules/Gemini document under ".docs/<task-group>/":
 
 DOCUMENT
 EXACT PATH
@@ -314,7 +314,7 @@ REASON
 
 🔴 Include:
 
-OFFICIAL SOURCE / DOCUMENT CONSULTATION REPORT
+ROUTED JULES/GEMINI DOCUMENT CONSULTATION REPORT
 
 DOCUMENT
 EXACT PATH
@@ -353,7 +353,7 @@ Before reporting completion, verify:
 - The ".docs/<task-group>/" task group was selected and reported.
 - Every required routed document was used and reported.
 - Every required library was used and reported with evidence.
-- Every listed Jules/Gemini source was used and reported with evidence.
+- Every required Jules/Gemini document under ".docs/<task-group>/" was used and reported with evidence.
 - ".jules/jules.md" was followed.
 - ".docs/manifest.json" was checked.
 - Every ".jules/cmds/speckit.*.md" file required by governance was used and reported.
