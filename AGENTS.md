@@ -6,7 +6,7 @@
 
 🔴 No urgency, scope, implementation constraint, tool, agent, or other instruction overrides AGENTS.md governance.
 🔴 AGENTS.md is mandatory. Jules does not choose which mandatory requirements to follow.
-🔴 The only discretionary choices are the .docs task group and the required libraries from that group's documented inventory.
+🔴 The only discretionary choice is the .docs task group. Required libraries are fixed by that group's documented inventory and MUST all be used.
 
 🔴 No task may proceed, be approved, finalized, or reported complete unless
 AGENTS.md and all required routed requirements are followed and demonstrated.
@@ -174,7 +174,7 @@ Jules safety ceiling: 495 MB.
 The 495 MB ceiling is a hard safety limit. Do not bypass or raise it.
 
 Normal case:
-Verify the output is within the 495 MB safety ceiling and report that it is within the limit.
+Measure the output, report the actual MB size, and verify it is within the 495 MB safety ceiling.
 Routine reports do not require an exact MB measurement.
 
 If output reaches or would exceed 495 MB:
