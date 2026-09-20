@@ -17,9 +17,9 @@ function localDateKey(date = new Date()) {
 }
 
 const STRIKE_SCHEDULES = {
-  standard: [1.5, 2.8, 4.3],
-  premium: [1.2, 2.3, 3.4, 4.5, 6.2],
-  flagship: [1.0, 1.8, 2.6, 3.4, 4.2, 5.0, 7.0]
+  standard: [3.5, 4.8, 6.3],
+  premium: [3.2, 4.3, 5.4, 6.5, 8.2],
+  flagship: [3.0, 3.8, 4.6, 5.4, 6.2, 7.0, 9.0]
 };
 
 export default function LuckyCardReveal() {
@@ -154,7 +154,8 @@ export default function LuckyCardReveal() {
 
     const schedule = STRIKE_SCHEDULES[tier];
     const finalStrike = schedule[schedule.length - 1];
-    const flipAt = finalStrike + 0.8;
+    const holdDuration = 1.2;
+    const flipAt = finalStrike + holdDuration;
     const maxLifetime = flipAt + 3.0;
 
     let maskLayers = [];
@@ -361,6 +362,34 @@ export default function LuckyCardReveal() {
             ctx.strokeStyle = `rgba(255, 255, 255, ${0.7 * opacity})`;
             ctx.stroke();
 
+            // Branching Electrical Filaments (Proton-energy effect)
+            if (Math.random() > (isFinal ? 0.3 : 0.6)) {
+                ctx.beginPath();
+                // Start somewhere along the curve
+                const branchT = progress * (0.3 + Math.random() * 0.6);
+                const branchStartX = Math.pow(1-branchT, 2)*fStartX + 2*(1-branchT)*branchT*controlPointX + Math.pow(branchT, 2)*currentX;
+                const branchStartY = Math.pow(1-branchT, 2)*fStartY + 2*(1-branchT)*branchT*controlPointY + Math.pow(branchT, 2)*currentY;
+
+                ctx.moveTo(branchStartX, branchStartY);
+                // Jagged branching
+                const angleOffset = (Math.random() - 0.5) * Math.PI;
+                const branchLen = (20 + Math.random() * 40) * (isFinal ? 1.5 : 1.0);
+                const branchEndX = branchStartX + Math.cos(angleOffset) * branchLen;
+                const branchEndY = branchStartY + Math.sin(angleOffset) * branchLen;
+
+                ctx.lineTo(branchStartX + (branchEndX - branchStartX)*0.5 + (Math.random()-0.5)*20, branchStartY + (branchEndY - branchStartY)*0.5 + (Math.random()-0.5)*20);
+                ctx.lineTo(branchEndX, branchEndY);
+
+                ctx.lineWidth = isFinal ? 2 + Math.random() * 2 : 1 + Math.random();
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 * opacity})`;
+                ctx.stroke();
+
+                // Bloom for branch
+                ctx.lineWidth = isFinal ? 8 : 4;
+                ctx.strokeStyle = `rgba(${beamColor}, ${0.3 * opacity})`;
+                ctx.stroke();
+            }
+
             // Energy convergence at the tip
             ctx.beginPath();
             ctx.arc(currentX, currentY, ctx.lineWidth * (isFinal ? 3 : 1.5), 0, Math.PI * 2);
@@ -504,7 +533,7 @@ export default function LuckyCardReveal() {
     const finalStrikeTime = schedule[schedule.length - 1];
     fallbackTimerRef.current = setTimeout(() => {
         executeRevealState();
-    }, (finalStrikeTime + 0.8 + 0.8 + 0.2) * 1000); // 200ms grace period after the 0.8s flip completes
+    }, (finalStrikeTime + 1.2 + 0.8 + 0.2) * 1000); // Wait for the new 1.2s hold duration + 0.8s flip + grace period
 
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
@@ -569,7 +598,8 @@ export default function LuckyCardReveal() {
     });
 
     const finalStrike = schedule[schedule.length - 1];
-    const flipAt = finalStrike + 0.8;
+    const holdDuration = 1.2;
+    const flipAt = finalStrike + holdDuration;
 
     sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
