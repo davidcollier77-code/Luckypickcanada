@@ -175,7 +175,6 @@ The 495 MB ceiling is a hard safety limit. Do not bypass or raise it.
 
 Normal case:
 Measure the output, report the actual MB size, and verify it is within the 495 MB safety ceiling.
-Routine reports do not require an exact MB measurement.
 
 If output reaches or would exceed 495 MB:
 STOP.
