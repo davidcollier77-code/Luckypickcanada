@@ -60,7 +60,7 @@ working, "memory-bank/" and its required files, and completion requirements.
 
 🔴 4. REQUIRED REPOSITORY SYSTEMS — USE ALL.
 
-🔴 CONTEXT7: Context7 may be used ONLY with explicit user permission or explicit task authorization. Its availability, presence, or usefulness does NOT constitute authorization.
+🔴 CONTEXT7: Context7 is NOT a required repository system and is excluded from the USE ALL and reporting mandates below. It may be used ONLY with explicit user permission or explicit task authorization. Its availability, presence, or usefulness does NOT constitute authorization.
 
 For EVERY task, Jules MUST use every listed repository system and report:
 
