@@ -19,7 +19,7 @@ export const LUCKY_CARDS = CARD_DEFINITIONS.map(([id, title, isReveal, tier]) =>
   id,
   title,
   image: LUCKY_CARD_IMAGES[id],
-  quote: LUCKY_CARD_QUOTES[id],
+  quote: null, // Quotes are assigned randomly now
   isReveal,
   tier,
   rarityWeight: LUCKY_CARD_RARITY_WEIGHTS[id]
@@ -48,9 +48,9 @@ export function selectWeightedLuckyCard(previousCardId = null) {
   const tierRoll = randomBuffer[0] / (0xffffffff + 1);
   let selectedTier = 'standard';
 
-  if (tierRoll < 0.70) {
+  if (tierRoll < 0.39) {
     selectedTier = 'standard';
-  } else if (tierRoll < 0.95) {
+  } else if (tierRoll < 0.75) {
     selectedTier = 'premium';
   } else {
     selectedTier = 'flagship';
@@ -78,4 +78,18 @@ export function selectWeightedLuckyCard(previousCardId = null) {
   }
 
   return tierCards[0]; // Fallback to first card if something goes wrong
+}
+
+export function selectRandomQuote(previousQuote = null) {
+  const allQuotes = Object.values(LUCKY_CARD_QUOTES);
+  let availableQuotes = allQuotes;
+
+  if (previousQuote && availableQuotes.length > 1) {
+    availableQuotes = availableQuotes.filter(q => q !== previousQuote);
+  }
+
+  const randomBuffer = new Uint32Array(1);
+  crypto.getRandomValues(randomBuffer);
+  const randomIndex = randomBuffer[0] % availableQuotes.length;
+  return availableQuotes[randomIndex];
 }

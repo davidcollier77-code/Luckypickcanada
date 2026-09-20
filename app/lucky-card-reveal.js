@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion } from 'framer-motion';
-import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
+import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
 
@@ -25,6 +25,7 @@ const STRIKE_SCHEDULES = {
 export default function LuckyCardReveal() {
   const [selectedCard, setSelectedCard] = useState(null);
   const [previousCardId, setPreviousCardId] = useState(null);
+  const [previousQuote, setPreviousQuote] = useState(null);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -60,11 +61,12 @@ export default function LuckyCardReveal() {
         if (parsed.revealDate === localDateKey()) {
           const card = LUCKY_CARDS.find(c => c.id === parsed.cardId);
           if (card) {
-            setSelectedCard(card);
+            setSelectedCard({ ...card, quote: parsed.quote || card.quote });
             setIsRevealed(true);
           }
         } else {
           setPreviousCardId(parsed.cardId);
+          setPreviousQuote(parsed.quote);
         }
       }
     } catch (e) {}
@@ -99,6 +101,7 @@ export default function LuckyCardReveal() {
       if (currentCard) {
           window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
             cardId: currentCard.id,
+            quote: currentCard.quote,
             revealDate: localDateKey(),
           }));
           const unlockedStr = window.localStorage.getItem('unlockedCards');
@@ -155,8 +158,7 @@ export default function LuckyCardReveal() {
 
     const schedule = STRIKE_SCHEDULES[tier];
     const finalStrike = schedule[schedule.length - 1];
-    const holdDuration = 1.2;
-    const flipAt = finalStrike + holdDuration;
+    const flipAt = finalStrike; // Synchronize card flip exactly with final visual impact
     const maxLifetime = flipAt + 3.0;
 
     let maskLayers = [];
@@ -508,6 +510,7 @@ export default function LuckyCardReveal() {
     const card = selectWeightedLuckyCard(previousCardId);
     activeTierRef.current = card.tier;
     activeCardRef.current = card;
+    card.quote = selectRandomQuote(previousQuote);
     isRevealedRef.current = false;
 
     setSelectedCard(card);
@@ -552,11 +555,7 @@ export default function LuckyCardReveal() {
     lastMaskValRef.current = '';
     strikeTargetsRef.current = {};
 
-    // Fallback timer to ensure reveal state is reached
-    const finalStrikeTime = schedule[schedule.length - 1];
-    fallbackTimerRef.current = setTimeout(() => {
-        executeRevealState();
-    }, (finalStrikeTime + 1.2 + 0.8 + 0.2) * 1000); // Wait for the new 1.2s hold duration + 0.8s flip + grace period
+    // Timer removed in favor of Framer Motion animation completion callback
 
 
     // --- FRAMER MOTION CHOREOGRAPHY ---
@@ -621,8 +620,7 @@ export default function LuckyCardReveal() {
     });
 
     const finalStrike = schedule[schedule.length - 1];
-    const holdDuration = 1.2;
-    const flipAt = finalStrike + holdDuration;
+    const flipAt = finalStrike;
 
     sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
@@ -630,6 +628,9 @@ export default function LuckyCardReveal() {
     // Guard animation for reduced-motion users
     if (!shouldReduceMotion) {
       animationControlsRef.current = animate(sequence, { autoplay: true });
+      animationControlsRef.current.then(() => {
+        executeRevealState();
+      });
     } else {
       // Apply revealed static card state without animation
       if (cardRef.current) {
