@@ -82,7 +82,6 @@ export default function LuckyCardReveal() {
     return stopAll;
   }, [stopAll]);
 
-
   const executeRevealState = useCallback(() => {
     if (isRevealedRef.current) return;
     isRevealedRef.current = true;
@@ -125,7 +124,6 @@ export default function LuckyCardReveal() {
     }
   }, []);
 
-
   const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
 
@@ -145,14 +143,12 @@ export default function LuckyCardReveal() {
     const { cx, cy, w: cardW, h: cardH } = cardMetricsRef.current;
     const tier = activeTierRef.current;
 
-
     ctx.clearRect(0, 0, w, h);
 
     const fgCtx = fgCanvasRef.current ? fgCanvasRef.current.getContext('2d') : null;
     if (fgCtx) {
       fgCtx.clearRect(0, 0, w, h);
     }
-
 
     const schedule = STRIKE_SCHEDULES[tier];
     const finalStrike = schedule[schedule.length - 1];
@@ -545,7 +541,7 @@ export default function LuckyCardReveal() {
             disabled={isGenerating}
             className="mt-2 px-6 py-2.5 rounded-full font-bold text-base shadow-lg transition-all bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 active:scale-95"
           >
-            {isGenerating ? 'Revealing...' : 'Reveal Today's Luck'}
+            {isGenerating ? 'Revealing...' : "Reveal Today's Luck"}
           </button>
         )}
       </div>
