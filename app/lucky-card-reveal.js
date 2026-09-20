@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, useAnimate, useReducedMotion } from 'framer-motion';
-import { Howl } from 'howler';
 import { LUCKY_CARDS, selectWeightedLuckyCard } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
@@ -32,9 +31,6 @@ export default function LuckyCardReveal() {
   const [imageError, setImageError] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
-  // Audio Loading State
-  const [audioLoading, setAudioLoading] = useState(true);
-
   const [scope, animate] = useAnimate();
   const activeTimeoutsRef = useRef([]);
   const animationControlsRef = useRef(null);
@@ -54,49 +50,6 @@ export default function LuckyCardReveal() {
   const cardMetricsRef = useRef({ cx: 140, cy: 202.5, w: 280, h: 405 });
   const strikeTargetsRef = useRef({});
   const fallbackTimerRef = useRef(null);
-
-    // Load Audio Assets with Howler
-  const soundsRef = useRef({});
-
-  useEffect(() => {
-    let mounted = true;
-
-    // Using existing project mixkit sounds
-    const files = {
-      lightning: '/sounds/mixkit-magic-sparkles.mp3', // impact pulse
-      buildup: '/sounds/mixkit-cinematic-whoosh.mp3',
-      whoosh: '/sounds/mixkit-cinematic-impact.mp3',
-      firework: '/sounds/mixkit-magical-impact.mp3',
-      aurora: '/sounds/mixkit-firework-crackle.mp3', // aurora beam sound
-      shimmer: '/sounds/mixkit-magic-sparkles.mp3' // replace oscillator with a shimmering sound
-    };
-
-    let loadedCount = 0;
-    const totalFiles = Object.keys(files).length;
-
-    const onLoad = () => {
-      loadedCount++;
-      if (loadedCount >= totalFiles && mounted) {
-        setAudioLoading(false);
-      }
-    };
-
-    const onLoadError = () => {
-      console.error("Failed to preload audio");
-      if (mounted) setAudioLoading(false); // Fail gracefully
-    };
-
-    for (const [key, url] of Object.entries(files)) {
-      soundsRef.current[key] = new Howl({
-        src: [url],
-        preload: true,
-        onload: onLoad,
-        onloaderror: onLoadError
-      });
-    }
-
-    return () => { mounted = false; };
-  }, []);
 
   useEffect(() => {
     try {
@@ -123,13 +76,6 @@ export default function LuckyCardReveal() {
     if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     activeTimeoutsRef.current.forEach(clearTimeout);
     activeTimeoutsRef.current = [];
-    if (soundsRef.current) {
-      Object.values(soundsRef.current).forEach(sound => {
-        if (sound && sound.stop) {
-           sound.stop();
-        }
-      });
-    }
   }, []);
 
   useEffect(() => {
@@ -179,71 +125,6 @@ export default function LuckyCardReveal() {
     }
   }, []);
 
-
-  // Audio Playback Helpers
-
-  // We remove playBuffer and use a simplified schedule system for Howler
-  // We'll use a visual-driven or timeout-driven scheduling.
-  // Actually, keeping the audio scheduled ahead of time is possible via setTimeout,
-  // but it's more accurate to link it to the RAF loop or calculate precise timeouts.
-
-  const playAudioSequence = (tier, schedule) => {
-    // 1. Initial Atmospheric Buildup
-    if (soundsRef.current.buildup) {
-      const id = soundsRef.current.buildup.play();
-      soundsRef.current.buildup.loop(true, id);
-      soundsRef.current.buildup.volume(0.3, id);
-      soundsRef.current.buildup.rate(0.6, id);
-
-      const finalStrikeTime = schedule[schedule.length - 1];
-      activeTimeoutsRef.current.push(setTimeout(() => {
-        soundsRef.current.buildup.fade(0.3, 0, 1000, id);
-        setTimeout(() => soundsRef.current.buildup.stop(id), 1000);
-      }, (finalStrikeTime + 1.0) * 1000));
-    }
-
-    // Schedule strikes
-    schedule.forEach((timeOffset, idx) => {
-      const isFinal = idx === schedule.length - 1;
-      const strikeTime = timeOffset;
-      const intensity = isFinal ? (tier === 'flagship' ? 1.5 : 1.2) : 0.4 + (idx / schedule.length) * 0.4;
-
-      activeTimeoutsRef.current.push(setTimeout(() => {
-        // Use firework as the primary impact sound since it is magical-impact.mp3
-        if (soundsRef.current.firework) {
-          const id = soundsRef.current.firework.play();
-          soundsRef.current.firework.volume(Math.min(intensity, 1.0), id);
-          soundsRef.current.firework.rate(isFinal ? 0.8 : 0.9 + (idx * 0.1), id);
-
-          // Layer lightning (magic sparkles) on top for texture
-          if (soundsRef.current.aurora) {
-            const aId = soundsRef.current.aurora.play();
-            soundsRef.current.aurora.volume(Math.min(intensity * 0.4, 0.4), aId);
-            soundsRef.current.aurora.rate(isFinal ? 1.0 : 1.2 + (idx * 0.1), aId);
-          }
-          if (soundsRef.current.lightning) {
-            const lId = soundsRef.current.lightning.play();
-            soundsRef.current.lightning.volume(Math.min(intensity * 0.5, 0.5), lId);
-            soundsRef.current.lightning.rate(isFinal ? 0.9 : 1.0 + (idx * 0.05), lId);
-          }
-        }
-      }, strikeTime * 1000));
-    });
-
-    const finalStrikeTime = schedule[schedule.length - 1];
-    const revealTime = finalStrikeTime + 0.1;
-
-    activeTimeoutsRef.current.push(setTimeout(() => {
-      if (soundsRef.current.shimmer) {
-        const id = soundsRef.current.shimmer.play();
-        soundsRef.current.shimmer.volume(0.5, id);
-        soundsRef.current.shimmer.rate(0.8, id);
-        // Short aftermath cleanup
-        setTimeout(() => soundsRef.current.shimmer.fade(0.5, 0, 1000, id), 1500);
-        setTimeout(() => soundsRef.current.shimmer.stop(id), 2500);
-      }
-    }, revealTime * 1000));
-  };
 
   const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
@@ -522,7 +403,6 @@ export default function LuckyCardReveal() {
     }
 
     const schedule = STRIKE_SCHEDULES[card.tier];
-    playAudioSequence(card.tier, schedule);
     rafStartTimeRef.current = 0;
 
     // Cache card geometry for render loop
@@ -662,12 +542,10 @@ export default function LuckyCardReveal() {
           <button
             type="button"
             onClick={triggerCardDraw}
-            disabled={isGenerating || audioLoading}
-            className={`mt-2 px-6 py-2.5 rounded-full font-bold text-base shadow-lg transition-all ${
-              audioLoading ? 'bg-gray-400 text-gray-700 opacity-70' : 'bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 active:scale-95'
-            }`}
+            disabled={isGenerating}
+            className="mt-2 px-6 py-2.5 rounded-full font-bold text-base shadow-lg transition-all bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 active:scale-95"
           >
-            {isGenerating ? 'Revealing...' : audioLoading ? 'Loading Magic...' : 'Reveal Today’s Luck'}
+            {isGenerating ? 'Revealing...' : 'Reveal Today's Luck'}
           </button>
         )}
       </div>
