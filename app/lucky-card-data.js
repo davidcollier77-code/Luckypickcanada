@@ -10,6 +10,7 @@ const CARD_DEFINITIONS = [
   ['guiding-star', 'The Guiding Star', false, 'standard'],
   ['northern-lights', 'The Northern Lights', true, 'premium'],
   ['coast-to-coast-tale', 'Coast-to-Coast Tale', true, 'premium'],
+  ['lucky-canadian-moose', 'Lucky Canadian Moose', true, 'premium'],
   ['lucky-golden-pick', 'Lucky Golden Pick', true, 'flagship'],
   ['flagship-card', 'The Flagship Card', false, 'flagship'],
 ];
