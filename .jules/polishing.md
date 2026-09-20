@@ -23,3 +23,7 @@ When materially necessary, consult the following approved libraries. (Requires C
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
 When implementing, ensure you test your changes.
+
+## 2024-11-20 - Cinematic Visual Updates
+**Learning:** Using purely static positional keyframes within Framer Motion without `scale` interpolations is necessary to prevent perspective distortion when a 3D-rotated object (like the Lucky Card) performs its flip inside a complex canvas scene. Coordinate sync between HTML elements and the Canvas `ctx` layer provides high-quality interactive visuals without structural deformation.
+**Action:** Overhauled `app/lucky-card-reveal.js` to draw physical energy strikes directly onto fixed target layout coordinates without using the CSS scaling that caused previous visual glitches.

@@ -151,43 +151,49 @@ export default function LuckyCardReveal() {
     }
 
 
+
     const schedule = STRIKE_SCHEDULES[tier];
     const finalStrike = schedule[schedule.length - 1];
     const flipAt = finalStrike + 0.1;
     const maxLifetime = flipAt + 3.0;
-    let totalEnergyAbsorbed = 0;
 
-    // --- Progressive Materialization Masks ---
     let maskLayers = [];
-
-    // Accumulate global effects to render them once per frame
-
     let maxFlashOpacity = 0;
     let flashRgb = '255, 255, 255';
-    let flashGlowColor = '255, 255, 255';
     let isFinalFlash = false;
 
-    // Draw strikes
     const tierColors = {
-      standard: ['167, 243, 208', '52, 211, 153', '16, 185, 129'], // Emerald/Green
-      premium: ['191, 219, 254', '96, 165, 250', '59, 130, 246', '37, 99, 235', '29, 78, 216'], // Blue to deep blue
-      flagship: ['253, 230, 138', '252, 211, 77', '251, 191, 36', '245, 158, 11', '217, 119, 6', '180, 83, 9', '255, 255, 255'] // Gold evolving to pure white
+      standard: ['167, 243, 208', '52, 211, 153', '16, 185, 129'], // Emerald
+      premium: ['191, 219, 254', '96, 165, 250', '59, 130, 246', '37, 99, 235', '29, 78, 216'], // Blue
+      flagship: ['253, 230, 138', '252, 211, 77', '251, 191, 36', '245, 158, 11', '217, 119, 6', '180, 83, 9', '255, 255, 255'] // Gold to White
     };
 
-    // Calculate global FORM phase (0 to 1.0s)
-    if (elapsed < 1.0) {
-      const formProgress = elapsed / 1.0;
-      const formAuraOpacity = formProgress * 0.5;
-
+    // Draw Aurora / Energy Source at top
+    if (elapsed > 0) {
+      const auroraProg = Math.min(1, elapsed / 1.5);
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
+
+      const sourceY = h * 0.1;
+      const sourceW = w * 0.8;
+
+      const auroraGrad = ctx.createRadialGradient(w/2, sourceY, 0, w/2, sourceY, sourceW);
+      const baseColor = tierColors[tier][0];
+      auroraGrad.addColorStop(0, `rgba(${baseColor}, ${auroraProg * 0.4})`);
+      auroraGrad.addColorStop(0.5, `rgba(${baseColor}, ${auroraProg * 0.1})`);
+      auroraGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      ctx.fillStyle = auroraGrad;
+      // Add a slight pulsing/wavy effect
+      const wave = Math.sin(elapsed * 2) * 20;
+      ctx.fillRect(0, 0, w, sourceY + sourceW + wave);
+
+      // Core energy ball building up
       ctx.beginPath();
-      ctx.arc(cx, cy, cardW * 0.8 + Math.sin(elapsed * 10) * 10, 0, Math.PI * 2);
-      const formGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, cardW);
-      formGrad.addColorStop(0, `rgba(255, 255, 255, ${formAuraOpacity * 0.8})`);
-      formGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = formGrad;
+      ctx.arc(w/2, sourceY, 30 + Math.sin(elapsed * 5) * 10, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${auroraProg * 0.8})`;
       ctx.fill();
+
       ctx.restore();
     }
 
@@ -197,13 +203,12 @@ export default function LuckyCardReveal() {
       const colorArr = tierColors[tier] || tierColors.standard;
       const beamColor = colorArr[idx % colorArr.length];
 
-      // Anticipation energy building up before the final strike
+      // Build up anticipation energy before final strike
       if (isFinal && elapsed > schedule[schedule.length - 2] && elapsed < strikeTime) {
          const anticipationProgress = (elapsed - schedule[schedule.length - 2]) / (strikeTime - schedule[schedule.length - 2]);
          ctx.save();
          ctx.globalCompositeOperation = 'screen';
          ctx.beginPath();
-         // Converging aura
          const drawRadius = (cardW * 2) * (1 - anticipationProgress * 0.5);
          ctx.arc(cx, cy, drawRadius, 0, Math.PI * 2);
          const antiGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, drawRadius);
@@ -214,21 +219,18 @@ export default function LuckyCardReveal() {
          ctx.restore();
       }
 
-      if (timeSinceStrike > 0) {
-        // Massive flash at the exact moment of impact (fade out over 0.5s)
-        if (timeSinceStrike < 0.5) {
-          const flashIntensity = 1 - (timeSinceStrike / 0.5);
-          const thisFlashMax = isFinal ? 0.9 : 0.4 + (idx * 0.1);
-          if (flashIntensity * thisFlashMax > maxFlashOpacity) {
-             maxFlashOpacity = flashIntensity * thisFlashMax;
-             flashRgb = beamColor;
-             flashGlowColor = beamColor;
-             isFinalFlash = isFinal;
-          }
+      // Flash calculation
+      if (timeSinceStrike > 0 && timeSinceStrike < 0.5) {
+        const flashIntensity = 1 - (timeSinceStrike / 0.5);
+        const thisFlashMax = isFinal ? 0.9 : 0.4 + (idx * 0.1);
+        if (flashIntensity * thisFlashMax > maxFlashOpacity) {
+           maxFlashOpacity = flashIntensity * thisFlashMax;
+           flashRgb = beamColor;
+           isFinalFlash = isFinal;
         }
       }
 
-      // --- Materialization Mask Calculation ---
+      // Materialization Mask (Reveal card front progressively)
       if (timeSinceStrike >= 0) {
         const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
         const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
@@ -244,14 +246,15 @@ export default function LuckyCardReveal() {
         maskLayers.push(`radial-gradient(circle ${maskSize}% at ${relX}% ${relY}%, rgba(0,0,0,1) ${isFinal ? 50 : 20}%, rgba(0,0,0,0) 100%)`);
       }
 
-      // Strike animation (starts slightly before impact, travels, hits, fades)
+      // Strike / Plasma / Lightning
       const travelTime = 0.3;
       const fadeTime = isFinal ? 0.6 : 0.3;
       const strikeStart = strikeTime - travelTime;
 
       if (elapsed >= strikeStart && elapsed < strikeTime + fadeTime) {
-        const startX = w * (0.2 + (idx % 4) * 0.2);
-        const startY = -h * 0.1;
+        // Originates from the top center energy source
+        const startX = w / 2;
+        const startY = h * 0.1;
 
         let progress = 0;
         let opacity = 0;
@@ -270,6 +273,7 @@ export default function LuckyCardReveal() {
         const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
         const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.25;
 
+        // Ensure we hit the card
         let strikeTarget = { x: cx, y: cy };
         if (cardRef.current) {
             const rect = cardRef.current.getBoundingClientRect();
@@ -290,37 +294,52 @@ export default function LuckyCardReveal() {
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
 
-        ctx.lineWidth = isFinal ? 60 : 30 + (idx * 5);
-        ctx.strokeStyle = `rgba(${beamColor}, ${0.2 * opacity})`;
-        // Aurora ribbon bezier path
-        const cp1x = startX + (currentX - startX) * 0.3 + Math.sin(elapsed * 5 + idx) * 100;
-        const cp1y = startY + (currentY - startY) * 0.2;
-        const cp2x = startX + (currentX - startX) * 0.7 - Math.sin(elapsed * 4 - idx) * 100;
-        const cp2y = startY + (currentY - startY) * 0.8;
+        // Outer glow
+        ctx.lineWidth = isFinal ? 50 : 20 + (idx * 4);
+        ctx.strokeStyle = `rgba(${beamColor}, ${0.3 * opacity})`;
+        ctx.lineCap = 'round';
+
+        // Jagged Lightning / Plasma Path
+        const segments = isFinal ? 12 : 8;
 
         ctx.beginPath();
         ctx.moveTo(startX, startY);
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, currentX, currentY);
+
+        // Keep consistent random offsets per strike using the index as a seed
+        for (let i = 1; i <= segments; i++) {
+            const segProg = i / segments;
+            const targetSegX = startX + (currentX - startX) * segProg;
+            const targetSegY = startY + (currentY - startY) * segProg;
+
+            // Add jaggedness, tapering off at the ends
+            const variance = (isFinal ? 60 : 30) * Math.sin(segProg * Math.PI) * (1 - progress * 0.5);
+            const offsetX = Math.sin(elapsed * 10 + i * idx) * variance;
+
+            if (i === segments) {
+               ctx.lineTo(currentX, currentY);
+            } else {
+               ctx.lineTo(targetSegX + offsetX, targetSegY);
+            }
+        }
         ctx.stroke();
 
-        ctx.lineWidth = isFinal ? 20 : 8 + (idx * 2);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${0.8 * opacity})`;
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, currentX, currentY);
+        // Inner Core
+        ctx.lineWidth = isFinal ? 15 : 6 + (idx * 1.5);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * opacity})`;
         ctx.stroke();
 
+        // Energy Ball at the leading edge
         ctx.beginPath();
-        ctx.arc(currentX, currentY, ctx.lineWidth * 1.5, 0, Math.PI * 2);
+        ctx.arc(currentX, currentY, ctx.lineWidth * 2, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
         ctx.fill();
 
         ctx.restore();
       }
 
-      // Flash foreground contact flash
-      if (timeSinceStrike > 0 && timeSinceStrike < 0.2 && fgCtx) {
-          const flashOp = 1 - (timeSinceStrike / 0.2);
+      // Foreground Contact Flash and Particles
+      if (timeSinceStrike > 0 && timeSinceStrike < 0.3 && fgCtx) {
+          const flashOp = 1 - (timeSinceStrike / 0.3);
           let strikeTarget = { x: cx, y: cy };
           if (cardRef.current) {
               const rect = cardRef.current.getBoundingClientRect();
@@ -334,15 +353,32 @@ export default function LuckyCardReveal() {
 
           fgCtx.save();
           fgCtx.globalCompositeOperation = 'screen';
+
+          // Flash Burst
           fgCtx.beginPath();
-          const radius = isFinal ? cardW * 2.5 : cardW;
+          const radius = isFinal ? cardW * 1.5 : cardW * 0.8;
           fgCtx.arc(strikeTarget.x, strikeTarget.y, radius, 0, Math.PI * 2);
           const flashGrad = fgCtx.createRadialGradient(strikeTarget.x, strikeTarget.y, 0, strikeTarget.x, strikeTarget.y, radius);
           flashGrad.addColorStop(0, `rgba(255, 255, 255, ${flashOp})`);
-          flashGrad.addColorStop(0.2, `rgba(${beamColor}, ${flashOp * 0.6})`);
+          flashGrad.addColorStop(0.3, `rgba(${beamColor}, ${flashOp * 0.7})`);
           flashGrad.addColorStop(1, 'rgba(0,0,0,0)');
           fgCtx.fillStyle = flashGrad;
           fgCtx.fill();
+
+          // Impact Particles/Sparks
+          const numParticles = isFinal ? 30 : 12;
+          for(let p=0; p<numParticles; p++) {
+              const angle = (Math.PI * 2 / numParticles) * p + (elapsed * 5);
+              const dist = (timeSinceStrike * (isFinal ? 300 : 150)) * (0.5 + Math.abs(Math.sin(p * idx)) * 0.5);
+              const pX = strikeTarget.x + Math.cos(angle) * dist;
+              const pY = strikeTarget.y + Math.sin(angle) * dist;
+
+              fgCtx.beginPath();
+              fgCtx.arc(pX, pY, isFinal ? 3 : 2, 0, Math.PI * 2);
+              fgCtx.fillStyle = `rgba(${beamColor}, ${flashOp})`;
+              fgCtx.fill();
+          }
+
           fgCtx.restore();
       }
     });
@@ -350,7 +386,7 @@ export default function LuckyCardReveal() {
     if (maxFlashOpacity > 0 && fgCtx) {
       fgCtx.save();
       fgCtx.globalCompositeOperation = 'screen';
-      fgCtx.fillStyle = `rgba(${flashRgb}, ${maxFlashOpacity * 0.5})`;
+      fgCtx.fillStyle = `rgba(${flashRgb}, ${maxFlashOpacity * 0.4})`;
       fgCtx.fillRect(0, 0, w, h);
       fgCtx.restore();
     }
@@ -434,9 +470,9 @@ export default function LuckyCardReveal() {
     const sequence = [];
 
     // Initial state: SUMMON and FORM (0 to 1.0s)
-    sequence.push([cardRef.current, { y: 20, scale: 0.9, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
+    sequence.push([cardRef.current, { y: 20, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
     sequence.push([cardFlipRef.current, { rotateY: 0 }, { duration: 0 }]);
-    sequence.push([cardRef.current, { opacity: 1, filter: "brightness(0.3)", y: 0, scale: 1 }, { at: 0.1, duration: 0.9, ease: 'easeOut' }]);
+    sequence.push([cardRef.current, { opacity: 1, filter: "brightness(0.3)", y: 0 }, { at: 0.1, duration: 0.9, ease: 'easeOut' }]);
 
     // Synchronize physical reactions with strikes
     schedule.forEach((strikeTime, idx) => {
@@ -478,7 +514,7 @@ export default function LuckyCardReveal() {
           x: [0, recoilX, -recoilX * 0.5, recoilX * 0.2, 0],
           y: [0, recoilY, -recoilY * 0.3, 0],
           rotateZ: [0, recoilRot, -recoilRot * 0.4, 0],
-          scale: [1, scaleUp, finalScale],
+
           filter: [brightStart, brightEnd]
         },
         {
@@ -494,7 +530,7 @@ export default function LuckyCardReveal() {
     const finalStrike = schedule[schedule.length - 1];
     const flipAt = finalStrike + 0.1;
 
-    sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
+    sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
 
     // Guard animation for reduced-motion users
@@ -549,7 +585,7 @@ export default function LuckyCardReveal() {
 
       <div
         ref={scope}
-        className="w-full flex justify-center py-2 flex-shrink-0 relative"
+        className="w-full flex justify-center pt-16 pb-4 flex-shrink-0 relative"
         style={{ perspective: '1200px' }}
       >
         <motion.div
