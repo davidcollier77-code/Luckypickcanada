@@ -168,58 +168,38 @@ export default function LuckyCardReveal() {
       flagship: ['14, 165, 233', '217, 70, 239', '14, 165, 233', '217, 70, 239', '14, 165, 233', '217, 70, 239', '234, 179, 8'] // Alternating -> Gold
     };
 
-    // Draw Aurora / Energy Source at top
+    // Draw Ambient Edge Glow (Cosmic Energy entering from outside)
     if (elapsed > 0) {
-      const auroraProg = Math.min(1, elapsed / 1.5);
+      const ambientProg = Math.min(1, elapsed / 1.5);
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
 
-      const sourceY = h * 0.1;
-      const sourceW = w * 0.8;
-
-      // Mystical Cosmic Anomaly
       const baseColor = tierColors[tier][0];
-      const timeScale = elapsed * 0.5;
 
-      // Layer 1: Atmospheric Glow
-      const atmosphericGrad = ctx.createRadialGradient(w/2, sourceY, 0, w/2, sourceY, sourceW * 0.9);
-      atmosphericGrad.addColorStop(0, `rgba(${baseColor}, ${auroraProg * 0.5})`);
-      atmosphericGrad.addColorStop(0.4, `rgba(${baseColor}, ${auroraProg * 0.15})`);
-      atmosphericGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = atmosphericGrad;
-      ctx.fillRect(0, 0, w, sourceY + sourceW);
+      // Top Left Glow
+      const tlGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, w * 0.8);
+      tlGrad.addColorStop(0, `rgba(${baseColor}, ${ambientProg * 0.4})`);
+      tlGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = tlGrad;
+      ctx.fillRect(0, 0, w, h * 0.5);
 
-      ctx.save();
-      ctx.translate(w/2, sourceY);
+      // Top Right Glow
+      const trGrad = ctx.createRadialGradient(w, 0, 0, w, 0, w * 0.8);
+      trGrad.addColorStop(0, `rgba(${baseColor}, ${ambientProg * 0.4})`);
+      trGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = trGrad;
+      ctx.fillRect(0, 0, w, h * 0.5);
 
-      // Layer 2: Rotating Vortex
-      ctx.rotate(timeScale * Math.PI * 0.5);
-      const vortexGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 120);
-      vortexGrad.addColorStop(0, `rgba(255, 255, 255, ${auroraProg * 0.9})`);
-      vortexGrad.addColorStop(0.3, `rgba(${baseColor}, ${auroraProg * 0.6})`);
-      vortexGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-      ctx.fillStyle = vortexGrad;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 140 + Math.sin(timeScale * 4) * 20, 80 + Math.cos(timeScale * 3) * 15, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Layer 3: Counter-rotating plasma filaments
-      ctx.rotate(-timeScale * Math.PI * 1.2);
-      ctx.beginPath();
-      for (let i = 0; i < 5; i++) {
-         ctx.ellipse(0, 0, 100, 20, (i * Math.PI) / 2.5, 0, Math.PI * 2);
+      // Subtle atmospheric dust/noise in the upper area
+      const timeScale = elapsed * 0.2;
+      for (let i = 0; i < 20; i++) {
+         const pX = (w * 0.1 * i + Math.sin(timeScale + i) * 50) % w;
+         const pY = (h * 0.2 * Math.cos(timeScale * 0.5 + i) + h * 0.1) % (h * 0.4);
+         ctx.beginPath();
+         ctx.arc(Math.abs(pX), Math.abs(pY), 1 + Math.sin(elapsed * 2 + i), 0, Math.PI * 2);
+         ctx.fillStyle = `rgba(255, 255, 255, ${ambientProg * 0.2})`;
+         ctx.fill();
       }
-      ctx.fillStyle = `rgba(255, 255, 255, ${auroraProg * 0.3})`;
-      ctx.fill();
-
-      // Layer 4: Dimensional Luminous Core
-      ctx.beginPath();
-      ctx.arc(0, 0, 25 + Math.sin(timeScale * 8) * 5, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${auroraProg})`;
-      ctx.shadowColor = `rgba(${baseColor}, 1)`;
-      ctx.shadowBlur = 40;
-      ctx.fill();
 
       ctx.restore();
     }
@@ -274,26 +254,43 @@ export default function LuckyCardReveal() {
         maskLayers.push(`radial-gradient(circle ${maskSize}% at ${relX}% ${relY}%, rgba(0,0,0,1) ${isFinal ? 50 : 20}%, rgba(0,0,0,0) 100%)`);
       }
 
-      // Strike / Plasma / Lightning
-      const travelTime = 0.3;
-      const fadeTime = isFinal ? 0.6 : 0.3;
+      // Strike / Volumetric Energy Filaments
+      const travelTime = 0.4; // Slightly slower for more cinematic feel
+      const fadeTime = isFinal ? 0.8 : 0.4;
       const strikeStart = strikeTime - travelTime;
 
       if (elapsed >= strikeStart && elapsed < strikeTime + fadeTime) {
-        // Originates from the top center energy source
-        const startX = w / 2;
-        const startY = h * 0.1;
+
+        // Determine origin points (corners / sides) based on strike index
+        const origins = [
+            { x: 0, y: 0 },         // Top Left
+            { x: w, y: 0 },         // Top Right
+            { x: -50, y: h * 0.3 }, // Mid Left offscreen
+            { x: w + 50, y: h * 0.3 },// Mid Right offscreen
+            { x: w * 0.2, y: -50 }, // Top Center-Left
+            { x: w * 0.8, y: -50 }  // Top Center-Right
+        ];
+
+        // Final strike comes from all directions (we use a composite approach)
+        const origin = isFinal ? { x: w/2, y: -100 } : origins[idx % origins.length];
+
+        // Add random variance to start position
+        const startX = isFinal ? w/2 + Math.sin(elapsed*5)*200 : origin.x;
+        const startY = isFinal ? -100 : origin.y;
 
         let progress = 0;
         let opacity = 0;
 
         if (elapsed < strikeTime) {
           const t = (elapsed - strikeStart) / travelTime;
+          // Smooth, sweeping acceleration
           progress = t * t * (3 - 2 * t);
+          // Opacity builds quickly, peaks at impact
           opacity = t * 1.5;
         } else {
           progress = 1;
-          opacity = 1 - (timeSinceStrike / fadeTime);
+          // Ethereal fade out
+          opacity = Math.pow(1 - (timeSinceStrike / fadeTime), 1.5);
         }
 
         opacity = Math.max(0, Math.min(1, opacity));
@@ -316,58 +313,56 @@ export default function LuckyCardReveal() {
         const impactX = strikeTarget.x + Math.cos(targetAngle) * targetRadius;
         const impactY = strikeTarget.y + Math.sin(targetAngle) * targetRadius;
 
-        const currentX = startX + (impactX - startX) * progress;
-        const currentY = startY + (impactY - startY) * progress;
-
         ctx.save();
         ctx.globalCompositeOperation = 'screen';
 
-        // Outer glow
-        ctx.lineWidth = isFinal ? 80 : 20 + (idx * 4); // Larger impact convergence
-        ctx.strokeStyle = `rgba(${beamColor}, ${(isFinal ? 0.6 : 0.3) * opacity})`;
-        ctx.lineCap = 'round';
+        // Draw multiple filaments converging
+        const numFilaments = isFinal ? 8 : 3;
 
-        // Jagged Lightning / Plasma Path
-        const segments = isFinal ? 12 : 8;
+        for (let f = 0; f < numFilaments; f++) {
 
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
+            // If final, spread origins out for a converging blast
+            const fStartX = isFinal ? (w/2) + Math.cos(f * Math.PI/4) * (w) : startX;
+            const fStartY = isFinal ? -100 + Math.sin(f * Math.PI/4) * (h/2) : startY;
 
-        // Keep consistent random offsets per strike using the index as a seed
-        for (let i = 1; i <= segments; i++) {
-            const segProg = i / segments;
-            const targetSegX = startX + (currentX - startX) * segProg;
-            const targetSegY = startY + (currentY - startY) * segProg;
+            const currentX = fStartX + (impactX - fStartX) * progress;
+            const currentY = fStartY + (impactY - fStartY) * progress;
 
-            // Add jaggedness, tapering off at the ends
-            const variance = (isFinal ? 60 : 30) * Math.sin(segProg * Math.PI) * (1 - progress * 0.5);
-            const offsetX = Math.sin(elapsed * 10 + i * idx) * variance;
+            // Atmospheric Bloom / Scattering around the filament
+            ctx.lineWidth = isFinal ? 120 - (f*10) : 40 + (idx * 5) - (f*8);
+            ctx.strokeStyle = `rgba(${beamColor}, ${(isFinal ? 0.15 : 0.1) * opacity})`;
+            ctx.lineCap = 'round';
 
-            if (i === segments) {
-               ctx.lineTo(currentX, currentY);
-            } else {
-               ctx.lineTo(targetSegX + offsetX, targetSegY);
-            }
+            ctx.beginPath();
+            ctx.moveTo(fStartX, fStartY);
+
+            // Curved, organic path
+            const controlPointX = fStartX + (impactX - fStartX) * 0.5 + Math.sin(elapsed * 2 + f) * 100;
+            const controlPointY = fStartY + (impactY - fStartY) * 0.3 + Math.cos(elapsed * 3 + f) * 100;
+
+            // Trace the path up to current progress
+            // Quadratic Bezier interpolation
+            let traceX = fStartX;
+            let traceY = fStartY;
+
+            // Draw path smoothly
+            ctx.quadraticCurveTo(controlPointX, controlPointY, currentX, currentY);
+            ctx.stroke();
+
+            // Inner Plasma Core
+            ctx.lineWidth = isFinal ? 15 - f : 4 + (idx * 0.5) - f;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.7 * opacity})`;
+            ctx.stroke();
+
+            // Energy convergence at the tip
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, ctx.lineWidth * (isFinal ? 3 : 1.5), 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.9})`;
+            ctx.shadowColor = `rgba(${beamColor}, 1)`;
+            ctx.shadowBlur = 20;
+            ctx.fill();
+            ctx.shadowBlur = 0;
         }
-        ctx.stroke();
-
-        // Inner Bloom
-        if (isFinal) {
-           ctx.lineWidth = 40;
-           ctx.strokeStyle = `rgba(${beamColor}, ${0.8 * opacity})`;
-           ctx.stroke();
-        }
-
-        // Inner Core
-        ctx.lineWidth = isFinal ? 25 : 6 + (idx * 1.5);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * opacity})`;
-        ctx.stroke();
-
-        // Energy Ball at the leading edge
-        ctx.beginPath();
-        ctx.arc(currentX, currentY, ctx.lineWidth * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.fill();
 
         ctx.restore();
       }
