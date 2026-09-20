@@ -188,6 +188,7 @@ export default function LuckyCardReveal() {
   // but it's more accurate to link it to the RAF loop or calculate precise timeouts.
 
   const playAudioSequence = (tier, schedule) => {
+    return; // VISUAL ONLY PASS: AUDIO DISABLED
     // 1. Initial Atmospheric Buildup
     if (soundsRef.current.buildup) {
       const id = soundsRef.current.buildup.play();

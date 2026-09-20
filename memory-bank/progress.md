@@ -8,3 +8,5 @@
 - Migrated canvas draw logic to render progressive dimensional beams, particle responses, contact flashes, and progressive scaling/shaking.
 - Synced Framer Motion animations to dynamically shift origin and recoil parameters in alignment with the `STRIKE_SCHEDULES` array.
 - Tuned Howler.js layers for distinct atmospheric escalation and clean up on completion.
+## Remove Audio from Lucky Card Reveal (2024-XX-XX)
+- Disabled audio execution in the Lucky Card Reveal by modifying `playAudioSequence` while preserving preload state and visual behavior.
