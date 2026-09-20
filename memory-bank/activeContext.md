@@ -6,7 +6,7 @@
 - Retained the existing impact counts (3, 5, 7) and physical card shaking behaviors linked to these impacts.
 - Verified and retained alternating blue and pink colors for preliminary beam strikes using the `tierColors` array.
 - Final tier impact utilizes the signature tier color (Bronze, Platinum, Gold).
-- Added cinematic branching electrical filaments to the Canvas `fgCtx` renderer to simulate high-end proton-energy strikes, while keeping mobile performance intact.
+- Added cinematic branching electrical filaments to the background Canvas `ctx` renderer (bgCanvasRef) to simulate high-end proton-energy strikes, while keeping mobile performance intact.
 - Introduced a deliberate 1.2s dramatically paused hold before initiating the final 180deg Framer Motion 3D card flip.
 - Built and tested successfully, preserving all scope boundaries.
 

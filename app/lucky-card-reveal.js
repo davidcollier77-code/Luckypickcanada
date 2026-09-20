@@ -50,6 +50,7 @@ export default function LuckyCardReveal() {
   const cardMetricsRef = useRef({ cx: 140, cy: 202.5, w: 280, h: 405 });
   const strikeTargetsRef = useRef({});
   const fallbackTimerRef = useRef(null);
+  const branchCacheRef = useRef({});
 
   useEffect(() => {
     try {
@@ -363,24 +364,46 @@ export default function LuckyCardReveal() {
             ctx.stroke();
 
             // Branching Electrical Filaments (Proton-energy effect)
-            if (Math.random() > (isFinal ? 0.3 : 0.6)) {
+            // Cache branch decisions and geometry per strike/filament to prevent flicker
+            const branchKey = `${idx}-${f}`;
+            if (!branchCacheRef.current[branchKey]) {
+                // Precompute stable branch properties using deterministic values
+                const seed = idx * 73 + f * 17;
+                const rand1 = (Math.sin(seed * 0.123) * 0.5 + 0.5);
+                const rand2 = (Math.sin(seed * 0.456) * 0.5 + 0.5);
+                const rand3 = (Math.sin(seed * 0.789) * 0.5 + 0.5);
+                const rand4 = (Math.sin(seed * 1.234) * 0.5 + 0.5);
+                const rand5 = (Math.sin(seed * 1.567) * 0.5 + 0.5);
+                const rand6 = (Math.sin(seed * 1.890) * 0.5 + 0.5);
+                
+                branchCacheRef.current[branchKey] = {
+                    shouldBranch: rand1 > (isFinal ? 0.3 : 0.6),
+                    branchTFactor: 0.3 + rand2 * 0.6,
+                    angleOffset: (rand3 - 0.5) * Math.PI,
+                    branchLen: (20 + rand4 * 40) * (isFinal ? 1.5 : 1.0),
+                    midOffset1: (rand5 - 0.5) * 20,
+                    midOffset2: (rand6 - 0.5) * 20,
+                    lineWidth: isFinal ? 2 + rand1 * 2 : 1 + rand1
+                };
+            }
+            
+            const branch = branchCacheRef.current[branchKey];
+            if (branch.shouldBranch) {
                 ctx.beginPath();
                 // Start somewhere along the curve
-                const branchT = progress * (0.3 + Math.random() * 0.6);
+                const branchT = progress * branch.branchTFactor;
                 const branchStartX = Math.pow(1-branchT, 2)*fStartX + 2*(1-branchT)*branchT*controlPointX + Math.pow(branchT, 2)*currentX;
                 const branchStartY = Math.pow(1-branchT, 2)*fStartY + 2*(1-branchT)*branchT*controlPointY + Math.pow(branchT, 2)*currentY;
 
                 ctx.moveTo(branchStartX, branchStartY);
                 // Jagged branching
-                const angleOffset = (Math.random() - 0.5) * Math.PI;
-                const branchLen = (20 + Math.random() * 40) * (isFinal ? 1.5 : 1.0);
-                const branchEndX = branchStartX + Math.cos(angleOffset) * branchLen;
-                const branchEndY = branchStartY + Math.sin(angleOffset) * branchLen;
+                const branchEndX = branchStartX + Math.cos(branch.angleOffset) * branch.branchLen;
+                const branchEndY = branchStartY + Math.sin(branch.angleOffset) * branch.branchLen;
 
-                ctx.lineTo(branchStartX + (branchEndX - branchStartX)*0.5 + (Math.random()-0.5)*20, branchStartY + (branchEndY - branchStartY)*0.5 + (Math.random()-0.5)*20);
+                ctx.lineTo(branchStartX + (branchEndX - branchStartX)*0.5 + branch.midOffset1, branchStartY + (branchEndY - branchStartY)*0.5 + branch.midOffset2);
                 ctx.lineTo(branchEndX, branchEndY);
 
-                ctx.lineWidth = isFinal ? 2 + Math.random() * 2 : 1 + Math.random();
+                ctx.lineWidth = branch.lineWidth;
                 ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 * opacity})`;
                 ctx.stroke();
 
