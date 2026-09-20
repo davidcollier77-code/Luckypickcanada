@@ -1,78 +1,58 @@
 # FINAL PR REPORT
 
 ## TASK OVERVIEW
-The requested task involved fixing visual, audio, and physical synchronization issues in the Lucky Card Reveal cinematic sequence to hit the desired "magical and mystical" vibe.
+Rebuild the Lucky Card Reveal cinematic presentation with exact evolving strike counts by tier (Standard: 3, Premium: 5, Flagship: 7), a defined anticipation gap before the final strike, and magical dimensional energy graphics.
 
 ## VERIFIED ROOT CAUSE
-1. **Beam Impact:** The aurora beams were targeting an impact radius `Math.min(cardW, cardH) * 0.45` near the edge of the card, and combined with opacity fading, created the illusion that they passed behind or faded before striking.
-2. **Card Reaction:** The `framer-motion` card shake sequence (`animate(sequence, { autoplay: false })`) was being manually driven by a time scrub in the `requestAnimationFrame` render loop (`animationControlsRef.current.time = ...`). This manual drive was causing the sequence to not visibly apply CSS transform changes in the specific version/usage of framer-motion, resulting in a completely static card.
-3. **Audio Sync:** The impact sound effects (`lightning` and `firework`) were slightly delayed (`strikeTime + impactOffset`), resulting in a desynchronized feel, and their volume punch was not pronounced enough to feel like a "distinct impact sound synced precisely with every single beam strike".
-4. **Tier Scaling:** Visual intensity of the beams was static across all tiers, and the schedule duration for `premium` and `flagship` tiers was not extended enough to match the user's intent.
+The previous reveal used a single visual sequence pattern, generic non-evolving strikes, and lacked deliberate anticipation mapping. The audio had tails running longer than necessary, and it didn't precisely match the new required structure.
 
 ## IMPLEMENTATION PERFORMED
-- **Beams:** Decreased `targetRadius` to `Math.min(cardW, cardH) * 0.25` so the beams visually hit the card closer to the center. Added a `tierMultiplier` to `drawBeam` calls to increase visual thickness based on tier.
-- **Card Reaction:** Removed the manual `animationControlsRef.current.time` scrubbing from `renderCanvas`. Switched the `framer-motion` initialization to `{ autoplay: true }` to allow it to run natively and sync automatically with the canvas (as both start on the exact same user action). Increased `basePower`, `baseRot`, `scaleUp`, and `finalScale` values to ensure the physical recoil punch is dramatic.
-- **Audio:** Removed `impactOffset = -0.02` from the audio scheduling timeouts. Triggered impact audio EXACTLY at `strikeTime * 1000`. Increased volume and adjusted rate for `lightning` and `firework` sound objects on strike to ensure a pronounced distinct hit per beam.
-- **Tier Scaling:** Added additional strike times to the `premium` and `flagship` arrays in `STRIKE_SCHEDULES` to extend their duration.
+- **Timing / Schedules:** Updated `STRIKE_SCHEDULES` to enforce exactly 3, 5, and 7 impacts. Added explicit anticipation gaps before the final strike.
+- **Card Reaction:** Updated Framer Motion logic (`triggerCardDraw`) to introduce a SUMMON phase (`y: 20`, scaling up). Card physics (scale punch, rotation, shake, glow brightness) now escalate per hit index and tier level.
+- **Visual Effects:** Refactored `renderCanvas`. Added a forming aura during the first second. Updated the beam strikes to be volumetric (outer glow, inner core) mapping to tier-specific evolving color palettes (e.g. Gold -> White for flagship). Rendered a converging aura during the anticipation gap before the final strike.
+- **Audio:** Rebuilt `playAudioSequence`. Atmospheric buildup loops early and fades out on final strike. Each impact audio trigger matches `strikeTime` exactly, with volume escalating by index. Cleaned up shimmer/aftermath tails to prevent runaway sounds.
+- **Protections:** Verified boundaries. Tier selection, daily persistence, card flip logic, and post-reveal functionality remain intact. Removed potential unbounded particle and timer loops.
 
 ## CHANGED FILES
 - `app/lucky-card-reveal.js`
 - `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+- `FINAL_REPORT.md`
 
 ## GOVERNANCE & ROUTING
 - **AGENTS.md**: Read first. Acknowledged 495 MB cap, non-gambling rules, and instructions.
 - **Task Group Selected**: Polishing (`.jules/polishing.md`) and Audio (`.jules/audio.md`).
 
 ## REQUIRED REPOSITORY COMPONENTS REPORT
-- COMPONENT: `memory-bank/projectBrief.md` | USED: YES | CHANGED: NO | USEFUL: YES | WHAT WAS USEFUL: Clarified non-gambling rules and overall Lucky Pick context. | EVIDENCE: `cat memory-bank/projectBrief.md` | REASON: Required context.
-- COMPONENT: `memory-bank/activeContext.md` | USED: YES | CHANGED: YES | VERIFIED: YES | USEFUL: YES | WHAT WAS USEFUL: Stored task progress. | EVIDENCE: Updated file. | REASON: Required to track state.
-- COMPONENT: `.jules/polishing.md` | USED: YES | CHANGED: NO | USEFUL: YES | WHAT WAS USEFUL: Confirmed acceptable library list. | EVIDENCE: `cat .jules/polishing.md` | REASON: Required task group rules.
-- COMPONENT: `.jules/audio.md` | USED: YES | CHANGED: NO | USEFUL: YES | WHAT WAS USEFUL: Confirmed Howler usage is primary. | EVIDENCE: `cat .jules/audio.md` | REASON: Required task group rules.
+- COMPONENT: `memory-bank/projectBrief.md` | USED: YES | CHANGED: NO | USEFUL: YES | WHAT WAS USEFUL: Clarified boundaries and scope. | EVIDENCE: `cat memory-bank/projectBrief.md`
+- COMPONENT: `memory-bank/activeContext.md` | USED: YES | CHANGED: YES | VERIFIED: YES | USEFUL: YES | WHAT WAS USEFUL: Tracked progress. | EVIDENCE: Replaced content.
+- COMPONENT: `memory-bank/progress.md` | USED: YES | CHANGED: YES | VERIFIED: YES | USEFUL: YES | WHAT WAS USEFUL: Recorded completion of rebuild. | EVIDENCE: Added entry.
 
 ## LIBRARY CONSULTATION REPORT
-- TASK GROUP: Audio
-- LIBRARY: Howler.js
-- VERSION: N/A (local implementation analyzed)
-- EXACT PATH: N/A (No .docs request made, native API understood via inspection of `app/lucky-card-reveal.js`)
-- USED: YES
-- USEFUL: YES
-- WHAT WAS USEFUL: Confirmed that `sound.play()`, `sound.volume()`, and `sound.rate()` correctly manage playback without needing synthetic oscillators.
-- EVIDENCE: Modified audio logic in `app/lucky-card-reveal.js`.
-- REASON: Audio synchronization was part of the request.
-
 - TASK GROUP: Polishing
 - LIBRARY: Framer Motion
-- VERSION: ^13.1.0
-- EXACT PATH: N/A (native API understood via inspection)
+- VERSION: Local
+- EXACT PATH: `app/lucky-card-reveal.js`
 - USED: YES
 - USEFUL: YES
-- WHAT WAS USEFUL: Confirmed `useAnimate` and `sequence` patterns.
-- EVIDENCE: Removed manual `time` scrubbing and enabled `autoplay: true`.
-- REASON: Fixing the static card issue required fixing the animation sequence.
+- WHAT WAS USEFUL: Choreographing the escalating physics strikes and SUMMON initial states.
+- EVIDENCE: Modified sequence arrays in `triggerCardDraw`.
 
-## OFFICIAL SOURCE / DOCUMENT CONSULTATION REPORT
-- DOCUMENT: Jules Documentation
-- EXACT PATH: jules.google/docs
-- USED: NO
-- USEFUL: NO
-- WHAT WAS USEFUL: N/A
-- EVIDENCE: N/A
-- REASON: Current codebase inspection was sufficient to resolve the issue.
-
-- DOCUMENT: Gemini CLI
-- EXACT PATH: /google-gemini/gemini-cli
-- USED: NO
-- USEFUL: NO
-- WHAT WAS USEFUL: N/A
-- EVIDENCE: N/A
-- REASON: Current codebase inspection was sufficient.
+- TASK GROUP: Audio
+- LIBRARY: Howler.js
+- VERSION: Local
+- EXACT PATH: `app/lucky-card-reveal.js`
+- USED: YES
+- USEFUL: YES
+- WHAT WAS USEFUL: Scaling intensity per hit and fading out tails smoothly.
+- EVIDENCE: Modified `playAudioSequence` logic.
 
 ## VERIFICATION & BUILD
-- `pnpm run build` executed successfully within the Next.js App Router environment.
-- `jules-verify.sh` executed successfully.
+- `pnpm run build` executed successfully.
+- `jules-verify.sh` executed and all verification checks passed successfully.
 - No secrets exposed.
-- 495 MB cap respected (Build output is normal size).
-- Result matches requested outcome.
+- 495 MB cap respected.
+- Post-reveal logic and card interaction remains protected.
 
 ## USEFUL RESULT
 YES
