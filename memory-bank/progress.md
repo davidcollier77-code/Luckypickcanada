@@ -10,3 +10,9 @@
 - Tuned Howler.js layers for distinct atmospheric escalation and clean up on completion.
 ## Remove Audio from Lucky Card Reveal (2024-XX-XX)
 - Disabled audio execution in the Lucky Card Reveal by modifying `playAudioSequence` while preserving preload state and visual behavior.
+
+## Cinematic Lucky Card Reveal System
+- Overhauled the Lucky Card visual sequence (in `app/lucky-card-reveal.js`).
+- Replaced the simple flashing effect with an advanced cinematic sequence: energy forming in a top Aurora and branching lightning/plasma beams physically striking the card.
+- Re-choreographed the Framer Motion sequence to prevent the card from distorting or scaling up while preserving physical impacts (shaking/recoil).
+- Ensured visual impacts scale accurately according to the 3, 5, and 7 tier system.

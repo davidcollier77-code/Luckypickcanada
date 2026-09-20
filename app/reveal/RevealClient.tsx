@@ -6,7 +6,7 @@ import CollectionBinder from '../collection-binder';
 
 export default function RevealClient() {
   return (
-    <div className="lucky-site-shell homepage-experience flex flex-col pt-24 pb-12">
+    <div className="lucky-site-shell homepage-experience flex flex-col pt-32 pb-12">
       <div className="aurora-container">
         <div className="aurora-layer aurora-layer-1"></div>
         <div className="aurora-layer aurora-layer-2"></div>
