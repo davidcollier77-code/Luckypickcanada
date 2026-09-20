@@ -193,10 +193,12 @@ export default function LuckyCardReveal() {
       // Subtle atmospheric dust/noise in the upper area
       const timeScale = elapsed * 0.2;
       for (let i = 0; i < 20; i++) {
-         const pX = (w * 0.1 * i + Math.sin(timeScale + i) * 50) % w;
-         const pY = (h * 0.2 * Math.cos(timeScale * 0.5 + i) + h * 0.1) % (h * 0.4);
+         const rawPx = (w * 0.1 * i + Math.sin(timeScale + i) * 50);
+         const rawPy = (h * 0.2 * Math.cos(timeScale * 0.5 + i) + h * 0.1);
+         const pX = ((rawPx % w) + w) % w;
+         const pY = ((rawPy % (h * 0.4)) + (h * 0.4)) % (h * 0.4);
          ctx.beginPath();
-         ctx.arc(Math.abs(pX), Math.abs(pY), 1 + Math.sin(elapsed * 2 + i), 0, Math.PI * 2);
+         ctx.arc(pX, pY, 1 + Math.sin(elapsed * 2 + i), 0, Math.PI * 2);
          ctx.fillStyle = `rgba(255, 255, 255, ${ambientProg * 0.2})`;
          ctx.fill();
       }
@@ -341,12 +343,17 @@ export default function LuckyCardReveal() {
             const controlPointY = fStartY + (impactY - fStartY) * 0.3 + Math.cos(elapsed * 3 + f) * 100;
 
             // Trace the path up to current progress
-            // Quadratic Bezier interpolation
-            let traceX = fStartX;
-            let traceY = fStartY;
+            // Quadratic Bezier interpolation calculation for the intermediate point
+            const t = progress;
+            const targetCX = Math.pow(1-t, 2)*fStartX + 2*(1-t)*t*controlPointX + Math.pow(t, 2)*currentX;
+            const targetCY = Math.pow(1-t, 2)*fStartY + 2*(1-t)*t*controlPointY + Math.pow(t, 2)*currentY;
 
-            // Draw path smoothly
-            ctx.quadraticCurveTo(controlPointX, controlPointY, currentX, currentY);
+            // Adjust the control point dynamically for the partial curve to prevent jumping ahead
+            const currentControlX = fStartX + (controlPointX - fStartX) * t;
+            const currentControlY = fStartY + (controlPointY - fStartY) * t;
+
+            // Draw path smoothly up to current progress
+            ctx.quadraticCurveTo(currentControlX, currentControlY, currentX, currentY);
             ctx.stroke();
 
             // Inner Plasma Core
