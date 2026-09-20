@@ -216,6 +216,11 @@ export default function LuckyCardReveal() {
           soundsRef.current.firework.rate(isFinal ? 0.8 : 0.9 + (idx * 0.1), id);
 
           // Layer lightning (magic sparkles) on top for texture
+          if (soundsRef.current.aurora) {
+            const aId = soundsRef.current.aurora.play();
+            soundsRef.current.aurora.volume(Math.min(intensity * 0.4, 0.4), aId);
+            soundsRef.current.aurora.rate(isFinal ? 1.0 : 1.2 + (idx * 0.1), aId);
+          }
           if (soundsRef.current.lightning) {
             const lId = soundsRef.current.lightning.play();
             soundsRef.current.lightning.volume(Math.min(intensity * 0.5, 0.5), lId);
@@ -226,7 +231,7 @@ export default function LuckyCardReveal() {
     });
 
     const finalStrikeTime = schedule[schedule.length - 1];
-    const revealTime = finalStrikeTime + 0.65;
+    const revealTime = finalStrikeTime + 0.1;
 
     activeTimeoutsRef.current.push(setTimeout(() => {
       if (soundsRef.current.shimmer) {
@@ -270,7 +275,7 @@ export default function LuckyCardReveal() {
 
     const schedule = STRIKE_SCHEDULES[tier];
     const finalStrike = schedule[schedule.length - 1];
-    const flipAt = finalStrike + 0.65;
+    const flipAt = finalStrike + 0.1;
     const maxLifetime = flipAt + 3.0;
     let totalEnergyAbsorbed = 0;
 
@@ -409,16 +414,22 @@ export default function LuckyCardReveal() {
 
         ctx.lineWidth = isFinal ? 60 : 30 + (idx * 5);
         ctx.strokeStyle = `rgba(${beamColor}, ${0.2 * opacity})`;
+        // Aurora ribbon bezier path
+        const cp1x = startX + (currentX - startX) * 0.3 + Math.sin(elapsed * 5 + idx) * 100;
+        const cp1y = startY + (currentY - startY) * 0.2;
+        const cp2x = startX + (currentX - startX) * 0.7 - Math.sin(elapsed * 4 - idx) * 100;
+        const cp2y = startY + (currentY - startY) * 0.8;
+
         ctx.beginPath();
         ctx.moveTo(startX, startY);
-        ctx.lineTo(currentX, currentY);
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, currentX, currentY);
         ctx.stroke();
 
         ctx.lineWidth = isFinal ? 20 : 8 + (idx * 2);
         ctx.strokeStyle = `rgba(255, 255, 255, ${0.8 * opacity})`;
         ctx.beginPath();
         ctx.moveTo(startX, startY);
-        ctx.lineTo(currentX, currentY);
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, currentX, currentY);
         ctx.stroke();
 
         ctx.beginPath();
@@ -533,7 +544,7 @@ export default function LuckyCardReveal() {
     const finalStrikeTime = schedule[schedule.length - 1];
     fallbackTimerRef.current = setTimeout(() => {
         executeRevealState();
-    }, (finalStrikeTime + 0.65 + 0.8 + 0.2) * 1000); // 200ms grace period after the 0.8s flip completes
+    }, (finalStrikeTime + 0.1 + 0.8 + 0.2) * 1000); // 200ms grace period after the 0.8s flip completes
 
     if (!shouldReduceMotion) {
       rafRef.current = requestAnimationFrame(renderCanvas);
@@ -604,7 +615,7 @@ export default function LuckyCardReveal() {
     });
 
     const finalStrike = schedule[schedule.length - 1];
-    const flipAt = finalStrike + 0.65;
+    const flipAt = finalStrike + 0.1;
 
     sequence.push([cardRef.current, { scale: 1, x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
