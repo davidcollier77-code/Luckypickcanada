@@ -49,7 +49,7 @@ For the selected group, Jules MUST:
 - Read ".docs/<task-group>/_google-gemini_gemini-cli.md".
 - Read ".docs/<task-group>/_websites_ai_google_dev_gemini-api.md".
 - Check ".docs/manifest.json".
-- Use ALL required documents and libraries in that group's documented inventory.
+- Use all available documents and libraries that are checked into the repository for that group.
 - Record the group, library, version, and exact ".docs" path.
 
 🔴 Do not select, rank, or skip documents or libraries within the selected group.
@@ -74,7 +74,6 @@ For EVERY task, Jules MUST use every listed repository system and report:
 - ".specify/workflows/speckit/workflow.yml"
 - ".specify/memory/constitution.md"
 - ".specify/integrations/speckit.manifest.json"
-- repository runbooks
 - source
 - configuration
 - tests
