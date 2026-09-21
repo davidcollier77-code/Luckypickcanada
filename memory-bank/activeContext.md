@@ -1,14 +1,19 @@
 # Active Context
 
 ## Current Work
-- Successfully investigated and rebuilt the Lucky Card Reveal cinematic in `app/lucky-card-reveal.js`.
-- Implemented the explicit 3, 5, 7 hit count model (Standard, Premium, Flagship).
-- Choreographed the proton-pack-style single-beam interaction (enter -> strike -> grab -> wrap -> hold -> shake -> release -> retract).
-- Enforced single-beam constraints with blue/pink alternating patterns for non-final hits, concluding with an intense tier-colored final lock/flip followed by a fading afterglow.
+- Performing final cinematic visual polish on the Lucky Card Reveal component (`app/lucky-card-reveal.js`).
+- Replaced jagged lightning bolt geometry with smooth, organic energy ribbons utilizing Bezier curves.
+- Added strong card reaction physics (shaking) to every single non-final beam impact rather than just the final one.
+- Updated the Standard tier's final beam color to an explicit Bronze/Copper hue for visual distinction.
+- Implemented a tiered residual energy afterglow that slowly dissipates after the final card flip.
+- Enhanced the final impact to have a more pronounced physics reaction on the card prior to the flip.
 
 ## Recent Changes
-- Overhauled `renderCanvas` in `app/lucky-card-reveal.js` to draw segmented lightning arcs and wrap radiuses synced to the `hitLocalTime`.
-- Replaced the simple floating Framer Motion sequence in `triggerCardDraw` with a dynamic sequence iterating through the precise number of hits, syncing physical container shakes to the exact grip-break timeline.
+- Overhauled `app/lucky-card-reveal.js` canvas drawing routines to use `drawEnergyRibbon`.
+- Adjusted Framer Motion sequence choreography for tier hits.
+- Adjusted final hit impact variables.
+- Added tiered fizzling/afterglow effect following the flip sequence.
+- Verified build and tests.
 
 ## Next Steps
-- Submit the PR with the mandated AGENTS.md governance format.
+- Submit PR with AGENTS.md governance requirements.
