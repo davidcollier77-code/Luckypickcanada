@@ -114,7 +114,7 @@ export default function LuckyCardReveal() {
   }, []);
 
   // Helpers for lightning drawing
-    const drawEnergyRibbon = (ctx, startX, startY, endX, endY, width, color) => {
+    const drawEnergyRibbon = (ctx, startX, startY, endX, endY, width, color, timestamp) => {
     ctx.beginPath();
     ctx.moveTo(startX, startY);
 
@@ -124,7 +124,7 @@ export default function LuckyCardReveal() {
     const dy = endY - startY;
     const dist = Math.sqrt(dx*dx + dy*dy);
 
-    const time = Date.now() / 200;
+    const time = (timestamp - rafStartTimeRef.current) / 200;
     const offset = Math.sin(time + startX) * (dist * 0.2);
 
     const cp1X = startX + dx * 0.3 - dy * 0.2 + offset;
@@ -250,8 +250,8 @@ export default function LuckyCardReveal() {
 
           if (alpha > 0) {
             const beamWidth = 8 + Math.random() * 4;
-            drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth, `rgba(${hitColor}, ${alpha * 0.6})`);
-            drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth/2, `rgba(255, 255, 255, ${alpha})`);
+            drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth, `rgba(${hitColor}, ${alpha * 0.6})`, timestamp);
+            drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, timestamp);
 
             if (showWrap) {
               const radius = cardW * 0.7;
@@ -297,8 +297,8 @@ export default function LuckyCardReveal() {
            }
 
            const beamWidth = (12 * intensityMult) + Math.random() * 6;
-           drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth, `rgba(${hitColor}, ${alpha * 0.7})`);
-           drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth/2, `rgba(255, 255, 255, ${alpha})`);
+           drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth, `rgba(${hitColor}, ${alpha * 0.7})`, timestamp);
+           drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, timestamp);
 
            if (showWrap) {
               const baseRadius = cardW * 0.7;
