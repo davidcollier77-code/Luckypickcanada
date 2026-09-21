@@ -54,7 +54,6 @@ export default function LuckyCardReveal() {
   const fallbackTimerRef = useRef(null);
 
   const particlesRef = useRef([]);
-  const lightningOffsetsRef = useRef(0);
 
   useEffect(() => {
     try {
