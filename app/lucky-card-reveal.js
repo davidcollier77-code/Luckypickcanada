@@ -237,8 +237,8 @@ export default function LuckyCardReveal() {
             showWrap = true;
             wrapProgress = 1;
             // Add erratic offset to beam target as it breaks
-            currentTargetX = cx + (Math.random() - 0.5) * 40;
-            currentTargetY = cy + (Math.random() - 0.5) * 40;
+            currentTargetX = cx;
+            currentTargetY = cy;
             alpha = 1 - ((hitLocalTime - P_HOLD) / (P_SHAKE - P_HOLD)) * 0.5; // Starts fading/losing energy
           } else {
             // Retracting
