@@ -163,8 +163,9 @@ export default function LuckyCardReveal() {
     const schedule = STRIKE_SCHEDULES[tier];
     const finalStrike = schedule[schedule.length - 1];
     const flipAt = finalStrike; // Synchronize card flip exactly with final visual impact
+    const flipDuration = 0.8;
     const residualDuration = 2.0;
-    const maxLifetime = flipAt + residualDuration + 1.0;
+    const maxLifetime = flipAt + flipDuration + residualDuration + 1.0;
 
     let maskLayers = [];
     let maxFlashOpacity = 0;
@@ -500,8 +501,9 @@ export default function LuckyCardReveal() {
     }
 
     // Residual Glow Handling
-    if (elapsed > flipAt) {
-        const residualElapsed = elapsed - flipAt;
+    const flipCompletedAt = flipAt + 0.8;
+    if (elapsed > flipCompletedAt) {
+        const residualElapsed = elapsed - flipCompletedAt;
         if (residualElapsed < 2.0 && fgCtx) {
             const fadeOut = 1 - Math.max(0, (residualElapsed - 1.0) / 1.0); // Start fading after 1 second
             const pulse = 1 + Math.sin(residualElapsed * Math.PI * 2) * 0.2;
