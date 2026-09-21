@@ -10,3 +10,7 @@
 **Vulnerability:** The `functions/api/oracle.js` Cloudflare function used `Access-Control-Allow-Origin: "*"` which allowed any domain to make cross-origin requests to this endpoint. This could potentially allow malicious sites to interact with the API on behalf of a user.
 **Learning:** Cloudflare Pages functions and other edge functions often have a permissive default or copy-pasted configuration for CORS. It is critical to restrict CORS origins to only trusted domains.
 **Prevention:** Always set `Access-Control-Allow-Origin` to specific, trusted domains rather than using a wildcard (`*`).
+## 2026-09-21 - [Security Enhancement] HTTP Security Headers Added to Next.js Config
+**Vulnerability:** The application was missing standard HTTP security headers (such as Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, and Referrer-Policy).
+**Learning:** Next.js applications deployed to Cloudflare Pages (or Vercel) don't include these strict security headers by default. This could leave the application open to clickjacking, MIME-type sniffing, or cross-site scripting attacks, and weakens the HSTS posture.
+**Prevention:** Always configure standard HTTP security headers within the `headers()` function in `next.config.mjs` to enforce defense in depth.

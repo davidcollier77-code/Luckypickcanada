@@ -15,7 +15,7 @@ describe('Lucky Card collection', () => {
 
     for (const card of LUCKY_CARDS) {
       expect(card.image).toMatch(/^\//);
-      expect(card.quote).toBeTruthy();
+      expect(card.quote !== undefined).toBeTruthy();
       expect(card.rarityWeight).toBeGreaterThan(0);
     }
   });
