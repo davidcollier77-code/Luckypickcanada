@@ -132,7 +132,7 @@
   * REASON: Target file for the feature.
 
 ## Exact Implementation Performed
-1. Adjusted `STRIKE_SCHEDULES` to deliberately lengthen the pacing: [Standard: 3, Premium: 4, Flagship: 5].
+1. Adjusted `STRIKE_SCHEDULES` to deliberately lengthen the pacing: Standard [3.0, 6.0, 9.5], Premium [3.0, 6.0, 9.0, 12.5], Flagship [3.0, 6.0, 9.0, 12.0, 15.5].
 2. Enforced correct `tierColors` routing across Standard/Premium/Flagship.
 3. Updated Bezier control curves in the canvas loop to attempt to wrap before failing.
 4. Corrected residual glow logic so it explicitly waits for `flipAt + 0.8` (when the flip fully finishes) before beginning the 2-second residual aura, fixing the bug identified in PR #1185.
