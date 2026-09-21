@@ -307,7 +307,9 @@ export default function LuckyCardReveal() {
     if (elapsed < maxLifetime) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     } else {
-      setIsGenerating(false);
+      fallbackTimerRef.current = setTimeout(() => {
+        setIsGenerating(false);
+      }, 100);
     }
   };
 
