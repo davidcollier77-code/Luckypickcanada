@@ -16,14 +16,11 @@ function localDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-const STRIKE_SCHEDULES = {
-  // Pacing: Time enough to form, travel, wrap, impact, shake, release, and settle.
-  // Standard: 3 impacts
-  standard: [3.0, 6.0, 9.5],
-  // Premium: 4 impacts
-  premium: [3.0, 6.0, 9.0, 12.5],
-  // Flagship: 5 impacts
-  flagship: [3.0, 6.0, 9.0, 12.0, 15.5]
+// Adjusted schedules for a smooth, gathering energy reveal
+const REVEAL_SCHEDULES = {
+  standard: { duration: 4.0, flipAt: 3.2 },
+  premium: { duration: 5.0, flipAt: 4.0 },
+  flagship: { duration: 6.0, flipAt: 4.8 }
 };
 
 export default function LuckyCardReveal() {
@@ -43,7 +40,6 @@ export default function LuckyCardReveal() {
   const cardFrontRef = useRef(null);
   const cardFlipRef = useRef(null);
 
-  // Canvas refs for visual effects
   const bgCanvasRef = useRef(null);
   const fgCanvasRef = useRef(null);
   const rafRef = useRef(null);
@@ -51,11 +47,13 @@ export default function LuckyCardReveal() {
   const activeTierRef = useRef('standard');
   const isRevealedRef = useRef(false);
   const activeCardRef = useRef(null);
-  const lastMaskValRef = useRef('');
   const cardMetricsRef = useRef({ cx: 140, cy: 202.5, w: 280, h: 405 });
-  const strikeTargetsRef = useRef({});
   const fallbackTimerRef = useRef(null);
-  const branchCacheRef = useRef({});
+
+  // Particle systems state for the render loop
+  const particlesRef = useRef([]);
+  const orbsRef = useRef([]);
+  const hasBurstRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -99,55 +97,33 @@ export default function LuckyCardReveal() {
         fallbackTimerRef.current = null;
     }
 
-    // Persist the card immediately to localStorage
-    try {
-      const currentCard = activeCardRef.current;
-      if (currentCard) {
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            cardId: currentCard.id,
-            quote: currentCard.quote,
-            revealDate: localDateKey(),
-          }));
-          const unlockedStr = window.localStorage.getItem('unlockedCards');
-          let unlocked = unlockedStr ? JSON.parse(unlockedStr) : [];
-          if (!unlocked.includes(currentCard.id)) {
-            unlocked.push(currentCard.id);
-            window.localStorage.setItem('unlockedCards', JSON.stringify(unlocked));
-            window.dispatchEvent(new Event('unlockedCardsUpdated'));
-          }
-      }
-    } catch (e) {}
-
-    // We wait 3000ms after the reveal state triggers before we unmount the canvas
-    // This safely covers the 3.0s `maxLifetime` post-flip padding from `renderCanvas`
-    // while ensuring the UI interaction loop completes cleanly.
-    window.setTimeout(() => {
-      setIsGenerating(false);
-    }, 3000);
+    if (activeCardRef.current && typeof window !== 'undefined') {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          cardId: activeCardRef.current.id,
+          quote: activeCardRef.current.quote,
+          revealDate: localDateKey()
+        }));
+      } catch (e) {}
+    }
 
     if (cardFrontRef.current) {
         cardFrontRef.current.style.maskImage = 'none';
-        cardFrontRef.current.style.WebkitMaskImage = 'none';
-        lastMaskValRef.current = 'none';
+        cardFrontRef.current.style.webkitMaskImage = 'none';
     }
   }, []);
 
+  // --- NEW CINEMATIC RENDER LOOP ---
   const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
-
     if (!rafStartTimeRef.current) rafStartTimeRef.current = timestamp;
 
-    // Master Clock: requestAnimationFrame timestamp
     let elapsed = (timestamp - rafStartTimeRef.current) / 1000;
 
-    // Framer Motion sequence is now driven automatically to prevent static card issues
-
     const ctx = bgCanvasRef.current.getContext('2d');
-
     const w = bgCanvasRef.current.width;
     const h = bgCanvasRef.current.height;
 
-    // Use cached card metrics to avoid DOM reads in hot path
     const { cx, cy, w: cardW, h: cardH } = cardMetricsRef.current;
     const tier = activeTierRef.current;
 
@@ -158,388 +134,179 @@ export default function LuckyCardReveal() {
       fgCtx.clearRect(0, 0, w, h);
     }
 
-
-
-    const schedule = STRIKE_SCHEDULES[tier];
-    const finalStrike = schedule[schedule.length - 1];
-    const flipAt = finalStrike; // Synchronize card flip exactly with final visual impact
-    const flipDuration = 0.8;
-    const residualDuration = 2.0;
-    const maxLifetime = flipAt + flipDuration + residualDuration + 1.0;
-
-    let maskLayers = [];
-    let maxFlashOpacity = 0;
-    let flashRgb = '255, 255, 255';
-    let isFinalFlash = false;
+    const schedule = REVEAL_SCHEDULES[tier] || REVEAL_SCHEDULES.standard;
+    const { flipAt, duration } = schedule;
+    const maxLifetime = duration + 2.0;
 
     const tierColors = {
-      standard: ['14, 165, 233', '217, 70, 239', '16, 185, 129'], // Blue, Pink, Emerald (Standard Final)
-      premium: ['14, 165, 233', '217, 70, 239', '14, 165, 233', '59, 130, 246'], // Blue, Pink, Blue, Premium Blue (Final)
-      flagship: ['14, 165, 233', '217, 70, 239', '14, 165, 233', '217, 70, 239', '234, 179, 8'] // Blue, Pink, Blue, Pink, Gold (Flagship Final)
+      standard: ['14, 165, 233', '217, 70, 239'], // Blue, Pink
+      premium: ['14, 165, 233', '217, 70, 239', '59, 130, 246'],
+      flagship: ['14, 165, 233', '217, 70, 239', '234, 179, 8'] // Blue, Pink, Gold
     };
+    const colors = tierColors[tier];
 
-    // Draw Ambient Edge Glow
+    // 1. Ambient Background Glow (Smooth, Breathing)
     if (elapsed > 0) {
-      const ambientProg = Math.min(1, elapsed / 1.5);
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
 
-      const baseColor = tierColors[tier][0];
+      const breathe = Math.sin(elapsed * 2) * 0.1 + 0.9;
+      const intensity = Math.min(1, elapsed / 2) * (elapsed > flipAt ? Math.max(0, 1 - (elapsed - flipAt)) : 1);
 
-      // Top Left Glow
-      const tlGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, w * 0.8);
-      tlGrad.addColorStop(0, `rgba(${baseColor}, ${ambientProg * 0.4})`);
-      tlGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = tlGrad;
-      ctx.fillRect(0, 0, w, h * 0.5);
+      const bgGrad = ctx.createRadialGradient(cx, cy, cardW * 0.5, cx, cy, Math.max(w, h) * 0.8 * breathe);
+      bgGrad.addColorStop(0, `rgba(${colors[0]}, ${0.15 * intensity})`);
+      bgGrad.addColorStop(0.5, `rgba(${colors[1] || colors[0]}, ${0.05 * intensity})`);
+      bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-      // Top Right Glow
-      const trGrad = ctx.createRadialGradient(w, 0, 0, w, 0, w * 0.8);
-      trGrad.addColorStop(0, `rgba(${baseColor}, ${ambientProg * 0.4})`);
-      trGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = trGrad;
-      ctx.fillRect(0, 0, w, h * 0.5);
-
-      // Subtle atmospheric dust/noise in the upper area
-      const timeScale = elapsed * 0.2;
-      for (let i = 0; i < 20; i++) {
-         const rawPx = (w * 0.1 * i + Math.sin(timeScale + i) * 50);
-         const rawPy = (h * 0.2 * Math.cos(timeScale * 0.5 + i) + h * 0.1);
-         const pX = ((rawPx % w) + w) % w;
-         const pY = ((rawPy % (h * 0.4)) + (h * 0.4)) % (h * 0.4);
-         ctx.beginPath();
-         ctx.arc(pX, pY, 1 + Math.sin(elapsed * 2 + i), 0, Math.PI * 2);
-         ctx.fillStyle = `rgba(255, 255, 255, ${ambientProg * 0.2})`;
-         ctx.fill();
-      }
-
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, w, h);
       ctx.restore();
     }
 
-    schedule.forEach((strikeTime, idx) => {
-      const timeSinceStrike = elapsed - strikeTime;
-      const isFinal = idx === schedule.length - 1;
-      const colorArr = tierColors[tier] || tierColors.standard;
-      const beamColor = colorArr[idx % colorArr.length];
-
-      // Build up anticipation energy before final strike
-      if (isFinal && elapsed > schedule[schedule.length - 2] && elapsed < strikeTime) {
-         const anticipationProgress = (elapsed - schedule[schedule.length - 2]) / (strikeTime - schedule[schedule.length - 2]);
-         ctx.save();
-         ctx.globalCompositeOperation = 'screen';
-         ctx.beginPath();
-         const drawRadius = (cardW * 2) * (1 - anticipationProgress * 0.5);
-         ctx.arc(cx, cy, drawRadius, 0, Math.PI * 2);
-         const antiGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, drawRadius);
-         antiGrad.addColorStop(0, `rgba(${beamColor}, ${anticipationProgress * 0.4})`);
-         antiGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-         ctx.fillStyle = antiGrad;
-         ctx.fill();
-         ctx.restore();
+    // 2. Manage Orbs (Volumetric Energy Fields)
+    if (elapsed < flipAt) {
+      if (Math.random() < 0.1 * (elapsed + 1)) {
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const angle = Math.random() * Math.PI * 2;
+        const dist = cardW * 1.5 + Math.random() * cardW;
+        orbsRef.current.push({
+          x: cx + Math.cos(angle) * dist,
+          y: cy + Math.sin(angle) * dist,
+          vx: -Math.cos(angle) * 20, // Move slowly towards center
+          vy: -Math.sin(angle) * 20,
+          radius: 50 + Math.random() * 150,
+          color: color,
+          life: 0,
+          maxLife: 1.5 + Math.random() * 1.5,
+          phase: Math.random() * Math.PI * 2
+        });
       }
-
-      // Flash calculation
-      if (timeSinceStrike > 0 && timeSinceStrike < 0.5) {
-        const flashIntensity = 1 - (timeSinceStrike / 0.5);
-        // Final strike flash is massive and luminous
-        const thisFlashMax = isFinal ? 1.0 : 0.4 + (idx * 0.1);
-        if (flashIntensity * thisFlashMax > maxFlashOpacity) {
-           maxFlashOpacity = flashIntensity * thisFlashMax;
-           flashRgb = beamColor;
-           isFinalFlash = isFinal;
-        }
-      }
-
-      // Materialization Mask (Reveal card front progressively)
-      if (timeSinceStrike >= 0) {
-        const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
-        const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
-        const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.25;
-
-        const relX = 50 + (Math.cos(targetAngle) * targetRadius / cardW) * 100;
-        const relY = 50 + (Math.sin(targetAngle) * targetRadius / cardH) * 100;
-
-        const matProgress = Math.min(1, timeSinceStrike / (isFinal ? 1.0 : 1.5));
-        const easedProg = 1 - Math.pow(1 - matProgress, 3);
-        const maskSize = isFinal ? 150 * easedProg : 40 + (30 * easedProg);
-
-        maskLayers.push(`radial-gradient(circle ${maskSize}% at ${relX}% ${relY}%, rgba(0,0,0,1) ${isFinal ? 50 : 20}%, rgba(0,0,0,0) 100%)`);
-      }
-
-      // Strike / Volumetric Energy Filaments
-      const travelTime = 0.4; // Slightly slower for more cinematic feel
-      const fadeTime = isFinal ? 0.8 : 0.4;
-      const strikeStart = strikeTime - travelTime;
-
-      if (elapsed >= strikeStart && elapsed < strikeTime + fadeTime) {
-
-        // Determine origin points (corners / sides) based on strike index
-        const origins = [
-            { x: 0, y: 0 },         // Top Left
-            { x: w, y: 0 },         // Top Right
-            { x: -50, y: h * 0.3 }, // Mid Left offscreen
-            { x: w + 50, y: h * 0.3 },// Mid Right offscreen
-            { x: w * 0.2, y: -50 }, // Top Center-Left
-            { x: w * 0.8, y: -50 }  // Top Center-Right
-        ];
-
-        // Final strike comes from all directions (we use a composite approach)
-        const origin = isFinal ? { x: w/2, y: -100 } : origins[idx % origins.length];
-
-        // Add random variance to start position
-        const startX = isFinal ? w/2 + Math.sin(elapsed*5)*200 : origin.x;
-        const startY = isFinal ? -100 : origin.y;
-
-        let progress = 0;
-        let opacity = 0;
-
-        if (elapsed < strikeTime) {
-          const t = (elapsed - strikeStart) / travelTime;
-          // Smooth, sweeping acceleration
-          progress = t * t * (3 - 2 * t);
-          // Opacity builds quickly, peaks at impact
-          opacity = t * 1.5;
-        } else {
-          progress = 1;
-          // Ethereal fade out
-          opacity = Math.pow(1 - (timeSinceStrike / fadeTime), 1.5);
-        }
-
-        opacity = Math.max(0, Math.min(1, opacity));
-        const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
-        const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
-        const targetRadius = isFinal ? 0 : Math.min(cardW, cardH) * 0.25;
-
-        // Ensure we hit the card
-        let strikeTarget = { x: cx, y: cy };
-        if (cardRef.current) {
-            const rect = cardRef.current.getBoundingClientRect();
-            if (rect && rect.width > 0 && rect.height > 0) {
-                strikeTarget = {
-                    x: rect.left + rect.width / 2,
-                    y: rect.top + rect.height / 2
-                };
-            }
-        }
-
-        const impactX = strikeTarget.x + Math.cos(targetAngle) * targetRadius;
-        const impactY = strikeTarget.y + Math.sin(targetAngle) * targetRadius;
-
-        ctx.save();
-        ctx.globalCompositeOperation = 'screen';
-
-        // Draw multiple filaments converging
-        const numFilaments = isFinal ? 8 : 3;
-
-        for (let f = 0; f < numFilaments; f++) {
-
-            // If final, spread origins out for a converging blast
-            const fStartX = isFinal ? (w/2) + Math.cos(f * Math.PI/4) * (w) : startX;
-            const fStartY = isFinal ? -100 + Math.sin(f * Math.PI/4) * (h/2) : startY;
-
-            const currentX = fStartX + (impactX - fStartX) * progress;
-            const currentY = fStartY + (impactY - fStartY) * progress;
-
-            // Atmospheric Bloom / Scattering around the filament
-            ctx.lineWidth = isFinal ? 120 - (f*10) : 40 + (idx * 5) - (f*8);
-            ctx.strokeStyle = `rgba(${beamColor}, ${(isFinal ? 0.15 : 0.1) * opacity})`;
-            ctx.lineCap = 'round';
-
-            ctx.beginPath();
-            ctx.moveTo(fStartX, fStartY);
-
-            // Curved, organic path
-            // The beam should curve significantly as it approaches to look like it's trying to wrap/lock on
-            const wrapFactor = isFinal ? 100 : 250 + Math.sin(elapsed * 4 + f) * 100; // Wider arcs for failed attempts
-            const controlPointX = fStartX + (impactX - fStartX) * (isFinal ? 0.8 : 0.5) + (f % 2 === 0 ? wrapFactor : -wrapFactor);
-            const controlPointY = fStartY + (impactY - fStartY) * (isFinal ? 0.9 : 0.5);
-
-            // Trace the path up to current progress
-            // Quadratic Bezier interpolation calculation for the intermediate point
-            const t = progress;
-            const targetCX = Math.pow(1-t, 2)*fStartX + 2*(1-t)*t*controlPointX + Math.pow(t, 2)*currentX;
-            const targetCY = Math.pow(1-t, 2)*fStartY + 2*(1-t)*t*controlPointY + Math.pow(t, 2)*currentY;
-
-            // Adjust the control point dynamically for the partial curve to prevent jumping ahead
-            const currentControlX = fStartX + (controlPointX - fStartX) * t;
-            const currentControlY = fStartY + (controlPointY - fStartY) * t;
-
-            // Draw path smoothly up to current progress
-            ctx.quadraticCurveTo(currentControlX, currentControlY, currentX, currentY);
-            ctx.stroke();
-
-            // Inner Plasma Core
-            ctx.lineWidth = isFinal ? 15 - f : 4 + (idx * 0.5) - f;
-            ctx.strokeStyle = `rgba(255, 255, 255, ${0.7 * opacity})`;
-            ctx.stroke();
-
-            // Branching Electrical Filaments (Proton-energy effect)
-            // Cache branch decisions and geometry per strike/filament to prevent flicker
-            const branchKey = `${idx}-${f}`;
-            if (!branchCacheRef.current[branchKey]) {
-                // Precompute stable branch properties using deterministic values
-                const seed = idx * 73 + f * 17;
-                const rand1 = (Math.sin(seed * 0.123) * 0.5 + 0.5);
-                const rand2 = (Math.sin(seed * 0.456) * 0.5 + 0.5);
-                const rand3 = (Math.sin(seed * 0.789) * 0.5 + 0.5);
-                const rand4 = (Math.sin(seed * 1.234) * 0.5 + 0.5);
-                const rand5 = (Math.sin(seed * 1.567) * 0.5 + 0.5);
-                const rand6 = (Math.sin(seed * 1.890) * 0.5 + 0.5);
-                
-                branchCacheRef.current[branchKey] = {
-                    shouldBranch: rand1 > (isFinal ? 0.3 : 0.6),
-                    branchTFactor: 0.3 + rand2 * 0.6,
-                    angleOffset: (rand3 - 0.5) * Math.PI,
-                    branchLen: (20 + rand4 * 40) * (isFinal ? 1.5 : 1.0),
-                    midOffset1: (rand5 - 0.5) * 20,
-                    midOffset2: (rand6 - 0.5) * 20,
-                    lineWidth: isFinal ? 2 + rand1 * 2 : 1 + rand1
-                };
-            }
-            
-            const branch = branchCacheRef.current[branchKey];
-            if (branch.shouldBranch) {
-                ctx.beginPath();
-                // Start somewhere along the curve
-                const branchT = progress * branch.branchTFactor;
-                const branchStartX = Math.pow(1-branchT, 2)*fStartX + 2*(1-branchT)*branchT*controlPointX + Math.pow(branchT, 2)*currentX;
-                const branchStartY = Math.pow(1-branchT, 2)*fStartY + 2*(1-branchT)*branchT*controlPointY + Math.pow(branchT, 2)*currentY;
-
-                ctx.moveTo(branchStartX, branchStartY);
-                // Jagged branching
-                const branchEndX = branchStartX + Math.cos(branch.angleOffset) * branch.branchLen;
-                const branchEndY = branchStartY + Math.sin(branch.angleOffset) * branch.branchLen;
-
-                ctx.lineTo(branchStartX + (branchEndX - branchStartX)*0.5 + branch.midOffset1, branchStartY + (branchEndY - branchStartY)*0.5 + branch.midOffset2);
-                ctx.lineTo(branchEndX, branchEndY);
-
-                ctx.lineWidth = branch.lineWidth;
-                ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 * opacity})`;
-                ctx.stroke();
-
-                // Bloom for branch
-                ctx.lineWidth = isFinal ? 8 : 4;
-                ctx.strokeStyle = `rgba(${beamColor}, ${0.3 * opacity})`;
-                ctx.stroke();
-            }
-
-            // Energy convergence at the tip
-            ctx.beginPath();
-            ctx.arc(currentX, currentY, ctx.lineWidth * (isFinal ? 3 : 1.5), 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.9})`;
-            ctx.shadowColor = `rgba(${beamColor}, 1)`;
-            ctx.shadowBlur = 20;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
-
-        ctx.restore();
-      }
-
-      // Foreground Contact Flash and Particles
-      if (timeSinceStrike > 0 && timeSinceStrike < 0.3 && fgCtx) {
-          const flashOp = 1 - (timeSinceStrike / 0.3);
-          let strikeTarget = { x: cx, y: cy };
-          if (cardRef.current) {
-              const rect = cardRef.current.getBoundingClientRect();
-              if (rect && rect.width > 0 && rect.height > 0) {
-                  strikeTarget = {
-                      x: rect.left + rect.width / 2,
-                      y: rect.top + rect.height / 2
-                  };
-              }
-          }
-
-          fgCtx.save();
-          fgCtx.globalCompositeOperation = 'screen';
-
-          // Flash Burst
-          fgCtx.beginPath();
-          const radius = isFinal ? cardW * 2.5 : cardW * 0.8; // Increased final impact radius
-          fgCtx.arc(strikeTarget.x, strikeTarget.y, radius, 0, Math.PI * 2);
-          const flashGrad = fgCtx.createRadialGradient(strikeTarget.x, strikeTarget.y, 0, strikeTarget.x, strikeTarget.y, radius);
-          flashGrad.addColorStop(0, `rgba(255, 255, 255, ${flashOp})`);
-          flashGrad.addColorStop(0.3, `rgba(${beamColor}, ${flashOp * 0.7})`);
-          flashGrad.addColorStop(1, 'rgba(0,0,0,0)');
-          fgCtx.fillStyle = flashGrad;
-          fgCtx.fill();
-
-          // Impact Particles/Sparks
-          const numParticles = isFinal ? 60 : 12; // Double the particles on final strike
-          for(let p=0; p<numParticles; p++) {
-              const angle = (Math.PI * 2 / numParticles) * p + (elapsed * 5);
-              const dist = (timeSinceStrike * (isFinal ? 300 : 150)) * (0.5 + Math.abs(Math.sin(p * idx)) * 0.5);
-              const pX = strikeTarget.x + Math.cos(angle) * dist;
-              const pY = strikeTarget.y + Math.sin(angle) * dist;
-
-              fgCtx.beginPath();
-              fgCtx.arc(pX, pY, isFinal ? 3 : 2, 0, Math.PI * 2);
-              fgCtx.fillStyle = `rgba(${beamColor}, ${flashOp})`;
-              fgCtx.fill();
-          }
-
-          fgCtx.restore();
-      }
-    });
-
-    if (maxFlashOpacity > 0 && fgCtx) {
-      fgCtx.save();
-      fgCtx.globalCompositeOperation = 'screen';
-      fgCtx.fillStyle = `rgba(${flashRgb}, ${maxFlashOpacity * 0.4})`;
-      fgCtx.fillRect(0, 0, w, h);
-      fgCtx.restore();
     }
 
-    // Apply the progressive mask to the card front
-    if (cardFrontRef.current && !isRevealedRef.current) {
-        const maskVal = maskLayers.length > 0 ? maskLayers.join(', ') : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0))';
-        if (lastMaskValRef.current !== maskVal) {
-            cardFrontRef.current.style.maskImage = maskVal;
-            cardFrontRef.current.style.WebkitMaskImage = maskVal;
-            lastMaskValRef.current = maskVal;
-        }
+    // 3. Manage Particles (Ethereal Dust)
+    if (elapsed < flipAt) {
+       // Gathering dust
+       for(let i=0; i < 3; i++) {
+         const angle = Math.random() * Math.PI * 2;
+         const dist = cardW + Math.random() * cardW * 2;
+         particlesRef.current.push({
+            x: cx + Math.cos(angle) * dist,
+            y: cy + Math.sin(angle) * dist + (Math.random() * 200 - 100),
+            vx: -Math.cos(angle) * (10 + Math.random() * 40),
+            vy: -Math.sin(angle) * (10 + Math.random() * 40) - 20, // Slight upward drift
+            size: 1 + Math.random() * 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            life: 0,
+            maxLife: 2 + Math.random() * 1,
+            type: 'gather'
+         });
+       }
     }
 
-    // Residual Glow Handling
-    const flipCompletedAt = flipAt + 0.8;
-    if (elapsed > flipCompletedAt) {
-        const residualElapsed = elapsed - flipCompletedAt;
-        if (residualElapsed < 2.0 && fgCtx) {
-            const fadeOut = 1 - Math.max(0, (residualElapsed - 1.0) / 1.0); // Start fading after 1 second
-            const pulse = 1 + Math.sin(residualElapsed * Math.PI * 2) * 0.2;
-            const residualOpacity = fadeOut * pulse * 0.5;
-
-            const finalColorArr = tierColors[tier] || tierColors.standard;
-            const finalBeamColor = finalColorArr[schedule.length - 1] || finalColorArr[finalColorArr.length - 1];
-
-            fgCtx.save();
-            fgCtx.globalCompositeOperation = 'screen';
-            fgCtx.beginPath();
-            // Match card dimensions
-            fgCtx.rect(cx - cardW/2, cy - cardH/2, cardW, cardH);
-            fgCtx.fillStyle = `rgba(${finalBeamColor}, ${residualOpacity})`;
-            fgCtx.fill();
-
-            // Outer residual bloom
-            fgCtx.beginPath();
-            fgCtx.rect(cx - cardW, cy - cardH, cardW * 2, cardH * 2);
-            const resGrad = fgCtx.createRadialGradient(cx, cy, cardW/2, cx, cy, cardW);
-            resGrad.addColorStop(0, `rgba(${finalBeamColor}, ${residualOpacity * 0.5})`);
-            resGrad.addColorStop(1, 'rgba(0,0,0,0)');
-            fgCtx.fillStyle = resGrad;
-            fgCtx.fill();
-            fgCtx.restore();
-        }
+    // Burst at flip
+    if (elapsed >= flipAt && !hasBurstRef.current) {
+       hasBurstRef.current = true;
+       for(let i=0; i < 150; i++) {
+         const angle = Math.random() * Math.PI * 2;
+         const speed = 100 + Math.random() * 400;
+         particlesRef.current.push({
+            x: cx,
+            y: cy,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: 2 + Math.random() * 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            life: 0,
+            maxLife: 1.0 + Math.random() * 1.5,
+            type: 'burst'
+         });
+       }
+       // Add a massive flash orb
+       orbsRef.current.push({
+          x: cx, y: cy, vx: 0, vy: 0,
+          radius: cardW * 3,
+          color: '255, 255, 255',
+          life: 0, maxLife: 1.0,
+          phase: 0,
+          isFlash: true
+       });
     }
 
-    if (elapsed >= flipAt + 0.8) {
+    // Draw Orbs
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    for (let i = orbsRef.current.length - 1; i >= 0; i--) {
+      let orb = orbsRef.current[i];
+      orb.life += 1/60; // Approx delta time
+      orb.x += orb.vx * (1/60);
+      orb.y += orb.vy * (1/60);
+
+      let progress = orb.life / orb.maxLife;
+      if (progress >= 1) {
+        orbsRef.current.splice(i, 1);
+        continue;
+      }
+
+      let opacity = orb.isFlash ? Math.pow(1 - progress, 2) : Math.sin(progress * Math.PI) * 0.3;
+      let currentRadius = orb.isFlash ? orb.radius * (1 + progress) : orb.radius * (0.8 + 0.2 * Math.sin(orb.phase + elapsed * 3));
+
+      ctx.beginPath();
+      ctx.arc(orb.x, orb.y, currentRadius, 0, Math.PI * 2);
+      const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, currentRadius);
+      grad.addColorStop(0, `rgba(${orb.color}, ${opacity})`);
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Draw Particles (in FG to overlay card slightly, or BG)
+    const targetCtx = elapsed > flipAt && fgCtx ? fgCtx : ctx;
+    targetCtx.save();
+    targetCtx.globalCompositeOperation = 'screen';
+    for (let i = particlesRef.current.length - 1; i >= 0; i--) {
+      let p = particlesRef.current[i];
+      p.life += 1/60;
+
+      if (p.type === 'burst') {
+          p.vx *= 0.92; // Drag
+          p.vy *= 0.92;
+          p.vy += 2; // Gravity
+      } else {
+          // Swirl effect for gathering
+          const angleToCenter = Math.atan2(cy - p.y, cx - p.x);
+          p.vx += Math.cos(angleToCenter) * 2;
+          p.vy += Math.sin(angleToCenter) * 2;
+          p.vx *= 0.95;
+          p.vy *= 0.95;
+      }
+
+      p.x += p.vx * (1/60);
+      p.y += p.vy * (1/60);
+
+      let progress = p.life / p.maxLife;
+      if (progress >= 1) {
+        particlesRef.current.splice(i, 1);
+        continue;
+      }
+
+      let opacity = p.type === 'burst' ? (1 - progress) : Math.sin(progress * Math.PI);
+
+      targetCtx.beginPath();
+      targetCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      targetCtx.fillStyle = `rgba(${p.color}, ${opacity * 0.8})`;
+      targetCtx.fill();
+    }
+    targetCtx.restore();
+
+
+    if (elapsed >= flipAt + 0.5) {
         executeRevealState();
     }
 
     if (elapsed < maxLifetime) {
       rafRef.current = requestAnimationFrame(renderCanvas);
     } else {
-      // Safety release
       setIsGenerating(false);
     }
   };
@@ -558,11 +325,8 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
 
-    const schedule = STRIKE_SCHEDULES[card.tier];
+    const schedule = REVEAL_SCHEDULES[card.tier] || REVEAL_SCHEDULES.standard;
 
-    // Size both canvases after their conditional mount and before scheduling the render loop.
-    // This ensures the canvas backing dimensions are established before the first render frame,
-    // preventing the default 300×150 backing size from clipping beam/particle effects.
     requestAnimationFrame(() => {
       if (bgCanvasRef.current) {
         bgCanvasRef.current.width = window.innerWidth;
@@ -573,14 +337,15 @@ export default function LuckyCardReveal() {
         fgCanvasRef.current.height = window.innerHeight;
       }
 
-      // Now schedule the render loop with properly sized canvases
       if (!shouldReduceMotion) {
+        particlesRef.current = [];
+        orbsRef.current = [];
+        hasBurstRef.current = false;
         rafRef.current = requestAnimationFrame(renderCanvas);
       }
     });
     rafStartTimeRef.current = 0;
 
-    // Cache card geometry for render loop
     if (cardRef.current) {
         const rect = cardRef.current.getBoundingClientRect();
         if (rect && rect.width > 0 && rect.height > 0) {
@@ -592,87 +357,35 @@ export default function LuckyCardReveal() {
             };
         }
     }
-    lastMaskValRef.current = '';
-    strikeTargetsRef.current = {};
 
-    // Timer removed in favor of Framer Motion animation completion callback
-
-
-    // --- FRAMER MOTION CHOREOGRAPHY ---
+    // --- NEW FRAMER MOTION CHOREOGRAPHY ---
     const sequence = [];
 
-    // Initial state: SUMMON and FORM (0 to 1.0s)
-    sequence.push([cardRef.current, { y: 20, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0.1 }]);
+    // Cinematic Float & Charge
+    const floatDuration = schedule.flipAt;
+
+    // Smooth initial lift
+    sequence.push([cardRef.current, { y: 30, scale: 0.95, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0 }]);
     sequence.push([cardFlipRef.current, { rotateY: 0 }, { duration: 0 }]);
-    sequence.push([cardRef.current, { opacity: 1, filter: "brightness(0.3)", y: 0 }, { at: 0.1, duration: 0.9, ease: 'easeOut' }]);
+    sequence.push([cardRef.current, { opacity: 1, filter: "brightness(0.5)", y: -10, scale: 1.0 }, { at: 0.1, duration: 2.0, ease: 'easeOut' }]);
 
-    // Synchronize physical reactions with strikes
-    schedule.forEach((strikeTime, idx) => {
-      const isFinal = idx === schedule.length - 1;
-
-      // Reaction intensity scales with index and tier
-      let basePower = 5 + (idx * 4);
-      let baseRot = 2 + idx;
-
-      if (card.tier === 'premium') { basePower *= 1.3; baseRot *= 1.3; }
-      if (card.tier === 'flagship') { basePower *= 1.6; baseRot *= 1.6; }
-
-      const power = isFinal ? Math.min(45, basePower * 2.5) : Math.min(30, basePower * 1.5);
-      const rotPower = isFinal ? Math.min(15, baseRot * 2.0) : Math.min(10, baseRot * 1.5);
-
-      // Determine direction of strike based on angle Map
-      const angleMap = [Math.PI * -0.25, Math.PI * -0.75, Math.PI * 0.25, Math.PI * 0.75, Math.PI * -0.5, Math.PI * 0.5, 0];
-      const targetAngle = isFinal ? 0 : angleMap[idx % angleMap.length];
-
-      const dirX = isFinal ? 0 : Math.cos(targetAngle);
-      const dirY = isFinal ? 1 : Math.sin(targetAngle); // Hit pushes it down/back slightly
-      const rotDir = isFinal ? 0 : (dirX > 0 ? 1 : -1);
-
-      const shakeDur = isFinal ? 0.8 : 0.5; // Brief, synchronized shake, leaves plenty of time to settle
-      const scaleUp = isFinal ? 1.4 : 1.1 + (idx * 0.05); // Escalating scale
-      const finalScale = isFinal ? 1.2 : 1.0;
-
-      const recoilX = power * dirX;
-      const recoilY = (power * 0.5) * dirY;
-      const recoilRot = rotPower * rotDir;
-
-      // Evolving brightness/glow
-      const brightStart = isFinal ? "brightness(3)" : `brightness(${1.2 + idx * 0.2})`;
-      const brightEnd = isFinal ? "brightness(1)" : `brightness(${0.4 + idx * 0.1})`;
-
-      sequence.push([
+    // Slow hovering levitation while charging
+    sequence.push([
         cardRef.current,
-        {
-          x: [0, recoilX, -recoilX * 0.5, recoilX * 0.2, 0],
-          y: [0, recoilY, -recoilY * 0.3, 0],
-          rotateZ: [0, recoilRot, -recoilRot * 0.4, 0],
+        { y: [-10, -25, -10], filter: ["brightness(0.5)", "brightness(2.5)", "brightness(1)"] },
+        { at: 1.0, duration: floatDuration - 1.0, ease: "easeInOut" }
+    ]);
 
-          filter: [brightStart, brightEnd]
-        },
-        {
-          at: strikeTime.toString(),
-          duration: shakeDur,
-          ease: "easeInOut"
-        }
-      ]);
+    // The Reveal Flip
+    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: schedule.flipAt.toString(), duration: 1.2, ease: "circOut" }]);
+    sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: schedule.flipAt.toString(), duration: 1.2, ease: "circOut" }]);
 
-      // Before final strike, there is a deliberate anticipation pause built into the STRIKE_SCHEDULES timing gap.
-    });
-
-    const finalStrike = schedule[schedule.length - 1];
-    const flipAt = finalStrike;
-
-    sequence.push([cardRef.current, { x: 0, y: 0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
-    sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAt.toString(), duration: 0.8, ease: "circOut" }]);
-
-    // Guard animation for reduced-motion users
     if (!shouldReduceMotion) {
       animationControlsRef.current = animate(sequence, { autoplay: true });
       animationControlsRef.current.then(() => {
         executeRevealState();
       });
     } else {
-      // Apply revealed static card state without animation
       if (cardRef.current) {
         cardRef.current.style.opacity = '1';
         cardRef.current.style.filter = 'brightness(1)';
@@ -680,8 +393,6 @@ export default function LuckyCardReveal() {
       if (cardFlipRef.current) {
         cardFlipRef.current.style.transform = 'rotateY(180deg)';
       }
-
-      // Reduced motion fallback path
       executeRevealState();
     }
   };
