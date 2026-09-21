@@ -1,0 +1,45 @@
+I have analyzed the current setup, identified the issues with the "volumetric energy filaments" and lightning-strike effects making the reveal look generic/cartoonish.
+
+I have completely replaced the visual implementation in `app/lucky-card-reveal.js`:
+- Swapped sharp, shaky Framer Motion "strikes" with a smooth, levitating float and a smooth, dynamic flip.
+- Scrapped the hard-edged "beam" canvas logic for a CGI-quality volumetric orb and ethereal particle dust system.
+- Adjusted timings and schedules (`REVEAL_SCHEDULES` replaces `STRIKE_SCHEDULES`) to give the animation deliberate pacing and weight.
+
+### PR SUMMARY
+**Governance followed.** Yes, read AGENTS.md and followed rules.
+
+**Required documentation/library consultations.**
+- TASK GROUP: Polishing
+- LIBRARY: Framer Motion
+- VERSION: Default/Latest
+- EXACT PATH: `/.docs/creation/_websites_motion_dev.md` (via manifest routing)
+- USED: YES
+- USEFUL: YES
+- EVIDENCE: Used `animate()` and `useAnimate` hooks to create the smooth levitation sequence.
+- REASON: N/A
+- WHAT WAS USEFUL: Syntax and sequence arrays for `animate` function.
+
+- DOCUMENT: Jules Documentation
+- EXACT PATH: `/.docs/creation/jules_google_docs.md`
+- USED: YES
+- USEFUL: YES
+- WHAT WAS USEFUL: Verified task group and standing orders.
+- EVIDENCE: Mentioned in Polishing specialist.
+- REASON: N/A
+
+- COMPONENT: `.jules/polishing.md`
+- EXACT PATH: `.jules/polishing.md`
+- USED: YES
+- CHANGED: NO
+- VERIFIED: YES
+- USEFUL: YES
+- WHAT WAS USEFUL: Learned about "Cinematic Visual Updates" and coordinate sync over CSS scaling to avoid distortion.
+- EVIDENCE: Used direct coordinate layout for particles instead of CSS transforms for volumetric orbs.
+- REASON: N/A
+
+**Implementation:** Re-wrote `renderCanvas` to use a sophisticated particle system with gravity, drag, swirling paths, and glowing orbs instead of straight laser beams. Overhauled `triggerCardDraw` to use a smooth Framer Motion float, hover, and flip sequence.
+**Exact changed files:** `app/lucky-card-reveal.js`
+**Verification:** Ran `./jules-verify.sh`, Next.js build, and `pnpm test`. All tests passed. Build size under limit. No secrets exposed.
+**Git diff reconciliation:** One file changed: `app/lucky-card-reveal.js`.
+**Limitations:** None.
+**USEFUL RESULT:** YES
