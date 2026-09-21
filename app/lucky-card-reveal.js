@@ -114,32 +114,30 @@ export default function LuckyCardReveal() {
   }, []);
 
   // Helpers for lightning drawing
-  const drawLightning = (ctx, startX, startY, endX, endY, segments, jaggedness, width, color) => {
-    const dx = endX - startX;
-    const dy = endY - startY;
-
+    const drawEnergyRibbon = (ctx, startX, startY, endX, endY, width, color, timestamp) => {
     ctx.beginPath();
     ctx.moveTo(startX, startY);
 
-    for (let i = 1; i < segments; i++) {
-      const t = i / segments;
-      const lx = startX + dx * t;
-      const ly = startY + dy * t;
+    // Create a smooth bezier curve instead of jagged lines
+    // Add some sine wave movement based on time for organic feel
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
 
-      const offset = (Math.random() - 0.5) * jaggedness;
-      // perpendicular vector
-      const nx = -dy;
-      const ny = dx;
-      const len = Math.sqrt(nx*nx + ny*ny);
+    const time = (timestamp - rafStartTimeRef.current) / 200;
+    const offset = Math.sin(time + startX) * (dist * 0.2);
 
-      const px = lx + (nx / len) * offset;
-      const py = ly + (ny / len) * offset;
+    const cp1X = startX + dx * 0.3 - dy * 0.2 + offset;
+    const cp1Y = startY + dy * 0.3 + dx * 0.2 + offset;
 
-      ctx.lineTo(px, py);
-    }
-    ctx.lineTo(endX, endY);
+    const cp2X = startX + dx * 0.7 + dy * 0.2 - offset;
+    const cp2Y = startY + dy * 0.7 - dx * 0.2 - offset;
+
+    ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+
     ctx.lineWidth = width;
     ctx.strokeStyle = color;
+    ctx.lineCap = 'round';
     ctx.stroke();
   };
 
@@ -178,7 +176,7 @@ export default function LuckyCardReveal() {
     const colors = {
       blue: '14, 165, 233',
       pink: '217, 70, 239',
-      standard: '14, 165, 233',
+      standard: '217, 119, 6', // Bronze/Copper
       premium: '59, 130, 246',
       flagship: '234, 179, 8'
     };
@@ -252,8 +250,8 @@ export default function LuckyCardReveal() {
 
           if (alpha > 0) {
             const beamWidth = 8 + Math.random() * 4;
-            drawLightning(targetCtx, originX, originY, currentTargetX, currentTargetY, 15, 60, beamWidth, `rgba(${hitColor}, ${alpha * 0.6})`);
-            drawLightning(targetCtx, originX, originY, currentTargetX, currentTargetY, 15, 20, beamWidth/2, `rgba(255, 255, 255, ${alpha})`);
+            drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth, `rgba(${hitColor}, ${alpha * 0.6})`, timestamp);
+            drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, timestamp);
 
             if (showWrap) {
               const radius = cardW * 0.7;
@@ -299,8 +297,8 @@ export default function LuckyCardReveal() {
            }
 
            const beamWidth = (12 * intensityMult) + Math.random() * 6;
-           drawLightning(targetCtx, originX, originY, currentTargetX, currentTargetY, 20, 80, beamWidth, `rgba(${hitColor}, ${alpha * 0.7})`);
-           drawLightning(targetCtx, originX, originY, currentTargetX, currentTargetY, 20, 30, beamWidth/2, `rgba(255, 255, 255, ${alpha})`);
+           drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth, `rgba(${hitColor}, ${alpha * 0.7})`, timestamp);
+           drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, timestamp);
 
            if (showWrap) {
               const baseRadius = cardW * 0.7;
@@ -317,20 +315,31 @@ export default function LuckyCardReveal() {
            const dissipateDuration = FINAL_HIT_DISSIPATE - F_AFTERGLOW_START;
            if (afterglowTime < dissipateDuration) {
              const t = afterglowTime / dissipateDuration;
-             const fizzAlpha = (1 - t) * 0.6;
+
+             // Tier specific multiplier
+             let tierMult = 1;
+             if (tier === 'premium') tierMult = 1.5;
+             if (tier === 'flagship') tierMult = 2.5;
+
+             const fizzAlpha = (1 - t) * 0.6 * tierMult;
 
              // Draw subtle residual energy around card
-             const bgGrad = targetCtx.createRadialGradient(cx, cy, cardW * 0.4, cx, cy, cardW * 1.5 * (1+t));
-             bgGrad.addColorStop(0, `rgba(${hitColor}, ${fizzAlpha})`);
+             const bgGrad = targetCtx.createRadialGradient(cx, cy, cardW * 0.4, cx, cy, cardW * (1.5 + (0.5 * tierMult)) * (1+t));
+             bgGrad.addColorStop(0, `rgba(${hitColor}, ${Math.min(0.8, fizzAlpha)})`);
              bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
              targetCtx.fillStyle = bgGrad;
-             targetCtx.fillRect(0, 0, w, h);
+             // optimize overdraw by restricting to bounding box around card
+             const maxR = cardW * (1.5 + (0.5 * tierMult)) * (1+t);
+             targetCtx.fillRect(Math.max(0, cx - maxR), Math.max(0, cy - maxR), maxR * 2, maxR * 2);
 
              // Occasional fizzy arcs
              if (Math.random() > t) {
-                const r = cardW * 0.7 * (1 + Math.random()*0.2);
-                const a = Math.random() * Math.PI * 2;
-                drawWrap(targetCtx, cx, cy, r, a, a + Math.random()*Math.PI, 2, `rgba(${hitColor}, ${fizzAlpha * Math.random()})`);
+                const numArcs = Math.ceil(tierMult);
+                for(let i=0; i<numArcs; i++) {
+                   const r = cardW * 0.7 * (1 + Math.random()* (0.2 * tierMult));
+                   const a = Math.random() * Math.PI * 2;
+                   drawWrap(targetCtx, cx, cy, r, a, a + Math.random()*Math.PI, 2 * tierMult, `rgba(${hitColor}, ${fizzAlpha * Math.random()})`);
+                }
              }
            }
         }
@@ -415,8 +424,12 @@ export default function LuckyCardReveal() {
         const P_HOLD = 1.0;
         const P_SHAKE = 1.2;
 
-        // Pulse brightness when grabbed
-        sequence.push([cardRef.current, { filter: "brightness(1.5)", scale: 0.98 }, { at: hitStart + P_WRAP, duration: 0.2 }]);
+        // Card reaction on EVERY IMPACT (wrap/hit moment)
+        sequence.push([
+            cardRef.current,
+            { filter: "brightness(1.5)", scale: 0.98, x: [-5, 5, -3, 3, 0], rotateZ: [-1, 1, -0.5, 0.5, 0] },
+            { at: hitStart + P_WRAP, duration: 0.2, ease: "easeInOut" }
+        ]);
 
         // Hold
         sequence.push([cardRef.current, { filter: "brightness(1.2)" }, { at: hitStart + P_WRAP + 0.2, duration: P_HOLD - (P_WRAP + 0.2) }]);
@@ -439,7 +452,12 @@ export default function LuckyCardReveal() {
     const F_WRAP = 0.4;
     const F_FLIP_TIME = 0.6; // exact lock and start of flip
 
-    sequence.push([cardRef.current, { filter: "brightness(2.5)", scale: 0.95 }, { at: finalHitStartTime + F_WRAP, duration: 0.2 }]);
+    // Final Impact - massive shake
+    sequence.push([
+      cardRef.current,
+      { filter: "brightness(2.5)", scale: 0.95, x: [-15, 15, -10, 10, -5, 5, 0], rotateZ: [-3, 3, -2, 2, -1, 1, 0] },
+      { at: finalHitStartTime + F_WRAP, duration: 0.2 }
+    ]);
 
     // The Reveal Flip
     const flipAbsTime = finalHitStartTime + F_FLIP_TIME;
