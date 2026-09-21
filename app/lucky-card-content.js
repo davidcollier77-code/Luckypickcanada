@@ -6,7 +6,6 @@ export const LUCKY_CARD_IMAGES = {
   'optimists-path': '/standard-card-optimists-path.png',
   'cosmic-flow': '/standard-card-cosmic-flow.png',
   'northern-lights': '/premium-card-northern-lights.png',
-  'coast-to-coast-tale': '/premium-card-coast-to-coast-tale.png',
   'lucky-canadian-moose': '/a_polished_high_detail_card_illustration_poster_i.png',
   'flagship-card': '/flagship-card-golden-maple-clover.png',
   'lucky-golden-pick': '/flagship-card-lucky-golden-pick.png',
