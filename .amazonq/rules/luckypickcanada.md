@@ -1,39 +1,126 @@
-LuckyPickCanada — Amazon Q Rules
+# LuckyPickCanada — Amazon Q Rules
+ 
+## 🔴 MANDATORY GOVERNANCE
+ 
+**`.amazonq/rules/luckypickcanada.md` MUST be followed. Period.**
+ 
+**This file governs Amazon Q only.**
+ 
+**The PR summary MUST explicitly confirm compliance with this file, scope limits, and verification requirements.**
+ 
+**DO NOT ASSUME. VERIFY. DO NOT CLAIM. DEMONSTRATE.**
+ 
+## 🔴 A — ANALYZE
+ 
+ 
+- Inspect the actual current repository, branch, PR, and relevant files.
+ 
+- Read `.amazonq/rules/luckypickcanada.md` before making changes.
+ 
+- Identify the exact files and functions involved.
+ 
+- Independently validate every automated-review finding.
+ 
+- Determine the actual root cause.
+ 
+- Establish a relevant file baseline when practical: path, line count, size, and relevant sections.
+ 
 
-ABC Approach
+ 
+## 🔴 B — BOUNDARIES
+ 
+ 
+- Change only what the task requires.
+ 
+- Make the smallest correct fix.
+ 
+- Preserve existing functionality.
+ 
+- No unrelated cleanup, refactoring, dependency changes, or architecture changes.
+ 
+- Treat explicit exclusions as hard boundaries.
+ 
+- **NO AUDIO CHANGES means no audio code, assets, timing, volume, or refactoring changes.**
+ 
+- Do not modify protected systems without explicit authorization.
+ 
 
-For investigation/review:
+ 
+## 🔴 C — EXECUTE + VERIFY
+ 
+ 
+- Inspect the complete final diff.
+ 
+- Confirm every change is necessary and in scope.
+ 
+- Re-check the original issue or finding.
+ 
+- Run all required tests, builds, checks, and repository verification.
+ 
+- Verify relevant behavior, not merely build success.
+ 
+- Compare final files against the baseline.
+ 
+- Correct unintended changes before completion.
+ 
 
-- A — Analyze: inspect the actual current repository/PR state and establish verified facts before acting.
-- B — Boundaries: determine what is relevant and in scope, while avoiding unrelated work.
-- C — Check/Conclude: trace and validate the relevant code/configuration, confirm the findings, and reach a conclusion before making changes.
+ 
+## 🔴 AUTOMATED REVIEW FINDINGS
+ 
+**Validate → Root Cause → Scope → Fix → Verify → Report**
+ 
+Never blindly apply a reviewer suggestion.
+ 
+## 🔴 PROTECTED SYSTEMS
+ 
+Do not modify without explicit authorization:
+ 
+ 
+- Payments / Stripe
+ 
+- Pricing / webhooks
+ 
+- Authentication / authorization
+ 
+- Database schema / migrations
+ 
+- Secrets / environment variables
+ 
+- Cloudflare / deployment configuration
+ 
 
-For reporting:
+ 
+Never expose, print, copy, or commit secrets or credentials.
+ 
+## 🔴 FINAL PR SUMMARY
+ 
+The PR summary MUST state:
+ 
+ 
+- What was investigated and verified.
+ 
+- Root cause.
+ 
+- What changed.
+ 
+- Exact changed files.
+ 
+- What remained unchanged and why.
+ 
+- Reviewer findings and their resolution.
+ 
+- Verification performed and actual results.
+ 
+- File baseline comparison where measured.
+ 
+- Explicit confirmation that `.amazonq/rules/luckypickcanada.md` was followed.
+ 
 
-- A — Analysis: state what was found and verified.
-- B — Boundaries: state what was in scope and what was deliberately left unchanged.
-- C — Completion: state what was changed, what verification was performed, and the resulting status.
-
-Core Rules
-
-Make only changes required by the assigned task or PR fix.
-
-Do not perform unrelated cleanup, refactoring, dependency upgrades, or architectural changes.
-
-Preserve existing functionality unless the task explicitly requires changing it.
-
-Do not modify Stripe, payments, pricing, webhooks, authentication, database/schema, secrets, environment variables, or Cloudflare configuration unless explicitly authorized.
-
-Never expose, print, copy, or commit secrets, API keys, tokens, credentials, or private configuration.
-
-Inspect the current repository state before making changes.
-
-Keep changes minimal, targeted, and consistent with the existing architecture.
-
-Run the repository's required verification after making changes.
-
-Inspect the final diff for unintended changes.
-
-Report only work and verification actually performed.
-
-Do not change anything else in this PR.
+ 
+**No evidence = no claim.**
+ 
+**No final diff audit = no completion.**
+ 
+**No required verification = no completion.**
+ 
+**No compliance with `.amazonq/rules/luckypickcanada.md` = NO TASK APPROVAL.**
