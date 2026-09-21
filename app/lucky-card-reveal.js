@@ -320,11 +320,13 @@ export default function LuckyCardReveal() {
              const fizzAlpha = (1 - t) * 0.6;
 
              // Draw subtle residual energy around card
-             const bgGrad = targetCtx.createRadialGradient(cx, cy, cardW * 0.4, cx, cy, cardW * 1.5 * (1+t));
+             const radius = cardW * 1.5 * (1+t);
+             const bgGrad = targetCtx.createRadialGradient(cx, cy, cardW * 0.4, cx, cy, radius);
              bgGrad.addColorStop(0, `rgba(${hitColor}, ${fizzAlpha})`);
              bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
              targetCtx.fillStyle = bgGrad;
-             targetCtx.fillRect(0, 0, w, h);
+             // ⚡ Bolt Optimization: Constrained fillRect to gradient bounding box to minimize GPU pixel fill-rate overdraw
+             targetCtx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2);
 
              // Occasional fizzy arcs
              if (Math.random() > t) {
