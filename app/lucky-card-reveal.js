@@ -17,9 +17,13 @@ function localDateKey(date = new Date()) {
 }
 
 const STRIKE_SCHEDULES = {
-  standard: [3.5, 4.8, 6.3],
-  premium: [3.2, 4.3, 5.4, 6.5, 8.2],
-  flagship: [3.0, 3.8, 4.6, 5.4, 6.2, 7.0, 9.0]
+  // Pacing: Time enough to form, travel, wrap, impact, shake, release, and settle.
+  // Standard: 3 impacts
+  standard: [3.0, 6.0, 9.5],
+  // Premium: 4 impacts
+  premium: [3.0, 6.0, 9.0, 12.5],
+  // Flagship: 5 impacts
+  flagship: [3.0, 6.0, 9.0, 12.0, 15.5]
 };
 
 export default function LuckyCardReveal() {
@@ -159,7 +163,9 @@ export default function LuckyCardReveal() {
     const schedule = STRIKE_SCHEDULES[tier];
     const finalStrike = schedule[schedule.length - 1];
     const flipAt = finalStrike; // Synchronize card flip exactly with final visual impact
-    const maxLifetime = flipAt + 3.0;
+    const flipDuration = 0.8;
+    const residualDuration = 2.0;
+    const maxLifetime = flipAt + flipDuration + residualDuration + 1.0;
 
     let maskLayers = [];
     let maxFlashOpacity = 0;
@@ -167,12 +173,12 @@ export default function LuckyCardReveal() {
     let isFinalFlash = false;
 
     const tierColors = {
-      standard: ['14, 165, 233', '217, 70, 239', '180, 83, 9'], // Blue -> Magenta -> Bronze
-      premium: ['14, 165, 233', '217, 70, 239', '14, 165, 233', '217, 70, 239', '156, 163, 175'], // Alternating -> Platinum
-      flagship: ['14, 165, 233', '217, 70, 239', '14, 165, 233', '217, 70, 239', '14, 165, 233', '217, 70, 239', '234, 179, 8'] // Alternating -> Gold
+      standard: ['14, 165, 233', '217, 70, 239', '16, 185, 129'], // Blue, Pink, Emerald (Standard Final)
+      premium: ['14, 165, 233', '217, 70, 239', '14, 165, 233', '59, 130, 246'], // Blue, Pink, Blue, Premium Blue (Final)
+      flagship: ['14, 165, 233', '217, 70, 239', '14, 165, 233', '217, 70, 239', '234, 179, 8'] // Blue, Pink, Blue, Pink, Gold (Flagship Final)
     };
 
-    // Draw Ambient Edge Glow (Cosmic Energy entering from outside)
+    // Draw Ambient Edge Glow
     if (elapsed > 0) {
       const ambientProg = Math.min(1, elapsed / 1.5);
       ctx.save();
@@ -343,8 +349,10 @@ export default function LuckyCardReveal() {
             ctx.moveTo(fStartX, fStartY);
 
             // Curved, organic path
-            const controlPointX = fStartX + (impactX - fStartX) * 0.5 + Math.sin(elapsed * 2 + f) * 100;
-            const controlPointY = fStartY + (impactY - fStartY) * 0.3 + Math.cos(elapsed * 3 + f) * 100;
+            // The beam should curve significantly as it approaches to look like it's trying to wrap/lock on
+            const wrapFactor = isFinal ? 100 : 250 + Math.sin(elapsed * 4 + f) * 100; // Wider arcs for failed attempts
+            const controlPointX = fStartX + (impactX - fStartX) * (isFinal ? 0.8 : 0.5) + (f % 2 === 0 ? wrapFactor : -wrapFactor);
+            const controlPointY = fStartY + (impactY - fStartY) * (isFinal ? 0.9 : 0.5);
 
             // Trace the path up to current progress
             // Quadratic Bezier interpolation calculation for the intermediate point
@@ -492,6 +500,38 @@ export default function LuckyCardReveal() {
         }
     }
 
+    // Residual Glow Handling
+    const flipCompletedAt = flipAt + 0.8;
+    if (elapsed > flipCompletedAt) {
+        const residualElapsed = elapsed - flipCompletedAt;
+        if (residualElapsed < 2.0 && fgCtx) {
+            const fadeOut = 1 - Math.max(0, (residualElapsed - 1.0) / 1.0); // Start fading after 1 second
+            const pulse = 1 + Math.sin(residualElapsed * Math.PI * 2) * 0.2;
+            const residualOpacity = fadeOut * pulse * 0.5;
+
+            const finalColorArr = tierColors[tier] || tierColors.standard;
+            const finalBeamColor = finalColorArr[schedule.length - 1] || finalColorArr[finalColorArr.length - 1];
+
+            fgCtx.save();
+            fgCtx.globalCompositeOperation = 'screen';
+            fgCtx.beginPath();
+            // Match card dimensions
+            fgCtx.rect(cx - cardW/2, cy - cardH/2, cardW, cardH);
+            fgCtx.fillStyle = `rgba(${finalBeamColor}, ${residualOpacity})`;
+            fgCtx.fill();
+
+            // Outer residual bloom
+            fgCtx.beginPath();
+            fgCtx.rect(cx - cardW, cy - cardH, cardW * 2, cardH * 2);
+            const resGrad = fgCtx.createRadialGradient(cx, cy, cardW/2, cx, cy, cardW);
+            resGrad.addColorStop(0, `rgba(${finalBeamColor}, ${residualOpacity * 0.5})`);
+            resGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            fgCtx.fillStyle = resGrad;
+            fgCtx.fill();
+            fgCtx.restore();
+        }
+    }
+
     if (elapsed >= flipAt + 0.8) {
         executeRevealState();
     }
@@ -588,7 +628,7 @@ export default function LuckyCardReveal() {
       const dirY = isFinal ? 1 : Math.sin(targetAngle); // Hit pushes it down/back slightly
       const rotDir = isFinal ? 0 : (dirX > 0 ? 1 : -1);
 
-      const shakeDur = isFinal ? 0.6 : 0.4;
+      const shakeDur = isFinal ? 0.8 : 0.5; // Brief, synchronized shake, leaves plenty of time to settle
       const scaleUp = isFinal ? 1.4 : 1.1 + (idx * 0.05); // Escalating scale
       const finalScale = isFinal ? 1.2 : 1.0;
 
