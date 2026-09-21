@@ -16,4 +16,3 @@
 - Fixed Lucky Card Tier randomization weights (standard: 39%, premium: 36%, flagship: 25%).
 - Decoupled quotes from fixed cards and implemented independent randomized quote selection with consecutive day protection.
 - Synchronized visual cinematic reveal timing with final beam impact.
-- **Lucky Card Cinematic:** Full proton-pack single-beam choreography implemented across 3/5/7 tiered hit iterations.

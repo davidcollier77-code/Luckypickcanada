@@ -1,11 +1,6 @@
 --- memory-bank/progress.md
 +++ memory-bank/progress.md
-@@ -7,6 +7,10 @@
- - Addressed 404 behavior for dynamic map sub-paths by returning a valid map skeleton and letting the client handle missing states.
- - Set up Resend webhook verification payload debugging to identify and resolve missing body signature parsing.
- - Polished the overall presentation by separating API concerns (stripe, webhook, suggestions).
-+- Polished the CGI quality of the Lucky Meter visuals (lightning bloom, lightning core, meteor flares, and firework glow arcs) without modifying the background.
-+- Removed a redundant visual sympathetic lightning branch from the "Cosmic Lightning" tier that caused phantom lightning strikes, while converting its audio into a deeper, delayed acoustic rumble.
-
- ## Completed Milestones
- - Added TwinklingStars to Lucky Meter, positioned behind the landscape background.
+@@ -29,2 +29,3 @@
+ - **Lucky Cards:** Standard, Premium, and Flagship tiers with unique designs. Added dynamic flip animations and reduced-motion fallback.
++- **Lucky Card Cinematic:** Full proton-pack single-beam choreography implemented across 3/5/7 tiered hit iterations.
+ - **Lucky Map:** Map tracking interactions across Canadian provinces and territories.

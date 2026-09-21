@@ -16,12 +16,15 @@ function localDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-// Adjusted schedules for a smooth, gathering energy reveal
-const REVEAL_SCHEDULES = {
-  standard: { duration: 4.0, flipAt: 3.2 },
-  premium: { duration: 5.0, flipAt: 4.0 },
-  flagship: { duration: 6.0, flipAt: 4.8 }
+const TIER_HITS = {
+  standard: 3,
+  premium: 5,
+  flagship: 7
 };
+
+// Hit durations in seconds
+const HIT_DURATION = 1.6;
+const FINAL_HIT_DISSIPATE = 2.5; // Final flip + afterglow
 
 export default function LuckyCardReveal() {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -50,10 +53,7 @@ export default function LuckyCardReveal() {
   const cardMetricsRef = useRef({ cx: 140, cy: 202.5, w: 280, h: 405 });
   const fallbackTimerRef = useRef(null);
 
-  // Particle systems state for the render loop
   const particlesRef = useRef([]);
-  const orbsRef = useRef([]);
-  const hasBurstRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -113,194 +113,234 @@ export default function LuckyCardReveal() {
     }
   }, []);
 
-  // --- NEW CINEMATIC RENDER LOOP ---
+  // Helpers for lightning drawing
+  const drawLightning = (ctx, startX, startY, endX, endY, segments, jaggedness, width, color) => {
+    const dx = endX - startX;
+    const dy = endY - startY;
+
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+
+    for (let i = 1; i < segments; i++) {
+      const t = i / segments;
+      const lx = startX + dx * t;
+      const ly = startY + dy * t;
+
+      const offset = (Math.random() - 0.5) * jaggedness;
+      // perpendicular vector
+      const nx = -dy;
+      const ny = dx;
+      const len = Math.sqrt(nx*nx + ny*ny);
+
+      const px = lx + (nx / len) * offset;
+      const py = ly + (ny / len) * offset;
+
+      ctx.lineTo(px, py);
+    }
+    ctx.lineTo(endX, endY);
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+  };
+
+  const drawWrap = (ctx, cx, cy, radius, startAngle, endAngle, width, color) => {
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, startAngle, endAngle);
+    ctx.lineWidth = width;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+  };
+
   const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
     if (!rafStartTimeRef.current) rafStartTimeRef.current = timestamp;
 
     let elapsed = (timestamp - rafStartTimeRef.current) / 1000;
 
-    const ctx = bgCanvasRef.current.getContext('2d');
+    const bgCtx = bgCanvasRef.current.getContext('2d');
+    const fgCtx = fgCanvasRef.current ? fgCanvasRef.current.getContext('2d') : null;
     const w = bgCanvasRef.current.width;
     const h = bgCanvasRef.current.height;
 
     const { cx, cy, w: cardW, h: cardH } = cardMetricsRef.current;
     const tier = activeTierRef.current;
+    const totalHits = TIER_HITS[tier] || 3;
+    const finalHitStartTime = (totalHits - 1) * HIT_DURATION;
+    const maxLifetime = finalHitStartTime + FINAL_HIT_DISSIPATE;
 
-    ctx.clearRect(0, 0, w, h);
+    bgCtx.clearRect(0, 0, w, h);
+    if (fgCtx) fgCtx.clearRect(0, 0, w, h);
 
-    const fgCtx = fgCanvasRef.current ? fgCanvasRef.current.getContext('2d') : null;
-    if (fgCtx) {
-      fgCtx.clearRect(0, 0, w, h);
-    }
-
-    const schedule = REVEAL_SCHEDULES[tier] || REVEAL_SCHEDULES.standard;
-    const { flipAt, duration } = schedule;
-    const maxLifetime = duration + 2.0;
-
-    const tierColors = {
-      standard: ['14, 165, 233', '217, 70, 239'], // Blue, Pink
-      premium: ['14, 165, 233', '217, 70, 239', '59, 130, 246'],
-      flagship: ['14, 165, 233', '217, 70, 239', '234, 179, 8'] // Blue, Pink, Gold
-    };
-    const colors = tierColors[tier];
-
-    // 1. Ambient Background Glow (Smooth, Breathing)
-    if (elapsed > 0) {
-      ctx.save();
-      ctx.globalCompositeOperation = 'screen';
-
-      const breathe = Math.sin(elapsed * 2) * 0.1 + 0.9;
-      const intensity = Math.min(1, elapsed / 2) * (elapsed > flipAt ? Math.max(0, 1 - (elapsed - flipAt)) : 1);
-
-      const bgGrad = ctx.createRadialGradient(cx, cy, cardW * 0.5, cx, cy, Math.max(w, h) * 0.8 * breathe);
-      bgGrad.addColorStop(0, `rgba(${colors[0]}, ${0.15 * intensity})`);
-      bgGrad.addColorStop(0.5, `rgba(${colors[1] || colors[0]}, ${0.05 * intensity})`);
-      bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, w, h);
-      ctx.restore();
-    }
-
-    // 2. Manage Orbs (Volumetric Energy Fields)
-    if (elapsed < flipAt) {
-      if (Math.random() < 0.1 * (elapsed + 1)) {
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const angle = Math.random() * Math.PI * 2;
-        const dist = cardW * 1.5 + Math.random() * cardW;
-        orbsRef.current.push({
-          x: cx + Math.cos(angle) * dist,
-          y: cy + Math.sin(angle) * dist,
-          vx: -Math.cos(angle) * 20, // Move slowly towards center
-          vy: -Math.sin(angle) * 20,
-          radius: 50 + Math.random() * 150,
-          color: color,
-          life: 0,
-          maxLife: 1.5 + Math.random() * 1.5,
-          phase: Math.random() * Math.PI * 2
-        });
-      }
-    }
-
-    // 3. Manage Particles (Ethereal Dust)
-    if (elapsed < flipAt) {
-       // Gathering dust
-       for(let i=0; i < 3; i++) {
-         const angle = Math.random() * Math.PI * 2;
-         const dist = cardW + Math.random() * cardW * 2;
-         particlesRef.current.push({
-            x: cx + Math.cos(angle) * dist,
-            y: cy + Math.sin(angle) * dist + (Math.random() * 200 - 100),
-            vx: -Math.cos(angle) * (10 + Math.random() * 40),
-            vy: -Math.sin(angle) * (10 + Math.random() * 40) - 20, // Slight upward drift
-            size: 1 + Math.random() * 3,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            life: 0,
-            maxLife: 2 + Math.random() * 1,
-            type: 'gather'
-         });
-       }
-    }
-
-    // Burst at flip
-    if (elapsed >= flipAt && !hasBurstRef.current) {
-       hasBurstRef.current = true;
-       for(let i=0; i < 150; i++) {
-         const angle = Math.random() * Math.PI * 2;
-         const speed = 100 + Math.random() * 400;
-         particlesRef.current.push({
-            x: cx,
-            y: cy,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            size: 2 + Math.random() * 4,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            life: 0,
-            maxLife: 1.0 + Math.random() * 1.5,
-            type: 'burst'
-         });
-       }
-       // Add a massive flash orb
-       orbsRef.current.push({
-          x: cx, y: cy, vx: 0, vy: 0,
-          radius: cardW * 3,
-          color: '255, 255, 255',
-          life: 0, maxLife: 1.0,
-          phase: 0,
-          isFlash: true
-       });
-    }
-
-    // Draw Orbs
-    ctx.save();
-    ctx.globalCompositeOperation = 'screen';
-    for (let i = orbsRef.current.length - 1; i >= 0; i--) {
-      let orb = orbsRef.current[i];
-      orb.life += 1/60; // Approx delta time
-      orb.x += orb.vx * (1/60);
-      orb.y += orb.vy * (1/60);
-
-      let progress = orb.life / orb.maxLife;
-      if (progress >= 1) {
-        orbsRef.current.splice(i, 1);
-        continue;
-      }
-
-      let opacity = orb.isFlash ? Math.pow(1 - progress, 2) : Math.sin(progress * Math.PI) * 0.3;
-      let currentRadius = orb.isFlash ? orb.radius * (1 + progress) : orb.radius * (0.8 + 0.2 * Math.sin(orb.phase + elapsed * 3));
-
-      ctx.beginPath();
-      ctx.arc(orb.x, orb.y, currentRadius, 0, Math.PI * 2);
-      const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, currentRadius);
-      grad.addColorStop(0, `rgba(${orb.color}, ${opacity})`);
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = grad;
-      ctx.fill();
-    }
-    ctx.restore();
-
-    // Draw Particles (in FG to overlay card slightly, or BG)
-    const targetCtx = elapsed > flipAt && fgCtx ? fgCtx : ctx;
+    const targetCtx = fgCtx || bgCtx;
     targetCtx.save();
     targetCtx.globalCompositeOperation = 'screen';
-    for (let i = particlesRef.current.length - 1; i >= 0; i--) {
-      let p = particlesRef.current[i];
-      p.life += 1/60;
 
-      if (p.type === 'burst') {
-          p.vx *= 0.92; // Drag
-          p.vy *= 0.92;
-          p.vy += 2; // Gravity
-      } else {
-          // Swirl effect for gathering
-          const angleToCenter = Math.atan2(cy - p.y, cx - p.x);
-          p.vx += Math.cos(angleToCenter) * 2;
-          p.vy += Math.sin(angleToCenter) * 2;
-          p.vx *= 0.95;
-          p.vy *= 0.95;
-      }
+    const colors = {
+      blue: '14, 165, 233',
+      pink: '217, 70, 239',
+      standard: '14, 165, 233',
+      premium: '59, 130, 246',
+      flagship: '234, 179, 8'
+    };
 
-      p.x += p.vx * (1/60);
-      p.y += p.vy * (1/60);
+    let activeHitIndex = Math.floor(elapsed / HIT_DURATION);
+    let hitLocalTime = elapsed % HIT_DURATION;
 
-      let progress = p.life / p.maxLife;
-      if (progress >= 1) {
-        particlesRef.current.splice(i, 1);
-        continue;
-      }
-
-      let opacity = p.type === 'burst' ? (1 - progress) : Math.sin(progress * Math.PI);
-
-      targetCtx.beginPath();
-      targetCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      targetCtx.fillStyle = `rgba(${p.color}, ${opacity * 0.8})`;
-      targetCtx.fill();
+    // Force final hit state if we are past its start time
+    if (elapsed >= finalHitStartTime) {
+      activeHitIndex = totalHits - 1;
+      hitLocalTime = elapsed - finalHitStartTime;
     }
+
+    if (activeHitIndex < totalHits) {
+      const isFinalHit = activeHitIndex === totalHits - 1;
+      const hitColor = isFinalHit ? colors[tier] : (activeHitIndex % 2 === 0 ? colors.blue : colors.pink);
+
+      let intensityMult = 1;
+      if (isFinalHit) {
+        if (tier === 'premium') intensityMult = 1.5;
+        if (tier === 'flagship') intensityMult = 2.5;
+      }
+
+      // Beam origin: alternate corners for visual interest
+      const originX = (activeHitIndex % 2 === 0) ? 0 : w;
+      const originY = (activeHitIndex % 3 === 0) ? 0 : (activeHitIndex % 3 === 1 ? h : h/2);
+
+      // Phase calculation
+      const P_ENTER = 0.2;
+      const P_WRAP = 0.4;
+      const P_HOLD = 1.0;
+      const P_SHAKE = 1.2;
+      const P_RETRACT = 1.4; // up to 1.6 is idle handoff
+
+      if (!isFinalHit) {
+        if (hitLocalTime < P_RETRACT) {
+          let alpha = 1;
+          let currentTargetX = cx;
+          let currentTargetY = cy;
+          let showWrap = false;
+          let wrapProgress = 0;
+
+          if (hitLocalTime < P_ENTER) {
+            // Entering
+            const t = hitLocalTime / P_ENTER;
+            currentTargetX = originX + (cx - originX) * t;
+            currentTargetY = originY + (cy - originY) * t;
+          } else if (hitLocalTime < P_WRAP) {
+            // Wrapping around
+            showWrap = true;
+            wrapProgress = (hitLocalTime - P_ENTER) / (P_WRAP - P_ENTER);
+          } else if (hitLocalTime < P_HOLD) {
+            // Holding
+            showWrap = true;
+            wrapProgress = 1;
+          } else if (hitLocalTime < P_SHAKE) {
+            // Shaking / Breaking Grip
+            showWrap = true;
+            wrapProgress = 1;
+            // Add erratic offset to beam target as it breaks
+            currentTargetX = cx + (Math.random() - 0.5) * 40;
+            currentTargetY = cy + (Math.random() - 0.5) * 40;
+            alpha = 1 - ((hitLocalTime - P_HOLD) / (P_SHAKE - P_HOLD)) * 0.5; // Starts fading/losing energy
+          } else {
+            // Retracting
+            const t = (hitLocalTime - P_SHAKE) / (P_RETRACT - P_SHAKE);
+            currentTargetX = cx + (originX - cx) * t;
+            currentTargetY = cy + (originY - cy) * t;
+            alpha = 1 - t;
+          }
+
+          if (alpha > 0) {
+            const beamWidth = 8 + Math.random() * 4;
+            drawLightning(targetCtx, originX, originY, currentTargetX, currentTargetY, 15, 60, beamWidth, `rgba(${hitColor}, ${alpha * 0.6})`);
+            drawLightning(targetCtx, originX, originY, currentTargetX, currentTargetY, 15, 20, beamWidth/2, `rgba(255, 255, 255, ${alpha})`);
+
+            if (showWrap) {
+              const radius = cardW * 0.7;
+              const angleSize = Math.PI * 1.5 * wrapProgress;
+              const startAngle = (hitLocalTime * 5) % (Math.PI * 2);
+
+              drawWrap(targetCtx, cx, cy, radius, startAngle, startAngle + angleSize, 6, `rgba(${hitColor}, ${alpha * 0.8})`);
+              drawWrap(targetCtx, cx, cy, radius + 15, -startAngle, -startAngle + angleSize * 0.8, 3, `rgba(${hitColor}, ${alpha * 0.5})`);
+            }
+          }
+        }
+      } else {
+        // FINAL HIT
+        // Strong impact -> Wrap -> Lock -> Flip -> Afterglow
+        const F_ENTER = 0.2;
+        const F_WRAP = 0.4;
+        const F_FLIP_TIME = 0.6;
+        const F_AFTERGLOW_START = F_FLIP_TIME + 1.2; // Match framer motion flip duration
+
+        let alpha = 1;
+
+        if (hitLocalTime < F_AFTERGLOW_START) {
+           // Still locking / flipping
+           let currentTargetX = cx;
+           let currentTargetY = cy;
+           let showWrap = false;
+           let wrapProgress = 1;
+
+           if (hitLocalTime < F_ENTER) {
+             const t = hitLocalTime / F_ENTER;
+             currentTargetX = originX + (cx - originX) * t;
+             currentTargetY = originY + (cy - originY) * t;
+           } else if (hitLocalTime < F_WRAP) {
+             showWrap = true;
+             wrapProgress = (hitLocalTime - F_ENTER) / (F_WRAP - F_ENTER);
+           } else {
+             showWrap = true;
+             wrapProgress = 1;
+             // Lock becomes tighter right before flip
+             if (hitLocalTime > F_FLIP_TIME - 0.2 && hitLocalTime < F_FLIP_TIME) {
+                alpha = 1 + (Math.random() * 0.5); // flash tighter
+             }
+           }
+
+           const beamWidth = (12 * intensityMult) + Math.random() * 6;
+           drawLightning(targetCtx, originX, originY, currentTargetX, currentTargetY, 20, 80, beamWidth, `rgba(${hitColor}, ${alpha * 0.7})`);
+           drawLightning(targetCtx, originX, originY, currentTargetX, currentTargetY, 20, 30, beamWidth/2, `rgba(255, 255, 255, ${alpha})`);
+
+           if (showWrap) {
+              const baseRadius = cardW * 0.7;
+              const lockTightness = (hitLocalTime > F_FLIP_TIME) ? Math.max(0.4, 1 - (hitLocalTime - F_FLIP_TIME)) : 1;
+              const radius = baseRadius * lockTightness;
+
+              const startAngle = (hitLocalTime * 8) % (Math.PI * 2);
+              drawWrap(targetCtx, cx, cy, radius, startAngle, startAngle + Math.PI * 2 * wrapProgress, 8 * intensityMult, `rgba(${hitColor}, ${alpha})`);
+              drawWrap(targetCtx, cx, cy, radius + 20, -startAngle*1.5, -startAngle*1.5 + Math.PI * 2 * wrapProgress, 4 * intensityMult, `rgba(255, 255, 255, ${alpha * 0.8})`);
+           }
+        } else {
+           // AFTERGLOW / FIZZ
+           const afterglowTime = hitLocalTime - F_AFTERGLOW_START;
+           const dissipateDuration = FINAL_HIT_DISSIPATE - F_AFTERGLOW_START;
+           if (afterglowTime < dissipateDuration) {
+             const t = afterglowTime / dissipateDuration;
+             const fizzAlpha = (1 - t) * 0.6;
+
+             // Draw subtle residual energy around card
+             const bgGrad = targetCtx.createRadialGradient(cx, cy, cardW * 0.4, cx, cy, cardW * 1.5 * (1+t));
+             bgGrad.addColorStop(0, `rgba(${hitColor}, ${fizzAlpha})`);
+             bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+             targetCtx.fillStyle = bgGrad;
+             targetCtx.fillRect(0, 0, w, h);
+
+             // Occasional fizzy arcs
+             if (Math.random() > t) {
+                const r = cardW * 0.7 * (1 + Math.random()*0.2);
+                const a = Math.random() * Math.PI * 2;
+                drawWrap(targetCtx, cx, cy, r, a, a + Math.random()*Math.PI, 2, `rgba(${hitColor}, ${fizzAlpha * Math.random()})`);
+             }
+           }
+        }
+      }
+    }
+
     targetCtx.restore();
 
-
-    if (elapsed >= flipAt + 0.5) {
+    // Trigger executeRevealState exactly at the end of the lock/flip moment
+    if (elapsed >= finalHitStartTime + 0.6 + 1.2 && !isRevealedRef.current) {
         executeRevealState();
     }
 
@@ -327,8 +367,6 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
 
-    const schedule = REVEAL_SCHEDULES[card.tier] || REVEAL_SCHEDULES.standard;
-
     requestAnimationFrame(() => {
       if (bgCanvasRef.current) {
         bgCanvasRef.current.width = window.innerWidth;
@@ -340,9 +378,6 @@ export default function LuckyCardReveal() {
       }
 
       if (!shouldReduceMotion) {
-        particlesRef.current = [];
-        orbsRef.current = [];
-        hasBurstRef.current = false;
         rafRef.current = requestAnimationFrame(renderCanvas);
       }
     });
@@ -362,31 +397,57 @@ export default function LuckyCardReveal() {
 
     // --- NEW FRAMER MOTION CHOREOGRAPHY ---
     const sequence = [];
+    const totalHits = TIER_HITS[card.tier] || 3;
+    const finalHitStartTime = (totalHits - 1) * HIT_DURATION;
 
-    // Cinematic Float & Charge
-    const floatDuration = schedule.flipAt;
-
-    // Smooth initial lift
-    sequence.push([cardRef.current, { y: 30, scale: 0.95, rotateZ: 0, opacity: 0, filter: "brightness(0)" }, { duration: 0 }]);
+    // Initial prep
+    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0, opacity: 1, filter: "brightness(0.7)" }, { duration: 0 }]);
     sequence.push([cardFlipRef.current, { rotateY: 0 }, { duration: 0 }]);
-    sequence.push([cardRef.current, { opacity: 1, filter: "brightness(0.5)", y: -10, scale: 1.0 }, { at: 0.1, duration: 2.0, ease: 'easeOut' }]);
 
-    // Slow hovering levitation while charging
-    sequence.push([
-        cardRef.current,
-        { y: [-10, -25, -10], filter: ["brightness(0.5)", "brightness(2.5)", "brightness(1)"] },
-        { at: 1.0, duration: floatDuration - 1.0, ease: "easeInOut" }
-    ]);
+    let currentTime = 0;
+
+    // Non-final hits choreography
+    for (let i = 0; i < totalHits - 1; i++) {
+        // Timeline for this hit
+        const hitStart = i * HIT_DURATION;
+        const P_ENTER = 0.2;
+        const P_WRAP = 0.4;
+        const P_HOLD = 1.0;
+        const P_SHAKE = 1.2;
+
+        // Pulse brightness when grabbed
+        sequence.push([cardRef.current, { filter: "brightness(1.5)", scale: 0.98 }, { at: hitStart + P_WRAP, duration: 0.2 }]);
+
+        // Hold
+        sequence.push([cardRef.current, { filter: "brightness(1.2)" }, { at: hitStart + P_WRAP + 0.2, duration: P_HOLD - (P_WRAP + 0.2) }]);
+
+        // SHAKE to break grip!
+        const shakeStart = hitStart + P_HOLD;
+        const shakeDuration = P_SHAKE - P_HOLD; // 0.2s
+        sequence.push([
+            cardRef.current,
+            { x: [-10, 10, -10, 10, -5, 5, 0], rotateZ: [-2, 2, -2, 2, -1, 1, 0], filter: "brightness(1)" },
+            { at: shakeStart, duration: shakeDuration, ease: "easeInOut" }
+        ]);
+
+        // Relax after release
+        sequence.push([cardRef.current, { scale: 1.0, filter: "brightness(0.7)" }, { at: hitStart + P_SHAKE, duration: 0.2 }]);
+    }
+
+    // FINAL HIT
+    const F_ENTER = 0.2;
+    const F_WRAP = 0.4;
+    const F_FLIP_TIME = 0.6; // exact lock and start of flip
+
+    sequence.push([cardRef.current, { filter: "brightness(2.5)", scale: 0.95 }, { at: finalHitStartTime + F_WRAP, duration: 0.2 }]);
 
     // The Reveal Flip
-    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0, opacity: 1, filter: "brightness(1)" }, { at: schedule.flipAt.toString(), duration: 1.2, ease: "circOut" }]);
-    sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: schedule.flipAt.toString(), duration: 1.2, ease: "circOut" }]);
+    const flipAbsTime = finalHitStartTime + F_FLIP_TIME;
+    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0, filter: "brightness(1)" }, { at: flipAbsTime, duration: 1.2, ease: "circOut" }]);
+    sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAbsTime, duration: 1.2, ease: "circOut" }]);
 
     if (!shouldReduceMotion) {
       animationControlsRef.current = animate(sequence, { autoplay: true });
-      animationControlsRef.current.then(() => {
-        executeRevealState();
-      });
     } else {
       if (cardRef.current) {
         cardRef.current.style.opacity = '1';
