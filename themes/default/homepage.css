@@ -203,8 +203,8 @@
 @keyframes lucky-moment-card-reveal { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .lucky-moment-stage.is-generating::after, .lucky-moment-stage.is-generating .lucky-moment-card, .lucky-moment-stage.is-revealed .lucky-moment-card-front { animation: none; } }
 
-.lucky-card-share { display: grid; justify-items: center; gap: .5rem; width: min(100%, 20rem); }
-.lucky-card-share-button { width: 100%; padding: .72rem 1rem; border: 1px solid rgba(173, 244, 205, .82); border-radius: 999px; color: #effff4; background: linear-gradient(135deg, #21685a, #12332f); box-shadow: inset 0 1px rgba(255,255,255,.2), 0 9px 24px rgba(0,0,0,.28); font-weight: 900; cursor: pointer; }
+.lucky-card-share { display: grid; justify-items: center; gap: .5rem; width: min(100%, 18rem); }
+.lucky-card-share-button { width: auto; min-width: 12.5rem; padding: .58rem .95rem; border: 1px solid rgba(173, 244, 205, .58); border-radius: .9rem; color: #effff4; background: rgba(18, 51, 47, .72); box-shadow: inset 0 1px rgba(255,255,255,.16), 0 7px 18px rgba(0,0,0,.22); font-size: .82rem; font-weight: 700; cursor: pointer; backdrop-filter: blur(10px); }
 .lucky-card-share-button:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
 .lucky-card-share-button:disabled { cursor: wait; opacity: .75; }
 .lucky-card-share-status { margin: 0; color: rgba(222, 255, 232, .86); font-size: .76rem; line-height: 1.4; text-align: center; }
