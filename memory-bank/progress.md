@@ -24,3 +24,7 @@
 ## 2026-09-22 - Lucky Card Reveal Cinematic Updates
 - Fetched and applied a cinematic deep space background (`public/NGC4216_crawford.jpg`) for the Lucky Card Reveal.
 - Fixed wording on the Lucky Card Reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection.", and improved readability against the cinematic background with a blurred backdrop container.
+
+## 2026-09-22 - Mobile UI Polish
+- Removed the translucent UI overlay container behind "Today's Lucky Card" on the Reveal page to improve readability and visual integration with the cinematic background.
+- Modified global CSS to hide the visible scrollbar on mobile devices to prevent interference with the aesthetic.
