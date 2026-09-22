@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import LuckyCardReveal from '../lucky-card-reveal';
-import CollectionBinder from '../collection-binder';
 
 export default function RevealClient() {
   return (
@@ -15,16 +14,6 @@ export default function RevealClient() {
         </div>
 
         <LuckyCardReveal />
-        <CollectionBinder />
-
-        <div className="mt-4 md:mt-12 flex justify-center w-full max-w-sm px-4">
-          <Link
-            href="/"
-            className="w-full text-center px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:brightness-110 active:scale-95 transition-all duration-300 shadow-md"
-          >
-            Return to Home
-          </Link>
-        </div>
       </div>
     </div>
   );
