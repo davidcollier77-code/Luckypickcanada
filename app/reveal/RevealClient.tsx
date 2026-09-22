@@ -14,10 +14,9 @@ export default function RevealClient() {
         <div className="aurora-layer aurora-layer-4"></div>
       </div>
       <div className="flex-1 w-full flex flex-col items-center">
-        <div className="homepage-section-heading mb-8">
-          <p>A daily moment of possibility</p>
-          <h1 id="cards-heading">Today’s Lucky Moment</h1>
-          <span>Every day brings a new card to discover. Take a moment, open today’s Lucky Moment, and see which piece of the collection finds you today.</span>
+        <div className="flex flex-col items-center text-center max-w-lg mx-auto mb-8 px-6 py-6 mt-8 relative z-20 bg-black/40 backdrop-blur-md rounded-3xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+          <h1 id="cards-heading" className="text-3xl md:text-5xl font-extrabold text-white mb-3 tracking-tight" style={{ textShadow: '0 4px 24px rgba(0,0,0,0.9), 0 2px 4px rgba(0,0,0,0.8)' }}>Today’s Lucky Card</h1>
+          <span className="text-lg md:text-xl text-white/95 font-medium leading-relaxed" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.8)' }}>A new Lucky Card awaits your collection.</span>
         </div>
 
         <LuckyCardReveal />

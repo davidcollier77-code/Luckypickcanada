@@ -24,3 +24,7 @@
 
 ## Next Steps
 - Submit PR with AGENTS.md governance requirements.
+
+## 2026-09-22 Updates
+- Fixed the wording on the Lucky Card reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection."
+- Improved readability of the text against the cinematic background using backdrop blur, adjusted text shadows, and a subtle border container to provide visual separation.

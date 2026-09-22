@@ -23,3 +23,4 @@
 
 ## 2026-09-22 - Lucky Card Reveal Cinematic Updates
 - Fetched and applied a cinematic deep space background (`public/NGC4216_crawford.jpg`) for the Lucky Card Reveal.
+- Fixed wording on the Lucky Card Reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection.", and improved readability against the cinematic background with a blurred backdrop container.
