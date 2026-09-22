@@ -156,7 +156,8 @@ export default function LuckyCardReveal() {
       const direction = endAngle > startAngle ? -1 : 1;
       ctx.arc(cx, cy, radius, endAngle + (edgeSize * direction), endAngle);
       ctx.lineWidth = width * 1.5;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      const edgeAlpha = Number(color.match(/,\s*([\d.]+)\)$/)?.[1] ?? 1);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${edgeAlpha * 0.8})`;
       ctx.stroke();
     }
   };
