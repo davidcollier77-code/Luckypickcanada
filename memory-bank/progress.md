@@ -28,3 +28,8 @@
 ## 2026-09-22 - Mobile UI Polish
 - Removed the translucent UI overlay container behind "Today's Lucky Card" on the Reveal page to improve readability and visual integration with the cinematic background.
 - Modified global CSS to hide the visible scrollbar on mobile devices to prevent interference with the aesthetic.
+
+## 2026-09-22 - Lucky Card Reveal Energy System Polish
+- Refined the continuous beam material in `app/lucky-card-reveal.js` with a luminous core and soft outer glow to appear more like plasma.
+- Replaced the water-ripple residual energy with a mystical plasma/electrical dissipation effect (fizz/afterglow) featuring erratic arcs, flickering thickness, and ejecting sparks.
+- Added a concentrated impact flare when the beam contacts the card.

@@ -23,9 +23,10 @@
 - Changed `FINAL_HIT_DISSIPATE` to 4.3s.
 - Replaced flat `arc` based plasma with 3D volumetric bezier streams.
 - Updated CSS text-shadow on `h1` in `themes/default/homepage.css` to fix readability.
+- Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
 
 ## Next Steps
-- Submit PR with AGENTS.md governance requirements.
+- Awaiting final PR submission.
 
 ## 2026-09-22 Updates
 - Fixed the wording on the Lucky Card reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection."
