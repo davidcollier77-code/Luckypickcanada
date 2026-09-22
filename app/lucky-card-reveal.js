@@ -127,81 +127,113 @@ export default function LuckyCardReveal() {
   }, []);
 
   // Helpers for lightning drawing
-    const drawContinuousBeam = (ctx, originX, originY, targetX, targetY, radius, wrapProgress, width, color, isSecondary, timestamp) => {
-    ctx.beginPath();
-    ctx.moveTo(originX, originY);
-
+    const drawContinuousBeam = (bgCtx, fgCtx, originX, originY, targetX, targetY, radius, wrapProgress, width, color, isSecondary, timestamp) => {
     const dx = targetX - originX;
     const dy = targetY - originY;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    // Calculate tangent point on the card radius to ensure a smooth transition into the wrap
+    // 3D Ellipse properties
+    const radiusX = radius;
+    const radiusY = radius * 0.35; // Squashed for 3D perspective
+    const rotation = isSecondary ? -0.15 : 0.15; // Slight tilt
+
     const angleToTarget = Math.atan2(dy, dx);
-    const tangentOffsetAngle = isSecondary ? -0.8 : 0.8; // Which side of the card it hits
+    const tangentOffsetAngle = isSecondary ? -0.8 : 0.8;
     const hitAngle = angleToTarget + tangentOffsetAngle;
 
-    // The point where the beam first touches the wrap perimeter
-    const contactX = targetX + Math.cos(hitAngle) * radius;
-    const contactY = targetY + Math.sin(hitAngle) * radius;
+    // Contact point on the ellipse
+    const contactX = targetX + Math.cos(rotation)*radiusX*Math.cos(hitAngle) - Math.sin(rotation)*radiusY*Math.sin(hitAngle);
+    const contactY = targetY + Math.sin(rotation)*radiusX*Math.cos(hitAngle) + Math.cos(rotation)*radiusY*Math.sin(hitAngle);
 
-    // Organic turbulence for the beam approach
     const time = (timestamp - rafStartTimeRef.current) / (isSecondary ? 150 : 250);
     const offsetMag = dist * (isSecondary ? 0.3 : 0.15);
     const offset = Math.sin(time + originX) * offsetMag;
 
-    // Control points to curve from origin naturally into the contact point tangent
     const cp1X = originX + dx * 0.4 - Math.sin(angleToTarget) * offset;
     const cp1Y = originY + dy * 0.4 + Math.cos(angleToTarget) * offset;
 
-    // Second control point aligned with the tangent of the wrap circle
     const cpDistance = radius * 1.5;
     const tangentDirection = isSecondary ? -1 : 1;
     const cp2X = contactX + Math.sin(hitAngle) * cpDistance * tangentDirection;
     const cp2Y = contactY - Math.cos(hitAngle) * cpDistance * tangentDirection;
 
-    // 1. Draw the approach beam
-    if (wrapProgress <= 0) {
-      // If we haven't wrapped, we are just reaching towards the contact point
-      // Intercept the bezier curve
-      const t = Math.max(0, Math.min(1, 1 + wrapProgress * 2)); // wrapProgress is negative during enter phase
-      const ptX = Math.pow(1-t, 3)*originX + 3*Math.pow(1-t, 2)*t*cp1X + 3*(1-t)*Math.pow(t, 2)*cp2X + Math.pow(t, 3)*contactX;
-      const ptY = Math.pow(1-t, 3)*originY + 3*Math.pow(1-t, 2)*t*cp1Y + 3*(1-t)*Math.pow(t, 2)*cp2Y + Math.pow(t, 3)*contactY;
-
-      const subCp1X = originX + (cp1X - originX) * t;
-      const subCp1Y = originY + (cp1Y - originY) * t;
-      const subCp2X = subCp1X + (cp2X - cp1X) * t;
-      const subCp2Y = subCp1Y + (cp2Y - cp1Y) * t;
-
-      ctx.bezierCurveTo(subCp1X, subCp1Y, subCp2X, subCp2Y, ptX, ptY);
-    } else {
-      // Draw full approach
-      ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, contactX, contactY);
-
-      // 2. Draw the continuous wrap around the card
-      // We are already at contactX, contactY. We smoothly arc around targetX, targetY.
-      // wrapProgress is 0 to 1+.
-      const wrapEndAngle = hitAngle + (isSecondary ? -1 : 1) * (Math.PI * 2 * wrapProgress);
-      ctx.arc(targetX, targetY, radius, hitAngle, wrapEndAngle, isSecondary);
-    }
-
-    ctx.lineWidth = width;
-    ctx.strokeStyle = color;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-
-    // Adding moving bright leading edge effect if fully wrapped
-    if (wrapProgress > 0.1) {
-      const edgeSize = 0.3;
-      const wrapEndAngle = hitAngle + (isSecondary ? -1 : 1) * (Math.PI * 2 * wrapProgress);
+    const drawCurve = (ctx, drawFn) => {
       ctx.beginPath();
-      ctx.arc(targetX, targetY, radius, wrapEndAngle - (isSecondary ? -edgeSize : edgeSize), wrapEndAngle, isSecondary);
-      ctx.lineWidth = width * 1.5;
-      const edgeAlpha = Number(color.match(/,\s*([\d.]+)\)$/)?.[1] ?? 1);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${edgeAlpha * 0.9})`;
+      ctx.moveTo(originX, originY);
+      drawFn(ctx);
+      ctx.lineWidth = width;
+      ctx.strokeStyle = color;
+      ctx.lineCap = 'round';
       ctx.stroke();
+    };
+
+    if (wrapProgress <= 0) {
+      if (fgCtx) {
+        drawCurve(fgCtx, (ctx) => {
+          const t = Math.max(0, Math.min(1, 1 + wrapProgress * 2));
+          const ptX = Math.pow(1-t, 3)*originX + 3*Math.pow(1-t, 2)*t*cp1X + 3*(1-t)*Math.pow(t, 2)*cp2X + Math.pow(t, 3)*contactX;
+          const ptY = Math.pow(1-t, 3)*originY + 3*Math.pow(1-t, 2)*t*cp1Y + 3*(1-t)*Math.pow(t, 2)*cp2Y + Math.pow(t, 3)*contactY;
+          const subCp1X = originX + (cp1X - originX) * t;
+          const subCp1Y = originY + (cp1Y - originY) * t;
+          const subCp2X = subCp1X + (cp2X - cp1X) * t;
+          const subCp2Y = subCp1Y + (cp2Y - cp1Y) * t;
+          ctx.bezierCurveTo(subCp1X, subCp1Y, subCp2X, subCp2Y, ptX, ptY);
+        });
+      }
+    } else {
+      if (fgCtx) {
+        drawCurve(fgCtx, (ctx) => {
+          ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, contactX, contactY);
+        });
+      }
+
+      const wrapEndAngle = hitAngle + (isSecondary ? -1 : 1) * (Math.PI * 2 * wrapProgress);
+
+      const startA = isSecondary ? wrapEndAngle : hitAngle;
+      const endA = isSecondary ? hitAngle : wrapEndAngle;
+
+      const segments = 32;
+      const step = (endA - startA) / segments;
+
+      for(let i=0; i<segments; i++) {
+        const a1 = startA + i*step;
+        const a2 = startA + (i+1)*step;
+        const midA = (a1 + a2) / 2;
+
+        let normA = midA % (Math.PI * 2);
+        if (normA < 0) normA += Math.PI * 2;
+        const isFront = normA > 0 && normA < Math.PI;
+
+        const ctx = isFront ? fgCtx : bgCtx;
+        if (ctx) {
+          ctx.beginPath();
+          ctx.ellipse(targetX, targetY, radiusX, radiusY, rotation, a1, a2, false);
+          ctx.lineWidth = width;
+          ctx.strokeStyle = color;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+        }
+      }
+
+      if (wrapProgress > 0.1) {
+         let normEnd = wrapEndAngle % (Math.PI * 2);
+         if (normEnd < 0) normEnd += Math.PI * 2;
+         const isFront = normEnd > 0 && normEnd < Math.PI;
+         const ctx = isFront ? fgCtx : bgCtx;
+         if (ctx) {
+           const edgeSize = 0.3;
+           ctx.beginPath();
+           ctx.ellipse(targetX, targetY, radiusX, radiusY, rotation, wrapEndAngle - (isSecondary ? -edgeSize : edgeSize), wrapEndAngle, isSecondary);
+           ctx.lineWidth = width * 1.5;
+           const edgeAlpha = Number(color.split(',').pop().replace(')', '').trim() || 1);
+           ctx.strokeStyle = `rgba(255, 255, 255, ${edgeAlpha * 0.9})`;
+           ctx.stroke();
+         }
+      }
     }
   };
-const renderCanvas = (timestamp) => {
+
+  const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
     if (!rafStartTimeRef.current) rafStartTimeRef.current = timestamp;
 
@@ -221,9 +253,12 @@ const renderCanvas = (timestamp) => {
     bgCtx.clearRect(0, 0, w, h);
     if (fgCtx) fgCtx.clearRect(0, 0, w, h);
 
-    const targetCtx = fgCtx || bgCtx;
-    targetCtx.save();
-    targetCtx.globalCompositeOperation = 'screen';
+    bgCtx.save();
+    bgCtx.globalCompositeOperation = 'screen';
+    if (fgCtx) {
+      fgCtx.save();
+      fgCtx.globalCompositeOperation = 'screen';
+    }
 
     const colors = {
       blue: '14, 165, 233',
@@ -307,11 +342,11 @@ const renderCanvas = (timestamp) => {
             const radius = cardW * 0.7;
 
             // Main beam
-            drawContinuousBeam(targetCtx, originX, originY, currentTargetX, currentTargetY, radius, approachProgress, beamWidth, `rgba(${hitColor}, ${alpha * 0.8})`, false, timestamp);
-            drawContinuousBeam(targetCtx, originX, originY, currentTargetX, currentTargetY, radius, approachProgress, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, false, timestamp);
+            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, currentTargetY, radius, approachProgress, beamWidth, `rgba(${hitColor}, ${alpha * 0.8})`, false, timestamp);
+            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, currentTargetY, radius, approachProgress, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, false, timestamp);
 
             // Secondary opposing beam
-            drawContinuousBeam(targetCtx, originX, originY, currentTargetX, currentTargetY, radius + 15, approachProgress * 0.8, 4, `rgba(${hitColor}, ${alpha * 0.5})`, true, timestamp);
+            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, currentTargetY, radius + 15, approachProgress * 0.8, 4, `rgba(${hitColor}, ${alpha * 0.5})`, true, timestamp);
           }
         }
       } else {
@@ -372,12 +407,12 @@ const renderCanvas = (timestamp) => {
            }
 
            // Draw the main tight gripping beam
-           drawContinuousBeam(targetCtx, originX, originY, currentTargetX, trackingY, radius, approachProgress * (lockTightness < 1 ? 1.5 : 1), beamWidth, `rgba(${hitColor}, ${alpha * 0.9})`, false, timestamp);
-           drawContinuousBeam(targetCtx, originX, originY, currentTargetX, trackingY, radius, approachProgress * (lockTightness < 1 ? 1.5 : 1), beamWidth/2, `rgba(255, 255, 255, ${alpha})`, false, timestamp);
+           drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius, approachProgress * (lockTightness < 1 ? 1.5 : 1), beamWidth, `rgba(${hitColor}, ${alpha * 0.9})`, false, timestamp);
+           drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius, approachProgress * (lockTightness < 1 ? 1.5 : 1), beamWidth/2, `rgba(255, 255, 255, ${alpha})`, false, timestamp);
 
            // Secondary counter-wrap
-           drawContinuousBeam(targetCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 6 * intensityMult, `rgba(${hitColor}, ${alpha * 0.6})`, true, timestamp);
-           drawContinuousBeam(targetCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 2 * intensityMult, `rgba(255, 255, 255, ${alpha * 0.8})`, true, timestamp);
+           drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 6 * intensityMult, `rgba(${hitColor}, ${alpha * 0.6})`, true, timestamp);
+           drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 2 * intensityMult, `rgba(255, 255, 255, ${alpha * 0.8})`, true, timestamp);
         } else {
            // AFTERGLOW / FIZZ
            const afterglowTime = hitLocalTime - F_AFTERGLOW_START;
@@ -393,33 +428,28 @@ const renderCanvas = (timestamp) => {
              const fizzAlpha = Math.max(0, 1 - Math.pow(t, 2)); // Ease out alpha
              const numArcs = Math.floor(4 * tierMult);
 
-             targetCtx.lineCap = 'round';
+                          const fizzCtx = fgCtx || bgCtx;
+             fizzCtx.lineCap = 'round';
              for (let i = 0; i < numArcs; i++) {
-                // Residual energy runs off/down the card, radius expands slightly and decays
                 const r = cardW * 0.7 * (1 + t * 0.2) + (i * 12);
-
-                // The base angle advances based on time to create a "travelling" effect running off the surface
                 const direction = (i % 2 === 0 ? 1 : -1);
                 const angleSpeed = 8 * direction * (1 - t * 0.8);
                 const baseAngle = (hitLocalTime * angleSpeed) + (i * Math.PI / numArcs) + (Math.PI / 2 * t);
-
-                // The arc length shrinks as it dissipates
                 const arcLength = (Math.PI * 0.6) * (1 - t) * (0.5 + Math.random() * 0.5);
 
-                targetCtx.beginPath();
-                targetCtx.arc(cx, cy, r, baseAngle, baseAngle + arcLength, direction < 0);
-                targetCtx.lineWidth = 3 * tierMult * (1 - t);
-                targetCtx.strokeStyle = `rgba(${hitColor}, ${fizzAlpha})`;
-                targetCtx.stroke();
+                fizzCtx.beginPath();
+                fizzCtx.ellipse(cx, cy, r, r * 0.4, 0.15, baseAngle, baseAngle + arcLength, direction < 0);
+                fizzCtx.lineWidth = 3 * tierMult * (1 - t);
+                fizzCtx.strokeStyle = `rgba(${hitColor}, ${fizzAlpha})`;
+                fizzCtx.stroke();
 
-                // Draw occasional secondary broken filaments (sparks)
                 if (Math.random() > t) {
                     const sparkOffset = Math.random() * 0.5;
-                    targetCtx.beginPath();
-                    targetCtx.arc(cx, cy, r + 10 * tierMult, baseAngle + sparkOffset, baseAngle + sparkOffset + 0.15, direction < 0);
-                    targetCtx.lineWidth = 1.5 * tierMult;
-                    targetCtx.strokeStyle = `rgba(255, 255, 255, ${fizzAlpha * 0.9})`;
-                    targetCtx.stroke();
+                    fizzCtx.beginPath();
+                    fizzCtx.ellipse(cx, cy, r + 10 * tierMult, (r + 10 * tierMult) * 0.4, 0.15, baseAngle + sparkOffset, baseAngle + sparkOffset + 0.15, direction < 0);
+                    fizzCtx.lineWidth = 1.5 * tierMult;
+                    fizzCtx.strokeStyle = `rgba(255, 255, 255, ${fizzAlpha * 0.9})`;
+                    fizzCtx.stroke();
                 }
              }
            }
@@ -427,7 +457,8 @@ const renderCanvas = (timestamp) => {
       }
     }
 
-    targetCtx.restore();
+    bgCtx.restore();
+    if (fgCtx) fgCtx.restore();
 
     // Trigger executeRevealState exactly at the end of the lock/flip moment
     if (elapsed >= finalHitStartTime + 0.6 + 1.2 && !isRevealedRef.current) {
