@@ -45,6 +45,7 @@ Exact changed files list matching the final Git diff with no omissions, false en
 - `app/reveal/RevealClient.tsx`
 - `memory-bank/activeContext.md`
 - `memory-bank/progress.md`
+- `pr_description.md`
 
 USEFUL RESULT: YES
 
