@@ -147,6 +147,19 @@ export default function LuckyCardReveal() {
     ctx.lineWidth = width;
     ctx.strokeStyle = color;
     ctx.stroke();
+
+    // Adding moving bright leading edge effect
+    const edgeSize = 0.2; // roughly 11 degrees
+    if (Math.abs(endAngle - startAngle) > edgeSize) {
+      ctx.beginPath();
+      // Assuming drawing from start to end, edge is at endAngle
+      const direction = endAngle > startAngle ? -1 : 1;
+      ctx.arc(cx, cy, radius, endAngle + (edgeSize * direction), endAngle);
+      ctx.lineWidth = width * 1.5;
+      const edgeAlpha = Number(color.match(/,\s*([\d.]+)\)$/)?.[1] ?? 1);
+      ctx.strokeStyle = `rgba(255, 255, 255, ${edgeAlpha * 0.8})`;
+      ctx.stroke();
+    }
   };
 
   const renderCanvas = (timestamp) => {
@@ -323,22 +336,26 @@ export default function LuckyCardReveal() {
 
              const fizzAlpha = (1 - t) * 0.6 * tierMult;
 
-             // Draw subtle residual energy around card
-             const bgGrad = targetCtx.createRadialGradient(cx, cy, cardW * 0.4, cx, cy, cardW * (1.5 + (0.5 * tierMult)) * (1+t));
-             bgGrad.addColorStop(0, `rgba(${hitColor}, ${Math.min(0.8, fizzAlpha)})`);
-             bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-             targetCtx.fillStyle = bgGrad;
-             // optimize overdraw by restricting to bounding box around card
-             const maxR = cardW * (1.5 + (0.5 * tierMult)) * (1+t);
-             targetCtx.fillRect(Math.max(0, cx - maxR), Math.max(0, cy - maxR), maxR * 2, maxR * 2);
+             // Draw travelling residual electrical energy (not a static ring)
+             const numArcs = Math.ceil(tierMult * 2);
+             for(let i=0; i<numArcs; i++) {
+                // Determine base radius and distance based on time (traveling outwards slightly then dissipating)
+                const r = (cardW * 0.7) + (t * cardW * 0.3 * Math.random());
 
-             // Occasional fizzy arcs
-             if (Math.random() > t) {
-                const numArcs = Math.ceil(tierMult);
-                for(let i=0; i<numArcs; i++) {
-                   const r = cardW * 0.7 * (1 + Math.random()* (0.2 * tierMult));
-                   const a = Math.random() * Math.PI * 2;
-                   drawWrap(targetCtx, cx, cy, r, a, a + Math.random()*Math.PI, 2 * tierMult, `rgba(${hitColor}, ${fizzAlpha * Math.random()})`);
+                // Angle advances based on time to create a "travelling" effect
+                const angleSpeed = 10 * (i % 2 === 0 ? 1 : -1) * (1 - t*0.5);
+                const baseAngle = (hitLocalTime * angleSpeed) + (i * Math.PI / numArcs);
+
+                // The arc length shrinks as it dissipates
+                const arcLength = (Math.PI * 0.8) * (1 - t) * Math.random();
+
+                // Draw main travelling filament
+                drawWrap(targetCtx, cx, cy, r, baseAngle, baseAngle + arcLength, 3 * tierMult, `rgba(${hitColor}, ${fizzAlpha})`);
+
+                // Draw occasional secondary broken filaments (sparks)
+                if (Math.random() > t) {
+                    const sparkOffset = Math.random() * 0.5;
+                    drawWrap(targetCtx, cx, cy, r + 15, baseAngle + sparkOffset, baseAngle + sparkOffset + 0.1, 1.5 * tierMult, `rgba(255, 255, 255, ${fizzAlpha * 0.8})`);
                 }
              }
            }
@@ -424,10 +441,11 @@ export default function LuckyCardReveal() {
         const P_HOLD = 1.0;
         const P_SHAKE = 1.2;
 
-        // Card reaction on EVERY IMPACT (wrap/hit moment)
+        // Card reaction on EVERY IMPACT (wrap/hit moment) - perfectly synchronized with contact
+        // Contact occurs at P_WRAP
         sequence.push([
             cardRef.current,
-            { filter: "brightness(1.5)", scale: 0.98, x: [-5, 5, -3, 3, 0], rotateZ: [-1, 1, -0.5, 0.5, 0] },
+            { filter: "brightness(1.5)", scale: 0.98, x: [-8, 8, -4, 4, 0], rotateZ: [-1.5, 1.5, -0.5, 0.5, 0] },
             { at: hitStart + P_WRAP, duration: 0.2, ease: "easeInOut" }
         ]);
 
@@ -452,16 +470,23 @@ export default function LuckyCardReveal() {
     const F_WRAP = 0.4;
     const F_FLIP_TIME = 0.6; // exact lock and start of flip
 
-    // Final Impact - massive shake
+    // Final Impact - tension grab
     sequence.push([
       cardRef.current,
-      { filter: "brightness(2.5)", scale: 0.95, x: [-15, 15, -10, 10, -5, 5, 0], rotateZ: [-3, 3, -2, 2, -1, 1, 0] },
-      { at: finalHitStartTime + F_WRAP, duration: 0.2 }
+      { filter: "brightness(2.5)", scale: 0.93, y: 15, rotateZ: -1 },
+      { at: finalHitStartTime + F_WRAP, duration: 0.2, ease: "easeOut" }
     ]);
 
-    // The Reveal Flip
+    // The Reveal Flip / Throw
     const flipAbsTime = finalHitStartTime + F_FLIP_TIME;
-    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0, filter: "brightness(1)" }, { at: flipAbsTime, duration: 1.2, ease: "circOut" }]);
+
+    // Throw upwards and scale out
+    sequence.push([cardRef.current, { y: -60, scale: 1.05, filter: "brightness(1)" }, { at: flipAbsTime, duration: 0.4, ease: "easeOut" }]);
+
+    // Settle back down
+    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0 }, { at: flipAbsTime + 0.4, duration: 0.8, ease: "backOut" }]);
+
+    // Flip with overshoot
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAbsTime, duration: 1.2, ease: "circOut" }]);
 
     if (!shouldReduceMotion) {
