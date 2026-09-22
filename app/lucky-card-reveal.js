@@ -650,16 +650,6 @@ export default function LuckyCardReveal() {
         )}
       </div>
 
-      <div className="w-full flex flex-col items-center gap-3 relative z-40 shrink-0">
-        <CollectionBinder />
-        <Link
-          href="/"
-          className="w-full text-center px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:brightness-110 active:scale-95 transition-all duration-300 shadow-md"
-        >
-          Return to Home
-        </Link>
-      </div>
-
       <div
         ref={scope}
         className="w-full flex justify-center pt-6 pb-2 md:pt-16 md:pb-4 flex-shrink-0 relative"
@@ -709,8 +699,18 @@ export default function LuckyCardReveal() {
         </motion.div>
       </div>
 
+      <div className="w-full flex items-center justify-center gap-2.5 pt-1 relative z-40 shrink-0">
+        <CollectionBinder />
+        <Link
+          href="/"
+          className="flex-1 min-w-0 inline-flex items-center justify-center min-h-9 px-3 py-2 rounded-xl bg-white/5 backdrop-blur-sm border border-white/15 text-white/80 text-xs font-semibold tracking-wide whitespace-nowrap shadow-sm hover:bg-white/10 hover:border-white/25 hover:text-white active:scale-[0.98] transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+        >
+          Return to Home
+        </Link>
+      </div>
+
       {isReady && isRevealed && selectedCard && (
-        <div className="w-full flex flex-col items-center space-y-4 pt-2 animate-fade-in">
+        <div className="w-full flex flex-col items-center space-y-4 pt-1 animate-fade-in">
           <div className="w-full p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
             <p className="text-base italic text-gray-800 font-serif leading-relaxed">
               "{selectedCard.quote || 'Your lucky moment awaits.'}"
