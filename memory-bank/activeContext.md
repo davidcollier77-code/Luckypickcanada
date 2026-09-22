@@ -25,7 +25,8 @@
 - Updated CSS text-shadow on `h1` in `themes/default/homepage.css` to fix readability.
 
 ## Next Steps
-- Submit PR with AGENTS.md governance requirements.
+- Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
+- Awaiting final PR submission.
 
 ## 2026-09-22 Updates
 - Fixed the wording on the Lucky Card reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection."

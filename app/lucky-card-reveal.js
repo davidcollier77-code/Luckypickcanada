@@ -129,7 +129,7 @@ export default function LuckyCardReveal() {
   }, []);
 
   // Helpers for lightning drawing
-    const drawContinuousBeam = (bgCtx, fgCtx, originX, originY, targetX, targetY, radius, wrapProgress, width, color, isSecondary, timestamp) => {
+  const drawContinuousBeam = (bgCtx, fgCtx, originX, originY, targetX, targetY, radius, wrapProgress, width, color, isSecondary, timestamp) => {
     const dx = targetX - originX;
     const dy = targetY - originY;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -151,20 +151,43 @@ export default function LuckyCardReveal() {
     const offsetMag = dist * (isSecondary ? 0.3 : 0.15);
     const offset = Math.sin(time + originX) * offsetMag;
 
-    const cp1X = originX + dx * 0.4 - Math.sin(angleToTarget) * offset;
-    const cp1Y = originY + dy * 0.4 + Math.cos(angleToTarget) * offset;
+    // Add turbulence to control points
+    const turbX = (Math.random() - 0.5) * 20;
+    const turbY = (Math.random() - 0.5) * 20;
+
+    const cp1X = originX + dx * 0.4 - Math.sin(angleToTarget) * offset + turbX;
+    const cp1Y = originY + dy * 0.4 + Math.cos(angleToTarget) * offset + turbY;
 
     const cpDistance = radius * 1.5;
     const tangentDirection = isSecondary ? -1 : 1;
-    const cp2X = contactX + Math.sin(hitAngle) * cpDistance * tangentDirection;
-    const cp2Y = contactY - Math.cos(hitAngle) * cpDistance * tangentDirection;
+    const cp2X = contactX + Math.sin(hitAngle) * cpDistance * tangentDirection + (Math.random() - 0.5) * 15;
+    const cp2Y = contactY - Math.cos(hitAngle) * cpDistance * tangentDirection + (Math.random() - 0.5) * 15;
 
     const drawCurve = (ctx, drawFn) => {
+      // Outer glow
+      ctx.beginPath();
+      ctx.moveTo(originX, originY);
+      drawFn(ctx);
+      ctx.lineWidth = width * 2.5;
+      ctx.strokeStyle = color.replace(')', ', 0.3)').replace('rgba', 'rgba').replace(', 0.3, 0.3)', ', 0.3)'); // Soften outer glow
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Main beam
       ctx.beginPath();
       ctx.moveTo(originX, originY);
       drawFn(ctx);
       ctx.lineWidth = width;
       ctx.strokeStyle = color;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Hot luminous core
+      ctx.beginPath();
+      ctx.moveTo(originX, originY);
+      drawFn(ctx);
+      ctx.lineWidth = width * 0.3;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.lineCap = 'round';
       ctx.stroke();
     };
@@ -179,7 +202,12 @@ export default function LuckyCardReveal() {
           const subCp1Y = originY + (cp1Y - originY) * t;
           const subCp2X = subCp1X + (cp2X - cp1X) * t;
           const subCp2Y = subCp1Y + (cp2Y - cp1Y) * t;
-          ctx.bezierCurveTo(subCp1X, subCp1Y, subCp2X, subCp2Y, ptX, ptY);
+
+          // Introduce micro-jitter on approach
+          const jitterX = (Math.random() - 0.5) * 5 * t;
+          const jitterY = (Math.random() - 0.5) * 5 * t;
+
+          ctx.bezierCurveTo(subCp1X, subCp1Y, subCp2X, subCp2Y, ptX + jitterX, ptY + jitterY);
         });
       }
     } else {
@@ -187,6 +215,20 @@ export default function LuckyCardReveal() {
         drawCurve(fgCtx, (ctx) => {
           ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, contactX, contactY);
         });
+
+        // Impact flare at contact point
+        if (wrapProgress < 0.2) { // Just hit
+            const flareSize = width * (3 + Math.random() * 2);
+            fgCtx.beginPath();
+            fgCtx.arc(contactX, contactY, flareSize, 0, Math.PI * 2);
+            fgCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            fgCtx.fill();
+
+            fgCtx.beginPath();
+            fgCtx.arc(contactX, contactY, flareSize * 2, 0, Math.PI * 2);
+            fgCtx.fillStyle = color.replace(')', ', 0.5)').replace('rgba', 'rgba');
+            fgCtx.fill();
+        }
       }
 
       const wrapEndAngle = hitAngle + (isSecondary ? -1 : 1) * (Math.PI * 2 * wrapProgress);
@@ -208,10 +250,31 @@ export default function LuckyCardReveal() {
 
         const ctx = isFront ? fgCtx : bgCtx;
         if (ctx) {
+          // Add irregularity to the wrapping ring
+          const radiusJitterX = (Math.random() - 0.5) * width * 0.5;
+          const radiusJitterY = (Math.random() - 0.5) * width * 0.5;
+
+          // Outer wrap glow
           ctx.beginPath();
-          ctx.ellipse(targetX, targetY, radiusX, radiusY, rotation, a1, a2, false);
+          ctx.ellipse(targetX, targetY, radiusX + radiusJitterX, radiusY + radiusJitterY, rotation, a1, a2, false);
+          ctx.lineWidth = width * 2;
+          ctx.strokeStyle = color.replace(')', ', 0.3)').replace('rgba', 'rgba');
+          ctx.lineCap = 'round';
+          ctx.stroke();
+
+          // Main wrap
+          ctx.beginPath();
+          ctx.ellipse(targetX, targetY, radiusX + radiusJitterX, radiusY + radiusJitterY, rotation, a1, a2, false);
           ctx.lineWidth = width;
           ctx.strokeStyle = color;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+
+          // Wrap core
+          ctx.beginPath();
+          ctx.ellipse(targetX, targetY, radiusX + radiusJitterX, radiusY + radiusJitterY, rotation, a1, a2, false);
+          ctx.lineWidth = width * 0.3;
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
           ctx.lineCap = 'round';
           ctx.stroke();
         }
@@ -223,12 +286,12 @@ export default function LuckyCardReveal() {
          const isFront = normEnd > 0 && normEnd < Math.PI;
          const ctx = isFront ? fgCtx : bgCtx;
          if (ctx) {
-           const edgeSize = 0.3;
+           const edgeSize = 0.3 + Math.random() * 0.2; // Flickering edge
            ctx.beginPath();
            ctx.ellipse(targetX, targetY, radiusX, radiusY, rotation, wrapEndAngle - (isSecondary ? -edgeSize : edgeSize), wrapEndAngle, isSecondary);
-           ctx.lineWidth = width * 1.5;
+           ctx.lineWidth = width * 2; // Thicker bright head
            const edgeAlpha = Number(color.split(',').pop().replace(')', '').trim() || 1);
-           ctx.strokeStyle = `rgba(255, 255, 255, ${edgeAlpha * 0.9})`;
+           ctx.strokeStyle = `rgba(255, 255, 255, ${edgeAlpha * (0.8 + Math.random() * 0.2)})`;
            ctx.stroke();
          }
       }
@@ -416,7 +479,7 @@ export default function LuckyCardReveal() {
            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 6 * intensityMult, `rgba(${hitColor}, ${alpha * 0.6})`, true, timestamp);
            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 2 * intensityMult, `rgba(255, 255, 255, ${alpha * 0.8})`, true, timestamp);
         } else {
-           // AFTERGLOW / FIZZ
+           // AFTERGLOW / FIZZ - Mystical Plasma Dissipation
            const afterglowTime = hitLocalTime - F_AFTERGLOW_START;
            const dissipateDuration = FINAL_HIT_DISSIPATE - F_AFTERGLOW_START;
            if (afterglowTime < dissipateDuration) {
@@ -427,30 +490,57 @@ export default function LuckyCardReveal() {
              if (tier === 'premium') tierMult = 1.5;
              if (tier === 'flagship') tierMult = 2.5;
 
-             const fizzAlpha = Math.max(0, 1 - Math.pow(t, 2)); // Ease out alpha
-             const numArcs = Math.floor(4 * tierMult);
+             const fizzAlpha = Math.max(0, 1 - Math.pow(t, 1.5)); // Ease out alpha, linger slightly longer
+             const numArcs = Math.floor(6 * tierMult); // More arcs for plasma feel
 
-                          const fizzCtx = fgCtx || bgCtx;
+             const fizzCtx = fgCtx || bgCtx;
              fizzCtx.lineCap = 'round';
+
+             // Base plasma field behavior
              for (let i = 0; i < numArcs; i++) {
-                const r = cardW * 0.7 * (1 + t * 0.2) + (i * 12);
+                // Irregular radius expansion and distortion
+                const rDistort = (Math.random() - 0.5) * 20 * t * tierMult;
+                const r = cardW * 0.7 * (1 + t * 0.4) + (i * 8) + rDistort;
+
                 const direction = (i % 2 === 0 ? 1 : -1);
-                const angleSpeed = 8 * direction * (1 - t * 0.8);
+
+                // Erratic angular speed simulating plasma crawling
+                const speedJitter = 1 + (Math.random() - 0.5) * 0.5;
+                const angleSpeed = 12 * direction * (1 - t) * speedJitter;
+
                 const baseAngle = (hitLocalTime * angleSpeed) + (i * Math.PI / numArcs) + (Math.PI / 2 * t);
-                const arcLength = (Math.PI * 0.6) * (1 - t) * (0.5 + Math.random() * 0.5);
+
+                // Fragmenting arcs
+                const arcLength = (Math.PI * 0.4) * (1 - t) * (0.2 + Math.random() * 0.8);
 
                 fizzCtx.beginPath();
-                fizzCtx.ellipse(cx, cy, r, r * 0.4, 0.15, baseAngle, baseAngle + arcLength, direction < 0);
-                fizzCtx.lineWidth = 3 * tierMult * (1 - t);
-                fizzCtx.strokeStyle = `rgba(${hitColor}, ${fizzAlpha})`;
+                fizzCtx.ellipse(cx, cy, r, r * (0.35 + (Math.random()*0.1)), 0.15 + (Math.random() - 0.5)*0.2*t, baseAngle, baseAngle + arcLength, direction < 0);
+
+                // Flicker thickness and opacity
+                const flickerThickness = 2 * tierMult * (1 - t) * (0.5 + Math.random() * 1.5);
+                const flickerAlpha = fizzAlpha * (0.5 + Math.random() * 0.5);
+
+                fizzCtx.lineWidth = flickerThickness;
+                fizzCtx.strokeStyle = `rgba(${hitColor}, ${flickerAlpha})`;
                 fizzCtx.stroke();
 
-                if (Math.random() > t) {
-                    const sparkOffset = Math.random() * 0.5;
+                // Bright core for some arcs
+                if (Math.random() > 0.5) {
+                    fizzCtx.lineWidth = flickerThickness * 0.3;
+                    fizzCtx.strokeStyle = `rgba(255, 255, 255, ${flickerAlpha * 0.8})`;
+                    fizzCtx.stroke();
+                }
+
+                // Ejecting sparks/tendrils breaking away from main field
+                if (Math.random() > t * 1.2) { // More sparks early on
+                    const sparkOffset = (Math.random() - 0.5) * 0.5;
+                    const ejectDist = r + (20 + Math.random() * 30) * t * tierMult;
+
                     fizzCtx.beginPath();
-                    fizzCtx.ellipse(cx, cy, r + 10 * tierMult, (r + 10 * tierMult) * 0.4, 0.15, baseAngle + sparkOffset, baseAngle + sparkOffset + 0.15, direction < 0);
-                    fizzCtx.lineWidth = 1.5 * tierMult;
-                    fizzCtx.strokeStyle = `rgba(255, 255, 255, ${fizzAlpha * 0.9})`;
+                    // Brief electrical tendril
+                    fizzCtx.ellipse(cx, cy, ejectDist, ejectDist * 0.4, 0.15, baseAngle + sparkOffset, baseAngle + sparkOffset + 0.1, direction < 0);
+                    fizzCtx.lineWidth = 1.5 * tierMult * (1-t);
+                    fizzCtx.strokeStyle = Math.random() > 0.3 ? `rgba(${hitColor}, ${flickerAlpha * 0.9})` : `rgba(255, 255, 255, ${flickerAlpha * 0.9})`;
                     fizzCtx.stroke();
                 }
              }
