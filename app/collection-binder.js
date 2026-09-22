@@ -127,7 +127,7 @@ export default function CollectionBinder() {
   return (
     <>
       {/* Trigger Button */}
-      <div className="w-full flex justify-center mt-6">
+      <div className="w-full flex justify-center">
         <button
           onClick={() => setIsOpen(true)}
           className="flex items-center space-x-2 text-sm font-medium bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 shadow-lg py-2 px-4 rounded-full transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
