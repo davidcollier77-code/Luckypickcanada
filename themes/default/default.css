@@ -62,8 +62,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(255, 226, 136, 0
   ::-webkit-scrollbar-thumb { border: 3px solid #02070d; border-radius: 999px; background: linear-gradient(180deg, #fff0a8, #c89635 48%, #106b57); }
 }
 
-@media (max-width: 768px) and (hover: none) {
+@media (max-width: 768px) {
   ::-webkit-scrollbar { display: none; }
+  * { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 .lpc-display, h1, h2, h3 { font-family: var(--lpc-display); }

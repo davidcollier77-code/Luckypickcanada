@@ -1,6 +1,8 @@
 # Active Context
 
 ## Current Work
+- Removed 'opacity-70' on NGC4216_crawford.jpg in app/lucky-card-reveal.js to eliminate shadowy overlay.
+- Added '-ms-overflow-style: none;' and 'scrollbar-width: none;' and removed '(hover: none)' requirement from the max-width: 768px scrollbar media query in themes/default/default.css to successfully hide the visible mobile scrollbar.
 - Implemented cinematic continuous beam architecture in `app/lucky-card-reveal.js`.
 - Replaced disconnected arc/bezier Canvas drawing with a unified `drawContinuousBeam` function that smoothly transitions from approach curve into a tight wrapping radius.
 - Re-synchronized Framer Motion `x/rotateZ` card shaking to strictly align with contact (`P_WRAP`) and stop exactly on release (`P_SHAKE`).
