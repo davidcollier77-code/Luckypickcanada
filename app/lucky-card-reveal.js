@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import CollectionBinder from './collection-binder';
 import { motion, useAnimate, useReducedMotion } from 'framer-motion';
 import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
@@ -646,6 +648,16 @@ export default function LuckyCardReveal() {
             {isGenerating ? 'Revealing...' : "Reveal Today's Luck"}
           </button>
         )}
+      </div>
+
+      <div className="w-full flex flex-col items-center gap-3 relative z-40 shrink-0">
+        <CollectionBinder />
+        <Link
+          href="/"
+          className="w-full text-center px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:brightness-110 active:scale-95 transition-all duration-300 shadow-md"
+        >
+          Return to Home
+        </Link>
       </div>
 
       <div
