@@ -19,6 +19,9 @@
 - Executed `./jules-verify.sh` successfully.
 
 ## Completed Work
+- Reduced regular hits by one across all tiers (Standard: 3, Premium: 4, Flagship: 5).
+- Replaced detached 2D afterglow ring with a physically attached, organic 3D plasma burnout effect on the card geometry in `app/lucky-card-reveal.js` (burnout lasts ~2.5s post-flip).
+
 - Repaired `lucky-card-reveal.js` to dispatch `unlockedCardsUpdated` and persist to `unlockedCards`.
 - Changed `FINAL_HIT_DISSIPATE` to 4.3s.
 - Replaced flat `arc` based plasma with 3D volumetric bezier streams.

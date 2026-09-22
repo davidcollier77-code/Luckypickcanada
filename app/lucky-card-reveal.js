@@ -20,8 +20,8 @@ function localDateKey(date = new Date()) {
 
 const TIER_HITS = {
   standard: 3,
-  premium: 5,
-  flagship: 7
+  premium: 4,
+  flagship: 5
 };
 
 // Hit durations in seconds
@@ -489,66 +489,129 @@ export default function LuckyCardReveal() {
            if (afterglowTime < dissipateDuration) {
              const t = afterglowTime / dissipateDuration;
 
-             // Tier specific multiplier
-             let tierMult = 1;
-             if (tier === 'premium') tierMult = 1.5;
-             if (tier === 'flagship') tierMult = 2.5;
-
-             const fizzAlpha = Math.max(0, 1 - Math.pow(t, 1.5)); // Ease out alpha, linger slightly longer
-             const numArcs = Math.floor(6 * tierMult); // More arcs for plasma feel
+             // The plasma burnout must be shared across all tiers (no tierMult scaling that makes them look different)
+             const fizzAlpha = Math.max(0, 1 - Math.pow(t, 1.2)); // Slower ease out for alpha
 
              const fizzCtx = fgCtx || bgCtx;
              fizzCtx.lineCap = 'round';
+             fizzCtx.lineJoin = 'round';
 
-             // Base plasma field behavior
-             for (let i = 0; i < numArcs; i++) {
-                // Irregular radius expansion and distortion
-                const rDistort = (Math.random() - 0.5) * 20 * t * tierMult;
-                const r = cardW * 0.7 * (1 + t * 0.4) + (i * 8) + rDistort;
+             // Draw localized plasma burnout adhering to card geometry
+             // Use cardW and cardH to constrain the plasma to the card's rectangular edges and surface
+             const w2 = cardW / 2;
+             const h2 = cardH / 2;
 
-                const direction = (i % 2 === 0 ? 1 : -1);
+             // Base points around the card (corners and midpoints)
+             const points = [
+               { x: cx - w2, y: cy - h2 }, // TL
+               { x: cx, y: cy - h2 },      // TM
+               { x: cx + w2, y: cy - h2 }, // TR
+               { x: cx + w2, y: cy },      // RM
+               { x: cx + w2, y: cy + h2 }, // BR
+               { x: cx, y: cy + h2 },      // BM
+               { x: cx - w2, y: cy + h2 }, // BL
+               { x: cx - w2, y: cy }       // LM
+             ];
 
-                // Erratic angular speed simulating plasma crawling
-                const speedJitter = 1 + (Math.random() - 0.5) * 0.5;
-                const angleSpeed = 12 * direction * (1 - t) * speedJitter;
-
-                const baseAngle = (hitLocalTime * angleSpeed) + (i * Math.PI / numArcs) + (Math.PI / 2 * t);
-
-                // Fragmenting arcs
-                const arcLength = (Math.PI * 0.4) * (1 - t) * (0.2 + Math.random() * 0.8);
+             // Draw jagged, electrical plasma conforming to the card edges
+             const numPlasmaStrands = 5;
+             for (let s = 0; s < numPlasmaStrands; s++) {
+                if (Math.random() > (1 - t * 0.8)) continue; // Progressive fragmentation
 
                 fizzCtx.beginPath();
-                fizzCtx.ellipse(cx, cy, r, r * (0.35 + (Math.random()*0.1)), 0.15 + (Math.random() - 0.5)*0.2*t, baseAngle, baseAngle + arcLength, direction < 0);
+                let started = false;
 
-                // Flicker thickness and opacity
-                const flickerThickness = 2 * tierMult * (1 - t) * (0.5 + Math.random() * 1.5);
-                const flickerAlpha = fizzAlpha * (0.5 + Math.random() * 0.5);
+                for (let i = 0; i < points.length; i++) {
+                    // Randomly skip some points to create broken arcs and fragments
+                    if (Math.random() > 0.4 + t * 0.5) {
+                       const p = points[i];
+                       const nextP = points[(i + 1) % points.length];
 
-                fizzCtx.lineWidth = flickerThickness;
+                       // Jitter based on time and randomness to make it organic and chaotic
+                       const jitterX = (Math.random() - 0.5) * 30 * (1 - t);
+                       const jitterY = (Math.random() - 0.5) * 30 * (1 - t);
+
+                       const cp1x = p.x + (nextP.x - p.x) * 0.3 + jitterX;
+                       const cp1y = p.y + (nextP.y - p.y) * 0.3 + jitterY;
+                       const cp2x = p.x + (nextP.x - p.x) * 0.7 - jitterX;
+                       const cp2y = p.y + (nextP.y - p.y) * 0.7 - jitterY;
+
+                       if (!started) {
+                           fizzCtx.moveTo(p.x + (Math.random()-0.5)*10, p.y + (Math.random()-0.5)*10);
+                           started = true;
+                       }
+                       fizzCtx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, nextP.x + (Math.random()-0.5)*10, nextP.y + (Math.random()-0.5)*10);
+                    } else {
+                       started = false;
+                    }
+                }
+
+                const flickerThickness = 1.5 * (1 - t) * (1 + Math.random() * 2);
+                const flickerAlpha = fizzAlpha * (0.4 + Math.random() * 0.6);
+
+                // Blue/white plasma (hitColor)
+                fizzCtx.lineWidth = flickerThickness + Math.random() * 3;
                 fizzCtx.strokeStyle = `rgba(${hitColor}, ${flickerAlpha})`;
                 fizzCtx.stroke();
 
-                // Bright core for some arcs
-                if (Math.random() > 0.5) {
-                    fizzCtx.lineWidth = flickerThickness * 0.3;
-                    fizzCtx.strokeStyle = `rgba(255, 255, 255, ${flickerAlpha * 0.8})`;
-                    fizzCtx.stroke();
-                }
-
-                // Ejecting sparks/tendrils breaking away from main field
-                if (Math.random() > t * 1.2) { // More sparks early on
-                    const sparkOffset = (Math.random() - 0.5) * 0.5;
-                    const ejectDist = r + (20 + Math.random() * 30) * t * tierMult;
-
-                    fizzCtx.beginPath();
-                    // Brief electrical tendril
-                    fizzCtx.ellipse(cx, cy, ejectDist, ejectDist * 0.4, 0.15, baseAngle + sparkOffset, baseAngle + sparkOffset + 0.1, direction < 0);
-                    fizzCtx.lineWidth = 1.5 * tierMult * (1-t);
-                    fizzCtx.strokeStyle = Math.random() > 0.3 ? `rgba(${hitColor}, ${flickerAlpha * 0.9})` : `rgba(255, 255, 255, ${flickerAlpha * 0.9})`;
+                // Core
+                if (Math.random() > 0.4) {
+                    fizzCtx.lineWidth = flickerThickness * 0.5;
+                    fizzCtx.strokeStyle = `rgba(255, 255, 255, ${flickerAlpha * 0.9})`;
                     fizzCtx.stroke();
                 }
              }
+
+             // Draw surface contact glow / hot spots
+             for (let i = 0; i < 4; i++) {
+                 if (Math.random() > 1 - t) continue;
+                 const glowX = cx + (Math.random() - 0.5) * cardW;
+                 const glowY = cy + (Math.random() - 0.5) * cardH;
+
+                 const glowR = 10 + Math.random() * 30 * (1 - t);
+                 const grad = fizzCtx.createRadialGradient(glowX, glowY, 0, glowX, glowY, glowR);
+                 grad.addColorStop(0, `rgba(255, 255, 255, ${fizzAlpha * 0.6})`);
+                 grad.addColorStop(0.2, `rgba(${hitColor}, ${fizzAlpha * 0.4})`);
+                 grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+                 fizzCtx.fillStyle = grad;
+                 // Use exact bounding box for fillRect to optimize GPU
+                 fizzCtx.fillRect(glowX - glowR, glowY - glowR, glowR * 2, glowR * 2);
+             }
+
+             // Sparks: Hot orange/gold heat sparks that break away and drizzle down
+             const numSparks = Math.floor(15 * (1 - t));
+             for (let i = 0; i < numSparks; i++) {
+                 // Sparks originate from card edges or surface
+                 const sparkX = cx + (Math.random() - 0.5) * cardW * 1.1;
+                 const sparkY = cy + (Math.random() - 0.5) * cardH * 1.1;
+
+                 // Velocity: generally downwards (drizzling), with some lateral drift
+                 const vx = (Math.random() - 0.5) * 2;
+                 const vy = 1 + Math.random() * 3; // Gravity effect
+
+                 // Age of this specific spark based on t to simulate falling over time
+                 // Since we don't have persistent particle state here, we simulate it via offset
+                 const sparkAge = t * (1 + Math.random());
+                 const currentX = sparkX + vx * sparkAge * 50;
+                 const currentY = sparkY + vy * sparkAge * 50;
+
+                 const sparkSize = (1 + Math.random() * 2) * (1 - t);
+                 const sparkAlpha = fizzAlpha * (0.5 + Math.random() * 0.5);
+
+                 // Orange/gold color for superheated sparks
+                 const r = 255;
+                 const g = 150 + Math.floor(Math.random() * 50);
+                 const b = 0;
+
+                 fizzCtx.beginPath();
+                 fizzCtx.arc(currentX, currentY, sparkSize, 0, Math.PI * 2);
+                 fizzCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${sparkAlpha})`;
+                 fizzCtx.fill();
+             }
            }
+
+
         }
       }
     }
