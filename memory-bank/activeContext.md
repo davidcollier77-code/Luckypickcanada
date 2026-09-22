@@ -23,9 +23,9 @@
 - Changed `FINAL_HIT_DISSIPATE` to 4.3s.
 - Replaced flat `arc` based plasma with 3D volumetric bezier streams.
 - Updated CSS text-shadow on `h1` in `themes/default/homepage.css` to fix readability.
+- Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
 
 ## Next Steps
-- Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
 - Awaiting final PR submission.
 
 ## 2026-09-22 Updates

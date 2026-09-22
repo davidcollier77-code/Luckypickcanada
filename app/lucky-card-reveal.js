@@ -226,7 +226,11 @@ export default function LuckyCardReveal() {
 
             fgCtx.beginPath();
             fgCtx.arc(contactX, contactY, flareSize * 2, 0, Math.PI * 2);
-            fgCtx.fillStyle = color.replace(')', ', 0.5)').replace('rgba', 'rgba');
+            // Flare with adjusted alpha
+            const alphaMatch = color.match(/rgba?\([^)]+,\s*([\d.]+)\)/);
+            const newAlpha = 0.5;
+            fgCtx.fillStyle = alphaMatch
+              ? color.replace(/,\s*[\d.]+\)$/, `, ${newAlpha})`) : color.replace(')', `, ${newAlpha})`);
             fgCtx.fill();
         }
       }
