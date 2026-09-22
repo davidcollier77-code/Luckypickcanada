@@ -2,14 +2,15 @@
 <html lang="en-US">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<base href="/tutorials/">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="/favicon.ico">
 <link rel="mask-icon" href="/apple-logo.svg" color="#333333">
 <title>WebKit | Apple Developer Documentation</title>
-<script>var baseUrl = "/tutorials/"</script><link rel="stylesheet" href="https://www.apple.com/wss/fonts?families=SF+Pro,v3|SF+Mono,v1|SF+Pro+SC,v1|SF+Pro+JP,v1" referrerpolicy="origin-when-cross-origin">
-<script defer src="/tutorials/js/chunk-vendors.d2411331.js"></script><script defer src="/tutorials/js/chunk-common.a8aed958.js"></script><script defer src="/tutorials/js/index.5f627f11.js"></script><link href="/tutorials/css/chunk-vendors.e84e4a47.css" rel="stylesheet">
+<link rel="stylesheet" href="https://www.apple.com/wss/fonts?families=SF+Pro,v3|SF+Mono,v1|SF+Pro+SC,v1|SF+Pro+JP,v1" referrerpolicy="origin-when-cross-origin">
+<script defer src="/tutorials/js/chunk-vendors.6bc61ad3.js"></script><script defer src="/tutorials/js/chunk-common.71c8ea9c.js"></script><script defer src="/tutorials/js/index.8f8c20db.js"></script><link href="/tutorials/css/chunk-vendors.0401d05a.css" rel="stylesheet">
 <link href="/tutorials/css/index.6a972d82.css" rel="stylesheet">
 <meta name="description" content="Integrate web content seamlessly into your app, and customize content interactions to meet your app’s needs.">
 <meta property="og:locale" content="en_US">
