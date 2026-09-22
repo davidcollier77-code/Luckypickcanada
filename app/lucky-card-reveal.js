@@ -516,6 +516,7 @@ export default function LuckyCardReveal() {
           quality={85}
           className="object-cover object-center opacity-70"
           sizes="100vw"
+          onError={(e) => e.target.style.display = 'none'}
         />
       </div>
 
