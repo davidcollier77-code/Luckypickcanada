@@ -114,55 +114,80 @@ export default function LuckyCardReveal() {
   }, []);
 
   // Helpers for lightning drawing
-    const drawEnergyRibbon = (ctx, startX, startY, endX, endY, width, color, timestamp) => {
+    const drawContinuousBeam = (ctx, originX, originY, targetX, targetY, radius, wrapProgress, width, color, isSecondary, timestamp) => {
     ctx.beginPath();
-    ctx.moveTo(startX, startY);
+    ctx.moveTo(originX, originY);
 
-    // Create a smooth bezier curve instead of jagged lines
-    // Add some sine wave movement based on time for organic feel
-    const dx = endX - startX;
-    const dy = endY - startY;
-    const dist = Math.sqrt(dx*dx + dy*dy);
+    const dx = targetX - originX;
+    const dy = targetY - originY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
 
-    const time = (timestamp - rafStartTimeRef.current) / 200;
-    const offset = Math.sin(time + startX) * (dist * 0.2);
+    // Calculate tangent point on the card radius to ensure a smooth transition into the wrap
+    const angleToTarget = Math.atan2(dy, dx);
+    const tangentOffsetAngle = isSecondary ? -0.8 : 0.8; // Which side of the card it hits
+    const hitAngle = angleToTarget + tangentOffsetAngle;
 
-    const cp1X = startX + dx * 0.3 - dy * 0.2 + offset;
-    const cp1Y = startY + dy * 0.3 + dx * 0.2 + offset;
+    // The point where the beam first touches the wrap perimeter
+    const contactX = targetX - Math.cos(hitAngle) * radius;
+    const contactY = targetY - Math.sin(hitAngle) * radius;
 
-    const cp2X = startX + dx * 0.7 + dy * 0.2 - offset;
-    const cp2Y = startY + dy * 0.7 - dx * 0.2 - offset;
+    // Organic turbulence for the beam approach
+    const time = (timestamp - rafStartTimeRef.current) / (isSecondary ? 150 : 250);
+    const offsetMag = dist * (isSecondary ? 0.3 : 0.15);
+    const offset = Math.sin(time + originX) * offsetMag;
 
-    ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+    // Control points to curve from origin naturally into the contact point tangent
+    const cp1X = originX + dx * 0.4 - Math.sin(angleToTarget) * offset;
+    const cp1Y = originY + dy * 0.4 + Math.cos(angleToTarget) * offset;
+
+    // Second control point aligned with the tangent of the wrap circle
+    const cpDistance = radius * 1.5;
+    const cp2X = contactX - Math.sin(hitAngle) * cpDistance;
+    const cp2Y = contactY + Math.cos(hitAngle) * cpDistance;
+
+    // 1. Draw the approach beam
+    if (wrapProgress <= 0) {
+      // If we haven't wrapped, we are just reaching towards the contact point
+      // Intercept the bezier curve
+      const t = Math.max(0, Math.min(1, 1 + wrapProgress * 2)); // wrapProgress is negative during enter phase
+      const ptX = Math.pow(1-t, 3)*originX + 3*Math.pow(1-t, 2)*t*cp1X + 3*(1-t)*Math.pow(t, 2)*cp2X + Math.pow(t, 3)*contactX;
+      const ptY = Math.pow(1-t, 3)*originY + 3*Math.pow(1-t, 2)*t*cp1Y + 3*(1-t)*Math.pow(t, 2)*cp2Y + Math.pow(t, 3)*contactY;
+
+      const subCp1X = originX + (cp1X - originX) * t;
+      const subCp1Y = originY + (cp1Y - originY) * t;
+      const subCp2X = subCp1X + (cp2X - cp1X) * t;
+      const subCp2Y = subCp1Y + (cp2Y - cp1Y) * t;
+
+      ctx.bezierCurveTo(subCp1X, subCp1Y, subCp2X, subCp2Y, ptX, ptY);
+    } else {
+      // Draw full approach
+      ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, contactX, contactY);
+
+      // 2. Draw the continuous wrap around the card
+      // We are already at contactX, contactY. We smoothly arc around targetX, targetY.
+      // wrapProgress is 0 to 1+.
+      const wrapEndAngle = hitAngle + (isSecondary ? -1 : 1) * (Math.PI * 2 * wrapProgress);
+      ctx.arc(targetX, targetY, radius, hitAngle, wrapEndAngle, isSecondary);
+    }
 
     ctx.lineWidth = width;
     ctx.strokeStyle = color;
     ctx.lineCap = 'round';
     ctx.stroke();
-  };
 
-  const drawWrap = (ctx, cx, cy, radius, startAngle, endAngle, width, color) => {
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, startAngle, endAngle);
-    ctx.lineWidth = width;
-    ctx.strokeStyle = color;
-    ctx.stroke();
-
-    // Adding moving bright leading edge effect
-    const edgeSize = 0.2; // roughly 11 degrees
-    if (Math.abs(endAngle - startAngle) > edgeSize) {
+    // Adding moving bright leading edge effect if fully wrapped
+    if (wrapProgress > 0.1) {
+      const edgeSize = 0.3;
+      const wrapEndAngle = hitAngle + (isSecondary ? -1 : 1) * (Math.PI * 2 * wrapProgress);
       ctx.beginPath();
-      // Assuming drawing from start to end, edge is at endAngle
-      const direction = endAngle > startAngle ? -1 : 1;
-      ctx.arc(cx, cy, radius, endAngle + (edgeSize * direction), endAngle);
+      ctx.arc(targetX, targetY, radius, wrapEndAngle - (isSecondary ? -edgeSize : edgeSize), wrapEndAngle, isSecondary);
       ctx.lineWidth = width * 1.5;
       const edgeAlpha = Number(color.match(/,\s*([\d.]+)\)$/)?.[1] ?? 1);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${edgeAlpha * 0.8})`;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${edgeAlpha * 0.9})`;
       ctx.stroke();
     }
   };
-
-  const renderCanvas = (timestamp) => {
+const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
     if (!rafStartTimeRef.current) rafStartTimeRef.current = timestamp;
 
@@ -263,17 +288,16 @@ export default function LuckyCardReveal() {
 
           if (alpha > 0) {
             const beamWidth = 8 + Math.random() * 4;
-            drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth, `rgba(${hitColor}, ${alpha * 0.6})`, timestamp);
-            drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, timestamp);
+            // Negative progress during approach
+            const approachProgress = (hitLocalTime < P_ENTER) ? (hitLocalTime / P_ENTER) - 1 : wrapProgress;
+            const radius = cardW * 0.7;
 
-            if (showWrap) {
-              const radius = cardW * 0.7;
-              const angleSize = Math.PI * 1.5 * wrapProgress;
-              const startAngle = (hitLocalTime * 5) % (Math.PI * 2);
+            // Main beam
+            drawContinuousBeam(targetCtx, originX, originY, currentTargetX, currentTargetY, radius, approachProgress, beamWidth, `rgba(${hitColor}, ${alpha * 0.8})`, false, timestamp);
+            drawContinuousBeam(targetCtx, originX, originY, currentTargetX, currentTargetY, radius, approachProgress, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, false, timestamp);
 
-              drawWrap(targetCtx, cx, cy, radius, startAngle, startAngle + angleSize, 6, `rgba(${hitColor}, ${alpha * 0.8})`);
-              drawWrap(targetCtx, cx, cy, radius + 15, -startAngle, -startAngle + angleSize * 0.8, 3, `rgba(${hitColor}, ${alpha * 0.5})`);
-            }
+            // Secondary opposing beam
+            drawContinuousBeam(targetCtx, originX, originY, currentTargetX, currentTargetY, radius + 15, approachProgress * 0.8, 4, `rgba(${hitColor}, ${alpha * 0.5})`, true, timestamp);
           }
         }
       } else {
@@ -310,18 +334,36 @@ export default function LuckyCardReveal() {
            }
 
            const beamWidth = (12 * intensityMult) + Math.random() * 6;
-           drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth, `rgba(${hitColor}, ${alpha * 0.7})`, timestamp);
-           drawEnergyRibbon(targetCtx, originX, originY, currentTargetX, currentTargetY, beamWidth/2, `rgba(255, 255, 255, ${alpha})`, timestamp);
+           const baseRadius = cardW * 0.7;
+           const lockTightness = (hitLocalTime > F_FLIP_TIME) ? Math.max(0.4, 1 - (hitLocalTime - F_FLIP_TIME)*2) : 1; // Pull tight fast
+           const radius = baseRadius * lockTightness;
+           const approachProgress = (hitLocalTime < F_ENTER) ? (hitLocalTime / F_ENTER) - 1 : wrapProgress;
 
-           if (showWrap) {
-              const baseRadius = cardW * 0.7;
-              const lockTightness = (hitLocalTime > F_FLIP_TIME) ? Math.max(0.4, 1 - (hitLocalTime - F_FLIP_TIME)) : 1;
-              const radius = baseRadius * lockTightness;
-
-              const startAngle = (hitLocalTime * 8) % (Math.PI * 2);
-              drawWrap(targetCtx, cx, cy, radius, startAngle, startAngle + Math.PI * 2 * wrapProgress, 8 * intensityMult, `rgba(${hitColor}, ${alpha})`);
-              drawWrap(targetCtx, cx, cy, radius + 20, -startAngle*1.5, -startAngle*1.5 + Math.PI * 2 * wrapProgress, 4 * intensityMult, `rgba(255, 255, 255, ${alpha * 0.8})`);
+           // Calculate dynamic Y tracking during the launch (throw)
+           // Framer Motion launches it y: -60 at F_FLIP_TIME over 0.4s
+           let trackingY = currentTargetY;
+           if (hitLocalTime >= F_FLIP_TIME && hitLocalTime < F_FLIP_TIME + 0.4) {
+               const launchT = (hitLocalTime - F_FLIP_TIME) / 0.4;
+               // Ease out roughly matches framer's easeOut
+               const easeOut = 1 - Math.pow(1 - launchT, 3);
+               trackingY = cy - (60 * easeOut);
+           } else if (hitLocalTime >= F_FLIP_TIME + 0.4) {
+               // Settle back down
+               const settleT = Math.min(1, (hitLocalTime - (F_FLIP_TIME + 0.4)) / 0.8);
+               // backOut approximate
+               const c1 = 1.70158;
+               const c3 = c1 + 1;
+               const easeBack = 1 + c3 * Math.pow(settleT - 1, 3) + c1 * Math.pow(settleT - 1, 2);
+               trackingY = (cy - 60) + (60 * easeBack);
            }
+
+           // Draw the main tight gripping beam
+           drawContinuousBeam(targetCtx, originX, originY, currentTargetX, trackingY, radius, approachProgress * (lockTightness < 1 ? 1.5 : 1), beamWidth, `rgba(${hitColor}, ${alpha * 0.9})`, false, timestamp);
+           drawContinuousBeam(targetCtx, originX, originY, currentTargetX, trackingY, radius, approachProgress * (lockTightness < 1 ? 1.5 : 1), beamWidth/2, `rgba(255, 255, 255, ${alpha})`, false, timestamp);
+
+           // Secondary counter-wrap
+           drawContinuousBeam(targetCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 6 * intensityMult, `rgba(${hitColor}, ${alpha * 0.6})`, true, timestamp);
+           drawContinuousBeam(targetCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 2 * intensityMult, `rgba(255, 255, 255, ${alpha * 0.8})`, true, timestamp);
         } else {
            // AFTERGLOW / FIZZ
            const afterglowTime = hitLocalTime - F_AFTERGLOW_START;
@@ -334,28 +376,36 @@ export default function LuckyCardReveal() {
              if (tier === 'premium') tierMult = 1.5;
              if (tier === 'flagship') tierMult = 2.5;
 
-             const fizzAlpha = (1 - t) * 0.6 * tierMult;
+             const fizzAlpha = Math.max(0, 1 - Math.pow(t, 2)); // Ease out alpha
+             const numArcs = Math.floor(4 * tierMult);
 
-             // Draw travelling residual electrical energy (not a static ring)
-             const numArcs = Math.ceil(tierMult * 2);
-             for(let i=0; i<numArcs; i++) {
-                // Determine base radius and distance based on time (traveling outwards slightly then dissipating)
-                const r = (cardW * 0.7) + (t * cardW * 0.3 * Math.random());
+             targetCtx.lineCap = 'round';
+             for (let i = 0; i < numArcs; i++) {
+                // Residual energy runs off/down the card, radius expands slightly and decays
+                const r = cardW * 0.7 * (1 + t * 0.2) + (i * 12);
 
-                // Angle advances based on time to create a "travelling" effect
-                const angleSpeed = 10 * (i % 2 === 0 ? 1 : -1) * (1 - t*0.5);
-                const baseAngle = (hitLocalTime * angleSpeed) + (i * Math.PI / numArcs);
+                // The base angle advances based on time to create a "travelling" effect running off the surface
+                const direction = (i % 2 === 0 ? 1 : -1);
+                const angleSpeed = 8 * direction * (1 - t * 0.8);
+                const baseAngle = (hitLocalTime * angleSpeed) + (i * Math.PI / numArcs) + (Math.PI / 2 * t);
 
                 // The arc length shrinks as it dissipates
-                const arcLength = (Math.PI * 0.8) * (1 - t) * Math.random();
+                const arcLength = (Math.PI * 0.6) * (1 - t) * (0.5 + Math.random() * 0.5);
 
-                // Draw main travelling filament
-                drawWrap(targetCtx, cx, cy, r, baseAngle, baseAngle + arcLength, 3 * tierMult, `rgba(${hitColor}, ${fizzAlpha})`);
+                targetCtx.beginPath();
+                targetCtx.arc(cx, cy, r, baseAngle, baseAngle + arcLength, direction < 0);
+                targetCtx.lineWidth = 3 * tierMult * (1 - t);
+                targetCtx.strokeStyle = `rgba(${hitColor}, ${fizzAlpha})`;
+                targetCtx.stroke();
 
                 // Draw occasional secondary broken filaments (sparks)
                 if (Math.random() > t) {
                     const sparkOffset = Math.random() * 0.5;
-                    drawWrap(targetCtx, cx, cy, r + 15, baseAngle + sparkOffset, baseAngle + sparkOffset + 0.1, 1.5 * tierMult, `rgba(255, 255, 255, ${fizzAlpha * 0.8})`);
+                    targetCtx.beginPath();
+                    targetCtx.arc(cx, cy, r + 10 * tierMult, baseAngle + sparkOffset, baseAngle + sparkOffset + 0.15, direction < 0);
+                    targetCtx.lineWidth = 1.5 * tierMult;
+                    targetCtx.strokeStyle = `rgba(255, 255, 255, ${fizzAlpha * 0.9})`;
+                    targetCtx.stroke();
                 }
              }
            }
@@ -449,16 +499,13 @@ export default function LuckyCardReveal() {
             { at: hitStart + P_WRAP, duration: 0.2, ease: "easeInOut" }
         ]);
 
-        // Hold
-        sequence.push([cardRef.current, { filter: "brightness(1.2)" }, { at: hitStart + P_WRAP + 0.2, duration: P_HOLD - (P_WRAP + 0.2) }]);
-
-        // SHAKE to break grip!
-        const shakeStart = hitStart + P_HOLD;
-        const shakeDuration = P_SHAKE - P_HOLD; // 0.2s
+        // Card fights the grip starting exactly at contact (P_WRAP) until release (P_SHAKE)
+        // Wrap phase starts at P_WRAP and holds until P_SHAKE
+        const fightDuration = P_SHAKE - P_WRAP;
         sequence.push([
             cardRef.current,
-            { x: [-10, 10, -10, 10, -5, 5, 0], rotateZ: [-2, 2, -2, 2, -1, 1, 0], filter: "brightness(1)" },
-            { at: shakeStart, duration: shakeDuration, ease: "easeInOut" }
+            { x: [-8, 8, -6, 6, -8, 8, -4, 4, -2, 2, 0], rotateZ: [-1.5, 1.5, -1, 1, -1.5, 1.5, -0.5, 0.5, 0], filter: "brightness(1.2)" },
+            { at: hitStart + P_WRAP, duration: fightDuration, ease: "linear" }
         ]);
 
         // Relax after release
