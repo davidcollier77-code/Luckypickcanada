@@ -553,6 +553,23 @@ const renderCanvas = (timestamp) => {
 
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none relative z-10">
+
+      {/* Cinematic Deep Space Background */}
+      <div className="fixed inset-0 z-[-20] w-full h-full pointer-events-none">
+        <Image
+          src="/NGC4216_crawford.jpg"
+          alt="Cosmic Space Background"
+          fill
+          priority
+          quality={85}
+          className="object-cover object-center opacity-70"
+          sizes="100vw"
+          onError={(e) => e.target.style.display = 'none'}
+        />
+      </div>
+
+      {/* Existing Background Canvas */}
+
       
       {isGenerating && (
         <canvas
