@@ -25,7 +25,7 @@ export default function RevealClient() {
         <div className="mt-12 flex justify-center w-full max-w-sm px-4">
           <Link
             href="/"
-            className="w-full text-center px-6 py-3 rounded-full bg-white/10 border border-white/20 text-white font-bold transition-all duration-300 hover:bg-white/20 hover:scale-105 active:scale-95 shadow-md"
+            className="w-full text-center px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:brightness-110 active:scale-95 transition-all duration-300 shadow-md"
           >
             Return to Home
           </Link>

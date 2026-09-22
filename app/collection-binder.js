@@ -130,7 +130,7 @@ export default function CollectionBinder() {
       <div className="w-full flex justify-center mt-6">
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center space-x-2 text-sm font-medium text-gray-400 hover:text-white transition-colors py-2 px-4 rounded-full border border-gray-700 hover:border-gray-500 bg-gray-900/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="flex items-center space-x-2 text-sm font-medium bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 shadow-lg py-2 px-4 rounded-full transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
           tabIndex={0}
         >
           <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
