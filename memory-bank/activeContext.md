@@ -16,5 +16,11 @@
 - Verified build (`pnpm run build`) and tests (`pnpm test`).
 - Executed `./jules-verify.sh` successfully.
 
+## Completed Work
+- Repaired `lucky-card-reveal.js` to dispatch `unlockedCardsUpdated` and persist to `unlockedCards`.
+- Changed `FINAL_HIT_DISSIPATE` to 4.3s.
+- Replaced flat `arc` based plasma with 3D volumetric bezier streams.
+- Updated CSS text-shadow on `h1` in `themes/default/homepage.css` to fix readability.
+
 ## Next Steps
 - Submit PR with AGENTS.md governance requirements.

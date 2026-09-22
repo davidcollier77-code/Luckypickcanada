@@ -24,7 +24,7 @@ const TIER_HITS = {
 
 // Hit durations in seconds
 const HIT_DURATION = 1.6;
-const FINAL_HIT_DISSIPATE = 2.5; // Final flip + afterglow
+const FINAL_HIT_DISSIPATE = 4.3; // Final flip + afterglow (1.8s flip sequence + 2.5s dissipation)
 
 export default function LuckyCardReveal() {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -104,6 +104,18 @@ export default function LuckyCardReveal() {
           quote: activeCardRef.current.quote,
           revealDate: localDateKey()
         }));
+
+        // Also update the unlockedCards collection
+        const storedCollection = window.localStorage.getItem('unlockedCards');
+        let collection = [];
+        if (storedCollection) {
+          collection = JSON.parse(storedCollection);
+        }
+        if (!collection.includes(activeCardRef.current.id)) {
+          collection.push(activeCardRef.current.id);
+          window.localStorage.setItem('unlockedCards', JSON.stringify(collection));
+          window.dispatchEvent(new Event('unlockedCardsUpdated'));
+        }
       } catch (e) {}
     }
 

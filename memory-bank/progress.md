@@ -1,5 +1,7 @@
 # Progress
 
+## Features & Enhancements
+
 ## Completed Features
 - Built out the main React app structure with standard, premium, and flagship card tiers.
 - Integrated Cloudflare Pages deployment via OpenNext.

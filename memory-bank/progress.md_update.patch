@@ -1,6 +1,0 @@
---- memory-bank/progress.md
-+++ memory-bank/progress.md
-@@ -29,2 +29,3 @@
- - **Lucky Cards:** Standard, Premium, and Flagship tiers with unique designs. Added dynamic flip animations and reduced-motion fallback.
-+- **Lucky Card Cinematic:** Full proton-pack single-beam choreography implemented across 3/5/7 tiered hit iterations.
- - **Lucky Map:** Map tracking interactions across Canadian provinces and territories.
