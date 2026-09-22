@@ -596,7 +596,7 @@ export default function LuckyCardReveal() {
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-4 space-y-6 select-none relative z-10">
+    <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-2 md:py-4 space-y-3 md:space-y-6 select-none relative z-10">
 
       {/* Cinematic Deep Space Background */}
       <div className="fixed inset-0 z-[-20] w-full h-full pointer-events-none">
@@ -650,7 +650,7 @@ export default function LuckyCardReveal() {
 
       <div
         ref={scope}
-        className="w-full flex justify-center pt-16 pb-4 flex-shrink-0 relative"
+        className="w-full flex justify-center pt-6 pb-2 md:pt-16 md:pb-4 flex-shrink-0 relative"
         style={{ perspective: '1200px' }}
       >
         <motion.div
