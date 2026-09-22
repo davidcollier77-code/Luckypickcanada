@@ -128,8 +128,8 @@ export default function LuckyCardReveal() {
     const hitAngle = angleToTarget + tangentOffsetAngle;
 
     // The point where the beam first touches the wrap perimeter
-    const contactX = targetX - Math.cos(hitAngle) * radius;
-    const contactY = targetY - Math.sin(hitAngle) * radius;
+    const contactX = targetX + Math.cos(hitAngle) * radius;
+    const contactY = targetY + Math.sin(hitAngle) * radius;
 
     // Organic turbulence for the beam approach
     const time = (timestamp - rafStartTimeRef.current) / (isSecondary ? 150 : 250);
@@ -142,8 +142,9 @@ export default function LuckyCardReveal() {
 
     // Second control point aligned with the tangent of the wrap circle
     const cpDistance = radius * 1.5;
-    const cp2X = contactX - Math.sin(hitAngle) * cpDistance;
-    const cp2Y = contactY + Math.cos(hitAngle) * cpDistance;
+    const tangentDirection = isSecondary ? -1 : 1;
+    const cp2X = contactX + Math.sin(hitAngle) * cpDistance * tangentDirection;
+    const cp2Y = contactY - Math.cos(hitAngle) * cpDistance * tangentDirection;
 
     // 1. Draw the approach beam
     if (wrapProgress <= 0) {

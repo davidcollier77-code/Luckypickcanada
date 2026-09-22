@@ -4,7 +4,7 @@
 - Implemented cinematic continuous beam architecture in `app/lucky-card-reveal.js`.
 - Replaced disconnected arc/bezier Canvas drawing with a unified `drawContinuousBeam` function that smoothly transitions from approach curve into a tight wrapping radius.
 - Re-synchronized Framer Motion `x/rotateZ` card shaking to strictly align with contact (`P_WRAP`) and stop exactly on release (`P_SHAKE`).
-- Engineered tension and physical launch tracking on the final hit, dynamically polling framer-motion flip timing offsets.
+- Engineered tension and physical launch tracking on the final hit, mirroring the Framer Motion flip timeline (y: -60 launch at F_FLIP_TIME) via shared constants and approximated easing curves.
 - Enhanced residual energy to function as a unified fluid runoff over the card rather than disjointed floating arcs.
 - Polished the cinematic visual progression of the Lucky Card Reveal component (`app/lucky-card-reveal.js`).
 - Removed dependence on static circular geometric hit indicators.
