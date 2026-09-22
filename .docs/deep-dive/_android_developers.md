@@ -2444,6 +2444,26 @@
                 </li>
               
                 <li class="devsite-nav-item">
+                  <a href="https://developer.android.com/google/play/vitals"
+                    
+                     track-type="nav"
+                     track-metadata-eventdetail="https://developer.android.com/google/play/vitals"
+                     track-metadata-position="nav - google play"
+                     track-metadata-module="tertiary nav"
+                     
+                       track-metadata-module_headline="fundamentals"
+                     
+                     tooltip
+                  >
+                    
+                    <div class="devsite-nav-item-title">
+                      Android vitals
+                    </div>
+                    
+                  </a>
+                </li>
+              
+                <li class="devsite-nav-item">
                   <a href="https://developer.android.com/distribute/play-policies"
                     
                      track-type="nav"
@@ -6944,6 +6964,35 @@
 <li class="devsite-nav-item">
 
   
+  <a href="/google/play/vitals"
+    
+       class="devsite-nav-title gc-analytics-event
+              
+              "
+    
+
+    
+     data-category="Site-Wide Custom Events"
+     data-label="Responsive Tab: Android vitals"
+     track-type="navMenu"
+     track-metadata-eventDetail="globalMenu"
+     track-metadata-position="nav">
+  
+    <span class="devsite-nav-text" tooltip >
+      Android vitals
+   </span>
+    
+  
+  </a>
+  
+
+</li>
+
+            
+              
+<li class="devsite-nav-item">
+
+  
   <a href="/distribute/play-policies"
     
        class="devsite-nav-title gc-analytics-event
@@ -9944,9 +9993,9 @@
     
     
       
-        data-label="dev-center-media"
-      
         data-category="feature-card"
+      
+        data-label="dev-center-media"
       
         data-value="0"
       
@@ -10070,11 +10119,11 @@
     
     
       
+        data-value="0"
+      
         data-category="feature-card"
       
         data-label="dev-center-games"
-      
-        data-value="0"
       
     
     >Learn more</a>
@@ -10221,11 +10270,11 @@
     
     
       
-        data-category="feature-card"
-      
         data-value="0"
       
         data-label="dev-center-health-fitness"
+      
+        data-category="feature-card"
       
     
     >Learn more</a>
@@ -10340,9 +10389,9 @@
     
     
       
-        data-label="dev-center-social-messaging"
-      
         data-value="0"
+      
+        data-label="dev-center-social-messaging"
       
         data-category="feature-card"
       
@@ -13252,12 +13301,12 @@
         .fully-clickable"
     watch=".android-editorial-and-updates-cards, .android-samples, devsite-content"></android-fully-clickable>
     
-<script nonce="XUVz/08MLtrADWScsgxoBJY20/ZE9D">
+<script nonce="zIIZZxn3n41O1H4yIP3I4J1Gb1Yw8r">
   
   (function(d,e,v,s,i,t,E){d['GoogleDevelopersObject']=i;
     t=e.createElement(v);t.async=1;t.src=s;E=e.getElementsByTagName(v)[0];
     E.parentNode.insertBefore(t,E);})(window, document, 'script',
-    'https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/android/js/app_loader.js', '[3,"en",null,"/js/devsite_app_module.js","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/android","https://android-dot-devsite-v2-prod.appspot.com",1,null,["/_pwa/android/manifest.json","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/images/video-placeholder.svg","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/android/images/favicon.svg","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/android/images/lockup.png","https://fonts.googleapis.com/css?family=Google+Sans:400,500,600,700|Google+Sans+Text:400,400italic,500,500italic,600,600italic,700,700italic|Roboto+Mono:400,500,700&display=swap"],1,null,[1,6,8,12,14,17,21,25,50,52,63,70,75,76,80,87,91,92,93,97,98,100,101,102,103,104,105,107,108,109,110,112,113,117,118,120,122,124,125,126,127,129,130,131,132,133,134,135,136,138,140,141,147,148,149,151,152,156,157,158,159,161,163,164,168,169,170,179,180,182,183,186,191,193,196],"AIzaSyAP-jjEJBzmIyKR4F-3XITp8yM9T1gEEI8","AIzaSyB6xiKGDR5O3Ak2okS4rLkauxGUG7XP0hg","developer.android.com","AIzaSyAQk0fBONSGUqCNznf6Krs82Ap1-NV6J4o","AIzaSyCCxcqdrZ_7QMeLCRY20bh_SXdAYqy70KY",null,null,null,["Significatio__enable_by_tenant","Cloud__enable_legacy_calculator_redirect","MiscFeatureFlags__enable_project_variables","DevPro__enable_google_one_card","DevPro__enable_free_benefits","CloudShell__cloud_code_overflow_menu","Analytics__enable_devpro_interaction_logging","MiscFeatureFlags__developers_footer_dark_image","BookNav__enable_tenant_cache_key","Profiles__enable_developer_profile_pages_as_content","Profiles__enable_complete_playlist_endpoint","MiscFeatureFlags__enable_framebox_badge_methods","MiscFeatureFlags__enable_variable_operator_index_yaml","CloudShell__cloud_shell_button","Cloud__enable_cloudx_experiment_ids","Cloud__enable_cloud_dlp_service","Profiles__enable_page_saving","Search__enable_ai_eligibility_checks","Profiles__enable_purchase_prompts","Concierge__enable_remove_info_panel_tags","Profiles__enable_stripe_subscription_management","Profiles__enable_awarding_url","SignIn__enable_l1_signup_flow","MiscFeatureFlags__enable_variable_operator","Cloud__enable_cloud_shell_fte_user_flow","DevPro__enable_firebase_workspaces_card","DevPro__enable_embed_profile_creation","Profiles__enable_developer_profiles_callout","Cloud__enable_free_trial_server_call","DevPro__enable_enterprise","MiscFeatureFlags__enable_explicit_template_dependencies","MiscFeatureFlags__enable_view_transitions","EngEduTelemetry__enable_engedu_telemetry","DevPro__enable_devsite_captcha","Profiles__require_profile_eligibility_for_signin","Cloud__cache_serialized_dynamic_content","MiscFeatureFlags__enable_dark_theme","DevPro__enable_cloud_innovators_plus","Profiles__enable_join_program_group_endpoint","Search__enable_suggestions_from_borg","TpcFeatures__enable_unmirrored_page_left_nav","Concierge__enable_actions_menu","Profiles__enable_targeted_hero","Experiments__reqs_query_experiments","DevPro__enable_g1_integration","Search__enable_ai_search_summaries","Profiles__enable_developer_profile_benefits_ui_redesign","Search__enable_ai_search_summaries_for_all","MiscFeatureFlags__fix_lower_breadcrumbs","MiscFeatureFlags__enable_firebase_utm","Cloud__fast_free_trial","Profiles__enable_completecodelab_endpoint","MiscFeatureFlags__remove_cross_domain_tracking_params","Profiles__enable_public_developer_profiles","Profiles__enable_auto_apply_credits","DevPro__enable_vertex_credit_card","Profiles__enable_callout_notifications","Profiles__enable_profile_collections","Profiles__enable_playlist_community_acl","DevPro__enable_g1_ineligible_redirect","DevPro__enable_nvidia_credits_card","MiscFeatureFlags__enable_appearance_cookies","TpcFeatures__proxy_prod_host","MiscFeatureFlags__enable_explain_this_code","Cloud__enable_cloud_shell","DevPro__enable_developer_subscriptions","Profiles__enable_dashboard_curated_recommendations","DevPro__enable_google_payments","DevPro__enable_code_assist","DevPro__enable_devpro_offers","DevPro__enable_credits_banner","Profiles__enable_recognition_badges","AIStudioInteractionsToggle__interactions_are_default","Concierge__enable_pushui","Search__enable_page_map","Concierge__enable_devsite_llm_tools","DevPro__enable_google_payments_buyflow","Search__enable_dynamic_content_confidential_banner","Analytics__enable_clearcut_logging","Profiles__enable_completequiz_endpoint","MiscFeatureFlags__gdp_dashboard_reskin_enabled","MiscFeatureFlags__enable_llms_txt","Profiles__enable_user_type","Profiles__enable_release_notes_notifications","DevPro__remove_eu_tax_intake_form","MiscFeatureFlags__developers_footer_image"],null,null,"AIzaSyBLEMok-5suZ67qRPzx0qUtbnLmyT_kCVE","https://developerscontentserving-pa.googleapis.com","AIzaSyCM4QpTRSqP5qI4Dvjt4OAScIN8sOUlO-k","https://developerscontentsearch-pa.googleapis.com",2,4,null,"https://developerprofiles-pa.googleapis.com",[3,"android","Android Developers","developer.android.com",null,"android-dot-devsite-v2-prod.appspot.com",null,null,[null,1,null,null,null,null,null,null,null,null,null,[1],null,null,null,null,null,null,[1],[1,null,null,[1,20],"/recommendations"],null,null,null,[1,null,1],[1,1,null,1,1],null,null,null,null,[1],[1]],null,[18,null,null,null,null,null,"/images/lockup.png","/images/touchicon-180.png",null,null,null,null,null,null,null,null,null,null,null,null,null,2,null,null,null,"/images/lockup-dark-theme.png",[]],[],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[6,1,14,15,20,22,23,28,29,37,43],null,[[],[1,1]],[[null,null,null,null,null,null,null,[["G-QFRN08RN6E"],null,null,[["G-QFRN08RN6E",1]]],null,null,null,null,1],null,[[1,1],[2,2]]],null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,"android.devsite.google"],null,"pk_live_5170syrHvgGVmSx9sBrnWtA5luvk9BwnVcvIi7HizpwauFG96WedXsuXh790rtij9AmGllqPtMLfhe2RSwD6Pn38V00uBCydV4m",1,1,"https://developerscontentinsights-pa.googleapis.com","AIzaSyCg-ZUslalsEbXMfIo9ZP8qufZgo3LSBDU","AIzaSyDxT0vkxnY_KeINtA4LSePJO-4MAZPMRsE","https://developers.googleapis.com",null,null,"AIzaSyBQom12tzI-rybN7Sf-KfeL4nwm-Rf7PmI\n",null,null,"https://developers.googleapis.com"]')
+    'https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/android/js/app_loader.js', '[3,"en",null,"/js/devsite_app_module.js","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/android","https://android-dot-devsite-v2-prod.appspot.com",1,null,["/_pwa/android/manifest.json","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/images/video-placeholder.svg","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/android/images/favicon.svg","https://www.gstatic.com/devrel-devsite/prod/v826fb839c0b38141980abf47020a61dc3ff340cbde624f57178f4c01d184ef87/android/images/lockup.png","https://fonts.googleapis.com/css?family=Google+Sans:400,500,600,700|Google+Sans+Text:400,400italic,500,500italic,600,600italic,700,700italic|Roboto+Mono:400,500,700&display=swap"],1,null,[1,6,8,12,14,17,21,25,50,52,63,70,75,76,80,87,91,92,93,97,98,100,101,102,103,104,105,107,108,109,110,112,113,116,117,118,120,122,124,125,126,127,129,130,131,132,133,134,135,136,138,140,141,147,148,149,151,152,156,157,158,159,161,163,164,168,169,170,179,180,182,183,186,191,193,196],"AIzaSyAP-jjEJBzmIyKR4F-3XITp8yM9T1gEEI8","AIzaSyB6xiKGDR5O3Ak2okS4rLkauxGUG7XP0hg","developer.android.com","AIzaSyAQk0fBONSGUqCNznf6Krs82Ap1-NV6J4o","AIzaSyCCxcqdrZ_7QMeLCRY20bh_SXdAYqy70KY",null,null,null,["BookNav__enable_tenant_cache_key","MiscFeatureFlags__enable_view_transitions","Profiles__enable_targeted_hero","DevPro__enable_g1_ineligible_redirect","Search__enable_page_map","Cloud__enable_free_trial_server_call","Profiles__enable_developer_profiles_callout","MiscFeatureFlags__enable_project_variables","Concierge__enable_devsite_llm_tools","Analytics__enable_devpro_interaction_logging","DevPro__enable_google_payments_buyflow","Concierge__enable_actions_menu","DevPro__enable_firebase_workspaces_card","MiscFeatureFlags__remove_cross_domain_tracking_params","Concierge__enable_pushui","TpcFeatures__proxy_prod_host","MiscFeatureFlags__enable_dark_theme","Profiles__enable_completequiz_endpoint","MiscFeatureFlags__fix_lower_breadcrumbs","Cloud__enable_cloud_shell_fte_user_flow","Profiles__enable_completecodelab_endpoint","Profiles__enable_user_type","Profiles__enable_callout_notifications","MiscFeatureFlags__developers_footer_dark_image","DevPro__enable_devsite_captcha","Search__enable_ai_search_summaries_for_all","Profiles__require_profile_eligibility_for_signin","DevPro__enable_developer_subscriptions","Cloud__fast_free_trial","Profiles__enable_profile_collections","DevPro__enable_cloud_innovators_plus","MiscFeatureFlags__developers_footer_image","Profiles__enable_public_developer_profiles","Search__enable_ai_search_summaries","DevPro__enable_free_benefits","MiscFeatureFlags__enable_variable_operator_index_yaml","DevPro__enable_credits_banner","DevPro__enable_enterprise","CloudShell__cloud_shell_button","Search__enable_suggestions_from_borg","Profiles__enable_complete_playlist_endpoint","Profiles__enable_playlist_community_acl","Profiles__enable_dashboard_curated_recommendations","SignIn__enable_l1_signup_flow","Profiles__enable_purchase_prompts","DevPro__enable_google_payments","TpcFeatures__enable_unmirrored_page_left_nav","DevPro__remove_eu_tax_intake_form","DevPro__enable_devpro_offers","Cloud__enable_legacy_calculator_redirect","DevPro__enable_google_one_card","Significatio__enable_by_tenant","Profiles__enable_page_saving","AIStudioInteractionsToggle__interactions_are_default","MiscFeatureFlags__enable_framebox_badge_methods","Search__enable_dynamic_content_confidential_banner","MiscFeatureFlags__gdp_dashboard_reskin_enabled","Profiles__enable_release_notes_notifications","Analytics__enable_clearcut_logging","Profiles__enable_auto_apply_credits","MiscFeatureFlags__enable_llms_txt","Profiles__enable_developer_profile_benefits_ui_redesign","DevPro__enable_vertex_credit_card","CloudShell__cloud_code_overflow_menu","DevPro__enable_code_assist","Profiles__enable_join_program_group_endpoint","MiscFeatureFlags__enable_appearance_cookies","MiscFeatureFlags__enable_explain_this_code","Search__enable_ai_eligibility_checks","Cloud__cache_serialized_dynamic_content","Profiles__enable_stripe_subscription_management","EngEduTelemetry__enable_engedu_telemetry","DevPro__enable_nvidia_credits_card","Cloud__enable_cloudx_experiment_ids","Profiles__enable_developer_profile_pages_as_content","DevPro__enable_g1_integration","Profiles__enable_awarding_url","Concierge__enable_remove_info_panel_tags","MiscFeatureFlags__enable_variable_operator","Cloud__enable_cloud_dlp_service","DevPro__enable_embed_profile_creation","Experiments__reqs_query_experiments","Profiles__enable_recognition_badges","MiscFeatureFlags__enable_explicit_template_dependencies","MiscFeatureFlags__enable_firebase_utm","Cloud__enable_cloud_shell"],null,null,"AIzaSyBLEMok-5suZ67qRPzx0qUtbnLmyT_kCVE","https://developerscontentserving-pa.googleapis.com","AIzaSyCM4QpTRSqP5qI4Dvjt4OAScIN8sOUlO-k","https://developerscontentsearch-pa.googleapis.com",2,4,null,"https://developerprofiles-pa.googleapis.com",[3,"android","Android Developers","developer.android.com",null,"android-dot-devsite-v2-prod.appspot.com",null,null,[null,1,null,null,null,null,null,null,null,null,null,[1],null,null,null,null,null,null,[1],[1,null,null,[1,20],"/recommendations"],null,null,null,[1,null,1],[1,1,null,1,1],null,null,null,null,[1],[1]],null,[18,null,null,null,null,null,"/images/lockup.png","/images/touchicon-180.png",null,null,null,null,null,null,null,null,null,null,null,null,null,2,null,null,null,"/images/lockup-dark-theme.png",[]],[],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[6,1,14,15,20,22,23,28,29,37,43],null,[[],[1,1]],[[null,null,null,null,null,null,null,[["G-QFRN08RN6E"],null,null,[["G-QFRN08RN6E",1]]],null,null,null,null,1],null,[[1,1],[2,2]]],null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,"android.devsite.google"],null,"pk_live_5170syrHvgGVmSx9sBrnWtA5luvk9BwnVcvIi7HizpwauFG96WedXsuXh790rtij9AmGllqPtMLfhe2RSwD6Pn38V00uBCydV4m",1,1,"https://developerscontentinsights-pa.googleapis.com","AIzaSyCg-ZUslalsEbXMfIo9ZP8qufZgo3LSBDU","AIzaSyDxT0vkxnY_KeINtA4LSePJO-4MAZPMRsE","https://developers.googleapis.com",null,null,"AIzaSyBQom12tzI-rybN7Sf-KfeL4nwm-Rf7PmI\n",null,null,"https://developers.googleapis.com"]')
   
 </script>
 
