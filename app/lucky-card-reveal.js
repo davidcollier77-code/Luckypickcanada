@@ -109,7 +109,8 @@ export default function LuckyCardReveal() {
         const storedCollection = window.localStorage.getItem('unlockedCards');
         let collection = [];
         if (storedCollection) {
-          collection = JSON.parse(storedCollection);
+          const parsedCollection = JSON.parse(storedCollection);
+          collection = Array.isArray(parsedCollection) ? parsedCollection : [];
         }
         if (!collection.includes(activeCardRef.current.id)) {
           collection.push(activeCardRef.current.id);
