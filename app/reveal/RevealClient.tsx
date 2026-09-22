@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import LuckyCardReveal from '../lucky-card-reveal';
 
 export default function RevealClient() {
