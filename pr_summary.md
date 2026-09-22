@@ -34,5 +34,8 @@ COMMAND | RESULT | EVIDENCE / OUTPUT SUMMARY
 
 - `app/lucky-card-reveal.js`
 - `app/reveal/RevealClient.tsx`
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+- `pr_summary.md`
 
 USEFUL RESULT: YES
