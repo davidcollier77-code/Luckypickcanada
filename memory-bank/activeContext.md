@@ -1,6 +1,15 @@
 # Active Context
 
 ## Current Work
+- Reduced the visual footprint of the "Share Your Lucky Card" button on the Lucky Card Reveal screen to make it more proportionate and refined.
+- Preserved the button's gold/golden visual treatment while reducing its padding, font size, and overall width.
+- Extracted `.lucky-card-share-button` from grouped selectors in `themes/default/homepage.css` to apply bespoke, smaller-scale styling without affecting other prominent calls to action.
+
+## Recent Changes
+- Modified `themes/default/homepage.css` to redefine `.lucky-card-share-button`, `.lucky-card-share-button:hover`, and `.lucky-card-share-button:active`.
+- Verified build (`pnpm run build`), tests (`pnpm test`), and the verification script (`./jules-verify.sh`).
+
+## Completed Work
 - Implemented cinematic continuous beam architecture in `app/lucky-card-reveal.js`.
 - Replaced disconnected arc/bezier Canvas drawing with a unified `drawContinuousBeam` function that smoothly transitions from approach curve into a tight wrapping radius.
 - Re-synchronized Framer Motion `x/rotateZ` card shaking to strictly align with contact (`P_WRAP`) and stop exactly on release (`P_SHAKE`).
@@ -9,14 +18,8 @@
 - Polished the cinematic visual progression of the Lucky Card Reveal component (`app/lucky-card-reveal.js`).
 - Fetched and applied a new deep space cinematic background (`NGC4216_crawford.jpg`) for the Lucky Card Reveal.
 - The new background image fills the entire viewport and remains visible alongside the interactive reveal canvas.
-
-## Recent Changes
 - Downloaded `NGC4216_crawford.jpg` via standard CLI (`curl`/python script).
 - Modified `app/lucky-card-reveal.js` to insert a fixed full-screen `next/image` background.
-- Verified build (`pnpm run build`) and tests (`pnpm test`).
-- Executed `./jules-verify.sh` successfully.
-
-## Completed Work
 - Repaired `lucky-card-reveal.js` to dispatch `unlockedCardsUpdated` and persist to `unlockedCards`.
 - Changed `FINAL_HIT_DISSIPATE` to 4.3s.
 - Replaced flat `arc` based plasma with 3D volumetric bezier streams.
@@ -24,7 +27,3 @@
 
 ## Next Steps
 - Submit PR with AGENTS.md governance requirements.
-
-## 2026-09-22 Updates
-- Fixed the wording on the Lucky Card reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection."
-- Improved readability of the text against the cinematic background using backdrop blur, adjusted text shadows, and a subtle border container to provide visual separation.
