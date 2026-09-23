@@ -791,13 +791,12 @@ export default function LuckyCardReveal() {
                trackingY = cy - (60 * easeOut);
            } else if (hitLocalTime >= F_FLIP_TIME + 0.4) {
                // Settle back down
-               // Updated to match the new duration (1.2) of the settle animation
-               const settleT = Math.min(1, (hitLocalTime - (F_FLIP_TIME + 0.4)) / 1.2);
-               // backOut approximate
-               const c1 = 1.70158;
-               const c3 = c1 + 1;
-               const easeBack = 1 + c3 * Math.pow(settleT - 1, 3) + c1 * Math.pow(settleT - 1, 2);
-               trackingY = (cy - 60) + (60 * easeBack);
+              // Match card settle: y: -5, duration: 0.8s, easeInOut
+              const settleT = Math.min(1, (hitLocalTime - (F_FLIP_TIME + 0.4)) / 0.8);
+              // easeInOut (smoothstep)
+              const easeInOut = settleT * settleT * (3 - 2 * settleT);
+              // Settle from y: -60 to y: -5
+              trackingY = (cy - 60) + (55 * easeInOut);
            }
 
            // Draw the main tight gripping beam
