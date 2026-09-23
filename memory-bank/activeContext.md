@@ -53,3 +53,10 @@
 - 2026-09-23: Fixed `drawRimFlow` so each rim flow progressively reveals only the traversed portion of the card edge over its configured duration; tier colors, thickness, glow, and existing VFX timing remain unchanged.
 
 - 2026-09-23: Refined the final post-flip VFX into a three-stage sequence: brief electric edge-wrap, short molten snap/pop bursts, then two attached lower-edge drips that grow from the card edge before detaching and fading. Shortened surface energy timing and anchored splatter/burst sources to the card perimeter so particles no longer appear disconnected from the molten event.
+
+## 2026-09-23 - Polished final Lucky Card Reveal Cinematic
+- Addressed task #1: Enhanced the existing Lucky Card Reveal cinematic at the final reveal/payoff moment.
+- Refined `app/lucky-card-reveal.js` by slowing the hero settle `duration: 1.2`, improving tension grab scale/y coordinates, and adding a slight `filter: brightness(1.5)` pulse during the throw.
+- The molten/afterglow dissipation was eased using a `smoothstep` ease-in-out calculation for a more natural release.
+- Protected scopes (artwork, audio, tiers, hit counts) were respected.
+- Build passed.
