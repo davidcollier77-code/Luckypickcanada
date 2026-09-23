@@ -552,7 +552,7 @@ export default function LuckyCardReveal() {
       if (t < arc.delay) return;
 
       const life = clamp01((t - arc.delay) / arc.duration);
-      if (life <= 0) return;
+      if (life <= 0 || life >= 1) return;
 
       const stream = arc.stream === 'secondary'
         ? material.secondaryStreams[arc.streamIndex]
