@@ -26,7 +26,7 @@ const TIER_HITS = {
 
 // Hit durations in seconds
 const HIT_DURATION = 1.6;
-const FINAL_HIT_DISSIPATE = 4.8; // Final flip + afterglow (1.8s flip sequence + 3.0s dissipation)
+const FINAL_HIT_DISSIPATE = 5.2; // Final flip + molten runoff (1.8s flip sequence + 3.4s dissipation)
 
 export default function LuckyCardReveal() {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -302,6 +302,203 @@ export default function LuckyCardReveal() {
     }
   };
 
+
+  const clamp01 = (value) => Math.min(1, Math.max(0, value));
+  const smoothstep = (edge0, edge1, value) => {
+    const t = clamp01((value - edge0) / (edge1 - edge0));
+    return t * t * (3 - 2 * t);
+  };
+
+  // Post-flip material should read as viscous molten plasma physically draining from
+  // the card: attached to edges, stretched by gravity, then broken into embers.
+  const drawMoltenBurnout = (ctx, metrics, hitColor, tier, t, material) => {
+    if (!ctx || !material) return;
+
+    const { cx, cy, w: cardW, h: cardH } = metrics;
+    const halfW = cardW / 2;
+    const halfH = cardH / 2;
+    const runoffFade = 1 - smoothstep(0.58, 1, t);
+    const earlyCling = 1 - smoothstep(0.0, 0.7, t);
+    const edgeX = cardW * 0.47;
+    const bottomY = cy + halfH - 2;
+
+    const hotColor = tier === 'premium'
+      ? '245, 248, 255'
+      : tier === 'flagship'
+        ? '255, 238, 170'
+        : '255, 226, 185';
+
+    const drawLiquidPath = (points, width, alpha) => {
+      if (points.length < 2 || alpha <= 0) return;
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i += 1) {
+        const prev = points[i - 1];
+        const point = points[i];
+        const midX = (prev.x + point.x) / 2;
+        const midY = (prev.y + point.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
+      }
+      const last = points[points.length - 1];
+      const prev = points[points.length - 2];
+      ctx.quadraticCurveTo(prev.x, prev.y, last.x, last.y);
+
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.lineWidth = width * 3.2;
+      ctx.strokeStyle = `rgba(${hitColor}, ${alpha * 0.28})`;
+      ctx.stroke();
+
+      ctx.lineWidth = width * 1.65;
+      ctx.strokeStyle = `rgba(${hitColor}, ${alpha * 0.92})`;
+      ctx.stroke();
+
+      ctx.lineWidth = Math.max(1, width * 0.42);
+      ctx.strokeStyle = `rgba(${hotColor}, ${alpha * 0.88})`;
+      ctx.stroke();
+    };
+
+    material.pools.forEach((pool) => {
+      const poolAlpha = runoffFade * (0.42 + earlyCling * 0.5);
+      if (poolAlpha <= 0) return;
+
+      const x = cx + pool.u * halfW;
+      const y = bottomY - pool.lift * (0.35 + earlyCling * 0.65);
+      const width = pool.width * (0.8 + earlyCling * 0.55);
+      const height = pool.height * (0.75 + earlyCling * 0.65);
+
+      ctx.beginPath();
+      ctx.moveTo(x - width, y);
+      ctx.quadraticCurveTo(x - width * 0.72, y - height, x, y - height * 0.35);
+      ctx.quadraticCurveTo(x + width * 0.72, y - height * 0.9, x + width, y);
+      ctx.quadraticCurveTo(x + width * 0.45, y + height * 0.48, x, y + height * 0.24);
+      ctx.quadraticCurveTo(x - width * 0.55, y + height * 0.52, x - width, y);
+      ctx.closePath();
+
+      ctx.fillStyle = `rgba(${hitColor}, ${poolAlpha * 0.58})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${hotColor}, ${poolAlpha * 0.62})`;
+      ctx.lineWidth = Math.max(1.2, pool.width * 0.17);
+      ctx.stroke();
+    });
+
+    // Localized edge runoff. There is deliberately no closed perimeter path.
+    material.drips.forEach((drip) => {
+      const phase = clamp01((t - drip.delay) / drip.duration);
+      if (phase <= 0) return;
+
+      const travel = phase * phase * (3 - 2 * phase);
+      let startX;
+      let startY;
+      let directionX = 0;
+
+      if (drip.edge === 'left') {
+        startX = cx - edgeX + drip.offset;
+        startY = cy + drip.start * halfH;
+        directionX = -1;
+      } else if (drip.edge === 'right') {
+        startX = cx + edgeX + drip.offset;
+        startY = cy + drip.start * halfH;
+        directionX = 1;
+      } else {
+        startX = cx + drip.start * halfW;
+        startY = bottomY + drip.offset;
+      }
+
+      const length = drip.length * travel;
+      const sway = Math.sin(phase * Math.PI * 1.15 + drip.phase) * drip.sway * travel;
+      const endX = startX + (drip.edge === 'bottom' ? sway : directionX * (Math.abs(drip.sway) * 0.45 + Math.abs(sway)));
+      const endY = startY + length;
+
+      const points = [
+        { x: startX, y: startY },
+        {
+          x: startX + (drip.edge === 'bottom' ? sway * 0.25 : directionX * 1.5),
+          y: startY + length * 0.28
+        },
+        {
+          x: startX + (drip.edge === 'bottom' ? sway * 0.65 : directionX * drip.sway * 0.45),
+          y: startY + length * 0.68
+        },
+        { x: endX, y: endY }
+      ];
+
+      const localFade = runoffFade * (0.7 + 0.3 * (1 - phase * 0.15));
+      drawLiquidPath(points, drip.width * (1 - phase * 0.22), localFade);
+
+      const bulbRadius = drip.width * (1.15 + 1.4 * Math.sin(Math.min(1, phase) * Math.PI));
+      if (bulbRadius > 0.5) {
+        ctx.beginPath();
+        ctx.arc(endX, endY, bulbRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${hitColor}, ${localFade * 0.7})`;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(endX, endY - bulbRadius * 0.15, Math.max(0.8, bulbRadius * 0.42), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${hotColor}, ${localFade * 0.82})`;
+        ctx.fill();
+      }
+
+      if (phase > 0.72 && drip.detach) {
+        const detachT = clamp01((phase - 0.72) / 0.28);
+        const detachedY = endY + drip.detachDistance * detachT * detachT;
+        const detachedX = endX + drip.detachSway * Math.sin(detachT * Math.PI);
+        const detachedAlpha = localFade * (1 - detachT) * 0.9;
+        const detachedRadius = Math.max(0.8, drip.width * (0.9 - detachT * 0.45));
+
+        ctx.beginPath();
+        ctx.arc(detachedX, detachedY, detachedRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${hotColor}, ${detachedAlpha})`;
+        ctx.fill();
+      }
+    });
+
+    material.sparks.forEach((spark) => {
+      const sparkT = clamp01((t - spark.delay) / spark.duration);
+      if (sparkT <= 0 || sparkT >= 1) return;
+
+      const gravity = spark.gravity * sparkT * sparkT;
+      const drift = Math.sin(sparkT * Math.PI * 1.6 + spark.phase) * spark.drift;
+      const x = spark.x + spark.vx * sparkT + drift;
+      const y = spark.y + spark.vy * sparkT + gravity;
+      const alpha = runoffFade * (1 - sparkT) * (0.55 + spark.brightness * 0.45);
+      if (alpha <= 0) return;
+
+      const tailX = x - spark.vx * 0.055;
+      const tailY = y - (spark.vy + spark.gravity * sparkT * 0.35) * 0.055;
+
+      ctx.beginPath();
+      ctx.moveTo(tailX, tailY);
+      ctx.lineTo(x, y);
+      ctx.lineWidth = spark.size;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = `rgba(${hotColor}, ${alpha})`;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(x, y, spark.size * 0.68, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${hitColor}, ${alpha * 0.8})`;
+      ctx.fill();
+    });
+
+    material.embers.forEach((ember) => {
+      const emberT = clamp01((t - ember.delay) / ember.duration);
+      if (emberT <= 0 || emberT >= 1) return;
+
+      const drift = Math.sin(emberT * Math.PI * 2 + ember.phase) * ember.sway;
+      const x = ember.x + ember.vx * emberT + drift;
+      const y = ember.y + ember.vy * emberT + ember.gravity * emberT * emberT;
+      const alpha = runoffFade * (1 - emberT) * 0.7;
+
+      ctx.beginPath();
+      ctx.arc(x, y, ember.size * (1 - emberT * 0.45), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${hotColor}, ${alpha})`;
+      ctx.fill();
+    });
+  };
+
   const renderCanvas = (timestamp) => {
     if (!bgCanvasRef.current || shouldReduceMotion) return;
     if (!rafStartTimeRef.current) rafStartTimeRef.current = timestamp;
@@ -483,169 +680,26 @@ export default function LuckyCardReveal() {
            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 6 * intensityMult, `rgba(${hitColor}, ${alpha * 0.6})`, true, timestamp);
            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 2 * intensityMult, `rgba(255, 255, 255, ${alpha * 0.8})`, true, timestamp);
         } else {
-           // AFTERGLOW / FIZZ - Mystical Plasma Dissipation
+
+           // AFTERGLOW / MOLTEN RUNOFF
+           // The post-flip effect stays attached to the lower card edges and
+           // drains downward under gravity before cooling into sparks/embers.
            const afterglowTime = hitLocalTime - F_AFTERGLOW_START;
            const dissipateDuration = FINAL_HIT_DISSIPATE - F_AFTERGLOW_START;
            if (afterglowTime < dissipateDuration) {
-             const t = afterglowTime / dissipateDuration;
-
-             // The plasma burnout must be shared across all tiers (no tierMult scaling that makes them look different)
-             const fizzAlpha = Math.max(0, 1 - Math.pow(t, 1.2)); // Slower ease out for alpha
-
-             // Create depth by randomly selecting between fgCtx and bgCtx for different strands
-             const availableCtxs = [fgCtx, bgCtx].filter(Boolean);
-             availableCtxs.forEach(ctx => {
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-             });
-
-             // Draw localized plasma burnout adhering to card geometry
-             // Expand the burnout area so the energy can spatially exceed the physical card boundaries
-             // This removes the "rectangular box" constraint. The energy spreads out organically.
-             const spread = 1 + t * 0.4; // Starts close to card size, expands outward
-             const w2 = (cardW / 2) * spread;
-             const h2 = (cardH / 2) * spread;
-
-             // Base points around the card (corners and midpoints)
-             const points = [
-               { x: cx - w2, y: cy - h2 }, // TL
-               { x: cx, y: cy - h2 },      // TM
-               { x: cx + w2, y: cy - h2 }, // TR
-               { x: cx + w2, y: cy },      // RM
-               { x: cx + w2, y: cy + h2 }, // BR
-               { x: cx, y: cy + h2 },      // BM
-               { x: cx - w2, y: cy + h2 }, // BL
-               { x: cx - w2, y: cy }       // LM
-             ];
-
-             // Draw jagged, electrical plasma conforming to the card edges
-             const numPlasmaStrands = 5;
-             for (let s = 0; s < numPlasmaStrands; s++) {
-                // Randomly assign each plasma strand to foreground or background to create 3D depth
-                const fizzCtx = availableCtxs[Math.floor(Math.random() * availableCtxs.length)] || fgCtx || bgCtx;
-                if (Math.random() > (1 - t * 0.8)) continue; // Progressive fragmentation
-
-                fizzCtx.beginPath();
-                let started = false;
-
-                for (let i = 0; i < points.length; i++) {
-                    // Randomly skip some points to create broken arcs and fragments
-                    if (Math.random() > 0.4 + t * 0.5) {
-                       const p = points[i];
-                       const nextP = points[(i + 1) % points.length];
-
-                       // Jitter based on time and randomness to make it organic and chaotic
-                       const jitterX = (Math.random() - 0.5) * 30 * (1 - t);
-                       // Add a gravity drip/stretch effect on Y axis
-                       const gravityStretch = (1 - t) * 40 * Math.random();
-                       const jitterY = (Math.random() - 0.5) * 20 * (1 - t) + gravityStretch;
-
-                       const cp1x = p.x + (nextP.x - p.x) * 0.3 + jitterX;
-                       const cp1y = p.y + (nextP.y - p.y) * 0.3 + jitterY;
-                       const cp2x = p.x + (nextP.x - p.x) * 0.7 - jitterX;
-                       const cp2y = p.y + (nextP.y - p.y) * 0.7 - jitterY;
-
-                       if (!started) {
-                           fizzCtx.moveTo(p.x + (Math.random()-0.5)*10, p.y + (Math.random()-0.5)*10);
-                           started = true;
-                       }
-                       fizzCtx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, nextP.x + (Math.random()-0.5)*10, nextP.y + (Math.random()-0.5)*10);
-                    } else {
-                       started = false;
-                    }
-                }
-
-                const flickerThickness = 1.5 * (1 - t) * (1 + Math.random() * 2);
-                const flickerAlpha = fizzAlpha * (0.4 + Math.random() * 0.6);
-
-                // Blue/white plasma (hitColor)
-                // Thick organic plasma body
-                fizzCtx.lineWidth = flickerThickness * 2 + Math.random() * 4;
-                fizzCtx.strokeStyle = `rgba(${hitColor}, ${flickerAlpha * 0.4})`;
-                fizzCtx.stroke();
-
-                fizzCtx.lineWidth = flickerThickness + Math.random() * 3;
-                fizzCtx.strokeStyle = `rgba(${hitColor}, ${flickerAlpha})`;
-                fizzCtx.stroke();
-
-                // Core (tight, less dominant)
-                if (Math.random() > 0.6) {
-                    fizzCtx.lineWidth = flickerThickness * 0.3;
-                    fizzCtx.strokeStyle = `rgba(255, 255, 255, ${flickerAlpha * 0.8})`;
-                    fizzCtx.stroke();
-                }
-             }
-
-             // Draw surface contact glow / hot spots
-             for (let i = 0; i < 4; i++) {
-                 const fizzCtx = availableCtxs[Math.floor(Math.random() * availableCtxs.length)] || fgCtx || bgCtx;
-                 if (Math.random() > 1 - t) continue;
-                 const glowX = cx + (Math.random() - 0.5) * (cardW * spread * 1.2);
-                 const glowY = cy + (Math.random() - 0.5) * (cardH * spread * 1.2);
-
-                 const glowR = 10 + Math.random() * 30 * (1 - t);
-                 const grad = fizzCtx.createRadialGradient(glowX, glowY, 0, glowX, glowY, glowR);
-                 grad.addColorStop(0, `rgba(255, 255, 255, ${fizzAlpha * 0.6})`);
-                 grad.addColorStop(0.2, `rgba(${hitColor}, ${fizzAlpha * 0.4})`);
-                 grad.addColorStop(1, 'rgba(0,0,0,0)');
-
-                 fizzCtx.fillStyle = grad;
-                 // Use exact bounding box for fillRect to optimize GPU
-                 fizzCtx.fillRect(glowX - glowR, glowY - glowR, glowR * 2, glowR * 2);
-             }
-
-             // Sparks: Hot orange/gold heat sparks that break away and drizzle down
-             const numSparks = Math.floor(25 * (1 - t));
-             for (let i = 0; i < numSparks; i++) {
-                 // Randomly push sparks to foreground or background
-                 const fizzCtx = availableCtxs[Math.floor(Math.random() * availableCtxs.length)] || fgCtx || bgCtx;
-                 // Sparks originate from card edges or surface
-                 const sparkX = cx + (Math.random() - 0.5) * cardW * 1.1;
-                 const sparkY = cy + (Math.random() - 0.5) * cardH * 1.1;
-
-                 // Velocity: generally downwards (drizzling), with some lateral drift
-                 const isExplosiveSpark = Math.random() > 0.5;
-
-                 // Explosive sparks shoot outwards and up, heat sparks drift around
-                 let vx = (Math.random() - 0.5) * (isExplosiveSpark ? 6 : 3);
-                 let vy = (Math.random() - 0.5) * (isExplosiveSpark ? 6 : 2) - 1; // Generally upward/outward
-
-                 // Age of this specific spark based on t to simulate falling over time
-                 const sparkAge = t * (1 + Math.random());
-
-                 // Add subtle curve/drift to particle path
-                 const drift = Math.sin(sparkAge * 5 + i) * 20;
-
-                 const currentX = sparkX + vx * sparkAge * 40 + drift;
-                 // Gravity eventually pulls them down a bit if they live long enough
-                 const gravityEffect = Math.pow(sparkAge, 2) * 20;
-                 const currentY = sparkY + vy * sparkAge * 40 + gravityEffect;
-
-                 const sparkSize = (1 + Math.random() * 2) * (1 - t);
-                 const sparkAlpha = fizzAlpha * (0.5 + Math.random() * 0.5);
-
-                 // Mix tier-colored sparks with superheated metallic variations
-                 let sparkColor = `rgba(${hitColor}, ${sparkAlpha})`;
-                 if (Math.random() > 0.5) {
-                    if (tier === 'premium') {
-                       // Superheated silver/white for premium
-                       sparkColor = `rgba(230, 235, 245, ${sparkAlpha})`;
-                    } else if (tier === 'flagship') {
-                       // Superheated bright gold for flagship
-                       sparkColor = `rgba(255, 215, 0, ${sparkAlpha})`;
-                    } else {
-                       // Superheated warm bronze/orange for standard
-                       sparkColor = `rgba(255, 180, 80, ${sparkAlpha})`;
-                    }
-                 }
-
-                 fizzCtx.beginPath();
-                 fizzCtx.arc(currentX, currentY, sparkSize, 0, Math.PI * 2);
-                 fizzCtx.fillStyle = sparkColor;
-                 fizzCtx.fill();
+             const t = clamp01(afterglowTime / dissipateDuration);
+             const effectCtx = fgCtx || bgCtx;
+             if (effectCtx) {
+               drawMoltenBurnout(
+                 effectCtx,
+                 cardMetricsRef.current,
+                 hitColor,
+                 tier,
+                 t,
+                 particlesRef.current
+               );
              }
            }
-
 
         }
       }
@@ -709,6 +763,65 @@ export default function LuckyCardReveal() {
             };
         }
     }
+
+
+    const { cx, cy, w: cardW, h: cardH } = cardMetricsRef.current;
+    particlesRef.current = {
+      pools: Array.from({ length: 5 }, () => ({
+        u: -0.76 + Math.random() * 1.52,
+        lift: 1 + Math.random() * 3,
+        width: 10 + Math.random() * 13,
+        height: 4 + Math.random() * 8,
+      })),
+      drips: Array.from({ length: 11 }, (_, index) => {
+        const edge = index < 3 ? 'left' : index < 6 ? 'right' : 'bottom';
+        return {
+          edge,
+          start: edge === 'bottom' ? -0.84 + Math.random() * 1.68 : -0.32 + Math.random() * 0.62,
+          offset: (Math.random() - 0.5) * 4,
+          length: edge === 'bottom' ? 18 + Math.random() * 82 : 24 + Math.random() * 96,
+          width: 2.2 + Math.random() * 4.6,
+          sway: edge === 'bottom' ? 4 + Math.random() * 14 : 4 + Math.random() * 11,
+          phase: Math.random() * Math.PI * 2,
+          delay: Math.random() * 0.12,
+          duration: 0.8 + Math.random() * 1.55,
+          detach: Math.random() > 0.28,
+          detachDistance: 12 + Math.random() * 38,
+          detachSway: (Math.random() - 0.5) * 22,
+        };
+      }),
+      sparks: Array.from({ length: 24 }, () => {
+        const fromBottom = Math.random() > 0.35;
+        const side = Math.random() > 0.5 ? -1 : 1;
+        return {
+          x: cx + (fromBottom ? (-0.44 + Math.random() * 0.88) * cardW * 0.5 : side * cardW * 0.47),
+          y: fromBottom
+            ? cy + cardH * 0.5 - Math.random() * 12
+            : cy + (0.28 + Math.random() * 0.58) * cardH - cardH * 0.5,
+          vx: (Math.random() - 0.5) * 28,
+          vy: 8 + Math.random() * 42,
+          gravity: 22 + Math.random() * 34,
+          drift: 4 + Math.random() * 13,
+          phase: Math.random() * Math.PI * 2,
+          delay: 0.05 + Math.random() * 0.95,
+          duration: 0.75 + Math.random() * 1.35,
+          size: 1 + Math.random() * 1.65,
+          brightness: Math.random(),
+        };
+      }),
+      embers: Array.from({ length: 12 }, () => ({
+        x: cx + (-0.46 + Math.random() * 0.92) * cardW * 0.5,
+        y: cy + cardH * 0.42 + Math.random() * 18,
+        vx: (Math.random() - 0.5) * 42,
+        vy: 4 + Math.random() * 22,
+        gravity: 8 + Math.random() * 16,
+        sway: 6 + Math.random() * 15,
+        phase: Math.random() * Math.PI * 2,
+        delay: 0.55 + Math.random() * 1.05,
+        duration: 0.9 + Math.random() * 1.5,
+        size: 1.1 + Math.random() * 1.3,
+      })),
+    };
 
     // --- NEW FRAMER MOTION CHOREOGRAPHY ---
     const sequence = [];

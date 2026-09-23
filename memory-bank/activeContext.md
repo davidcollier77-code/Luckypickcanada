@@ -2,11 +2,20 @@
 
 
 ## Current Work
+- 2026-09-23: Replacing the Lucky Card Reveal post-flip dissipation with a gravity-driven molten-plasma runoff sequence.
+- The post-flip effect is intentionally modeled as viscous plasma attached to the card edges and lower rim, with downward drips, stretched streams, detached droplets, sparse sparks, and cooling embers.
+- Removed the previous perimeter/afterglow-ring rendering model; the new effect contains no closed perimeter path, expanding ring, shockwave, or orbital loop.
+- Extended the final reveal lifetime to 5.2s total from final-hit start: 1.8s flip/settle plus 3.4s molten dissipation.
+- The effect is rendered through the existing foreground canvas only after the card flip, avoiding duplicate screen-composited rendering and unnecessary mobile GPU work.
+- Particle positions are initialized once from the measured card bounds so they remain stable during the dissipation instead of changing randomly every animation frame.
+- Tier-specific material colors remain tied to Standard, Premium, and Flagship while sharing the same physical runoff behavior.
+- No card artwork, tier selection logic, collection persistence, countdown, share behavior, or navigation behavior is intentionally changed.
+- Verification status: source/diff inspection completed; repository CI/build and final visual re-review remain required before claiming completion.
 - Rebuilt Lucky Card Reveal post-flip burnout to accurately reflect 3-stage visual storyboard (Ignition, Active Burnout, clean Dissipation).
 - Refined metallic tier colors per governance (Standard: Bronze/Gold, Premium: Pewter/Silver, Flagship: Rich Gold).
 - Removed persistent `tier-glow` CSS application from card front to ensure perfectly clean dissipation with no lingering halo or grid artifacts.
 - Synced explosive/superheated spark colors to tier properties to prevent Premium from receiving warm orange sparks.
-- Adjusted `FINAL_HIT_DISSIPATE` duration to 4.8s to fully capture the 3-second visual burnout phase cleanly.
+- Previous: Adjusted `FINAL_HIT_DISSIPATE` duration to 4.8s to fully capture the 3-second visual burnout phase cleanly.
 - Improved cinematic post-flip burn sequence in `app/lucky-card-reveal.js` across all tiers.
 - Restored color dominance in the plasma/beam effects by reducing white core thickness and increasing colored outer glow bloom and line width.
 - Added organic stretching and gravity drip effects to the plasma breakup sequence by modifying control points.
@@ -40,7 +49,7 @@
 - Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
 
 ## Next Steps
-- Awaiting final PR submission.
+- Run repository verification and independent visual re-review of the three-tier post-flip dissipation before final approval.
 
 ## 2026-09-22 Updates
 - Fixed the wording on the Lucky Card reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection."
