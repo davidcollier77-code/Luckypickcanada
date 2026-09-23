@@ -60,3 +60,12 @@
 - The molten/afterglow dissipation was eased using a `smoothstep` ease-in-out calculation for a more natural release.
 - Protected scopes (artwork, audio, tiers, hit counts) were respected.
 - Build passed.
+
+## 2026-09-24 - Post-Flip 3D Projection Cinematic Polish
+- Applied true 3D Z-axis projection mathematics to `app/lucky-card-reveal.js` without relying on DOM manipulation.
+- Refined `drawMoltenBurst` so edge explosions pop outwards (`zPop`).
+- Adjusted `drawEnergyArc` so energy strands blow away from the card surface during dissipation (`zBlow`).
+- Introduced continuous 3D depth to `drawDroplet` splatters, adjusting scale and offset appropriately as they travel towards the camera.
+- Pushed background pools deeper into the z-plane (`zPush`).
+- Choreographed Framer Motion with a new physical tumble (`rotateX`, `rotateZ`) during the reveal throw, followed by a continuous slow float through the post-flip dissipation.
+- Respected the 495 MB cap and completed tests effectively.

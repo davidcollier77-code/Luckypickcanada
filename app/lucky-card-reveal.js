@@ -384,9 +384,14 @@ export default function LuckyCardReveal() {
         const envelope = Math.sin(Math.PI * q);
         const curve = Math.sin(Math.PI * q) * arc.curve;
         const noise = Math.sin(i * 2.91 + material.seed + t * 110 + arc.phase) * arc.jag * envelope;
+
+        // 3D Blow out effect: Arcs push outward (Z-axis expansion) as they dissipate
+        const zBlow = smoothstep(0.4, 1.0, progress) * (arc.behind ? -0.2 : 0.3) * envelope;
+        const projScale = Math.max(0.5, 1.0 + zBlow);
+
         points.push({
-          x: cx + halfW * baseU + arc.curveN * curve + arc.nx * noise,
-          y: cy + halfH * baseV + arc.curveT * curve + arc.ny * noise,
+          x: cx + (halfW * baseU + arc.curveN * curve + arc.nx * noise) * projScale,
+          y: cy + (halfH * baseV + arc.curveT * curve + arc.ny * noise) * projScale,
         });
       }
 
@@ -446,9 +451,14 @@ export default function LuckyCardReveal() {
       if (p <= 0 || p >= 1) return;
       const hit = Math.sin(Math.PI * clamp01(p));
       const cool = 1 - smoothstep(0.55, 1, p);
-      const x = cx + halfW * burst.u;
-      const y = cy + halfH * burst.v;
-      const r = burst.radius * (0.35 + hit * 0.95);
+
+      // 3D Pop: Bursts bulge towards the camera at their peak
+      const zPop = hit * 0.15;
+      const projScale = 1.0 + zPop;
+
+      const x = cx + (halfW * burst.u) * projScale;
+      const y = cy + (halfH * burst.v) * projScale;
+      const r = burst.radius * (0.35 + hit * 0.95) * projScale;
       const a = moltenAlpha * burst.opacity * (0.32 + hit * 0.68);
 
       ctx.save();
@@ -550,10 +560,17 @@ export default function LuckyCardReveal() {
       const p = smoothstep(drop.delay, drop.delay + drop.duration, t);
       if (p <= 0) return;
       const vanish = 1 - smoothstep(0.8, 1, p);
-      const z = 0.72 + drop.depth * 0.55;
-      const x = drop.x + drop.vx * p * z;
-      const y = drop.y + drop.vy * p * z + drop.gravity * p * p * z;
-      const size = drop.size * (0.72 + z * 0.56);
+
+      // 3D Projection: Splatter moves along Z axis, affecting scale and XY offset
+      // Z increases as p increases, creating a 3D blowing away effect
+      const zMotion = p * drop.outwardZ;
+      const z = Math.max(0.1, 0.72 + drop.depth * 0.55 + zMotion);
+      const projScale = splatter ? (1.5 / z) : 1;
+
+      const x = cx + (drop.x - cx) * projScale + drop.vx * p * (1/z);
+      const y = cy + (drop.y - cy) * projScale + drop.vy * p * (1/z) + drop.gravity * p * p * (1/z);
+
+      const size = Math.max(0.1, drop.size * (0.72 + z * 0.56) * projScale);
       const alpha = moltenAlpha * drop.brightness * vanish;
       ctx.save(); ctx.globalCompositeOperation = 'screen';
       ctx.beginPath();
@@ -567,7 +584,16 @@ export default function LuckyCardReveal() {
       material.energyArcs.filter((arc) => arc.behind).forEach((arc) => drawEnergyArc(arc, shellAlpha));
       material.backPools.forEach((pool) => {
         const p = smoothstep(pool.delay, pool.delay + pool.duration, t); if (p <= 0) return;
-        const alpha = shellAlpha * pool.opacity; const x = cx + halfW * pool.u; const y = cy + halfH * pool.v; const r = pool.radius * (0.7 + 0.3 * Math.sin(t * 8 + pool.phase));
+
+        // 3D Projection: Push background pools slightly deeper over time
+        const zPush = p * 0.15;
+        const projScale = 1.0 - zPush;
+
+        const alpha = shellAlpha * pool.opacity;
+        const x = cx + (halfW * pool.u) * projScale;
+        const y = cy + (halfH * pool.v) * projScale;
+        const r = pool.radius * (0.7 + 0.3 * Math.sin(t * 8 + pool.phase)) * projScale;
+
         ctx.save(); ctx.globalCompositeOperation = 'screen';
         const g = ctx.createRadialGradient(x, y, 0, x, y, r * 4); g.addColorStop(0, rgba(electricHot, alpha * 0.45)); g.addColorStop(0.2, rgba(electricRgb, alpha * 0.34)); g.addColorStop(1, rgba(electricRgb, 0));
         ctx.beginPath(); ctx.arc(x, y, r * 4, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill(); ctx.restore();
@@ -928,6 +954,7 @@ export default function LuckyCardReveal() {
           gravity:18+Math.random()*38,
           size:(foreground ? 2.4 : 1.1)+Math.random()*(foreground ? 2.1 : 2.4),
           depth:foreground ? 1.55 : 0.55+Math.random()*0.7,
+          outwardZ: (foreground ? -1.2 : 0.8) * Math.random(), // Z-axis velocity
           brightness:0.42+Math.random()*0.5,
           delay:0.16+Math.random()*0.22,
           duration:0.14+Math.random()*0.26,
@@ -992,11 +1019,14 @@ export default function LuckyCardReveal() {
     // The Reveal Flip / Throw
     const flipAbsTime = finalHitStartTime + F_FLIP_TIME;
 
-    // Throw upwards and scale out with a bright hero exposure
-    sequence.push([cardRef.current, { y: -60, scale: 1.08, filter: "brightness(1.5)" }, { at: flipAbsTime, duration: 0.4, ease: "easeOut" }]);
+    // Throw upwards and scale out with a bright hero exposure, initiating a 3D tumble
+    sequence.push([cardRef.current, { y: -60, scale: 1.08, rotateZ: 2, rotateX: 10, filter: "brightness(1.5)" }, { at: flipAbsTime, duration: 0.4, ease: "easeOut" }]);
 
-    // Settle back down and cool off to a clean hero state
-    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0, filter: "brightness(1)" }, { at: flipAbsTime + 0.4, duration: 1.2, ease: "backOut" }]);
+    // Settle back down, maintaining a subtle physical float
+    sequence.push([cardRef.current, { y: -5, scale: 1.0, rotateZ: -1, rotateX: -5, filter: "brightness(1.1)" }, { at: flipAbsTime + 0.4, duration: 0.8, ease: "easeInOut" }]);
+
+    // Continuous slow drift during the post-flip dissipation
+    sequence.push([cardRef.current, { y: 0, rotateZ: 0, rotateX: 0, filter: "brightness(1)" }, { at: flipAbsTime + 1.2, duration: 3.0, ease: "easeOut" }]);
 
     // Flip with overshoot
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAbsTime, duration: 1.2, ease: "circOut" }]);
