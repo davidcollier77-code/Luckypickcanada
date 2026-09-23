@@ -55,3 +55,14 @@
 - Limited the final burnout renderer to the foreground canvas to avoid duplicate screen compositing and reduce unnecessary mobile rendering work.
 - Preserved Standard, Premium, and Flagship tiers and the existing card flip/reveal, collection, countdown, sharing, and navigation behavior.
 - Source and branch diff have been inspected; repository verification and independent visual re-review remain pending before completion is claimed.
+
+## 2026-09-23 - Lucky Card Molten Plasma Crawl
+- Replaced the post-flip lower-edge-only runoff model with a top-to-bottom molten-plasma crawl across the card face in `app/lucky-card-reveal.js`.
+- Added four primary and six secondary tier-colored molten streams that originate at the top edge, travel visibly down the upright card, and extend past the bottom as runoff.
+- Added blue electrical filaments that crawl along the molten streams while preserving tier-specific molten material color.
+- Added lower-rim pools, hanging droplets that detach and fall, side runoff, incandescent sparks, and longer-lived embers.
+- Added a deliberate cooling/smolder phase so the effect weakens and extinguishes naturally instead of simply cutting off.
+- Set post-flip dissipation to 4.2s after the existing 1.8s final flip/settle sequence (6.0s total final-hit lifetime).
+- Kept the renderer foreground-only and stable against measured card coordinates for mobile performance.
+- Preserved the card artwork, upright orientation, tier hit counts, selection logic, collection, countdown, sharing, navigation, audio, and existing flip choreography.
+- Final verification and independent visual re-review remain pending before completion is claimed.
