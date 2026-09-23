@@ -12,6 +12,16 @@
 - Card artwork, tier selection, collection persistence, countdown, sharing, navigation, audio, and the existing final flip behavior remain unchanged.
 - Review-remediation status: Cubic's two concrete P2 findings were validated; the deepColor compositing state is now explicitly restored around the dark layer, and heat-node alpha now respects nodeProgress. Final CI/re-review remains pending. Runtime visual confirmation remains a manual device/browser check.
 
+## 2026-09-23 - Reference-Driven Cinematic VFX Shell
+- Rebuilt the Lucky Card post-flip effect around the supplied cinematic reference: universal electric-blue energy plus a tier-colored hot-metal material.
+- Kept reveal classification tier-based only; individual card IDs do not select different post-flip visuals.
+- Replaced the prior vertical stream model with irregular rim flows, surface pools, depth-separated electrical arcs, surface filaments, splatter, droplets, and cooling.
+- Added rear/background and foreground canvas passes to create stronger apparent 3D depth while keeping the card artwork and upright orientation unchanged.
+- Tier material palette: Standard = copper/bronze, Premium = silver/pewter, Flagship = polished gold.
+- Blue electrical arcs are deliberately thicker than the prior implementation, but sparse enough to preserve card readability on mobile.
+- No new dependency introduced; existing card selection, hit counts, flip choreography, collection, countdown, sharing, navigation, audio, and reduced-motion behavior remain unchanged.
+- Verification of build/CI and independent runtime visual review remains pending.
+
 ## Recent Changes
 - Downloaded `NGC4216_crawford.jpg` via standard CLI (`curl`/python script).
 - Modified `app/lucky-card-reveal.js` to insert a fixed full-screen `next/image` background.
