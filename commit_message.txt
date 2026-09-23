@@ -1,6 +1,0 @@
-Rebuild Lucky Card Reveal post-flip burnout sequence
-
-- Aligned 3-stage visual burnout timing with storyboard target.
-- Adjusted tier metallic colors (Standard: Bronze/Gold, Premium: Pewter/Silver, Flagship: Rich Gold).
-- Removed persistent tier-glow from card front for completely clean final state without halos.
-- Parameterized spark coloration based on tier.
