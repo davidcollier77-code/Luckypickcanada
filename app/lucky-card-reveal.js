@@ -319,7 +319,7 @@ export default function LuckyCardReveal() {
 
   // Post-flip material behaves like white-hot molten plasma physically clinging
   // to the card face: top-to-bottom streams, secondary rivulets, edge runoff,
-  // blue electrical filaments, sparks, embers, and a deliberate smolder-out.
+  // brief electrical charge/snap-arcs, sparks, embers, and a deliberate smolder-out.
   const drawMoltenBurnout = (ctx, metrics, hitColor, tier, t, material) => {
     if (!ctx || !material || t >= 1) return;
 
