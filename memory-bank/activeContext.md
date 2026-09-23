@@ -2,6 +2,11 @@
 
 
 ## Current Work
+- Rebuilt Lucky Card Reveal post-flip burnout to accurately reflect 3-stage visual storyboard (Ignition, Active Burnout, clean Dissipation).
+- Refined metallic tier colors per governance (Standard: Bronze/Gold, Premium: Pewter/Silver, Flagship: Rich Gold).
+- Removed persistent `tier-glow` CSS application from card front to ensure perfectly clean dissipation with no lingering halo or grid artifacts.
+- Synced explosive/superheated spark colors to tier properties to prevent Premium from receiving warm orange sparks.
+- Adjusted `FINAL_HIT_DISSIPATE` duration to 4.8s to fully capture the 3-second visual burnout phase cleanly.
 - Improved cinematic post-flip burn sequence in `app/lucky-card-reveal.js` across all tiers.
 - Restored color dominance in the plasma/beam effects by reducing white core thickness and increasing colored outer glow bloom and line width.
 - Added organic stretching and gravity drip effects to the plasma breakup sequence by modifying control points.

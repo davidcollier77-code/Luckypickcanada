@@ -26,7 +26,7 @@ const TIER_HITS = {
 
 // Hit durations in seconds
 const HIT_DURATION = 1.6;
-const FINAL_HIT_DISSIPATE = 4.3; // Final flip + afterglow (1.8s flip sequence + 2.5s dissipation)
+const FINAL_HIT_DISSIPATE = 4.8; // Final flip + afterglow (1.8s flip sequence + 3.0s dissipation)
 
 export default function LuckyCardReveal() {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -332,9 +332,9 @@ export default function LuckyCardReveal() {
     const colors = {
       blue: '14, 165, 233',
       pink: '217, 70, 239',
-      standard: '217, 119, 6', // Bronze/Copper
-      premium: '59, 130, 246',
-      flagship: '234, 179, 8'
+      standard: '212, 136, 70', // Warm Bronze/Gold
+      premium: '180, 185, 195', // Pewter/Silver
+      flagship: '218, 165, 32', // Rich Gold/Antique-Gold
     };
 
     let activeHitIndex = Math.floor(elapsed / HIT_DURATION);
@@ -424,7 +424,7 @@ export default function LuckyCardReveal() {
         const F_ENTER = 0.2;
         const F_WRAP = 0.4;
         const F_FLIP_TIME = 0.6;
-        const F_AFTERGLOW_START = F_FLIP_TIME + 1.2; // Match framer motion flip duration
+        const F_AFTERGLOW_START = F_FLIP_TIME + 1.2; // Ignition point after the flip finishes
 
         let alpha = 1;
 
@@ -624,13 +624,19 @@ export default function LuckyCardReveal() {
                  const sparkSize = (1 + Math.random() * 2) * (1 - t);
                  const sparkAlpha = fizzAlpha * (0.5 + Math.random() * 0.5);
 
-                 // Mix tier-colored sparks with superheated sparks
+                 // Mix tier-colored sparks with superheated metallic variations
                  let sparkColor = `rgba(${hitColor}, ${sparkAlpha})`;
                  if (Math.random() > 0.5) {
-                    const r = 255;
-                    const g = 150 + Math.floor(Math.random() * 50);
-                    const b = 0;
-                    sparkColor = `rgba(${r}, ${g}, ${b}, ${sparkAlpha})`;
+                    if (tier === 'premium') {
+                       // Superheated silver/white for premium
+                       sparkColor = `rgba(230, 235, 245, ${sparkAlpha})`;
+                    } else if (tier === 'flagship') {
+                       // Superheated bright gold for flagship
+                       sparkColor = `rgba(255, 215, 0, ${sparkAlpha})`;
+                    } else {
+                       // Superheated warm bronze/orange for standard
+                       sparkColor = `rgba(255, 180, 80, ${sparkAlpha})`;
+                    }
                  }
 
                  fizzCtx.beginPath();
@@ -864,7 +870,7 @@ export default function LuckyCardReveal() {
 
               <div
                 ref={cardFrontRef}
-                className={`absolute inset-0 rounded-2xl transition-shadow duration-700 ${isRevealed && selectedCard ? `tier-glow-${selectedCard.tier}` : ''}`}
+                className={`absolute inset-0 rounded-2xl transition-shadow duration-700`}
                 style={{
                   backfaceVisibility: 'hidden',
                   transform: 'rotateY(180deg)',
