@@ -102,3 +102,8 @@
 - Preserved tier hit counts (Standard 3, Premium 4, Flagship 5) and existing selection, collection, countdown, sharing, navigation, audio, flip choreography, and reduced-motion behavior.
 - Branch created: `feat/lucky-card-cinematic-vfx-shell-20260923`.
 - Build/CI verification and independent runtime visual review remain pending.
+
+
+## 2026-09-23 - Lucky Card Rim Flow Progression Fix
+- Fixed `drawRimFlow` in `app/lucky-card-reveal.js` so the molten rim path is progressively revealed according to each flow's delay/duration instead of drawing the full edge immediately.
+- Preserved the existing tier-driven material colors, widths, glow, irregularity, and post-flip timing.

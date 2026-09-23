@@ -402,11 +402,13 @@ export default function LuckyCardReveal() {
     const drawRimFlow = (flow) => {
       const p = smoothstep(flow.delay, flow.delay + flow.duration, t);
       if (p <= 0) return;
-      const spread = flow.spread * smoothstep(0, 0.28, p);
+      const visibleProgress = clamp01(p);
+      const spread = flow.spread * smoothstep(0, 0.28, visibleProgress);
       const wobble = Math.sin(t * 18 + flow.phase) * flow.wobble;
+      const segmentCount = Math.max(1, Math.ceil(12 * visibleProgress));
       const points = [];
-      for (let i = 0; i <= 12; i += 1) {
-        const q = i / 12;
+      for (let i = 0; i <= segmentCount; i += 1) {
+        const q = visibleProgress * (i / segmentCount);
         let u; let v;
         if (flow.edge === 'top') { u = flow.start + (flow.end - flow.start) * q; v = -1 + spread * Math.sin(Math.PI * q) + wobble / cardH; }
         else if (flow.edge === 'bottom') { u = flow.start + (flow.end - flow.start) * q; v = 1 - spread * Math.sin(Math.PI * q) + wobble / cardH; }

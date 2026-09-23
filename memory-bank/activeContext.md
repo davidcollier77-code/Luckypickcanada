@@ -49,3 +49,5 @@
 ## 2026-09-22 Updates (Mobile Polish)
 - Removed the translucent UI overlay container behind "Today's Lucky Card" on the Reveal page to improve readability and visual integration with the cinematic background.
 - Modified `themes/default/default.css` to hide the custom `-webkit-scrollbar` on mobile devices (`max-width: 768px`) to ensure the page is clean, while retaining standard touch scrolling.
+
+- 2026-09-23: Fixed `drawRimFlow` so each rim flow progressively reveals only the traversed portion of the card edge over its configured duration; tier colors, thickness, glow, and existing VFX timing remain unchanged.
