@@ -493,13 +493,6 @@ export default function LuckyCardReveal() {
     material.splatter.filter((drop) => !drop.behind).forEach((drop) => drawDroplet(drop, true));
     material.drips.forEach((drop) => drawDroplet(drop, false));
 
-    if (t > 0.68) {
-      const cool = smoothstep(0.68, 0.96, t) * 0.46;
-      ctx.save(); ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = rgba(tierDeep, cool * 0.18);
-      ctx.fillRect(cx - halfW, cy - halfH, cardW, cardH);
-      ctx.restore();
-    }
   };
 
   const renderCanvas = (timestamp) => {
