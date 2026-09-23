@@ -327,7 +327,6 @@ export default function LuckyCardReveal() {
     const halfW = cardW / 2;
     const halfH = cardH / 2;
     const edgeX = cardW * 0.475;
-    const topY = cy - halfH;
     const bottomY = cy + halfH;
 
     const materialColor = tier === 'premium'
