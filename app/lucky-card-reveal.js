@@ -765,7 +765,8 @@ export default function LuckyCardReveal() {
                trackingY = cy - (60 * easeOut);
            } else if (hitLocalTime >= F_FLIP_TIME + 0.4) {
                // Settle back down
-               const settleT = Math.min(1, (hitLocalTime - (F_FLIP_TIME + 0.4)) / 0.8);
+               // Updated to match the new duration (1.2) of the settle animation
+               const settleT = Math.min(1, (hitLocalTime - (F_FLIP_TIME + 0.4)) / 1.2);
                // backOut approximate
                const c1 = 1.70158;
                const c3 = c1 + 1;
@@ -788,7 +789,9 @@ export default function LuckyCardReveal() {
            const afterglowTime = hitLocalTime - F_AFTERGLOW_START;
            const dissipateDuration = FINAL_HIT_DISSIPATE - F_AFTERGLOW_START;
            if (afterglowTime < dissipateDuration) {
-             const t = clamp01(afterglowTime / dissipateDuration);
+             // Create a natural easing for the dissipation so it collapses gracefully
+             const linearT = clamp01(afterglowTime / dissipateDuration);
+             const t = linearT * linearT * (3 - 2 * linearT); // smoothstep ease-in-out
              if (bgCtx) {
                drawMoltenBurnout(bgCtx, cardMetricsRef.current, hitColor, tier, t, particlesRef.current, 'behind');
              }
@@ -979,21 +982,21 @@ export default function LuckyCardReveal() {
     const F_WRAP = 0.4;
     const F_FLIP_TIME = FINAL_FLIP_TIME; // exact lock and start of flip
 
-    // Final Impact - tension grab
+    // Final Impact - tension grab (Energy Transfer)
     sequence.push([
       cardRef.current,
-      { filter: "brightness(2.5)", scale: 0.93, y: 15, rotateZ: -1 },
+      { filter: "brightness(2.5)", scale: 0.91, y: 18, rotateZ: -1 },
       { at: finalHitStartTime + F_WRAP, duration: 0.2, ease: "easeOut" }
     ]);
 
     // The Reveal Flip / Throw
     const flipAbsTime = finalHitStartTime + F_FLIP_TIME;
 
-    // Throw upwards and scale out
-    sequence.push([cardRef.current, { y: -60, scale: 1.05, filter: "brightness(1)" }, { at: flipAbsTime, duration: 0.4, ease: "easeOut" }]);
+    // Throw upwards and scale out with a bright hero exposure
+    sequence.push([cardRef.current, { y: -60, scale: 1.08, filter: "brightness(1.5)" }, { at: flipAbsTime, duration: 0.4, ease: "easeOut" }]);
 
-    // Settle back down
-    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0 }, { at: flipAbsTime + 0.4, duration: 0.8, ease: "backOut" }]);
+    // Settle back down and cool off to a clean hero state
+    sequence.push([cardRef.current, { y: 0, scale: 1.0, rotateZ: 0, filter: "brightness(1)" }, { at: flipAbsTime + 0.4, duration: 1.2, ease: "backOut" }]);
 
     // Flip with overshoot
     sequence.push([cardFlipRef.current, { rotateY: 180 }, { at: flipAbsTime, duration: 1.2, ease: "circOut" }]);
