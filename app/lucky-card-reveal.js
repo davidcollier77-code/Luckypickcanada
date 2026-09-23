@@ -502,7 +502,7 @@ export default function LuckyCardReveal() {
              // Draw localized plasma burnout adhering to card geometry
              // Expand the burnout area so the energy can spatially exceed the physical card boundaries
              // This removes the "rectangular box" constraint. The energy spreads out organically.
-             const spread = 1 + (1 - t) * 0.4; // Starts close to card size, expands outward
+             const spread = 1 + t * 0.4; // Starts close to card size, expands outward
              const w2 = (cardW / 2) * spread;
              const h2 = (cardH / 2) * spread;
 
