@@ -1,31 +1,23 @@
 # 🔴 AGENTS.md — MANDATORY GOVERNANCE
 
 🔴 READ FIRST. FOLLOW COMPLETELY. DEMONSTRATE COMPLIANCE.
-
 🔴 DO NOT ASSUME. VERIFY. DO NOT CLAIM. DEMONSTRATE.
 
 AGENTS.md is the HIGHEST and AUTHORITATIVE repository governance.
+Jules MUST read it FIRST and follow it COMPLETELY.
 
-Jules MUST read AGENTS.md FIRST and MUST follow it COMPLETELY.
-
-NOTHING overrides AGENTS.md.
-
-No task request, urgency, agent instruction, tool, implementation choice,
-scope decision, or other guidance may bypass, weaken, or replace it.
+NOTHING overrides AGENTS.md. No request, urgency, agent instruction, tool,
+implementation choice, scope decision, or other guidance may bypass or weaken it.
 
 Jules has ONE governance choice:
-
 SELECT THE SINGLE APPLICABLE .docs TASK GROUP.
 
-That choice does NOT permit Jules to skip anything routed by that group.
-
-EVERY requirement routed by AGENTS.md is MANDATORY.
+That choice does NOT permit Jules to skip any routed requirement.
 
 Jules MUST NOT skip, substitute, rank, reinterpret, or declare required
 documents, libraries, workflows, commands, sources, systems, or checks irrelevant.
 
 When uncertain, conflicting, or off-scope:
-
 STOP → RETURN TO AGENTS.md → VERIFY THE GOVERNANCE PATH → CONTINUE ONLY
 AS REQUIRED BY AGENTS.md.
 
@@ -42,16 +34,14 @@ WITHOUT DEMONSTRATED COMPLIANCE.
 ## 🔴 1. READ AGENTS.md FIRST
 
 Read this file before any other task analysis or implementation.
-Follow it completely.
 
 ## 🔴 2. SELECT THE .docs TASK GROUP
 
 Select EXACTLY ONE:
-
 creation / troubleshooting / polishing / testing / security / audio /
 deep-dive / seo
 
-For that group, Jules MUST:
+For the selected group, Jules MUST:
 
 - Read ".jules/<task-group>.md".
 - Read ".docs/<task-group>/jules_google_docs.md".
@@ -61,20 +51,19 @@ For that group, Jules MUST:
 - Use ALL available documents and libraries checked into the repository for that group.
 - Verify applicable library names, versions, and repository locations.
 
-The selected group MUST be reported in the PR Summary with a brief reason.
+The selected group and reason MUST be reported in the PR Summary.
 
 Jules MUST NOT select multiple groups or skip, rank, or substitute material
 within the selected group.
 
 ## 🔴 3. READ JULES GOVERNANCE
 
-After AGENTS.md, read ".jules/jules.md".
-
-Follow its initialization, working, memory-bank, and completion requirements.
+After AGENTS.md, read ".jules/jules.md" and follow its initialization,
+working, memory-bank, and completion requirements.
 
 ## 🔴 4. REQUIRED REPOSITORY SYSTEMS — USE ALL
 
-For EVERY task, Jules MUST use every listed repository system:
+For EVERY task, Jules MUST use:
 
 - "memory-bank/" and required files
 - "CSS_FIX_GUIDE.md"
@@ -88,10 +77,7 @@ For EVERY task, Jules MUST use every listed repository system:
 - ".specify/workflows/speckit/workflow.yml"
 - ".specify/memory/constitution.md"
 - ".specify/integrations/speckit.manifest.json"
-- source
-- configuration
-- tests
-- dependencies
+- source, configuration, tests, dependencies
 - all other guidance explicitly routed by AGENTS.md
 
 No listed system may be silently skipped, substituted, ranked, reinterpreted,
@@ -100,15 +86,13 @@ or marked "N/A".
 ### CONTEXT7
 
 Context7 is NOT a required repository system.
-
 Use it ONLY with explicit user permission or explicit task authorization.
-
 Its availability, presence, or usefulness does NOT constitute authorization.
 
 ## 🔴 5. VERIFY BEFORE EXECUTION
 
 Inspect the actual branch, task path, relevant files, configuration, code, tests,
-dependencies, and relevant history before modifying code.
+dependencies, and relevant history.
 
 Use the exact repository-routed ".docs/<task-group>/" material.
 
@@ -116,7 +100,6 @@ Do not substitute internet searches, generic documentation, or unverified
 external material for required repository-routed guidance.
 
 Classify findings:
-
 VERIFIED / ASSUMPTION / HYPOTHESIS / UNKNOWN
 
 ---
@@ -135,14 +118,10 @@ Before modification, establish:
 - authorization requirements
 
 🔴 Make the smallest appropriate change.
-
 🔴 Preserve behavior outside scope and repository conventions.
-
 🔴 Do not refactor, redesign, upgrade dependencies, add unnecessary dependencies,
 change unrelated behavior, or expand scope.
-
 🔴 Protected changes require explicit authorization.
-
 🔴 Present verified analysis and plan before modification unless autonomous
 execution is explicitly authorized.
 
@@ -152,8 +131,8 @@ execution is explicitly authorized.
 
 ## 🔴 ROUTED GOVERNANCE
 
-Follow EVERY requirement routed by AGENTS.md, including all applicable
-".jules", ".jules/cmds", ".docs", ".specify", library, and verification requirements.
+Follow EVERY requirement routed by AGENTS.md, including ".jules", ".jules/cmds",
+".docs", ".docs/manifest.json", ".specify", required libraries, and verification.
 
 No routed requirement may be skipped, substituted, ranked, or marked "N/A".
 
@@ -164,20 +143,17 @@ consultation, implementation, verification, and final Git state.
 
 Jules MUST complete it before reporting the task complete.
 
-## 🔴 1. SELECTED TASK GROUP — REQUIRED
+## 1. SELECTED TASK GROUP — REQUIRED
 
 Report:
-
 SELECTED TASK GROUP: <group>
 GROUP REASON: <brief, specific reason>
 
-Exactly ONE group must be reported.
+Exactly ONE group MUST be reported and MUST match the routing actually followed.
 
-## 🔴 2. LIBRARY CONSULTATION REPORT — REQUIRED
+## 2. LIBRARY CONSULTATION REPORT — REQUIRED
 
-EVERY required library routed by the selected group MUST be reported.
-
-For EACH library:
+Report EVERY required library from the selected group:
 
 LIBRARY: <name>
 VERSION: <version>
@@ -185,23 +161,18 @@ USED: YES/NO
 USEFUL: YES/NO
 REASON: <brief, specific reason>
 
-Rules:
+USED: YES = actually consulted.
+USEFUL: YES = materially contributed to analysis, implementation, verification,
+or validation.
+REASON is REQUIRED for every library.
+USEFUL: YES MUST state what it contributed.
+USEFUL: NO MUST state why it did not contribute.
 
-- Every required library MUST appear.
-- USED and USEFUL MUST be explicit YES or NO.
-- REASON is REQUIRED for every library.
-- USED: YES means the library was actually consulted.
-- USEFUL: YES means it materially contributed to analysis, implementation,
-  verification, or validation.
-- USEFUL: YES must state what it contributed.
-- USEFUL: NO must state why it did not contribute.
-- No usage or usefulness claim may be made without actual evaluation.
+No usage or usefulness claim may be made without actual evaluation.
 
-## 🔴 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
+## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
 
-EVERY required routed Jules/Gemini document MUST be reported.
-
-For EACH document:
+Report EVERY required routed Jules/Gemini document:
 
 DOCUMENT: <name>
 USED: YES/NO
@@ -210,127 +181,89 @@ REASON: <brief, specific reason>
 
 The same usage and usefulness rules apply.
 
-## 🔴 4. REPOSITORY COMPONENT REPORT — REQUIRED
+## 4. REPOSITORY COMPONENT REPORT — REQUIRED
 
-EVERY required or task-relevant repository component MUST be reported.
-
-For EACH component:
+Report EVERY required or task-relevant repository component:
 
 COMPONENT: <name>
 USED: YES/NO
 USEFUL: YES/NO
 REASON: <brief, specific reason>
 
-USED: YES means the component was actually inspected or used.
-
-USEFUL: YES means it materially contributed to analysis, implementation,
-verification, or validation.
-
+USED: YES = actually inspected or used.
+USEFUL: YES = materially contributed to analysis, implementation, verification,
+or validation.
 REASON is REQUIRED.
+USEFUL: YES MUST state what it contributed.
+USEFUL: NO MUST state why it did not contribute.
 
-USEFUL: YES must state what it contributed.
-USEFUL: NO must state why it did not contribute.
-
-## 🔴 5. REPORTING INTEGRITY — MANDATORY
+## 5. REPORTING INTEGRITY — MANDATORY
 
 The PR Summary MUST describe work Jules actually performed.
 
-Jules MUST NOT:
+Jules MUST NOT invent consultation, claim unused material was used, claim
+usefulness without evaluation, omit required items, replace YES/NO with vague
+wording, use "N/A" to avoid a determination, or make unsupported compliance claims.
 
-- invent consultation
-- claim usage that did not occur
-- claim usefulness without evaluation
-- omit required libraries, documents, or components
-- replace YES/NO with vague wording
-- use "N/A" to avoid a required determination
-- make unsupported compliance claims
-
-The required consultation questions are always:
-
+Every required consultation item MUST answer:
 USED: YES/NO
 USEFUL: YES/NO
 REASON: WHY
 
-## 🔴 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
+## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
 
-Report:
-
-- implementation performed
-- protected-system changes
-- authorization status
-- scope compliance
-- remaining issues
+Report implementation performed, protected-system changes, authorization status,
+scope compliance, and remaining issues.
 
 Unauthorized protected changes are a governance failure.
 
-## 🔴 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
+## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
 
-The PR Summary MUST list EVERY actual changed file by EXACT repository path.
+List EVERY actual changed file by EXACT repository path.
 
 Every changed file MUST appear exactly once.
-
 No changed file may be omitted.
 No unchanged file may be falsely listed.
-
 The list MUST reconcile exactly with the final Git diff.
 
-## 🔴 8. VERIFICATION — REQUIRED
+## 8. VERIFICATION — REQUIRED
 
 Run every required verification check.
 
-For EVERY verification command:
-
+For EVERY verification command, report:
 COMMAND: <exact command>
 RESULT: PASS/FAIL
 EVIDENCE/OUTPUT SUMMARY: <actual result>
 
 Never claim a check was run unless it was actually run.
 
-Inspect the final diff and every changed file.
+Inspect the final diff and every changed file. Verify no unintended files or
+dependencies, no secrets, no scope drift, no unauthorized protected changes,
+implementation matches the plan, result matches the request, and unverifiable
+items are identified.
 
-Verify:
-
-- no unintended files or dependencies
-- no secrets
-- no scope drift
-- no unauthorized protected changes
-- implementation matches the plan
-- result matches the requested outcome
-- unverifiable items are identified
-
-## 🔴 9. USEFUL RESULT — REQUIRED
+## 9. USEFUL RESULT — REQUIRED
 
 Report:
-
 USEFUL RESULT: YES/NO
 
-USEFUL RESULT: YES may be reported ONLY when the requested result was verified.
+USEFUL RESULT: YES ONLY when the requested result was actually verified.
 
-## 🔴 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
+## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
 
-Before completion, verify:
+Before completion, verify the requested outcome, scope, implementation,
+governance compliance, consultation reporting, verification results, and final
+Git diff.
 
-- requested outcome
-- scope
-- implementation
-- governance compliance
-- library/document/component reporting
-- verification results
-- final Git diff
-
-State in the PR Summary that this double-check was completed.
+The PR Summary MUST state that this double-check was completed.
 
 ## 🔴 NO REPORT = NO APPROVAL
 
 The PR Summary MUST contain:
-
 - selected task group and reason
-- every required library
-- every required routed document
-- every required/relevant component
-- USED: YES/NO
-- USEFUL: YES/NO
-- REASON
+- every required library with VERSION, USED, USEFUL, REASON
+- every required routed document with USED, USEFUL, REASON
+- every required/relevant component with USED, USEFUL, REASON
 - exact changed-file reconciliation
 - verification results
 - USEFUL RESULT: YES/NO
@@ -348,7 +281,6 @@ Failure to provide the required PR Summary is a GOVERNANCE FAILURE.
 # 🔴 PROTECTED SYSTEMS
 
 Explicit authorization is required before changing:
-
 - Stripe/payment
 - database/schema
 - authentication/security
@@ -370,21 +302,15 @@ Turnstile/CAPTCHA, rate limiting, duplicate protection, or environment handling.
 # 🔴 BUILD SAFETY
 
 495 MB is the HARD MAXIMUM BUILD LIMIT.
-
 NEVER exceed or bypass it.
 
 Every build MUST be measured and its actual size MUST be reported.
 
 If a build reaches or exceeds 495 MB:
-
 STOP.
-
 Do not continue the build.
-
 Preserve the safe state.
-
 Report the measured size and the exact point where work can safely resume.
-
 Do not claim completion.
 
 ---
@@ -408,7 +334,8 @@ Before reporting completion, Jules MUST verify:
 - AGENTS.md was read FIRST and followed completely.
 - EXACTLY ONE .docs task group was selected and reported with its reason.
 - Every required routed document was consulted and reported.
-- Every required library was consulted and reported with VERSION, USED, USEFUL, and REASON.
+- Every required library was consulted and reported with VERSION, USED, USEFUL,
+  and REASON.
 - Every required/relevant component was reported with USED, USEFUL, and REASON.
 - No unsupported usage or usefulness claim was made.
 - ".jules/jules.md" was followed.
@@ -429,7 +356,6 @@ Before reporting completion, Jules MUST verify:
 - All PR Summary statements match the actual work.
 
 🔴 DO NOT CLAIM COMPLIANCE. DEMONSTRATE IT.
-
 🔴 AGENTS.md GOVERNANCE IS MANDATORY.
 🔴 NO GOVERNANCE = NO TASK.
 🔴 NO DEMONSTRATED COMPLIANCE = NO TASK APPROVAL.
