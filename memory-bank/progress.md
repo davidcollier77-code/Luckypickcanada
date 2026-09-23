@@ -93,3 +93,12 @@
 - Amazon Q performed the remediation under its Master Work Request and reported the changes as minimal and boundary-preserving.
 - GitHub Actions `Validate OpenNext Repair` run #428 passed (Total Upload: 6856.69 KiB). Cubic re-review reports all identified P2 findings addressed; only Memory Bank verification on the newer documentation-only head remains to be revalidated by CI.
 
+
+
+## 2026-09-23 - Lucky Card Reference-Driven Cinematic VFX Shell
+- Rebuilt the final post-flip renderer in `app/lucky-card-reveal.js` to target the supplied reference: thicker, irregular blue electrical arcs plus tier-colored hot-metal material that clings to the card rim, pools on the face, splashes outward, and cools away.
+- Standard uses copper/bronze, Premium uses silver/pewter, and Flagship uses polished gold; this remains strictly tier-driven rather than card-specific.
+- Added separate background and foreground VFX passes, apparent depth, surface filaments, pools, droplets, sparks/splatter, and a cooling phase while preserving the upright card and artwork.
+- Preserved tier hit counts (Standard 3, Premium 4, Flagship 5) and existing selection, collection, countdown, sharing, navigation, audio, flip choreography, and reduced-motion behavior.
+- Branch created: `feat/lucky-card-cinematic-vfx-shell-20260923`.
+- Build/CI verification and independent runtime visual review remain pending.
