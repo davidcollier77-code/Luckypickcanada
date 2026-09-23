@@ -91,5 +91,5 @@
 - The deep molten layer now renders with `source-over` before restoring the existing `screen` compositing for emissive layers.
 - Heat-node alpha now multiplies `nodeProgress`, so configured heat-node fade-in duration is actually respected.
 - Amazon Q performed the remediation under its Master Work Request and reported the changes as minimal and boundary-preserving.
-- Final CI and Cubic re-review of the resulting head remain pending.
+- GitHub Actions `Validate OpenNext Repair` run #428 passed (Total Upload: 6856.69 KiB). Cubic re-review reports all identified P2 findings addressed; only Memory Bank verification on the newer documentation-only head remains to be revalidated by CI.
 
