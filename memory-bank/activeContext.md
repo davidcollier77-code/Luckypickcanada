@@ -1,6 +1,12 @@
 # Active Context
 
+
 ## Current Work
+- Improved cinematic post-flip burn sequence in `app/lucky-card-reveal.js` across all tiers.
+- Restored color dominance in the plasma/beam effects by reducing white core thickness and increasing colored outer glow bloom and line width.
+- Added organic stretching and gravity drip effects to the plasma breakup sequence by modifying control points.
+- Refactored spark particle behavior to include explosive outward/upward arcs mixed with drifting heat embers, varied colors (tier color + superheated gold/orange), and gravity effects.
+- Maintained mobile performance constraints by leveraging the existing canvas context without adding DOM nodes or complex physics simulation loops.
 - Removed 'opacity-70' on NGC4216_crawford.jpg in app/lucky-card-reveal.js to eliminate shadowy overlay.
 - Added '-ms-overflow-style: none;' and 'scrollbar-width: none;' and removed '(hover: none)' requirement from the max-width: 768px scrollbar media query in themes/default/default.css to successfully hide the visible mobile scrollbar.
 - Implemented cinematic continuous beam architecture in `app/lucky-card-reveal.js`.

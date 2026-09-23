@@ -38,3 +38,11 @@
 - Reduced the regular hit count by one across all tiers (Standard to 3, Premium to 4, Flagship to 5).
 - Replaced the symmetric detached circular 2D post-flip ring with a physically reactive, organic, 3D plasma burnout that traces and wraps directly around the rectangular Lucky Card.
 - Enhanced the aftermath to feature drifting orange/gold sparks and asymmetric fragmentation of blue/white energy, ensuring a cinematic 2-3 second burnout.
+
+## 2026-09-23 - Lucky Card Final Burn Sequence Polish
+- Improved cinematic post-flip burn sequence across all tiers in `app/lucky-card-reveal.js`.
+- Restored tier color dominance in plasma/beam effects by expanding glow and reducing the white core.
+- Introduced gravity-influenced stretching and downward drip effects to the plasma breakup sequence.
+- Expanded the rendering boundaries of the plasma to avoid hard rectangular clipping.
+- Refactored spark behavior to mix explosive directional arcs with drifting heat embers, varying in velocity, drift, and color.
+- Ensured strong foreground/background layering for sparks and energy relative to the card layout without impacting mobile performance.
