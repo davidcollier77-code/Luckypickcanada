@@ -164,30 +164,30 @@ export default function LuckyCardReveal() {
     const cp2Y = contactY - Math.cos(hitAngle) * cpDistance * tangentDirection + (Math.random() - 0.5) * 15;
 
     const drawCurve = (ctx, drawFn) => {
-      // Outer glow
+      // Outer glow (more color, more bloom)
       ctx.beginPath();
       ctx.moveTo(originX, originY);
       drawFn(ctx);
-      ctx.lineWidth = width * 2.5;
-      ctx.strokeStyle = color.replace(')', ', 0.3)').replace('rgba', 'rgba').replace(', 0.3, 0.3)', ', 0.3)'); // Soften outer glow
+      ctx.lineWidth = width * 3.5;
+      ctx.strokeStyle = color.replace(/,[\s\d.]+\)$/, ', 0.4)');
       ctx.lineCap = 'round';
       ctx.stroke();
 
-      // Main beam
+      // Main colored plasma (thicker, organic)
       ctx.beginPath();
       ctx.moveTo(originX, originY);
       drawFn(ctx);
-      ctx.lineWidth = width;
-      ctx.strokeStyle = color;
+      ctx.lineWidth = width * 2.0;
+      ctx.strokeStyle = color.replace(/,[\s\d.]+\)$/, ', 0.85)');
       ctx.lineCap = 'round';
       ctx.stroke();
 
-      // Hot luminous core
+      // White hot core (smaller, tighter)
       ctx.beginPath();
       ctx.moveTo(originX, originY);
       drawFn(ctx);
       ctx.lineWidth = width * 0.3;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.lineCap = 'round';
       ctx.stroke();
     };
@@ -221,7 +221,7 @@ export default function LuckyCardReveal() {
             const flareSize = width * (3 + Math.random() * 2);
             fgCtx.beginPath();
             fgCtx.arc(contactX, contactY, flareSize, 0, Math.PI * 2);
-            fgCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            fgCtx.fillStyle = 'rgba(255, 255, 255, 0.6)';
             fgCtx.fill();
 
             fgCtx.beginPath();
@@ -492,14 +492,19 @@ export default function LuckyCardReveal() {
              // The plasma burnout must be shared across all tiers (no tierMult scaling that makes them look different)
              const fizzAlpha = Math.max(0, 1 - Math.pow(t, 1.2)); // Slower ease out for alpha
 
-             const fizzCtx = fgCtx || bgCtx;
-             fizzCtx.lineCap = 'round';
-             fizzCtx.lineJoin = 'round';
+             // Create depth by randomly selecting between fgCtx and bgCtx for different strands
+             const availableCtxs = [fgCtx, bgCtx].filter(Boolean);
+             availableCtxs.forEach(ctx => {
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+             });
 
              // Draw localized plasma burnout adhering to card geometry
-             // Use cardW and cardH to constrain the plasma to the card's rectangular edges and surface
-             const w2 = cardW / 2;
-             const h2 = cardH / 2;
+             // Expand the burnout area so the energy can spatially exceed the physical card boundaries
+             // This removes the "rectangular box" constraint. The energy spreads out organically.
+             const spread = 1 + t * 0.4; // Starts close to card size, expands outward
+             const w2 = (cardW / 2) * spread;
+             const h2 = (cardH / 2) * spread;
 
              // Base points around the card (corners and midpoints)
              const points = [
@@ -516,6 +521,8 @@ export default function LuckyCardReveal() {
              // Draw jagged, electrical plasma conforming to the card edges
              const numPlasmaStrands = 5;
              for (let s = 0; s < numPlasmaStrands; s++) {
+                // Randomly assign each plasma strand to foreground or background to create 3D depth
+                const fizzCtx = availableCtxs[Math.floor(Math.random() * availableCtxs.length)] || fgCtx || bgCtx;
                 if (Math.random() > (1 - t * 0.8)) continue; // Progressive fragmentation
 
                 fizzCtx.beginPath();
@@ -529,7 +536,9 @@ export default function LuckyCardReveal() {
 
                        // Jitter based on time and randomness to make it organic and chaotic
                        const jitterX = (Math.random() - 0.5) * 30 * (1 - t);
-                       const jitterY = (Math.random() - 0.5) * 30 * (1 - t);
+                       // Add a gravity drip/stretch effect on Y axis
+                       const gravityStretch = (1 - t) * 40 * Math.random();
+                       const jitterY = (Math.random() - 0.5) * 20 * (1 - t) + gravityStretch;
 
                        const cp1x = p.x + (nextP.x - p.x) * 0.3 + jitterX;
                        const cp1y = p.y + (nextP.y - p.y) * 0.3 + jitterY;
@@ -550,23 +559,29 @@ export default function LuckyCardReveal() {
                 const flickerAlpha = fizzAlpha * (0.4 + Math.random() * 0.6);
 
                 // Blue/white plasma (hitColor)
+                // Thick organic plasma body
+                fizzCtx.lineWidth = flickerThickness * 2 + Math.random() * 4;
+                fizzCtx.strokeStyle = `rgba(${hitColor}, ${flickerAlpha * 0.4})`;
+                fizzCtx.stroke();
+
                 fizzCtx.lineWidth = flickerThickness + Math.random() * 3;
                 fizzCtx.strokeStyle = `rgba(${hitColor}, ${flickerAlpha})`;
                 fizzCtx.stroke();
 
-                // Core
-                if (Math.random() > 0.4) {
-                    fizzCtx.lineWidth = flickerThickness * 0.5;
-                    fizzCtx.strokeStyle = `rgba(255, 255, 255, ${flickerAlpha * 0.9})`;
+                // Core (tight, less dominant)
+                if (Math.random() > 0.6) {
+                    fizzCtx.lineWidth = flickerThickness * 0.3;
+                    fizzCtx.strokeStyle = `rgba(255, 255, 255, ${flickerAlpha * 0.8})`;
                     fizzCtx.stroke();
                 }
              }
 
              // Draw surface contact glow / hot spots
              for (let i = 0; i < 4; i++) {
+                 const fizzCtx = availableCtxs[Math.floor(Math.random() * availableCtxs.length)] || fgCtx || bgCtx;
                  if (Math.random() > 1 - t) continue;
-                 const glowX = cx + (Math.random() - 0.5) * cardW;
-                 const glowY = cy + (Math.random() - 0.5) * cardH;
+                 const glowX = cx + (Math.random() - 0.5) * (cardW * spread * 1.2);
+                 const glowY = cy + (Math.random() - 0.5) * (cardH * spread * 1.2);
 
                  const glowR = 10 + Math.random() * 30 * (1 - t);
                  const grad = fizzCtx.createRadialGradient(glowX, glowY, 0, glowX, glowY, glowR);
@@ -580,33 +595,47 @@ export default function LuckyCardReveal() {
              }
 
              // Sparks: Hot orange/gold heat sparks that break away and drizzle down
-             const numSparks = Math.floor(15 * (1 - t));
+             const numSparks = Math.floor(25 * (1 - t));
              for (let i = 0; i < numSparks; i++) {
+                 // Randomly push sparks to foreground or background
+                 const fizzCtx = availableCtxs[Math.floor(Math.random() * availableCtxs.length)] || fgCtx || bgCtx;
                  // Sparks originate from card edges or surface
                  const sparkX = cx + (Math.random() - 0.5) * cardW * 1.1;
                  const sparkY = cy + (Math.random() - 0.5) * cardH * 1.1;
 
                  // Velocity: generally downwards (drizzling), with some lateral drift
-                 const vx = (Math.random() - 0.5) * 2;
-                 const vy = 1 + Math.random() * 3; // Gravity effect
+                 const isExplosiveSpark = Math.random() > 0.5;
+
+                 // Explosive sparks shoot outwards and up, heat sparks drift around
+                 let vx = (Math.random() - 0.5) * (isExplosiveSpark ? 6 : 3);
+                 let vy = (Math.random() - 0.5) * (isExplosiveSpark ? 6 : 2) - 1; // Generally upward/outward
 
                  // Age of this specific spark based on t to simulate falling over time
-                 // Since we don't have persistent particle state here, we simulate it via offset
                  const sparkAge = t * (1 + Math.random());
-                 const currentX = sparkX + vx * sparkAge * 50;
-                 const currentY = sparkY + vy * sparkAge * 50;
+
+                 // Add subtle curve/drift to particle path
+                 const drift = Math.sin(sparkAge * 5 + i) * 20;
+
+                 const currentX = sparkX + vx * sparkAge * 40 + drift;
+                 // Gravity eventually pulls them down a bit if they live long enough
+                 const gravityEffect = Math.pow(sparkAge, 2) * 20;
+                 const currentY = sparkY + vy * sparkAge * 40 + gravityEffect;
 
                  const sparkSize = (1 + Math.random() * 2) * (1 - t);
                  const sparkAlpha = fizzAlpha * (0.5 + Math.random() * 0.5);
 
-                 // Orange/gold color for superheated sparks
-                 const r = 255;
-                 const g = 150 + Math.floor(Math.random() * 50);
-                 const b = 0;
+                 // Mix tier-colored sparks with superheated sparks
+                 let sparkColor = `rgba(${hitColor}, ${sparkAlpha})`;
+                 if (Math.random() > 0.5) {
+                    const r = 255;
+                    const g = 150 + Math.floor(Math.random() * 50);
+                    const b = 0;
+                    sparkColor = `rgba(${r}, ${g}, ${b}, ${sparkAlpha})`;
+                 }
 
                  fizzCtx.beginPath();
                  fizzCtx.arc(currentX, currentY, sparkSize, 0, Math.PI * 2);
-                 fizzCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${sparkAlpha})`;
+                 fizzCtx.fillStyle = sparkColor;
                  fizzCtx.fill();
              }
            }
