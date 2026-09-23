@@ -107,3 +107,9 @@
 ## 2026-09-23 - Lucky Card Rim Flow Progression Fix
 - Fixed `drawRimFlow` in `app/lucky-card-reveal.js` so the molten rim path is progressively revealed according to each flow's delay/duration instead of drawing the full edge immediately.
 - Preserved the existing tier-driven material colors, widths, glow, irregularity, and post-flip timing.
+
+## 2026-09-23 - Lucky Card Final VFX Sequence Refinement
+- Refined `app/lucky-card-reveal.js` so the final post-flip event reads as electric wrap → molten snap/pop splatter → one or two attached bottom-edge drips.
+- Shortened and progressively revealed the blue charge arcs so they travel around the card edge instead of lingering as full-length ribbons.
+- Anchored molten bursts and splatter to card-edge hotspots and replaced detached drip particles with two attached gravity-driven drips that grow from the lower edge.
+- Preserved tier materials, card artwork, hit counts, flip choreography, collection, countdown, sharing, navigation, audio, reduced-motion behavior, and existing timing outside the focused VFX sequence.

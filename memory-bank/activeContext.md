@@ -51,3 +51,5 @@
 - Modified `themes/default/default.css` to hide the custom `-webkit-scrollbar` on mobile devices (`max-width: 768px`) to ensure the page is clean, while retaining standard touch scrolling.
 
 - 2026-09-23: Fixed `drawRimFlow` so each rim flow progressively reveals only the traversed portion of the card edge over its configured duration; tier colors, thickness, glow, and existing VFX timing remain unchanged.
+
+- 2026-09-23: Refined the final post-flip VFX into a three-stage sequence: brief electric edge-wrap, short molten snap/pop bursts, then two attached lower-edge drips that grow from the card edge before detaching and fading. Shortened surface energy timing and anchored splatter/burst sources to the card perimeter so particles no longer appear disconnected from the molten event.
