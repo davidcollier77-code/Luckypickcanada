@@ -33,3 +33,8 @@
 - Refined the continuous beam material in `app/lucky-card-reveal.js` with a luminous core and soft outer glow to appear more like plasma.
 - Replaced the water-ripple residual energy with a mystical plasma/electrical dissipation effect (fizz/afterglow) featuring erratic arcs, flickering thickness, and ejecting sparks.
 - Added a concentrated impact flare when the beam contacts the card.
+
+## 2026-09-22 - Lucky Card Cinematic Plasma Overhaul
+- Reduced the regular hit count by one across all tiers (Standard to 3, Premium to 4, Flagship to 5).
+- Replaced the symmetric detached circular 2D post-flip ring with a physically reactive, organic, 3D plasma burnout that traces and wraps directly around the rectangular Lucky Card.
+- Enhanced the aftermath to feature drifting orange/gold sparks and asymmetric fragmentation of blue/white energy, ensuring a cinematic 2-3 second burnout.
