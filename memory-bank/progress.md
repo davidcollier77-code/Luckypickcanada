@@ -75,3 +75,21 @@
 - Cubic re-review reported all previously identified issues addressed; the historical timing documentation finding is resolved and the electrical filament duration finding is resolved.
 - Final source/diff inspection confirms only `app/lucky-card-reveal.js`, `memory-bank/activeContext.md`, and `memory-bank/progress.md` changed.
 - Runtime visual confirmation is still a manual device/browser check; CI and code review cannot substitute for observing the cinematic effect in the actual UI.
+
+## 2026-09-23 - Lucky Card Post-Flip Heat/Arc Polish
+- Refined `app/lucky-card-reveal.js` so the molten runoff carries more visible thermal depth instead of reading as uniform liquid.
+- Replaced the previous persistent blue electrical zigzags with a short white/cyan ignition discharge and sparse, short-lived surface snap-arcs attached to molten streams.
+- Added localized pulsing heat nodes and a darker molten outer body beneath the emissive material to create hotter/cooler variation.
+- Reduced spark and ember counts/lifetimes while keeping a small number of upward hot fragments for restrained crackle/popping visual language.
+- Preserved tier system, hit counts, artwork, audio, flip choreography, collection, countdown, sharing, navigation, reduced-motion behavior, and the existing 4.2s post-flip dissipation.
+- No new dependency was introduced.
+
+
+
+## 2026-09-23 - Lucky Card Plasma Heat/Arc Review Remediation
+- Validated and resolved two Cubic P2 findings in `app/lucky-card-reveal.js`.
+- The deep molten layer now renders with `source-over` before restoring the existing `screen` compositing for emissive layers.
+- Heat-node alpha now multiplies `nodeProgress`, so configured heat-node fade-in duration is actually respected.
+- Amazon Q performed the remediation under its Master Work Request and reported the changes as minimal and boundary-preserving.
+- GitHub Actions `Validate OpenNext Repair` run #428 passed (Total Upload: 6856.69 KiB). Cubic re-review reports all identified P2 findings addressed; only Memory Bank verification on the newer documentation-only head remains to be revalidated by CI.
+
