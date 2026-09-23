@@ -320,437 +320,179 @@ export default function LuckyCardReveal() {
   // Post-flip material behaves like white-hot molten plasma physically clinging
   // to the card face: top-to-bottom streams, secondary rivulets, edge runoff,
   // brief electrical charge/snap-arcs, sparks, embers, and a deliberate smolder-out.
-  const drawMoltenBurnout = (ctx, metrics, hitColor, tier, t, material) => {
+  // Post-flip VFX is tier-driven, not card-driven.
+  // Blue electricity is universal; the hot-metal material changes only by tier.
+  // Two canvas passes create depth: rear energy shell + foreground molten/spark layer.
+  const drawMoltenBurnout = (ctx, metrics, hitColor, tier, t, material, layer = 'front') => {
     if (!ctx || !material || t >= 1) return;
 
     const { cx, cy, w: cardW, h: cardH } = metrics;
     const halfW = cardW / 2;
     const halfH = cardH / 2;
-    const edgeX = cardW * 0.475;
-    const bottomY = cy + halfH;
-
-    const materialColor = tier === 'premium'
-      ? '205, 214, 228'
-      : tier === 'flagship'
-        ? '224, 170, 48'
-        : '214, 122, 57';
-
-    const hotColor = tier === 'premium'
-      ? '255, 255, 255'
-      : tier === 'flagship'
-        ? '255, 246, 205'
-        : '255, 232, 199';
-
-    const deepColor = tier === 'premium'
-      ? '64, 74, 88'
-      : tier === 'flagship'
-        ? '106, 58, 10'
-        : '102, 42, 16';
-
-    const electricColor = '62, 178, 255';
-    const electricCore = '220, 248, 255';
-
+    const tierRgb = tier === 'premium' ? '218, 224, 232' : tier === 'flagship' ? '238, 166, 50' : '201, 112, 52';
+    const tierHot = tier === 'premium' ? '255, 255, 255' : tier === 'flagship' ? '255, 244, 194' : '255, 226, 184';
+    const tierDeep = tier === 'premium' ? '62, 70, 82' : tier === 'flagship' ? '104, 54, 8' : '96, 40, 14';
+    const electricRgb = '46, 166, 255';
+    const electricHot = '226, 249, 255';
     const rgba = (rgb, alpha) => 'rgba(' + rgb + ', ' + Math.max(0, alpha) + ')';
 
-    // The material stays vivid through the travel phase, then cools gradually.
-    const cooling = smoothstep(0.64, 0.9, t);
-    const finalFade = 1 - smoothstep(0.92, 1, t);
-    const bodyAlpha = (0.98 - cooling * 0.58) * finalFade;
-    const glowAlpha = bodyAlpha * (0.34 + cooling * 0.1);
-    const coreAlpha = (0.95 - cooling * 0.5) * finalFade;
+    const fade = 1 - smoothstep(0.88, 1, t);
+    const heat = 1 - smoothstep(0.62, 0.96, t);
+    const pulse = 0.94 + Math.sin(t * 30 + material.seed) * 0.06;
+    const energyFade = (1 - smoothstep(0.66, 0.92, t)) * fade;
+    const shellAlpha = 0.82 * energyFade;
+    const moltenAlpha = (0.96 - (1 - heat) * 0.36) * fade * pulse;
+    const toPoint = (u, v, depth = 0) => ({ x: cx + (halfW + depth) * u, y: cy + (halfH + depth) * v });
 
-    const pointOnStream = (stream, progress) => {
-      const p = clamp01(progress);
-      const eased = p * p * (3 - 2 * p);
-      const primaryWave = Math.sin((p * stream.cycles + stream.phase) * Math.PI * 2);
-      const secondaryWave = Math.sin((p * stream.cycles * 0.47 + stream.phase * 1.73) * Math.PI * 2);
-      const taper = 0.3 + eased * 0.7;
-      const x = cx + halfW * (
-        stream.startU +
-        (stream.endU - stream.startU) * eased
-      ) + (
-        primaryWave * stream.sway +
-        secondaryWave * stream.microSway
-      ) * taper;
-
-      const y = cy + halfH * (
-        stream.startV + (stream.endV - stream.startV) * eased
-      );
-
-      return { x, y };
-    };
-
-    const buildStreamPoints = (stream, progress) => {
-      const points = [];
-      const count = Math.max(8, Math.ceil(16 * Math.max(0.2, progress)));
-      for (let i = 0; i <= count; i += 1) {
-        points.push(pointOnStream(stream, progress * (i / count)));
-      }
-      return points;
-    };
-
-    const strokePath = (points, width, strokeStyle) => {
+    const strokeSmooth = (points, width, style, composite = 'source-over', shadow = 0) => {
       if (points.length < 2 || width <= 0) return;
+      ctx.save();
+      ctx.globalCompositeOperation = composite;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = width;
+      ctx.strokeStyle = style;
+      if (shadow > 0) { ctx.shadowBlur = shadow; ctx.shadowColor = style; }
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
       for (let i = 1; i < points.length; i += 1) {
         const prev = points[i - 1];
         const point = points[i];
-        const midX = (prev.x + point.x) / 2;
-        const midY = (prev.y + point.y) / 2;
-        ctx.quadraticCurveTo(prev.x, prev.y, midX, midY);
+        const mx = (prev.x + point.x) / 2;
+        const my = (prev.y + point.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
       }
       const last = points[points.length - 1];
       const prev = points[points.length - 2];
       ctx.quadraticCurveTo(prev.x, prev.y, last.x, last.y);
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineWidth = width;
-      ctx.strokeStyle = strokeStyle;
       ctx.stroke();
+      ctx.restore();
     };
 
-    const drawMoltenStream = (stream, strength = 1) => {
-      const revealProgress = smoothstep(
-        stream.delay,
-        stream.delay + stream.duration,
-        t
-      );
-
-      if (revealProgress <= 0) return;
-
-      const alpha = bodyAlpha * strength;
-      if (alpha <= 0) return;
-
-      const points = buildStreamPoints(stream, revealProgress);
-      const pulse = 1 + Math.sin(t * 18 + stream.phase) * 0.08;
-      const width = stream.width * pulse;
-
-      // Broad incandescent bloom around the molten material.
-      strokePath(points, width * 3.8, rgba(hitColor || materialColor, glowAlpha * strength));
-      ctx.globalCompositeOperation = 'source-over';
-      strokePath(points, width * 2.55, rgba(deepColor, alpha * 0.68));
+    const drawEnergyArc = (arc, strength) => {
+      const p = (t - arc.delay) / Math.max(0.001, arc.duration);
+      if (p <= 0 || p > 1.02) return;
+      const points = [];
+      const segs = 11;
+      for (let i = 0; i <= segs; i += 1) {
+        const u = i / segs;
+        const envelope = Math.sin(Math.PI * u);
+        const noise = Math.sin(i * 2.91 + material.seed + t * 90 + arc.phase) * arc.jag * envelope;
+        const x = cx + halfW * (arc.startU + (arc.endU - arc.startU) * u);
+        const y = cy + halfH * (arc.startV + (arc.endV - arc.startV) * u);
+        points.push({ x: x + arc.nx * noise, y: y + arc.ny * noise });
+      }
+      const fadeEdge = 1 - smoothstep(0.86, 1, p);
+      const a = strength * fadeEdge * (0.78 + 0.22 * Math.sin(t * 120 + arc.phase));
+      const width = arc.width * (0.88 + 0.12 * Math.sin(t * 44 + arc.phase));
+      strokeSmooth(points, width * 3.3, rgba(electricRgb, a * 0.17), 'screen', width * 1.8);
+      strokeSmooth(points, width * 1.55, rgba(electricRgb, a * 0.82), 'screen', width * 0.9);
+      strokeSmooth(points, Math.max(1.05, width * 0.33), rgba(electricHot, a), 'screen', 2);
+      const head = points[Math.min(points.length - 1, Math.floor(clamp01(p) * (points.length - 1)))];
+      ctx.save();
       ctx.globalCompositeOperation = 'screen';
-      strokePath(points, width * 1.95, rgba(materialColor, alpha * 0.96));
-
-      // A near-white hot core gives the material depth without turning the
-      // tier-specific molten color into a flat white stroke.
-      const first = points[0];
-      const last = points[points.length - 1];
-      const coreGradient = ctx.createLinearGradient(first.x, first.y, last.x, last.y);
-      coreGradient.addColorStop(0, rgba(hotColor, coreAlpha));
-      coreGradient.addColorStop(0.48, rgba(hotColor, coreAlpha * 0.84));
-      coreGradient.addColorStop(1, rgba(materialColor, coreAlpha * 0.9));
-      strokePath(points, Math.max(1, width * 0.42), coreGradient);
-
-      // The leading edge behaves like a heavy molten bead traveling down the
-      // surface. When it reaches the bottom it naturally becomes runoff.
-      const head = pointOnStream(stream, revealProgress);
-      const headRadius = Math.max(2.2, width * (1.25 + 0.7 * Math.sin(revealProgress * Math.PI)));
-      const headGlow = ctx.createRadialGradient(
-        head.x,
-        head.y,
-        0,
-        head.x,
-        head.y,
-        headRadius * 3.5
-      );
-      headGlow.addColorStop(0, rgba(hotColor, coreAlpha * 0.98));
-      headGlow.addColorStop(0.35, rgba(materialColor, alpha * 0.9));
-      headGlow.addColorStop(1, rgba(materialColor, 0));
-      ctx.beginPath();
-      ctx.arc(head.x, head.y, headRadius * 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = headGlow;
-      ctx.fill();
+      const flash = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, width * 6);
+      flash.addColorStop(0, rgba(electricHot, a * 0.9));
+      flash.addColorStop(0.2, rgba(electricRgb, a * 0.38));
+      flash.addColorStop(1, rgba(electricRgb, 0));
+      ctx.beginPath(); ctx.arc(head.x, head.y, width * 6, 0, Math.PI * 2);
+      ctx.fillStyle = flash; ctx.fill(); ctx.restore();
     };
 
-    material.streams.forEach((stream) => drawMoltenStream(stream, 1));
-    material.secondaryStreams.forEach((stream) => drawMoltenStream(stream, 0.72));
+    const drawRimFlow = (flow) => {
+      const p = smoothstep(flow.delay, flow.delay + flow.duration, t);
+      if (p <= 0) return;
+      const spread = flow.spread * smoothstep(0, 0.28, p);
+      const wobble = Math.sin(t * 18 + flow.phase) * flow.wobble;
+      const points = [];
+      for (let i = 0; i <= 12; i += 1) {
+        const q = i / 12;
+        let u; let v;
+        if (flow.edge === 'top') { u = flow.start + (flow.end - flow.start) * q; v = -1 + spread * Math.sin(Math.PI * q) + wobble / cardH; }
+        else if (flow.edge === 'bottom') { u = flow.start + (flow.end - flow.start) * q; v = 1 - spread * Math.sin(Math.PI * q) + wobble / cardH; }
+        else if (flow.edge === 'left') { u = -1 + spread * Math.sin(Math.PI * q) + wobble / cardW; v = flow.start + (flow.end - flow.start) * q; }
+        else { u = 1 - spread * Math.sin(Math.PI * q) + wobble / cardW; v = flow.start + (flow.end - flow.start) * q; }
+        points.push(toPoint(u, v));
+      }
+      const width = flow.width * (0.84 + 0.16 * Math.sin(t * 24 + flow.phase));
+      const alpha = moltenAlpha * flow.opacity;
+      strokeSmooth(points, width * 3.6, rgba(tierRgb, alpha * 0.28), 'screen', 7);
+      strokeSmooth(points, width * 2.25, rgba(tierDeep, alpha * 0.76), 'source-over', 2);
+      strokeSmooth(points, width * 1.72, rgba(tierRgb, alpha), 'screen', 5);
+      strokeSmooth(points, Math.max(1.1, width * 0.38), rgba(tierHot, alpha * 0.92), 'screen', 2);
+    };
 
-    // A brief electrical ignition happens immediately after the flip. It is
-    // deliberately short, asymmetrical, and white-hot at the crossing point so
-    // the molten runoff reads as a consequence of an energy discharge.
-    const ignitionWindow = 0.42;
-    if (t < ignitionWindow && material.chargeArcs?.length) {
-      const chargeFadeIn = smoothstep(0, 0.025, t);
-      const chargeFadeOut = 1 - smoothstep(0.16, ignitionWindow, t);
-      const chargePulse = chargeFadeIn * chargeFadeOut;
+    const drawHotPool = (pool) => {
+      const p = smoothstep(pool.delay, pool.delay + pool.duration, t);
+      if (p <= 0) return;
+      const cool = 1 - smoothstep(0.55, 0.95, p);
+      const x = cx + halfW * (pool.u + Math.sin(t * 12 + pool.phase) * 0.01);
+      const y = cy + halfH * (pool.v + Math.cos(t * 10 + pool.phase) * 0.01);
+      const rx = pool.rx * (0.82 + p * 0.2);
+      const ry = pool.ry * (0.86 + p * 0.18);
+      const a = moltenAlpha * pool.opacity * (0.58 + cool * 0.42);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(pool.angle);
+      ctx.globalCompositeOperation = 'screen';
+      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(rx, ry) * 2.8);
+      glow.addColorStop(0, rgba(tierHot, a * 0.9)); glow.addColorStop(0.24, rgba(tierRgb, a * 0.9)); glow.addColorStop(0.72, rgba(tierRgb, a * 0.28)); glow.addColorStop(1, rgba(tierRgb, 0));
+      ctx.beginPath(); ctx.ellipse(0, 0, rx * 2.8, ry * 2.4, 0, 0, Math.PI * 2); ctx.fillStyle = glow; ctx.fill();
+      ctx.globalCompositeOperation = 'source-over'; ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.fillStyle = rgba(tierDeep, a * 0.78); ctx.fill();
+      ctx.globalCompositeOperation = 'screen'; ctx.beginPath(); ctx.ellipse(-rx * 0.12, -ry * 0.12, rx * 0.86, ry * 0.72, 0, 0, Math.PI * 2); ctx.fillStyle = rgba(tierRgb, a * 0.9); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-rx * 0.18, -ry * 0.24, rx * 0.46, ry * 0.32, 0, 0, Math.PI * 2); ctx.fillStyle = rgba(tierHot, a * 0.62); ctx.fill();
+      ctx.restore();
+    };
 
-      material.chargeArcs.forEach((arc) => {
-        const points = [];
-        const segments = 9;
-        for (let i = 0; i <= segments; i += 1) {
-          const p = i / segments;
-          const baseX = cx + halfW * (
-            arc.startU + (arc.endU - arc.startU) * p
-          );
-          const baseY = cy + halfH * (
-            arc.startV + (arc.endV - arc.startV) * p
-          );
-          const jitter = i === 0 || i === segments
-            ? 0
-            : Math.sin(i * 8.7 + arc.phase + t * 54) * arc.jag;
-          const normalX = -Math.sin(arc.angle);
-          const normalY = Math.cos(arc.angle);
-          points.push({
-            x: baseX + normalX * jitter,
-            y: baseY + normalY * jitter
-          });
-        }
-
-        const arcAlpha = chargePulse * (0.72 + 0.28 * Math.sin(t * 95 + arc.phase));
-        strokePath(points, 7.5, rgba(electricColor, arcAlpha * 0.24));
-        strokePath(points, 2.6, rgba(electricColor, arcAlpha * 0.95));
-        strokePath(points, 1.0, rgba(electricCore, arcAlpha));
-      });
-
-      const flashX = cx;
-      const flashY = cy - cardH * 0.02;
-      const flashRadius = cardW * (0.12 + chargePulse * 0.12);
-      const flash = ctx.createRadialGradient(
-        flashX,
-        flashY,
-        0,
-        flashX,
-        flashY,
-        flashRadius
-      );
-      flash.addColorStop(0, rgba(hotColor, chargePulse * 0.98));
-      flash.addColorStop(0.2, rgba(electricCore, chargePulse * 0.72));
-      flash.addColorStop(0.55, rgba(electricColor, chargePulse * 0.24));
-      flash.addColorStop(1, rgba(electricColor, 0));
+    const drawDroplet = (drop, splatter = false) => {
+      const p = smoothstep(drop.delay, drop.delay + drop.duration, t);
+      if (p <= 0) return;
+      const vanish = 1 - smoothstep(0.8, 1, p);
+      const z = 0.72 + drop.depth * 0.55;
+      const x = drop.x + drop.vx * p * z;
+      const y = drop.y + drop.vy * p * z + drop.gravity * p * p * z;
+      const size = drop.size * (0.72 + z * 0.56);
+      const alpha = moltenAlpha * drop.brightness * vanish;
+      ctx.save(); ctx.globalCompositeOperation = 'screen';
       ctx.beginPath();
-      ctx.arc(flashX, flashY, flashRadius, 0, Math.PI * 2);
-      ctx.fillStyle = flash;
-      ctx.fill();
+      ctx.ellipse(x, y, size * (splatter ? 1.7 : 1.05), size * (splatter ? 0.62 : 1.8), Math.atan2(drop.vy, drop.vx), 0, Math.PI * 2);
+      ctx.fillStyle = rgba(tierHot, alpha * 0.92); ctx.shadowBlur = splatter ? 7 : 5; ctx.shadowColor = rgba(tierRgb, alpha); ctx.fill();
+      ctx.beginPath(); ctx.arc(x, y, Math.max(0.8, size * 0.55), 0, Math.PI * 2); ctx.fillStyle = rgba(tierRgb, alpha * 0.9); ctx.fill();
+      ctx.restore();
+    };
+
+    if (layer === 'behind') {
+      material.energyArcs.filter((arc) => arc.behind).forEach((arc) => drawEnergyArc(arc, shellAlpha));
+      material.backPools.forEach((pool) => {
+        const p = smoothstep(pool.delay, pool.delay + pool.duration, t); if (p <= 0) return;
+        const alpha = shellAlpha * pool.opacity; const x = cx + halfW * pool.u; const y = cy + halfH * pool.v; const r = pool.radius * (0.7 + 0.3 * Math.sin(t * 8 + pool.phase));
+        ctx.save(); ctx.globalCompositeOperation = 'screen';
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * 4); g.addColorStop(0, rgba(electricHot, alpha * 0.45)); g.addColorStop(0.2, rgba(electricRgb, alpha * 0.34)); g.addColorStop(1, rgba(electricRgb, 0));
+        ctx.beginPath(); ctx.arc(x, y, r * 4, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill(); ctx.restore();
+      });
+      material.splatter.filter((drop) => drop.behind).forEach((drop) => drawDroplet(drop, true));
+      return;
     }
 
-    // Small incandescent hot nodes keep the molten streams from reading like
-    // uniform liquid. They flare, cool, and move slightly with their streams.
-    material.heatNodes?.forEach((node) => {
-      const nodeProgress = smoothstep(node.delay, node.delay + node.duration, t);
-      if (nodeProgress <= 0) return;
-
-      const stream = node.stream === 'secondary'
-        ? material.secondaryStreams[node.streamIndex]
-        : material.streams[node.streamIndex];
-      if (!stream) return;
-
-      const point = pointOnStream(stream, node.position);
-      const pulse = 0.72 + 0.28 * Math.sin(t * node.rate + node.phase);
-      const alpha = nodeProgress * finalFade * (1 - cooling * 0.6) * pulse;
-      const radius = node.radius * (0.92 + 0.15 * Math.sin(t * 17 + node.phase));
-
-      if (alpha <= 0) return;
-
-      const glow = ctx.createRadialGradient(
-        point.x,
-        point.y,
-        0,
-        point.x,
-        point.y,
-        radius * 3.6
-      );
-      glow.addColorStop(0, rgba(hotColor, alpha * 0.72));
-      glow.addColorStop(0.28, rgba(materialColor, alpha * 0.74));
-      glow.addColorStop(0.7, rgba(materialColor, alpha * 0.1));
-      glow.addColorStop(1, rgba(materialColor, 0));
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, radius * 3.6, 0, Math.PI * 2);
-      ctx.fillStyle = glow;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = rgba(hotColor, alpha * 0.62);
-      ctx.fill();
-    });
-
-    // Discrete hot pockets sit near the lower rim rather than forming a ring.
-    // During burnout they flicker like cooling droplets of molten material.
-    material.hotspots.forEach((spot) => {
-      const glowStart = spot.delay;
-      const local = clamp01((t - glowStart) / (1 - glowStart));
-      if (local <= 0) return;
-
-      const x = cx + spot.u * halfW;
-      const y = bottomY - spot.lift;
-      const radius = spot.radius * (0.9 + Math.sin(t * 22 + spot.phase) * 0.1);
-      const alpha = finalFade * (0.45 + (1 - cooling) * 0.42);
-
-      if (alpha <= 0) return;
-
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, radius * 3.6);
-      glow.addColorStop(0, rgba(hotColor, alpha * 0.92));
-      glow.addColorStop(0.26, rgba(materialColor, alpha * 0.8));
-      glow.addColorStop(0.62, rgba(materialColor, alpha * 0.25));
-      glow.addColorStop(1, rgba(materialColor, 0));
-
-      ctx.beginPath();
-      ctx.arc(x, y, radius * 3.6, 0, Math.PI * 2);
-      ctx.fillStyle = glow;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = rgba(hotColor, alpha * 0.85);
-      ctx.fill();
-    });
-
-    // Molten material hanging from the bottom edge and side edges.
-    material.drips.forEach((drip) => {
-      const phase = clamp01((t - drip.delay) / drip.duration);
-      if (phase <= 0) return;
-
-      const travel = smoothstep(0, drip.detachAt, phase);
-      const direction = drip.edge === 'left' ? -1 : drip.edge === 'right' ? 1 : 0;
-      const startX = drip.edge === 'bottom'
-        ? cx + drip.u * halfW
-        : cx + direction * edgeX;
-      const startY = drip.edge === 'bottom'
-        ? bottomY - 1
-        : cy + drip.v * halfH;
-
-      const sway = Math.sin(phase * Math.PI * 1.25 + drip.phase) * drip.sway;
-      const attachedLength = drip.length * travel;
-      const endX = drip.edge === 'bottom'
-        ? startX + sway
-        : startX + direction * (Math.abs(sway) * 0.7 + drip.outward);
-      const endY = startY + attachedLength;
-
-      const points = [
-        { x: startX, y: startY },
-        { x: startX + (endX - startX) * 0.2, y: startY + attachedLength * 0.3 },
-        { x: startX + (endX - startX) * 0.64, y: startY + attachedLength * 0.68 },
-        { x: endX, y: endY }
-      ];
-
-      const attachedAlpha = bodyAlpha * (1 - smoothstep(drip.detachAt, 1, phase) * 0.82);
-      strokePath(points, drip.width * 3.1, rgba(materialColor, attachedAlpha * 0.3));
-      strokePath(points, drip.width * 1.55, rgba(materialColor, attachedAlpha * 0.93));
-      strokePath(
-        points,
-        Math.max(1, drip.width * 0.42),
-        rgba(hotColor, attachedAlpha * 0.9)
-      );
-
-      if (phase >= drip.detachAt) {
-        const detachT = clamp01((phase - drip.detachAt) / (1 - drip.detachAt));
-        const dropT = detachT * detachT;
-        const dropX = endX + Math.sin(detachT * Math.PI) * drip.dropSway;
-        const dropY = endY + drip.dropDistance * dropT;
-        const dropAlpha = finalFade * (1 - detachT) * 0.92;
-        const dropRadius = Math.max(1.2, drip.width * (1.25 - detachT * 0.42));
-
-        ctx.beginPath();
-        ctx.arc(dropX, dropY, dropRadius, 0, Math.PI * 2);
-        ctx.fillStyle = rgba(hotColor, dropAlpha * 0.92);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.arc(dropX, dropY - dropRadius * 0.2, dropRadius * 0.55, 0, Math.PI * 2);
-        ctx.fillStyle = rgba(materialColor, dropAlpha * 0.86);
-        ctx.fill();
-      }
-    });
-
-    // Surface electricity now appears as brief snap-arcs attached to the hot
-    // material instead of persistent blue zigzags. Each filament flashes, crawls
-    // only a short distance, then disappears.
-    material.electricArcs?.forEach((arc) => {
-      if (t < arc.delay) return;
-
-      const life = clamp01((t - arc.delay) / arc.duration);
-      if (life <= 0 || life >= 1) return;
-
-      const stream = arc.stream === 'secondary'
-        ? material.secondaryStreams[arc.streamIndex]
-        : material.streams[arc.streamIndex];
-      if (!stream) return;
-
-      const center = clamp01(arc.start + life * arc.travel);
-      const startProgress = clamp01(center - arc.span * 0.5);
-      const endProgress = clamp01(center + arc.span * 0.5);
-      if (endProgress <= startProgress) return;
-
+    material.rimFlows.forEach(drawRimFlow);
+    material.pools.forEach(drawHotPool);
+    material.energyArcs.filter((arc) => !arc.behind).forEach((arc) => drawEnergyArc(arc, 0.94 * energyFade));
+    material.surfaceFilaments.forEach((filament) => {
+      const p = smoothstep(filament.delay, filament.delay + filament.duration, t); if (p <= 0) return;
       const points = [];
-      const segments = 5;
-      for (let i = 0; i <= segments; i += 1) {
-        const p = startProgress + (endProgress - startProgress) * (i / segments);
-        const base = pointOnStream(stream, p);
-        const prev = pointOnStream(stream, Math.max(0, p - 0.02));
-        const next = pointOnStream(stream, Math.min(1, p + 0.02));
-        const tangent = Math.atan2(next.y - prev.y, next.x - prev.x);
-        const normalX = -Math.sin(tangent);
-        const normalY = Math.cos(tangent);
-        const envelope = Math.sin(life * Math.PI);
-        const jag = i === 0 || i === segments ? 0 : (
-          Math.sin(i * 13.1 + arc.phase + t * 58) * arc.jag * envelope
-        );
-        points.push({
-          x: base.x + normalX * jag,
-          y: base.y + normalY * jag
-        });
+      for (let i = 0; i <= 8; i += 1) {
+        const q = i / 8;
+        const x = cx + halfW * (filament.startU + (filament.endU - filament.startU) * q);
+        const y = cy + halfH * (filament.startV + (filament.endV - filament.startV) * q);
+        const jitter = Math.sin(q * 12 + filament.phase + t * 70) * filament.jag * Math.sin(Math.PI * q);
+        points.push({ x: x + filament.nx * jitter, y: y + filament.ny * jitter });
       }
-
-      const flicker = 0.62 + 0.38 * Math.sin(t * 76 + arc.phase);
-      const arcAlpha = finalFade * flicker * Math.sin(life * Math.PI);
-
-      strokePath(points, arc.width * 3.6, rgba(electricColor, arcAlpha * 0.24));
-      strokePath(points, arc.width * 1.45, rgba(electricColor, arcAlpha * 0.9));
-      strokePath(points, Math.max(0.75, arc.width * 0.38), rgba(electricCore, arcAlpha));
+      const a = energyFade * filament.opacity;
+      strokeSmooth(points, filament.width * 2.8, rgba(electricRgb, a * 0.22), 'screen', 5);
+      strokeSmooth(points, filament.width, rgba(electricRgb, a * 0.82), 'screen', 2);
+      strokeSmooth(points, Math.max(0.75, filament.width * 0.24), rgba(electricHot, a), 'screen', 1);
     });
+    material.splatter.filter((drop) => !drop.behind).forEach((drop) => drawDroplet(drop, true));
+    material.drips.forEach((drop) => drawDroplet(drop, false));
 
-    // Hot fragments peel away from the runoff with fast directional motion.
-    material.sparks.forEach((spark) => {
-      const phase = clamp01((t - spark.delay) / spark.duration);
-      if (phase <= 0 || phase >= 1) return;
-
-      const gravity = spark.gravity * phase * phase;
-      const drift = Math.sin(phase * Math.PI * 1.8 + spark.phase) * spark.drift;
-      const x = spark.x + spark.vx * phase + drift;
-      const y = spark.y + spark.vy * phase + gravity;
-      const alpha = finalFade * (1 - phase) * spark.brightness;
-
-      if (alpha <= 0) return;
-
-      const tailX = x - spark.vx * 0.05;
-      const tailY = y - (spark.vy + spark.gravity * phase * 0.3) * 0.05;
-
-      ctx.beginPath();
-      ctx.moveTo(tailX, tailY);
-      ctx.lineTo(x, y);
-      ctx.lineWidth = spark.size;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = rgba(hotColor, alpha);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(x, y, spark.size * 0.65, 0, Math.PI * 2);
-      ctx.fillStyle = rgba(materialColor, alpha * 0.82);
-      ctx.fill();
-    });
-
-    // Longer-lived embers survive into the smolder phase. Their upward drift
-    // keeps the effect feeling hot and alive instead of simply liquid.
-    material.embers.forEach((ember) => {
-      const phase = clamp01((t - ember.delay) / ember.duration);
-      if (phase <= 0 || phase >= 1) return;
-
-      const rise = ember.vy * phase;
-      const gravity = ember.gravity * phase * phase;
-      const sway = Math.sin(phase * Math.PI * 2 + ember.phase) * ember.sway;
-      const x = ember.x + ember.vx * phase + sway;
-      const y = ember.y - rise + gravity;
-      const alpha = (1 - phase) * finalFade * ember.brightness;
-
-      if (alpha <= 0) return;
-
-      ctx.beginPath();
-      ctx.arc(x, y, ember.size * (1 - phase * 0.45), 0, Math.PI * 2);
-      ctx.fillStyle = rgba(hotColor, alpha);
-      ctx.fill();
-    });
   };
 
   const renderCanvas = (timestamp) => {
@@ -942,16 +684,11 @@ export default function LuckyCardReveal() {
            const dissipateDuration = FINAL_HIT_DISSIPATE - F_AFTERGLOW_START;
            if (afterglowTime < dissipateDuration) {
              const t = clamp01(afterglowTime / dissipateDuration);
-             const effectCtx = fgCtx || bgCtx;
-             if (effectCtx) {
-               drawMoltenBurnout(
-                 effectCtx,
-                 cardMetricsRef.current,
-                 hitColor,
-                 tier,
-                 t,
-                 particlesRef.current
-               );
+             if (bgCtx) {
+               drawMoltenBurnout(bgCtx, cardMetricsRef.current, hitColor, tier, t, particlesRef.current, 'behind');
+             }
+             if (fgCtx) {
+               drawMoltenBurnout(fgCtx, cardMetricsRef.current, hitColor, tier, t, particlesRef.current, 'front');
              }
            }
 
@@ -1021,151 +758,53 @@ export default function LuckyCardReveal() {
 
     const { cx, cy, w: cardW, h: cardH } = cardMetricsRef.current;
     particlesRef.current = {
-      streams: Array.from({ length: 4 }, (_, index) => {
-        const startUs = [-0.62, -0.2, 0.24, 0.63];
-        const endUs = [-0.5, -0.06, 0.14, 0.54];
-        return {
-          startU: startUs[index] + (Math.random() - 0.5) * 0.08,
-          endU: endUs[index] + (Math.random() - 0.5) * 0.1,
-          startV: -1.01,
-          endV: 1.08 + Math.random() * 0.04,
-          sway: 5 + Math.random() * 9,
-          microSway: 2 + Math.random() * 4,
-          cycles: 1.15 + Math.random() * 0.8,
-          phase: Math.random() * Math.PI * 2,
-          width: 5.2 + Math.random() * 3.4,
-          delay: 0.015 + Math.random() * 0.08,
-          duration: 0.34 + Math.random() * 0.12,
-        };
-      }),
-      secondaryStreams: Array.from({ length: 6 }, (_, index) => {
-        const startUs = [-0.76, -0.5, -0.27, 0.03, 0.36, 0.72];
-        return {
-          startU: startUs[index] + (Math.random() - 0.5) * 0.1,
-          endU: startUs[index] + (Math.random() - 0.5) * 0.18,
-          startV: -1.0 + Math.random() * 0.03,
-          endV: 0.82 + Math.random() * 0.28,
-          sway: 3 + Math.random() * 7,
-          microSway: 1.5 + Math.random() * 3,
-          cycles: 1.3 + Math.random() * 1.0,
-          phase: Math.random() * Math.PI * 2,
-          width: 2.2 + Math.random() * 2.2,
-          delay: 0.08 + Math.random() * 0.11,
-          duration: 0.34 + Math.random() * 0.16,
-        };
-      }),
-      hotspots: Array.from({ length: 6 }, (_, index) => ({
-        u: -0.78 + index * 0.3 + (Math.random() - 0.5) * 0.09,
-        lift: 2 + Math.random() * 8,
-        radius: 6 + Math.random() * 7,
-        delay: 0.16 + Math.random() * 0.2,
-        phase: Math.random() * Math.PI * 2,
-      })),
-      drips: [
-        ...Array.from({ length: 8 }, () => ({
-          edge: 'bottom',
-          u: -0.82 + Math.random() * 1.64,
-          length: 34 + Math.random() * 62,
-          width: 2.7 + Math.random() * 3.7,
-          sway: 3 + Math.random() * 9,
-          outward: 0,
-          delay: 0.37 + Math.random() * 0.12,
-          duration: 0.24 + Math.random() * 0.1,
-          detachAt: 0.58 + Math.random() * 0.18,
-          dropDistance: 22 + Math.random() * 46,
-          dropSway: (Math.random() - 0.5) * 20,
-          phase: Math.random() * Math.PI * 2,
-        })),
-        ...Array.from({ length: 4 }, (_, index) => ({
-          edge: index % 2 === 0 ? 'left' : 'right',
-          v: 0.18 + Math.random() * 0.48,
-          length: 28 + Math.random() * 44,
-          width: 2.2 + Math.random() * 2.8,
-          sway: 3 + Math.random() * 7,
-          outward: 4 + Math.random() * 10,
-          delay: 0.27 + Math.random() * 0.16,
-          duration: 0.22 + Math.random() * 0.1,
-          detachAt: 0.64 + Math.random() * 0.16,
-          dropDistance: 18 + Math.random() * 30,
-          dropSway: (Math.random() - 0.5) * 18,
-          phase: Math.random() * Math.PI * 2,
-        })),
+      seed: Math.random() * Math.PI * 2,
+      rimFlows: [
+        { edge: 'top', start: -0.84, end: 0.64, spread: 0.035, wobble: 2.8, width: 7.2, opacity: 0.94, delay: 0.015, duration: 0.28, phase: 0.7 },
+        { edge: 'top', start: -0.56, end: 0.42, spread: 0.026, wobble: 2.2, width: 4.1, opacity: 0.72, delay: 0.08, duration: 0.33, phase: 2.1 },
+        { edge: 'right', start: -0.76, end: 0.82, spread: 0.03, wobble: 3.4, width: 6.3, opacity: 0.9, delay: 0.05, duration: 0.3, phase: 1.6 },
+        { edge: 'right', start: -0.14, end: 0.9, spread: 0.018, wobble: 2.3, width: 3.8, opacity: 0.68, delay: 0.12, duration: 0.3, phase: 3.2 },
+        { edge: 'bottom', start: -0.86, end: 0.88, spread: 0.045, wobble: 3.8, width: 8.8, opacity: 0.98, delay: 0.1, duration: 0.32, phase: 2.8 },
+        { edge: 'bottom', start: -0.62, end: 0.44, spread: 0.026, wobble: 3.2, width: 4.8, opacity: 0.78, delay: 0.18, duration: 0.32, phase: 4.1 },
+        { edge: 'left', start: -0.8, end: 0.76, spread: 0.032, wobble: 3.1, width: 6.5, opacity: 0.9, delay: 0.07, duration: 0.3, phase: 5.0 },
+        { edge: 'left', start: -0.24, end: 0.58, spread: 0.018, wobble: 2.1, width: 3.8, opacity: 0.66, delay: 0.16, duration: 0.3, phase: 0.2 }
       ],
-      chargeArcs: [
-        {
-          startU: -0.56,
-          startV: -0.7,
-          endU: 0.48,
-          endV: 0.58,
-          angle: 0.86,
-          jag: 5 + Math.random() * 2,
-          phase: Math.random() * Math.PI * 2,
-        },
-        {
-          startU: 0.58,
-          startV: -0.55,
-          endU: -0.42,
-          endV: 0.64,
-          angle: -2.38,
-          jag: 4 + Math.random() * 2,
-          phase: Math.random() * Math.PI * 2,
-        },
+      pools: [
+        { u: -0.56, v: -0.74, rx: 18, ry: 11, angle: -0.3, opacity: 0.78, delay: 0.06, duration: 0.24, phase: 0.1 },
+        { u: 0.54, v: -0.48, rx: 16, ry: 10, angle: 0.28, opacity: 0.74, delay: 0.12, duration: 0.24, phase: 2.2 },
+        { u: -0.7, v: 0.34, rx: 14, ry: 9, angle: -0.55, opacity: 0.72, delay: 0.18, duration: 0.28, phase: 3.4 },
+        { u: 0.68, v: 0.48, rx: 20, ry: 12, angle: 0.42, opacity: 0.8, delay: 0.16, duration: 0.26, phase: 4.6 },
+        { u: -0.18, v: 0.78, rx: 23, ry: 13, angle: -0.08, opacity: 0.88, delay: 0.2, duration: 0.24, phase: 1.5 }
       ],
-      heatNodes: Array.from({ length: 7 }, (_, index) => ({
-        stream: index % 4 === 0 ? 'secondary' : 'primary',
-        streamIndex: index % 4 === 0 ? index % 6 : index % 4,
-        position: 0.08 + Math.random() * 0.82,
-        delay: 0.08 + Math.random() * 0.28,
-        duration: 0.26 + Math.random() * 0.24,
-        radius: 3.2 + Math.random() * 3.6,
-        rate: 18 + Math.random() * 12,
-        phase: Math.random() * Math.PI * 2,
+      backPools: Array.from({ length: 7 }, (_, index) => ({
+        u: -0.86 + Math.random() * 1.72, v: -0.92 + Math.random() * 1.84, radius: 12 + Math.random() * 18,
+        opacity: 0.55 + Math.random() * 0.28, delay: 0.02 + Math.random() * 0.16, duration: 0.3 + Math.random() * 0.25, phase: index * 1.7 + Math.random() * 0.8
       })),
-      electricArcs: Array.from({ length: 6 }, (_, index) => ({
-        stream: index % 3 === 0 ? 'secondary' : 'primary',
-        streamIndex: index % 3 === 0 ? index % 6 : index % 4,
-        start: 0.1 + Math.random() * 0.66,
-        travel: 0.12 + Math.random() * 0.16,
-        span: 0.028 + Math.random() * 0.034,
-        delay: 0.28 + Math.random() * 0.58,
-        duration: 0.16 + Math.random() * 0.17,
-        width: 0.8 + Math.random() * 0.72,
-        jag: 2 + Math.random() * 2.5,
-        phase: Math.random() * Math.PI * 2,
-      })),
-      sparks: Array.from({ length: 14 }, () => {
-        const fromMaterial = Math.random() > 0.25;
-        return {
-          x: fromMaterial
-            ? cx + (-0.4 + Math.random() * 0.8) * cardW * 0.5
-            : cx + (Math.random() > 0.5 ? -1 : 1) * cardW * 0.46,
-          y: fromMaterial
-            ? cy + (-0.2 + Math.random() * 0.78) * cardH
-            : cy + (-0.05 + Math.random() * 0.78) * cardH,
-          vx: (Math.random() - 0.5) * 58,
-          vy: -32 + Math.random() * 20,
-          gravity: 20 + Math.random() * 30,
-          drift: 3 + Math.random() * 9,
-          phase: Math.random() * Math.PI * 2,
-          delay: 0.12 + Math.random() * 1.15,
-          duration: 0.28 + Math.random() * 0.34,
-          size: 0.8 + Math.random() * 1.3,
-          brightness: 0.52 + Math.random() * 0.48,
-        };
+      energyArcs: Array.from({ length: 12 }, (_, index) => {
+        const starts = [[-1.16,-0.78],[-1.12,0.42],[-0.76,-1.1],[0.26,-1.12],[1.12,-0.52],[1.16,0.38],[0.74,1.11],[-0.22,1.12],[-1.12,-0.1],[1.08,0.06],[-0.38,-1.08],[0.38,1.08]];
+        const ends = [[0.12,0.88],[0.7,-0.22],[-0.12,0.34],[-0.68,0.18],[-0.18,0.78],[-0.72,-0.42],[0.1,-0.7],[-0.74,-0.18],[0.42,-0.82],[-0.44,0.7],[0.88,0.26],[-0.86,0.18]];
+        const [startU,startV] = starts[index]; const [endU,endV] = ends[index];
+        const dx = endU - startU; const dy = endV - startV; const len = Math.max(0.001, Math.hypot(dx,dy));
+        return { startU,startV,endU,endV,nx:-dy/len,ny:dx/len,jag:6+Math.random()*7,width:5.2+Math.random()*2.8,delay:0.015+Math.random()*0.38,duration:0.24+Math.random()*0.36,phase:Math.random()*Math.PI*2,behind:index%2===0||index===7 };
       }),
-      embers: Array.from({ length: 10 }, () => ({
-        x: cx + (-0.44 + Math.random() * 0.88) * cardW * 0.5,
-        y: cy + cardH * 0.12 + Math.random() * cardH * 0.5,
-        vx: (Math.random() - 0.5) * 38,
-        vy: 14 + Math.random() * 18,
-        gravity: -6 + Math.random() * 12,
-        sway: 4 + Math.random() * 12,
-        phase: Math.random() * Math.PI * 2,
-        delay: 0.28 + Math.random() * 1.15,
-        duration: 0.7 + Math.random() * 0.45,
-        size: 0.9 + Math.random() * 1.25,
-        brightness: 0.38 + Math.random() * 0.45,
-      })),
+      surfaceFilaments: Array.from({ length: 8 }, (_, index) => {
+        const starts = [-0.78,-0.56,-0.28,0.04,0.28,0.48,0.68,-0.06];
+        const startU = starts[index] + (Math.random()-0.5)*0.08; const endU = startU + (Math.random()-0.5)*0.26;
+        const startV = -0.84 + Math.random()*1.18; const endV = startV + 0.36 + Math.random()*0.74;
+        const dx=endU-startU; const dy=endV-startV; const len=Math.max(0.001,Math.hypot(dx,dy));
+        return { startU,startV,endU,endV,nx:-dy/len,ny:dx/len,jag:3+Math.random()*3,width:1.4+Math.random()*1.1,opacity:0.62+Math.random()*0.28,delay:0.1+Math.random()*0.36,duration:0.28+Math.random()*0.3,phase:Math.random()*Math.PI*2 };
+      }),
+      drips: Array.from({ length: 14 }, (_, index) => {
+        const edge = index < 7 ? 'bottom' : index % 2 === 0 ? 'left' : 'right'; let x; let y;
+        if (edge === 'bottom') { x = cx + (-0.84 + Math.random()*1.68) * (cardW / 2); y = cy + (cardH / 2) - 2; }
+        else if (edge === 'left') { x = cx - (cardW / 2) + 2; y = cy + (-0.2 + Math.random()*0.96) * (cardH / 2); }
+        else { x = cx + (cardW / 2) - 2; y = cy + (-0.2 + Math.random()*0.96) * (cardH / 2); }
+        return { x,y,vx:edge==='left' ? -18-Math.random()*26 : edge==='right' ? 18+Math.random()*26 : (Math.random()-0.5)*34,vy:edge==='bottom' ? 38+Math.random()*58 : 12+Math.random()*42,gravity:38+Math.random()*46,size:2.3+Math.random()*3.7,depth:Math.random(),brightness:0.55+Math.random()*0.42,delay:0.2+Math.random()*0.48,duration:0.28+Math.random()*0.34 };
+      }),
+      splatter: Array.from({ length: 36 }, (_, index) => {
+        const angle=Math.random()*Math.PI*2; const radius=cardW*(0.34+Math.random()*0.38); const startX=cx+Math.cos(angle)*radius; const startY=cy+Math.sin(angle)*radius*(cardH/cardW)*0.7; const outward=22+Math.random()*76;
+        return { x:startX,y:startY,vx:Math.cos(angle)*outward+(Math.random()-0.5)*22,vy:Math.sin(angle)*outward*0.86-6+Math.random()*16,gravity:20+Math.random()*42,size:1+Math.random()*2.9,depth:Math.random(),brightness:0.38+Math.random()*0.58,delay:0.08+Math.random()*0.82,duration:0.26+Math.random()*0.55,behind:index%3===0 };
+      })
     };
 
     // --- NEW FRAMER MOTION CHOREOGRAPHY ---
