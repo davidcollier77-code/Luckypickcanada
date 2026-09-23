@@ -428,7 +428,9 @@ export default function LuckyCardReveal() {
 
       // Broad incandescent bloom around the molten material.
       strokePath(points, width * 3.8, rgba(hitColor || materialColor, glowAlpha * strength));
+      ctx.globalCompositeOperation = 'source-over';
       strokePath(points, width * 2.55, rgba(deepColor, alpha * 0.68));
+      ctx.globalCompositeOperation = 'screen';
       strokePath(points, width * 1.95, rgba(materialColor, alpha * 0.96));
 
       // A near-white hot core gives the material depth without turning the
