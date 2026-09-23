@@ -10,7 +10,7 @@
 - Preserved the top-to-bottom molten streams, lower-rim pools, side/bottom runoff, droplets, smolder-out, tier colors, upright card, and foreground-only renderer.
 - Standard, Premium, and Flagship hit counts remain 3, 4, and 5 total hits respectively.
 - Card artwork, tier selection, collection persistence, countdown, sharing, navigation, audio, and the existing final flip behavior remain unchanged.
-- Verification status: implementation change committed; CI/re-review and final Memory Bank verification update remain pending. Runtime visual confirmation remains a manual device/browser check.
+- Review-remediation status: Cubic's two concrete P2 findings were validated; the deepColor compositing state is now explicitly restored around the dark layer, and heat-node alpha now respects nodeProgress. Final CI/re-review remains pending. Runtime visual confirmation remains a manual device/browser check.
 
 ## Recent Changes
 - Downloaded `NGC4216_crawford.jpg` via standard CLI (`curl`/python script).
