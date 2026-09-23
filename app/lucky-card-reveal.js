@@ -341,6 +341,12 @@ export default function LuckyCardReveal() {
         ? '255, 246, 205'
         : '255, 232, 199';
 
+    const deepColor = tier === 'premium'
+      ? '64, 74, 88'
+      : tier === 'flagship'
+        ? '106, 58, 10'
+        : '102, 42, 16';
+
     const electricColor = '62, 178, 255';
     const electricCore = '220, 248, 255';
 
@@ -422,7 +428,8 @@ export default function LuckyCardReveal() {
 
       // Broad incandescent bloom around the molten material.
       strokePath(points, width * 3.8, rgba(hitColor || materialColor, glowAlpha * strength));
-      strokePath(points, width * 2.15, rgba(materialColor, alpha * 0.92));
+      strokePath(points, width * 2.55, rgba(deepColor, alpha * 0.68));
+      strokePath(points, width * 1.95, rgba(materialColor, alpha * 0.96));
 
       // A near-white hot core gives the material depth without turning the
       // tier-specific molten color into a flat white stroke.
@@ -457,6 +464,105 @@ export default function LuckyCardReveal() {
 
     material.streams.forEach((stream) => drawMoltenStream(stream, 1));
     material.secondaryStreams.forEach((stream) => drawMoltenStream(stream, 0.72));
+
+    // A brief electrical ignition happens immediately after the flip. It is
+    // deliberately short, asymmetrical, and white-hot at the crossing point so
+    // the molten runoff reads as a consequence of an energy discharge.
+    const ignitionWindow = 0.42;
+    if (t < ignitionWindow && material.chargeArcs?.length) {
+      const chargeFadeIn = smoothstep(0, 0.025, t);
+      const chargeFadeOut = 1 - smoothstep(0.16, ignitionWindow, t);
+      const chargePulse = chargeFadeIn * chargeFadeOut;
+
+      material.chargeArcs.forEach((arc) => {
+        const points = [];
+        const segments = 9;
+        for (let i = 0; i <= segments; i += 1) {
+          const p = i / segments;
+          const baseX = cx + halfW * (
+            arc.startU + (arc.endU - arc.startU) * p
+          );
+          const baseY = cy + halfH * (
+            arc.startV + (arc.endV - arc.startV) * p
+          );
+          const jitter = i === 0 || i === segments
+            ? 0
+            : Math.sin(i * 8.7 + arc.phase + t * 54) * arc.jag;
+          const normalX = -Math.sin(arc.angle);
+          const normalY = Math.cos(arc.angle);
+          points.push({
+            x: baseX + normalX * jitter,
+            y: baseY + normalY * jitter
+          });
+        }
+
+        const arcAlpha = chargePulse * (0.72 + 0.28 * Math.sin(t * 95 + arc.phase));
+        strokePath(points, 7.5, rgba(electricColor, arcAlpha * 0.24));
+        strokePath(points, 2.6, rgba(electricColor, arcAlpha * 0.95));
+        strokePath(points, 1.0, rgba(electricCore, arcAlpha));
+      });
+
+      const flashX = cx;
+      const flashY = cy - cardH * 0.02;
+      const flashRadius = cardW * (0.12 + chargePulse * 0.12);
+      const flash = ctx.createRadialGradient(
+        flashX,
+        flashY,
+        0,
+        flashX,
+        flashY,
+        flashRadius
+      );
+      flash.addColorStop(0, rgba(hotColor, chargePulse * 0.98));
+      flash.addColorStop(0.2, rgba(electricCore, chargePulse * 0.72));
+      flash.addColorStop(0.55, rgba(electricColor, chargePulse * 0.24));
+      flash.addColorStop(1, rgba(electricColor, 0));
+      ctx.beginPath();
+      ctx.arc(flashX, flashY, flashRadius, 0, Math.PI * 2);
+      ctx.fillStyle = flash;
+      ctx.fill();
+    }
+
+    // Small incandescent hot nodes keep the molten streams from reading like
+    // uniform liquid. They flare, cool, and move slightly with their streams.
+    material.heatNodes?.forEach((node) => {
+      const nodeProgress = smoothstep(node.delay, node.delay + node.duration, t);
+      if (nodeProgress <= 0) return;
+
+      const stream = node.stream === 'secondary'
+        ? material.secondaryStreams[node.streamIndex]
+        : material.streams[node.streamIndex];
+      if (!stream) return;
+
+      const point = pointOnStream(stream, node.position);
+      const pulse = 0.72 + 0.28 * Math.sin(t * node.rate + node.phase);
+      const alpha = finalFade * (1 - cooling * 0.6) * pulse;
+      const radius = node.radius * (0.92 + 0.15 * Math.sin(t * 17 + node.phase));
+
+      if (alpha <= 0) return;
+
+      const glow = ctx.createRadialGradient(
+        point.x,
+        point.y,
+        0,
+        point.x,
+        point.y,
+        radius * 3.6
+      );
+      glow.addColorStop(0, rgba(hotColor, alpha * 0.72));
+      glow.addColorStop(0.28, rgba(materialColor, alpha * 0.74));
+      glow.addColorStop(0.7, rgba(materialColor, alpha * 0.1));
+      glow.addColorStop(1, rgba(materialColor, 0));
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, radius * 3.6, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = rgba(hotColor, alpha * 0.62);
+      ctx.fill();
+    });
 
     // Discrete hot pockets sit near the lower rim rather than forming a ring.
     // During burnout they flicker like cooling droplets of molten material.
@@ -546,9 +652,10 @@ export default function LuckyCardReveal() {
       }
     });
 
-    // Electricity crawls along the molten paths. It is intentionally blue on
-    // every tier so heat color and electrical color remain visually distinct.
-    material.electricArcs.forEach((arc) => {
+    // Surface electricity now appears as brief snap-arcs attached to the hot
+    // material instead of persistent blue zigzags. Each filament flashes, crawls
+    // only a short distance, then disappears.
+    material.electricArcs?.forEach((arc) => {
       if (t < arc.delay) return;
 
       const life = clamp01((t - arc.delay) / arc.duration);
@@ -557,7 +664,6 @@ export default function LuckyCardReveal() {
       const stream = arc.stream === 'secondary'
         ? material.secondaryStreams[arc.streamIndex]
         : material.streams[arc.streamIndex];
-
       if (!stream) return;
 
       const center = clamp01(arc.start + life * arc.travel);
@@ -566,17 +672,18 @@ export default function LuckyCardReveal() {
       if (endProgress <= startProgress) return;
 
       const points = [];
-      const segments = 7;
+      const segments = 5;
       for (let i = 0; i <= segments; i += 1) {
         const p = startProgress + (endProgress - startProgress) * (i / segments);
         const base = pointOnStream(stream, p);
-        const prev = pointOnStream(stream, Math.max(0, p - 0.015));
-        const next = pointOnStream(stream, Math.min(1, p + 0.015));
+        const prev = pointOnStream(stream, Math.max(0, p - 0.02));
+        const next = pointOnStream(stream, Math.min(1, p + 0.02));
         const tangent = Math.atan2(next.y - prev.y, next.x - prev.x);
         const normalX = -Math.sin(tangent);
         const normalY = Math.cos(tangent);
+        const envelope = Math.sin(life * Math.PI);
         const jag = i === 0 || i === segments ? 0 : (
-          Math.sin(i * 11.7 + arc.phase + t * 32) * arc.jag
+          Math.sin(i * 13.1 + arc.phase + t * 58) * arc.jag * envelope
         );
         points.push({
           x: base.x + normalX * jag,
@@ -584,12 +691,12 @@ export default function LuckyCardReveal() {
         });
       }
 
-      const flicker = 0.55 + 0.45 * Math.sin(t * 42 + arc.phase);
-      const arcAlpha = finalFade * flicker * (1 - smoothstep(0.8, 0.98, t));
+      const flicker = 0.62 + 0.38 * Math.sin(t * 76 + arc.phase);
+      const arcAlpha = finalFade * flicker * Math.sin(life * Math.PI);
 
-      strokePath(points, arc.width * 4.2, rgba(electricColor, arcAlpha * 0.3));
-      strokePath(points, arc.width * 1.8, rgba(electricColor, arcAlpha * 0.9));
-      strokePath(points, Math.max(1, arc.width * 0.44), rgba(electricCore, arcAlpha * 0.95));
+      strokePath(points, arc.width * 3.6, rgba(electricColor, arcAlpha * 0.24));
+      strokePath(points, arc.width * 1.45, rgba(electricColor, arcAlpha * 0.9));
+      strokePath(points, Math.max(0.75, arc.width * 0.38), rgba(electricCore, arcAlpha));
     });
 
     // Hot fragments peel away from the runoff with fast directional motion.
@@ -982,50 +1089,80 @@ export default function LuckyCardReveal() {
           phase: Math.random() * Math.PI * 2,
         })),
       ],
-      electricArcs: Array.from({ length: 8 }, (_, index) => ({
-        stream: index % 3 === 0 ? 'secondary' : 'primary',
-        streamIndex: index % 3 === 0 ? index % 6 : index % 4,
-        start: 0.06 + Math.random() * 0.52,
-        travel: 0.22 + Math.random() * 0.26,
-        span: 0.08 + Math.random() * 0.09,
-        delay: 0.04 + Math.random() * 0.26,
-        duration: 0.6 + Math.random() * 0.25,
-        width: 1.0 + Math.random() * 1.15,
-        jag: 4 + Math.random() * 5,
+      chargeArcs: [
+        {
+          startU: -0.56,
+          startV: -0.7,
+          endU: 0.48,
+          endV: 0.58,
+          angle: 0.86,
+          jag: 5 + Math.random() * 2,
+          phase: Math.random() * Math.PI * 2,
+        },
+        {
+          startU: 0.58,
+          startV: -0.55,
+          endU: -0.42,
+          endV: 0.64,
+          angle: -2.38,
+          jag: 4 + Math.random() * 2,
+          phase: Math.random() * Math.PI * 2,
+        },
+      ],
+      heatNodes: Array.from({ length: 7 }, (_, index) => ({
+        stream: index % 4 === 0 ? 'secondary' : 'primary',
+        streamIndex: index % 4 === 0 ? index % 6 : index % 4,
+        position: 0.08 + Math.random() * 0.82,
+        delay: 0.08 + Math.random() * 0.28,
+        duration: 0.26 + Math.random() * 0.24,
+        radius: 3.2 + Math.random() * 3.6,
+        rate: 18 + Math.random() * 12,
         phase: Math.random() * Math.PI * 2,
       })),
-      sparks: Array.from({ length: 26 }, () => {
-        const fromBottom = Math.random() > 0.36;
+      electricArcs: Array.from({ length: 6 }, (_, index) => ({
+        stream: index % 3 === 0 ? 'secondary' : 'primary',
+        streamIndex: index % 3 === 0 ? index % 6 : index % 4,
+        start: 0.1 + Math.random() * 0.66,
+        travel: 0.12 + Math.random() * 0.16,
+        span: 0.028 + Math.random() * 0.034,
+        delay: 0.28 + Math.random() * 0.58,
+        duration: 0.16 + Math.random() * 0.17,
+        width: 0.8 + Math.random() * 0.72,
+        jag: 2 + Math.random() * 2.5,
+        phase: Math.random() * Math.PI * 2,
+      })),
+      sparks: Array.from({ length: 14 }, () => {
+        const fromMaterial = Math.random() > 0.25;
         return {
-          x: fromBottom
-            ? cx + (-0.45 + Math.random() * 0.9) * cardW * 0.5
+          x: fromMaterial
+            ? cx + (-0.4 + Math.random() * 0.8) * cardW * 0.5
             : cx + (Math.random() > 0.5 ? -1 : 1) * cardW * 0.46,
-          y: fromBottom
-            ? cy + cardH * 0.5 - 4 - Math.random() * 16
-            : cy + (-0.18 + Math.random() * 0.8) * cardH,
-          vx: (Math.random() - 0.5) * 76,
-          vy: -16 + Math.random() * 48,
-          gravity: 24 + Math.random() * 44,
-          drift: 4 + Math.random() * 13,
+          y: fromMaterial
+            ? cy + (-0.2 + Math.random() * 0.78) * cardH
+            : cy + (-0.05 + Math.random() * 0.78) * cardH,
+          vx: (Math.random() - 0.5) * 58,
+          vy: -32 + Math.random() * 20,
+          gravity: 20 + Math.random() * 30,
+          drift: 3 + Math.random() * 9,
           phase: Math.random() * Math.PI * 2,
-          delay: 0.03 + Math.random() * 0.58,
-          duration: 0.42 + Math.random() * 0.48,
-          size: 0.9 + Math.random() * 1.7,
-          brightness: 0.55 + Math.random() * 0.45,
+          delay: 0.12 + Math.random() * 1.15,
+          duration: 0.28 + Math.random() * 0.34,
+          size: 0.8 + Math.random() * 1.3,
+          brightness: 0.52 + Math.random() * 0.48,
         };
       }),
-      embers: Array.from({ length: 18 }, () => ({
-        x: cx + (-0.48 + Math.random() * 0.96) * cardW * 0.5,
-        y: cy + cardH * 0.2 + Math.random() * cardH * 0.34,
-        vx: (Math.random() - 0.5) * 48,
-        vy: 8 + Math.random() * 22,
-        gravity: -4 + Math.random() * 18,
-        sway: 5 + Math.random() * 16,
+      embers: Array.from({ length: 10 }, () => ({
+        x: cx + (-0.44 + Math.random() * 0.88) * cardW * 0.5,
+        y: cy + cardH * 0.12 + Math.random() * cardH * 0.5,
+        vx: (Math.random() - 0.5) * 38,
+        vy: 14 + Math.random() * 18,
+        gravity: -6 + Math.random() * 12,
+        sway: 4 + Math.random() * 12,
         phase: Math.random() * Math.PI * 2,
-        delay: 0.15 + Math.random() * 0.62,
-        duration: 0.66 + Math.random() * 0.38,
-        size: 1.0 + Math.random() * 1.45,
-        brightness: 0.42 + Math.random() * 0.5,
+        delay: 0.28 + Math.random() * 1.15,
+        duration: 0.7 + Math.random() * 0.45,
+        size: 0.9 + Math.random() * 1.25,
+        brightness: 0.38 + Math.random() * 0.45,
       })),
     };
 
