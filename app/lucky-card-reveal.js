@@ -688,18 +688,17 @@ export default function LuckyCardReveal() {
            const dissipateDuration = FINAL_HIT_DISSIPATE - F_AFTERGLOW_START;
            if (afterglowTime < dissipateDuration) {
              const t = clamp01(afterglowTime / dissipateDuration);
-             const availableCtxs = [fgCtx, bgCtx].filter(Boolean);
-
-             availableCtxs.forEach((ctx) => {
+             const effectCtx = fgCtx || bgCtx;
+             if (effectCtx) {
                drawMoltenBurnout(
-                 ctx,
+                 effectCtx,
                  cardMetricsRef.current,
                  hitColor,
                  tier,
                  t,
                  particlesRef.current
                );
-             });
+             }
            }
 
         }
