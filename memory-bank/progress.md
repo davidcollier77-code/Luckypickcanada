@@ -75,3 +75,12 @@
 - Cubic re-review reported all previously identified issues addressed; the historical timing documentation finding is resolved and the electrical filament duration finding is resolved.
 - Final source/diff inspection confirms only `app/lucky-card-reveal.js`, `memory-bank/activeContext.md`, and `memory-bank/progress.md` changed.
 - Runtime visual confirmation is still a manual device/browser check; CI and code review cannot substitute for observing the cinematic effect in the actual UI.
+
+## 2026-09-23 - Lucky Card Post-Flip Heat/Arc Polish
+- Refined `app/lucky-card-reveal.js` so the molten runoff carries more visible thermal depth instead of reading as uniform liquid.
+- Replaced the previous persistent blue electrical zigzags with a short white/cyan ignition discharge and sparse, short-lived surface snap-arcs attached to molten streams.
+- Added localized pulsing heat nodes and a darker molten outer body beneath the emissive material to create hotter/cooler variation.
+- Reduced spark and ember counts/lifetimes while keeping a small number of upward hot fragments for restrained crackle/popping visual language.
+- Preserved tier system, hit counts, artwork, audio, flip choreography, collection, countdown, sharing, navigation, reduced-motion behavior, and the existing 4.2s post-flip dissipation.
+- No new dependency was introduced.
+
