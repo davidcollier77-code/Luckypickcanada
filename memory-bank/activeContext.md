@@ -11,7 +11,7 @@
 - The card stays upright during the effect; no post-flip shake was added.
 - Standard, Premium, and Flagship hit counts remain 3, 4, and 5 total hits respectively.
 - Card artwork, tier selection, collection persistence, countdown, sharing, navigation, and the existing final flip behavior remain unchanged.
-- Current verification status: source/diff inspection completed; CI/build verification and independent visual re-review remain pending.
+- Verification status: source/diff inspection completed; GitHub Actions build/OpenNext/Wrangler validation passed on the final head; Cubic re-review reports all findings addressed. Runtime visual confirmation remains a manual device/browser check.
 
 ## Recent Changes
 - Downloaded `NGC4216_crawford.jpg` via standard CLI (`curl`/python script).
