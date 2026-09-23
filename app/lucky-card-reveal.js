@@ -443,7 +443,7 @@ export default function LuckyCardReveal() {
 
     const drawMoltenBurst = (burst) => {
       const p = smoothstep(burst.delay, burst.delay + burst.duration, t);
-      if (p <= 0) return;
+      if (p <= 0 || p >= 1) return;
       const hit = Math.sin(Math.PI * clamp01(p));
       const cool = 1 - smoothstep(0.55, 1, p);
       const x = cx + halfW * burst.u;
