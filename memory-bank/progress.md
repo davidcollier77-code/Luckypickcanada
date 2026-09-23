@@ -46,3 +46,12 @@
 - Expanded the rendering boundaries of the plasma to avoid hard rectangular clipping.
 - Refactored spark behavior to mix explosive directional arcs with drifting heat embers, varying in velocity, drift, and color.
 - Ensured strong foreground/background layering for sparks and energy relative to the card layout without impacting mobile performance.
+
+## 2026-09-23 - Lucky Card Final Dissipation Rebuild
+- Replaced the post-flip perimeter/fizz rendering with a localized molten-plasma runoff model in `app/lucky-card-reveal.js`.
+- Added stable, measured-card-bound material pools, side/bottom drips, detached droplets, gravity-driven sparks, and sparse cooling embers.
+- Removed expanding perimeter behavior from the post-flip phase so the effect reads as attached material draining off the physical card rather than a wave or ring.
+- Set the final reveal lifetime to 5.2s from final-hit start, providing a 3.4s post-flip dissipation phase.
+- Limited the final burnout renderer to the foreground canvas to avoid duplicate screen compositing and reduce unnecessary mobile rendering work.
+- Preserved Standard, Premium, and Flagship tiers and the existing card flip/reveal, collection, countdown, sharing, and navigation behavior.
+- Source and branch diff have been inspected; repository verification and independent visual re-review remain pending before completion is claimed.
