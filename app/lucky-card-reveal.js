@@ -740,6 +740,40 @@ export default function LuckyCardReveal() {
     isRevealedRef.current = false;
 
     setSelectedCard(card);
+    };
+
+    setIsRevealed(false);
+    setIsGenerating(true);
+    setImageError(false);
+
+    requestAnimationFrame(() => {
+      if (bgCanvasRef.current) {
+        bgCanvasRef.current.width = window.innerWidth;
+        bgCanvasRef.current.height = window.innerHeight;
+      }
+      if (fgCanvasRef.current) {
+        fgCanvasRef.current.width = window.innerWidth;
+        fgCanvasRef.current.height = window.innerHeight;
+      }
+
+      if (!shouldReduceMotion) {
+        rafRef.current = requestAnimationFrame(renderCanvas);
+      }
+    });
+    rafStartTimeRef.current = 0;
+
+    if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect();
+        if (rect && rect.width > 0 && rect.height > 0) {
+            cardMetricsRef.current = {
+                cx: rect.left + rect.width / 2,
+                cy: rect.top + rect.height / 2,
+                w: rect.width,
+                h: rect.height
+            };
+        }
+    }
+
     particlesRef.current = {
       pools: Array.from({ length: 5 }, () => ({
         u: -0.76 + Math.random() * 1.52,
@@ -775,7 +809,7 @@ export default function LuckyCardReveal() {
           x: cx + (fromBottom ? (-0.44 + Math.random() * 0.88) * cardW * 0.5 : side * cardW * 0.47),
           y: fromBottom
             ? cy + cardH * 0.5 - Math.random() * 12
-            : cy + (0.05 + Math.random() * 0.5) * cardH - cardH * 0.5,
+            : cy + (0.28 + Math.random() * 0.58) * cardH - cardH * 0.5,
           vx: (Math.random() - 0.5) * 28,
           vy: 8 + Math.random() * 42,
           gravity: 22 + Math.random() * 34,
@@ -800,38 +834,6 @@ export default function LuckyCardReveal() {
         size: 1.1 + Math.random() * 1.3,
       })),
     };
-
-    setIsRevealed(false);
-    setIsGenerating(true);
-    setImageError(false);
-
-    requestAnimationFrame(() => {
-      if (bgCanvasRef.current) {
-        bgCanvasRef.current.width = window.innerWidth;
-        bgCanvasRef.current.height = window.innerHeight;
-      }
-      if (fgCanvasRef.current) {
-        fgCanvasRef.current.width = window.innerWidth;
-        fgCanvasRef.current.height = window.innerHeight;
-      }
-
-      if (!shouldReduceMotion) {
-        rafRef.current = requestAnimationFrame(renderCanvas);
-      }
-    });
-    rafStartTimeRef.current = 0;
-
-    if (cardRef.current) {
-        const rect = cardRef.current.getBoundingClientRect();
-        if (rect && rect.width > 0 && rect.height > 0) {
-            cardMetricsRef.current = {
-                cx: rect.left + rect.width / 2,
-                cy: rect.top + rect.height / 2,
-                w: rect.width,
-                h: rect.height
-            };
-        }
-    }
 
     // --- NEW FRAMER MOTION CHOREOGRAPHY ---
     const sequence = [];
