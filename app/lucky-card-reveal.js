@@ -422,7 +422,7 @@ export default function LuckyCardReveal() {
       const width = stream.width * pulse;
 
       // Broad incandescent bloom around the molten material.
-      strokePath(points, width * 3.8, rgba(materialColor, glowAlpha * strength));
+      strokePath(points, width * 3.8, rgba(hitColor || materialColor, glowAlpha * strength));
       strokePath(points, width * 2.15, rgba(materialColor, alpha * 0.92));
 
       // A near-white hot core gives the material depth without turning the
