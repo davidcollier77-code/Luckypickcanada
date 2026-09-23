@@ -21,10 +21,10 @@
 
 ## Completed Work
 - Reduced regular hits by one across all tiers (Standard: 3, Premium: 4, Flagship: 5).
-- Replaced detached 2D afterglow ring with a physically attached, organic 3D plasma burnout effect on the card geometry in `app/lucky-card-reveal.js` (burnout lasts ~2.5s post-flip).
+- Historical: The prior 3D plasma burnout implementation was documented as lasting ~2.5s post-flip; superseded by the current 4.2s post-flip crawl.
 
 - Repaired `lucky-card-reveal.js` to dispatch `unlockedCardsUpdated` and persist to `unlockedCards`.
-- Changed `FINAL_HIT_DISSIPATE` to 4.3s.
+- Historical: The prior implementation set `FINAL_HIT_DISSIPATE` to 4.3s; superseded by the current 6.0s total final-hit lifetime (4.2s post-flip).
 - Replaced flat `arc` based plasma with 3D volumetric bezier streams.
 - Updated CSS text-shadow on `h1` in `themes/default/homepage.css` to fix readability.
 - Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
