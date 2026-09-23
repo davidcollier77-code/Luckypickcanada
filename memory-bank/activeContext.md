@@ -1,3 +1,6 @@
+# Active Context
+
+
 ## Current Work
 - 2026-09-23: Rebuilt the Lucky Card Reveal post-flip effect as a tier-colored molten-plasma crawl across the front face.
 - Post-flip dissipation is 4.2s after the 1.8s final flip/settle, for a 6.0s final-hit lifetime.
