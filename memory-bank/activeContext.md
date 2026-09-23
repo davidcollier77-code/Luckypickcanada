@@ -2,16 +2,15 @@
 
 
 ## Current Work
-- 2026-09-23: Rebuilt the Lucky Card Reveal post-flip effect as a tier-colored molten-plasma crawl across the front face.
-- Post-flip dissipation is 4.2s after the 1.8s final flip/settle, for a 6.0s final-hit lifetime.
-- Four primary and six secondary molten streams originate at the top edge, visibly travel down the upright card, and continue below the bottom edge as runoff.
-- The molten material uses Standard copper/bronze, Premium silver/pewter, or Flagship rich-gold tones; the electrical filaments remain blue across all tiers.
-- Added lower-rim pools, falling molten droplets, side runoff, blue electrical crawl, hot sparks, longer-lived embers, and a deliberate final smolder-out before the canvas becomes fully clean.
-- The post-flip renderer remains foreground-canvas-only and uses stable measured-card coordinates; no DOM particle system or new physics dependency was introduced.
-- The card stays upright during the effect; no post-flip shake was added.
+- 2026-09-23: Polished the merged Lucky Card Reveal post-flip molten-plasma effect after three-tier visual review.
+- Kept the 4.2s post-flip dissipation after the existing 1.8s flip/settle, for a 6.0s final-hit lifetime.
+- Reworked the electrical treatment from persistent blue zigzags into brief surface snap-arcs plus a short white/cyan charge discharge immediately after the flip.
+- Added localized heat nodes and a deeper molten outer layer so the material reads as heated/plasma-like rather than uniform liquid.
+- Reduced spark/ember counts and shortened lifetimes so the effect remains restrained and physically attached to the molten runoff.
+- Preserved the top-to-bottom molten streams, lower-rim pools, side/bottom runoff, droplets, smolder-out, tier colors, upright card, and foreground-only renderer.
 - Standard, Premium, and Flagship hit counts remain 3, 4, and 5 total hits respectively.
-- Card artwork, tier selection, collection persistence, countdown, sharing, navigation, and the existing final flip behavior remain unchanged.
-- Verification status: source/diff inspection completed; GitHub Actions build/OpenNext/Wrangler validation passed on the final head; Cubic re-review reports all findings addressed. Runtime visual confirmation remains a manual device/browser check.
+- Card artwork, tier selection, collection persistence, countdown, sharing, navigation, audio, and the existing final flip behavior remain unchanged.
+- Verification status: implementation change committed; CI/re-review and final Memory Bank verification update remain pending. Runtime visual confirmation remains a manual device/browser check.
 
 ## Recent Changes
 - Downloaded `NGC4216_crawford.jpg` via standard CLI (`curl`/python script).
@@ -30,7 +29,7 @@
 - Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
 
 ## Next Steps
-- Run repository verification and independent visual re-review of the three-tier post-flip dissipation before final approval.
+- Complete repository verification and independent visual re-review of the updated post-flip electrical/heat treatment before final approval.
 
 ## 2026-09-22 Updates
 - Fixed the wording on the Lucky Card reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection."
