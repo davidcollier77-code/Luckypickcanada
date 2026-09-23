@@ -3,31 +3,8 @@ import { playButtonClick } from '../../lib/audio';
 
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
-import { Cinzel, Space_Grotesk, Cormorant_Garamond } from 'next/font/google';
 import styles from './CrystalBall.module.css';
 import MapleLeafLogo from './MapleLeafLogo';
-
-const cinzel = Cinzel({
-  subsets: ['latin'],
-  weight: ['400', '600', '700'],
-  variable: '--font-cinzel',
-  display: 'swap',
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-space-grotesk',
-  display: 'swap',
-});
-
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
-  variable: '--font-cormorant',
-  display: 'swap',
-});
 
 type Reading = {
   id: string;
@@ -101,7 +78,7 @@ export default function CrystalBall({
           : 'Awaiting your question…';
 
   return (
-    <div className={`${styles.page} ${cinzel.variable} ${spaceGrotesk.variable} ${cormorant.variable}`}>
+    <div className={`${styles.page}`}>
       <div className={styles.aurora} aria-hidden="true">
         <div className={styles.stars} />
         <div className={`${styles.auroraBlob} ${styles.auroraBlob1}`} />
