@@ -41,35 +41,6 @@
 
 ### Critical Constraints
 
-#### ⚠️ ZZFX Top-Level Import Constraint
-
-**CRITICAL: ZZFX must NOT be imported at top-level in Next.js**
-
-ZZFX sound effects library breaks Next.js server-side rendering builds when imported at module top-level. This occurs because ZZFX attempts to access browser-only globals (window, AudioContext) during module initialization.
-
-**Why this matters:**
-- Top-level ZZFX imports cause SSR build failures
-- Next.js pre-renders components on the server during build
-- Server environment has no browser globals
-- Import at top = code executes during module load = server crashes
-
-**If ZZFX is needed in future:**
-```javascript
-// ❌ WRONG - Top-level import breaks SSR
-import { zzfx } from 'zzfx';
-
-// ✅ CORRECT - Dynamic import in client-only code
-useEffect(() => {
-  if (typeof window !== 'undefined') {
-    import('zzfx').then(({ zzfx }) => {
-      // Use zzfx here safely
-    });
-  }
-}, []);
-```
-
-**Current state:** ZZFX is NOT in the application. Howler.js is the audio library. This constraint is documented to prevent future reintroduction of the problematic pattern.
-
 ### Hydration Issues
 
 - **Canvas timestamp rendering**: Ensure server-rendered timestamp matches client hydration
