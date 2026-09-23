@@ -229,6 +229,7 @@ The list MUST reconcile exactly with the final Git diff.
 ## 8. VERIFICATION — REQUIRED
 
 Run every required verification check.
+Resolve in-scope failures; report unresolved failures.
 
 For EVERY verification command, report:
 COMMAND: <exact command>
