@@ -1,36 +1,6 @@
-Polish cinematic energy effects for Lucky Card Reveal
+Rebuild Lucky Card Reveal post-flip burnout sequence
 
-- Refined the continuous beam material in `app/lucky-card-reveal.js` with a luminous core and soft outer glow to appear more like plasma.
-- Replaced the water-ripple residual energy with a mystical plasma/electrical dissipation effect (fizz/afterglow) featuring erratic arcs, flickering thickness, and ejecting sparks.
-- Added a concentrated impact flare when the beam contacts the card.
-
-LIBRARY CONSULTATION REPORT
-TASK GROUP | LIBRARY | EXACT PATH | USED | USEFUL | WHAT WAS USEFUL | EVIDENCE | REASON
-polishing | none | none | NO | NO | N/A | No changes were required in areas demanding external libraries | N/A
-
-ROUTED JULES/GEMINI DOCUMENT REPORT
-DOCUMENT | EXACT PATH | USED | USEFUL | WHAT WAS USEFUL | EVIDENCE | REASON
-Jules/Gemini CLI | .docs/polishing/_google-gemini_gemini-cli.md | YES | YES | Workflow verification context | Verified via inspection | N/A
-Jules/Gemini API | .docs/polishing/_websites_ai_google_dev_gemini-api.md | YES | YES | General context | Verified via inspection | N/A
-Jules Docs | .docs/polishing/jules_google_docs.md | YES | YES | Agent tool constraints | Verified via inspection | N/A
-
-REPOSITORY COMPONENT REPORT
-COMPONENT | EXACT PATH | USED | CHANGED | VERIFIED | USEFUL | WHAT WAS USEFUL | EVIDENCE | REASON
-Lucky Card Reveal | app/lucky-card-reveal.js | YES | YES | YES | YES | The component logic for energy effects | Code changes and test runs | N/A
-Jules Verification Script | ./jules-verify.sh | YES | NO | YES | YES | Ran script for pre-commit verification | Terminal output | N/A
-
-VERIFICATION REPORT
-COMMAND | RESULT | EVIDENCE / OUTPUT SUMMARY
-`pnpm run build` | PASS | Build completed successfully in 7.8s with a total size of 311M, well under 495M.
-`pnpm test` | PASS | 11 tests passed in 1.6s.
-`./jules-verify.sh` | PASS | All 17 checks passed.
-
-FINAL RECONCILIATION
-Exact changed-file list:
-app/lucky-card-reveal.js
-memory-bank/activeContext.md
-memory-bank/progress.md
-
-USEFUL RESULT: YES
-
-FINAL GOVERNANCE AUDIT: Double-check completed.
+- Aligned 3-stage visual burnout timing with storyboard target.
+- Adjusted tier metallic colors (Standard: Bronze/Gold, Premium: Pewter/Silver, Flagship: Rich Gold).
+- Removed persistent tier-glow from card front for completely clean final state without halos.
+- Parameterized spark coloration based on tier.
