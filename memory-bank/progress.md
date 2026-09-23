@@ -84,3 +84,12 @@
 - Preserved tier system, hit counts, artwork, audio, flip choreography, collection, countdown, sharing, navigation, reduced-motion behavior, and the existing 4.2s post-flip dissipation.
 - No new dependency was introduced.
 
+
+
+## 2026-09-23 - Lucky Card Plasma Heat/Arc Review Remediation
+- Validated and resolved two Cubic P2 findings in `app/lucky-card-reveal.js`.
+- The deep molten layer now renders with `source-over` before restoring the existing `screen` compositing for emissive layers.
+- Heat-node alpha now multiplies `nodeProgress`, so configured heat-node fade-in duration is actually respected.
+- Amazon Q performed the remediation under its Master Work Request and reported the changes as minimal and boundary-preserving.
+- Final CI and Cubic re-review of the resulting head remain pending.
+
