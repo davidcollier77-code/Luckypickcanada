@@ -796,9 +796,9 @@ export default function LuckyCardReveal() {
       }),
       drips: Array.from({ length: 14 }, (_, index) => {
         const edge = index < 7 ? 'bottom' : index % 2 === 0 ? 'left' : 'right'; let x; let y;
-        if (edge === 'bottom') { x = cx + (-0.84 + Math.random()*1.68)*halfW; y = cy + halfH - 2; }
-        else if (edge === 'left') { x = cx - halfW + 2; y = cy + (-0.2 + Math.random()*0.96)*halfH; }
-        else { x = cx + halfW - 2; y = cy + (-0.2 + Math.random()*0.96)*halfH; }
+        if (edge === 'bottom') { x = cx + (-0.84 + Math.random()*1.68) * (cardW / 2); y = cy + (cardH / 2) - 2; }
+        else if (edge === 'left') { x = cx - (cardW / 2) + 2; y = cy + (-0.2 + Math.random()*0.96) * (cardH / 2); }
+        else { x = cx + (cardW / 2) - 2; y = cy + (-0.2 + Math.random()*0.96) * (cardH / 2); }
         return { x,y,vx:edge==='left' ? -18-Math.random()*26 : edge==='right' ? 18+Math.random()*26 : (Math.random()-0.5)*34,vy:edge==='bottom' ? 38+Math.random()*58 : 12+Math.random()*42,gravity:38+Math.random()*46,size:2.3+Math.random()*3.7,depth:Math.random(),brightness:0.55+Math.random()*0.42,delay:0.2+Math.random()*0.48,duration:0.28+Math.random()*0.34 };
       }),
       splatter: Array.from({ length: 36 }, (_, index) => {
