@@ -538,7 +538,7 @@ export default function LuckyCardReveal() {
 
       const point = pointOnStream(stream, node.position);
       const pulse = 0.72 + 0.28 * Math.sin(t * node.rate + node.phase);
-      const alpha = finalFade * (1 - cooling * 0.6) * pulse;
+      const alpha = nodeProgress * finalFade * (1 - cooling * 0.6) * pulse;
       const radius = node.radius * (0.92 + 0.15 * Math.sin(t * 17 + node.phase));
 
       if (alpha <= 0) return;
