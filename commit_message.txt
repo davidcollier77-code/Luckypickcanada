@@ -1,0 +1,3 @@
+fix(audio): restrict Howler cleanup to component instances
+
+Replaced the global `Howler.stop()` in `app/lucky-card-reveal.js` with instance-specific `.unload()` calls to prevent global audio teardown when the reveal component unmounts. This respects the requested audio boundaries and cleanup rules.
