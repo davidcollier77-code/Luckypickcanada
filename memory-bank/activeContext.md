@@ -10,15 +10,16 @@
 - An upcoming task will authorize the implementation of the proposed fixes (DPR scaling, CSS filter optimization).
 
 
-## 2026-09-24 - Premium 3D Volumetric Energy Polish
-- Addressed Task #1: Improved the post-final-card-flip electrical-field effect to be a convincing 3D cinematic energy event across all tiers (Standard, Premium, Flagship).
-- Refined `drawEnergyArc` in `app/lucky-card-reveal.js` by replacing plain sine waves with complex procedural turbulence (`tNoise1` and `tNoise2`).
-- Introduced parallax drift (`parallaxX` and `parallaxY`) and Z-depth scaling based on the arc's `behind` flag.
-- Added procedural branching secondary tendrils to main energy arcs to emulate real plasma behavior.
-- Switched `surfaceFilaments` to utilize 3D Z-push outward projection combined with multi-layered noise.
-- Adjusted `drawMoltenBurst` to feature a 3D pop effect.
-- Upgraded the inner core rendering to a stark white/cyan structure with layered multi-pass screen blending for authentic illumination.
-- Converted full-screen `arc` gradient fills to tightly bounded `fillRect` calls, strictly enforcing high mobile framerates and meeting the 1080p target fidelity efficiently.
+## 2026-09-24 - Post-Flip 3D Electrical / Volumetric Cinematic Polish
+- Applied true 3D Z-axis projection mathematics to `app/lucky-card-reveal.js` without relying on DOM manipulation.
+- Refined `drawMoltenBurst` so edge explosions pop outwards (`zPop`) and adjusted `drawEnergyArc` so energy strands blow away from the card surface during dissipation (`zBlow`).
+- Introduced continuous 3D depth to `drawDroplet` splatters and pushed background pools deeper into the z-plane (`zPush`).
+- Choreographed Framer Motion with the physical `rotateX`/`rotateZ` tumble during the reveal throw followed by the existing post-flip motion.
+- Improved the post-final-card-flip electrical-field effect across Standard, Premium, and Flagship into a more convincing 3D cinematic energy event.
+- Replaced plain sine-wave arc motion with procedural turbulence (`tNoise1`, `tNoise2`), parallax drift (`parallaxX`, `parallaxY`), Z-depth scaling, and branching secondary tendrils.
+- Updated `surfaceFilaments` with layered noise and 3D outward projection.
+- Upgraded the inner electrical core with layered white/cyan screen-blended passes.
+- Replaced full-screen gradient fills with tightly bounded `fillRect` passes to preserve mobile performance while targeting maximum practical fidelity within 1080p.
 - Automated verification passed (`./jules-verify.sh` and `pnpm run build`); independent visual regression review remains pending.
 
 ## Completed Work
@@ -51,11 +52,3 @@
 - Protected scopes (artwork, audio, tiers, hit counts) were respected.
 - Build passed.
 
-## 2026-09-24 - Post-Flip 3D Projection Cinematic Polish
-- Applied true 3D Z-axis projection mathematics to `app/lucky-card-reveal.js` without relying on DOM manipulation.
-- Refined `drawMoltenBurst` so edge explosions pop outwards (`zPop`).
-- Adjusted `drawEnergyArc` so energy strands blow away from the card surface during dissipation (`zBlow`).
-- Introduced continuous 3D depth to `drawDroplet` splatters, adjusting scale and offset appropriately as they travel towards the camera.
-- Pushed background pools deeper into the z-plane (`zPush`).
-- Choreographed Framer Motion with a new physical tumble (`rotateX`, `rotateZ`) during the reveal throw, followed by a continuous slow float through the post-flip dissipation.
-- Respected the 495 MB cap and completed tests effectively.
