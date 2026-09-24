@@ -49,3 +49,10 @@
 - **2026-09-23**: Polished Lucky Card Reveal cinematic - enhanced hero settle, tension grab, throw brightness pulse
 - **2026-09-23**: Completed homepage performance investigation
 - **2026-09-24**: Implemented Gemini Code Agent / GitHub Actions integration
+
+
+### 2026-09-24 — Lucky Card Reveal Audio All-Tier Correction
+- Corrected the shared reveal tier schedule to Standard: 3, Premium: 5, Flagship: 7.
+- Reworked authored audio scheduling to use the same hit contact, final lock, flip, snap, and post-flip boundaries as the visual reveal.
+- Removed looped electrical_arc playback from the cinematic reveal and added explicit per-hit cleanup.
+- Strengthened lifecycle cleanup so stale audio timers/instances cannot bleed into a later reveal.
