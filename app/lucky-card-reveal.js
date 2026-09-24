@@ -471,7 +471,7 @@ export default function LuckyCardReveal() {
       const popScale = 1.0 + Math.sin(p * Math.PI) * 0.4;
 
       const rad = burst.radius * Math.sin(p * Math.PI) * popScale;
-      const a = moltenAlpha * (1 - p) * (0.8 + 0.2 * Math.sin(t * 50 + burst.seed));
+      const a = moltenAlpha * burst.opacity * (1 - p) * (0.8 + 0.2 * Math.sin(t * 50 + burst.phase));
       if (a <= 0.01) return;
 
       ctx.save();
@@ -488,7 +488,7 @@ export default function LuckyCardReveal() {
       ctx.fillRect(x - gRad, y - gRad, gRad * 2, gRad * 2);
       ctx.restore();
     };
-const drawDroplet = (drop, splatter = false) => {
+    const drawDroplet = (drop, splatter = false) => {
       const p = smoothstep(drop.delay, drop.delay + drop.duration, t);
       if (p <= 0) return;
       const vanish = 1 - smoothstep(0.8, 1, p);
@@ -535,9 +535,6 @@ const drawDroplet = (drop, splatter = false) => {
     }
 
     material.energyArcs.filter((arc) => !arc.behind).forEach((arc) => drawEnergyArc(arc, 0.96 * energyFade));
-    material.rimFlows.forEach(drawRimFlow);
-    material.bursts.forEach(drawMoltenBurst);
-    material.pools.forEach(drawHotPool);
 
     material.surfaceFilaments.forEach((filament) => {
       const p = smoothstep(filament.delay, filament.delay + filament.duration, t); if (p <= 0) return;
@@ -568,8 +565,10 @@ const drawDroplet = (drop, splatter = false) => {
       strokeSmooth(points, filament.width * 1.5, rgba(electricRgb, a * 0.7), 'screen', 3);
       strokeSmooth(points, Math.max(0.6, filament.width * 0.3), rgba('255,255,255', a * 0.9), 'screen', 1);
     });
-material.splatter.filter((drop) => !drop.behind).forEach((drop) => drawDroplet(drop, true));
-    material.drips.forEach(drawFinalDrip);
+    
+    material.bursts.forEach(drawMoltenBurst);
+    material.splatter.filter((drop) => !drop.behind).forEach((drop) => drawDroplet(drop, true));
+
 
   };
 
