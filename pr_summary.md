@@ -28,6 +28,7 @@ npm run build | PASS | Build completed successfully.
 
 FINAL RECONCILIATION
 app/lucky-card-reveal.js
+pr_summary.md
 memory-bank/activeContext.md
 memory-bank/progress.md
 
