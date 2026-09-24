@@ -38,6 +38,18 @@
 - Updated CSS text-shadow on `h1` in `themes/default/homepage.css` to fix readability.
 - Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
 
+
+## 2026-09-24 - Premium 3D Volumetric Energy Polish
+- Addressed Task #1: Improved the post-final-card-flip electrical-field effect to be a convincing 3D cinematic energy event across all tiers (Standard, Premium, Flagship).
+- Refined `drawEnergyArc` in `app/lucky-card-reveal.js` by replacing plain sine waves with complex procedural turbulence (`tNoise1` and `tNoise2`).
+- Introduced parallax drift (`parallaxX` and `parallaxY`) and Z-depth scaling based on the arc's `behind` flag.
+- Added procedural branching secondary tendrils to main energy arcs to emulate real plasma behavior.
+- Switched `surfaceFilaments` to utilize 3D Z-push outward projection combined with multi-layered noise.
+- Adjusted `drawMoltenBurst` to feature a 3D pop effect.
+- Upgraded the inner core rendering to a stark white/cyan structure with layered multi-pass screen blending for authentic illumination.
+- Converted full-screen `arc` gradient fills to tightly bounded `fillRect` calls, strictly enforcing high mobile framerates and meeting the 1080p target fidelity efficiently.
+- Passed local `./jules-verify.sh` and `pnpm run build` without regression.
+
 ## Next Steps
 - Complete repository verification and independent visual re-review of the updated post-flip electrical/heat treatment before final approval.
 

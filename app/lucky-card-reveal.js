@@ -370,193 +370,125 @@ export default function LuckyCardReveal() {
       ctx.restore();
     };
 
+
     const drawEnergyArc = (arc, strength) => {
       const rawProgress = (t - arc.delay) / Math.max(0.001, arc.duration);
       if (rawProgress <= 0 || rawProgress > 1.08) return;
       const progress = clamp01(rawProgress);
       const reveal = smoothstep(0, 0.84, progress);
-      const points = [];
-      const segs = Math.max(2, Math.ceil(12 * reveal));
-      for (let i = 0; i <= segs; i += 1) {
-        const q = reveal * (i / segs);
-        const baseU = arc.startU + (arc.endU - arc.startU) * q;
-        const baseV = arc.startV + (arc.endV - arc.startV) * q;
-        const envelope = Math.sin(Math.PI * q);
-        const curve = Math.sin(Math.PI * q) * arc.curve;
-        const noise = Math.sin(i * 2.91 + material.seed + t * 110 + arc.phase) * arc.jag * envelope;
 
-        // 3D Blow out effect: Arcs push outward (Z-axis expansion) as they dissipate
-        const zBlow = smoothstep(0.4, 1.0, progress) * (arc.behind ? -0.2 : 0.3) * envelope;
-        const projScale = Math.max(0.5, 1.0 + zBlow);
+      const segs = Math.max(4, Math.ceil(18 * reveal)); // More segments for smoother organic curves
 
-        points.push({
-          x: cx + (halfW * baseU + arc.curveN * curve + arc.nx * noise) * projScale,
-          y: cy + (halfH * baseV + arc.curveT * curve + arc.ny * noise) * projScale,
-        });
-      }
+      const generatePoints = (offsetX, offsetY, noiseMult, phaseOffset, zScaleMult) => {
+        const points = [];
+        for (let i = 0; i <= segs; i += 1) {
+          const q = reveal * (i / segs);
+          const baseU = arc.startU + (arc.endU - arc.startU) * q;
+          const baseV = arc.startV + (arc.endV - arc.startV) * q;
+          const envelope = Math.sin(Math.PI * q); // Tapers at ends
+          const curve = Math.sin(Math.PI * q) * arc.curve;
+
+          // Organic, turbulent noise rather than simple sine
+          const tNoise1 = Math.sin(i * 1.8 + material.seed + t * 80 + arc.phase + phaseOffset);
+          const tNoise2 = Math.cos(i * 3.4 - t * 120 + arc.phase * 1.5);
+          const noise = (tNoise1 * 0.7 + tNoise2 * 0.3) * arc.jag * envelope * noiseMult;
+
+          // 3D Blow out effect: Arcs push outward and slightly rotate
+          const zBlow = smoothstep(0.3, 1.0, progress) * (arc.behind ? -0.3 : 0.45) * envelope * zScaleMult;
+          const projScale = Math.max(0.4, 1.0 + zBlow);
+
+          // Add parallax drift based on z depth to really sell 3D
+          const parallaxX = (arc.behind ? -1 : 1) * zBlow * 15 * (1 - envelope);
+          const parallaxY = zBlow * 10;
+
+          points.push({
+            x: cx + (halfW * baseU + arc.curveN * curve + arc.nx * noise) * projScale + offsetX + parallaxX,
+            y: cy + (halfH * baseV + arc.curveT * curve + arc.ny * noise) * projScale + offsetY + parallaxY,
+            z: zBlow
+          });
+        }
+        return points;
+      };
+
+      const points = generatePoints(0, 0, 1.0, 0, 1.0);
 
       const fadeIn = smoothstep(0.02, 0.16, progress);
-      const fadeOut = 1 - smoothstep(0.68, 1, progress);
-      const a = strength * fadeIn * fadeOut * (0.78 + 0.22 * Math.sin(t * 150 + arc.phase));
-      const width = arc.width * (0.9 + 0.1 * Math.sin(t * 48 + arc.phase));
-      strokeSmooth(points, width * 3.2, rgba(electricRgb, a * 0.16), 'screen', width * 1.8);
-      strokeSmooth(points, width * 1.62, rgba(electricRgb, a * 0.82), 'screen', width * 0.9);
-      strokeSmooth(points, Math.max(1.05, width * 0.34), rgba(electricHot, a), 'screen', 2);
+      const fadeOut = 1 - smoothstep(0.64, 1, progress); // Faster fadeout for snap
+      const flicker = 0.85 + 0.15 * Math.sin(t * 180 + arc.phase * 3);
+      const a = strength * fadeIn * fadeOut * flicker;
+      const width = arc.width * (0.8 + 0.2 * Math.sin(t * 60 + arc.phase));
 
-      const headIndex = Math.min(points.length - 1, Math.floor(reveal * (points.length - 1)));
-      const head = points[headIndex];
-      ctx.save();
-      ctx.globalCompositeOperation = 'screen';
-      const flash = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, width * 5.5);
-      flash.addColorStop(0, rgba(electricHot, a * 0.92));
-      flash.addColorStop(0.2, rgba(electricRgb, a * 0.42));
-      flash.addColorStop(1, rgba(electricRgb, 0));
-      ctx.beginPath();
-      ctx.arc(head.x, head.y, width * 5.5, 0, Math.PI * 2);
-      ctx.fillStyle = flash;
-      ctx.fill();
-      ctx.restore();
-    };
+      if (a <= 0.01) return;
 
-    const drawRimFlow = (flow) => {
-      const p = smoothstep(flow.delay, flow.delay + flow.duration, t);
-      if (p <= 0) return;
-      const visibleProgress = clamp01(p);
-      const spread = flow.spread * smoothstep(0, 0.38, visibleProgress);
-      const wobble = Math.sin(t * 22 + flow.phase) * flow.wobble;
-      const segmentCount = Math.max(1, Math.ceil(10 * visibleProgress));
-      const points = [];
-      for (let i = 0; i <= segmentCount; i += 1) {
-        const q = visibleProgress * (i / segmentCount);
-        let u; let v;
-        if (flow.edge === 'top') { u = flow.start + (flow.end - flow.start) * q; v = -1 + spread * Math.sin(Math.PI * q) + wobble / cardH; }
-        else if (flow.edge === 'bottom') { u = flow.start + (flow.end - flow.start) * q; v = 1 - spread * Math.sin(Math.PI * q) + wobble / cardH; }
-        else if (flow.edge === 'left') { u = -1 + spread * Math.sin(Math.PI * q) + wobble / cardW; v = flow.start + (flow.end - flow.start) * q; }
-        else { u = 1 - spread * Math.sin(Math.PI * q) + wobble / cardW; v = flow.start + (flow.end - flow.start) * q; }
-        points.push(toPoint(u, v));
+      // Draw secondary tendrils branching off main arc for "plasma" look
+      if (width > 3 && reveal > 0.4) {
+        const tendrilPoints1 = generatePoints(arc.nx * 6, arc.ny * 6, 1.5, 2.0, 0.8);
+        const tendrilPoints2 = generatePoints(-arc.nx * 4, -arc.ny * 4, 1.8, 4.0, 1.1);
+        strokeSmooth(tendrilPoints1, width * 0.4, rgba(electricRgb, a * 0.5), 'screen', 2);
+        strokeSmooth(tendrilPoints2, width * 0.25, rgba(electricHot, a * 0.6), 'screen', 1);
       }
 
-      const fadeIn = smoothstep(0, 0.18, p);
-      const fadeOut = 1 - smoothstep(0.72, 1, p);
-      const width = flow.width * (0.9 + 0.1 * Math.sin(t * 34 + flow.phase));
-      const alpha = moltenAlpha * flow.opacity * fadeIn * fadeOut;
-      strokeSmooth(points, width * 3.4, rgba(tierRgb, alpha * 0.24), 'screen', 6);
-      strokeSmooth(points, width * 2.05, rgba(tierDeep, alpha * 0.72), 'source-over', 2);
-      strokeSmooth(points, width * 1.55, rgba(tierRgb, alpha), 'screen', 5);
-      strokeSmooth(points, Math.max(1.1, width * 0.36), rgba(tierHot, alpha * 0.9), 'screen', 2);
+      // Draw the main volumetric plasma arc
+      // Broad ambient glow
+      strokeSmooth(points, width * 4.2, rgba(electricRgb, a * 0.12), 'screen', width * 2.5);
+      // Outer shell
+      strokeSmooth(points, width * 2.2, rgba(electricRgb, a * 0.6), 'screen', width * 1.2);
+      // Mid hot core
+      strokeSmooth(points, width * 0.9, rgba(electricHot, a * 0.9), 'screen', width * 0.5);
+      // Intense white center line (very thin)
+      strokeSmooth(points, Math.max(0.8, width * 0.25), rgba('255,255,255', a), 'source-over', 0);
+
+      const headIndex = Math.min(points.length - 1, Math.floor(reveal * (points.length - 1)));
+      if (headIndex >= 0 && points[headIndex]) {
+        const head = points[headIndex];
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+
+        // Ensure gradient rect bounds are strictly defined to avoid full screen fill (Optimization rule)
+        const rad = width * 6.5;
+        const flash = ctx.createRadialGradient(head.x, head.y, 0, head.x, head.y, rad);
+        flash.addColorStop(0, rgba('255, 255, 255', a * 0.95));
+        flash.addColorStop(0.15, rgba(electricHot, a * 0.7));
+        flash.addColorStop(0.4, rgba(electricRgb, a * 0.25));
+        flash.addColorStop(1, rgba(electricRgb, 0));
+
+        ctx.fillStyle = flash;
+        ctx.fillRect(head.x - rad, head.y - rad, rad * 2, rad * 2);
+        ctx.restore();
+      }
     };
+
+
 
     const drawMoltenBurst = (burst) => {
       const p = smoothstep(burst.delay, burst.delay + burst.duration, t);
       if (p <= 0 || p >= 1) return;
-      const hit = Math.sin(Math.PI * clamp01(p));
-      const cool = 1 - smoothstep(0.55, 1, p);
 
-      // 3D Pop: Bursts bulge towards the camera at their peak
-      const zPop = hit * 0.15;
-      const projScale = 1.0 + zPop;
+      const x = cx + halfW * burst.u;
+      const y = cy + halfH * burst.v;
 
-      const x = cx + (halfW * burst.u) * projScale;
-      const y = cy + (halfH * burst.v) * projScale;
-      const r = burst.radius * (0.35 + hit * 0.95) * projScale;
-      const a = moltenAlpha * burst.opacity * (0.32 + hit * 0.68);
+      // 3D pop effect for bursts (coming outward)
+      const popScale = 1.0 + Math.sin(p * Math.PI) * 0.4;
 
-      ctx.save();
-      ctx.globalCompositeOperation = 'screen';
-      const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 3.4);
-      glow.addColorStop(0, rgba(tierHot, a * 0.95));
-      glow.addColorStop(0.2, rgba(tierRgb, a * 0.88));
-      glow.addColorStop(0.62, rgba(tierRgb, a * 0.24));
-      glow.addColorStop(1, rgba(tierRgb, 0));
-      ctx.beginPath();
-      ctx.arc(x, y, r * 3.4, 0, Math.PI * 2);
-      ctx.fillStyle = glow;
-      ctx.fill();
-
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.beginPath();
-      ctx.ellipse(x, y + r * 0.12, r * 1.05, r * 0.72, burst.angle, 0, Math.PI * 2);
-      ctx.fillStyle = rgba(tierDeep, a * (0.62 + cool * 0.24));
-      ctx.shadowBlur = 7;
-      ctx.shadowColor = rgba(tierRgb, a);
-      ctx.fill();
-
-      ctx.globalCompositeOperation = 'screen';
-      ctx.beginPath();
-      ctx.ellipse(x - r * 0.18, y - r * 0.2, r * 0.58, r * 0.34, burst.angle - 0.12, 0, Math.PI * 2);
-      ctx.fillStyle = rgba(tierHot, a * 0.82);
-      ctx.fill();
-
-      for (let i = 0; i < 4; i += 1) {
-        const angle = burst.phase + i * (Math.PI / 2);
-        const travel = r * (0.9 + i * 0.18);
-        const px = x + Math.cos(angle) * travel;
-        const py = y + Math.sin(angle) * travel * 0.8;
-        const size = Math.max(1.1, r * (0.15 + (i % 2) * 0.05));
-        ctx.beginPath();
-        ctx.arc(px, py, size, 0, Math.PI * 2);
-        ctx.fillStyle = rgba(tierHot, a * (0.62 - i * 0.07));
-        ctx.fill();
-      }
-      ctx.restore();
-    };
-
-    const drawFinalDrip = (drip) => {
-      const p = smoothstep(drip.delay, drip.delay + drip.duration, t);
-      if (p <= 0) return;
-      const grow = smoothstep(0, 0.42, p);
-      const fadeOut = 1 - smoothstep(0.8, 1, p);
-      const sway = Math.sin(p * Math.PI * 1.2 + drip.phase) * drip.sway;
-      const sourceX = cx + halfW * drip.u;
-      const sourceY = cy + halfH * drip.v;
-      const length = drip.length * grow;
-      const width = drip.width * (0.9 + 0.18 * Math.sin(t * 26 + drip.phase));
-      const a = moltenAlpha * drip.opacity * fadeOut;
-
-      const points = [
-        { x: sourceX, y: sourceY },
-        { x: sourceX + sway * 0.16, y: sourceY + length * 0.26 },
-        { x: sourceX + sway * 0.42, y: sourceY + length * 0.6 },
-        { x: sourceX + sway, y: sourceY + length },
-      ];
-
-      strokeSmooth(points, width * 2.8, rgba(tierRgb, a * 0.28), 'screen', 6);
-      strokeSmooth(points, width * 1.8, rgba(tierDeep, a * 0.78), 'source-over', 2);
-      strokeSmooth(points, width * 1.32, rgba(tierRgb, a), 'screen', 4);
-      strokeSmooth(points, Math.max(1.1, width * 0.34), rgba(tierHot, a * 0.92), 'screen', 2);
+      const rad = burst.radius * Math.sin(p * Math.PI) * popScale;
+      const a = moltenAlpha * (1 - p) * (0.8 + 0.2 * Math.sin(t * 50 + burst.seed));
+      if (a <= 0.01) return;
 
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
-      ctx.beginPath();
-      ctx.ellipse(sourceX + sway, sourceY + length + width * 0.42, width * 0.72, width * 1.14, 0, 0, Math.PI * 2);
-      ctx.fillStyle = rgba(tierHot, a * 0.84);
-      ctx.shadowBlur = 5;
-      ctx.shadowColor = rgba(tierRgb, a);
-      ctx.fill();
+
+      // Keep rect localized
+      const gRad = rad * 2.8;
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, gRad);
+      grad.addColorStop(0, rgba(tierHot, a * 0.95));
+      grad.addColorStop(0.2, rgba(tierRgb, a * 0.7));
+      grad.addColorStop(1, rgba(tierRgb, 0));
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(x - gRad, y - gRad, gRad * 2, gRad * 2);
       ctx.restore();
     };
-
-    const drawHotPool = (pool) => {
-      const p = smoothstep(pool.delay, pool.delay + pool.duration, t);
-      if (p <= 0) return;
-      const cool = 1 - smoothstep(0.55, 0.95, p);
-      const x = cx + halfW * (pool.u + Math.sin(t * 12 + pool.phase) * 0.01);
-      const y = cy + halfH * (pool.v + Math.cos(t * 10 + pool.phase) * 0.01);
-      const rx = pool.rx * (0.82 + p * 0.2);
-      const ry = pool.ry * (0.86 + p * 0.18);
-      const a = moltenAlpha * pool.opacity * (0.58 + cool * 0.42);
-      ctx.save(); ctx.translate(x, y); ctx.rotate(pool.angle);
-      ctx.globalCompositeOperation = 'screen';
-      const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(rx, ry) * 2.8);
-      glow.addColorStop(0, rgba(tierHot, a * 0.9)); glow.addColorStop(0.24, rgba(tierRgb, a * 0.9)); glow.addColorStop(0.72, rgba(tierRgb, a * 0.28)); glow.addColorStop(1, rgba(tierRgb, 0));
-      ctx.beginPath(); ctx.ellipse(0, 0, rx * 2.8, ry * 2.4, 0, 0, Math.PI * 2); ctx.fillStyle = glow; ctx.fill();
-      ctx.globalCompositeOperation = 'source-over'; ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); ctx.fillStyle = rgba(tierDeep, a * 0.78); ctx.fill();
-      ctx.globalCompositeOperation = 'screen'; ctx.beginPath(); ctx.ellipse(-rx * 0.12, -ry * 0.12, rx * 0.86, ry * 0.72, 0, 0, Math.PI * 2); ctx.fillStyle = rgba(tierRgb, a * 0.9); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(-rx * 0.18, -ry * 0.24, rx * 0.46, ry * 0.32, 0, 0, Math.PI * 2); ctx.fillStyle = rgba(tierHot, a * 0.62); ctx.fill();
-      ctx.restore();
-    };
-
-    const drawDroplet = (drop, splatter = false) => {
+const drawDroplet = (drop, splatter = false) => {
       const p = smoothstep(drop.delay, drop.delay + drop.duration, t);
       if (p <= 0) return;
       const vanish = 1 - smoothstep(0.8, 1, p);
@@ -606,22 +538,37 @@ export default function LuckyCardReveal() {
     material.rimFlows.forEach(drawRimFlow);
     material.bursts.forEach(drawMoltenBurst);
     material.pools.forEach(drawHotPool);
+
     material.surfaceFilaments.forEach((filament) => {
       const p = smoothstep(filament.delay, filament.delay + filament.duration, t); if (p <= 0) return;
       const points = [];
-      for (let i = 0; i <= 8; i += 1) {
-        const q = i / 8;
+      const segs = 14;
+      for (let i = 0; i <= segs; i += 1) {
+        const q = i / segs;
         const x = cx + halfW * (filament.startU + (filament.endU - filament.startU) * q);
         const y = cy + halfH * (filament.startV + (filament.endV - filament.startV) * q);
-        const jitter = Math.sin(q * 12 + filament.phase + t * 70) * filament.jag * Math.sin(Math.PI * q);
-        points.push({ x: x + filament.nx * jitter, y: y + filament.ny * jitter });
+
+        // Multi-layered noise for crackling surface electricity
+        const n1 = Math.sin(q * 16 + filament.phase + t * 90);
+        const n2 = Math.cos(q * 28 - t * 140 + filament.phase * 2.1);
+        const jitter = (n1 * 0.6 + n2 * 0.4) * filament.jag * Math.sin(Math.PI * q);
+
+        // Push outward from card surface based on jitter intensity
+        const zPush = Math.abs(jitter) * 0.15 + 1.0;
+
+        points.push({
+          x: cx + ((x - cx) + filament.nx * jitter) * zPush,
+          y: cy + ((y - cy) + filament.ny * jitter) * zPush
+        });
       }
-      const a = energyFade * filament.opacity;
-      strokeSmooth(points, filament.width * 2.8, rgba(electricRgb, a * 0.22), 'screen', 5);
-      strokeSmooth(points, filament.width, rgba(electricRgb, a * 0.82), 'screen', 2);
-      strokeSmooth(points, Math.max(0.75, filament.width * 0.24), rgba(electricHot, a), 'screen', 1);
+      const a = energyFade * filament.opacity * (0.8 + 0.2 * Math.sin(t * 200 + filament.phase));
+      if (a <= 0.01) return;
+
+      strokeSmooth(points, filament.width * 3.5, rgba(electricRgb, a * 0.15), 'screen', 6);
+      strokeSmooth(points, filament.width * 1.5, rgba(electricRgb, a * 0.7), 'screen', 3);
+      strokeSmooth(points, Math.max(0.6, filament.width * 0.3), rgba('255,255,255', a * 0.9), 'screen', 1);
     });
-    material.splatter.filter((drop) => !drop.behind).forEach((drop) => drawDroplet(drop, true));
+material.splatter.filter((drop) => !drop.behind).forEach((drop) => drawDroplet(drop, true));
     material.drips.forEach(drawFinalDrip);
 
   };
