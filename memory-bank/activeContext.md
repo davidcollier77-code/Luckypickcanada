@@ -17,14 +17,5 @@
 ## Completed Work
 - Completed implementation of the Gemini Code Agent GitHub Action workflow.
 - Completed audio logic synchronization into the `triggerCardDraw` lifecycle without disrupting visually rendered Framer Motion elements.
-- Maintained exact Tier hit logic (Standard: 3, Premium: 5, Flagship: 7) and updated the audio loop appropriately.
+- Maintained exact Tier hit logic (Standard: 3, Premium: 4, Flagship: 5) and updated the audio loop appropriately.
 - Pre-commit verification for the Gemini integration (YAML linting/build) passed.
-
-
-## 2026-09-24 — Lucky Card Reveal Audio All-Tier Correction
-- Re-audited the merged Lucky Card audio implementation against the recorded Standard-tier behavior and the documented three-tier reveal design.
-- Verified the reveal tier schedule in the current implementation was Standard: 3, Premium: 4, Flagship: 5; corrected the shared reveal schedule to Standard: 3, Premium: 5, Flagship: 7 so visual/audio timing can remain aligned across all tiers.
-- Reworked the reveal audio lifecycle so scheduled audio callbacks and active Howler instances are cleared by the same reveal cleanup path.
-- Changed electrical_arc from a looping texture to one-shot per-hit layering to eliminate repeat-loop cadence between impacts.
-- Kept the seven authored reveal assets as the only cinematic reveal sounds and retained playButtonClick() as the separate button cue.
-- Kept final lock-on, discharge, snap, and dissipation on the same visual boundaries as the final hit/flip/reveal sequence.
