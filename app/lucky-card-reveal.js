@@ -61,7 +61,7 @@ export default function LuckyCardReveal() {
     // Preload audio assets
     audioRefs.current.beam = new Howl({ src: ['/sounds/beam_energy.mp3'], loop: true, volume: 0.36, preload: true });
     audioRefs.current.impact = new Howl({ src: ['/sounds/beam_impact.mp3'], volume: 0.78, preload: true });
-    audioRefs.current.arc = new Howl({ src: ['/sounds/electrical_arc.mp3'], volume: 0.42, loop: true, preload: true });
+    audioRefs.current.arc = new Howl({ src: ['/sounds/electrical_arc.mp3'], volume: 0.42, loop: false, preload: true });
     audioRefs.current.lockOn = new Howl({ src: ['/sounds/final_lock_on.mp3'], volume: 0.78, preload: true });
     audioRefs.current.discharge = new Howl({ src: ['/sounds/final_discharge.mp3'], volume: 0.95, preload: true });
     audioRefs.current.snap = new Howl({ src: ['/sounds/reveal_snap.mp3'], volume: 0.46, preload: true });
@@ -121,6 +121,12 @@ export default function LuckyCardReveal() {
     if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
     activeTimeoutsRef.current.forEach(clearTimeout);
     activeTimeoutsRef.current = [];
+
+    audioTimers.current.forEach(clearTimeout);
+    audioTimers.current = [];
+    Object.values(audioRefs.current).forEach(sound => {
+      if (sound) sound.stop();
+    });
   }, []);
 
   useEffect(() => {
@@ -838,141 +844,163 @@ export default function LuckyCardReveal() {
     setImageError(false);
 
     // --- AUDIO TIMING ---
-    // The cinematic reveal uses only the authored reveal sound set. The
-    // button click is handled separately by playButtonClick() and is never
-    // allowed to become part of the cinematic bed.
+    // Audio is synchronized to the existing visual reveal timeline.
+    // Tier hit counts are read from the existing visual TIER_HITS schedule;
+    // this audio layer does not alter that schedule or any visual choreography.
     audioTimers.current.forEach(clearTimeout);
     audioTimers.current = [];
-    Howler.stop();
+
+    Object.values(audioRefs.current).forEach(sound => {
+      if (sound) sound.stop();
+    });
 
     const scheduleAudio = (callback, delay) => {
-      const timerId = setTimeout(callback, delay);
+      const timerId = setTimeout(callback, Math.max(0, delay));
       audioTimers.current.push(timerId);
       return timerId;
     };
 
     playButtonClick();
 
+    const tier = activeTierRef.current || 'standard';
+    const audioTotalHits = TIER_HITS[tier] || TIER_HITS.standard;
+    const regularImpactRate =
+      tier === 'flagship' ? 1.1 :
+      tier === 'premium' ? 1.05 : 1.0;
+
+    const P_WRAP = 0.4;
+    const P_SHAKE = 1.2;
+    const FINAL_LOCK_OFFSET = 0;
+    const SNAP_LEAD = 0.08;
+
+    // One continuous authored energy bed follows the full existing reveal.
+    let beamId = null;
     scheduleAudio(() => {
-      const totalHits = TIER_HITS[activeTierRef.current || 'standard'];
-      const regularImpactRate =
-        activeTierRef.current === 'flagship' ? 1.1 :
-        activeTierRef.current === 'premium' ? 1.05 : 1.0;
+      if (!audioRefs.current.beam) return;
+      beamId = audioRefs.current.beam.play();
+      audioRefs.current.beam.rate(1.0, beamId);
+      audioRefs.current.beam.fade(0, 0.36, 420, beamId);
+    }, 0);
 
-      // Continuous energy bed: low and restrained during the approach.
-      if (audioRefs.current.beam) {
-        audioRefs.current.beam.play();
-        audioRefs.current.beam.fade(0, 0.36, 420);
-        audioRefs.current.beam.rate(1.0);
-      }
+    // Every existing visual hit gets the authored electrical lead-in and impact.
+    // The final existing hit additionally becomes the audible lock-on moment.
+    for (let i = 0; i < audioTotalHits; i += 1) {
+      const hitStart = i * HIT_DURATION;
+      const contactTime = hitStart + P_WRAP;
+      const isFinalHit = i === audioTotalHits - 1;
 
-      // Each non-final hit is a woven micro-sequence:
-      // electrical contact lead-in -> impact -> short arc hold -> release.
-      for (let i = 0; i < totalHits - 1; i++) {
-        const hitStart = i * HIT_DURATION;
-        const P_WRAP = 0.4;
-        const P_SHAKE = 1.2;
-
-        scheduleAudio(() => {
-          if (audioRefs.current.arc) {
-            const arcId = audioRefs.current.arc.play();
-            audioRefs.current.arc.fade(0, 0.34, 85, arcId);
-            scheduleAudio(() => {
-              audioRefs.current.arc.fade(0.34, 0, 220, arcId);
-              scheduleAudio(() => audioRefs.current.arc.stop(arcId), 220);
-            }, Math.max(0, (P_SHAKE - P_WRAP) * 1000 - 220));
-          }
-        }, Math.max(0, (hitStart + P_WRAP - 0.06) * 1000));
-
-        scheduleAudio(() => {
-          if (audioRefs.current.impact) {
-            const impactId = audioRefs.current.impact.play();
-            audioRefs.current.impact.rate(regularImpactRate, impactId);
-          }
-        }, (hitStart + P_WRAP) * 1000);
-      }
-
-      const finalHitStartTime = (totalHits - 1) * HIT_DURATION;
-      const F_WRAP = 0.4;
-      const flipAbsTime = finalHitStartTime + FINAL_FLIP_TIME;
-
-      // The last approach becomes audibly denser and faster before contact.
       scheduleAudio(() => {
-        if (audioRefs.current.beam) {
-          audioRefs.current.beam.fade(0.36, 0.68, 320);
-          audioRefs.current.beam.rate(1.12);
-        }
-        if (audioRefs.current.arc) {
-          const finalArcId = audioRefs.current.arc.play();
-          audioRefs.current.arc.fade(0, 0.46, 120, finalArcId);
+        if (!audioRefs.current.arc) return;
 
-          // Keep the final electrical tension alive through the lock, then
-          // release it with the flip rather than creating another isolated ping.
+        const arcId = audioRefs.current.arc.play();
+        const peak = isFinalHit ? 0.46 : 0.34;
+        audioRefs.current.arc.rate(isFinalHit ? 1.04 : 1.0, arcId);
+        audioRefs.current.arc.fade(0, peak, 85, arcId);
+
+        if (isFinalHit) {
+          const flipAbsTime = hitStart + FINAL_FLIP_TIME;
+          const fadeDelay = Math.max(120, (flipAbsTime - contactTime) * 1000 - 180);
           scheduleAudio(() => {
-            audioRefs.current.arc.fade(0.46, 0, 180, finalArcId);
-            scheduleAudio(() => audioRefs.current.arc.stop(finalArcId), 180);
-          }, Math.max(0, (flipAbsTime - finalHitStartTime) * 1000 - 120));
+            if (audioRefs.current.arc) {
+              audioRefs.current.arc.fade(peak, 0, 180, arcId);
+            }
+          }, fadeDelay);
+          scheduleAudio(() => {
+            if (audioRefs.current.arc) {
+              audioRefs.current.arc.stop(arcId);
+            }
+          }, fadeDelay + 190);
+        } else {
+          scheduleAudio(() => {
+            if (audioRefs.current.arc) {
+              audioRefs.current.arc.fade(peak, 0, 220, arcId);
+            }
+          }, Math.max(0, (P_SHAKE - P_WRAP) * 1000 - 220));
+          scheduleAudio(() => {
+            if (audioRefs.current.arc) {
+              audioRefs.current.arc.stop(arcId);
+            }
+          }, Math.max(0, (P_SHAKE - P_WRAP) * 1000));
         }
-      }, finalHitStartTime * 1000);
+      }, Math.max(0, (contactTime - 0.06) * 1000));
 
-      // Final contact = physical strike.
       scheduleAudio(() => {
-        if (audioRefs.current.impact) {
-          const finalImpactId = audioRefs.current.impact.play();
-          audioRefs.current.impact.rate(regularImpactRate, finalImpactId);
-        }
+        if (!audioRefs.current.impact) return;
+        const impactId = audioRefs.current.impact.play();
+        audioRefs.current.impact.rate(
+          isFinalHit ? regularImpactRate + 0.02 : regularImpactRate,
+          impactId
+        );
+      }, contactTime * 1000);
 
-        // Distinct lock-on cue immediately follows the impact so the listener
-        // hears the beam take hold before the throw/flip begins.
+      if (isFinalHit) {
+        const finalHitStartTime = hitStart;
+        const flipAbsTime = finalHitStartTime + FINAL_FLIP_TIME;
+
+        // The final existing visual hit is the grab/lock point.
         scheduleAudio(() => {
-          if (audioRefs.current.lockOn) {
-            const lockId = audioRefs.current.lockOn.play();
-            audioRefs.current.lockOn.rate(
-              activeTierRef.current === 'flagship' ? 0.96 :
-              activeTierRef.current === 'premium' ? 1.0 : 1.04,
-              lockId
+          if (!audioRefs.current.lockOn) return;
+          const lockId = audioRefs.current.lockOn.play();
+          audioRefs.current.lockOn.rate(
+            tier === 'flagship' ? 0.96 :
+            tier === 'premium' ? 1.0 : 1.04,
+            lockId
+          );
+        }, (contactTime + FINAL_LOCK_OFFSET) * 1000);
+
+        // Intensify the same continuous beam during the final approach.
+        scheduleAudio(() => {
+          if (!audioRefs.current.beam || beamId === null) return;
+          audioRefs.current.beam.rate(1.12, beamId);
+          audioRefs.current.beam.fade(0.36, 0.68, 320, beamId);
+        }, finalHitStartTime * 1000);
+
+        // Flip/throw starts the authored discharge at the existing visual boundary.
+        scheduleAudio(() => {
+          if (audioRefs.current.discharge) {
+            const dischargeId = audioRefs.current.discharge.play();
+            audioRefs.current.discharge.rate(
+              tier === 'flagship' ? 0.98 :
+              tier === 'premium' ? 1.04 : 1.1,
+              dischargeId
             );
           }
-        }, 70);
-      }, (finalHitStartTime + F_WRAP) * 1000);
 
-      // Flip/throw starts the strongest discharge. Do not fire the reveal snap
-      // yet; reserve it for the moment the front face actually settles into view.
-      scheduleAudio(() => {
-        if (audioRefs.current.discharge) {
-          const dischargeId = audioRefs.current.discharge.play();
-          audioRefs.current.discharge.rate(
-            activeTierRef.current === 'flagship' ? 0.98 :
-            activeTierRef.current === 'premium' ? 1.04 : 1.1,
-            dischargeId
-          );
-        }
+          if (audioRefs.current.beam && beamId !== null) {
+            audioRefs.current.beam.fade(0.68, 0, 260, beamId);
+            scheduleAudio(() => {
+              if (audioRefs.current.beam) {
+                audioRefs.current.beam.stop(beamId);
+              }
+            }, 260);
+          }
+        }, flipAbsTime * 1000);
 
-        if (audioRefs.current.beam) {
-          audioRefs.current.beam.fade(0.68, 0, 260);
-          scheduleAudio(() => audioRefs.current.beam.stop(), 260);
-        }
-      }, flipAbsTime * 1000);
-
-      // Reveal snap is deliberately delayed until the 3D flip is essentially
-      // complete, eliminating the "computer ping" impression at flip start.
-      scheduleAudio(() => {
-        if (audioRefs.current.snap) {
+        // Snap is reserved for the existing flip-completion boundary.
+        scheduleAudio(() => {
+          if (!audioRefs.current.snap) return;
           const snapId = audioRefs.current.snap.play();
           audioRefs.current.snap.rate(0.96, snapId);
-        }
-      }, (flipAbsTime + FINAL_FLIP_DURATION - 0.08) * 1000);
+        }, (flipAbsTime + FINAL_FLIP_DURATION - SNAP_LEAD) * 1000);
 
-      // The post-flip electrical tail begins with the revealed face, then
-      // gently dissolves over the visual after-effect window.
-      scheduleAudio(() => {
-        if (audioRefs.current.dissipation) {
+        // Dissipation begins when the revealed face reaches its existing settled boundary.
+        scheduleAudio(() => {
+          if (!audioRefs.current.dissipation) return;
           const dissId = audioRefs.current.dissipation.play();
-          audioRefs.current.dissipation.fade(0.62, 0, 3000, dissId);
-          scheduleAudio(() => audioRefs.current.dissipation.stop(dissId), 3100);
-        }
-      }, (flipAbsTime + FINAL_FLIP_DURATION) * 1000);
-    }, 0);
+          audioRefs.current.dissipation.fade(
+            0.62,
+            0,
+            POST_FLIP_DISSIPATION * 1000,
+            dissId
+          );
+          scheduleAudio(() => {
+            if (audioRefs.current.dissipation) {
+              audioRefs.current.dissipation.stop(dissId);
+            }
+          }, POST_FLIP_DISSIPATION * 1000 + 100);
+        }, (flipAbsTime + FINAL_FLIP_DURATION) * 1000);
+      }
+    }
     // --- END AUDIO TIMING ---
 
 

@@ -32,6 +32,10 @@
 
 ## Historical Record
 
+### 2026-09-24 — Lucky Card Reveal Audio Synchronization
+- Integrated the seven existing authored reveal sounds into the Lucky Card Reveal while preserving the existing Standard: 3 / Premium: 4 / Flagship: 5 hit schedule and visual choreography.
+- Synchronized final lock-on audio to the existing final hit/grab point and the remaining authored cues to the existing flip and settle boundaries.
+
 ### Completed Features
 - **Lucky Card Reveal System**: Full cinematic reveal with tier-based visuals (Standard, Premium, Flagship)
 - **Tier-Based Hit System**: Reduced regular hits across all tiers (Standard: 3, Premium: 4, Flagship: 5)
