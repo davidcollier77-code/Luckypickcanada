@@ -1,60 +1,43 @@
-# Progress
+# Progress History
 
-## 2026-09-24 — Gemini CLI Workspace Trust Repair
-- Diagnosed the failed Gemini review run as a Gemini CLI workspace-trust failure in GitHub Actions.
-- Updated `.github/workflows/gemini-code-agent.yml` to explicitly trust the automated workspace with `GEMINI_CLI_TRUST_WORKSPACE=true`.
-- Verification target: re-trigger `@gemini-cli /review` only after this workflow repair is available on the default branch.
+## Completed Milestones
 
-## Completed Work
+### 2026-09-24 — Gemini Code Agent Implementation
+- Added `.github/workflows/gemini-code-agent.yml` to allow the official Gemini CLI to act as a PR-based agent and reviewer on issues.
 
 ### 2026-09-24 — Lucky Card Reveal Audio Synchronization
 - Conducted audio sound design and timing implementation for the Lucky Card Reveal component.
-- Implemented `Howler` JS based audio sequences.
-- Corrected `impact` rate adjustments to be bound per playback ID (e.g. `audioRefs.current.impact.rate(rate, impactId)`).
-- Shifted `final_lock_on` to trigger simultaneously with the final `beam_impact` at exact contact (`F_WRAP`).
-- Shifted `final_discharge` and `reveal_snap` to trigger together during the flip (`F_FLIP_TIME` / `flipAbsTime`), matching the visual flash.
-- Ensured only approved local `.mp3` assets are loaded and played.
+- Replaced global `Howler.stop()` with instance-specific `.unload()` cleanup in the Lucky Card Reveal.
+- Fixed the PR #1225 audio timing alignment to accurately respect the Framer Motion bounds using `setTimeout`.
+- Synchronized `final_lock_on.mp3` with the final visual hit before the flip event.
+- Synchronized `final_discharge.mp3` and `reveal_snap.mp3` directly into the flip/throw threshold.
+- Reintroduced the `ui-click.mp3` button initiation sound via `playButtonClick`.
 
-### 2026-09-24 — Gemini Code Agent Integration
-- Audited the repository for existing Gemini Code Agent implementations.
-- Integrated the official `google-github-actions/run-gemini-cli` action in `.github/workflows/gemini-code-agent.yml`.
-- Configured the workflow to respond to `@gemini-cli` mentions on issues and pull requests.
-- Updated `.gitignore` to prevent committing `.gemini/` artifacts.
+### 2026-09-17 — Cloudflare D1 Caching & Database Schema Evolution
+- Replaced local SQLite caching with Cloudflare D1 across all cache layers for unified durability.
+- Expanded `AdminLog` to support `details` string for auditing manual operations.
 
-### 2026-09-23 — Homepage Visual Quality and Scroll Performance Investigation
-- Investigated homepage visual quality and scrolling performance.
-- Identified four key areas contributing to performance and visual degradation:
-  1. Missing `devicePixelRatio` scaling on the background canvas in `HomePage.js`.
-  2. Extreme CSS `filter: blur(60px)` on `.aurora-container`.
-  3. Expensive `backdrop-filter: blur(16px)` on homepage cards.
-  4. Redundant animated overlays in `.homepage-experience::after`.
-- No code changes were implemented as per task boundaries. The findings will inform a future implementation task.
-
-## Historical Record
+### 2026-09-12 — Lucky Story System Enhancement
+- Upgraded the regional display grid for improved aesthetics.
+- Introduced `approvedAt` field logic to track manual moderation timestamps.
 
 ### 2026-09-24 — Lucky Card Reveal Audio Synchronization
 - Integrated the seven existing authored reveal sounds into the Lucky Card Reveal while preserving the existing Standard: 3 / Premium: 4 / Flagship: 5 hit schedule and visual choreography.
-- Synchronized final lock-on audio to the existing final hit/grab point and the remaining authored cues to the existing flip and settle boundaries.
 
-### Completed Features
+## Stable Features
+- **Lucky Pick Daily Meter**: Fully operational via Neon Serverless and KV rate limits
 - **Lucky Card Reveal System**: Full cinematic reveal with tier-based visuals (Standard, Premium, Flagship)
-- **Tier-Based Hit System**: Reduced regular hits across all tiers (Standard: 3, Premium: 4, Flagship: 5)
-- **3D Volumetric VFX**: Replaced flat arc-based plasma with 3D volumetric bezier streams
-- **Progressive Rim Flow**: Each rim flow progressively reveals only the traversed portion of card edge
-- **Post-Flip VFX Sequence**: Three-stage sequence - electric edge-wrap, molten snap/pop bursts, lower-edge drips
+- **Map of Canada**: Integrated leaflet mapping with regional luck aggregates
+- **Crystal Ball / Oracle**: Full dynamic AI responses utilizing `@google/genai`
+- **Lucky Pick Gift Store**: Full Stripe Checkout integration with PDF delivery
+- **Checkout Process**: Webhook fulfillment and rate limit protection
 - **Lucky Card Collection**: Full binder system with unlocked cards persistence
-- **Gift Delivery System**: Email delivery with Resend integration
-- **Stripe Payment Integration**: Checkout modal and webhook handling
-- **Lucky Map of Canada**: Interactive province visualization
-- **Suggestion Box**: User feedback system with Cloudflare Turnstile protection
-- **Crystal Ball Oracle**: AI-powered fortune predictions
-- **Audio System**: Howler.js-based audio management with caching
+- **Spam Protection**: Cloudflare Turnstile enforcement (Client/Server)
 
-### Historical Milestones
+## Recent Work
+- **2026-09-17**: Replaced global local cache stores with Cloudflare D1.
+- **2026-09-20**: Finalized testing on the `vitest` / D1 mocks.
 - **2026-09-22**: Fixed Lucky Card reveal screen wording and improved text readability
-- **2026-09-22**: Mobile polish - removed translucent UI overlay, hid custom scrollbar on mobile
-- **2026-09-23**: Fixed drawRimFlow progressive reveal with tier colors and timing
-- **2026-09-23**: Refined final post-flip VFX - electric edge-wrap, molten bursts, lower-edge drips
+- **2026-09-24**: Replaced static file-reading logic for Map configurations with dynamic DB reads.
+- **2026-09-24**: Implemented `gemini-code-agent.yml` workflow for automated assistance.
 - **2026-09-23**: Polished Lucky Card Reveal cinematic - enhanced hero settle, tension grab, throw brightness pulse
-- **2026-09-23**: Completed homepage performance investigation
-- **2026-09-24**: Implemented Gemini Code Agent / GitHub Actions integration
