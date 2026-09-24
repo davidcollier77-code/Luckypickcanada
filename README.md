@@ -1,72 +1,62 @@
-# Luckypickcanada
+# Lucky Pick Canada
 
-A tiny, local utility to generate random Canadian lottery number sets (example project / demo for the repository).
+A community-focused Canadian digital experience built around luck, stories, sharing, and a little everyday magic.
 
-## Usage
+Lucky Pick Canada started as a simple idea for bringing a little positivity and fun into the day. Built as a small creative project in Nova Scotia, it has grown into a corner of the internet where people can discover their daily luck, share their own stories, explore the experiences of others, and take part in something designed simply to brighten the day.
 
-Run the included script with Python 3:
+## The Community Comes First
+
+At the heart of Lucky Pick Canada are the people and the stories they bring with them.
+
+Share a lucky story about an unexpected coincidence, an opportunity that appeared at just the right time, finding money, a small everyday win, or simply a moment that made you feel unusually lucky. Stories can become part of the Lucky Map of Canada, giving visitors a way to explore experiences being shared across the country.
+
+The numbers are only part of the experience. The bigger idea is what happens around them: the stories people tell, the moments they remember, and the connections that can grow from a little bit of fun.
+
+## What You Can Explore
+
+- **Lucky Meter** — a daily experience designed to give you a moment of reflection, encouragement, and fun.
+- **Lucky Stories & Lucky Map** — share your own experience of luck and explore stories from across Canada.
+- **Daily Lucky Card** — reveal a collectible digital card and build your collection over time.
+- **Crystal Ball** — ask a question and receive a playful, mystical reading.
+- **Lucky Picks** — generate a fresh set of lucky numbers for a little daily entertainment.
+- **Gift Experiences** — send a personalized lucky experience to someone else.
+- **Suggestion Box** — share ideas that could help shape the future of Lucky Pick Canada.
+- **Tip Jar** — optionally support the project and help keep it going.
+
+The site is designed so people can simply enjoy one small experience and discover the rest naturally.
+
+## More Than the Numbers
+
+Lucky Pick Canada is not built around the idea that numbers are the most important part of the experience.
+
+It is about creating something people can return to, share with someone else, contribute to, and make part of their own routine.
+
+A lucky pick might bring someone to the site once.
+
+A story, a card collection, a shared experience, or something discovered along the way might give them a reason to come back.
+
+## A Small Canadian Project
+
+Lucky Pick Canada is an independent digital entertainment and community project created in Nova Scotia.
+
+It began with a simple idea around everyday positivity and has continued to grow one feature, one story, and one little moment at a time.
+
+The goal is simple: create something positive, playful, and distinctly Canadian that people can enjoy and share.
+
+## Entertainment Only
+
+Lucky Pick Canada is an independent digital entertainment experience. It does not operate a lottery, provide gambling services, or offer real-money lottery prizes, and it is not affiliated with, endorsed by, or connected to any lottery organization.
+
+The experience is designed for fun, encouragement, creativity, and community participation.
+
+## Development
+
+Lucky Pick Canada is built with Next.js, React, and TypeScript, with an emphasis on reliability, accessibility, performance, and a polished experience across phones, tablets, and desktop devices.
+
+### Local Development
+
+This project uses `pnpm`.
 
 ```bash
-python3 luckypick.py
-# or
-chmod +x luckypick.py && ./luckypick.py
-```
-
-Presets:
-- Six pick: six numbers from 1–49
-- Seven pick: seven numbers from 1–50
-
-Examples:
-
-```bash
-# Default (six pick)
-python3 luckypick.py
-
-# Seven pick preset
-python3 luckypick.py --game seven-pick
-
-# Custom count and max
-python3 luckypick.py --count 5 --max 40 --sets 3
-```
-
-## Tests
-
-Install the test dependencies and run pytest:
-
-```bash
-python3 -m pip install -r requirements.txt
-python3 -m pytest -q
-```
-
-## CI
-
-A GitHub Actions workflow runs the test suite on push and pull requests.
-
-## License
-
-This project is licensed under the MIT License — see LICENSE for details.
-
-## Stripe Checkout
-
-Set these Vercel environment variables before using the payment buttons, gift email delivery, Little Luck Map, and suggestion box:
-
-- `STRIPE_SECRET_KEY`: your Stripe secret key
-- `RESEND_API_KEY`: Resend API key used to send $2.99 gift emails and suggestion notifications
-- `GIFT_FROM_EMAIL`: verified sender email address for gift delivery; also used for suggestion notifications unless `SUGGESTIONS_FROM_EMAIL` is set
-- `GIFT_TEST_SECRET`: optional secret for sending protected test gift emails through `/api/admin/test-gift-email`
-- `SUGGESTIONS_FROM_EMAIL`: optional verified sender email address for suggestion notifications
-- `SUGGESTIONS_TO_EMAIL`: optional destination for suggestion notifications; defaults to `davidcollier77@gmail.com`
-- `POSTGRES_URL` or `DATABASE_URL`: database connection string used to save Little Luck Map submissions and suggestions
-- `ADMIN_PASSWORD`: password for `/admin/suggestions`, where saved suggestions can be reviewed
-- `TURNSTILE_SITE_KEY` or `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: Cloudflare Turnstile site key shown on public, non-payment forms
-- `TURNSTILE_SECRET_KEY`: Cloudflare Turnstile secret key used to verify public form submissions server-side
-
-The homepage posts to `/api/checkout`, which creates Stripe Checkout Sessions for the $1.00 Lucky Pick, $2.99 gift email package, and a custom tip jar amount. Lucky Pick includes either 6 unique numbers from 1 to 49 or 7 unique numbers from 1 to 50, plus a slow reveal with stars and Aurora, a lucky color, and a lucky day of the week. The gift package sends the selected lucky pick, lucky color, lucky day, and personal greeting to the recipient by email after payment. The gift delivery route accepts either a Checkout Session ID (`session_id=cs_...`) or Payment Intent ID (`payment_id=pi_...`) for resends.
-
-To send a no-purchase test gift email, make a `POST` request to `/api/admin/test-gift-email` with the `x-gift-test-secret` header set to `GIFT_TEST_SECRET` and a JSON body containing `recipientEmail`. Optional fields are `recipientName`, `senderName`, `giftMessage`, and `luckyPickGame` (`6` or `7`).
-
-After completing the $1.00 Lucky Pick checkout, visitors can add their name and province or territory to the Lucky Purchases Across Canada display. Submissions are verified against the paid Stripe Checkout Session, saved in the `luck_shares` database table, and shown as purchase activity by province plus recent purchase provinces. Lucky Stories are handled separately by the existing Lucky Map of Canada page.
-
-Suggestions are saved in the `suggestions` database table and can be reviewed at `/admin/suggestions` with `ADMIN_PASSWORD`.
-
-Disclaimer: Lucky Pick Canada is not affiliated with, endorsed by, or connected to any lottery organization. Picks are for fun and entertainment only.
+pnpm install
+pnpm dev
