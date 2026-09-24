@@ -863,7 +863,7 @@ export default function LuckyCardReveal() {
     playButtonClick();
 
     const tier = activeTierRef.current || 'standard';
-    const totalHits = TIER_HITS[tier] || TIER_HITS.standard;
+    const audioTotalHits = TIER_HITS[tier] || TIER_HITS.standard;
     const regularImpactRate =
       tier === 'flagship' ? 1.1 :
       tier === 'premium' ? 1.05 : 1.0;
@@ -884,10 +884,10 @@ export default function LuckyCardReveal() {
 
     // Every existing visual hit gets the authored electrical lead-in and impact.
     // The final existing hit additionally becomes the audible lock-on moment.
-    for (let i = 0; i < totalHits; i += 1) {
+    for (let i = 0; i < audioTotalHits; i += 1) {
       const hitStart = i * HIT_DURATION;
       const contactTime = hitStart + P_WRAP;
-      const isFinalHit = i === totalHits - 1;
+      const isFinalHit = i === audioTotalHits - 1;
 
       scheduleAudio(() => {
         if (!audioRefs.current.arc) return;
