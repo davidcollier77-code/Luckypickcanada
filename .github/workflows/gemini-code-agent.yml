@@ -13,9 +13,12 @@ concurrency:
 jobs:
   run-gemini-cli:
     if: >-
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@gemini-cli')) ||
+      ((github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR') &&
+       ((github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@gemini-cli')) ||
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@gemini-cli')) ||
-      (github.event_name == 'issue_comment' && !github.event.issue.pull_request && contains(github.event.comment.body, '@gemini-cli'))
+      (github.event_name == 'issue_comment' && !github.event.issue.pull_request && contains(github.event.comment.body, '@gemini-cli'))))
     runs-on: ubuntu-latest
     permissions:
       contents: write
