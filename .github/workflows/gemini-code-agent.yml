@@ -1,0 +1,65 @@
+name: '🤖 Gemini Code Agent'
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+concurrency:
+  group: '${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}'
+  cancel-in-progress: false
+
+jobs:
+  run-gemini-cli:
+    if: >-
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '@gemini-cli')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@gemini-cli')) ||
+      (github.event_name == 'issue_comment' && !github.event.issue.pull_request && contains(github.event.comment.body, '@gemini-cli'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 'Prepare prompt context'
+        shell: 'bash'
+        run: |-
+          mkdir -p .gemini
+          jq -n \
+            --arg title "${TITLE}" \
+            --arg desc "${DESCRIPTION}" \
+            --arg event "${EVENT_NAME}" \
+            --arg pr "${IS_PULL_REQUEST}" \
+            --arg num "${ISSUE_NUMBER}" \
+            --arg repo "${REPOSITORY}" \
+            '{title: $title, description: $desc, event_name: $event, is_pull_request: $pr, issue_number: $num, repository: $repo}' > .gemini/context.json
+        env:
+          TITLE: '${{ github.event.pull_request.title || github.event.issue.title }}'
+          DESCRIPTION: '${{ github.event.pull_request.body || github.event.issue.body }}'
+          EVENT_NAME: '${{ github.event_name }}'
+          IS_PULL_REQUEST: '${{ !!github.event.pull_request }}'
+          ISSUE_NUMBER: '${{ github.event.pull_request.number || github.event.issue.number }}'
+          REPOSITORY: '${{ github.repository }}'
+
+      - name: Run Gemini CLI
+        id: run_gemini
+        uses: google-github-actions/run-gemini-cli@v1
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          github_pr_number: ${{ github.event.pull_request.number }}
+          github_issue_number: ${{ github.event.issue.number }}
+          prompt: ${{ github.event.comment.body }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

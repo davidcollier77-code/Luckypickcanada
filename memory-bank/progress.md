@@ -2,6 +2,12 @@
 
 ## Completed Work
 
+### 2026-09-24 — Gemini Code Agent Integration
+- Audited the repository for existing Gemini Code Agent implementations (none found).
+- Integrated the official `google-github-actions/run-gemini-cli` action in `.github/workflows/gemini-code-agent.yml`.
+- Configured the workflow to respond to `@gemini-cli` mentions on issues and pull requests.
+- Updated `.gitignore` to prevent committing `.gemini/` artifacts.
+
 ### 2026-09-23 — Homepage Visual Quality and Scroll Performance Investigation
 - Investigated homepage visual quality and scrolling performance.
 - Identified four key areas contributing to performance and visual degradation:
@@ -35,7 +41,8 @@
 - **2026-09-23**: Fixed drawRimFlow progressive reveal with tier colors and timing
 - **2026-09-23**: Refined final post-flip VFX - electric edge-wrap, molten bursts, lower-edge drips
 - **2026-09-23**: Polished Lucky Card Reveal cinematic - enhanced hero settle, tension grab, throw brightness pulse
-- **2026-09-23**: Completed homepage performance investigation (current task)
+- **2026-09-23**: Completed homepage performance investigation
+- **2026-09-24**: Implemented Gemini Code Agent / GitHub Actions integration (current task)
 
 ## Remaining Technical Debt
 

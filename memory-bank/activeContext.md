@@ -1,14 +1,15 @@
 # Active Context
 
 ## Current Work
-- 2026-09-24: Audio-only sound-design and synchronization pass for the existing Lucky Card Reveal cinematic.
-- Investigated the timeline constraints and timing references (e.g. `P_WRAP`, `P_SHAKE`, `F_WRAP`, `F_FLIP_TIME`) inside `app/lucky-card-reveal.js`.
-- Selected and downloaded cinematic audio assets mimicking Ghostbusters-style proton pack beam logic via CC0 sources via CLI in `public/sounds/`.
-- Updated `app/lucky-card-reveal.js` to implement an independent but synchronized audio `setTimeout` pipeline matching the animation sequences exactly, applying Pitch shifting to `impact` and `final_discharge` depending on the selected Tier.
+- 2026-09-24: Audited the repository and implemented the Gemini Code Agent / GitHub Actions integration to allow Gemini to operate as a PR-based coding/review agent.
+- Verified that there were no existing Gemini Code Agent workflows, and that the existing `functions/api/oracle.js` usage of the `GEMINI_API_KEY` operates independently of the GitHub Actions environment.
+- Added `.github/workflows/gemini-code-agent.yml` using the official `google-github-actions/run-gemini-cli@v1` action.
+- Added `.gemini/` to `.gitignore` to prevent committing agent artifacts.
+- The workflow supports on-demand collaboration via `@gemini-cli` mentions in issue comments and pull request review comments.
 
 ## Next Steps
-- Await approval of the implemented audio polish.
+- Await approval of the Gemini Code Agent integration PR.
 
 ## Completed Work
-- Completed audio logic synchronization into the `triggerCardDraw` lifecycle without disrupting visually rendered Framer Motion elements.
-- Maintained exact Tier hit logic (`Standard: 3, Premium: 4, Flagship: 5`) and updated the audio loop appropriately.
+- Completed implementation of the Gemini Code Agent GitHub Action workflow.
+- Pre-commit verifications (YAML linting, build verification) have passed.

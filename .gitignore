@@ -26,3 +26,6 @@ act_output.log
 .jules/cmds/
 .specify/feature.json
 .specify/extensions/*/local-config.yml
+
+# Gemini CLI
+.gemini/
