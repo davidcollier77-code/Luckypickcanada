@@ -17,7 +17,7 @@
 ## Completed Work
 - Completed implementation of the Gemini Code Agent GitHub Action workflow.
 - Completed audio logic synchronization into the `triggerCardDraw` lifecycle without disrupting visually rendered Framer Motion elements.
-- Maintained exact Tier hit logic (Standard: 3, Premium: 4, Flagship: 5) and updated the audio loop appropriately.
+- Maintained exact Tier hit logic (Standard: 3, Premium: 5, Flagship: 7) and updated the audio loop appropriately.
 - Pre-commit verification for the Gemini integration (YAML linting/build) passed.
 
 
