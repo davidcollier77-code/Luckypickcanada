@@ -886,7 +886,7 @@ export default function LuckyCardReveal() {
     for (let i = 0; i < audioTotalHits; i += 1) {
       const hitStart = i * HIT_DURATION;
       const contactTime = hitStart + P_WRAP;
-      const isFinalHit = i === totalHits - 1;
+      const isFinalHit = i === audioTotalHits - 1;
 
       // Each physical hit gets a short electrical lead-in followed by the
       // impact exactly at contact. electrical_arc is deliberately one-shot,
