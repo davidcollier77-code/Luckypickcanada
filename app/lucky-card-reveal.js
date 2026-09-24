@@ -22,8 +22,8 @@ function localDateKey(date = new Date()) {
 
 const TIER_HITS = {
   standard: 3,
-  premium: 4,
-  flagship: 5
+  premium: 5,
+  flagship: 7
 };
 
 // Hit durations in seconds
@@ -61,7 +61,7 @@ export default function LuckyCardReveal() {
     // Preload audio assets
     audioRefs.current.beam = new Howl({ src: ['/sounds/beam_energy.mp3'], loop: true, volume: 0.36, preload: true });
     audioRefs.current.impact = new Howl({ src: ['/sounds/beam_impact.mp3'], volume: 0.78, preload: true });
-    audioRefs.current.arc = new Howl({ src: ['/sounds/electrical_arc.mp3'], volume: 0.42, loop: true, preload: true });
+    audioRefs.current.arc = new Howl({ src: ['/sounds/electrical_arc.mp3'], volume: 0.42, loop: false, preload: true });
     audioRefs.current.lockOn = new Howl({ src: ['/sounds/final_lock_on.mp3'], volume: 0.78, preload: true });
     audioRefs.current.discharge = new Howl({ src: ['/sounds/final_discharge.mp3'], volume: 0.95, preload: true });
     audioRefs.current.snap = new Howl({ src: ['/sounds/reveal_snap.mp3'], volume: 0.46, preload: true });
@@ -119,8 +119,15 @@ export default function LuckyCardReveal() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (animationControlsRef.current) animationControlsRef.current.stop();
     if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+
     activeTimeoutsRef.current.forEach(clearTimeout);
     activeTimeoutsRef.current = [];
+
+    // Audio is part of the reveal lifecycle. Kill both scheduled callbacks and
+    // active Howler instances so a new reveal cannot inherit the previous tail.
+    audioTimers.current.forEach(clearTimeout);
+    audioTimers.current = [];
+    Howler.stop();
   }, []);
 
   useEffect(() => {
@@ -838,141 +845,149 @@ export default function LuckyCardReveal() {
     setImageError(false);
 
     // --- AUDIO TIMING ---
-    // The cinematic reveal uses only the authored reveal sound set. The
-    // button click is handled separately by playButtonClick() and is never
-    // allowed to become part of the cinematic bed.
+    // Audio follows the same absolute timeline as the visual sequence:
+    // contact = P_WRAP, lock = shortly after final contact, discharge = flip,
+    // snap = near flip completion, dissipation = revealed-face after-effect.
+    const P_WRAP = 0.4;
+    const P_SHAKE = 1.2;
+    const FINAL_LOCK_DELAY = 0.07;
+    const SNAP_LEAD = 0.08;
+
     audioTimers.current.forEach(clearTimeout);
     audioTimers.current = [];
     Howler.stop();
 
     const scheduleAudio = (callback, delay) => {
-      const timerId = setTimeout(callback, delay);
+      const timerId = setTimeout(callback, Math.max(0, delay));
       audioTimers.current.push(timerId);
       return timerId;
     };
 
+    // The button click remains a separate UI cue.
     playButtonClick();
 
+    const tier = activeTierRef.current || 'standard';
+    const totalHits = TIER_HITS[tier] || TIER_HITS.standard;
+    const profile = {
+      standard: { beam: 0.34, arc: 0.34, finalBeam: 0.58, impactRate: 1.00, lockRate: 1.04, dischargeRate: 1.08 },
+      premium: { beam: 0.36, arc: 0.38, finalBeam: 0.64, impactRate: 1.04, lockRate: 1.00, dischargeRate: 1.03 },
+      flagship: { beam: 0.38, arc: 0.42, finalBeam: 0.70, impactRate: 1.08, lockRate: 0.96, dischargeRate: 0.98 }
+    }[tier] || { beam: 0.34, arc: 0.34, finalBeam: 0.58, impactRate: 1.00, lockRate: 1.04, dischargeRate: 1.08 };
+
+    // One continuous authored bed. No synthesized tones or generic pings.
     scheduleAudio(() => {
-      const totalHits = TIER_HITS[activeTierRef.current || 'standard'];
-      const regularImpactRate =
-        activeTierRef.current === 'flagship' ? 1.1 :
-        activeTierRef.current === 'premium' ? 1.05 : 1.0;
+      if (!audioRefs.current.beam) return;
+      const beamId = audioRefs.current.beam.play();
+      audioRefs.current.beam.rate(1.0, beamId);
+      audioRefs.current.beam.fade(0, profile.beam, 320, beamId);
+    }, 0);
 
-      // Continuous energy bed: low and restrained during the approach.
-      if (audioRefs.current.beam) {
-        audioRefs.current.beam.play();
-        audioRefs.current.beam.fade(0, 0.36, 420);
-        audioRefs.current.beam.rate(1.0);
-      }
+    for (let i = 0; i < totalHits; i += 1) {
+      const hitStart = i * HIT_DURATION;
+      const contactTime = hitStart + P_WRAP;
+      const isFinalHit = i === totalHits - 1;
 
-      // Each non-final hit is a woven micro-sequence:
-      // electrical contact lead-in -> impact -> short arc hold -> release.
-      for (let i = 0; i < totalHits - 1; i++) {
-        const hitStart = i * HIT_DURATION;
-        const P_WRAP = 0.4;
-        const P_SHAKE = 1.2;
+      // Each physical hit gets a short electrical lead-in followed by the
+      // impact exactly at contact. electrical_arc is deliberately one-shot,
+      // not looped, so it cannot create a repeating beep-like cadence.
+      const arcLead = isFinalHit ? 0.20 : 0.16;
+      const arcWindow = isFinalHit ? FINAL_FLIP_TIME - FINAL_LOCK_DELAY : P_SHAKE - P_WRAP;
 
+      scheduleAudio(() => {
+        if (!audioRefs.current.arc) return;
+        const arcId = audioRefs.current.arc.play();
+        const arcPeak = isFinalHit ? profile.finalBeam * 0.68 : profile.arc;
+        audioRefs.current.arc.rate(isFinalHit ? 1.04 : 1.0, arcId);
+        audioRefs.current.arc.fade(0, arcPeak, 75, arcId);
+
+        const fadeDelay = Math.max(90, (arcWindow * 1000) - 180);
         scheduleAudio(() => {
           if (audioRefs.current.arc) {
-            const arcId = audioRefs.current.arc.play();
-            audioRefs.current.arc.fade(0, 0.34, 85, arcId);
-            scheduleAudio(() => {
-              audioRefs.current.arc.fade(0.34, 0, 220, arcId);
-              scheduleAudio(() => audioRefs.current.arc.stop(arcId), 220);
-            }, Math.max(0, (P_SHAKE - P_WRAP) * 1000 - 220));
+            audioRefs.current.arc.fade(arcPeak, 0, 180, arcId);
           }
-        }, Math.max(0, (hitStart + P_WRAP - 0.06) * 1000));
+        }, fadeDelay);
 
         scheduleAudio(() => {
-          if (audioRefs.current.impact) {
-            const impactId = audioRefs.current.impact.play();
-            audioRefs.current.impact.rate(regularImpactRate, impactId);
-          }
-        }, (hitStart + P_WRAP) * 1000);
-      }
+          if (audioRefs.current.arc) audioRefs.current.arc.stop(arcId);
+        }, fadeDelay + 190);
+      }, (contactTime - arcLead) * 1000);
 
-      const finalHitStartTime = (totalHits - 1) * HIT_DURATION;
-      const F_WRAP = 0.4;
-      const flipAbsTime = finalHitStartTime + FINAL_FLIP_TIME;
-
-      // The last approach becomes audibly denser and faster before contact.
       scheduleAudio(() => {
-        if (audioRefs.current.beam) {
-          audioRefs.current.beam.fade(0.36, 0.68, 320);
-          audioRefs.current.beam.rate(1.12);
-        }
-        if (audioRefs.current.arc) {
-          const finalArcId = audioRefs.current.arc.play();
-          audioRefs.current.arc.fade(0, 0.46, 120, finalArcId);
+        if (!audioRefs.current.impact) return;
+        const impactId = audioRefs.current.impact.play();
+        audioRefs.current.impact.rate(
+          isFinalHit ? profile.impactRate + 0.02 : profile.impactRate,
+          impactId
+        );
+      }, contactTime * 1000);
 
-          // Keep the final electrical tension alive through the lock, then
-          // release it with the flip rather than creating another isolated ping.
+      if (isFinalHit) {
+        const finalStartTime = hitStart;
+        const flipAbsTime = finalStartTime + FINAL_FLIP_TIME;
+
+        // Densify the final approach without introducing a new sound source.
+        scheduleAudio(() => {
+          if (!audioRefs.current.beam) return;
+          const finalBeamId = audioRefs.current.beam.play();
+          audioRefs.current.beam.rate(1.12, finalBeamId);
+          audioRefs.current.beam.fade(profile.beam, profile.finalBeam, 220, finalBeamId);
+
           scheduleAudio(() => {
-            audioRefs.current.arc.fade(0.46, 0, 180, finalArcId);
-            scheduleAudio(() => audioRefs.current.arc.stop(finalArcId), 180);
-          }, Math.max(0, (flipAbsTime - finalHitStartTime) * 1000 - 120));
-        }
-      }, finalHitStartTime * 1000);
+            if (audioRefs.current.beam) {
+              audioRefs.current.beam.fade(profile.finalBeam, 0, 180, finalBeamId);
+            }
+          }, Math.max(0, (flipAbsTime - finalStartTime) * 1000 - 180));
 
-      // Final contact = physical strike.
-      scheduleAudio(() => {
-        if (audioRefs.current.impact) {
-          const finalImpactId = audioRefs.current.impact.play();
-          audioRefs.current.impact.rate(regularImpactRate, finalImpactId);
-        }
+          scheduleAudio(() => {
+            if (audioRefs.current.beam) {
+              audioRefs.current.beam.stop(finalBeamId);
+              audioRefs.current.beam.stop();
+            }
+          }, Math.max(0, (flipAbsTime - finalStartTime) * 1000));
+        }, finalStartTime * 1000);
 
-        // Distinct lock-on cue immediately follows the impact so the listener
-        // hears the beam take hold before the throw/flip begins.
+        // The lock-on follows the final strike, leaving a brief audible hold
+        // before the physical throw/flip begins.
         scheduleAudio(() => {
-          if (audioRefs.current.lockOn) {
-            const lockId = audioRefs.current.lockOn.play();
-            audioRefs.current.lockOn.rate(
-              activeTierRef.current === 'flagship' ? 0.96 :
-              activeTierRef.current === 'premium' ? 1.0 : 1.04,
-              lockId
-            );
-          }
-        }, 70);
-      }, (finalHitStartTime + F_WRAP) * 1000);
+          if (!audioRefs.current.lockOn) return;
+          const lockId = audioRefs.current.lockOn.play();
+          audioRefs.current.lockOn.rate(profile.lockRate, lockId);
+        }, (contactTime + FINAL_LOCK_DELAY) * 1000);
 
-      // Flip/throw starts the strongest discharge. Do not fire the reveal snap
-      // yet; reserve it for the moment the front face actually settles into view.
-      scheduleAudio(() => {
-        if (audioRefs.current.discharge) {
+        // Final discharge is tied to the flip boundary.
+        scheduleAudio(() => {
+          if (!audioRefs.current.discharge) return;
           const dischargeId = audioRefs.current.discharge.play();
-          audioRefs.current.discharge.rate(
-            activeTierRef.current === 'flagship' ? 0.98 :
-            activeTierRef.current === 'premium' ? 1.04 : 1.1,
-            dischargeId
-          );
-        }
+          audioRefs.current.discharge.rate(profile.dischargeRate, dischargeId);
+        }, flipAbsTime * 1000);
 
-        if (audioRefs.current.beam) {
-          audioRefs.current.beam.fade(0.68, 0, 260);
-          scheduleAudio(() => audioRefs.current.beam.stop(), 260);
-        }
-      }, flipAbsTime * 1000);
-
-      // Reveal snap is deliberately delayed until the 3D flip is essentially
-      // complete, eliminating the "computer ping" impression at flip start.
-      scheduleAudio(() => {
-        if (audioRefs.current.snap) {
+        // Reveal snap is reserved for the end of the 3D flip.
+        scheduleAudio(() => {
+          if (!audioRefs.current.snap) return;
           const snapId = audioRefs.current.snap.play();
-          audioRefs.current.snap.rate(0.96, snapId);
-        }
-      }, (flipAbsTime + FINAL_FLIP_DURATION - 0.08) * 1000);
+          audioRefs.current.snap.rate(0.98, snapId);
+        }, (flipAbsTime + FINAL_FLIP_DURATION - SNAP_LEAD) * 1000);
 
-      // The post-flip electrical tail begins with the revealed face, then
-      // gently dissolves over the visual after-effect window.
-      scheduleAudio(() => {
-        if (audioRefs.current.dissipation) {
-          const dissId = audioRefs.current.dissipation.play();
-          audioRefs.current.dissipation.fade(0.62, 0, 3000, dissId);
-          scheduleAudio(() => audioRefs.current.dissipation.stop(dissId), 3100);
-        }
-      }, (flipAbsTime + FINAL_FLIP_DURATION) * 1000);
-    }, 0);
+        // Post-flip electrical material begins exactly as the revealed face
+        // settles, then fades across the full visual after-effect window.
+        scheduleAudio(() => {
+          if (!audioRefs.current.dissipation) return;
+          const dissipationId = audioRefs.current.dissipation.play();
+          audioRefs.current.dissipation.fade(
+            0.62,
+            0,
+            POST_FLIP_DISSIPATION * 1000,
+            dissipationId
+          );
+
+          scheduleAudio(() => {
+            if (audioRefs.current.dissipation) {
+              audioRefs.current.dissipation.stop(dissipationId);
+            }
+          }, POST_FLIP_DISSIPATION * 1000 + 100);
+        }, (flipAbsTime + FINAL_FLIP_DURATION) * 1000);
+      }
+    }
     // --- END AUDIO TIMING ---
 
 
