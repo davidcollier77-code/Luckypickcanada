@@ -1,5 +1,10 @@
 # Progress
 
+## 2026-09-24 — Gemini CLI Workspace Trust Repair
+- Diagnosed the failed Gemini review run as a Gemini CLI workspace-trust failure in GitHub Actions.
+- Updated `.github/workflows/gemini-code-agent.yml` to explicitly trust the automated workspace with `GEMINI_CLI_TRUST_WORKSPACE=true`.
+- Verification target: re-trigger `@gemini-cli /review` only after this workflow repair is available on the default branch.
+
 ## Completed Work
 
 ### 2026-09-24 — Lucky Card Reveal Audio Synchronization
