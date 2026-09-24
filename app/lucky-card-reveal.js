@@ -875,11 +875,12 @@ export default function LuckyCardReveal() {
     }[tier] || { beam: 0.34, arc: 0.34, finalBeam: 0.58, impactRate: 1.00, lockRate: 1.04, dischargeRate: 1.08 };
 
     // One continuous authored bed. No synthesized tones or generic pings.
+    let revealBeamId = null;
     scheduleAudio(() => {
       if (!audioRefs.current.beam) return;
-      const beamId = audioRefs.current.beam.play();
-      audioRefs.current.beam.rate(1.0, beamId);
-      audioRefs.current.beam.fade(0, profile.beam, 320, beamId);
+      revealBeamId = audioRefs.current.beam.play();
+      audioRefs.current.beam.rate(1.0, revealBeamId);
+      audioRefs.current.beam.fade(0, profile.beam, 320, revealBeamId);
     }, 0);
 
     for (let i = 0; i < totalHits; i += 1) {
@@ -925,22 +926,22 @@ export default function LuckyCardReveal() {
         const finalStartTime = hitStart;
         const flipAbsTime = finalStartTime + FINAL_FLIP_TIME;
 
-        // Densify the final approach without introducing a new sound source.
+        // Densify the same continuous bed rather than starting a second
+        // looping beam instance on top of the original.
         scheduleAudio(() => {
-          if (!audioRefs.current.beam) return;
-          const finalBeamId = audioRefs.current.beam.play();
-          audioRefs.current.beam.rate(1.12, finalBeamId);
-          audioRefs.current.beam.fade(profile.beam, profile.finalBeam, 220, finalBeamId);
+          if (!audioRefs.current.beam || revealBeamId === null) return;
+          audioRefs.current.beam.rate(1.12, revealBeamId);
+          audioRefs.current.beam.fade(profile.beam, profile.finalBeam, 220, revealBeamId);
 
           scheduleAudio(() => {
             if (audioRefs.current.beam) {
-              audioRefs.current.beam.fade(profile.finalBeam, 0, 180, finalBeamId);
+              audioRefs.current.beam.fade(profile.finalBeam, 0, 180, revealBeamId);
             }
           }, Math.max(0, (flipAbsTime - finalStartTime) * 1000 - 180));
 
           scheduleAudio(() => {
             if (audioRefs.current.beam) {
-              audioRefs.current.beam.stop(finalBeamId);
+              audioRefs.current.beam.stop(revealBeamId);
               audioRefs.current.beam.stop();
             }
           }, Math.max(0, (flipAbsTime - finalStartTime) * 1000));
