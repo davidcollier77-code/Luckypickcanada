@@ -870,7 +870,7 @@ export default function LuckyCardReveal() {
 
     const P_WRAP = 0.4;
     const P_SHAKE = 1.2;
-    const FINAL_LOCK_OFFSET = 0.02;
+    const FINAL_LOCK_OFFSET = 0;
     const SNAP_LEAD = 0.08;
 
     // One continuous authored energy bed follows the full existing reveal.
