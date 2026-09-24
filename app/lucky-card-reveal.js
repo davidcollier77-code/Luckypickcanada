@@ -69,7 +69,9 @@ export default function LuckyCardReveal() {
 
     return () => {
       // Cleanup
-      Howler.stop();
+      Object.values(audioRefs.current).forEach(sound => {
+        if (sound) sound.stop();
+      });
       audioTimers.current.forEach(clearTimeout);
     };
   }, []);

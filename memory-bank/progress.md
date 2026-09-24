@@ -1,60 +1,8 @@
 # Progress
 
-## 2026-09-24 — Gemini CLI Workspace Trust Repair
-- Diagnosed the failed Gemini review run as a Gemini CLI workspace-trust failure in GitHub Actions.
-- Updated `.github/workflows/gemini-code-agent.yml` to explicitly trust the automated workspace with `GEMINI_CLI_TRUST_WORKSPACE=true`.
-- Verification target: re-trigger `@gemini-cli /review` only after this workflow repair is available on the default branch.
-
-## Completed Work
-
-### 2026-09-24 — Lucky Card Reveal Audio Synchronization
-- Conducted audio sound design and timing implementation for the Lucky Card Reveal component.
-- Implemented `Howler` JS based audio sequences.
-- Corrected `impact` rate adjustments to be bound per playback ID (e.g. `audioRefs.current.impact.rate(rate, impactId)`).
-- Shifted `final_lock_on` to trigger simultaneously with the final `beam_impact` at exact contact (`F_WRAP`).
-- Shifted `final_discharge` and `reveal_snap` to trigger together during the flip (`F_FLIP_TIME` / `flipAbsTime`), matching the visual flash.
-- Ensured only approved local `.mp3` assets are loaded and played.
-
-### 2026-09-24 — Gemini Code Agent Integration
-- Audited the repository for existing Gemini Code Agent implementations.
-- Integrated the official `google-github-actions/run-gemini-cli` action in `.github/workflows/gemini-code-agent.yml`.
-- Configured the workflow to respond to `@gemini-cli` mentions on issues and pull requests.
-- Updated `.gitignore` to prevent committing `.gemini/` artifacts.
-
-### 2026-09-23 — Homepage Visual Quality and Scroll Performance Investigation
-- Investigated homepage visual quality and scrolling performance.
-- Identified four key areas contributing to performance and visual degradation:
-  1. Missing `devicePixelRatio` scaling on the background canvas in `HomePage.js`.
-  2. Extreme CSS `filter: blur(60px)` on `.aurora-container`.
-  3. Expensive `backdrop-filter: blur(16px)` on homepage cards.
-  4. Redundant animated overlays in `.homepage-experience::after`.
-- No code changes were implemented as per task boundaries. The findings will inform a future implementation task.
-
-## Historical Record
-
-### 2026-09-24 — Lucky Card Reveal Audio Synchronization
-- Integrated the seven existing authored reveal sounds into the Lucky Card Reveal while preserving the existing Standard: 3 / Premium: 4 / Flagship: 5 hit schedule and visual choreography.
-- Synchronized final lock-on audio to the existing final hit/grab point and the remaining authored cues to the existing flip and settle boundaries.
-
-### Completed Features
-- **Lucky Card Reveal System**: Full cinematic reveal with tier-based visuals (Standard, Premium, Flagship)
-- **Tier-Based Hit System**: Reduced regular hits across all tiers (Standard: 3, Premium: 4, Flagship: 5)
-- **3D Volumetric VFX**: Replaced flat arc-based plasma with 3D volumetric bezier streams
-- **Progressive Rim Flow**: Each rim flow progressively reveals only the traversed portion of card edge
-- **Post-Flip VFX Sequence**: Three-stage sequence - electric edge-wrap, molten snap/pop bursts, lower-edge drips
-- **Lucky Card Collection**: Full binder system with unlocked cards persistence
-- **Gift Delivery System**: Email delivery with Resend integration
-- **Stripe Payment Integration**: Checkout modal and webhook handling
-- **Lucky Map of Canada**: Interactive province visualization
-- **Suggestion Box**: User feedback system with Cloudflare Turnstile protection
-- **Crystal Ball Oracle**: AI-powered fortune predictions
-- **Audio System**: Howler.js-based audio management with caching
-
-### Historical Milestones
-- **2026-09-22**: Fixed Lucky Card reveal screen wording and improved text readability
-- **2026-09-22**: Mobile polish - removed translucent UI overlay, hid custom scrollbar on mobile
-- **2026-09-23**: Fixed drawRimFlow progressive reveal with tier colors and timing
-- **2026-09-23**: Refined final post-flip VFX - electric edge-wrap, molten bursts, lower-edge drips
-- **2026-09-23**: Polished Lucky Card Reveal cinematic - enhanced hero settle, tension grab, throw brightness pulse
-- **2026-09-23**: Completed homepage performance investigation
-- **2026-09-24**: Implemented Gemini Code Agent / GitHub Actions integration
+## COMPLETED
+- Implemented authored audio system for Lucky Card Reveal cinematic in `app/lucky-card-reveal.js`.
+- Replaced global `Howler.stop()` in `useEffect` cleanup with instance-specific `.stop()` calls on `audioRefs.current` to avoid stopping unrelated application audio.
+- Verified all 7 required audio assets (`beam_energy.mp3`, `beam_impact.mp3`, `electrical_arc.mp3`, `final_lock_on.mp3`, `final_discharge.mp3`, `reveal_snap.mp3`, `plasma_dissipation.mp3`) exist and are correctly utilized.
+- Verified no remaining placeholder beeps are loaded or played in `lucky-card-reveal.js`.
+- Verified build and tests pass successfully.
