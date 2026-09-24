@@ -5,9 +5,10 @@
 - Investigated the timeline constraints and timing references (e.g. `P_WRAP`, `P_SHAKE`, `F_WRAP`, `F_FLIP_TIME`) inside `app/lucky-card-reveal.js`.
 - Selected and downloaded cinematic audio assets mimicking Ghostbusters-style proton pack beam logic via CC0 sources via CLI in `public/sounds/`.
 - Updated `app/lucky-card-reveal.js` to implement an independent but synchronized audio `setTimeout` pipeline matching the animation sequences exactly, applying Pitch shifting to `impact` and `final_discharge` depending on the selected Tier.
+- Validated and refined the final contact logic, binding `final_lock_on` to the last impact strike, and deferring `final_discharge` + `snap` to the flip moment to emphasize the tension/release arc.
 
 ## Next Steps
-- Await approval of the implemented audio polish.
+- Submit final PR for the finalized Audio Polish.
 
 ## Completed Work
 - Completed audio logic synchronization into the `triggerCardDraw` lifecycle without disrupting visually rendered Framer Motion elements.
