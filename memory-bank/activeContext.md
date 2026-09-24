@@ -1,42 +1,13 @@
 # Active Context
 
-
 ## Current Work
-- 2026-09-23: Polished the merged Lucky Card Reveal post-flip molten-plasma effect after three-tier visual review.
-- Kept the 4.2s post-flip dissipation after the existing 1.8s flip/settle, for a 6.0s final-hit lifetime.
-- Reworked the electrical treatment from persistent blue zigzags into brief surface snap-arcs plus a short white/cyan charge discharge immediately after the flip.
-- Added localized heat nodes and a deeper molten outer layer so the material reads as heated/plasma-like rather than uniform liquid.
-- Reduced spark/ember counts and shortened lifetimes so the effect remains restrained and physically attached to the molten runoff.
-- Preserved the top-to-bottom molten streams, lower-rim pools, side/bottom runoff, droplets, smolder-out, tier colors, upright card, and foreground-only renderer.
-- Standard, Premium, and Flagship hit counts remain 3, 4, and 5 total hits respectively.
-- Card artwork, tier selection, collection persistence, countdown, sharing, navigation, audio, and the existing final flip behavior remain unchanged.
-- Review-remediation status: Cubic's two concrete P2 findings were validated; the deepColor compositing state is now explicitly restored around the dark layer, and heat-node alpha now respects nodeProgress. Final CI/re-review remains pending. Runtime visual confirmation remains a manual device/browser check.
+- 2026-09-23: Completed the investigation task "Homepage Visual Quality + Scroll Performance Investigation".
+- Verified root causes for the reported lack of "1080p-class" sharpness (missing `devicePixelRatio` scaling on the canvas) and scroll jank (extreme use of CSS `filter: blur` and `backdrop-filter: blur`).
+- Prepared a detailed findings report. No code changes were implemented, respecting the investigation-only boundary.
 
-## 2026-09-23 - Reference-Driven Cinematic VFX Shell
-- Rebuilt the Lucky Card post-flip effect around the supplied cinematic reference: universal electric-blue energy plus a tier-colored hot-metal material.
-- Kept reveal classification tier-based only; individual card IDs do not select different post-flip visuals.
-- Replaced the prior vertical stream model with irregular rim flows, surface pools, depth-separated electrical arcs, surface filaments, splatter, droplets, and cooling.
-- Added rear/background and foreground canvas passes to create stronger apparent 3D depth while keeping the card artwork and upright orientation unchanged.
-- Tier material palette: Standard = copper/bronze, Premium = silver/pewter, Flagship = polished gold.
-- Blue electrical arcs are deliberately thicker than the prior implementation, but sparse enough to preserve card readability on mobile.
-- No new dependency introduced; existing card selection, hit counts, flip choreography, collection, countdown, sharing, navigation, audio, and reduced-motion behavior remain unchanged.
-- Verification of build/CI and independent runtime visual review remains pending.
-
-## Recent Changes
-- Downloaded `NGC4216_crawford.jpg` via standard CLI (`curl`/python script).
-- Modified `app/lucky-card-reveal.js` to insert a fixed full-screen `next/image` background.
-- Verified build (`pnpm run build`) and tests (`pnpm test`).
-- Executed `./jules-verify.sh` successfully.
-
-## Completed Work
-- Reduced regular hits by one across all tiers (Standard: 3, Premium: 4, Flagship: 5).
-- Historical: The prior 3D plasma burnout implementation was documented as lasting ~2.5s post-flip; superseded by the current 4.2s post-flip crawl.
-
-- Repaired `lucky-card-reveal.js` to dispatch `unlockedCardsUpdated` and persist to `unlockedCards`.
-- Historical: The prior implementation set `FINAL_HIT_DISSIPATE` to 4.3s; superseded by the current 6.0s total final-hit lifetime (4.2s post-flip).
-- Replaced flat `arc` based plasma with 3D volumetric bezier streams.
-- Updated CSS text-shadow on `h1` in `themes/default/homepage.css` to fix readability.
-- Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
+## Next Steps
+- Await approval of the investigation report.
+- An upcoming task will authorize the implementation of the proposed fixes (DPR scaling, CSS filter optimization).
 
 
 ## 2026-09-24 - Premium 3D Volumetric Energy Polish
@@ -48,10 +19,17 @@
 - Adjusted `drawMoltenBurst` to feature a 3D pop effect.
 - Upgraded the inner core rendering to a stark white/cyan structure with layered multi-pass screen blending for authentic illumination.
 - Converted full-screen `arc` gradient fills to tightly bounded `fillRect` calls, strictly enforcing high mobile framerates and meeting the 1080p target fidelity efficiently.
-- Passed local `./jules-verify.sh` and `pnpm run build` without regression.
+- Automated verification passed (`./jules-verify.sh` and `pnpm run build`); independent visual regression review remains pending.
 
-## Next Steps
-- Complete repository verification and independent visual re-review of the updated post-flip electrical/heat treatment before final approval.
+## Completed Work
+- Reduced regular hits by one across all tiers (Standard: 3, Premium: 4, Flagship: 5).
+- Historical: The prior 3D plasma burnout implementation was documented as lasting ~2.5s post-flip; superseded by the current 4.2s post-flip crawl.
+
+- Repaired `lucky-card-reveal.js` to dispatch `unlockedCardsUpdated` and persist to `unlockedCards`.
+- Historical: The prior implementation set `FINAL_HIT_DISSIPATE` to 4.3s; superseded by the current 6.0s total final-hit lifetime (4.2s post-flip).
+- Replaced flat `arc` based plasma with 3D volumetric bezier streams.
+- Updated CSS text-shadow on `h1` in `themes/default/homepage.css` to fix readability.
+- Refined beam and residual energy visuals in `app/lucky-card-reveal.js`.
 
 ## 2026-09-22 Updates
 - Fixed the wording on the Lucky Card reveal screen to read "Today's Lucky Card" and "A new Lucky Card awaits your collection."
@@ -70,3 +48,14 @@
 - Addressed task #1: Enhanced the existing Lucky Card Reveal cinematic at the final reveal/payoff moment.
 - Refined `app/lucky-card-reveal.js` by slowing the hero settle `duration: 1.2`, improving tension grab scale/y coordinates, and adding a slight `filter: brightness(1.5)` pulse during the throw.
 - The molten/afterglow dissipation was eased using a `smoothstep` ease-in-out calculation for a more natural release.
+- Protected scopes (artwork, audio, tiers, hit counts) were respected.
+- Build passed.
+
+## 2026-09-24 - Post-Flip 3D Projection Cinematic Polish
+- Applied true 3D Z-axis projection mathematics to `app/lucky-card-reveal.js` without relying on DOM manipulation.
+- Refined `drawMoltenBurst` so edge explosions pop outwards (`zPop`).
+- Adjusted `drawEnergyArc` so energy strands blow away from the card surface during dissipation (`zBlow`).
+- Introduced continuous 3D depth to `drawDroplet` splatters, adjusting scale and offset appropriately as they travel towards the camera.
+- Pushed background pools deeper into the z-plane (`zPush`).
+- Choreographed Framer Motion with a new physical tumble (`rotateX`, `rotateZ`) during the reveal throw, followed by a continuous slow float through the post-flip dissipation.
+- Respected the 495 MB cap and completed tests effectively.
