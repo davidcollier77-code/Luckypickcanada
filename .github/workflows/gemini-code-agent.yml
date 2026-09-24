@@ -66,3 +66,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # GitHub Actions is a headless/automated environment; explicitly trust the checked-out workspace.
+          GEMINI_CLI_TRUST_WORKSPACE: 'true'
