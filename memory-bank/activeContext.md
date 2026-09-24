@@ -1,5 +1,10 @@
 # Active Context
 
+## 2026-09-24 — Gemini CLI Workspace Trust Repair
+- Verified the `@gemini-cli /review` workflow was triggering but Gemini CLI exited before review because the GitHub Actions workspace was not trusted.
+- Updated `.github/workflows/gemini-code-agent.yml` to set `GEMINI_CLI_TRUST_WORKSPACE=true` for the Gemini CLI step, matching the supported headless/CI trust mechanism.
+- Kept the Lucky Card Reveal application/audio implementation out of this repair; the Gemini workflow fix is isolated to the dedicated repair branch.
+
 ## Current Work
 - 2026-09-24: Audited the repository and implemented the Gemini Code Agent / GitHub Actions integration to allow Gemini to operate as a PR-based coding/review agent.
 - 2026-09-24: Audio-only sound-design and synchronization pass for the existing Lucky Card Reveal cinematic.
