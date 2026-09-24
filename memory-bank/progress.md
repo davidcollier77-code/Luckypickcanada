@@ -27,9 +27,13 @@
 
 ## Historical Record
 
+### 2026-09-24 — Lucky Card Reveal Audio Synchronization
+- Integrated the seven existing authored reveal sounds into the Lucky Card Reveal while preserving the existing Standard: 3 / Premium: 4 / Flagship: 5 hit schedule and visual choreography.
+- Synchronized final lock-on audio to the existing final hit/grab point and the remaining authored cues to the existing flip and settle boundaries.
+
 ### Completed Features
 - **Lucky Card Reveal System**: Full cinematic reveal with tier-based visuals (Standard, Premium, Flagship)
-- **Tier-Based Hit System**: Regular reveal hits are Standard: 3, Premium: 5, Flagship: 7
+- **Tier-Based Hit System**: Reduced regular hits across all tiers (Standard: 3, Premium: 4, Flagship: 5)
 - **3D Volumetric VFX**: Replaced flat arc-based plasma with 3D volumetric bezier streams
 - **Progressive Rim Flow**: Each rim flow progressively reveals only the traversed portion of card edge
 - **Post-Flip VFX Sequence**: Three-stage sequence - electric edge-wrap, molten snap/pop bursts, lower-edge drips
@@ -49,10 +53,3 @@
 - **2026-09-23**: Polished Lucky Card Reveal cinematic - enhanced hero settle, tension grab, throw brightness pulse
 - **2026-09-23**: Completed homepage performance investigation
 - **2026-09-24**: Implemented Gemini Code Agent / GitHub Actions integration
-
-
-### 2026-09-24 — Lucky Card Reveal Audio All-Tier Correction
-- Corrected the shared reveal tier schedule to Standard: 3, Premium: 5, Flagship: 7.
-- Reworked authored audio scheduling to use the same hit contact, final lock, flip, snap, and post-flip boundaries as the visual reveal.
-- Removed looped electrical_arc playback from the cinematic reveal and added explicit per-hit cleanup.
-- Strengthened lifecycle cleanup so stale audio timers/instances cannot bleed into a later reveal.
