@@ -862,8 +862,8 @@ export default function LuckyCardReveal() {
               if (audioRefs.current.impact) {
                   // Tier differentiation: Pitch shift slightly for higher tiers to sound more energetic
                   const rate = activeTierRef.current === 'flagship' ? 1.1 : activeTierRef.current === 'premium' ? 1.05 : 1.0;
-                  audioRefs.current.impact.rate(rate);
-                  audioRefs.current.impact.play();
+                  const impactId = audioRefs.current.impact.play();
+                  audioRefs.current.impact.rate(rate, impactId);
               }
               if (audioRefs.current.arc) {
                   const arcId = audioRefs.current.arc.play();
@@ -882,24 +882,35 @@ export default function LuckyCardReveal() {
       const F_WRAP = 0.4;
       const flipAbsTime = finalHitStartTime + FINAL_FLIP_TIME;
 
-      // Lock-on begins just before final wrap
+      // Increase beam intensity/pitch just before final sequence
       audioTimers.current.push(setTimeout(() => {
-          if (audioRefs.current.lockOn) {
-              audioRefs.current.lockOn.play();
-          }
-          // Increase beam intensity/pitch for final sequence
           if (audioRefs.current.beam) {
               audioRefs.current.beam.fade(0.5, 0.8, 400);
               audioRefs.current.beam.rate(1.2);
           }
       }, finalHitStartTime * 1000));
 
-      // Maximum discharge at final hit contact
+      // Final lock-on at exact contact (Energy Transfer / Grab)
+      audioTimers.current.push(setTimeout(() => {
+          if (audioRefs.current.impact) {
+              const rate = activeTierRef.current === 'flagship' ? 1.1 : activeTierRef.current === 'premium' ? 1.05 : 1.0;
+              const finalImpactId = audioRefs.current.impact.play();
+              audioRefs.current.impact.rate(rate, finalImpactId);
+          }
+          if (audioRefs.current.lockOn) {
+              audioRefs.current.lockOn.play();
+          }
+      }, (finalHitStartTime + F_WRAP) * 1000));
+
+      // Reveal flip (snap & maximum discharge)
       audioTimers.current.push(setTimeout(() => {
           if (audioRefs.current.discharge) {
               const rate = activeTierRef.current === 'flagship' ? 1.0 : activeTierRef.current === 'premium' ? 1.1 : 1.2; // Pitch down for flagship = heavier
-              audioRefs.current.discharge.rate(rate);
-              audioRefs.current.discharge.play();
+              const dischargeId = audioRefs.current.discharge.play();
+              audioRefs.current.discharge.rate(rate, dischargeId);
+          }
+          if (audioRefs.current.snap) {
+              audioRefs.current.snap.play();
           }
           // Stop beam
           if (audioRefs.current.beam) {
@@ -908,11 +919,6 @@ export default function LuckyCardReveal() {
                 if (audioRefs.current.beam) audioRefs.current.beam.stop();
               }, 300);
           }
-      }, (finalHitStartTime + F_WRAP) * 1000));
-
-      // Reveal snap at actual flip time
-      audioTimers.current.push(setTimeout(() => {
-          if (audioRefs.current.snap) audioRefs.current.snap.play();
       }, flipAbsTime * 1000));
 
       // Post-reveal dissipation
