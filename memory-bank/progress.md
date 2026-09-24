@@ -29,7 +29,7 @@
 
 ### Completed Features
 - **Lucky Card Reveal System**: Full cinematic reveal with tier-based visuals (Standard, Premium, Flagship)
-- **Tier-Based Hit System**: Reduced regular hits across all tiers (Standard: 3, Premium: 4, Flagship: 5)
+- **Tier-Based Hit System**: Regular reveal hits are Standard: 3, Premium: 5, Flagship: 7
 - **3D Volumetric VFX**: Replaced flat arc-based plasma with 3D volumetric bezier streams
 - **Progressive Rim Flow**: Each rim flow progressively reveals only the traversed portion of card edge
 - **Post-Flip VFX Sequence**: Three-stage sequence - electric edge-wrap, molten snap/pop bursts, lower-edge drips
