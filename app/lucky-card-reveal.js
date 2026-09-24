@@ -867,7 +867,7 @@ export default function LuckyCardReveal() {
     playButtonClick();
 
     const tier = activeTierRef.current || 'standard';
-    const totalHits = TIER_HITS[tier] || TIER_HITS.standard;
+    const audioTotalHits = TIER_HITS[tier] || TIER_HITS.standard;
     const profile = {
       standard: { beam: 0.34, arc: 0.34, finalBeam: 0.58, impactRate: 1.00, lockRate: 1.04, dischargeRate: 1.08 },
       premium: { beam: 0.36, arc: 0.38, finalBeam: 0.64, impactRate: 1.04, lockRate: 1.00, dischargeRate: 1.03 },
@@ -883,7 +883,7 @@ export default function LuckyCardReveal() {
       audioRefs.current.beam.fade(0, profile.beam, 320, revealBeamId);
     }, 0);
 
-    for (let i = 0; i < totalHits; i += 1) {
+    for (let i = 0; i < audioTotalHits; i += 1) {
       const hitStart = i * HIT_DURATION;
       const contactTime = hitStart + P_WRAP;
       const isFinalHit = i === totalHits - 1;
