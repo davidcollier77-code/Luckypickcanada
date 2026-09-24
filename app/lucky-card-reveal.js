@@ -8,6 +8,7 @@ import { motion, useAnimate, useReducedMotion } from 'framer-motion';
 import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
 import MidnightCountdown from '../components/midnight-countdown';
+import { Howl, Howler } from 'howler';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
 
