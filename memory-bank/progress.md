@@ -2,8 +2,16 @@
 
 ## Completed Work
 
+### 2026-09-24 — Lucky Card Reveal Audio Synchronization
+- Conducted audio sound design and timing implementation for the Lucky Card Reveal component.
+- Implemented `Howler` JS based audio sequences.
+- Corrected `impact` rate adjustments to be bound per playback ID (e.g. `audioRefs.current.impact.rate(rate, impactId)`).
+- Shifted `final_lock_on` to trigger simultaneously with the final `beam_impact` at exact contact (`F_WRAP`).
+- Shifted `final_discharge` and `reveal_snap` to trigger together during the flip (`F_FLIP_TIME` / `flipAbsTime`), matching the visual flash.
+- Ensured only approved local `.mp3` assets are loaded and played.
+
 ### 2026-09-24 — Gemini Code Agent Integration
-- Audited the repository for existing Gemini Code Agent implementations (none found).
+- Audited the repository for existing Gemini Code Agent implementations.
 - Integrated the official `google-github-actions/run-gemini-cli` action in `.github/workflows/gemini-code-agent.yml`.
 - Configured the workflow to respond to `@gemini-cli` mentions on issues and pull requests.
 - Updated `.gitignore` to prevent committing `.gemini/` artifacts.
@@ -20,7 +28,6 @@
 ## Historical Record
 
 ### Completed Features
-
 - **Lucky Card Reveal System**: Full cinematic reveal with tier-based visuals (Standard, Premium, Flagship)
 - **Tier-Based Hit System**: Reduced regular hits across all tiers (Standard: 3, Premium: 4, Flagship: 5)
 - **3D Volumetric VFX**: Replaced flat arc-based plasma with 3D volumetric bezier streams
@@ -35,34 +42,10 @@
 - **Audio System**: Howler.js-based audio management with caching
 
 ### Historical Milestones
-
 - **2026-09-22**: Fixed Lucky Card reveal screen wording and improved text readability
 - **2026-09-22**: Mobile polish - removed translucent UI overlay, hid custom scrollbar on mobile
 - **2026-09-23**: Fixed drawRimFlow progressive reveal with tier colors and timing
 - **2026-09-23**: Refined final post-flip VFX - electric edge-wrap, molten bursts, lower-edge drips
 - **2026-09-23**: Polished Lucky Card Reveal cinematic - enhanced hero settle, tension grab, throw brightness pulse
 - **2026-09-23**: Completed homepage performance investigation
-- **2026-09-24**: Implemented Gemini Code Agent / GitHub Actions integration (current task)
-
-## Remaining Technical Debt
-
-### Critical Constraints
-
-### Hydration Issues
-
-- **Canvas timestamp rendering**: Ensure server-rendered timestamp matches client hydration
-- **Dynamic content**: Any time-based or random content must use consistent seed between server/client
-- **useEffect dependencies**: Review all useEffect hooks for missing dependencies that could cause hydration mismatches
-
-### Cloudflare Turnstile
-
-- **Form protection**: Turnstile is integrated for suggestion box and gift delivery
-- **Testing mode**: Turnstile has test mode keys for development (always passes)
-- **Production keys**: Ensure production Turnstile keys are configured in environment
-- **Error handling**: Turnstile failure should gracefully degrade or show user-friendly error
-- **Rate limiting**: Consider additional rate limiting beyond Turnstile for API routes
-
-### Performance
-
-- **Homepage visual quality**: Canvas DPR scaling needed (from 2026-09-23 investigation)
-- **Scroll performance**: CSS filter optimization needed (from 2026-09-23 investigation)
+- **2026-09-24**: Implemented Gemini Code Agent / GitHub Actions integration
