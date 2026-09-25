@@ -19,6 +19,6 @@ Current repair on branch `fix/lucky-card-audio-runtime`:
 ## 2026-09-25 — Lucky Card Audio Runtime Repair
 - Branch: `fix/lucky-card-audio-runtime`
 - Verified defect in `app/lucky-card-reveal.js`: Audio cues were using hard cutoffs that chopped the audio prematurely.
-- Addressed by implementing extended fade/stop windows for all cinematic assets in `app/lucky-card-reveal.js`, matching the measured length of the MP3 files.
+- Addressed by implementing extended fade/stop windows in `app/lucky-card-reveal.js`: whoosh (4.88s asset → 1.2s stop), beam impact (1.59s asset → 1.6s stop), lock-on (1.15s asset → 1.15s stop), discharge (7.68s asset → 3.0s stop), reveal snap (4.02s asset → 2.5s stop), electrical arc (2.22s asset → 2.2s stop). Assets are deliberately truncated to fit the reveal sequence timing while avoiding the previous aggressive hard cutoffs.
 - Ensured build size does not exceed the 495 MB cap.
 - Verified standard tests pass.
