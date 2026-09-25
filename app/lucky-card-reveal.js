@@ -1003,22 +1003,6 @@ export default function LuckyCardReveal() {
       return timerId;
     };
 
-    const stopAfter = (soundKey, id, fadeMs, stopMs) => {
-      const sound = audioRefs.current[soundKey];
-      if (!sound || id == null) return;
-      if (fadeMs > 0) {
-        const currentVolume =
-          soundKey === 'beamApproach' ? 0.44 :
-          soundKey === 'beamImpact' ? 0.82 :
-          soundKey === 'finalLockOn' ? 0.86 :
-          soundKey === 'finalDischarge' ? 0.9 :
-          soundKey === 'revealSnap' ? 0.52 :
-          0.28;
-        sound.fade(currentVolume, 0, fadeMs, id);
-      }
-      scheduleAudio(() => audioRefs.current[soundKey]?.stop(id), stopMs);
-    };
-
     const totalHitsForAudio = TIER_HITS[card.tier] || 3;
     const finalHitStartTimeForAudio = (totalHitsForAudio - 1) * HIT_DURATION;
     const finalFlipStartForAudio = finalHitStartTimeForAudio + FINAL_FLIP_TIME;
