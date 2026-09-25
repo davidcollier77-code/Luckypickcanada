@@ -28,10 +28,10 @@
 ## 2026-09-25 — Measured Audio Timing Repair
 - Analyzed the supplied Standard reveal capture and extracted soundtrack rather than relying on filenames alone.
 - Measured repository MP3 source lengths by parsing their actual frame headers.
-- Confirmed the long-tail risk: several reveal cues are multi-second assets, including \`mixkit-cinematic-impact.mp3\` (9.012s), \`final_discharge.mp3\` (7.706s), \`reveal_snap.mp3\` (4.049s), and \`mixkit-firework-crackle.mp3\` (22.805s).
-- Updated \`app/lucky-card-reveal.js\` so no long source is allowed to run as an unbounded reveal layer; each cue is explicitly faded/stopped inside its visual phase.
-- Replaced the per-hit long impact/magic stack with the measured 1.620s \`beam_impact.mp3\`, hard-bounded to the contact event.
-- Replaced the 22.805s firework crackle post-flip cue with the 2.247s \`electrical_arc.mp3\` and hard-stopped it after the intended runoff window.
+- Confirmed the long-tail risk: several reveal cues are multi-second assets, including `mixkit-cinematic-impact.mp3` (9.012s), `final_discharge.mp3` (7.706s), `reveal_snap.mp3` (4.049s), and `mixkit-firework-crackle.mp3` (22.805s).
+- Updated `app/lucky-card-reveal.js` so no long source is allowed to run as an unbounded reveal layer; each cue is explicitly faded/stopped inside its visual phase.
+- Replaced the per-hit long impact/magic stack with the measured 1.620s `beam_impact.mp3`, hard-bounded to the contact event.
+- Replaced the 22.805s firework crackle post-flip cue with the 2.247s `electrical_arc.mp3` and hard-stopped it after the intended runoff window.
 - No visual choreography, tier counts, card artwork, reset, collection, share, or reduced-motion behavior was intentionally changed.
 ## 2026-09-25 — Lucky Card Reveal Standard Audio Sync Repair
 - Identified precise waveform peaks for beamApproach (1.04s) and beamImpact (0.208s peak, 0.13s audible start).
@@ -47,3 +47,9 @@
 - Premium and Flagship audio choreography was deliberately left unchanged.
 - No visual/VFX timing or artwork changes were made.
 - Verification still required: repository tests/build and final diff inspection before merge.
+
+## 2026-09-25 — Gemini GitHub Integration Cleanup
+- Verified PR #1233 removed the repository GitHub Actions workflow that invoked Gemini CLI.
+- Confirmed the current `main` branch contains no `run-gemini-cli` action, `@gemini-cli` trigger, or dedicated Gemini Code Agent workflow.
+- Preserved the site's separate Gemini-powered Oracle endpoint in `functions/api/oracle.js`.
+- Removed the obsolete `.gemini/` ignore rule left over from the removed GitHub integration.
