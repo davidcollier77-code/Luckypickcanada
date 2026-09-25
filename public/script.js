@@ -57,11 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const qDiv = document.createElement('div');
     qDiv.className = 'log-q';
     qDiv.textContent = `Q: ${question}`;
-    qDiv.innerHTML = `Q: ${escapeHtml(question)}`;
     const aDiv = document.createElement('div');
     aDiv.className = 'log-a';
     aDiv.textContent = answer;
-    aDiv.innerHTML = escapeHtml(answer);
     li.appendChild(qDiv);
     li.appendChild(aDiv);
 
