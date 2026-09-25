@@ -28,7 +28,6 @@ Current repair on branch `fix/lucky-card-audio-runtime`:
 - Verified standard tests pass.
 
 ## 2026-09-25 — Standard-Tier Audio Sound-Design Repair
-## 2026-09-25 — Lucky Card Reveal Standard Audio Beeping Fix
 
 - Branch: `fix/lucky-card-standard-audio-sound-design`
 
