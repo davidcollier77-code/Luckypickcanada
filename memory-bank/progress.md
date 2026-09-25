@@ -33,3 +33,7 @@
 - Replaced the per-hit long impact/magic stack with the measured 1.620s \`beam_impact.mp3\`, hard-bounded to the contact event.
 - Replaced the 22.805s firework crackle post-flip cue with the 2.247s \`electrical_arc.mp3\` and hard-stopped it after the intended runoff window.
 - No visual choreography, tier counts, card artwork, reset, collection, share, or reduced-motion behavior was intentionally changed.
+## 2026-09-25 — Lucky Card Reveal Standard Audio Sync Repair
+- Identified precise waveform peaks for beamApproach (1.04s) and beamImpact (0.208s peak, 0.13s audible start).
+- Adjusted app/lucky-card-reveal.js audio scheduling so beam_impact.mp3 plays 0.13s early and mixkit-cinematic-whoosh.mp3 skips its first 0.64s.
+- Flawlessly aligned audio climaxes to the verified visual contact timing (0.4s) for Standard hits without adding dependencies, changing visuals, or expanding scope.
