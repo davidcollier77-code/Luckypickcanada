@@ -1024,8 +1024,8 @@ export default function LuckyCardReveal() {
         const id = sound.play();
         const volume = isFinalHit ? 0.58 : Math.min(0.5 + i * 0.035, 0.58);
         sound.volume(volume, id);
-        scheduleAudio(() => sound.fade(volume, 0, 230, id), 420);
-        scheduleAudio(() => sound.stop(id), 690);
+        scheduleAudio(() => sound.fade(volume, 0, 800, id), 400);
+        scheduleAudio(() => sound.stop(id), 1200);
       }, hitStart * 1000);
 
       // One physical impact only. Do not layer a second long "magic" tail on every hit.
@@ -1035,8 +1035,8 @@ export default function LuckyCardReveal() {
         const id = sound.play();
         const volume = isFinalHit ? 0.9 : Math.min(0.68 + i * 0.06, 0.82);
         sound.volume(volume, id);
-        sound.fade(volume, 0, 520, id);
-        scheduleAudio(() => sound.stop(id), 610);
+        sound.fade(volume, 0, 1500, id);
+        scheduleAudio(() => sound.stop(id), 1600);
       }, contact * 1000);
 
       if (isFinalHit) {
@@ -1046,8 +1046,8 @@ export default function LuckyCardReveal() {
           if (!sound) return;
           const id = sound.play();
           sound.volume(0.86, id);
-          sound.fade(0.86, 0, 330, id);
-          scheduleAudio(() => sound.stop(id), 440);
+          sound.fade(0.86, 0, 1100, id);
+          scheduleAudio(() => sound.stop(id), 1150);
         }, (hitStart + 0.18) * 1000);
 
         // Final discharge: the authored 7.706s source is deliberately truncated
@@ -1057,8 +1057,8 @@ export default function LuckyCardReveal() {
           if (!sound) return;
           const id = sound.play();
           sound.volume(0.9, id);
-          sound.fade(0.9, 0, 1050, id);
-          scheduleAudio(() => sound.stop(id), 1450);
+          sound.fade(0.9, 0, 3000, id);
+          scheduleAudio(() => sound.stop(id), 3000);
         }, finalFlipStartForAudio * 1000);
 
         // Reveal snap is a transient at the end of the 3D flip, not a four-second tail.
@@ -1067,8 +1067,8 @@ export default function LuckyCardReveal() {
           if (!sound) return;
           const id = sound.play();
           sound.volume(0.52, id);
-          sound.fade(0.52, 0, 320, id);
-          scheduleAudio(() => sound.stop(id), 480);
+          sound.fade(0.52, 0, 2000, id);
+          scheduleAudio(() => sound.stop(id), 2500);
         }, Math.max(0, (finalFlipEndForAudio - 0.06) * 1000));
 
         // Post-flip electrical runoff: use the measured 2.247s electrical asset,
@@ -1080,8 +1080,8 @@ export default function LuckyCardReveal() {
           if (!sound) return;
           const id = sound.play();
           sound.volume(0.28, id);
-          sound.fade(0.28, 0, 1850, id);
-          scheduleAudio(() => sound.stop(id), 2100);
+          sound.fade(0.28, 0, 2100, id);
+          scheduleAudio(() => sound.stop(id), 2200);
         }, postFlipStart * 1000);
 
         // Final guarantee: reveal-owned audio is silent shortly after the
@@ -1091,7 +1091,7 @@ export default function LuckyCardReveal() {
             if (sound) sound.stop();
           });
           audioTimersRef.current = [];
-        }, (postFlipStart + 2.2) * 1000);
+        }, (postFlipStart + 4.0) * 1000);
       }
     }
 

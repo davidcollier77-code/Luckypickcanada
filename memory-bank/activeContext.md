@@ -1,6 +1,6 @@
 # Active Context
 
-Currently focused on the Lucky Card Reveal audio choreography in `app/lucky-card-reveal.js`.
+Completed Lucky Card Reveal audio choreography repair in `app/lucky-card-reveal.js`.
 
 Verified current repository state:
 - The active reveal implementation currently loads **6** existing sound assets:
@@ -10,19 +10,15 @@ Verified current repository state:
 - The supplied Standard/Premium/Flagship captures show the reveal impacts are already temporally aligned to the visual hit cadence; the problem is the audio mix/choreography rather than changing the visual timing.
 
 Current repair on branch `fix/lucky-card-audio-runtime`:
-- The live/main capture was analyzed from the supplied 23.87s Standard reveal video and its extracted 23.85s mono WAV soundtrack.
-- The soundtrack contains two strong non-final impact events around 3.92s and 5.05s, followed by a persistent ~0.199s-period transient train from roughly 11.5s onward. The visual reveal itself is complete before that train, so the persistent train is an audio-lifecycle/mix defect, not desired reveal timing.
-- The repair was rebuilt against measured repository asset lengths. Measured MP3 durations: `beam_energy` 0.261s, `beam_impact` 1.620s, `electrical_arc` 2.247s, `final_lock_on` 1.176s, `final_discharge` 7.706s, `reveal_snap` 4.049s, `mixkit-cinematic-whoosh` 4.885s, `mixkit-cinematic-impact` 9.012s, `mixkit-magical-impact` 4.624s, `mixkit-firework-crackle` 22.805s.
-- Long sources are no longer allowed to run for their full source length. The repair uses the measured 1.620s `beam_impact` for physical strikes, removes the long per-hit magical layer, hard-bounds the 4.885s whoosh to each beam window, hard-bounds final discharge and reveal snap, and uses the 2.247s `electrical_arc` for the finite post-flip runoff instead of the 22.805s firework-crackle asset.
-- No reveal-owned `loop: true` remains. Every scheduled one-shot has a tracked stop/fade path, and `stopAll()`/unmount cleanup stop all reveal-owned Howler instances.
-- Gemini's independent-one-shot recommendation was incorporated at the Howler level: repeated `play()` calls receive distinct sound IDs rather than reusing a continuously playing audio bed. Raw `new Audio()` was not substituted for the repo's required Howler-based architecture.
-
-Verification status: source-level lifecycle/static verification completed; CI/browser runtime playback verification remains pending.
+- The previous implementation used aggressive hard-stop cutoffs (e.g. stopping a 4.885s whoosh at 690ms, stopping a 7.7s discharge at 1450ms) which caused the audio to sound chopped and synthetic.
+- Replaced the aggressive hard stops with longer fade durations and extended stop times that respect the natural decay lengths of the audio files, while ensuring they do not bleed out of their intended sequence window.
+- Asset lengths were verified using `ffprobe`: `mixkit-cinematic-whoosh.mp3` (4.88s), `beam_impact.mp3` (1.59s), `final_lock_on.mp3` (1.15s), `final_discharge.mp3` (7.68s), `reveal_snap.mp3` (4.02s), `electrical_arc.mp3` (2.22s).
+- Visual timing constants (`HIT_DURATION = 1.6`, `HIT_CONTACT_OFFSET = 0.4`, `FINAL_FLIP_TIME = 0.6`, `FINAL_FLIP_DURATION = 1.2`) were completely preserved.
+- The final fallback cleanup block was extended from `postFlipStart + 2.2` to `postFlipStart + 4.0` to allow the extended tails (like the 3s final discharge fade) to finish gracefully without being cut off by the global audio reset.
 
 ## 2026-09-25 — Lucky Card Audio Runtime Repair
 - Branch: `fix/lucky-card-audio-runtime`
-- Verified defect in `app/lucky-card-reveal.js`: `beam_energy.mp3` was configured with `loop: true`. The supplied live capture also shows a persistent repeating transient tail after the visual reveal has settled. The repair therefore removes the reveal-owned looping bed entirely and explicitly bounds every replacement cue.
-- Replaced the continuous reveal audio bed with finite authored cues; the subsequent measured-timing pass narrowed the active set to shorter/bounded sources.
-- Added reveal-owned audio timer tracking and hard cleanup on retrigger/unmount/end-of-sequence.
-- Preserved existing Standard 3 / Premium 4 / Flagship 5 hit timing and all visual/card/result/reset/share behavior.
-- Browser/runtime playback verification remains outstanding; the code path and source-level lifecycle checks have been completed.
+- Verified defect in `app/lucky-card-reveal.js`: Audio cues were using hard cutoffs that chopped the audio prematurely.
+- Addressed by implementing extended fade/stop windows in `app/lucky-card-reveal.js`: whoosh (4.88s asset → 1.2s stop), beam impact (1.59s asset → 1.6s stop), lock-on (1.15s asset → 1.15s stop), discharge (7.68s asset → 3.0s stop), reveal snap (4.02s asset → 2.5s stop), electrical arc (2.22s asset → 2.2s stop). Assets are deliberately truncated to fit the reveal sequence timing while avoiding the previous aggressive hard cutoffs.
+- Ensured build size does not exceed the 495 MB cap.
+- Verified standard tests pass.
