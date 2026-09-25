@@ -17,6 +17,10 @@ Current repair on branch `fix/lucky-card-audio-runtime`:
 - The final fallback cleanup block was extended from `postFlipStart + 2.2` to `postFlipStart + 4.0` to allow the extended tails (like the 3s final discharge fade) to finish gracefully without being cut off by the global audio reset.
 
 ## 2026-09-25 — Lucky Card Audio Runtime Repair
+## 2026-09-25 — Lucky Card Reveal Standard Audio Sync Repair
+- Investigated specific audio sync issues for the Standard tier reveal. Discovered that the `mixkit-cinematic-whoosh.mp3` has its audible climax at ~1.04s, and `beam_impact.mp3` has ~0.13s of silence before its physical attack.
+- Repaired audio synchronization without modifying any visual timing by shifting `beam_impact.mp3` playback early by 0.13s, and using Howler`s seek(0.64) on `beamApproach` to perfectly align its climax with the visual contact at `hitStart + 0.4`.
+
 - Branch: `fix/lucky-card-audio-runtime`
 - Verified defect in `app/lucky-card-reveal.js`: Audio cues were using hard cutoffs that chopped the audio prematurely.
 - Addressed by implementing extended fade/stop windows in `app/lucky-card-reveal.js`: whoosh (4.88s asset → 1.2s stop), beam impact (1.59s asset → 1.6s stop), lock-on (1.15s asset → 1.15s stop), discharge (7.68s asset → 3.0s stop), reveal snap (4.02s asset → 2.5s stop), electrical arc (2.22s asset → 2.2s stop). Assets are deliberately truncated to fit the reveal sequence timing while avoiding the previous aggressive hard cutoffs.

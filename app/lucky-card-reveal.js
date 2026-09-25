@@ -1022,6 +1022,7 @@ export default function LuckyCardReveal() {
         const sound = audioRefs.current.beamApproach;
         if (!sound) return;
         const id = sound.play();
+        sound.seek(0.64, id);
         const volume = isFinalHit ? 0.58 : Math.min(0.5 + i * 0.035, 0.58);
         sound.volume(volume, id);
         scheduleAudio(() => sound.fade(volume, 0, 800, id), 400);
@@ -1037,7 +1038,7 @@ export default function LuckyCardReveal() {
         sound.volume(volume, id);
         sound.fade(volume, 0, 1500, id);
         scheduleAudio(() => sound.stop(id), 1600);
-      }, contact * 1000);
+      }, (contact - 0.13) * 1000);
 
       if (isFinalHit) {
         // Final lock begins with the visual wrap and resolves into the flip.
