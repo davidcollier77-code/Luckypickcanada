@@ -18,12 +18,6 @@
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
       "/dropbox/zxcvbn",
-      "/mdn/content",
-      "/pixijs/pixijs",
-      "/mrdoob/three.js",
-      "/adobe/react-spectrum",
-      "/storybookjs/storybook",
-      "/lovell/sharp",
       "/pmndrs/react-three-fiber"
     ],
     "troubleshooting": [
@@ -44,9 +38,6 @@
       "/websites/developer_apple_webkit",
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
-      "/mdn/content",
-      "/open-telemetry/opentelemetry.io",
-      "/GoogleChrome/web.dev",
       "/cloudflare/cloudflare-docs/turnstile",
       "/cloudflare/cloudflare-docs/pages",
       "/websites/neon"
@@ -66,14 +57,8 @@
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
       "/dequelabs/axe-core",
-      "/mdn/content",
-      "/pixijs/pixijs",
-      "/mrdoob/three.js",
-      "/adobe/react-spectrum",
-      "/storybookjs/storybook",
-      "/lovell/sharp",
-      "/GoogleChrome/web.dev",
-      "/magicuidesign/magicui"
+      "/magicuidesign/magicui",
+      "/goldfire/howler.js"
     ],
     "testing": [
       "/github/docs",
@@ -91,13 +76,7 @@
       "/websites/developer_apple_webkit",
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
-      "/dequelabs/axe-core",
-      "/mdn/content",
-      "/adobe/react-spectrum",
-      "/OWASP/wstg",
-      "/storybookjs/storybook",
-      "/open-telemetry/opentelemetry.io",
-      "/GoogleChrome/web.dev"
+      "/dequelabs/axe-core"
     ],
     "security": [
       "/vercel/next.js",
@@ -118,7 +97,6 @@
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
       "/dropbox/zxcvbn",
-      "/OWASP/wstg",
       "/cloudflare/cloudflare-docs/turnstile",
       "/marsidev/react-turnstile",
       "/upstash/ratelimit"
@@ -129,7 +107,8 @@
       "jules.google/docs",
       "developers.google.com/jules/api",
       "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api"
+      "/websites/ai_google_dev_gemini-api",
+      "/goldfire/howler.js"
     ],
     "deep-dive": [
       "/github/docs",
@@ -155,16 +134,6 @@
       "/websites/developer_apple_webkit",
       "/android/developers",
       "/dequelabs/axe-core",
-      "/mdn/content",
-      "/pixijs/pixijs",
-      "/mrdoob/three.js",
-      "/adobe/react-spectrum",
-      "/OWASP/wstg",
-      "/google/search-central",
-      "/storybookjs/storybook",
-      "/open-telemetry/opentelemetry.io",
-      "/lovell/sharp",
-      "/GoogleChrome/web.dev",
       "/cloudflare/cloudflare-docs/pages",
       "/posthog/posthog-js"
     ],
@@ -180,9 +149,7 @@
       "jules.google/docs",
       "developers.google.com/jules/api",
       "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api",
-      "/google/search-central",
-      "/GoogleChrome/web.dev"
+      "/websites/ai_google_dev_gemini-api"
     ]
   },
   "sources": {
@@ -357,6 +324,10 @@
     "/posthog/posthog-js": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/PostHog/posthog-js/main/README.md"
+    },
+    "/goldfire/howler.js": {
+      "type": "url",
+      "url": "https://context7.com/goldfire/howler.js/llms.txt"
     }
   },
   "inventory": [
@@ -395,16 +366,6 @@
     "/android/developers",
     "/dequelabs/axe-core",
     "/dropbox/zxcvbn",
-    "/mdn/content",
-    "/pixijs/pixijs",
-    "/mrdoob/three.js",
-    "/adobe/react-spectrum",
-    "/OWASP/wstg",
-    "/google/search-central",
-    "/storybookjs/storybook",
-    "/open-telemetry/opentelemetry.io",
-    "/lovell/sharp",
-    "/GoogleChrome/web.dev",
     "/cloudflare/cloudflare-docs/turnstile",
     "/cloudflare/cloudflare-docs/pages",
     "/marsidev/react-turnstile",
@@ -412,7 +373,8 @@
     "/pmndrs/react-three-fiber",
     "/websites/neon",
     "/magicuidesign/magicui",
-    "/posthog/posthog-js"
+    "/posthog/posthog-js",
+    "/goldfire/howler.js"
   ],
   "githubShas": {
     "/github/docs": "75ea7dd097a5564f27364a5b70eaa1979106eabd",

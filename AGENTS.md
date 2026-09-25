@@ -320,8 +320,8 @@ Do not claim completion.
 
 - Use pnpm. NEVER use "npm ci".
 - Inspect "package.json" before using or claiming package scripts.
-- Audio tasks follow ".jules/audio.md"; Howler is primary unless repository
-  guidance says otherwise.
+- Audio tasks follow ".jules/audio.md"; Howler.js ("/goldfire/howler.js") is primary unless repository
+  guidance says otherwise. Consult ".docs/polishing/_goldfire_howler_js.md" when available.
 - Do not introduce prohibited public MP3 assets.
 - Preserve accessibility, keyboard behavior, responsive behavior, and
   prefers-reduced-motion.
