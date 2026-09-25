@@ -8,6 +8,7 @@ import { Howl } from 'howler';
 import { motion, useAnimate, useReducedMotion } from 'framer-motion';
 import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
+import { playButtonClick } from './lib/audio';
 import MidnightCountdown from '../components/midnight-countdown';
 
 const STORAGE_KEY = 'lucky-pick-canada-todays-lucky-moment';
@@ -866,6 +867,7 @@ export default function LuckyCardReveal() {
 
   const triggerCardDraw = () => {
     stopAll();
+    playButtonClick();
 
     const card = selectWeightedLuckyCard(previousCardId);
     activeTierRef.current = card.tier;
