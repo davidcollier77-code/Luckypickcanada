@@ -77,7 +77,7 @@ export default function LuckyCardReveal() {
 
   // Pre-load sounds on mount
   useEffect(() => {
-    audioRefs.current.beamEnergy = new Howl({ src: ['/sounds/beam_energy.mp3'], volume: 0.8, preload: true });
+    audioRefs.current.beamEnergy = new Howl({ src: ['/sounds/beam_energy.mp3'], volume: 0.8, preload: true, loop: true });
     audioRefs.current.beamImpact = new Howl({ src: ['/sounds/beam_impact.mp3'], volume: 1.0, preload: true });
     audioRefs.current.electricalArc = new Howl({ src: ['/sounds/electrical_arc.mp3'], volume: 0.42, preload: true });
     audioRefs.current.finalLockOn = new Howl({ src: ['/sounds/final_lock_on.mp3'], volume: 1.0, preload: true });
