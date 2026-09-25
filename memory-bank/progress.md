@@ -1,12 +1,17 @@
 # Progress
 
 ## COMPLETED
-- Implemented authored audio system for Lucky Card Reveal cinematic in `app/lucky-card-reveal.js`.
-- Replaced global `Howler.stop()` in `useEffect` cleanup with instance-specific `.stop()` calls on `audioRefs.current` to avoid stopping unrelated application audio.
-- Verified all 7 required audio assets (`beam_energy.mp3`, `beam_impact.mp3`, `electrical_arc.mp3`, `final_lock_on.mp3`, `final_discharge.mp3`, `reveal_snap.mp3`, `plasma_dissipation.mp3`) exist and are correctly utilized.
-- Verified no remaining placeholder beeps are loaded or played in `lucky-card-reveal.js`.
-- Verified build and tests pass successfully.
+- Verified the current Lucky Card Reveal audio implementation uses 6 active reveal sound assets, not 7.
+- Verified the previous implementation contained rate-randomized repeated impacts and a looping post-flip electrical arc.
+- Implemented a scoped audio-choreography repair in `app/lucky-card-reveal.js`:
+  - removed impact-rate randomization;
+  - replaced final beam replay/rate escalation with a continuous energy bed plus volume escalation;
+  - separated beam fade-out from the final discharge;
+  - moved residual electrical audio to after the completed 3D flip;
+  - changed the electrical arc from a loop to a finite, fading pass.
+- Preserved existing visual timing, tier hit counts (Standard 3 / Premium 4 / Flagship 5), card artwork, reduced-motion behavior, and unrelated site audio.
 
-## 2024-10-31 - Fresh Audio Integration for Card Reveal
-- Cleanly integrated the 6 approved Howler audio clips into `app/lucky-card-reveal.js` for cinematic impacts, sweeps, and lock-on effects.
-- Correctly ensured timeouts are appended to `activeTimeoutsRef` ensuring zero playback drift or memory leaks on reveal cancellation/unmount.
+## 2026-09-24 - Lucky Card Audio Choreography Repair
+- Branch: `fix/lucky-card-audio-choreography`
+- Commit: `0dbad92e16667100fe3bff15fcbfbb8b3eb445f2`
+- Verification status at this checkpoint: code diff reconciled to a single changed application file; CI/browser verification still required before completion.
