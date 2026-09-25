@@ -81,6 +81,46 @@ export default function LuckyCardReveal() {
   });
   const audioTimersRef = useRef([]);
 
+  const audioCtxRef = useRef(null);
+  const audioBuffersRef = useRef({});
+  const rawAudioDataRef = useRef({});
+  const webAudioNodesRef = useRef([]);
+  const webAudioOriginRef = useRef(0);
+  const standardAudioPreloadRef = useRef(null);
+
+  useEffect(() => {
+    const audioSources = {
+      beamApproach: '/sounds/mixkit-cinematic-whoosh.mp3',
+      beamEnergy: '/sounds/beam_energy.mp3',
+      beamImpact: '/sounds/beam_impact.mp3',
+      finalLockOn: '/sounds/final_lock_on.mp3',
+      finalDischarge: '/sounds/final_discharge.mp3',
+      revealSnap: '/sounds/reveal_snap.mp3',
+      electricalArc: '/sounds/electrical_arc.mp3'
+    };
+
+    standardAudioPreloadRef.current = Promise.all(
+      Object.entries(audioSources).map(async ([key, url]) => {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} while loading ${url}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        rawAudioDataRef.current[key] = arrayBuffer;
+      })
+    )
+      .then(() => true)
+      .catch(err => {
+        console.error('Standard reveal audio preload failed:', err);
+        return false;
+      });
+
+    return () => {
+      standardAudioPreloadRef.current = null;
+    };
+  }, []);
+
+
   // Pre-load only the authored reveal cues that fit the measured timing windows.
   // Howler play() returns a unique sound id for each one-shot, so repeated hits can
   // overlap safely without introducing a persistent reveal-owned audio bed.
@@ -166,6 +206,16 @@ export default function LuckyCardReveal() {
     Object.values(audioRefs.current).forEach(sound => {
       if (sound) sound.stop();
     });
+
+    webAudioNodesRef.current.forEach(({ source, gainNode }) => {
+      try {
+        // Cancel scheduled fades
+        gainNode.gain.cancelScheduledValues(0);
+        source.stop();
+      } catch (e) {}
+    });
+    webAudioNodesRef.current = [];
+
   }, []);
 
   useEffect(() => {
@@ -868,7 +918,7 @@ export default function LuckyCardReveal() {
     }
   };
 
-  const triggerCardDraw = () => {
+  const triggerCardDraw = async () => {
     stopAll();
     playButtonClick();
 
@@ -883,6 +933,68 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
 
+    let standardWebAudioReady = false;
+
+    if (card.tier === 'standard') {
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+
+      if (AudioContextCtor) {
+        try {
+          if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+            audioCtxRef.current = new AudioContextCtor();
+          }
+
+          const ctx = audioCtxRef.current;
+
+          // Resume immediately from the user gesture before any asynchronous preload/decode wait.
+          if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
+            await ctx.resume();
+          }
+
+          const preloadPromise = standardAudioPreloadRef.current;
+          const preloadSucceeded = preloadPromise ? await preloadPromise : false;
+
+          if (preloadSucceeded) {
+            const requiredKeys = [
+              'beamApproach',
+              'beamEnergy',
+              'beamImpact',
+              'finalLockOn',
+              'finalDischarge',
+              'revealSnap',
+              'electricalArc'
+            ];
+
+            await Promise.all(
+              requiredKeys.map(async key => {
+                if (!audioBuffersRef.current[key]) {
+                  const arrayBuffer = rawAudioDataRef.current[key];
+                  if (!arrayBuffer) {
+                    throw new Error(`Missing preloaded audio data for ${key}`);
+                  }
+
+                  const clonedBuffer = arrayBuffer.slice(0);
+                  audioBuffersRef.current[key] = await ctx.decodeAudioData(clonedBuffer);
+                }
+              })
+            );
+
+            standardWebAudioReady =
+              requiredKeys.every(key => Boolean(audioBuffersRef.current[key])) &&
+              ctx.state === 'running';
+          }
+
+          if (standardWebAudioReady) {
+            webAudioOriginRef.current = ctx.currentTime;
+          }
+        } catch (err) {
+          standardWebAudioReady = false;
+          console.error('Web Audio initialization failed; using Howler fallback:', err);
+        }
+      } else {
+        console.warn('Web Audio API is unavailable; using Howler fallback for Standard reveal audio.');
+      }
+    }
 
     requestAnimationFrame(() => {
       if (bgCanvasRef.current) {
@@ -1007,6 +1119,16 @@ export default function LuckyCardReveal() {
       if (sound) sound.stop();
     });
 
+    webAudioNodesRef.current.forEach(({ source, gainNode }) => {
+      try {
+        // Cancel scheduled fades
+        gainNode.gain.cancelScheduledValues(0);
+        source.stop();
+      } catch (e) {}
+    });
+    webAudioNodesRef.current = [];
+
+
     const scheduleAudio = (callback, delayMs) => {
       const timerId = setTimeout(callback, Math.max(0, delayMs));
       audioTimersRef.current.push(timerId);
@@ -1018,7 +1140,53 @@ export default function LuckyCardReveal() {
     const finalFlipStartForAudio = finalHitStartTimeForAudio + FINAL_FLIP_TIME;
     const finalFlipEndForAudio = finalFlipStartForAudio + FINAL_FLIP_DURATION;
 
-    if (card.tier === 'standard') {
+    if (card.tier === 'standard' && standardWebAudioReady) {
+      const scheduleWebAudio = (bufferKey, delaySec, volume, fadeDurationSec = 0, seekOffsetSec = 0, durationSec = null) => {
+        const ctx = audioCtxRef.current;
+        const buffer = audioBuffersRef.current[bufferKey];
+        if (!ctx || !buffer) return;
+
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = volume;
+
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        const startTime = webAudioOriginRef.current + delaySec;
+
+        if (fadeDurationSec > 0 && durationSec !== null) {
+          const fadeStartTime = startTime + durationSec - fadeDurationSec;
+          gainNode.gain.setValueAtTime(volume, startTime);
+          gainNode.gain.setValueAtTime(volume, Math.max(startTime, fadeStartTime));
+          gainNode.gain.linearRampToValueAtTime(0.001, startTime + durationSec);
+        }
+
+        if (durationSec !== null) {
+          source.start(startTime, seekOffsetSec, durationSec);
+        } else {
+          source.start(startTime, seekOffsetSec);
+        }
+
+        const nodeRecord = { source, gainNode };
+        source.onended = () => {
+          const nodes = webAudioNodesRef.current;
+          const index = nodes.indexOf(nodeRecord);
+          if (index !== -1) {
+            nodes.splice(index, 1);
+          }
+          try {
+            source.disconnect();
+          } catch (e) {}
+          try {
+            gainNode.disconnect();
+          } catch (e) {}
+        };
+        webAudioNodesRef.current.push(nodeRecord);
+      };
+
       for (let i = 0; i < totalHitsForAudio; i += 1) {
         const hitStart = i * HIT_DURATION;
         const contact = hitStart + HIT_CONTACT_OFFSET;
@@ -1027,92 +1195,32 @@ export default function LuckyCardReveal() {
         const energyVolume = isFinalHit ? 0.28 : 0.18 + i * 0.025;
         const impactVolume = isFinalHit ? 0.9 : 0.72 + i * 0.05;
 
-        // Approach: the verified source peak is positioned so its main swell lands
-        // at the visual contact window; keep the tail bounded but audible.
-        scheduleAudio(() => {
-          const sound = audioRefs.current.beamApproach;
-          if (!sound) return;
-          const id = sound.play();
-          sound.seek(0.64, id);
-          sound.volume(approachVolume, id);
-          sound.fade(approachVolume, 0, 720, id);
-          scheduleAudio(() => sound.stop(id), 1100);
-        }, hitStart * 1000);
+        // beamApproach: delay=hitStart, seek=0.64, volume, fade=0.72, duration=1.1
+        scheduleWebAudio('beamApproach', hitStart, approachVolume, 0.72, 0.64, 1.1);
 
-        // Very short energy texture gives each physical grab a continuous electrical
-        // body without restoring the old looping beam bed.
-        scheduleAudio(() => {
-          const sound = audioRefs.current.beamEnergy;
-          if (!sound) return;
-          const id = sound.play();
-          sound.volume(energyVolume, id);
-          sound.fade(energyVolume, 0, 170, id);
-          scheduleAudio(() => sound.stop(id), 300);
-        }, (hitStart + 0.08) * 1000);
+        // beamEnergy: delay=hitStart+0.08, volume, fade=0.17, duration=0.3
+        scheduleWebAudio('beamEnergy', hitStart + 0.08, energyVolume, 0.17, 0, 0.3);
 
-        // Preserve the measured 130ms leading-silence compensation on the physical
-        // impact, but keep the hit as the dominant contact cue rather than adding a
-        // second long cinematic-impact layer.
-        scheduleAudio(() => {
-          const sound = audioRefs.current.beamImpact;
-          if (!sound) return;
-          const id = sound.play();
-          sound.volume(impactVolume, id);
-          sound.fade(impactVolume, 0, isFinalHit ? 1050 : 900, id);
-          scheduleAudio(() => sound.stop(id), isFinalHit ? 1250 : 1100);
-        }, (contact - 0.13) * 1000);
-
-
+        // beamImpact: delay=contact-0.13, volume, fade=(isFinal?1.05:0.9), duration=(isFinal?1.25:1.1)
+        scheduleWebAudio('beamImpact', contact - 0.13, impactVolume, isFinalHit ? 1.05 : 0.9, 0, isFinalHit ? 1.25 : 1.1);
 
         if (isFinalHit) {
-          // Final lock is shorter and more focused: contact -> lock -> brief breath.
-          scheduleAudio(() => {
-            const sound = audioRefs.current.finalLockOn;
-            if (!sound) return;
-            const id = sound.play();
-            sound.volume(0.8, id);
-            sound.fade(0.8, 0, 760, id);
-            scheduleAudio(() => sound.stop(id), 900);
-          }, (hitStart + 0.18) * 1000);
+          // finalLockOn: delay=hitStart+0.18, volume=0.8, fade=0.76, duration=0.9
+          scheduleWebAudio('finalLockOn', hitStart + 0.18, 0.8, 0.76, 0, 0.9);
 
-          // The discharge is the final physical release. Shorten its effective tail
-          // so the reveal snap remains a discrete event instead of blending into it.
-          scheduleAudio(() => {
-            const sound = audioRefs.current.finalDischarge;
-            if (!sound) return;
-            const id = sound.play();
-            sound.volume(0.84, id);
-            sound.fade(0.84, 0, 1850, id);
-            scheduleAudio(() => sound.stop(id), 2000);
-          }, finalFlipStartForAudio * 1000);
+          // finalDischarge: delay=finalFlipStartForAudio, volume=0.84, fade=1.85, duration=2.0
+          scheduleWebAudio('finalDischarge', finalFlipStartForAudio, 0.84, 1.85, 0, 2.0);
 
-          // Reveal snap is intentionally a transient, not a multi-second bed.
-          scheduleAudio(() => {
-            const sound = audioRefs.current.revealSnap;
-            if (!sound) return;
-            const id = sound.play();
-            sound.volume(0.5, id);
-            sound.fade(0.5, 0, 260, id);
-            scheduleAudio(() => sound.stop(id), 450);
-          }, Math.max(0, (finalFlipEndForAudio - 0.04) * 1000));
+          // revealSnap: delay=Math.max(0, finalFlipEndForAudio-0.04), volume=0.5, fade=0.26, duration=0.45
+          scheduleWebAudio('revealSnap', Math.max(0, finalFlipEndForAudio - 0.04), 0.5, 0.26, 0, 0.45);
 
-          // Final plasma/electrical runoff lives after the flip and decays naturally.
+          // electricalArc: delay=postFlipStart, volume=0.22, fade=1.8, duration=2.0
           const postFlipStart = finalFlipEndForAudio + 0.05;
-          scheduleAudio(() => {
-            const sound = audioRefs.current.electricalArc;
-            if (!sound) return;
-            const id = sound.play();
-            sound.volume(0.22, id);
-            sound.fade(0.22, 0, 1800, id);
-            scheduleAudio(() => sound.stop(id), 2000);
-          }, postFlipStart * 1000);
+          scheduleWebAudio('electricalArc', postFlipStart, 0.22, 1.8, 0, 2.0);
 
-          scheduleAudio(() => {
-            Object.values(audioRefs.current).forEach(sound => {
-              if (sound) sound.stop();
-            });
-            audioTimersRef.current = [];
-          }, (postFlipStart + 2.2) * 1000);
+          // The cleanup that was originally here via setTimeout is no longer strictly necessary because
+          // nodes will naturally stop playing based on their duration parameter.
+          // However, we still have the visual and premium tier fallback timer doing full reset.
         }
       }
     } else {
