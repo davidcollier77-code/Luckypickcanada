@@ -64,3 +64,9 @@
 ## 2026-09-25 — GCP Key Redaction and Action Pin Monitoring
 - Verified the three flagged workflows already had immutable 40-character action pins.
 - Redacted 9 `AIza...` values from `.docs/deep-dive/_android_developers.md` and added weekly Dependabot monitoring for GitHub Actions.
+## 2026-09-25 — Lucky Card Reveal Web Audio Implementation (Standard Tier)
+- Identified the synchronization and mobile initialization problem caused by scheduling Howler.js using JavaScript `setTimeout` inside a loop for the Standard tier reveal sequence.
+- Refactored `app/lucky-card-reveal.js` to utilize the native Web Audio API for precise scheduling for the Standard tier.
+- Audio buffers are fetched on mount, decoded upon the user interaction event, and scheduled strictly against `audioContext.currentTime` using absolute offsets.
+- Volume fades were implemented using `linearRampToValueAtTime` to remove reliance on async library wrappers.
+- The Premium/Flagship tier fallback and visual sequencing were retained as required.
