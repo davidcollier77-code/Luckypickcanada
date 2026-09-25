@@ -1026,7 +1026,6 @@ export default function LuckyCardReveal() {
         const approachVolume = isFinalHit ? 0.5 : 0.42 + i * 0.035;
         const energyVolume = isFinalHit ? 0.28 : 0.18 + i * 0.025;
         const impactVolume = isFinalHit ? 0.9 : 0.72 + i * 0.05;
-        const arcVolume = isFinalHit ? 0.24 : 0.16 + i * 0.025;
 
         // Approach: the verified source peak is positioned so its main swell lands
         // at the visual contact window; keep the tail bounded but audible.
@@ -1063,17 +1062,7 @@ export default function LuckyCardReveal() {
           scheduleAudio(() => sound.stop(id), isFinalHit ? 1250 : 1100);
         }, (contact - 0.13) * 1000);
 
-        // A short electrical/material response starts immediately after contact.
-        // This makes the beam feel attached to the card instead of sounding like a
-        // single isolated "hit" sample.
-        scheduleAudio(() => {
-          const sound = audioRefs.current.electricalArc;
-          if (!sound) return;
-          const id = sound.play();
-          sound.volume(arcVolume, id);
-          sound.fade(arcVolume, 0, isFinalHit ? 900 : 600, id);
-          scheduleAudio(() => sound.stop(id), isFinalHit ? 1050 : 750);
-        }, (contact + 0.02) * 1000);
+
 
         if (isFinalHit) {
           // Final lock is shorter and more focused: contact -> lock -> brief breath.
