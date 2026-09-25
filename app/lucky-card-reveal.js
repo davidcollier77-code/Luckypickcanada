@@ -28,6 +28,9 @@ const TIER_HITS = {
 
 // Hit durations in seconds
 const HIT_DURATION = 1.6;
+// Hit-to-contact timing offset used for audio and visual synchronization.
+// This value represents the time from hit start to the actual contact/wrap moment.
+const HIT_CONTACT_OFFSET = 0.4;
 
 // Final-hit timing is split so the post-flip material gets a full 4.2s to
 // travel, drip, spark, smolder, and cleanly extinguish after the 1.8s flip.
@@ -1010,7 +1013,7 @@ export default function LuckyCardReveal() {
 
     for (let i = 0; i < totalHitsForAudio; i += 1) {
       const hitStart = i * HIT_DURATION;
-      const contact = hitStart + 0.4;
+      const contact = hitStart + HIT_CONTACT_OFFSET;
       const isFinalHit = i === totalHitsForAudio - 1;
 
       // Beam approach: use the long cinematic source only as a short physical sweep.
@@ -1130,7 +1133,7 @@ export default function LuckyCardReveal() {
     sequence.push([
       cardRef.current,
       { filter: "brightness(2.5)", scale: 0.91, y: 18, rotateZ: -1 },
-      { at: finalHitStartTime + F_WRAP, duration: 0.2, ease: "easeOut" }
+      { at: finalHitStartTime + HIT_CONTACT_OFFSET, duration: 0.2, ease: "easeOut" }
     ]);
 
     // The Reveal Flip / Throw
