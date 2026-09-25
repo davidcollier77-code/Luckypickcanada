@@ -23,3 +23,13 @@
 - Added tracked audio timer cleanup and a hard final stop.
 - Restored `playButtonClick()` for the reveal button as a separate cue.
 - Source-level verification completed; browser/runtime playback verification remains pending.
+
+
+## 2026-09-25 — Measured Audio Timing Repair
+- Analyzed the supplied Standard reveal capture and extracted soundtrack rather than relying on filenames alone.
+- Measured repository MP3 source lengths by parsing their actual frame headers.
+- Confirmed the long-tail risk: several reveal cues are multi-second assets, including \`mixkit-cinematic-impact.mp3\` (9.012s), \`final_discharge.mp3\` (7.706s), \`reveal_snap.mp3\` (4.049s), and \`mixkit-firework-crackle.mp3\` (22.805s).
+- Updated \`app/lucky-card-reveal.js\` so no long source is allowed to run as an unbounded reveal layer; each cue is explicitly faded/stopped inside its visual phase.
+- Replaced the per-hit long impact/magic stack with the measured 1.620s \`beam_impact.mp3\`, hard-bounded to the contact event.
+- Replaced the 22.805s firework crackle post-flip cue with the 2.247s \`electrical_arc.mp3\` and hard-stopped it after the intended runoff window.
+- No visual choreography, tier counts, card artwork, reset, collection, share, or reduced-motion behavior was intentionally changed.
