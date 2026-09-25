@@ -28,6 +28,18 @@ Current repair on branch `fix/lucky-card-audio-runtime`:
 - Verified standard tests pass.
 
 ## 2026-09-25 — Standard-Tier Audio Sound-Design Repair
+
+- Branch: `fix/lucky-card-standard-audio-sound-design`
+
+- Investigated "strange beeping/tonal noises" during Standard tier reveal.
+
+- Discovered `electrical_arc.mp3` was inadvertently playing on every single contact impact in the Standard tier loop, creating repeated tonal artifacts.
+
+- Removed the `electrical_arc.mp3` trigger and its volume scheduling from the individual hit events, preserving its legitimate single-use post-flip runoff role.
+
+- Verified build size remained well under 495 MB (279 MB).
+
+- Ensured tests and standard verification pass.
 - Branch: `fix/lucky-card-standard-audio-sound-design`
 - Scope is intentionally restricted to **Standard-tier reveal audio**; Premium and Flagship runtime choreography is preserved.
 - The latest supplied Standard capture was analyzed as rendered audio/video evidence. The main hit transients are already close to the visual contact cadence, so this repair does not move the visual timeline or introduce another broad synchronization shift.
