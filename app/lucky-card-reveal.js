@@ -75,9 +75,16 @@ export default function LuckyCardReveal() {
     revealSnap: null
   });
 
-  // Pre-load sounds on mount
+  // Pre-load sounds on mount. Each sound is owned by this component so
+  // lifecycle cleanup can stop only Lucky Card audio without touching unrelated
+  // site audio.
   useEffect(() => {
-    audioRefs.current.beamEnergy = new Howl({ src: ['/sounds/beam_energy.mp3'], volume: 0.8, preload: true, loop: true });
+    audioRefs.current.beamEnergy = new Howl({
+      src: ['/sounds/beam_energy.mp3'],
+      volume: 0.8,
+      preload: true,
+      loop: false
+    });
     audioRefs.current.beamImpact = new Howl({ src: ['/sounds/beam_impact.mp3'], volume: 1.0, preload: true });
     audioRefs.current.electricalArc = new Howl({ src: ['/sounds/electrical_arc.mp3'], volume: 0.42, preload: true });
     audioRefs.current.finalLockOn = new Howl({ src: ['/sounds/final_lock_on.mp3'], volume: 1.0, preload: true });
@@ -85,7 +92,6 @@ export default function LuckyCardReveal() {
     audioRefs.current.revealSnap = new Howl({ src: ['/sounds/reveal_snap.mp3'], volume: 1.0, preload: true });
 
     return () => {
-      // Cleanup all Howl instances to prevent stale audio playing on unmount
       Object.values(audioRefs.current).forEach(sound => {
         if (sound) {
           sound.stop();
@@ -123,6 +129,11 @@ export default function LuckyCardReveal() {
     activeTimeoutsRef.current.forEach(clearTimeout);
     activeTimeoutsRef.current = [];
 
+    // Stop only the Howl instances owned by this reveal. This is deliberately
+    // local rather than using Howler.stop(), so other site audio is untouched.
+    Object.values(audioRefs.current).forEach(sound => {
+      if (sound) sound.stop();
+    });
   }, []);
 
   useEffect(() => {
@@ -954,70 +965,89 @@ export default function LuckyCardReveal() {
     let currentTime = 0;
 
     // --- AUDIO CHOREOGRAPHY ---
-    // Stop any existing audio before starting a new reveal. Do not use global
-    // Howler.stop(): unrelated site audio must remain untouched.
-    Object.values(audioRefs.current).forEach(sound => {
-      if (sound) sound.stop();
-    });
+    // Audio follows the visual beam lifecycle. Every beam gets its own energy
+    // instance: launch -> sweep/wrap -> impact -> retract/miss. There is no
+    // global looping bed underneath the whole reveal.
+    const P_WRAP = 0.4;
+    const P_RETRACT = 1.4;
 
-    // Keep one continuous energy bed instead of replaying/rate-shifting it at
-    // the final hit. The beam impacts provide the physical strike transients.
-    let beamEnergyId = null;
-    if (audioRefs.current.beamEnergy) {
-      beamEnergyId = audioRefs.current.beamEnergy.play();
-      audioRefs.current.beamEnergy.volume(0, beamEnergyId);
-      audioRefs.current.beamEnergy.fade(0, 0.64, 900, beamEnergyId);
-    }
+    const startBeamSound = (hitStart, targetVolume, stopOffset) => {
+      const tStart = setTimeout(() => {
+        const sound = audioRefs.current.beamEnergy;
+        if (!sound) return;
 
+        const id = sound.play();
+        sound.loop(true, id);
+        sound.volume(0, id);
+        sound.fade(0, targetVolume, 120, id);
+
+        const tStop = setTimeout(() => {
+          sound.fade(targetVolume, 0, 120, id);
+          const tHardStop = setTimeout(() => sound.stop(id), 120);
+          activeTimeoutsRef.current.push(tHardStop);
+        }, stopOffset * 1000);
+        activeTimeoutsRef.current.push(tStop);
+      }, hitStart * 1000);
+      activeTimeoutsRef.current.push(tStart);
+    };
+
+    // NON-FINAL BEAMS
     for (let i = 0; i < totalHits - 1; i++) {
       const hitStart = i * HIT_DURATION;
-      const P_WRAP = 0.4;
-      const impactVolume = Math.min(0.86, 0.66 + i * 0.08);
+      const impactVolume = Math.min(0.88, 0.68 + i * 0.07);
+
+      // Match the visible beam: start when it launches and stop just after its
+      // retract phase, leaving the same short visual breathing room before the
+      // next beam appears.
+      startBeamSound(hitStart, 0.72 + Math.min(0.1, i * 0.04), P_RETRACT + 0.04);
 
       const tImpact = setTimeout(() => {
-        if (audioRefs.current.beamImpact) {
-          const id = audioRefs.current.beamImpact.play();
-          audioRefs.current.beamImpact.volume(impactVolume, id);
-          // Intentionally keep the source pitch stable. Rate randomization was
-          // turning repeated physical impacts into conspicuous chirps/beeps.
-        }
+        if (!audioRefs.current.beamImpact) return;
+        const id = audioRefs.current.beamImpact.play();
+        audioRefs.current.beamImpact.volume(impactVolume, id);
       }, (hitStart + P_WRAP) * 1000);
       activeTimeoutsRef.current.push(tImpact);
     }
 
-    // FINAL ESCALATION & LOCK ON
-    const tEscalation = setTimeout(() => {
-      if (audioRefs.current.beamEnergy && beamEnergyId != null) {
-        audioRefs.current.beamEnergy.fade(0.64, 0.86, 350, beamEnergyId);
-      }
-    }, finalHitStartTime * 1000);
-    activeTimeoutsRef.current.push(tEscalation);
+    // FINAL BEAM: keep the energy bed attached to the visible sweep until the
+    // lock-on moment, then hand over to the dedicated lock/discharge sounds.
+    const finalLockOffset = 0.46;
+    let finalLockOnId = null;
+    startBeamSound(finalHitStartTime, 0.9, finalLockOffset);
+
+    const tFinalImpact = setTimeout(() => {
+      if (!audioRefs.current.beamImpact) return;
+      const id = audioRefs.current.beamImpact.play();
+      audioRefs.current.beamImpact.volume(1.0, id);
+    }, (finalHitStartTime + P_WRAP) * 1000);
+    activeTimeoutsRef.current.push(tFinalImpact);
 
     const tLockOn = setTimeout(() => {
-      if (audioRefs.current.finalLockOn) {
-        const id = audioRefs.current.finalLockOn.play();
-        audioRefs.current.finalLockOn.volume(0.9, id);
+      const energy = audioRefs.current.beamEnergy;
+      if (energy) {
+        // Fade the current beam instance down immediately as the visual beam
+        // transitions from sweep to lock.
+        energy.fade(0.9, 0, 90);
       }
-    }, (finalHitStartTime + F_WRAP) * 1000);
+
+      if (audioRefs.current.finalLockOn) {
+        finalLockOnId = audioRefs.current.finalLockOn.play();
+        audioRefs.current.finalLockOn.volume(1.0, finalLockOnId);
+      }
+    }, (finalHitStartTime + finalLockOffset) * 1000);
     activeTimeoutsRef.current.push(tLockOn);
 
     const flipAbsTime_AUDIO = finalHitStartTime + FINAL_FLIP_TIME;
 
     // FINAL DISCHARGE & FLIP
     const tDischarge = setTimeout(() => {
-      if (audioRefs.current.beamEnergy && beamEnergyId != null) {
-        audioRefs.current.beamEnergy.fade(0.86, 0, 400, beamEnergyId);
-        const tEnergyStop = setTimeout(() => {
-          if (audioRefs.current.beamEnergy) {
-            audioRefs.current.beamEnergy.stop(beamEnergyId);
-          }
-        }, 400);
-        activeTimeoutsRef.current.push(tEnergyStop);
+      if (audioRefs.current.finalLockOn && finalLockOnId != null) {
+        audioRefs.current.finalLockOn.stop(finalLockOnId);
       }
 
       if (audioRefs.current.finalDischarge) {
         const id = audioRefs.current.finalDischarge.play();
-        audioRefs.current.finalDischarge.volume(0.96, id);
+        audioRefs.current.finalDischarge.volume(1.0, id);
       }
     }, flipAbsTime_AUDIO * 1000);
     activeTimeoutsRef.current.push(tDischarge);
@@ -1026,15 +1056,14 @@ export default function LuckyCardReveal() {
     const tSnap = setTimeout(() => {
       if (audioRefs.current.revealSnap) {
         const id = audioRefs.current.revealSnap.play();
-        audioRefs.current.revealSnap.volume(0.72, id);
+        audioRefs.current.revealSnap.volume(0.8, id);
       }
     }, (flipAbsTime_AUDIO + 0.35) * 1000);
     activeTimeoutsRef.current.push(tSnap);
 
     // POST-FLIP ELECTRICAL ACTIVITY
-    // Start only after the 3D flip has finished. A single finite pass with a
-    // short fade sounds like attached residual energy instead of a synthetic
-    // loop running underneath the entire reveal.
+    // Start after the 3D flip finishes so the residual energy belongs to the
+    // attached plasma burnout rather than competing with the flip.
     const postFlipAudioStart = flipAbsTime_AUDIO + FINAL_FLIP_DURATION + 0.08;
     const tPostFlip = setTimeout(() => {
       if (audioRefs.current.electricalArc) {
