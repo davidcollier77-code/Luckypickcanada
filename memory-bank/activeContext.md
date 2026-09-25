@@ -9,15 +9,15 @@ Verified current repository state:
 - The previous implementation rate-shifted repeated impact sounds and looped `electrical_arc.mp3`, which produced repeated pitched transients and an extended post-flip audio bed.
 - The supplied Standard/Premium/Flagship captures show the reveal impacts are already temporally aligned to the visual hit cadence; the problem is the audio mix/choreography rather than changing the visual timing.
 
-Current repair on branch `fix/lucky-card-audio-choreography`:
-- Keep one beam-energy instance instead of replaying/rate-shifting it for the final escalation.
-- Remove per-hit playback-rate randomization from `beam_impact.mp3`; use volume escalation instead.
-- Keep final lock-on and discharge as distinct events.
-- Fade the beam-energy bed out into the final discharge rather than leaving it underneath the flip.
-- Make `electrical_arc.mp3` a single finite post-flip pass starting after the 3D flip completes, with a controlled fade-out instead of looping.
-- Preserve all existing tier counts, visual choreography, card artwork, accessibility/reduced-motion behavior, and unrelated audio.
+Current repair on branch \`fix/lucky-card-audio-runtime\`:
+- The live/main capture was analyzed from the supplied 23.87s Standard reveal video and its extracted 23.85s mono WAV soundtrack.
+- The soundtrack contains two strong non-final impact events around 3.92s and 5.05s, followed by a persistent ~0.199s-period transient train from roughly 11.5s onward. The visual reveal itself is complete before that train, so the persistent train is an audio-lifecycle/mix defect, not desired reveal timing.
+- The repair was rebuilt against measured repository asset lengths. Measured MP3 durations: \`beam_energy\` 0.261s, \`beam_impact\` 1.620s, \`electrical_arc\` 2.247s, \`final_lock_on\` 1.176s, \`final_discharge\` 7.706s, \`reveal_snap\` 4.049s, \`mixkit-cinematic-whoosh\` 4.885s, \`mixkit-cinematic-impact\` 9.012s, \`mixkit-magical-impact\` 4.624s, \`mixkit-firework-crackle\` 22.805s.
+- Long sources are no longer allowed to run for their full source length. The repair uses the measured 1.620s \`beam_impact\` for physical strikes, removes the long per-hit magical layer, hard-bounds the 4.885s whoosh to each beam window, hard-bounds final discharge and reveal snap, and uses the 2.247s \`electrical_arc\` for the finite post-flip runoff instead of the 22.805s firework-crackle asset.
+- No reveal-owned \`loop: true\` remains. Every scheduled one-shot has a tracked stop/fade path, and \`stopAll()\`/unmount cleanup stop all reveal-owned Howler instances.
+- Gemini's independent-one-shot recommendation was incorporated at the Howler level: repeated \`play()\` calls receive distinct sound IDs rather than reusing a continuously playing audio bed. Raw \`new Audio()\` was not substituted for the repo's required Howler-based architecture.
 
-Verification status: code diff inspected; repository CI/browser verification is pending.
+Verification status: source-level lifecycle/static verification completed; CI/browser runtime playback verification remains pending.
 
 ## 2026-09-25 — Lucky Card Audio Runtime Repair
 - Branch: `fix/lucky-card-audio-runtime`
