@@ -86,25 +86,38 @@ export default function LuckyCardReveal() {
   const rawAudioDataRef = useRef({});
   const webAudioNodesRef = useRef([]);
   const webAudioOriginRef = useRef(0);
+  const standardAudioPreloadRef = useRef(null);
 
   useEffect(() => {
-    const fetchAudio = async (key, url) => {
-      try {
-        const res = await fetch(url);
-        const arrayBuffer = await res.arrayBuffer();
-        rawAudioDataRef.current[key] = arrayBuffer;
-      } catch (err) {
-        console.error(`Failed to fetch ${url}`, err);
-      }
+    const audioSources = {
+      beamApproach: '/sounds/mixkit-cinematic-whoosh.mp3',
+      beamEnergy: '/sounds/beam_energy.mp3',
+      beamImpact: '/sounds/beam_impact.mp3',
+      finalLockOn: '/sounds/final_lock_on.mp3',
+      finalDischarge: '/sounds/final_discharge.mp3',
+      revealSnap: '/sounds/reveal_snap.mp3',
+      electricalArc: '/sounds/electrical_arc.mp3'
     };
 
-    fetchAudio('beamApproach', '/sounds/mixkit-cinematic-whoosh.mp3');
-    fetchAudio('beamEnergy', '/sounds/beam_energy.mp3');
-    fetchAudio('beamImpact', '/sounds/beam_impact.mp3');
-    fetchAudio('finalLockOn', '/sounds/final_lock_on.mp3');
-    fetchAudio('finalDischarge', '/sounds/final_discharge.mp3');
-    fetchAudio('revealSnap', '/sounds/reveal_snap.mp3');
-    fetchAudio('electricalArc', '/sounds/electrical_arc.mp3');
+    standardAudioPreloadRef.current = Promise.all(
+      Object.entries(audioSources).map(async ([key, url]) => {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} while loading ${url}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        rawAudioDataRef.current[key] = arrayBuffer;
+      })
+    )
+      .then(() => true)
+      .catch(err => {
+        console.error('Standard reveal audio preload failed:', err);
+        return false;
+      });
+
+    return () => {
+      standardAudioPreloadRef.current = null;
+    };
   }, []);
 
 
@@ -920,29 +933,64 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
 
+    let standardWebAudioReady = false;
+
     if (card.tier === 'standard') {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!audioCtxRef.current) {
-          audioCtxRef.current = new AudioContext();
-        }
-        const ctx = audioCtxRef.current;
-        if (ctx.state === 'suspended') {
-          await ctx.resume();
-        }
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
 
-        const decodePromises = Object.entries(rawAudioDataRef.current).map(async ([key, arrayBuffer]) => {
-          if (!audioBuffersRef.current[key]) {
-            const clonedBuffer = arrayBuffer.slice(0);
-            const decoded = await ctx.decodeAudioData(clonedBuffer);
-            audioBuffersRef.current[key] = decoded;
+      if (AudioContextCtor) {
+        try {
+          if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+            audioCtxRef.current = new AudioContextCtor();
           }
-        });
-        await Promise.all(decodePromises);
 
-        webAudioOriginRef.current = ctx.currentTime;
-      } catch (err) {
-        console.error("Web Audio Init Error:", err);
+          const ctx = audioCtxRef.current;
+
+          // Resume immediately from the user gesture before any asynchronous preload/decode wait.
+          if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
+            await ctx.resume();
+          }
+
+          const preloadPromise = standardAudioPreloadRef.current;
+          const preloadSucceeded = preloadPromise ? await preloadPromise : false;
+
+          if (preloadSucceeded) {
+            const requiredKeys = [
+              'beamApproach',
+              'beamEnergy',
+              'beamImpact',
+              'finalLockOn',
+              'finalDischarge',
+              'revealSnap',
+              'electricalArc'
+            ];
+
+            await Promise.all(
+              requiredKeys.map(async key => {
+                if (!audioBuffersRef.current[key]) {
+                  const arrayBuffer = rawAudioDataRef.current[key];
+                  if (!arrayBuffer) {
+                    throw new Error(`Missing preloaded audio data for ${key}`);
+                  }
+
+                  const clonedBuffer = arrayBuffer.slice(0);
+                  audioBuffersRef.current[key] = await ctx.decodeAudioData(clonedBuffer);
+                }
+              })
+            );
+
+            standardWebAudioReady = requiredKeys.every(key => Boolean(audioBuffersRef.current[key]));
+          }
+
+          if (standardWebAudioReady && ctx.state === 'running') {
+            webAudioOriginRef.current = ctx.currentTime;
+          }
+        } catch (err) {
+          standardWebAudioReady = false;
+          console.error('Web Audio initialization failed; using Howler fallback:', err);
+        }
+      } else {
+        console.warn('Web Audio API is unavailable; using Howler fallback for Standard reveal audio.');
       }
     }
 
@@ -1090,7 +1138,7 @@ export default function LuckyCardReveal() {
     const finalFlipStartForAudio = finalHitStartTimeForAudio + FINAL_FLIP_TIME;
     const finalFlipEndForAudio = finalFlipStartForAudio + FINAL_FLIP_DURATION;
 
-    if (card.tier === 'standard') {
+    if (card.tier === 'standard' && standardWebAudioReady) {
       const scheduleWebAudio = (bufferKey, delaySec, volume, fadeDurationSec = 0, seekOffsetSec = 0, durationSec = null) => {
         const ctx = audioCtxRef.current;
         const buffer = audioBuffersRef.current[bufferKey];
@@ -1120,7 +1168,21 @@ export default function LuckyCardReveal() {
           source.start(startTime, seekOffsetSec);
         }
 
-        webAudioNodesRef.current.push({ source, gainNode });
+        const nodeRecord = { source, gainNode };
+        source.onended = () => {
+          const nodes = webAudioNodesRef.current;
+          const index = nodes.indexOf(nodeRecord);
+          if (index !== -1) {
+            nodes.splice(index, 1);
+          }
+          try {
+            source.disconnect();
+          } catch (e) {}
+          try {
+            gainNode.disconnect();
+          } catch (e) {}
+        };
+        webAudioNodesRef.current.push(nodeRecord);
       };
 
       for (let i = 0; i < totalHitsForAudio; i += 1) {
