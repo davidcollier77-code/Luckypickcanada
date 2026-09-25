@@ -26,3 +26,23 @@ Current repair on branch `fix/lucky-card-audio-runtime`:
 - Addressed by implementing extended fade/stop windows in `app/lucky-card-reveal.js`: whoosh (4.88s asset → 1.2s stop), beam impact (1.59s asset → 1.6s stop), lock-on (1.15s asset → 1.15s stop), discharge (7.68s asset → 3.0s stop), reveal snap (4.02s asset → 2.5s stop), electrical arc (2.22s asset → 2.2s stop). Assets are deliberately truncated to fit the reveal sequence timing while avoiding the previous aggressive hard cutoffs.
 - Ensured build size does not exceed the 495 MB cap.
 - Verified standard tests pass.
+
+## 2026-09-25 — Standard-Tier Audio Sound-Design Repair
+- Branch: `fix/lucky-card-standard-audio-sound-design`
+- Scope is intentionally restricted to **Standard-tier reveal audio**; Premium and Flagship runtime choreography is preserved.
+- The latest supplied Standard capture was analyzed as rendered audio/video evidence. The main hit transients are already close to the visual contact cadence, so this repair does not move the visual timeline or introduce another broad synchronization shift.
+- The rendered capture showed a sparse, isolated hit sequence plus long/tonal tails rather than one coherent physical energy event.
+- Standard audio was rebuilt as a layered finite sequence using existing repository assets only:
+  - approach sweep;
+  - short `beam_energy.mp3` texture;
+  - physical `beam_impact.mp3` contact;
+  - short `electrical_arc.mp3` material/electrical response;
+  - final `final_lock_on.mp3` hold;
+  - bounded `final_discharge.mp3` throw/flip event;
+  - short `reveal_snap.mp3` transient;
+  - post-flip `electrical_arc.mp3` runoff.
+- The measured 130ms leading-silence compensation for `beam_impact.mp3` and the 0.64s `beamApproach` seek from PR #1242 were retained.
+- The old looping beam bed remains removed. No synthesized browser tone or new asset was introduced.
+- Premium/Flagship audio code was retained in its verified current form.
+- Repository visual choreography, Standard/Premium/Flagship hit counts, card artwork, reset/collection/share behavior, and reduced-motion behavior were not intentionally changed.
+- Source-audio audition of the individual GitHub MP3 binaries was not available in this connected execution environment; therefore no claim is made that the source files were literally auditioned here. The repair is based on the supplied rendered capture, verified source durations already recorded by the repository, and the actual current playback code.

@@ -37,3 +37,13 @@
 - Identified precise waveform peaks for beamApproach (1.04s) and beamImpact (0.208s peak, 0.13s audible start).
 - Adjusted app/lucky-card-reveal.js audio scheduling so beam_impact.mp3 plays 0.13s early and mixkit-cinematic-whoosh.mp3 skips its first 0.64s.
 - Flawlessly aligned audio climaxes to the verified visual contact timing (0.4s) for Standard hits without adding dependencies, changing visuals, or expanding scope.
+
+## 2026-09-25 — Standard-Tier Audio Sound-Design Repair
+- Branch: `fix/lucky-card-standard-audio-sound-design`
+- Changed `app/lucky-card-reveal.js` so **Standard only** uses a coherent layered sound sequence instead of isolated hit cues.
+- Added the existing `beam_energy.mp3` as a short non-looping texture and `electrical_arc.mp3` as a bounded material/electrical response around each Standard contact.
+- Shortened the Standard final discharge and reveal-snap tails so the flip/reveal does not become a long tonal audio bed.
+- Preserved the verified PR #1242 timing compensation: `beamApproach` seeks to 0.64s and `beam_impact.mp3` is scheduled 0.13s before the visual contact to compensate for source leading silence.
+- Premium and Flagship audio choreography was deliberately left unchanged.
+- No visual/VFX timing or artwork changes were made.
+- Verification still required: repository tests/build and final diff inspection before merge.

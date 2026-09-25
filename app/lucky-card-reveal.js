@@ -72,6 +72,7 @@ export default function LuckyCardReveal() {
 
   const audioRefs = useRef({
     beamApproach: null,
+    beamEnergy: null,
     beamImpact: null,
     finalLockOn: null,
     finalDischarge: null,
@@ -85,13 +86,18 @@ export default function LuckyCardReveal() {
   // overlap safely without introducing a persistent reveal-owned audio bed.
   useEffect(() => {
     audioRefs.current.beamApproach = new Howl({
-      src: ['/sounds/mixkit-cinematic-whoosh.mp3'], // 4.885s source; hard-stopped per hit
-      volume: 0.44,
+      src: ['/sounds/mixkit-cinematic-whoosh.mp3'], // 4.885s source; short approach layer
+      volume: 0.42,
+      preload: true
+    });
+    audioRefs.current.beamEnergy = new Howl({
+      src: ['/sounds/beam_energy.mp3'], // 0.261s source; short energy texture for Standard only
+      volume: 0.2,
       preload: true
     });
     audioRefs.current.beamImpact = new Howl({
       src: ['/sounds/beam_impact.mp3'], // 1.620s source; physical strike cue
-      volume: 0.82,
+      volume: 0.8,
       preload: true
     });
     audioRefs.current.finalLockOn = new Howl({
@@ -992,8 +998,9 @@ export default function LuckyCardReveal() {
     let currentTime = 0;
 
     // --- AUDIO CHOREOGRAPHY ---
-    // Timing is derived from the actual reveal capture plus measured source lengths.
-    // No reveal-owned audio loops. Every one-shot gets an explicit fade/stop window.
+    // Standard-tier audio is intentionally treated as a single physical/cinematic
+    // sound event rather than a stack of isolated MP3 triggers.
+    // Premium/Flagship retain the verified current choreography unchanged.
     audioTimersRef.current.forEach(clearTimeout);
     audioTimersRef.current = [];
     Object.values(audioRefs.current).forEach(sound => {
@@ -1011,88 +1018,187 @@ export default function LuckyCardReveal() {
     const finalFlipStartForAudio = finalHitStartTimeForAudio + FINAL_FLIP_TIME;
     const finalFlipEndForAudio = finalFlipStartForAudio + FINAL_FLIP_DURATION;
 
-    for (let i = 0; i < totalHitsForAudio; i += 1) {
-      const hitStart = i * HIT_DURATION;
-      const contact = hitStart + HIT_CONTACT_OFFSET;
-      const isFinalHit = i === totalHitsForAudio - 1;
+    if (card.tier === 'standard') {
+      for (let i = 0; i < totalHitsForAudio; i += 1) {
+        const hitStart = i * HIT_DURATION;
+        const contact = hitStart + HIT_CONTACT_OFFSET;
+        const isFinalHit = i === totalHitsForAudio - 1;
+        const approachVolume = isFinalHit ? 0.5 : 0.42 + i * 0.035;
+        const energyVolume = isFinalHit ? 0.28 : 0.18 + i * 0.025;
+        const impactVolume = isFinalHit ? 0.9 : 0.72 + i * 0.05;
+        const arcVolume = isFinalHit ? 0.24 : 0.16 + i * 0.025;
 
-      // Beam approach: use the long cinematic source only as a short physical sweep.
-      // The source is 4.885s, but the visual approach/contact window is ~0.4-0.7s.
-      scheduleAudio(() => {
-        const sound = audioRefs.current.beamApproach;
-        if (!sound) return;
-        const id = sound.play();
-        sound.seek(0.64, id);
-        const volume = isFinalHit ? 0.58 : Math.min(0.5 + i * 0.035, 0.58);
-        sound.volume(volume, id);
-        scheduleAudio(() => sound.fade(volume, 0, 800, id), 400);
-        scheduleAudio(() => sound.stop(id), 1200);
-      }, hitStart * 1000);
-
-      // One physical impact only. Do not layer a second long "magic" tail on every hit.
-      scheduleAudio(() => {
-        const sound = audioRefs.current.beamImpact;
-        if (!sound) return;
-        const id = sound.play();
-        const volume = isFinalHit ? 0.9 : Math.min(0.68 + i * 0.06, 0.82);
-        sound.volume(volume, id);
-        sound.fade(volume, 0, 1500, id);
-        scheduleAudio(() => sound.stop(id), 1600);
-      }, (contact - 0.13) * 1000);
-
-      if (isFinalHit) {
-        // Final lock begins with the visual wrap and resolves into the flip.
+        // Approach: the verified source peak is positioned so its main swell lands
+        // at the visual contact window; keep the tail bounded but audible.
         scheduleAudio(() => {
-          const sound = audioRefs.current.finalLockOn;
+          const sound = audioRefs.current.beamApproach;
           if (!sound) return;
           const id = sound.play();
-          sound.volume(0.86, id);
-          sound.fade(0.86, 0, 1100, id);
-          scheduleAudio(() => sound.stop(id), 1150);
-        }, (hitStart + 0.18) * 1000);
+          sound.seek(0.64, id);
+          sound.volume(approachVolume, id);
+          sound.fade(approachVolume, 0, 720, id);
+          scheduleAudio(() => sound.stop(id), 1100);
+        }, hitStart * 1000);
 
-        // Final discharge: the authored 7.706s source is deliberately truncated
-        // to the physical throw/flip boundary so it cannot become a background bed.
+        // Very short energy texture gives each physical grab a continuous electrical
+        // body without restoring the old looping beam bed.
         scheduleAudio(() => {
-          const sound = audioRefs.current.finalDischarge;
+          const sound = audioRefs.current.beamEnergy;
           if (!sound) return;
           const id = sound.play();
-          sound.volume(0.9, id);
-          sound.fade(0.9, 0, 3000, id);
-          scheduleAudio(() => sound.stop(id), 3000);
-        }, finalFlipStartForAudio * 1000);
+          sound.volume(energyVolume, id);
+          sound.fade(energyVolume, 0, 170, id);
+          scheduleAudio(() => sound.stop(id), 300);
+        }, (hitStart + 0.08) * 1000);
 
-        // Reveal snap is a transient at the end of the 3D flip, not a four-second tail.
+        // Preserve the measured 130ms leading-silence compensation on the physical
+        // impact, but keep the hit as the dominant contact cue rather than adding a
+        // second long cinematic-impact layer.
         scheduleAudio(() => {
-          const sound = audioRefs.current.revealSnap;
+          const sound = audioRefs.current.beamImpact;
           if (!sound) return;
           const id = sound.play();
-          sound.volume(0.52, id);
-          sound.fade(0.52, 0, 2000, id);
-          scheduleAudio(() => sound.stop(id), 2500);
-        }, Math.max(0, (finalFlipEndForAudio - 0.06) * 1000));
+          sound.volume(impactVolume, id);
+          sound.fade(impactVolume, 0, isFinalHit ? 1050 : 900, id);
+          scheduleAudio(() => sound.stop(id), isFinalHit ? 1250 : 1100);
+        }, (contact - 0.13) * 1000);
 
-        // Post-flip electrical runoff: use the measured 2.247s electrical asset,
-        // start with the visible plasma runoff, and hard-stop after the source's
-        // natural-length window. This replaces the 22.805s firework-crackle tail.
-        const postFlipStart = finalFlipEndForAudio + 0.06;
+        // A short electrical/material response starts immediately after contact.
+        // This makes the beam feel attached to the card instead of sounding like a
+        // single isolated "hit" sample.
         scheduleAudio(() => {
           const sound = audioRefs.current.electricalArc;
           if (!sound) return;
           const id = sound.play();
-          sound.volume(0.28, id);
-          sound.fade(0.28, 0, 2100, id);
-          scheduleAudio(() => sound.stop(id), 2200);
-        }, postFlipStart * 1000);
+          sound.volume(arcVolume, id);
+          sound.fade(arcVolume, 0, isFinalHit ? 900 : 600, id);
+          scheduleAudio(() => sound.stop(id), isFinalHit ? 1050 : 750);
+        }, (contact + 0.02) * 1000);
 
-        // Final guarantee: reveal-owned audio is silent shortly after the
-        // visible burnout phase begins to settle. No source may survive this point.
+        if (isFinalHit) {
+          // Final lock is shorter and more focused: contact -> lock -> brief breath.
+          scheduleAudio(() => {
+            const sound = audioRefs.current.finalLockOn;
+            if (!sound) return;
+            const id = sound.play();
+            sound.volume(0.8, id);
+            sound.fade(0.8, 0, 760, id);
+            scheduleAudio(() => sound.stop(id), 900);
+          }, (hitStart + 0.18) * 1000);
+
+          // The discharge is the final physical release. Shorten its effective tail
+          // so the reveal snap remains a discrete event instead of blending into it.
+          scheduleAudio(() => {
+            const sound = audioRefs.current.finalDischarge;
+            if (!sound) return;
+            const id = sound.play();
+            sound.volume(0.84, id);
+            sound.fade(0.84, 0, 1850, id);
+            scheduleAudio(() => sound.stop(id), 2000);
+          }, finalFlipStartForAudio * 1000);
+
+          // Reveal snap is intentionally a transient, not a multi-second bed.
+          scheduleAudio(() => {
+            const sound = audioRefs.current.revealSnap;
+            if (!sound) return;
+            const id = sound.play();
+            sound.volume(0.5, id);
+            sound.fade(0.5, 0, 260, id);
+            scheduleAudio(() => sound.stop(id), 450);
+          }, Math.max(0, (finalFlipEndForAudio - 0.04) * 1000));
+
+          // Final plasma/electrical runoff lives after the flip and decays naturally.
+          const postFlipStart = finalFlipEndForAudio + 0.05;
+          scheduleAudio(() => {
+            const sound = audioRefs.current.electricalArc;
+            if (!sound) return;
+            const id = sound.play();
+            sound.volume(0.22, id);
+            sound.fade(0.22, 0, 1800, id);
+            scheduleAudio(() => sound.stop(id), 2000);
+          }, postFlipStart * 1000);
+
+          scheduleAudio(() => {
+            Object.values(audioRefs.current).forEach(sound => {
+              if (sound) sound.stop();
+            });
+            audioTimersRef.current = [];
+          }, (postFlipStart + 2.2) * 1000);
+        }
+      }
+    } else {
+      // Premium / Flagship: preserve the verified current choreography unchanged.
+      for (let i = 0; i < totalHitsForAudio; i += 1) {
+        const hitStart = i * HIT_DURATION;
+        const contact = hitStart + HIT_CONTACT_OFFSET;
+        const isFinalHit = i === totalHitsForAudio - 1;
+
         scheduleAudio(() => {
-          Object.values(audioRefs.current).forEach(sound => {
-            if (sound) sound.stop();
-          });
-          audioTimersRef.current = [];
-        }, (postFlipStart + 4.0) * 1000);
+          const sound = audioRefs.current.beamApproach;
+          if (!sound) return;
+          const id = sound.play();
+          sound.seek(0.64, id);
+          const volume = isFinalHit ? 0.58 : Math.min(0.5 + i * 0.035, 0.58);
+          sound.volume(volume, id);
+          scheduleAudio(() => sound.fade(volume, 0, 800, id), 400);
+          scheduleAudio(() => sound.stop(id), 1200);
+        }, hitStart * 1000);
+
+        scheduleAudio(() => {
+          const sound = audioRefs.current.beamImpact;
+          if (!sound) return;
+          const id = sound.play();
+          const volume = isFinalHit ? 0.9 : Math.min(0.68 + i * 0.06, 0.82);
+          sound.volume(volume, id);
+          sound.fade(volume, 0, 1500, id);
+          scheduleAudio(() => sound.stop(id), 1600);
+        }, (contact - 0.13) * 1000);
+
+        if (isFinalHit) {
+          scheduleAudio(() => {
+            const sound = audioRefs.current.finalLockOn;
+            if (!sound) return;
+            const id = sound.play();
+            sound.volume(0.86, id);
+            sound.fade(0.86, 0, 1100, id);
+            scheduleAudio(() => sound.stop(id), 1150);
+          }, (hitStart + 0.18) * 1000);
+
+          scheduleAudio(() => {
+            const sound = audioRefs.current.finalDischarge;
+            if (!sound) return;
+            const id = sound.play();
+            sound.volume(0.9, id);
+            sound.fade(0.9, 0, 3000, id);
+            scheduleAudio(() => sound.stop(id), 3000);
+          }, finalFlipStartForAudio * 1000);
+
+          scheduleAudio(() => {
+            const sound = audioRefs.current.revealSnap;
+            if (!sound) return;
+            const id = sound.play();
+            sound.volume(0.52, id);
+            sound.fade(0.52, 0, 2000, id);
+            scheduleAudio(() => sound.stop(id), 2500);
+          }, Math.max(0, (finalFlipEndForAudio - 0.06) * 1000));
+
+          const postFlipStart = finalFlipEndForAudio + 0.06;
+          scheduleAudio(() => {
+            const sound = audioRefs.current.electricalArc;
+            if (!sound) return;
+            const id = sound.play();
+            sound.volume(0.28, id);
+            sound.fade(0.28, 0, 2100, id);
+            scheduleAudio(() => sound.stop(id), 2200);
+          }, postFlipStart * 1000);
+
+          scheduleAudio(() => {
+            Object.values(audioRefs.current).forEach(sound => {
+              if (sound) sound.stop();
+            });
+            audioTimersRef.current = [];
+          }, (postFlipStart + 4.0) * 1000);
+        }
       }
     }
 
