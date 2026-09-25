@@ -1,6 +1,6 @@
 ## PaymentRequestButtonElement
 
-*The payment request button and `stripe.paymentRequest()` are deprecated. [Migrate to the express checkout element](https://docs.stripe.com/elements/express-checkout-element/migration.md).*
+*The `PaymentRequestButtonElement` is deprecated. [Migrate to the Express Checkout Element](https://docs.stripe.com/elements/express-checkout-element/migration.md).*
 
 Use the `PaymentRequestButtonElement` from `@stripe/react-stripe-js` to display Apple Pay, Google Pay,
 Link (also known as Onelink in the UK), and browser-based payment request buttons powered by the Payment Request API.
