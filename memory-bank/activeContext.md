@@ -57,3 +57,9 @@ Current repair on branch `fix/lucky-card-audio-runtime`:
 ## 2026-09-25 — Security License and GitHub Actions Pinning
 - Removed the stale `package-lock.json`; the repository is governed by pnpm and uses `pnpm-lock.yaml`. The flagged LGPL-3.0-or-later entries were optional `@img/sharp-libvips-*` packages recorded only in that stale npm lockfile.
 - Pinned all third-party actions in the three flagged workflows to immutable full commit SHAs, preserving their current major-version behavior via version comments.
+
+
+## 2026-09-25 — GCP Key Redaction and Action Pin Monitoring
+- Verified the three flagged GitHub Actions workflows already use full 40-character commit SHAs; no workflow code change was required.
+- Redacted 9 Google API-key-shaped values from `.docs/deep-dive/_android_developers.md`.
+- Added `.github/dependabot.yml` to monitor GitHub Actions updates weekly while retaining immutable pins.
