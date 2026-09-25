@@ -18,3 +18,11 @@ Current repair on branch `fix/lucky-card-audio-choreography`:
 - Preserve all existing tier counts, visual choreography, card artwork, accessibility/reduced-motion behavior, and unrelated audio.
 
 Verification status: code diff inspected; repository CI/browser verification is pending.
+
+## 2026-09-25 — Lucky Card Audio Runtime Repair
+- Branch: `fix/lucky-card-audio-runtime`
+- Verified defect in `app/lucky-card-reveal.js`: `beam_energy.mp3` was configured with `loop: true`, and the audio choreography referenced `F_WRAP` before that visual constant was declared later in the function. This could terminate audio scheduling before the looping beam instance received its shutdown timer.
+- Replaced the continuous reveal audio bed with finite authored cues already present in `public/sounds/`: cinematic whoosh, cinematic impact, magical impact, final lock-on, final discharge, reveal snap, and firework crackle.
+- Added reveal-owned audio timer tracking and hard cleanup on retrigger/unmount/end-of-sequence.
+- Preserved existing Standard 3 / Premium 4 / Flagship 5 hit timing and all visual/card/result/reset/share behavior.
+- Browser/runtime playback verification remains outstanding; the code path and source-level lifecycle checks have been completed.
