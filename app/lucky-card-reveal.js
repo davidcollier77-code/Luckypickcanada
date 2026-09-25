@@ -986,7 +986,6 @@ export default function LuckyCardReveal() {
     }
 
     // FINAL ESCALATION & LOCK ON
-    const F_WRAP = 0.4;
     const tEscalation = setTimeout(() => {
       if (audioRefs.current.beamEnergy && beamEnergyId != null) {
         audioRefs.current.beamEnergy.fade(0.64, 0.86, 350, beamEnergyId);
@@ -1085,7 +1084,6 @@ export default function LuckyCardReveal() {
 
     // FINAL HIT
     const F_ENTER = 0.2;
-    const F_WRAP = 0.4;
     const F_FLIP_TIME = FINAL_FLIP_TIME; // exact lock and start of flip
 
     // Final Impact - tension grab (Energy Transfer)
