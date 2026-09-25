@@ -979,10 +979,12 @@ export default function LuckyCardReveal() {
               })
             );
 
-            standardWebAudioReady = requiredKeys.every(key => Boolean(audioBuffersRef.current[key]));
+            standardWebAudioReady =
+              requiredKeys.every(key => Boolean(audioBuffersRef.current[key])) &&
+              ctx.state === 'running';
           }
 
-          if (standardWebAudioReady && ctx.state === 'running') {
+          if (standardWebAudioReady) {
             webAudioOriginRef.current = ctx.currentTime;
           }
         } catch (err) {
