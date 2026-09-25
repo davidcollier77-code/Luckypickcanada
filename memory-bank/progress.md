@@ -59,3 +59,8 @@
 - Removed the stale npm `package-lock.json`, eliminating the flagged optional LGPL `@img/sharp-libvips-*` lockfile entries. The authoritative dependency lockfile remains `pnpm-lock.yaml`.
 - Pinned every third-party action in `.github/workflows/deploy-open-next.yml`, `.github/workflows/update-spec-kit.yml`, and `.github/workflows/validate-open-next-repair.yml` to full 40-character commit SHAs.
 - No application runtime code or dependency versions were changed.
+
+
+## 2026-09-25 — GCP Key Redaction and Action Pin Monitoring
+- Verified the three flagged workflows already had immutable 40-character action pins.
+- Redacted 9 `AIza...` values from `.docs/deep-dive/_android_developers.md` and added weekly Dependabot monitoring for GitHub Actions.
