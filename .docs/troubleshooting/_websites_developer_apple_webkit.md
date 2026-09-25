@@ -10,7 +10,7 @@
 <link rel="mask-icon" href="/apple-logo.svg" color="#333333">
 <title>WebKit | Apple Developer Documentation</title>
 <link rel="stylesheet" href="https://www.apple.com/wss/fonts?families=SF+Pro,v3|SF+Mono,v1|SF+Pro+SC,v1|SF+Pro+JP,v1" referrerpolicy="origin-when-cross-origin">
-<script defer src="/tutorials/js/chunk-vendors.6bc61ad3.js"></script><script defer src="/tutorials/js/chunk-common.71c8ea9c.js"></script><script defer src="/tutorials/js/index.8f8c20db.js"></script><link href="/tutorials/css/chunk-vendors.0401d05a.css" rel="stylesheet">
+<script defer src="/tutorials/js/chunk-vendors.1707025a.js"></script><script defer src="/tutorials/js/chunk-common.55b91678.js"></script><script defer src="/tutorials/js/index.7b654e03.js"></script><link href="/tutorials/css/chunk-vendors.0401d05a.css" rel="stylesheet">
 <link href="/tutorials/css/index.6a972d82.css" rel="stylesheet">
 <meta name="description" content="Integrate web content seamlessly into your app, and customize content interactions to meet your app’s needs.">
 <meta property="og:locale" content="en_US">

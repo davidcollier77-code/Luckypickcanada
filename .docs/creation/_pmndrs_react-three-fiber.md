@@ -18,7 +18,7 @@ Build your scene declaratively with re-usable, self-contained components that re
 npm install three @types/three @react-three/fiber
 ```
 
-> [!WARNING]
+> [!WARNING]  
 > Three-fiber is a React renderer, it must pair with a major version of React, just like react-dom, react-native, etc. @react-three/fiber@8 pairs with react@18, @react-three/fiber@9 pairs with react@19.
 
 ---
@@ -148,7 +148,7 @@ npm install expo-cli -g
 expo init my-app
 cd my-app
 # Install dependencies
-npm install three @react-three/fiber@8 react@18
+npm install three @react-three/fiber@beta react@rc
 # Start
 expo start
 ```
