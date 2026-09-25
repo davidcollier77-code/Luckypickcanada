@@ -53,3 +53,9 @@
 - Confirmed the current `main` branch contains no `run-gemini-cli` action, `@gemini-cli` trigger, or dedicated Gemini Code Agent workflow.
 - Preserved the site's separate Gemini-powered Oracle endpoint in `functions/api/oracle.js`.
 - Removed the obsolete `.gemini/` ignore rule left over from the removed GitHub integration.
+
+
+## 2026-09-25 — Security License and GitHub Actions Pinning
+- Removed the stale npm `package-lock.json`, eliminating the flagged optional LGPL `@img/sharp-libvips-*` lockfile entries. The authoritative dependency lockfile remains `pnpm-lock.yaml`.
+- Pinned every third-party action in `.github/workflows/deploy-open-next.yml`, `.github/workflows/update-spec-kit.yml`, and `.github/workflows/validate-open-next-repair.yml` to full 40-character commit SHAs.
+- No application runtime code or dependency versions were changed.
