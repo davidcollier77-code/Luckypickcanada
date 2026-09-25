@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import CollectionBinder from './collection-binder';
+import { Howl } from 'howler';
 import { motion, useAnimate, useReducedMotion } from 'framer-motion';
 import { LUCKY_CARDS, selectWeightedLuckyCard, selectRandomQuote } from './lucky-card-data';
 import LuckyCardShare from './lucky-card-share';
@@ -64,6 +65,36 @@ export default function LuckyCardReveal() {
   const fallbackTimerRef = useRef(null);
 
   const particlesRef = useRef([]);
+
+  const audioRefs = useRef({
+    beamEnergy: null,
+    beamImpact: null,
+    electricalArc: null,
+    finalLockOn: null,
+    finalDischarge: null,
+    revealSnap: null
+  });
+
+  // Pre-load sounds on mount
+  useEffect(() => {
+    audioRefs.current.beamEnergy = new Howl({ src: ['/sounds/beam_energy.mp3'], volume: 0.8, preload: true });
+    audioRefs.current.beamImpact = new Howl({ src: ['/sounds/beam_impact.mp3'], volume: 1.0, preload: true });
+    audioRefs.current.electricalArc = new Howl({ src: ['/sounds/electrical_arc.mp3'], volume: 0.6, preload: true, loop: true });
+    audioRefs.current.finalLockOn = new Howl({ src: ['/sounds/final_lock_on.mp3'], volume: 1.0, preload: true });
+    audioRefs.current.finalDischarge = new Howl({ src: ['/sounds/final_discharge.mp3'], volume: 1.0, preload: true });
+    audioRefs.current.revealSnap = new Howl({ src: ['/sounds/reveal_snap.mp3'], volume: 1.0, preload: true });
+
+    return () => {
+      // Cleanup all Howl instances to prevent stale audio playing on unmount
+      Object.values(audioRefs.current).forEach(sound => {
+        if (sound) {
+          sound.stop();
+          sound.unload();
+        }
+      });
+    };
+  }, []);
+
 
   useEffect(() => {
     try {
@@ -921,6 +952,92 @@ export default function LuckyCardReveal() {
     sequence.push([cardFlipRef.current, { rotateY: 0 }, { duration: 0 }]);
 
     let currentTime = 0;
+
+    // --- AUDIO CHOREOGRAPHY ---
+    // Stop any existing audio before starting new sequence
+    Object.values(audioRefs.current).forEach(sound => {
+      if (sound) {
+        sound.stop();
+      }
+    });
+    
+    // --- AUDIO CHOREOGRAPHY ---
+    const AUDIO_START = () => {
+        // Build up energy at start
+        if (audioRefs.current.beamEnergy) {
+           const id = audioRefs.current.beamEnergy.play();
+           audioRefs.current.beamEnergy.fade(0, 0.4, 500, id);
+        }
+    };
+    AUDIO_START();
+
+    for (let i = 0; i < totalHits - 1; i++) {
+        const hitStart = i * HIT_DURATION;
+        const _P_WRAP = 0.4;
+
+        // Regular pulse impact (sync with P_WRAP)
+        const t1 = setTimeout(() => {
+            if (audioRefs.current.beamImpact) {
+                const id = audioRefs.current.beamImpact.play();
+                audioRefs.current.beamImpact.rate(0.9 + Math.random() * 0.2, id);
+            }
+        }, (hitStart + _P_WRAP) * 1000);
+        activeTimeoutsRef.current.push(t1);
+    }
+
+    // FINAL ESCALATION & LOCK ON
+    const _F_WRAP = 0.4;
+    const tEscalation = setTimeout(() => {
+        // Distinct escalation sound for final hit, differentiated from regular pulses
+        if (audioRefs.current.beamEnergy) {
+            const id = audioRefs.current.beamEnergy.play();
+            audioRefs.current.beamEnergy.rate(1.2, id); // Higher pitch for escalation
+            audioRefs.current.beamEnergy.volume(0.8, id);
+        }
+    }, finalHitStartTime * 1000);
+    activeTimeoutsRef.current.push(tEscalation);
+
+    const tLockOn = setTimeout(() => {
+        // Lock on acquisition
+        if (audioRefs.current.finalLockOn) audioRefs.current.finalLockOn.play();
+    }, (finalHitStartTime + _F_WRAP) * 1000);
+    activeTimeoutsRef.current.push(tLockOn);
+
+    const flipAbsTime_AUDIO = finalHitStartTime + FINAL_FLIP_TIME;
+
+    // FINAL DISCHARGE & FLIP
+    const tDischarge = setTimeout(() => {
+        if (audioRefs.current.finalDischarge) audioRefs.current.finalDischarge.play();
+    }, flipAbsTime_AUDIO * 1000);
+    activeTimeoutsRef.current.push(tDischarge);
+
+    // REVEAL SNAP (mid flip)
+    const tSnap = setTimeout(() => {
+        if (audioRefs.current.revealSnap) audioRefs.current.revealSnap.play();
+    }, (flipAbsTime_AUDIO + 0.3) * 1000);
+    activeTimeoutsRef.current.push(tSnap);
+
+    // POST-FLIP ELECTRICAL ACTIVITY
+    const tPostFlip = setTimeout(() => {
+        if (audioRefs.current.electricalArc) {
+            const id = audioRefs.current.electricalArc.play();
+            audioRefs.current.electricalArc.fade(0, 0.6, 200, id);
+
+            // Cleanup electrical arc exactly at DISSIPATE end
+            const tEnd = setTimeout(() => {
+                if (audioRefs.current.electricalArc) {
+                    audioRefs.current.electricalArc.fade(0.6, 0, 800, id);
+                    const tStop = setTimeout(() => {
+                        if (audioRefs.current.electricalArc) audioRefs.current.electricalArc.stop(id);
+                    }, 800);
+                    activeTimeoutsRef.current.push(tStop);
+                }
+            }, POST_FLIP_DISSIPATION * 1000);
+            activeTimeoutsRef.current.push(tEnd);
+        }
+    }, (flipAbsTime_AUDIO + 0.6) * 1000);
+    activeTimeoutsRef.current.push(tPostFlip);
+
 
     // Non-final hits choreography
     for (let i = 0; i < totalHits - 1; i++) {
