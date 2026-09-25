@@ -1,8 +1,6 @@
-const { execSync, execFileSync } = require('child_process');
 const fs = require('fs');
 const https = require('https');
 const path = require('path');
-const os = require('os');
 
 const DOCS_DIR = path.join(process.cwd(), '.docs');
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
