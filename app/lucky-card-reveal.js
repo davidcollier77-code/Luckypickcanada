@@ -954,6 +954,14 @@ export default function LuckyCardReveal() {
     let currentTime = 0;
 
     // --- AUDIO CHOREOGRAPHY ---
+    // Stop any existing audio before starting new sequence
+    Object.values(audioRefs.current).forEach(sound => {
+      if (sound) {
+        sound.stop();
+      }
+    });
+    
+    // --- AUDIO CHOREOGRAPHY ---
     const AUDIO_START = () => {
         // Build up energy at start
         if (audioRefs.current.beamEnergy) {
@@ -1019,9 +1027,10 @@ export default function LuckyCardReveal() {
             const tEnd = setTimeout(() => {
                 if (audioRefs.current.electricalArc) {
                     audioRefs.current.electricalArc.fade(0.6, 0, 800, id);
-                    setTimeout(() => {
+                    const tStop = setTimeout(() => {
                         if (audioRefs.current.electricalArc) audioRefs.current.electricalArc.stop(id);
                     }, 800);
+                    activeTimeoutsRef.current.push(tStop);
                 }
             }, POST_FLIP_DISSIPATION * 1000);
             activeTimeoutsRef.current.push(tEnd);
