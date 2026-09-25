@@ -52,3 +52,8 @@ Current repair on branch `fix/lucky-card-audio-runtime`:
 - Verified `.github/workflows/gemini-code-agent.yml` is no longer present on `main`, and repository search returns no `google-github-actions/run-gemini-cli`, `@gemini-cli`, or `GEMINI_API_KEY` references belonging to that GitHub workflow.
 - The site's separate Oracle feature still uses `env.GEMINI_API_KEY` in `functions/api/oracle.js`; this application integration was not changed.
 - Removed the obsolete `.gemini/` Git ignore entry so the repository no longer carries configuration specifically for the removed Gemini CLI workflow.
+
+
+## 2026-09-25 — Security License and GitHub Actions Pinning
+- Removed the stale `package-lock.json`; the repository is governed by pnpm and uses `pnpm-lock.yaml`. The flagged LGPL-3.0-or-later entries were optional `@img/sharp-libvips-*` packages recorded only in that stale npm lockfile.
+- Pinned all third-party actions in the three flagged workflows to immutable full commit SHAs, preserving their current major-version behavior via version comments.
