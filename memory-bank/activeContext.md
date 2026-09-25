@@ -46,3 +46,9 @@ Current repair on branch `fix/lucky-card-audio-runtime`:
 - Premium/Flagship audio code was retained in its verified current form.
 - Repository visual choreography, Standard/Premium/Flagship hit counts, card artwork, reset/collection/share behavior, and reduced-motion behavior were not intentionally changed.
 - Source-audio audition of the individual GitHub MP3 binaries was not available in this connected execution environment; therefore no claim is made that the source files were literally auditioned here. The repair is based on the supplied rendered capture, verified source durations already recorded by the repository, and the actual current playback code.
+
+## 2026-09-25 — Gemini GitHub Integration Cleanup
+- Verified the repository's former Gemini CLI GitHub Actions integration was removed by PR #1233.
+- Verified `.github/workflows/gemini-code-agent.yml` is no longer present on `main`, and repository search returns no `google-github-actions/run-gemini-cli`, `@gemini-cli`, or `GEMINI_API_KEY` references belonging to that GitHub workflow.
+- The site's separate Oracle feature still uses `env.GEMINI_API_KEY` in `functions/api/oracle.js`; this application integration was not changed.
+- Removed the obsolete `.gemini/` Git ignore entry so the repository no longer carries configuration specifically for the removed Gemini CLI workflow.
