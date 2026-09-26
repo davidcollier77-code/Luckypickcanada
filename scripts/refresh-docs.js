@@ -3,7 +3,48 @@ const https = require('https');
 const path = require('path');
 
 const DOCS_DIR = path.join(process.cwd(), '.docs');
+const DOCS_BASE_DIR = path.resolve(DOCS_DIR);
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
+
+function resolveDocsPath(...segments) {
+  if (fs.lstatSync(DOCS_BASE_DIR).isSymbolicLink()) {
+    throw new Error('The .docs directory must not be a symbolic link.');
+  }
+
+  const resolved = path.resolve(DOCS_BASE_DIR, ...segments);
+  if (resolved !== DOCS_BASE_DIR && !resolved.startsWith(DOCS_BASE_DIR + path.sep)) {
+    throw new Error('Resolved documentation path escapes the .docs directory.');
+  }
+
+  let currentPath = DOCS_BASE_DIR;
+  const relativePath = path.relative(DOCS_BASE_DIR, resolved);
+  for (const segment of relativePath.split(path.sep).filter(Boolean)) {
+    currentPath = path.resolve(currentPath, segment);
+    if (fs.existsSync(currentPath) && fs.lstatSync(currentPath).isSymbolicLink()) {
+      throw new Error('Documentation paths must not traverse symbolic links.');
+    }
+  }
+
+  return resolved;
+}
+
+function validateGroupName(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+$/.test(value) || path.isAbsolute(value)) {
+    throw new Error('Invalid group: unsafe path value.');
+  }
+  return value;
+}
+
+function validateLibraryIdentifier(value) {
+  if (
+    typeof value !== 'string' ||
+    !/^\/?[A-Za-z0-9._/-]+$/.test(value) ||
+    value.split(/[\\/]+/).includes('..')
+  ) {
+    throw new Error('Invalid library: unsafe identifier.');
+  }
+  return value;
+}
 
 
 const getHalifaxTimestamp = () => {
@@ -32,7 +73,7 @@ function getDirSize(dirPath) {
   if (!fs.existsSync(dirPath)) return 0;
   const files = fs.readdirSync(dirPath);
   for (let i = 0; i < files.length; i++) {
-    const filePath = path.join(dirPath, files[i]);
+    const filePath = resolveDocsPath(path.relative(DOCS_BASE_DIR, dirPath), files[i]);
     const stats = fs.lstatSync(filePath);
     if (stats.isDirectory()) {
       size += getDirSize(filePath);
@@ -261,7 +302,7 @@ function getUpstreamSha(lib, sourceConfig) {
 function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) {
   const timestamp = getHalifaxTimestamp();
 
-  const manifestPath = path.join(DOCS_DIR, 'manifest.json');
+  const manifestPath = resolveDocsPath('manifest.json');
   let currentManifest = {};
   if (fs.existsSync(manifestPath)) {
     currentManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -274,7 +315,8 @@ function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) 
     inventory: Array.from(inventory),
     githubShas: shas
   };
-  const tempManifestPath = manifestPath + '.tmp.' + Date.now();
+  const tempFilename = 'manifest.json.tmp.' + Date.now();
+  const tempManifestPath = resolveDocsPath(tempFilename);
   try {
     fs.writeFileSync(tempManifestPath, JSON.stringify(manifestData, null, 2) + '\n');
     fs.renameSync(tempManifestPath, manifestPath);
@@ -288,7 +330,7 @@ function cleanupStaleTempFiles(dirPath) {
   if (!fs.existsSync(dirPath)) return;
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
   for (const entry of entries) {
-    const entryPath = path.join(dirPath, entry.name);
+    const entryPath = resolveDocsPath(path.relative(DOCS_BASE_DIR, dirPath), entry.name);
     if (entry.isDirectory()) {
       cleanupStaleTempFiles(entryPath);
     } else if (entry.isFile() && entry.name.includes('.tmp.')) {
@@ -311,7 +353,7 @@ async function main() {
 
   cleanupStaleTempFiles(DOCS_DIR);
 
-  const manifestPath = path.join(DOCS_DIR, 'manifest.json');
+  const manifestPath = resolveDocsPath('manifest.json');
   if (!fs.existsSync(manifestPath)) {
       console.error('CRITICAL: .docs/manifest.json not found.');
       process.exit(1);
@@ -324,16 +366,18 @@ async function main() {
   const libraryToGroups = new Map();
 
   for (const [group, libs] of Object.entries(groupsConfig)) {
-    const groupDir = path.join(DOCS_DIR, group);
+    const safeGroup = validateGroupName(group);
+    const groupDir = resolveDocsPath(safeGroup);
     if (!fs.existsSync(groupDir)) {
       fs.mkdirSync(groupDir, { recursive: true });
     }
     for (const lib of libs) {
-      uniqueLibraries.add(lib);
-      if (!libraryToGroups.has(lib)) {
-        libraryToGroups.set(lib, []);
+      const safeLib = validateLibraryIdentifier(lib);
+      uniqueLibraries.add(safeLib);
+      if (!libraryToGroups.has(safeLib)) {
+        libraryToGroups.set(safeLib, []);
       }
-      libraryToGroups.get(lib).push(group);
+      libraryToGroups.get(safeLib).push(group);
     }
   }
 
@@ -391,10 +435,12 @@ async function main() {
       const lib = nextUpdate.lib;
       const groups = nextUpdate.groups;
 
-      const safeName = lib.replace(/[\/\.]/g, '_');
+      const safeLib = validateLibraryIdentifier(lib);
+      const safeName = safeLib.replace(/[^A-Za-z0-9_-]/g, '_');
       // For size calculation, check the first group's file
-      const firstGroupDir = path.join(DOCS_DIR, groups[0]);
-      const firstDocPath = path.join(firstGroupDir, `${safeName}.md`);
+      const firstGroup = validateGroupName(groups[0]);
+      const firstGroupDir = resolveDocsPath(firstGroup);
+      const firstDocPath = resolveDocsPath(firstGroup, `${safeName}.md`);
 
       let existingSize = 0;
       let contentBefore = null;
@@ -423,7 +469,8 @@ async function main() {
       // Check upstream SHA if possible
       let allDocsExist = true;
       for (const group of groups) {
-          const docPath = path.join(DOCS_DIR, group, `${safeName}.md`);
+          const safeGroup = validateGroupName(group);
+          const docPath = resolveDocsPath(safeGroup, `${safeName}.md`);
           if (!fs.existsSync(docPath)) {
               allDocsExist = false;
               break;
@@ -514,8 +561,9 @@ async function main() {
           // Ensure symlinks/files exist for ALL groups just in case
           for (let i = 0; i < groups.length; i++) {
             const group = groups[i];
-            const groupDir = path.join(DOCS_DIR, group);
-            const docPath = path.join(groupDir, `${safeName}.md`);
+            const safeGroup = validateGroupName(group);
+            const groupDir = resolveDocsPath(safeGroup);
+            const docPath = resolveDocsPath(path.relative(DOCS_BASE_DIR, groupDir), `${safeName}.md`);
 
             if (i === 0) {
               if (!fs.existsSync(docPath)) {
@@ -531,7 +579,8 @@ async function main() {
             } else {
                if (!fs.existsSync(docPath)) {
                   try {
-                    const relativeTarget = path.relative(groupDir, path.join(DOCS_DIR, groups[0], `${safeName}.md`));
+                    const safeFirstGroup = validateGroupName(groups[0]);
+                    const relativeTarget = path.relative(groupDir, resolveDocsPath(safeFirstGroup, `${safeName}.md`));
                     fs.symlinkSync(relativeTarget, docPath);
                   } catch(e) {
                      // fallback
@@ -554,7 +603,8 @@ async function main() {
           stats.updated++;
 
           // Write primary copy to first group
-          const firstGroupPath = path.join(DOCS_DIR, groups[0], `${safeName}.md`);
+          const safeFirstGroup = validateGroupName(groups[0]);
+          const firstGroupPath = resolveDocsPath(safeFirstGroup, `${safeName}.md`);
           const tempPath1 = firstGroupPath + '.tmp.' + Date.now();
           try {
              fs.writeFileSync(tempPath1, outputWithCorrectLineEndings);
@@ -566,8 +616,9 @@ async function main() {
 
           // Write symlinks for subsequent groups
           for (let i = 1; i < groups.length; i++) {
-             const groupDir = path.join(DOCS_DIR, groups[i]);
-             const docPath = path.join(groupDir, `${safeName}.md`);
+             const safeGroup = validateGroupName(groups[i]);
+             const groupDir = resolveDocsPath(safeGroup);
+             const docPath = resolveDocsPath(path.relative(DOCS_BASE_DIR, groupDir), `${safeName}.md`);
              const tempSymlinkPath = docPath + '.tmp.' + Date.now();
              try {
                 const relativeTarget = path.relative(groupDir, firstGroupPath);
