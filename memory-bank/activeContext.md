@@ -9,6 +9,16 @@
 - No application runtime, Lucky Card Reveal audio/visual code, database, authentication, payment, or secrets were changed.
 - Production verification is still pending until the new deployment path successfully completes and the live homepage/reveal are visually checked.
 
+## 2026-09-26 — Cloudflare API Rate-Limit Deployment Repair
+
+- Branch: `fix/cloudflare-deploy-rate-limit`.
+- Verified the latest deployment retry still builds Next.js and OpenNext successfully, then fails only at the Cloudflare publish command.
+- First failure returned Cloudflare API rate-limit code 10500 on `GET /accounts`; the subsequent retry returned HTTP 429 on the Worker deployments endpoint.
+- Verified the production rendering repair is therefore blocked by Cloudflare deployment API throttling, not by the Next.js/Tailwind build.
+- Added a bounded deployment backoff that retries only recognized Cloudflare rate-limit responses, with delays of 60s, 120s, 180s, and 300s; non-rate-limit deployment failures still fail immediately.
+- No application runtime, Lucky Card Reveal audio/visual code, database, authentication, payment, or secrets were changed.
+- Production verification remains pending until a rate-limit-aware deployment succeeds and the live CSS is directly verified.
+
 # Active Context
 
 ## 2026-09-26 — Standard Audio Stale-Fallback Lifecycle Repair
