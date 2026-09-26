@@ -600,7 +600,7 @@ async function main() {
           for (let i = 1; i < groups.length; i++) {
              const safeGroup = validateManifestValue(groups[i], 'group');
              const groupDir = resolveDocsPath(safeGroup);
-             const docPath = path.join(groupDir, `${safeName}.md`);
+             const docPath = resolveDocsPath(path.relative(DOCS_BASE_DIR, groupDir), `${safeName}.md`);
              const tempSymlinkPath = docPath + '.tmp.' + Date.now();
              try {
                 const relativeTarget = path.relative(groupDir, firstGroupPath);
