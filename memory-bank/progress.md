@@ -4,6 +4,12 @@
 - Implemented the minimal workflow-only workaround on branch `fix/cloudflare-deploy-bypass-open-next-cache-populate`.
 - Production verification remains pending until CI deploy completion and live visual checks.
 
+## 2026-09-26 — Cloudflare API Rate-Limit Deployment Repair
+- Verified a fresh CI retry reproduced the deployment blocker as Cloudflare HTTP 429 on the Worker deployments endpoint after successful Next.js and OpenNext builds.
+- Added a bounded retry/backoff around the existing Wrangler publish command, retrying only recognized Cloudflare rate-limit responses.
+- Kept the repair limited to `.github/workflows/deploy-open-next.yml`; no application code or secrets changed.
+- Production CSS verification remains pending until the deployment completes successfully.
+
 # Progress
 
 ## 2026-09-26 — Standard Audio Stale-Fallback Lifecycle Repair
