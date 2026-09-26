@@ -55,9 +55,22 @@ jobs:
             exit 1;
           fi
 
+          css_file="$(find "$css_dir" -type f -name '*.css' -print -quit)"
+          if [ -z "$css_file" ]; then
+            echo "NO GENERATED CSS FILE FOUND";
+            find "$css_dir" -maxdepth 2 -type f -print | sort | head -100 || true;
+            exit 1;
+          fi
+
           if grep -R -n -F '@tailwind base;' "$css_dir"; then
             echo "UNPROCESSED TAILWIND DIRECTIVE DETECTED";
             exit 1;
+          else
+            grep_status=$?
+            if [ "$grep_status" -gt 1 ]; then
+              echo "TAILWIND CSS SCAN FAILED (grep exit $grep_status)";
+              exit "$grep_status";
+            fi
           fi
 
           echo "TAILWIND CSS COMPILED"
