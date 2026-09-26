@@ -7940,6 +7940,8 @@ snapshots:
       browserslist: 4.28.8
       caniuse-lite: 1.0.30001809
 
+  caniuse-lite@1.0.30001810: {}
+
   caniuse-lite@1.0.30001809: {}
 
   canvas-confetti@1.9.4: {}
