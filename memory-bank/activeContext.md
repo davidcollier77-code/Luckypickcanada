@@ -107,3 +107,12 @@
 - Cross-referenced that timing against the current Standard Web Audio choreography: `beamEnergy` is scheduled at `hitStart + 0.08s`, which places a source-internal transient in the exact observed window. The previously fixed Web Audio clock-origin defect is not the current cause.
 - Implemented the minimum audio-only repair in `app/lucky-card-reveal.js`: Standard no longer schedules `beamEnergy`. Approach, physical impact, final lock/discharge/reveal cues, Web Audio timing, visual/VFX code, and Premium/Flagship behavior remain unchanged.
 - Verification so far: the application change is one targeted file diff with 3 additions and 4 deletions; subsequent commits only update the Memory Bank records. User-facing runtime playback still requires a fresh rendered capture after this change.
+
+
+## 2026-09-26 — Critical Build/Deployment Safeguards
+
+- Added explicit authorization-required notices to tailwind.config.js and postcss.config.js so unrelated AI/application tasks are instructed to leave the site-wide build configuration unchanged.
+- Added explicit protected-safeguard notices to .github/workflows/deploy-open-next.yml covering the Cloudflare deployment concurrency group and bounded 429/10500 retry/backoff logic.
+- Preserved the existing deployment behavior exactly: cancel-in-progress: false and bounded 60/120/180/300-second retry delays remain unchanged.
+- No application runtime, audio, visual, database, authentication, payment, or secret behavior was changed.
+- Verification requires final diff inspection and workflow/config syntax checks.
