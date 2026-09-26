@@ -151,3 +151,16 @@
 - Final asset binaries were re-audited after ingestion; all eight passed the same targeted tonal checks.
 - No visual/VFX, artwork, tier counts, reset/countdown, collection, share, database, authentication, payment, deployment, or secrets were changed.
 - Verification pending: repository CI/build/browser playback capture and final diff audit.
+
+## 2026-09-26 — Standard Audio Fallback Timing Repair
+- Addressed Sourcery review finding in the Standard Howler fallback.
+- Verified the fallback had no delay around beam, impact, shake, lock, discharge, snap, or post-flip arc playback, causing all fallback cues to fire at reveal start.
+- Added matching `scheduleAudio` delays:
+  - beam: `hitStart * 1000`
+  - impact: `(contact - 0.19) * 1000`
+  - shake: `(contact - 0.14) * 1000`
+  - final lock: `(hitStart + 0.13) * 1000`
+  - final discharge: `finalFlipStartForAudio * 1000`
+  - reveal snap: `Math.max(0, finalFlipEndForAudio - 0.65) * 1000`
+  - electrical arc: `postFlipStart * 1000`
+- No visual/VFX or Premium/Flagship behavior was changed.
