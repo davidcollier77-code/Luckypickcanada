@@ -133,3 +133,21 @@
 - Removed only the Standard playback scheduling for `beamEnergy` in `app/lucky-card-reveal.js`.
 - Preserved the Web Audio origin repair from PR #1271, approach/impact timing, final cues, all visual/VFX behavior, and Premium/Flagship choreography.
 - Runtime confirmation after rebuilding the branch remains the final verification step; no claim of post-fix browser/device playback has been made.
+
+## 2026-09-26 — Standard Reveal Fresh Audio Asset Rebuild
+- Deep-audited the seven existing Standard reveal MP3s from their actual binary contents after the rendered recording showed a recurring computer-like tone.
+- Verified `beam_impact.mp3` itself contained the strongest matching narrow tonal structure; source replacement was therefore justified rather than another timing-only patch.
+- Sourced eight fresh Mixkit sound-effect assets for Standard-only use and independently checked each candidate for the targeted 2.1 kHz / 1.56 kHz tonal signature before ingestion.
+- Added a dedicated Standard audio palette:
+  - beam shot
+  - physical beam impact
+  - subtle card shake
+  - stronger final beam
+  - mechanical final lock
+  - final electrical discharge
+  - reveal snap
+  - post-flip electrical arc
+- Implemented Standard-only Web Audio scheduling and a Standard-only Howler fallback in `app/lucky-card-reveal.js`, while preserving the existing Premium/Flagship legacy asset path.
+- Final asset binaries were re-audited after ingestion; all eight passed the same targeted tonal checks.
+- No visual/VFX, artwork, tier counts, reset/countdown, collection, share, database, authentication, payment, deployment, or secrets were changed.
+- Verification pending: repository CI/build/browser playback capture and final diff audit.
