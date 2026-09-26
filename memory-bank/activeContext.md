@@ -1,3 +1,14 @@
+## 2026-09-26 — OpenNext Publish Hang Repair
+
+- Branch: `fix/cloudflare-deploy-bypass-open-next-cache-populate`
+- Base: current `main` at `3f944de4c2a6736cb88a6feb06375f5e43507231`.
+- Verified the latest post-#1264 deployment workflow run `36230678014` built the Next.js app and OpenNext worker successfully, verified the worker/assets outputs, and then remained in progress at the Cloudflare publish step.
+- Verified the publish step introduced by PR #1264 invokes `opennextjs-cloudflare deploy`, which enters remote R2 incremental-cache population before deployment.
+- Upstream OpenNext Cloudflare issue #1273 documents the same silent `populateCache` hang and its supported escape hatch: set `OPEN_NEXT_DEPLOY=true` when invoking `wrangler deploy` to bypass automatic OpenNext deployment/cache population and deploy the Worker directly; cache entries then populate lazily on request misses.
+- Implemented the minimal deployment change in `.github/workflows/deploy-open-next.yml`: retain the existing Next.js/OpenNext build and artifact verification, but publish with `pnpm exec wrangler deploy --config ./wrangler.jsonc` under `OPEN_NEXT_DEPLOY=true`.
+- No application runtime, Lucky Card Reveal audio/visual code, database, authentication, payment, or secrets were changed.
+- Production verification is still pending until the new deployment path successfully completes and the live homepage/reveal are visually checked.
+
 # Active Context
 
 ## 2026-09-26 — OpenNext Remote Cache Deployment Repair
