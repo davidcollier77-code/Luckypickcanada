@@ -1,64 +1,33 @@
-I have completed the Lucky Card Reveal cinematic beam rework strictly adhering to `AGENTS.md` governance and the attached visual target.
+Fix: Assign AudioContext.currentTime to webAudioOriginRef.current
 
-**Analysis:** The previous architecture used disconnected geometric Canvas shapes (`drawEnergyRibbon` bezier and `drawWrap` arc) which violated the requirement that the incoming beam *is* the grabbing wrap. Framer Motion shakes were out of sync with contact physics.
+The Standard lucky card reveal audio was missing because the Web Audio timing origin
+(`webAudioOriginRef.current`) was never initialized from the active `AudioContext.currentTime`.
+This caused scheduled playback events (`source.start(...)`) to use incorrect timestamps or fail outright.
 
-**Implementation:** I completely re-architected `app/lucky-card-reveal.js` to draw a continuous bezier curve that transitions seamlessly into the wrapping arc (`drawContinuousBeam`). Framer Motion `x/rotateZ` shaking is perfectly synchronized to `P_WRAP` (contact) and ends exactly at `P_SHAKE` (release). The final hit dynamically tracks Framer Motion's `y` coordinate offset to visually "throw" the card.
+This commit restores the Standard audio implementation by assigning `webAudioOriginRef.current = audioCtxRef.current.currentTime;`
+at the beginning of the `scheduleWebAudio` block inside `app/lucky-card-reveal.js`.
 
-### PR SUMMARY
-**Governance followed:** YES. Read AGENTS.md first and followed its complete routing chain.
+**PR Summary:**
 
-**LIBRARY CONSULTATION REPORT**
-- TASK GROUP: polishing
-- LIBRARY: Framer Motion
-- EXACT PATH: .docs/polishing/_websites_motion_dev.md
-- USED: YES
-- USEFUL: YES
-- WHAT WAS USEFUL: Investigated exact syntax for easing properties and exact `at` timings within sequential arrays.
-- EVIDENCE: Used `ease: "linear"` for the card fight to replace the generic `easeInOut` inside `triggerCardDraw`.
-- REASON: N/A
+TASK GROUP
+audio | Restore missing audio playback in the Standard lucky card reveal.
 
-- TASK GROUP: polishing
-- LIBRARY: Canvas 2D / MDN
-- EXACT PATH: .docs/polishing/_mdn_content.md
-- USED: YES
-- USEFUL: YES
-- WHAT WAS USEFUL: Investigated `ctx.bezierCurveTo` and tangent calculations for continuous paths without breaking geometry.
-- EVIDENCE: Replaced disjointed Canvas commands with calculated cubic beziers converging exactly onto the Archimedean spiral tangent.
-- REASON: N/A
+LIBRARY CONSULTATION REPORT
+None | N/A | USED: NO | USEFUL: NO | No libraries were required; this is a pure Web Audio API timing bug.
 
-**ROUTED JULES/GEMINI DOCUMENT REPORT**
-- DOCUMENT: Jules Documentation
-- EXACT PATH: .docs/polishing/jules_google_docs.md
-- USED: YES
-- USEFUL: YES
-- WHAT WAS USEFUL: Verified standing orders and project constraints for verification reports.
-- EVIDENCE: Read before execution as required.
-- REASON: N/A
+ROUTED JULES/GEMINI DOCUMENT REPORT
+.jules/audio.md | USED: YES | USEFUL: YES | Guided the process of restoring the Web Audio timing sequence without redesigning the sound system.
 
-**REPOSITORY COMPONENT REPORT**
-- COMPONENT: .jules/polishing.md
-- EXACT PATH: .jules/polishing.md
-- USED: YES
-- CHANGED: NO
-- VERIFIED: YES
-- USEFUL: YES
-- WHAT WAS USEFUL: Re-affirmed that Canvas overlay was preferred over injecting 3D scale transforms that cause CSS distortion.
-- EVIDENCE: Kept the `mixBlendMode: 'screen'` 2D Canvas rendering strategy instead of switching to a WebGL architecture.
-- REASON: N/A
+REPOSITORY COMPONENT REPORT
+app/lucky-card-reveal.js | USED: YES | USEFUL: YES | Located and repaired the missing `webAudioOriginRef.current` assignment that prevented Standard audio events from playing.
 
-**VERIFICATION REPORT**
-- COMMAND: `pnpm run build`
-- RESULT: SUCCESS
-- EVIDENCE / OUTPUT SUMMARY: "Build completed successfully", `.next` size is 302M (under 495MB hard limit).
-- COMMAND: `pnpm test`
-- RESULT: SUCCESS
-- EVIDENCE / OUTPUT SUMMARY: "Tests complete: 11 passed".
-- COMMAND: `./jules-verify.sh`
-- RESULT: SUCCESS
-- EVIDENCE / OUTPUT SUMMARY: "All verification steps passed."
+495 MB BUILD CAP
+FOLLOWED: YES | ACTUAL BUILD SIZE: <495 MB | IF CAP REACHED: N/A
 
-**FINAL RECONCILIATION**
-- `app/lucky-card-reveal.js`
-- `memory-bank/activeContext.md`
+VERIFICATION REPORT
+./jules-verify.sh | PASS | Build checks and typescript checks passed successfully without introducing any regressions or typing errors.
+
+FINAL RECONCILIATION
+app/lucky-card-reveal.js
 
 USEFUL RESULT: YES
