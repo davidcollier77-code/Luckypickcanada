@@ -82,6 +82,18 @@ export default function LuckyCardReveal() {
     revealSnap: null,
     electricalArc: null
   });
+
+  const standardAudioRefs = useRef({
+    beamShot: null,
+    finalBeam: null,
+    beamImpact: null,
+    finalLock: null,
+    finalDischarge: null,
+    revealSnap: null,
+    electricalArc: null,
+    cardShake: null
+  });
+
   const audioTimersRef = useRef([]);
 
   const audioCtxRef = useRef(null);
@@ -93,13 +105,14 @@ export default function LuckyCardReveal() {
 
   useEffect(() => {
     const audioSources = {
-      beamApproach: '/sounds/mixkit-cinematic-whoosh.mp3',
-      beamEnergy: '/sounds/beam_energy.mp3',
-      beamImpact: '/sounds/beam_impact.mp3',
-      finalLockOn: '/sounds/final_lock_on.mp3',
-      finalDischarge: '/sounds/final_discharge.mp3',
-      revealSnap: '/sounds/reveal_snap.mp3',
-      electricalArc: '/sounds/electrical_arc.mp3'
+      beamShot: '/sounds/standard_beam_shot.mp3',
+      finalBeam: '/sounds/standard_final_beam.mp3',
+      beamImpact: '/sounds/standard_beam_impact.mp3',
+      finalLock: '/sounds/standard_final_lock.mp3',
+      finalDischarge: '/sounds/standard_final_discharge.mp3',
+      revealSnap: '/sounds/standard_reveal_snap.mp3',
+      electricalArc: '/sounds/standard_electrical_arc.mp3',
+      cardShake: '/sounds/standard_card_shake.mp3'
     };
 
     standardAudioPreloadRef.current = Promise.all(
@@ -128,44 +141,92 @@ export default function LuckyCardReveal() {
   // Howler play() returns a unique sound id for each one-shot, so repeated hits can
   // overlap safely without introducing a persistent reveal-owned audio bed.
   useEffect(() => {
+    // Legacy reveal assets are intentionally retained for Premium/Flagship.
     audioRefs.current.beamApproach = new Howl({
-      src: ['/sounds/mixkit-cinematic-whoosh.mp3'], // 4.885s source; short approach layer
+      src: ['/sounds/mixkit-cinematic-whoosh.mp3'],
       volume: 0.42,
       preload: true
     });
     audioRefs.current.beamEnergy = new Howl({
-      src: ['/sounds/beam_energy.mp3'], // 0.261s source; short energy texture for Standard only
+      src: ['/sounds/beam_energy.mp3'],
       volume: 0.2,
       preload: true
     });
     audioRefs.current.beamImpact = new Howl({
-      src: ['/sounds/beam_impact.mp3'], // 1.620s source; physical strike cue
+      src: ['/sounds/beam_impact.mp3'],
       volume: 0.8,
       preload: true
     });
     audioRefs.current.finalLockOn = new Howl({
-      src: ['/sounds/final_lock_on.mp3'], // 1.176s source; final lock buildup
+      src: ['/sounds/final_lock_on.mp3'],
       volume: 0.86,
       preload: true
     });
     audioRefs.current.finalDischarge = new Howl({
-      src: ['/sounds/final_discharge.mp3'], // 7.706s source; hard-limited to flip/throw
+      src: ['/sounds/final_discharge.mp3'],
       volume: 0.9,
       preload: true
     });
     audioRefs.current.revealSnap = new Howl({
-      src: ['/sounds/reveal_snap.mp3'], // 4.049s source; hard-limited to the reveal snap
+      src: ['/sounds/reveal_snap.mp3'],
       volume: 0.52,
       preload: true
     });
     audioRefs.current.electricalArc = new Howl({
-      src: ['/sounds/electrical_arc.mp3'], // 2.247s source; post-flip residual energy
+      src: ['/sounds/electrical_arc.mp3'],
       volume: 0.28,
+      preload: true
+    });
+
+    standardAudioRefs.current.beamShot = new Howl({
+      src: ['/sounds/standard_beam_shot.mp3'],
+      volume: 0.46,
+      preload: true
+    });
+    standardAudioRefs.current.finalBeam = new Howl({
+      src: ['/sounds/standard_final_beam.mp3'],
+      volume: 0.62,
+      preload: true
+    });
+    standardAudioRefs.current.beamImpact = new Howl({
+      src: ['/sounds/standard_beam_impact.mp3'],
+      volume: 0.7,
+      preload: true
+    });
+    standardAudioRefs.current.finalLock = new Howl({
+      src: ['/sounds/standard_final_lock.mp3'],
+      volume: 0.74,
+      preload: true
+    });
+    standardAudioRefs.current.finalDischarge = new Howl({
+      src: ['/sounds/standard_final_discharge.mp3'],
+      volume: 0.78,
+      preload: true
+    });
+    standardAudioRefs.current.revealSnap = new Howl({
+      src: ['/sounds/standard_reveal_snap.mp3'],
+      volume: 0.28,
+      preload: true
+    });
+    standardAudioRefs.current.electricalArc = new Howl({
+      src: ['/sounds/standard_electrical_arc.mp3'],
+      volume: 0.18,
+      preload: true
+    });
+    standardAudioRefs.current.cardShake = new Howl({
+      src: ['/sounds/standard_card_shake.mp3'],
+      volume: 0.15,
       preload: true
     });
 
     return () => {
       Object.values(audioRefs.current).forEach(sound => {
+        if (sound) {
+          sound.stop();
+          sound.unload();
+        }
+      });
+      Object.values(standardAudioRefs.current).forEach(sound => {
         if (sound) {
           sound.stop();
           sound.unload();
@@ -207,6 +268,9 @@ export default function LuckyCardReveal() {
     audioTimersRef.current.forEach(clearTimeout);
     audioTimersRef.current = [];
     Object.values(audioRefs.current).forEach(sound => {
+      if (sound) sound.stop();
+    });
+    Object.values(standardAudioRefs.current).forEach(sound => {
       if (sound) sound.stop();
     });
 
@@ -983,13 +1047,14 @@ export default function LuckyCardReveal() {
 
           if (preloadSucceeded) {
             const requiredKeys = [
-              'beamApproach',
-              'beamEnergy',
+              'beamShot',
+              'finalBeam',
               'beamImpact',
-              'finalLockOn',
+              'finalLock',
               'finalDischarge',
               'revealSnap',
-              'electricalArc'
+              'electricalArc',
+              'cardShake'
             ];
 
             await Promise.all(
@@ -1151,6 +1216,9 @@ export default function LuckyCardReveal() {
     Object.values(audioRefs.current).forEach(sound => {
       if (sound) sound.stop();
     });
+    Object.values(standardAudioRefs.current).forEach(sound => {
+      if (sound) sound.stop();
+    });
 
     webAudioNodesRef.current.forEach(({ source, gainNode }) => {
       try {
@@ -1235,35 +1303,145 @@ export default function LuckyCardReveal() {
         const hitStart = i * HIT_DURATION;
         const contact = hitStart + HIT_CONTACT_OFFSET;
         const isFinalHit = i === totalHitsForAudio - 1;
-        const approachVolume = isFinalHit ? 0.5 : 0.42 + i * 0.035;
-        const impactVolume = isFinalHit ? 0.9 : 0.72 + i * 0.05;
-
-        // beamApproach: delay=hitStart, seek=0.64, volume, fade=0.72, duration=1.1
-        scheduleWebAudio('beamApproach', hitStart, approachVolume, 0.72, 0.64, 1.1);
-
-        // Standard intentionally omits beamEnergy. The supplied Standard capture showed
-        // a narrow, repetitive tonal transient around +0.20s into every hit, matching
-        // this cue's scheduled position. Keep the physical approach and impact cues.
-        // beamImpact: delay=contact-0.13, volume, fade=(isFinal?1.05:0.9), duration=(isFinal?1.25:1.1)
-        scheduleWebAudio('beamImpact', contact - 0.13, impactVolume, isFinalHit ? 1.05 : 0.9, 0, isFinalHit ? 1.25 : 1.1);
 
         if (isFinalHit) {
-          // finalLockOn: delay=hitStart+0.18, volume=0.8, fade=0.76, duration=0.9
-          scheduleWebAudio('finalLockOn', hitStart + 0.18, 0.8, 0.76, 0, 0.9);
+          // Standard final beam is intentionally distinct from the two strike/miss beams.
+          scheduleWebAudio('finalBeam', hitStart, 0.62, 0.9, 0.45, 1.45);
+        } else {
+          // Regular beam: clean sci-fi energy shot, with its measured peak landing at visual contact.
+          scheduleWebAudio('beamShot', hitStart, 0.46 + i * 0.035, 0.5, 0, 0.75);
+        }
 
-          // finalDischarge: delay=finalFlipStartForAudio, volume=0.84, fade=1.85, duration=2.0
-          scheduleWebAudio('finalDischarge', finalFlipStartForAudio, 0.84, 1.85, 0, 2.0);
+        // Physical card hit: the source is windowed around its measured impact transient.
+        scheduleWebAudio(
+          'beamImpact',
+          contact - 0.19,
+          isFinalHit ? 0.88 : 0.66 + i * 0.04,
+          0.75,
+          0.72,
+          1.0
+        );
 
-          // revealSnap: delay=Math.max(0, finalFlipEndForAudio-0.04), volume=0.5, fade=0.26, duration=0.45
-          scheduleWebAudio('revealSnap', Math.max(0, finalFlipEndForAudio - 0.04), 0.5, 0.26, 0, 0.45);
+        // The first two beams physically knock the card and shake it loose.
+        if (!isFinalHit) {
+          scheduleWebAudio(
+            'cardShake',
+            contact - 0.14,
+            0.15 + i * 0.02,
+            0.45,
+            0,
+            0.6
+          );
+        }
 
-          // electricalArc: delay=postFlipStart, volume=0.22, fade=1.8, duration=2.0
+        if (isFinalHit) {
+          // Mechanical lock lands on the card at final contact.
+          scheduleWebAudio('finalLock', hitStart + 0.13, 0.74, 0.5, 0, 0.8);
+
+          // Broad electrical discharge begins with the flip and carries into the payoff.
+          scheduleWebAudio('finalDischarge', finalFlipStartForAudio, 0.78, 1.7, 0, 2.1);
+
+          // Subtle card/page motion peaks near the end of the physical flip.
+          scheduleWebAudio(
+            'revealSnap',
+            Math.max(0, finalFlipEndForAudio - 0.65),
+            0.28,
+            0.4,
+            0.65,
+            0.65
+          );
+
+          // Electrical residue continues after the flip completes.
           const postFlipStart = finalFlipEndForAudio + 0.05;
-          scheduleWebAudio('electricalArc', postFlipStart, 0.22, 1.8, 0, 2.0);
+          scheduleWebAudio('electricalArc', postFlipStart, 0.18, 1.8, 0, 2.0);
+        }
+      }
+    } else if (card.tier === 'standard') {
+      // Standard fallback uses the same fresh Standard-only source palette via Howler.
+      for (let i = 0; i < totalHitsForAudio; i += 1) {
+        const hitStart = i * HIT_DURATION;
+        const contact = hitStart + HIT_CONTACT_OFFSET;
+        const isFinalHit = i === totalHitsForAudio - 1;
 
-          // The cleanup that was originally here via setTimeout is no longer strictly necessary because
-          // nodes will naturally stop playing based on their duration parameter.
-          // However, we still have the visual and premium tier fallback timer doing full reset.
+        const beam = isFinalHit ? standardAudioRefs.current.finalBeam : standardAudioRefs.current.beamShot;
+        if (beam) {
+          scheduleAudio(() => {
+            const id = beam.play();
+            beam.seek(isFinalHit ? 0.45 : 0, id);
+            const volume = isFinalHit ? 0.62 : 0.46 + i * 0.035;
+            beam.volume(volume, id);
+            beam.fade(volume, 0, isFinalHit ? 900 : 500, id);
+            scheduleAudio(() => beam.stop(id), isFinalHit ? 1450 : 750);
+          }, hitStart * 1000);
+        }
+
+        const impact = standardAudioRefs.current.beamImpact;
+        if (impact) {
+          scheduleAudio(() => {
+            const id = impact.play();
+            impact.seek(0.72, id);
+            const volume = isFinalHit ? 0.88 : 0.66 + i * 0.04;
+            impact.volume(volume, id);
+            impact.fade(volume, 0, 750, id);
+            scheduleAudio(() => impact.stop(id), 1000);
+          }, (contact - 0.19) * 1000);
+        }
+
+        if (!isFinalHit) {
+          const shake = standardAudioRefs.current.cardShake;
+          if (shake) {
+            scheduleAudio(() => {
+              const id = shake.play();
+              const volume = 0.15 + i * 0.02;
+              shake.volume(volume, id);
+              shake.fade(volume, 0, 450, id);
+              scheduleAudio(() => shake.stop(id), 600);
+            }, (contact - 0.14) * 1000);
+          }
+        }
+
+        if (isFinalHit) {
+          const lock = standardAudioRefs.current.finalLock;
+          if (lock) {
+            scheduleAudio(() => {
+              const id = lock.play();
+              lock.volume(0.74, id);
+              lock.fade(0.74, 0, 500, id);
+              scheduleAudio(() => lock.stop(id), 800);
+            }, (hitStart + 0.13) * 1000);
+          }
+
+          const discharge = standardAudioRefs.current.finalDischarge;
+          if (discharge) {
+            scheduleAudio(() => {
+              const id = discharge.play();
+              discharge.volume(0.78, id);
+              discharge.fade(0.78, 0, 1700, id);
+              scheduleAudio(() => discharge.stop(id), 2100);
+            }, finalFlipStartForAudio * 1000);
+          }
+
+          const snap = standardAudioRefs.current.revealSnap;
+          if (snap) {
+            scheduleAudio(() => {
+              const id = snap.play();
+              snap.seek(0.65, id);
+              snap.volume(0.28, id);
+              snap.fade(0.28, 0, 400, id);
+              scheduleAudio(() => snap.stop(id), 650);
+            }, Math.max(0, finalFlipEndForAudio - 0.65) * 1000);
+          }
+
+          const postFlipStart = finalFlipEndForAudio + 0.05;
+          const arc = standardAudioRefs.current.electricalArc;
+          if (arc) {
+            scheduleAudio(() => {
+              const id = arc.play();
+              arc.volume(0.18, id);
+              arc.fade(0.18, 0, 1800, id);
+              scheduleAudio(() => arc.stop(id), 2000);
+            }, postFlipStart * 1000);
+          }
         }
       }
     } else {
