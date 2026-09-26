@@ -1001,25 +1001,23 @@ export default function LuckyCardReveal() {
               })
             );
 
-            standardWebAudioReady =
             // Check if component is still mounted and operation is still current after decode
             if (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId) {
               standardWebAudioReady = false;
               return;
             }
 
+            standardWebAudioReady =
               requiredKeys.every(key => Boolean(audioBuffersRef.current[key])) &&
               ctx.state === 'running';
           }
 
-          if (standardWebAudioReady) {
-            // Ensure this initialization wasn't superseded by another click
-            if (audioTransactionIdRef.current === currentTransactionId) {
-            // Also check if component is still mounted
-            if (isMountedRef.current && audioTransactionIdRef.current === currentTransactionId) {
-            } else {
-              standardWebAudioReady = false;
-            }
+          // Re-check lifecycle/transaction validity before any later scheduling.
+          if (
+            standardWebAudioReady &&
+            (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId)
+          ) {
+            standardWebAudioReady = false;
           }
         } catch (err) {
           standardWebAudioReady = false;
