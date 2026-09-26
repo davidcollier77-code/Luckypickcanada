@@ -72,3 +72,12 @@
 - Verified `app/globals.css` still contains Tailwind v3 directives (`@tailwind base/components/utilities`) and `package.json` still declares Tailwind CSS, PostCSS override, and Autoprefixer.
 - Restored the known-good `postcss.config.js` and `tailwind.config.js` from `e1e7d2f` without changing `app/lucky-card-reveal.js` or the recent Standard-tier Web Audio implementation.
 - Verification pending: local clean pnpm test/build and final diff/PR checks.
+
+
+## 2026-09-26 — Standard Reveal Tonal-Cue Repair
+
+- Re-analyzed the supplied Standard-tier capture `6384.mp4`: the three ordinary reveal hits recur at approximately 4.04s, 5.64s, and 7.24s, preserving the intended 1.6s cadence.
+- The recurring unwanted artifact is a narrow tonal transient centered around approximately 2.1 kHz and occurring about +0.20s into each ordinary hit.
+- Cross-referenced that timing against the current Standard Web Audio choreography: `beamEnergy` is scheduled at `hitStart + 0.08s`, which places a source-internal transient in the exact observed window. The previously fixed Web Audio clock-origin defect is not the current cause.
+- Implemented the minimum audio-only repair in `app/lucky-card-reveal.js`: Standard no longer schedules `beamEnergy`. Approach, physical impact, final lock/discharge/reveal cues, Web Audio timing, visual/VFX code, and Premium/Flagship behavior remain unchanged.
+- Verification so far: the application change is one targeted file diff with 3 additions and 4 deletions; subsequent commits only update the Memory Bank records. User-facing runtime playback still requires a fresh rendered capture after this change.

@@ -1236,15 +1236,14 @@ export default function LuckyCardReveal() {
         const contact = hitStart + HIT_CONTACT_OFFSET;
         const isFinalHit = i === totalHitsForAudio - 1;
         const approachVolume = isFinalHit ? 0.5 : 0.42 + i * 0.035;
-        const energyVolume = isFinalHit ? 0.28 : 0.18 + i * 0.025;
         const impactVolume = isFinalHit ? 0.9 : 0.72 + i * 0.05;
 
         // beamApproach: delay=hitStart, seek=0.64, volume, fade=0.72, duration=1.1
         scheduleWebAudio('beamApproach', hitStart, approachVolume, 0.72, 0.64, 1.1);
 
-        // beamEnergy: delay=hitStart+0.08, volume, fade=0.17, duration=0.3
-        scheduleWebAudio('beamEnergy', hitStart + 0.08, energyVolume, 0.17, 0, 0.3);
-
+        // Standard intentionally omits beamEnergy. The supplied Standard capture showed
+        // a narrow, repetitive tonal transient around +0.20s into every hit, matching
+        // this cue's scheduled position. Keep the physical approach and impact cues.
         // beamImpact: delay=contact-0.13, volume, fade=(isFinal?1.05:0.9), duration=(isFinal?1.25:1.1)
         scheduleWebAudio('beamImpact', contact - 0.13, impactVolume, isFinalHit ? 1.05 : 0.9, 0, isFinalHit ? 1.25 : 1.1);
 

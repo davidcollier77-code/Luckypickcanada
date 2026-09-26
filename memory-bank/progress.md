@@ -124,3 +124,12 @@
 - Preserved the existing rate-limit-aware deployment backoff and direct Wrangler/OpenNext bypass path.
 - No application runtime or secret changes.
 - CI verification remains pending.
+
+
+## 2026-09-26 — Standard Reveal Tonal-Cue Repair
+
+- Supplied Standard capture `6384.mp4` was measured at the intended 1.6s hit cadence, with a highly repetitive narrow ~2.1 kHz transient approximately +0.20s into each ordinary hit.
+- Current Standard Web Audio scheduling was traced to the `beamEnergy` cue: it begins at `hitStart + 0.08s`, matching the observed placement once the cue's internal transient is accounted for.
+- Removed only the Standard playback scheduling for `beamEnergy` in `app/lucky-card-reveal.js`.
+- Preserved the Web Audio origin repair from PR #1271, approach/impact timing, final cues, all visual/VFX behavior, and Premium/Flagship choreography.
+- Runtime confirmation after rebuilding the branch remains the final verification step; no claim of post-fix browser/device playback has been made.
