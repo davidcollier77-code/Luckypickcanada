@@ -55,6 +55,7 @@ export default function LuckyCardReveal() {
   const isGeneratingRef = useRef(false);
   const audioTransactionIdRef = useRef(0);
   const activeTimeoutsRef = useRef([]);
+  const isMountedRef = useRef(true);
   const animationControlsRef = useRef(null);
   const cardRef = useRef(null);
   const cardFrontRef = useRef(null);
@@ -226,6 +227,8 @@ export default function LuckyCardReveal() {
   useEffect(() => {
     return () => {
       isGeneratingRef.current = false;
+      audioTransactionIdRef.current = -1;
+      isMountedRef.current = false;
       stopAll();
     };
   }, [stopAll]);
@@ -964,6 +967,12 @@ export default function LuckyCardReveal() {
             await ctx.resume();
           }
 
+          // Check if component is still mounted and operation is still current
+          if (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId) {
+            standardWebAudioReady = false;
+            return;
+          }
+
           const preloadPromise = standardAudioPreloadRef.current;
           const preloadSucceeded = preloadPromise ? await preloadPromise : false;
 
@@ -993,6 +1002,12 @@ export default function LuckyCardReveal() {
             );
 
             standardWebAudioReady =
+            // Check if component is still mounted and operation is still current after decode
+            if (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId) {
+              standardWebAudioReady = false;
+              return;
+            }
+
               requiredKeys.every(key => Boolean(audioBuffersRef.current[key])) &&
               ctx.state === 'running';
           }
@@ -1000,7 +1015,8 @@ export default function LuckyCardReveal() {
           if (standardWebAudioReady) {
             // Ensure this initialization wasn't superseded by another click
             if (audioTransactionIdRef.current === currentTransactionId) {
-              webAudioOriginRef.current = ctx.currentTime;
+            // Also check if component is still mounted
+            if (isMountedRef.current && audioTransactionIdRef.current === currentTransactionId) {
             } else {
               standardWebAudioReady = false;
             }
