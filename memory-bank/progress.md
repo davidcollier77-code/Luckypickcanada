@@ -6,6 +6,15 @@
 
 # Progress
 
+## 2026-09-26 — Standard Audio Stale-Fallback Lifecycle Repair
+- Re-checked the lifecycle race reported by Sourcery on PR #1262 against current `main`.
+- Confirmed that the existing mounted/transaction checks covered `ctx.resume()` and successful decode completion, but did not cover the `preloadPromise` result before the fallback branch.
+- Added an unconditional mounted/transaction guard immediately after the preload await so stale operations return instead of invoking Howler fallback audio.
+- Added the same stale-operation guard in the Web Audio initialization catch path so unmounted/superseded operations cannot schedule fallback audio.
+- Kept the repair limited to `app/lucky-card-reveal.js` runtime logic; no timing, assets, visuals, or tier choreography changed.
+- Verification pending: CI/build/test checks and final diff audit.
+
+
 ## 2026-09-26 — OpenNext Remote Cache Deployment Repair
 - Deep-dived the supplied production recording and verified the regression is visual/layout-wide, not an audio defect.
 - Forced live production retrieval and verified homepage/reveal HTML referenced stale CSS assets `cc4b9b8ab9f722ff.css` and `ac4b46593ca20d2e.css`.
