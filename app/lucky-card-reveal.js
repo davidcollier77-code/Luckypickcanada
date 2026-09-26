@@ -1216,6 +1216,9 @@ export default function LuckyCardReveal() {
     Object.values(audioRefs.current).forEach(sound => {
       if (sound) sound.stop();
     });
+    Object.values(standardAudioRefs.current).forEach(sound => {
+      if (sound) sound.stop();
+    });
 
     webAudioNodesRef.current.forEach(({ source, gainNode }) => {
       try {
