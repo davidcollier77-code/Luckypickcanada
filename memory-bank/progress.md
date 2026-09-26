@@ -44,6 +44,7 @@
 - Restored `playButtonClick()` for the reveal button as a separate cue.
 - Source-level verification completed; browser/runtime playback verification remains pending.
 
+
 ## 2026-09-25 — Measured Audio Timing Repair
 - Analyzed the supplied Standard reveal capture and extracted soundtrack rather than relying on filenames alone.
 - Measured repository MP3 source lengths by parsing their actual frame headers.
@@ -52,10 +53,9 @@
 - Replaced the per-hit long impact/magic stack with the measured 1.620s `beam_impact.mp3`, hard-bounded to the contact event.
 - Replaced the 22.805s firework crackle post-flip cue with the 2.247s `electrical_arc.mp3` and hard-stopped it after the intended runoff window.
 - No visual choreography, tier counts, card artwork, reset, collection, share, or reduced-motion behavior was intentionally changed.
-
 ## 2026-09-25 — Lucky Card Reveal Standard Audio Sync Repair
 - Identified precise waveform peaks for beamApproach (1.04s) and beamImpact (0.208s peak, 0.13s audible start).
-- Adjusted `app/lucky-card-reveal.js` audio scheduling so beam_impact.mp3 plays 0.13s early and mixkit-cinematic-whoosh.mp3 skips its first 0.64s.
+- Adjusted app/lucky-card-reveal.js audio scheduling so beam_impact.mp3 plays 0.13s early and mixkit-cinematic-whoosh.mp3 skips its first 0.64s.
 - Flawlessly aligned audio climaxes to the verified visual contact timing (0.4s) for Standard hits without adding dependencies, changing visuals, or expanding scope.
 
 ## 2026-09-25 — Standard-Tier Audio Sound-Design Repair
@@ -74,15 +74,16 @@
 - Preserved the site's separate Gemini-powered Oracle endpoint in `functions/api/oracle.js`.
 - Removed the obsolete `.gemini/` ignore rule left over from the removed GitHub integration.
 
+
 ## 2026-09-25 — Security License and GitHub Actions Pinning
 - Removed the stale npm `package-lock.json`, eliminating the flagged optional LGPL `@img/sharp-libvips-*` lockfile entries. The authoritative dependency lockfile remains `pnpm-lock.yaml`.
 - Pinned every third-party action in `.github/workflows/deploy-open-next.yml`, `.github/workflows/update-spec-kit.yml`, and `.github/workflows/validate-open-next-repair.yml` to full 40-character commit SHAs.
 - No application runtime code or dependency versions were changed.
 
+
 ## 2026-09-25 — GCP Key Redaction and Action Pin Monitoring
 - Verified the three flagged workflows already had immutable 40-character action pins.
 - Redacted 9 `AIza...` values from `.docs/deep-dive/_android_developers.md` and added weekly Dependabot monitoring for GitHub Actions.
-
 ## 2026-09-25 — Lucky Card Reveal Web Audio Implementation (Standard Tier)
 - Identified the synchronization and mobile initialization problem caused by scheduling Howler.js using JavaScript `setTimeout` inside a loop for the Standard tier reveal sequence.
 - Refactored `app/lucky-card-reveal.js` to utilize the native Web Audio API for precise scheduling for the Standard tier.
