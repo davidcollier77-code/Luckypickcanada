@@ -7847,6 +7847,8 @@ snapshots:
 
   base64-arraybuffer@1.0.2: {}
 
+  baseline-browser-mapping@2.11.21: {}
+
   baseline-browser-mapping@2.11.18: {}
 
   bidi-js@1.0.3:
