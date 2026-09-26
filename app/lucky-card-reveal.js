@@ -1001,23 +1001,14 @@ export default function LuckyCardReveal() {
               })
             );
 
-            // Check if component is still mounted and operation is still current after decode
+            // Abort stale or unmounted operations before either audio scheduling path.
             if (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId) {
-              standardWebAudioReady = false;
               return;
             }
 
             standardWebAudioReady =
               requiredKeys.every(key => Boolean(audioBuffersRef.current[key])) &&
               ctx.state === 'running';
-          }
-
-          // Re-check lifecycle/transaction validity before any later scheduling.
-          if (
-            standardWebAudioReady &&
-            (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId)
-          ) {
-            standardWebAudioReady = false;
           }
         } catch (err) {
           standardWebAudioReady = false;
