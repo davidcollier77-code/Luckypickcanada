@@ -1,3 +1,22 @@
+## 2026-09-26 — Standard Reveal Audio Fresh-Asset Rebuild
+
+- Standard-tier audio was rebuilt from a fresh, separately audited asset set after the rendered capture continued to exhibit a computer-like tonal artifact.
+- Source-level PCM analysis verified the previous `beam_impact.mp3` contained a strong narrow ~2.1 kHz / ~1.56 kHz tonal structure that matched the unwanted rendered signature; it was not merely a scheduling artifact.
+- Eight new Standard-only assets were sourced from Mixkit and independently decoded/analyzed before integration:
+  - `standard_beam_shot.mp3`
+  - `standard_final_beam.mp3`
+  - `standard_beam_impact.mp3`
+  - `standard_final_lock.mp3`
+  - `standard_final_discharge.mp3`
+  - `standard_reveal_snap.mp3`
+  - `standard_electrical_arc.mp3`
+  - `standard_card_shake.mp3`
+- The new asset set was re-audited after ingestion. None showed the previously targeted persistent >20 dB narrow-band prominence around 2.1 kHz or 1.56 kHz in the analysis windows used.
+- Standard choreography now models the intended physical sequence: two beam-shot attempts with card impacts and subtle shake, followed by a distinct stronger final beam, mechanical lock, discharge/flip, reveal snap, and post-flip electrical residue.
+- Standard uses dedicated Web Audio buffers and a dedicated Howler fallback. Premium/Flagship retain the legacy seven asset paths and fallback choreography unchanged.
+- No visual/VFX choreography, card artwork, tier hit counts, reset/countdown, collection, share, database, authentication, payment, deployment, or secrets were changed.
+- Verification pending: repository CI/build/browser playback capture and final PR diff reconciliation.
+
 ## 2026-09-26 — Cloudflare Deployment Concurrency Guard
 
 - Branch: `fix/cloudflare-deploy-concurrency`.
