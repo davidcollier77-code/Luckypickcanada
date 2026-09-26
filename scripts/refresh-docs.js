@@ -558,7 +558,7 @@ async function main() {
           // Ensure symlinks/files exist for ALL groups just in case
           for (let i = 0; i < groups.length; i++) {
             const group = groups[i];
-            const safeGroup = validateManifestValue(group, 'group');
+            const safeGroup = validateGroupName(group);
             const groupDir = resolveDocsPath(safeGroup);
             const docPath = resolveDocsPath(path.relative(DOCS_BASE_DIR, groupDir), `${safeName}.md`);
 
