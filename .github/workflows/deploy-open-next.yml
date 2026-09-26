@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
 
+# 🔴 PROTECTED DEPLOYMENT SAFEGUARD — AUTHORIZATION REQUIRED
+#
+# Do not remove or change this concurrency protection unless the task
+# explicitly authorizes a Cloudflare deployment-control change.
+# cancel-in-progress MUST remain false so a newer run waits rather than
+# cancelling an active Cloudflare deployment.
 concurrency:
   group: "cloudflare-deploy"
   cancel-in-progress: false
@@ -60,6 +66,13 @@ jobs:
             exit 1;
           fi
 
+      # 🔴 PROTECTED RATE-LIMIT SAFEGUARD — AUTHORIZATION REQUIRED
+      #
+      # Do not remove, disable, broaden, or materially alter this bounded
+      # Cloudflare API retry/backoff unless the task explicitly authorizes a
+      # deployment rate-limit change. Non-rate-limit failures must still fail
+      # immediately; recognized Cloudflare 429/10500 responses use bounded
+      # backoff only.
       # OpenNext's remote R2 cache population can hang during deploy in CI.
       # Bypass that step and let the deployed Worker repopulate cache entries lazily.
       - name: Publish to Cloudflare via Wrangler
