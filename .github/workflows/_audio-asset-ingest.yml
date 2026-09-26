@@ -32,6 +32,7 @@ jobs:
             [final_discharge.mp3]="https://assets.mixkit.co/active_storage/sfx/2601/2601-preview.mp3"
             [reveal_snap.mp3]="https://assets.mixkit.co/active_storage/sfx/2386/2386-preview.mp3"
             [electrical_arc.mp3]="https://assets.mixkit.co/active_storage/sfx/2598/2598-preview.mp3"
+            [card_shake.mp3]="https://assets.mixkit.co/active_storage/sfx/2380/2380-preview.mp3"
           )
 
           mkdir -p public/sounds
@@ -46,5 +47,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/sounds
-          git commit -m "chore(audio): replace Standard reveal source assets [skip ci]" || echo "No asset changes"
+          git commit -m "chore(audio): add reviewed Standard card shake asset [skip ci]" || echo "No asset changes"
           git push origin "${GITHUB_REF_NAME}"
