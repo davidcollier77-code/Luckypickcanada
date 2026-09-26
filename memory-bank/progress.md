@@ -164,3 +164,9 @@
   - reveal snap: `Math.max(0, finalFlipEndForAudio - 0.65) * 1000`
   - electrical arc: `postFlipStart * 1000`
 - No visual/VFX or Premium/Flagship behavior was changed.
+
+
+## 2026-09-26 — Critical Build/Deployment Safeguards
+- Added in-file authorization warnings to the restored Tailwind and PostCSS configuration files.
+- Added in-file authorization warnings around the Cloudflare deployment concurrency and rate-limit retry safeguards.
+- Preserved all existing configuration and deployment behavior; this is repository-hardening only.
