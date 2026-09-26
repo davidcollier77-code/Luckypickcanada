@@ -53,8 +53,13 @@ module.exports = {
         'fade-in-dim': 'fadeInDim 1s ease-out forwards',
         'pop-bright': 'popBright 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
         'scale-dramatic-neon': 'scaleDramaticNeon 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+        'fade-in': 'fadeIn 0.4s ease-out forwards',
               },
       keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
         'glow-breathe': {
           '0%, 100%': {
             filter: 'brightness(1)',
