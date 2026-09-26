@@ -116,3 +116,11 @@
 - Audio buffers are fetched on mount, decoded upon the user interaction event, and scheduled strictly against `audioContext.currentTime` using absolute offsets.
 - Volume fades were implemented using `linearRampToValueAtTime` to remove reliance on async library wrappers.
 - The Premium/Flagship tier fallback and visual sequencing were retained as required.
+
+
+## 2026-09-26 — Cloudflare Deployment Concurrency Guard
+- Branch: `fix/cloudflare-deploy-concurrency`
+- Added workflow-level GitHub Actions concurrency control to `.github/workflows/deploy-open-next.yml` with group `cloudflare-deploy` and `cancel-in-progress: true`.
+- Preserved the existing rate-limit-aware deployment backoff and direct Wrangler/OpenNext bypass path.
+- No application runtime or secret changes.
+- CI verification remains pending.
