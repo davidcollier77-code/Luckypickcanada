@@ -1,5 +1,15 @@
 # Progress
 
+## 2026-09-26 — Production CSS Regression Repair
+- Compared known-good `e1e7d2f` against current `f740f66` and confirmed PR #1261 explicitly deleted:
+  - `postcss.config.js`
+  - `tailwind.config.js`
+- Confirmed the current application still uses Tailwind CSS v3 directives in `app/globals.css` and still declares Tailwind/PostCSS/Autoprefixer dependencies.
+- Restored both configuration files verbatim from the known-good `e1e7d2f` baseline on branch `fix/restore-tailwind-postcss-after-audio`.
+- No audio or visual application code was changed by this repair.
+
+# Progress
+
 ## COMPLETED
 - Verified the current Lucky Card Reveal audio implementation uses 6 active reveal sound assets, not 7.
 - Verified the previous implementation contained rate-randomized repeated impacts and a looping post-flip electrical arc.
