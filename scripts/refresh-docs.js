@@ -7,27 +7,42 @@ const DOCS_BASE_DIR = path.resolve(DOCS_DIR);
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
 
 function resolveDocsPath(...segments) {
+  if (fs.lstatSync(DOCS_BASE_DIR).isSymbolicLink()) {
+    throw new Error('The .docs directory must not be a symbolic link.');
+  }
+
   const resolved = path.resolve(DOCS_BASE_DIR, ...segments);
   if (resolved !== DOCS_BASE_DIR && !resolved.startsWith(DOCS_BASE_DIR + path.sep)) {
     throw new Error('Resolved documentation path escapes the .docs directory.');
   }
+
+  let currentPath = DOCS_BASE_DIR;
+  const relativePath = path.relative(DOCS_BASE_DIR, resolved);
+  for (const segment of relativePath.split(path.sep).filter(Boolean)) {
+    currentPath = path.resolve(currentPath, segment);
+    if (fs.existsSync(currentPath) && fs.lstatSync(currentPath).isSymbolicLink()) {
+      throw new Error('Documentation paths must not traverse symbolic links.');
+    }
+  }
+
   return resolved;
 }
 
-function validateManifestValue(value, name, allowLibraryPrefix = false) {
-  if (typeof value !== 'string' || value.length === 0) {
-    throw new Error(`Invalid ${name}: expected a non-empty string.`);
+function validateGroupName(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+$/.test(value) || path.isAbsolute(value)) {
+    throw new Error('Invalid group: unsafe path value.');
   }
+  return value;
+}
 
-  const pattern = allowLibraryPrefix ? /^\/?[A-Za-z0-9._/-]+$/ : /^[A-Za-z0-9_-]+$/;
-  if (!pattern.test(value) || value.split(/[\\/]+/).includes('..')) {
-    throw new Error(`Invalid ${name}: unsafe path value.`);
+function validateLibraryIdentifier(value) {
+  if (
+    typeof value !== 'string' ||
+    !/^\/?[A-Za-z0-9._/-]+$/.test(value) ||
+    value.split(/[\\/]+/).includes('..')
+  ) {
+    throw new Error('Invalid library: unsafe identifier.');
   }
-
-  if (!allowLibraryPrefix && path.isAbsolute(value)) {
-    throw new Error(`Invalid ${name}: absolute paths are not allowed.`);
-  }
-
   return value;
 }
 
@@ -350,7 +365,7 @@ async function main() {
   const libraryToGroups = new Map();
 
   for (const [group, libs] of Object.entries(groupsConfig)) {
-    const safeGroup = validateManifestValue(group, 'group');
+    const safeGroup = validateGroupName(group);
     const groupDir = resolveDocsPath(safeGroup);
     if (!fs.existsSync(groupDir)) {
       fs.mkdirSync(groupDir, { recursive: true });
@@ -420,7 +435,7 @@ async function main() {
 
       const safeName = lib.replace(/[\/\.]/g, '_');
       // For size calculation, check the first group's file
-      const firstGroup = validateManifestValue(groups[0], 'group');
+      const firstGroup = validateGroupName(groups[0]);
       const firstGroupDir = resolveDocsPath(firstGroup);
       const firstDocPath = resolveDocsPath(firstGroup, `${safeName}.md`);
 
@@ -451,7 +466,7 @@ async function main() {
       // Check upstream SHA if possible
       let allDocsExist = true;
       for (const group of groups) {
-          const safeGroup = validateManifestValue(group, 'group');
+          const safeGroup = validateGroupName(group);
           const docPath = resolveDocsPath(safeGroup, `${safeName}.md`);
           if (!fs.existsSync(docPath)) {
               allDocsExist = false;
@@ -561,7 +576,7 @@ async function main() {
             } else {
                if (!fs.existsSync(docPath)) {
                   try {
-                    const safeFirstGroup = validateManifestValue(groups[0], 'group');
+                    const safeFirstGroup = validateGroupName(groups[0]);
                     const relativeTarget = path.relative(groupDir, resolveDocsPath(safeFirstGroup, `${safeName}.md`));
                     fs.symlinkSync(relativeTarget, docPath);
                   } catch(e) {
@@ -585,7 +600,7 @@ async function main() {
           stats.updated++;
 
           // Write primary copy to first group
-          const safeFirstGroup = validateManifestValue(groups[0], 'group');
+          const safeFirstGroup = validateGroupName(groups[0]);
           const firstGroupPath = resolveDocsPath(safeFirstGroup, `${safeName}.md`);
           const tempPath1 = firstGroupPath + '.tmp.' + Date.now();
           try {
@@ -598,7 +613,7 @@ async function main() {
 
           // Write symlinks for subsequent groups
           for (let i = 1; i < groups.length; i++) {
-             const safeGroup = validateManifestValue(groups[i], 'group');
+             const safeGroup = validateGroupName(groups[i]);
              const groupDir = resolveDocsPath(safeGroup);
              const docPath = resolveDocsPath(path.relative(DOCS_BASE_DIR, groupDir), `${safeName}.md`);
              const tempSymlinkPath = docPath + '.tmp.' + Date.now();
