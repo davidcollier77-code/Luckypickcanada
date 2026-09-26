@@ -1177,6 +1177,9 @@ export default function LuckyCardReveal() {
     const finalFlipEndForAudio = finalFlipStartForAudio + FINAL_FLIP_DURATION;
 
     if (card.tier === 'standard' && standardWebAudioReady) {
+      if (audioCtxRef.current) {
+        webAudioOriginRef.current = audioCtxRef.current.currentTime;
+      }
       const scheduleWebAudio = (bufferKey, delaySec, volume, fadeDurationSec = 0, seekOffsetSec = 0, durationSec = null) => {
         const ctx = audioCtxRef.current;
         const buffer = audioBuffersRef.current[bufferKey];
