@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: "cloudflare-deploy"
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Deploy OpenNext Worker
