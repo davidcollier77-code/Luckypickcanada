@@ -67,8 +67,10 @@ jobs:
         run: |
           set -o pipefail
           for delay in 60 120 180 300; do
+            set +e
             output=$(pnpm exec wrangler deploy --config ./wrangler.jsonc 2>&1)
             status=$?
+            set -e
             printf '%s\n' "$output"
 
             if [ "$status" -eq 0 ]; then

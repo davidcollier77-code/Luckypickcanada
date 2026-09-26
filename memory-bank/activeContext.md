@@ -19,6 +19,14 @@
 - No application runtime, Lucky Card Reveal audio/visual code, database, authentication, payment, or secrets were changed.
 - Production verification remains pending until a rate-limit-aware deployment succeeds and the live CSS is directly verified.
 
+## 2026-09-26 — Cloudflare Retry Control-Flow Correction
+
+- The first rate-limit backoff implementation was merged and executed, but GitHub Actions' default `-e` behavior terminated the publish step immediately when Wrangler returned 429, before the wrapper could inspect the exit status.
+- Verified the build and OpenNext stages still pass on the merged repair.
+- Corrected the wrapper to temporarily disable `errexit` only around the Wrangler invocation, capture its status/output, then restore `errexit` before applying the rate-limit classification.
+- Non-rate-limit failures still terminate immediately; recognized rate-limit responses proceed to bounded backoff.
+- Production verification remains pending.
+
 # Active Context
 
 ## 2026-09-26 — Standard Audio Stale-Fallback Lifecycle Repair

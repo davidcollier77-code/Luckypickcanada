@@ -10,6 +10,11 @@
 - Kept the repair limited to `.github/workflows/deploy-open-next.yml`; no application code or secrets changed.
 - Production CSS verification remains pending until the deployment completes successfully.
 
+## 2026-09-26 — Cloudflare Retry Control-Flow Correction
+- Verified the first retry wrapper did not reach its classification logic because the runner's default `-e` setting exited on Wrangler's non-zero 429 status.
+- Corrected the wrapper to capture Wrangler failures safely and apply the intended rate-limit retry policy.
+- Scope remains limited to `.github/workflows/deploy-open-next.yml`; no application runtime or secrets changed.
+
 # Progress
 
 ## 2026-09-26 — Standard Audio Stale-Fallback Lifecycle Repair
