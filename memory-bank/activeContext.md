@@ -16,6 +16,9 @@
 
 ## 2026-09-26 — Production CSS Regression Repair
 
-- Restored the missing `postcss.config.js` and `tailwind.config.js` after PR #1261 deleted them and caused the Tailwind/PostCSS regression.
-- Added the required `playfair` font family and `fade-in` animation configuration identified by reviewer feedback.
-- The CSS configuration repair did not modify `app/lucky-card-reveal.js` or the Standard-tier Web Audio implementation.
+- Branch: `fix/restore-tailwind-postcss-after-audio`
+- Verified the active production recovery build is based on `e1e7d2f300ea5d7787fcbd03335fc5691989e26e`, while `main` remains at `f740f660b146fcc1f44ee4fe91ca8ca26b8bd370`.
+- Deep-dive comparison confirmed PR #1261 explicitly deleted `postcss.config.js` and `tailwind.config.js`.
+- Verified `app/globals.css` still contains Tailwind v3 directives (`@tailwind base/components/utilities`) and `package.json` still declares Tailwind CSS, PostCSS override, and Autoprefixer.
+- Restored the known-good `postcss.config.js` and `tailwind.config.js` from `e1e7d2f` without changing `app/lucky-card-reveal.js` or the recent Standard-tier Web Audio implementation.
+- Verification pending: local clean pnpm test/build and final diff/PR checks.
