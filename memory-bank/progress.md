@@ -1,3 +1,9 @@
+## 2026-09-26 — OpenNext Publish Hang Repair
+- Verified current main's post-#1264 deploy run `36230678014` succeeds through build and OpenNext artifact verification but hangs at the publish step.
+- Matched the failure mode to upstream OpenNext Cloudflare issue #1273, which documents the same remote R2 cache population hang and the `OPEN_NEXT_DEPLOY=true wrangler deploy` workaround.
+- Implemented the minimal workflow-only workaround on branch `fix/cloudflare-deploy-bypass-open-next-cache-populate`.
+- Production verification remains pending until CI deploy completion and live visual checks.
+
 # Progress
 
 ## 2026-09-26 — OpenNext Remote Cache Deployment Repair
