@@ -1,14 +1,10 @@
 # Active Context
 
-## 2026-09-25 — Lucky Card Reveal Web Audio Implementation (Standard Tier)
+## 2026-09-26 — Production CSS Regression Repair
 
-- Branch: `fix/lucky-card-audio-runtime`
-- Verified defect: The Standard tier reveal audio sequence was relying on `setTimeout` to schedule Howler.js triggers, which can desynchronize with `requestAnimationFrame` visuals and suffer from mobile browser AudioContext suspension blocks.
-- Action: Implemented deterministic Web Audio scheduling specifically for the Standard tier:
-  - Fetched and cached array buffers in `useEffect` on mount.
-  - Initialized and unlocked `AudioContext` immediately upon user interaction in `triggerCardDraw`.
-  - Replaced imprecise `setTimeout` callbacks with deterministic `AudioBufferSourceNode.start(audioCtxRef.current.currentTime + delay)`.
-  - Used `GainNode` automation for volume and fading (e.g. `linearRampToValueAtTime`) rather than relying on Howler `fade()` callbacks for the Standard tier.
-  - Premium and Flagship tiers retain the original Howler implementation unchanged as required by bounds.
-- Checked build size: 293 MB (well under the 495 MB cap).
-- Passed standard tests (`pnpm test` and `pnpm run build`).
+- Branch: `fix/restore-tailwind-postcss-after-audio`
+- Verified the active production recovery build is based on `e1e7d2f300ea5d7787fcbd03335fc5691989e26e`, while `main` remains at `f740f660b146fcc1f44ee4fe91ca8ca26b8bd370`.
+- Deep-dive comparison confirmed PR #1261 explicitly deleted `postcss.config.js` and `tailwind.config.js`.
+- Verified `app/globals.css` still contains Tailwind v3 directives (`@tailwind base/components/utilities`) and `package.json` still declares Tailwind CSS, PostCSS override, and Autoprefixer.
+- Restored the known-good `postcss.config.js` and `tailwind.config.js` from `e1e7d2f` without changing `app/lucky-card-reveal.js` or the recent Standard-tier Web Audio implementation.
+- Verification pending: local clean pnpm test/build and final diff/PR checks.
