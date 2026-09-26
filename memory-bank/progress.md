@@ -1,3 +1,10 @@
+## 2026-09-26 — Standard Final Reveal Audio Texture Pass
+
+- Added four nonuniform, low-gain electrical flicker bursts during the Standard final discharge to match the small plasma/spark activity visible in the supplied capture.
+- Reused the existing `standard_electrical_arc.mp3` in both the native Web Audio path and the Howler fallback; no new audio asset was introduced.
+- Preserved the existing main final-hit and post-flip audio levels/timing and all Premium/Flagship behavior.
+- Verification status: source diff and timing-path reconciliation completed; CI/build/runtime playback verification remains required.
+
 ## 2026-09-26 — OpenNext Publish Hang Repair
 - Verified current main's post-#1264 deploy run `36230678014` succeeds through build and OpenNext artifact verification but hangs at the publish step.
 - Matched the failure mode to upstream OpenNext Cloudflare issue #1273, which documents the same remote R2 cache population hang and the `OPEN_NEXT_DEPLOY=true wrangler deploy` workaround.

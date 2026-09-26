@@ -1351,6 +1351,26 @@ export default function LuckyCardReveal() {
             0.65
           );
 
+          // Add a few irregular, low-gain electrical flickers during the burnout so the
+          // final discharge feels physically active rather than like one clean tone.
+          const finalFlickers = [
+            { delay: 0.20, seek: 0.08, volume: 0.10, fade: 0.06, duration: 0.18 },
+            { delay: 0.52, seek: 0.42, volume: 0.08, fade: 0.05, duration: 0.15 },
+            { delay: 0.87, seek: 0.74, volume: 0.10, fade: 0.07, duration: 0.21 },
+            { delay: 1.18, seek: 1.02, volume: 0.065, fade: 0.05, duration: 0.17 }
+          ];
+
+          finalFlickers.forEach(({ delay, seek, volume, fade, duration }) => {
+            scheduleWebAudio(
+              'electricalArc',
+              finalFlipStartForAudio + delay,
+              volume,
+              fade,
+              seek,
+              duration
+            );
+          });
+
           // Electrical residue continues after the flip completes.
           const postFlipStart = finalFlipEndForAudio + 0.05;
           scheduleWebAudio('electricalArc', postFlipStart, 0.30, 1.8, 0, 2.0);
@@ -1432,9 +1452,28 @@ export default function LuckyCardReveal() {
             }, Math.max(0, finalFlipEndForAudio - 0.65) * 1000);
           }
 
-          const postFlipStart = finalFlipEndForAudio + 0.05;
           const arc = standardAudioRefs.current.electricalArc;
           if (arc) {
+            // Mirror the Web Audio micro-flicker texture in the Howler fallback.
+            const finalFlickers = [
+              { delay: 0.20, seek: 0.08, volume: 0.10, fade: 60, duration: 180 },
+              { delay: 0.52, seek: 0.42, volume: 0.08, fade: 50, duration: 150 },
+              { delay: 0.87, seek: 0.74, volume: 0.10, fade: 70, duration: 210 },
+              { delay: 1.18, seek: 1.02, volume: 0.065, fade: 50, duration: 170 }
+            ];
+
+            finalFlickers.forEach(({ delay, seek, volume, fade, duration }) => {
+              scheduleAudio(() => {
+                const id = arc.play();
+                arc.seek(seek, id);
+                arc.volume(volume, id);
+                arc.fade(volume, 0, fade, id);
+                scheduleAudio(() => arc.stop(id), duration);
+              }, (finalFlipStartForAudio + delay) * 1000);
+            });
+
+            // Preserve the existing post-flip electrical residue.
+            const postFlipStart = finalFlipEndForAudio + 0.05;
             scheduleAudio(() => {
               const id = arc.play();
               arc.volume(0.30, id);
