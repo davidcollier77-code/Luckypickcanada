@@ -337,7 +337,7 @@ async function main() {
 
   cleanupStaleTempFiles(DOCS_DIR);
 
-  const manifestPath = path.join(DOCS_DIR, 'manifest.json');
+  const manifestPath = resolveDocsPath('manifest.json');
   if (!fs.existsSync(manifestPath)) {
       console.error('CRITICAL: .docs/manifest.json not found.');
       process.exit(1);
