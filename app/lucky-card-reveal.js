@@ -52,6 +52,8 @@ export default function LuckyCardReveal() {
   const shouldReduceMotion = useReducedMotion();
 
   const [scope, animate] = useAnimate();
+  const isGeneratingRef = useRef(false);
+  const audioTransactionIdRef = useRef(0);
   const activeTimeoutsRef = useRef([]);
   const animationControlsRef = useRef(null);
   const cardRef = useRef(null);
@@ -210,7 +212,10 @@ export default function LuckyCardReveal() {
     webAudioNodesRef.current.forEach(({ source, gainNode }) => {
       try {
         // Cancel scheduled fades
-        gainNode.gain.cancelScheduledValues(0);
+        const ctx = audioCtxRef.current;
+        const now = ctx ? ctx.currentTime : 0;
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setValueAtTime(0, now);
         source.stop();
       } catch (e) {}
     });
@@ -219,7 +224,10 @@ export default function LuckyCardReveal() {
   }, []);
 
   useEffect(() => {
-    return stopAll;
+    return () => {
+      isGeneratingRef.current = false;
+      stopAll();
+    };
   }, [stopAll]);
 
   const executeRevealState = useCallback(() => {
@@ -913,12 +921,17 @@ export default function LuckyCardReveal() {
       rafRef.current = requestAnimationFrame(renderCanvas);
     } else {
       fallbackTimerRef.current = setTimeout(() => {
+        isGeneratingRef.current = false;
         setIsGenerating(false);
       }, 100);
     }
   };
 
   const triggerCardDraw = async () => {
+    if (isGeneratingRef.current || isGenerating) return;
+    isGeneratingRef.current = true;
+    const currentTransactionId = ++audioTransactionIdRef.current;
+
     stopAll();
     playButtonClick();
 
@@ -985,7 +998,12 @@ export default function LuckyCardReveal() {
           }
 
           if (standardWebAudioReady) {
-            webAudioOriginRef.current = ctx.currentTime;
+            // Ensure this initialization wasn't superseded by another click
+            if (audioTransactionIdRef.current === currentTransactionId) {
+              webAudioOriginRef.current = ctx.currentTime;
+            } else {
+              standardWebAudioReady = false;
+            }
           }
         } catch (err) {
           standardWebAudioReady = false;
@@ -1122,7 +1140,10 @@ export default function LuckyCardReveal() {
     webAudioNodesRef.current.forEach(({ source, gainNode }) => {
       try {
         // Cancel scheduled fades
-        gainNode.gain.cancelScheduledValues(0);
+        const ctx = audioCtxRef.current;
+        const now = ctx ? ctx.currentTime : 0;
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setValueAtTime(0, now);
         source.stop();
       } catch (e) {}
     });
@@ -1150,17 +1171,22 @@ export default function LuckyCardReveal() {
         source.buffer = buffer;
 
         const gainNode = ctx.createGain();
-        gainNode.gain.value = volume;
+        gainNode.gain.value = 0; // Initialize at 0 to avoid any initial pop before the ramp starts
 
         source.connect(gainNode);
         gainNode.connect(ctx.destination);
 
         const startTime = webAudioOriginRef.current + delaySec;
 
+        // Micro-fade in (attack ramp) to eliminate abrupt start transients
+        const attackSec = 0.015;
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(volume, startTime + attackSec);
+
         if (fadeDurationSec > 0 && durationSec !== null) {
           const fadeStartTime = startTime + durationSec - fadeDurationSec;
-          gainNode.gain.setValueAtTime(volume, startTime);
-          gainNode.gain.setValueAtTime(volume, Math.max(startTime, fadeStartTime));
+          // Hold the sustained volume until the fade starts
+          gainNode.gain.setValueAtTime(volume, Math.max(startTime + attackSec, fadeStartTime));
           gainNode.gain.linearRampToValueAtTime(0.001, startTime + durationSec);
         }
 
