@@ -11,6 +11,16 @@
 
 # Active Context
 
+## 2026-09-26 — Standard Audio Stale-Fallback Lifecycle Repair
+
+- Verified the remaining Sourcery lifecycle finding from PR #1262 against current `main`: after `await standardAudioPreloadRef.current`, a stale or unmounted Standard-tier transaction could leave `standardWebAudioReady` false and fall through into the Howler fallback scheduling path.
+- Verified the same stale-fallback risk in the async initialization `catch` path: a post-unmount/preemption error could also fall through to fallback scheduling.
+- Implemented the minimal lifecycle guard in `app/lucky-card-reveal.js`: after the preload await, and at the start of the initialization catch, the transaction must still be current and the component mounted or the function returns before any fallback scheduling can occur.
+- Preserved Standard hit timing/choreography, visual/VFX behavior, audio assets, gain values, Web Audio scheduling, generation locking, and Premium/Flagship behavior.
+- No deployment, database, authentication, payment, secrets, or unrelated application systems were changed.
+- Verification pending: repository CI/build/test checks and final diff reconciliation on the repair branch.
+
+
 ## 2026-09-26 — OpenNext Remote Cache Deployment Repair
 
 - Branch: `fix/open-next-remote-cache-deploy`

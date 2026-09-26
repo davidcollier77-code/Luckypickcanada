@@ -976,6 +976,11 @@ export default function LuckyCardReveal() {
           const preloadPromise = standardAudioPreloadRef.current;
           const preloadSucceeded = preloadPromise ? await preloadPromise : false;
 
+          // Do not allow a stale/unmounted draw to fall through to the Howler fallback.
+          if (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId) {
+            return;
+          }
+
           if (preloadSucceeded) {
             const requiredKeys = [
               'beamApproach',
@@ -1011,6 +1016,11 @@ export default function LuckyCardReveal() {
               ctx.state === 'running';
           }
         } catch (err) {
+          // A stale/unmounted transaction must stop here rather than scheduling fallback audio.
+          if (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId) {
+            return;
+          }
+
           standardWebAudioReady = false;
           console.error('Web Audio initialization failed; using Howler fallback:', err);
         }
