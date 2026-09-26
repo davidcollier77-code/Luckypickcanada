@@ -1306,7 +1306,7 @@ export default function LuckyCardReveal() {
 
         if (isFinalHit) {
           // Standard final beam is intentionally distinct from the two strike/miss beams.
-          scheduleWebAudio('finalBeam', hitStart, 0.62, 0.9, 0.45, 1.45);
+          scheduleWebAudio('finalBeam', hitStart, 0.68, 0.9, 0.45, 1.45);
         } else {
           // Regular beam: clean sci-fi energy shot, with its measured peak landing at visual contact.
           scheduleWebAudio('beamShot', hitStart, 0.46 + i * 0.035, 0.5, 0, 0.75);
@@ -1336,7 +1336,7 @@ export default function LuckyCardReveal() {
 
         if (isFinalHit) {
           // Mechanical lock lands on the card at final contact.
-          scheduleWebAudio('finalLock', hitStart + 0.13, 0.74, 0.5, 0, 0.8);
+          scheduleWebAudio('finalLock', hitStart + 0.13, 0.80, 0.5, 0, 0.8);
 
           // Broad electrical discharge begins with the flip and carries into the payoff.
           scheduleWebAudio('finalDischarge', finalFlipStartForAudio, 0.78, 1.7, 0, 2.1);
@@ -1353,7 +1353,7 @@ export default function LuckyCardReveal() {
 
           // Electrical residue continues after the flip completes.
           const postFlipStart = finalFlipEndForAudio + 0.05;
-          scheduleWebAudio('electricalArc', postFlipStart, 0.18, 1.8, 0, 2.0);
+          scheduleWebAudio('electricalArc', postFlipStart, 0.30, 1.8, 0, 2.0);
         }
       }
     } else if (card.tier === 'standard') {
@@ -1368,7 +1368,7 @@ export default function LuckyCardReveal() {
           scheduleAudio(() => {
             const id = beam.play();
             beam.seek(isFinalHit ? 0.45 : 0, id);
-            const volume = isFinalHit ? 0.62 : 0.46 + i * 0.035;
+            const volume = isFinalHit ? 0.68 : 0.46 + i * 0.035;
             beam.volume(volume, id);
             beam.fade(volume, 0, isFinalHit ? 900 : 500, id);
             scheduleAudio(() => beam.stop(id), isFinalHit ? 1450 : 750);
@@ -1405,8 +1405,8 @@ export default function LuckyCardReveal() {
           if (lock) {
             scheduleAudio(() => {
               const id = lock.play();
-              lock.volume(0.74, id);
-              lock.fade(0.74, 0, 500, id);
+              lock.volume(0.80, id);
+              lock.fade(0.80, 0, 500, id);
               scheduleAudio(() => lock.stop(id), 800);
             }, (hitStart + 0.13) * 1000);
           }
@@ -1437,8 +1437,8 @@ export default function LuckyCardReveal() {
           if (arc) {
             scheduleAudio(() => {
               const id = arc.play();
-              arc.volume(0.18, id);
-              arc.fade(0.18, 0, 1800, id);
+              arc.volume(0.30, id);
+              arc.fade(0.30, 0, 1800, id);
               scheduleAudio(() => arc.stop(id), 2000);
             }, postFlipStart * 1000);
           }
