@@ -1,3 +1,14 @@
+## 2026-09-26 — Cloudflare Deployment Concurrency Guard
+
+- Branch: `fix/cloudflare-deploy-concurrency`.
+- Added a workflow-level GitHub Actions concurrency group in `.github/workflows/deploy-open-next.yml`:
+  - group: `cloudflare-deploy`
+  - cancel-in-progress: `true`
+- This serializes Cloudflare deployment workflows so overlapping runs cannot concurrently consume Cloudflare API capacity.
+- Preserved the existing bounded Cloudflare 429/code-10500 backoff and the OpenNext `OPEN_NEXT_DEPLOY=true` Wrangler deployment path.
+- Scope is limited to deployment workflow control; no application runtime, CSS, database, authentication, payment, secrets, or visual/audio behavior was changed.
+- Verification still required: workflow syntax/diff inspection and CI deployment checks.
+
 ## 2026-09-26 — OpenNext Publish Hang Repair
 
 - Branch: `fix/cloudflare-deploy-bypass-open-next-cache-populate`
