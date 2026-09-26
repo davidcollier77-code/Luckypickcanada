@@ -1365,66 +1365,82 @@ export default function LuckyCardReveal() {
 
         const beam = isFinalHit ? standardAudioRefs.current.finalBeam : standardAudioRefs.current.beamShot;
         if (beam) {
-          const id = beam.play();
-          beam.seek(isFinalHit ? 0.45 : 0, id);
-          const volume = isFinalHit ? 0.62 : 0.46 + i * 0.035;
-          beam.volume(volume, id);
-          beam.fade(volume, 0, isFinalHit ? 900 : 500, id);
-          scheduleAudio(() => beam.stop(id), isFinalHit ? 1450 : 750);
+          scheduleAudio(() => {
+            const id = beam.play();
+            beam.seek(isFinalHit ? 0.45 : 0, id);
+            const volume = isFinalHit ? 0.62 : 0.46 + i * 0.035;
+            beam.volume(volume, id);
+            beam.fade(volume, 0, isFinalHit ? 900 : 500, id);
+            scheduleAudio(() => beam.stop(id), isFinalHit ? 1450 : 750);
+          }, hitStart * 1000);
         }
 
         const impact = standardAudioRefs.current.beamImpact;
         if (impact) {
-          const id = impact.play();
-          impact.seek(0.72, id);
-          const volume = isFinalHit ? 0.88 : 0.66 + i * 0.04;
-          impact.volume(volume, id);
-          impact.fade(volume, 0, 750, id);
-          scheduleAudio(() => impact.stop(id), 1000);
+          scheduleAudio(() => {
+            const id = impact.play();
+            impact.seek(0.72, id);
+            const volume = isFinalHit ? 0.88 : 0.66 + i * 0.04;
+            impact.volume(volume, id);
+            impact.fade(volume, 0, 750, id);
+            scheduleAudio(() => impact.stop(id), 1000);
+          }, (contact - 0.19) * 1000);
         }
 
         if (!isFinalHit) {
           const shake = standardAudioRefs.current.cardShake;
           if (shake) {
-            const id = shake.play();
-            shake.volume(0.15 + i * 0.02, id);
-            shake.fade(0.15 + i * 0.02, 0, 450, id);
-            scheduleAudio(() => shake.stop(id), 600);
+            scheduleAudio(() => {
+              const id = shake.play();
+              const volume = 0.15 + i * 0.02;
+              shake.volume(volume, id);
+              shake.fade(volume, 0, 450, id);
+              scheduleAudio(() => shake.stop(id), 600);
+            }, (contact - 0.14) * 1000);
           }
         }
 
         if (isFinalHit) {
           const lock = standardAudioRefs.current.finalLock;
           if (lock) {
-            const id = lock.play();
-            lock.volume(0.74, id);
-            lock.fade(0.74, 0, 500, id);
-            scheduleAudio(() => lock.stop(id), 800);
+            scheduleAudio(() => {
+              const id = lock.play();
+              lock.volume(0.74, id);
+              lock.fade(0.74, 0, 500, id);
+              scheduleAudio(() => lock.stop(id), 800);
+            }, (hitStart + 0.13) * 1000);
           }
 
           const discharge = standardAudioRefs.current.finalDischarge;
           if (discharge) {
-            const id = discharge.play();
-            discharge.volume(0.78, id);
-            discharge.fade(0.78, 0, 1700, id);
-            scheduleAudio(() => discharge.stop(id), 2100);
+            scheduleAudio(() => {
+              const id = discharge.play();
+              discharge.volume(0.78, id);
+              discharge.fade(0.78, 0, 1700, id);
+              scheduleAudio(() => discharge.stop(id), 2100);
+            }, finalFlipStartForAudio * 1000);
           }
 
           const snap = standardAudioRefs.current.revealSnap;
           if (snap) {
-            const id = snap.play();
-            snap.seek(0.65, id);
-            snap.volume(0.28, id);
-            snap.fade(0.28, 0, 400, id);
-            scheduleAudio(() => snap.stop(id), 650);
+            scheduleAudio(() => {
+              const id = snap.play();
+              snap.seek(0.65, id);
+              snap.volume(0.28, id);
+              snap.fade(0.28, 0, 400, id);
+              scheduleAudio(() => snap.stop(id), 650);
+            }, Math.max(0, finalFlipEndForAudio - 0.65) * 1000);
           }
 
+          const postFlipStart = finalFlipEndForAudio + 0.05;
           const arc = standardAudioRefs.current.electricalArc;
           if (arc) {
-            const id = arc.play();
-            arc.volume(0.18, id);
-            arc.fade(0.18, 0, 1800, id);
-            scheduleAudio(() => arc.stop(id), 2000);
+            scheduleAudio(() => {
+              const id = arc.play();
+              arc.volume(0.18, id);
+              arc.fade(0.18, 0, 1800, id);
+              scheduleAudio(() => arc.stop(id), 2000);
+            }, postFlipStart * 1000);
           }
         }
       }
