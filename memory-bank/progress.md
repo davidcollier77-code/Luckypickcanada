@@ -1,5 +1,15 @@
 # Progress
 
+## 2026-09-26 — OpenNext Remote Cache Deployment Repair
+- Deep-dived the supplied production recording and verified the regression is visual/layout-wide, not an audio defect.
+- Forced live production retrieval and verified homepage/reveal HTML referenced stale CSS assets `cc4b9b8ab9f722ff.css` and `ac4b46593ca20d2e.css`.
+- Inspected those live CSS assets and verified Tailwind utilities required by the rendered markup were missing, while literal Tailwind directives remained.
+- Verified the GitHub deployment workflow cleared local `.next/cache` and `.open-next` but then deployed with raw `wrangler deploy`, while the repository uses the OpenNext R2 incremental cache.
+- Confirmed the OpenNext Cloudflare CLI deploy path populates the remote cache before calling Wrangler.
+- Changed `.github/workflows/deploy-open-next.yml` to use `pnpm exec opennextjs-cloudflare deploy --config ./wrangler.jsonc` after the existing build/worker checks.
+- Updated `memory-bank/activeContext.md` with the verified diagnosis and scope.
+- Verification pending: remote CI/build and post-deployment live visual verification.
+
 ## 2026-09-26 — Production CSS Regression Repair
 - Compared known-good `e1e7d2f` against current `f740f66` and confirmed PR #1261 explicitly deleted:
   - `postcss.config.js`
