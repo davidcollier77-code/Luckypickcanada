@@ -1,0 +1,50 @@
+name: Audio Asset Ingest
+
+on:
+  push:
+    branches:
+      - fix/lucky-card-standard-audio-fresh-assets
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Download reviewed Standard audio assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          declare -A urls=(
+            [mixkit-cinematic-whoosh.mp3]="https://assets.mixkit.co/active_storage/sfx/1467/1467-preview.mp3"
+            [beam_energy.mp3]="https://assets.mixkit.co/active_storage/sfx/2596/2596-preview.mp3"
+            [beam_impact.mp3]="https://assets.mixkit.co/active_storage/sfx/782/782-preview.mp3"
+            [final_lock_on.mp3]="https://assets.mixkit.co/active_storage/sfx/2858/2858-preview.mp3"
+            [final_discharge.mp3]="https://assets.mixkit.co/active_storage/sfx/2601/2601-preview.mp3"
+            [reveal_snap.mp3]="https://assets.mixkit.co/active_storage/sfx/2386/2386-preview.mp3"
+            [electrical_arc.mp3]="https://assets.mixkit.co/active_storage/sfx/2598/2598-preview.mp3"
+          )
+
+          mkdir -p public/sounds
+
+          for file in "${!urls[@]}"; do
+            curl -L --fail --retry 3 --silent --show-error "${urls[$file]}" -o "public/sounds/$file"
+            test -s "public/sounds/$file"
+            printf '%s  ' "$file"
+            sha256sum "public/sounds/$file" | cut -d' ' -f1
+          done
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/sounds
+          git commit -m "chore(audio): replace Standard reveal source assets [skip ci]" || echo "No asset changes"
+          git push origin "${GITHUB_REF_NAME}"
