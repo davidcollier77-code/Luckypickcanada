@@ -1,3 +1,11 @@
+## 2026-09-26 — Standard Final Reveal Audio Texture Pass
+
+- Implemented a focused final-hit texture repair in `app/lucky-card-reveal.js` after reviewing the supplied Standard-tier capture.
+- Added four irregular, low-gain micro-electrical flicker bursts around the final discharge, reusing the existing audited `standard_electrical_arc.mp3` rather than adding another asset.
+- Mirrored the same timed flicker texture in the Howler fallback while preserving the existing main final beam, lock, discharge, reveal snap, and post-flip electrical residue levels and durations.
+- Kept the change Standard-tier-only; Premium/Flagship choreography, visuals, artwork, tier counts, reset/countdown, collection, share, deployment, database, authentication, payment, and secrets are unchanged.
+- Verification status: source diff and timing-path reconciliation completed; CI/build/runtime playback verification is still required before this result is declared complete.
+
 ## 2026-09-26 — Standard Audio Fallback Timing Repair
 
 - Verified Sourcery's bug-risk finding: the Standard Howler fallback previously invoked every cue immediately inside the hit loop, bypassing the Web Audio choreography offsets.
