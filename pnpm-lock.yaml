@@ -22,7 +22,7 @@ importers:
         version: 1.9.4
       eslint:
         specifier: ^10.8.1
-        version: 10.9.0(jiti@1.21.7)
+        version: 10.11.0(jiti@1.21.7)
       framer-motion:
         specifier: ^13.1.0
         version: 13.1.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
