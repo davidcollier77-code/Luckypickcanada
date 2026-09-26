@@ -6411,7 +6411,7 @@ snapshots:
 
   '@eslint-community/eslint-utils@4.10.1(eslint@10.11.0(jiti@1.21.7))':
     dependencies:
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.2': {}
@@ -7564,7 +7564,7 @@ snapshots:
       '@typescript-eslint/scope-manager': 8.69.0
       '@typescript-eslint/types': 8.69.0
       '@typescript-eslint/typescript-estree': 8.69.0(typescript@5.9.3)
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
       typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
@@ -8448,11 +8448,11 @@ snapshots:
 
   eslint-config-prettier@10.1.8(eslint@10.11.0(jiti@1.21.7)):
     dependencies:
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
 
   eslint-plugin-jest-dom@5.10.1(@testing-library/dom@10.4.1)(eslint@10.11.0(jiti@1.21.7)):
     dependencies:
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
       requireindex: 1.2.0
     optionalDependencies:
       '@testing-library/dom': 10.4.1
@@ -8467,7 +8467,7 @@ snapshots:
       axobject-query: 4.1.0
       damerau-levenshtein: 1.0.8
       emoji-regex: 9.2.2
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
       hasown: 2.0.4
       jsx-ast-utils: 3.3.5
       language-tags: 1.0.9
@@ -8478,7 +8478,7 @@ snapshots:
 
   eslint-plugin-prettier@5.5.6(eslint-config-prettier@10.1.8(eslint@10.11.0(jiti@1.21.7)))(eslint@10.11.0(jiti@1.21.7))(prettier@3.9.6):
     dependencies:
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
       prettier: 3.9.6
       prettier-linter-helpers: 1.0.1
       synckit: 0.11.13
@@ -8489,7 +8489,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.29.7
       '@babel/parser': 7.29.8
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
       hermes-parser: 0.25.1
       zod: 4.5.4
       zod-validation-error: 4.0.2(zod@4.5.4)
@@ -8504,7 +8504,7 @@ snapshots:
       array.prototype.tosorted: 1.1.4
       doctrine: 2.1.0
       es-iterator-helpers: 1.4.0
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
       estraverse: 5.3.0
       hasown: 2.0.4
       jsx-ast-utils: 3.3.5
@@ -8522,7 +8522,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/scope-manager': 8.69.0
       '@typescript-eslint/utils': 8.69.0(eslint@10.11.0(jiti@1.21.7))(typescript@5.9.3)
-      eslint: 10.9.0(jiti@1.21.7)
+      eslint: 10.11.0(jiti@1.21.7)
     transitivePeerDependencies:
       - supports-color
       - typescript
