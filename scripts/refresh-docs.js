@@ -433,7 +433,8 @@ async function main() {
       const lib = nextUpdate.lib;
       const groups = nextUpdate.groups;
 
-      const safeName = lib.replace(/[\/\.]/g, '_');
+      const safeLib = validateLibraryIdentifier(lib);
+      const safeName = safeLib.replace(/[^A-Za-z0-9_-]/g, '_');
       // For size calculation, check the first group's file
       const firstGroup = validateGroupName(groups[0]);
       const firstGroupDir = resolveDocsPath(firstGroup);
