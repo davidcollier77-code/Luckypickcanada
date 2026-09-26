@@ -315,7 +315,8 @@ function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) 
     inventory: Array.from(inventory),
     githubShas: shas
   };
-  const tempManifestPath = manifestPath + '.tmp.' + Date.now();
+  const tempFilename = 'manifest.json.tmp.' + Date.now();
+  const tempManifestPath = resolveDocsPath(tempFilename);
   try {
     fs.writeFileSync(tempManifestPath, JSON.stringify(manifestData, null, 2) + '\n');
     fs.renameSync(tempManifestPath, manifestPath);
