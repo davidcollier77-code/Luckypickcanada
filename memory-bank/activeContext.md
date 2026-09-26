@@ -1,3 +1,10 @@
+## 2026-09-26 — Standard Audio Fallback Timing Repair
+
+- Verified Sourcery's bug-risk finding: the Standard Howler fallback previously invoked every cue immediately inside the hit loop, bypassing the Web Audio choreography offsets.
+- Implemented the minimal repair in `app/lucky-card-reveal.js`: every Standard fallback cue is now wrapped in `scheduleAudio` using the same timing offsets as the Web Audio path.
+- Preserved all existing Standard asset choices, gain values, seek offsets, fade durations, hit cadence, final lock/discharge sequence, and Premium/Flagship behavior.
+- Verification pending: repository CI/build and fresh runtime/device playback capture.
+
 ## 2026-09-26 — Standard Reveal Audio Fresh-Asset Rebuild
 
 - Standard-tier audio was rebuilt from a fresh, separately audited asset set after the rendered capture continued to exhibit a computer-like tonal artifact.
