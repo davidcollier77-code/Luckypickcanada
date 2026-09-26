@@ -40,7 +40,8 @@
       "/websites/ai_google_dev_gemini-api",
       "/cloudflare/cloudflare-docs/turnstile",
       "/cloudflare/cloudflare-docs/pages",
-      "/websites/neon"
+      "/websites/neon",
+      "/websites/mdn_web_audio"
     ],
     "polishing": [
       "/vercel/next.js",
@@ -108,7 +109,8 @@
       "developers.google.com/jules/api",
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
-      "/goldfire/howler.js"
+      "/goldfire/howler.js",
+      "/websites/mdn_web_audio"
     ],
     "deep-dive": [
       "/github/docs",
@@ -135,7 +137,8 @@
       "/android/developers",
       "/dequelabs/axe-core",
       "/cloudflare/cloudflare-docs/pages",
-      "/posthog/posthog-js"
+      "/posthog/posthog-js",
+      "/websites/mdn_web_audio"
     ],
     "seo": [
       "/vercel/next.js",
@@ -328,6 +331,10 @@
     "/goldfire/howler.js": {
       "type": "url",
       "url": "https://context7.com/goldfire/howler.js/llms.txt"
+    },
+    "/websites/mdn_web_audio": {
+      "type": "url",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API"
     }
   },
   "inventory": [
@@ -374,7 +381,8 @@
     "/websites/neon",
     "/magicuidesign/magicui",
     "/posthog/posthog-js",
-    "/goldfire/howler.js"
+    "/goldfire/howler.js",
+    "/websites/mdn_web_audio"
   ],
   "githubShas": {
     "/github/docs": "75ea7dd097a5564f27364a5b70eaa1979106eabd",
