@@ -35,6 +35,22 @@ jobs:
       - name: Build OpenNext for Cloudflare
         run: pnpm exec opennextjs-cloudflare build
 
+      - name: Verify compiled Tailwind CSS
+        run: |
+          css_dir=".open-next/assets/_next/static/css"
+          if [ ! -d "$css_dir" ]; then
+            echo "COMPILED CSS DIR MISSING";
+            find .open-next/assets -maxdepth 4 -type d | sort | head -100 || true;
+            exit 1;
+          fi
+
+          if grep -R -n -F '@tailwind base;' "$css_dir"; then
+            echo "UNPROCESSED TAILWIND DIRECTIVE DETECTED";
+            exit 1;
+          fi
+
+          echo "TAILWIND CSS COMPILED"
+
       - name: Verify .open-next/worker.js exists
         run: |
           if [ -f .open-next/worker.js ]; then
