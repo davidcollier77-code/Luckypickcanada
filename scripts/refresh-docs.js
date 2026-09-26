@@ -3,7 +3,33 @@ const https = require('https');
 const path = require('path');
 
 const DOCS_DIR = path.join(process.cwd(), '.docs');
+const DOCS_BASE_DIR = path.resolve(DOCS_DIR);
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
+
+function resolveDocsPath(...segments) {
+  const resolved = path.resolve(DOCS_BASE_DIR, ...segments);
+  if (resolved !== DOCS_BASE_DIR && !resolved.startsWith(DOCS_BASE_DIR + path.sep)) {
+    throw new Error('Resolved documentation path escapes the .docs directory.');
+  }
+  return resolved;
+}
+
+function validateManifestValue(value, name, allowLibraryPrefix = false) {
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`Invalid ${name}: expected a non-empty string.`);
+  }
+
+  const pattern = allowLibraryPrefix ? /^\/?[A-Za-z0-9._/-]+$/ : /^[A-Za-z0-9_-]+$/;
+  if (!pattern.test(value) || value.split(/[\\/]+/).includes('..')) {
+    throw new Error(`Invalid ${name}: unsafe path value.`);
+  }
+
+  if (!allowLibraryPrefix && path.isAbsolute(value)) {
+    throw new Error(`Invalid ${name}: absolute paths are not allowed.`);
+  }
+
+  return value;
+}
 
 
 const getHalifaxTimestamp = () => {
@@ -32,7 +58,7 @@ function getDirSize(dirPath) {
   if (!fs.existsSync(dirPath)) return 0;
   const files = fs.readdirSync(dirPath);
   for (let i = 0; i < files.length; i++) {
-    const filePath = path.join(dirPath, files[i]);
+    const filePath = resolveDocsPath(path.relative(DOCS_BASE_DIR, dirPath), files[i]);
     const stats = fs.lstatSync(filePath);
     if (stats.isDirectory()) {
       size += getDirSize(filePath);
@@ -261,7 +287,7 @@ function getUpstreamSha(lib, sourceConfig) {
 function saveManifest(inventory, shas, sources, groups, updateTimestamp = true) {
   const timestamp = getHalifaxTimestamp();
 
-  const manifestPath = path.join(DOCS_DIR, 'manifest.json');
+  const manifestPath = resolveDocsPath('manifest.json');
   let currentManifest = {};
   if (fs.existsSync(manifestPath)) {
     currentManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -288,7 +314,7 @@ function cleanupStaleTempFiles(dirPath) {
   if (!fs.existsSync(dirPath)) return;
   const entries = fs.readdirSync(dirPath, { withFileTypes: true });
   for (const entry of entries) {
-    const entryPath = path.join(dirPath, entry.name);
+    const entryPath = resolveDocsPath(path.relative(DOCS_BASE_DIR, dirPath), entry.name);
     if (entry.isDirectory()) {
       cleanupStaleTempFiles(entryPath);
     } else if (entry.isFile() && entry.name.includes('.tmp.')) {
@@ -324,7 +350,8 @@ async function main() {
   const libraryToGroups = new Map();
 
   for (const [group, libs] of Object.entries(groupsConfig)) {
-    const groupDir = path.join(DOCS_DIR, group);
+    const safeGroup = validateManifestValue(group, 'group');
+    const groupDir = resolveDocsPath(safeGroup);
     if (!fs.existsSync(groupDir)) {
       fs.mkdirSync(groupDir, { recursive: true });
     }
@@ -393,8 +420,9 @@ async function main() {
 
       const safeName = lib.replace(/[\/\.]/g, '_');
       // For size calculation, check the first group's file
-      const firstGroupDir = path.join(DOCS_DIR, groups[0]);
-      const firstDocPath = path.join(firstGroupDir, `${safeName}.md`);
+      const firstGroup = validateManifestValue(groups[0], 'group');
+      const firstGroupDir = resolveDocsPath(firstGroup);
+      const firstDocPath = resolveDocsPath(firstGroup, `${safeName}.md`);
 
       let existingSize = 0;
       let contentBefore = null;
@@ -423,7 +451,8 @@ async function main() {
       // Check upstream SHA if possible
       let allDocsExist = true;
       for (const group of groups) {
-          const docPath = path.join(DOCS_DIR, group, `${safeName}.md`);
+          const safeGroup = validateManifestValue(group, 'group');
+          const docPath = resolveDocsPath(safeGroup, `${safeName}.md`);
           if (!fs.existsSync(docPath)) {
               allDocsExist = false;
               break;
@@ -514,8 +543,9 @@ async function main() {
           // Ensure symlinks/files exist for ALL groups just in case
           for (let i = 0; i < groups.length; i++) {
             const group = groups[i];
-            const groupDir = path.join(DOCS_DIR, group);
-            const docPath = path.join(groupDir, `${safeName}.md`);
+            const safeGroup = validateManifestValue(group, 'group');
+            const groupDir = resolveDocsPath(safeGroup);
+            const docPath = resolveDocsPath(path.relative(DOCS_BASE_DIR, groupDir), `${safeName}.md`);
 
             if (i === 0) {
               if (!fs.existsSync(docPath)) {
@@ -531,7 +561,8 @@ async function main() {
             } else {
                if (!fs.existsSync(docPath)) {
                   try {
-                    const relativeTarget = path.relative(groupDir, path.join(DOCS_DIR, groups[0], `${safeName}.md`));
+                    const safeFirstGroup = validateManifestValue(groups[0], 'group');
+                    const relativeTarget = path.relative(groupDir, resolveDocsPath(safeFirstGroup, `${safeName}.md`));
                     fs.symlinkSync(relativeTarget, docPath);
                   } catch(e) {
                      // fallback
@@ -554,7 +585,8 @@ async function main() {
           stats.updated++;
 
           // Write primary copy to first group
-          const firstGroupPath = path.join(DOCS_DIR, groups[0], `${safeName}.md`);
+          const safeFirstGroup = validateManifestValue(groups[0], 'group');
+          const firstGroupPath = resolveDocsPath(safeFirstGroup, `${safeName}.md`);
           const tempPath1 = firstGroupPath + '.tmp.' + Date.now();
           try {
              fs.writeFileSync(tempPath1, outputWithCorrectLineEndings);
@@ -566,7 +598,8 @@ async function main() {
 
           // Write symlinks for subsequent groups
           for (let i = 1; i < groups.length; i++) {
-             const groupDir = path.join(DOCS_DIR, groups[i]);
+             const safeGroup = validateManifestValue(groups[i], 'group');
+             const groupDir = resolveDocsPath(safeGroup);
              const docPath = path.join(groupDir, `${safeName}.md`);
              const tempSymlinkPath = docPath + '.tmp.' + Date.now();
              try {
