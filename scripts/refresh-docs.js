@@ -371,11 +371,12 @@ async function main() {
       fs.mkdirSync(groupDir, { recursive: true });
     }
     for (const lib of libs) {
-      uniqueLibraries.add(lib);
-      if (!libraryToGroups.has(lib)) {
-        libraryToGroups.set(lib, []);
+      const safeLib = validateLibraryIdentifier(lib);
+      uniqueLibraries.add(safeLib);
+      if (!libraryToGroups.has(safeLib)) {
+        libraryToGroups.set(safeLib, []);
       }
-      libraryToGroups.get(lib).push(group);
+      libraryToGroups.get(safeLib).push(group);
     }
   }
 
