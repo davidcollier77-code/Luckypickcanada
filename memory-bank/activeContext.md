@@ -87,19 +87,21 @@
 - Corrected the wrapper to temporarily disable `errexit` only around the Wrangler invocation, capture its status/output, then restore `errexit` before applying the rate-limit classification.
 ## 2026-09-27 — Controlled Dependency Refresh (PR #1286)
 
-- Branch: `chore/dependency-refresh-sept-2026`
-- Base: current `main` at `13ad77092411db72c7e477a3b61d96d65c8c2c64`.
-- Verified package.json already contains all target dependency versions for the authorized refresh:
-  - prettier: ^3.9.9 (line 69)
-  - react-hook-form: ^7.89.0 (line 70)
-  - tailwind-merge: ^3.7.0 (line 74)
-  - playwright: ^1.63.0 (line 67)
-  - playwright-chromium: ^1.63.0 (line 68)
-- Verified already-current packages remain unchanged: @playwright/test ^1.63.0, sonner ^2.0.8, stylelint ^17.15.0, stylelint-config-standard ^40.0.0, tailwindcss 4.2.4, wrangler 4.141.0.
-- Verified packageManager remains pnpm@10.30.3.
-- Scope is locked to devDependencies only; no production dependencies, source code, audio, visuals, database, authentication, payment, deployment configuration, or secrets changed.
-- Verification pending: pnpm install to regenerate pnpm-lock.yaml, pnpm test, pnpm build with size measurement < 495 MB, final diff audit.
-
+- Authorized scope: refresh only the five developer dependencies that were verified behind current releases; leave already-current dependencies unchanged.
+- Updated package.json:
+  - prettier: ^3.9.6 → ^3.9.9
+  - react-hook-form: ^7.87.0 → ^7.89.0
+  - tailwind-merge: ^3.6.0 → ^3.7.0
+  - playwright: ^1.62.1 → ^1.63.0
+  - playwright-chromium: ^1.62.1 → ^1.63.0
+- Preserved already-current packages including @playwright/test ^1.63.0, sonner ^2.0.8, stylelint ^17.15.0, stylelint-config-standard ^40.0.0, tailwindcss 4.2.4, and wrangler 4.141.0.
+- Updated pnpm-lock.yaml only for the authorized dependency graph and corresponding peer/snapshot references; stale 1.62.1-era Playwright records, Prettier 3.9.6, React Hook Form 7.87.0, and Tailwind Merge 3.6.0 records were removed.
+- Repository toolchain remains pnpm@10.30.3 / Node 22.x.
+- GitHub Actions validation run 36315064397 passed: frozen pnpm install, Next.js production build, OpenNext Cloudflare build, compiled Tailwind verification, Worker/assets checks, Wrangler build validation, and clean Git status.
+- GitHub protected-file workflow run 36315063676 passed for the authorized package.json/pnpm-lock.yaml changes.
+- Test-suite command pnpm test was not executed because the repository's PR validation workflow does not run it and the local execution environment cannot reach GitHub to clone the branch.
+- The AGENTS.md 495 MB build-size measurement was not provided by the existing workflow, so no unsupported size claim is made.
+- No application source code, audio, visuals/VFX, database, authentication, payment, deployment workflow, or secrets were changed.
 - Non-rate-limit failures still terminate immediately; recognized rate-limit responses proceed to bounded backoff.
 - Production verification remains pending.
 
