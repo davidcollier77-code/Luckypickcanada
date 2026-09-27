@@ -1080,9 +1080,7 @@ export default function LuckyCardReveal() {
               return;
             }
 
-            webAudioReady =
-          webAudioReady =
-              ctx.state === 'running';
+            webAudioReady = ctx.state === 'running';
           }
         } catch (err) {
           // A stale/unmounted transaction must stop here rather than scheduling fallback audio.
@@ -1091,7 +1089,6 @@ export default function LuckyCardReveal() {
           }
 
           webAudioReady = false;
-        webAudioReady = false;
         }
       } else {
         console.warn('Web Audio API is unavailable; using Howler fallback for recognized-tier reveal audio.');
