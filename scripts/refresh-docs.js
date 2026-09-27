@@ -21,7 +21,25 @@ function resolveDocsPath(...segments) {
   for (const segment of relativePath.split(path.sep).filter(Boolean)) {
     currentPath = path.resolve(currentPath, segment);
     if (fs.existsSync(currentPath) && fs.lstatSync(currentPath).isSymbolicLink()) {
-      throw new Error('Documentation paths must not traverse symbolic links.');
+      // Symlinked documentation files are intentional deduplication links created by this updater.
+      // Permit only a final-path symlink whose fully-resolved target remains inside .docs.
+      if (currentPath !== resolved) {
+        throw new Error('Documentation paths must not traverse symbolic links.');
+      }
+
+      let realTarget;
+      try {
+        realTarget = fs.realpathSync(currentPath);
+      } catch (e) {
+        throw new Error('Documentation symlink target could not be resolved safely.');
+      }
+
+      if (
+        realTarget !== DOCS_BASE_DIR &&
+        !realTarget.startsWith(DOCS_BASE_DIR + path.sep)
+      ) {
+        throw new Error('Documentation symlink target must remain inside the .docs directory.');
+      }
     }
   }
 
