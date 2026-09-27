@@ -1080,7 +1080,7 @@ export default function LuckyCardReveal() {
               return;
             }
 
-            standardWebAudioReady =
+            webAudioReady =
           webAudioReady =
               ctx.state === 'running';
           }
@@ -1090,11 +1090,11 @@ export default function LuckyCardReveal() {
             return;
           }
 
-          standardWebAudioReady = false;
+          webAudioReady = false;
         webAudioReady = false;
         }
       } else {
-        console.warn('Web Audio API is unavailable; using Howler fallback for Standard reveal audio.');
+        console.warn('Web Audio API is unavailable; using Howler fallback for recognized-tier reveal audio.');
       }
     }
 
