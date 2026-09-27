@@ -10,13 +10,14 @@ on:
       - 'pnpm-lock.yaml'
       - 'wrangler.jsonc'
       - 'tailwind.config.js'
-      - 'postcss.config.cjs'
+      - 'postcss.config.js'
       - 'app/globals.css'
       - 'middleware.ts'
       - '.github/workflows/deploy-open-next.yml'
       - '.github/workflows/validate-open-next-repair.yml'
       - '.github/workflows/refresh-docs.yml'
       - 'scripts/refresh-docs.js'
+      - '.github/workflows/protected-files.yml'
 
 permissions:
   contents: read
@@ -53,6 +54,7 @@ jobs:
             ".github/workflows/validate-open-next-repair.yml"
             ".github/workflows/refresh-docs.yml"
             "scripts/refresh-docs.js"
+            ".github/workflows/protected-files.yml"
           )
 
           protected_changed=()
@@ -92,14 +94,14 @@ jobs:
           done < "$api_output"
 
           found=false
-          if ((${#protected_changed[@]} > 0)); then
+          if (("${#protected_changed[@]}" > 0)); then
             found=true
           fi
 
           {
             echo "protected_changed=$found"
             echo "protected_files<<EOF"
-            if ((${#protected_changed[@]} > 0)); then
+            if (("${#protected_changed[@]}" > 0)); then
               printf '%s\n' "${protected_changed[@]}"
             fi
             echo "EOF"
