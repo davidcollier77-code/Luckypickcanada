@@ -1,3 +1,10 @@
+## 2026-09-27 — Premium/Flagship Web Audio Reveal Extension
+
+- Generalized the verified Standard-tier Web Audio initialization gate so Premium and Flagship also create/resume the same AudioContext and decode the same Standard audio buffers on the user interaction.
+- Generalized the Standard Web Audio scheduler and matched Howler fallback to all recognized tiers.
+- Preserved the existing hit cadence: Standard 3 / Premium 4 / Flagship 5, including the final-hit offset derived from `TIER_HITS`.
+- Changed only `app/lucky-card-reveal.js` for application behavior; no new audio assets or visual/VFX changes.
+- Source diff reconciled successfully. No GitHub Actions run or commit status is currently attached to the PR head, so browser/test/build verification remains pending.
 ## 2026-09-27 — Documentation Refresh Symlink Compatibility Repair
 
 - Verified run `36308236510` failed in `scripts/refresh-docs.js` because the updater rejected an intentional `.docs/` symlink while cleaning stale temp files.
@@ -200,3 +207,10 @@
 - Final validation passed with the frozen lockfile and the repository's normal PR CI.
 - Verified build sizes: `.next` 291 MB; `.open-next` 96 MB.
 - Temporary verification workflow was removed before finalization.
+
+
+## 2026-09-27 — Premium/Flagship Web Audio Rename Repair
+
+- Fixed the incomplete `standardWebAudioReady` → `webAudioReady` rename in `app/lucky-card-reveal.js` from the Q follow-up commit on PR #1285.
+- Updated the Web Audio unavailable fallback comment to describe recognized-tier fallback rather than Standard-only behavior.
+- Scope remains limited to the existing all-tier Web Audio extension; no new assets, visual/VFX, timing, or tier-count changes.

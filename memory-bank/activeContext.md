@@ -1,3 +1,10 @@
+## 2026-09-27 — Premium/Flagship Web Audio Reveal Extension
+
+- Extended the existing Standard-tier native Web Audio reveal scheduler to Premium and Flagship.
+- Premium retains 4 hits and Flagship retains 5 hits because the existing `TIER_HITS` cadence remains unchanged.
+- The same decoded Standard audio asset set, absolute Web Audio scheduling, final-hit sequence, and Howler fallback are now selected for all recognized tiers.
+- No new audio assets or visual/VFX choreography were introduced.
+- Runtime/browser verification is still pending because the PR head currently has no associated GitHub Actions run or commit status.
 ## 2026-09-27 — Documentation Refresh Symlink Compatibility Repair
 
 - Verified the documentation refresh failure on run 36308236510: `scripts/refresh-docs.js` failed during `cleanupStaleTempFiles()` with `Documentation paths must not traverse symbolic links.`
@@ -154,3 +161,9 @@
 - Updated the documented v4 utility renames used by the app (`bg-gradient-to-*` → `bg-linear-to-*`, `shadow-sm` → `shadow-xs`).
 - Rejected broad and resolver-refreshed lockfiles because they changed unrelated dependencies; final lockfile was constrained to the Tailwind 4.2.4 dependency closure while preserving the main baseline ordering/versions.
 - Verified frozen install, Next.js production build, OpenNext Cloudflare build, compiled Tailwind CSS, OpenNext artifacts, build-size limits, Wrangler no-deploy validation, and clean lockfile state. No production deployment or merge performed.
+
+
+## 2026-09-27 — Premium/Flagship Web Audio Rename Repair
+
+- Fixed the incomplete `standardWebAudioReady` → `webAudioReady` rename left by the automated Q follow-up on PR #1285.
+- Verified the remaining stale identifier references were confined to `app/lucky-card-reveal.js`; replacing them completes the generalized recognized-tier Web Audio state path without changing timing, tier hit counts, assets, visuals, or fallback architecture.

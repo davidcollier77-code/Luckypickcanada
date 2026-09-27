@@ -141,7 +141,7 @@ export default function LuckyCardReveal() {
   // Howler play() returns a unique sound id for each one-shot, so repeated hits can
   // overlap safely without introducing a persistent reveal-owned audio bed.
   useEffect(() => {
-    // Legacy reveal assets are intentionally retained for Premium/Flagship.
+    // Legacy reveal assets are retained only as a compatibility fallback for unexpected tier states.
     audioRefs.current.beamApproach = new Howl({
       src: ['/sounds/mixkit-cinematic-whoosh.mp3'],
       volume: 0.42,
@@ -1013,9 +1013,13 @@ export default function LuckyCardReveal() {
     setIsGenerating(true);
     setImageError(false);
 
-    let standardWebAudioReady = false;
+    let webAudioReady = false;
 
-    if (card.tier === 'standard') {
+    // Use own-property check to prevent inherited property lookup (e.g., toString, constructor)
+    // and validate that the tier hit count is a positive integer
+    const hasTier = Object.hasOwn(TIER_HITS, card.tier);
+    const tierHits = hasTier ? TIER_HITS[card.tier] : null;
+    if (hasTier && Number.isInteger(tierHits) && tierHits > 0) {
       const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
 
       if (AudioContextCtor) {
@@ -1033,7 +1037,7 @@ export default function LuckyCardReveal() {
 
           // Check if component is still mounted and operation is still current
           if (!isMountedRef.current || audioTransactionIdRef.current !== currentTransactionId) {
-            standardWebAudioReady = false;
+            webAudioReady = false;
             return;
           }
 
@@ -1076,9 +1080,7 @@ export default function LuckyCardReveal() {
               return;
             }
 
-            standardWebAudioReady =
-              requiredKeys.every(key => Boolean(audioBuffersRef.current[key])) &&
-              ctx.state === 'running';
+            webAudioReady = ctx.state === 'running';
           }
         } catch (err) {
           // A stale/unmounted transaction must stop here rather than scheduling fallback audio.
@@ -1086,11 +1088,10 @@ export default function LuckyCardReveal() {
             return;
           }
 
-          standardWebAudioReady = false;
-          console.error('Web Audio initialization failed; using Howler fallback:', err);
+          webAudioReady = false;
         }
       } else {
-        console.warn('Web Audio API is unavailable; using Howler fallback for Standard reveal audio.');
+        console.warn('Web Audio API is unavailable; using Howler fallback for recognized-tier reveal audio.');
       }
     }
 
@@ -1207,9 +1208,10 @@ export default function LuckyCardReveal() {
 
     let currentTime = 0;
 
-    // --- AUDIO CHOREOGRAPHY ---
-    // Standard-tier audio is intentionally treated as a single physical/cinematic
-    // sound event rather than a stack of isolated MP3 triggers.
+    // Recognized-tier Web Audio scheduling treats audio as a single physical/cinematic
+    // sound event rather than isolated MP3 triggers, with the existing Howler path
+    // retained as the fallback for recognized tiers when native Web Audio is unavailable.
+    
     // Premium/Flagship retain the verified current choreography unchanged.
     audioTimersRef.current.forEach(clearTimeout);
     audioTimersRef.current = [];
@@ -1244,7 +1246,8 @@ export default function LuckyCardReveal() {
     const finalFlipStartForAudio = finalHitStartTimeForAudio + FINAL_FLIP_TIME;
     const finalFlipEndForAudio = finalFlipStartForAudio + FINAL_FLIP_DURATION;
 
-    if (card.tier === 'standard' && standardWebAudioReady) {
+    // Native Web Audio scheduling for all recognized tiers
+    if (webAudioReady) {
       if (audioCtxRef.current) {
         webAudioOriginRef.current = audioCtxRef.current.currentTime;
       }
@@ -1376,8 +1379,8 @@ export default function LuckyCardReveal() {
           scheduleWebAudio('electricalArc', postFlipStart, 0.30, 1.8, 0, 2.0);
         }
       }
-    } else if (card.tier === 'standard') {
-      // Standard fallback uses the same fresh Standard-only source palette via Howler.
+    } else if (hasTier && Number.isInteger(tierHits) && tierHits > 0) {
+      // Howler fallback for recognized tiers when native Web Audio is unavailable or not ready
       for (let i = 0; i < totalHitsForAudio; i += 1) {
         const hitStart = i * HIT_DURATION;
         const contact = hitStart + HIT_CONTACT_OFFSET;
