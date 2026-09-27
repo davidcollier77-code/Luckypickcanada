@@ -107,6 +107,7 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: diff](https://neon.com/docs/cli/diff.md): Show a git-style schema diff between two branches
 - [Neon CLI command: env](https://neon.com/docs/cli/env.md): Manage a branch's Neon environment variables locally
 - [Neon CLI command: functions](https://neon.com/docs/cli/functions.md): Deploy, list, inspect, and delete Neon Functions, and manage their custom domains
+- [Neon CLI command: git](https://neon.com/docs/cli/git.md): Keep your Neon branch in sync with the git branch you have checked out
 - [Neon CLI command: init](https://neon.com/docs/cli/init.md): Set up the current directory for Neon with agent tooling, a linked project, and an optional neon.ts config
 - [Neon CLI command: inspect](https://neon.com/docs/cli/inspect.md): Run diagnostic queries against a branch's Postgres to check its health and configuration
 - [Neon CLI command: ip-allow](https://neon.com/docs/cli/ip-allow.md): Manage the IP allowlist: list, add, remove, and reset allowed IPs
@@ -250,6 +251,7 @@ Access frontier and open-source models through a single API.
 - [AI Gateway troubleshooting](https://neon.com/docs/ai-gateway/troubleshooting.md): Common errors and how to fix them
 - [Anthropic Messages API](https://neon.com/docs/ai-gateway/anthropic-messages.md): Use the Anthropic SDK with Neon AI Gateway
 - [Chat completions](https://neon.com/docs/ai-gateway/chat-completions.md): The OpenAI-compatible unified endpoint
+- [Embeddings](https://neon.com/docs/ai-gateway/embeddings.md): The OpenAI-compatible embeddings endpoint
 - [Gemini API](https://neon.com/docs/ai-gateway/gemini.md): Use the Google Gemini API with Neon AI Gateway
 - [Get started with Neon AI Gateway](https://neon.com/docs/ai-gateway/get-started.md): Make your first inference request in minutes
 - [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview.md): One API for open-weight and foundation models from OpenAI, Google, and more. Built into your Neon project.
