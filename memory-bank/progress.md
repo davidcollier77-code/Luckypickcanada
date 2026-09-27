@@ -177,3 +177,12 @@
 - Added in-file authorization warnings to the restored Tailwind and PostCSS configuration files.
 - Added in-file authorization warnings around the Cloudflare deployment concurrency and rate-limit retry safeguards.
 - Preserved all existing configuration and deployment behavior; this is repository-hardening only.
+
+
+## 2026-09-27 — OpenNext Cloudflare 1.20.6 Dependency Update
+
+- Investigated `@opennextjs/cloudflare` separately from the preceding Wrangler update so dependency causality remains isolated.
+- Verified compatibility of OpenNext 1.20.6 with the repository's Next.js 16.3.6 and Wrangler 4.141.0 baseline.
+- Updated `package.json` to pin `@opennextjs/cloudflare` at 1.20.6 and updated `pnpm-lock.yaml` to the matching OpenNext Cloudflare 1.20.6 / OpenNext AWS 4.1.4 graph.
+- PR #1280 validation run 553 passed all repository checks without deployment.
+- Final verification confirmed the Next.js build, OpenNext Cloudflare build, Tailwind compilation, `.open-next` worker/assets outputs, Wrangler build validation, and Git status all passed.
