@@ -9,12 +9,7 @@ import Link from 'next/link';
 export default function Page() {
   return (
     <>
-      <div className="aurora-container">
-        <div className="aurora-layer aurora-layer-1"></div>
-        <div className="aurora-layer aurora-layer-2"></div>
-        <div className="aurora-layer aurora-layer-3"></div>
-        <div className="aurora-layer aurora-layer-4"></div>
-      </div>
+      <div className="homepage-sky-backdrop" aria-hidden="true" />
       <Hero />
       <HomePage />
       <FAQSection />
