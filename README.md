@@ -1,8 +1,23 @@
 # Lucky Pick Canada
 
-A community-focused Canadian digital experience built around luck, stories, sharing, and a little everyday magic.
+> A Canadian digital entertainment experience for daily luck, stories, collectible cards, and a little everyday magic.
 
-Lucky Pick Canada started as a simple idea for bringing a little positivity and fun into the day. Built as a small creative project in Nova Scotia, it has grown into a corner of the internet where people can discover their daily luck, share their own stories, explore the experiences of others, and take part in something designed simply to brighten the day.
+**[Visit Lucky Pick Canada](https://luckypickcanada.ca/)**
+
+Lucky Pick Canada is an independent community-focused web experience created in Nova Scotia. It combines playful daily experiences with community stories, interactive reveals, and shareable moments.
+
+## Explore the Live Experience
+
+- **Lucky Meter** — a daily experience designed around reflection, encouragement, and fun.
+- **Lucky Stories & Lucky Map** — share experiences of luck and explore stories from across Canada.
+- **Daily Lucky Card** — reveal a collectible digital card and build a collection over time.
+- **Crystal Ball** — ask a question and receive a playful, mystical reading.
+- **Lucky Picks** — generate fresh number combinations for entertainment.
+- **Gift Experiences** — send a personalized digital lucky experience to someone else.
+- **Suggestion Box** — contribute ideas for the project.
+- **Tip Jar** — optionally support the independent project.
+
+The project is designed so visitors can enjoy one small experience and naturally discover the rest.
 
 ## The Community Comes First
 
@@ -11,19 +26,6 @@ At the heart of Lucky Pick Canada are the people and the stories they bring with
 Share a lucky story about an unexpected coincidence, an opportunity that appeared at just the right time, finding money, a small everyday win, or simply a moment that made you feel unusually lucky. Stories can become part of the Lucky Map of Canada, giving visitors a way to explore experiences being shared across the country.
 
 The numbers are only part of the experience. The bigger idea is what happens around them: the stories people tell, the moments they remember, and the connections that can grow from a little bit of fun.
-
-## What You Can Explore
-
-- **Lucky Meter** — a daily experience designed to give you a moment of reflection, encouragement, and fun.
-- **Lucky Stories & Lucky Map** — share your own experience of luck and explore stories from across Canada.
-- **Daily Lucky Card** — reveal a collectible digital card and build your collection over time.
-- **Crystal Ball** — ask a question and receive a playful, mystical reading.
-- **Lucky Picks** — generate a fresh set of lucky numbers for a little daily entertainment.
-- **Gift Experiences** — send a personalized lucky experience to someone else.
-- **Suggestion Box** — share ideas that could help shape the future of Lucky Pick Canada.
-- **Tip Jar** — optionally support the project and help keep it going.
-
-The site is designed so people can simply enjoy one small experience and discover the rest naturally.
 
 ## More Than the Numbers
 
@@ -60,3 +62,4 @@ This project uses `pnpm`.
 ```bash
 pnpm install
 pnpm dev
+```
