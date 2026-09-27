@@ -13,16 +13,16 @@ jobs:
     name: Detect protected file changes
     runs-on: ubuntu-latest
     outputs:
-      protected_changed: \${{ steps.detect.outputs.protected_changed }}
-      protected_files: \${{ steps.detect.outputs.protected_files }}
+      protected_changed: ${{ steps.detect.outputs.protected_changed }}
+      protected_files: ${{ steps.detect.outputs.protected_files }}
     steps:
       - name: Inspect changed paths from GitHub
         id: detect
         shell: bash
         env:
-          GH_TOKEN: \${{ github.token }}
-          PR_NUMBER: \${{ github.event.pull_request.number }}
-          REPOSITORY: \${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
 
@@ -43,24 +43,24 @@ jobs:
 
           mapfile -t changed_entries < <(
             gh api --paginate \
-              "repos/\${REPOSITORY}/pulls/\${PR_NUMBER}/files?per_page=100" \
+              "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
               --jq '.[] | [.filename, (.previous_filename // "")] | @tsv'
           )
 
           protected_changed=()
           declare -A seen=()
 
-          for entry in "\${changed_entries[@]}"; do
-            new_path="\${entry%%\$'\\t'*}"
-            old_path="\${entry#*\$'\\t'}"
+          for entry in "${changed_entries[@]}"; do
+            new_path="${entry%%\$'\t'*}"
+            old_path="${entry#*\$'\t'}"
 
-            for candidate in "\$new_path" "\$old_path"; do
-              [[ -z "\$candidate" ]] && continue
+            for candidate in "$new_path" "$old_path"; do
+              [[ -z "$candidate" ]] && continue
 
-              for protected in "\${protected_files[@]}"; do
-                if [[ "\$candidate" == "\$protected" && -z "\${seen[\$protected]+x}" ]]; then
-                  protected_changed+=("\$protected")
-                  seen["\$protected"]=1
+              for protected in "${protected_files[@]}"; do
+                if [[ "$candidate" == "$protected" && -z "${seen[$protected]+x}" ]]; then
+                  protected_changed+=("$protected")
+                  seen["$protected"]=1
                   break
                 fi
               done
@@ -68,27 +68,27 @@ jobs:
           done
 
           found=false
-          if ((\${#protected_changed[@]} > 0)); then
+          if ((${#protected_changed[@]} > 0)); then
             found=true
           fi
 
           {
-            echo "protected_changed=\$found"
+            echo "protected_changed=$found"
             echo "protected_files<<EOF"
-            if ((\${#protected_changed[@]} > 0)); then
-              printf '%s\\n' "\${protected_changed[@]}"
+            if ((${#protected_changed[@]} > 0)); then
+              printf '%s\n' "${protected_changed[@]}"
             fi
             echo "EOF"
-          } >> "\$GITHUB_OUTPUT"
+          } >> "$GITHUB_OUTPUT"
 
-          if [[ "\$found" == "false" ]]; then
+          if [[ "$found" == "false" ]]; then
             {
               echo "## Protected File Authorization"
               echo
               echo "✅ No protected files were changed."
               echo
               echo "The human authorization gate is not required for this pull request."
-            } >> "\$GITHUB_STEP_SUMMARY"
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
 
@@ -96,14 +96,14 @@ jobs:
             echo "## 🔴 Protected File Modification Detected"
             echo
             echo "The following protected file(s) changed:"
-            for file in "\${protected_changed[@]}"; do
-              echo "- \`\$file\`"
+            for file in "${protected_changed[@]}"; do
+              echo "- \`$file\`"
             done
             echo
             echo "**Explicit human authorization is required before this pull request may merge.**"
             echo
             echo "The authorization gate will wait for the configured human reviewer."
-          } >> "\$GITHUB_STEP_SUMMARY"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   authorize:
     name: Protected File Authorization
@@ -112,22 +112,22 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: protected-file-authorization
-      url: \${{ github.event.pull_request.html_url }}
+      url: ${{ github.event.pull_request.html_url }}
     steps:
       - name: Record authorization
         shell: bash
         env:
-          PROTECTED_FILES: \${{ needs.detect.outputs.protected_files }}
+          PROTECTED_FILES: ${{ needs.detect.outputs.protected_files }}
         run: |
           set -euo pipefail
           echo "Human authorization received for the protected-file change."
           echo
           echo "Authorized protected files:"
-          printf '%s\\n' "\$PROTECTED_FILES"
+          printf '%s\n' "$PROTECTED_FILES"
           {
             echo "## ✅ Protected File Authorization Received"
             echo
             echo "The configured human reviewer approved this protected-file change."
             echo
-            printf '%s\\n' "\$PROTECTED_FILES" | sed 's/^/- /'
-          } >> "\$GITHUB_STEP_SUMMARY"
+            printf '%s\n' "$PROTECTED_FILES" | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
