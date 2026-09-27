@@ -186,3 +186,12 @@
 
 - Fixed the incomplete `standardWebAudioReady` → `webAudioReady` rename left by the automated Q follow-up on PR #1285.
 - Verified the remaining stale identifier references were confined to `app/lucky-card-reveal.js`; replacing them completes the generalized recognized-tier Web Audio state path without changing timing, tier hit counts, assets, visuals, or fallback architecture.
+
+## 2026-09-27 — Lucky Card Reveal Visual Polish
+
+- Branch: `jules-visual-polish`
+- Completed the visual polish pass on the Lucky Card Reveal component (`app/lucky-card-reveal.js`).
+- Implemented robust, non-intrusive direct replacements targeting specific canvas rendering functions (`drawContinuousBeam`, `drawMoltenBurnout`, particle physics, Framer Motion sequencing).
+- Successfully enhanced cinematic depth (ambient glow, contact flashes, drag physics) while perfectly preserving the protected card artwork, tier logic, and audio choreography.
+- Validated tier identities: Standard (Bronze), Premium (true Silver/Pewter, no blue), Flagship (Rich Gold).
+- Build size verified well under the 495MB limit (291MB). Tests passing.

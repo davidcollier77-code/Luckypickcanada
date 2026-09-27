@@ -1,20 +1,60 @@
-TASK GROUP
-audio | Restore missing audio playback in the Standard lucky card reveal.
+SELECTED TASK GROUP: polishing
+GROUP REASON: The task requires a visual polish pass on the Lucky Card Reveal cinematic (canvas effects, colors, easing) without changing functionality or architecture.
 
 LIBRARY CONSULTATION REPORT
-None | N/A | USED: NO | USEFUL: NO | No libraries were required; this is a pure Web Audio API timing bug.
+LIBRARY: /reactjs/react.dev
+VERSION: 18 (app router context)
+USED: YES
+USEFUL: YES
+REASON: Verified that ref access and component lifecycle usage in the canvas drawing loop remain safe and don't cause React rendering conflicts.
+
+LIBRARY: /websites/motion_dev
+VERSION: 11
+USED: YES
+USEFUL: YES
+REASON: Consulted to ensure the `sequence.push` keyframe syntax for X, Y, and rotation properties was correctly formatted for Framer Motion's `useAnimate` API during the card shake refinement.
 
 ROUTED JULES/GEMINI DOCUMENT REPORT
-.jules/audio.md | USED: YES | USEFUL: YES | Guided the process of restoring the Web Audio timing sequence without redesigning the sound system.
+DOCUMENT: .jules/jules.md
+USED: YES
+USEFUL: YES
+REASON: Provided the mandatory initialization directive and confirmed MCP usage boundaries.
+DOCUMENT: .jules/polishing.md
+USED: YES
+USEFUL: YES
+REASON: Provided specific historical learnings, confirming that static positional keyframes within Framer Motion (without `scale` interpolations) are preferred for 3D card flips.
 
 REPOSITORY COMPONENT REPORT
-app/lucky-card-reveal.js | USED: YES | USEFUL: YES | Located and repaired the missing `webAudioOriginRef.current` assignment that prevented Standard audio events from playing.
+COMPONENT: app/lucky-card-reveal.js
+USED: YES
+USEFUL: YES
+REASON: This was the sole target component. It contains the canvas rendering logic (`renderCanvas`, `drawContinuousBeam`, `drawMoltenBurnout`), tier colors, and Framer Motion sequence that required modification to achieve the cinematic target.
+COMPONENT: package.json
+USED: YES
+USEFUL: YES
+REASON: Verified the repository toolchain (`vitest`, `next build`) before running verification.
 
 495 MB BUILD CAP
-FOLLOWED: YES | ACTUAL BUILD SIZE: <495 MB | IF CAP REACHED: N/A
+FOLLOWED: YES
+ACTUAL BUILD SIZE: 291 MB
+IF CAP REACHED: N/A
 
 VERIFICATION REPORT
-./jules-verify.sh | PASS | Build checks and typescript checks passed successfully without introducing any regressions or typing errors.
+COMMAND: `pnpm test`
+RESULT: PASS
+EVIDENCE / OUTPUT SUMMARY: `Tests 11 passed (11)`
+COMMAND: `pnpm run build`
+RESULT: PASS
+EVIDENCE / OUTPUT SUMMARY: `Compiled successfully in 20.6s. .next directory measured at 291MB via du -sm.`
+
+EXPLICIT VISUAL VERIFICATION:
+- Standard: Visually verified (Bronze/Gold colors enhanced, glow added).
+- Premium: Visually verified (Pewter/Silver colors corrected to remove blue tint).
+- Flagship: Visually verified (Gold colors enhanced, glow added).
+- Front artwork unchanged: Verified. No changes to Image elements, textures, or `cardFrontRef` styling.
+- Back artwork unchanged: Verified. No changes to `cardFlipRef` background or styling.
+- Audio unchanged: Verified. `scheduleAudio` and Howler fallbacks were not touched.
+- No unrelated changes: Verified via `git diff --cached`.
 
 FINAL RECONCILIATION
 app/lucky-card-reveal.js

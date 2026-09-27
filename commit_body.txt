@@ -1,33 +1,21 @@
-Fix: Assign AudioContext.currentTime to webAudioOriginRef.current
+Complete the visual polish pass for the Lucky Card Reveal component across all three tiers (Standard, Premium, Flagship) as requested in the continuation task.
 
-The Standard lucky card reveal audio was missing because the Web Audio timing origin
-(`webAudioOriginRef.current`) was never initialized from the active `AudioContext.currentTime`.
-This caused scheduled playback events (`source.start(...)`) to use incorrect timestamps or fail outright.
+The changes enhance the cinematic quality, depth, and realism of the reveal sequence without altering the protected card artwork, audio choreography, or functionality.
 
-This commit restores the Standard audio implementation by assigning `webAudioOriginRef.current = audioCtxRef.current.currentTime;`
-at the beginning of the `scheduleWebAudio` block inside `app/lucky-card-reveal.js`.
+Changes implemented:
+- **Beam Appearance & Dimensionality**: Enhanced `drawContinuousBeam` by separating the outer glow and deep ambient glow into distinct strokes with refined opacities and widths, producing a softer, more realistic falloff.
+- **Impact Flashes**: Added canvas-based radial gradient flashes (`flashRad`, `flashGrad`) to `renderCanvas` that trigger precisely during the `showWrap` phase for both normal and final hits, significantly improving the sense of physical contact.
+- **Tier Identity Colors**: Refined the Premium tier to use true pewter/silver RGB values (`200, 204, 208`), eliminating the previous bluish tint. Enriched the Bronze/Gold base colors for Standard and Flagship tiers.
+- **Particle Behavior & Sparks**:
+  - Re-tuned `drawMoltenBurst` with a smoother alpha curve (`Math.pow(1 - p, 1.5)`) and expanded the gradient radius.
+  - Constrained the burst `fillRect` strictly to its bounding box `(x - gRad, y - gRad, gRad * 2, gRad * 2)` to adhere to GPU overdraw rules.
+  - Added simulated drag physics to `drawDroplet` (`drag = 1.0 - (p * 0.4)`) and increased the base gravity for splatters to give particles a heavier, more realistic physical weight.
+- **Card Shake Motion Quality**: Updated the Framer Motion `sequence` for the grip/shake phase. Shifted from rigid linear X-axis shakes to a more organic combined X, Y, and rotation path (`x: [-6, 6...], y: [-2, 2...], rotateZ: [-1.2, 1.2...]`).
+- **Environmental Lighting**: Added a pulsing ambient environmental glow behind the card on the background canvas during the approach and hold phases to better integrate the card with the scene lighting.
 
-**PR Summary:**
+Visual Verification Requirements Met:
+- Front and back artwork remain strictly unchanged.
+- Audio scheduling and Howler.js assets remain strictly unchanged.
+- All non-visual functionality (tier logic, random generation, storage) is perfectly preserved.
 
-TASK GROUP
-audio | Restore missing audio playback in the Standard lucky card reveal.
-
-LIBRARY CONSULTATION REPORT
-None | N/A | USED: NO | USEFUL: NO | No libraries were required; this is a pure Web Audio API timing bug.
-
-ROUTED JULES/GEMINI DOCUMENT REPORT
-.jules/audio.md | USED: YES | USEFUL: YES | Guided the process of restoring the Web Audio timing sequence without redesigning the sound system.
-
-REPOSITORY COMPONENT REPORT
-app/lucky-card-reveal.js | USED: YES | USEFUL: YES | Located and repaired the missing `webAudioOriginRef.current` assignment that prevented Standard audio events from playing.
-
-495 MB BUILD CAP
-FOLLOWED: YES | ACTUAL BUILD SIZE: <495 MB | IF CAP REACHED: N/A
-
-VERIFICATION REPORT
-./jules-verify.sh | PASS | Build checks and typescript checks passed successfully without introducing any regressions or typing errors.
-
-FINAL RECONCILIATION
-app/lucky-card-reveal.js
-
-USEFUL RESULT: YES
+Build size is confirmed within the 495MB safety limit.
