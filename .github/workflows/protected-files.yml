@@ -38,7 +38,7 @@ jobs:
             ".github/workflows/refresh-docs.yml"
             "scripts/refresh-docs.js"
           )
-          mapfile -t changed_files < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          mapfile -t changed_files < <(git diff --name-only --no-renames "$BASE_SHA" "$HEAD_SHA")
           protected_changed=()
           found=0
           for file in "${changed_files[@]}"; do
