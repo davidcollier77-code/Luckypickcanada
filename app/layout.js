@@ -67,7 +67,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className="m-0 p-0">
-        <div className="fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
+        <div className="homepage-background-foundation fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
         </div>
         <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0 flex flex-col min-h-screen">
           <div className="flex-grow">
