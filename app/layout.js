@@ -43,6 +43,13 @@ export const viewport = {
   initialScale: 1,
 };
 
+/**
+ * Renders the root HTML document with shared styles, background, and footer.
+ *
+ * @param {Object} props - The root layout props.
+ * @param {import('react').ReactNode} props.children - The active route's content.
+ * @returns {import('react').ReactElement} The document wrapping the route content.
+ */
 export default function RootLayout({ children }) {
   return (
     <html lang="en-CA" className="m-0 p-0">
