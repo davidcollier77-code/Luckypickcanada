@@ -1,3 +1,10 @@
+## 2026-09-27 — Documentation Refresh Symlink Compatibility Repair
+
+- Verified run `36308236510` failed in `scripts/refresh-docs.js` because the updater rejected an intentional `.docs/` symlink while cleaning stale temp files.
+- Verified current `main` contains 90 symlinked documentation snapshot files under `.docs/`, and the updater itself creates these links for shared library snapshots.
+- Repaired `scripts/refresh-docs.js` so final-path symlinks are allowed only when their fully resolved target remains inside `.docs/`; intermediate symlink traversal and escaping targets remain blocked.
+- Verification completed: branch diff is limited to the updater script, and a synthetic filesystem test confirmed safe internal symlink acceptance plus rejection of an escaping symlink.
+- Final GitHub Actions refresh run is intentionally deferred to the user-triggered post-merge verification.
 ## 2026-09-26 — Standard Final Reveal Audio Texture Pass
 
 - Added four nonuniform, low-gain electrical flicker bursts during the Standard final discharge to match the small plasma/spark activity visible in the supplied capture.

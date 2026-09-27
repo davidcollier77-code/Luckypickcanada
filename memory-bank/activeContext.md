@@ -1,3 +1,12 @@
+## 2026-09-27 — Documentation Refresh Symlink Compatibility Repair
+
+- Verified the documentation refresh failure on run 36308236510: `scripts/refresh-docs.js` failed during `cleanupStaleTempFiles()` with `Documentation paths must not traverse symbolic links.`
+- Verified the repository currently contains 90 intentional `.docs/` symlinked documentation snapshots used to deduplicate library guidance across task groups.
+- Traced the regression to the 2026-09-26 security hardening change `fix(security): reject symlinked documentation paths`, which applied a blanket symlink rejection to paths the updater itself intentionally creates and reads.
+- Implemented the minimal repair in `scripts/refresh-docs.js`: a final-path documentation symlink is permitted only when its fully resolved target remains inside `.docs/`; symlink traversal through an intermediate directory and symlinks resolving outside `.docs/` remain rejected.
+- Verification: branch diff contains only `scripts/refresh-docs.js`; a synthetic filesystem regression test passed for both an internal final symlink and an escaping symlink.
+- Functional GitHub Actions verification remains pending until the repaired workflow is manually triggered after merge.
+
 ## 2026-09-26 — Standard Final Reveal Audio Texture Pass
 
 - Implemented a focused final-hit texture repair in `app/lucky-card-reveal.js` after reviewing the supplied Standard-tier capture.
