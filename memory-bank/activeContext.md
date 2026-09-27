@@ -97,11 +97,13 @@
 - Preserved already-current packages including @playwright/test ^1.63.0, sonner ^2.0.8, stylelint ^17.15.0, stylelint-config-standard ^40.0.0, tailwindcss 4.2.4, and wrangler 4.141.0.
 - Updated pnpm-lock.yaml only for the authorized dependency graph and corresponding peer/snapshot references; stale 1.62.1-era Playwright records, Prettier 3.9.6, React Hook Form 7.87.0, and Tailwind Merge 3.6.0 records were removed.
 - Repository toolchain remains pnpm@10.30.3 / Node 22.x.
-- GitHub Actions validation run 36315064397 passed: frozen pnpm install, Next.js production build, OpenNext Cloudflare build, compiled Tailwind verification, Worker/assets checks, Wrangler build validation, and clean Git status.
-- GitHub protected-file workflow run 36315063676 passed for the authorized package.json/pnpm-lock.yaml changes.
-- Test-suite command pnpm test was not executed because the repository's PR validation workflow does not run it and the local execution environment cannot reach GitHub to clone the branch.
-- The AGENTS.md 495 MB build-size measurement was not provided by the existing workflow, so no unsupported size claim is made.
-- No application source code, audio, visuals/VFX, database, authentication, payment, deployment workflow, or secrets were changed.
+- GitHub Actions validation run 36315064397 passed the earlier frozen-install/build pipeline; final verification run 36315879187 additionally ran pnpm install with pnpm 10.30.3, pnpm test, the production builds, the explicit AGENTS.md 495 MB size measurement, and Wrangler validation.
+- The pnpm 10.30.3 regeneration step produced no pnpm-lock.yaml diff, demonstrating that the committed lockfile is already canonical for the declared package.json dependency state; no manual lockfile rewrite remains necessary.
+- Final measured build outputs from run 36315879187: .next = 291 MiB / 284,734,594 bytes; .open-next = 96 MiB / 85,030,507 bytes. Both are below the 495 MB hard limit, leaving 204 MiB and 399 MiB margins respectively and therefore remaining safely below GitHub's 500 MB platform maximum.
+- GitHub protected-file workflow run 36315284894 passed for the authorized package.json/pnpm-lock.yaml changes.
+- pnpm test passed.
+- No application source code, audio, visuals/VFX, database, authentication, payment, deployment behavior, or secrets were changed.
+- A temporary verification workflow was used only to execute the missing pnpm regeneration/test/build/size checks and was removed before finalization.
 - Non-rate-limit failures still terminate immediately; recognized rate-limit responses proceed to bounded backoff.
 - Production verification remains pending.
 
