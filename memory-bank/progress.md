@@ -186,3 +186,10 @@
 - Updated `package.json` to pin `@opennextjs/cloudflare` at 1.20.6 and updated `pnpm-lock.yaml` to the matching OpenNext Cloudflare 1.20.6 / OpenNext AWS 4.1.4 graph.
 - PR #1280 validation run 553 passed all repository checks without deployment.
 - Final verification confirmed the Next.js build, OpenNext Cloudflare build, Tailwind compilation, `.open-next` worker/assets outputs, Wrangler build validation, and Git status all passed.
+
+
+## 2026-09-27 — Tailwind CSS 4.2.4 migration verification
+- Final lockfile is intentionally constrained to the Tailwind 4.2.4 dependency graph; unrelated `latest`/peer refreshes were rejected.
+- Final validation passed with the frozen lockfile and the repository's normal PR CI.
+- Verified build sizes: `.next` 291 MB; `.open-next` 96 MB.
+- Temporary verification workflow was removed before finalization.
