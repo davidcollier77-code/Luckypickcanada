@@ -1,0 +1,76 @@
+name: Protected File Changes
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  protected-files:
+    name: Check protected files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect protected-file changes
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          protected_files=(
+            "next.config.mjs"
+            "package.json"
+            "pnpm-lock.yaml"
+            "wrangler.jsonc"
+            "tailwind.config.js"
+            "postcss.config.cjs"
+            "app/globals.css"
+            "middleware.ts"
+            ".github/workflows/deploy-open-next.yml"
+            ".github/workflows/validate-open-next-repair.yml"
+            ".github/workflows/refresh-docs.yml"
+            "scripts/refresh-docs.js"
+          )
+          mapfile -t changed_files < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
+          protected_changed=()
+          found=0
+          for file in "${changed_files[@]}"; do
+            for protected in "${protected_files[@]}"; do
+              if [[ "$file" == "$protected" ]]; then
+                protected_changed+=("$file")
+                found=1
+                break
+              fi
+            done
+          done
+
+          if [ "$found" -eq 0 ]; then
+            echo "## Protected File Check" >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo "✅ No protected files were changed." >> "$GITHUB_STEP_SUMMARY"
+            echo "No protected files changed."
+            exit 0
+          fi
+
+          echo "## 🔴 Protected File Modification Detected" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo "The following protected file(s) were changed:" >> "$GITHUB_STEP_SUMMARY"
+          for file in "${protected_changed[@]}"; do
+            echo "- $file" >> "$GITHUB_STEP_SUMMARY"
+          done
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo "**Explicit authorization is required before this protected change may be merged.**" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo "The repository Code Owner must review and approve this PR after confirming that these changes are authorized." >> "$GITHUB_STEP_SUMMARY"
+          echo "::error title=Protected file modification detected::Explicit authorization is required before the protected change can be merged."
+          for file in "${protected_changed[@]}"; do
+            echo "::error file=$file::Protected file changed: $file"
+          done
+          exit 1
