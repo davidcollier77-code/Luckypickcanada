@@ -1,6 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+/**
+ * Renders the homepage's primary navigation, logo, heading, and introduction.
+ *
+ * @returns {import('react').ReactElement} The homepage hero header.
+ */
 export default function Hero() {
   return (
     <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">

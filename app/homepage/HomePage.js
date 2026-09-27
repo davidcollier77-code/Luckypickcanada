@@ -26,6 +26,12 @@ function SectionHeading({ eyebrow, id, title, children }) {
   );
 }
 
+/**
+ * Renders the interactive homepage content and animated star canvas.
+ * Manages visit counts, checkout and reveal modals, and suggestion feedback.
+ *
+ * @returns {import('react').ReactElement} The homepage content and modal elements.
+ */
 export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
   const [luckyReveal, setLuckyReveal] = useState(null);

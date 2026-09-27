@@ -6,6 +6,12 @@ export const dynamic = 'force-static';
 
 import Link from 'next/link';
 
+/**
+ * Composes the static homepage with its sky backdrop, hero, interactive content,
+ * FAQ, and introductory sections.
+ *
+ * @returns {import('react').ReactElement} The complete homepage.
+ */
 export default function Page() {
   return (
     <>
