@@ -207,3 +207,10 @@
 - Final validation passed with the frozen lockfile and the repository's normal PR CI.
 - Verified build sizes: `.next` 291 MB; `.open-next` 96 MB.
 - Temporary verification workflow was removed before finalization.
+
+
+## 2026-09-27 — Premium/Flagship Web Audio Rename Repair
+
+- Fixed the incomplete `standardWebAudioReady` → `webAudioReady` rename in `app/lucky-card-reveal.js` from the Q follow-up commit on PR #1285.
+- Updated the Web Audio unavailable fallback comment to describe recognized-tier fallback rather than Standard-only behavior.
+- Scope remains limited to the existing all-tier Web Audio extension; no new assets, visual/VFX, timing, or tier-count changes.
