@@ -45,6 +45,24 @@ jobs:
           declare -A seen=()
           TAB=$(printf '\t')
 
+          api_output="$(mktemp)"
+          trap 'rm -f "$api_output"' EXIT
+
+          if ! gh api --paginate \
+            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
+            --jq '.[] | [.filename, (.previous_filename // "")] | @tsv' \
+            >"$api_output"; then
+            echo "::error::Failed to query the GitHub API for pull request files."
+            {
+              echo "## 🔴 Protected File Detection Failed"
+              echo
+              echo "**The GitHub API request used to inspect changed files failed.**"
+              echo
+              echo "Detection is failing closed. Protected-file authorization cannot be skipped because the changed-file list could not be verified."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
           while IFS="$TAB" read -r new_path old_path; do
             for candidate in "$new_path" "$old_path"; do
               [[ -z "$candidate" ]] && continue
@@ -57,11 +75,7 @@ jobs:
                 fi
               done
             done
-          done < <(
-            gh api --paginate \
-              "repos/${REPOSITORY}/pulls/${PR_NUMBER}/files?per_page=100" \
-              --jq '.[] | [.filename, (.previous_filename // "")] | @tsv'
-          )
+          done < "$api_output"
 
           found=false
           if ((${#protected_changed[@]} > 0)); then
