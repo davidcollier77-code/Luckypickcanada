@@ -26,10 +26,8 @@ jobs:
         with:
           version: 10.30.3
 
-      - name: Install dependencies and generate lockfile
-        run: |
-          pnpm update --no-save --lockfile-only tailwindcss@4.2.4 @tailwindcss/postcss@4.2.4
-          pnpm install --frozen-lockfile
+      - name: Install dependencies with frozen lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Verify Tailwind package graph
         run: |
@@ -101,16 +99,5 @@ jobs:
       - name: Wrangler build validation (no deploy)
         run: pnpm exec wrangler build --config ./wrangler.jsonc
 
-      - name: Commit generated lockfile
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- pnpm-lock.yaml; then
-            echo "pnpm-lock.yaml is already current"
-          else
-            git add pnpm-lock.yaml
-            git commit -m "chore: refresh pnpm lockfile for Tailwind 4.2.4"
-            git push origin HEAD:${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
-          fi
+      - name: Assert lockfile remains clean
+        run: git diff --exit-code -- pnpm-lock.yaml
