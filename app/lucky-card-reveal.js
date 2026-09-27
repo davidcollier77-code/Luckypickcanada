@@ -1691,6 +1691,28 @@ export default function LuckyCardReveal() {
     }
   };
 
+  // Neutral material polish applied at the presentation layer only.
+  // Existing card image assets, colors, artwork, and copy remain untouched.
+  const cardPolishFrameStyle = {
+    border: '1px solid rgba(255, 255, 255, 0.14)',
+    boxShadow:
+      '0 24px 48px rgba(0, 0, 0, 0.48), 0 8px 18px rgba(0, 0, 0, 0.30), inset 0 0 0 1px rgba(255, 255, 255, 0.08)',
+  };
+
+  const cardPolishEdgeStyle = {
+    pointerEvents: 'none',
+    borderRadius: 'inherit',
+    boxShadow:
+      'inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(0, 0, 0, 0.20), inset 0 0 18px rgba(0, 0, 0, 0.12)',
+  };
+
+  const cardPolishSheenStyle = {
+    pointerEvents: 'none',
+    borderRadius: 'inherit',
+    background:
+      'linear-gradient(118deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 22%, rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.045) 100%)',
+  };
+
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-2 md:py-4 space-y-3 md:space-y-6 select-none relative z-10">
 
@@ -1765,8 +1787,13 @@ export default function LuckyCardReveal() {
                 className="absolute inset-0"
                 style={{ backfaceVisibility: 'hidden' }}
               >
-                <div className="absolute inset-0 bg-transparent rounded-2xl overflow-hidden shadow-2xl border-none">
+                <div
+                  className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
+                  style={cardPolishFrameStyle}
+                >
                   <Image alt="Card Back Face" className="object-cover rounded-2xl" fill priority quality={100} src="/IMG_20260728_220305_112042.png"/>
+                  <div className="absolute inset-0" style={cardPolishSheenStyle} />
+                  <div className="absolute inset-0" style={cardPolishEdgeStyle} />
                 </div>
               </div>
 
@@ -1778,7 +1805,10 @@ export default function LuckyCardReveal() {
                   transform: 'rotateY(180deg)',
                 }}
               >
-                <div className="absolute inset-0 bg-transparent rounded-2xl overflow-hidden shadow-2xl border-none">
+                <div
+                  className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
+                  style={cardPolishFrameStyle}
+                >
                   {selectedCard && selectedCard.image && !imageError ? (
                     <Image alt={selectedCard.title || 'Revealed Card'} className="object-cover rounded-2xl" fill onError={() => setImageError(true)} priority quality={100} src={selectedCard.image} />
                   ) : (
@@ -1786,6 +1816,8 @@ export default function LuckyCardReveal() {
                       Lucky Pick 🍁 Canada.ca
                     </div>
                   )}
+                  <div className="absolute inset-0" style={cardPolishSheenStyle} />
+                  <div className="absolute inset-0" style={cardPolishEdgeStyle} />
                 </div>
               </div>
             </div>
