@@ -27,7 +27,8 @@ jobs:
           version: 10.30.3
 
       - name: Install dependencies and generate lockfile
-        run: pnpm update --no-save --lockfile-only tailwindcss@4.2.4 @tailwindcss/postcss@4.2.4
+        run: |
+          pnpm update --no-save --lockfile-only tailwindcss@4.2.4 @tailwindcss/postcss@4.2.4
           pnpm install --frozen-lockfile
 
       - name: Verify Tailwind package graph
