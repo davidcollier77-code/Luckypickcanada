@@ -1,3 +1,15 @@
+## 2026-09-27 — Controlled Dependency Refresh (PR #1286)
+
+- Authorized a controlled refresh of exactly five outdated devDependencies: prettier 3.9.6 → 3.9.9, react-hook-form 7.87.0 → 7.89.0, tailwind-merge 3.6.0 → 3.7.0, playwright 1.62.1 → 1.63.0, and playwright-chromium 1.62.1 → 1.63.0.
+- Preserved already-current packages, including @playwright/test 1.63.0, Sonner 2.0.8, Stylelint 17.15.0, Stylelint Config Standard 40.0.0, Tailwind CSS 4.2.4, and Wrangler 4.141.0.
+- Reconciled package.json and pnpm-lock.yaml; peer/snapshot references for react-hook-form and prettier were aligned with the upgraded versions.
+- Final verification run 36315879187 ran pnpm install with pnpm 10.30.3 and produced no pnpm-lock.yaml diff, confirming the committed lockfile is canonical for the declared package.json dependency state.
+- Final verification run 36315879187 passed pnpm test, the Next.js production build, the OpenNext Cloudflare build, the explicit AGENTS.md 495 MB build-size measurement, Wrangler validation, and final diff checks.
+- Measured build outputs: .next = 291 MiB (284,734,594 bytes) and .open-next = 96 MiB (85,030,507 bytes). Both are below the 495 MB hard limit; margins to 495 MB are 204 MiB and 399 MiB respectively.
+- Protected-file authorization workflow run 36315284894 passed.
+- Final scope remained limited to the authorized dependency changes plus required memory-bank documentation. No deployment or merge was performed during verification.
+- A temporary verification workflow was used only to execute the missing regeneration/test/build/size checks and was removed before finalization.
+
 ## 2026-09-27 — Premium/Flagship Web Audio Reveal Extension
 
 - Generalized the verified Standard-tier Web Audio initialization gate so Premium and Flagship also create/resume the same AudioContext and decode the same Standard audio buffers on the user interaction.
