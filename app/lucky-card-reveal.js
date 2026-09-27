@@ -1675,7 +1675,7 @@ export default function LuckyCardReveal() {
             type="button"
             onClick={triggerCardDraw}
             disabled={isGenerating}
-            className="mt-2 px-6 py-2.5 rounded-full font-bold text-base shadow-lg transition-all bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 active:scale-95"
+            className="mt-2 px-6 py-2.5 rounded-full font-bold text-base shadow-lg transition-all bg-linear-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 active:scale-95"
           >
             {isGenerating ? 'Revealing...' : "Reveal Today's Luck"}
           </button>
@@ -1735,7 +1735,7 @@ export default function LuckyCardReveal() {
         <CollectionBinder />
         <Link
           href="/"
-          className="flex-1 min-w-0 inline-flex items-center justify-center min-h-9 px-3 py-2 rounded-xl bg-white/5 backdrop-blur-sm border border-white/15 text-white/80 text-xs font-semibold tracking-wide whitespace-nowrap shadow-sm hover:bg-white/10 hover:border-white/25 hover:text-white active:scale-[0.98] transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+          className="flex-1 min-w-0 inline-flex items-center justify-center min-h-9 px-3 py-2 rounded-xl bg-white/5 backdrop-blur-sm border border-white/15 text-white/80 text-xs font-semibold tracking-wide whitespace-nowrap shadow-xs hover:bg-white/10 hover:border-white/25 hover:text-white active:scale-[0.98] transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
         >
           Return to Home
         </Link>
