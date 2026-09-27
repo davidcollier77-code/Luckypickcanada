@@ -124,3 +124,15 @@
 - Preserved the existing deployment behavior exactly: cancel-in-progress: false and bounded 60/120/180/300-second retry delays remain unchanged.
 - No application runtime, audio, visual, database, authentication, payment, or secret behavior was changed.
 - Verification requires final diff inspection and workflow/config syntax checks.
+
+
+## 2026-09-27 — OpenNext Cloudflare 1.20.6 Dependency Update
+
+- Branch: `chore/opennext-1-20-6`; PR #1280.
+- Verified `main` baseline at `fa4aa7772ea31cc15d59a7d2aafc3cd3cad899fc`, including the merged Wrangler 4.141.0 update.
+- Verified the repository was using `@opennextjs/cloudflare` 1.20.2 in the lockfile with Next.js 16.3.6 and Wrangler 4.141.0.
+- Verified upstream OpenNext Cloudflare 1.20.6 publishes peer support for Next.js `>=16.3.3` and Wrangler 4.x, and moves the OpenNext AWS core to 4.1.4.
+- Pinned `@opennextjs/cloudflare` to 1.20.6 and updated only the corresponding lockfile graph, including the OpenNext AWS core and package integrity records.
+- Preserved application code, OpenNext configuration, Wrangler configuration, Tailwind/PostCSS configuration, deployment workflow, database, authentication, payment, audio, visuals, and secrets.
+- Validation run 553 passed: frozen pnpm install, Next.js production build, OpenNext Cloudflare build, compiled Tailwind verification, worker/assets checks, Wrangler build validation, and Git status.
+- No production deployment was triggered by PR #1280.
