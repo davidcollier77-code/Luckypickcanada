@@ -36,7 +36,7 @@
   "devDependencies": {
     "@axe-core/react": "^4.13.0",
     "@hookform/resolvers": "^5.9.1",
-    "@opennextjs/cloudflare": "latest",
+    "@opennextjs/cloudflare": "1.20.6",
     "@playwright/test": "^1.63.0",
     "@sentry/nextjs": "^10.73.0",
     "@testing-library/jest-dom": "^7.0.1",
