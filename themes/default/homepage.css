@@ -496,10 +496,14 @@
 }
 
 body:has(.homepage-sky-backdrop) {
-  background:
-    linear-gradient(180deg, #02050a 0%, #03070d 54%, #010307 100%) !important;
+  background: transparent !important;
 }
 
+body:has(.homepage-sky-backdrop) .homepage-background-foundation {
+  background-color: transparent !important;
+}
+
+/* Keep the global dark foundation intact on every non-homepage route. */
 body:has(.homepage-sky-backdrop)::before,
 body:has(.homepage-sky-backdrop)::after {
   content: none !important;

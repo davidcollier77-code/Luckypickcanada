@@ -1,3 +1,12 @@
+## 2026-09-27 — Homepage Sky Layer Repair (In Progress)
+
+- Verified the deployed homepage retained a full-screen `bg-slate-950` foundation while the photographic homepage backdrop remained at `z-index: -30`.
+- Verified the existing `HomePage.js` canvas already provides ambient star twinkle and randomized shooting-star effects; those effects are intentionally preserved unchanged.
+- Implemented a scoped background-layer repair on branch `fix/homepage-sky-background-layer`: the legacy global background layer is now identifiable as `.homepage-background-foundation`, and becomes transparent only when the homepage photographic backdrop is present.
+- Scoped the homepage body background to transparent while retaining the legacy dark foundation on non-homepage routes.
+- No image assets were deleted or replaced; no homepage content, card artwork, audio, interactions, or other functionality was changed.
+- Verification of the production build and runtime rendering remains pending.
+
 ## 2026-09-27 — Homepage Cinematic Night-Sky + Visual Polish (PR #1290)
 
 - Replaced the homepage's synthetic four-layer aurora background foundation with a fixed, sky-only photographic Milky Way backdrop selected for an overhead/zenith-style composition with no landscape or horizon.
