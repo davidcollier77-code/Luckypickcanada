@@ -1,0 +1,13 @@
+/.github/CODEOWNERS @davidcollier77-code
+/next.config.mjs @davidcollier77-code
+/package.json @davidcollier77-code
+/pnpm-lock.yaml @davidcollier77-code
+/wrangler.jsonc @davidcollier77-code
+/tailwind.config.js @davidcollier77-code
+/postcss.config.cjs @davidcollier77-code
+/app/globals.css @davidcollier77-code
+/middleware.ts @davidcollier77-code
+/.github/workflows/deploy-open-next.yml @davidcollier77-code
+/.github/workflows/validate-open-next-repair.yml @davidcollier77-code
+/.github/workflows/refresh-docs.yml @davidcollier77-code
+/scripts/refresh-docs.js @davidcollier77-code
