@@ -35,11 +35,11 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const lock = fs.readFileSync('pnpm-lock.yaml', 'utf8');
-          if (!/tailwindcss@4\\.2\\.4/.test(lock)) {
+          if (!lock.includes('tailwindcss@4.2.4')) {
             console.error('Tailwind 4.2.4 is not present in pnpm-lock.yaml');
             process.exit(1);
           }
-          if (!/@tailwindcss\\/postcss@4\\.2\\.4/.test(lock)) {
+          if (!lock.includes('@tailwindcss/postcss@4.2.4')) {
             console.error('@tailwindcss/postcss 4.2.4 is not present in pnpm-lock.yaml');
             process.exit(1);
           }
