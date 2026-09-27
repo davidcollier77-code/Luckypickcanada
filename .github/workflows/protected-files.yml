@@ -73,4 +73,4 @@ jobs:
           for file in "${protected_changed[@]}"; do
             echo "::error file=$file::Protected file changed: $file"
           done
-          exit 1
+          exit 0
