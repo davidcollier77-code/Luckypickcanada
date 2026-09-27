@@ -85,6 +85,21 @@
 - The first rate-limit backoff implementation was merged and executed, but GitHub Actions' default `-e` behavior terminated the publish step immediately when Wrangler returned 429, before the wrapper could inspect the exit status.
 - Verified the build and OpenNext stages still pass on the merged repair.
 - Corrected the wrapper to temporarily disable `errexit` only around the Wrangler invocation, capture its status/output, then restore `errexit` before applying the rate-limit classification.
+## 2026-09-27 — Controlled Dependency Refresh (PR #1286)
+
+- Branch: `chore/dependency-refresh-sept-2026`
+- Base: current `main` at `13ad77092411db72c7e477a3b61d96d65c8c2c64`.
+- Verified package.json already contains all target dependency versions for the authorized refresh:
+  - prettier: ^3.9.9 (line 69)
+  - react-hook-form: ^7.89.0 (line 70)
+  - tailwind-merge: ^3.7.0 (line 74)
+  - playwright: ^1.63.0 (line 67)
+  - playwright-chromium: ^1.63.0 (line 68)
+- Verified already-current packages remain unchanged: @playwright/test ^1.63.0, sonner ^2.0.8, stylelint ^17.15.0, stylelint-config-standard ^40.0.0, tailwindcss 4.2.4, wrangler 4.141.0.
+- Verified packageManager remains pnpm@10.30.3.
+- Scope is locked to devDependencies only; no production dependencies, source code, audio, visuals, database, authentication, payment, deployment configuration, or secrets changed.
+- Verification pending: pnpm install to regenerate pnpm-lock.yaml, pnpm test, pnpm build with size measurement < 495 MB, final diff audit.
+
 - Non-rate-limit failures still terminate immediately; recognized rate-limit responses proceed to bounded backoff.
 - Production verification remains pending.
 
