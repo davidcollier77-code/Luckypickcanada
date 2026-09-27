@@ -20,7 +20,17 @@ function resolveDocsPath(...segments) {
   const relativePath = path.relative(DOCS_BASE_DIR, resolved);
   for (const segment of relativePath.split(path.sep).filter(Boolean)) {
     currentPath = path.resolve(currentPath, segment);
-    if (fs.existsSync(currentPath) && fs.lstatSync(currentPath).isSymbolicLink()) {
+    let currentStat;
+    try {
+      currentStat = fs.lstatSync(currentPath);
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        continue;
+      }
+      throw e;
+    }
+
+    if (currentStat.isSymbolicLink()) {
       // Symlinked documentation files are intentional deduplication links created by this updater.
       // Permit only a final-path symlink whose fully-resolved target remains inside .docs.
       if (currentPath !== resolved) {
