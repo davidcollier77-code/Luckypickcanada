@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - chore/tailwind-4-2-4
+  pull_request:
 
 permissions:
   contents: read
