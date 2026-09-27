@@ -141,7 +141,7 @@ export default function LuckyCardReveal() {
   // Howler play() returns a unique sound id for each one-shot, so repeated hits can
   // overlap safely without introducing a persistent reveal-owned audio bed.
   useEffect(() => {
-    // Legacy reveal assets are intentionally retained for Premium/Flagship.
+    // Legacy reveal assets are retained only as a compatibility fallback for unexpected tier states.
     audioRefs.current.beamApproach = new Howl({
       src: ['/sounds/mixkit-cinematic-whoosh.mp3'],
       volume: 0.42,
@@ -1015,7 +1015,7 @@ export default function LuckyCardReveal() {
 
     let standardWebAudioReady = false;
 
-    if (card.tier === 'standard') {
+    if (TIER_HITS[card.tier]) {
       const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
 
       if (AudioContextCtor) {
@@ -1244,7 +1244,7 @@ export default function LuckyCardReveal() {
     const finalFlipStartForAudio = finalHitStartTimeForAudio + FINAL_FLIP_TIME;
     const finalFlipEndForAudio = finalFlipStartForAudio + FINAL_FLIP_DURATION;
 
-    if (card.tier === 'standard' && standardWebAudioReady) {
+    if (standardWebAudioReady) {
       if (audioCtxRef.current) {
         webAudioOriginRef.current = audioCtxRef.current.currentTime;
       }
@@ -1376,7 +1376,7 @@ export default function LuckyCardReveal() {
           scheduleWebAudio('electricalArc', postFlipStart, 0.30, 1.8, 0, 2.0);
         }
       }
-    } else if (card.tier === 'standard') {
+    } else if (TIER_HITS[card.tier]) {
       // Standard fallback uses the same fresh Standard-only source palette via Howler.
       for (let i = 0; i < totalHitsForAudio; i += 1) {
         const hitStart = i * HIT_DURATION;
