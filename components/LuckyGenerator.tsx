@@ -217,7 +217,7 @@ function ResonanceButton({ onClick, isLoading }: { onClick: () => void; isLoadin
       onClick={onClick}
       disabled={isLoading}
       aria-disabled={isLoading}
-      className={`btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 ${
+      className={`btn-pulse inline-flex items-center justify-center rounded-full border border-white/15 bg-linear-to-br from-fuchsia-500/80 via-purple-500/80 to-cyan-400/80 px-8 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-md transition-transform duration-150 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 ${
         isLoading ? 'opacity-75 cursor-not-allowed' : 'active:scale-95'
       }`}
     >
@@ -1172,8 +1172,8 @@ export default function LuckyGenerator() {
                 
                 <div className={`tabular-nums transition-all duration-300 ease-out flex flex-col items-center
                   ${impactFired 
-                    ? 'text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-cyan-50 scale-110 drop-shadow-[0_0_40px_rgba(255,255,255,1)] brightness-150'
-                    : 'text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-cyan-200/80 scale-100'}`}
+                    ? 'text-8xl font-bold text-transparent bg-clip-text bg-linear-to-b from-white via-white to-cyan-50 scale-110 drop-shadow-[0_0_40px_rgba(255,255,255,1)] brightness-150'
+                    : 'text-6xl font-bold text-transparent bg-clip-text bg-linear-to-b from-white to-cyan-200/80 scale-100'}`}
                 >
                   {/* Tier name is intentionally hidden during reveal, only shown in locked phase */}
                   <span ref={scoreTextRef}>0%</span>
@@ -1187,7 +1187,7 @@ export default function LuckyGenerator() {
               <p className="text-xs uppercase tracking-[0.35em] text-fuchsia-200/80">
                 {tierName}
               </p>
-              <div className="text-7xl font-bold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-yellow-100 via-white to-cyan-200">
+              <div className="text-7xl font-bold tabular-nums text-transparent bg-clip-text bg-linear-to-b from-yellow-100 via-white to-cyan-200">
                 {score}%
               </div>
               {quoteIndex !== null && (

@@ -136,3 +136,12 @@
 - Preserved application code, OpenNext configuration, Wrangler configuration, Tailwind/PostCSS configuration, deployment workflow, database, authentication, payment, audio, visuals, and secrets.
 - Validation run 553 passed: frozen pnpm install, Next.js production build, OpenNext Cloudflare build, compiled Tailwind verification, worker/assets checks, Wrangler build validation, and Git status.
 - No production deployment was triggered by PR #1280.
+
+
+## 2026-09-27 — Tailwind CSS 4.2.4 migration
+- Isolated migration prepared on `chore/tailwind-4-2-4` using the AGENTS.md deep-dive governance path.
+- Migrated Tailwind CSS from the resolved 3.4.19 line to 4.2.4 and added `@tailwindcss/postcss` 4.2.4.
+- Preserved the existing JavaScript Tailwind configuration with `@config "../tailwind.config.js"` and replaced the v3 PostCSS integration with `@tailwindcss/postcss`.
+- Updated the documented v4 utility renames used by the app (`bg-gradient-to-*` → `bg-linear-to-*`, `shadow-sm` → `shadow-xs`).
+- Rejected broad and resolver-refreshed lockfiles because they changed unrelated dependencies; final lockfile was constrained to the Tailwind 4.2.4 dependency closure while preserving the main baseline ordering/versions.
+- Verified frozen install, Next.js production build, OpenNext Cloudflare build, compiled Tailwind CSS, OpenNext artifacts, build-size limits, Wrangler no-deploy validation, and clean lockfile state. No production deployment or merge performed.
