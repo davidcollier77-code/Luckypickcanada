@@ -372,12 +372,21 @@ export default function LuckyCardReveal() {
     const cp2Y = contactY - Math.cos(hitAngle) * cpDistance * tangentDirection + (Math.random() - 0.5) * 15;
 
     const drawCurve = (ctx, drawFn) => {
-      // Outer glow (more color, more bloom)
+      // Deep ambient glow
+      ctx.beginPath();
+      ctx.moveTo(originX, originY);
+      drawFn(ctx);
+      ctx.lineWidth = width * 6.0;
+      ctx.strokeStyle = color.replace(/,[\s\d.]+\)$/, ', 0.15)');
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // Outer glow
       ctx.beginPath();
       ctx.moveTo(originX, originY);
       drawFn(ctx);
       ctx.lineWidth = width * 3.5;
-      ctx.strokeStyle = color.replace(/,[\s\d.]+\)$/, ', 0.4)');
+      ctx.strokeStyle = color.replace(/,[\s\d.]+\)$/, ', 0.45)');
       ctx.lineCap = 'round';
       ctx.stroke();
 
@@ -385,8 +394,8 @@ export default function LuckyCardReveal() {
       ctx.beginPath();
       ctx.moveTo(originX, originY);
       drawFn(ctx);
-      ctx.lineWidth = width * 2.0;
-      ctx.strokeStyle = color.replace(/,[\s\d.]+\)$/, ', 0.85)');
+      ctx.lineWidth = width * 1.8;
+      ctx.strokeStyle = color.replace(/,[\s\d.]+\)$/, ', 0.9)');
       ctx.lineCap = 'round';
       ctx.stroke();
 
@@ -531,9 +540,9 @@ export default function LuckyCardReveal() {
     const { cx, cy, w: cardW, h: cardH } = metrics;
     const halfW = cardW / 2;
     const halfH = cardH / 2;
-    const tierRgb = tier === 'premium' ? '218, 224, 232' : tier === 'flagship' ? '238, 166, 50' : '201, 112, 52';
-    const tierHot = tier === 'premium' ? '255, 255, 255' : tier === 'flagship' ? '255, 244, 194' : '255, 226, 184';
-    const tierDeep = tier === 'premium' ? '62, 70, 82' : tier === 'flagship' ? '104, 54, 8' : '96, 40, 14';
+    const tierRgb = tier === 'premium' ? '200, 204, 208' : tier === 'flagship' ? '238, 166, 50' : '224, 148, 64';
+    const tierHot = tier === 'premium' ? '240, 242, 245' : tier === 'flagship' ? '255, 244, 194' : '255, 230, 196';
+    const tierDeep = tier === 'premium' ? '70, 74, 80' : tier === 'flagship' ? '104, 54, 8' : '106, 50, 18';
     const electricRgb = '46, 166, 255';
     const electricHot = '226, 249, 255';
     const rgba = (rgb, alpha) => 'rgba(' + rgb + ', ' + Math.max(0, alpha) + ')';
@@ -672,21 +681,24 @@ export default function LuckyCardReveal() {
       const popScale = 1.0 + Math.sin(p * Math.PI) * 0.4;
 
       const rad = burst.radius * Math.sin(p * Math.PI) * popScale;
-      const a = moltenAlpha * burst.opacity * (1 - p) * (0.8 + 0.2 * Math.sin(t * 50 + burst.phase));
+      // Smoother alpha curve for burst
+      const a = moltenAlpha * burst.opacity * Math.pow(1 - p, 1.5) * (0.85 + 0.15 * Math.sin(t * 50 + burst.phase));
       if (a <= 0.01) return;
 
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
 
       // Keep rect localized
-      const gRad = rad * 2.8;
+      const gRad = rad * 3.2;
       const grad = ctx.createRadialGradient(x, y, 0, x, y, gRad);
-      grad.addColorStop(0, rgba(tierHot, a * 0.95));
-      grad.addColorStop(0.2, rgba(tierRgb, a * 0.7));
+      grad.addColorStop(0, rgba(tierHot, a));
+      grad.addColorStop(0.15, rgba(tierRgb, a * 0.8));
+      grad.addColorStop(0.5, rgba(tierDeep, a * 0.3));
       grad.addColorStop(1, rgba(tierRgb, 0));
 
       ctx.fillStyle = grad;
-      ctx.fillRect(x - gRad, y - gRad, gRad * 2, gRad * 2);
+      // Constrain fillRect to exactly the bounding box of the gradient (Exploration Rule)
+      ctx.fillRect(Math.floor(x - gRad), Math.floor(y - gRad), Math.ceil(gRad * 2), Math.ceil(gRad * 2));
       ctx.restore();
     };
     const drawDroplet = (drop, splatter = false) => {
@@ -700,8 +712,10 @@ export default function LuckyCardReveal() {
       const z = Math.max(0.1, 0.72 + drop.depth * 0.55 + zMotion);
       const projScale = splatter ? (1.5 / z) : 1;
 
-      const x = cx + (drop.x - cx) * projScale + drop.vx * p * (1/z);
-      const y = cy + (drop.y - cy) * projScale + drop.vy * p * (1/z) + drop.gravity * p * p * (1/z);
+      // Add slight drag for more realistic particle physics
+      const drag = 1.0 - (p * 0.4);
+      const x = cx + (drop.x - cx) * projScale + drop.vx * p * drag * (1/z);
+      const y = cy + (drop.y - cy) * projScale + drop.vy * p * drag * (1/z) + drop.gravity * p * p * (1/z);
 
       const size = Math.max(0.1, drop.size * (0.72 + z * 0.56) * projScale);
       const alpha = moltenAlpha * drop.brightness * vanish;
@@ -803,8 +817,8 @@ export default function LuckyCardReveal() {
     const colors = {
       blue: '14, 165, 233',
       pink: '217, 70, 239',
-      standard: '212, 136, 70', // Warm Bronze/Gold
-      premium: '180, 185, 195', // Pewter/Silver
+      standard: '224, 148, 64', // Richer Bronze/Gold
+      premium: '200, 204, 208', // True Pewter/Silver (less blue)
       flagship: '218, 165, 32', // Rich Gold/Antique-Gold
     };
 
@@ -837,6 +851,23 @@ export default function LuckyCardReveal() {
       const P_HOLD = 1.0;
       const P_SHAKE = 1.2;
       const P_RETRACT = 1.4; // up to 1.6 is idle handoff
+
+      // Draw ambient environmental glow behind the card on the background canvas
+      if (hitLocalTime > P_ENTER && hitLocalTime < P_RETRACT) {
+         const glowAlpha = Math.sin((hitLocalTime - P_ENTER) / (P_RETRACT - P_ENTER) * Math.PI) * 0.15;
+         if (glowAlpha > 0.01) {
+             bgCtx.save();
+             const envGlowRad = cardW * 1.5;
+             const envGlow = bgCtx.createRadialGradient(cx, cy, cardW * 0.3, cx, cy, envGlowRad);
+             envGlow.addColorStop(0, `rgba(${hitColor}, ${glowAlpha})`);
+             envGlow.addColorStop(0.5, `rgba(${hitColor}, ${glowAlpha * 0.4})`);
+             envGlow.addColorStop(1, `rgba(${hitColor}, 0)`);
+             bgCtx.fillStyle = envGlow;
+             bgCtx.globalCompositeOperation = 'screen';
+             bgCtx.fillRect(cx - envGlowRad, cy - envGlowRad, envGlowRad * 2, envGlowRad * 2);
+             bgCtx.restore();
+         }
+      }
 
       if (!isFinalHit) {
         if (hitLocalTime < P_RETRACT) {
@@ -887,6 +918,20 @@ export default function LuckyCardReveal() {
 
             // Secondary opposing beam
             drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, currentTargetY, radius + 15, approachProgress * 0.8, 4, `rgba(${hitColor}, ${alpha * 0.5})`, true, timestamp);
+
+            // Draw contact flash at the target point if it's currently wrapping/holding
+            if (showWrap && alpha > 0.1) {
+              fgCtx.save();
+              const flashRad = 60 + Math.random() * 20;
+              const flashGrad = fgCtx.createRadialGradient(currentTargetX, currentTargetY, 0, currentTargetX, currentTargetY, flashRad);
+              flashGrad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
+              flashGrad.addColorStop(0.2, `rgba(${hitColor}, ${alpha * 0.6})`);
+              flashGrad.addColorStop(1, `rgba(${hitColor}, 0)`);
+              fgCtx.fillStyle = flashGrad;
+              fgCtx.globalCompositeOperation = 'screen';
+              fgCtx.fillRect(currentTargetX - flashRad, currentTargetY - flashRad, flashRad * 2, flashRad * 2);
+              fgCtx.restore();
+            }
           }
         }
       } else {
@@ -953,6 +998,20 @@ export default function LuckyCardReveal() {
            // Secondary counter-wrap
            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 6 * intensityMult, `rgba(${hitColor}, ${alpha * 0.6})`, true, timestamp);
            drawContinuousBeam(bgCtx, fgCtx, originX, originY, currentTargetX, trackingY, radius + 20, approachProgress * 0.8, 2 * intensityMult, `rgba(255, 255, 255, ${alpha * 0.8})`, true, timestamp);
+
+           // Massive final contact flash
+           if (showWrap && alpha > 0.1) {
+              fgCtx.save();
+              const flashRad = (100 * intensityMult) + Math.random() * 40;
+              const flashGrad = fgCtx.createRadialGradient(currentTargetX, trackingY, 0, currentTargetX, trackingY, flashRad);
+              flashGrad.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+              flashGrad.addColorStop(0.3, `rgba(${hitColor}, ${alpha * 0.8})`);
+              flashGrad.addColorStop(1, `rgba(${hitColor}, 0)`);
+              fgCtx.fillStyle = flashGrad;
+              fgCtx.globalCompositeOperation = 'screen';
+              fgCtx.fillRect(currentTargetX - flashRad, trackingY - flashRad, flashRad * 2, flashRad * 2);
+              fgCtx.restore();
+           }
         } else {
 
            // AFTERGLOW / MOLTEN RUNOFF
@@ -1185,7 +1244,7 @@ export default function LuckyCardReveal() {
           y:startY,
           vx:Math.cos(angle)*outward+(Math.random()-0.5)*18,
           vy:Math.sin(angle)*outward*0.8-10+Math.random()*18,
-          gravity:18+Math.random()*38,
+          gravity:28+Math.random()*45, // Slightly heavier gravity for more realistic drop
           size:(foreground ? 2.4 : 1.1)+Math.random()*(foreground ? 2.1 : 2.4),
           depth:foreground ? 1.55 : 0.55+Math.random()*0.7,
           outwardZ: (foreground ? -1.2 : 0.8) * Math.random(), // Z-axis velocity
@@ -1584,7 +1643,7 @@ export default function LuckyCardReveal() {
         const fightDuration = P_SHAKE - P_WRAP;
         sequence.push([
             cardRef.current,
-            { x: [-8, 8, -6, 6, -8, 8, -4, 4, -2, 2, 0], rotateZ: [-1.5, 1.5, -1, 1, -1.5, 1.5, -0.5, 0.5, 0], filter: "brightness(1.2)" },
+            { x: [-6, 6, -5, 5, -7, 7, -4, 4, -2, 2, 0], y: [-2, 2, -1, 1, -2, 2, -1, 1, 0, 0, 0], rotateZ: [-1.2, 1.2, -0.8, 0.8, -1.5, 1.5, -0.5, 0.5, 0], filter: "brightness(1.2)" },
             { at: hitStart + P_WRAP, duration: fightDuration, ease: "linear" }
         ]);
 
