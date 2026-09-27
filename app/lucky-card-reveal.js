@@ -1713,6 +1713,8 @@ export default function LuckyCardReveal() {
       'linear-gradient(118deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 22%, rgba(255, 255, 255, 0) 46%, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.045) 100%)',
   };
 
+  const preserveCoastToCoastPolish = selectedCard?.id === 'coast-to-coast-tale';
+
   return (
     <div className="w-full max-w-sm mx-auto flex flex-col items-center px-4 py-2 md:py-4 space-y-3 md:space-y-6 select-none relative z-10">
 
@@ -1807,7 +1809,7 @@ export default function LuckyCardReveal() {
               >
                 <div
                   className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
-                  style={cardPolishFrameStyle}
+                  style={preserveCoastToCoastPolish ? undefined : cardPolishFrameStyle}
                 >
                   {selectedCard && selectedCard.image && !imageError ? (
                     <Image alt={selectedCard.title || 'Revealed Card'} className="object-cover rounded-2xl" fill onError={() => setImageError(true)} priority quality={100} src={selectedCard.image} />
@@ -1816,8 +1818,12 @@ export default function LuckyCardReveal() {
                       Lucky Pick 🍁 Canada.ca
                     </div>
                   )}
-                  <div className="absolute inset-0" style={cardPolishSheenStyle} />
-                  <div className="absolute inset-0" style={cardPolishEdgeStyle} />
+                  {!preserveCoastToCoastPolish && (
+                    <>
+                      <div className="absolute inset-0" style={cardPolishSheenStyle} />
+                      <div className="absolute inset-0" style={cardPolishEdgeStyle} />
+                    </>
+                  )}
                 </div>
               </div>
             </div>
