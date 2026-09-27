@@ -1,3 +1,10 @@
+## 2026-09-27 — Premium/Flagship Web Audio Reveal Extension
+
+- Extended the existing Standard-tier native Web Audio reveal scheduler to Premium and Flagship.
+- Premium retains 4 hits and Flagship retains 5 hits because the existing `TIER_HITS` cadence remains unchanged.
+- The same decoded Standard audio asset set, absolute Web Audio scheduling, final-hit sequence, and Howler fallback are now selected for all recognized tiers.
+- No new audio assets or visual/VFX choreography were introduced.
+- Runtime/browser verification is still pending because the PR head currently has no associated GitHub Actions run or commit status.
 ## 2026-09-27 — Documentation Refresh Symlink Compatibility Repair
 
 - Verified the documentation refresh failure on run 36308236510: `scripts/refresh-docs.js` failed during `cleanupStaleTempFiles()` with `Documentation paths must not traverse symbolic links.`
