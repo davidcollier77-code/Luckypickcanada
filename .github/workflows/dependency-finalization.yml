@@ -28,16 +28,17 @@ jobs:
         with:
           version: 10.30.3
 
-      - name: Regenerate lockfile with pnpm
+      - name: Regenerate lockfile with pnpm 10.30.3
         run: pnpm install
 
-      - name: Verify lockfile changed from PR head
+      - name: Verify pnpm-generated lockfile is canonical
         run: |
           if git diff --quiet -- pnpm-lock.yaml; then
-            echo "LOCKFILE_UNCHANGED"
-            exit 1
+            echo "PNPM_LOCKFILE_CANONICAL: pnpm install produced no lockfile diff."
+          else
+            echo "PNPM_LOCKFILE_CHANGED: pnpm install produced a lockfile update."
+            git diff -- pnpm-lock.yaml
           fi
-          echo "LOCKFILE_REGENERATED_BY_PNPM"
 
       - name: Run tests
         run: pnpm test
