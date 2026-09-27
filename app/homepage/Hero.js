@@ -1,6 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+/**
+ * Renders the homepage's primary navigation, logo, heading, and introduction.
+ *
+ * @returns {import('react').ReactElement} The homepage hero header.
+ */
 export default function Hero() {
   return (
     <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950">
@@ -8,10 +13,10 @@ export default function Hero() {
       <div className="relative z-10 w-full flex flex-col items-center">
         {/* Navigation */}
         <nav
-          className="w-full max-w-3xl mx-auto relative z-20 pointer-events-auto mt-0 mb-2 md:mb-3 px-4"
+          className="homepage-main-nav w-full max-w-3xl mx-auto relative z-20 pointer-events-auto mt-0 mb-2 md:mb-3 px-4"
           aria-label="Primary navigation"
         >
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 py-2 px-4 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 text-xs sm:text-sm font-medium">
+          <div className="homepage-main-nav-surface flex flex-wrap items-center justify-center gap-2 sm:gap-4 py-2 px-4 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 text-xs sm:text-sm font-medium">
             <Link
               href="/lucky-meter"
               className="text-amber-400 hover:text-amber-300 transition-colors"
@@ -52,7 +57,7 @@ export default function Hero() {
         {/* Hero Center Content */}
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-0 mb-0 px-4">
           {/* Logo with spark portal */}
-          <div className="relative mb-1 flex items-center justify-center pointer-events-none">
+          <div className="homepage-logo-stage relative mb-1 flex items-center justify-center pointer-events-none">
             <div
               className="absolute inset-[-20%] blur-2xl rounded-full mix-blend-screen pointer-events-none"
               style={{
@@ -61,11 +66,11 @@ export default function Hero() {
               }}
             />
             <Image
+              className="homepage-logo object-cover object-center w-[130px] h-[130px] md:w-[160px] md:h-[160px] drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] relative z-10"
               src="/BackgroundEraser_20260724_163638777.png"
               alt="Lucky Pick Canada Logo"
               width={130}
               height={130}
-              className="object-cover object-center w-[130px] h-[130px] md:w-[160px] md:h-[160px] drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] relative z-10"
               priority
             />
           </div>
@@ -76,7 +81,7 @@ export default function Hero() {
           </p>
 
           {/* Main Heading */}
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] my-1 text-gold-gradient drop-shadow-3d">
+          <h1 className="homepage-hero-title font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] my-1 text-gold-gradient drop-shadow-3d">
             Lucky Pick Canada:<br /> Your daily lucky<br /> moment.
           </h1>
 

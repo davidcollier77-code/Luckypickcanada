@@ -26,6 +26,12 @@ function SectionHeading({ eyebrow, id, title, children }) {
   );
 }
 
+/**
+ * Renders the interactive homepage content and animated star canvas.
+ * Manages visit counts, checkout and reveal modals, and suggestion feedback.
+ *
+ * @returns {import('react').ReactElement} The homepage content and modal elements.
+ */
 export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
   const [luckyReveal, setLuckyReveal] = useState(null);
@@ -296,7 +302,7 @@ export default function HomePage() {
       {/* 1. & 3. Viewport-Wide Shooting Stars & Constellation Twinkle */}
       <canvas
         ref={backgroundCanvasRef}
-        className="fixed inset-0 w-full h-full pointer-events-none -z-10"
+        className="homepage-star-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
         style={{ position: 'fixed' }}
       />
       <section className="homepage-section homepage-community-grid pt-4 mt-0 sm:pt-6" aria-label="Lucky Pick Canada community">

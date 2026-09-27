@@ -1,3 +1,16 @@
+## 2026-09-27 — Homepage Cinematic Night-Sky + Visual Polish (PR #1290)
+
+- Replaced the homepage's synthetic four-layer aurora background foundation with a fixed, sky-only photographic Milky Way backdrop selected for an overhead/zenith-style composition with no landscape or horizon.
+- Preserved the existing viewport Canvas atmosphere: ambient stars, independent twinkle behavior, and randomized shooting-star events with tails. Only the presentation layer was adjusted.
+- Added a scoped homepage visual polish pass covering navigation glass, logo presentation, hero title depth, content-card surfaces, community banner/image framing, CTA treatment, suggestion/about surfaces, and lower-page SEO presentation.
+- Removed the competing homepage synthetic pseudo-background layers so the photograph acts as the environmental foundation instead of stacking multiple simulated skies.
+- Preserved reduced-motion handling and did not change audio, dependencies, homepage functionality, reset/countdown behavior, collections, sharing, payment, database, authentication, deployment configuration, or protected files.
+- Verification: GitHub Actions run 36344468480 passed Next.js build, OpenNext build, compiled Tailwind verification, worker/assets checks, Wrangler validation, and Git status.
+- Amazon Q review reported no blocking defects. CodeRabbit status was success; its repository comment indicated automatic review is disabled for this repository and a manual trigger is available.
+- Runtime visual verification on a deployed preview was not performed in this PR; the current CI verifies the production build pipeline but does not deploy a PR preview.
+- The photographic source remains an external Pexels URL in CSS; no local binary image asset was added because repository binary transfer was not available in the implementation environment.
+- No protected files were changed.
+
 ## 2026-09-27 — Premium/Flagship Web Audio Reveal Extension
 
 - Extended the existing Standard-tier native Web Audio reveal scheduler to Premium and Flagship.
