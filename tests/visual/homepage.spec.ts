@@ -29,20 +29,7 @@ test('homepage viewport matches the approved visual baseline', async ({ page }) 
   await expect(page.locator('canvas.homepage-star-canvas')).toBeVisible({ timeout: 10_000 });
 
   await page.waitForLoadState('load', { timeout: 15_000 }).catch(() => {});
-
-  await page.evaluate(async () => {
-    await Promise.all(
-      Array.from(document.images).map((image) => {
-        if (image.complete) return Promise.resolve();
-        return new Promise((resolve) => {
-          image.addEventListener('load', resolve, { once: true });
-          image.addEventListener('error', resolve, { once: true });
-        });
-      }),
-    );
-  });
-
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(1_000);
 
   await expect(page).toHaveScreenshot('homepage-viewport.png', {
     fullPage: false,
