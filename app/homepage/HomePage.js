@@ -93,7 +93,7 @@ export default function HomePage() {
           twinkleSpeed: Math.random() * 0.0025 + 0.0015,
           twinklePhase: Math.random() * Math.PI * 2,
           twinkleAmount: Math.random() * 0.12 + 0.06,
-          isCluster: false // Will mark cluster stars later
+          isCluster: false // A small subset gets extra constellation twinkle
         });
       }
 
