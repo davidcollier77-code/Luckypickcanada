@@ -1,18 +1,16 @@
 name: Visual QA
 
 on:
-  push:
-    branches: [visual-qa/playwright-homepage]
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: read
 
 concurrency:
-  group: visual-qa-${{ github.event.pull_request.number || github.ref_name }}
+  group: visual-qa-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -20,8 +18,6 @@ jobs:
     name: Visual QA
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    env:
-      BASELINE_BOOTSTRAP_BRANCH: visual-qa/playwright-homepage
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -42,8 +38,7 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Establish initial homepage visual baselines
-        id: bootstrap
+      - name: Verify committed visual baselines
         shell: bash
         run: |
           set -euo pipefail
@@ -51,36 +46,14 @@ jobs:
           if [[ -d tests/visual/__screenshots__ ]]; then
             snapshot_count="$(find tests/visual/__screenshots__ -type f -name '*.png' | wc -l | tr -d ' ')"
           fi
-          if [[ "$snapshot_count" -gt 0 ]]; then
-            echo "Visual baselines already exist: $snapshot_count PNG files."
-            echo "bootstrapped=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if [[ "${{ github.head_ref || github.ref_name }}" != "$BASELINE_BOOTSTRAP_BRANCH" ]]; then
-            echo "::error::Visual baselines are missing on a non-bootstrap branch."
+          if [[ "$snapshot_count" -lt 3 ]]; then
+            echo "::error::Expected at least 3 committed homepage visual baselines; found $snapshot_count."
             exit 1
           fi
-          echo "No visual baselines exist. Generating the initial approved baseline from this setup branch."
-          pnpm exec playwright test --update-snapshots
-          echo "bootstrapped=true" >> "$GITHUB_OUTPUT"
+          echo "Committed visual baselines: $snapshot_count PNG files."
 
       - name: Run visual regression tests
         run: pnpm exec playwright test
-
-      - name: Commit initial visual baselines
-        if: steps.bootstrap.outputs.bootstrapped == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tests/visual/__screenshots__
-          if git diff --cached --quiet; then
-            echo "No baseline changes to commit."
-            exit 0
-          fi
-          git commit -m "test: establish homepage visual baselines"
-          git push
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
