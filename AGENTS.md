@@ -323,7 +323,7 @@ Do not claim completion.
 - Audio tasks follow ".jules/audio.md"; Howler.js ("/goldfire/howler.js") is primary unless repository
   guidance says otherwise. Consult ".docs/polishing/_goldfire_howler_js.md" when available.
 - Do not introduce prohibited public MP3 assets.
-- For rendered UI/visual tasks, Jules MUST use `@playwright/test` / `playwright` with the repository's `playwright-chromium` support to inspect and verify the actual rendered result; source inspection alone is insufficient.
+- For rendered UI/visual tasks, Jules MUST use `@playwright/test` / `playwright` with `playwright-chromium` as declared in `package.json` to inspect and verify the actual rendered result; source inspection alone is insufficient.
 - Preserve accessibility, keyboard behavior, responsive behavior, and
   prefers-reduced-motion.
 
