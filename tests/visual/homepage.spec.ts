@@ -22,6 +22,7 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+// Deterministic inputs keep the rendered homepage stable so visual diffs represent real regressions.
 test('homepage viewport matches the approved visual baseline', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
