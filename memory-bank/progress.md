@@ -68,3 +68,14 @@
 - Synchronized `public/themes/default/homepage.css` to match `themes/default/homepage.css`.
 - Fixed the missing Pexels `.homepage-sky-backdrop` layer caused by stale public assets.
 - Updated Playwright visual baselines to reflect the restored cinematic background design.
+
+
+## 2026-09-28 — Homepage Lower Content Reordering & Visibility
+
+- **Status:** Implementation complete on branch; verification in progress.
+- **Branch:** `polish/homepage-layout-visibility`
+- **Scope:** Homepage section ordering and text readability only.
+- **Implementation:** Reordered the named lower homepage sections without changing their existing feature interactions or destinations; moved the Community Facebook Group between Tip Jar and FAQ; moved FAQ into the lower-page sequence; removed the duplicate legacy Our Story section; preserved the preferred About the Creator & Our Story teaser; applied the existing glass surface treatment to FAQ containers and the supporting personalization copy.
+- **Preserved:** Hero/top portion, feature logic, checkout types, Suggestion Box submission behavior, Facebook destination, Lucky Map destination, and existing homepage artwork/background.
+- **Governance:** Source and served homepage CSS remain synchronized.
+- **Verification:** Final PR CI/Playwright, link/destination verification, final diff reconciliation, and pre-submission second check remain required.
