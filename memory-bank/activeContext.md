@@ -264,3 +264,12 @@
 - **Scope Control**: Reverted earlier unnecessary changes to `default.css` and `hero.css` from the previous failed attempt; they were already synced or unrelated to the bug. Kept changes strictly limited to `public/themes/default/homepage.css` to satisfy the "smallest correct change" requirement.
 - **Verification**: Verified using a local production build (`pnpm run build` and `node .next/standalone/server.js`), captured mandatory viewport screenshots (Desktop full/1440x900, Mobile 412x915, Mobile 390x844). Verified visually that the cinematic background was restored without breaking existing ambient animations (Canvas stars).
 - **Baselines**: Ran `npx playwright test --update-snapshots` to deliberately regenerate the three committed visual baselines, since the baselines were previously set against the broken dark-background state.
+
+## 2026-09-28 — Homepage Atmospheric Layer Cleanup
+
+- Deep-dive audit verified that the old homepage atmospheric pseudo-layers were dead legacy code: the static .homepage-experience::before star field and .homepage-experience::after / cosmic-aurora-shift aurora existed only in the homepage CSS copies and were subsequently overridden with content: none; no live homepage markup referenced the orphaned .hd-aurora-bg or .hd-aurora-accent classes.
+- Removed those legacy layers, their animation, and the now-unnecessary disabling override from both synchronized homepage CSS copies.
+- Removed the disabled homepage hero decoration that was also no longer rendered.
+- Kept the intended homepage atmosphere to three explicit layers only: the photographic sky backdrop, the new homepage aurora layer, and the Canvas star/shooting-star engine.
+- Cleaned the Canvas file without changing its visual behavior: removed redundant inline fixed positioning, removed a no-op composite-mode assignment, and clarified the star/cluster comments.
+- Runtime/build verification remains pending; no visual result is claimed yet.
