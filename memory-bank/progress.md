@@ -80,3 +80,12 @@
 - Synchronized `public/themes/default/homepage.css` to match `themes/default/homepage.css`.
 - Fixed the missing Pexels `.homepage-sky-backdrop` layer caused by stale public assets.
 - Updated Playwright visual baselines to reflect the restored cinematic background design.
+
+## 2026-09-28 — Homepage Atmospheric Layer Cleanup
+
+- **Status:** Implemented; runtime verification pending.
+- **Deep-dive finding:** The old homepage static-star pseudo-layer, old CSS aurora animation, orphaned HD Aurora selectors, and their disabling override were dead/unused legacy code.
+- **Cleanup:** Removed those legacy CSS blocks from both synchronized homepage CSS copies and removed the disabled homepage hero decoration.
+- **Preserved:** Photographic sky, dedicated homepage aurora, randomized Canvas shooting stars, subtle star twinkle, responsive/reduced-motion behavior, and all homepage functionality.
+- **Canvas cleanup:** Removed redundant fixed inline positioning and a no-op composite assignment without changing the star/shooting-star engine behavior.
+- **Verification:** Static cross-reference and source/public parity checks passed. Build and browser verification are still required before claiming the final visual result.
