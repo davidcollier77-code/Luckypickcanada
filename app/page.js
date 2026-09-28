@@ -1,10 +1,8 @@
 import HomePage from './homepage/HomePage';
 import Hero from './homepage/Hero';
-import FAQSection from './homepage/FAQSection';
 
 export const dynamic = 'force-static';
 
-import Link from 'next/link';
 
 /**
  * Composes the static homepage with its sky backdrop, hero, interactive content,
@@ -18,7 +16,6 @@ export default function Page() {
       <div className="homepage-sky-backdrop" aria-hidden="true" />
       <Hero />
       <HomePage />
-      <FAQSection />
 
       {/* Low-Profile SEO Text Section */}
       <section
@@ -47,43 +44,6 @@ export default function Page() {
         </p>
       </section>
 
-      {/* About the Creator Teaser */}
-      <section
-        className="homepage-seo-section"
-        style={{
-          marginTop: '40px',
-          padding: '24px 16px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          maxWidth: '800px',
-          marginInline: 'auto',
-          textAlign: 'center',
-          color: 'rgba(255, 255, 255, 0.9)'
-        }}
-      >
-        <h2 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '600', color: '#fbbf24' }}>
-          Our Story
-        </h2>
-        <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '16px' }}>
-          LuckyPickCanada is a solo, one-person creative project built right here in Nova Scotia. It started as a simple idea for everyday positivity and has grown into a small, cozy corner of the internet.
-        </p>
-        <Link
-          href="/about"
-          style={{
-            display: 'inline-block',
-            padding: '8px 16px',
-            backgroundColor: 'rgba(251, 191, 36, 0.2)',
-            color: '#fbbf24',
-            border: '1px solid rgba(251, 191, 36, 0.4)',
-            borderRadius: '9999px',
-            textDecoration: 'none',
-            fontSize: '0.9rem',
-            transition: 'all 0.2s ease-in-out'
-          }}
-          className="hover:bg-amber-400/20 hover:border-amber-400/40"
-        >
-          Read the Full Story
-        </Link>
-      </section>
     </>
   );
 }
