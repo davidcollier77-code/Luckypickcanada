@@ -1,0 +1,66 @@
+name: Visual QA
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: visual-qa-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    name: Visual QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10.30.3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Verify committed visual baselines
+        shell: bash
+        run: |
+          set -euo pipefail
+          snapshot_count=0
+          if [[ -d tests/visual/__screenshots__ ]]; then
+            snapshot_count="$(find tests/visual/__screenshots__ -type f -name '*.png' | wc -l | tr -d ' ')"
+          fi
+          if [[ "$snapshot_count" -lt 3 ]]; then
+            echo "::error::Expected at least 3 committed homepage visual baselines; found $snapshot_count."
+            exit 1
+          fi
+          echo "Committed visual baselines: $snapshot_count PNG files."
+
+      - name: Run visual regression tests
+        run: pnpm exec playwright test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-visual-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

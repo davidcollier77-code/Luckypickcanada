@@ -236,3 +236,14 @@
 - Re-inspection found the remaining root `html { background: var(--night) }` layer in `themes/default/default.css`. The homepage clears `body`, while `.homepage-sky-backdrop` uses a negative z-index, so the root background can remain visible in the root stacking order.
 - Added a homepage-scoped `html:has(.homepage-sky-backdrop)` transparency rule in `themes/default/homepage.css`.
 - Runtime/browser verification remains pending; this is a code-level fix, not a claimed visual verification.
+
+
+## 2026-09-28 — Playwright Visual QA Foundation
+
+- Implemented a dedicated Playwright visual-regression check for the homepage.
+- Coverage: desktop 1440×900, mobile 390×844, and mobile 412×915 Chromium viewports.
+- Playwright was already present in the repository at 1.63.0; no dependency or lockfile changes were made.
+- Added deterministic Math.random/Date.now inputs and a fixed /api/visits response so screenshots represent visual regressions rather than transient data.
+- Established three committed homepage viewport baselines under tests/visual/__screenshots__/.
+- GitHub Actions verification run 36394814400 passed the complete visual comparison against those baselines.
+- Final PR workflow is read-only with committed baselines; normal PRs do not auto-create or mutate baselines.
