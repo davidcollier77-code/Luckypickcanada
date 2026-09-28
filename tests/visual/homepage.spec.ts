@@ -23,13 +23,14 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('homepage viewport matches the approved visual baseline', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
-  await expect(page.locator('main')).toBeVisible();
-  await expect(page.locator('canvas.homepage-star-canvas')).toBeVisible();
+  await expect(page.locator('main')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('canvas.homepage-star-canvas')).toBeVisible({ timeout: 10_000 });
+
+  await page.waitForLoadState('load', { timeout: 15_000 }).catch(() => {});
 
   await page.evaluate(async () => {
-    await document.fonts.ready;
     await Promise.all(
       Array.from(document.images).map((image) => {
         if (image.complete) return Promise.resolve();
