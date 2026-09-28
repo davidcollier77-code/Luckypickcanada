@@ -53,3 +53,14 @@
 - **Implementation**: Added `html:has(.homepage-sky-backdrop) { background: transparent !important; }` to the homepage stylesheet, scoped only to pages containing the photographic backdrop.
 - **Preserved**: Non-homepage root background, homepage content, navigation, stars, functionality, and existing sky/mobile brightness rules.
 - **Verification**: Repository/code cross-reference completed; runtime/browser rendering is still required before claiming the visual result.
+
+
+## 2026-09-28 — Playwright Visual QA Foundation
+
+- **Status**: Completed and CI verified
+- **PR**: #1297
+- **Scope**: Homepage visual-regression testing only; no application behavior or dependency changes.
+- **Coverage**: Chromium desktop 1440×900, mobile 390×844, and mobile 412×915.
+- **Baselines**: Three approved viewport screenshots committed under `tests/visual/__screenshots__/`.
+- **Verification**: GitHub Actions run 36394814400 passed dependency installation, baseline verification, and all three visual regression comparisons.
+- **Workflow**: Dedicated read-only PR check using pnpm 10.30.3 and Playwright 1.63.0; missing baselines fail rather than being silently regenerated.
