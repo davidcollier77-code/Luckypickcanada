@@ -220,3 +220,12 @@
 - Successfully enhanced cinematic depth (ambient glow, contact flashes, drag physics) while perfectly preserving the protected card artwork, tier logic, and audio choreography.
 - Validated tier identities: Standard (Bronze), Premium (true Silver/Pewter, no blue), Flagship (Rich Gold).
 - Build size verified well under the 495MB limit (291MB). Tests passing.
+
+
+## 2026-09-28 — Homepage Top Background Foundation Repair
+
+- Verified the prior homepage photographic-sky brightness fixes are already present on `main`, including mobile `brightness(1.0)`.
+- Cross-referenced `app/page.js`, `app/layout.js`, and `themes/default/homepage.css` against the latest mobile recording.
+- Identified a redundant full-viewport `.homepage-background-foundation` layer that the homepage CSS previously made transparent but did not remove.
+- Removed that homepage-only foundation layer with a scoped `display: none !important` rule, leaving the photographic sky, navigation, hero, stars, and homepage functionality unchanged.
+- Branch: `fix/homepage-top-foundation-layer`; PR #1295. Runtime visual verification remains pending on the next deployed/mobile build.

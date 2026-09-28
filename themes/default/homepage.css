@@ -500,7 +500,7 @@ body:has(.homepage-sky-backdrop) {
 }
 
 body:has(.homepage-sky-backdrop) .homepage-background-foundation {
-  background-color: transparent !important;
+  display: none !important;
 }
 
 /* Keep the global dark foundation intact on every non-homepage route. */
