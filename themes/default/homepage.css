@@ -495,6 +495,10 @@
   mix-blend-mode: screen;
 }
 
+html:has(.homepage-sky-backdrop) {
+  background: transparent !important;
+}
+
 body:has(.homepage-sky-backdrop) {
   background: transparent !important;
 }
