@@ -229,3 +229,10 @@
 - Identified a redundant full-viewport `.homepage-background-foundation` layer that the homepage CSS previously made transparent but did not remove.
 - Removed that homepage-only foundation layer with a scoped `display: none !important` rule, leaving the photographic sky, navigation, hero, stars, and homepage functionality unchanged.
 - Branch: `fix/homepage-top-foundation-layer`; PR #1295. Runtime visual verification remains pending on the next deployed/mobile build.
+
+
+## 2026-09-28 — Homepage Root Background Follow-up
+- The merged homepage foundation-layer repair did not change the reported mobile appearance.
+- Re-inspection found the remaining root `html { background: var(--night) }` layer in `themes/default/default.css`. The homepage clears `body`, while `.homepage-sky-backdrop` uses a negative z-index, so the root background can remain visible in the root stacking order.
+- Added a homepage-scoped `html:has(.homepage-sky-backdrop)` transparency rule in `themes/default/homepage.css`.
+- Runtime/browser verification remains pending; this is a code-level fix, not a claimed visual verification.
