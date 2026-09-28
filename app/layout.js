@@ -84,7 +84,7 @@ export default function RootLayout({ children }) {
             <div className="max-w-4xl mx-auto space-y-4">
               <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
 
-              <nav className="flex flex-wrap justify-center gap-4 md:gap-6 text-white/90">
+              <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-4 md:gap-6 text-white/90">
                 <Link href="/" className="hover:text-amber-400 transition-colors">Home</Link>
                 <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors">Lucky Meter</Link>
                 <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors">Crystal Ball</Link>
