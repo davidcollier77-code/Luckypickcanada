@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { createLuckyReveal } from '../lucky-reveal';
+import FAQSection from './FAQSection';
 
 // PERFORMANCE OPTIMIZATION (Bolt ⚡):
 // Lazy load non-critical modal components to reduce the initial JS bundle size.
@@ -21,7 +22,7 @@ function SectionHeading({ eyebrow, id, title, children }) {
     <div className="homepage-section-heading">
       <p>{eyebrow}</p>
       <h2 id={id}>{title}</h2>
-      {children && <span>{children}</span>}
+      {children && <span className="homepage-section-heading-copy">{children}</span>}
     </div>
   );
 }
@@ -320,11 +321,11 @@ export default function HomePage() {
             )}
           </div>
         </article>
-        <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20">
-          <p className="homepage-offer-kicker">COMMUNITY STORIES</p>
-          <h2>Lucky Stories</h2>
-          <p>A community space to share your own experiences of luck and good fortune. From amazing coincidences and unexpected opportunities, to finding money or simply a small everyday moment where you felt unusually lucky—big or small, we want to hear about it! (Please note: these are not business reviews or testimonials.)</p>
-          <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE LUCKY STORIES →<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
+        <article id="daily-card-reveal" className="homepage-community-card backdrop-blur-sm bg-black/20">
+          <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
+          <h2>Today's Lucky Card</h2>
+          <p>A new Lucky Card awaits your collection. Open today's Lucky Card, enjoy the reveal, and keep building your collection.</p>
+          <Link href="/reveal" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Reveal Today&apos;s Card <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
         <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
@@ -332,23 +333,12 @@ export default function HomePage() {
           <p>Have a question in mind? Focus your intention, ask the Crystal Ball, and see what mysterious answer appears.</p>
           <Link href="/crystal-ball" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">CONSULT THE ORACLE <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
-        <article id="daily-card-reveal" className="homepage-community-card backdrop-blur-sm bg-black/20">
-          <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
-          <h2>Today's Lucky Card</h2>
-          <p>A new Lucky Card awaits your collection. Open today's Lucky Card, enjoy the reveal, and keep building your collection.</p>
-          <Link href="/reveal" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Reveal Today&apos;s Card <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
+        <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20">
+          <p className="homepage-offer-kicker">COMMUNITY STORIES</p>
+          <h2>Lucky Stories</h2>
+          <p>A community space to share your own experiences of luck and good fortune. From amazing coincidences and unexpected opportunities, to finding money or simply a small everyday moment where you felt unusually lucky—big or small, we want to hear about it! (Please note: these are not business reviews or testimonials.)</p>
+          <Link href="/map" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE LUCKY STORIES →<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
-      </section>
-
-      <section id="community" className="homepage-community-banner" aria-labelledby="community-heading">
-        <div>
-          <p className="homepage-offer-kicker">The Lucky Pick Canada community</p>
-          <h2 id="community-heading">Keep the good energy moving.</h2>
-          <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
-        </div>
-        <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
-          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" width="769" height="1376" loading="lazy" />
-        </a>
       </section>
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
@@ -383,6 +373,19 @@ export default function HomePage() {
           </article>
         </div>
       </section>
+
+      <section id="community" className="homepage-community-banner" aria-labelledby="community-heading">
+        <div>
+          <p className="homepage-offer-kicker">The Lucky Pick Canada community</p>
+          <h2 id="community-heading">Keep the good energy moving.</h2>
+          <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
+        </div>
+        <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
+          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" width="769" height="1376" loading="lazy" />
+        </a>
+      </section>
+
+      <FAQSection />
 
       <section id="suggestion-box" className="suggestion-box premium-surface" aria-labelledby="suggestion-box-heading">
         <div className="suggestion-box-copy">

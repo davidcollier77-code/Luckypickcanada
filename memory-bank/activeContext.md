@@ -260,3 +260,14 @@
 - **Fix**: Adjusted text colors in `app/page.js` to `rgba(255, 255, 255, 0.9)` and `#bbb` to improve contrast. Removed `opacity: 0.9` inline styles. Increased button background opacity to `0.2` and border to `0.4`. In `app/layout.js`, increased footer text opacity classes (e.g., `text-white/60` -> `text-white/80`, `text-white/30` -> `text-white/50`).
 - **Scope Control**: No changes to layout, background brightness, or animations. Dimensions and overall design remained intact.
 - **Verification**: Changes passed local build/tests. Visual impact manually verified to increase legibility without compromising the site's dark aesthetic.
+
+
+## 2026-09-28 — Homepage Lower Content Reordering & Visibility
+
+- Implemented the authorized homepage lower-content layout pass on branch `polish/homepage-layout-visibility`.
+- Preserved the top/hero portion, existing feature behavior, link destinations, and payment/form interactions.
+- Reordered the named homepage sections to: Lucky Meter → Lucky Card Reveal → Crystal Ball → Lucky Map → $1.99 Lucky Reveal → $2.99 Gift Experience → Tip Jar → Community Facebook Group → FAQ → Suggestion Box → About the Creator & Our Story.
+- Removed the duplicate legacy `Our Story / Read the Full Story` section.
+- Reused the established homepage glass/surface treatment for FAQ question containers and the supporting `Make Your Moment Personal` section copy.
+- Kept `themes/default/homepage.css` and `public/themes/default/homepage.css` synchronized.
+- Verification remaining before completion: PR CI/Playwright, final link/destination checks, final diff audit, and second error check.
