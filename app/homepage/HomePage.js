@@ -65,7 +65,7 @@ export default function HomePage() {
   }, []);
 
 
-  // Viewport-Wide Shooting Stars & Constellation Twinkle
+  // Homepage atmospheric stars, subtle twinkle, and randomized shooting stars
   const backgroundCanvasRef = useRef(null);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export default function HomePage() {
         });
       }
 
-      // Select 3-4 stars for cluster twinkling
+      // Select a small random cluster for occasional constellation twinkling
       const clusterCount = Math.floor(Math.random() * 3) + 4;
       for (let i = 0; i < clusterCount; i++) {
         if (newStars.length > 0) {
@@ -187,8 +187,6 @@ export default function HomePage() {
       const width = canvas.width;
       const height = canvas.height;
 
-      ctx.globalCompositeOperation = 'screen';
-      // Restore default composite operation and ensure globalAlpha is clean
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1.0;
 
@@ -308,7 +306,6 @@ export default function HomePage() {
       <canvas
         ref={backgroundCanvasRef}
         className="homepage-star-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
-        style={{ position: 'fixed' }}
       />
       <section className="homepage-section homepage-community-grid pt-4 mt-0 sm:pt-6" aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
