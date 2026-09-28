@@ -658,7 +658,7 @@ body:has(.homepage-sky-backdrop)::after {
 @media (max-width: 820px) {
   .homepage-sky-backdrop {
     background-position: center 42%;
-    filter: saturate(0.9) contrast(1.04) brightness(0.76);
+    filter: saturate(0.9) contrast(1.04) brightness(1.0);
   }
 
   .homepage-star-canvas {
