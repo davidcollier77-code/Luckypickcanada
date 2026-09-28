@@ -1,3 +1,4 @@
+
 # 🔴 AGENTS.md — MANDATORY GOVERNANCE
 
 🔴 READ FIRST. FOLLOW COMPLETELY. DEMONSTRATE COMPLIANCE.
@@ -30,11 +31,9 @@ WITHOUT DEMONSTRATED COMPLIANCE.
 ---
 
 # A — ANALYZE
-
 ## 🔴 1. READ AGENTS.md FIRST
 
 Read this file before any other task analysis or implementation.
-
 ## 🔴 2. SELECT THE .docs TASK GROUP
 
 Select EXACTLY ONE:
@@ -55,12 +54,10 @@ The selected group and reason MUST be reported in the PR Summary.
 
 Jules MUST NOT select multiple groups or skip, rank, or substitute material
 within the selected group.
-
 ## 🔴 3. READ JULES GOVERNANCE
 
 After AGENTS.md, read ".jules/jules.md" and follow its initialization,
 working, memory-bank, and completion requirements.
-
 ## 🔴 4. REQUIRED REPOSITORY SYSTEMS — USE ALL
 
 For EVERY task, Jules MUST use:
@@ -88,7 +85,6 @@ or marked "N/A".
 Context7 is NOT a required repository system.
 Use it ONLY with explicit user permission or explicit task authorization.
 Its availability, presence, or usefulness does NOT constitute authorization.
-
 ## 🔴 5. VERIFY BEFORE EXECUTION
 
 Inspect the actual branch, task path, relevant files, configuration, code, tests,
@@ -128,7 +124,6 @@ execution is explicitly authorized.
 ---
 
 # C — EXECUTE + VERIFY
-
 ## 🔴 ROUTED GOVERNANCE
 
 Follow EVERY requirement routed by AGENTS.md, including ".jules", ".jules/cmds",
@@ -319,6 +314,7 @@ Do not claim completion.
 # 🔴 EXECUTION RULES
 
 - Use pnpm. NEVER use "npm ci".
+- For visual work, Jules MUST use `playwright` and `playwright-chromium`, configured through `playwright.config.ts`, for browser-based visual verification.
 - Inspect "package.json" before using or claiming package scripts.
 - Audio tasks follow ".jules/audio.md"; Howler.js ("/goldfire/howler.js") is primary unless repository
   guidance says otherwise. Consult ".docs/polishing/_goldfire_howler_js.md" when available.
