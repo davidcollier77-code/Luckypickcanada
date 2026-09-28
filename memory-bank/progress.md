@@ -64,3 +64,7 @@
 - **Baselines**: Three approved viewport screenshots committed under `tests/visual/__screenshots__/`.
 - **Verification**: GitHub Actions run 36394814400 passed dependency installation, baseline verification, and all three visual regression comparisons.
 - **Workflow**: Dedicated read-only PR check using pnpm 10.30.3 and Playwright 1.63.0; missing baselines fail rather than being silently regenerated.
+## 2026-09-28 — Restored Cinematic Homepage Background
+- Synchronized `public/themes/default/homepage.css` to match `themes/default/homepage.css`.
+- Fixed the missing Pexels `.homepage-sky-backdrop` layer caused by stale public assets.
+- Updated Playwright visual baselines to reflect the restored cinematic background design.
