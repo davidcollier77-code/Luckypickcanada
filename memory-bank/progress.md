@@ -32,3 +32,14 @@
 - **Verification:** Inspected `themes/default/homepage.css` and verified the base rule no longer had the `brightness(0.82)` reduction, but the `@media (max-width: 820px)` rule still applied `brightness(0.76)`.
 - **Implementation:** Replaced `brightness(0.76)` with `brightness(1.0)` in the mobile media query for `.homepage-sky-backdrop`, preserving the existing `saturate(0.9)` and `contrast(1.04)` filters, the `background-position`, the base rule, and the image source. No JavaScript, layout, or backend changes were made.
 - **Result:** The photographic night sky is now visible on mobile devices at the intended corrected brightness without the obsolete darkening.
+
+
+## 2026-09-28 — Homepage Top Background Foundation Repair
+
+- **Status**: Implemented; runtime verification pending.
+- **PR**: #1295
+- **Component scope**: Homepage visual background layer only.
+- **Objective**: Remove the redundant full-viewport dark foundation layer visible behind/above the homepage after the prior sky-brightness fixes.
+- **Implementation**: Changed the homepage-scoped `.homepage-background-foundation` rule in `themes/default/homepage.css` from transparent painting to `display: none !important`.
+- **Preserved**: Photographic sky backdrop, mobile brightness correction, navigation, hero, stars, and existing homepage functionality.
+- **Verification**: Branch diff against `main` is exactly one CSS-file change; browser/build verification is still required before claiming the visual result.
