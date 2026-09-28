@@ -131,6 +131,9 @@
 
 # Active Context
 
+## 2026-09-28 — Homepage Mobile Sky Correction
+- Corrected the remaining `brightness(0.76)` override for `.homepage-sky-backdrop` in `themes/default/homepage.css` within the mobile media query, aligning it with the already-corrected base brightness value (`brightness(1.0)`). Verified clean builds and passing tests.
+
 ## 2026-09-26 — Standard Audio Stale-Fallback Lifecycle Repair
 
 - Verified the remaining Sourcery lifecycle finding from PR #1262 against current `main`: after `await standardAudioPreloadRef.current`, a stale or unmounted Standard-tier transaction could leave `standardWebAudioReady` false and fall through into the Howler fallback scheduling path.

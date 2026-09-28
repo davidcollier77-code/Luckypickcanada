@@ -26,3 +26,9 @@
     - **Particles**: Tweaked `drawMoltenBurst` alpha easing and constrained `fillRect` to gradient bounding box. Added drag physics to splatters and increased their gravity for realistic weight.
     - **Card Motion**: Refined the Framer Motion shake sequence (`fightDuration`) to use organic, multi-axis keyframes (`x`, `y`, `rotateZ`) instead of linear horizontal shaking.
 - **Verification**: `pnpm test` passed (11 tests). `pnpm run build` passed successfully within the 495MB size limit (.next measured at 291MB). Front/back artwork and audio remained strictly unchanged.
+
+## 2026-09-28 — Homepage Mobile Sky Correction
+- **Task:** Verify and correct the remaining mobile brightness reduction on the homepage photographic sky.
+- **Verification:** Inspected `themes/default/homepage.css` and verified the base rule no longer had the `brightness(0.82)` reduction, but the `@media (max-width: 820px)` rule still applied `brightness(0.76)`.
+- **Implementation:** Replaced `brightness(0.76)` with `brightness(1.0)` in the mobile media query for `.homepage-sky-backdrop`, preserving the existing `saturate(0.9)` and `contrast(1.04)` filters, the `background-position`, the base rule, and the image source. No JavaScript, layout, or backend changes were made.
+- **Result:** The photographic night sky is now visible on mobile devices at the intended corrected brightness without the obsolete darkening.
