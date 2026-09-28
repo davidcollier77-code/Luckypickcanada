@@ -1,9 +1,8 @@
-# PR Summary — Homepage Atmospheric Layer Repair
+# PR Summary — Homepage Atmospheric Layer Repair + Legacy Cleanup
 
 ## SELECTED TASK GROUP
-SELECTED TASK GROUP: polishing
-GROUP REASON: Restore and polish the homepage atmospheric background presentation: aurora, star
-visibility/twinkle, and randomized shooting stars without changing homepage functionality.
+SELECTED TASK GROUP: deep-dive
+GROUP REASON: Evidence-driven homepage atmosphere audit and cleanup of duplicate/dead visual layers while preserving the intended sky, aurora, shooting-star, twinkle, and site functionality.
 
 ## LIBRARY CONSULTATION REPORT
 
@@ -11,144 +10,89 @@ LIBRARY: Next.js
 VERSION: 16.3.6
 USED: YES
 USEFUL: YES
-REASON: Consulted the repository's Next.js snapshot and current package declaration while
-preserving the existing App Router homepage structure.
+REASON: Verified the current App Router package/version and preserved the existing homepage composition in app/page.js and app/homepage/HomePage.js.
 
 LIBRARY: React
-VERSION: latest (package.json declaration)
+VERSION: latest (repository package declaration)
 USED: YES
 USEFUL: YES
-REASON: Consulted the repository React guidance while keeping the existing component/render
-structure and using a dedicated decorative layer with aria-hidden.
+REASON: Verified the existing client-component hook structure; cleanup retained the existing useEffect/useRef Canvas engine without adding dependencies.
+
+LIBRARY: Playwright
+VERSION: 1.63.0
+USED: YES
+USEFUL: YES
+REASON: Inspected the existing homepage visual test and confirmed it already asserts the homepage-star-canvas; no browser execution was available.
 
 LIBRARY: Tailwind CSS
 VERSION: 4.2.4
 USED: YES
-USEFUL: YES
-REASON: Consulted the local Tailwind snapshot while preserving the existing utility-driven
-homepage structure and custom CSS layering.
-
-LIBRARY: GSAP
-VERSION: 3.15.0
-USED: YES
 USEFUL: NO
-REASON: No GSAP code was involved in this homepage atmosphere repair.
+REASON: Current package/version was verified, but no Tailwind code needed to change for this targeted cleanup.
 
-LIBRARY: Motion
-VERSION: framer-motion 13.1.0; no direct motion package dependency
-USED: YES
+CONTROLLED CONTEXT7 LIBRARIES
+USED: NO
 USEFUL: NO
-REASON: No Motion/Framer Motion animation code was changed.
-
-LIBRARY: Lucide
-VERSION: 1.41.0
-USED: YES
-USEFUL: NO
-REASON: No icon implementation was changed.
-
-LIBRARY: Sonner
-VERSION: 2.0.8
-USED: YES
-USEFUL: NO
-REASON: No toast implementation was changed.
-
-LIBRARY: Howler.js
-VERSION: 2.2.4
-USED: YES
-USEFUL: NO
-REASON: The task intentionally preserved all audio behavior.
-
-LIBRARY: Chrome Developer
-VERSION: repository snapshot
-USED: YES
-USEFUL: NO
-REASON: Consulted the routed browser guidance; no browser-specific API change was required.
-
-LIBRARY: Apple WebKit Developer
-VERSION: repository snapshot
-USED: YES
-USEFUL: NO
-REASON: Consulted the routed WebKit guidance; no WebKit-specific implementation change was
-required.
-
-LIBRARY: axe-core
-VERSION: 4.13.0
-USED: YES
-USEFUL: YES
-REASON: Consulted accessibility guidance and kept the decorative atmospheric layer
-aria-hidden and pointer-events-free.
-
-LIBRARY: Magic UI
-VERSION: repository snapshot; no direct dependency
-USED: YES
-USEFUL: NO
-REASON: Consulted the routed visual library snapshot; no Magic UI component was needed.
+REASON: Context7 requires explicit repository-owner approval under AGENTS.md and was not invoked; checked-in repository documentation and source were sufficient.
 
 ## ROUTED JULES/GEMINI DOCUMENT REPORT
 
-DOCUMENT: jules_google_docs.md
-USED: YES
-USEFUL: YES
-REASON: Consulted the repository-routed Jules operating guidance.
-
-DOCUMENT: developers_google_com_jules_api.md
+DOCUMENT: .docs/deep-dive/jules_google_docs.md
 USED: YES
 USEFUL: NO
-REASON: No Jules API operation was required.
+REASON: Consulted as a routed mandatory resource; it did not materially change the implementation.
 
-DOCUMENT: _google-gemini_gemini-cli.md
+DOCUMENT: .docs/deep-dive/developers_google_com_jules_api.md
 USED: YES
 USEFUL: NO
-REASON: No Gemini CLI operation was required.
+REASON: Consulted as a routed mandatory resource; no Jules API operation was required.
 
-DOCUMENT: _websites_ai_google_dev_gemini-api.md
+DOCUMENT: .docs/deep-dive/_google-gemini_gemini-cli.md
 USED: YES
 USEFUL: NO
-REASON: No Gemini API operation was required.
+REASON: Consulted as a routed mandatory resource; no Gemini CLI operation was required.
+
+DOCUMENT: .docs/deep-dive/_websites_ai_google_dev_gemini-api.md
+USED: YES
+USEFUL: NO
+REASON: Consulted as a routed mandatory resource; no Gemini API operation was required.
 
 ## REPOSITORY COMPONENT REPORT
 
 COMPONENT: AGENTS.md
 USED: YES
 USEFUL: YES
-REASON: Read first and used as the governing task and verification authority.
+REASON: Read first and used as the authoritative governance, authorization, scope, and verification path.
 
-COMPONENT: .jules/polishing.md
+COMPONENT: .jules/deep-dive.md
 USED: YES
 USEFUL: YES
-REASON: Established the selected polishing task path and mandatory local resources.
+REASON: Selected the evidence-driven deep-dive route and required implementation work to follow the investigation.
 
 COMPONENT: .jules/jules.md
 USED: YES
 USEFUL: YES
-REASON: Applied mandatory initialization, memory-bank, testing, and completion requirements.
-
-COMPONENT: .jules/*.md and .jules/cmds/speckit.*.md
-USED: YES
-USEFUL: YES
-REASON: Consulted the repository-routed specialist and Spec Kit command guidance required by
-AGENTS.md; no Spec Kit artifact generation was needed for this targeted repair.
+REASON: Applied initialization, memory-bank, verification, and completion requirements.
 
 COMPONENT: .docs/manifest.json
 USED: YES
 USEFUL: YES
-REASON: Verified the polishing library inventory and routed documentation sources.
+REASON: Verified the routed documentation/library inventory and local snapshots.
 
 COMPONENT: memory-bank/projectBrief.md
 USED: YES
 USEFUL: YES
-REASON: Confirmed the site's entertainment-only identity and the requirement to preserve
-existing project behavior.
+REASON: Confirmed homepage scope and preservation of existing site behavior.
 
 COMPONENT: memory-bank/activeContext.md
 USED: YES
 USEFUL: YES
-REASON: Confirmed the current homepage sky implementation and recorded this repair.
+REASON: Confirmed homepage background history and recorded the cleanup.
 
 COMPONENT: memory-bank/progress.md
 USED: YES
 USEFUL: YES
-REASON: Recorded the completed implementation milestone.
+REASON: Recorded the implementation and verification state.
 
 COMPONENT: CSS_FIX_GUIDE.md
 USED: YES
@@ -158,97 +102,106 @@ REASON: Confirmed the source/public homepage CSS synchronization convention.
 COMPONENT: app/page.js
 USED: YES
 USEFUL: YES
-REASON: Owns the homepage backdrop composition; a dedicated aurora layer was inserted there.
+REASON: Verified the homepage backdrop composition and dedicated homepage aurora element.
 
 COMPONENT: app/homepage/HomePage.js
 USED: YES
 USEFUL: YES
-REASON: Contains the existing Canvas star and shooting-star engine; it was tuned in place.
+REASON: Verified the single Canvas renderer and preserved its star, twinkle, and shooting-star behavior while removing redundant code.
 
 COMPONENT: themes/default/homepage.css
 USED: YES
 USEFUL: YES
-REASON: Source homepage atmosphere and layer styles were extended here.
+REASON: Deep-dive identified and removed the legacy homepage atmospheric selectors and obsolete overrides.
 
 COMPONENT: public/themes/default/homepage.css
 USED: YES
 USEFUL: YES
-REASON: Kept the served static homepage CSS synchronized with its source counterpart.
+REASON: Maintained the served static CSS copy in exact sync with the source copy.
 
 COMPONENT: tests/visual/homepage.spec.ts
 USED: YES
 USEFUL: YES
-REASON: Confirmed the existing visual test already checks the star canvas; baseline regeneration
-is pending because no browser run was performed.
+REASON: Confirmed the existing homepage visual test targets the Canvas atmosphere.
 
 COMPONENT: .github/workflows/protected-files.yml
 USED: YES
 USEFUL: YES
-REASON: Verified that none of the changed repository paths are in the protected-file list.
+REASON: Verified the final changed paths are outside the protected-file list.
 
 COMPONENT: package.json
 USED: YES
 USEFUL: YES
-REASON: Verified the current versions and required pnpm command path.
+REASON: Verified the package scripts, dependency versions, and pnpm requirement.
+
+## VERIFIED DEEP-DIVE FINDINGS
+
+- The homepage has one Canvas renderer for animated stars/shooting stars; no second Canvas star renderer was found.
+- The old .homepage-experience::before static star field was legacy CSS only and was already overridden later in the stylesheet. It is now removed.
+- The old .homepage-experience::after / cosmic-aurora-shift aurora was legacy CSS only and was already overridden later in the stylesheet. It is now removed.
+- The orphaned .hd-aurora-bg and .hd-aurora-accent selectors had no live markup references in repository code. They are now removed.
+- The predictable rare-shooting-star CSS fallback was already removed by the prior implementation commit and remains absent; the Canvas scheduler is the only homepage shooting-star renderer.
+- The card-stage Aurora using .card-stage-container::after / auroraDrift is unrelated Lucky Card Reveal presentation and was retained.
+- Crystal Ball Aurora animations are unrelated page-specific presentation and were retained.
+- The intended homepage atmosphere is now explicitly: photographic sky + .homepage-aurora-layer + .homepage-star-canvas.
 
 ## IMPLEMENTATION
 
-- Added a dedicated fixed aurora layer between the photographic sky backdrop and the star canvas.
-- Restored subtle animated aurora movement with reduced-motion handling.
-- Tuned the Canvas star field for clearer, more natural individual twinkle without adding a
-dependency.
-- Improved randomized shooting-star timing and visibility; the first event can occur during a
-normal initial visit while later events remain infrequent.
-- Removed the legacy predictable CSS shooting-star fallback so the Canvas engine is authoritative.
-- Kept the two homepage CSS copies synchronized.
-- No pull request was created, and no merge/publish/deployment action was performed.
+- Preserved the dedicated homepage aurora layer between the photographic sky and Canvas atmosphere.
+- Preserved randomized Canvas shooting stars, reduced-motion handling, subtle per-star twinkle, and constellation twinkle behavior.
+- Removed dead homepage pseudo-star and pseudo-aurora layers, their animation, and the obsolete disabling override.
+- Removed orphaned HD Aurora selectors with no live markup references.
+- Removed the disabled homepage hero decoration.
+- Removed redundant inline fixed positioning from the Canvas and a no-op composite-mode assignment without intentionally changing visual behavior.
+- Kept themes/default/homepage.css and public/themes/default/homepage.css byte-for-byte synchronized.
+- Preserved midnight reset, countdown timer, collection, sharing, tier systems, audio, card artwork, payment, database, authentication, deployment, and other non-atmosphere behavior.
+- No pull request was created and no deployment/merge action was performed.
 
 ## AUTHORIZATION / SCOPE
 
-- Visual/background change was explicitly authorized by the owner in this conversation.
-- Protected files listed in .github/workflows/protected-files.yml were not changed.
-- No deployment, payment, authentication, database, secret, audio, artwork, or core homepage
-functionality changes were made.
-- Scope was limited to the requested homepage atmosphere restoration plus mandatory memory/report
-updates.
+- Owner explicitly authorized the homepage cleanup and requested the deep-dive investigation.
+- No protected file listed by .github/workflows/protected-files.yml was changed.
+- No dependency was added or upgraded.
+- No production deployment was triggered.
+- Scope remained limited to homepage atmosphere cleanup plus mandatory memory/report updates.
 
 ## VERIFICATION
 
 COMMAND: AGENTS.md / routed repository inspection
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: AGENTS.md was read first; the polishing route, repository memory,
-required .jules/.docs/.specify material, and relevant source/tests were inspected.
+EVIDENCE/OUTPUT SUMMARY: AGENTS.md was read first; the deep-dive route, .jules, .docs, memory-bank, source, tests, package metadata, and protected-file rules were inspected.
 
-COMMAND: Theme CSS synchronization check
+COMMAND: Legacy-selector cross-reference
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: The implementation was constructed from one transformed CSS source and
-the resulting themes/default/homepage.css and public/themes/default/homepage.css contents were
-required to match before committing their shared blob.
+EVIDENCE/OUTPUT SUMMARY: The legacy homepage pseudo-star/pseudo-aurora selectors and orphaned HD Aurora selectors were traced to the homepage CSS only; no live homepage markup references were found for the removed HD Aurora selectors.
 
-COMMAND: Static implementation assertions
+COMMAND: Source/public homepage CSS parity
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: The transformation asserted the star twinkle phase, shooting-star
-scheduler, homepage aurora markup, and aurora CSS were all present; the expected legacy CSS
-shooting-star block was also verified and removed.
+EVIDENCE/OUTPUT SUMMARY: The cleanup was generated once from the source CSS and the resulting themes/default/homepage.css and public/themes/default/homepage.css contents were verified identical.
+
+COMMAND: Single homepage Canvas renderer assertion
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: HomePage.js contains one homepage-star-canvas render; the existing Canvas engine remains responsible for animated stars, twinkle, and shooting stars.
+
+COMMAND: Legacy code absence assertion
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: cosmic-aurora-shift, hd-aurora-bg, hd-aurora-accent, rare-shooting-star, and the old .homepage-experience::before/::after blocks are absent from the cleaned homepage CSS.
 
 COMMAND: pnpm test
 RESULT: NOT RUN
-EVIDENCE/OUTPUT SUMMARY: No local repository working tree/dependency installation was available,
-and no PR was created to invoke the repository's PR-based test workflows.
+EVIDENCE/OUTPUT SUMMARY: No local repository working tree/dependency installation was available in this execution, so the test suite was not executed.
 
 COMMAND: pnpm run build
 RESULT: NOT RUN
-EVIDENCE/OUTPUT SUMMARY: No local repository working tree/dependency installation was available;
-therefore no build size was measured and no build result is claimed.
+EVIDENCE/OUTPUT SUMMARY: No local repository working tree/dependency installation was available, so no production build or build-size measurement was performed.
 
 COMMAND: Browser/runtime visual verification
 RESULT: NOT RUN
-EVIDENCE/OUTPUT SUMMARY: No browser-capable repository runtime was available in this execution;
-the existing Playwright visual baseline therefore was not regenerated or claimed as passing.
+EVIDENCE/OUTPUT SUMMARY: No browser-capable repository runtime was available in this execution. No visual result is claimed.
 
 ## BUILD CAP
 BUILD CAP STATUS: NOT MEASURED
-REASON: No build was executed. The 495 MB hard cap was therefore not approached or bypassed.
+REASON: No build was executed. The 495 MB hard cap was neither approached nor bypassed.
 
 ## EXACT FINAL DIFF RECONCILIATION
 
@@ -262,19 +215,14 @@ pr_summary.md
 
 ## REMAINING ISSUES
 
-- The code and CSS change are committed to the dedicated branch, but browser rendering has not
-yet been independently verified.
-- Existing visual screenshot baselines have not been regenerated. A later PR review/CI run may
-therefore require intentional homepage baseline updates.
-- No PR was created, per owner instruction.
+- Runtime/browser verification is still required before claiming the final visual result.
+- The dedicated branch has not been opened as a pull request.
+- If CI reports visual-regression drift, any screenshot baseline update should be intentional and reviewed.
 
 ## USEFUL RESULT: NO
 
-The requested implementation is present on the branch, but AGENTS.md requires a verified requested
-result before reporting USEFUL RESULT: YES; browser/runtime verification remains outstanding.
+The requested cleanup is statically verified on the branch, but AGENTS.md requires the requested result to be runtime-verified before reporting USEFUL RESULT: YES.
 
 ## PRE-SUBMISSION DOUBLE-CHECK
 
-Completed: re-checked requested scope, changed-file set, protected-file list, source/public CSS
-synchronization, preserved homepage functionality, no PR creation, and the distinction between
-verified static work and unverified runtime behavior.
+Completed: re-checked the requested homepage atmosphere scope, legacy-layer removal, single Canvas renderer, source/public CSS parity, protected-file list, preserved non-scope functionality, exact changed-file set, unrun build/test status, and the distinction between verified static work and unverified runtime behavior.
