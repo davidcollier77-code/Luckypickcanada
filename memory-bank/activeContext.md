@@ -247,3 +247,10 @@
 - Established three committed homepage viewport baselines under tests/visual/__screenshots__/.
 - GitHub Actions verification run 36394814400 passed the complete visual comparison against those baselines.
 - Final PR workflow is read-only with committed baselines; normal PRs do not auto-create or mutate baselines.
+## 2026-09-28 — Homepage Background Restoration (CSS Sync)
+- **Problem**: The homepage was rendering a dark, sparse background instead of the intended cinematic Pexels photographic Milky Way.
+- **Root Cause Verified**: `themes/default/homepage.css` contained the correct `.homepage-sky-backdrop` implementation, but the file served to the browser (`public/themes/default/homepage.css`) was a stale, older copy that lacked this implementation. The `CSS_FIX_GUIDE.md` establishes a convention to manually copy CSS from `themes/default/` to `public/themes/default/` to bypass Next.js CSS bundling issues.
+- **Fix**: Synchronized `public/themes/default/homepage.css` with the source `themes/default/homepage.css`.
+- **Scope Control**: Reverted earlier unnecessary changes to `default.css` and `hero.css` from the previous failed attempt; they were already synced or unrelated to the bug. Kept changes strictly limited to `public/themes/default/homepage.css` to satisfy the "smallest correct change" requirement.
+- **Verification**: Verified using a local production build (`pnpm run build` and `node .next/standalone/server.js`), captured mandatory viewport screenshots (Desktop full/1440x900, Mobile 412x915, Mobile 390x844). Verified visually that the cinematic background was restored without breaking existing ambient animations (Canvas stars).
+- **Baselines**: Ran `npx playwright test --update-snapshots` to deliberately regenerate the three committed visual baselines, since the baselines were previously set against the broken dark-background state.
