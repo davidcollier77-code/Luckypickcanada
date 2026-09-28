@@ -30,7 +30,7 @@ export default function Page() {
           maxWidth: '800px',
           marginInline: 'auto',
           textAlign: 'left',
-          opacity: '0.9'
+          color: 'rgba(255, 255, 255, 0.9)'
         }}
       >
         <h2 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '600' }}>
@@ -42,7 +42,7 @@ export default function Page() {
         <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
           Our digital card decks feature tiered card reveals—ranging from standard draws to premium cards like <em>Coast to Coast</em>—designed to make every pick exciting. Use our random pick tool for daily decisions, entertainment, or simply testing your fortune today.
         </p>
-        <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '16px' }}>
+        <p style={{ fontSize: '0.85rem', color: '#bbb', marginTop: '16px' }}>
           Lucky Pick Canada is intended strictly for entertainment purposes. Enjoy your daily draws and see what luck has in store for you!
         </p>
       </section>
@@ -57,7 +57,7 @@ export default function Page() {
           maxWidth: '800px',
           marginInline: 'auto',
           textAlign: 'center',
-          opacity: '0.9'
+          color: 'rgba(255, 255, 255, 0.9)'
         }}
       >
         <h2 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '600', color: '#fbbf24' }}>
@@ -71,9 +71,9 @@ export default function Page() {
           style={{
             display: 'inline-block',
             padding: '8px 16px',
-            backgroundColor: 'rgba(251, 191, 36, 0.1)',
+            backgroundColor: 'rgba(251, 191, 36, 0.2)',
             color: '#fbbf24',
-            border: '1px solid rgba(251, 191, 36, 0.2)',
+            border: '1px solid rgba(251, 191, 36, 0.4)',
             borderRadius: '9999px',
             textDecoration: 'none',
             fontSize: '0.9rem',
