@@ -3,7 +3,6 @@
 .homepage-hero > *, .homepage-community-banner > *, .homepage-offer-grid > *, .homepage-community-grid > * { min-width: 0; max-width: 100%; }
 .navigation-logo { height: 40px; width: auto; object-fit: contain; }
 .homepage-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(380px, 1.1fr); align-items: center; min-height: 680px; padding: 0 clamp(1rem, 5vw, 5.5rem) clamp(2rem, 7vw, 6rem); }
-.homepage-hero::before { display: none; content: ''; position: absolute; inset: 3% 8% 8%; z-index: -1; border: 1px solid rgba(247, 210, 107, .2); border-radius: 46% 54% 50% 45%; background: radial-gradient(ellipse at 65% 42%, rgba(95, 210, 165, .18), transparent 34%), radial-gradient(ellipse at 90% 25%, rgba(141, 102, 224, .14), transparent 30%); }
 .homepage-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; margin-top: 1.4rem; }
 .homepage-hero-artwork { display: block; width: 100%; height: auto; }
 .homepage-text-link { color: #ffe29a; font-size: .86rem; font-weight: 800; letter-spacing: .05em; text-decoration: none; text-transform: uppercase; transition: color .2s ease, transform .2s ease; }
@@ -271,62 +270,6 @@
 .homepage-social-links a { color: #ffe49a; font-size: .75rem; font-weight: 900; letter-spacing: .08em; text-decoration: none; text-transform: uppercase; }
 .homepage-social-links a:hover, .homepage-social-links a:focus-visible { color: #fff7cc; text-decoration: underline; }
 
-.homepage-experience::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: -1;
-  background:
-    radial-gradient(circle 1.5px at 10% 20%, #ffffff 100%, transparent 100%),
-    radial-gradient(circle 1px at 30% 15%, #ffffff 100%, transparent 100%),
-    radial-gradient(circle 2px at 80% 40%, #ffffff 100%, transparent 100%),
-    radial-gradient(circle 1px at 70% 80%, #ffffff 100%, transparent 100%),
-    radial-gradient(circle 1.5px at 40% 70%, #ffffff 100%, transparent 100%),
-    radial-gradient(circle 1px at 90% 10%, #ffffff 100%, transparent 100%),
-    radial-gradient(circle 1.5px at 50% 90%, #ffffff 100%, transparent 100%),
-    radial-gradient(circle 2px at 20% 60%, #ffffff 100%, transparent 100%),
-    radial-gradient(circle 1px at 60% 30%, #ffffff 100%, transparent 100%);
-  background-size: 200px 200px;
-  background-color: transparent;
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-.homepage-experience::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: -1;
-  mix-blend-mode: screen;
-  pointer-events: none;
-  animation: cosmic-aurora-shift 30s ease-in-out infinite alternate;
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  background: radial-gradient(ellipse 60% 40% at 20% -10%, rgba(24, 208, 132, 0.15) 0%, rgba(24, 208, 132, 0.05) 40%, transparent 70%),
-              radial-gradient(ellipse 70% 50% at 80% 110%, rgba(151, 78, 240, 0.12) 0%, rgba(151, 78, 240, 0.04) 40%, transparent 70%),
-              radial-gradient(ellipse 80% 60% at 50% 50%, rgba(105, 184, 255, 0.08) 0%, rgba(105, 184, 255, 0.03) 30%, transparent 60%);
-}
-
-@keyframes cosmic-aurora-shift {
-  0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 0.8; }
-  50% { transform: scale(1.1) translate(-2%, 2%) rotate(1deg); opacity: 1; }
-  100% { transform: scale(1.05) translate(2%, -1%) rotate(-1deg); opacity: 0.85; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .homepage-experience::after {
-    animation: none !important;
-  }
-}
-
-/* Rare Shooting Star */
-
 /* Align homepage buttons with main reveal button style (cta-glow) */
 .homepage-offer-action,
 .checkout-modal-submit,
@@ -380,16 +323,6 @@
 }
 
 
-/* HD Aurora and Underglows */
-.hd-aurora-bg {
-  background: radial-gradient(circle at center, rgba(30, 215, 150, 0.2) 0%, rgba(15, 80, 150, 0.1) 40%, transparent 70%);
-  filter: blur(40px);
-}
-.hd-aurora-accent {
-  background: radial-gradient(circle at center, rgba(100, 200, 255, 0.25) 0%, rgba(50, 100, 200, 0.1) 50%, transparent 70%);
-  filter: blur(30px);
-}
-
 .tier-underglow {
   transition: opacity 0.5s ease-in-out;
 }
@@ -428,8 +361,8 @@
 
 /* ==========================================================================
    CINEMATIC HOMEPAGE SKY + UI POLISH
-   The photographic sky is the environment; animated stars/shooting stars
-   remain dynamic atmosphere. Existing content and interactions are preserved.
+   Single homepage atmosphere stack:
+   photographic sky → CSS aurora → Canvas stars + shooting stars.
    ========================================================================== */
 
 .homepage-sky-backdrop {
@@ -482,12 +415,6 @@ body:has(.homepage-sky-backdrop)::after {
 
 .lucky-site-shell.homepage-experience {
   background: transparent !important;
-}
-
-.lucky-site-shell.homepage-experience::before,
-.homepage-experience::before,
-.homepage-experience::after {
-  content: none !important;
 }
 
 .homepage-aurora-layer {
