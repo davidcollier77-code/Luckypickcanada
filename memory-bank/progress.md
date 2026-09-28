@@ -43,3 +43,13 @@
 - **Implementation**: Changed the homepage-scoped `.homepage-background-foundation` rule in `themes/default/homepage.css` from transparent painting to `display: none !important`.
 - **Preserved**: Photographic sky backdrop, mobile brightness correction, navigation, hero, stars, and existing homepage functionality.
 - **Verification**: Branch diff against `main` is exactly one CSS-file change; browser/build verification is still required before claiming the visual result.
+
+
+## 2026-09-28 — Homepage Sky Root Background Follow-up
+- **Status**: Implemented; runtime verification pending.
+- **Branch**: `fix/homepage-top-foundation-layer`
+- **Objective**: Address the mobile recording remaining visually unchanged after removing the redundant `.homepage-background-foundation` element from the homepage background stack.
+- **Finding**: `themes/default/default.css` retains `html { background: var(--night) }`; the homepage only previously cleared the body background. Because `.homepage-sky-backdrop` uses a negative z-index, the root background remained a viable obscuring layer.
+- **Implementation**: Added `html:has(.homepage-sky-backdrop) { background: transparent !important; }` in `themes/default/homepage.css`, scoped only to pages containing the homepage photographic backdrop.
+- **Preserved**: Non-homepage root background, homepage content, navigation, stars, functionality, and existing mobile brightness settings.
+- **Verification**: Code-level cross-reference completed; runtime/browser verification is still required before claiming success.
