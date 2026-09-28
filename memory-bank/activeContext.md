@@ -1,3 +1,13 @@
+## 2026-09-28 — Homepage Atmospheric Layer Repair (Branch: fix/homepage-atmosphere-restore)
+
+- Verified the homepage atmospheric stack still contained the photographic sky backdrop and the existing Canvas star/shooting-star engine, while the old animated homepage pseudo-layer was explicitly disabled.
+- Implemented a scoped restoration using a dedicated `.homepage-aurora-layer` between the photographic sky and star canvas so the aurora no longer depends on the disabled global pseudo-background layers.
+- Tuned the existing Canvas atmosphere rather than replacing it: stars now use independent twinkle phases/amplitudes, remain visible over the photographic sky, and randomized shooting stars can appear earlier on a fresh page visit while remaining rare thereafter.
+- Removed the legacy predictable CSS shooting-star fallback so the randomized Canvas engine is the single shooting-star implementation.
+- Synchronized `themes/default/homepage.css` and `public/themes/default/homepage.css` after the change.
+- Preserved homepage functionality, content, card artwork, audio, reset/countdown behavior, collection/share behavior, deployment configuration, and protected files.
+- Runtime browser/build verification is still pending because this work was intentionally left on a branch with no pull request, per owner request.
+
 ## 2026-09-27 — Homepage Sky Layer Repair (In Progress)
 
 - Verified the deployed homepage retained a full-screen `bg-slate-950` foundation while the photographic homepage backdrop remained at `z-index: -30`.

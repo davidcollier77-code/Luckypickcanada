@@ -16,6 +16,7 @@ export default function Page() {
   return (
     <>
       <div className="homepage-sky-backdrop" aria-hidden="true" />
+      <div className="homepage-aurora-layer" aria-hidden="true" />
       <Hero />
       <HomePage />
       <FAQSection />

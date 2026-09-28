@@ -81,23 +81,24 @@ export default function HomePage() {
     let constellationTwinklePhase = 0; // 0 to 1
 
     const initAmbientStars = (width, height) => {
-      const numStars = Math.floor((width * height) / 2000); // Moderate density
+      const numStars = Math.floor((width * height) / 3200); // Moderate density with more visible star points
       const newStars = [];
       for (let i = 0; i < numStars; i++) {
         newStars.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          radius: Math.random() * 0.6 + 0.2, // Tiny stars
-          baseAlpha: Math.random() * 0.4 + 0.1, // Dim base alpha
+          radius: Math.random() * 0.75 + 0.3, // Small but visible star points
+          baseAlpha: Math.random() * 0.42 + 0.18,
           alpha: 0, // Current alpha
-          twinkleSpeed: Math.random() * 0.01 + 0.005,
-          twinkleDir: Math.random() > 0.5 ? 1 : -1,
+          twinkleSpeed: Math.random() * 0.0025 + 0.0015,
+          twinklePhase: Math.random() * Math.PI * 2,
+          twinkleAmount: Math.random() * 0.12 + 0.06,
           isCluster: false // Will mark cluster stars later
         });
       }
 
       // Select 3-4 stars for cluster twinkling
-      const clusterCount = Math.floor(Math.random() * 2) + 3;
+      const clusterCount = Math.floor(Math.random() * 3) + 4;
       for (let i = 0; i < clusterCount; i++) {
         if (newStars.length > 0) {
           const index = Math.floor(Math.random() * newStars.length);
@@ -114,10 +115,10 @@ export default function HomePage() {
       const startX = Math.random() * width;
       const startY = Math.random() * (height * 0.8);
 
-      const length = Math.random() * 40 + 40;
-      const angle = (Math.random() * 90 + 20) * (Math.PI / 180);
+      const length = Math.random() * 70 + 55;
+      const angle = (Math.random() * 70 + 24) * (Math.PI / 180);
       const finalAngle = Math.random() > 0.5 ? angle : Math.PI - angle;
-      const speed = Math.random() * 10 + 8;
+      const speed = Math.random() * 8 + 10;
 
       shootingStars.push({
         x: startX,
@@ -126,7 +127,7 @@ export default function HomePage() {
         angle: finalAngle,
         speed: speed,
         life: 1.0,
-        decay: Math.random() * 0.015 + 0.01,
+        decay: Math.random() * 0.01 + 0.012,
         coreGlow: Math.random() * 0.5 + 0.5,
       });
     };
@@ -146,8 +147,12 @@ export default function HomePage() {
     // Timers
     let shootingStarTimeout;
     let doubleStarTimeout;
+    let firstShootingStar = true;
     const scheduleShootingStar = () => {
-      const delay = Math.random() * 30000 + 30000; // 30s to 60s
+      const minDelay = firstShootingStar ? 12000 : 24000;
+      const maxDelay = firstShootingStar ? 22000 : 48000;
+      const delay = Math.random() * (maxDelay - minDelay) + minDelay;
+      firstShootingStar = false;
       shootingStarTimeout = setTimeout(() => {
         spawnShootingStar(canvas.width, canvas.height);
 
@@ -200,11 +205,11 @@ export default function HomePage() {
       for (let i = 0; i < ambientStars.length; i++) {
         const star = ambientStars[i];
 
-        let currentAlpha = star.baseAlpha + Math.sin(currentTime * star.twinkleSpeed) * 0.2;
+        let currentAlpha = star.baseAlpha + Math.sin(currentTime * star.twinkleSpeed + star.twinklePhase) * star.twinkleAmount;
 
         if (star.isCluster && isConstellationTwinkling) {
             // Brighten up during constellation pulse
-            currentAlpha += Math.sin(constellationTwinklePhase) * 0.6;
+            currentAlpha += Math.sin(constellationTwinklePhase) * 0.45;
         }
 
         ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
@@ -233,7 +238,7 @@ export default function HomePage() {
         // PERFORMANCE OPTIMIZATION (Bolt ⚡):
         // Replaced string interpolation for `rgba(...)` with static hex colors
         // and manipulated opacity via `ctx.globalAlpha`.
-        ctx.globalAlpha = Math.max(0, star.life);
+        ctx.globalAlpha = Math.max(0, Math.min(1, star.life * (0.78 + star.coreGlow * 0.22)));
 
         const gradient = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
         gradient.addColorStop(0, 'rgb(255, 240, 200)');
@@ -243,11 +248,11 @@ export default function HomePage() {
         ctx.moveTo(star.x, star.y);
         ctx.lineTo(tailX, tailY);
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = Math.max(0.5, star.life * 1.5);
+        ctx.lineWidth = Math.max(0.8, star.life * 1.75);
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(star.x - 0.5, star.y - 0.5, 1.5, 1.5);
+        ctx.fillRect(star.x - 0.8, star.y - 0.8, 2, 2);
       }
       ctx.globalAlpha = 1.0;
       ctx.globalCompositeOperation = 'source-over';

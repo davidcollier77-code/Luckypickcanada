@@ -1,3 +1,15 @@
+## 2026-09-28 — Homepage Atmospheric Layer Repair
+
+- Branch: `fix/homepage-atmosphere-restore`.
+- Verified the current homepage already had a photographic `.homepage-sky-backdrop` plus a Canvas atmosphere for stars and randomized shooting stars; the previous CSS aurora pseudo-layer was disabled by `.homepage-experience::before/::after { content: none !important; }`.
+- Implemented the smallest scoped restoration across `app/page.js`, `app/homepage/HomePage.js`, and both synchronized homepage CSS copies.
+- Added a dedicated animated aurora layer at a distinct z-index above the photographic sky and below the star canvas.
+- Improved star visibility and naturalness with larger low-density points and per-star twinkle phase/amplitude values.
+- Adjusted shooting-star timing/visibility so a first event can occur within an initial visit while later events remain randomized and infrequent.
+- Removed the old fixed 25-second CSS shooting-star fallback to avoid competing predictable effects.
+- No protected deployment, payment, database, authentication, secret, audio, card-art, reset/countdown, collection, or sharing systems were changed.
+- Full pnpm build and browser runtime visual verification remain pending because no PR was created.
+
 ## 2026-09-27 — Homepage Cinematic Night-Sky + Visual Polish
 
 - **Status**: Completed implementation; CI verified
