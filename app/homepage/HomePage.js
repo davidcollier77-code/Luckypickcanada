@@ -143,7 +143,6 @@ export default function HomePage() {
     canvas.width = window.innerWidth || 1024;
     canvas.height = window.innerHeight || 768;
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
 
     // Timers
     let shootingStarTimeout;
@@ -257,9 +256,14 @@ export default function HomePage() {
     };
 
     draw();
+    const handleResize = () => {
+      resizeCanvas();
+      if (reducedMotion) draw();
+    };
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('resize', handleResize);
       clearTimeout(shootingStarTimeout);
       clearTimeout(doubleStarTimeout);
 
