@@ -78,8 +78,7 @@ export default function HomePage() {
 
     let ambientStars = [];
     let shootingStars = [];
-    let isConstellationTwinkling = false;
-    let constellationTwinklePhase = 0; // 0 to 1
+
 
     /**
      * Creates randomly positioned stars, each with an 8% chance of independent
@@ -150,6 +149,7 @@ export default function HomePage() {
     let shootingStarTimeout;
     let doubleStarTimeout;
     const scheduleShootingStar = () => {
+      if (reducedMotion) return;
       const delay = Math.random() * 30000 + 30000; // 30s to 60s
       shootingStarTimeout = setTimeout(() => {
         spawnShootingStar(canvas.width, canvas.height);
@@ -167,21 +167,12 @@ export default function HomePage() {
     };
     scheduleShootingStar();
 
-    let twinkleTimeout;
-    const scheduleTwinkle = () => {
-      const delay = Math.random() * 15000 + 45000; // 45s to 60s
-      twinkleTimeout = setTimeout(() => {
-        isConstellationTwinkling = true;
-        constellationTwinklePhase = 0;
-        scheduleTwinkle();
-      }, delay);
-    };
-    scheduleTwinkle();
+
 
     /**
      * Repaints the star canvas, advances shooting stars, removes expired ones,
-     * and schedules the next animation frame. Ambient twinkling uses elapsed
-     * wall-clock milliseconds and continues even when reduced motion is preferred.
+     * and schedules the next animation frame. Respects reduced motion preferences
+     * by skipping animation loops.
      *
      * @throws {TypeError} If the canvas has no 2D rendering context.
      */
@@ -204,7 +195,7 @@ export default function HomePage() {
         let currentAlpha = star.baseAlpha;
 
         // Add subtle independent twinkling for the sparse subset of active stars
-        if (star.canTwinkle) {
+        if (star.canTwinkle && !reducedMotion) {
           // Slow sine wave based on time, phase, and speed
           currentAlpha += Math.sin(currentTime * star.twinkleSpeed + star.twinklePhase) * 0.3;
         }
@@ -254,7 +245,9 @@ export default function HomePage() {
       ctx.globalAlpha = 1.0;
       ctx.globalCompositeOperation = 'source-over';
 
-      animationFrameId = requestAnimationFrame(draw);
+      if (!reducedMotion) {
+        animationFrameId = requestAnimationFrame(draw);
+      }
     };
 
     draw();
@@ -264,7 +257,9 @@ export default function HomePage() {
       clearTimeout(shootingStarTimeout);
       clearTimeout(doubleStarTimeout);
 
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, []);
 
