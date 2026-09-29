@@ -85,25 +85,18 @@ export default function HomePage() {
       const numStars = Math.floor((width * height) / 2000); // Moderate density
       const newStars = [];
       for (let i = 0; i < numStars; i++) {
+        // Only a small subset (~8%) of stars will twinkle independently
+        const canTwinkle = Math.random() < 0.08;
+
         newStars.push({
           x: Math.random() * width,
           y: Math.random() * height,
           radius: Math.random() * 0.6 + 0.2, // Tiny stars
           baseAlpha: Math.random() * 0.4 + 0.1, // Dim base alpha
-          alpha: 0, // Current alpha
-          twinkleSpeed: Math.random() * 0.01 + 0.005,
-          twinkleDir: Math.random() > 0.5 ? 1 : -1,
-          isCluster: false // Will mark cluster stars later
+          canTwinkle: canTwinkle,
+          twinkleSpeed: canTwinkle ? (Math.random() * 0.002 + 0.001) : 0, // Very slow independent twinkle
+          twinklePhase: canTwinkle ? Math.random() * Math.PI * 2 : 0, // Random starting phase
         });
-      }
-
-      // Select 3-4 stars for cluster twinkling
-      const clusterCount = Math.floor(Math.random() * 2) + 3;
-      for (let i = 0; i < clusterCount; i++) {
-        if (newStars.length > 0) {
-          const index = Math.floor(Math.random() * newStars.length);
-          newStars[index].isCluster = true;
-        }
       }
       return newStars;
     };
@@ -188,24 +181,16 @@ export default function HomePage() {
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1.0;
 
-      // Handle Constellation Twinkle Phase
-      if (isConstellationTwinkling) {
-        constellationTwinklePhase += 0.005; // Adjust for ~3s cycle
-        if (constellationTwinklePhase >= Math.PI) {
-          isConstellationTwinkling = false;
-          constellationTwinklePhase = 0;
-        }
-      }
-
       // Draw Ambient Stars
       for (let i = 0; i < ambientStars.length; i++) {
         const star = ambientStars[i];
 
-        let currentAlpha = star.baseAlpha + Math.sin(currentTime * star.twinkleSpeed) * 0.2;
+        let currentAlpha = star.baseAlpha;
 
-        if (star.isCluster && isConstellationTwinkling) {
-            // Brighten up during constellation pulse
-            currentAlpha += Math.sin(constellationTwinklePhase) * 0.6;
+        // Add subtle independent twinkling for the sparse subset of active stars
+        if (star.canTwinkle) {
+          // Slow sine wave based on time, phase, and speed
+          currentAlpha += Math.sin(currentTime * star.twinkleSpeed + star.twinklePhase) * 0.3;
         }
 
         ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
@@ -262,7 +247,7 @@ export default function HomePage() {
       window.removeEventListener('resize', resizeCanvas);
       clearTimeout(shootingStarTimeout);
       clearTimeout(doubleStarTimeout);
-      clearTimeout(twinkleTimeout);
+
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
