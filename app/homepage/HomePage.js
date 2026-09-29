@@ -81,6 +81,15 @@ export default function HomePage() {
     let isConstellationTwinkling = false;
     let constellationTwinklePhase = 0; // 0 to 1
 
+    /**
+     * Creates randomly positioned stars, each with an 8% chance of independent
+     * twinkling. Twinkle speeds are in radians per millisecond; phases are in radians.
+     *
+     * @param {number} width - Canvas width in pixels.
+     * @param {number} height - Canvas height in pixels.
+     * @returns {Object[]} New star records, one per 2,000 square pixels rounded down;
+     * empty when the nonnegative canvas area is less than 2,000 square pixels.
+     */
     const initAmbientStars = (width, height) => {
       const numStars = Math.floor((width * height) / 2000); // Moderate density
       const newStars = [];
@@ -169,6 +178,13 @@ export default function HomePage() {
     };
     scheduleTwinkle();
 
+    /**
+     * Repaints the star canvas, advances shooting stars, removes expired ones,
+     * and schedules the next animation frame. Ambient twinkling uses elapsed
+     * wall-clock milliseconds and continues even when reduced motion is preferred.
+     *
+     * @throws {TypeError} If the canvas has no 2D rendering context.
+     */
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
