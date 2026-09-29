@@ -148,6 +148,11 @@ export default function HomePage() {
     // Timers
     let shootingStarTimeout;
     let doubleStarTimeout;
+    /**
+     * Schedules recurring shooting-star spawn attempts 30–60 seconds apart, with
+     * a 15% chance of a second attempt 0.5–2 seconds later. Schedules nothing if
+     * reduced motion was preferred when the effect initialized.
+     */
     const scheduleShootingStar = () => {
       if (reducedMotion) return;
       const delay = Math.random() * 30000 + 30000; // 30s to 60s
@@ -171,8 +176,9 @@ export default function HomePage() {
 
     /**
      * Repaints the star canvas, advances shooting stars, removes expired ones,
-     * and schedules the next animation frame. Respects reduced motion preferences
-     * by skipping animation loops.
+     * and schedules the next animation frame. If reduced motion was preferred
+     * when the effect initialized, paints without ambient twinkling and does not
+     * schedule another frame.
      *
      * @throws {TypeError} If the canvas has no 2D rendering context.
      */
