@@ -79,3 +79,13 @@
 - **Preserved:** Hero/top portion, feature logic, checkout types, Suggestion Box submission behavior, Facebook destination, Lucky Map destination, and existing homepage artwork/background.
 - **Governance:** Source and served homepage CSS remain synchronized.
 - **Verification:** Final PR CI/Playwright, link/destination verification, final diff reconciliation, and pre-submission second check remain required.
+
+
+## 2026-09-29 — Homepage Aurora / Photographic Sky Compositing Repair
+- **Status:** Completed.
+- **PR:** #1306.
+- **Scope:** One-line homepage compositing repair in `app/globals.css`.
+- **Fix:** Made the existing `.aurora-container` background transparent so the photographic Milky Way at `z-index: -30` remains visible beneath the aurora layers at `z-index: -20`.
+- **Preserved:** Existing four-layer aurora animation, sparse independent star twinkle/shooting-star canvas, homepage layout/content, and all site functionality.
+- **Verification:** Temporary Playwright baseline generation succeeded; final Visual QA run 36534573471 passed all three Chromium viewport comparisons. Final OpenNext validation run 36534573368 passed the Next.js build, OpenNext build, compiled Tailwind scan, worker/assets checks, and Wrangler build validation.
+- **Final diff control:** Temporary baseline workflow was removed; the final application change remains limited to `app/globals.css` plus the three approved visual baseline PNGs and required Memory Bank/PR reporting records.

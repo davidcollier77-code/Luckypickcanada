@@ -315,7 +315,7 @@ body {
   z-index: -20;
   overflow: hidden;
   pointer-events: none;
-  background-color: var(--lp-bg);
+  background: transparent;
   /* Heavy blur blends the gradients into flowing atmospheric ribbons */
   filter: blur(60px) saturate(2);
   transform: translateZ(0); /* Hardware acceleration */
