@@ -1,3 +1,9 @@
+## 2026-09-29 — Homepage reduced-motion canvas resize repair
+
+- Verified that resizing clears the canvas while reduced motion has no recurring frame to repaint it.
+- Updated the resize listener to redraw once after resizing for reduced motion; normal motion retains its existing animation loop.
+- A focused effect check passed for both motion settings and listener cleanup. CodeRabbit CLI review was unavailable because review is disabled for this task.
+
 ## 2026-09-27 — Homepage Sky Layer Repair (In Progress)
 
 - Verified the deployed homepage retained a full-screen `bg-slate-950` foundation while the photographic homepage backdrop remained at `z-index: -30`.
