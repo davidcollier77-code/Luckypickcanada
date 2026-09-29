@@ -383,7 +383,7 @@ Compliance certifications, acceptable use policies, HIPAA, and security reportin
 
 Postgres extensions supported by Neon, with install and usage instructions.
 
-- [All 47 Extensions pages](https://neon.com/docs/extensions/llms.txt) — key pages below
+- [All 48 Extensions pages](https://neon.com/docs/extensions/llms.txt) — key pages below
 
 - [Postgres extensions](https://neon.com/docs/extensions/pg-extensions.md)
 - [The pg_stat_statements extension](https://neon.com/docs/extensions/pg_stat_statements.md): Track planning and execution statistics for all SQL statements
