@@ -271,3 +271,16 @@
 - Reused the established homepage glass/surface treatment for FAQ question containers and the supporting `Make Your Moment Personal` section copy.
 - Kept `themes/default/homepage.css` and `public/themes/default/homepage.css` synchronized.
 - Verification remaining before completion: PR CI/Playwright, final link/destination checks, final diff audit, and second error check.
+
+
+## 2026-09-29 — Homepage Aurora / Photographic Sky Compositing Repair
+- **Status:** Implemented and runtime-verified in Chromium CI.
+- **PR:** #1306.
+- **Root cause verified:** `.homepage-sky-backdrop` remains the photographic Milky Way foundation at `z-index: -30`, while `.aurora-container` was positioned at `z-index: -20` and painted an opaque `var(--lp-bg)` background. That container obscured the photographic image beneath it.
+- **Implementation:** Changed only `.aurora-container` in `app/globals.css` from the opaque `background-color: var(--lp-bg)` to `background: transparent`.
+- **Preserved:** All four existing aurora gradient layers and their slow motion; the homepage photographic background and its existing served-CSS synchronization; the existing viewport canvas with sparse independent star twinkling (~8% of stars) and randomized shooting stars; homepage content and functionality.
+- **Visual verification:** The fixed branch regenerated the three approved Playwright baselines from a real Chromium render. Final Visual QA run 36534573471 passed the committed-baseline check and the screenshot comparison for desktop 1440×900, mobile 390×844, and mobile 412×915.
+- **Build verification:** Validate OpenNext run 36534573368 passed the Next.js production build, OpenNext Cloudflare build, compiled Tailwind verification, worker/assets checks, and Wrangler no-deploy validation.
+- **Temporary tooling cleanup:** The temporary baseline-regeneration workflow used only to approve the corrected visual baselines was removed before finalization.
+- **Authorization:** `app/globals.css` is a protected file under the repository policy; the owner explicitly authorized this homepage visual repair.
+- **No changes:** No card artwork, audio, tier logic, reset/countdown, collection/share behavior, payment, database, authentication, deployment configuration, or secrets were changed.
