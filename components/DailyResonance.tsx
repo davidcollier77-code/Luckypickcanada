@@ -1118,7 +1118,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
       {!isCompact && (
         <div className="absolute top-4 left-4 z-20">
-          <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90">
+          <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/60 backdrop-blur-md transition hover:border-white/20 hover:text-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80">
             <span aria-hidden>←</span> Return to Home
           </Link>
         </div>
@@ -1166,7 +1166,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
             <div className="flex flex-col items-center mt-auto w-full pt-4">
               <button
                 onClick={handleShare}
-                className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200 mb-6"
+                className="border border-cyan-500/50 text-cyan-300 px-6 py-2 rounded-full hover:bg-cyan-500/10 transition-colors duration-200 mb-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300/80"
               >
                 {shareStatus === 'copied' ? 'Copied ✓' : 'Share My Resonance'}
               </button>

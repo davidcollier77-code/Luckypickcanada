@@ -9,3 +9,7 @@
 ## 2026-09-12 - Prevent screen readers from announcing loading spinners redundantly
 **Learning:** Decorative SVG elements like loading spinners inside interactive elements (e.g., `<button>`) with text can cause screen readers to announce confusing or redundant information. This is an accessibility issue found in the `LuckyGenerator` loading state.
 **Action:** Always add `aria-hidden="true"` to loading spinners or decorative `<svg>` icons when semantic text like "Loading..." is already present.
+
+## 2026-09-17 - Keyboard navigation focus states
+**Learning:** Some interactive elements in `DailyResonance.tsx` (like "Return to Home" and "Share My Resonance") lacked consistent `focus-visible` styling, hindering keyboard navigation accessibility.
+**Action:** Always add `focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2` alongside an appropriate `focus-visible:outline-color` (e.g., `outline-white/80` or `outline-cyan-300/80`) to interactive elements (`<button>`, `<Link>`, `<a>`) to ensure a consistent, accessible experience for keyboard users across the application.
