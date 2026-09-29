@@ -133,6 +133,9 @@ No routed requirement may be skipped, substituted, ranked, or marked "N/A".
 
 # 🔴 PR SUMMARY — MANDATORY CANONICAL RECORD
 
+**PR Summary means the GitHub Pull Request description/summary itself — NOT a repository file such as `pr-summary.md`.**
+**Jules MUST put the complete final task report in the GitHub PR Summary and MUST NOT create or update `pr-summary.md` unless explicitly requested.**
+
 The PR Summary is the SINGLE CANONICAL RECORD of governance compliance,
 consultation, implementation, verification, and final Git state.
 
