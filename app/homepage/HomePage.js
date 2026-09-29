@@ -94,15 +94,15 @@ export default function HomePage() {
       const newStars = [];
       for (let i = 0; i < numStars; i++) {
         // Only a small subset (~8%) of stars will twinkle independently
-        const canTwinkle = Math.random() < 0.08;
+        const canTwinkle = Math.random() < 0.12;
 
         newStars.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          radius: Math.random() * 0.6 + 0.2, // Tiny stars
-          baseAlpha: Math.random() * 0.4 + 0.1, // Dim base alpha
+          radius: Math.random() * 0.8 + 0.5, // 1px to 2.6px stars to prevent sub-pixel blur
+          baseAlpha: Math.random() * 0.5 + 0.2, // Slightly brighter base alpha
           canTwinkle: canTwinkle,
-          twinkleSpeed: canTwinkle ? (Math.random() * 0.002 + 0.001) : 0, // Very slow independent twinkle
+          twinkleSpeed: canTwinkle ? (Math.random() * 0.004 + 0.002) : 0, // Perceptible but gentle twinkle speed
           twinklePhase: canTwinkle ? Math.random() * Math.PI * 2 : 0, // Random starting phase
         });
       }
@@ -154,7 +154,7 @@ export default function HomePage() {
      */
     const scheduleShootingStar = () => {
       if (reducedMotion) return;
-      const delay = Math.random() * 30000 + 30000; // 30s to 60s
+      const delay = Math.random() * 20000 + 10000; // 10s to 30s
       shootingStarTimeout = setTimeout(() => {
         spawnShootingStar(canvas.width, canvas.height);
 
@@ -188,8 +188,7 @@ export default function HomePage() {
       const width = canvas.width;
       const height = canvas.height;
 
-      ctx.globalCompositeOperation = 'screen';
-      // Restore default composite operation and ensure globalAlpha is clean
+      // Ensure composite operation and globalAlpha are clean for ambient stars
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 1.0;
 
@@ -202,7 +201,7 @@ export default function HomePage() {
         // Add subtle independent twinkling for the sparse subset of active stars
         if (star.canTwinkle && !reducedMotion) {
           // Slow sine wave based on time, phase, and speed
-          currentAlpha += Math.sin(currentTime * star.twinkleSpeed + star.twinklePhase) * 0.3;
+          currentAlpha += Math.sin(currentTime * star.twinkleSpeed + star.twinklePhase) * 0.4;
         }
 
         ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));

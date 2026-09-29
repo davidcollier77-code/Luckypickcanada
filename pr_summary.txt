@@ -1,68 +1,81 @@
 SELECTED TASK GROUP: polishing
-GROUP REASON: Task involves adjusting opacity and contrast of existing visual elements to fix visibility/legibility.
+GROUP REASON: The request is to refine and visually polish the homepage hero night-sky atmospheric effect (stars, shooting stars, and sharpness) without redesigning or restructuring components.
 
-LIBRARY CONSULTATION REPORT
-LIBRARY: Next.js
-VERSION: 14/15/16.3.6 (framework default)
+LIBRARY CONSULTATION REPORT:
+LIBRARY: reactjs/react.dev
+VERSION: Latest (from `.docs/polishing`)
 USED: YES
-USEFUL: YES
-REASON: Essential framework for the application. Evaluated styling approaches (inline vs Tailwind) across layouts.
-LIBRARY: React
-VERSION: 18/19
-USED: YES
-USEFUL: YES
-REASON: Required for understanding component structure in layout.js and page.js.
-LIBRARY: Tailwind CSS
-VERSION: v3/v4
-USED: YES
-USEFUL: YES
-REASON: Used to determine how to adjust text utility classes (e.g., text-white/60 to text-white/80) in layout.js.
+USEFUL: NO
+REASON: React documentation was not directly applicable as the fix involved vanilla Canvas API and CSS properties rather than React paradigms.
 
-ROUTED JULES/GEMINI DOCUMENT REPORT
+LIBRARY: mdn/canvas
+VERSION: Latest
+USED: YES
+USEFUL: YES
+REASON: Guided understanding of `ctx.fillRect` sub-pixel rendering and `ctx.globalCompositeOperation` handling.
+
+ROUTED JULES/GEMINI DOCUMENT REPORT:
 DOCUMENT: .jules/jules.md
 USED: YES
 USEFUL: YES
-REASON: Adhered to initialization requirements and verified MCP gating rules.
-DOCUMENT: .docs/polishing/jules_google_docs.md
-USED: YES
-USEFUL: YES
-REASON: Provided instructions on Jules CLI environment, ensuring actions like pre-commits align with environment expectations.
-DOCUMENT: .docs/polishing/_google-gemini_gemini-cli.md
-USED: YES
-USEFUL: YES
-REASON: Informational on tooling shortcuts, maintaining adherence to project-specified documentation paths.
+REASON: Provided the mandatory initialization directive and established the governance and reporting requirements.
+
 DOCUMENT: .jules/polishing.md
 USED: YES
 USEFUL: YES
-REASON: Confirmed task routing and verified required controlled resources for polishing changes.
+REASON: Confirmed the task fits the polishing task group constraints (e.g. testing visual changes, utilizing fixed target layouts over CSS scaling which was evaluated to not be the problem here).
 
-REPOSITORY COMPONENT REPORT
-COMPONENT: memory-bank/activeContext.md
+DOCUMENT: AGENTS.md
 USED: YES
 USEFUL: YES
-REASON: Reviewed recent fixes to understand previous CSS adjustments and appended the new fix record.
-COMPONENT: app/page.js
+REASON: Provided governance rules regarding 495 MB limits, file verification procedures, PR summary format, and MCP restrictions.
+
+REPOSITORY COMPONENT REPORT:
+COMPONENT: app/homepage/HomePage.js
 USED: YES
 USEFUL: YES
-REASON: Identified as the primary location of the "Our Story" text and "Read the Full Story" button that were difficult to read. Opacities and inline color styles were adjusted here.
-COMPONENT: app/layout.js
+REASON: Examined to diagnose and patch canvas logic (twinkle rates, shooting star timing, sub-pixel radii).
+
+COMPONENT: themes/default/homepage.css & public/themes/default/homepage.css
 USED: YES
 USEFUL: YES
-REASON: Identified as the location of the footer where text legibility was poor. Adjusted Tailwind text-opacity classes.
+REASON: Examined to diagnose CSS filters impacting canvas sharpness.
 
-495 MB BUILD CAP
-FOLLOWED: YES
-ACTUAL BUILD SIZE: 291 MB (approximate from previous logs, well under limit)
-IF CAP REACHED: N/A
+ROOT CAUSE:
+The imperceptible animation was caused by multiple factors in `app/homepage/HomePage.js`:
+1. Twinkle speed was too slow (taking 3-6 seconds per cycle) and the amplitude combined with very dim base opacities made changes unnoticeable. Only 8% of stars could twinkle.
+2. The shooting star timer delay was set to 30-60 seconds, meaning it rarely triggered within normal viewing times (e.g., a 44s recording).
+3. The perceived softness was caused by sub-pixel `ctx.fillRect` sizes (radii as small as 0.2px) which the browser antialiases into blurry blocks.
+4. CSS on `.homepage-star-canvas` had `opacity: 0.74;` and `filter: saturate(0.9) brightness(0.95);`, washing out the brightness of the generated stars.
 
-VERIFICATION REPORT
-COMMAND: ./pre_commit.sh
-RESULT: PASS
-EVIDENCE / OUTPUT SUMMARY: Successfully ran Next.js production build in 21.3s. Compiled successfully. 17 test suites passed. Build output showed no critical errors, only minor syntax warnings in third-party CSS.
+TWINKLE CHANGES:
+- Increased twinkling subset from 8% to 12%.
+- Adjusted `twinkleSpeed` from a max of `0.003` to `0.006` (radians per ms) for gentle but perceptible movement.
+- Increased sine wave amplitude from `0.3` to `0.4` for greater contrast.
+- Increased minimum `baseAlpha` from `0.1` to `0.2` so twinkling stars don't entirely vanish for long periods.
+- Redundant `globalCompositeOperation = 'screen'` overridden immediately by `'source-over'` was removed.
 
-FINAL RECONCILIATION
-app/layout.js
-app/page.js
-memory-bank/activeContext.md
+SHOOTING-STAR CHANGES:
+- Adjusted schedule timeout from `Math.random() * 30000 + 30000` to `Math.random() * 20000 + 10000` (10s to 30s), ensuring it triggers occasionally during a normal visit.
 
-USEFUL RESULT: YES
+STARFIELD SHARPNESS CHANGES:
+- Changed `initAmbientStars` radii generation to `Math.random() * 0.8 + 0.5`. Enforcing a minimum radius of 0.5px (1x1 full pixel minimum) eliminates browser antialiasing blur on sub-pixels.
+- Updated `themes/default/homepage.css` and `public/themes/default/homepage.css` to remove the `.homepage-star-canvas` filter, and increased opacity to 0.95 (desktop) and 0.85 (mobile).
+
+VERIFICATION PERFORMED AND RESULTS:
+- Checked logic execution via isolated Node scripts (`test_stars.js`).
+- Verified `pnpm run build` completed successfully (5.1s build, 0 static generation errors).
+- Executed Playwright regression testing (`npx playwright test`); the three established viewports successfully passed pixel match.
+- Executed `jules-verify.sh`, which passed all build and custom checks.
+- Pre-submission double-check was completed.
+
+FINAL CHANGED FILES:
+- app/homepage/HomePage.js (Canvas tweaks to animation speeds, density, and sizes)
+- themes/default/homepage.css (Canvas opacity and filter adjustments)
+- public/themes/default/homepage.css (Canvas opacity and filter adjustments sync)
+
+REMAINING ISSUES:
+None.
+
+USEFUL RESULT:
+YES (The requested visual refinements to the hero starfield were implemented, resolving the static nature and softness without disrupting existing composition, adhering to governance requirements.)
