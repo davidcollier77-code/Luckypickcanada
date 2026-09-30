@@ -2,6 +2,12 @@
 
 import { useState } from 'react';
 
+/**
+ * Renders the homepage FAQ accordion with all answers initially collapsed.
+ * Opening a question closes the previous one; selecting it again collapses it.
+ *
+ * @returns {import('react').ReactElement} The FAQ section with FAQPage JSON-LD.
+ */
 export default function FAQSection() {
   const [openQuestion, setOpenQuestion] = useState(null);
 
