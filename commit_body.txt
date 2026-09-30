@@ -1,8 +1,3 @@
-style(hero): polish gold emblem, typography, and maple leaf separator
+test(visual): update playwright baselines for polished hero elements
 
-Refined the Lucky Pick Canada homepage hero presentation to match the premium metallic-gold reference.
-1. Implemented a subtle, reflective-metal gold emblem ring behind the logo.
-2. Enhanced the dimensional, metallic-gold appearance of the main typography (`Lucky Pick Canada`).
-3. Increased the readability and visual prominence of the `A LITTLE CANADIAN MAGIC...` subhead.
-4. Replaced the generic star separator with a proportional, metallic-gold maple leaf SVG.
-5. Guaranteed preservation of the `HomePage.js` Milky Way sky elements and responsive behavior.
+Updated the expected visual screenshots in Playwright to match the authorized polish tasks performed in `app/homepage/Hero.js`. This resolves the prior CI check failure ("Visual QA" failure). Tested successfully locally with zero regressions.

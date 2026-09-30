@@ -1,7 +1,7 @@
 # PR Summary
 
 **SELECTED TASK GROUP**: polishing
-**GROUP REASON**: This task involves visual enhancements (gradients, styling, text-shadows) to the homepage hero without structural or functional overhauls.
+**GROUP REASON**: This task involves visual enhancements (gradients, styling, text-shadows) to the homepage hero and updating visual testing baselines to accommodate these authorized changes without structural overhauls.
 
 **LIBRARY CONSULTATION REPORT**:
 - LIBRARY: Next.js
@@ -44,6 +44,11 @@
   USED: NO
   USEFUL: NO
   REASON: No audio changes were made.
+- LIBRARY: Playwright
+  VERSION: 1.48.1
+  USED: YES
+  USEFUL: YES
+  REASON: Used to update visual regression baselines for the modified homepage hero layout.
 
 **ROUTED JULES/GEMINI DOCUMENT REPORT**:
 - DOCUMENT: .jules/jules.md
@@ -66,12 +71,15 @@
   REASON: Verified that this component containing the Milky Way background was completely unmodified.
 
 **IMPLEMENTATION & SCOPE**:
-Added a refined gold ring behind the logo, improved the metallic typography gradient/shadows for "Lucky Pick Canada", updated subhead readability with drop-shadow layers, and added an inline SVG maple leaf. Zero structural layout changes. Milky Way background perfectly preserved. Maximum build size constraint validated (281 MB vs 495 MB).
+Added a refined gold ring behind the logo, improved the metallic typography gradient/shadows for "Lucky Pick Canada", updated subhead readability with drop-shadow layers, and added an inline SVG maple leaf. Zero structural layout changes. Milky Way background perfectly preserved. Maximum build size constraint validated (281 MB vs 495 MB). Updated Playwright visual baselines to resolve expected CI failures after visual changes.
 
 **EXACT FINAL DIFF RECONCILIATION**:
 - `app/homepage/Hero.js`
 - `pr-summary.md`
 - `pr-summary.txt`
+- `tests/visual/__screenshots__/desktop/homepage-viewport.png`
+- `tests/visual/__screenshots__/mobile-390/homepage-viewport.png`
+- `tests/visual/__screenshots__/mobile-412/homepage-viewport.png`
 
 **VERIFICATION**:
 - COMMAND: `pnpm run build`
@@ -80,5 +88,8 @@ Added a refined gold ring behind the logo, improved the metallic typography grad
 - COMMAND: `./jules-verify.sh`
   RESULT: PASS
   EVIDENCE/OUTPUT SUMMARY: Types, build, and docs tests all passed.
+- COMMAND: `pnpm exec playwright test`
+  RESULT: PASS
+  EVIDENCE/OUTPUT SUMMARY: 6 passed (53.2s) including visual baseline matching.
 
 **USEFUL RESULT: YES**
