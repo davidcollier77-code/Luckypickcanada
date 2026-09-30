@@ -298,3 +298,12 @@
 - Normalized vertical spacing between major homepage sections using a consistent CSS clamp in \`themes/default/homepage.css\`.
 - Verified changes visually via Playwright tests which resulted in updated baselines matching the expected aesthetic.
 - Ensured no existing animations, features, or core functionality were affected.
+
+## 2026-09-30 — Homepage Welcome-First Hero (In Progress)
+
+- Implemented the authorized homepage composition change on branch `polish/homepage-welcome-hero`.
+- Preserved the existing Milky Way photographic backdrop, real maple-leaf/clover logo asset, navigation, Lucky Meter feature, and all downstream homepage content.
+- Reworked the hero so the opening viewport is dedicated to the welcome/brand presentation, with the existing Lucky Meter beginning below the fold.
+- Upgraded `Lucky Pick Canada: Your daily lucky moment.` to a larger, bold metallic champagne/gold presentation with stronger contrast and dark separation.
+- Added the gold maple-leaf divider, `Explore your luck` cue, and double-chevron scroll affordance that links to the existing Lucky Meter section.
+- Verification of the changed source and repository structure is complete; browser/build/visual CI verification is pending.
