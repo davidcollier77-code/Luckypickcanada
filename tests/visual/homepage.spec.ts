@@ -62,11 +62,13 @@ test.describe("Homepage Visual", () => {
     const snapshot1 = await canvas.screenshot();
 
     // Advance time by 500ms (1/2 second should noticeably change the sin wave for twinkling stars)
+    // Advance time by 500ms (1/2 second should noticeably change the sin wave for twinkling stars)
     await page.evaluate(() => {
       (window as any).__advanceTime(500);
     });
 
-    await page.waitForTimeout(500); // give the animation loop a chance to run
+    // Wait for a few animation frames to process with the new time
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
     const snapshot2 = await canvas.screenshot();
 
