@@ -18,5 +18,10 @@ export const metadata = {
 };
 
 export default function CrystalBallPage() {
-  return <CrystalBallClient />;
+  return (
+    <>
+      <div className="homepage-sky-backdrop" aria-hidden="true" />
+      <CrystalBallClient />
+    </>
+  );
 }

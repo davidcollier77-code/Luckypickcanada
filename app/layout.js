@@ -80,11 +80,11 @@ export default function RootLayout({ children }) {
           <div className="flex-grow">
             {children}
           </div>
-                    <footer className="w-full py-6 px-4 bg-slate-950/80 backdrop-blur-md border-t border-white/10 text-center text-xs text-white/80 relative z-20">
-            <div className="max-w-4xl mx-auto space-y-4">
+                    <footer className="w-full py-8 px-4 bg-slate-950/90 backdrop-blur-md border-t border-white/10 text-center text-xs text-white/80 relative z-20">
+            <div className="max-w-4xl mx-auto space-y-4 sm:space-y-5 flex flex-col items-center">
               <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
 
-              <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-4 md:gap-6 text-white/90">
+              <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-white/90 max-w-lg mb-2">
                 <Link href="/" className="hover:text-amber-400 transition-colors">Home</Link>
                 <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors">Lucky Meter</Link>
                 <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors">Crystal Ball</Link>
@@ -93,7 +93,7 @@ export default function RootLayout({ children }) {
                 <Link href="/about" className="hover:text-amber-400 transition-colors">About</Link>
               </nav>
 
-              <nav className="flex flex-wrap justify-center gap-4 text-white/75 text-[11px]" aria-label="Social links">
+              <nav className="flex flex-wrap justify-center gap-3 sm:gap-4 text-white/75 text-[10px] sm:text-[11px] max-w-sm mb-2" aria-label="Social links">
                 <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Facebook Community</a>
                 <a href="https://www.facebook.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Facebook Page</a>
                 <a href="https://x.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">X (Twitter)</a>
@@ -101,6 +101,7 @@ export default function RootLayout({ children }) {
                 <a href="https://www.tiktok.com/@luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">TikTok</a>
               </nav>
 
+              <div className="w-16 h-px bg-white/10 my-2"></div>
               <nav className="flex flex-wrap justify-center gap-4 text-white/60 text-[10px]" aria-label="Legal links">
                 <Link href="/privacy" className="hover:text-amber-400 transition-colors">Privacy Policy</Link>
                 <Link href="/terms" className="hover:text-amber-400 transition-colors">Terms of Service</Link>

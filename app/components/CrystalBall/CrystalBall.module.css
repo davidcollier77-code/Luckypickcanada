@@ -40,7 +40,7 @@
   position: relative;
   min-height: 100dvh;
   overflow-x: hidden;
-  background: radial-gradient(ellipse at 50% -10%, var(--space-800) 0%, var(--space-950) 60%);
+  background: transparent;
   color: var(--ink-100);
   font-family: var(--font-ui);
 }
