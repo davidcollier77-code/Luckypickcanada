@@ -1,6 +1,8 @@
-Investigated SEO Checker report findings regarding page response time and internal anchor texts.
+style(hero): polish gold emblem, typography, and maple leaf separator
 
-1. **Performance/Response Time**: Concluded that the 1.32s response time reported is due to external CDN factors or test location, as the site uses `export const dynamic = 'force-static';` and relies on Cloudflare's edge caching. No legitimate codebase optimizations are applicable.
-2. **Internal Anchor Text**: Determined that duplicate anchor texts in navigation (e.g., "Lucky Map" in header and footer) are standard and semantically correct; altering them would degrade UX. However, fixed legitimately broken internal navigation defaults within `CrystalBall.tsx` (`/luck-meter` to `/lucky-meter` and `/community-map` to `/map`).
-
-All testing and build verification checks passed successfully.
+Refined the Lucky Pick Canada homepage hero presentation to match the premium metallic-gold reference.
+1. Implemented a subtle, reflective-metal gold emblem ring behind the logo.
+2. Enhanced the dimensional, metallic-gold appearance of the main typography (`Lucky Pick Canada`).
+3. Increased the readability and visual prominence of the `A LITTLE CANADIAN MAGIC...` subhead.
+4. Replaced the generic star separator with a proportional, metallic-gold maple leaf SVG.
+5. Guaranteed preservation of the `HomePage.js` Milky Way sky elements and responsive behavior.
