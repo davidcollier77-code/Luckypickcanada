@@ -1,6 +1,3 @@
-Investigated SEO Checker report findings regarding page response time and internal anchor texts.
+test(visual): update playwright baselines for polished hero elements
 
-1. **Performance/Response Time**: Concluded that the 1.32s response time reported is due to external CDN factors or test location, as the site uses `export const dynamic = 'force-static';` and relies on Cloudflare's edge caching. No legitimate codebase optimizations are applicable.
-2. **Internal Anchor Text**: Determined that duplicate anchor texts in navigation (e.g., "Lucky Map" in header and footer) are standard and semantically correct; altering them would degrade UX. However, fixed legitimately broken internal navigation defaults within `CrystalBall.tsx` (`/luck-meter` to `/lucky-meter` and `/community-map` to `/map`).
-
-All testing and build verification checks passed successfully.
+Updated the expected visual screenshots in Playwright to match the authorized polish tasks performed in `app/homepage/Hero.js`. This resolves the prior CI check failure ("Visual QA" failure). Tested successfully locally with zero regressions.
