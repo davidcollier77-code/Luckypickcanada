@@ -112,6 +112,7 @@ REASON: Ran to verify that local type checks and production builds remain succes
 
 ## EXACT FINAL DIFF RECONCILIATION
 - `app/components/CrystalBall/CrystalBall.tsx`
+- `commit_body.txt`
 - `pr-summary.md`
 
 ## VERIFICATION
