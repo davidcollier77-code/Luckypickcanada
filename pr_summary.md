@@ -1,80 +1,54 @@
 # PR Summary
 
-## 1. SELECTED TASK GROUP
-**SELECTED TASK GROUP:** polishing
-**GROUP REASON:** The task requested fixing, polishing, and verifying the homepage photographic sky atmosphere behavior and CSS layering, which falls strictly into the polishing and visual enhancement category.
+## Task Group
+- **Selected Task Group**: polishing
+- **Reason**: The task involved adjusting an existing visual ambient effect (ambient star twinkling) without making architectural or dependency changes, fitting strictly within the polishing domain as per `AGENTS.md` and `.jules/polishing.md`.
 
-## 2. LIBRARY CONSULTATION REPORT
-LIBRARY: Motion
-VERSION: ^13.1.0
-USED: NO
-USEFUL: NO
-REASON: The animation changes were done directly on HTML5 Canvas using vanilla JavaScript's requestAnimationFrame rather than Framer Motion.
+## Governance & Routing
+- `AGENTS.md` was read first.
+- Selected task group: polishing
+- Consulted `.jules/polishing.md`
+- Respecting 495 MB maximum `.docs` limit (Currently 3.0M).
+- No forbidden tools/integrations used.
+- All testing (Playwright, Vitest) and building succeeded with Node 22.x and pnpm 10.30.3.
 
-LIBRARY: Tailwind CSS
-VERSION: 4.2.4
-USED: YES
-USEFUL: YES
-REASON: Inspected Tailwind utility patterns as background structure but no direct class modifications were required in this specific canvas fix.
+## Library & Component Usage Report
+| Library / Component | Version | USED | USEFUL | Reason |
+| --- | --- | --- | --- | --- |
+| Playwright | `1.63.0` | YES | YES | Modified `tests/visual/homepage.spec.ts` to deterministically verify the time-based twinkling without flakiness. |
+| React | `latest` | NO | NO | No React changes were needed; pure canvas/JS adjustment. |
+| Vitest | `5.0.0` | YES | YES | Tested exclusion of visual directory to fix vitest testing suite error since visual test relies on playwright and not vitest. |
 
-LIBRARY: Playwright
-VERSION: ^1.63.0
-USED: YES
-USEFUL: YES
-REASON: Used Playwright visual baseline tests to ensure that the canvas fixes did not introduce any visual regressions into the homepage.
+## Documentation Used
+- `.jules/jules.md` (Mandatory, YES)
+- `.jules/polishing.md` (Mandatory for group, YES)
+- Context7 Libraries: None specifically accessed since local code changes sufficed.
 
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
-DOCUMENT: .docs/polishing/_websites_developer_chrome.md (Generic API Context)
-USED: YES
-USEFUL: YES
-REASON: Kept performance limitations and canvas `requestAnimationFrame` lifecycle guidelines in mind while preventing animation loops running under the `prefers-reduced-motion: reduce` preference.
+## Changed-File Reconciliation
+- `app/homepage/HomePage.js`: Updated twinkling chance from ~12% to ~16% and aligned documentation comments.
+- `tests/visual/homepage.spec.ts`: Refactored to allow deterministic time advancement via `__advanceTime` override and added a new visual diff test `ambient stars twinkle over time`.
+- `vitest.config.mts`: Excluded `tests/visual` directory to prevent Vitest from erroneously attempting to parse the Playwright spec file as it lacked the appropriate setup context for the Playwright `test` and `test.describe` blocks.
 
-DOCUMENT: .jules/polishing.md
-USED: YES
-USEFUL: YES
-REASON: Validated task constraints and consulted best practices for preserving interactions on the canvas.
+## Verification & Tests
+- Command: `pnpm test`
+  - Result: PASS
+  - Note: Prevented Vitest from scanning `tests/visual` to resolve parsing errors.
+- Command: `pnpm run build && pnpm exec playwright test`
+  - Result: PASS (6/6 tests passed including mobile and desktop baselines and the new ambient twinkling time-advance diff verification).
+- Command: `./jules-verify.sh`
+  - Result: PASS
+- Command: `du -sh .docs`
+  - Result: 3.0M
 
-## 4. REPOSITORY COMPONENT REPORT
-COMPONENT: app/homepage/HomePage.js
-USED: YES
-USEFUL: YES
-REASON: Directly debugged and fixed the missing `.draw()` execution, cleanup scheduling, and reduced-motion evaluation.
+## Remaining Issues
+- None.
 
-COMPONENT: tests/visual/homepage.spec.ts
-USED: YES
-USEFUL: YES
-REASON: Needed to wrap in a `test.describe` block to satisfy Playwright restrictions.
+## Pre-submission Double Check
+- [x] AGENTS.md governance rules followed
+- [x] No changes to unauthorized protected systems
+- [x] Implemented only the requested, scoped change
+- [x] Build safety limit respected
+- [x] Visual behavior tested and validated deterministically
+- [x] Changes verified against final git diff
 
-COMPONENT: themes/default/homepage.css
-USED: YES
-USEFUL: YES
-REASON: Verified z-indexing and transparent overrides for `.homepage-sky-backdrop` layer order.
-
-## 5. REPORTING INTEGRITY
-Work performed matches exactly what is described here. Consultations, testing, and component references were actively inspected.
-
-## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-Fixed the `HomePage.js` canvas animation so that it runs ambient and shooting stars reliably, properly removing the loop for accessibility concerns if `prefers-reduced-motion` is active. Removed orphaned code related to a stale `constellationTwinklePhase`. Fixed the broken Playwright testing structure.
-
-## 7. EXACT FINAL DIFF RECONCILIATION
-- `app/homepage/HomePage.js`
-- `tests/visual/homepage.spec.ts`
-
-## 8. VERIFICATION
-COMMAND: `pnpm exec playwright test`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: 3 tests (mobile-390, mobile-412, desktop) passed without any regressions on visual baseline.
-
-COMMAND: `pnpm run build`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Compiled successfully; production static generation finished efficiently.
-
-## 9. USEFUL RESULT
-**USEFUL RESULT: YES**
-
-## 10. PRE-SUBMISSION DOUBLE-CHECK
-The required pre-submission double-check was completed:
-- `AGENTS.md` rules and 495 MB cap restrictions were followed.
-- The visual canvas layout matches intended specifications.
-- Exact modifications trace directly back to intended requirements.
-- No protected configuration, credentials, or systems were modified.
+USEFUL RESULT: YES
