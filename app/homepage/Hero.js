@@ -55,7 +55,8 @@ export default function Hero() {
         </nav>
 
         {/* Hero Center Content */}
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-0 mb-0 px-4">
+        <div className="flex-1 w-full flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-0 mb-0 px-4">
           {/* Logo with spark portal */}
           <div className="homepage-logo-stage relative mb-0 sm:mb-1 flex items-center justify-center pointer-events-none">
             <Image
@@ -93,6 +94,7 @@ export default function Hero() {
           <p className="text-white text-xs sm:text-sm md:text-base font-sans font-medium tracking-wide mt-3 mb-0 drop-shadow-lg [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
             A Canadian digital entertainment experience made to bring a little luck and a little magic to your day.
           </p>
+          </div>
         </div>
 
         {/* Welcome-to-experience transition */}
