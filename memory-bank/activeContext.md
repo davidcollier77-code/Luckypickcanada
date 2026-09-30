@@ -298,3 +298,21 @@
 - Normalized vertical spacing between major homepage sections using a consistent CSS clamp in \`themes/default/homepage.css\`.
 - Verified changes visually via Playwright tests which resulted in updated baselines matching the expected aesthetic.
 - Ensured no existing animations, features, or core functionality were affected.
+
+## 2026-09-30 — Homepage Welcome-First Hero (In Progress)
+
+- Implemented the authorized homepage composition change on branch `polish/homepage-welcome-hero`.
+- Preserved the existing Milky Way photographic backdrop, real maple-leaf/clover logo asset, navigation, Lucky Meter feature, and all downstream homepage content.
+- Reworked the hero so the opening viewport is dedicated to the welcome/brand presentation, with the existing Lucky Meter beginning below the fold.
+- Upgraded `Lucky Pick Canada: Your daily lucky moment.` to a larger, bold metallic champagne/gold presentation with stronger contrast and dark separation.
+- Added the gold maple-leaf divider, `Explore your luck` cue, and double-chevron scroll affordance that links to the existing Lucky Meter section.
+- Verification of the changed source and repository structure is complete; browser/build/visual CI verification is pending.
+
+## 2026-09-30 — Homepage Welcome-First Hero Verification
+
+- GitHub Actions `Validate OpenNext Repair` run 36774547627 completed successfully, confirming the changed homepage compiles through the repository's OpenNext validation path.
+- GitHub Actions `Visual QA` run 36774547653 completed the full six-test homepage suite: the three ambient-star twinkle checks passed; the three viewport screenshot comparisons failed because the approved baselines still represent the previous hero composition.
+- The screenshot comparison failures were stable and expected for this intentional visual change; no test, threshold, or feature logic was weakened to hide them.
+- CodeRabbit status on the implementation commit is `success`.
+- Final branch-vs-main reconciliation remains exactly `app/homepage/Hero.js`, `memory-bank/activeContext.md`, and `memory-bank/progress.md`.
+- Remaining verification work is limited to approving regenerated visual baselines for the new welcome-first hero; no application-runtime or functional issue has been identified.
