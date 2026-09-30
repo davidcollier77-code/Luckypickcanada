@@ -93,7 +93,7 @@ export default function HomePage() {
       const numStars = Math.floor((width * height) / 2000); // Moderate density
       const newStars = [];
       for (let i = 0; i < numStars; i++) {
-        // Only a small subset (~8%) of stars will twinkle independently
+        // Only a small subset (~12%) of stars will twinkle independently
         const canTwinkle = Math.random() < 0.12;
 
         newStars.push({
