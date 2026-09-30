@@ -81,7 +81,7 @@ export default function HomePage() {
 
 
     /**
-     * Creates randomly positioned stars, each with an 8% chance of independent
+     * Creates randomly positioned stars, each with a ~16% chance of independent
      * twinkling. Twinkle speeds are in radians per millisecond; phases are in radians.
      *
      * @param {number} width - Canvas width in pixels.
@@ -93,8 +93,8 @@ export default function HomePage() {
       const numStars = Math.floor((width * height) / 2000); // Moderate density
       const newStars = [];
       for (let i = 0; i < numStars; i++) {
-        // Only a small subset (~12%) of stars will twinkle independently
-        const canTwinkle = Math.random() < 0.12;
+        // Only a small subset (~16%) of stars will twinkle independently
+        const canTwinkle = Math.random() < 0.16;
 
         newStars.push({
           x: Math.random() * width,

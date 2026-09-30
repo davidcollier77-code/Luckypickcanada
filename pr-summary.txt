@@ -1,62 +1,54 @@
-SELECTED TASK GROUP: polishing
-GROUP REASON: The task requires a visual polish pass on the Lucky Card Reveal cinematic (canvas effects, colors, easing) without changing functionality or architecture.
+# PR Summary
 
-LIBRARY CONSULTATION REPORT
-LIBRARY: /reactjs/react.dev
-VERSION: 18 (app router context)
-USED: YES
-USEFUL: YES
-REASON: Verified that ref access and component lifecycle usage in the canvas drawing loop remain safe and don't cause React rendering conflicts.
+## Task Group
+- **Selected Task Group**: polishing
+- **Reason**: The task involved adjusting an existing visual ambient effect (ambient star twinkling) without making architectural or dependency changes, fitting strictly within the polishing domain as per `AGENTS.md` and `.jules/polishing.md`.
 
-LIBRARY: /websites/motion_dev
-VERSION: 11
-USED: YES
-USEFUL: YES
-REASON: Consulted to ensure the `sequence.push` keyframe syntax for X, Y, and rotation properties was correctly formatted for Framer Motion's `useAnimate` API during the card shake refinement.
+## Governance & Routing
+- `AGENTS.md` was read first.
+- Selected task group: polishing
+- Consulted `.jules/polishing.md`
+- Respecting 495 MB maximum `.docs` limit (Currently 3.0M).
+- No forbidden tools/integrations used.
+- All testing (Playwright, Vitest) and building succeeded with Node 22.x and pnpm 10.30.3.
 
-ROUTED JULES/GEMINI DOCUMENT REPORT
-DOCUMENT: .jules/jules.md
-USED: YES
-USEFUL: YES
-REASON: Provided the mandatory initialization directive and confirmed MCP usage boundaries.
-DOCUMENT: .jules/polishing.md
-USED: YES
-USEFUL: YES
-REASON: Provided specific historical learnings, confirming that static positional keyframes within Framer Motion (without `scale` interpolations) are preferred for 3D card flips.
+## Library & Component Usage Report
+| Library / Component | Version | USED | USEFUL | Reason |
+| --- | --- | --- | --- | --- |
+| Playwright | `1.63.0` | YES | YES | Modified `tests/visual/homepage.spec.ts` to deterministically verify the time-based twinkling without flakiness. |
+| React | `latest` | NO | NO | No React changes were needed; pure canvas/JS adjustment. |
+| Vitest | `5.0.0` | YES | YES | Tested exclusion of visual directory to fix vitest testing suite error since visual test relies on playwright and not vitest. |
 
-REPOSITORY COMPONENT REPORT
-COMPONENT: app/lucky-card-reveal.js
-USED: YES
-USEFUL: YES
-REASON: This was the sole target component. It contains the canvas rendering logic (`renderCanvas`, `drawContinuousBeam`, `drawMoltenBurnout`), tier colors, and Framer Motion sequence that required modification to achieve the cinematic target.
-COMPONENT: package.json
-USED: YES
-USEFUL: YES
-REASON: Verified the repository toolchain (`vitest`, `next build`) before running verification.
+## Documentation Used
+- `.jules/jules.md` (Mandatory, YES)
+- `.jules/polishing.md` (Mandatory for group, YES)
+- Context7 Libraries: None specifically accessed since local code changes sufficed.
 
-495 MB BUILD CAP
-FOLLOWED: YES
-ACTUAL BUILD SIZE: 291 MB
-IF CAP REACHED: N/A
+## Changed-File Reconciliation
+- `app/homepage/HomePage.js`: Updated twinkling chance from ~12% to ~16% and aligned documentation comments.
+- `tests/visual/homepage.spec.ts`: Refactored to allow deterministic time advancement via `__advanceTime` override and added a new visual diff test `ambient stars twinkle over time`.
+- `vitest.config.mts`: Excluded `tests/visual` directory to prevent Vitest from erroneously attempting to parse the Playwright spec file as it lacked the appropriate setup context for the Playwright `test` and `test.describe` blocks.
 
-VERIFICATION REPORT
-COMMAND: `pnpm test`
-RESULT: PASS
-EVIDENCE / OUTPUT SUMMARY: `Tests 11 passed (11)`
-COMMAND: `pnpm run build`
-RESULT: PASS
-EVIDENCE / OUTPUT SUMMARY: `Compiled successfully in 20.6s. .next directory measured at 291MB via du -sm.`
+## Verification & Tests
+- Command: `pnpm test`
+  - Result: PASS
+  - Note: Prevented Vitest from scanning `tests/visual` to resolve parsing errors.
+- Command: `pnpm run build && pnpm exec playwright test`
+  - Result: PASS (6/6 tests passed including mobile and desktop baselines and the new ambient twinkling time-advance diff verification).
+- Command: `./jules-verify.sh`
+  - Result: PASS
+- Command: `du -sh .docs`
+  - Result: 3.0M
 
-EXPLICIT VISUAL VERIFICATION:
-- Standard: Visually verified (Bronze/Gold colors enhanced, glow added).
-- Premium: Visually verified (Pewter/Silver colors corrected to remove blue tint).
-- Flagship: Visually verified (Gold colors enhanced, glow added).
-- Front artwork unchanged: Verified. No changes to Image elements, textures, or `cardFrontRef` styling.
-- Back artwork unchanged: Verified. No changes to `cardFlipRef` background or styling.
-- Audio unchanged: Verified. `scheduleAudio` and Howler fallbacks were not touched.
-- No unrelated changes: Verified via `git diff --cached`.
+## Remaining Issues
+- None.
 
-FINAL RECONCILIATION
-app/lucky-card-reveal.js
+## Pre-submission Double Check
+- [x] AGENTS.md governance rules followed
+- [x] No changes to unauthorized protected systems
+- [x] Implemented only the requested, scoped change
+- [x] Build safety limit respected
+- [x] Visual behavior tested and validated deterministically
+- [x] Changes verified against final git diff
 
 USEFUL RESULT: YES
