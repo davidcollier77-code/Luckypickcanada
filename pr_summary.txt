@@ -140,6 +140,12 @@ EVIDENCE/OUTPUT SUMMARY: 6/6 tests passed using 2 workers, verifying visual stab
 
 
 ## EXACT FINAL DIFF RECONCILIATION
+- `FINAL_REPORT.md`
+- `commit_body.txt`
+- `pr-summary.txt`
+- `pr_summary.md`
+- `pr_summary.txt`
+- `report.md`
 - `app/page.js`
 - `app/homepage/HomePage.js`
 - `app/homepage/FAQSection.js`
