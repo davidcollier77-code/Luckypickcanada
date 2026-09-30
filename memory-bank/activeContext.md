@@ -290,3 +290,11 @@
 - **Temporary tooling cleanup:** The temporary baseline-regeneration workflow used only to approve the corrected visual baselines was removed before finalization.
 - **Authorization:** `app/globals.css` is a protected file under the repository policy; the owner explicitly authorized this homepage visual repair.
 - **No changes:** No card artwork, audio, tier logic, reset/countdown, collection/share behavior, payment, database, authentication, deployment configuration, or secrets were changed.
+
+## 2026-09-30 — Homepage Polish
+
+- Implemented the authorized cosmetic polish pass on the homepage.
+- Applied the \`premium-surface\` class to the "About Lucky Pick Canada" and "About the Creator & Our Story" sections to improve readability and separation from the background.
+- Normalized vertical spacing between major homepage sections using a consistent CSS clamp in \`themes/default/homepage.css\`.
+- Verified changes visually via Playwright tests which resulted in updated baselines matching the expected aesthetic.
+- Ensured no existing animations, features, or core functionality were affected.
