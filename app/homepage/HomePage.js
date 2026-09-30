@@ -81,7 +81,7 @@ export default function HomePage() {
 
 
     /**
-     * Creates randomly positioned stars, each with an 8% chance of independent
+     * Creates randomly positioned stars, each with a 12% chance of independent
      * twinkling. Twinkle speeds are in radians per millisecond; phases are in radians.
      *
      * @param {number} width - Canvas width in pixels.
@@ -148,7 +148,7 @@ export default function HomePage() {
     let shootingStarTimeout;
     let doubleStarTimeout;
     /**
-     * Schedules recurring shooting-star spawn attempts 30–60 seconds apart, with
+     * Schedules recurring shooting-star spawn attempts with 10–30-second delays and
      * a 15% chance of a second attempt 0.5–2 seconds later. Schedules nothing if
      * reduced motion was preferred when the effect initialized.
      */
