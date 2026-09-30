@@ -36,8 +36,8 @@ export interface CrystalBallProps {
 export default function CrystalBall({
   onSeekFortune = defaultFortuneGenerator,
   backHref = '/',
-  luckMeterHref = '/luck-meter',
-  communityMapHref = '/community-map',
+  luckMeterHref = '/lucky-meter',
+  communityMapHref = '/map',
 }: CrystalBallProps) {
   const [question, setQuestion] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
