@@ -622,8 +622,6 @@ body:has(.homepage-sky-backdrop)::after {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72);
 }
 
-.homepage-experience a.rounded-full,
-.homepage-experience button.rounded-full,
 .homepage-experience .cta-secondary {
   background: rgba(255, 235, 174, 0.1) !important;
   border: 1px solid rgba(255, 235, 174, 0.4) !important;
@@ -637,6 +635,8 @@ body:has(.homepage-sky-backdrop)::after {
   border-color: rgba(255, 235, 174, 0.6) !important;
   box-shadow: 0 0 15px rgba(250, 199, 75, 0.15) !important;
 }
+.homepage-experience a.rounded-full,
+.homepage-experience button.rounded-full,
 .homepage-experience .cta-glow {
   border: 1px solid rgba(255, 235, 174, 0.64) !important;
   background:
