@@ -62,7 +62,6 @@ test.describe("Homepage Visual", () => {
     const snapshot1 = await canvas.screenshot();
 
     // Advance time by 500ms (1/2 second should noticeably change the sin wave for twinkling stars)
-    // Advance time by 500ms (1/2 second should noticeably change the sin wave for twinkling stars)
     await page.evaluate(() => {
       (window as any).__advanceTime(500);
     });
