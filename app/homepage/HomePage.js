@@ -311,7 +311,7 @@ export default function HomePage() {
         className="homepage-star-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
         style={{ position: 'fixed' }}
       />
-      <section className="homepage-section homepage-community-grid pt-4 mt-0 sm:pt-6" aria-label="Lucky Pick Canada community">
+      <section className="homepage-section homepage-community-grid " aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2>LUCKY METER</h2>
@@ -414,13 +414,10 @@ export default function HomePage() {
 
       {/* About the Creator teaser */}
       <section
-        className="homepage-about-teaser"
+        className="homepage-about-teaser premium-surface"
         style={{
-          marginTop: '48px',
+
           padding: '32px 24px',
-          backgroundColor: 'rgba(234, 190, 82, 0.05)',
-          border: '1px solid rgba(234, 190, 82, 0.2)',
-          borderRadius: '12px',
           maxWidth: '700px',
           marginInline: 'auto',
           textAlign: 'center'

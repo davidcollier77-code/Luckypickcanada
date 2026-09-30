@@ -61,7 +61,7 @@ export default function FAQSection() {
         maxWidth: '800px',
         marginInline: 'auto',
         padding: '32px 16px',
-        marginTop: '24px'
+
       }}
     >
       <script

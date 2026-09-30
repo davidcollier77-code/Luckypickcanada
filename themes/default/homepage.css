@@ -707,3 +707,10 @@ body:has(.homepage-sky-backdrop)::after {
   backdrop-filter: blur(16px);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72);
 }
+
+
+/* Normalized vertical section rhythm */
+.homepage-section, .homepage-community-banner, .faq-section, .suggestion-box, .homepage-about-teaser, .homepage-seo-section {
+  margin-top: clamp(4rem, 8vw, 6rem) !important;
+  margin-bottom: clamp(4rem, 8vw, 6rem) !important;
+}
