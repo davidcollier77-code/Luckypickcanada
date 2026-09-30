@@ -99,7 +99,7 @@ export default function HomePage() {
         newStars.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          radius: Math.random() * 0.8 + 0.5, // 1px to 2.6px stars to prevent sub-pixel blur
+          radius: Math.random() * 0.8 + 0.5, // ~0.5px-1.3px radius (1px-2.6px diameter) to prevent sub-pixel blur
           baseAlpha: Math.random() * 0.5 + 0.2, // Slightly brighter base alpha
           canTwinkle: canTwinkle,
           twinkleSpeed: canTwinkle ? (Math.random() * 0.004 + 0.002) : 0, // Perceptible but gentle twinkle speed
