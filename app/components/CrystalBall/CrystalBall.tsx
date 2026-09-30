@@ -79,12 +79,7 @@ export default function CrystalBall({
 
   return (
     <div className={`${styles.page}`}>
-      <div className={styles.aurora} aria-hidden="true">
-        <div className={styles.stars} />
-        <div className={`${styles.auroraBlob} ${styles.auroraBlob1}`} />
-        <div className={`${styles.auroraBlob} ${styles.auroraBlob2}`} />
-        <div className={`${styles.auroraBlob} ${styles.auroraBlob3}`} />
-      </div>
+
 
       <main className={styles.container}>
         <header className={styles.header}>

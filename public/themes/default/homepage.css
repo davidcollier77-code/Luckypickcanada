@@ -15,12 +15,14 @@
 .homepage-section-heading > span { position: relative; z-index: 10; }
 .homepage-cards-section { background: linear-gradient(90deg, transparent, rgba(117, 61, 193, .07), transparent); }
 .homepage-offer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.homepage-offer, .homepage-community-card { position: relative; isolation: isolate; overflow: hidden; min-height: 275px; padding: clamp(1.4rem, 3vw, 2.2rem); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 22px; background: rgba(10, 20, 30, 0.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 1px rgba(255,255,255,.09), 0 18px 48px rgba(0,0,0,.23); }
+.homepage-offer, .homepage-community-card { position: relative; isolation: isolate; overflow: hidden; min-height: 275px; padding: clamp(1.25rem, 3vw, 2.2rem); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 22px; background: rgba(10, 20, 30, 0.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 1px rgba(255,255,255,.09), 0 18px 48px rgba(0,0,0,.23); }
 .homepage-offer::before, .homepage-community-card::before { content: ''; position: absolute; z-index: 0; inset: 0; pointer-events: none; background: linear-gradient(135deg, rgba(255, 231, 151, .05), transparent 30%, rgba(68, 210, 161, .05)); }
 .homepage-offer-featured { padding-top: clamp(1.75rem, 3vw, 2.2rem); border-color: rgba(255, 255, 255, 0.15); background: radial-gradient(circle at 90% 5%, rgba(234, 179, 56, .15), transparent 30%), rgba(20, 20, 25, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
 .homepage-offer-image { position: absolute; z-index: 0; right: -.75rem; bottom: -1.25rem; width: 42%; max-height: 92%; object-fit: contain; object-position: right bottom; opacity: .28; pointer-events: none; }
 .homepage-offer > :not(.homepage-offer-image) { position: relative; z-index: 20; }
-.homepage-offer h3, .homepage-community-card h2, .homepage-offer-title { margin: 0 0 0.5rem 0; color: #fff0bd; font-size: clamp(1.35rem, 2.2vw, 2rem); line-height: 1.13; }
+.homepage-offer h3, .homepage-community-card h2, .homepage-offer-title { margin: 0 0 0.5rem 0; color: #fff0bd; line-height: 1.15; font-family: var(--font-header, serif); }
+.homepage-community-card h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
+.homepage-offer h3, .homepage-offer-title { font-size: clamp(1.25rem, 2.2vw, 1.75rem); }
 .homepage-offer > p:not(.homepage-offer-kicker):not(.homepage-offer-note), .homepage-community-card > p:not(.homepage-offer-kicker) { color: rgba(255, 245, 218, .75); line-height: 1.65; }
 .homepage-offer-note { margin: 1.3rem 0 0; color: #a4dbbf; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .homepage-choice-row { display: flex; gap: .6rem; margin-top: 1.2rem; }.homepage-choice-row span { padding: .48rem .75rem; border: 1px solid rgba(255, 224, 135, .45); border-radius: 999px; color: #ffe8a0; font-family: var(--lpc-display); font-size: .82rem; }
@@ -563,10 +565,11 @@ body:has(.homepage-sky-backdrop)::after {
 }
 
 .homepage-hero-title {
-  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.62));
+  filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.82));
   text-shadow:
     0 1px 0 rgba(255, 248, 213, 0.18),
-    0 6px 24px rgba(0, 0, 0, 0.62);
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 6px 24px rgba(0, 0, 0, 0.82);
 }
 
 .homepage-experience .homepage-community-card,
@@ -621,6 +624,19 @@ body:has(.homepage-sky-backdrop)::after {
 
 .homepage-experience a.rounded-full,
 .homepage-experience button.rounded-full,
+.homepage-experience .cta-secondary {
+  background: rgba(255, 235, 174, 0.1) !important;
+  border: 1px solid rgba(255, 235, 174, 0.4) !important;
+  color: #fff2bd !important;
+  box-shadow: none !important;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8) !important;
+}
+.homepage-experience .cta-secondary:hover,
+.homepage-experience .cta-secondary:focus-visible {
+  background: rgba(255, 235, 174, 0.2) !important;
+  border-color: rgba(255, 235, 174, 0.6) !important;
+  box-shadow: 0 0 15px rgba(250, 199, 75, 0.15) !important;
+}
 .homepage-experience .cta-glow {
   border: 1px solid rgba(255, 235, 174, 0.64) !important;
   background:
@@ -720,8 +736,8 @@ body:has(.homepage-sky-backdrop)::after {
    Declared after the rule above so it wins on source order. */
 @media (max-width: 780px) {
   .homepage-section, .faq-section, .suggestion-box, .homepage-about-teaser, .homepage-seo-section {
-    margin-top: clamp(2rem, 6vw, 2.5rem);
-    margin-bottom: clamp(2rem, 6vw, 2.5rem);
+    margin-top: clamp(1.5rem, 5vw, 2rem);
+    margin-bottom: clamp(1.5rem, 5vw, 2rem);
   }
 
   .homepage-community-banner { margin: 1rem; }
