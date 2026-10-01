@@ -392,7 +392,9 @@
     "/magicuidesign/magicui",
     "/posthog/posthog-js",
     "/goldfire/howler.js",
-    "/websites/mdn_web_audio"
+    "/websites/mdn_web_audio",
+    "/python-pillow/Pillow",
+    "/numpy/numpy"
   ],
   "githubShas": {
     "/github/docs": "394068dacf2ea33d383fee605dc87aa48441305e",
@@ -427,6 +429,8 @@
     "/posthog/posthog-js": "4c20d76630462e329c4298f8188043e5b01b1c79",
     "/upstash/ratelimit": "89c481bf3b836a1ef5454c0615bc201e6386826b",
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
-    "/resend/resend-node": "004c938a14406c7405205bc74e0fe6547fa2a40f"
+    "/resend/resend-node": "004c938a14406c7405205bc74e0fe6547fa2a40f",
+    "/python-pillow/Pillow": "53286b80749c9587418b5d6725b2813ab413b6e3",
+    "/numpy/numpy": "455acc03559c446bfd1d3f809124301b4276d055"
   }
 }
