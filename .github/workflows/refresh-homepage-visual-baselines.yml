@@ -52,12 +52,21 @@ jobs:
           mapfile -t changed < <(git diff --name-only)
           printf 'Changed files before commit:\n%s\n' "${changed[@]}"
 
-          printf '%s\n' "${changed[@]}" | sort > /tmp/changed.txt
-          printf '%s\n' "${expected[@]}" | sort > /tmp/expected.txt
-          if ! diff -u /tmp/expected.txt /tmp/changed.txt; then
-            echo "::error::Unexpected files changed during baseline regeneration."
+          if [[ "${#changed[@]}" -ne 3 ]]; then
+            echo "::error::Expected exactly 3 changed baseline files; found ${#changed[@]}."
             exit 1
           fi
+
+          for path in "${changed[@]}"; do
+            case "$path" in
+              tests/visual/__screenshots__/desktop/homepage-viewport.png|tests/visual/__screenshots__/mobile-390/homepage-viewport.png|tests/visual/__screenshots__/mobile-412/homepage-viewport.png)
+                ;;
+              *)
+                echo "::error::Unexpected file changed during baseline regeneration: $path"
+                exit 1
+                ;;
+            esac
+          done
 
           pnpm exec playwright test
 
