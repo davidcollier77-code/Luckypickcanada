@@ -137,4 +137,4 @@ jobs:
 
           git diff --cached --check
           git commit -m "test(homepage): refresh visual baselines after hero sizing"
-          git push origin "fix/refresh-homepage-visual-baselines"
+          git push origin HEAD:fix/refresh-homepage-visual-baselines
