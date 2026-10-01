@@ -73,6 +73,10 @@ Fixed the missing arbitrary Tailwind aspect ratio classes (`aspect-[4/3]`, `sm:a
 
 ## 6. EXACT FINAL DIFF RECONCILIATION
 - `app/homepage/Hero.js`
+- `next-env.d.ts`
+- `pr-summary.md`
+- `pr-summary.txt`
+- `public/themes/default/homepage.css`
 - `themes/default/homepage.css`
 
 ## 7. VERIFICATION
