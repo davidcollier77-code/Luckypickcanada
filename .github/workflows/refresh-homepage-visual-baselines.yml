@@ -121,7 +121,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add             tests/visual/__screenshots__/desktop/homepage-viewport.png             tests/visual/__screenshots__/mobile-390/homepage-viewport.png             tests/visual/__screenshots__/mobile-412/homepage-viewport.png             memory-bank/activeContext.md             memory-bank/progress.md             .github/workflows/refresh-homepage-visual-baselines.yml
+          git add tests/visual/__screenshots__/desktop/homepage-viewport.png tests/visual/__screenshots__/mobile-390/homepage-viewport.png tests/visual/__screenshots__/mobile-412/homepage-viewport.png memory-bank/activeContext.md memory-bank/progress.md
 
           git diff --cached --name-only | sort > /tmp/final-files.txt
           expected_final=(
