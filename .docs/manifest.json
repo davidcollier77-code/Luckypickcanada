@@ -59,7 +59,9 @@
       "/websites/ai_google_dev_gemini-api",
       "/dequelabs/axe-core",
       "/magicuidesign/magicui",
-      "/goldfire/howler.js"
+      "/goldfire/howler.js",
+      "/python-pillow/Pillow",
+      "/numpy/numpy"
     ],
     "testing": [
       "/github/docs",
@@ -335,6 +337,14 @@
     "/websites/mdn_web_audio": {
       "type": "url",
       "url": "https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API"
+    },
+    "/python-pillow/Pillow": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/python-pillow/Pillow/main/docs/handbook/concepts.rst"
+    },
+    "/numpy/numpy": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/numpy/numpy/main/doc/source/reference/arrays.ndarray.rst"
     }
   },
   "inventory": [
