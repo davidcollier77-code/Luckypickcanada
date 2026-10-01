@@ -3,7 +3,7 @@
 - Verified the post-merge Visual QA failure on the homepage visual-regression suite: the three viewport screenshot comparisons failed consistently on desktop, mobile 390, and mobile 412, while all three ambient-star tests passed.
 - Verified the mismatch was caused by the intentional PR #1326 hero artwork sizing change making the committed baselines stale; the failed-run actual screenshots were identical across retries.
 - Regenerated the three approved homepage viewport baselines from the current merged implementation using the repository Playwright configuration without changing the screenshot diff threshold or test logic.
-- Re-ran the complete Playwright suite after regeneration; all six homepage visual tests passed.
+- Re-ran the complete Playwright suite after regeneration; all six homepage visual tests passed in GitHub Actions run 36860009779.
 - Temporary baseline-refresh workflow was used only to create and verify the new baselines, then removed in the same commit so the final branch contains no new CI behavior.
 - Preserved the hero implementation, Milky Way background, star canvas, shooting stars, and existing test thresholds.
 
