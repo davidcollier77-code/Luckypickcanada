@@ -10,7 +10,7 @@ export default function Hero() {
   return (
     <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950 homepage-hero-welcome" style={{ minHeight: '100svh' }}>
       {/* Main Content Stack */}
-      <div className="relative z-10 w-full min-h-[100svh] flex flex-col items-center">
+      <div className="relative z-10 w-full h-[100svh] min-h-0 flex flex-col items-center">
         {/* Navigation */}
         <nav
           className="homepage-main-nav w-full max-w-3xl mx-auto relative z-20 pointer-events-auto mt-0 mb-2 md:mb-3 px-4"
@@ -55,15 +55,15 @@ export default function Hero() {
         </nav>
 
         {/* Hero Center Content */}
-        <div className="flex-1 w-full flex flex-col items-center justify-center">
-          <div className="flex flex-col items-center text-center w-full max-w-[800px] mx-auto mt-4 mb-4 px-4 sm:px-6 relative">
+        <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center text-center w-full max-w-[1100px] mx-auto mt-4 mb-4 px-4 sm:px-6 relative">
             <div className="relative w-full hero-image-container flex items-center justify-center pointer-events-none">
               <Image
                 className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] relative z-10"
                 src="/file_00000000e2c481f6912a5c165bae46a4.png"
                 alt="Lucky Pick Canada Hero Composition"
                 fill
-                sizes="(max-width: 768px) 100vw, 800px"
+                sizes="(max-width: 768px) 100vw, 1100px"
                 priority
               />
             </div>
