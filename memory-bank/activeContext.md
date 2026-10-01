@@ -1,3 +1,12 @@
+## 2026-10-01 — Homepage Visual Baseline Repair
+
+- Verified the post-merge Visual QA failure on the homepage visual-regression suite: the three viewport screenshot comparisons failed consistently on desktop, mobile 390, and mobile 412, while all three ambient-star tests passed.
+- Verified the mismatch was caused by the intentional PR #1326 hero artwork sizing change making the committed baselines stale; the failed-run actual screenshots were identical across retries.
+- Regenerated the three approved homepage viewport baselines from the current merged implementation using the repository Playwright configuration without changing the screenshot diff threshold or test logic.
+- Re-ran the complete Playwright suite after regeneration; all six homepage visual tests passed.
+- Temporary baseline-refresh workflow was used only to create and verify the new baselines, then removed in the same commit so the final branch contains no new CI behavior.
+- Preserved the hero implementation, Milky Way background, star canvas, shooting stars, and existing test thresholds.
+
 ## 2026-10-01 — Homepage Hero Artwork Layout Repair
 
 - Verified the current foreground hero artwork was being constrained by an 800px maximum-width wrapper and a 4:3 mobile / 16:9 desktop container while the image itself uses `object-contain`.

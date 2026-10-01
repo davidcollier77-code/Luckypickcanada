@@ -1,5 +1,13 @@
 # Progress
 
+## 2026-10-01 — Homepage Visual Baseline Repair
+
+- Reconciled the post-merge Visual QA failure with the intentional PR #1326 hero artwork scaling change.
+- Regenerated the three committed homepage viewport baselines for desktop 1440×900, mobile 390×844, and mobile 412×915.
+- Verified the complete Playwright homepage visual suite after regeneration: 6 passed, including 3 screenshot comparisons and 3 ambient-star twinkle checks.
+- No application source, test threshold, or visual-validation logic was weakened or changed.
+- The temporary baseline-refresh workflow was removed before finalizing the repair.
+
 ## 2026-10-01 — Homepage Hero Artwork Layout Repair
 
 - Corrected the homepage hero sizing constraint that was making the new foreground artwork render too small inside a landscape-oriented container.
