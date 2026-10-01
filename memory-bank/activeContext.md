@@ -1,5 +1,3 @@
-## 2026-09-29 — Homepage reduced-motion canvas resize repair
-
 ## 2026-10-01 — Homepage Hero Artwork Layout Repair
 
 - Verified the current foreground hero artwork was being constrained by an 800px maximum-width wrapper and a 4:3 mobile / 16:9 desktop container while the image itself uses `object-contain`.
@@ -9,9 +7,8 @@
 - The PNG transparency/checkerboard issue is explicitly outside this task and remains unchanged for the later asset replacement.
 - Verification status: source-level reconciliation complete; browser/build verification remains required on the pull request because a local repository checkout was unavailable in the execution environment.
 
-- Verified that resizing clears the canvas while reduced motion has no recurring frame to repaint it.
-- Updated the resize listener to redraw once after resizing for reduced motion; normal motion retains its existing animation loop.
-- A focused effect check passed for both motion settings and listener cleanup. CodeRabbit CLI review was unavailable because review is disabled for this task.
+## 2026-09-29 — Homepage reduced-motion canvas resize repair
+
 
 ## 2026-09-27 — Homepage Sky Layer Repair (In Progress)
 
