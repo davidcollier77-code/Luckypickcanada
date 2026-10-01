@@ -40,3 +40,11 @@
 - Preserved reduced-motion handling and did not change audio, dependencies, homepage functionality, reset/countdown behavior, collections, sharing, payment, database, authentication, deployment configuration, or protected files.
 - Verification: GitHub Actions run 36344468480 passed Next.js build, OpenNext build, compiled Tailwind verification, worker/assets checks, Wrangler validation, and Git status.
 - Amazon Q review reported no blocking defects. CodeRabbit status was success; its repository comment indicated automatic review is disabled for this repository and a manual trigger is available.
+
+## 2026-10-01 — Homepage Hero Image Transparency Cleanup
+
+- Identified checkerboard artifacts embedded in the primary hero artwork (`public/file_00000000e2c481f6912a5c165bae46a4.png`).
+- Developed a Python processing script (`fix_image_with_alpha.py`) to systematically remove the specific opaque and blended checkerboard pixels (grey shades around 140 and 190 RGB values) while preserving the opaque gold, maple leaf, red tones, and intended transparency bounds of the artwork.
+- Processed the PNG and verified the removal of the baked-in grid remnants surrounding the text and inner emblem elements without damaging glowing effects or borders.
+- Re-ran the Playwright visual test suite against the updated image and safely updated the known-good visual regression snapshots (`tests/visual/__screenshots__`) because the underlying pixel-level layout of the artwork intrinsically shifted to true transparency.
+- Verified final build passes, verified size limits (`< 495 MB`), and ensured `./jules-verify.sh` succeeded without degrading the Next.js optimization pipeline.
