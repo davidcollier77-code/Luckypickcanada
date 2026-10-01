@@ -1,88 +1,72 @@
-# PR Summary
+Removed the grey/white checkered background from the Lucky Pick Canada homepage image asset and replaced it with real alpha transparency so the starfield can show through. The original artwork and text were preserved entirely.
 
 ## 1. SELECTED TASK GROUP
-SELECTED TASK GROUP: Polishing
-GROUP REASON: Modifying CSS configuration/styles to fix a visual bug on the homepage.
+SELECTED TASK GROUP: polishing
+GROUP REASON: Task involves removing an unwanted background from a UI image asset (visual enhancement)
 
 ## 2. LIBRARY CONSULTATION REPORT
-LIBRARY: tailwindcss
-VERSION: 4.2.4
-USED: YES
-USEFUL: YES
-REASON: Inspected Tailwind configuration and generated css to diagnose the missing arbitrary class values and verify the best method to implement a fix without disrupting the entire build process.
+
+LIBRARY: None specifically
+VERSION: N/A
+USED: NO
+USEFUL: NO
+REASON: No documentation was needed or used to execute a standard flood-fill image manipulation in python.
 
 ## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
-DOCUMENT: jules.google/docs
+
+DOCUMENT: .jules/jules.md
 USED: YES
 USEFUL: YES
-REASON: Consulted for formatting and tool usage instructions.
+REASON: Used to ensure memory bank compliance and overall PR procedure requirements.
 
-DOCUMENT: developers.google.com/jules/api
+DOCUMENT: .jules/polishing.md
 USED: YES
 USEFUL: YES
-REASON: Consulted for tool interaction requirements.
-
-DOCUMENT: /google-gemini/gemini-cli
-USED: YES
-USEFUL: NO
-REASON: Not required for CSS tasks.
-
-DOCUMENT: /websites/ai_google_dev_gemini-api
-USED: YES
-USEFUL: NO
-REASON: Not required for CSS tasks.
+REASON: Provided guidance on visual improvements and polishing assets.
 
 ## 4. REPOSITORY COMPONENT REPORT
-COMPONENT: memory-bank/
-USED: YES
-USEFUL: NO
-REASON: Reviewed project brief but no changes required.
 
-COMPONENT: CSS_FIX_GUIDE.md
+COMPONENT: `public/file_00000000e2c481f6912a5c165bae46a4.png`
 USED: YES
 USEFUL: YES
-REASON: Checked for guidance on CSS loading in production to ensure proper inclusion of themes/default/homepage.css.
+REASON: The image asset that needed the checkerboard background removed.
 
-COMPONENT: DATABASE_SETUP.md
-USED: YES
-USEFUL: NO
-REASON: Not relevant for this task.
+## 5. REPORTING INTEGRITY
 
-COMPONENT: DEPLOYMENT_CHECKLIST.md
-USED: YES
-USEFUL: NO
-REASON: Checked for build size constraints.
+Work reported reflects actions taken.
 
-COMPONENT: QUICK_FIX_GUIDE.md
-USED: YES
-USEFUL: NO
-REASON: No relevant quick fixes found for this particular Tailwind v4 arbitrary class issue.
+## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
 
-COMPONENT: .jules/
-USED: YES
-USEFUL: YES
-REASON: Reviewed governance and troubleshooting requirements.
+- Analyzed the image structure and identified the color bands for the checkered background.
+- Wrote a python script using `Pillow` to execute a BFS flood fill starting at the image boundaries and targeting those exact color bands.
+- Ran script and confirmed the checkerboard was converted to alpha transparency without touching the foreground graphic.
+- Verified transparency correctly applied through ASCII visual debugging.
+- No protected systems were modified.
+- Only the target image was changed.
+- Scope compliance maintained.
 
-COMPONENT: .specify/
-USED: YES
-USEFUL: NO
-REASON: No speckit updates needed for this task.
+## 7. EXACT FINAL DIFF RECONCILIATION
 
-## 5. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-Fixed the missing arbitrary Tailwind aspect ratio classes (`aspect-[4/3]`, `sm:aspect-[16/9]`) by introducing a dedicated standard CSS class `.hero-image-container` within `themes/default/homepage.css`, and updating the `Hero.js` component to use it. No protected systems were modified without authorization. Scope was strictly limited to restoring the hero foreground image visibility.
+- `public/file_00000000e2c481f6912a5c165bae46a4.png`
 
-## 6. EXACT FINAL DIFF RECONCILIATION
-- `app/homepage/Hero.js`
-- `themes/default/homepage.css`
+## 8. VERIFICATION
 
-## 7. VERIFICATION
-COMMAND: `pnpm run build`
+- `.docs/` size measured as 3.0M (well under the 495MB limit).
+- `./jules-verify.sh` run and completed successfully without errors.
+- Visual inspection via ascii representations inside python.
+
+COMMAND: `./jules-verify.sh`
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Build completed successfully in 11.4s. Generated static pages without issues. Build size remained well within limits (313MB).
+EVIDENCE/OUTPUT SUMMARY: Tests complete: 17 passed, 0 failed. All verification steps passed.
 
-COMMAND: `pnpm exec playwright test tests/visual/hero.spec.ts`
+COMMAND: `du -sh .docs/`
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Created a new playwright visual test specifically verifying the `.hero-image-container` visibility and nonzero height on desktop (1440x900) and two mobile viewports (390x844, 412x915). All 6 tests passed in 26.5s.
+EVIDENCE/OUTPUT SUMMARY: 3.0M
 
-## 8. USEFUL RESULT
+## 9. USEFUL RESULT
+
 USEFUL RESULT: YES
+
+## 10. PRE-SUBMISSION DOUBLE-CHECK
+
+Completed.
