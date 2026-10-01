@@ -1,5 +1,14 @@
 ## 2026-09-29 — Homepage reduced-motion canvas resize repair
 
+## 2026-10-01 — Homepage Hero Artwork Layout Repair
+
+- Verified the current foreground hero artwork was being constrained by an 800px maximum-width wrapper and a 4:3 mobile / 16:9 desktop container while the image itself uses `object-contain`.
+- Implemented the minimal layout-only repair on branch `fix/homepage-hero-image-sizing`: the hero content stack now has a fixed `100svh` height with a shrink-safe flex center, the artwork wrapper expands to 1100px, and `.hero-image-container` is sized from viewport height (`clamp(420px, 72svh, 720px)`) rather than a landscape aspect ratio.
+- Mirrored the hero CSS change in `themes/default/homepage.css` and `public/themes/default/homepage.css` because the application explicitly loads the public theme index and that index imports the mirrored homepage stylesheet.
+- Preserved the existing hero PNG path, Milky Way background, navigation, page content below the fold, star canvas, shooting stars, accessibility behavior, and all non-layout functionality.
+- The PNG transparency/checkerboard issue is explicitly outside this task and remains unchanged for the later asset replacement.
+- Verification status: source-level reconciliation complete; browser/build verification remains required on the pull request because a local repository checkout was unavailable in the execution environment.
+
 - Verified that resizing clears the canvas while reduced motion has no recurring frame to repaint it.
 - Updated the resize listener to redraw once after resizing for reduced motion; normal motion retains its existing animation loop.
 - A focused effect check passed for both motion settings and listener cleanup. CodeRabbit CLI review was unavailable because review is disabled for this task.
