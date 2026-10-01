@@ -49,6 +49,14 @@ jobs:
             test -f "$path"
           done
 
+          # The Next.js dev server may rewrite this generated declaration during a test run.
+          git checkout -- next-env.d.ts
+
+          pnpm exec playwright test
+
+          # Keep generated environment declarations out of the repair commit.
+          git checkout -- next-env.d.ts
+
           mapfile -t changed < <(git diff --name-only)
           printf 'Changed files before commit:\n%s\n' "${changed[@]}"
 
@@ -67,8 +75,6 @@ jobs:
                 ;;
             esac
           done
-
-          pnpm exec playwright test
 
       - name: Update Memory Bank and remove temporary workflow
         shell: bash
