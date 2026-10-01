@@ -48,3 +48,12 @@
 - Processed the PNG and verified the removal of the baked-in grid remnants surrounding the text and inner emblem elements without damaging glowing effects or borders.
 - Re-ran the Playwright visual test suite against the updated image and safely updated the known-good visual regression snapshots (`tests/visual/__screenshots__`) because the underlying pixel-level layout of the artwork intrinsically shifted to true transparency.
 - Verified final build passes, verified size limits (`< 495 MB`), and ensured `./jules-verify.sh` succeeded without degrading the Next.js optimization pipeline.
+
+## 2026-10-01 — PR #1332 Review Comment Processing
+
+- Resolved three kilo-code-bot review comments on PR #1332 via the GitHub review-fix workflow.
+- next-env.d.ts: reverted the manual `.next/dev/types/` edit back to the generated `./.next/types/` paths (matches origin/main). Fixes comment 1.
+- pr_summary.md scope: updated the scope description to list all changed files and note the next-env.d.ts revert. Fixes comment 2.
+- pr_summary.md test-results note: corrected the stale-artifact statement. Fixes comment 3.
+- A concurrent session had already pushed equivalent fixes for comments 1 and 3 (commits 6b747a4, de64164); those were preserved and only the unique scope-description refinement was added.
+- Verification: `pnpm run build` PASS (325M .next, under 495 MB), `pnpm exec tsc --noEmit` PASS, refresh-docs tests 17/17 PASS.

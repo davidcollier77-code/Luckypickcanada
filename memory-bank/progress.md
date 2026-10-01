@@ -40,3 +40,11 @@
 - Identified and removed embedded Photoshop-style checkerboard artifacts (specifically around values 140/190 grayscale) while protecting the core glowing, drop-shadow, and metallic visual components.
 - Generated updated Playwright visual baseline screenshots to lock in the true-transparency presentation.
 - Successfully verified the application build footprint and regression metrics.
+
+## 2026-10-01 — PR #1332 Review Comment Processing
+
+- Resolved all three kilo-code-bot review comments on PR #1332 (homepage hero transparency-cleanup PR).
+- Reverted the manual next-env.d.ts dev-path edit to the Next.js-generated state (matches origin/main).
+- Refined the pr_summary.md scope description and test-results note for accuracy.
+- Preserved concurrent-session fixes already on the branch (6b747a4, de64164); added only the unique scope-description refinement.
+- Verified: build PASS (325M < 495 MB), `tsc --noEmit` PASS, refresh-docs tests 17/17 PASS.
