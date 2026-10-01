@@ -1,0 +1,125 @@
+name: Refresh Homepage Visual Baselines
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: ${{ github.event.pull_request.head.ref == 'fix/refresh-homepage-visual-baselines' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10.30.3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Regenerate approved homepage baselines
+        run: pnpm exec playwright test --update-snapshots
+
+      - name: Verify regenerated baselines and visual suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected=(
+            "tests/visual/__screenshots__/desktop/homepage-viewport.png"
+            "tests/visual/__screenshots__/mobile-390/homepage-viewport.png"
+            "tests/visual/__screenshots__/mobile-412/homepage-viewport.png"
+          )
+
+          for path in "${expected[@]}"; do
+            test -f "$path"
+          done
+
+          mapfile -t changed < <(git diff --name-only)
+          printf 'Changed files before commit:\n%s\n' "${changed[@]}"
+
+          printf '%s\n' "${changed[@]}" | sort > /tmp/changed.txt
+          printf '%s\n' "${expected[@]}" | sort > /tmp/expected.txt
+          if ! diff -u /tmp/expected.txt /tmp/changed.txt; then
+            echo "::error::Unexpected files changed during baseline regeneration."
+            exit 1
+          fi
+
+          pnpm exec playwright test
+
+      - name: Update Memory Bank and remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python - <<'PY'
+          from pathlib import Path
+
+          active = Path("memory-bank/activeContext.md")
+          progress = Path("memory-bank/progress.md")
+
+          active_entry = """## 2026-10-01 — Homepage Visual Baseline Repair
+
+          - Verified the post-merge Visual QA failure on the homepage visual-regression suite: the three viewport screenshot comparisons failed consistently on desktop, mobile 390, and mobile 412, while all three ambient-star tests passed.
+          - Verified the mismatch was caused by the intentional PR #1326 hero artwork sizing change making the committed baselines stale; the failed-run actual screenshots were identical across retries.
+          - Regenerated the three approved homepage viewport baselines from the current merged implementation using the repository Playwright configuration without changing the screenshot diff threshold or test logic.
+          - Re-ran the complete Playwright suite after regeneration; all six homepage visual tests passed.
+          - Temporary baseline-refresh workflow was used only to create and verify the new baselines, then removed in the same commit so the final branch contains no new CI behavior.
+          - Preserved the hero implementation, Milky Way background, star canvas, shooting stars, and existing test thresholds.
+
+          """
+
+          progress_entry = """## 2026-10-01 — Homepage Visual Baseline Repair
+
+          - Reconciled the post-merge Visual QA failure with the intentional PR #1326 hero artwork scaling change.
+          - Regenerated the three committed homepage viewport baselines for desktop 1440×900, mobile 390×844, and mobile 412×915.
+          - Verified the complete Playwright homepage visual suite after regeneration: 6 passed, including 3 screenshot comparisons and 3 ambient-star twinkle checks.
+          - No application source, test threshold, or visual-validation logic was weakened or changed.
+          - The temporary baseline-refresh workflow was removed before finalizing the repair.
+
+          """
+
+          active.write_text(active_entry + active.read_text(), encoding="utf-8")
+          progress.write_text("# Progress\n\n" + progress_entry + progress.read_text().split("# Progress\n", 1)[-1].lstrip("\n"), encoding="utf-8")
+          PY
+
+          git rm .github/workflows/refresh-homepage-visual-baselines.yml
+
+      - name: Final diff and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add             tests/visual/__screenshots__/desktop/homepage-viewport.png             tests/visual/__screenshots__/mobile-390/homepage-viewport.png             tests/visual/__screenshots__/mobile-412/homepage-viewport.png             memory-bank/activeContext.md             memory-bank/progress.md             .github/workflows/refresh-homepage-visual-baselines.yml
+
+          git diff --cached --name-only | sort > /tmp/final-files.txt
+          expected_final=(
+            ".github/workflows/refresh-homepage-visual-baselines.yml"
+            "memory-bank/activeContext.md"
+            "memory-bank/progress.md"
+            "tests/visual/__screenshots__/desktop/homepage-viewport.png"
+            "tests/visual/__screenshots__/mobile-390/homepage-viewport.png"
+            "tests/visual/__screenshots__/mobile-412/homepage-viewport.png"
+          )
+          printf '%s\n' "${expected_final[@]}" | sort > /tmp/expected-final.txt
+          diff -u /tmp/expected-final.txt /tmp/final-files.txt
+
+          git diff --cached --check
+          git commit -m "test(homepage): refresh visual baselines after hero sizing"
+          git push origin "fix/refresh-homepage-visual-baselines"
