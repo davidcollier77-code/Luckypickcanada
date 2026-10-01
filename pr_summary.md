@@ -49,7 +49,7 @@ All reporting items correctly identify the actual analysis, processing strategy,
 
 - **Implementation**: Created and ran a localized Python script to detect gray-scale artifacts (between 130-150 and 180-200 averages in RGB) with anti-aliasing edge detection to strip out the checkerboard from `public/file_00000000e2c481f6912a5c165bae46a4.png`.
 - **Authorization**: The task was an explicit image restoration request and operated purely on an existing asset without modifying protected external systems.
-- **Scope Compliance**: Changes were strictly limited to the target PNG asset, the resulting Playwright visual test baselines, and Memory Bank files. No other components or functionalities were touched.
+- **Scope Compliance**: Changes were limited to the target PNG asset, the resulting Playwright visual test baselines, Memory Bank files, and removal of stale gitignored test-results artifacts. The next-env.d.ts file was inspected and reverted to its original Next.js-generated state (no net change). No protected systems, dependencies, or unrelated functionality were touched.
 - **Remaining Issues**: None.
 
 ## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
