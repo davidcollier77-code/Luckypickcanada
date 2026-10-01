@@ -1,5 +1,13 @@
 # Progress
 
+## 2026-10-01 — Homepage Hero Artwork Layout Repair
+
+- Corrected the homepage hero sizing constraint that was making the new foreground artwork render too small inside a landscape-oriented container.
+- The hero now uses viewport-height sizing for the artwork stage, a wider 1100px content cap, and a shrink-safe 100svh flex layout while preserving the existing PNG, background, navigation, and scrollable homepage structure.
+- Mirrored the CSS change in both theme stylesheet copies used by the application.
+- Transparency/checkerboard cleanup was not changed and remains a separate follow-up.
+- Verification: code/diff reconciliation completed; browser/build checks remain pending on the PR.
+
 ## 2026-10-01 — Homepage & Crystal Ball Visual Polish
 
 - Implemented authorized visual polish on `app/homepage/Hero.js`, `app/homepage/HomePage.js`, `app/layout.js`, and `themes/default/homepage.css`.
