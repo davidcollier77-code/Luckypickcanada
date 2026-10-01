@@ -742,3 +742,13 @@ body:has(.homepage-sky-backdrop)::after {
 
   .homepage-community-banner { margin: 1rem; }
 }
+
+/* Hero Image Container */
+.hero-image-container {
+  aspect-ratio: 4 / 3;
+}
+@media (min-width: 640px) {
+  .hero-image-container {
+    aspect-ratio: 16 / 9;
+  }
+}
