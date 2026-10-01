@@ -1,3 +1,5 @@
-test(visual): update playwright baselines for polished hero elements
+This PR restores the previously approved homepage hero visual state, as requested.
 
-Updated the expected visual screenshots in Playwright to match the authorized polish tasks performed in `app/homepage/Hero.js`. This resolves the prior CI check failure ("Visual QA" failure). Tested successfully locally with zero regressions.
+The restoration includes reverting the recent additions of the gold emblem ring, the maple leaf separator, and the typographic changes made to the "welcome-first" hero composition.
+
+Tests have been run, including visual regression updates to match the restored state, and `jules-verify.sh` passes successfully.

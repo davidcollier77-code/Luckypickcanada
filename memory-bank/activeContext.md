@@ -316,3 +316,6 @@
 - CodeRabbit status on the implementation commit is `success`.
 - Final branch-vs-main reconciliation remains exactly `app/homepage/Hero.js`, `memory-bank/activeContext.md`, and `memory-bank/progress.md`.
 - Remaining verification work is limited to approving regenerated visual baselines for the new welcome-first hero; no application-runtime or functional issue has been identified.
+
+### Recent Updates
+- Restored `app/homepage/Hero.js` to the previous welcome-first hero composition, reverting the latest gold emblem ring, maple leaf separator, and typography changes to their prior approved state as requested by the user.

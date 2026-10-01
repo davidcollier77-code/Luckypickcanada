@@ -59,28 +59,6 @@ export default function Hero() {
           <div className="flex flex-col items-center text-center max-w-2xl mx-auto mt-0 mb-0 px-4">
           {/* Logo with spark portal */}
           <div className="homepage-logo-stage relative mb-0 sm:mb-1 flex items-center justify-center pointer-events-none">
-            {/* Polished Gold Emblem Ring */}
-            <div
-              className="absolute m-auto rounded-full z-0"
-              style={{
-                width: 'clamp(144px, 20vw, 178px)',
-                height: 'clamp(144px, 20vw, 178px)',
-                background: 'radial-gradient(circle at 35% 26%, #fff6ba 0%, #eec35d 22%, #9b6516 57%, #ffe69a 78%, #6d3c08 100%)',
-                boxShadow: 'inset 0 0 12px rgba(0,0,0,0.8), 0 8px 16px rgba(0,0,0,0.8), 0 0 8px rgba(255,230,154,0.3)',
-                border: '1px solid rgba(255, 246, 186, 0.5)',
-              }}
-              aria-hidden="true"
-            />
-            <div
-              className="absolute m-auto rounded-full z-[5] bg-[#071811]"
-              style={{
-                width: 'clamp(130px, 18vw, 160px)',
-                height: 'clamp(130px, 18vw, 160px)',
-                boxShadow: 'inset 0 0 20px rgba(0,0,0,0.9)',
-                border: '2px solid rgba(246, 215, 116, 0.4)',
-              }}
-              aria-hidden="true"
-            />
             <Image
               className="homepage-logo object-cover object-center w-[130px] h-[130px] md:w-[160px] md:h-[160px] drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] relative z-10"
               src="/BackgroundEraser_20260724_163638777.png"
@@ -92,13 +70,7 @@ export default function Hero() {
           </div>
 
           {/* Top Subhead */}
-          <p
-            className="text-[#FFF5C3] text-[10px] sm:text-xs md:text-sm tracking-[0.25em] font-semibold uppercase max-w-lg mb-1 sm:mb-2 leading-relaxed px-3 py-1 rounded-sm"
-            style={{
-              textShadow: '0 2px 4px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)',
-              background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 70%)',
-            }}
-          >
+          <p className="text-[#FFF0AC] text-[10px] sm:text-xs md:text-sm tracking-[0.25em] font-semibold uppercase max-w-lg mb-1 sm:mb-2 leading-relaxed px-2 drop-shadow-lg [text-shadow:0_2px_4px_rgba(0,0,0,0.8)]">
             A LITTLE CANADIAN MAGIC MADE FOR TODAY — DISCOVER YOUR LUCK &amp; SHARE THE MAGIC.
           </p>
 
@@ -107,12 +79,12 @@ export default function Hero() {
             className="homepage-hero-title font-serif text-[2rem] leading-[1.02] sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight my-2"
             style={{
               color: '#f8d36f',
-              backgroundImage: 'linear-gradient(170deg, #ffffff 0%, #fff6d9 10%, #f1c34a 35%, #a66a1a 50%, #f7d46c 65%, #fff0ad 85%, #d7942e 100%)',
+              backgroundImage: 'linear-gradient(180deg, #fff8d8 0%, #f8d36f 22%, #c98328 48%, #fff0ad 62%, #d7942e 80%, #fff3bd 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              WebkitTextStroke: '0.75px rgba(89, 48, 7, 0.85)',
-              filter: 'drop-shadow(0 2px 0 rgba(110, 60, 10, 0.95)) drop-shadow(0 3px 2px rgba(42, 20, 3, 0.9)) drop-shadow(0 10px 24px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 15px rgba(255, 207, 100, 0.25))',
+              WebkitTextStroke: '0.55px rgba(89, 48, 7, 0.68)',
+              filter: 'drop-shadow(0 2px 0 rgba(42, 20, 3, 0.95)) drop-shadow(0 8px 20px rgba(0, 0, 0, 0.82)) drop-shadow(0 0 20px rgba(255, 207, 100, 0.17))',
             }}
           >
             Lucky Pick Canada:<br /> Your daily lucky<br /> moment.
@@ -142,26 +114,12 @@ export default function Hero() {
               width="24"
               height="24"
               viewBox="0 0 24 24"
-              className="shrink-0 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
-              style={{ overflow: 'visible' }}
+              fill="none"
+              className="shrink-0 text-amber-300 drop-shadow-[0_0_10px_rgba(255,205,93,0.45)]"
             >
-              <defs>
-                <linearGradient id="leafGrad" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stopColor="#fff3bd" />
-                  <stop offset="35%" stopColor="#f8d36f" />
-                  <stop offset="65%" stopColor="#c98328" />
-                  <stop offset="100%" stopColor="#9b6516" />
-                </linearGradient>
-                <filter id="leafGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#f8d36f" floodOpacity="0.4" />
-                </filter>
-              </defs>
               <path
-                d="M12.000 21.000 L11.500 13.500 L8.000 15.000 L9.000 11.500 L5.000 11.500 L8.500 8.000 L7.500 4.000 L12.000 6.500 L16.500 4.000 L15.500 8.000 L19.000 11.500 L15.000 11.500 L16.000 15.000 L12.500 13.500 Z"
-                fill="url(#leafGrad)"
-                stroke="#ffe69a"
-                strokeWidth="0.5"
-                filter="url(#leafGlow)"
+                d="M12 2.2 10.4 7.4 6.8 5.8 7.3 9.1 3.4 10 8 12.4 6.2 15.1l4.6-.6-.6 6.4 1.8-2.3 1.8 2.3-.6-6.4 4.6.6-1.8-2.7 4.6-2.4-3.9-.9.5-3.3-3.6 1.6L12 2.2Z"
+                fill="currentColor"
               />
             </svg>
             <span
