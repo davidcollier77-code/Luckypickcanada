@@ -16,3 +16,5 @@
 - Existing Milky Way background and real logo asset are preserved.
 - Metallic gold hero typography and the gold maple-leaf `Explore your luck` transition were added.
 - Final Playwright/build verification is pending.
+
+- **YYYY-MM-DD**: Restored `app/homepage/Hero.js` to the previous welcome-first hero composition. Updated Playwright visual baselines.

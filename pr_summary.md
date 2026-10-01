@@ -2,26 +2,26 @@
 
 ## SELECTED TASK GROUP
 SELECTED TASK GROUP: polishing
-GROUP REASON: The task requires a purely cosmetic polish pass on the homepage layout, adjusting spacing and background readability without adding new features, animations, or altering functionality.
+GROUP REASON: The task is to restore a previously approved visual/composition state for the homepage hero, which involves styling, images, and layout adjustments without new feature development.
 
 ## LIBRARY CONSULTATION REPORT
 LIBRARY: Next.js
 VERSION: (project dependency)
 USED: YES
-USEFUL: YES
-REASON: Consulted as a required background context for routing and static generation constraints. (No new Next.js patterns were added.)
+USEFUL: NO
+REASON: Consulted briefly for standard structure context, but no Next.js patterns were modified.
 
 LIBRARY: React
 VERSION: (project dependency)
 USED: YES
 USEFUL: YES
-REASON: Required reference for applying proper class names (`className`) and valid component inline styling to React components (`page.js`, `HomePage.js`, `FAQSection.js`).
+REASON: Required reference for manipulating the React component tree and inline JSX styling in `Hero.js`.
 
 LIBRARY: Tailwind CSS
 VERSION: (project dependency)
-USED: NO
-USEFUL: NO
-REASON: This task relied exclusively on pre-existing custom CSS (`themes/default/homepage.css`) and existing CSS classes rather than modifying Tailwind utility classes.
+USED: YES
+USEFUL: YES
+REASON: Used to revert and verify Tailwind CSS utility classes on the hero content to match the restored state.
 
 LIBRARY: GSAP
 VERSION: N/A
@@ -65,54 +65,27 @@ USED: NO
 USEFUL: NO
 REASON: Not required for these specific visual styling updates.
 
-
 ## ROUTED JULES/GEMINI DOCUMENT REPORT
 DOCUMENT: jules.google/docs
 USED: YES
 USEFUL: YES
 REASON: Followed the overall execution policies, build size constraint checks, and PR generation constraints detailed in the Jules documentation framework.
 
-DOCUMENT: developers.google.com/jules/api
-USED: NO
-USEFUL: NO
-REASON: The API was not directly referenced or needed to write the component styling changes.
-
-DOCUMENT: /google-gemini/gemini-cli
-USED: NO
-USEFUL: NO
-REASON: The Gemini CLI was not utilized for this task.
-
-DOCUMENT: /websites/ai_google_dev_gemini-api
-USED: NO
-USEFUL: NO
-REASON: The Gemini API was not referenced or required for this web development task.
-
-
 ## REPOSITORY COMPONENT REPORT
 COMPONENT: memory-bank/activeContext.md
 USED: YES
 USEFUL: YES
-REASON: Reviewed recent homepage CSS and visual updates to ensure no conflicts with existing changes, and appended the final result.
+REASON: Updated to reflect the restoration of the homepage hero.
 
-COMPONENT: app/page.js
+COMPONENT: memory-bank/progress.md
 USED: YES
 USEFUL: YES
-REASON: Updated the inline styles and classes for the "About Lucky Pick Canada" section to enhance readability using the existing `premium-surface` aesthetic.
+REASON: Updated to record the task completion.
 
-COMPONENT: app/homepage/HomePage.js
+COMPONENT: app/homepage/Hero.js
 USED: YES
 USEFUL: YES
-REASON: Updated the inline styles and classes for the "About the Creator" section to improve its readability and match the site's surface visual language.
-
-COMPONENT: themes/default/homepage.css
-USED: YES
-USEFUL: YES
-REASON: Added a generalized clamp-based vertical margin strategy to normalize section spacing across the homepage.
-
-COMPONENT: public/themes/default/homepage.css
-USED: YES
-USEFUL: YES
-REASON: Synced with `themes/default/homepage.css` to bypass Next.js CSS bundling as required by the repository CSS guide.
+REASON: The primary target of the restoration, reverting the emblem, typography, and separator back to their previous approved states.
 
 COMPONENT: scripts/jules-verify.sh
 USED: YES
@@ -124,7 +97,6 @@ USED: YES
 USEFUL: YES
 REASON: Ran visual regression tests (`npx playwright test --update-snapshots`) to verify changes applied correctly to visual output across desktop and mobile form factors and generated updated baselines.
 
-
 ## VERIFICATION
 COMMAND: `./jules-verify.sh`
 RESULT: PASS
@@ -132,26 +104,16 @@ EVIDENCE/OUTPUT SUMMARY: Type check passed. Next.js production build succeeded. 
 
 COMMAND: `pnpm exec playwright test --update-snapshots`
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Run across desktop, mobile-390, and mobile-412 viewports. Generated three visual baseline updates reflecting the spaced sections and enhanced About backgrounds. Twinkle ambient tests passed, ensuring no background disruptions.
+EVIDENCE/OUTPUT SUMMARY: Run across desktop, mobile-390, and mobile-412 viewports. Generated three visual baseline updates reflecting the restored homepage hero. Twinkle ambient tests passed, ensuring no background disruptions.
 
 COMMAND: `pnpm exec playwright test`
 RESULT: PASS
 EVIDENCE/OUTPUT SUMMARY: 6/6 tests passed using 2 workers, verifying visual stability against the newly generated baselines.
 
-
 ## EXACT FINAL DIFF RECONCILIATION
-- `FINAL_REPORT.md`
-- `commit_body.txt`
-- `pr-summary.txt`
-- `pr_summary.md`
-- `pr_summary.txt`
-- `report.md`
-- `app/page.js`
-- `app/homepage/HomePage.js`
-- `app/homepage/FAQSection.js`
-- `themes/default/homepage.css`
-- `public/themes/default/homepage.css`
+- `app/homepage/Hero.js`
 - `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
 - `tests/visual/__screenshots__/desktop/homepage-viewport.png`
 - `tests/visual/__screenshots__/mobile-390/homepage-viewport.png`
 - `tests/visual/__screenshots__/mobile-412/homepage-viewport.png`
