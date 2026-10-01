@@ -61,7 +61,7 @@ All reporting items correctly identify the actual analysis, processing strategy,
 - `tests/visual/__screenshots__/mobile-390/homepage-viewport.png`
 - `tests/visual/__screenshots__/mobile-412/homepage-viewport.png`
 
-*(Note: Test artifact files generated locally during Playwright execution like `test-results/` were cleared or ignored.)*
+*(Note: Gitignored Playwright test artifacts under `test-results/` (force-added in a prior commit) appear in the diff as deletions; the directory remains listed in `.gitignore`.)*
 
 ## 8. VERIFICATION — REQUIRED
 
