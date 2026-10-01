@@ -34,3 +34,9 @@
 - Final Playwright/build verification is pending.
 
 - **YYYY-MM-DD**: Restored `app/homepage/Hero.js` to the previous welcome-first hero composition. Updated Playwright visual baselines.
+
+## 2026-10-01 — Homepage Hero Image Transparency Cleanup
+- Cleaned up the `public/file_00000000e2c481f6912a5c165bae46a4.png` hero asset.
+- Identified and removed embedded Photoshop-style checkerboard artifacts (specifically around values 140/190 grayscale) while protecting the core glowing, drop-shadow, and metallic visual components.
+- Generated updated Playwright visual baseline screenshots to lock in the true-transparency presentation.
+- Successfully verified the application build footprint and regression metrics.
