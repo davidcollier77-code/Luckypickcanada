@@ -57,7 +57,7 @@ export default function Hero() {
         {/* Hero Center Content */}
         <div className="flex-1 w-full flex flex-col items-center justify-center">
           <div className="flex flex-col items-center text-center w-full max-w-[800px] mx-auto mt-4 mb-4 px-4 sm:px-6 relative">
-            <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] flex items-center justify-center pointer-events-none">
+            <div className="relative w-full hero-image-container flex items-center justify-center pointer-events-none">
               <Image
                 className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] relative z-10"
                 src="/file_00000000e2c481f6912a5c165bae46a4.png"
