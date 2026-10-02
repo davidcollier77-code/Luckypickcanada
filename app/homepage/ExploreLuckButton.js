@@ -8,6 +8,7 @@ export default function ExploreLuckButton() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const particleIdCounter = useRef(0);
   const timeoutsRef = useRef(new Set());
+  const isAnimatingRef = useRef(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -24,14 +25,18 @@ export default function ExploreLuckButton() {
   }, []);
 
   const handleClick = useCallback((e) => {
-    // 1. Scroll to Lucky Meter
+    if (isAnimatingRef.current) return;
+
     const luckyMeter = document.getElementById('lucky-meter');
-    if (luckyMeter) {
-      luckyMeter.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+
+    if (prefersReducedMotion) {
+      if (luckyMeter) {
+        luckyMeter.scrollIntoView({ behavior: 'auto' });
+      }
+      return;
     }
 
-    // 2. Visual Effect (skip if reduced motion)
-    if (prefersReducedMotion) return;
+    isAnimatingRef.current = true;
 
     const newParticles = [];
 
@@ -70,6 +75,12 @@ export default function ExploreLuckButton() {
     // Cleanup after max duration
     const timerId = setTimeout(() => {
       setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
+      isAnimatingRef.current = false;
+
+      // 2. Scroll to Lucky Meter
+      if (luckyMeter) {
+        luckyMeter.scrollIntoView({ behavior: 'smooth' });
+      }
     }, 1250);
     timeoutsRef.current.add(timerId);
 

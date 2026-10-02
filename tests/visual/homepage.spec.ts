@@ -48,6 +48,7 @@ test.describe("Homepage Visual", () => {
       maxDiffPixelRatio: 0.003,
     });
   });
+
   test('ambient stars twinkle over time', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
@@ -74,5 +75,49 @@ test.describe("Homepage Visual", () => {
     // The two screenshots should be different, proving stars are twinkling.
     // If they are exactly the same, twinkling is broken or not perceptible.
     expect(snapshot1).not.toEqual(snapshot2);
+  });
+
+  test('explore luck button correctly sequences display before scrolling', async ({ page }) => {
+    // Ensure we mock matchMedia to not prefer reduced motion so the animation plays
+    await page.addInitScript(() => {
+      window.matchMedia = (query) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => {}, // Deprecated
+        removeListener: () => {}, // Deprecated
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+      } as any);
+    });
+
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+
+    const exploreButton = page.locator('button[aria-label="Explore your luck. Scroll down to the Lucky Meter."]');
+    await expect(exploreButton).toBeVisible();
+
+    // Verify we are at the top
+    let scrollY = await page.evaluate(() => window.scrollY);
+    expect(scrollY).toBe(0);
+
+    await exploreButton.click();
+
+    // The page should NOT scroll immediately (it should still be 0)
+    // Wait a tiny bit just in case
+    await page.waitForTimeout(100);
+    scrollY = await page.evaluate(() => window.scrollY);
+    expect(scrollY).toBe(0);
+
+    // Particles should be in the DOM
+    const particles = page.locator('.animate-magic-burst');
+    expect(await particles.count()).toBeGreaterThan(0);
+
+    // Wait for the animation duration (1250ms timeout)
+    await page.waitForTimeout(1500);
+
+    // Now the page should have scrolled down
+    scrollY = await page.evaluate(() => window.scrollY);
+    expect(scrollY).toBeGreaterThan(0);
   });
 });

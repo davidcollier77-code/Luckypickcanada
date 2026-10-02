@@ -1,72 +1,49 @@
-Removed the grey/white checkered background from the Lucky Pick Canada homepage image asset and replaced it with real alpha transparency so the starfield can show through. The original artwork and text were preserved entirely.
+## PR Summary
 
-## 1. SELECTED TASK GROUP
-SELECTED TASK GROUP: polishing
-GROUP REASON: Task involves removing an unwanted background from a UI image asset (visual enhancement)
+**SELECTED TASK GROUP**: polishing
+**GROUP REASON**: The request involves correcting a frontend interaction and animation sequence on the homepage (the downward-arrow interaction in `ExploreLuckButton`), fitting the polishing scope for UI interactions.
 
-## 2. LIBRARY CONSULTATION REPORT
+### LIBRARY CONSULTATION REPORT
+**LIBRARY**: React (`/reactjs/react.dev`)
+**VERSION**: N/A
+**USED**: YES
+**USEFUL**: YES
+**REASON**: Provided context for `useRef` and React state changes handling the animation sequence and preventing rapid re-triggering of the visual effect. Consulted via `.docs/creation/_reactjs_react_dev.md` (symlinked in polishing).
 
-LIBRARY: None specifically
-VERSION: N/A
-USED: NO
-USEFUL: NO
-REASON: No documentation was needed or used to execute a standard flood-fill image manipulation in python.
+### ROUTED JULES/GEMINI DOCUMENT REPORT
+**DOCUMENT**: `AGENTS.md`
+**USED**: YES
+**USEFUL**: YES
+**REASON**: Established the strict repository governance process and the 495 MB maximum size limit requirement which was verified.
 
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
+**DOCUMENT**: `.jules/jules.md`
+**USED**: YES
+**USEFUL**: YES
+**REASON**: Confirmed execution constraints and workflow rules.
 
-DOCUMENT: .jules/jules.md
-USED: YES
-USEFUL: YES
-REASON: Used to ensure memory bank compliance and overall PR procedure requirements.
+**DOCUMENT**: `.jules/polishing.md`
+**USED**: YES
+**USEFUL**: YES
+**REASON**: Provided guidance on visual changes and handling animations vs. scrolling correctly.
 
-DOCUMENT: .jules/polishing.md
-USED: YES
-USEFUL: YES
-REASON: Provided guidance on visual improvements and polishing assets.
+### REPOSITORY COMPONENT REPORT
+**COMPONENT**: `app/homepage/ExploreLuckButton.js`
+**USED**: YES
+**USEFUL**: YES
+**REASON**: This was the source of the bug. It triggered the `luckyMeter.scrollIntoView()` immediately on click before the animation finished. We added a `setTimeout` here.
 
-## 4. REPOSITORY COMPONENT REPORT
+**COMPONENT**: `tests/visual/homepage.spec.ts`
+**USED**: YES
+**USEFUL**: YES
+**REASON**: This file houses the Playwright visual tests. We added an automated deterministic test to verify that the visual display completely plays before the scroll action is performed.
 
-COMPONENT: `public/file_00000000e2c481f6912a5c165bae46a4.png`
-USED: YES
-USEFUL: YES
-REASON: The image asset that needed the checkerboard background removed.
+### EXACT FINAL DIFF RECONCILIATION
+- `app/homepage/ExploreLuckButton.js`
+- `tests/visual/homepage.spec.ts`
 
-## 5. REPORTING INTEGRITY
+### VERIFICATION RESULTS
+- `pnpm run build`: **PASS** (Actual build size: 345 MB, within the 495 MB limit).
+- `pnpm exec playwright test`: **PASS** (Tests pass successfully).
+- Pre-submission double-check completed: The requested result was verified, the 495MB size cap was respected, pnpm was used, and no prohibited changes were made.
 
-Work reported reflects actions taken.
-
-## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-
-- Analyzed the image structure and identified the color bands for the checkered background.
-- Wrote a python script using `Pillow` to execute a BFS flood fill starting at the image boundaries and targeting those exact color bands.
-- Ran script and confirmed the checkerboard was converted to alpha transparency without touching the foreground graphic.
-- Verified transparency correctly applied through ASCII visual debugging.
-- No protected systems were modified.
-- Only the target image was changed.
-- Scope compliance maintained.
-
-## 7. EXACT FINAL DIFF RECONCILIATION
-
-- `public/file_00000000e2c481f6912a5c165bae46a4.png`
-
-## 8. VERIFICATION
-
-- `.docs/` size measured as 3.0M (well under the 495MB limit).
-- `./jules-verify.sh` run and completed successfully without errors.
-- Visual inspection via ascii representations inside python.
-
-COMMAND: `./jules-verify.sh`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Tests complete: 17 passed, 0 failed. All verification steps passed.
-
-COMMAND: `du -sh .docs/`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: 3.0M
-
-## 9. USEFUL RESULT
-
-USEFUL RESULT: YES
-
-## 10. PRE-SUBMISSION DOUBLE-CHECK
-
-Completed.
+**USEFUL RESULT: YES**
