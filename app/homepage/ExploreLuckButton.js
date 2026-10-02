@@ -21,7 +21,7 @@ export default function ExploreLuckButton() {
     // 1. Scroll to Lucky Meter
     const luckyMeter = document.getElementById('lucky-meter');
     if (luckyMeter) {
-      luckyMeter.scrollIntoView({ behavior: 'smooth' });
+      luckyMeter.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
     }
 
     // 2. Visual Effect (skip if reduced motion)
