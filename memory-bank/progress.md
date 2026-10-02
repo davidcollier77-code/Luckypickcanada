@@ -1,5 +1,14 @@
 # Progress
 
+## 2026-10-02 — PR #1345 Review-Fix Pass
+
+- Addressed all three unresolved bot review threads on the open performance PR with one commit per thread.
+- Nav hit areas now grow through a positioned `::before` instead of padding plus negative margin, which keeps the hero and footer nav spacing identical to the merged baseline.
+- Removed the three inert `<picture>` offer-artwork wrappers; the theme stylesheet already hides that artwork at all viewports.
+- Removed the redundant manual preload for the theme stylesheet while keeping the stylesheet link in place.
+- Verified with `pnpm test` (11/11), `pnpm build` (306 MB, under the 495 MB limit), compiled CSS inspection, and Chromium DOM/hit-testing checks at desktop and mobile widths.
+- The Playwright visual suite could not be executed locally because `playwright.config.ts` hardcodes port 3000 and that port is taken in this environment; PR CI remains the validation point.
+
 ## 2026-10-02 — Explore Your Luck Touch-Target Repair
 
 - Diagnosed the remaining issue after PR #1341: the sequencing logic was covered by a synthetic direct-button test, but the physical invisible hit area was not verified for responsive/touch placement over the baked-in arrow artwork.

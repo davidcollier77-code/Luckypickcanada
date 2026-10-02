@@ -1,3 +1,13 @@
+## 2026-10-02 — PR #1345 Review-Fix Pass (nav spacing, offer artwork, css preload)
+
+- Verified the three open, unresolved review threads on PR #1345 (`app/homepage/Hero.js:23`, `app/homepage/HomePage.js:355`, `app/layout.js:57`) against the shipped theme CSS and the compiled Tailwind output before changing anything.
+- Replaced the `p-2 -m-2` hit-area pattern on the primary nav links and every footer nav link with `relative before:absolute before:-inset-2 before:content-['']`, so the 0.5rem tap-area growth no longer widens the label-to-separator spacing.
+- Reverted the three `<picture>` offer-artwork wrappers in `app/homepage/HomePage.js`; the theme rule `.homepage-offer-grid > .homepage-offer:nth-child(-n + 3) > .homepage-offer-image { display: none; }` already hides that artwork at every viewport.
+- Removed the manual `<link rel="preload" as="style">` for the theme stylesheet. The `<link rel="stylesheet">` stays in the same head position so the no-FOUC guarantee is unchanged; Next.js/React still emits its own preload for that stylesheet.
+- Verification: `pnpm test` 11/11 passed; `pnpm build` passed with a 306 MB production `.next` (495 MB hard limit); compiled CSS contains `.before\:absolute:before` and `.before\:-inset-2:before`; Chromium checks at 1440x900 and 390x844 confirm label-to-neighbour distance equals the container gap, link box width equals label width, padding/margin are `0px`, and probes 4px outside each box resolve to that link.
+- `tests/visual/homepage.spec.ts` could not run locally because `playwright.config.ts` hardcodes port 3000, which an unrelated sandbox service already occupies; that suite must run in pull-request CI.
+- Protected systems, Stripe, database, auth, deployment, environment variables, dependencies, `.docs/`, `AGENTS.md`, and `tailwind.config.js` were not modified.
+
 ## 2026-10-02 — Explore Your Luck Touch-Target Repair
 
 - Verified the merged PR #1341 correctly delayed scrolling but its browser test activated the button directly, so it did not verify the real mobile tap hit area over the baked-in arrow artwork.
