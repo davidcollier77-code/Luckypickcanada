@@ -64,4 +64,4 @@ Build size check (`du -sm .docs`): 4 MB (Well below the 495 MB limit).
 USEFUL RESULT: YES
 
 ## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
-Completed pre-submission double check. The only modified file is `public/homepage-hero-lucky-pick-canada.png`, and transparency is correctly applied.
+Completed pre-submission double check. The modified files are `public/homepage-hero-lucky-pick-canada.png` and `pr_summary.md`. Transparency is correctly applied to the image.
