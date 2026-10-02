@@ -1,3 +1,10 @@
+## 2026-10-02 — Explore Your Luck Touch-Target Repair
+
+- Verified the merged PR #1341 correctly delayed scrolling but its browser test activated the button directly, so it did not verify the real mobile tap hit area over the baked-in arrow artwork.
+- Implemented a scoped repair in `app/homepage/ExploreLuckButton.js`: expanded the invisible lower-center touch target across the hero stage, kept normal scrolling behavior intact, removed the hover tooltip/visible hover cue, preserved the artwork, particle effect, and reduced-motion path, and re-queried `#lucky-meter` after the animation before scrolling.
+- Extended `tests/visual/homepage.spec.ts` to verify the hit target is centered, reaches the hero-stage bottom edge, is large enough to cover the intended interaction zone, and uses a touch tap on mobile projects.
+- Browser/build verification is being handled by the pull-request CI because a local repository checkout is unavailable in this environment.
+
 ## 2026-10-02 — Homepage PNG Replacement
 
 - Replaced the homepage hero PNG with the provided replacement image.
