@@ -84,8 +84,8 @@ test.describe("Homepage Visual", () => {
         matches: false,
         media: query,
         onchange: null,
-        addListener: () => {}, // Deprecated
-        removeListener: () => {}, // Deprecated
+        addListener: () => {},
+        removeListener: () => {},
         addEventListener: () => {},
         removeEventListener: () => {},
         dispatchEvent: () => false,
@@ -94,33 +94,47 @@ test.describe("Homepage Visual", () => {
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
-    const exploreButton = page.locator('button[aria-label="Explore your luck. Scroll down to the Lucky Meter."]');
+    const label = 'Explore your luck. Scroll down to the Lucky Meter.';
+    const exploreButton = page.locator(`button[aria-label="${label}"]`);
     const heroStage = page.locator('.hero-image-container');
     await expect(exploreButton).toBeVisible();
+    await expect(heroStage).toBeVisible();
 
-    // The interactive surface is intentionally invisible, but it must remain centered
-    // and reach the bottom edge of the hero stage so the baked-in arrows stay tappable
-    // after responsive object-contain sizing.
+    // The interactive surface is intentionally visually transparent, but the actual
+    // mobile tap must hit the button where the baked-in arrows are displayed.
     const buttonBox = await exploreButton.boundingBox();
     const stageBox = await heroStage.boundingBox();
     expect(buttonBox).not.toBeNull();
     expect(stageBox).not.toBeNull();
+
     expect(Math.abs((buttonBox!.x + buttonBox!.width / 2) - (stageBox!.x + stageBox!.width / 2))).toBeLessThanOrEqual(1);
     expect(buttonBox!.y + buttonBox!.height).toBeGreaterThanOrEqual(stageBox!.y + stageBox!.height - 1);
     expect(buttonBox!.width).toBeGreaterThan(stageBox!.width * 0.25);
+
+    const computedPointerEvents = await heroStage.evaluate((element) => getComputedStyle(element).pointerEvents);
+    expect(computedPointerEvents).toBe('auto');
+
+    // Verify the lower-center arrow hotspot resolves to the real button through
+    // Chromium hit-testing before performing the touch gesture.
+    const tapX = stageBox!.x + stageBox!.width / 2;
+    const tapY = stageBox!.y + stageBox!.height * 0.9;
+    const hitTargetLabel = await page.evaluate(({ x, y }) => {
+      const element = document.elementFromPoint(x, y);
+      return element?.closest('button')?.getAttribute('aria-label') ?? null;
+    }, { x: tapX, y: tapY });
+    expect(hitTargetLabel).toBe(label);
 
     // Verify we are at the top
     let scrollY = await page.evaluate(() => window.scrollY);
     expect(scrollY).toBe(0);
 
     if (test.info().project.name.startsWith('mobile-')) {
-      await exploreButton.tap();
+      await page.touchscreen.tap(tapX, tapY);
     } else {
       await exploreButton.click();
     }
 
     // The page should NOT scroll immediately (it should still be 0)
-    // Wait a tiny bit just in case
     await page.waitForTimeout(100);
     scrollY = await page.evaluate(() => window.scrollY);
     expect(scrollY).toBe(0);
