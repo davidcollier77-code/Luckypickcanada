@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-10-02 — Merge auto/docs-refresh to main
+
+- Resolved the unrelated history merge conflict on PR #1339.
+- Kept upstream documentation updates for files inside `.docs/`.
+- Preserved existing `main` state for `.github/`, `.jules/`, `.specify/`, and `memory-bank/`.
+
 ## 2026-10-02 — Explore Your Luck Interaction
 
 - Implemented an interactive transparent overlay over the baked-in "Explore your luck" arrows in the static hero PNG (`homepage-hero-lucky-pick-canada.png`).
