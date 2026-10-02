@@ -91,7 +91,7 @@ export default function ExploreLuckButton() {
       <button
         type="button"
         onClick={handleClick}
-        className="pointer-events-auto h-full w-[min(24rem,70vw)] cursor-pointer rounded-xl bg-white opacity-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 focus-visible:opacity-0 touch-manipulation"
+        className="pointer-events-auto h-full w-[min(24rem,70vw)] cursor-pointer rounded-xl bg-white opacity-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 focus-visible:opacity-5 touch-manipulation"
         aria-label="Explore your luck. Scroll down to the Lucky Meter."
       >
         <span className="sr-only">Explore your luck</span>
