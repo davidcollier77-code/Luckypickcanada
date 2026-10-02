@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import ExploreLuckButton from './ExploreLuckButton';
 
 /**
  * Renders the homepage's primary navigation, logo, heading, and introduction.
@@ -66,6 +67,7 @@ export default function Hero() {
                 sizes="(max-width: 768px) 100vw, 1100px"
                 priority
               />
+              <ExploreLuckButton />
             </div>
           </div>
         </div>
