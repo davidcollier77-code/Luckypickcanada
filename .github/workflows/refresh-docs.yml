@@ -47,7 +47,7 @@ jobs:
           echo "Atlantic time: $(TZ=America/Halifax date --iso-8601=seconds)"
 
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
