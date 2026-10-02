@@ -63,3 +63,13 @@
 - Preserved the repository constitution and application/source files outside the requested Spec Kit scope.
 - Second-pass verification confirmed the ten Jules Spec Kit command files contain no unresolved __SPECKIT_COMMAND_ placeholders and no stale 1.0.4 markers.
 - Runtime build/test verification is left to the pull-request checks because a local repository checkout/network was unavailable in the execution environment.
+
+## 2026-10-02 — Documentation Refresh Schedule Reliability Repair
+
+- Deep-dived the scheduled documentation updater instead of changing the working refresh engine.
+- Verified scheduled Refresh Documentation runs repeatedly landed several hours later than the configured 2:21 AM and 6:21 AM Atlantic targets, while the updater itself completed successfully when a scheduled event was eventually delivered.
+- Verified run #33 updated 14 documentation snapshots with 0 failures and created/updated the automated refresh PR successfully.
+- Confirmed the earlier UTC/time-guard design could discard delayed scheduled events because it required the runner clock to be exactly 02:00 Atlantic; that guard was not restored.
+- Updated .github/workflows/refresh-docs.yml to retain the intended 2:21 AM and 6:21 AM Tuesday/Friday schedules, add a 10:21 AM Tuesday/Friday recovery opportunity, record the nominal schedule plus actual UTC/Atlantic trigger time, and cap a refresh job at 20 minutes.
+- Preserved the updater script and documentation refresh behavior unchanged.
+- Runtime pull-request execution remains the final validation point because the repository cannot be checked out locally in this environment.
