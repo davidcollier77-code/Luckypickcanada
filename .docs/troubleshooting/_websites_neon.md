@@ -343,6 +343,7 @@ API reference, SDKs, Terraform provider, Postgres compatibility, and platform-le
 
 - [@neon/config-runtime](https://neon.com/docs/reference/config-runtime.md): Programmatic API for running a neon.ts policy from your own scripts and CI.
 - [Claimable Neon](https://neon.com/docs/reference/claimable-neon.md): CLI, claim, and HTTP reference
+- [Effect bindings for the Neon SDK](https://neon.com/docs/reference/effect-sdk.md): Use the Neon Management SDK with Effect v4 — every call an Effect, every paginated list a Stream, with tagged errors and interruption.
 - [Get started with the Neon API](https://neon.com/docs/reference/api/get-started.md): Create an API key and make your first authenticated request.
 - [Manage Neon with Terraform](https://neon.com/docs/reference/terraform.md): Use Terraform to provision and manage your Neon projects, branches, endpoints, roles, databases, and other resources as code.
 - [Managed Better Auth and Data API SDK](https://neon.com/docs/reference/javascript-sdk.md): Reference documentation for @neondatabase/neon-js (authentication and Data API database queries)
