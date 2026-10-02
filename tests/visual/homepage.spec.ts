@@ -111,8 +111,10 @@ test.describe("Homepage Visual", () => {
     expect(buttonBox!.y + buttonBox!.height).toBeGreaterThanOrEqual(stageBox!.y + stageBox!.height - 1);
     expect(buttonBox!.width).toBeGreaterThan(stageBox!.width * 0.25);
 
-    const computedPointerEvents = await heroStage.evaluate((element) => getComputedStyle(element).pointerEvents);
-    expect(computedPointerEvents).toBe('auto');
+    const computedStagePointerEvents = await heroStage.evaluate((element) => getComputedStyle(element).pointerEvents);
+    const computedButtonPointerEvents = await exploreButton.evaluate((element) => getComputedStyle(element).pointerEvents);
+    expect(computedStagePointerEvents).toBe('none');
+    expect(computedButtonPointerEvents).toBe('auto');
 
     // Verify the lower-center arrow hotspot resolves to the real button through
     // Chromium hit-testing before performing the touch gesture.
@@ -143,12 +145,22 @@ test.describe("Homepage Visual", () => {
     const particles = page.locator('.animate-magic-burst');
     expect(await particles.count()).toBeGreaterThan(0);
 
-    // Wait for the animation duration (1250ms timeout)
+    // Wait for the animation duration (1250ms timeout).
     await page.waitForTimeout(1500);
 
-    // Now the page should have scrolled down
+    // Now the page should have scrolled down.
     scrollY = await page.evaluate(() => window.scrollY);
     expect(scrollY).toBeGreaterThan(0);
+
+    // A second real mobile tap after the animation must still be a legitimate
+    // activation; the touch path must not rely on a timestamp suppression window.
+    if (test.info().project.name.startsWith('mobile-')) {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.touchscreen.tap(tapX, tapY);
+      await page.waitForTimeout(1500);
+      const secondScrollY = await page.evaluate(() => window.scrollY);
+      expect(secondScrollY).toBeGreaterThan(0);
+    }
   });
 
   test('footer and social touch targets stay enlarged without overlapping on mobile', async ({ page }) => {
