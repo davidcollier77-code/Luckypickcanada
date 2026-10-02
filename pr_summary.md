@@ -48,7 +48,7 @@ REASON: FAQSection kept on `next/dynamic`; non-functional `picture`/`source` wra
 COMPONENT: app/homepage/ExploreLuckButton.js
 USED: YES
 USEFUL: YES
-REASON: Enlarged the invisible touch target (the main-branch button computed to 0px width and was untappable); it does not use the gap-breaking `p-2 -m-2` pattern, so no wrapper was required. Particle images keep explicit 24×24 dimensions.
+REASON: Preserved the previously implemented enlarged invisible touch target; this follow-up did not modify its behavior because it is outside the remaining footer/documentation scope. Particle images keep explicit 24×24 dimensions.
 COMPONENT: themes/default/homepage.css + public/themes/default/homepage.css
 USED: YES
 USEFUL: YES
@@ -62,10 +62,10 @@ REASON: Ran the Playwright baseline suite; it fails identically for unmodified m
 All changes were verified against the exact requested findings without violating protected visual bounds. The earlier claim of a 4.2MB mobile payload saving was removed: the `picture`/`source` srcSet duplicated the `img` src (no responsive selection), no smaller variants exist in the repo, and the theme CSS already hides the images, so no payload saving is claimed anymore. The manual theme-CSS preload was also removed (same-href preload immediately before a stylesheet is deduplicated by the browser and cannot reduce render-blocking time).
 
 ## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-- Touch targets (review issue 1): replaced the `p-2 -m-2` combination on every primary-nav and footer-nav link with `relative before:absolute before:-inset-2 before:content-['']`. The absolutely-positioned `::before` extends the clickable area 0.5rem beyond each link without padding or negative margins on the flex item, so flex `gap` measurement is untouched. Chromium probes 4px outside each link box resolve to that link, while label-to-label spacing, link box size, padding, and margin are identical to the unpadded baseline.
+- Touch targets (review issue 1): the existing primary-nav and footer-nav links use positioned `::before` hit areas rather than padding plus negative margins, preserving flex `gap` measurement. The follow-up repaired the footer/social mobile rows by using `before:-inset-1 sm:before:-inset-2`, which preserves the larger desktop target while preventing mobile overlap.
 - Offer artwork (review issue 2): removed the non-functional `picture`/`source` wrappers (identical srcSet = no responsive selection, no payload saving; the `max-sm` 640px breakpoint also did not match the theme CSS). Restored the plain `img` with `loading="lazy"` and explicit width/height; the theme CSS continues to hide the images at every viewport.
 - Render-blocking CSS (review issue 3): removed the redundant `rel="preload" as="style"` link that immediately preceded the same-href `rel="stylesheet"` link. Next.js handles the bundled `globals.css` import, so no manual preload is needed; the stylesheet link itself stays in place.
-- Preserved PR #1345 wins: `fetchPriority="high"` on the hero LCP image, the enlarged ExploreLuckButton touch target, explicit particle image dimensions, and the dynamic FAQSection import.
+- Preserved PR #1345 wins: `fetchPriority="high"` on the hero LCP image, the previously implemented enlarged ExploreLuckButton touch target, explicit particle image dimensions, and the dynamic FAQSection import.
 - Protected Systems Check: No database, payment, or auth boundaries were crossed.
 
 ## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
@@ -109,5 +109,6 @@ Pre-submission double-check completed: exact files modified match the task requi
 - Verification on follow-up commit `ce043c90203bb62efd23d9b085f9ba65f59df1c8`: Visual QA PASS (11 executed tests; desktop follow-up test skipped as intended). OpenNext validation PASS, including Next.js build, OpenNext build, Tailwind CSS validation, worker/assets checks, Wrangler dry-run, and Git status.
 - Latest clean production build size previously measured on this PR: 305M, below the 495 MB hard maximum. The current OpenNext validation workflow does not emit a `.next` size measurement.
 - No visual, audio, wording, content, artwork, payment, database, authentication, or deployment behavior was changed.
+- Documentation integrity follow-up: removed the unsupported `ExploreLuckButton` 0px-width justification from the canonical summary.
 
 USEFUL RESULT: YES

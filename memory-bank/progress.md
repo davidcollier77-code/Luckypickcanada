@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-02 — PR #1345 Documentation Integrity Correction
+
+- Documentation integrity follow-up: removed the unsupported ExploreLuckButton 0px-width justification from the canonical PR Summary and preserved the verified footer repair.
+
 ## 2026-10-02 — PR #1345 Follow-up Repair Pass
 
 - Re-verified the current PR #1345 head before modifying anything.
