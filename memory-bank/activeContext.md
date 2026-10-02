@@ -54,3 +54,12 @@
 - Processed the PNG and verified the removal of the baked-in grid remnants surrounding the text and inner emblem elements without damaging glowing effects or borders.
 - Re-ran the Playwright visual test suite against the updated image and safely updated the known-good visual regression snapshots (`tests/visual/__screenshots__`) because the underlying pixel-level layout of the artwork intrinsically shifted to true transparency.
 - Verified final build passes, verified size limits (`< 495 MB`), and ensured `./jules-verify.sh` succeeded without degrading the Next.js optimization pipeline.
+
+## 2026-10-02 — Spec Kit v1.0.13 Update
+
+- Verified the repository's recorded Spec Kit version was 1.0.4.
+- Verified upstream Spec Kit v1.0.13 is newer and used it as the replacement baseline.
+- Updated the managed Spec Kit scripts, templates, Jules generic command files, Spec Kit workflow, and version/manifests.
+- Preserved the repository constitution and application/source files outside the requested Spec Kit scope.
+- Second-pass verification confirmed the ten Jules Spec Kit command files contain no unresolved __SPECKIT_COMMAND_ placeholders and no stale 1.0.4 markers.
+- Runtime build/test verification is left to the pull-request checks because a local repository checkout/network was unavailable in the execution environment.
