@@ -49,7 +49,7 @@ export default function ExploreLuckButton() {
       const angle = Math.random() * Math.PI * 2;
       const velocity = Math.random() * 70 + 40; // 40-110px
       newParticles.push({
-        id: `confetti-${Date.now()}-${particleIdCounter.current++}`,
+        id: `confetti-${particleIdCounter.current++}`,
         type: 'confetti',
         x: Math.cos(angle) * velocity,
         y: Math.sin(angle) * velocity + 70, // bias downwards more
