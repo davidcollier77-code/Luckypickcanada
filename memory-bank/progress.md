@@ -1,5 +1,12 @@
 # Progress
 
+## 2026-10-02 — Explore Your Luck Touch-Target Repair
+
+- Diagnosed the remaining issue after PR #1341: the sequencing logic was covered by a synthetic direct-button test, but the physical invisible hit area was not verified for responsive/touch placement over the baked-in arrow artwork.
+- Updated `app/homepage/ExploreLuckButton.js` with a wider lower-center invisible hit target, preserved reduced-motion and visual behavior, removed the hover/tooltip exposure, and re-queried the Lucky Meter target inside the deferred callback.
+- Updated `tests/visual/homepage.spec.ts` with responsive hit-area geometry checks and a mobile touch-tap path.
+- Created branch `fix/homepage-explore-luck-hit-area`; no merge performed.
+
 ## 2026-10-02 — Explore Your Luck Interaction
 
 - Implemented an interactive transparent overlay over the baked-in "Explore your luck" arrows in the static hero PNG (`homepage-hero-lucky-pick-canada.png`).

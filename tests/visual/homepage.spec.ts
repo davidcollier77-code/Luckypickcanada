@@ -77,7 +77,7 @@ test.describe("Homepage Visual", () => {
     expect(snapshot1).not.toEqual(snapshot2);
   });
 
-  test('explore luck button correctly sequences display before scrolling', async ({ page }) => {
+  test('explore luck hit area sequences display before scrolling', async ({ page }) => {
     // Ensure we mock matchMedia to not prefer reduced motion so the animation plays
     await page.addInitScript(() => {
       window.matchMedia = (query) => ({
@@ -95,13 +95,29 @@ test.describe("Homepage Visual", () => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
     const exploreButton = page.locator('button[aria-label="Explore your luck. Scroll down to the Lucky Meter."]');
+    const heroStage = page.locator('.hero-image-container');
     await expect(exploreButton).toBeVisible();
+
+    // The interactive surface is intentionally invisible, but it must remain centered
+    // and reach the bottom edge of the hero stage so the baked-in arrows stay tappable
+    // after responsive object-contain sizing.
+    const buttonBox = await exploreButton.boundingBox();
+    const stageBox = await heroStage.boundingBox();
+    expect(buttonBox).not.toBeNull();
+    expect(stageBox).not.toBeNull();
+    expect(Math.abs((buttonBox!.x + buttonBox!.width / 2) - (stageBox!.x + stageBox!.width / 2))).toBeLessThanOrEqual(1);
+    expect(buttonBox!.y + buttonBox!.height).toBeGreaterThanOrEqual(stageBox!.y + stageBox!.height - 1);
+    expect(buttonBox!.width).toBeGreaterThan(stageBox!.width * 0.25);
 
     // Verify we are at the top
     let scrollY = await page.evaluate(() => window.scrollY);
     expect(scrollY).toBe(0);
 
-    await exploreButton.click();
+    if (test.info().project.name.startsWith('mobile-')) {
+      await exploreButton.tap();
+    } else {
+      await exploreButton.click();
+    }
 
     // The page should NOT scroll immediately (it should still be 0)
     // Wait a tiny bit just in case
