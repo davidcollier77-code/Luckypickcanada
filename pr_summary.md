@@ -50,6 +50,7 @@ All usage and usefulness reported accurately reflects actual work performed. The
 
 ## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
 - `public/homepage-hero-lucky-pick-canada.png`
+- `pr_summary.md`
 
 ## 8. VERIFICATION — REQUIRED
 COMMAND: `./jules-verify.sh`
