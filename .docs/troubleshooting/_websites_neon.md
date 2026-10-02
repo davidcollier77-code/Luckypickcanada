@@ -97,7 +97,7 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: checkout](https://neon.com/docs/cli/checkout.md): Pin a branch in your local .neon context file
 - [Neon CLI command: claim](https://neon.com/docs/cli/claim.md): Create and claim a temporary Neon project without an account
 - [Neon CLI command: completion](https://neon.com/docs/cli/completion.md): Generate shell completion scripts for neon commands and options
-- [Neon CLI command: config](https://neon.com/docs/cli/config.md): Manage a branch with a neon.ts policy: init, status, plan, and apply
+- [Neon CLI command: config](https://neon.com/docs/cli/config.md): Manage a branch with a neon.ts policy: init, add, status, plan, and apply
 - [Neon CLI command: connection-string](https://neon.com/docs/cli/connection-string.md): Get Postgres connection strings for branches and databases
 - [Neon CLI command: credentials](https://neon.com/docs/cli/credentials.md): Issue, list, reveal, rotate, and revoke scoped credentials on a branch
 - [Neon CLI command: data-api](https://neon.com/docs/cli/data-api.md): Provision and manage the Neon Data API from the CLI
