@@ -284,3 +284,9 @@ body {
 .animate-magic-burst {
   animation: magic-burst ease-out forwards;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-magic-burst {
+    animation: none;
+  }
+}
