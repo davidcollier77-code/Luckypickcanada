@@ -136,4 +136,53 @@ test.describe("Homepage Visual", () => {
     scrollY = await page.evaluate(() => window.scrollY);
     expect(scrollY).toBeGreaterThan(0);
   });
+
+  test('footer and social touch targets stay enlarged without overlapping on mobile', async ({ page }) => {
+    test.skip(!test.info().project.name.startsWith('mobile-'), 'Mobile-only touch-target geometry check');
+
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+
+    for (const selector of ['nav[aria-label="Footer navigation"] a', 'nav[aria-label="Social links"] a']) {
+      const links = page.locator(selector);
+      const count = await links.count();
+      expect(count).toBeGreaterThan(1);
+
+      const boxes = [];
+      for (let i = 0; i < count; i += 1) {
+        const box = await links.nth(i).boundingBox();
+        expect(box).not.toBeNull();
+        boxes.push(box!);
+      }
+
+      const expanded = await Promise.all(
+        boxes.map(async (box, i) => {
+          const style = await links.nth(i).evaluate((el) => {
+            const pseudo = getComputedStyle(el, '::before');
+            return {
+              left: parseFloat(pseudo.left) || 0,
+              right: parseFloat(pseudo.right) || 0,
+            };
+          });
+
+          return {
+            left: box.x + style.left,
+            right: box.x + box.width - style.right,
+            top: box.y,
+            bottom: box.y + box.height,
+          };
+        })
+      );
+
+      for (let i = 0; i < expanded.length; i += 1) {
+        for (let j = i + 1; j < expanded.length; j += 1) {
+          const a = expanded[i];
+          const b = expanded[j];
+          const sameRow = Math.min(a.bottom, b.bottom) > Math.max(a.top, b.top);
+          const horizontalOverlap = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          expect(sameRow && horizontalOverlap > 0).toBeFalsy();
+        }
+      }
+    }
+  });
+
 });
