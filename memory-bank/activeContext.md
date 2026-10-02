@@ -102,3 +102,23 @@
 - Updated .github/workflows/refresh-docs.yml to retain the intended 2:21 AM and 6:21 AM Tuesday/Friday schedules, add a 10:21 AM Tuesday/Friday recovery opportunity, record the nominal schedule plus actual UTC/Atlantic trigger time, and cap a refresh job at 20 minutes.
 - Preserved the updater script and documentation refresh behavior unchanged.
 - Runtime pull-request execution remains the final validation point because the repository cannot be checked out locally in this environment.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Explore Your Luck Touch
+
+- Addressed the three review findings on PR #1346.
+- Removed the timestamp-based touch suppression from `app/homepage/ExploreLuckButton.js`; touch/pen input now prevents the compatibility click at `pointerdown`, while `pointerup` performs the activation directly.
+- Restored the narrower pointer-event boundary in `app/homepage/Hero.js`: the hero stage remains `pointer-events-none`, while only the Explore button restores `pointer-events-auto`.
+- Strengthened `tests/visual/homepage.spec.ts` to assert the stage/button pointer-event split and exercise a second real mobile tap after the first animation completes.
+- The repair remains limited to the homepage Explore Your Luck interaction and its targeted regression coverage. CI is the required runtime verification point.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Regression Test Strengthening
+
+- Kilo re-review confirmed the three implementation findings were resolved and identified one remaining test-coverage weakness.
+- Strengthened `tests/visual/homepage.spec.ts` so a native click activation is attempted after a completed real mobile touch sequence while the test clock remains frozen. This specifically fails under the removed timestamp-guard implementation, because a reintroduced frozen-time guard would suppress the click.
+- Retained a second real mobile touchscreen tap check after that click sequence to cover repeat touch activation.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Smooth-Scroll Test Reset
+
+- Kilo's latest incremental review identified a test-only issue: the global smooth-scroll CSS could leave the viewport moving when the repeat-touch coordinates were reused.
+- Updated `tests/visual/homepage.spec.ts` to temporarily force `scroll-behavior: auto`, reset to `scrollY === 0`, restore the page style, and only then issue the repeat mobile tap.
+- Application interaction code remains unchanged by this follow-up.

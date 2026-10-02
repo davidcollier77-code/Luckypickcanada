@@ -99,3 +99,22 @@
 - Added a 10:21 AM Atlantic recovery schedule, trigger-time telemetry, and a 20-minute workflow job timeout.
 - Preserved scripts/refresh-docs.js unchanged.
 - Runtime CI remains the final verification point because a local checkout is unavailable in this environment.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Explore Your Luck Touch
+
+- Fixed all three review findings on PR #1346 without changing the existing visual artwork or animation sequence.
+- Replaced timestamp-based touch/click suppression with native pointerdown compatibility-click cancellation plus pointerup activation.
+- Kept pointer events narrowly scoped to the actual Explore button instead of the entire hero stage.
+- Added regression coverage for the pointer-event boundary and a second legitimate mobile activation after the animation interval.
+- Runtime/browser/build verification remains pending in PR CI.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Regression Test Strengthening
+
+- Addressed the remaining Kilo review suggestion in the homepage regression test.
+- The mobile test now verifies a native click after a completed touch activation while `Date.now()` remains frozen, making reinstatement of the old timestamp guard observable.
+- The test also retains a subsequent real touchscreen tap check for repeat touch activation.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Smooth-Scroll Test Reset
+
+- Fixed the remaining test reliability finding by making the viewport reset immediate before the repeat touch coordinate test.
+- No application behavior changed in this follow-up; it only stabilizes the mobile regression test under the repository's global smooth-scroll CSS.
