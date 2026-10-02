@@ -1,5 +1,26 @@
 # Progress
 
+## 2026-10-02 — PR #1345 Documentation Integrity Correction
+
+- Documentation integrity follow-up: removed the unsupported ExploreLuckButton 0px-width justification from the canonical PR Summary and preserved the verified footer repair.
+
+## 2026-10-02 — PR #1345 Follow-up Repair Pass
+
+- Re-verified the current PR #1345 head before modifying anything.
+- Repaired the mobile footer and social-link touch-target technique in `app/layout.js`: mobile expansion is now `before:-inset-1` with `sm:before:-inset-2`, preserving the larger desktop target while leaving enough separation between adjacent mobile links.
+- Added deterministic Chromium/Playwright coverage in `tests/visual/homepage.spec.ts` to verify footer/social pseudo-element hit areas remain enlarged and do not overlap on mobile, including midpoint hit-testing between adjacent links.
+- Investigated the FAQ loading path. `FAQSection` remains a `next/dynamic` code-split import; no additional viewport-gating change was made because doing so would require a new placeholder/layout strategy and the existing implementation is already split from the main client bundle. No unsupported network-timing claim is made.
+- Follow-up CI on commit `ce043c90203bb62efd23d9b085f9ba65f59df1c8`: Visual QA passed (11 executed tests, 1 desktop skip); OpenNext validation passed through build, CSS, worker/assets, Wrangler, and Git-status checks. The latest validation workflow does not emit a `.next` disk-size measurement; the most recent clean production build measurement already recorded on this PR is 305M, below the 495 MB hard maximum.
+
+## 2026-10-02 — PR #1345 Review-Fix Pass
+
+- Addressed all three unresolved bot review threads on the open performance PR with one commit per thread.
+- Nav hit areas now grow through a positioned `::before` instead of padding plus negative margin, which keeps the hero and footer nav spacing identical to the merged baseline.
+- Removed the three inert `<picture>` offer-artwork wrappers; the theme stylesheet already hides that artwork at all viewports.
+- Removed the redundant manual preload for the theme stylesheet while keeping the stylesheet link in place.
+- Verified with `pnpm test` (11/11), `pnpm build` (306 MB, under the 495 MB limit), compiled CSS inspection, and Chromium DOM/hit-testing checks at desktop and mobile widths.
+- The Playwright visual suite could not be executed locally because `playwright.config.ts` hardcodes port 3000 and that port is taken in this environment; PR CI remains the validation point.
+
 ## 2026-10-02 — Explore Your Luck Touch-Target Repair
 
 - Diagnosed the remaining issue after PR #1341: the sequencing logic was covered by a synthetic direct-button test, but the physical invisible hit area was not verified for responsive/touch placement over the baked-in arrow artwork.

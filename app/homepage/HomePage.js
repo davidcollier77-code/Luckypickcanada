@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { createLuckyReveal } from '../lucky-reveal';
-import FAQSection from './FAQSection';
+const FAQSection = dynamic(() => import('./FAQSection'));
 
 // PERFORMANCE OPTIMIZATION (Bolt ⚡):
 // Lazy load non-critical modal components to reduce the initial JS bundle size.

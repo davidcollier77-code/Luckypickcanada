@@ -136,4 +136,67 @@ test.describe("Homepage Visual", () => {
     scrollY = await page.evaluate(() => window.scrollY);
     expect(scrollY).toBeGreaterThan(0);
   });
+
+  test('footer and social touch targets stay enlarged without overlapping on mobile', async ({ page }) => {
+    test.skip(!test.info().project.name.startsWith('mobile-'), 'Mobile-only touch-target geometry check');
+
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+
+    for (const selector of ['nav[aria-label="Footer navigation"] a', 'nav[aria-label="Social links"] a']) {
+      const links = page.locator(selector);
+      const count = await links.count();
+      expect(count).toBeGreaterThan(1);
+
+      const boxes = [];
+      for (let i = 0; i < count; i += 1) {
+        const box = await links.nth(i).boundingBox();
+        expect(box).not.toBeNull();
+        boxes.push(box!);
+      }
+
+      const expanded = await Promise.all(
+        boxes.map(async (box, i) => {
+          const style = await links.nth(i).evaluate((el) => {
+            const pseudo = getComputedStyle(el, '::before');
+            return {
+              left: parseFloat(pseudo.left) || 0,
+              right: parseFloat(pseudo.right) || 0,
+              top: parseFloat(pseudo.top) || 0,
+              bottom: parseFloat(pseudo.bottom) || 0,
+            };
+          });
+
+          return {
+            left: box.x + style.left,
+            right: box.x + box.width - style.right,
+            top: box.y + style.top,
+            bottom: box.y + box.height - style.bottom,
+          };
+        })
+      );
+
+      for (let i = 0; i < expanded.length; i += 1) {
+        for (let j = i + 1; j < expanded.length; j += 1) {
+          const a = expanded[i];
+          const b = expanded[j];
+          const horizontalOverlap = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const verticalOverlap = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          expect(horizontalOverlap > 0 && verticalOverlap > 0).toBeFalsy();
+
+          const sameRow = Math.min(a.bottom, b.bottom) > Math.max(a.top, b.top);
+          if (sameRow) {
+            const midpointX = (Math.max(a.left, b.left) + Math.min(a.right, b.right)) / 2;
+            const midpointY = (Math.max(a.top, b.top) + Math.min(a.bottom, b.bottom)) / 2;
+            const owner = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('a')?.getAttribute('href') ?? null, {
+              x: midpointX,
+              y: midpointY,
+            });
+            expect(owner).not.toBe(await links.nth(i).getAttribute('href'));
+            expect(owner).not.toBe(await links.nth(j).getAttribute('href'));
+          }
+        }
+      }
+    }
+  });
+
 });

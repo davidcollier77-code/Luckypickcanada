@@ -20,35 +20,35 @@ export default function Hero() {
           <div className="homepage-main-nav-surface flex flex-wrap items-center justify-center gap-1.5 sm:gap-3 md:gap-4 py-1.5 sm:py-2 px-3 sm:px-4 rounded-[2rem] sm:rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 text-[11px] sm:text-xs md:text-sm font-medium leading-tight">
             <Link
               href="/lucky-meter"
-              className="text-amber-400 hover:text-amber-300 transition-colors"
+              className="text-amber-400 hover:text-amber-300 transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Lucky Meter
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="#community-stories"
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Community Stories
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="/crystal-ball"
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Consult the Crystal Ball
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="/map"
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Lucky Map
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="/reveal"
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Daily Card Reveal
             </Link>
@@ -59,14 +59,7 @@ export default function Hero() {
         <div className="flex-1 min-h-0 w-full flex flex-col items-center justify-center">
           <div className="flex flex-col items-center text-center w-full max-w-[1100px] mx-auto mt-4 mb-4 px-4 sm:px-6 relative">
             <div className="relative w-full hero-image-container flex items-center justify-center pointer-events-none">
-              <Image
-                className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] relative z-10"
-                src="/homepage-hero-lucky-pick-canada.png"
-                alt="Lucky Pick Canada Hero Composition"
-                fill
-                sizes="(max-width: 768px) 100vw, 1100px"
-                priority
-              />
+              <Image className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] relative z-10" src="/homepage-hero-lucky-pick-canada.png" alt="Lucky Pick Canada Hero Composition" fill sizes="(max-width: 768px) 100vw, 1100px" priority fetchPriority="high" />
               <ExploreLuckButton />
             </div>
           </div>
