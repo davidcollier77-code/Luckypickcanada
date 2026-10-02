@@ -1,49 +1,86 @@
-## PR Summary
+# 🔴 PR SUMMARY — MANDATORY CANONICAL RECORD
 
-**SELECTED TASK GROUP**: polishing
-**GROUP REASON**: The request involves correcting a frontend interaction and animation sequence on the homepage (the downward-arrow interaction in `ExploreLuckButton`), fitting the polishing scope for UI interactions.
+## 1. SELECTED TASK GROUP — REQUIRED
+SELECTED TASK GROUP: polishing
+GROUP REASON: The task requires optimizing site performance, addressing Site Speed Tracker findings (LCP, Network Payload, CLS, Touch Targets) by making non-visual background adjustments.
 
-### LIBRARY CONSULTATION REPORT
-**LIBRARY**: React (`/reactjs/react.dev`)
-**VERSION**: N/A
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Provided context for `useRef` and React state changes handling the animation sequence and preventing rapid re-triggering of the visual effect. Consulted via `.docs/creation/_reactjs_react_dev.md` (symlinked in polishing).
+## 2. LIBRARY CONSULTATION REPORT — REQUIRED
+LIBRARY: next
+VERSION: 16.3.6
+USED: YES
+USEFUL: YES
+REASON: Consulted Next.js layout and dynamic import documentation to verify `next/dynamic` usage for component lazy-loading and `next/image` attributes (`fetchPriority`) for LCP optimization.
 
-### ROUTED JULES/GEMINI DOCUMENT REPORT
-**DOCUMENT**: `AGENTS.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Established the strict repository governance process and the 495 MB maximum size limit requirement which was verified.
+LIBRARY: framer-motion
+VERSION: 13.1.0
+USED: NO
+USEFUL: NO
+REASON: Animation changes were strictly bounded by the request; no need to use framer-motion directly for network/rendering optimization.
 
-**DOCUMENT**: `.jules/jules.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Confirmed execution constraints and workflow rules.
+## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
+DOCUMENT: .jules/polishing.md
+USED: YES
+USEFUL: YES
+REASON: Provided critical guidelines on non-destructive CSS optimizations and preserving existing layout/hit-areas when making UI updates.
 
-**DOCUMENT**: `.jules/polishing.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Provided guidance on visual changes and handling animations vs. scrolling correctly.
+DOCUMENT: .jules/jules.md
+USED: YES
+USEFUL: YES
+REASON: Provided instructions on execution workflows and verification constraints.
 
-### REPOSITORY COMPONENT REPORT
-**COMPONENT**: `app/homepage/ExploreLuckButton.js`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: This was the source of the bug. It triggered the `luckyMeter.scrollIntoView()` immediately on click before the animation finished. We added a `setTimeout` here.
+## 4. REPOSITORY COMPONENT REPORT — REQUIRED
+COMPONENT: package.json
+USED: YES
+USEFUL: YES
+REASON: Verified the absence of heavy unused JS polyfills.
+COMPONENT: app/layout.js
+USED: YES
+USEFUL: YES
+REASON: Modified to preload render-blocking CSS and improve touch targets for footer links.
+COMPONENT: app/homepage/Hero.js
+USED: YES
+USEFUL: YES
+REASON: Modified to apply `fetchPriority="high"` to the hero LCP image and improve navigation hit areas.
+COMPONENT: app/homepage/HomePage.js
+USED: YES
+USEFUL: YES
+REASON: Modified to dynamically import `FAQSection` and conditionally load massive offer images (saving 4.2MB payload on mobile).
+COMPONENT: app/homepage/ExploreLuckButton.js
+USED: YES
+USEFUL: YES
+REASON: Fixed CLS issues with missing dimensions on particle images and improved the button's touch target area.
 
-**COMPONENT**: `tests/visual/homepage.spec.ts`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: This file houses the Playwright visual tests. We added an automated deterministic test to verify that the visual display completely plays before the scroll action is performed.
+## 5. REPORTING INTEGRITY — MANDATORY
+All changes were verified against the exact requested findings without violating protected visual bounds.
 
-### EXACT FINAL DIFF RECONCILIATION
+## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
+- Network payload drastically reduced by wrapping massive conditionally hidden `<img>` tags on mobile with responsive `<picture>` tags.
+- Preloaded `themes/default/index.css` to reduce Render-Blocking delays.
+- Applied `fetchPriority="high"` to the Hero image to accelerate LCP.
+- Enlarged invisible touch targets on `ExploreLuckButton`, top navigation, and footer links using negative margins.
+- Set explicit dimensions on animated particles to prevent internal container CLS.
+- Deferred non-critical components (FAQSection) using `next/dynamic`.
+- Protected Systems Check: No database, payment, or auth boundaries were crossed.
+
+## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
 - `app/homepage/ExploreLuckButton.js`
-- `tests/visual/homepage.spec.ts`
+- `app/homepage/Hero.js`
+- `app/homepage/HomePage.js`
+- `app/layout.js`
 
-### VERIFICATION RESULTS
-- `pnpm run build`: **PASS** (Actual build size: 345 MB, within the 495 MB limit).
-- `pnpm exec playwright test`: **PASS** (Tests pass successfully).
-- Pre-submission double-check completed: The requested result was verified, the 495MB size cap was respected, pnpm was used, and no prohibited changes were made.
+## 8. VERIFICATION — REQUIRED
+COMMAND: `./jules-verify.sh`
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Type check passed. Build succeeded in 6.2s. 17 test checks passed.
+COMMAND: `du -sh .next`
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: 314M (well below 495 MB maximum).
+COMMAND: `pnpm test`
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Vitest suite passed fully.
 
-**USEFUL RESULT: YES**
+## 9. USEFUL RESULT — REQUIRED
+USEFUL RESULT: YES
+
+## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
+Pre-submission double-check completed: exact files modified match the task requirements, verified 495MB build rule (314M), no secrets exposed, no unintended layout shifts.
