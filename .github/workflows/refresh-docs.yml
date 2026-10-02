@@ -99,7 +99,7 @@ jobs:
 
             if [ -z "$PR_EXISTS" ] || [ "$PR_EXISTS" = "null" ]; then
               # Create the PR if it does not exist
-              gh pr create                 --title "docs: scheduled documentation refresh"                 --body "Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory."                 --base main                 --head auto/docs-refresh
+              gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory.' --base main --head auto/docs-refresh
             else
               echo "PR #$PR_EXISTS already exists and has been successfully updated via force-push."
             fi
