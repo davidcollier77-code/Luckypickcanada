@@ -1,7 +1,0 @@
-Implemented a polished visual interaction for the "EXPLORE YOUR LUCK" arrows located within the static homepage hero composition.
-
-- Created an invisible, accessible `<button>` overlay aligned over the visual arrows in the `homepage-hero-lucky-pick-canada.png` image.
-- Implemented an immediate smooth-scroll anchor jump to the `lucky-meter` container upon activation.
-- Fired a ~1.25s lightweight CSS-based particle burst animation containing golden confetti and the canonical maple leaf image asset (`BackgroundEraser_20260724_163638777.png`).
-- Fully respected the `prefers-reduced-motion` media query to suppress animation generation while retaining structural interaction.
-- Handled prompt DOM cleanup to avoid node accumulation on repeated triggers.
