@@ -27,9 +27,8 @@ export default function ExploreLuckButton() {
   const handleClick = useCallback((e) => {
     if (isAnimatingRef.current) return;
 
-    const luckyMeter = document.getElementById('lucky-meter');
-
     if (prefersReducedMotion) {
+      const luckyMeter = document.getElementById('lucky-meter');
       if (luckyMeter) {
         luckyMeter.scrollIntoView({ behavior: 'auto' });
       }
@@ -77,7 +76,8 @@ export default function ExploreLuckButton() {
       setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
       isAnimatingRef.current = false;
 
-      // 2. Scroll to Lucky Meter
+      // Re-query after the animation so a replaced Lucky Meter element is still targeted.
+      const luckyMeter = document.getElementById('lucky-meter');
       if (luckyMeter) {
         luckyMeter.scrollIntoView({ behavior: 'smooth' });
       }
@@ -87,13 +87,12 @@ export default function ExploreLuckButton() {
   }, [prefersReducedMotion]);
 
   return (
-    <div className="absolute bottom-[4%] md:bottom-[6%] left-1/2 -translate-x-1/2 w-32 md:w-48 h-24 md:h-32 z-30 flex flex-col items-center justify-center pointer-events-auto">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex h-[30%] min-h-24 max-h-40 items-end justify-center">
       <button
         type="button"
         onClick={handleClick}
-         className="w-full h-full rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 opacity-0 hover:opacity-5 focus-visible:opacity-5 transition-opacity bg-white cursor-pointer"
+        className="pointer-events-auto h-full w-[min(24rem,70vw)] cursor-pointer rounded-xl bg-white opacity-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 focus-visible:opacity-0 touch-manipulation"
         aria-label="Explore your luck. Scroll down to the Lucky Meter."
-        title="Explore your luck"
       >
         <span className="sr-only">Explore your luck</span>
       </button>
