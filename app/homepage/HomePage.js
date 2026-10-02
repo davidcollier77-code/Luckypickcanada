@@ -352,7 +352,7 @@ export default function HomePage() {
         </SectionHeading>
         <div className="homepage-offer-grid">
           <article className="homepage-offer homepage-offer-featured">
-            <picture className="homepage-offer-image max-sm:hidden"><source media="(min-width: 768px)" srcSet="/1784862459046.png" /><img src="/1784862459046.png" alt="Personalized Lucky Pick card artwork" width="704" height="1524" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "right bottom" }} /></picture>
+            <img className="homepage-offer-image" src="/1784862459046.png" alt="Personalized Lucky Pick card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">$1 Lucky Pick</p>
             <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Make your moment personal.</h3>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Ready for today’s pick? Discover a fresh set of lucky numbers and see what combination finds its way to you.</p>
@@ -361,7 +361,7 @@ export default function HomePage() {
             <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyPickCheckout(e); }}>Choose a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
           <article className="homepage-offer">
-            <picture className="homepage-offer-image max-sm:hidden"><source media="(min-width: 768px)" srcSet="/1784889264858.png" /><img src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "right bottom" }} /></picture>
+            <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">$2.99 Gift Experience</p>
             <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Gift Experience</h3>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Share a little Canadian magic with someone you know. The Gift Experience turns Lucky Pick Canada into a fun surprise made to brighten someone’s day.</p>
@@ -369,7 +369,7 @@ export default function HomePage() {
             <button type="button" className="cta-secondary relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}>Gift a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
           <article className="homepage-offer">
-            <picture className="homepage-offer-image max-sm:hidden"><source media="(min-width: 768px)" srcSet="/1784931654864.png" /><img src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "right bottom" }} /></picture>
+            <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">Keep the lights glowing</p>
             <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Leave a tip for the journey.</h3>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Enjoying Lucky Pick Canada? If you’d like to show a little extra support, the Tip Jar is always here. Completely optional, always appreciated.</p>
