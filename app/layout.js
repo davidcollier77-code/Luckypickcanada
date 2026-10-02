@@ -86,26 +86,26 @@ export default function RootLayout({ children }) {
               <p>Lucky Pick Canada · Made for fun, optimism, and a little everyday magic.</p>
 
               <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-white/90 max-w-lg mb-2">
-                <Link href="/" className="hover:text-amber-400 transition-colors p-2 -m-2">Home</Link>
-                <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors p-2 -m-2">Lucky Meter</Link>
-                <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors p-2 -m-2">Crystal Ball</Link>
-                <Link href="/reveal" className="hover:text-amber-400 transition-colors p-2 -m-2">Daily Reveal</Link>
-                <Link href="/map" className="hover:text-amber-400 transition-colors p-2 -m-2">Lucky Map</Link>
-                <Link href="/about" className="hover:text-amber-400 transition-colors p-2 -m-2">About</Link>
+                <Link href="/" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Home</Link>
+                <Link href="/lucky-meter" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Lucky Meter</Link>
+                <Link href="/crystal-ball" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Crystal Ball</Link>
+                <Link href="/reveal" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Daily Reveal</Link>
+                <Link href="/map" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Lucky Map</Link>
+                <Link href="/about" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">About</Link>
               </nav>
 
               <nav className="flex flex-wrap justify-center gap-3 sm:gap-4 text-white/75 text-[10px] sm:text-[11px] max-w-sm mb-2" aria-label="Social links">
-                <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors p-2 -m-2">Facebook Community</a>
-                <a href="https://www.facebook.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors p-2 -m-2">Facebook Page</a>
-                <a href="https://x.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors p-2 -m-2">X (Twitter)</a>
-                <a href="https://www.instagram.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors p-2 -m-2">Instagram</a>
-                <a href="https://www.tiktok.com/@luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors p-2 -m-2">TikTok</a>
+                <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Facebook Community</a>
+                <a href="https://www.facebook.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Facebook Page</a>
+                <a href="https://x.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">X (Twitter)</a>
+                <a href="https://www.instagram.com/luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Instagram</a>
+                <a href="https://www.tiktok.com/@luckypickcanada" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">TikTok</a>
               </nav>
 
               <div className="w-16 h-px bg-white/10 my-2"></div>
               <nav className="flex flex-wrap justify-center gap-4 text-white/60 text-[10px]" aria-label="Legal links">
-                <Link href="/privacy" className="hover:text-amber-400 transition-colors p-2 -m-2">Privacy Policy</Link>
-                <Link href="/terms" className="hover:text-amber-400 transition-colors p-2 -m-2">Terms of Service</Link>
+                <Link href="/privacy" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-amber-400 transition-colors relative before:absolute before:-inset-2 before:content-['']">Terms of Service</Link>
               </nav>
 
               <p className="text-[10px] text-white/50 max-w-2xl mx-auto leading-relaxed">

@@ -20,35 +20,35 @@ export default function Hero() {
           <div className="homepage-main-nav-surface flex flex-wrap items-center justify-center gap-1.5 sm:gap-3 md:gap-4 py-1.5 sm:py-2 px-3 sm:px-4 rounded-[2rem] sm:rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 text-[11px] sm:text-xs md:text-sm font-medium leading-tight">
             <Link
               href="/lucky-meter"
-              className="text-amber-400 hover:text-amber-300 transition-colors p-2 -m-2"
+              className="text-amber-400 hover:text-amber-300 transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Lucky Meter
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="#community-stories"
-              className="text-white/80 hover:text-white transition-colors p-2 -m-2"
+              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Community Stories
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="/crystal-ball"
-              className="text-white/80 hover:text-white transition-colors p-2 -m-2"
+              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Consult the Crystal Ball
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="/map"
-              className="text-white/80 hover:text-white transition-colors p-2 -m-2"
+              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Lucky Map
             </Link>
             <span className="text-white/20 text-[10px] sm:text-xs" aria-hidden="true">•</span>
             <Link
               href="/reveal"
-              className="text-white/80 hover:text-white transition-colors p-2 -m-2"
+              className="text-white/80 hover:text-white transition-colors relative before:absolute before:-inset-2 before:content-['']"
             >
               Daily Card Reveal
             </Link>
