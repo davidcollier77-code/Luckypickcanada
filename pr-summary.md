@@ -1,72 +1,69 @@
 # PR Summary
 
-## 1. SELECTED TASK GROUP
+## SELECTED TASK GROUP
 SELECTED TASK GROUP: polishing
-GROUP REASON: Task involves removing an unwanted background from a UI image asset (visual enhancement)
+GROUP REASON: Implementing visual interaction
 
-## 2. LIBRARY CONSULTATION REPORT
+## LIBRARY CONSULTATION REPORT
+LIBRARY: next/image
+VERSION: 16.3.6
+USED: YES
+USEFUL: YES
+REASON: Rendered maple leaf asset.
 
-LIBRARY: None specifically
-VERSION: N/A
-USED: NO
-USEFUL: NO
-REASON: No documentation was needed or used to execute a standard flood-fill image manipulation in python.
+LIBRARY: tailwindcss
+VERSION: 4.0.9
+USED: YES
+USEFUL: YES
+REASON: Positioned invisible interaction overlay.
 
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
-
+## ROUTED JULES/GEMINI DOCUMENT REPORT
 DOCUMENT: .jules/jules.md
 USED: YES
 USEFUL: YES
-REASON: Used to ensure memory bank compliance and overall PR procedure requirements.
+REASON: Core procedures.
 
-DOCUMENT: .jules/polishing.md
+DOCUMENT: AGENTS.md
 USED: YES
 USEFUL: YES
-REASON: Provided guidance on visual improvements and polishing assets.
+REASON: Instructions and 495MB build limit.
 
-## 4. REPOSITORY COMPONENT REPORT
-
-COMPONENT: `public/file_00000000e2c481f6912a5c165bae46a4.png`
+## REPOSITORY COMPONENT REPORT
+COMPONENT: app/homepage/Hero.js
 USED: YES
 USEFUL: YES
-REASON: The image asset that needed the checkerboard background removed.
+REASON: Mounted overlay.
 
-## 5. REPORTING INTEGRITY
+COMPONENT: app/globals.css
+USED: YES
+USEFUL: YES
+REASON: Added CSS animations.
 
-Work reported reflects actions taken.
+## IMPLEMENTATION
+**Basis:** Visual elements were found fully baked into the large static composition image `public/homepage-hero-lucky-pick-canada.png`.
+**Implementation:** Implemented invisible `<button>` placed exactly over the arrows' stage presence on the image. Activating triggers an immediate scroll to the `lucky-meter` and a lightweight pure-CSS particle explosion. DOM nodes clean up via `setTimeout` after `1.25s`.
+**Scope:** Respected `prefers-reduced-motion`. No HD background changed. No image was cropped.
 
-## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
+## EXACT FINAL DIFF RECONCILIATION
+- `app/homepage/ExploreLuckButton.js` (Added)
+- `app/homepage/Hero.js` (Modified)
+- `app/globals.css` (Modified)
+- `memory-bank/activeContext.md` (Modified)
+- `memory-bank/progress.md` (Modified)
 
-- Analyzed the image structure and identified the color bands for the checkered background.
-- Wrote a python script using `Pillow` to execute a BFS flood fill starting at the image boundaries and targeting those exact color bands.
-- Ran script and confirmed the checkerboard was converted to alpha transparency without touching the foreground graphic.
-- Verified transparency correctly applied through ASCII visual debugging.
-- No protected systems were modified.
-- Only the target image was changed.
-- Scope compliance maintained.
-
-## 7. EXACT FINAL DIFF RECONCILIATION
-
-- `public/file_00000000e2c481f6912a5c165bae46a4.png`
-
-## 8. VERIFICATION
-
-- `.docs/` size measured as 3.0M (well under the 495MB limit).
-- `./jules-verify.sh` run and completed successfully without errors.
-- Visual inspection via ascii representations inside python.
-
-COMMAND: `./jules-verify.sh`
+## VERIFICATION
+COMMAND: `pnpm run build`
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Tests complete: 17 passed, 0 failed. All verification steps passed.
-
-COMMAND: `du -sh .docs/`
+EVIDENCE/OUTPUT SUMMARY: Build completed in ~5.5s.
+COMMAND: `du -sm .next`
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: 3.0M
-
-## 9. USEFUL RESULT
+EVIDENCE/OUTPUT SUMMARY: Reported size `313 MB`.
+COMMAND: `pnpm test`
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Vitest passed all tests.
 
 USEFUL RESULT: YES
 
-## 10. PRE-SUBMISSION DOUBLE-CHECK
-
-Completed.
+## PRE-SUBMISSION DOUBLE-CHECK
+- Checked `prefers-reduced-motion` bypass.
+- Checked DOM self-cleanup.

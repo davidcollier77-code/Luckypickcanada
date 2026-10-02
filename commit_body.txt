@@ -1,5 +1,0 @@
-This PR restores the previously approved homepage hero visual state, as requested.
-
-The restoration includes reverting the recent additions of the gold emblem ring, the maple leaf separator, and the typographic changes made to the "welcome-first" hero composition.
-
-Tests have been run, including visual regression updates to match the restored state, and `jules-verify.sh` passes successfully.

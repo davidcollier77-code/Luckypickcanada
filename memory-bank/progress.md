@@ -1,5 +1,13 @@
 # Progress
 
+## 2026-10-02 — Explore Your Luck Interaction
+
+- Implemented an interactive transparent overlay over the baked-in "Explore your luck" arrows in the static hero PNG (`homepage-hero-lucky-pick-canada.png`).
+- Connected the overlay to an immediate smooth-scroll to the Lucky Meter.
+- Included a lightweight 1.25s CSS animation bursting maple leaves (using the existing logo asset `BackgroundEraser_20260724_163638777.png`) and gold confetti.
+- Adhered strictly to `prefers-reduced-motion` to disable animation when necessary while retaining scroll interaction.
+- Handled DOM node cleanup safely after animation sequence.
+
 ## 2026-10-01 — Homepage Visual Baseline Repair
 
 - Reconciled the post-merge Visual QA failure with the intentional PR #1326 hero artwork scaling change.
