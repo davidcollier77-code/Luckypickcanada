@@ -107,3 +107,9 @@
 - Kept pointer events narrowly scoped to the actual Explore button instead of the entire hero stage.
 - Added regression coverage for the pointer-event boundary and a second legitimate mobile activation after the animation interval.
 - Runtime/browser/build verification remains pending in PR CI.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Regression Test Strengthening
+
+- Addressed the remaining Kilo review suggestion in the homepage regression test.
+- The mobile test now verifies a native click after a completed touch activation while `Date.now()` remains frozen, making reinstatement of the old timestamp guard observable.
+- The test also retains a subsequent real touchscreen tap check for repeat touch activation.
