@@ -163,7 +163,16 @@ test.describe("Homepage Visual", () => {
       expect(clickAfterTouchScrollY).toBeGreaterThan(0);
 
       // A subsequent real touch must also remain valid after the prior activation.
-      await page.evaluate(() => window.scrollTo(0, 0));
+      // The global page uses smooth scrolling, so temporarily force an immediate
+      // reset before reusing the original viewport coordinates for the tap.
+      await page.evaluate(() => {
+        document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
+        window.scrollTo(0, 0);
+      });
+      await page.waitForFunction(() => window.scrollY === 0);
+      await page.evaluate(() => {
+        document.documentElement.style.removeProperty('scroll-behavior');
+      });
       await page.touchscreen.tap(tapX, tapY);
       await page.waitForTimeout(1500);
       const secondTouchScrollY = await page.evaluate(() => window.scrollY);
