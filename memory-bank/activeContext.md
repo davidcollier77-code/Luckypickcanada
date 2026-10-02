@@ -102,3 +102,11 @@
 - Updated .github/workflows/refresh-docs.yml to retain the intended 2:21 AM and 6:21 AM Tuesday/Friday schedules, add a 10:21 AM Tuesday/Friday recovery opportunity, record the nominal schedule plus actual UTC/Atlantic trigger time, and cap a refresh job at 20 minutes.
 - Preserved the updater script and documentation refresh behavior unchanged.
 - Runtime pull-request execution remains the final validation point because the repository cannot be checked out locally in this environment.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Explore Your Luck Touch
+
+- Addressed the three review findings on PR #1346.
+- Removed the timestamp-based touch suppression from `app/homepage/ExploreLuckButton.js`; touch/pen input now prevents the compatibility click at `pointerdown`, while `pointerup` performs the activation directly.
+- Restored the narrower pointer-event boundary in `app/homepage/Hero.js`: the hero stage remains `pointer-events-none`, while only the Explore button restores `pointer-events-auto`.
+- Strengthened `tests/visual/homepage.spec.ts` to assert the stage/button pointer-event split and exercise a second real mobile tap after the first animation completes.
+- The repair remains limited to the homepage Explore Your Luck interaction and its targeted regression coverage. CI is the required runtime verification point.
