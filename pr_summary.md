@@ -99,3 +99,15 @@ USEFUL RESULT: YES
 
 ## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
 Pre-submission double-check completed: exact files modified match the task requirements, verified the 495MB build rule, no secrets exposed, no unintended layout shifts, no database/payment/auth changes, and all three review issues addressed with the rendered layout unchanged.
+
+
+## 11. PR #1345 FOLLOW-UP REPAIR PASS
+
+- Mobile footer and social hit targets were repaired in `app/layout.js` using `before:-inset-1 sm:before:-inset-2`. This preserves expanded touch targets while preventing adjacent mobile hit-area overlap.
+- `tests/visual/homepage.spec.ts` now performs a mobile-only Chromium geometry and midpoint hit-test check for the footer navigation and social links.
+- The current `FAQSection` remains a `next/dynamic` code-split import. No viewport-gating change was made because a safe implementation would require a new placeholder/layout strategy; no unsupported network-timing claim is made.
+- Verification on follow-up commit `ce043c90203bb62efd23d9b085f9ba65f59df1c8`: Visual QA PASS (11 executed tests; desktop follow-up test skipped as intended). OpenNext validation PASS, including Next.js build, OpenNext build, Tailwind CSS validation, worker/assets checks, Wrangler dry-run, and Git status.
+- Latest clean production build size previously measured on this PR: 305M, below the 495 MB hard maximum. The current OpenNext validation workflow does not emit a `.next` size measurement.
+- No visual, audio, wording, content, artwork, payment, database, authentication, or deployment behavior was changed.
+
+USEFUL RESULT: YES
