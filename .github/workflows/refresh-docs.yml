@@ -1,5 +1,7 @@
 name: Refresh Documentation
 
+run-name: Refresh Documentation — ${{ github.event.schedule || 'manual' }}
+
 on:
   schedule:
     # Primary refresh: 2:21 AM Atlantic local time every Tuesday and Friday.
@@ -11,6 +13,12 @@ on:
     # Provides a second independent opportunity if the 2:21 AM scheduled run
     # was delayed, missed, or otherwise did not complete.
     - cron: '21 6 * * 2,5'
+      timezone: 'America/Halifax'
+
+    # Recovery refresh: 10:21 AM Atlantic local time every Tuesday and Friday.
+    # Gives the schedule path another opportunity when GitHub delivers earlier
+    # scheduled events late or drops a queued event during heavy Actions load.
+    - cron: '21 10 * * 2,5'
       timezone: 'America/Halifax'
 
   # Manual escape hatch for an immediate refresh.
@@ -27,8 +35,17 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
+      - name: Record Trigger Timing
+        env:
+          SCHEDULE_CRON: ${{ github.event.schedule || 'manual' }}
+        run: |
+          echo "Trigger schedule: $SCHEDULE_CRON"
+          echo "Runner UTC: $(date -u --iso-8601=seconds)"
+          echo "Atlantic time: $(TZ=America/Halifax date --iso-8601=seconds)"
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
@@ -82,11 +99,7 @@ jobs:
 
             if [ -z "$PR_EXISTS" ] || [ "$PR_EXISTS" = "null" ]; then
               # Create the PR if it does not exist
-              gh pr create \
-                --title "docs: scheduled documentation refresh" \
-                --body "Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local \`.docs/\` snapshots to reflect the latest upstream documentation for the approved library inventory." \
-                --base main \
-                --head auto/docs-refresh
+              gh pr create                 --title "docs: scheduled documentation refresh"                 --body "Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory."                 --base main                 --head auto/docs-refresh
             else
               echo "PR #$PR_EXISTS already exists and has been successfully updated via force-push."
             fi
