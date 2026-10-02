@@ -54,7 +54,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en-CA" className="m-0 p-0">
       <head>
-        <link rel="preload" href={cssPath} as="style" />
         <link rel="stylesheet" href={cssPath} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
