@@ -161,14 +161,16 @@ test.describe("Homepage Visual", () => {
             return {
               left: parseFloat(pseudo.left) || 0,
               right: parseFloat(pseudo.right) || 0,
+              top: parseFloat(pseudo.top) || 0,
+              bottom: parseFloat(pseudo.bottom) || 0,
             };
           });
 
           return {
             left: box.x + style.left,
             right: box.x + box.width - style.right,
-            top: box.y,
-            bottom: box.y + box.height,
+            top: box.y + style.top,
+            bottom: box.y + box.height - style.bottom,
           };
         })
       );
@@ -177,9 +179,21 @@ test.describe("Homepage Visual", () => {
         for (let j = i + 1; j < expanded.length; j += 1) {
           const a = expanded[i];
           const b = expanded[j];
-          const sameRow = Math.min(a.bottom, b.bottom) > Math.max(a.top, b.top);
           const horizontalOverlap = Math.min(a.right, b.right) - Math.max(a.left, b.left);
-          expect(sameRow && horizontalOverlap > 0).toBeFalsy();
+          const verticalOverlap = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          expect(horizontalOverlap > 0 && verticalOverlap > 0).toBeFalsy();
+
+          const sameRow = Math.min(a.bottom, b.bottom) > Math.max(a.top, b.top);
+          if (sameRow) {
+            const midpointX = (Math.max(a.left, b.left) + Math.min(a.right, b.right)) / 2;
+            const midpointY = (Math.max(a.top, b.top) + Math.min(a.bottom, b.bottom)) / 2;
+            const owner = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('a')?.getAttribute('href') ?? null, {
+              x: midpointX,
+              y: midpointY,
+            });
+            expect(owner).not.toBe(await links.nth(i).getAttribute('href'));
+            expect(owner).not.toBe(await links.nth(j).getAttribute('href'));
+          }
         }
       }
     }
