@@ -7,6 +7,7 @@ export default function ExploreLuckButton() {
   const [particles, setParticles] = useState([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const particleIdCounter = useRef(0);
+  const timeoutsRef = useRef(new Set());
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -15,6 +16,11 @@ export default function ExploreLuckButton() {
     const handler = (e) => setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => () => {
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current.clear();
   }, []);
 
   const handleClick = useCallback((e) => {
@@ -62,9 +68,10 @@ export default function ExploreLuckButton() {
     setParticles(prev => [...prev, ...newParticles]);
 
     // Cleanup after max duration
-    setTimeout(() => {
+    const timerId = setTimeout(() => {
       setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
     }, 1250);
+    timeoutsRef.current.add(timerId);
 
   }, [prefersReducedMotion]);
 
