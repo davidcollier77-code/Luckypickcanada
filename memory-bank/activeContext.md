@@ -1,3 +1,9 @@
+## 2026-10-02 — Homepage PNG Replacement
+
+- Replaced the homepage hero PNG with the provided replacement image.
+- Updated references in app/homepage/Hero.js.
+- Verified Playwright baselines and build limits.
+
 ## 2026-10-01 — Homepage Visual Baseline Repair
 
 - Verified the post-merge Visual QA failure on the homepage visual-regression suite: the three viewport screenshot comparisons failed consistently on desktop, mobile 390, and mobile 412, while all three ambient-star tests passed.
