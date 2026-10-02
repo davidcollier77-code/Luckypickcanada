@@ -99,3 +99,11 @@
 - Added a 10:21 AM Atlantic recovery schedule, trigger-time telemetry, and a 20-minute workflow job timeout.
 - Preserved scripts/refresh-docs.js unchanged.
 - Runtime CI remains the final verification point because a local checkout is unavailable in this environment.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Explore Your Luck Touch
+
+- Fixed all three review findings on PR #1346 without changing the existing visual artwork or animation sequence.
+- Replaced timestamp-based touch/click suppression with native pointerdown compatibility-click cancellation plus pointerup activation.
+- Kept pointer events narrowly scoped to the actual Explore button instead of the entire hero stage.
+- Added regression coverage for the pointer-event boundary and a second legitimate mobile activation after the animation interval.
+- Runtime/browser/build verification remains pending in PR CI.
