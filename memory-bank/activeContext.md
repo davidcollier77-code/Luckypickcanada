@@ -116,3 +116,9 @@
 - Kilo re-review confirmed the three implementation findings were resolved and identified one remaining test-coverage weakness.
 - Strengthened `tests/visual/homepage.spec.ts` so a native click activation is attempted after a completed real mobile touch sequence while the test clock remains frozen. This specifically fails under the removed timestamp-guard implementation, because a reintroduced frozen-time guard would suppress the click.
 - Retained a second real mobile touchscreen tap check after that click sequence to cover repeat touch activation.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Smooth-Scroll Test Reset
+
+- Kilo's latest incremental review identified a test-only issue: the global smooth-scroll CSS could leave the viewport moving when the repeat-touch coordinates were reused.
+- Updated `tests/visual/homepage.spec.ts` to temporarily force `scroll-behavior: auto`, reset to `scrollY === 0`, restore the page style, and only then issue the repeat mobile tap.
+- Application interaction code remains unchanged by this follow-up.
