@@ -113,3 +113,8 @@
 - Addressed the remaining Kilo review suggestion in the homepage regression test.
 - The mobile test now verifies a native click after a completed touch activation while `Date.now()` remains frozen, making reinstatement of the old timestamp guard observable.
 - The test also retains a subsequent real touchscreen tap check for repeat touch activation.
+
+## 2026-10-02 — PR #1346 Review Follow-up — Smooth-Scroll Test Reset
+
+- Fixed the remaining test reliability finding by making the viewport reset immediate before the repeat touch coordinate test.
+- No application behavior changed in this follow-up; it only stabilizes the mobile regression test under the repository's global smooth-scroll CSS.
