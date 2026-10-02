@@ -62,3 +62,12 @@
 - Refreshed the Spec Kit scripts, templates, Jules generic command files, workflow, and version/manifests while preserving the project constitution and application code.
 - Completed a second-pass static verification of all ten Jules Spec Kit command files: no unresolved command placeholders and no stale 1.0.4 markers remain.
 - Runtime build/test verification remains pending in pull-request CI because the execution environment could not access GitHub from a local checkout.
+
+## 2026-10-02 — Documentation Refresh Schedule Reliability Repair
+
+- Verified the refresh engine itself is healthy when invoked: the October 2 scheduled run completed with 14 updates and 0 failures.
+- Identified recurring multi-hour delivery delay in the Tuesday/Friday scheduled workflow after the September 11 timezone-aware schedule revision.
+- Kept the supported America/Halifax timezone-aware schedules and removed any exact-run-time guard from the repair path.
+- Added a 10:21 AM Atlantic recovery schedule, trigger-time telemetry, and a 20-minute workflow job timeout.
+- Preserved scripts/refresh-docs.js unchanged.
+- Runtime CI remains the final verification point because a local checkout is unavailable in this environment.
