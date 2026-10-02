@@ -152,14 +152,22 @@ test.describe("Homepage Visual", () => {
     scrollY = await page.evaluate(() => window.scrollY);
     expect(scrollY).toBeGreaterThan(0);
 
-    // A second real mobile tap after the animation must still be a legitimate
-    // activation; the touch path must not rely on a timestamp suppression window.
     if (test.info().project.name.startsWith('mobile-')) {
+      // A native click activation after a completed touch sequence must remain
+      // valid. With the old frozen-Date.now() timestamp guard, this click would
+      // be incorrectly suppressed because its elapsed time would read as zero.
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await exploreButton.click();
+      await page.waitForTimeout(1500);
+      const clickAfterTouchScrollY = await page.evaluate(() => window.scrollY);
+      expect(clickAfterTouchScrollY).toBeGreaterThan(0);
+
+      // A subsequent real touch must also remain valid after the prior activation.
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.touchscreen.tap(tapX, tapY);
       await page.waitForTimeout(1500);
-      const secondScrollY = await page.evaluate(() => window.scrollY);
-      expect(secondScrollY).toBeGreaterThan(0);
+      const secondTouchScrollY = await page.evaluate(() => window.scrollY);
+      expect(secondTouchScrollY).toBeGreaterThan(0);
     }
   });
 
