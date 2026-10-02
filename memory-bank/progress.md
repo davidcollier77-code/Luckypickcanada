@@ -55,3 +55,10 @@
 - Updated `app/homepage/Hero.js` to reference the newly named asset `homepage-hero-lucky-pick-canada.png`.
 - Regenerated the Playwright visual baselines to match the new image.
 - Verified build constraints (<495 MB) and executed full test suite.
+
+## 2026-10-02 — Spec Kit v1.0.13 Upgrade
+
+- Replaced the repository's recorded Spec Kit 1.0.4 managed project files with the upstream v1.0.13 baseline.
+- Refreshed the Spec Kit scripts, templates, Jules generic command files, workflow, and version/manifests while preserving the project constitution and application code.
+- Completed a second-pass static verification of all ten Jules Spec Kit command files: no unresolved command placeholders and no stale 1.0.4 markers remain.
+- Runtime build/test verification remains pending in pull-request CI because the execution environment could not access GitHub from a local checkout.
