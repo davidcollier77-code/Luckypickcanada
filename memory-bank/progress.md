@@ -40,3 +40,10 @@
 - Identified and removed embedded Photoshop-style checkerboard artifacts (specifically around values 140/190 grayscale) while protecting the core glowing, drop-shadow, and metallic visual components.
 - Generated updated Playwright visual baseline screenshots to lock in the true-transparency presentation.
 - Successfully verified the application build footprint and regression metrics.
+
+## $(date +%Y-%m-%d) — Homepage PNG Replacement
+
+- Replaced the homepage hero PNG (`file_00000000...`) with the provided `Home Page Lucky Pick Canada.png`.
+- Updated `app/homepage/Hero.js` to reference the newly named asset `homepage-hero-lucky-pick-canada.png`.
+- Regenerated the Playwright visual baselines to match the new image.
+- Verified build constraints (<495 MB) and executed full test suite.
