@@ -30,7 +30,7 @@ and commands read the constitution at runtime and are not modified here.
   making changes.
 - After completing the constitution update, include a `Next Actions` section for each deferred
   intent. List the original intent and suggest the appropriate follow-up Spec Kit command, such
-  as `__SPECKIT_COMMAND_SPECIFY__`, without invoking it.
+  as `/speckit.specify`, without invoking it.
 - If there are no non-governance intents, omit the `Next Actions` section.
 
 ## Pre-Execution Checks

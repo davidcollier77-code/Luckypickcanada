@@ -3,13 +3,13 @@
   "version": "1.0.13",
   "installed_at": "2026-09-07T04:11:21.756226+00:00",
   "files": {
-    ".jules/cmds/speckit.analyze.md": "f0e7a9022fe306570800adf59956b3454ac1b33045422f46af060c066b7ec395",
-    ".jules/cmds/speckit.clarify.md": "8063b00f836019611150bab50fce362fa4b010819e5d5e4bd6ae0bd836a9d9d9",
-    ".jules/cmds/speckit.constitution.md": "210385942791b15f4dbc788ecdb6f0c528716649475e604ed6c9556467b5063c",
+    ".jules/cmds/speckit.analyze.md": "df220a1364bc068c1f11ed49d30372bb3779b2cf509e53b3e986f5558f32a834",
+    ".jules/cmds/speckit.clarify.md": "dd11eb5b9759f7d3cd18c9d7f23a0ae2fe7973fc6ca2486dbfaf53a5569224b1",
+    ".jules/cmds/speckit.constitution.md": "9a7e9296f0878cdf4ed011b0de74cfb3656938680b64e43e808553fdfd054efc",
     ".jules/cmds/speckit.implement.md": "cfab608b4532c74c9b29f57d3e029b26626ba257cebf02f17fb725b9823c4483",
-    ".jules/cmds/speckit.converge.md": "e9f86062d8970c03edffad257d0e7aa8abe9b2dd80bec113666a2cbceb2f180e",
+    ".jules/cmds/speckit.converge.md": "3cb55244c9dc5b9bf52ee3127ba177c52cabd5e5e5197e1312497b3eaeb8b9a4",
     ".jules/cmds/speckit.plan.md": "66fbb557460d25373c4665a887d59cf276eea8583f0a144b4dd5061be2d012ef",
-    ".jules/cmds/speckit.checklist.md": "abe5af1eb29c91eb00d5b5bf9d371ea845b7de020ddb9040eaea3b11a4a57d83",
+    ".jules/cmds/speckit.checklist.md": "fa58b19e2604ce56ff5f5427061f6ee94fd44d7194e740b874824d9bf21ee15b",
     ".jules/cmds/speckit.specify.md": "f5915aef35f67d2a3673af76f5320817d43335255976417e750a9e5a06bb0eb6",
     ".jules/cmds/speckit.tasks.md": "dac225f02e2bee926e07626d84b2d03a53fbc3f891485f277f1d86295c6ed1d7",
     ".jules/cmds/speckit.taskstoissues.md": "2fba6207db114a4eb56bb25cb9cbf5fcd74ddb5eb87ced05771b1cb937ae585d"
