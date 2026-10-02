@@ -34,7 +34,7 @@ export default function ExploreLuckButton() {
       const angle = Math.random() * Math.PI * 2;
       const velocity = Math.random() * 60 + 50; // 50-110px
       newParticles.push({
-        id: `leaf-${Date.now()}-${particleIdCounter.current++}`,
+        id: `leaf-${particleIdCounter.current++}`,
         type: 'leaf',
         x: Math.cos(angle) * velocity,
         y: Math.sin(angle) * velocity + 50, // bias downwards
