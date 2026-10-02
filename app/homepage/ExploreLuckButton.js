@@ -9,7 +9,6 @@ export default function ExploreLuckButton() {
   const particleIdCounter = useRef(0);
   const timeoutsRef = useRef(new Set());
   const isAnimatingRef = useRef(false);
-  const lastTouchActivationRef = useRef(0);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -88,27 +87,31 @@ export default function ExploreLuckButton() {
   }, [prefersReducedMotion]);
 
   const handleClick = useCallback(() => {
-    // Touch devices fire a synthetic click after pointerup. The pointer path below
-    // handles the activation directly, so ignore that follow-up click.
-    if (Date.now() - lastTouchActivationRef.current < 1000) return;
+    // Mouse and keyboard activation use the native click path.
     activateExplore();
   }, [activateExplore]);
 
+  const handlePointerDown = useCallback((event) => {
+    // Cancel the browser's compatibility click for touch/pen input because
+    // pointerup performs the activation directly.
+    if (event.pointerType === 'touch' || event.pointerType === 'pen') {
+      event.preventDefault();
+    }
+  }, []);
+
   const handlePointerUp = useCallback((event) => {
     if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return;
-
-    event.preventDefault();
-    lastTouchActivationRef.current = Date.now();
     activateExplore();
   }, [activateExplore]);
 
   return (
-    <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-30 flex h-[30%] min-h-24 max-h-40 items-end justify-center">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex h-[30%] min-h-24 max-h-40 items-end justify-center">
       <button
         type="button"
         onClick={handleClick}
+        onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
-        className="h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+        className="pointer-events-auto h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         aria-label="Explore your luck. Scroll down to the Lucky Meter."
       >
         <span className="sr-only">Explore your luck</span>
