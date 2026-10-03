@@ -1,16 +1,30 @@
-## 2024-08-12 - [Security Enhancement] Rate Limiting Bypass via IP Spoofing
-**Vulnerability:** The `getClientIp` function in `app/spam-protection.js` prioritized the `x-forwarded-for` header over `cf-connecting-ip`.
-**Learning:** This could allow a malicious user to bypass rate limits or spam block by spoofing the `x-forwarded-for` header. Since the app is hosted behind Cloudflare, `cf-connecting-ip` is the authoritative source for the client IP.
-**Prevention:** Always prioritize trusted headers provided by the CDN/WAF over easily spoofed headers like `x-forwarded-for`.
-## 2024-08-12 - [Security Enhancement] Error Message Information Leakage Prevention
-**Vulnerability:** The Stripe checkout error handling in `app/api/checkout/route.js` could expose raw exception messages to the client.
-**Learning:** Returning `error.message` directly in URL parameters during a catch block could leak sensitive internal application structure, third-party API details, or environment configurations to users if an unhandled exception occurred.
-**Prevention:** Always replace unhandled internal exceptions with a static, generic error message (e.g. "Unable to start checkout. Please try again.") when communicating failures to the client. Keep the detailed errors isolated in secure server logs (e.g., `console.error()`).
-## 2024-08-17 - [Security Enhancement] Overly Permissive CORS Configuration
-**Vulnerability:** The `functions/api/oracle.js` Cloudflare function used `Access-Control-Allow-Origin: "*"` which allowed any domain to make cross-origin requests to this endpoint. This could potentially allow malicious sites to interact with the API on behalf of a user.
-**Learning:** Cloudflare Pages functions and other edge functions often have a permissive default or copy-pasted configuration for CORS. It is critical to restrict CORS origins to only trusted domains.
-**Prevention:** Always set `Access-Control-Allow-Origin` to specific, trusted domains rather than using a wildcard (`*`).
-## 2026-09-21 - [Security Enhancement] HTTP Security Headers Added to Next.js Config
-**Vulnerability:** The application was missing standard HTTP security headers (such as Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, and Referrer-Policy).
-**Learning:** Next.js applications deployed to Cloudflare Pages (or Vercel) don't include these strict security headers by default. This could leave the application open to clickjacking, MIME-type sniffing, or cross-site scripting attacks, and weakens the HSTS posture.
-**Prevention:** Always configure standard HTTP security headers within the `headers()` function in `next.config.mjs` to enforce defense in depth.
+# Sentinel Specialist
+
+## Mandatory Standing Resources
+For all tasks, you MUST actually consult the following resources:
+- Jules Documentation "jules.google/docs"
+- Jules API "developers.google.com/jules/api"
+- Gemini CLI "/google-gemini/gemini-cli"
+- Gemini API "/websites/ai_google_dev_gemini-api"
+
+## Controlled Context7 Libraries
+When materially necessary, consult the following approved libraries. (Requires Context7 approval if not available in `.docs/`):
+- Next.js "/vercel/next.js"
+- React "/reactjs/react.dev"
+- TypeScript "/microsoft/typescript"
+- Zod "/colinhacks/zod"
+- DOMPurify "/cure53/dompurify"
+- Sentry Docs "/getsentry/sentry-docs"
+- Stripe.js "/stripe/stripe-js"
+- Resend "/resend/resend-node"
+- Neon "/neondatabase/neon"
+- Upstash Docs "/upstash/docs"
+- GitHub Docs "/github/docs"
+- Chrome Developer "/websites/developer_chrome"
+- Apple WebKit Developer "/websites/developer_apple_webkit"
+
+**Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
+
+## 2026-10-03 - DMARC & DKIM DNS Authentication
+**Learning:** Security scanner reports regarding missing DNS authentication records (DMARC/DKIM/SPF) often require verifying external DNS configurations rather than application codebase logic. Missing root domain records (e.g. DMARC `v=DMARC1; p=none`) must be added externally at the provider (Cloudflare), while existing DKIM records on provider-specific subdomains (e.g., `resend._domainkey`) may trigger false positives in generic scanners if the scanner looks for a default selector.
+**Action:** Investigated missing DMARC and DKIM reports. Verified external DNS configuration via `dig TXT _dmarc.luckypickcanada.ca` and `dig TXT resend._domainkey.luckypickcanada.ca`. Blocked any unsupported changes to external infrastructure from the application codebase context, and provided explicit remediation instructions to the domain owner to be implemented in Cloudflare.

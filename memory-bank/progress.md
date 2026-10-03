@@ -130,3 +130,6 @@
 - Investigated the repository and confirmed that the payload was received by the `jules-bridge` Cloudflare Worker (`workers/jules-bridge/src/index.js`), which authenticated and forwarded it to the Jules API.
 - Verified that no codebase changes were required, as the webhook is functioning perfectly and correctly handled the test event.
 - Confirmed there was no misrouting to the Stripe webhook endpoint (`app/api/stripe-webhook/route.js`).
+
+## 2026-10-03
+- **Completed Security Scan Investigation (DMARC/DKIM):** Verified missing DMARC record and correct existing Resend DKIM configuration. Provided manual remediation instructions for Cloudflare DNS to the domain owner without modifying protected infrastructure.
