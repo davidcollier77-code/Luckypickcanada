@@ -90,7 +90,7 @@ test.describe("Homepage Visual", () => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
     const label = 'Explore your luck. Scroll down to the Lucky Meter.';
-    const exploreButton = page.locator(\`button[aria-label="\${label}"]\`);
+    const exploreButton = page.locator(`button[aria-label="${label}"]`);
     const heroStage = page.locator('.hero-image-container');
     const particles = page.locator('.animate-magic-burst');
 
@@ -206,7 +206,7 @@ test.describe("Homepage Visual", () => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
     const label = 'Explore your luck. Scroll down to the Lucky Meter.';
-    const exploreButton = page.locator(\`button[aria-label="\${label}"]\`);
+    const exploreButton = page.locator(`button[aria-label="${label}"]`);
     await expect(exploreButton).toBeVisible();
 
     await exploreButton.click();
