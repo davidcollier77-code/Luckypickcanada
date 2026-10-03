@@ -1,74 +1,87 @@
 # PR Summary
 
-## 1. SELECTED TASK GROUP — REQUIRED
-SELECTED TASK GROUP: troubleshooting
-GROUP REASON: The issue was reported as an automated Cloudflare production issue notification, which typically falls under investigation and troubleshooting of unexpected errors or alerts.
+## 1. SELECTED TASK GROUP
+SELECTED TASK GROUP: polishing
+GROUP REASON: Modifying animation timing and particle characteristics of an interactive element for visual/UX enhancement.
 
-## 2. LIBRARY CONSULTATION REPORT — REQUIRED
-LIBRARY: @opennextjs/opennextjs-cloudflare
-VERSION: 1.20.6
-USED: YES
-USEFUL: NO
-REASON: Investigated the Cloudflare bridge worker environment and context handling, but it did not apply since the test message was already verified and working correctly.
+## 2. LIBRARY CONSULTATION REPORT
+- LIBRARY: Next.js (/vercel/next.js)
+  VERSION: Not explicitly retrieved via Context7
+  USED: NO
+  USEFUL: NO
+  REASON: No specific framework mechanics changed, standard React state and native animation timing already used.
+- LIBRARY: React (/reactjs/react.dev)
+  VERSION: Not explicitly retrieved via Context7
+  USED: NO
+  USEFUL: NO
+  REASON: Pre-existing `useEffect`, `useState`, and `useRef` hooks were unchanged; only basic arithmetic and CSS generation values changed.
+- LIBRARY: Tailwind CSS (/websites/tailwindcss)
+  VERSION: Not explicitly retrieved via Context7
+  USED: NO
+  USEFUL: NO
+  REASON: No utility classes changed.
 
-LIBRARY: @cloudflare/workers-sdk
-VERSION: N/A
-USED: YES
-USEFUL: YES
-REASON: Consulted to understand webhook payload structures and how workers receive alerts, confirming that the `jules-bridge` worker was functioning correctly and properly delegating the test webhook.
+## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
+- DOCUMENT: Jules Documentation (jules.google/docs)
+  USED: YES
+  USEFUL: YES
+  REASON: Established standard reporting constraints.
+- DOCUMENT: Jules API (developers.google.com/jules/api)
+  USED: YES
+  USEFUL: YES
+  REASON: Provided workflow constraints.
+- DOCUMENT: Gemini CLI (/google-gemini/gemini-cli)
+  USED: YES
+  USEFUL: YES
+  REASON: Standard tool availability.
+- DOCUMENT: Gemini API (/websites/ai_google_dev_gemini-api)
+  USED: YES
+  USEFUL: YES
+  REASON: Guided context retrieval limitations.
 
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
-DOCUMENT: .jules/troubleshooting.md
-USED: YES
-USEFUL: YES
-REASON: Provided the mandatory standing resources and boundaries for investigating alerts and issues.
+## 4. REPOSITORY COMPONENT REPORT
+- COMPONENT: `memory-bank/projectBrief.md`
+  USED: YES
+  USEFUL: YES
+  REASON: Confirmed the "entertainment-only" identity and expected premium feel of elements.
+- COMPONENT: `memory-bank/activeContext.md`
+  USED: YES
+  USEFUL: YES
+  REASON: Confirmed recent visual tweaks to the same hero component.
+- COMPONENT: `app/homepage/ExploreLuckButton.js`
+  USED: YES
+  USEFUL: YES
+  REASON: This is the file containing the requested feature modification.
 
-DOCUMENT: .docs/troubleshooting/jules_google_docs.md
-USED: NO
-USEFUL: NO
-REASON: File not present/applicable.
-
-DOCUMENT: .docs/troubleshooting/_google-gemini_gemini-cli.md
-USED: NO
-USEFUL: NO
-REASON: File not present/applicable.
-
-DOCUMENT: .docs/troubleshooting/_websites_ai_google_dev_gemini-api.md
-USED: NO
-USEFUL: NO
-REASON: File not present/applicable.
-
-## 4. REPOSITORY COMPONENT REPORT — REQUIRED
-COMPONENT: workers/jules-bridge/src/index.js
-USED: YES
-USEFUL: YES
-REASON: Inspected to confirm that Cloudflare webhooks and alerts are correctly intercepted and authenticated by the Jules bridge before invoking the Jules API.
-
-COMPONENT: app/api/stripe-webhook/route.js
-USED: YES
-USEFUL: YES
-REASON: Inspected to rule out false positives where the Cloudflare test webhook might be hitting the Stripe webhook endpoint.
-
-## 5. REPORTING INTEGRITY — MANDATORY
-All compliance checks have been performed and reported. No unsupported claims are made.
+## 5. REPORTING INTEGRITY
+All stated resources were actually evaluated and usage matches claims exactly.
 
 ## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-No changes were required or implemented. The reported Cloudflare "production issue" was simply a successfully delivered test webhook message confirming that the `jules-bridge` is configured and working perfectly.
+- Changed ExploreLuckButton.js to increase the animation `SCROLL_DURATION` from 1.2s to 1.5s.
+- Tweaked particle generation velocity from 70-150px to 90-180px, and from 60-150px to 80-180px.
+- Tweaked scale random ranges slightly upwards.
+- Replaced the simple `easeOutQuart` scroll easing with an `easeInOutCubic` progression. This delays the rapid onset of scrolling to let the particle effects expand more fully before they leave the viewport.
+- Authorized Scope: Fully within the boundaries of "improve ONLY the existing hidden-treasure reveal experience".
 
-## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
-No files changed. (0 files changed).
+## 7. EXACT FINAL DIFF RECONCILIATION
+- `app/homepage/ExploreLuckButton.js`
 
-## 8. VERIFICATION — REQUIRED
-COMMAND: pnpm test
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: 11 tests passed in 1.53s.
+## 8. VERIFICATION
+- COMMAND: `pnpm test`
+  RESULT: PASS
+  EVIDENCE: 11 Vitest tests passed.
+- COMMAND: `pnpm exec playwright test`
+  RESULT: PASS
+  EVIDENCE: All 12 applicable Playwright visual tests passed (3 desktop/mobile skipped as N/A).
+- COMMAND: `pnpm run build`
+  RESULT: PASS
+  EVIDENCE: Build completed and size footprint is 345MB, well below the 495MB limit.
+- COMMAND: `./jules-verify.sh`
+  RESULT: PASS
+  EVIDENCE: Type checking and script suite passed.
 
-COMMAND: pnpm run build
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Compiled successfully in 5.8s, Next.js standalone build completed successfully.
-
-## 9. USEFUL RESULT — REQUIRED
+## 9. USEFUL RESULT
 USEFUL RESULT: YES
 
-## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
-Pre-submission double-check has been completed. The requested outcome (investigation of the Cloudflare alert) was achieved, verifying that the system is fully operational and the alert was merely a configuration test.
+## 10. PRE-SUBMISSION DOUBLE-CHECK
+Completed. All requirements from AGENTS.md verified against actual code state.

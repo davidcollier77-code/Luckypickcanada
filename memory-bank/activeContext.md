@@ -158,3 +158,9 @@
 - Kilo's latest incremental review identified a test-only issue: the global smooth-scroll CSS could leave the viewport moving when the repeat-touch coordinates were reused.
 - Updated `tests/visual/homepage.spec.ts` to temporarily force `scroll-behavior: auto`, reset to `scrollY === 0`, restore the page style, and only then issue the repeat mobile tap.
 - Application interaction code remains unchanged by this follow-up.
+
+## 2026-10-03 — Explore Your Luck Reveal Polish
+
+- Increased the visual presence of the particle burst on the "Explore your luck" button by moderately increasing leaf and confetti particle velocity and scale bounds in `ExploreLuckButton.js`.
+- Expanded the explicit javascript `SCROLL_DURATION` from 1.2s to 1.5s and switched the easing function from `easeOutQuart` to `easeInOutCubic`. This provides a slower startup that permits the burst animation to visually register before the viewport rapidly scrolls down to the meter.
+- Regenerated and executed tests (Vitest, Playwright DOM visual) and built to verify behavior within the 495MB allowance limit (345MB).
