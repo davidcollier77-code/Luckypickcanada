@@ -26,6 +26,7 @@ To correctly authenticate the existing Resend implementation for the root `From`
    - **Name**: `@` (or `luckypickcanada.ca`)
    - **Value**: `v=spf1 include:amazonses.com ~all`
    - *Reason*: Authorizes Resend (via AWS SES) to send emails on behalf of the root domain, aligning with the `From` header used in the application.
+   - *Google is not a sender for this domain*: Resend is the only outbound sender, so no `include:_spf.google.com` is needed and tightening this record to `-all` later will not break any Google-sent mail. Evidence: the only two outbound call sites (`app/api/send-gift/route.ts:47` and `app/suggestions.js:96`) both send through Resend, and the Gmail address in this project is used as a **recipient**, not a sender (`app/suggestions.js:90`, `SUGGESTIONS_TO_EMAIL` default `davidcollier77@gmail.com`). The Gmail addresses therefore receive mail only and are unaffected by this SPF record.
 
 2. **DMARC Monitoring Record**
    - **Type**: `TXT`
