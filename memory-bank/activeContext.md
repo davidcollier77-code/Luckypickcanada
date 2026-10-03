@@ -2,6 +2,13 @@
 - Repaired the rAF scroll loop so each frame uses explicit `behavior: 'instant'` scrolling, preventing the global `scroll-behavior: smooth` rule from restarting a native animation on every frame.
 - Moved the 10-second cooldown initialization until after `#lucky-meter` is confirmed to exist, so a missing target does not unnecessarily lock the control.
 - Added user-interruption handling for wheel, touchstart/touchmove, and scrolling keyboard input; interruption cancels the rAF loop, clears particles, and returns scroll control to the user.
+- Cleaned formatting and stale test comments, replaced fixed cooldown sleeps with polling, and changed the early-scroll assertion to match the intended synchronized animation.
+- Added a desktop regression test proving keyboard scroll input can interrupt the synchronized animation.
+
+## 2026-10-03 — PR #1347 Review Fix — Explore Your Luck Scroll Reliability
+- Repaired the rAF scroll loop so each frame uses explicit `behavior: 'instant'` scrolling, preventing the global `scroll-behavior: smooth` rule from restarting a native animation on every frame.
+- Moved the 10-second cooldown initialization until after `#lucky-meter` is confirmed to exist, so a missing target does not unnecessarily lock the control.
+- Added user-interruption handling for wheel, touchstart/touchmove, and scrolling keyboard input; interruption cancels the rAF loop, clears particles, and returns scroll control to the user.
 - Cleaned formatting and stale test comments, and replaced fixed cooldown sleeps in repeat-activation checks with polling.
 - Added a desktop regression test proving keyboard scroll input can interrupt the synchronized animation.
 
