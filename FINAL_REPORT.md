@@ -228,7 +228,15 @@ All reporting is accurate based on the investigation and provided evidence.
   2. DMARC (`_dmarc`): `v=DMARC1; p=none;`
 
 ## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
-No codebase application files changed. Only reporting files (`FINAL_REPORT.md`, `pr_summary.md`, `pr_description.md`) were updated/created.
+No application source files changed. Verified with `git diff --name-status origin/main...HEAD`:
+
+- `FINAL_REPORT.md` (modified)
+- `pr_description.md` (modified)
+- `pr_description_clean.md` (added)
+- `pr_summary.md` (modified)
+- `submit.sh` (modified)
+
+All five are reporting/helper files; nothing under `app/`, `components/`, or `functions/` is touched.
 
 ## 8. VERIFICATION — REQUIRED
 COMMAND: grep "from:" app/api/send-gift/route.ts app/suggestions.js
