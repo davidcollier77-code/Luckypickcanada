@@ -133,3 +133,6 @@
 
 ## 2026-10-03
 - **Completed Security Scan Investigation (DMARC/DKIM):** Verified missing DMARC record and correct existing Resend DKIM configuration. Provided manual remediation instructions for Cloudflare DNS to the domain owner without modifying protected infrastructure.
+
+## 2026-10-03
+- **Completed Root SPF and DMARC Investigation:** Verified missing root SPF and DMARC records. Confirmed Resend as the sole email sender. Provided manual remediation instructions for Cloudflare DNS to the domain owner without modifying protected infrastructure.

@@ -2,7 +2,7 @@
 
 ## 1. SELECTED TASK GROUP — REQUIRED
 SELECTED TASK GROUP: security
-GROUP REASON: Task involves investigating and remediating DMARC and DKIM DNS authentication issues identified by a security scan.
+GROUP REASON: Task involves investigating and providing remediation for critical missing DNS authentication records (SPF and DMARC) to prevent spoofing and ensure email deliverability.
 
 ## 2. LIBRARY CONSULTATION REPORT — REQUIRED
 
@@ -58,7 +58,7 @@ LIBRARY: /resend/resend-node
 VERSION: N/A
 USED: YES
 USEFUL: YES
-REASON: Used to understand the existing email sending architecture and confirm Resend's DKIM requirements.
+REASON: Used to understand the existing email sending architecture and confirm Resend's SPF/DKIM requirements.
 
 LIBRARY: /neondatabase/neon
 VERSION: N/A
@@ -177,30 +177,40 @@ REASON: No integration changes required.
 All reporting is accurate based on the investigation and provided evidence.
 
 ## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-- **DMARC:** Verified no `_dmarc` TXT record exists. A manual DNS update is required: `v=DMARC1; p=none`.
-- **DKIM:** Verified a valid DKIM record exists at `resend._domainkey.luckypickcanada.ca`. No changes are required. The scanner likely failed to recognize the Resend selector.
-- **SPF/MX:** Verified `send.luckypickcanada.ca` has an SPF record. No root SPF or MX records exist. No changes were made to these records as they are outside the authorized scope.
-- **Implementation:** STOPPED. As required by the task constraints, no DNS records were changed because the external Cloudflare zone cannot be edited or verified from this repository.
-- **Scope Compliance:** Strictly adhered to investigating and providing remediation instructions only for DMARC and DKIM.
+- **Root SPF:** Verified missing via `dig`. Investigated codebase and verified Resend is the exclusive sender. Provided required record: `v=spf1 include:amazonses.com ~all`.
+- **DMARC:** Verified missing via `dig`. Provided required record: `v=DMARC1; p=none;`.
+- **Implementation:** STOPPED. As required by task constraints, no DNS records were changed because the external Cloudflare zone cannot be edited or verified from this repository.
+- **Scope Compliance:** Strictly adhered to investigating and providing remediation instructions only for Root SPF and DMARC. Existing DKIM and subdomain SPF records were verified as intact and intentionally untouched.
 
 ## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
 No application source files changed.
 
 - `pr_description.md`
 - `pr_summary.md`
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+- `.jules/sentinel.md`
 
 ## 8. VERIFICATION — REQUIRED
+COMMAND: dig TXT luckypickcanada.ca +short
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Returned only site-verification tokens, confirming Root SPF is missing.
+
 COMMAND: dig TXT _dmarc.luckypickcanada.ca +short
 RESULT: PASS
 EVIDENCE/OUTPUT SUMMARY: Returned empty, confirming the DMARC record is missing.
 
+COMMAND: grep -rn "@luckypickcanada.ca" app/ functions/
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Confirmed root domain addresses are used as `From` addresses (e.g., `gifts@luckypickcanada.ca`).
+
+COMMAND: grep -rn "resend" app/ functions/
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Confirmed Resend is the only email sending service invoked in the codebase.
+
 COMMAND: dig TXT resend._domainkey.luckypickcanada.ca +short
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Returned a valid DKIM public key record ("p=MIGf...").
-
-COMMAND: dig TXT send.luckypickcanada.ca +short
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Returned "v=spf1 include:amazonses.com ~all", confirming the SES SPF record is present.
+EVIDENCE/OUTPUT SUMMARY: Returned valid DKIM record, confirming it was unaffected.
 
 COMMAND: none — build not run
 RESULT: NOT RUN
@@ -210,4 +220,4 @@ EVIDENCE/OUTPUT SUMMARY: This PR changes no application source files, so `pnpm r
 USEFUL RESULT: YES
 
 ## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
-Pre-submission double-check completed. All constraints adhered to. External changes safely blocked and reported accurately. Scope strictly limited to DMARC and DKIM.
+Pre-submission double-check completed. All constraints adhered to. External changes safely blocked and reported accurately. Scope strictly limited to Root SPF and DMARC.
