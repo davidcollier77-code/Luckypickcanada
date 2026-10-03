@@ -240,13 +240,17 @@ No application source files changed. Verified with `git diff --name-status origi
 All five are reporting/helper files; nothing under `app/`, `components/`, or `functions/` is touched.
 
 ## 8. VERIFICATION — REQUIRED
-COMMAND: grep "from:" app/api/send-gift/route.ts app/suggestions.js
+COMMAND: grep -n "FROM_EMAIL" app/api/send-gift/route.ts app/suggestions.js
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Confirmed `gifts@luckypickcanada.ca` and `noreply@luckypickcanada.ca` are the root domain `From` addresses.
+EVIDENCE/OUTPUT SUMMARY: Prints the actual `From` definitions — `app/api/send-gift/route.ts:20` (`process.env.GIFT_FROM_EMAIL?.trim() || 'gifts@luckypickcanada.ca'`) and `app/suggestions.js:89` (`process.env.SUGGESTIONS_FROM_EMAIL || process.env.GIFT_FROM_EMAIL || 'noreply@luckypickcanada.ca'`). Note these are **default** `From` addresses, overridable by environment variables; the deployed values were not read, so this verifies the code defaults only.
 
-COMMAND: pnpm run build
+COMMAND: grep -n "resend" app/api/send-gift/route.ts app/suggestions.js
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Build completes successfully.
+EVIDENCE/OUTPUT SUMMARY: Confirms Resend is the only outbound path — `route.ts:47` calls `resend.emails.send(...)` and `suggestions.js:96` posts to `https://api.resend.com/emails`. No other mail provider appears.
+
+COMMAND: none — build not run
+RESULT: NOT RUN
+EVIDENCE/OUTPUT SUMMARY: This PR changes no application source file (see section 7) and `node_modules/` is not installed in this environment, so `pnpm run build` cannot run here. No build size is claimed, so the 495 MB build limit is neither exercised nor breached by this change.
 
 ## 9. USEFUL RESULT — REQUIRED
 USEFUL RESULT: YES
