@@ -134,7 +134,7 @@ test.describe("Homepage Visual", () => {
       await exploreButton.click();
     }
 
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     const earlyScrollY = await page.evaluate(() => window.scrollY);
     expect(earlyScrollY).toBeGreaterThan(0);
     expect(earlyScrollY).toBeLessThan(targetScrollY!);
