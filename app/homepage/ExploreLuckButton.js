@@ -148,7 +148,7 @@ export default function ExploreLuckButton() {
       const progress = Math.min(elapsed / SCROLL_DURATION, 1);
       const easedProgress = easeOutQuart(progress);
 
-      // Use explicit instant scrolling so the global smooth-scroll CSS cannot
+      // Use explicit instant per-frame scrolling so the global smooth-scroll CSS cannot
       // restart a native animation on every animation frame.
       window.scrollTo({
         top: startY + distance * easedProgress,
