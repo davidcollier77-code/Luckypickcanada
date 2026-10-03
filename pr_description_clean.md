@@ -36,7 +36,6 @@ To correctly authenticate the existing Resend implementation without altering th
 
 ### PR Summary Canonical Record
 
-```markdown
 # PR Summary
 
 ## 1. SELECTED TASK GROUP — REQUIRED
@@ -244,4 +243,3 @@ USEFUL RESULT: YES
 
 ## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
 Pre-submission double-check completed. All constraints adhered to. External changes safely blocked and reported.
-```
