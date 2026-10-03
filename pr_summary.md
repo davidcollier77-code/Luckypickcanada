@@ -49,7 +49,12 @@ I confirm that this report describes the work actually performed. No unsupported
 
 ## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
 
+Every file changed by this PR, each listed exactly once. Verified against `git diff origin/main...HEAD --name-only`, which returns these four paths and no others.
+
+- `memory-bank/activeContext.md`
 - `next.config.mjs`
+- `pr_description.md`
+- `pr_summary.md`
 
 ## 8. VERIFICATION — REQUIRED
 
