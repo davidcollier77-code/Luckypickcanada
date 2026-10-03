@@ -164,3 +164,18 @@
 - Increased the visual presence of the particle burst on the "Explore your luck" button by moderately increasing leaf and confetti particle velocity and scale bounds in `ExploreLuckButton.js`.
 - Expanded the explicit javascript `SCROLL_DURATION` from 1.2s to 1.5s and switched the easing function from `easeOutQuart` to `easeInOutCubic`. This provides a slower startup that permits the burst animation to visually register before the viewport rapidly scrolls down to the meter.
 - Regenerated and executed tests (Vitest, Playwright DOM visual) and built to verify behavior within the 495MB allowance limit (345MB).
+
+## 2026-10-03 — DMARC & DKIM DNS Authentication Investigation
+- Investigated security scan findings regarding missing DMARC and DKIM records for `luckypickcanada.ca`.
+- Verified via `dig` that the root `_dmarc` record is missing and provided the required remediation configuration (`v=DMARC1; p=none`) in the PR description.
+- Verified via `dig` that a valid DKIM record exists for Resend at `resend._domainkey.luckypickcanada.ca`. No changes are required.
+- Stopped execution before attempting unsupported modifications to the external Cloudflare DNS configuration, adhering to strict security and environment constraints.
+- Updated `pr_description.md` and `pr_summary.md` with the verified findings, remediation instructions, and compliance evidence.
+
+## 2026-10-03 — Root SPF & DMARC DNS Authentication Investigation
+- Investigated security scan findings regarding missing root SPF and DMARC records for `luckypickcanada.ca`.
+- Verified via `dig` that both records are missing.
+- Verified via codebase analysis that Resend is the exclusive outbound email provider for root domain addresses.
+- Provided the required remediation configurations (`v=spf1 include:amazonses.com ~all` and `v=DMARC1; p=none`) in the PR description.
+- Stopped execution before attempting unsupported modifications to the external Cloudflare DNS configuration, adhering to strict security and environment constraints.
+- Updated `pr_description.md` and `pr_summary.md` with the verified findings, remediation instructions, and compliance evidence.
