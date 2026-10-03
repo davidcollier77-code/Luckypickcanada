@@ -30,7 +30,7 @@ To correctly authenticate the existing Resend implementation without altering th
 
 #### 🔴 Preservation of Existing Functionality
 - **No changes** were made to the existing Gmail accounts or mailboxes.
-- **No changes** were made to the sender/display identities (`gifts@luckypickcanada.ca`, `hello@luckypickcanada.ca`).
+- **No changes** were made to the sender/display identities (`gifts@luckypickcanada.ca`, `noreply@luckypickcanada.ca`).
 - **No changes** were made to the `Resend` integration, suggestion boxes, or contact/notification functionality.
 - The existing valid DKIM record was preserved and left unchanged.
 
