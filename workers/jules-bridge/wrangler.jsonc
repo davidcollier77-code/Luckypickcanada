@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "jules-bridge",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-03",
+  "account_id": "dbd3120f6fa0104b5fe66c201ea4251b",
+  "workers_dev": true,
+  "keep_vars": true,
+  "observability": {
+    "enabled": true,
+    "issues": {
+      "enabled": false
+    }
+  }
+}

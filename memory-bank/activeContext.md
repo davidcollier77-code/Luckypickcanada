@@ -1,3 +1,12 @@
+## 2026-10-03 — Jules/Cloudflare Bridge Integration (PR)
+- Created an isolated Cloudflare Worker bridge under `workers/jules-bridge/` so the production `luckypickcanada-app` Worker and its Wrangler configuration remain untouched.
+- Added a GitHub Actions workflow that dry-runs the bridge on pull requests and deploys it only after changes reach `main`, using the repository's existing `CLOUDFLARE_API_TOKEN` secret.
+- The bridge uses the separately stored Cloudflare Worker secret `JULES_API_KEY` for Jules API authentication and requires a separate `CF_WEBHOOK_SECRET` for incoming Cloudflare Generic Webhook requests.
+- Jules sessions request explicit plan approval before execution while retaining automatic PR creation after approved work.
+- Cloudflare Issues detection is disabled for the bridge Worker itself to avoid an issue-to-Jules feedback loop.
+- No Jules API key or webhook secret is stored in the repository.
+- PR branch: `feat/jules-cloudflare-bridge`. The bridge is not enabled as a Cloudflare notification destination until the webhook secret is configured and the destination is attached to the desired policy.
+
 ## 2026-10-03 — PR #1347 Review Fix — Explore Your Luck Scroll Reliability
 - Repaired the rAF scroll loop so each frame uses explicit `behavior: 'instant'` scrolling, preventing the global `scroll-behavior: smooth` rule from restarting a native animation on every frame.
 - Moved the 10-second cooldown initialization until after `#lucky-meter` is confirmed to exist, so a missing target does not unnecessarily lock the control.
