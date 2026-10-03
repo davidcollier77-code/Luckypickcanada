@@ -1,3 +1,10 @@
+## 2026-10-03 — Jules/Cloudflare Bridge Integration
+- Prepared a separate `jules-bridge` Worker implementation and deployment workflow for routing Cloudflare Generic Webhook issues to the Jules REST API.
+- Verified the repository's authoritative governance path (`AGENTS.md` → security task group) and the relevant local Jules/Gemini/security documentation before implementation.
+- Kept the bridge isolated from the main OpenNext Worker configuration and preserved secret values outside Git.
+- Added a PR-path dry-run deployment check and a main-branch deployment path using the existing Cloudflare API token secret.
+- Remaining activation step: configure a dedicated `CF_WEBHOOK_SECRET` in the Worker and use the same value in the Cloudflare Generic Webhook destination before attaching the destination to an Issues policy.
+
 # Progress
 
 ## 2026-10-02 — PR #1345 Documentation Integrity Correction

@@ -1,0 +1,72 @@
+name: Deploy Jules Cloudflare Bridge
+
+on:
+  pull_request:
+    paths:
+      - "workers/jules-bridge/**"
+      - ".github/workflows/deploy-jules-bridge.yml"
+  push:
+    branches: [main]
+    paths:
+      - "workers/jules-bridge/**"
+      - ".github/workflows/deploy-jules-bridge.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-jules-bridge-deploy
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify Jules bridge
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.0.0
+        with:
+          version: 10.30.3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Wrangler dry-run
+        run: pnpm exec wrangler deploy --dry-run --config workers/jules-bridge/wrangler.jsonc
+
+  deploy:
+    name: Deploy Jules bridge
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.0.0
+        with:
+          version: 10.30.3
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy with Wrangler
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm exec wrangler deploy --config workers/jules-bridge/wrangler.jsonc --keep-vars
