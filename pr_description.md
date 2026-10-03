@@ -314,11 +314,13 @@ No application source files changed. Verified with `git diff --name-status origi
 
 - `FINAL_REPORT.md` (modified)
 - `pr_description.md` (modified)
-- `pr_description_clean.md` (added)
+- `pr_description_clean.md` (modified)
 - `pr_summary.md` (modified)
 - `submit.sh` (modified)
 
-All five are reporting/helper files; nothing under `app/`, `components/`, or `functions/` is touched.
+All five are reporting/helper files; nothing under `app/`, `components/`, or `functions/` is touched (verified with `git diff --name-only origin/main...HEAD -- app components functions lib`, which returns empty; this repository has no `lib/` directory).
+
+About the routed `.docs/` cache files cited in section 3 — `.docs/creation/_websites_ai_google_dev_gemini-api.md`, `.docs/creation/developers_google_com_jules_api.md`, `.docs/deep-dive/_android_developers.md`, `.docs/manifest.json`, `.docs/security/_cure53_dompurify.md`, and `.docs/troubleshooting/_websites_developer_chrome.md` — these are **not** part of this branch's diff and are therefore correctly absent from the list above. They are already tracked on `main` (verified: `git cat-file -e origin/main:<path>` resolves for all six) and are untouched here (verified: `git diff --name-only origin/main...HEAD -- .docs/` returns empty, and `git status --porcelain -- .docs/` is clean). They reached `main` through the earlier `docs: update upstream documentation snapshots` commits, which predate and sit outside this branch. Listing them here would be an inaccuracy, so they are documented in this note rather than in the diff list.
 
 ## 8. VERIFICATION — REQUIRED
 COMMAND: grep -n "FROM_EMAIL" app/api/send-gift/route.ts app/suggestions.js
