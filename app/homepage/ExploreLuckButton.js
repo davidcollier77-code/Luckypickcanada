@@ -75,7 +75,7 @@ export default function ExploreLuckButton() {
       const angle = Math.random() * Math.PI * 2;
       const velocity = Math.random() * 80 + 70; // 70-150px (increased distance)
       newParticles.push({
-        id: \`leaf-\${particleIdCounter.current++}\`,
+        id: `leaf-${particleIdCounter.current++}`,
         type: 'leaf',
         x: Math.cos(angle) * velocity,
         y: Math.sin(angle) * velocity + 60, // bias downwards
@@ -90,7 +90,7 @@ export default function ExploreLuckButton() {
       const angle = Math.random() * Math.PI * 2;
       const velocity = Math.random() * 90 + 60; // 60-150px (increased distance)
       newParticles.push({
-        id: \`confetti-\${particleIdCounter.current++}\`,
+        id: `confetti-${particleIdCounter.current++}`,
         type: 'confetti',
         x: Math.cos(angle) * velocity,
         y: Math.sin(angle) * velocity + 80, // bias downwards more
@@ -207,11 +207,11 @@ export default function ExploreLuckButton() {
                 key={particle.id}
                 className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 w-6 h-6 animate-magic-burst"
                 style={{
-                  '--tx': \`\${particle.x}px\`,
-                  '--ty': \`\${particle.y}px\`,
-                  '--r': \`\${particle.rotation}deg\`,
+                  '--tx': `${particle.x}px`,
+                  '--ty': `${particle.y}px`,
+                  '--r': `${particle.rotation}deg`,
                   '--s': particle.scale,
-                  animationDuration: \`\${particle.duration}s\`,
+                  animationDuration: `${particle.duration}s`,
                 }}
               >
                 <Image
@@ -230,11 +230,11 @@ export default function ExploreLuckButton() {
               key={particle.id}
               className="absolute left-0 top-0 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-sm bg-gradient-to-br from-yellow-300 to-amber-500 animate-magic-burst shadow-[0_0_8px_rgba(251,191,36,0.8)]"
               style={{
-                '--tx': \`\${particle.x}px\`,
-                '--ty': \`\${particle.y}px\`,
-                '--r': \`\${particle.rotation}deg\`,
+                '--tx': `${particle.x}px`,
+                '--ty': `${particle.y}px`,
+                '--r': `${particle.rotation}deg`,
                 '--s': particle.scale,
-                animationDuration: \`\${particle.duration}s\`,
+                animationDuration: `${particle.duration}s`,
               }}
             />
           );
