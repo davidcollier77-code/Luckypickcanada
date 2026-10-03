@@ -220,9 +220,9 @@ COMMAND: dig TXT resend._domainkey.luckypickcanada.ca +short
 RESULT: PASS
 EVIDENCE/OUTPUT SUMMARY: Found valid DKIM public key string.
 
-COMMAND: pnpm run build
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Build completes successfully.
+COMMAND: none — build not run
+RESULT: NOT RUN
+EVIDENCE/OUTPUT SUMMARY: This PR changes no application source file (see section 7) and `node_modules/` is not installed in this environment, so `pnpm run build` cannot run here. No build size is claimed, so the 495 MB build limit is neither exercised nor breached by this change.
 
 ## 9. USEFUL RESULT — REQUIRED
 USEFUL RESULT: YES
