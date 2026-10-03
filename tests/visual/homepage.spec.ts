@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 
+const EXPLORE_COOLDOWN_MS = 10_000;
+
 test.describe("Homepage Visual", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
@@ -30,7 +32,6 @@ test.describe("Homepage Visual", () => {
     });
   });
 
-  // Deterministic inputs keep the rendered homepage stable so visual diffs represent real regressions.
   test('homepage viewport matches the approved visual baseline', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
@@ -54,31 +55,25 @@ test.describe("Homepage Visual", () => {
 
     await expect(page.locator('canvas.homepage-star-canvas')).toBeVisible({ timeout: 10_000 });
 
-    // Ensure initial render is stable
     await page.waitForTimeout(1_000);
 
     const canvas = page.locator('canvas.homepage-star-canvas');
-
-    // Take screenshot at t=0
     const snapshot1 = await canvas.screenshot();
 
-    // Advance time by 500ms (1/2 second should noticeably change the sin wave for twinkling stars)
     await page.evaluate(() => {
       (window as any).__advanceTime(500);
     });
 
-    // Wait for a few animation frames to process with the new time
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 
     const snapshot2 = await canvas.screenshot();
 
-    // The two screenshots should be different, proving stars are twinkling.
-    // If they are exactly the same, twinkling is broken or not perceptible.
     expect(snapshot1).not.toEqual(snapshot2);
   });
 
-  test('explore luck hit area sequences display before scrolling', async ({ page }) => { test.setTimeout(60000);
-    // Ensure we mock matchMedia to not prefer reduced motion so the animation plays
+  test('explore luck hit area sequences display before scrolling', async ({ page }) => {
+    test.setTimeout(60_000);
+
     await page.addInitScript(() => {
       window.matchMedia = (query) => ({
         matches: false,
@@ -95,13 +90,13 @@ test.describe("Homepage Visual", () => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
     const label = 'Explore your luck. Scroll down to the Lucky Meter.';
-    const exploreButton = page.locator(`button[aria-label="${label}"]`);
+    const exploreButton = page.locator(\`button[aria-label="\${label}"]\`);
     const heroStage = page.locator('.hero-image-container');
+    const particles = page.locator('.animate-magic-burst');
+
     await expect(exploreButton).toBeVisible();
     await expect(heroStage).toBeVisible();
 
-    // The interactive surface is intentionally visually transparent, but the actual
-    // mobile tap must hit the button where the baked-in arrows are displayed.
     const buttonBox = await exploreButton.boundingBox();
     const stageBox = await heroStage.boundingBox();
     expect(buttonBox).not.toBeNull();
@@ -116,8 +111,6 @@ test.describe("Homepage Visual", () => {
     expect(computedStagePointerEvents).toBe('none');
     expect(computedButtonPointerEvents).toBe('auto');
 
-    // Verify the lower-center arrow hotspot resolves to the real button through
-    // Chromium hit-testing before performing the touch gesture.
     const tapX = stageBox!.x + stageBox!.width / 2;
     const tapY = stageBox!.y + stageBox!.height * 0.9;
     const hitTargetLabel = await page.evaluate(({ x, y }) => {
@@ -126,9 +119,14 @@ test.describe("Homepage Visual", () => {
     }, { x: tapX, y: tapY });
     expect(hitTargetLabel).toBe(label);
 
-    // Verify we are at the top
-    let scrollY = await page.evaluate(() => window.scrollY);
+    const scrollY = await page.evaluate(() => window.scrollY);
     expect(scrollY).toBe(0);
+
+    const targetScrollY = await page.evaluate(() => {
+      const luckyMeter = document.getElementById('lucky-meter');
+      return luckyMeter ? window.scrollY + luckyMeter.getBoundingClientRect().top : null;
+    });
+    expect(targetScrollY).not.toBeNull();
 
     if (test.info().project.name.startsWith('mobile-')) {
       await page.touchscreen.tap(tapX, tapY);
@@ -136,36 +134,35 @@ test.describe("Homepage Visual", () => {
       await exploreButton.click();
     }
 
-    // The page should NOT scroll immediately (it should still be 0)
     await page.waitForTimeout(100);
-    scrollY = await page.evaluate(() => window.scrollY);
-    expect(scrollY).toBe(0);
+    const earlyScrollY = await page.evaluate(() => window.scrollY);
+    expect(earlyScrollY).toBe(0);
 
-    // Particles should be in the DOM
-    const particles = page.locator('.animate-magic-burst');
     expect(await particles.count()).toBeGreaterThan(0);
 
-    // Wait for the animation duration (1250ms timeout).
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(1_500);
 
-    // Now the page should have scrolled down.
-    scrollY = await page.evaluate(() => window.scrollY);
-    expect(scrollY).toBeGreaterThan(0);
+    const finalScrollY = await page.evaluate(() => window.scrollY);
+    expect(finalScrollY).toBeGreaterThan(0);
+    expect(Math.abs(finalScrollY - targetScrollY!)).toBeLessThanOrEqual(2);
+    await expect(particles).toHaveCount(0);
 
     if (test.info().project.name.startsWith('mobile-')) {
-      // A native click activation after a completed touch sequence must remain
-      // valid. With the old frozen-Date.now() timestamp guard, this click would
-      // be incorrectly suppressed because its elapsed time would read as zero.
-      await page.evaluate(() => window.scrollTo(0, 0));
-      await page.waitForTimeout(10000); // Wait for 10s cooldown
-      await exploreButton.click();
-      await page.waitForTimeout(1500);
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.waitForFunction(() => window.scrollY === 0);
+
+      await expect.poll(async () => {
+        await exploreButton.click();
+        return particles.count();
+      }, {
+        timeout: EXPLORE_COOLDOWN_MS + 2_000,
+        intervals: [250],
+      }).toBeGreaterThan(0);
+
+      await page.waitForTimeout(1_500);
       const clickAfterTouchScrollY = await page.evaluate(() => window.scrollY);
       expect(clickAfterTouchScrollY).toBeGreaterThan(0);
 
-      // A subsequent real touch must also remain valid after the prior activation.
-      // The global page uses smooth scrolling, so temporarily force an immediate
-      // reset before reusing the original viewport coordinates for the tap.
       await page.evaluate(() => {
         document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
         window.scrollTo(0, 0);
@@ -174,12 +171,49 @@ test.describe("Homepage Visual", () => {
       await page.evaluate(() => {
         document.documentElement.style.removeProperty('scroll-behavior');
       });
-      await page.waitForTimeout(10000); // Wait for 10s cooldown
-      await page.touchscreen.tap(tapX, tapY);
-      await page.waitForTimeout(1500);
+
+      await expect.poll(async () => {
+        await page.touchscreen.tap(tapX, tapY);
+        return particles.count();
+      }, {
+        timeout: EXPLORE_COOLDOWN_MS + 2_000,
+        intervals: [250],
+      }).toBeGreaterThan(0);
+
+      await page.waitForTimeout(1_500);
       const secondTouchScrollY = await page.evaluate(() => window.scrollY);
       expect(secondTouchScrollY).toBeGreaterThan(0);
     }
+  });
+
+  test('explore luck scroll yields to user keyboard input', async ({ page }) => {
+    test.skip(test.info().project.name.startsWith('mobile-'), 'Keyboard interruption check is covered on desktop');
+
+    await page.addInitScript(() => {
+      window.matchMedia = (query) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => false,
+      } as any);
+    });
+
+    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+
+    const label = 'Explore your luck. Scroll down to the Lucky Meter.';
+    const exploreButton = page.locator(\`button[aria-label="\${label}"]\`);
+    await expect(exploreButton).toBeVisible();
+
+    await exploreButton.click();
+    await page.waitForTimeout(150);
+    await page.keyboard.press('Home');
+    await page.waitForTimeout(1_500);
+
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 
   test('footer and social touch targets stay enlarged without overlapping on mobile', async ({ page }) => {
@@ -243,5 +277,4 @@ test.describe("Homepage Visual", () => {
       }
     }
   });
-
 });
