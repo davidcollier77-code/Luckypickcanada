@@ -179,3 +179,12 @@
 - Provided the required remediation configurations (`v=spf1 include:amazonses.com ~all` and `v=DMARC1; p=none`) in the PR description.
 - Stopped execution before attempting unsupported modifications to the external Cloudflare DNS configuration, adhering to strict security and environment constraints.
 - Updated `pr_description.md` and `pr_summary.md` with the verified findings, remediation instructions, and compliance evidence.
+
+## 2026-10-03 — Security Headers Improvement (PR)
+
+- Addressed security scan findings by implementing missing HTTP security headers.
+- Analyzed the `Strict-Transport-Security` (HSTS) finding and verified that the application's `next.config.mjs` is already correctly configured with `max-age=63072000; includeSubDomains; preload`. The production discrepancy is confirmed to be an edge-level (Cloudflare) configuration override that must be resolved outside the codebase.
+- Added a robust `Content-Security-Policy` that allows required Next.js behavior, inline styles for Framer Motion, and `challenges.cloudflare.com` for the Turnstile integration, while blocking object execution and setting a strict base URI.
+- Added `Permissions-Policy` restricting `camera`, `microphone`, `geolocation`, and `payment`. Verified via codebase analysis that Stripe is implemented via checkout redirect, meaning the browser's Payment Request API is not used by the application directly.
+- Added `Cross-Origin-Opener-Policy: same-origin` to ensure cross-origin isolation.
+- Verified successful `pnpm run build` and Vitest execution (`npm run test`) to ensure the configuration is valid and application logic remains intact.

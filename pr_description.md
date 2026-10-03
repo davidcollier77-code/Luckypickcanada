@@ -1,34 +1,13 @@
-🛡️ Sentinel: [HIGH] Fix Root SPF and DMARC DNS Authentication
+🛡️ Sentinel: HIGH Security headers improvement
 
-This PR delivers the investigation and remediation instructions for the missing root-domain SPF and DMARC DNS authentication records for `luckypickcanada.ca`.
+- **Severity:** High
+- **Vulnerability:** Missing strict HTTP security headers including Content-Security-Policy, Permissions-Policy, Cross-Origin-Opener-Policy, and HSTS discrepancy.
+- **Impact:** Leaves the application susceptible to cross-site scripting (XSS), cross-site framing, unwanted access to device APIs, and insufficient transport security reinforcement on subdomains.
+- **Fix:** Implemented missing security headers in `next.config.mjs` matching the application's actual resource requirements, including an appropriate CSP that allows Cloudflare Turnstile, a restrictive Permissions-Policy, and COOP. Documented that HSTS is already configured securely in the codebase and any discrepancy is at the Cloudflare edge layer.
+- **Verification:** Verified successful Next.js build output, ensuring config validity. Verified via source code analysis that the application's Stripe integration redirects to checkout rather than using the browser Payment API, allowing safe restriction in Permissions-Policy. Verified CSP rules accommodate existing Turnstile requirements.
 
-**Severity:** High
-**Vulnerability:** Missing root SPF and DMARC records.
-**Impact:** Emails sent from root-domain addresses (e.g., `gifts@luckypickcanada.ca`) lack SPF authorization and DMARC alignment, leaving the domain vulnerable to spoofing and causing legitimate emails to be rejected or marked as spam by receiving mail servers.
-
-**Fix (External Action Required):**
-The domain's DNS is managed externally (Cloudflare), and the execution environment lacks the necessary authenticated access to apply DNS changes directly. The following records MUST be manually added to the Cloudflare DNS zone by the domain owner.
-
-**1. Root Domain SPF Record**
-- **Type**: `TXT`
-- **Name**: `@` (or `luckypickcanada.ca`)
-- **Value**: `v=spf1 include:amazonses.com ~all`
-- *Reason*: Authorizes Resend (via AWS SES) to send emails on behalf of the root domain. The codebase investigation confirmed that Resend is the exclusive outbound email provider for `@luckypickcanada.ca` addresses. No other providers (like Google) are used for sending.
-
-**2. DMARC Monitoring Record**
-- **Type**: `TXT`
-- **Name**: `_dmarc` (resolves to `_dmarc.luckypickcanada.ca`)
-- **Value**: `v=DMARC1; p=none;`
-- *Reason*: Establishes DMARC monitoring mode as recommended, avoiding abrupt mail rejections while satisfying health checks. No `rua` or `ruf` reporting destinations were added because no verified, deliverable addresses were provided.
-
-**Explicit Scope Boundaries Respected:**
-- **DKIM:** The existing Resend DKIM record at `resend._domainkey.luckypickcanada.ca` was verified and remains unchanged.
-- **Subdomain SPF:** The existing SES SPF record at `send.luckypickcanada.ca` was verified and remains unchanged.
-- **Other:** No other DNS, Cloudflare, application code, or infrastructure settings were modified.
-
-**Verification Performed:**
-- `dig TXT luckypickcanada.ca +short` confirmed no root SPF record exists.
-- `dig TXT _dmarc.luckypickcanada.ca +short` confirmed no DMARC record exists.
-- `grep` analysis of the codebase (`app/` and `functions/`) confirmed Resend is the sole outbound email sender.
-
-No application source files were changed.
+### Investigation Details
+- **Strict-Transport-Security (HSTS):** The `next.config.mjs` already defines `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`. The production discrepancy (reporting `max-age=15552000`) is verified to be a Cloudflare edge configuration overriding the origin headers. No codebase change is required for HSTS; the Cloudflare dashboard setting "HTTP Strict Transport Security (HSTS)" must be updated to align with the origin configuration.
+- **Permissions-Policy:** Verified that the frontend does not use `@stripe/stripe-js` to embed Stripe Elements. Payments are handled via redirect to a hosted checkout session (`checkout.stripe.com`). Therefore, `payment=()` is safe and has been applied alongside `camera=()`, `microphone=()`, and `geolocation=()`.
+- **Content-Security-Policy (CSP):** Implemented a robust CSP that allows Next.js functionality, inline styles for animations (Framer Motion), and `https://challenges.cloudflare.com` for the existing Cloudflare Turnstile integration.
+- **Cross-Origin-Opener-Policy (COOP):** Added `same-origin` to ensure the document is isolated from cross-origin windows.
