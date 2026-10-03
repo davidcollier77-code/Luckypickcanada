@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
 const COOLDOWN_MS = 10_000;
-const SCROLL_DURATION = 1_200;
+const SCROLL_DURATION = 1_500;
 const SCROLL_KEYS = new Set([
   'ArrowDown',
   'ArrowUp',
@@ -73,12 +73,12 @@ export default function ExploreLuckButton() {
     // Generate exactly 6 leaves.
     for (let i = 0; i < 6; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const velocity = Math.random() * 80 + 70; // 70-150px (increased distance)
+      const velocity = Math.random() * 90 + 90; // 90-180px
       newParticles.push({
         id: `leaf-${particleIdCounter.current++}`,
         type: 'leaf',
         x: Math.cos(angle) * velocity,
-        y: Math.sin(angle) * velocity + 60, // bias downwards
+        y: Math.sin(angle) * velocity + 70, // bias downwards
         rotation: Math.random() * 360,
         scale: Math.random() * 0.4 + 0.6,
         duration: SCROLL_DURATION / 1000,
@@ -88,12 +88,12 @@ export default function ExploreLuckButton() {
     // Generate exactly 12 confetti pieces.
     for (let i = 0; i < 12; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const velocity = Math.random() * 90 + 60; // 60-150px (increased distance)
+      const velocity = Math.random() * 100 + 80; // 80-180px
       newParticles.push({
         id: `confetti-${particleIdCounter.current++}`,
         type: 'confetti',
         x: Math.cos(angle) * velocity,
-        y: Math.sin(angle) * velocity + 80, // bias downwards more
+        y: Math.sin(angle) * velocity + 90, // bias downwards more
         rotation: Math.random() * 360,
         scale: Math.random() * 0.5 + 0.5,
         duration: SCROLL_DURATION / 1000,
@@ -109,7 +109,7 @@ export default function ExploreLuckButton() {
     const distance = targetY - startY;
     const startTime = performance.now();
 
-    const easeOutQuart = (progress) => 1 - Math.pow(1 - progress, 4);
+    const easeInOutCubic = (progress) => progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
     const removeInterruptListeners = () => {
       window.removeEventListener('wheel', handleUserInterrupt);
@@ -146,7 +146,7 @@ export default function ExploreLuckButton() {
     const scrollStep = (currentTime) => {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / SCROLL_DURATION, 1);
-      const easedProgress = easeOutQuart(progress);
+      const easedProgress = easeInOutCubic(progress);
 
       // Use explicit instant per-frame scrolling so the global smooth-scroll CSS cannot
       // restart a native animation on every animation frame.
