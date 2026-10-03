@@ -77,7 +77,7 @@ test.describe("Homepage Visual", () => {
     expect(snapshot1).not.toEqual(snapshot2);
   });
 
-  test('explore luck hit area sequences display before scrolling', async ({ page }) => {
+  test('explore luck hit area sequences display before scrolling', async ({ page }) => { test.setTimeout(60000);
     // Ensure we mock matchMedia to not prefer reduced motion so the animation plays
     await page.addInitScript(() => {
       window.matchMedia = (query) => ({
@@ -157,6 +157,7 @@ test.describe("Homepage Visual", () => {
       // valid. With the old frozen-Date.now() timestamp guard, this click would
       // be incorrectly suppressed because its elapsed time would read as zero.
       await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(10000); // Wait for 10s cooldown
       await exploreButton.click();
       await page.waitForTimeout(1500);
       const clickAfterTouchScrollY = await page.evaluate(() => window.scrollY);
@@ -173,6 +174,7 @@ test.describe("Homepage Visual", () => {
       await page.evaluate(() => {
         document.documentElement.style.removeProperty('scroll-behavior');
       });
+      await page.waitForTimeout(10000); // Wait for 10s cooldown
       await page.touchscreen.tap(tapX, tapY);
       await page.waitForTimeout(1500);
       const secondTouchScrollY = await page.evaluate(() => window.scrollY);

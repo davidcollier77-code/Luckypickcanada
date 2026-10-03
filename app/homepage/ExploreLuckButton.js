@@ -7,8 +7,10 @@ export default function ExploreLuckButton() {
   const [particles, setParticles] = useState([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const particleIdCounter = useRef(0);
-  const timeoutsRef = useRef(new Set());
-  const isAnimatingRef = useRef(false);
+    const isAnimatingRef = useRef(false);
+  const isCoolingDownRef = useRef(false);
+  const cooldownTimeoutRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -19,71 +21,105 @@ export default function ExploreLuckButton() {
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
-  useEffect(() => () => {
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current.clear();
+
+
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (cooldownTimeoutRef.current) {
+        clearTimeout(cooldownTimeoutRef.current);
+      }
+    };
   }, []);
 
-  const activateExplore = useCallback(() => {
-    if (isAnimatingRef.current) return;
+
+const activateExplore = useCallback(() => {
+    if (isAnimatingRef.current || isCoolingDownRef.current) return;
+
+    isCoolingDownRef.current = true;
+    if (cooldownTimeoutRef.current) {
+      clearTimeout(cooldownTimeoutRef.current);
+    }
+    cooldownTimeoutRef.current = setTimeout(() => {
+      isCoolingDownRef.current = false;
+    }, 10000); // 10 second cooldown
+
+    const luckyMeter = document.getElementById('lucky-meter');
+    if (!luckyMeter) return;
 
     if (prefersReducedMotion) {
-      const luckyMeter = document.getElementById('lucky-meter');
-      if (luckyMeter) {
-        luckyMeter.scrollIntoView({ behavior: 'auto' });
-      }
+      luckyMeter.scrollIntoView({ behavior: 'auto' });
       return;
     }
 
     isAnimatingRef.current = true;
 
     const newParticles = [];
+    const SCROLL_DURATION = 1200; // ms
+    const durationInSeconds = SCROLL_DURATION / 1000;
 
-    // Generate Leaves
-    for (let i = 0; i < 4; i++) {
+    // Generate exactly 6 Leaves
+    for (let i = 0; i < 6; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const velocity = Math.random() * 60 + 50; // 50-110px
+      const velocity = Math.random() * 80 + 70; // 70-150px (increased distance)
       newParticles.push({
         id: `leaf-${particleIdCounter.current++}`,
         type: 'leaf',
         x: Math.cos(angle) * velocity,
-        y: Math.sin(angle) * velocity + 50, // bias downwards
+        y: Math.sin(angle) * velocity + 60, // bias downwards
         rotation: Math.random() * 360,
         scale: Math.random() * 0.4 + 0.6,
-        duration: Math.random() * 0.3 + 0.9 // 0.9 - 1.2s
+        duration: durationInSeconds
       });
     }
 
-    // Generate Confetti
-    for (let i = 0; i < 10; i++) {
+    // Generate exactly 12 Confetti
+    for (let i = 0; i < 12; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const velocity = Math.random() * 70 + 40; // 40-110px
+      const velocity = Math.random() * 90 + 60; // 60-150px (increased distance)
       newParticles.push({
         id: `confetti-${particleIdCounter.current++}`,
         type: 'confetti',
         x: Math.cos(angle) * velocity,
-        y: Math.sin(angle) * velocity + 70, // bias downwards more
+        y: Math.sin(angle) * velocity + 80, // bias downwards more
         rotation: Math.random() * 360,
         scale: Math.random() * 0.5 + 0.5,
-        duration: Math.random() * 0.4 + 0.8 // 0.8 - 1.2s
+        duration: durationInSeconds
       });
     }
 
-    setParticles(prev => [...prev, ...newParticles]);
+    setParticles(newParticles); // Replaces any existing particles immediately
 
-    // Cleanup after max duration
-    const timerId = setTimeout(() => {
-      timeoutsRef.current.delete(timerId);
-      setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
-      isAnimatingRef.current = false;
+    // Calculate scroll target and distance
+    const startY = window.scrollY;
+    const rect = luckyMeter.getBoundingClientRect();
+    const targetY = startY + rect.top;
+    const distance = targetY - startY;
+    const startTime = performance.now();
 
-      // Re-query after the animation so a replaced Lucky Meter element is still targeted.
-      const luckyMeter = document.getElementById('lucky-meter');
-      if (luckyMeter) {
-        luckyMeter.scrollIntoView({ behavior: 'smooth' });
+    const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
+
+    const scrollStep = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / SCROLL_DURATION, 1);
+      const easedProgress = easeOutQuart(progress);
+
+      window.scrollTo(0, startY + distance * easedProgress);
+
+      if (progress < 1) {
+        animationFrameRef.current = requestAnimationFrame(scrollStep);
+      } else {
+        // Scroll exactly finished, clean up particles
+        setParticles([]);
+        isAnimatingRef.current = false;
+        animationFrameRef.current = null;
       }
-    }, 1250);
-    timeoutsRef.current.add(timerId);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(scrollStep);
+
   }, [prefersReducedMotion]);
 
   const handleClick = useCallback(() => {
@@ -105,7 +141,7 @@ export default function ExploreLuckButton() {
   }, [activateExplore]);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex h-[30%] min-h-24 max-h-40 items-end justify-center">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex h-[30%] min-h-24 max-h-[300px] items-end justify-center">
       <button
         type="button"
         onClick={handleClick}

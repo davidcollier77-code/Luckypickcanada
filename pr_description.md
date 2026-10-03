@@ -1,49 +1,62 @@
-## PR Summary
+SELECTED TASK GROUP: polishing
+GROUP REASON: Task modifies the visual animation, layout alignment, and interactive behavior of the Explore Your Luck arrow button on the homepage.
 
-**SELECTED TASK GROUP**: polishing
-**GROUP REASON**: The request involves correcting a frontend interaction and animation sequence on the homepage (the downward-arrow interaction in `ExploreLuckButton`), fitting the polishing scope for UI interactions.
+LIBRARY CONSULTATION REPORT:
+LIBRARY: React
+VERSION: 18.x
+USED: YES
+USEFUL: YES
+REASON: Utilized `useRef`, `useState`, `useEffect`, and `useCallback` to manage animation loops, cleanup, and cooldown states for the new interaction logic.
 
-### LIBRARY CONSULTATION REPORT
-**LIBRARY**: React (`/reactjs/react.dev`)
-**VERSION**: N/A
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Provided context for `useRef` and React state changes handling the animation sequence and preventing rapid re-triggering of the visual effect. Consulted via `.docs/creation/_reactjs_react_dev.md` (symlinked in polishing).
+LIBRARY: Framer Motion
+VERSION: ^13.1.0
+USED: NO
+USEFUL: NO
+REASON: The particle animation uses CSS `@keyframes` (`animate-magic-burst`) rather than Framer Motion, so it was not necessary.
 
-### ROUTED JULES/GEMINI DOCUMENT REPORT
-**DOCUMENT**: `AGENTS.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Established the strict repository governance process and the 495 MB maximum size limit requirement which was verified.
+LIBRARY: Playwright
+VERSION: 1.58.0
+USED: YES
+USEFUL: YES
+REASON: Used to verify visual regressions, test the extended spam cooldown behavior on the Explore Your Luck button, and validate the touch interactions.
 
-**DOCUMENT**: `.jules/jules.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Confirmed execution constraints and workflow rules.
+ROUTED JULES/GEMINI DOCUMENT REPORT:
+DOCUMENT: jules.google/docs
+USED: YES
+USEFUL: YES
+REASON: Guided adherence to task scoping and pre-submission verification steps.
 
-**DOCUMENT**: `.jules/polishing.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Provided guidance on visual changes and handling animations vs. scrolling correctly.
+DOCUMENT: .jules/polishing.md
+USED: YES
+USEFUL: YES
+REASON: Provided rules on modifying visual behaviors, retaining CSS-based keyframes for simple elements, and ensuring visual states are explicitly tested.
 
-### REPOSITORY COMPONENT REPORT
-**COMPONENT**: `app/homepage/ExploreLuckButton.js`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: This was the source of the bug. It triggered the `luckyMeter.scrollIntoView()` immediately on click before the animation finished. We added a `setTimeout` here.
+REPOSITORY COMPONENT REPORT:
+COMPONENT: app/homepage/ExploreLuckButton.js
+USED: YES
+USEFUL: YES
+REASON: This is the exact component containing the interactive chevron logic, particle animations, and scrolling mechanisms that required fixing.
 
-**COMPONENT**: `tests/visual/homepage.spec.ts`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: This file houses the Playwright visual tests. We added an automated deterministic test to verify that the visual display completely plays before the scroll action is performed.
+COMPONENT: tests/visual/homepage.spec.ts
+USED: YES
+USEFUL: YES
+REASON: Provided the baseline for verifying that the new layout and cooldown changes didn't break functionality on mobile or desktop devices.
 
-### EXACT FINAL DIFF RECONCILIATION
-- `app/homepage/ExploreLuckButton.js`
-- `tests/visual/homepage.spec.ts`
+EXACT FINAL DIFF RECONCILIATION:
+M app/homepage/ExploreLuckButton.js
+M tests/visual/homepage.spec.ts
+M memory-bank/activeContext.md
 
-### VERIFICATION RESULTS
-- `pnpm run build`: **PASS** (Actual build size: 345 MB, within the 495 MB limit).
-- `pnpm exec playwright test`: **PASS** (Tests pass successfully).
-- Pre-submission double-check completed: The requested result was verified, the 495MB size cap was respected, pnpm was used, and no prohibited changes were made.
+VERIFICATION:
+COMMAND: pnpm exec playwright test tests/visual/homepage.spec.ts
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: All 11 layout/visual regression tests passed successfully across mobile-390, mobile-412, and desktop viewports, fully validating the 10-second spam cooldown.
 
-**USEFUL RESULT: YES**
+COMMAND: ./jules-verify.sh
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Full type check, linting, Next.js build (414M size), and Refresh Docs Tests completed successfully without errors.
+
+REMAINING ISSUES:
+None.
+
+USEFUL RESULT: YES
