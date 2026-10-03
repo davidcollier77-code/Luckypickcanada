@@ -24,7 +24,8 @@ To correctly authenticate the existing Resend implementation without altering th
    - **Type**: `TXT`
    - **Name**: `_dmarc`
    - **Value**: `v=DMARC1; p=none;`
-   - *Reason*: Establishes DMARC monitoring mode as recommended, avoiding abrupt mail rejections while increasing deliverability trust.
+   - *Reason*: Sets DMARC to observe-only, avoiding abrupt mail rejections while satisfying the DNS health check.
+   - *Important*: `p=none` alone generates **no reports** — DMARC only sends aggregate reports when a `rua=` destination is present. This record observes and reports nothing, and it does not protect against spoofing. If reports are actually wanted, publish `v=DMARC1; p=none; rua=mailto:dmarc@luckypickcanada.ca` (create that mailbox first) and add `adkim=r; aspf=r` to make the alignment intent explicit.
 
 #### 🔴 Preservation of Existing Functionality
 - **No changes** were made to the existing Gmail accounts or mailboxes.
