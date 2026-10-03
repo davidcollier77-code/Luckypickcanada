@@ -188,3 +188,13 @@
 - Added `Permissions-Policy` restricting `camera`, `microphone`, `geolocation`, and `payment`. Verified via codebase analysis that Stripe is implemented via checkout redirect, meaning the browser's Payment Request API is not used by the application directly.
 - Added `Cross-Origin-Opener-Policy: same-origin` to ensure cross-origin isolation.
 - Verified successful `pnpm run build` and Vitest execution (`npm run test`) to ensure the configuration is valid and application logic remains intact.
+
+## 2026-10-03 — Security Headers CSP Hardening (PR #1356 Review Fixes)
+
+- Responded to five unresolved bot review comments on PR #1356. All five threads were open, contained no reply from the PR author, and none were written by the author, so all qualified for action.
+- Audited the shipped `Content-Security-Policy` against actual call sites before changing anything. Confirmed `'unsafe-eval'` had no consumer: zero `eval(` and zero `new Function(` in app code, and the only dynamic `<script>` insertion (`app/turnstile-field.js:40`) loads an external `challenges.cloudflare.com` URL that the policy already allows by host.
+- Split `script-src` on `NODE_ENV` so production ships without `'unsafe-eval'` while `next dev` keeps it for the webpack source-map/HMR path. Verified the split by evaluating the config under both `NODE_ENV` values and inspecting the resolved header value.
+- Added `frame-ancestors 'none'` so the framing protection the PR description claims is actually expressed in CSP. Verified safe: zero `<iframe>`, `<object>`, or `<embed>` in the repo, and nothing frames this site. `X-Frame-Options: SAMEORIGIN` already blocked all cross-origin framing, so the only behavioural delta is same-origin framing, which nothing uses.
+- Added `media-src 'self' data:` to unblock the base64 audio fallback at `components/LuckyMeterButton.tsx:17`, which was being blocked by the `default-src 'self'` fallback exactly when the fallback was needed.
+- Declined the reviewer's suggested nonce/`strict-dynamic` rewrite. It requires creating a new `middleware.ts`, which is a protected file gated on explicit human authorization (`.github/workflows/protected-files.yml`), and a static `headers()` array cannot emit a per-request nonce. `'unsafe-inline'` remains load-bearing for the App Router's inline RSC flight-data scripts.
+- Open item not addressed, because no review comment covered it and it falls outside this review-fix scope: the policy's `img-src` omits `https://images.pexels.com`, which is used as the fixed full-viewport `.homepage-sky-backdrop` background at `themes/default/homepage.css:483` and `public/themes/default/homepage.css:483`. That background is blocked by this PR's CSP and needs either the host added to `img-src` or the asset self-hosted.
