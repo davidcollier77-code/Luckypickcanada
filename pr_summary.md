@@ -105,25 +105,30 @@ REASON: Not opened. No WebKit-specific behaviour was changed or analysed.
 
 ## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
 
-DOCUMENT: jules.google/docs
+DOCUMENT: .jules/troubleshooting.md
 USED: YES
 USEFUL: YES
-REASON: Guided tool usage and system navigation.
+REASON: The selected task-group document. It routed the four mandatory standing resources and the 13 approved libraries, and its rule that `.docs/` is READ-ONLY is why the DNS records are delivered as manual instructions instead of edited files.
 
-DOCUMENT: developers.google.com/jules/api
-USED: YES
-USEFUL: YES
-REASON: API usage constraints.
-
-DOCUMENT: /google-gemini/gemini-cli
-USED: YES
+DOCUMENT: .docs/troubleshooting/jules_google_docs.md (jules.google/docs)
+USED: NO
 USEFUL: NO
-REASON: No CLI operations required.
+REASON: Not opened. No Jules agent run or Jules tooling was needed for a DNS record analysis.
 
-DOCUMENT: /websites/ai_google_dev_gemini-api
-USED: YES
+DOCUMENT: .docs/troubleshooting/developers_google_com_jules_api.md (developers.google.com/jules/api)
+USED: NO
 USEFUL: NO
-REASON: No API operations required.
+REASON: Not opened. The Jules API was not called.
+
+DOCUMENT: .docs/troubleshooting/_google-gemini_gemini-cli.md (/google-gemini/gemini-cli)
+USED: NO
+USEFUL: NO
+REASON: Not opened. No Gemini CLI operation was required.
+
+DOCUMENT: .docs/troubleshooting/_websites_ai_google_dev_gemini-api.md (/websites/ai_google_dev_gemini-api)
+USED: NO
+USEFUL: NO
+REASON: Not opened. No Gemini API call was required.
 
 ## 4. REPOSITORY COMPONENT REPORT — REQUIRED
 
