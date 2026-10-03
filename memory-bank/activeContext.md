@@ -1,3 +1,24 @@
+## 2026-10-03 — PR #1347 Review Fix — Explore Your Luck Scroll Reliability
+- Repaired the rAF scroll loop so each frame uses explicit `behavior: 'instant'` scrolling, preventing the global `scroll-behavior: smooth` rule from restarting a native animation on every frame.
+- Moved the 10-second cooldown initialization until after `#lucky-meter` is confirmed to exist, so a missing target does not unnecessarily lock the control.
+- Added user-interruption handling for wheel, touchstart/touchmove, and scrolling keyboard input; interruption cancels the rAF loop, clears particles, and returns scroll control to the user.
+- Cleaned formatting and stale test comments, replaced fixed cooldown sleeps with polling, and changed the early-scroll assertion to match the intended synchronized animation.
+- Added a desktop regression test proving keyboard scroll input can interrupt the synchronized animation.
+
+## 2026-10-03 — PR #1347 Review Fix — Explore Your Luck Scroll Reliability
+- Repaired the rAF scroll loop so each frame uses explicit `behavior: 'instant'` scrolling, preventing the global `scroll-behavior: smooth` rule from restarting a native animation on every frame.
+- Moved the 10-second cooldown initialization until after `#lucky-meter` is confirmed to exist, so a missing target does not unnecessarily lock the control.
+- Added user-interruption handling for wheel, touchstart/touchmove, and scrolling keyboard input; interruption cancels the rAF loop, clears particles, and returns scroll control to the user.
+- Cleaned formatting and stale test comments, and replaced fixed cooldown sleeps in repeat-activation checks with polling.
+- Added a desktop regression test proving keyboard scroll input can interrupt the synchronized animation.
+
+## 2026-10-02 — Explore Your Luck Interaction Polish & Spam Protection
+- **Hit Area Fix:** Increased the `max-h` constraint on the Explore Your Luck button wrapper from `160px` to `300px` (`max-h-[300px]`) to ensure the invisible touch target accurately aligns over the higher golden chevrons in the responsive background image.
+- **Particle Refinement:** Adjusted the `activateExplore` function to generate exactly 6 maple leaves and 12 confetti particles. Increased particle velocity slightly for a wider, more satisfying burst.
+- **Scroll Sync:** Replaced `element.scrollIntoView` with a custom smooth scroll powered by `requestAnimationFrame`. This perfectly matches the 1.2s scroll duration with the 1.2s particle animation length, allowing particles to cleanly disappear the moment the scroll stops.
+- **Spam Protection:** Added a 10-second interaction cooldown to the button using `useRef` checks, protecting it against duplicate or chaotic activations while an animation/scroll is running or cooling down.
+- **Testing:** Playwright visual and interaction test suites have been successfully updated to await the new 10-second spam cooldown when verifying subsequent touch/click capabilities. Build sizes remain under the strict 495MB limit.
+
 ## 2026-10-02 — PR #1345 Documentation Integrity Correction
 
 - Documentation integrity follow-up: removed the unsupported ExploreLuckButton 0px-width justification from the canonical PR Summary and preserved the verified footer repair.
