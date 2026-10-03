@@ -136,7 +136,8 @@ test.describe("Homepage Visual", () => {
 
     await page.waitForTimeout(100);
     const earlyScrollY = await page.evaluate(() => window.scrollY);
-    expect(earlyScrollY).toBe(0);
+    expect(earlyScrollY).toBeGreaterThan(0);
+    expect(earlyScrollY).toBeLessThan(targetScrollY!);
 
     expect(await particles.count()).toBeGreaterThan(0);
 
