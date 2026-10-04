@@ -1,0 +1,1 @@
+Perf: Mitigate lighthouse warnings and console errors
