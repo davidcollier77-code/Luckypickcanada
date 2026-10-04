@@ -9,3 +9,14 @@
 - Implemented a debounce wrapper on `handleResize` in `app/homepage/HomePage.js` to avoid resize-triggered performance spikes/jank when calculating visual viewport bounds.
 - Recreated missing visual snapshots (`pnpm exec playwright test tests/visual/homepage.spec.ts --update-snapshots`) to reflect new WebP LCP rendering bounds and behavior.
 - Successfully built app (495MB limit respected - build footprint is unchanged at ~300MB node_modules and output). All static checks (`pnpm run build`, `./jules-verify.sh`, `vitest run`) pass correctly.
+- Fixed a `LazyLoadImageIssue` DevTools warning on mobile by removing `loading="lazy"` from `communityCover` in `app/homepage/HomePage.js`. Verified `CookieIssue` was external.
+
+## 2026-10-04 — Mobile LCP and Render-Blocking Optimization
+- Optimized Mobile LCP and Render-Blocking resources. Replaced the render-blocking Google Fonts `<link rel="stylesheet">` in `app/layout.js` with `next/font/google` for non-blocking typography delivery.
+- Fixed the primary LCP issue by scaling down the unoptimized `3840px` width Pexels CSS background image used on the homepage to `1920w` for desktop and `1200w` for mobile via media queries.
+- Re-routed the `--lpc-display` / `--lpc-body` typography tokens in `default.css` to the injected Next font variables, and removed the Google Fonts `@import` from `index.css`.
+- Moved the `next/font` variable classNames onto the `<html>` element so `--font-*` is defined where `--lpc-*` is computed, keeping the font variables resolvable.
+- Restored the `<link rel="stylesheet">` theme delivery in `<head>` and removed the `import '../public/themes/default/index.css'` bundler import, per `QUICK_FIX_GUIDE.md` and `CSS_FIX_GUIDE.md`.
+- Mirrored the `default.css`, `homepage.css`, and `index.css` edits into the `themes/default/` source copies so the documented copy step cannot revert them.
+- Reverted the auto-generated `next-env.d.ts` to the build-variant `.next/types/...` paths so the committed type references exist on the deploy path.
+- Build size (385MB) remained well below limits and local Playwright regression tests passed successfully.

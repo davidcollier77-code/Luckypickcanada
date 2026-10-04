@@ -128,11 +128,7 @@ test.describe("Homepage Visual", () => {
     });
     expect(targetScrollY).not.toBeNull();
 
-    if (test.info().project.name.startsWith('mobile-')) {
-      await page.touchscreen.tap(tapX, tapY);
-    } else {
-      await exploreButton.click();
-    }
+    await exploreButton.click();
 
     await page.waitForTimeout(300);
     const earlyScrollY = await page.evaluate(() => window.scrollY);
