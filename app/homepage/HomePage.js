@@ -255,9 +255,13 @@ export default function HomePage() {
     };
 
     draw();
+    let resizeTimeout;
     const handleResize = () => {
-      resizeCanvas();
-      if (reducedMotion) draw();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        resizeCanvas();
+        if (reducedMotion) draw();
+      }, 200);
     };
     window.addEventListener('resize', handleResize);
 
@@ -265,6 +269,7 @@ export default function HomePage() {
       window.removeEventListener('resize', handleResize);
       clearTimeout(shootingStarTimeout);
       clearTimeout(doubleStarTimeout);
+      if (typeof resizeTimeout !== 'undefined') clearTimeout(resizeTimeout);
 
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);

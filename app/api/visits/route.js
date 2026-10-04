@@ -7,10 +7,14 @@ import { Redis } from '@upstash/redis';
 // Initialize Redis client lazily to prevent startup crashes
 function getRedisClient() {
   try {
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+      console.warn('Redis connection not configured. Using fallback.');
+      return null;
+    }
     return Redis.fromEnv();
   } catch (error) {
-    console.error('Redis initialization failed:', error);
-    throw new Error('Redis connection not configured');
+    console.warn('Redis initialization failed:', error.message);
+    return null;
   }
 }
 
@@ -26,11 +30,15 @@ export async function POST(req) {
     }
 
     const redis = getRedisClient();
+    if (!redis) {
+      return NextResponse.json({ visits: 0 }); // Graceful fallback
+    }
     const visits = await redis.incr('total_visits');
     return NextResponse.json({ visits });
   } catch (error) {
     console.error('Error incrementing visits:', error);
-    return NextResponse.json({ error: 'Failed to update visits' }, { status: 500 });
+    // Don't return 500 which causes client errors, just return a fallback
+    return NextResponse.json({ visits: 0, warning: 'Failed to update visits' }, { status: 200 });
   }
 }
 
@@ -38,10 +46,14 @@ export async function POST(req) {
 export async function GET(req) {
   try {
     const redis = getRedisClient();
+    if (!redis) {
+      return NextResponse.json({ visits: 0 }); // Graceful fallback
+    }
     const visits = await redis.get('total_visits') || 0;
     return NextResponse.json({ visits: parseInt(visits, 10) });
   } catch (error) {
     console.error('Error fetching visits:', error);
-    return NextResponse.json({ error: 'Failed to fetch visits' }, { status: 500 });
+    // Don't return 500 which causes client errors, just return a fallback
+    return NextResponse.json({ visits: 0, warning: 'Failed to fetch visits' }, { status: 200 });
   }
 }

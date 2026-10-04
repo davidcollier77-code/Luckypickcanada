@@ -4,7 +4,7 @@ import './globals.css';
 
 // Use Next.js build ID for cache-busting, automatically updated on each build
 // This ensures CSS cache invalidation without manual version bumps
-const buildId = process.env.CF_PAGES_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.BUILD_ID || crypto.randomUUID();
+const buildId = process.env.CF_PAGES_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.BUILD_ID || "default-build";
 const cssPath = `/themes/default/index.css?v=${buildId}`;
 
 const siteUrl = 'https://luckypickcanada.ca';
@@ -59,7 +59,7 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
-        <link rel="preload" href="/BackgroundEraser_20260724_163638777.png" as="image" fetchPriority="high" />
+        <link rel="preload" href="/homepage-hero-lucky-pick-canada.webp" as="image" fetchPriority="high" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
