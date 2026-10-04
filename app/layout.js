@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import './globals.css';
-import '../public/themes/default/index.css';
 import { Inter, Playfair_Display, Cinzel, Manrope } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
