@@ -1,13 +1,22 @@
-🛡️ Sentinel: HIGH Security headers improvement
+## Description
 
-- **Severity:** High
-- **Vulnerability:** Missing strict HTTP security headers including Content-Security-Policy, Permissions-Policy, Cross-Origin-Opener-Policy, and HSTS discrepancy.
-- **Impact:** Leaves the application susceptible to cross-site scripting (XSS), cross-site framing, unwanted access to device APIs, and insufficient transport security reinforcement on subdomains.
-- **Fix:** Implemented missing security headers in `next.config.mjs` matching the application's actual resource requirements, including an appropriate CSP that allows Cloudflare Turnstile, a restrictive Permissions-Policy, and COOP. Documented that HSTS is already configured securely in the codebase and any discrepancy is at the Cloudflare edge layer. Updated Playwright visual baselines to match the production build output. Adjusted the Playwright test's scroll detection threshold from 100ms to 300ms to accommodate the smoother `easeInOutCubic` easing curve introduced in a recent commit.
-- **Verification:** Verified successful Next.js build output, ensuring config validity. Verified via source code analysis that the application's Stripe integration redirects to checkout rather than using the browser Payment API, allowing safe restriction in Permissions-Policy. Verified CSP rules accommodate existing Turnstile requirements. Playwright visual tests have been successfully re-run locally to update baselines and stabilize test execution.
+This PR fully implements the three reported mobile Speed Analyzer findings regarding the Lucky Pick Canada homepage, establishing actual root causes and resolving them appropriately in the current codebase context.
 
-### Investigation Details
-- **Strict-Transport-Security (HSTS):** The `next.config.mjs` already defines `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`. The production discrepancy (reporting `max-age=15552000`) is verified to be a Cloudflare edge configuration overriding the origin headers. No codebase change is required for HSTS; the Cloudflare dashboard setting "HTTP Strict Transport Security (HSTS)" must be updated to align with the origin configuration.
-- **Permissions-Policy:** Verified that the frontend does not use `@stripe/stripe-js` to embed Stripe Elements. Payments are handled via redirect to a hosted checkout session (`checkout.stripe.com`). Therefore, `payment=()` is safe and has been applied alongside `camera=()`, `microphone=()`, and `geolocation=()`.
-- **Content-Security-Policy (CSP):** Implemented a robust CSP that allows Next.js functionality, inline styles for animations (Framer Motion), and `https://challenges.cloudflare.com` for the existing Cloudflare Turnstile integration.
-- **Cross-Origin-Opener-Policy (COOP):** Added `same-origin` to ensure the document is isolated from cross-origin windows.
+**1. SPEED INDEX:**
+- **Finding/Baseline:** Speed index was exceptionally high. A major cause was the cache-busting behavior for `app/layout.js` which used `crypto.randomUUID()` when environment variables were not available, forcing the CSS to be re-downloaded constantly on every page load in some environments. Additionally, an unused image (`BackgroundEraser_20260724_163638777.png`) was aggressively preloaded with `fetchPriority="high"`, stealing bandwidth from critical path resources.
+- **Fix:** Swapped `crypto.randomUUID()` for a deterministic `"default-build"` fallback to preserve CSS cacheability. Removed the incorrect `BackgroundEraser` preload, and added an optimized preload for the hero image.
+
+**2. LCP (Largest Contentful Paint):**
+- **Finding/Baseline:** LCP was extremely long. The hero element is a 2MB `homepage-hero-lucky-pick-canada.png` asset. Due to Next.js image optimization being bypassed (`unoptimized: true` in `next.config.mjs` for Cloudflare compatibility), the raw 2MB file was served directly to mobile devices.
+- **Fix:** Converted the 2MB PNG to a 300KB WebP (`homepage-hero-lucky-pick-canada.webp`). Updated `app/homepage/Hero.js` to reference the WebP. Added a `fetchPriority="high"` preload to `app/layout.js` specifically for this new asset. This cuts the critical payload by ~85%.
+
+**3. BROWSER CONSOLE ERRORS:**
+- **Finding/Baseline:** `/api/visits` was throwing a 500 server error when the Upstash Redis environment variables were not populated, leading to visible client-side console errors on every load. `HomePage.js` had potential errors related to `handleResize`.
+- **Fix:** Refactored `app/api/visits/route.js` to gracefully fall back and return a default `{ visits: 0 }` response when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are missing, instead of failing with a 500. Additionally, wrapped the `handleResize` function in `app/homepage/HomePage.js` in a 200ms `setTimeout` debounce to mitigate frantic canvas recalibrations.
+
+**Visuals & Boundaries:**
+- Verified that the high-definition Milky Way background is fully preserved and un-altered.
+- Verified that Aurora was not reintroduced.
+- Verified that shooting star behavior functions correctly without interference.
+- Maintained all existing interaction sequences and visual coverage.
+- Build remains well under the 495MB safety ceiling. Playwright visual tests and Vitest passing.

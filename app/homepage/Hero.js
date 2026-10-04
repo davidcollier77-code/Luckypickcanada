@@ -61,7 +61,7 @@ export default function Hero() {
             <div className="relative w-full hero-image-container flex items-center justify-center pointer-events-none">
               <Image
                 className="pointer-events-none object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] relative z-10"
-                src="/homepage-hero-lucky-pick-canada.png"
+                src="/homepage-hero-lucky-pick-canada.webp"
                 alt="Lucky Pick Canada Hero Composition"
                 fill
                 sizes="(max-width: 768px) 100vw, 1100px"
