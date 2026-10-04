@@ -106,6 +106,7 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: dev](https://neon.com/docs/cli/dev.md): Run Neon Functions locally with a dev server
 - [Neon CLI command: diff](https://neon.com/docs/cli/diff.md): Show a git-style schema diff between two branches
 - [Neon CLI command: env](https://neon.com/docs/cli/env.md): Manage a branch's Neon environment variables locally
+- [Neon CLI command: feedback](https://neon.com/docs/cli/feedback.md): Send feedback about the Neon CLI and docs to the Neon team
 - [Neon CLI command: functions](https://neon.com/docs/cli/functions.md): Deploy, list, inspect, and delete Neon Functions, and manage their custom domains
 - [Neon CLI command: git](https://neon.com/docs/cli/git.md): Keep your Neon branch in sync with the git branch you have checked out
 - [Neon CLI command: init](https://neon.com/docs/cli/init.md): Set up the current directory for Neon with agent tooling, a linked project, and an optional neon.ts config
@@ -115,7 +116,7 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: login](https://neon.com/docs/cli/login.md): Authenticate to Neon via browser or API key and manage credentials
 - [Neon CLI command: logs](https://neon.com/docs/cli/logs.md): Query the logs a branch's services emit
 - [Neon CLI command: mcp](https://neon.com/docs/cli/mcp.md): Install the Neon MCP Server into your coding agents
-- [Neon CLI command: me](https://neon.com/docs/cli/me.md): View current user info, login details, and project limits
+- [Neon CLI command: me](https://neon.com/docs/cli/me.md): View the authenticated user and login details
 - [Neon CLI command: neon-auth](https://neon.com/docs/cli/neon-auth.md): Manage Managed Better Auth from the CLI
 - [Neon CLI command: open](https://neon.com/docs/cli/open.md): Open the linked project in the Neon Console in your browser
 - [Neon CLI command: operations](https://neon.com/docs/cli/operations.md): List and manage long-running operations for a Neon project

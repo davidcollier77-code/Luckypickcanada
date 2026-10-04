@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-02T15:27:03-03:00",
+  "lastUpdated": "2026-10-04T09:10:44-03:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -418,21 +418,21 @@
     "/websites/web_dev_images"
   ],
   "githubShas": {
-    "/github/docs": "d42e9e69399ef977beb99c123363db149d6cf81e",
-    "/vercel/next.js": "4b85c8b6dd67cb041fa05d51bde5b4539f3b9c0e",
+    "/github/docs": "2bd66de8cea336061c9ea060c9b37385136e6ab3",
+    "/vercel/next.js": "ba80ee48fc319735151c3ad6d9bb9a8180c9f09e",
     "/reactjs/react.dev": "8c68ae8d2410abe59f351195780c6f8ea9f50904",
-    "/microsoft/typescript": "efbf3b5067547539c9cf8331d51943543c8bc91a",
-    "/lucide-icons/lucide": "8a26c9eaa54fd5dfb82ddfdf346e4b26ee3546a1",
+    "/microsoft/typescript": "50d70a3f5f453a79a4323b263165da51f656a4e3",
+    "/lucide-icons/lucide": "500620a2e8123f8d1db191538886dc0c223f69a9",
     "/react-hook-form/documentation": "3ac1fe0254947748d993cd4b1915fc5dea87ba8b",
     "/react-hook-form/resolvers": "8d088d4e022bb6e86ce100769379e2f3ae6f6902",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
-    "/bvaughn/react-error-boundary": "f6b6dd27f9099ee4fd517d1e92a23673f922d387",
+    "/bvaughn/react-error-boundary": "1f1387e47c8dc3eb4431c0704fb336438ec2a997",
     "/google-gemini/gemini-cli": "fb972b2f87fe7d5b06d37eac711490162d98de2c",
-    "/cloudflare/cloudflare-docs/turnstile": "1359190d9f6ca17ff7dd49ea81d17dfdaae3a426",
-    "/cloudflare/cloudflare-docs/pages": "1359190d9f6ca17ff7dd49ea81d17dfdaae3a426",
+    "/cloudflare/cloudflare-docs/turnstile": "e43015cd6cddad3ee1c0fa087c4d5022e65e7c98",
+    "/cloudflare/cloudflare-docs/pages": "e43015cd6cddad3ee1c0fa087c4d5022e65e7c98",
     "/dequelabs/axe-core": "f59642eddf14c93ae3c9c31d69bcd611229bedb4",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
-    "/microsoft/playwright": "a47fcf59c87a1b06a7439ce0c7ffe491d8cba513",
+    "/microsoft/playwright": "7ad3fba1aad9471c7e46d67a11b0e710a5d77ea8",
     "/vitest-dev/vitest": "964e1a4404c31bf8fd37cb05ea0095483b506802",
     "/colinhacks/zod": "0b216ef674e297ebe41d8bf902262e56f8755822",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
@@ -440,10 +440,10 @@
     "/coreyhaines31/marketingskills": "0023b8cae6ab3d0da26d978994c1d60feb4d9383",
     "/opennextjs/opennextjs-cloudflare": "dd912000e5757ca60a0aae3a3d7df2e63ab46cb8",
     "/opennextjs/docs": "c50ac62fcb2aec0904d6b58cdd523e2050c8de69",
-    "/cloudflare/workers-sdk": "22dbde63a5726ba5d17c15270db0b11b50122b79",
+    "/cloudflare/workers-sdk": "f025bbfddcdab0193bffffc9fe5a9bf143f2fa65",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
     "/upstash/docs": "e0eef6bfcb886fd139c15102f4fb30b04b10d111",
-    "/getsentry/sentry-docs": "c1a64e545be5305084c007d78908ed8b98dbf5c2",
+    "/getsentry/sentry-docs": "a083b427165113e89904071c8674a58249e2cff4",
     "/pmndrs/react-three-fiber": "d604b18bbda025d9ca682efb322cc76b99350e52",
     "/magicuidesign/magicui": "d7207e5692d14c00dceafa8488d6d01f197fa0e4",
     "/marsidev/react-turnstile": "2be6ab9a5570b9edc3edd91f73531fc2e9d11251",
@@ -451,7 +451,8 @@
     "/upstash/ratelimit": "89c481bf3b836a1ef5454c0615bc201e6386826b",
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
     "/resend/resend-node": "7388c5f17d0514d717d58b84d51addad5b769aa1",
-    "/python-pillow/Pillow": "0be6beda0b70a80dc083265f2606b31ba6cc1e88",
-    "/numpy/numpy": "6acfb88f0b1a3606ec73a382dddf9696272a175f"
+    "/python-pillow/Pillow": "dc95da20207827a062cfbf551ee9f6031465a8bb",
+    "/numpy/numpy": "2f1eca306857b641fb0fef0ab854a2d4137e1581",
+    "/lovell/sharp": "6cd2eb1141809280fcb938d75bfa1cab4df162ad"
   }
 }
