@@ -17,3 +17,5 @@
 - Reduced unused JavaScript and render-blocking CSS warnings in Lighthouse/PageSpeed audits for the mobile configuration.
 - Refactored `TurnstileField` to use `next/script` for reliable initialization.
 - Secured rate-limiting paths using distributed Redis state.
+
+- **Redis spam protection resilience**: Added operation failure handling and atomic counter expiry in `app/spam-protection.js`; verified outage/limit/duplicate behavior with 15 regression tests and counter TTL/concurrency behavior against local Redis.
