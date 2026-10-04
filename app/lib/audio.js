@@ -5,6 +5,7 @@ const audioCache = {};
  * reusing the cached sound instance. Does nothing when called on the server.
  *
  * @returns {Promise<void>} Resolves after requesting playback, not when playback ends.
+ * Rejects on import failure or a synchronous error during sound creation or playback.
  */
 export async function playButtonClick() {
   if (typeof window === 'undefined') return;
