@@ -1,5 +1,11 @@
 const audioCache = {};
 
+/**
+ * Plays the button-click sound in the browser, loading Howler on demand and
+ * reusing the cached sound instance. Does nothing when called on the server.
+ *
+ * @returns {Promise<void>} Resolves after requesting playback, not when playback ends.
+ */
 export async function playButtonClick() {
   if (typeof window === 'undefined') return;
 
