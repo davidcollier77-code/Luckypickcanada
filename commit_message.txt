@@ -1,0 +1,3 @@
+Perf: Mitigate lighthouse warnings and console errors
+
+Addresses remaining lighthouse issues by removing unused javascript from initial render via ssr:false in dynamic imports. Fixes console logging warnings when third party redis is missing. Resolves network request critical paths by preloading fonts and removing extra connection handshakes.
