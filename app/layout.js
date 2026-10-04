@@ -1,18 +1,12 @@
 import Link from 'next/link';
 import './globals.css';
+import '../public/themes/default/index.css';
 import { Inter, Playfair_Display, Cinzel, Manrope } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
 const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap', variable: '--font-playfair' });
 const cinzel = Cinzel({ subsets: ['latin'], display: 'swap', variable: '--font-cinzel', weight: ['600', '700', '800', '900'] });
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-manrope', weight: ['400', '500', '600', '700', '800'] });
-
-
-
-// Use Next.js build ID for cache-busting, automatically updated on each build
-// This ensures CSS cache invalidation without manual version bumps
-const buildId = process.env.CF_PAGES_COMMIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || process.env.BUILD_ID || "default-build";
-const cssPath = `/themes/default/index.css?v=${buildId}`;
 
 const siteUrl = 'https://luckypickcanada.ca';
 const socialImage = '/1785347037732.png';
@@ -61,7 +55,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en-CA" className={`m-0 p-0 ${inter.variable} ${playfair.variable} ${cinzel.variable} ${manrope.variable}`}>
       <head>
-        <link rel="stylesheet" href={cssPath} />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="preload" href="/homepage-hero-lucky-pick-canada.webp" as="image" fetchPriority="high" />
         <script

@@ -1,22 +1,16 @@
 # Progress
 
-## 2026-10-04 — Performance & Stability (Speed Index, LCP, Console Errors)
-- Analyzed mobile homepage Speed Index and LCP bottlenecks. Verified that the `BackgroundEraser` image was mistakenly preloaded at `high` priority and the main LCP hero image was a massive 2MB PNG (`homepage-hero-lucky-pick-canada.png`).
-- Converted `homepage-hero-lucky-pick-canada.png` to WebP (300KB), resolving the LCP asset bloat issue. Pointed `<Image>` in `app/homepage/Hero.js` to the `.webp` asset.
-- Updated `app/layout.js` to remove the incorrect `BackgroundEraser` preload and properly preload `homepage-hero-lucky-pick-canada.webp` to improve Speed Index.
-- Resolved unstable CSS cache busting in `app/layout.js` by replacing the `crypto.randomUUID()` fallback with a deterministic `"default-build"` fallback when environment-provided build hashes are absent, preventing constant cache invalidation and rendering blocks.
-- Investigated and mitigated `/api/visits` server-side 500 console errors stemming from missing Upstash Redis environment variables. Updated the route to gracefully fallback and return a synthetic `{ visits: 0 }` default.
-- Implemented a debounce wrapper on `handleResize` in `app/homepage/HomePage.js` to avoid resize-triggered performance spikes/jank when calculating visual viewport bounds.
-- Recreated missing visual snapshots (`pnpm exec playwright test tests/visual/homepage.spec.ts --update-snapshots`) to reflect new WebP LCP rendering bounds and behavior.
-- Successfully built app (495MB limit respected - build footprint is unchanged at ~300MB node_modules and output). All static checks (`pnpm run build`, `./jules-verify.sh`, `vitest run`) pass correctly.
-- Fixed a `LazyLoadImageIssue` DevTools warning on mobile by removing `loading="lazy"` from `communityCover` in `app/homepage/HomePage.js`. Verified `CookieIssue` was external.
+## Milestones
 
-## 2026-10-04 — Mobile LCP and Render-Blocking Optimization
-- Optimized Mobile LCP and Render-Blocking resources. Replaced the render-blocking Google Fonts `<link rel="stylesheet">` in `app/layout.js` with `next/font/google` for non-blocking typography delivery.
-- Fixed the primary LCP issue by scaling down the unoptimized `3840px` width Pexels CSS background image used on the homepage to `1920w` for desktop and `1200w` for mobile via media queries.
-- Re-routed the `--lpc-display` / `--lpc-body` typography tokens in `default.css` to the injected Next font variables, and removed the Google Fonts `@import` from `index.css`.
-- Moved the `next/font` variable classNames onto the `<html>` element so `--font-*` is defined where `--lpc-*` is computed, keeping the font variables resolvable.
-- Restored the `<link rel="stylesheet">` theme delivery in `<head>` and removed the `import '../public/themes/default/index.css'` bundler import, per `QUICK_FIX_GUIDE.md` and `CSS_FIX_GUIDE.md`.
-- Mirrored the `default.css`, `homepage.css`, and `index.css` edits into the `themes/default/` source copies so the documented copy step cannot revert them.
-- Reverted the auto-generated `next-env.d.ts` to the build-variant `.next/types/...` paths so the committed type references exist on the deploy path.
-- Build size (385MB) remained well below limits and local Playwright regression tests passed successfully.
+- **Initial Setup**: Project scaffolded using Next.js App Router, Tailwind CSS, and Framer Motion.
+- **Visual Foundation**: Hero section, sky backdrop, Milky Way HD image integration, shooting stars, and ambient star twinkle implemented.
+- **Interactivity**: Homepage interaction added with interactive Lucky Pick card reveal (6/7 picks), dynamic color and day selection logic, tip jar, and gift package.
+- **Payment & Cloud Integration**: Added Stripe checkout support and email handling configuration logic.
+- **Mobile Performance Phase 1**: Addressed LCP delays, optimized heavy hero images to WEBP, corrected fetch priorities, eliminated endless cache busting, and handled 500 errors gracefully with Upstash.
+- **Mobile Performance Phase 2**: Eliminated render-blocking CSS logic in `layout.js` by reverting to Next.js CSS asset bundling. Dynamically imported Howler.js (`audio.js`) only upon user click interactions, removing 41 KiB of unused JS from the initial page load.
+
+## Completed Tasks
+
+- Integrated Cloudflare Turnstile into public forms.
+- Replaced the hardcoded 'crypto.randomUUID()' in `app/layout.js` styles path with the stable Next.js build ID/commit hash, resolving unstable style reloads.
+- Reduced unused JavaScript and render-blocking CSS warnings in Lighthouse/PageSpeed audits for the mobile configuration.
