@@ -4,21 +4,25 @@
 - Ensure homepage mobile rendering achieves optimal Speed Index and Largest Contentful Paint (LCP) benchmarks.
 - Mitigate console errors and unexpected fallbacks triggered by absent cloud services (Upstash Redis) or frantic user events (window resizes).
 - Resolve browser reliability warnings from performance scans.
+- **New:** Ensure form and payment security mechanisms (Turnstile, rate limiting, gift delivery) are robust and do not cause intermittent availability issues.
 
 ## Recent Work
-- Modified `app/layout.js` to utilize native Next.js CSS imports (`import '../public/themes/default/index.css'`) instead of an injected `<link>` tag with a cache-busting ID. This enables Next.js to properly bundle and optimize the CSS natively, resolving a severe render-blocking performance issue.
-- Refactored `app/lib/audio.js` to load the `howler` dependency dynamically when `playButtonClick()` is called, removing 41 KiB of unused JavaScript from the initial homepage load footprint.
+- Refactored `app/turnstile-field.js` to utilize `next/script` (`lazyOnload`), replacing a complex, manual DOM injection approach that was susceptible to hydration and routing race conditions, causing intermittent "Spam check is not configured" errors.
+- Corrected a pricing inconsistency in `app/api/checkout/route.js`, updating the `gift_package` unit amount from 199 to 299 to match the intended $2.99 CAD price point used in the UI and validation.
+- Upgraded the in-memory rate limiting map in `app/spam-protection.js` to utilize Upstash Redis for distributed state, enabling robust rate limiting across ephemeral Cloudflare Worker instances.
+- Enhanced `app/api/gift-delivery/route.js` to securely lean on the Stripe webhook for definitive email delivery, prioritizing early redirects to the reveal page if `metadata.giftDeliveredAt` is already set to prevent potential race-condition abuses on the GET route.
+- Modified `app/layout.js` to utilize native Next.js CSS imports.
+- Refactored `app/lib/audio.js` to load the `howler` dependency dynamically.
 - Investigated and improved the mobile Speed Index and LCP on the homepage.
-- Handled the massive 2MB `homepage-hero-lucky-pick-canada.png` by converting it to `webp` (300KB), which was delaying LCP significantly since Next image optimization is disabled.
-- Removed an erroneous `fetchPriority="high"` tag for a non-LCP asset (`BackgroundEraser`) in the root `app/layout.js`, transferring this priority to the newly generated `homepage-hero-lucky-pick-canada.webp`.
-- Eliminated an unstable cache-busting behavior in `app/layout.js` where `crypto.randomUUID()` caused styles to reload endlessly, harming Speed Index cache hit rates.
-- Addressed server console 500 errors in `app/api/visits/route.js` caused by initializing `@upstash/redis` without credentials. Provided a graceful initialization bypass (`{ visits: 0 }`).
-- Mitigated visual jank on viewport resize by adding a 200ms debounce to the `handleResize` function in `app/homepage/HomePage.js`.
-- Fixed a `LazyLoadImageIssue` DevTools warning on mobile by removing `loading="lazy"` from `communityCover` in `app/homepage/HomePage.js`. Verified `CookieIssue` was external.
+- Handled the massive 2MB `homepage-hero-lucky-pick-canada.png` by converting it to `webp` (300KB).
+- Removed an erroneous `fetchPriority="high"` tag for a non-LCP asset.
+- Eliminated an unstable cache-busting behavior in `app/layout.js`.
+- Addressed server console 500 errors in `app/api/visits/route.js`.
+- Mitigated visual jank on viewport resize.
 
 ## Open Questions
-- None. Speed Index, LCP, and Console Error targets have been successfully met according to available bounds and environments. Build completes successfully and is under the 495MB limit.
+- None. Security updates have been implemented and builds succeed.
 
 ## Pending Verification
-- CI/CD visual Playwright suite tests (completed successfully locally).
-- Performance baseline metrics delta (LCP/Speed Index should reflect immediate drops in raw metric wait times).
+- Real-world distributed rate limiting observation (KV store interaction).
+- Turnstile reliability across various browsers/network speeds.

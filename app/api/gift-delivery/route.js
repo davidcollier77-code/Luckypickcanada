@@ -53,6 +53,25 @@ export async function GET(request) {
       return redirectHome(request, { giftError: 'Unable to find the paid gift checkout session.' });
     }
 
+    const metadata = session.metadata || {};
+
+    // If it's not a gift package, or not paid, redirect to home
+    if (session.payment_status !== 'paid' || metadata.checkoutType !== 'gift_package') {
+      return redirectHome(request, { giftError: 'Unable to verify the gift payment.' });
+    }
+
+    // Only redirect to reveal if delivery was completed by webhook
+    if (metadata.giftDeliveredAt) {
+      const recipientEmail = metadata.recipientEmail || '';
+      const url = new URL(`/reveal/${session.id}`, request.url);
+      if (recipientEmail) {
+        url.searchParams.set('recipientEmail', recipientEmail);
+      }
+      return Response.redirect(url, 303);
+    }
+
+    // If webhook hasn't processed it yet, attempt delivery here as fallback,
+    // but this is mostly handled by webhook now. Let's just do it securely.
     const result = await deliverGiftEmailForSession(stripe, session.id);
 
     if (result.ok) {

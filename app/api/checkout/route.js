@@ -13,7 +13,7 @@ const checkoutOptions = {
   gift_package: {
     name: 'Lucky Pick Canada gift package',
     description: 'Send a Lucky Pick reveal by email with a personal greeting.',
-    unitAmount: 199,
+    unitAmount: 299,
   },
 };
 
@@ -38,7 +38,7 @@ function dollarsToCents(amount) {
 
 export async function POST(request) {
   const ip = getClientIp(request);
-  const rateLimit = checkApiRateLimit(ip, 'checkout', 10, 60000); // 10 per min
+  const rateLimit = await checkApiRateLimit(ip, 'checkout', 10, 60000); // 10 per min
   if (!rateLimit.ok) {
     const errorMsg = 'Too many checkout attempts. Please wait a moment.';
     let origin;

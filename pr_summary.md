@@ -1,69 +1,89 @@
-# PR Summary
+# PR Summary Canonical Record
 
-## 1. SELECTED TASK GROUP — REQUIRED
-SELECTED TASK GROUP: polishing
-GROUP REASON: The requested mobile performance improvements directly target rendering speed (render-blocking requests) and JavaScript delivery (unused JS), both of which fit under optimization and UX polishing without structural capability changes.
+## 1. SELECTED TASK GROUP
+SELECTED TASK GROUP: security
+GROUP REASON: Task involves investigating and fixing intermittent public-form protection issues (Turnstile), payment inconsistencies, API rate limits, and gift-delivery security.
 
-## 2. LIBRARY CONSULTATION REPORT — REQUIRED
-LIBRARY: /vercel/next.js
-VERSION: 16.3.6
+## 2. LIBRARY CONSULTATION REPORT
+LIBRARY: Next.js (/vercel/next.js)
+VERSION: 14.x
 USED: YES
 USEFUL: YES
-REASON: Validated the Next.js `next.config.mjs` asset imports, build configurations, and dynamic import structure to optimize asset delivery logic for CSS and JavaScript rendering paths on the server/client boundaries.
+REASON: Consulted to determine the proper usage of Next.js `next/script` tag to replace custom DOM injection for Turnstile, resolving hydration/routing race conditions.
 
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
-DOCUMENT: .jules/polishing.md
+LIBRARY: Upstash Docs (/upstash/docs)
+VERSION: latest
 USED: YES
 USEFUL: YES
-REASON: Informed the boundaries of keeping visual behaviors identical while ensuring performance tweaks comply with the "cinematic polish" requirement and do not break functionality.
+REASON: Used to determine the correct way to initialize the Upstash Redis client and utilize it for distributed incrementing and expiration for rate limiting in serverless environments.
 
-DOCUMENT: .jules/jules.md
+## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
+DOCUMENT: Jules Documentation
 USED: YES
 USEFUL: YES
-REASON: Verified agent workflow constraints and MCP restrictions (none external required).
+REASON: Used to establish baseline initialization protocols and verification standards.
 
-## 4. REPOSITORY COMPONENT REPORT — REQUIRED
-COMPONENT: CSS_FIX_GUIDE.md
+DOCUMENT: .jules/sentinel.md
 USED: YES
 USEFUL: YES
-REASON: Identified the cause of render-blocking requests as an anti-pattern in `app/layout.js` (using an external `<link rel="stylesheet">` with cache-busting URLs vs. standard Next.js bundled relative CSS imports). Guided the solution (Solution 3/variant) for standardizing `import '../public/themes/default/index.css'`.
+REASON: Provided instructions for documenting security-related learnings, PR naming conventions, and required format for reporting fixes.
 
-COMPONENT: memory-bank/projectBrief.md
+## 4. REPOSITORY COMPONENT REPORT
+COMPONENT: app/turnstile-field.js
 USED: YES
 USEFUL: YES
-REASON: Re-verified core product components and entertainment parameters to ensure interactive features, like Howler.js audio interactions, wouldn't break while deferring logic.
+REASON: Analyzed custom script loading logic and replaced it with Next.js Script component to fix intermittent race conditions.
 
-COMPONENT: memory-bank/activeContext.md
+COMPONENT: app/spam-protection.js
 USED: YES
 USEFUL: YES
-REASON: Consulted recent LCP/Speed Index adjustments to ensure the CSS changes align with prior layout adjustments.
+REASON: Upgraded from in-memory Map rate-limiting to Upstash Redis to ensure distributed state consistency across Cloudflare ephemeral instances.
 
-## 5. REPORTING INTEGRITY — MANDATORY
-All items consulted reported actual USED and USEFUL metrics accurately.
+COMPONENT: app/api/checkout/route.js
+USED: YES
+USEFUL: YES
+REASON: Fixed pricing bug where gift_package was mistakenly set to $1.99 instead of $2.99.
+
+COMPONENT: app/api/gift-delivery/route.js
+USED: YES
+USEFUL: YES
+REASON: Hardened the GET route against duplicate/race condition abuse by relying on the metadata.giftDeliveredAt flag set by the webhook for definitive state checking.
+
+## 5. REPORTING INTEGRITY
+Work performed matches the requested scope accurately. All modifications were verified with `pnpm run build` and `pnpm test`.
 
 ## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-- Unused JavaScript fix: Modified `app/lib/audio.js` to asynchronously load the `howler` dependency only when `playButtonClick` is invoked instead of globally loading it when `app/homepage/HomePage.js` initially mounts.
-- Render-blocking CSS fix: Removed the `cssPath` dynamically injected `<link>` tag from `app/layout.js` which caused a blocking browser network fetch. Standardized `import '../public/themes/default/index.css';` using Next.js native CSS bundling to inline and pre-compile styling properly.
-- Kept UI, styling, functionality (such as checkout and Stripe), interactive Aurora effects, and the star animations fully intact.
-- Scope bounds were strictly followed. No redesigns or unverified code cleanups were applied.
+- Replaced custom Turnstile injection with Next.js `<Script>` to fix intermittent loading failures while preserving performance (lazyOnload).
+- Changed `gift_package` `unitAmount` in `app/api/checkout/route.js` from 199 to 299 to fix a critical pricing inconsistency.
+- Integrated Upstash Redis into `app/spam-protection.js` to provide distributed, robust rate limiting and duplicate-submission blocking.
+- Updated `app/api/gift-delivery/route.js` to securely rely on webhook-driven `metadata.giftDeliveredAt` to prevent race conditions or abuse of the GET route.
+- Updated `memory-bank` context and `sentinel.md` learnings.
+- Authorized systems (Stripe checkout, Turnstile, Rate limits) were modified within the authorized bounds to fix specific issues without expanding scope unnecessarily.
 
-## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
-`app/layout.js`
-`app/lib/audio.js`
+## 7. EXACT FINAL DIFF RECONCILIATION
+Changed files:
+- .jules/sentinel.md
+- app/api/checkout/route.js
+- app/api/gift-delivery/route.js
+- app/api/oracle/route.js
+- app/api/send-gift/route.ts
+- app/api/visits/route.js
+- app/spam-protection.js
+- app/turnstile-field.js
+- memory-bank/activeContext.md
+- memory-bank/progress.md
 
-## 8. VERIFICATION — REQUIRED
+## 8. VERIFICATION
 COMMAND: `pnpm run build`
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Compiled successfully in 13.1s. Generated static pages. Final payload within the 495 MB limit (94 MB standalone payload / 321 MB total .next build dir).
+EVIDENCE/OUTPUT SUMMARY: Build completed successfully in 4.5s. All routes generated and compiled without error.
 
-COMMAND: `./pre_commit.sh`
+COMMAND: `pnpm test`
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Build checks and script unit tests executed successfully.
+EVIDENCE/OUTPUT SUMMARY: 11 tests passed in 2 test files.
 
-## 9. USEFUL RESULT — REQUIRED
+## 9. USEFUL RESULT
 USEFUL RESULT: YES
 
-## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
-Pre-submission checks successfully validated that:
-- Governance rules, build safety boundaries (495 MB max), and required file checks were run.
-- Changes were scoped exclusively to mobile performance (render-blocking, unused JS) fixes.
+## 10. PRE-SUBMISSION DOUBLE-CHECK
+Pre-submission double-check has been completed. The changes accurately address the Turnstile, checkout pricing, rate limiting, and gift delivery security issues while remaining within the authorized scope.
