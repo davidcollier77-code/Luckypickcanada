@@ -6,6 +6,8 @@
 - Resolve browser reliability warnings from performance scans.
 
 ## Recent Work
+- Modified `app/layout.js` to utilize native Next.js CSS imports (`import '../public/themes/default/index.css'`) instead of an injected `<link>` tag with a cache-busting ID. This enables Next.js to properly bundle and optimize the CSS natively, resolving a severe render-blocking performance issue.
+- Refactored `app/lib/audio.js` to load the `howler` dependency dynamically when `playButtonClick()` is called, removing 41 KiB of unused JavaScript from the initial homepage load footprint.
 - Investigated and improved the mobile Speed Index and LCP on the homepage.
 - Handled the massive 2MB `homepage-hero-lucky-pick-canada.png` by converting it to `webp` (300KB), which was delaying LCP significantly since Next image optimization is disabled.
 - Removed an erroneous `fetchPriority="high"` tag for a non-LCP asset (`BackgroundEraser`) in the root `app/layout.js`, transferring this priority to the newly generated `homepage-hero-lucky-pick-canada.webp`.
