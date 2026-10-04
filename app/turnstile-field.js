@@ -1,86 +1,7 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-
-const TURNSTILE_SCRIPT_ID = 'cloudflare-turnstile-script';
-const TURNSTILE_SCRIPT_URL = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-
-const MAX_RETRIES = 2;
-const RETRY_DELAY = 1000;
-const API_CHECK_DELAY = 100;
-const API_CHECK_TIMEOUT = 2000;
-
-let turnstileScriptPromise;
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-async function waitForTurnstileApi(startTime = Date.now()) {
-  if (window.turnstile && typeof window.turnstile.render === 'function') {
-    return window.turnstile;
-  }
-
-  if (Date.now() - startTime > API_CHECK_TIMEOUT) {
-    throw new Error('Turnstile API not available after timeout');
-  }
-
-  await sleep(50);
-  return waitForTurnstileApi(startTime);
-}
-
-function injectScript() {
-  return new Promise((resolve, reject) => {
-    let existingScript = document.getElementById(TURNSTILE_SCRIPT_ID);
-
-    if (existingScript) {
-      existingScript.addEventListener('load', resolve, { once: true });
-      existingScript.addEventListener('error', reject, { once: true });
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.id = TURNSTILE_SCRIPT_ID;
-    script.src = TURNSTILE_SCRIPT_URL;
-    script.async = true;
-    script.defer = true;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-}
-
-async function attemptLoadScript(retryCount = 0) {
-  try {
-    await injectScript();
-    await sleep(API_CHECK_DELAY);
-    return await waitForTurnstileApi();
-  } catch (error) {
-    if (retryCount < MAX_RETRIES) {
-      document.getElementById(TURNSTILE_SCRIPT_ID)?.remove();
-      await sleep(RETRY_DELAY);
-      return attemptLoadScript(retryCount + 1);
-    }
-    throw new Error('Failed to load Turnstile script after retries');
-  }
-}
-
-function loadTurnstileScript() {
-  if (typeof window === 'undefined') {
-    return Promise.resolve(null);
-  }
-
-  if (window.turnstile && typeof window.turnstile.render === 'function') {
-    return Promise.resolve(window.turnstile);
-  }
-
-  if (!turnstileScriptPromise) {
-    turnstileScriptPromise = attemptLoadScript().catch((err) => {
-      turnstileScriptPromise = null;
-      throw err;
-    });
-  }
-
-  return turnstileScriptPromise;
-}
+import { useEffect, useRef, useState } from 'react';
+import Script from 'next/script';
 
 export default function TurnstileField({ siteKey, submitButtonId }) {
   const containerRef = useRef(null);
@@ -88,61 +9,62 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('loading');
+  const [isReady, setIsReady] = useState(false);
 
-  useLayoutEffect(() => {
-    if (!siteKey) {
+  useEffect(() => {
+    if (!siteKey || !isReady || !containerRef.current) {
       return undefined;
     }
 
     let cancelled = false;
-    setToken('');
-    setError('');
-    setStatus('loading');
 
-    loadTurnstileScript()
-      .then((turnstile) => {
-        if (cancelled || !turnstile || !containerRef.current || widgetIdRef.current !== null) {
-          return;
+    if (window.turnstile && typeof window.turnstile.render === 'function') {
+      try {
+        if (widgetIdRef.current !== null) {
+          window.turnstile.remove(widgetIdRef.current);
+          widgetIdRef.current = null;
         }
 
-        widgetIdRef.current = turnstile.render(containerRef.current, {
+        widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
           theme: 'auto',
           'refresh-expired': 'auto',
           callback: (newToken) => {
+            if (cancelled) return;
             setToken(newToken || '');
             setError('');
             setStatus(newToken ? 'verified' : 'loading');
           },
           'expired-callback': () => {
+            if (cancelled) return;
             setToken('');
             setStatus('loading');
           },
           'error-callback': () => {
+            if (cancelled) return;
             setToken('');
             setStatus('error');
             setError('The security check had a problem. Please use Troubleshoot or refresh, then try again.');
           },
           'response-field': false,
         });
-      })
-      .catch(() => {
+      } catch (err) {
+        console.error("Turnstile render error", err);
         if (!cancelled) {
-          setToken('');
           setStatus('error');
           setError('The security check could not load. Please refresh and try again.');
         }
-      });
+      }
+    }
 
     return () => {
       cancelled = true;
-
       if (window.turnstile && widgetIdRef.current !== null) {
         window.turnstile.remove(widgetIdRef.current);
         widgetIdRef.current = null;
       }
     };
-  }, [siteKey]);
+  }, [siteKey, isReady]);
 
   useEffect(() => {
     if (!submitButtonId || !containerRef.current) {
@@ -185,6 +107,15 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
 
   return (
     <div style={{ display: 'grid', gap: '0.45rem' }}>
+      <Script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+        strategy="lazyOnload"
+        onReady={() => setIsReady(true)}
+        onError={() => {
+            setStatus('error');
+            setError('The security check could not load. Please refresh and try again.');
+        }}
+      />
       <input type="hidden" name="cf-turnstile-response" value={token} readOnly />
       <div ref={containerRef} />
       {error ? <p role="status" style={{ margin: 0, color: '#fecaca', fontWeight: 700 }}>{error}</p> : null}
