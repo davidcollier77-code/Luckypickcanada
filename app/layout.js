@@ -59,7 +59,7 @@ export const viewport = {
  */
 export default function RootLayout({ children }) {
   return (
-    <html lang="en-CA" className="m-0 p-0">
+    <html lang="en-CA" className={`m-0 p-0 ${inter.variable} ${playfair.variable} ${cinzel.variable} ${manrope.variable}`}>
       <head>
         <link rel="stylesheet" href={cssPath} />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
@@ -77,7 +77,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className={`m-0 p-0 ${inter.variable} ${playfair.variable} ${cinzel.variable} ${manrope.variable}`}>
+      <body className="m-0 p-0">
         <div className="homepage-background-foundation fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
         </div>
         <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0 flex flex-col min-h-screen">
