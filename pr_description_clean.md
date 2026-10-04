@@ -1,254 +1,56 @@
-### 🔴 TASK: Investigate and Remediate DNS/Email-Authentication Issues
+SELECTED TASK GROUP: Performance — Mobile PageSpeed Insights
+GROUP REASON: The request explicitly targeted reducing unused JavaScript (estimated 41 KiB) found in mobile PageSpeed Insights tests.
 
-This PR delivers the investigation and verification report regarding the email authentication issues (SPF, DMARC, DKIM) reported for `luckypickcanada.ca`.
-
-#### 🔴 Investigation Findings
-1. **Verified Current Email Sender**: The application strictly uses **Resend** (via `app/api/send-gift/route.ts` and `app/suggestions.js`) utilizing the `RESEND_API_KEY`.
-2. **Current DNS State** (Queried via `dig`):
-   - **DKIM**: A valid DKIM record already exists and is active at `resend._domainkey.luckypickcanada.ca`.
-   - **SPF**: Missing. No `v=spf1` TXT record was found at the root domain (`luckypickcanada.ca`).
-   - **DMARC**: Missing. No DMARC TXT record was found at `_dmarc.luckypickcanada.ca`.
-
-#### 🔴 Remediation Plan (External Action Required)
-In strict accordance with `AGENTS.md` boundaries, I have **stopped** before making unsupported changes. The domain's DNS is managed externally (via Cloudflare Pages as indicated in `wrangler.jsonc`), which I cannot directly edit from this repository.
-
-To correctly authenticate the existing Resend implementation without altering the application workflow, the following records must be manually added to the external DNS provider (e.g., Cloudflare):
-
-1. **SPF Record** (Root Domain: `luckypickcanada.ca`)
-   - **Type**: `TXT`
-   - **Name**: `@` (or `luckypickcanada.ca`)
-   - **Value**: `v=spf1 include:amazonses.com ~all`
-   - *Reason*: Resend routes emails via AWS SES, requiring this explicit SPF include.
-
-2. **DMARC Record** (Hostname: `_dmarc.luckypickcanada.ca`)
-   - **Type**: `TXT`
-   - **Name**: `_dmarc`
-   - **Value**: `v=DMARC1; p=none;`
-   - *Reason*: Sets DMARC to observe-only, avoiding abrupt mail rejections while satisfying the DNS health check.
-   - *Important*: `p=none` alone generates **no reports** — DMARC only sends aggregate reports when a `rua=` destination is present. This record observes and reports nothing, and it does not protect against spoofing. If reports are actually wanted, publish `v=DMARC1; p=none; rua=mailto:dmarc@luckypickcanada.ca` (create that mailbox first) and add `adkim=r; aspf=r` to make the alignment intent explicit.
-
-#### 🔴 Preservation of Existing Functionality
-- **No changes** were made to the existing Gmail accounts or mailboxes.
-- **No changes** were made to the sender/display identities (`gifts@luckypickcanada.ca`, `hello@luckypickcanada.ca`).
-- **No changes** were made to the `Resend` integration, suggestion boxes, or contact/notification functionality.
-- The existing valid DKIM record was preserved and left unchanged.
-
----
-
-### PR Summary Canonical Record
-
-# PR Summary
-
-## 1. SELECTED TASK GROUP — REQUIRED
-SELECTED TASK GROUP: troubleshooting
-GROUP REASON: Investigating and resolving DNS/Email authentication issues.
-
-## 2. LIBRARY CONSULTATION REPORT — REQUIRED
-
-LIBRARY: /github/docs
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
+LIBRARY CONSULTATION REPORT:
 LIBRARY: /vercel/next.js
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /reactjs/react.dev
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /microsoft/typescript
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /opennextjs/opennextjs-cloudflare
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /opennextjs/docs
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /cloudflare/workers-sdk
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /neondatabase/neon
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /upstash/docs
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /getsentry/sentry-docs
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /bvaughn/react-error-boundary
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /websites/developer_chrome
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-LIBRARY: /websites/developer_apple_webkit
-VERSION: N/A
-USED: YES
-USEFUL: NO
-REASON: Not required for DNS analysis
-
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
-
-DOCUMENT: jules.google/docs
+VERSION: 16.3.6
 USED: YES
 USEFUL: YES
-REASON: Guided tool usage and system navigation.
+REASON: Guided identification of chunks and Next.js internal router/React hydration code architecture.
 
-DOCUMENT: developers.google.com/jules/api
+ROUTED JULES/GEMINI DOCUMENT REPORT:
+DOCUMENT: .jules/jules.md
 USED: YES
 USEFUL: YES
-REASON: API usage constraints.
-
-DOCUMENT: /google-gemini/gemini-cli
-USED: YES
-USEFUL: NO
-REASON: No CLI operations required.
-
-DOCUMENT: /websites/ai_google_dev_gemini-api
-USED: YES
-USEFUL: NO
-REASON: No API operations required.
-
-## 4. REPOSITORY COMPONENT REPORT — REQUIRED
-
-COMPONENT: memory-bank/
+REASON: Validated governance requirements and pre-submission checks.
+DOCUMENT: .jules/testing.md
 USED: YES
 USEFUL: YES
-REASON: Provided context about the project's email integration (Resend) and environment constraints.
+REASON: Verified testing commands for build constraints and visual validation.
 
-COMPONENT: CSS_FIX_GUIDE.md
-USED: YES
-USEFUL: NO
-REASON: No CSS changes required.
-
-COMPONENT: DATABASE_SETUP.md
-USED: YES
-USEFUL: NO
-REASON: No database changes required.
-
-COMPONENT: DEPLOYMENT_CHECKLIST.md
-USED: YES
-USEFUL: NO
-REASON: No deployment changes required.
-
-COMPONENT: QUICK_FIX_GUIDE.md
-USED: YES
-USEFUL: NO
-REASON: No quick fixes required.
-
-COMPONENT: .jules/*.md
+REPOSITORY COMPONENT REPORT:
+COMPONENT: .next/static/chunks/
 USED: YES
 USEFUL: YES
-REASON: Governed task routing, behavior constraints, and troubleshooting guidelines.
-
-COMPONENT: .jules/cmds/*.md
-USED: YES
-USEFUL: NO
-REASON: No specific commands required.
-
-COMPONENT: .jules/cmds/speckit.*.md
-USED: YES
-USEFUL: NO
-REASON: No speckit commands used.
-
-COMPONENT: .specify/
-USED: YES
-USEFUL: NO
-REASON: No specify changes required.
-
-COMPONENT: .specify/workflows/speckit/workflow.yml
-USED: YES
-USEFUL: NO
-REASON: No workflow changes required.
-
-COMPONENT: .specify/memory/constitution.md
+REASON: Analyzed the specific chunks `1092-d7877b29e7d6d0a5.js` and `abf3477e-8a2a82d8653a1d01.js` identified in the PageSpeed report. Mapped these to the core Next.js internal router and React-DOM hydration mechanisms.
+COMPONENT: app/homepage/HomePage.js
 USED: YES
 USEFUL: YES
-REASON: Clarified project identity and constraints.
+REASON: Verified that dynamic imports for heavy third-party code (like Turnstile and Howler) are already correctly implemented and deferred.
 
-COMPONENT: .specify/integrations/speckit.manifest.json
-USED: YES
-USEFUL: NO
-REASON: No integration changes required.
+IMPLEMENTATION:
+- Analyzed the two 61.7 KiB chunks (`1092-*.js` and `abf3477e-*.js`) flagged by Lighthouse as unused JavaScript.
+- Investigated their source mapping using Next.js build manifests (`.next/build-manifest.json`) and source maps.
+- Verified that these chunks correspond directly to `react-dom/client` and Next.js core application router/scheduler internals.
+- Lighthouse flags parts of these chunks because React hydration and complex concurrent routing features contain branches that do not execute during a static page load (e.g., error boundaries, client navigation logic).
+- Because these are mandatory first-party framework chunks required for the app to function properly on the client, they cannot be deferred, lazy-loaded, or safely removed.
+- Confirmed that previous optimizations (dynamically importing `Howler` and `TurnstileField`) have successfully eliminated actual removable unused JavaScript.
+- Conclusion: No speculative deletions or unsafe code-splitting were performed. The remaining "unused JS" is a PageSpeed false positive against the necessary React/Next.js hydration engine.
 
-## 5. REPORTING INTEGRITY — MANDATORY
-All reporting is accurate based on the investigation.
+EXACT FINAL DIFF RECONCILIATION:
+- (No files were changed for this task as no safe, worthwhile optimization is supported by the evidence for core framework chunks).
 
-## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-- Verified email provider: Resend (via `app/api/send-gift/route.ts` and `app/suggestions.js`).
-- Verified existing records: DKIM exists at `resend._domainkey.luckypickcanada.ca`. No SPF or DMARC records found.
-- Implementation: STOPPED. As required by the task constraints, no DNS records were changed and no application source file was modified, because the external Cloudflare zone cannot be edited or verified from this repository. The only files this PR changes are the five reporting/helper files listed in section 7.
-- Deliberately left unchanged: Existing Resend setup, email addresses, and all codebase files.
-- Exact DNS records to be applied manually to the external provider:
-  1. SPF (Root domain `luckypickcanada.ca`): `v=spf1 include:amazonses.com ~all` (Resend uses AWS SES).
-  2. DMARC (`_dmarc.luckypickcanada.ca`): `v=DMARC1; p=none;`
-
-## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
-No application source files changed. Verified with `git diff --name-status origin/main...HEAD`:
-
-- `FINAL_REPORT.md` (modified)
-- `pr_description.md` (modified)
-- `pr_description_clean.md` (added)
-- `pr_summary.md` (modified)
-- `submit.sh` (modified)
-
-All five are reporting/helper files; nothing under `app/`, `components/`, or `functions/` is touched.
-
-## 8. VERIFICATION — REQUIRED
-COMMAND: dig TXT luckypickcanada.ca +short
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Found Google Site Verification, no SPF record.
-
-COMMAND: dig TXT _dmarc.luckypickcanada.ca +short
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: No DMARC record found.
-
-COMMAND: dig TXT resend._domainkey.luckypickcanada.ca +short
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Found valid DKIM public key string.
-
+VERIFICATION:
 COMMAND: pnpm run build
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Build completes successfully.
+EVIDENCE/OUTPUT SUMMARY: Build completed successfully. Build size remained under the 495MB maximum limit.
 
-## 9. USEFUL RESULT — REQUIRED
+COMMAND: pnpm test
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Vitest suite executed successfully.
+
+COMMAND: pnpm exec playwright test
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Visual tests executed and verified that all existing homepage functionality and presentation remained intact.
+
 USEFUL RESULT: YES
-
-## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
-Pre-submission double-check completed. All constraints adhered to. External changes safely blocked and reported.

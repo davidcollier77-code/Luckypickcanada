@@ -1,49 +1,56 @@
-## PR Summary
+SELECTED TASK GROUP: Performance — Mobile PageSpeed Insights
+GROUP REASON: The request explicitly targeted reducing unused JavaScript (estimated 41 KiB) found in mobile PageSpeed Insights tests.
 
-**SELECTED TASK GROUP**: polishing
-**GROUP REASON**: The request involves correcting a frontend interaction and animation sequence on the homepage (the downward-arrow interaction in `ExploreLuckButton`), fitting the polishing scope for UI interactions.
+LIBRARY CONSULTATION REPORT:
+LIBRARY: /vercel/next.js
+VERSION: 16.3.6
+USED: YES
+USEFUL: YES
+REASON: Guided identification of chunks and Next.js internal router/React hydration code architecture.
 
-### LIBRARY CONSULTATION REPORT
-**LIBRARY**: React (`/reactjs/react.dev`)
-**VERSION**: N/A
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Provided context for `useRef` and React state changes handling the animation sequence and preventing rapid re-triggering of the visual effect. Consulted via `.docs/creation/_reactjs_react_dev.md` (symlinked in polishing).
+ROUTED JULES/GEMINI DOCUMENT REPORT:
+DOCUMENT: .jules/jules.md
+USED: YES
+USEFUL: YES
+REASON: Validated governance requirements and pre-submission checks.
+DOCUMENT: .jules/testing.md
+USED: YES
+USEFUL: YES
+REASON: Verified testing commands for build constraints and visual validation.
 
-### ROUTED JULES/GEMINI DOCUMENT REPORT
-**DOCUMENT**: `AGENTS.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Established the strict repository governance process and the 495 MB maximum size limit requirement which was verified.
+REPOSITORY COMPONENT REPORT:
+COMPONENT: .next/static/chunks/
+USED: YES
+USEFUL: YES
+REASON: Analyzed the specific chunks `1092-d7877b29e7d6d0a5.js` and `abf3477e-8a2a82d8653a1d01.js` identified in the PageSpeed report. Mapped these to the core Next.js internal router and React-DOM hydration mechanisms.
+COMPONENT: app/homepage/HomePage.js
+USED: YES
+USEFUL: YES
+REASON: Verified that dynamic imports for heavy third-party code (like Turnstile and Howler) are already correctly implemented and deferred.
 
-**DOCUMENT**: `.jules/jules.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Confirmed execution constraints and workflow rules.
+IMPLEMENTATION:
+- Analyzed the two 61.7 KiB chunks (`1092-*.js` and `abf3477e-*.js`) flagged by Lighthouse as unused JavaScript.
+- Investigated their source mapping using Next.js build manifests (`.next/build-manifest.json`) and source maps.
+- Verified that these chunks correspond directly to `react-dom/client` and Next.js core application router/scheduler internals.
+- Lighthouse flags parts of these chunks because React hydration and complex concurrent routing features contain branches that do not execute during a static page load (e.g., error boundaries, client navigation logic).
+- Because these are mandatory first-party framework chunks required for the app to function properly on the client, they cannot be deferred, lazy-loaded, or safely removed.
+- Confirmed that previous optimizations (dynamically importing `Howler` and `TurnstileField`) have successfully eliminated actual removable unused JavaScript.
+- Conclusion: No speculative deletions or unsafe code-splitting were performed. The remaining "unused JS" is a PageSpeed false positive against the necessary React/Next.js hydration engine.
 
-**DOCUMENT**: `.jules/polishing.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Provided guidance on visual changes and handling animations vs. scrolling correctly.
+EXACT FINAL DIFF RECONCILIATION:
+- (No files were changed for this task as no safe, worthwhile optimization is supported by the evidence for core framework chunks).
 
-### REPOSITORY COMPONENT REPORT
-**COMPONENT**: `app/homepage/ExploreLuckButton.js`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: This was the source of the bug. It triggered the `luckyMeter.scrollIntoView()` immediately on click before the animation finished. We added a `setTimeout` here.
+VERIFICATION:
+COMMAND: pnpm run build
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Build completed successfully. Build size remained under the 495MB maximum limit.
 
-**COMPONENT**: `tests/visual/homepage.spec.ts`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: This file houses the Playwright visual tests. We added an automated deterministic test to verify that the visual display completely plays before the scroll action is performed.
+COMMAND: pnpm test
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Vitest suite executed successfully.
 
-### EXACT FINAL DIFF RECONCILIATION
-- `app/homepage/ExploreLuckButton.js`
-- `tests/visual/homepage.spec.ts`
+COMMAND: pnpm exec playwright test
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Visual tests executed and verified that all existing homepage functionality and presentation remained intact.
 
-### VERIFICATION RESULTS
-- `pnpm run build`: **PASS** (Actual build size: 345 MB, within the 495 MB limit).
-- `pnpm exec playwright test`: **PASS** (Tests pass successfully).
-- Pre-submission double-check completed: The requested result was verified, the 495MB size cap was respected, pnpm was used, and no prohibited changes were made.
-
-**USEFUL RESULT: YES**
+USEFUL RESULT: YES
