@@ -96,7 +96,7 @@ describe('public form protection', () => {
   it('preserves successful Redis counters, duplicate TTL, and Turnstile verification', async () => {
     expect(await submit({ fields: ['hello'] })).toEqual({ ok: true });
     expect(redis.eval).toHaveBeenCalledWith(expect.any(String), [`rate_limit:suggestions:${IP}`], [WINDOW]);
-    expect(redis.set).toHaveBeenCalledWith(`duplicate:suggestions:${IP}:hello`, '1', { px: 600000 });
+    expect(redis.set).toHaveBeenCalledWith(`duplicate:suggestions:${IP}:hello`, '1', { px: 600000, nx: true });
     expect(fetch).toHaveBeenCalledOnce();
     expect(errorLog).not.toHaveBeenCalled();
   });
@@ -147,7 +147,7 @@ describe('public form protection', () => {
   });
 
   it('preserves duplicate rejection even if recording the spam attempt fails', async () => {
-    redis.get.mockImplementation(async (key) => key.startsWith('duplicate:') ? '1' : null);
+    redis.set.mockResolvedValue(null);
     redis.eval.mockImplementation(async (_script, [key]) => {
       if (key.startsWith('spam_attempts:')) throw failure;
       return 1;
@@ -156,19 +156,53 @@ describe('public form protection', () => {
     expectRedisError('eval', `spam_attempts:${IP}`);
   });
 
-  it.each(['get', 'set'])('uses local duplicate detection and expiry when Redis %s fails', async (operation) => {
-    redis[operation].mockImplementation(async (key) => {
+  it('uses local duplicate detection and expiry when the Redis claim fails', async () => {
+    redis.set.mockImplementation(async (key) => {
       if (key.startsWith('duplicate:')) throw failure;
-      return operation === 'get' ? null : 'OK';
+      return 'OK';
     });
     expect(await submit({ fields: ['hello'] })).toEqual({ ok: true });
-    expectRedisError(operation, `duplicate:suggestions:${IP}:[fingerprint]`);
+    expectRedisError('set', `duplicate:suggestions:${IP}:[fingerprint]`);
     // A healthy Redis miss must not bypass the marker retained in memory.
     redis.get.mockResolvedValue(null);
     redis.set.mockResolvedValue('OK');
     expect(await submit({ fields: ['hello'] })).toMatchObject({ ok: false, error: expect.stringContaining('duplicate submission') });
+    expect(redis.set).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(600001);
     expect(await submit({ fields: ['hello'] })).toEqual({ ok: true });
+  });
+
+  it('accepts only one concurrent duplicate claim and records the rejected attempt', async () => {
+    const keys = new Set();
+    redis.set.mockImplementation(async (key, _value, { nx }) => {
+      if (nx && keys.has(key)) return null;
+      keys.add(key);
+      return 'OK';
+    });
+
+    const results = await Promise.all([
+      submit({ fields: ['hello'] }),
+      submit({ fields: ['hello'] }),
+    ]);
+
+    expect(results.filter(result => result.ok)).toHaveLength(1);
+    expect(results.filter(result => !result.ok)).toEqual([
+      { ok: false, error: 'This looks like a duplicate submission. Please wait a few minutes before trying again.' },
+    ]);
+    expect(redis.get.mock.calls.every(([key]) => key === `blocked_ip:${IP}`)).toBe(true);
+    expect(redis.eval).toHaveBeenCalledWith(expect.any(String), [`spam_attempts:${IP}`], [WINDOW]);
+    expect(console.warn).toHaveBeenCalledWith('Public form spam protection triggered', expect.objectContaining({ reason: 'duplicate_submission' }));
+  });
+
+  it('rejects concurrent duplicates when Redis claims fail', async () => {
+    redis.set.mockRejectedValue(failure);
+    const results = await Promise.all([
+      submit({ fields: ['hello'] }),
+      submit({ fields: ['hello'] }),
+    ]);
+    expect(results.filter(result => result.ok)).toHaveLength(1);
+    expect(results.filter(result => !result.ok)).toHaveLength(1);
+    expectRedisError('set', `duplicate:suggestions:${IP}:[fingerprint]`);
   });
 
   it('preserves a Turnstile rejection when spam recording fails', async () => {

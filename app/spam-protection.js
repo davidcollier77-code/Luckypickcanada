@@ -192,17 +192,22 @@ async function checkDuplicateSubmission({ formName, ip, fields }) {
 
   const fingerprint = `${formName}:${ip}:${submissionFingerprint}`;
 
+  if (recentSubmissions.has(fingerprint)) {
+    await recordSpamAttempt({ formName, ip, reason: 'duplicate_submission' });
+    return { ok: false, error: 'This looks like a duplicate submission. Please wait a few minutes before trying again.' };
+  }
+
   const redis = getRedisClient();
   if (redis) {
     const key = `duplicate:${fingerprint}`;
     // Fingerprints contain submitted form text; keep it out of failure logs.
     const logKey = `duplicate:${formName}:${ip}:[fingerprint]`;
-    const exists = await tryRedisOperation(redis, 'get', logKey, key);
-    if (exists || recentSubmissions.has(fingerprint)) {
+    const claimed = await tryRedisOperation(redis, 'set', logKey, key, '1', { px: DUPLICATE_SUBMISSION_WINDOW_MS, nx: true });
+    if (claimed === null) {
       await recordSpamAttempt({ formName, ip, reason: 'duplicate_submission' });
       return { ok: false, error: 'This looks like a duplicate submission. Please wait a few minutes before trying again.' };
     }
-    if (exists !== undefined && await tryRedisOperation(redis, 'set', logKey, key, '1', { px: DUPLICATE_SUBMISSION_WINDOW_MS }) !== undefined) {
+    if (claimed !== undefined) {
       return { ok: true };
     }
   }

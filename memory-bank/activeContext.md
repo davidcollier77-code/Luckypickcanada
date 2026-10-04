@@ -7,6 +7,7 @@
 - **New:** Ensure form and payment security mechanisms (Turnstile, rate limiting, gift delivery) are robust and do not cause intermittent availability issues.
 
 ## Recent Work
+- Duplicate fingerprints now use a Redis `SET NX` claim with the existing ten-minute expiry; rejected claims record spam attempts, and local outage markers remain effective. Concurrent claims and fallback behavior pass regression tests.
 - Fixed Redis operation failures in spam protection to log operation/key context and use the existing memory fallback; counters now initialize with an expiry atomically. Local fallback blocks and duplicate markers remain effective after failed Redis writes.
 - Refactored `app/turnstile-field.js` to utilize `next/script` (`lazyOnload`), replacing a complex, manual DOM injection approach that was susceptible to hydration and routing race conditions, causing intermittent "Spam check is not configured" errors.
 - Corrected a pricing inconsistency in `app/api/checkout/route.js`, updating the `gift_package` unit amount from 199 to 299 to match the intended $2.99 CAD price point used in the UI and validation.
