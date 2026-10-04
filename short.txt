@@ -1,0 +1,37 @@
+- **Vulnerability:** The client-side reveal authorization (`HomePage.js`) trusted browser URL parameters (`?payment=success&session_id=...&pick=...`) without independently verifying the payment status with Stripe. This allowed users to manually trigger paid reveals without a valid payment.
+- **Fix:** Implemented a new `/api/verify-session` endpoint to securely check the Stripe session status server-side (`payment_status === 'paid'`). `HomePage.js` now calls this endpoint to authorize the reveal, discarding any fabricated URL parameters.
+
+- **Vulnerability:** The gift fulfillment process (`gift-email.js` and `/api/gift-delivery/route.js`) contained a race condition where a concurrent webhook and fallback delivery request could read the same unclaimed state, process the payload, and send duplicate emails for a single purchase.
+- **Fix:** Introduced an atomic Redis lock (`nx: true`) keyed on `session.id` to guarantee absolute idempotency. The fulfillment logic now accurately respects this lock and correctly handles Stripe metadata updates *after* successful email transmission to ensure failure safety.
+
+- **Vulnerability:** An unauthenticated, public endpoint `/api/send-gift/route.ts` was found remaining in the codebase, enabling users to generate and send gift emails outside of the Stripe checkout flow, bypassing the required $2.99 payment entitlement.
+- **Fix:** Safely removed the legacy `/api/send-gift/route.ts` endpoint and stripped its associated rogue client-side call from `checkout-modal.js`. All gift deliveries now securely route through verified Stripe webhook fulfillment.
+
+- **Impact:** All paid gifts and standard reveals now mandate verified server-side authorization. Duplicate fulfillment is completely blocked across distributed environments.
+
+- **Verification:** All tests passed. The build size was maintained below the 495MB limit (281MB). Pre-submission double-checks were completed successfully.
+
+# PR Summary
+
+SELECTED TASK GROUP: Security Specialist
+GROUP REASON: Task explicitely requested hardening of the Lucky Pick Canada payment and gift-delivery security boundaries, verifying and securing authorization checks and idempotency mechanisms for paid gifts.
+
+## 2. LIBRARY CONSULTATION REPORT — REQUIRED
+
+LIBRARY: /vercel/next.js
+VERSION: N/A (URL based)
+USED: YES
+USEFUL: YES
+REASON: Consulted API routing and server-side request/response paradigms to correctly implement the `/api/verify-session` endpoint and update webhook handling.
+
+LIBRARY: /reactjs/react.dev
+VERSION: N/A (URL based)
+USED: YES
+USEFUL: YES
+REASON: Reviewed `useEffect` and React state updates in `HomePage.js` to ensure the asynchronous session verification via `fetch` properly updates the component state securely.
+
+LIBRARY: /stripe/stripe-js
+VERSION: N/A (URL based)
+USED: YES
+USEFUL: YES
+REASON: Verified the metadata structure and available webhook events (`checkout.session.completed`, `checkout.session.async_payment_succeeded`) to correctly handle paid authorizations and

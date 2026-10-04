@@ -57,32 +57,6 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
       const senderName = formData.get('senderName') || '';
       const giftMessage = formData.get('giftMessage') || '';
       const selectedGame = formData.get('luckyPickGame') || luckyPickGame;
-
-      try {
-        const res = await fetch('/api/send-gift', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipientName,
-            recipientEmail,
-            senderName,
-            personalMessage: giftMessage,
-            pickType: selectedGame,
-          }),
-        });
-
-        if (!res.ok) {
-          console.error('[Client] Backend gift email sending failed with status:', res.status);
-          console.error('[Client] Response:', await res.text().catch(() => 'Unable to read response'));
-        } else {
-
-        }
-      } catch (err) {
-        console.error('[Client] Network error when sending gift email:', err);
-        console.error('[Client] Error details:', err.message || 'Unknown error');
-      }
     }
 
     setIsSubmitting(false);

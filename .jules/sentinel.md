@@ -36,3 +36,10 @@ When materially necessary, consult the following approved libraries. (Requires C
 ## 2026-10-04 - Distributed Rate Limiting & Webhook Idempotency
 **Learning:** In serverless/edge environments like Cloudflare Workers (via OpenNext), in-memory data structures (like `Map`) used for rate limiting or deduplication are ephemeral per-isolate and do not provide effective global protection. Also, asynchronous payment webhooks combined with GET-based redirect flows can create race conditions if the GET route relies solely on its own invocation to finalize a transaction.
 **Action:** Migrated rate-limiting and deduplication logic in `app/spam-protection.js` to utilize Upstash Redis for distributed state, falling back to in-memory maps only if Redis is unavailable. Hardened `app/api/gift-delivery/route.js` to act strictly as a fallback mechanism, relying primarily on Stripe webhooks for delivery while ensuring idempotency by checking `metadata.giftDeliveredAt`.
+## 2024-11-20 - [Payment Security] Idempotency in Gift Fulfillment
+**Learning:** Checking a flag on a remote record (Stripe Metadata) and then acting before writing the update creates a significant race condition gap, especially when fallback GET routes and asynchronous POST webhooks converge simultaneously.
+**Action:** Implemented a short-lived atomic Redis lock (`SET NX`) keyed to the Stripe `session.id` to guarantee absolute idempotency across distributed worker instances for gift-email deliveries.
+
+## 2024-11-20 - [Payment Security] Server-Side Verification for Client Reveals
+**Learning:** Client-side URL parameters (`?payment=success&session_id=...`) can easily be spoofed to trigger high-value experiences if the client doesn't call back to a trusted server environment to verify the session state.
+**Action:** Refactored the `HomePage` to pause on `payment=success`, ping a new secure `/api/verify-session` endpoint, and only proceed to the `LuckyReveal` once the backend affirmatively verifies the Stripe session `payment_status === 'paid'`.

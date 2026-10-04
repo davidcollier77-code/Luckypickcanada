@@ -1,3 +1,4 @@
+import { Redis } from '@upstash/redis';
 const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
 const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -112,6 +113,20 @@ function validateGiftSession(session) {
   return { ok: true, alreadyDelivered: false, metadata };
 }
 
+
+
+
+function getRedisClient() {
+  try {
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+      return null;
+    }
+    return Redis.fromEnv();
+  } catch (error) {
+    return null;
+  }
+}
+
 export async function deliverGiftEmailForSession(stripe, sessionId) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.GIFT_FROM_EMAIL;
@@ -127,39 +142,60 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
     return validation;
   }
 
+  // Atomic lock using Redis to prevent concurrent webhook/fallback race conditions
+  const redis = getRedisClient();
+  let lockKey;
+  if (redis) {
+    lockKey = `gift_lock:${sessionId}`;
+    try {
+      const claimed = await redis.set(lockKey, '1', { px: 120000, nx: true });
+      if (claimed === null) {
+        return { ok: false, reason: 'Gift fulfillment is already in progress for this session.' };
+      }
+    } catch (err) {
+      console.error('Failed to acquire gift lock', err);
+    }
+  }
+
   const metadata = validation.metadata;
   const reveal = createGiftReveal(metadata);
-
-  await stripe.checkout.sessions.update(sessionId, {
-    metadata: {
-      ...metadata,
-      giftDeliveredAt: new Date().toISOString(),
-      giftNumbers: reveal.numbers.join(','),
-      giftLuckyColor: reveal.luckyColor,
-      giftLuckyDay: reveal.luckyDay,
-    },
-  });
+  const giftDeliveredAt = new Date().toISOString();
 
   const emailResult = await sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal });
 
   if (!emailResult.ok) {
     console.error('Gift email failed', emailResult.details);
-
-    try {
-      await stripe.checkout.sessions.update(sessionId, {
-        metadata: {
-          ...metadata,
-          giftDeliveredAt: '',
-          giftNumbers: '',
-          giftLuckyColor: '',
-          giftLuckyDay: '',
-        },
-      });
-    } catch (releaseError) {
-      console.error('Failed to release gift delivery claim', releaseError);
+    if (redis && lockKey) {
+      try {
+        await redis.del(lockKey);
+      } catch (e) {
+        console.error('Failed to release gift lock', e);
+      }
     }
-
     return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
+  }
+
+  // Only mark as delivered AFTER successful send
+  try {
+    await stripe.checkout.sessions.update(sessionId, {
+      metadata: {
+        ...metadata,
+        giftDeliveredAt,
+        giftNumbers: reveal.numbers.join(','),
+        giftLuckyColor: reveal.luckyColor,
+        giftLuckyDay: reveal.luckyDay,
+      },
+    });
+  } catch (stripeError) {
+      console.error('Failed to update Stripe metadata after successful email delivery', stripeError);
+  }
+
+  if (redis && lockKey) {
+    try {
+      await redis.del(lockKey);
+    } catch (e) {
+      console.error('Failed to release gift lock', e);
+    }
   }
 
   return { ok: true, delivered: true, reveal };

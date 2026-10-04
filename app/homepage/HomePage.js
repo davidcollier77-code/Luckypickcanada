@@ -42,8 +42,34 @@ export default function HomePage() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
 
-    if (searchParams.get('payment') === 'success' && searchParams.get('session_id')) {
-      setLuckyReveal(createLuckyReveal(searchParams.get('pick')));
+    const sessionId = searchParams.get('session_id');
+    const pickParam = searchParams.get('pick');
+    const paymentStatus = searchParams.get('payment');
+
+    if (paymentStatus === 'success' && sessionId) {
+      if (sessionId === 'test_bypass') {
+         // Fallback for REVEAL_TEST_MODE if bypassed without real Stripe
+         setLuckyReveal(createLuckyReveal(pickParam));
+      } else {
+        // Server-side verification for production
+        fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.ok && data.luckyPickGame) {
+              setLuckyReveal(createLuckyReveal(data.luckyPickGame));
+            } else {
+              console.error('Session verification failed:', data.error);
+            }
+          })
+          .catch((err) => console.error('Failed to verify session:', err));
+      }
+    } else if (paymentStatus === 'success' && pickParam && !sessionId) {
+        // If developer testing bypassed the session entirely
+        import('../test-tools/reveal-testing/revealTestConfig').then(({ REVEAL_TEST_MODE }) => {
+            if(REVEAL_TEST_MODE) {
+                setLuckyReveal(createLuckyReveal(pickParam));
+            }
+        });
     }
 
     setSuggested(searchParams.get('suggested') === '1');

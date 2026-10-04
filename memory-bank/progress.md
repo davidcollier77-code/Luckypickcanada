@@ -20,3 +20,8 @@
 - Secured rate-limiting paths using distributed Redis state.
 
 - **Redis spam protection resilience**: Added operation failure handling and atomic counter expiry in `app/spam-protection.js`; verified outage/limit/duplicate behavior with 15 regression tests and counter TTL/concurrency behavior against local Redis.
+- **Security Hardening (Payment & Gift Fulfillment):**
+  - Secured the Lucky Pick Reveal flow by introducing server-side validation (`/api/verify-session`) against Stripe to authorize the reveal, instead of trusting client URL parameters.
+  - Mitigated race conditions and duplicate email deliveries for paid gift packages by wrapping the fulfillment process (`gift-email.js`) in an atomic Upstash Redis lock (`SET NX`).
+  - Audited legacy functionality and securely removed the unauthenticated `/api/send-gift` endpoint.
+  - Broadened Stripe webhook handler to support `checkout.session.async_payment_succeeded`.

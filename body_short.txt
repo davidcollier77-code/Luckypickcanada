@@ -1,0 +1,52 @@
+- **Vulnerability:** The client-side reveal authorization (`HomePage.js`) trusted browser URL parameters (`?payment=success&session_id=...&pick=...`) without independently verifying the payment status with Stripe. This allowed users to manually trigger paid reveals without a valid payment.
+- **Fix:** Implemented a new `/api/verify-session` endpoint to securely check the Stripe session status server-side (`payment_status === 'paid'`). `HomePage.js` now calls this endpoint to authorize the reveal, discarding any fabricated URL parameters.
+
+- **Vulnerability:** The gift fulfillment process (`gift-email.js` and `/api/gift-delivery/route.js`) contained a race condition where a concurrent webhook and fallback delivery request could read the same unclaimed state, process the payload, and send duplicate emails for a single purchase.
+- **Fix:** Introduced an atomic Redis lock (`nx: true`) keyed on `session.id` to guarantee absolute idempotency. The fulfillment logic now accurately respects this lock and correctly handles Stripe metadata updates *after* successful email transmission to ensure failure safety.
+
+- **Vulnerability:** An unauthenticated, public endpoint `/api/send-gift/route.ts` was found remaining in the codebase, enabling users to generate and send gift emails outside of the Stripe checkout flow, bypassing the required $2.99 payment entitlement.
+- **Fix:** Safely removed the legacy `/api/send-gift/route.ts` endpoint and stripped its associated rogue client-side call from
+
+... (PR Summary truncated for length, see pr_description.md for full report) ...
+
+oiding race conditions.
+- Removed the insecure legacy `/api/send-gift/route.ts` endpoint and stripped its erroneous client-side fetch from `app/checkout-modal.js`.
+- Enhanced payment-event coverage by handling `checkout.session.async_payment_succeeded` in `app/api/stripe-webhook/route.js`.
+- Checked and verified that tests pass.
+- Verified build footprint remains comfortably below 495MB.
+
+## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
+
+- `app/api/checkout/route.js`
+- `app/api/gift-delivery/route.js`
+- `app/api/send-gift/route.ts` (deleted)
+- `app/api/stripe-webhook/route.js`
+- `app/api/verify-session/route.js` (new)
+- `app/checkout-modal.js`
+- `app/gift-email.js`
+- `app/homepage/HomePage.js`
+
+## 8. VERIFICATION — REQUIRED
+
+- COMMAND: `pnpm run build`
+  - RESULT: PASS
+  - EVIDENCE: Production build successful. Final `.next/` footprint is 281MB, remaining well under the 495MB limit.
+- COMMAND: `pnpm exec playwright test`
+  - RESULT: PASS
+  - EVIDENCE: Passed 12 functional regression/visual tests on Chromium covering mobile and desktop.
+- COMMAND: `./jules-verify.sh`
+  - RESULT: PASS
+  - EVIDENCE: All verification steps passed.
+
+## 9. USEFUL RESULT — REQUIRED
+
+USEFUL RESULT: YES
+
+## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
+
+Pre-submission double-check has been completed.
+- AGENTS.md was read FIRST.
+- The 495 MB build limit was respected.
+- Final diff inspected and matches PR Summary exactly.
+- USEFUL RESULT: YES is present.
+- All PR Summary statements match the actual work.

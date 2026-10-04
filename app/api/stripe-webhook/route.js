@@ -23,7 +23,7 @@ export async function POST(request) {
     return Response.json({ error: 'Invalid Stripe webhook signature.' }, { status: 400 });
   }
 
-  if (event.type !== 'checkout.session.completed') {
+  if (event.type !== 'checkout.session.completed' && event.type !== 'checkout.session.async_payment_succeeded') {
     return Response.json({ received: true });
   }
 

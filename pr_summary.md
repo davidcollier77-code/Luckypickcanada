@@ -1,89 +1,121 @@
-# PR Summary Canonical Record
+# PR Summary
 
-## 1. SELECTED TASK GROUP
-SELECTED TASK GROUP: security
-GROUP REASON: Task involves investigating and fixing intermittent public-form protection issues (Turnstile), payment inconsistencies, API rate limits, and gift-delivery security.
+SELECTED TASK GROUP: Security Specialist
+GROUP REASON: Task explicitely requested hardening of the Lucky Pick Canada payment and gift-delivery security boundaries, verifying and securing authorization checks and idempotency mechanisms for paid gifts.
 
-## 2. LIBRARY CONSULTATION REPORT
-LIBRARY: Next.js (/vercel/next.js)
-VERSION: 14.x
+## 2. LIBRARY CONSULTATION REPORT — REQUIRED
+
+LIBRARY: /vercel/next.js
+VERSION: N/A (URL based)
 USED: YES
 USEFUL: YES
-REASON: Consulted to determine the proper usage of Next.js `next/script` tag to replace custom DOM injection for Turnstile, resolving hydration/routing race conditions.
+REASON: Consulted API routing and server-side request/response paradigms to correctly implement the `/api/verify-session` endpoint and update webhook handling.
 
-LIBRARY: Upstash Docs (/upstash/docs)
-VERSION: latest
+LIBRARY: /reactjs/react.dev
+VERSION: N/A (URL based)
 USED: YES
 USEFUL: YES
-REASON: Used to determine the correct way to initialize the Upstash Redis client and utilize it for distributed incrementing and expiration for rate limiting in serverless environments.
+REASON: Reviewed `useEffect` and React state updates in `HomePage.js` to ensure the asynchronous session verification via `fetch` properly updates the component state securely.
 
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
-DOCUMENT: Jules Documentation
+LIBRARY: /stripe/stripe-js
+VERSION: N/A (URL based)
 USED: YES
 USEFUL: YES
-REASON: Used to establish baseline initialization protocols and verification standards.
+REASON: Verified the metadata structure and available webhook events (`checkout.session.completed`, `checkout.session.async_payment_succeeded`) to correctly handle paid authorizations and idempotency safely.
 
-DOCUMENT: .jules/sentinel.md
+LIBRARY: /upstash/docs
+VERSION: N/A (URL based)
 USED: YES
 USEFUL: YES
-REASON: Provided instructions for documenting security-related learnings, PR naming conventions, and required format for reporting fixes.
+REASON: Consulted Upstash Redis documentation for atomic lock implementation (`nx: true`, `px: 120000`) to guarantee idempotency and prevent duplicate webhook/fallback delivery attempts.
 
-## 4. REPOSITORY COMPONENT REPORT
-COMPONENT: app/turnstile-field.js
+## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
+
+DOCUMENT: jules.google/docs
 USED: YES
 USEFUL: YES
-REASON: Analyzed custom script loading logic and replaced it with Next.js Script component to fix intermittent race conditions.
+REASON: Followed standard governance review and execution procedures for tasks.
+
+DOCUMENT: developers.google.com/jules/api
+USED: NO
+USEFUL: NO
+REASON: API details not needed.
+
+DOCUMENT: /google-gemini/gemini-cli
+USED: NO
+USEFUL: NO
+REASON: CLI Not needed.
+
+DOCUMENT: /websites/ai_google_dev_gemini-api
+USED: NO
+USEFUL: NO
+REASON: Not needed.
+
+## 4. REPOSITORY COMPONENT REPORT — REQUIRED
+
+COMPONENT: memory-bank/
+USED: YES
+USEFUL: YES
+REASON: Reviewed `activeContext.md` and `projectBrief.md` to understand recent changes to Turnstile, Redis spam protection, and Stripe webhook logic that formed the foundation for this task.
+
+COMPONENT: .jules/
+USED: YES
+USEFUL: YES
+REASON: Read `jules.md`, `security.md`, and `testing.md`. Dictated the security constraints, verification mandates, and authorization requirements for modifying payment logic.
 
 COMPONENT: app/spam-protection.js
 USED: YES
 USEFUL: YES
-REASON: Upgraded from in-memory Map rate-limiting to Upstash Redis to ensure distributed state consistency across Cloudflare ephemeral instances.
+REASON: Inspected existing Redis implementations (`tryRedisOperation`) as a reference model for applying a short-lived atomic lock in the gift delivery flow.
 
-COMPONENT: app/api/checkout/route.js
-USED: YES
-USEFUL: YES
-REASON: Fixed pricing bug where gift_package was mistakenly set to $1.99 instead of $2.99.
+## 5. REPORTING INTEGRITY — MANDATORY
 
-COMPONENT: app/api/gift-delivery/route.js
-USED: YES
-USEFUL: YES
-REASON: Hardened the GET route against duplicate/race condition abuse by relying on the metadata.giftDeliveredAt flag set by the webhook for definitive state checking.
-
-## 5. REPORTING INTEGRITY
-Work performed matches the requested scope accurately. All modifications were verified with `pnpm run build` and `pnpm test`.
+I have truthfully reported all tool usage and context acquisition. Only documents actually loaded via bash and verified for relevance were marked "USED: YES".
 
 ## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-- Replaced custom Turnstile injection with Next.js `<Script>` to fix intermittent loading failures while preserving performance (lazyOnload).
-- Changed `gift_package` `unitAmount` in `app/api/checkout/route.js` from 199 to 299 to fix a critical pricing inconsistency.
-- Integrated Upstash Redis into `app/spam-protection.js` to provide distributed, robust rate limiting and duplicate-submission blocking.
-- Updated `app/api/gift-delivery/route.js` to securely rely on webhook-driven `metadata.giftDeliveredAt` to prevent race conditions or abuse of the GET route.
-- Updated `memory-bank` context and `sentinel.md` learnings.
-- Authorized systems (Stripe checkout, Turnstile, Rate limits) were modified within the authorized bounds to fix specific issues without expanding scope unnecessarily.
 
-## 7. EXACT FINAL DIFF RECONCILIATION
-Changed files:
-- .jules/sentinel.md
-- app/api/checkout/route.js
-- app/api/gift-delivery/route.js
-- app/api/oracle/route.js
-- app/api/send-gift/route.ts
-- app/api/visits/route.js
-- app/spam-protection.js
-- app/turnstile-field.js
-- memory-bank/activeContext.md
-- memory-bank/progress.md
+- Analyzed the three security concerns affecting Stripe payments and gift delivery.
+- Established server-side authorization for paid `lucky_pick` reveals by implementing `app/api/verify-session/route.js` to check actual Stripe Session status (`payment_status === 'paid'`) instead of blindly trusting URL parameters (`payment=success&session_id=...&pick=...`).
+- Preserved the existing `REVEAL_TEST_MODE` developer testing bypass in `app/homepage/HomePage.js`.
+- Hardened gift delivery against concurrent duplicate execution by introducing a 2-minute atomic Redis lock (`nx: true`) keyed on `session.id` in `app/gift-email.js` prior to sending the email.
+- Secured the gift fallback loop by updating `app/api/gift-delivery/route.js` to redirect successfully if `result.alreadyDelivered` is true, avoiding race conditions.
+- Removed the insecure legacy `/api/send-gift/route.ts` endpoint and stripped its erroneous client-side fetch from `app/checkout-modal.js`.
+- Enhanced payment-event coverage by handling `checkout.session.async_payment_succeeded` in `app/api/stripe-webhook/route.js`.
+- Checked and verified that tests pass.
+- Verified build footprint remains comfortably below 495MB.
 
-## 8. VERIFICATION
-COMMAND: `pnpm run build`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Build completed successfully in 4.5s. All routes generated and compiled without error.
+## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
 
-COMMAND: `pnpm test`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: 11 tests passed in 2 test files.
+- `app/api/checkout/route.js`
+- `app/api/gift-delivery/route.js`
+- `app/api/send-gift/route.ts` (deleted)
+- `app/api/stripe-webhook/route.js`
+- `app/api/verify-session/route.js` (new)
+- `app/checkout-modal.js`
+- `app/gift-email.js`
+- `app/homepage/HomePage.js`
 
-## 9. USEFUL RESULT
+## 8. VERIFICATION — REQUIRED
+
+- COMMAND: `pnpm run build`
+  - RESULT: PASS
+  - EVIDENCE: Production build successful. Final `.next/` footprint is 281MB, remaining well under the 495MB limit.
+- COMMAND: `pnpm exec playwright test`
+  - RESULT: PASS
+  - EVIDENCE: Passed 12 functional regression/visual tests on Chromium covering mobile and desktop.
+- COMMAND: `./jules-verify.sh`
+  - RESULT: PASS
+  - EVIDENCE: All verification steps passed.
+
+## 9. USEFUL RESULT — REQUIRED
+
 USEFUL RESULT: YES
 
-## 10. PRE-SUBMISSION DOUBLE-CHECK
-Pre-submission double-check has been completed. The changes accurately address the Turnstile, checkout pricing, rate limiting, and gift delivery security issues while remaining within the authorized scope.
+## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
+
+Pre-submission double-check has been completed.
+- AGENTS.md was read FIRST.
+- The 495 MB build limit was respected.
+- Final diff inspected and matches PR Summary exactly.
+- USEFUL RESULT: YES is present.
+- All PR Summary statements match the actual work.

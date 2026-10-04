@@ -1,0 +1,1 @@
+🛡️ Sentinel: [HIGH] Fix authorization, idempotency, and legacy endpoint bypasses in Stripe payment flow.

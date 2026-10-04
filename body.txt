@@ -1,5 +1,3 @@
-🛡️ Sentinel: [HIGH] Fix authorization, idempotency, and legacy endpoint bypasses in Stripe payment flow.
-
 - **Vulnerability:** The client-side reveal authorization (`HomePage.js`) trusted browser URL parameters (`?payment=success&session_id=...&pick=...`) without independently verifying the payment status with Stripe. This allowed users to manually trigger paid reveals without a valid payment.
 - **Fix:** Implemented a new `/api/verify-session` endpoint to securely check the Stripe session status server-side (`payment_status === 'paid'`). `HomePage.js` now calls this endpoint to authorize the reveal, discarding any fabricated URL parameters.
 

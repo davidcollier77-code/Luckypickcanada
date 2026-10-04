@@ -74,7 +74,7 @@ export async function GET(request) {
     // but this is mostly handled by webhook now. Let's just do it securely.
     const result = await deliverGiftEmailForSession(stripe, session.id);
 
-    if (result.ok) {
+    if (result.ok || result.alreadyDelivered) {
       const recipientEmail = session.metadata?.recipientEmail || '';
       const url = new URL(`/reveal/${session.id}`, request.url);
       if (recipientEmail) {

@@ -28,3 +28,7 @@
 ## Pending Verification
 - Real-world distributed rate limiting observation (KV store interaction).
 - Turnstile reliability across various browsers/network speeds.
+- Hardened paid gift fulfillment to prevent concurrent duplicate emails via a temporary Redis NX lock keyed by Stripe session ID.
+- Established server-side authorization for paid `lucky_pick` reveals by checking Stripe Session data, closing an exploit that relied on client-side URL parameter manipulation.
+- Removed the obsolete and unverified legacy `/api/send-gift` endpoint to enforce paid entitlement boundaries.
+- Enhanced Stripe webhook logic to cover asynchronous payment events (`checkout.session.async_payment_succeeded`).
