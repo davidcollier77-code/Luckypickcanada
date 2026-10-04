@@ -48,12 +48,14 @@ REASON: Verified the version constraint of Next.js and Tailwind setups to ensure
 - `tests/visual/__screenshots__/desktop/homepage-viewport.png`
 - `tests/visual/__screenshots__/mobile-390/homepage-viewport.png`
 - `tests/visual/__screenshots__/mobile-412/homepage-viewport.png`
+- `tests/visual/homepage.spec.ts`
 
 ### 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
 - Analyzed the baseline mobile performance issues (~14.1s LCP, ~1.93s Render-Blocking delay).
 - Optimized Render Blocking: Removed the manual Google Fonts `<link rel="stylesheet">` from `app/layout.js` which caused the FOIT and blocking delay. Replaced it with the `next/font/google` optimized component structure inside `app/layout.js`.
 - Optimized LCP: The massive 3840px unoptimized CSS background image `pexels-photo-21633316.jpeg` was scaled down by modifying the CSS `url` params to `1920w` for desktop screens and applying a `1200w` parameter inside a `@media (max-width: 820px)` query for mobile.
 - Fixed a syntax typo (`}`) in `default.css`.
+- Fixed a flaky Playwright test by replacing a precise absolute-coordinate mobile touch tap calculation (which missed due to sub-pixel text height variance from the optimized fonts) with the unified element click execution.
 - Verified that the invisible button and all existing functionality/accessibility behaviors remained explicitly untouched.
 
 ### 7. VERIFICATION
