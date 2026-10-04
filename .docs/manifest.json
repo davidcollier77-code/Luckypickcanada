@@ -61,7 +61,10 @@
       "/magicuidesign/magicui",
       "/goldfire/howler.js",
       "/python-pillow/Pillow",
-      "/numpy/numpy"
+      "/numpy/numpy",
+      "/websites/google_webp",
+      "/lovell/sharp",
+      "/websites/web_dev_images"
     ],
     "testing": [
       "/github/docs",
@@ -345,6 +348,18 @@
     "/numpy/numpy": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/numpy/numpy/main/doc/source/reference/arrays.ndarray.rst"
+    },
+    "/websites/google_webp": {
+      "type": "url",
+      "url": "https://developers.google.com/speed/webp"
+    },
+    "/lovell/sharp": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/lovell/sharp/main/README.md"
+    },
+    "/websites/web_dev_images": {
+      "type": "url",
+      "url": "https://web.dev/learn/images"
     }
   },
   "inventory": [
@@ -394,7 +409,10 @@
     "/goldfire/howler.js",
     "/websites/mdn_web_audio",
     "/python-pillow/Pillow",
-    "/numpy/numpy"
+    "/numpy/numpy",
+    "/websites/google_webp",
+    "/lovell/sharp",
+    "/websites/web_dev_images"
   ],
   "githubShas": {
     "/github/docs": "d42e9e69399ef977beb99c123363db149d6cf81e",
