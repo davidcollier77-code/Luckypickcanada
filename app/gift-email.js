@@ -154,6 +154,7 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
       }
     } catch (err) {
       console.error('Failed to acquire gift lock', err);
+      return { ok: false, reason: 'Gift fulfillment service temporarily unavailable.' };
     }
   }
 
