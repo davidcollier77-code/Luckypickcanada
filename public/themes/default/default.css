@@ -8,8 +8,8 @@
   --aurora-green: #49c99f;
   --aurora-blue: #76bdfd;
   --aurora-violet: #c58dff;
-  --lpc-display: 'Cinzel', Georgia, serif;
-  --lpc-body: 'Manrope', Inter, ui-sans-serif, system-ui, sans-serif;
+  --lpc-display: var(--font-cinzel, 'Cinzel'), Georgia, serif;
+  --lpc-body: var(--font-manrope, 'Manrope'), var(--font-inter, Inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -101,7 +101,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(255, 226, 136, 0
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
-}
+
 
 .lucky-site-shell::before,
 .lucky-map-shell::before {

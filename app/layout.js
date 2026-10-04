@@ -1,5 +1,13 @@
 import Link from 'next/link';
 import './globals.css';
+import '../public/themes/default/index.css';
+import { Inter, Playfair_Display, Cinzel, Manrope } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
+const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap', variable: '--font-playfair' });
+const cinzel = Cinzel({ subsets: ['latin'], display: 'swap', variable: '--font-cinzel', weight: ['600', '700', '800', '900'] });
+const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-manrope', weight: ['400', '500', '600', '700', '800'] });
+
 
 
 // Use Next.js build ID for cache-busting, automatically updated on each build
@@ -54,10 +62,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en-CA" className="m-0 p-0">
       <head>
-        <link rel="stylesheet" href={cssPath} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+        <link rel="preload" href={cssPath} as="style" />
+
+
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
         <link rel="preload" href="/homepage-hero-lucky-pick-canada.webp" as="image" fetchPriority="high" />
         <script
@@ -73,7 +80,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className="m-0 p-0">
+      <body className={`m-0 p-0 ${inter.variable} ${playfair.variable} ${cinzel.variable} ${manrope.variable}`}>
         <div className="homepage-background-foundation fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
         </div>
         <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0 flex flex-col min-h-screen">
