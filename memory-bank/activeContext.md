@@ -3,6 +3,7 @@
 ## Current Goals
 - Ensure homepage mobile rendering achieves optimal Speed Index and Largest Contentful Paint (LCP) benchmarks.
 - Mitigate console errors and unexpected fallbacks triggered by absent cloud services (Upstash Redis) or frantic user events (window resizes).
+- Resolve browser reliability warnings from performance scans.
 
 ## Recent Work
 - Investigated and improved the mobile Speed Index and LCP on the homepage.
@@ -11,6 +12,7 @@
 - Eliminated an unstable cache-busting behavior in `app/layout.js` where `crypto.randomUUID()` caused styles to reload endlessly, harming Speed Index cache hit rates.
 - Addressed server console 500 errors in `app/api/visits/route.js` caused by initializing `@upstash/redis` without credentials. Provided a graceful initialization bypass (`{ visits: 0 }`).
 - Mitigated visual jank on viewport resize by adding a 200ms debounce to the `handleResize` function in `app/homepage/HomePage.js`.
+- Fixed a `LazyLoadImageIssue` DevTools warning on mobile by removing `loading="lazy"` from `communityCover` in `app/homepage/HomePage.js`. Verified `CookieIssue` was external.
 
 ## Open Questions
 - None. Speed Index, LCP, and Console Error targets have been successfully met according to available bounds and environments. Build completes successfully and is under the 495MB limit.
