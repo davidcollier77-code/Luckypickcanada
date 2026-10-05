@@ -5,7 +5,7 @@ import { getClientIp, checkApiRateLimit } from '../../spam-protection';
 
 export const runtime = 'nodejs';
 
-function readStoredLuckyReveal(metadata) {
+function readStoredLuckyReveal(metadata: Record<string, string>) {
   const game = metadata.luckyPickGame === '7' ? '7' : '6';
   const expectedCount = game === '7' ? 7 : 6;
   const max = game === '7' ? 50 : 49;
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
     }
 
     const game = metadata.luckyPickGame === '7' ? '7' : '6';
-    let reveal;
+    let reveal: ReturnType<typeof readStoredLuckyReveal> = null;
 
     if (checkoutType === 'lucky_pick') {
       reveal = readStoredLuckyReveal(metadata);
