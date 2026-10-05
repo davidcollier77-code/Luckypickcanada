@@ -33,3 +33,7 @@
 - Removed the obsolete and unverified legacy `/api/send-gift` endpoint to enforce paid entitlement boundaries.
 - Enhanced Stripe webhook logic to cover asynchronous payment events (`checkout.session.async_payment_succeeded`).
 - Addressed CodeRabbit review feedback on PR #1367 to fine-tune Stripe webhooks, Redis locking, and error fallback scenarios in `gift-email.js` and `HomePage.js`.
+- Restored per-IP rate limiting on `/api/verify-session` (`verify_session`, 60 requests per hour, 429 with `{ error: 'rate_limited' }` returned before any Stripe call) plus `export const dynamic = 'force-dynamic'`.
+- `HomePage.js` now surfaces a visible `role="alert"` message when paid-reveal verification fails, with a dedicated 429 message, instead of only writing to the console.
+- Verified with temporary harnesses (not committed): the 61st request is rejected before Stripe is constructed; the 60th still succeeds; the in-memory fallback enforces the same ceiling; unpaid and non-`lucky_pick` sessions remain 403; `test_bypass` and `?pick=` reveals stay gated behind `REVEAL_TEST_MODE = false`.
+- Known limitation: the committed Vitest config does not enable JSX for `.js` modules, so `app/homepage/*.js` components cannot be imported by Vitest without a temporary config or `.jsx` copy.

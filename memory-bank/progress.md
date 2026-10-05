@@ -29,3 +29,8 @@
   - Updated Redis lock implementation for gift deliveries to fail closed on initialization errors, properly use a unique lock token, and release locks via a Lua script in a `finally` block to prevent deadlocks.
   - Implemented a 24-hour Redis 'sent marker' fallback in case Stripe metadata fails to update after successful email delivery, reinforcing idempotency.
   - Reinforced `test_bypass` checking in the browser to ensure `REVEAL_TEST_MODE` is strictly evaluated before rendering unverified reveals.
+- **Security Hardening Follow-up (Rate-limit regression on PR #1367):**
+  - Restored the `checkApiRateLimit(getClientIp(request), 'verify_session', 60, 3600000)` guard and `export const dynamic = 'force-dynamic'` on `/api/verify-session`, rejecting with HTTP 429 `{ ok: false, error: 'rate_limited' }` before the Stripe client is constructed so an unauthenticated caller cannot burn Stripe quota or probe session IDs.
+  - Raised the ceiling from 10/hour to 60/hour so shared/NAT and carrier-grade NAT customers are not locked out of a paid reveal they already paid for.
+  - Replaced the console-only failure path in `HomePage.js` with a visible `role="alert"` notice that distinguishes a 429 rate limit from other verification failures and from a network failure.
+  - Verification: 27/27 Vitest tests pass; `pnpm build` succeeds with a 290.42 MB `.next` (limit 495 MB) and lists `/api/verify-session` as a dynamic route.
