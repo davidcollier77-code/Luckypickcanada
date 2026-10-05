@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { checkApiRateLimit, getClientIp } from '../../spam-protection';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -9,6 +11,12 @@ export async function GET(request) {
 
   if (!secretKey || !sessionId) {
     return NextResponse.json({ ok: false, error: 'Invalid request' }, { status: 400 });
+  }
+
+  const rateLimit = await checkApiRateLimit(getClientIp(request), 'verify_session', 10, 3600000);
+
+  if (!rateLimit.ok) {
+    return NextResponse.json({ ok: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
   }
 
   const stripe = new Stripe(secretKey, {
@@ -19,7 +27,7 @@ export async function GET(request) {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session) {
-      return NextResponse.json({ ok: false, error: 'Session not found' }, { status: 404 });
+      return NextResponse.json({ ok: false, error: 'Payment not verified' }, { status: 403 });
     }
 
     const metadata = session.metadata || {};
