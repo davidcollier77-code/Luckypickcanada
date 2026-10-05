@@ -1,11 +1,13 @@
 # JULES FINAL REPORT - SECURITY HARDENING PAYMENT & REVEAL FLOWS
 
 ## 1. ACTION SUMMARY
-Audited the payment logic and discovered the client app explicitly trusted `payment=success` browser parameters to generate reveals. We introduced strict server-authoritative logic. I created `/api/verify-session` to mandate validating checkout sessions against Stripe and retrieving their details directly, ignoring the URL parameters. Legacy bypassing APIs have been securely walled behind `NODE_ENV === 'development'`. Gift delivery is protected against concurrent dispatches with a Redis SET NX claim when distributed storage is configured, plus a stable Resend idempotency key and deterministic per-session reveal.
+Audited the payment logic and removed client-side trust of payment-success browser parameters. Server-authoritative Stripe verification now gates paid reveals. Gift delivery is protected against concurrent dispatches with a Redis SET NX claim when distributed storage is configured, a stable Resend idempotency key, and a deterministic per-session reveal. Legacy reveal routes are restricted to local development test mode.
 
 ## 2. FILES CHANGED
-- `app/api/verify-session/route.ts` (NEW)\n- `app/api/verify-session/route.js` (REMOVED)
-- `__tests__/security-payment.test.js` (NEW)
+- `app/api/verify-session/route.ts` (NEW)
+- `app/api/verify-session/route.js` (REMOVED)
+- `__tests__/security-payment.test.js` (NEW/UPDATED)
+- `__tests__/verify-session.security.test.js` (ADDED/UPDATED)
 - `app/api/send-gift/route.ts`
 - `app/api/gift-delivery/route.js`
 - `app/gift-email.js`
@@ -14,17 +16,17 @@ Audited the payment logic and discovered the client app explicitly trusted `paym
 - `app/checkout-modal.js`
 
 ## 3. LIBRARIES CONSULTED / USED
-- None specifically. General standard library interactions.
+- Stripe, Resend, and Upstash integrations already present in the project.
 
-## 4. TESTS EXECUTED
-- `vitest run` on `__tests__/security-payment.test.js` completely verified that legacy APIs were strictly for dev overrides and that production endpoints rejected malformed requests. All 31 tests are passing.
-- `pnpm run build` confirmed next-build generates static correctly with the updated client boundary.
+## 4. TESTS / VERIFICATION
+- Added focused security coverage for unpaid sessions, unsupported checkout types, invalid/forged session retrieval, metadata allowlisting, stable concurrent lucky reveals, persistence-failure handling, and the development-only legacy gift endpoint.
+- Automated CI is the authoritative test/build execution for this PR. No local test or build pass is claimed in this report.
 
 ## 5. UNRESOLVED ISSUES
-- None
+- No known code-review blockers remain after the final fixes. CI verification is still required before merge.
 
 ## 6. SCOPE EXPANSIONS
-- None
+- None.
 
 ## 7. USEFUL RESULT: YES
-The reviewed payment, reveal, and gift-delivery paths have been hardened; CI remains the final verification gate.
+The reviewed payment, reveal, and gift-delivery paths have been hardened. Final merge readiness depends on the PR's CI checks completing successfully.
