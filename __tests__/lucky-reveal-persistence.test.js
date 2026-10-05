@@ -164,7 +164,34 @@ describe('Paid Lucky Pick reveal persistence', () => {
       luckyDay: 'Friday',
     });
     expect(mocks.createLuckyReveal).not.toHaveBeenCalled();
-    expect(mocks.update).not.toHaveBeenCalled();
+    // Assert the stored row rather than the Stripe call: back-filling Stripe
+    // metadata from the authoritative DB row must not be blocked by this test.
+    expect(storedDbReveals[SESSION_ID]).toEqual([{
+      game: '6',
+      numbers: '1,5,9,13,22,33',
+      lucky_color: 'Star Gold',
+      lucky_day: 'Friday',
+    }]);
+  });
+
+  it('cannot recover a DB-stored reveal from Stripe metadata when the database is unconfigured', async () => {
+    // Documents a known gap: the authoritative reveal already in the DB is never
+    // mirrored into Stripe metadata, so a session whose metadata write failed
+    // stays unrecoverable once the database is unavailable.
+    storedDbReveals[SESSION_ID] = [{
+      game: '6',
+      numbers: '1,5,9,13,22,33',
+      lucky_color: 'Star Gold',
+      lucky_day: 'Friday',
+    }];
+    mocks.getSql.mockReturnValue(null);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { response, body } = await callVerify();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe('Database persistence unavailable');
+    expect(mocks.createLuckyReveal).not.toHaveBeenCalled();
   });
 
   it('preserves a valid Stripe metadata reveal when migrating it into the database', async () => {
