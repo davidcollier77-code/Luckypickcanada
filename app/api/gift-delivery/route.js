@@ -74,7 +74,9 @@ export async function GET(request) {
     // but this is mostly handled by webhook now. Let's just do it securely.
     const result = await deliverGiftEmailForSession(stripe, session.id);
 
-    if (result.ok || result.alreadyDelivered) {
+    // The webhook may already hold the lock, in which case delivery is about to
+    // succeed, so the user still reaches the reveal page.
+    if (result.ok || result.alreadyDelivered || result.inProgress) {
       const recipientEmail = session.metadata?.recipientEmail || '';
       const url = new URL(`/reveal/${session.id}`, request.url);
       if (recipientEmail) {
