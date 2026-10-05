@@ -82,80 +82,133 @@ export async function GET(request: Request) {
         // Ensure DB schema is ready
         await initializeDatabase();
 
-        // 1. Check if we already have an authoritative reveal in the DB
-        let dbReveal = await sql`
-          SELECT game, numbers, lucky_color, lucky_day
-          FROM lucky_reveals
-          WHERE session_id = ${sessionId}
-        `;
-
-        if (dbReveal && dbReveal.length > 0) {
-          // Authoritative reveal found.
-          const row = dbReveal[0];
-          reveal = {
-            game: row.game,
-            numbers: row.numbers.split(',').map(Number),
-            luckyColor: row.lucky_color,
-            luckyDay: row.lucky_day,
-          };
-        } else {
-          // 2. No authoritative reveal found. Generate one locally.
-          const generatedReveal = createLuckyReveal(session.metadata?.luckyPickGame === '7' ? '7' : '6');
-          const numbersString = generatedReveal.game.numbers.join(',');
-
-          try {
-            // 3. Atomically attempt to insert the new reveal. ON CONFLICT DO NOTHING ensures
-            // if a concurrent request beat us to it, we don't overwrite the authoritative one.
-            await sql`
-              INSERT INTO lucky_reveals (session_id, game, numbers, lucky_color, lucky_day)
-              VALUES (
-                ${sessionId},
-                ${session.metadata?.luckyPickGame === '7' ? '7' : '6'},
-                ${numbersString},
-                ${generatedReveal.luckyColor},
-                ${generatedReveal.luckyDay}
-              )
-              ON CONFLICT (session_id) DO NOTHING
-            `;
-          } catch (insertError) {
-             console.error('Failed to insert lucky reveal into database:', insertError);
-             return NextResponse.json({ error: 'Failed to persist reveal' }, { status: 500 });
-          }
-
-          // 4. Re-read from DB to get the actual authoritative reveal (either ours or the concurrent winner's)
-          dbReveal = await sql`
+        try {
+          // 1. Check if we already have an authoritative reveal in the DB
+          let dbReveal = await sql`
             SELECT game, numbers, lucky_color, lucky_day
             FROM lucky_reveals
             WHERE session_id = ${sessionId}
           `;
 
           if (dbReveal && dbReveal.length > 0) {
-             const row = dbReveal[0];
-             reveal = {
-               game: row.game,
-               numbers: row.numbers.split(',').map(Number),
-               luckyColor: row.lucky_color,
-               luckyDay: row.lucky_day,
-             };
+            // Authoritative reveal found - validate before using
+            const row = dbReveal[0];
+            const game = row.game === '7' ? '7' : '6';
+            const expectedCount = game === '7' ? 7 : 6;
+            const max = game === '7' ? 50 : 49;
+            const numbers = String(row.numbers || '')
+              .split(',')
+              .map((value) => Number(value.trim()));
 
-             // 5. Update Stripe metadata for convenience/read-through.
-             // Ignore failures since the DB is now the absolute source of truth.
-             try {
+            if (
+              !row.lucky_color ||
+              !row.lucky_day ||
+              numbers.length !== expectedCount ||
+              numbers.some((number) => !Number.isInteger(number) || number < 1 || number > max) ||
+              new Set(numbers).size !== numbers.length
+            ) {
+              console.error('Invalid reveal data found in database for session:', sessionId);
+              return NextResponse.json({ error: 'Invalid stored reveal data' }, { status: 500 });
+            }
+
+            reveal = {
+              game,
+              numbers,
+              luckyColor: row.lucky_color,
+              luckyDay: row.lucky_day,
+            };
+          } else {
+            // 2. No authoritative reveal found. Check Stripe metadata for migration.
+            const existingReveal = readStoredLuckyReveal(session.metadata || {});
+            let revealToInsert;
+
+            if (existingReveal) {
+              // Preserve existing paid reveal from Stripe metadata
+              revealToInsert = existingReveal;
+            } else {
+              // Generate a new reveal
+              const generatedReveal = createLuckyReveal(session.metadata?.luckyPickGame === '7' ? '7' : '6');
+              revealToInsert = {
+                game: generatedReveal.game.name.startsWith('7') ? '7' : '6',
+                numbers: generatedReveal.game.numbers,
+                luckyColor: generatedReveal.luckyColor,
+                luckyDay: generatedReveal.luckyDay,
+              };
+            }
+
+            const numbersString = revealToInsert.numbers.join(',');
+            const gameValue = revealToInsert.game;
+
+            // 3. Atomically attempt to insert the new reveal. ON CONFLICT DO NOTHING ensures
+            // if a concurrent request beat us to it, we don't overwrite the authoritative one.
+            await sql`
+              INSERT INTO lucky_reveals (session_id, game, numbers, lucky_color, lucky_day)
+              VALUES (
+                ${sessionId},
+                ${gameValue},
+                ${numbersString},
+                ${revealToInsert.luckyColor},
+                ${revealToInsert.luckyDay}
+              )
+              ON CONFLICT (session_id) DO NOTHING
+            `;
+
+            // 4. Re-read from DB to get the actual authoritative reveal (either ours or the concurrent winner's)
+            dbReveal = await sql`
+              SELECT game, numbers, lucky_color, lucky_day
+              FROM lucky_reveals
+              WHERE session_id = ${sessionId}
+            `;
+
+            if (dbReveal && dbReveal.length > 0) {
+              const row = dbReveal[0];
+              const game = row.game === '7' ? '7' : '6';
+              const expectedCount = game === '7' ? 7 : 6;
+              const max = game === '7' ? 50 : 49;
+              const numbers = String(row.numbers || '')
+                .split(',')
+                .map((value) => Number(value.trim()));
+
+              if (
+                !row.lucky_color ||
+                !row.lucky_day ||
+                numbers.length !== expectedCount ||
+                numbers.some((number) => !Number.isInteger(number) || number < 1 || number > max) ||
+                new Set(numbers).size !== numbers.length
+              ) {
+                console.error('Invalid reveal data found in database after insert for session:', sessionId);
+                return NextResponse.json({ error: 'Invalid stored reveal data' }, { status: 500 });
+              }
+
+              reveal = {
+                game,
+                numbers,
+                luckyColor: row.lucky_color,
+                luckyDay: row.lucky_day,
+              };
+
+              // 5. Update Stripe metadata for convenience/read-through.
+              // Ignore failures since the DB is now the absolute source of truth.
+              try {
                 session = await stripe.checkout.sessions.update(sessionId, {
                   metadata: {
                     ...(session.metadata || {}),
-                    luckyPickNumbers: row.numbers,
+                    luckyPickNumbers: numbers.join(','),
                     luckyPickLuckyColor: row.lucky_color,
                     luckyPickLuckyDay: row.lucky_day,
                   },
                 });
-             } catch (stripeUpdateError) {
+              } catch (stripeUpdateError) {
                 console.error('Non-critical: Failed to update Stripe metadata with DB authoritative reveal', stripeUpdateError);
-             }
-          } else {
-             console.error('Failed to retrieve reveal from DB immediately after insert attempt.');
-             return NextResponse.json({ error: 'Failed to retrieve authoritative reveal' }, { status: 500 });
+              }
+            } else {
+              console.error('Failed to retrieve reveal from DB immediately after insert attempt.');
+              return NextResponse.json({ error: 'Failed to retrieve authoritative reveal' }, { status: 500 });
+            }
           }
+        } catch (dbError) {
+          console.error('Database error during Lucky Pick reveal persistence:', dbError);
+          return NextResponse.json({ error: 'Database persistence failed' }, { status: 500 });
         }
       }
     }

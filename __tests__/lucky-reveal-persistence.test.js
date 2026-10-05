@@ -91,7 +91,7 @@ afterEach(() => {
 describe('Paid Lucky Pick reveal persistence', () => {
   it('persists a generated reveal on first verification', async () => {
     expectRedisConfigured();
-
+    expectDatabaseConfigured();
     const { response, body } = await callVerify();
 
     expect(response.status).toBe(200);
@@ -103,11 +103,91 @@ describe('Paid Lucky Pick reveal persistence', () => {
       luckyDay: GENERATED.luckyDay,
     });
     expect(storedMetadata.luckyPickNumbers).toBe('3,11,19,24,40,47');
-    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(storedDbReveals[SESSION_ID]).toBeDefined();
+    expect(storedDbReveals[SESSION_ID][0].numbers).toBe('3,11,19,24,40,47');
   });
 
   it('returns the identical persisted reveal on a second verification', async () => {
     expectRedisConfigured();
+    expectDatabaseConfigured();
+    storedDbReveals[SESSION_ID] = [{
+      game: '6',
+      numbers: '1,5,9,13,22,33',
+      lucky_color: 'Star Gold',
+      lucky_day: 'Friday',
+    }];
+
+    const { response, body } = await callVerify();
+
+    expect(response.status).toBe(200);
+    expect(body.reveal.numbers).toEqual([1, 5, 9, 13, 22, 33]);
+    expect(body.reveal.luckyColor).toBe('Star Gold');
+    expect(mocks.update).toHaveBeenCalled();
+    expect(mocks.createLuckyReveal).not.toHaveBeenCalled();
+  });
+
+  it('preserves existing reveals from Stripe metadata during migration', async () => {
+    expectDatabaseConfigured();
+    storedMetadata = {
+      ...storedMetadata,
+      luckyPickNumbers: '7,14,21,28,35,42',
+      luckyPickLuckyColor: 'Fortune Blue',
+      luckyPickLuckyDay: 'Wednesday',
+
+    const { response, body } = await callVerify();
+
+    expect(response.status).toBe(200);
+    expect(body.reveal.numbers).toEqual([1, 5, 9, 13, 22, 33]);
+    expect(body.reveal.numbers).toEqual([7, 14, 21, 28, 35, 42]);
+    expect(body.reveal.luckyColor).toBe('Fortune Blue');
+    expect(body.reveal.luckyDay).toBe('Wednesday');
+    // Verify the Stripe metadata was used to seed the database
+    expect(storedDbReveals[SESSION_ID][0].numbers).toBe('7,14,21,28,35,42');
+    expect(mocks.redis.set).not.toHaveBeenCalled();
+
+  it('does not generate a second reveal while another request holds the lock', async () => {
+  it('handles concurrent inserts with ON CONFLICT DO NOTHING', async () => {
+    expectDatabaseConfigured();
+    let insertCount = 0;
+    mocks.sql.mockImplementation(async (strings, ...values) => {
+      const query = strings.join('?');
+      if (query.includes('SELECT') && query.includes('FROM lucky_reveals')) {
+        const sessionId = values[0];
+        return storedDbReveals[sessionId] || [];
+      }
+      if (query.includes('INSERT INTO lucky_reveals')) {
+        const [sessionId, game, numbers, luckyColor, luckyDay] = values;
+        // Simulate concurrent insert: first one wins
+        if (insertCount === 0) {
+          storedDbReveals[sessionId] = [{ game, numbers, lucky_color: luckyColor, lucky_day: luckyDay }];
+          insertCount++;
+        }
+        // ON CONFLICT DO NOTHING - second insert does nothing
+        return [];
+      }
+      return [];
+    });
+    const { response, body } = await callVerify();
+
+    expect(response.status).toBe(409);
+    expect(response.status).toBe(200);
+    expect(body.reveal.numbers).toEqual(GENERATED.game.numbers);
+
+  it('reuses a concurrently persisted reveal instead of failing with 409', async () => {
+  it('returns 500 error when database is unavailable', async () => {
+    mocks.getSql.mockReturnValue(mocks.sql);
+    mocks.initializeDatabase.mockResolvedValue();
+    mocks.sql.mockRejectedValue(new Error('Database connection failed'));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { response, body } = await callVerify();
+
+    expect(response.status).toBe(200);
+    expect(response.status).toBe(500);
+    expect(body.error).toBe('Database persistence failed');
+
+  it('still generates and persists the reveal when the lock backend is unavailable', async () => {
+  it('still generates and persists the reveal when the database is unconfigured', async () => {
+    mocks.getSql.mockReturnValue(null);
     storedMetadata = {
       ...storedMetadata,
       luckyPickNumbers: '1,5,9,13,22,33',
@@ -118,96 +198,57 @@ describe('Paid Lucky Pick reveal persistence', () => {
     const { response, body } = await callVerify();
 
     expect(response.status).toBe(200);
-    expect(body.reveal.numbers).toEqual([1, 5, 9, 13, 22, 33]);
-    expect(body.reveal.luckyColor).toBe('Star Gold');
-    expect(mocks.update).not.toHaveBeenCalled();
-    expect(mocks.createLuckyReveal).not.toHaveBeenCalled();
-    expect(mocks.redis.set).not.toHaveBeenCalled();
-  });
-
-  it('does not generate a second reveal while another request holds the lock', async () => {
-    expectRedisConfigured();
-    mocks.redis.set.mockResolvedValue(null); // lock already held by a concurrent request
-
-    const { response, body } = await callVerify();
-
-    expect(response.status).toBe(409);
-    expect(body.error).toContain('another request');
-    expect(mocks.update).not.toHaveBeenCalled();
-    expect(mocks.createLuckyReveal).not.toHaveBeenCalled();
-  });
-
-  it('reuses a concurrently persisted reveal instead of failing with 409', async () => {
-    expectRedisConfigured();
-    mocks.redis.set.mockResolvedValue(null);
-    // The concurrent request finished writing before our re-read of Stripe.
-    mocks.retrieve
-      .mockResolvedValueOnce({ ...paidSession(), metadata: { ...storedMetadata } })
-      .mockResolvedValue({
-        ...paidSession(),
-        metadata: {
-          ...storedMetadata,
-          luckyPickNumbers: '2,4,8,16,32,40',
-          luckyPickLuckyColor: 'Lucky Red',
-          luckyPickLuckyDay: 'Monday',
-        },
-      });
-
-    const { response, body } = await callVerify();
-
-    expect(response.status).toBe(200);
-    expect(body.reveal.numbers).toEqual([2, 4, 8, 16, 32, 40]);
-    expect(mocks.update).not.toHaveBeenCalled();
-  });
-
-  it('still generates and persists the reveal when the lock backend is unavailable', async () => {
-    // No Upstash env vars configured: getRedisClient() returns null.
-    vi.stubEnv('UPSTASH_REDIS_REST_URL', '');
-    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', '');
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    const { response, body } = await callVerify();
-
-    expect(response.status).toBe(200);
     expect(body.reveal.numbers).toEqual(GENERATED.game.numbers);
-    expect(mocks.update).toHaveBeenCalledTimes(1);
-  });
+    expect(body.reveal.numbers).toEqual([1, 5, 9, 13, 22, 33]);
 
   it('rejects tampered reveal metadata instead of serving it', async () => {
-    expectRedisConfigured();
-    storedMetadata = {
-      ...storedMetadata,
-      luckyPickNumbers: '1,5,9,13,22,99', // 99 is out of range for a 6 pick
-      luckyPickLuckyColor: 'Star Gold',
-      luckyPickLuckyDay: 'Friday',
-    };
+  it('rejects invalid reveal data from database', async () => {
+    expectDatabaseConfigured();
+    storedDbReveals[SESSION_ID] = [{
+      game: '6',
+      numbers: '1,5,9,13,22,99', // 99 is out of range for a 6 pick
+      lucky_color: 'Star Gold',
+      lucky_day: 'Friday',
+    }];
+    vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const { response, body } = await callVerify();
 
-    expect(response.status).toBe(200);
-    expect(body.reveal.numbers).toEqual(GENERATED.game.numbers);
-    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(response.status).toBe(500);
+    expect(body.error).toBe('Invalid stored reveal data');
   });
 
-  it('rejects duplicate numbers in persisted metadata', async () => {
-    expectRedisConfigured();
-    storedMetadata = {
-      ...storedMetadata,
-      luckyPickNumbers: '1,5,9,13,22,5',
-      luckyPickLuckyColor: 'Star Gold',
-      luckyPickLuckyDay: 'Friday',
-    };
-
-    const { body } = await callVerify();
-
-    expect(body.reveal.numbers).toEqual(GENERATED.game.numbers);
-  });
-
-  it('keeps the lock when the Stripe update cannot be verified', async () => {
-    expectRedisConfigured();
+  it('rejects duplicate numbers in database reveal data', async () => {
+    expectDatabaseConfigured();
+    storedDbReveals[SESSION_ID] = [{
+      game: '6',
+      numbers: '1,5,9,13,22,5', // duplicate 5
+      lucky_color: 'Star Gold',
+      lucky_day: 'Friday',
+    }];
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    // The update and both verification re-reads all return unusable metadata.
-    mocks.update.mockResolvedValue({ ...paidSession(), metadata: { ...storedMetadata } });
+
+    const { response, body } = await callVerify();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe('Invalid stored reveal data');
+  });
+
+  it('rejects missing required fields in database reveal data', async () => {
+    expectDatabaseConfigured();
+    storedDbReveals[SESSION_ID] = [{
+      game: '6',
+      numbers: '1,5,9,13,22,33',
+      lucky_color: '', // missing color
+      lucky_day: 'Friday',
+    }];
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { response, body } = await callVerify();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe('Invalid stored reveal data');
+
 
     const { response } = await callVerify();
 

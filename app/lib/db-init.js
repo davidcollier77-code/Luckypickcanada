@@ -73,6 +73,18 @@ export async function initializeDatabase() {
         `;
 
         await sql`
+          CREATE TABLE IF NOT EXISTS lucky_reveals (
+            id BIGSERIAL PRIMARY KEY,
+            session_id TEXT NOT NULL UNIQUE,
+            game TEXT NOT NULL,
+            numbers TEXT NOT NULL,
+            lucky_color TEXT NOT NULL,
+            lucky_day TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          )
+        `;
+
+        await sql`
           CREATE TABLE IF NOT EXISTS luck_shares (
             id BIGSERIAL PRIMARY KEY,
             display_name TEXT NOT NULL,
