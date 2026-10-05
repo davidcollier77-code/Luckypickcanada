@@ -98,7 +98,7 @@ function RevealPageContent() {
               .split(',')
               .map((value: string) => Number(value.trim()));
 
-            const isSevenPick = data.metadata.giftLuckyDay && numbers.length === 7;
+            const isSevenPick = numbers.length === 7;
             const max = isSevenPick ? 50 : 49;
 
             if (
