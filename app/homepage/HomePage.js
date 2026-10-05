@@ -27,6 +27,28 @@ function SectionHeading({ eyebrow, id, title, children }) {
   );
 }
 
+const VERIFY_SESSION_RETRY_DELAYS_MS = [400, 1200, 2500];
+
+/**
+ * Verifies a paid checkout session, retrying the transient 409/503 responses
+ * that occur while a reveal lock is held or persistence is briefly unavailable.
+ *
+ * @param {string} sessionId Stripe checkout session id.
+ * @param {number} attempt Current retry attempt index.
+ * @returns {Promise<object>} Parsed verification payload.
+ */
+async function fetchVerifiedSession(sessionId, attempt = 0) {
+  const res = await fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`);
+
+  if ((res.status === 409 || res.status === 503) && attempt < VERIFY_SESSION_RETRY_DELAYS_MS.length) {
+    await new Promise((resolve) => setTimeout(resolve, VERIFY_SESSION_RETRY_DELAYS_MS[attempt]));
+    return fetchVerifiedSession(sessionId, attempt + 1);
+  }
+
+  if (!res.ok) throw new Error('Invalid session');
+  return res.json();
+}
+
 /**
  * Renders the interactive homepage content and animated star canvas.
  * Manages visit counts, checkout and reveal modals, and suggestion feedback.
@@ -47,11 +69,7 @@ export default function HomePage() {
 
       // SECURITY HARDENING: Verify the paid session server-side and use the
       // persisted server-generated reveal for this specific checkout session.
-      fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Invalid session');
-          return res.json();
-        })
+      fetchVerifiedSession(sessionId)
         .then(data => {
           if (data.success && data.reveal?.numbers?.length) {
             setLuckyReveal({
