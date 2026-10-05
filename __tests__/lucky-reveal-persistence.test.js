@@ -248,11 +248,5 @@ describe('Paid Lucky Pick reveal persistence', () => {
 
     expect(response.status).toBe(500);
     expect(body.error).toBe('Invalid stored reveal data');
-
-
-    const { response } = await callVerify();
-
-    expect(response.status).toBe(400);
-    expect(mocks.redis.eval).not.toHaveBeenCalled();
   });
 });

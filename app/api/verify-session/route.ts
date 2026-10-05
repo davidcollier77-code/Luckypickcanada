@@ -130,7 +130,7 @@ export async function GET(request: Request) {
               const generatedReveal = createLuckyReveal(session.metadata?.luckyPickGame === '7' ? '7' : '6');
               revealToInsert = {
                 game: generatedReveal.game.name.startsWith('7') ? '7' : '6',
-                numbers: generatedReveal.game.numbers,
+                game: session.metadata?.luckyPickGame === '7' ? '7' : '6',
                 luckyColor: generatedReveal.luckyColor,
                 luckyDay: generatedReveal.luckyDay,
               };
