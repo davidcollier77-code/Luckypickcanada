@@ -48,8 +48,13 @@ export default function HomePage() {
 
     if (paymentStatus === 'success' && sessionId) {
       if (sessionId === 'test_bypass') {
-         // Fallback for REVEAL_TEST_MODE if bypassed without real Stripe
-         setLuckyReveal(createLuckyReveal(pickParam));
+        // Fallback for REVEAL_TEST_MODE if bypassed without real Stripe.
+        // Gated on REVEAL_TEST_MODE so it cannot authorize a paid reveal in production.
+        import('../test-tools/reveal-testing/revealTestConfig').then(({ REVEAL_TEST_MODE }) => {
+          if (REVEAL_TEST_MODE) {
+            setLuckyReveal(createLuckyReveal(pickParam));
+          }
+        });
       } else {
         // Server-side verification for production
         fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`)
