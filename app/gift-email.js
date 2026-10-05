@@ -1,5 +1,15 @@
+import { Redis } from '@upstash/redis';
+
 const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
 const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+const GIFT_DELIVERY_CLAIM_TTL_SECONDS = 120;
+const RELEASE_GIFT_DELIVERY_CLAIM = `
+  if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+  end
+  return 0
+`;
 
 export function generateNumbers(count, max) {
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
@@ -113,6 +123,52 @@ function readStoredGiftReveal(metadata) {
   };
 }
 
+function getRedisClient() {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return null;
+  }
+
+  try {
+    return Redis.fromEnv();
+  } catch (error) {
+    console.error('Gift delivery Redis initialization failed', error);
+    return null;
+  }
+}
+
+async function acquireGiftDeliveryClaim(redis, sessionId) {
+  if (!redis) {
+    return null;
+  }
+
+  const key = `gift_delivery_claim:${sessionId}`;
+  const token = crypto.randomUUID();
+
+  try {
+    const result = await redis.set(key, token, {
+      nx: true,
+      ex: GIFT_DELIVERY_CLAIM_TTL_SECONDS,
+    });
+
+    return result === null ? undefined : { key, token };
+  } catch (error) {
+    console.error('Gift delivery claim failed', error);
+    return null;
+  }
+}
+
+async function releaseGiftDeliveryClaim(redis, claim) {
+  if (!redis || !claim) {
+    return;
+  }
+
+  try {
+    await redis.eval(RELEASE_GIFT_DELIVERY_CLAIM, [claim.key], [claim.token]);
+  } catch (error) {
+    console.error('Gift delivery claim release failed', error);
+  }
+}
+
 export function buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyDay }) {
   const recipientName = escapeHtml(metadata.recipientName || 'Friend');
   const senderName = escapeHtml(metadata.senderName || 'Someone');
@@ -202,16 +258,17 @@ function validateGiftSession(session) {
 
 /**
  * Validates a paid gift session and sends its reveal email.
- * Delivery is made idempotent with a stable Resend idempotency key derived from
- * the Stripe Checkout Session ID, so concurrent webhook/fallback requests cannot
- * send duplicate emails. The reveal is deterministic until it is stored in Stripe
- * metadata, which keeps concurrent requests on the same payload.
+ * A Redis SET NX claim serializes concurrent webhook/fallback deliveries when
+ * distributed storage is configured. Resend also receives a stable idempotency
+ * key derived from the Stripe Checkout Session ID, preventing duplicate email
+ * side effects across retries or lock expiry. The reveal is deterministic until
+ * it is stored in Stripe metadata, so concurrent callers use the same payload.
  *
  * @param {import('stripe').default} stripe - Stripe client for retrieving and updating checkout sessions.
- * @param {string} sessionId - Checkout session ID to validate and deliver.
+ * @param {string} sessionId - Checkout Session ID to validate and deliver.
  * @returns {Promise<object>} Delivery status with a reveal, existing delivery metadata,
- * or a failure reason. Sessions with a delivery marker return alreadyDelivered without resending.
- * @throws {Error} Propagates Stripe errors.
+ * or a failure reason.
+ * @throws {Error} Propagates Stripe retrieval errors and unexpected email transport failures.
  */
 export async function deliverGiftEmailForSession(stripe, sessionId) {
   const resendApiKey = process.env.RESEND_API_KEY;
@@ -232,37 +289,48 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
     return { ok: true, alreadyDelivered: true, delivered: true, metadata: validation.metadata };
   }
 
-  const metadata = validation.metadata;
-  const reveal = readStoredGiftReveal(metadata) || createGiftReveal(metadata, sessionId);
+  const redis = getRedisClient();
+  const claim = await acquireGiftDeliveryClaim(redis, sessionId);
 
-  const emailResult = await sendGiftEmail({
-    metadata,
-    resendApiKey,
-    fromEmail,
-    reveal,
-    sessionId,
-  });
-
-  if (!emailResult.ok) {
-    console.error('Gift email failed', emailResult.details);
-    return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
+  if (redis && claim === undefined) {
+    return { ok: false, reason: 'Gift delivery is already being processed. Please try again shortly.' };
   }
 
   try {
-    await stripe.checkout.sessions.update(sessionId, {
-      metadata: {
-        ...metadata,
-        giftDeliveredAt: new Date().toISOString(),
-        giftNumbers: reveal.numbers.join(','),
-        giftLuckyColor: reveal.luckyColor,
-        giftLuckyDay: reveal.luckyDay,
-      },
-    });
-  } catch (error) {
-    // Resend idempotency prevents a retry from sending the gift a second time.
-    // Leave the result successful so Stripe/webhook retry can reconcile metadata.
-    console.error('Gift delivery metadata update failed', error);
-  }
+    const metadata = validation.metadata;
+    const reveal = readStoredGiftReveal(metadata) || createGiftReveal(metadata, sessionId);
 
-  return { ok: true, delivered: true, reveal };
+    const emailResult = await sendGiftEmail({
+      metadata,
+      resendApiKey,
+      fromEmail,
+      reveal,
+      sessionId,
+    });
+
+    if (!emailResult.ok) {
+      console.error('Gift email failed', emailResult.details);
+      return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
+    }
+
+    try {
+      await stripe.checkout.sessions.update(sessionId, {
+        metadata: {
+          ...metadata,
+          giftDeliveredAt: new Date().toISOString(),
+          giftNumbers: reveal.numbers.join(','),
+          giftLuckyColor: reveal.luckyColor,
+          giftLuckyDay: reveal.luckyDay,
+        },
+      });
+    } catch (error) {
+      // Resend idempotency prevents a retry from sending the gift a second time.
+      // Leave the result successful so a subsequent webhook can reconcile metadata.
+      console.error('Gift delivery metadata update failed', error);
+    }
+
+    return { ok: true, delivered: true, reveal };
+  } finally {
+    await releaseGiftDeliveryClaim(redis, claim);
+  }
 }
