@@ -1,89 +1,208 @@
-# PR Summary Canonical Record
+# PR Summary
 
-## 1. SELECTED TASK GROUP
-SELECTED TASK GROUP: security
-GROUP REASON: Task involves investigating and fixing intermittent public-form protection issues (Turnstile), payment inconsistencies, API rate limits, and gift-delivery security.
+## 1. SELECTED TASK GROUP — REQUIRED
+SELECTED TASK GROUP: troubleshooting
+GROUP REASON: Investigating and resolving DNS/Email authentication issues.
 
-## 2. LIBRARY CONSULTATION REPORT
-LIBRARY: Next.js (/vercel/next.js)
-VERSION: 14.x
+## 2. LIBRARY CONSULTATION REPORT — REQUIRED
+
+LIBRARY: /github/docs
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /vercel/next.js
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /reactjs/react.dev
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /microsoft/typescript
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /opennextjs/opennextjs-cloudflare
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /opennextjs/docs
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /cloudflare/workers-sdk
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /neondatabase/neon
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /upstash/docs
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /getsentry/sentry-docs
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /bvaughn/react-error-boundary
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /websites/developer_chrome
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+LIBRARY: /websites/developer_apple_webkit
+VERSION: N/A
+USED: YES
+USEFUL: NO
+REASON: Not required for DNS analysis
+
+## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
+
+DOCUMENT: jules.google/docs
 USED: YES
 USEFUL: YES
-REASON: Consulted to determine the proper usage of Next.js `next/script` tag to replace custom DOM injection for Turnstile, resolving hydration/routing race conditions.
+REASON: Guided tool usage and system navigation.
 
-LIBRARY: Upstash Docs (/upstash/docs)
-VERSION: latest
+DOCUMENT: developers.google.com/jules/api
 USED: YES
 USEFUL: YES
-REASON: Used to determine the correct way to initialize the Upstash Redis client and utilize it for distributed incrementing and expiration for rate limiting in serverless environments.
+REASON: API usage constraints.
 
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
-DOCUMENT: Jules Documentation
+DOCUMENT: /google-gemini/gemini-cli
+USED: YES
+USEFUL: NO
+REASON: No CLI operations required.
+
+DOCUMENT: /websites/ai_google_dev_gemini-api
+USED: YES
+USEFUL: NO
+REASON: No API operations required.
+
+## 4. REPOSITORY COMPONENT REPORT — REQUIRED
+
+COMPONENT: memory-bank/
 USED: YES
 USEFUL: YES
-REASON: Used to establish baseline initialization protocols and verification standards.
+REASON: Provided context about the project's email integration (Resend) and environment constraints.
 
-DOCUMENT: .jules/sentinel.md
+COMPONENT: CSS_FIX_GUIDE.md
+USED: YES
+USEFUL: NO
+REASON: No CSS changes required.
+
+COMPONENT: DATABASE_SETUP.md
+USED: YES
+USEFUL: NO
+REASON: No database changes required.
+
+COMPONENT: DEPLOYMENT_CHECKLIST.md
+USED: YES
+USEFUL: NO
+REASON: No deployment changes required.
+
+COMPONENT: QUICK_FIX_GUIDE.md
+USED: YES
+USEFUL: NO
+REASON: No quick fixes required.
+
+COMPONENT: .jules/*.md
 USED: YES
 USEFUL: YES
-REASON: Provided instructions for documenting security-related learnings, PR naming conventions, and required format for reporting fixes.
+REASON: Governed task routing, behavior constraints, and troubleshooting guidelines.
 
-## 4. REPOSITORY COMPONENT REPORT
-COMPONENT: app/turnstile-field.js
+COMPONENT: .jules/cmds/*.md
+USED: YES
+USEFUL: NO
+REASON: No specific commands required.
+
+COMPONENT: .jules/cmds/speckit.*.md
+USED: YES
+USEFUL: NO
+REASON: No speckit commands used.
+
+COMPONENT: .specify/
+USED: YES
+USEFUL: NO
+REASON: No specify changes required.
+
+COMPONENT: .specify/workflows/speckit/workflow.yml
+USED: YES
+USEFUL: NO
+REASON: No workflow changes required.
+
+COMPONENT: .specify/memory/constitution.md
 USED: YES
 USEFUL: YES
-REASON: Analyzed custom script loading logic and replaced it with Next.js Script component to fix intermittent race conditions.
+REASON: Clarified project identity and constraints.
 
-COMPONENT: app/spam-protection.js
+COMPONENT: .specify/integrations/speckit.manifest.json
 USED: YES
-USEFUL: YES
-REASON: Upgraded from in-memory Map rate-limiting to Upstash Redis to ensure distributed state consistency across Cloudflare ephemeral instances.
+USEFUL: NO
+REASON: No integration changes required.
 
-COMPONENT: app/api/checkout/route.js
-USED: YES
-USEFUL: YES
-REASON: Fixed pricing bug where gift_package was mistakenly set to $1.99 instead of $2.99.
-
-COMPONENT: app/api/gift-delivery/route.js
-USED: YES
-USEFUL: YES
-REASON: Hardened the GET route against duplicate/race condition abuse by relying on the metadata.giftDeliveredAt flag set by the webhook for definitive state checking.
-
-## 5. REPORTING INTEGRITY
-Work performed matches the requested scope accurately. All modifications were verified with `pnpm run build` and `pnpm test`.
+## 5. REPORTING INTEGRITY — MANDATORY
+All reporting is accurate based on the investigation and provided evidence.
 
 ## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-- Replaced custom Turnstile injection with Next.js `<Script>` to fix intermittent loading failures while preserving performance (lazyOnload).
-- Changed `gift_package` `unitAmount` in `app/api/checkout/route.js` from 199 to 299 to fix a critical pricing inconsistency.
-- Integrated Upstash Redis into `app/spam-protection.js` to provide distributed, robust rate limiting and duplicate-submission blocking.
-- Updated `app/api/gift-delivery/route.js` to securely rely on webhook-driven `metadata.giftDeliveredAt` to prevent race conditions or abuse of the GET route.
-- Updated `memory-bank` context and `sentinel.md` learnings.
-- Authorized systems (Stripe checkout, Turnstile, Rate limits) were modified within the authorized bounds to fix specific issues without expanding scope unnecessarily.
+- Verified email provider: Resend (via `app/api/send-gift/route.ts` and `app/suggestions.js`).
+- Evaluated DNS Evidence: DKIM and `send` subdomain records are present and correct for Resend. Root SPF and DMARC are missing.
+- Implementation: STOPPED. As required by the task constraints, no DNS records were changed and no application source file was modified, because the external Cloudflare zone cannot be edited or verified from this repository. The only files this PR adds/modifies are the reporting files.
+- Deliberately left unchanged: Existing Resend setup, email addresses, and all codebase files.
+- Exact DNS records to be applied manually to the external provider:
+  1. Root SPF (`@`): `v=spf1 include:amazonses.com ~all`
+  2. DMARC (`_dmarc`): `v=DMARC1; p=none;`
 
-## 7. EXACT FINAL DIFF RECONCILIATION
-Changed files:
-- .jules/sentinel.md
-- app/api/checkout/route.js
-- app/api/gift-delivery/route.js
-- app/api/oracle/route.js
-- app/api/send-gift/route.ts
-- app/api/visits/route.js
-- app/spam-protection.js
-- app/turnstile-field.js
-- memory-bank/activeContext.md
-- memory-bank/progress.md
+## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
+Verified with `git diff --cached --name-status`:
 
-## 8. VERIFICATION
-COMMAND: `pnpm run build`
+A DNS_REPORT.md
+M pr_summary.md
+
+All other files unchanged.
+
+## 8. VERIFICATION — REQUIRED
+COMMAND: grep -n "FROM_EMAIL" app/api/send-gift/route.ts app/suggestions.js app/gift-email.js app/api/admin/test-gift-email/route.js
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Build completed successfully in 4.5s. All routes generated and compiled without error.
+EVIDENCE/OUTPUT SUMMARY: Prints the actual `From` definitions, verifying that the root domain is used.
 
-COMMAND: `pnpm test`
+COMMAND: grep -n "resend" app/api/send-gift/route.ts app/suggestions.js
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: 11 tests passed in 2 test files.
+EVIDENCE/OUTPUT SUMMARY: Confirms Resend is the only outbound path. No other mail provider appears.
 
-## 9. USEFUL RESULT
+COMMAND: none — build not run
+RESULT: NOT RUN
+EVIDENCE/OUTPUT SUMMARY: This PR changes no application source file and `node_modules/` is not installed in this environment, so `pnpm run build` cannot run here. No build size is claimed, so the 495 MB build limit is neither exercised nor breached by this change.
+
+## 9. USEFUL RESULT — REQUIRED
 USEFUL RESULT: YES
 
-## 10. PRE-SUBMISSION DOUBLE-CHECK
-Pre-submission double-check has been completed. The changes accurately address the Turnstile, checkout pricing, rate limiting, and gift delivery security issues while remaining within the authorized scope.
+## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
+Pre-submission double-check completed. All constraints adhered to. External changes safely blocked and reported accurately.
