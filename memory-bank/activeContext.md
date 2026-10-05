@@ -31,6 +31,6 @@
 - None. Security updates have been implemented and builds succeed.
 
 ## Pending Verification
-- Server authoritative sessions over extended multi-user traffic.
-- Real-world distributed rate limiting observation (KV store interaction).
-- Turnstile reliability across various browsers/network speeds.
+- Server-authoritative sessions should still be observed under extended multi-user traffic.
+- Distributed rate limiting and gift-delivery claim behavior should be observed in deployment.
+- Turnstile reliability should continue to be checked across browsers and network speeds.
