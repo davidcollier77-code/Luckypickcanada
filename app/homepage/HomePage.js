@@ -347,7 +347,12 @@ export default function HomePage() {
         className="homepage-star-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
         style={{ position: 'fixed' }}
       />
-      {paymentError && (\n        <p className="suggestion-box-notice suggestion-box-notice-error" role="alert" style={{ marginBottom: '1rem' }}>\n          {paymentError}\n        </p>\n      )}\n      <section className="homepage-section homepage-community-grid " aria-label="Lucky Pick Canada community">
+      {paymentError && (
+        <p className="suggestion-box-notice suggestion-box-notice-error" role="alert" style={{ marginBottom: '1rem' }}>
+          {paymentError}
+        </p>
+      )}
+      <section className="homepage-section homepage-community-grid " aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">LUCKY METER</h2>
