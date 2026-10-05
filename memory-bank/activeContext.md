@@ -28,7 +28,7 @@
 - Mitigated visual jank on viewport resize.
 
 ## Open Questions
-- None. Security updates have been implemented and builds succeed.
+- None. Security updates have been implemented. CI remains the final verification gate.
 
 ## Pending Verification
 - Server-authoritative sessions should still be observed under extended multi-user traffic.
