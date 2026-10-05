@@ -27,6 +27,28 @@ function SectionHeading({ eyebrow, id, title, children }) {
   );
 }
 
+const VERIFY_SESSION_RETRY_DELAYS_MS = [400, 1200, 2500];
+
+/**
+ * Verifies a paid checkout session, retrying the transient 409/503 responses
+ * that occur while a reveal lock is held or persistence is briefly unavailable.
+ *
+ * @param {string} sessionId Stripe checkout session id.
+ * @param {number} attempt Current retry attempt index.
+ * @returns {Promise<object>} Parsed verification payload.
+ */
+async function fetchVerifiedSession(sessionId, attempt = 0) {
+  const res = await fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`);
+
+  if ((res.status === 409 || res.status === 503) && attempt < VERIFY_SESSION_RETRY_DELAYS_MS.length) {
+    await new Promise((resolve) => setTimeout(resolve, VERIFY_SESSION_RETRY_DELAYS_MS[attempt]));
+    return fetchVerifiedSession(sessionId, attempt + 1);
+  }
+
+  if (!res.ok) throw new Error('Invalid session');
+  return res.json();
+}
+
 /**
  * Renders the interactive homepage content and animated star canvas.
  * Manages visit counts, checkout and reveal modals, and suggestion feedback.
@@ -44,17 +66,23 @@ export default function HomePage() {
 
     if (searchParams.get('payment') === 'success' && searchParams.get('session_id')) {
       const sessionId = searchParams.get('session_id');
-      const pick = searchParams.get('pick') || '6';
 
-      // SECURITY HARDENING: Verify the session server-side before showing the reveal
-      fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Invalid session');
-          return res.json();
-        })
+      // SECURITY HARDENING: Verify the paid session server-side and use the
+      // persisted server-generated reveal for this specific checkout session.
+      fetchVerifiedSession(sessionId)
         .then(data => {
-          if (data.success) {
-            setLuckyReveal(createLuckyReveal(data.game || pick));
+          if (data.success && data.reveal?.numbers?.length) {
+            setLuckyReveal({
+              game: {
+                name: data.game === '7' ? '7 Pick' : '6 Pick',
+                numbers: data.reveal.numbers,
+              },
+              luckyColor: data.reveal.luckyColor,
+              luckyDay: data.reveal.luckyDay,
+            });
+          } else if (data.success) {
+            console.error('Lucky reveal data missing from verified session');
+            setSuggestionError('Unable to load your lucky reveal. Please contact support if you were charged.');
           } else {
             console.error('Session verification failed:', data.error);
             setSuggestionError('Unable to verify payment. Please contact support if you were charged.');
@@ -320,7 +348,6 @@ export default function HomePage() {
     setLuckyReveal(null);
     const url = new URL(window.location.href);
     url.searchParams.delete('payment');
-    url.searchParams.delete('pick');
     url.searchParams.delete('session_id');
     window.history.replaceState(null, '', url);
   }
