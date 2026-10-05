@@ -70,7 +70,7 @@ function RevealPageContent() {
             return res.json();
           })
           .then(data => {
-            if (data.success && data.metadata?.checkoutType === 'gift_package' && data.metadata?.giftDeliveredAt) {
+            if (data.success && ((data.metadata?.checkoutType === 'gift_package' && data.metadata?.giftDeliveredAt) || data.metadata?.checkoutType === 'lucky_pick')) {
                // Render actual server-verified gift data if available, fallback to deterministic
                if (data.metadata.giftNumbers) {
                  const numbers = data.metadata.giftNumbers.split(',').map(Number);
@@ -93,10 +93,13 @@ function RevealPageContent() {
             console.error('Failed to verify gift reveal:', err);
             setAuthError('Unable to verify this gift delivery.');
           });
-      } else {
+      } else if (process.env.NODE_ENV === 'development') {
          // Generate a deterministic reveal based on the revealId (for legacy revealIds not starting with cs_)
          const generatedReveal = createRevealFromId(revealId);
          setReveal(generatedReveal);
+      } else {
+        // In production, require server verification for all reveals
+        setAuthError('Unable to verify this gift delivery.');
       }
     }
   }, [revealId]);

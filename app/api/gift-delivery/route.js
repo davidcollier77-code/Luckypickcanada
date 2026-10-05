@@ -65,8 +65,9 @@ export async function GET(request) {
 
     // If webhook hasn't processed it yet, attempt delivery here as fallback,
     // but this is mostly handled by webhook now. Let's just do it securely.
+    let result;
     if (!isDelivered) {
-      const result = await deliverGiftEmailForSession(stripe, session.id);
+      result = await deliverGiftEmailForSession(stripe, session.id);
       if (result.ok) {
         isDelivered = true;
       } else if (!result.alreadyDelivered) {

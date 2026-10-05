@@ -36,10 +36,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Invalid checkout type' }, { status: 400 });
     }
 
+    const m = session.metadata;
     return NextResponse.json({
       success: true,
-      game: session.metadata.luckyPickGame || '6',
-      metadata: session.metadata,
+      game: m.luckyPickGame === '7' ? '7' : '6',
+      metadata: {
+        checkoutType: m.checkoutType,
+        giftDeliveredAt: m.giftDeliveredAt || '',
+        giftNumbers: m.giftNumbers || '',
+        giftLuckyColor: m.giftLuckyColor || '',
+        giftLuckyDay: m.giftLuckyDay || '',
+      },
     });
   } catch (error) {
     console.error('Session verification failed:', error);
