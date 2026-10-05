@@ -50,6 +50,15 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
 
     event.preventDefault();
 
+    if (type === 'gift_package') {
+      const formData = new FormData(event.currentTarget);
+      const recipientName = formData.get('recipientName') || '';
+      const recipientEmail = formData.get('recipientEmail') || '';
+      const senderName = formData.get('senderName') || '';
+      const giftMessage = formData.get('giftMessage') || '';
+      const selectedGame = formData.get('luckyPickGame') || luckyPickGame;
+    }
+
     setIsSubmitting(false);
     onRevealTestStart?.(type, luckyPickGame);
   }

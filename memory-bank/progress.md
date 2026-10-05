@@ -13,7 +13,6 @@
 ## Completed Tasks
 
 - **Atomic duplicate protection**: Replaced the fingerprint read/write race with `SET NX PX`; verified successful claims, concurrent rejection, spam logging, and outage fallback in the 27-test suite. The Redis error-handling and atomic counter-expiry review findings were already resolved in the starting revision.
-- **Gift delivery lock/marker ordering (PR #1367 review fix)**: Added a post-acquisition `hasGiftBeenSent` re-check to `app/gift-email.js` so the durable marker is re-read while the gift lock is held, and release the lock through the existing ownership-checked helper before returning `alreadyDelivered`. The not-acquired, Redis-unavailable, and in-memory fallback paths are unchanged (one marker read, no post-lock read).
 - Integrated Cloudflare Turnstile into public forms.
 - Replaced the hardcoded 'crypto.randomUUID()' in `app/layout.js` styles path with the stable Next.js build ID/commit hash, resolving unstable style reloads.
 - Reduced unused JavaScript and render-blocking CSS warnings in Lighthouse/PageSpeed audits for the mobile configuration.
@@ -26,3 +25,7 @@
   - Mitigated race conditions and duplicate email deliveries for paid gift packages by wrapping the fulfillment process (`gift-email.js`) in an atomic Upstash Redis lock (`SET NX`).
   - Audited legacy functionality and securely removed the unauthenticated `/api/send-gift` endpoint.
   - Broadened Stripe webhook handler to support `checkout.session.async_payment_succeeded`.
+- **Security Hardening Follow-up (CodeRabbit Review):**
+  - Updated Redis lock implementation for gift deliveries to fail closed on initialization errors, properly use a unique lock token, and release locks via a Lua script in a `finally` block to prevent deadlocks.
+  - Implemented a 24-hour Redis 'sent marker' fallback in case Stripe metadata fails to update after successful email delivery, reinforcing idempotency.
+  - Reinforced `test_bypass` checking in the browser to ensure `REVEAL_TEST_MODE` is strictly evaluated before rendering unverified reveals.

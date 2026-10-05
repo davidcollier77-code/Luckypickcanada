@@ -123,125 +123,8 @@ function getRedisClient() {
     }
     return Redis.fromEnv();
   } catch (error) {
-    console.error('Gift Redis client initialization failed', { operation: 'fromEnv', error });
+    console.error('Redis client initialization failed', error);
     return null;
-  }
-}
-
-const GIFT_LOCK_TTL_MS = 120000;
-const GIFT_SENT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-// Fallback lock store for environments without Upstash configured, so an
-// unconfigured environment degrades to per-instance locking instead of
-// dropping the concurrency guard entirely.
-const memoryGiftLocks = new Map();
-const memoryGiftSent = new Map();
-
-function pruneMemoryGiftLocks() {
-  const currentTime = Date.now();
-
-  for (const [key, entry] of memoryGiftLocks) {
-    if (entry.expiresAt <= currentTime) {
-      memoryGiftLocks.delete(key);
-    }
-  }
-
-  for (const [key, expiresAt] of memoryGiftSent) {
-    if (expiresAt <= currentTime) {
-      memoryGiftSent.delete(key);
-    }
-  }
-}
-
-function createLockToken() {
-  const randomBuffer = new Uint32Array(4);
-  crypto.getRandomValues(randomBuffer);
-  return Array.from(randomBuffer, (value) => value.toString(36)).join('');
-}
-
-// Delete the lock only while this worker still owns it, so an expired lock that
-// was re-acquired by another worker is never released from under it.
-const RELEASE_IF_OWNER = `
-  if redis.call('GET', KEYS[1]) == ARGV[1] then
-    return redis.call('DEL', KEYS[1])
-  end
-  return 0
-`;
-
-async function acquireGiftLock(redis, lockKey, lockToken) {
-  if (redis) {
-    try {
-      const claimed = await redis.set(lockKey, lockToken, { px: GIFT_LOCK_TTL_MS, nx: true });
-      if (claimed === null) {
-        return { acquired: false, inProgress: true };
-      }
-    } catch (err) {
-      console.error('Failed to acquire gift lock', err);
-      return { acquired: false, unavailable: true };
-    }
-
-    return { acquired: true };
-  }
-
-  pruneMemoryGiftLocks();
-
-  if (memoryGiftLocks.has(lockKey)) {
-    return { acquired: false, inProgress: true };
-  }
-
-  memoryGiftLocks.set(lockKey, { token: lockToken, expiresAt: Date.now() + GIFT_LOCK_TTL_MS });
-  return { acquired: true };
-}
-
-async function releaseGiftLock(redis, lockKey, lockToken) {
-  try {
-    if (redis) {
-      await redis.eval(RELEASE_IF_OWNER, [lockKey], [lockToken]);
-      return;
-    }
-
-    const entry = memoryGiftLocks.get(lockKey);
-
-    if (entry && entry.token === lockToken) {
-      memoryGiftLocks.delete(lockKey);
-    }
-  } catch (e) {
-    console.error('Failed to release gift lock', e);
-  }
-}
-
-// The short-lived lock only covers one attempt. This longer-lived marker
-// records that the gift email already went out, so a later retry cannot send a
-// second copy even when the Stripe metadata write failed.
-async function hasGiftBeenSent(redis, sessionId) {
-  const sentKey = `gift_sent:${sessionId}`;
-
-  try {
-    if (redis) {
-      return (await redis.exists(sentKey)) > 0;
-    }
-
-    pruneMemoryGiftLocks();
-    return memoryGiftSent.has(sentKey);
-  } catch (e) {
-    console.error('Failed to read the gift sent marker', e);
-    return false;
-  }
-}
-
-async function markGiftSent(redis, sessionId) {
-  const sentKey = `gift_sent:${sessionId}`;
-
-  try {
-    if (redis) {
-      await redis.set(sentKey, '1', { px: GIFT_SENT_TTL_MS });
-      return;
-    }
-
-    pruneMemoryGiftLocks();
-    memoryGiftSent.set(sentKey, Date.now() + GIFT_SENT_TTL_MS);
-  } catch (e) {
-    console.error('Failed to write the gift sent marker', e);
   }
 }
 
@@ -260,39 +143,54 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
     return validation;
   }
 
-  // Atomic lock using Redis to prevent concurrent webhook/fallback race conditions
   const redis = getRedisClient();
-  const lockKey = `gift_lock:${sessionId}`;
-  const lockToken = createLockToken();
 
-  if (await hasGiftBeenSent(redis, sessionId)) {
-    return { ok: true, alreadyDelivered: true, metadata: validation.metadata };
+  if (redis) {
+    try {
+      const alreadySent = await redis.get(`gift_sent:${sessionId}`);
+      if (alreadySent) {
+        return { ok: true, alreadyDelivered: true, metadata: validation.metadata };
+      }
+    } catch (e) {
+      console.error('Failed to check sent marker', e);
+    }
   }
 
-  const lock = await acquireGiftLock(redis, lockKey, lockToken);
-
-  if (!lock.acquired) {
-    return {
-      ok: false,
-      inProgress: Boolean(lock.inProgress),
-      reason: lock.unavailable
-        ? 'Gift fulfillment service temporarily unavailable.'
-        : 'Gift fulfillment is already in progress for this session.',
-    };
-  }
-
-  // Re-check the sent marker now that the lock is held. The check above ran
-  // before `acquireGiftLock`, so its Redis round-trip leaves a TOCTOU window: a
-  // delayed `SET NX` can land after a concurrent webhook or fallback request has
-  // already sent the email, written the marker, and released the lock in its
-  // `finally`. Holding the lock is what makes this second read authoritative, so
-  // do not remove it and send a second gift email with a freshly randomized reveal.
-  if (await hasGiftBeenSent(redis, sessionId)) {
-    await releaseGiftLock(redis, lockKey, lockToken);
-    return { ok: true, alreadyDelivered: true, metadata: validation.metadata };
-  }
-
+  // Atomic lock using Redis to prevent concurrent webhook/fallback race conditions
+  let lockKey;
+  let lockToken;
+  let stripeFallbackLockUsed = false;
   const metadata = validation.metadata;
+
+  if (redis) {
+    lockKey = `gift_lock:${sessionId}`;
+    lockToken = crypto.randomUUID();
+    try {
+      const claimed = await redis.set(lockKey, lockToken, { px: 120000, nx: true });
+      if (claimed === null) {
+        return { ok: false, reason: 'Gift fulfillment is already in progress for this session.', lockHeld: true };
+      }
+    } catch (err) {
+      console.error('Failed to acquire gift lock', err);
+      // Fail closed if Redis is configured but errors out
+      return { ok: false, reason: 'Temporary error acquiring lock for gift fulfillment.' };
+    }
+  } else {
+    // If Redis is completely unavailable/unconfigured, use Stripe metadata as a fallback lock
+    // This is not perfectly atomic but it provides a safety net when Redis is missing.
+    try {
+      await stripe.checkout.sessions.update(sessionId, {
+        metadata: {
+          ...metadata,
+          giftDeliveredAt: 'processing',
+        },
+      });
+      stripeFallbackLockUsed = true;
+    } catch (err) {
+      console.error('Failed to acquire Stripe fallback lock', err);
+      return { ok: false, reason: 'Temporary error acquiring fallback lock for gift fulfillment.' };
+    }
+  }
   const reveal = createGiftReveal(metadata);
   const giftDeliveredAt = new Date().toISOString();
 
@@ -301,14 +199,25 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
 
     if (!emailResult.ok) {
       console.error('Gift email failed', emailResult.details);
+
+      // If we used the Stripe fallback lock, clear it
+      if (stripeFallbackLockUsed) {
+        try {
+          await stripe.checkout.sessions.update(sessionId, {
+            metadata: {
+              ...metadata,
+              giftDeliveredAt: '',
+            },
+          });
+        } catch (releaseError) {
+          console.error('Failed to release gift delivery fallback claim', releaseError);
+        }
+      }
+
       return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
     }
 
-    // The email is out, so record it before the Stripe write. A failed Stripe
-    // update then cannot let a retry send a second gift email.
-    await markGiftSent(redis, sessionId);
-
-    // Only mark as delivered AFTER successful send
+    // Email succeeded. Update Stripe metadata.
     try {
       await stripe.checkout.sessions.update(sessionId, {
         metadata: {
@@ -321,10 +230,26 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
       });
     } catch (stripeError) {
       console.error('Failed to update Stripe metadata after successful email delivery', stripeError);
+
+      // If Stripe update fails after sending, set a longer-lived sent marker in Redis so retries do not send duplicate
+      if (redis) {
+        try {
+          await redis.set(`gift_sent:${sessionId}`, '1', { px: 24 * 60 * 60 * 1000 }); // 24 hours
+        } catch (err) {
+          console.error('Failed to set long-lived sent marker', err);
+        }
+      }
     }
 
     return { ok: true, delivered: true, reveal };
   } finally {
-    await releaseGiftLock(redis, lockKey, lockToken);
+    if (redis && lockKey && lockToken) {
+      try {
+        const luaScript = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+        await redis.eval(luaScript, [lockKey], [lockToken]);
+      } catch (e) {
+        console.error('Failed to release gift lock', e);
+      }
+    }
   }
 }

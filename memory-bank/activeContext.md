@@ -7,7 +7,6 @@
 - **New:** Ensure form and payment security mechanisms (Turnstile, rate limiting, gift delivery) are robust and do not cause intermittent availability issues.
 
 ## Recent Work
-- Re-checked the durable `gift_sent` marker after the gift lock is acquired in `deliverGiftEmailForSession`, closing the TOCTOU window where a delayed `SET NX` could land after a concurrent webhook or fallback had already sent the email. The early return releases the lock via the ownership-checked `releaseGiftLock` helper.
 - Duplicate fingerprints now use a Redis `SET NX` claim with the existing ten-minute expiry; rejected claims record spam attempts, and local outage markers remain effective. Concurrent claims and fallback behavior pass regression tests.
 - Fixed Redis operation failures in spam protection to log operation/key context and use the existing memory fallback; counters now initialize with an expiry atomically. Local fallback blocks and duplicate markers remain effective after failed Redis writes.
 - Refactored `app/turnstile-field.js` to utilize `next/script` (`lazyOnload`), replacing a complex, manual DOM injection approach that was susceptible to hydration and routing race conditions, causing intermittent "Spam check is not configured" errors.
@@ -33,3 +32,4 @@
 - Established server-side authorization for paid `lucky_pick` reveals by checking Stripe Session data, closing an exploit that relied on client-side URL parameter manipulation.
 - Removed the obsolete and unverified legacy `/api/send-gift` endpoint to enforce paid entitlement boundaries.
 - Enhanced Stripe webhook logic to cover asynchronous payment events (`checkout.session.async_payment_succeeded`).
+- Addressed CodeRabbit review feedback on PR #1367 to fine-tune Stripe webhooks, Redis locking, and error fallback scenarios in `gift-email.js` and `HomePage.js`.

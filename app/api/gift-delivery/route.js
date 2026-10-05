@@ -74,9 +74,18 @@ export async function GET(request) {
     // but this is mostly handled by webhook now. Let's just do it securely.
     const result = await deliverGiftEmailForSession(stripe, session.id);
 
-    // The webhook may already hold the lock, in which case delivery is about to
-    // succeed, so the user still reaches the reveal page.
-    if (result.ok || result.alreadyDelivered || result.inProgress) {
+    if (result.lockHeld) {
+      // The webhook or another request is currently processing this gift.
+      // Redirect to the reveal page assuming it will succeed shortly.
+      const recipientEmail = session.metadata?.recipientEmail || '';
+      const url = new URL(`/reveal/${session.id}`, request.url);
+      if (recipientEmail) {
+        url.searchParams.set('recipientEmail', recipientEmail);
+      }
+      return Response.redirect(url, 303);
+    }
+
+    if (result.ok || result.alreadyDelivered) {
       const recipientEmail = session.metadata?.recipientEmail || '';
       const url = new URL(`/reveal/${session.id}`, request.url);
       if (recipientEmail) {
