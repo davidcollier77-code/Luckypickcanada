@@ -13,6 +13,7 @@
 ## Completed Tasks
 
 - **Atomic duplicate protection**: Replaced the fingerprint read/write race with `SET NX PX`; verified successful claims, concurrent rejection, spam logging, and outage fallback in the 27-test suite. The Redis error-handling and atomic counter-expiry review findings were already resolved in the starting revision.
+- **Gift delivery lock/marker ordering (PR #1367 review fix)**: Added a post-acquisition `hasGiftBeenSent` re-check to `app/gift-email.js` so the durable marker is re-read while the gift lock is held, and release the lock through the existing ownership-checked helper before returning `alreadyDelivered`. The not-acquired, Redis-unavailable, and in-memory fallback paths are unchanged (one marker read, no post-lock read).
 - Integrated Cloudflare Turnstile into public forms.
 - Replaced the hardcoded 'crypto.randomUUID()' in `app/layout.js` styles path with the stable Next.js build ID/commit hash, resolving unstable style reloads.
 - Reduced unused JavaScript and render-blocking CSS warnings in Lighthouse/PageSpeed audits for the mobile configuration.

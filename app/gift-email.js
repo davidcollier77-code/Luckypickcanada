@@ -281,6 +281,17 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
     };
   }
 
+  // Re-check the sent marker now that the lock is held. The check above ran
+  // before `acquireGiftLock`, so its Redis round-trip leaves a TOCTOU window: a
+  // delayed `SET NX` can land after a concurrent webhook or fallback request has
+  // already sent the email, written the marker, and released the lock in its
+  // `finally`. Holding the lock is what makes this second read authoritative, so
+  // do not remove it and send a second gift email with a freshly randomized reveal.
+  if (await hasGiftBeenSent(redis, sessionId)) {
+    await releaseGiftLock(redis, lockKey, lockToken);
+    return { ok: true, alreadyDelivered: true, metadata: validation.metadata };
+  }
+
   const metadata = validation.metadata;
   const reveal = createGiftReveal(metadata);
   const giftDeliveredAt = new Date().toISOString();
