@@ -10,15 +10,6 @@ const COPY = {
   tip: { title: 'Leave a tip', description: 'Choose an amount in Canadian dollars to continue to the secure checkout.' },
 };
 
-/**
- * Renders checkout options and handles the configured reveal test bypass.
- *
- * @param {object} props - Checkout configuration and callbacks.
- * @param {'lucky_pick'|'gift_package'|'tip'} props.type - Checkout form to display.
- * @param {Function} props.onClose - Closes the modal.
- * @param {Function} [props.onRevealTestStart] - Starts a test reveal with the type and game.
- * @returns {import('react').ReactElement} The checkout modal and form.
- */
 export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
   const [luckyPickGame, setLuckyPickGame] = useState('6');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,14 +36,6 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
 
-  /**
-   * Blocks repeat submissions and permits normal checkout form submission unless
-   * test bypass is enabled. In test mode, attempts gift email delivery when needed
-   * and starts the test reveal even if that delivery attempt fails.
-   *
-   * @param {import('react').FormEvent<HTMLFormElement>} event - Checkout submission event.
-   * @returns {Promise<void>} Resolves after handling submission or the test reveal callback.
-   */
   async function requestRevealAccess(event) {
     if (isSubmitting) {
       event.preventDefault();

@@ -3,33 +3,36 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import LuckyRevealPopup from '../../lucky-reveal-popup';
-import { canBypassRevealPayment } from '../../test-tools/reveal-testing/revealTestConfig';
 
-// Create a deterministic reveal for development-only legacy reveal links.
+// Create a deterministic reveal based on revealId
 function createRevealFromId(revealId: string) {
+  // Use the revealId as a seed for deterministic randomness
   let seed = 0;
   for (let i = 0; i < revealId.length; i++) {
     seed = ((seed << 5) - seed) + revealId.charCodeAt(i);
-    seed = seed & seed;
+    seed = seed & seed; // Convert to 32bit integer
   }
   
+  // Simple seeded random function
   const seededRandom = () => {
     seed = (seed * 9301 + 49297) % 233280;
     return seed / 233280;
   };
   
+  // Determine game type based on seed
   const isSevenPick = seededRandom() > 0.5;
   const count = isSevenPick ? 7 : 6;
   const max = isSevenPick ? 50 : 49;
   
+  // Generate deterministic lucky numbers
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
-  for (let index = numbers.length - 1; index > 0; index--) {
+  for (let index = numbers.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(seededRandom() * (index + 1));
     [numbers[index], numbers[swapIndex]] = [numbers[swapIndex], numbers[index]];
   }
-
   const luckyNumbers = numbers.slice(0, count).sort((a, b) => a - b);
   
+  // Pick lucky color and day deterministically
   const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
   const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
@@ -46,11 +49,6 @@ function createRevealFromId(revealId: string) {
   };
 }
 
-/**
- * Loads an authorized paid reveal from the server.
- * Non-Stripe legacy reveal IDs are available only in local development test mode.
- * @returns {import('react').ReactElement|null} The reveal UI, verification error state, or null while loading.
- */
 function RevealPageContent() {
   const params = useParams();
   const router = useRouter();
@@ -63,82 +61,44 @@ function RevealPageContent() {
   const recipientEmail = searchParams?.get('recipientEmail') || '';
 
   useEffect(() => {
-    if (!revealId) {
-      return;
-    }
-
-    if (revealId.startsWith('cs_')) {
-      fetch(`/api/verify-session?session_id=${encodeURIComponent(revealId)}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Invalid or unpaid session');
-          return res.json();
-        })
-        .then(data => {
-          if (!data.success) {
-            throw new Error('Unable to verify this checkout session.');
-          }
-
-          if (data.metadata?.checkoutType === 'lucky_pick' && data.reveal) {
-            setReveal({
-              game: {
-                name: data.reveal.game === '7' ? '7 Pick' : '6 Pick',
-                numbers: data.reveal.numbers,
-              },
-              luckyColor: data.reveal.luckyColor,
-              luckyDay: data.reveal.luckyDay,
-            });
-            return;
-          }
-
-          if (
-            data.metadata?.checkoutType === 'gift_package' &&
-            data.metadata?.giftDeliveredAt &&
-            data.metadata?.giftNumbers
-          ) {
-            const numbers = data.metadata.giftNumbers
-              .split(',')
-              .map((value: string) => Number(value.trim()));
-
-            const isSevenPick = numbers.length === 7;
-            const max = isSevenPick ? 50 : 49;
-
-            if (
-              (numbers.length !== 6 && numbers.length !== 7) ||
-              numbers.some((number: number) => !Number.isInteger(number) || number < 1 || number > max) ||
-              new Set(numbers).size !== numbers.length ||
-              !data.metadata.giftLuckyColor ||
-              !data.metadata.giftLuckyDay
-            ) {
-              throw new Error('Unable to verify this gift delivery.');
+    if (revealId) {
+      // For cs_ stripe sessions, verify they are actually paid gifts via server
+      if (revealId.startsWith('cs_')) {
+        fetch(`/api/verify-session?session_id=${encodeURIComponent(revealId)}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Invalid or unpaid session');
+            return res.json();
+          })
+          .then(data => {
+            if (data.success && data.metadata?.checkoutType === 'gift_package' && data.metadata?.giftDeliveredAt) {
+               // Render actual server-verified gift data if available, fallback to deterministic
+               if (data.metadata.giftNumbers) {
+                 const numbers = data.metadata.giftNumbers.split(',').map(Number);
+                 setReveal({
+                   game: {
+                     name: numbers.length === 7 ? '7 Pick' : '6 Pick',
+                     numbers: numbers,
+                   },
+                   luckyColor: data.metadata.giftLuckyColor || 'Star Gold',
+                   luckyDay: data.metadata.giftLuckyDay || 'Friday',
+                 });
+               } else {
+                 setReveal(createRevealFromId(revealId));
+               }
+            } else {
+              setAuthError('Unable to verify this gift delivery.');
             }
-
-            setReveal({
-              game: {
-                name: numbers.length === 7 ? '7 Pick' : '6 Pick',
-                numbers,
-              },
-              luckyColor: data.metadata.giftLuckyColor,
-              luckyDay: data.metadata.giftLuckyDay,
-            });
-            return;
-          }
-
-          throw new Error('Unable to verify this reveal.');
-        })
-        .catch(err => {
-          console.error('Failed to verify gift reveal:', err);
-          setAuthError('Unable to verify this gift delivery.');
-        });
-
-      return;
+          })
+          .catch(err => {
+            console.error('Failed to verify gift reveal:', err);
+            setAuthError('Unable to verify this gift delivery.');
+          });
+      } else {
+         // Generate a deterministic reveal based on the revealId (for legacy revealIds not starting with cs_)
+         const generatedReveal = createRevealFromId(revealId);
+         setReveal(generatedReveal);
+      }
     }
-
-    if (process.env.NODE_ENV === 'development' && canBypassRevealPayment('gift_package')) {
-      setReveal(createRevealFromId(revealId));
-      return;
-    }
-
-    setAuthError('Unable to verify this reveal.');
   }, [revealId]);
 
   useEffect(() => {

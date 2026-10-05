@@ -1,15 +1,5 @@
-import { Redis } from '@upstash/redis';
-
 const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
 const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
-const GIFT_DELIVERY_CLAIM_TTL_SECONDS = 120;
-const RELEASE_GIFT_DELIVERY_CLAIM = `
-  if redis.call('GET', KEYS[1]) == ARGV[1] then
-    return redis.call('DEL', KEYS[1])
-  end
-  return 0
-`;
 
 export function generateNumbers(count, max) {
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
@@ -30,38 +20,6 @@ function pickOne(items) {
   return items[randomBuffer[0] % items.length];
 }
 
-function createSeededRandom(seedSource) {
-  let seed = 2166136261;
-
-  for (let index = 0; index < seedSource.length; index += 1) {
-    seed ^= seedSource.charCodeAt(index);
-    seed = Math.imul(seed, 16777619);
-  }
-
-  return () => {
-    seed += 0x6D2B79F5;
-    let value = seed;
-    value = Math.imul(value ^ (value >>> 15), value | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function generateDeterministicNumbers(count, max, random) {
-  const numbers = Array.from({ length: max }, (_, index) => index + 1);
-
-  for (let index = numbers.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    [numbers[index], numbers[swapIndex]] = [numbers[swapIndex], numbers[index]];
-  }
-
-  return numbers.slice(0, count).sort((a, b) => a - b);
-}
-
-function pickOneWithRandom(items, random) {
-  return items[Math.floor(random() * items.length)];
-}
-
 function escapeHtml(value) {
   return String(value || '')
     .replaceAll('&', '&amp;')
@@ -71,102 +29,16 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-export function createGiftReveal(metadata, seedSource = '') {
+export function createGiftReveal(metadata) {
   const isSevenPick = metadata.luckyPickGame === '7';
-  const count = isSevenPick ? 7 : 6;
-  const max = isSevenPick ? 50 : 49;
-
-  if (seedSource) {
-    const random = createSeededRandom(seedSource);
-
-    return {
-      gameName: isSevenPick ? '7 Pick' : '6 Pick',
-      numbers: generateDeterministicNumbers(count, max, random),
-      luckyColor: pickOneWithRandom(luckyColors, random),
-      luckyDay: pickOneWithRandom(luckyDays, random),
-    };
-  }
+  const numbers = generateNumbers(isSevenPick ? 7 : 6, isSevenPick ? 50 : 49);
 
   return {
     gameName: isSevenPick ? '7 Pick' : '6 Pick',
-    numbers: generateNumbers(count, max),
+    numbers,
     luckyColor: pickOne(luckyColors),
     luckyDay: pickOne(luckyDays),
   };
-}
-
-function readStoredGiftReveal(metadata) {
-  const numbers = String(metadata.giftNumbers || '')
-    .split(',')
-    .map((value) => Number(value.trim()))
-    .filter((number) => Number.isFinite(number));
-
-  const isSevenPick = metadata.luckyPickGame === '7';
-  const expectedCount = isSevenPick ? 7 : 6;
-  const max = isSevenPick ? 50 : 49;
-
-  if (
-    !metadata.giftLuckyColor ||
-    !metadata.giftLuckyDay ||
-    numbers.length !== expectedCount ||
-    numbers.some((number) => !Number.isInteger(number) || number < 1 || number > max) ||
-    new Set(numbers).size !== numbers.length
-  ) {
-    return null;
-  }
-
-  return {
-    gameName: isSevenPick ? '7 Pick' : '6 Pick',
-    numbers: numbers.sort((a, b) => a - b),
-    luckyColor: metadata.giftLuckyColor,
-    luckyDay: metadata.giftLuckyDay,
-  };
-}
-
-function getRedisClient() {
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-    return null;
-  }
-
-  try {
-    return Redis.fromEnv();
-  } catch (error) {
-    console.error('Gift delivery Redis initialization failed', error);
-    return null;
-  }
-}
-
-async function acquireGiftDeliveryClaim(redis, sessionId) {
-  if (!redis) {
-    return null;
-  }
-
-  const key = `gift_delivery_claim:${sessionId}`;
-  const token = crypto.randomUUID();
-
-  try {
-    const result = await redis.set(key, token, {
-      nx: true,
-      ex: GIFT_DELIVERY_CLAIM_TTL_SECONDS,
-    });
-
-    return result === null ? undefined : { key, token };
-  } catch (error) {
-    console.error('Gift delivery claim failed', error);
-    return null;
-  }
-}
-
-async function releaseGiftDeliveryClaim(redis, claim) {
-  if (!redis || !claim) {
-    return;
-  }
-
-  try {
-    await redis.eval(RELEASE_GIFT_DELIVERY_CLAIM, [claim.key], [claim.token]);
-  } catch (error) {
-    console.error('Gift delivery claim release failed', error);
-  }
 }
 
 export function buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyDay }) {
@@ -200,42 +72,26 @@ export function buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyD
   `;
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+export async function sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal = createGiftReveal(metadata) }) {
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: metadata.recipientEmail,
+      subject: `${metadata.senderName || 'Someone'} sent you a Lucky Pick Canada gift`,
+      html: buildGiftEmail({ metadata, ...reveal }),
+    }),
+  });
 
-export async function sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal = createGiftReveal(metadata), sessionId }) {
-  const requestBody = {
-    from: fromEmail,
-    to: metadata.recipientEmail,
-    subject: `${metadata.senderName || 'Someone'} sent you a Lucky Pick Canada gift`,
-    html: buildGiftEmail({ metadata, ...reveal }),
-  };
-
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-        ...(sessionId ? { 'Idempotency-Key': `gift-package/${sessionId}` } : {}),
-      },
-      body: JSON.stringify(requestBody),
-    });
-
-    if (response.ok) {
-      return { ok: true, details: await response.text(), reveal };
-    }
-
-    if (response.status === 409 && attempt < 2) {
-      await sleep(250 * (attempt + 1));
-      continue;
-    }
-
+  if (!response.ok) {
     return { ok: false, details: await response.text(), reveal };
   }
 
-  return { ok: false, details: 'Unable to complete idempotent gift delivery.', reveal };
+  return { ok: true, details: await response.text(), reveal };
 }
 
 function validateGiftSession(session) {
@@ -256,20 +112,6 @@ function validateGiftSession(session) {
   return { ok: true, alreadyDelivered: false, metadata };
 }
 
-/**
- * Validates a paid gift session and sends its reveal email.
- * A Redis SET NX claim serializes concurrent webhook/fallback deliveries when
- * distributed storage is configured. Resend also receives a stable idempotency
- * key derived from the Stripe Checkout Session ID, preventing duplicate email
- * side effects across retries or lock expiry. The reveal is deterministic until
- * it is stored in Stripe metadata, so concurrent callers use the same payload.
- *
- * @param {import('stripe').default} stripe - Stripe client for retrieving and updating checkout sessions.
- * @param {string} sessionId - Checkout Session ID to validate and deliver.
- * @returns {Promise<object>} Delivery status with a reveal, existing delivery metadata,
- * or a failure reason.
- * @throws {Error} Propagates Stripe retrieval errors and unexpected email transport failures.
- */
 export async function deliverGiftEmailForSession(stripe, sessionId) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.GIFT_FROM_EMAIL;
@@ -286,51 +128,45 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   }
 
   if (validation.alreadyDelivered) {
+    // If it's already delivered, just return success with alreadyDelivered true
+    // we don't try to send it again or update stripe
     return { ok: true, alreadyDelivered: true, delivered: true, metadata: validation.metadata };
   }
 
-  const redis = getRedisClient();
-  const claim = await acquireGiftDeliveryClaim(redis, sessionId);
+  const metadata = validation.metadata;
+  const reveal = createGiftReveal(metadata);
 
-  if (redis && claim === undefined) {
-    return { ok: false, reason: 'Gift delivery is already being processed. Please try again shortly.' };
-  }
+  await stripe.checkout.sessions.update(sessionId, {
+    metadata: {
+      ...metadata,
+      giftDeliveredAt: new Date().toISOString(),
+      giftNumbers: reveal.numbers.join(','),
+      giftLuckyColor: reveal.luckyColor,
+      giftLuckyDay: reveal.luckyDay,
+    },
+  });
 
-  try {
-    const metadata = validation.metadata;
-    const reveal = readStoredGiftReveal(metadata) || createGiftReveal(metadata, sessionId);
+  const emailResult = await sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal });
 
-    const emailResult = await sendGiftEmail({
-      metadata,
-      resendApiKey,
-      fromEmail,
-      reveal,
-      sessionId,
-    });
-
-    if (!emailResult.ok) {
-      console.error('Gift email failed', emailResult.details);
-      return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
-    }
+  if (!emailResult.ok) {
+    console.error('Gift email failed', emailResult.details);
 
     try {
       await stripe.checkout.sessions.update(sessionId, {
         metadata: {
           ...metadata,
-          giftDeliveredAt: new Date().toISOString(),
-          giftNumbers: reveal.numbers.join(','),
-          giftLuckyColor: reveal.luckyColor,
-          giftLuckyDay: reveal.luckyDay,
+          giftDeliveredAt: '',
+          giftNumbers: '',
+          giftLuckyColor: '',
+          giftLuckyDay: '',
         },
       });
-    } catch (error) {
-      // Resend idempotency prevents a retry from sending the gift a second time.
-      // Leave the result successful so a subsequent webhook can reconcile metadata.
-      console.error('Gift delivery metadata update failed', error);
+    } catch (releaseError) {
+      console.error('Failed to release gift delivery claim', releaseError);
     }
 
-    return { ok: true, delivered: true, reveal };
-  } finally {
-    await releaseGiftDeliveryClaim(redis, claim);
+    return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
   }
+
+  return { ok: true, delivered: true, reveal };
 }

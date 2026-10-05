@@ -36,12 +36,6 @@ async function findCheckoutSession(stripe, paymentId) {
   return sessions.data[0] || null;
 }
 
-/**
- * Resolves a paid gift checkout and attempts delivery when its delivery marker is absent.
- *
- * @param {Request} request - Request with a session_id or payment_id query parameter.
- * @returns {Promise<Response>} A 303 redirect to the reveal, or home with a gift error.
- */
 export async function GET(request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const paymentId = new URL(request.url).searchParams.get('session_id') || new URL(request.url).searchParams.get('payment_id');
@@ -61,30 +55,37 @@ export async function GET(request) {
 
     const metadata = session.metadata || {};
 
+    // If it's not a gift package, or not paid, redirect to home
     if (session.payment_status !== 'paid' || metadata.checkoutType !== 'gift_package') {
       return redirectHome(request, { giftError: 'Unable to verify the gift payment.' });
     }
 
-    if (metadata.giftDeliveredAt) {
+    // We should strictly rely on webhook or try local fallback but ensure idempotency is respected
+    let isDelivered = !!metadata.giftDeliveredAt;
+
+    // If webhook hasn't processed it yet, attempt delivery here as fallback,
+    // but this is mostly handled by webhook now. Let's just do it securely.
+    if (!isDelivered) {
+      const result = await deliverGiftEmailForSession(stripe, session.id);
+      if (result.ok) {
+        isDelivered = true;
+      } else if (!result.alreadyDelivered) {
+        return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
+      } else {
+        isDelivered = true;
+      }
+    }
+
+    if (isDelivered) {
+      const recipientEmail = metadata.recipientEmail || session.metadata?.recipientEmail || '';
       const url = new URL(`/reveal/${session.id}`, request.url);
-      if (metadata.recipientEmail) {
-        url.searchParams.set('recipientEmail', metadata.recipientEmail);
+      if (recipientEmail) {
+        url.searchParams.set('recipientEmail', recipientEmail);
       }
       return Response.redirect(url, 303);
     }
 
-    const result = await deliverGiftEmailForSession(stripe, session.id);
-
-    if (!result.ok && !result.alreadyDelivered) {
-      return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
-    }
-
-    const url = new URL(`/reveal/${session.id}`, request.url);
-    if (metadata.recipientEmail) {
-      url.searchParams.set('recipientEmail', metadata.recipientEmail);
-    }
-
-    return Response.redirect(url, 303);
+    return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
   } catch (error) {
     console.error('Gift delivery failed', error);
     return redirectHome(request, { giftError: 'Unable to send this lucky pick gift right now.' });

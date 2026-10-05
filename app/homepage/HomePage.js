@@ -38,42 +38,31 @@ export default function HomePage() {
   const [luckyReveal, setLuckyReveal] = useState(null);
   const [suggested, setSuggested] = useState(false);
   const [suggestionError, setSuggestionError] = useState('');
-  const [paymentError, setPaymentError] = useState('');
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
 
     if (searchParams.get('payment') === 'success' && searchParams.get('session_id')) {
       const sessionId = searchParams.get('session_id');
+      const pick = searchParams.get('pick') || '6';
 
-      // SECURITY HARDENING: Verify the session server-side and use the persisted
-      // server-generated reveal so a paid checkout cannot create fresh picks on reload.
+      // SECURITY HARDENING: Verify the session server-side before showing the reveal
       fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`)
         .then(res => {
           if (!res.ok) throw new Error('Invalid session');
           return res.json();
         })
         .then(data => {
-          if (data.success && data.reveal?.numbers?.length) {
-            setLuckyReveal({
-              game: {
-                name: data.game === '7' ? '7 Pick' : '6 Pick',
-                numbers: data.reveal.numbers,
-              },
-              luckyColor: data.reveal.luckyColor,
-              luckyDay: data.reveal.luckyDay,
-            });
-          } else if (data.success) {
-            console.error('Lucky reveal data missing from verified session');
-            setPaymentError('Unable to load your lucky reveal. Please contact support if you were charged.');
+          if (data.success) {
+            setLuckyReveal(createLuckyReveal(data.game || pick));
           } else {
             console.error('Session verification failed:', data.error);
-            setPaymentError('Unable to verify payment. Please contact support if you were charged.');
+            setSuggestionError('Unable to verify payment. Please contact support if you were charged.');
           }
         })
         .catch(err => {
           console.error('Session verification error:', err);
-          setPaymentError('Unable to verify payment. Please contact support if you were charged.');
+          setSuggestionError('Unable to verify payment. Please contact support if you were charged.');
         });
     }
 
@@ -347,11 +336,6 @@ export default function HomePage() {
         className="homepage-star-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
         style={{ position: 'fixed' }}
       />
-      {paymentError && (
-        <p className="suggestion-box-notice suggestion-box-notice-error" role="alert" style={{ marginBottom: '1rem' }}>
-          {paymentError}
-        </p>
-      )}
       <section className="homepage-section homepage-community-grid " aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
