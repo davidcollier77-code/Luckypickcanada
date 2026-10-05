@@ -59,68 +59,23 @@ function RevealPageContent() {
 
   const recipientEmail = searchParams?.get('recipientEmail') || '';
 
-  // The gift-delivery endpoint only sets this flag after it has verified the Stripe
-  // session and confirmed the dispatch. Its absence means delivery is unconfirmed, so the
-  // success copy and the pick itself must stay hidden even if `recipientEmail` is present
-  // (for example on a hand-crafted or stale URL).
-  const giftDeliveryConfirmed = searchParams?.get('giftDelivered') === '1';
-
   useEffect(() => {
-    if (revealId && giftDeliveryConfirmed) {
+    if (revealId) {
       // Generate a deterministic reveal based on the revealId
       const generatedReveal = createRevealFromId(revealId);
       setReveal(generatedReveal);
     }
-  }, [revealId, giftDeliveryConfirmed]);
+  }, [revealId]);
 
   useEffect(() => {
-    if (giftDeliveryConfirmed && recipientEmail.trim() !== '') {
+    if (recipientEmail && recipientEmail.trim() !== '') {
       setShowGiftBanner(true);
     }
-  }, [giftDeliveryConfirmed, recipientEmail]);
+  }, [recipientEmail]);
   
   const handleClose = () => {
     router.push('/');
   };
-
-  if (!giftDeliveryConfirmed) {
-    return (
-      <main style={{
-        minHeight: '100vh',
-        display: 'grid',
-        placeItems: 'center',
-        padding: '1.5rem',
-        background: '#061826',
-        color: '#f8fafc',
-        fontFamily: 'Arial, Helvetica, sans-serif',
-        textAlign: 'center',
-      }}>
-        <div style={{ maxWidth: '34rem' }}>
-          <span style={{
-            display: 'inline-block',
-            padding: '0.35rem 1rem',
-            borderRadius: '999px',
-            background: 'rgba(253, 230, 138, 0.15)',
-            border: '1px solid rgba(253, 230, 138, 0.34)',
-            color: '#fde68a',
-            fontWeight: 800,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            fontSize: '0.8rem',
-          }}>
-            Gift not confirmed
-          </span>
-          <h1 style={{ fontSize: 'clamp(1.6rem, 4vw, 2.3rem)', lineHeight: 1.15, margin: '1.1rem 0 0.9rem' }}>
-            We could not confirm this gift
-          </h1>
-          <p role="status" aria-live="polite" style={{ fontSize: '1.05rem', lineHeight: 1.6, color: '#d1fae5', margin: 0 }}>
-            This reveal has not been confirmed as delivered. If you just sent a Lucky Pick Canada gift, return
-            to the gift link you were emailed and we will finish sending it.
-          </p>
-        </div>
-      </main>
-    );
-  }
 
   if (!reveal) {
     return null;

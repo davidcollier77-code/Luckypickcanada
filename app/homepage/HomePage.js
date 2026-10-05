@@ -38,7 +38,6 @@ export default function HomePage() {
   const [luckyReveal, setLuckyReveal] = useState(null);
   const [suggested, setSuggested] = useState(false);
   const [suggestionError, setSuggestionError] = useState('');
-  const [revealError, setRevealError] = useState('');
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -58,28 +57,15 @@ export default function HomePage() {
       } else {
         // Server-side verification for production
         fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`)
-          .then(async (res) => {
-            const data = await res.json().catch(() => null);
-
-            if (res.ok && data && data.ok && data.luckyPickGame) {
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.ok && data.luckyPickGame) {
               setLuckyReveal(createLuckyReveal(data.luckyPickGame));
-              return;
+            } else {
+              console.error('Session verification failed:', data.error);
             }
-
-            console.error('Session verification failed:', res.status, data && data.error);
-
-            const rateLimited = res.status === 429 || (data && data.error === 'rate_limited');
-
-            setRevealError(
-              rateLimited
-                ? 'Too many verification attempts — please try again shortly.'
-                : 'We could not verify your payment just now. Please try again in a moment.'
-            );
           })
-          .catch((err) => {
-            console.error('Failed to verify session:', err);
-            setRevealError('We could not reach the payment verification service. Please try again in a moment.');
-          });
+          .catch((err) => console.error('Failed to verify session:', err));
       }
     } else if (paymentStatus === 'success' && pickParam && !sessionId) {
         // If developer testing bypassed the session entirely
@@ -360,11 +346,6 @@ export default function HomePage() {
         className="homepage-star-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
         style={{ position: 'fixed' }}
       />
-      {revealError && (
-        <div className="mx-auto w-full max-w-3xl">
-          <p className="suggestion-box-notice suggestion-box-notice-error" role="alert">{revealError}</p>
-        </div>
-      )}
       <section className="homepage-section homepage-community-grid " aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
