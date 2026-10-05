@@ -149,6 +149,8 @@ export async function GET(request: Request) {
             );
           }
         } else {
+          let releaseLock = true;
+
           try {
             // Re-read after acquiring the lock so a reveal written just before
             // the lock was acquired is reused rather than regenerated.
@@ -170,11 +172,24 @@ export async function GET(request: Request) {
               reveal = readStoredLuckyReveal(session.metadata || {});
 
               if (!reveal) {
-                throw new Error('Lucky reveal persistence could not be verified after Stripe update');
+                // The update returned without verifiable reveal metadata. Re-read
+                // Stripe once before treating persistence as failed.
+                session = await stripe.checkout.sessions.retrieve(sessionId);
+                reveal = readStoredLuckyReveal(session.metadata || {});
+
+                if (!reveal) {
+                  // Do not release an ownership lock after an uncertain write.
+                  // Let the short TTL expire rather than allowing another request
+                  // to generate a second reveal for the same paid session.
+                  releaseLock = false;
+                  throw new Error('Lucky reveal persistence could not be verified after Stripe update');
+                }
               }
             }
           } finally {
-            await releaseLuckyRevealLock(sessionId, lock.token);
+            if (releaseLock) {
+              await releaseLuckyRevealLock(sessionId, lock.token);
+            }
           }
         }
       }
