@@ -278,21 +278,17 @@ memory-bank/activeContext.md
 memory-bank/progress.md
 
 ## 8. VERIFICATION
-COMMAND: GitHub compare main...fix/lucky-reveal-persistence-followup
+COMMAND: pnpm test __tests__/lucky-reveal-persistence.test.js
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: The corrective branch initially contained only the intended route/test changes before required governance records were updated.
+EVIDENCE/OUTPUT SUMMARY: vitest 5.0.0 reported "Test Files 1 passed (1)" and "Tests 12 passed (12)" with a duration of 582ms. Dependencies were installed first with pnpm 10.30.3.
 
 COMMAND: GitHub PR check inspection for PR #1371
 RESULT: IN PROGRESS
 EVIDENCE/OUTPUT SUMMARY: Amazon Q Developer, Kilo Code Review, Visual QA, and Validate OpenNext checks were observed running against commit `8d29dc2100e392cb5fc9fae771a5e3fe3592ac3a`.
 
-COMMAND: local pnpm test
-RESULT: NOT RUN
-EVIDENCE/OUTPUT SUMMARY: This execution environment does not have pnpm/vitest installed and cannot reach the package registry. No test-pass claim is made.
-
 COMMAND: local pnpm run build
 RESULT: NOT RUN
-EVIDENCE/OUTPUT SUMMARY: This execution environment cannot perform the repository pnpm install/build workflow. No build-pass claim is made.
+EVIDENCE/OUTPUT SUMMARY: No production Next.js build was executed in this environment. No build-pass claim is made.
 
 REMAINING ISSUES: Repository CI/reviewer checks are still in progress at the time of this summary update.
 
