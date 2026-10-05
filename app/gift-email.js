@@ -128,6 +128,11 @@ function getRedisClient() {
   }
 }
 
+// Stripe retries `checkout.session.completed` and the async payment equivalents
+// for up to ~3 days, so the durable sent marker has to outlive that retry window.
+// A shorter TTL lets a late retry find no marker and send a second gift email.
+const GIFT_SENT_MARKER_TTL_SECONDS = 7 * 24 * 60 * 60;
+
 export async function deliverGiftEmailForSession(stripe, sessionId) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.GIFT_FROM_EMAIL;
@@ -195,6 +200,23 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   const giftDeliveredAt = new Date().toISOString();
 
   try {
+    // Re-read the durable sent marker now that the lock is held. The read before
+    // lock acquisition runs a Redis round-trip first, which leaves a TOCTOU
+    // window: a concurrent request can send the email, write the marker, and
+    // release the lock before this one claims it. Holding the lock makes this
+    // second read authoritative. Keep it, or a retry sends a second gift email
+    // with a freshly randomized reveal. The `finally` below releases the lock.
+    if (redis) {
+      try {
+        const sentAfterLock = await redis.get(`gift_sent:${sessionId}`);
+        if (sentAfterLock) {
+          return { ok: true, alreadyDelivered: true, metadata: validation.metadata };
+        }
+      } catch (e) {
+        console.error('Failed to re-check sent marker after acquiring gift lock', e);
+      }
+    }
+
     const emailResult = await sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal });
 
     if (!emailResult.ok) {
@@ -217,6 +239,20 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
       return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
     }
 
+    // The email is out, so record it before the Stripe write. Writing the durable
+    // marker here, rather than in the Stripe catch, is what makes delivery
+    // at-most-once: a Stripe failure can no longer leave a sent gift unrecorded,
+    // and a retry that reads the marker is stopped before it can send a second
+    // gift with a differently randomized reveal. Failures are logged loudly but
+    // must not abort an already-delivered gift.
+    if (redis) {
+      try {
+        await redis.set(`gift_sent:${sessionId}`, '1', { px: GIFT_SENT_MARKER_TTL_SECONDS * 1000 });
+      } catch (markerError) {
+        console.error('CRITICAL: Gift email was delivered but the durable gift sent marker could not be written; a retry may send a duplicate gift.', markerError);
+      }
+    }
+
     // Email succeeded. Update Stripe metadata.
     try {
       await stripe.checkout.sessions.update(sessionId, {
@@ -230,15 +266,6 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
       });
     } catch (stripeError) {
       console.error('Failed to update Stripe metadata after successful email delivery', stripeError);
-
-      // If Stripe update fails after sending, set a longer-lived sent marker in Redis so retries do not send duplicate
-      if (redis) {
-        try {
-          await redis.set(`gift_sent:${sessionId}`, '1', { px: 24 * 60 * 60 * 1000 }); // 24 hours
-        } catch (err) {
-          console.error('Failed to set long-lived sent marker', err);
-        }
-      }
     }
 
     return { ok: true, delivered: true, reveal };
