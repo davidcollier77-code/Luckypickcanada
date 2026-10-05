@@ -23,3 +23,8 @@
 ## In-Progress Corrective Work
 
 - **Paid Lucky Pick persistence follow-up (PR #1371)**: Corrected strict database `game` validation, removed the duplicate generated-reveal `game` key, and rebuilt the broken persistence regression tests from the actual merged state of PR #1370. Final CI/reviewer verification remains pending.
+
+## 2026-10-05 - DNS/Scanner Discrepancy Investigation
+- **Investigated:** The low DNS Health score for `www.luckypickcanada.ca` reported by security scanners.
+- **Findings:** The scanner incorrectly penalized the `www` hostname for lacking SPF, DMARC, and DKIM records. The `www` hostname is strictly configured as an HTTP 301 redirect to the canonical root domain (`luckypickcanada.ca`) and never sends email. The root domain correctly possesses all required email authentication records for the Resend integration.
+- **Action:** No changes made. Determined the configuration is technically correct and secure, and the scanner report for the `www` hostname should be safely ignored.
