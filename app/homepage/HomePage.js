@@ -37,7 +37,7 @@ export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
   const [luckyReveal, setLuckyReveal] = useState(null);
   const [suggested, setSuggested] = useState(false);
-  const [suggestionError, setSuggestionError] = useState('');
+  const [suggestionError, setSuggestionError] = useState('');\n  const [paymentError, setPaymentError] = useState('');
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -64,10 +64,10 @@ export default function HomePage() {
             });
           } else if (data.success) {
             console.error('Lucky reveal data missing from verified session');
-            setSuggestionError('Unable to load your lucky reveal. Please contact support if you were charged.');
+            setPaymentError('Unable to load your lucky reveal. Please contact support if you were charged.');
           } else {
             console.error('Session verification failed:', data.error);
-            setSuggestionError('Unable to verify payment. Please contact support if you were charged.');
+            setPaymentError('Unable to verify payment. Please contact support if you were charged.');
           }
         })
         .catch(err => {
@@ -346,7 +346,7 @@ export default function HomePage() {
         className="homepage-star-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
         style={{ position: 'fixed' }}
       />
-      <section className="homepage-section homepage-community-grid " aria-label="Lucky Pick Canada community">
+      {paymentError && (\n        <p className="suggestion-box-notice suggestion-box-notice-error" role="alert" style={{ marginBottom: '1rem' }}>\n          {paymentError}\n        </p>\n      )}\n      <section className="homepage-section homepage-community-grid " aria-label="Lucky Pick Canada community">
         <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">LUCKY METER</h2>
