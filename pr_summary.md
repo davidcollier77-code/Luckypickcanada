@@ -1,7 +1,7 @@
 # PR Summary
 
 SELECTED TASK GROUP: Security Specialist
-GROUP REASON: Task explicitely requested hardening of the Lucky Pick Canada payment and gift-delivery security boundaries, verifying and securing authorization checks and idempotency mechanisms for paid gifts.
+GROUP REASON: Task explicitly requested hardening of the Lucky Pick Canada payment and gift-delivery security boundaries, verifying and securing authorization checks and idempotency mechanisms for paid gifts.
 
 ## 2. LIBRARY CONSULTATION REPORT — REQUIRED
 
