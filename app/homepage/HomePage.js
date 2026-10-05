@@ -44,17 +44,27 @@ export default function HomePage() {
 
     if (searchParams.get('payment') === 'success' && searchParams.get('session_id')) {
       const sessionId = searchParams.get('session_id');
-      const pick = searchParams.get('pick') || '6';
 
-      // SECURITY HARDENING: Verify the session server-side before showing the reveal
+      // SECURITY HARDENING: Verify the paid session server-side and use the
+      // persisted server-generated reveal for this specific checkout session.
       fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`)
         .then(res => {
           if (!res.ok) throw new Error('Invalid session');
           return res.json();
         })
         .then(data => {
-          if (data.success) {
-            setLuckyReveal(createLuckyReveal(data.game || pick));
+          if (data.success && data.reveal?.numbers?.length) {
+            setLuckyReveal({
+              game: {
+                name: data.game === '7' ? '7 Pick' : '6 Pick',
+                numbers: data.reveal.numbers,
+              },
+              luckyColor: data.reveal.luckyColor,
+              luckyDay: data.reveal.luckyDay,
+            });
+          } else if (data.success) {
+            console.error('Lucky reveal data missing from verified session');
+            setSuggestionError('Unable to load your lucky reveal. Please contact support if you were charged.');
           } else {
             console.error('Session verification failed:', data.error);
             setSuggestionError('Unable to verify payment. Please contact support if you were charged.');
@@ -320,7 +330,6 @@ export default function HomePage() {
     setLuckyReveal(null);
     const url = new URL(window.location.href);
     url.searchParams.delete('payment');
-    url.searchParams.delete('pick');
     url.searchParams.delete('session_id');
     window.history.replaceState(null, '', url);
   }
