@@ -129,11 +129,13 @@ function getRedisClient() {
 }
 
 const GIFT_LOCK_TTL_MS = 120000;
+const GIFT_SENT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Fallback lock store for environments without Upstash configured, so an
 // unconfigured environment degrades to per-instance locking instead of
 // dropping the concurrency guard entirely.
 const memoryGiftLocks = new Map();
+const memoryGiftSent = new Map();
 
 function pruneMemoryGiftLocks() {
   const currentTime = Date.now();
@@ -141,6 +143,12 @@ function pruneMemoryGiftLocks() {
   for (const [key, entry] of memoryGiftLocks) {
     if (entry.expiresAt <= currentTime) {
       memoryGiftLocks.delete(key);
+    }
+  }
+
+  for (const [key, expiresAt] of memoryGiftSent) {
+    if (expiresAt <= currentTime) {
+      memoryGiftSent.delete(key);
     }
   }
 }
@@ -202,6 +210,41 @@ async function releaseGiftLock(redis, lockKey, lockToken) {
   }
 }
 
+// The short-lived lock only covers one attempt. This longer-lived marker
+// records that the gift email already went out, so a later retry cannot send a
+// second copy even when the Stripe metadata write failed.
+async function hasGiftBeenSent(redis, sessionId) {
+  const sentKey = `gift_sent:${sessionId}`;
+
+  try {
+    if (redis) {
+      return (await redis.exists(sentKey)) > 0;
+    }
+
+    pruneMemoryGiftLocks();
+    return memoryGiftSent.has(sentKey);
+  } catch (e) {
+    console.error('Failed to read the gift sent marker', e);
+    return false;
+  }
+}
+
+async function markGiftSent(redis, sessionId) {
+  const sentKey = `gift_sent:${sessionId}`;
+
+  try {
+    if (redis) {
+      await redis.set(sentKey, '1', { px: GIFT_SENT_TTL_MS });
+      return;
+    }
+
+    pruneMemoryGiftLocks();
+    memoryGiftSent.set(sentKey, Date.now() + GIFT_SENT_TTL_MS);
+  } catch (e) {
+    console.error('Failed to write the gift sent marker', e);
+  }
+}
+
 export async function deliverGiftEmailForSession(stripe, sessionId) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.GIFT_FROM_EMAIL;
@@ -221,6 +264,11 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   const redis = getRedisClient();
   const lockKey = `gift_lock:${sessionId}`;
   const lockToken = createLockToken();
+
+  if (await hasGiftBeenSent(redis, sessionId)) {
+    return { ok: true, alreadyDelivered: true, metadata: validation.metadata };
+  }
+
   const lock = await acquireGiftLock(redis, lockKey, lockToken);
 
   if (!lock.acquired) {
@@ -244,6 +292,10 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
       console.error('Gift email failed', emailResult.details);
       return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
     }
+
+    // The email is out, so record it before the Stripe write. A failed Stripe
+    // update then cannot let a retry send a second gift email.
+    await markGiftSent(redis, sessionId);
 
     // Only mark as delivered AFTER successful send
     try {
