@@ -49,6 +49,12 @@ function createRevealFromId(revealId: string) {
   };
 }
 
+/**
+ * Loads a gift reveal from the route ID, verifying Stripe session IDs with the server
+ * and requiring gift delivery metadata. Legacy IDs use a deterministic local reveal.
+ *
+ * @returns The reveal and optional gift banner, a verification error, or null while loading.
+ */
 function RevealPageContent() {
   const params = useParams();
   const router = useRouter();

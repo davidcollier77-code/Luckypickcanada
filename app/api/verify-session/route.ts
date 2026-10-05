@@ -4,6 +4,13 @@ import { getClientIp, checkApiRateLimit } from '../../spam-protection';
 
 export const runtime = 'nodejs';
 
+/**
+ * Verifies with Stripe that a checkout is paid and has a supported checkout type.
+ *
+ * @param request - Request with the Stripe checkout ID in the session_id query parameter.
+ * @returns JSON with the game and session metadata, or an error for rate limits,
+ * missing configuration, invalid sessions, unsupported checkout types, or unpaid checkouts.
+ */
 export async function GET(request: Request) {
   const ip = getClientIp(request);
   const rateLimit = await checkApiRateLimit(ip, 'verify_session', 20, 60000); // 20 per minute

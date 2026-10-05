@@ -36,6 +36,12 @@ async function findCheckoutSession(stripe, paymentId) {
   return sessions.data[0] || null;
 }
 
+/**
+ * Resolves a paid gift checkout and attempts delivery when its delivery marker is absent.
+ *
+ * @param {Request} request - Request with a session_id or payment_id query parameter.
+ * @returns {Promise<Response>} A 303 redirect to the reveal, or home with a gift error.
+ */
 export async function GET(request) {
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const paymentId = new URL(request.url).searchParams.get('session_id') || new URL(request.url).searchParams.get('payment_id');

@@ -8,6 +8,12 @@ export const dynamic = 'force-dynamic';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
 
+/**
+ * Sends a legacy gift email in development after rate limiting and input validation.
+ *
+ * @param req - JSON request containing recipientEmail, revealId, and optional personalMessage.
+ * @returns A JSON success or error response; requests outside development receive 403.
+ */
 export async function POST(req: Request) {
   // SECURITY HARDENING: Legacy endpoint should only be used in development mode for test_bypass
   if (process.env.NODE_ENV !== 'development') {

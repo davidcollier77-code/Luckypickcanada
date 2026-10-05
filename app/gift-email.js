@@ -112,6 +112,17 @@ function validateGiftSession(session) {
   return { ok: true, alreadyDelivered: false, metadata };
 }
 
+/**
+ * Validates a paid gift session and sends its reveal email when no delivery marker exists.
+ * Requires email configuration, records reveal metadata before sending, and attempts
+ * to clear that metadata if the email provider returns an unsuccessful response.
+ *
+ * @param {import('stripe').default} stripe - Stripe client for retrieving and updating checkout sessions.
+ * @param {string} sessionId - Checkout session ID to validate and deliver.
+ * @returns {Promise<object>} Delivery status with a reveal, existing delivery metadata,
+ * or a failure reason. Sessions with a delivery marker return alreadyDelivered without resending.
+ * @throws {Error} Propagates Stripe errors and email transport failures.
+ */
 export async function deliverGiftEmailForSession(stripe, sessionId) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.GIFT_FROM_EMAIL;
