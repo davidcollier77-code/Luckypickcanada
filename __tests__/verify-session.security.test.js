@@ -104,9 +104,11 @@ describe('verify-session security regressions', () => {
       'http://localhost/api/verify-session?session_id=cs_test_lucky',
     );
 
-    const firstResponse = await verifySession(request);
+    const [firstResponse, secondResponse] = await Promise.all([
+      verifySession(request),
+      verifySession(request),
+    ]);
     const firstData = await firstResponse.json();
-    const secondResponse = await verifySession(request);
     const secondData = await secondResponse.json();
 
     expect(firstResponse.status).toBe(200);
@@ -116,5 +118,26 @@ describe('verify-session security regressions', () => {
     expect(firstData.reveal.numbers).toHaveLength(6);
     expect(new Set(firstData.reveal.numbers).size).toBe(6);
     expect(mocks.update).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns a valid reveal when Stripe metadata persistence fails', async () => {
+    mocks.retrieve.mockResolvedValue({
+      payment_status: 'paid',
+      metadata: {
+        checkoutType: 'lucky_pick',
+        luckyPickGame: '7',
+      },
+    });
+    mocks.update.mockRejectedValue(new Error('temporary Stripe failure'));
+
+    const response = await verifySession(
+      new Request('http://localhost/api/verify-session?session_id=cs_test_persist_failure'),
+    );
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.reveal.numbers).toHaveLength(7);
+    expect(new Set(data.reveal.numbers).size).toBe(7);
   });
 });
