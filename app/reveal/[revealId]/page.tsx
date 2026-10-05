@@ -49,6 +49,7 @@ function createRevealFromId(revealId: string) {
 /**
  * Loads an authorized paid reveal from the server.
  * Non-Stripe legacy reveal IDs are available only in local development test mode.
+ * @returns {import('react').ReactElement|null} The reveal UI, verification error state, or null while loading.
  */
 function RevealPageContent() {
   const params = useParams();
