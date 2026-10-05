@@ -1,0 +1,9 @@
+🛡️ Sentinel: HIGH Harden paid Lucky Pick reveal persistence
+
+Severity: HIGH
+Vulnerability: Race Condition / Concurrency / Persistence Weakness
+Impact: A temporary Redis outage could cause `verify-session` to fail open, resulting in concurrent requests for the same paid `session_id` generating two separate reveals and racing to overwrite Stripe metadata. In addition, relying purely on Stripe metadata mutations post-payment was not an authoritative, concurrency-safe server truth.
+Fix: Created a `lucky_reveals` table in the existing Neon PostgreSQL database. Modified `app/api/verify-session/route.ts` to drop the unreliable Redis lock for paid `lucky_pick` checkouts and instead rely on an atomic `INSERT ... ON CONFLICT DO NOTHING` constraint. The database is now the absolute source of truth. Stripe metadata is updated strictly as a read-through convenience.
+Verification: Updated `lucky-reveal-persistence.test.js` to simulate database atomicity. Run local zero-cost verifications via `./jules-verify.sh`. Build size verified under 495MB.
+
+See PR Summary for full governance and verification details.

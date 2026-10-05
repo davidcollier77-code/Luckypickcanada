@@ -1,56 +1,112 @@
-SELECTED TASK GROUP: Performance — Mobile PageSpeed Insights
-GROUP REASON: The request explicitly targeted reducing unused JavaScript (estimated 41 KiB) found in mobile PageSpeed Insights tests.
+SELECTED TASK GROUP: security
+GROUP REASON: Task explicitly requests hardening a persistence mechanism against concurrent race conditions, preventing state-manipulation via Stripe metadata, and implementing atomic database locking/insertion to protect the paid product flow from duplicate creation vectors.
 
-LIBRARY CONSULTATION REPORT:
-LIBRARY: /vercel/next.js
-VERSION: 16.3.6
+LIBRARY: jules.google/docs
+VERSION: local
 USED: YES
 USEFUL: YES
-REASON: Guided identification of chunks and Next.js internal router/React hydration code architecture.
+REASON: Guided workflow requirements and PR summary formatting strictly per AGENTS.md and memory constraints.
 
-ROUTED JULES/GEMINI DOCUMENT REPORT:
-DOCUMENT: .jules/jules.md
+LIBRARY: developers.google.com/jules/api
+VERSION: local
 USED: YES
 USEFUL: YES
-REASON: Validated governance requirements and pre-submission checks.
-DOCUMENT: .jules/testing.md
+REASON: Directed standard tool usage (bash, test execution) and planning mechanics for modifying the database implementation securely.
+
+LIBRARY: /google-gemini/gemini-cli
+VERSION: local
+USED: NO
+USEFUL: NO
+REASON: No CLI operations required for resolving this specific Neon Postgres implementation.
+
+LIBRARY: /websites/ai_google_dev_gemini-api
+VERSION: local
+USED: NO
+USEFUL: NO
+REASON: No Gemini API integrations were modified or consulted.
+
+LIBRARY: /neondatabase/neon
+VERSION: local
 USED: YES
 USEFUL: YES
-REASON: Verified testing commands for build constraints and visual validation.
+REASON: Verified correct syntax and implementation for Neon Serverless `sql\`` tagged templates to execute `INSERT ... ON CONFLICT DO NOTHING RETURNING *` securely.
 
-REPOSITORY COMPONENT REPORT:
-COMPONENT: .next/static/chunks/
+LIBRARY: /stripe/stripe-js
+VERSION: local
 USED: YES
 USEFUL: YES
-REASON: Analyzed the specific chunks `1092-d7877b29e7d6d0a5.js` and `abf3477e-8a2a82d8653a1d01.js` identified in the PageSpeed report. Mapped these to the core Next.js internal router and React-DOM hydration mechanisms.
-COMPONENT: app/homepage/HomePage.js
+REASON: Validated Stripe Checkout Session metadata constraints and how it can be utilized safely as a read-through cache without relying on it as authoritative state.
+
+DOCUMENT: memory-bank/projectBrief.md
 USED: YES
 USEFUL: YES
-REASON: Verified that dynamic imports for heavy third-party code (like Turnstile and Howler) are already correctly implemented and deferred.
+REASON: Verified overall architecture constraint to use Neon PostgreSQL and avoid adding unapproved databases or architectures.
 
-IMPLEMENTATION:
-- Analyzed the two 61.7 KiB chunks (`1092-*.js` and `abf3477e-*.js`) flagged by Lighthouse as unused JavaScript.
-- Investigated their source mapping using Next.js build manifests (`.next/build-manifest.json`) and source maps.
-- Verified that these chunks correspond directly to `react-dom/client` and Next.js core application router/scheduler internals.
-- Lighthouse flags parts of these chunks because React hydration and complex concurrent routing features contain branches that do not execute during a static page load (e.g., error boundaries, client navigation logic).
-- Because these are mandatory first-party framework chunks required for the app to function properly on the client, they cannot be deferred, lazy-loaded, or safely removed.
-- Confirmed that previous optimizations (dynamically importing `Howler` and `TurnstileField`) have successfully eliminated actual removable unused JavaScript.
-- Conclusion: No speculative deletions or unsafe code-splitting were performed. The remaining "unused JS" is a PageSpeed false positive against the necessary React/Next.js hydration engine.
+DOCUMENT: memory-bank/activeContext.md
+USED: YES
+USEFUL: YES
+REASON: Updated to reflect the newly hardened Postgres-backed reveal persistence implementation.
 
-EXACT FINAL DIFF RECONCILIATION:
-- (No files were changed for this task as no safe, worthwhile optimization is supported by the evidence for core framework chunks).
+DOCUMENT: .jules/security.md
+USED: YES
+USEFUL: YES
+REASON: Confirmed Neon and Stripe docs were approved sources for this type of backend security/persistence modification.
 
-VERIFICATION:
-COMMAND: pnpm run build
+DOCUMENT: AGENTS.md
+USED: YES
+USEFUL: YES
+REASON: The absolute governance requirement. Followed strictly for bounding scope, selecting task group, formatting PR summary, and ensuring no unauthorized scope expansion occurred.
+
+COMPONENT: app/api/verify-session/route.ts
+USED: YES
+USEFUL: YES
+REASON: The primary target of the hardening effort. Modified to replace Redis locks with atomic Postgres inserts.
+
+COMPONENT: app/lib/db-init.js
+USED: YES
+USEFUL: YES
+REASON: Modified to provision the new `lucky_reveals` table schema cleanly.
+
+COMPONENT: __tests__/lucky-reveal-persistence.test.js
+USED: YES
+USEFUL: YES
+REASON: Updated to simulate and verify Postgres atomic inserts (`ON CONFLICT DO NOTHING`) instead of Upstash Redis behavior.
+
+COMPONENT: app/reveal/[revealId]/page.tsx
+USED: YES
+USEFUL: YES
+REASON: Inspected to confirm it cleanly consumes the server-authoritative reveal from the API. No changes were needed here.
+
+--- Exact Final Diff Reconciliation ---
+__tests__/lucky-reveal-persistence.test.js
+app/api/verify-session/route.ts
+app/lib/db-init.js
+memory-bank/activeContext.md
+
+--- Verification Results ---
+COMMAND: pnpm test __tests__/lucky-reveal-persistence.test.js
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Build completed successfully. Build size remained under the 495MB maximum limit.
+EVIDENCE/OUTPUT SUMMARY: 8 passed tests confirming atomic concurrency and persistence behavior.
 
 COMMAND: pnpm test
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Vitest suite executed successfully.
+EVIDENCE/OUTPUT SUMMARY: 37 total passed tests across 5 suites.
 
-COMMAND: pnpm exec playwright test
+COMMAND: pnpm tsc --noEmit
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Visual tests executed and verified that all existing homepage functionality and presentation remained intact.
+EVIDENCE/OUTPUT SUMMARY: Zero type errors.
 
+COMMAND: pnpm run build
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Compiled successfully. Size checked at 286MB (.next), well under 495MB limit.
+
+COMMAND: node scripts/test-refresh-docs.js
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: 17 passed tests, confirming docs workflow is unbroken.
+
+COMMAND: ./jules-verify.sh
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: All zero-cost local verifications complete.
+
+REMAINING ISSUES: None.
 USEFUL RESULT: YES

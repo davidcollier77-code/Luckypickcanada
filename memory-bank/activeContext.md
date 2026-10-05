@@ -1,10 +1,7 @@
 # Active Context
 
 ## Current Goals
-- Ensure homepage mobile rendering achieves optimal Speed Index and Largest Contentful Paint (LCP) benchmarks.
-- Mitigate console errors and unexpected fallbacks triggered by absent cloud services (Upstash Redis) or frantic user events (window resizes).
-- Resolve browser reliability warnings from performance scans.
-- **New:** Audit and harden payment/reveal authorization, ensuring no duplicate delivery bugs, client-side forgery loopholes, or bypass legacy routes.
+- Harden the paid Lucky Pick reveal persistence system.
 
 ## Recent Work
 - Audited and secured payment workflows against client-side parameter tampering (e.g. `payment=success` exploits).
@@ -26,6 +23,7 @@
 - Eliminated an unstable cache-busting behavior in `app/layout.js`.
 - Addressed server console 500 errors in `app/api/visits/route.js`.
 - Mitigated visual jank on viewport resize.
+- Replaced unreliable Redis concurrency locks with Neon Postgres `INSERT ... ON CONFLICT DO NOTHING` atomic database constraints in `app/api/verify-session/route.ts` for authoritative paid Lucky Pick persistence. Update `app/reveal/[revealId]/page.tsx` rendering path. Test suite transitioned to simulating Postgres transitions instead of Upstash Redis mock.
 
 ## Open Questions
 - None. Security updates have been implemented and builds succeed.
