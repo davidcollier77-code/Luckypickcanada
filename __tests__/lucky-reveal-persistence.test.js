@@ -267,6 +267,36 @@ describe('Paid Lucky Pick reveal persistence', () => {
     expect(body.error).toBe('Invalid stored reveal data');
   });
 
+  it('rejects an invalid game value returned after an insert attempt', async () => {
+    let insert = true;
+    mocks.sql.mockImplementation(async (strings, ...values) => {
+      const query = strings.join('');
+
+      if (query.includes('SELECT game, numbers, lucky_color, lucky_day') && query.includes('FROM lucky_reveals')) {
+        return insert ? [] : storedDbReveals[SESSION_ID];
+      }
+
+      if (query.includes('INSERT INTO lucky_reveals')) {
+        storedDbReveals[SESSION_ID] = [{
+          game: '5',
+          numbers: values[2],
+          lucky_color: values[3],
+          lucky_day: values[4],
+        }];
+        insert = false;
+        return [];
+      }
+
+      throw new Error(`Unexpected SQL query: ${query}`);
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { response, body } = await callVerify();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe('Invalid stored reveal data');
+  });
+
   it('rejects out-of-range database numbers', async () => {
     storedDbReveals[SESSION_ID] = [{
       game: '6',
