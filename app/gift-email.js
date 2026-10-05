@@ -128,6 +128,61 @@ function getRedisClient() {
   }
 }
 
+const GIFT_LOCK_TTL_MS = 120000;
+
+// Fallback lock store for environments without Upstash configured, so an
+// unconfigured environment degrades to per-instance locking instead of
+// dropping the concurrency guard entirely.
+const memoryGiftLocks = new Map();
+
+function pruneMemoryGiftLocks() {
+  const currentTime = Date.now();
+
+  for (const [key, entry] of memoryGiftLocks) {
+    if (entry.expiresAt <= currentTime) {
+      memoryGiftLocks.delete(key);
+    }
+  }
+}
+
+async function acquireGiftLock(redis, lockKey) {
+  if (redis) {
+    try {
+      const claimed = await redis.set(lockKey, '1', { px: GIFT_LOCK_TTL_MS, nx: true });
+      if (claimed === null) {
+        return { acquired: false, inProgress: true };
+      }
+    } catch (err) {
+      console.error('Failed to acquire gift lock', err);
+      return { acquired: false, unavailable: true };
+    }
+
+    return { acquired: true };
+  }
+
+  pruneMemoryGiftLocks();
+
+  if (memoryGiftLocks.has(lockKey)) {
+    return { acquired: false, inProgress: true };
+  }
+
+  memoryGiftLocks.set(lockKey, { expiresAt: Date.now() + GIFT_LOCK_TTL_MS });
+  return { acquired: true };
+}
+
+async function releaseGiftLock(redis, lockKey) {
+  try {
+    if (redis) {
+      await redis.del(lockKey);
+      return;
+    }
+
+    memoryGiftLocks.delete(lockKey);
+  } catch (e) {
+    console.error('Failed to release gift lock', e);
+  }
+}
+
 export async function deliverGiftEmailForSession(stripe, sessionId) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.GIFT_FROM_EMAIL;
@@ -145,18 +200,16 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
 
   // Atomic lock using Redis to prevent concurrent webhook/fallback race conditions
   const redis = getRedisClient();
-  let lockKey;
-  if (redis) {
-    lockKey = `gift_lock:${sessionId}`;
-    try {
-      const claimed = await redis.set(lockKey, '1', { px: 120000, nx: true });
-      if (claimed === null) {
-        return { ok: false, reason: 'Gift fulfillment is already in progress for this session.' };
-      }
-    } catch (err) {
-      console.error('Failed to acquire gift lock', err);
-      return { ok: false, reason: 'Gift fulfillment service temporarily unavailable.' };
-    }
+  const lockKey = `gift_lock:${sessionId}`;
+  const lock = await acquireGiftLock(redis, lockKey);
+
+  if (!lock.acquired) {
+    return {
+      ok: false,
+      reason: lock.unavailable
+        ? 'Gift fulfillment service temporarily unavailable.'
+        : 'Gift fulfillment is already in progress for this session.',
+    };
   }
 
   const metadata = validation.metadata;
@@ -167,13 +220,7 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
 
   if (!emailResult.ok) {
     console.error('Gift email failed', emailResult.details);
-    if (redis && lockKey) {
-      try {
-        await redis.del(lockKey);
-      } catch (e) {
-        console.error('Failed to release gift lock', e);
-      }
-    }
+    await releaseGiftLock(redis, lockKey);
     return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
   }
 
@@ -192,13 +239,7 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
       console.error('Failed to update Stripe metadata after successful email delivery', stripeError);
   }
 
-  if (redis && lockKey) {
-    try {
-      await redis.del(lockKey);
-    } catch (e) {
-      console.error('Failed to release gift lock', e);
-    }
-  }
+  await releaseGiftLock(redis, lockKey);
 
   return { ok: true, delivered: true, reveal };
 }
