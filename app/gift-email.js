@@ -123,6 +123,7 @@ function getRedisClient() {
     }
     return Redis.fromEnv();
   } catch (error) {
+    console.error('Gift Redis client initialization failed', { operation: 'fromEnv', error });
     return null;
   }
 }
