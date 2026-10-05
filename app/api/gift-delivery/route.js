@@ -60,22 +60,24 @@ export async function GET(request) {
       return redirectHome(request, { giftError: 'Unable to verify the gift payment.' });
     }
 
-    // Only redirect to reveal if delivery was completed by webhook
-    if (metadata.giftDeliveredAt) {
-      const recipientEmail = metadata.recipientEmail || '';
-      const url = new URL(`/reveal/${session.id}`, request.url);
-      if (recipientEmail) {
-        url.searchParams.set('recipientEmail', recipientEmail);
-      }
-      return Response.redirect(url, 303);
-    }
+    // We should strictly rely on webhook or try local fallback but ensure idempotency is respected
+    let isDelivered = !!metadata.giftDeliveredAt;
 
     // If webhook hasn't processed it yet, attempt delivery here as fallback,
     // but this is mostly handled by webhook now. Let's just do it securely.
-    const result = await deliverGiftEmailForSession(stripe, session.id);
+    if (!isDelivered) {
+      const result = await deliverGiftEmailForSession(stripe, session.id);
+      if (result.ok) {
+        isDelivered = true;
+      } else if (!result.alreadyDelivered) {
+        return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
+      } else {
+        isDelivered = true;
+      }
+    }
 
-    if (result.ok) {
-      const recipientEmail = session.metadata?.recipientEmail || '';
+    if (isDelivered) {
+      const recipientEmail = metadata.recipientEmail || session.metadata?.recipientEmail || '';
       const url = new URL(`/reveal/${session.id}`, request.url);
       if (recipientEmail) {
         url.searchParams.set('recipientEmail', recipientEmail);

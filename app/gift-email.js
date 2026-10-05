@@ -123,8 +123,14 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   const validation = validateGiftSession(session);
 
-  if (!validation.ok || validation.alreadyDelivered) {
+  if (!validation.ok) {
     return validation;
+  }
+
+  if (validation.alreadyDelivered) {
+    // If it's already delivered, just return success with alreadyDelivered true
+    // we don't try to send it again or update stripe
+    return { ok: true, alreadyDelivered: true, delivered: true, metadata: validation.metadata };
   }
 
   const metadata = validation.metadata;

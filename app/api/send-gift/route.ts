@@ -9,6 +9,11 @@ export const dynamic = 'force-dynamic';
 const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
 
 export async function POST(req: Request) {
+  // SECURITY HARDENING: Legacy endpoint should only be used in development mode for test_bypass
+  if (process.env.NODE_ENV !== 'development') {
+    return NextResponse.json({ error: 'This endpoint is restricted to development test mode.' }, { status: 403 });
+  }
+
   const ip = getClientIp(req);
   const rateLimit = await checkApiRateLimit(ip, 'send_gift', 5, 3600000); // Max 5 gifts per hour per IP
 
@@ -59,10 +64,7 @@ export async function POST(req: Request) {
   <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #0b1120; padding: 30px 10px;">
     <tr>
       <td align="center">
-        <!-- Main Card Container -->
         <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 500px; background-color: #111827; border: 1px solid #1f2937; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
-
-          <!-- Header -->
           <tr>
             <td style="padding: 32px 24px 10px 24px; text-align: center;">
               <div style="font-size: 40px; margin-bottom: 10px;">💎</div>
@@ -74,8 +76,6 @@ export async function POST(req: Request) {
               </p>
             </td>
           </tr>
-
-          <!-- Custom Message Box -->
           <tr>
             <td style="padding: 16px 24px;">
               <div style="background-color: #1f2937; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 16px; color: #f3f4f6; font-size: 14px; line-height: 1.5; font-style: italic;">
@@ -83,21 +83,16 @@ export async function POST(req: Request) {
               </div>
             </td>
           </tr>
-
-          <!-- CTA Button -->
           <tr>
             <td style="padding: 20px 24px 32px 24px; text-align: center;">
               <p style="color: #d1d5db; font-size: 15px; margin-bottom: 24px;">
                 Tap below to uncover your gems with the live slow reveal:
               </p>
-
               <a href="${revealUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 50px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
                 💎 Uncover My Jewels
               </a>
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
             <td style="padding: 16px 24px; background-color: #030712; text-align: center; border-top: 1px solid #1f2937;">
               <p style="color: #4b5563; font-size: 12px; margin: 0;">
@@ -105,7 +100,6 @@ export async function POST(req: Request) {
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>

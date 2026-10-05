@@ -59,25 +59,26 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
       const selectedGame = formData.get('luckyPickGame') || luckyPickGame;
 
       try {
-        const res = await fetch('/api/send-gift', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipientName,
-            recipientEmail,
-            senderName,
-            personalMessage: giftMessage,
-            pickType: selectedGame,
-          }),
-        });
+        if (isRevealTestMode) {
+          const res = await fetch('/api/send-gift', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              recipientName,
+              recipientEmail,
+              senderName,
+              personalMessage: giftMessage,
+              pickType: selectedGame,
+              revealId: 'test_reveal_' + Math.random().toString(36).substring(7),
+            }),
+          });
 
-        if (!res.ok) {
-          console.error('[Client] Backend gift email sending failed with status:', res.status);
-          console.error('[Client] Response:', await res.text().catch(() => 'Unable to read response'));
-        } else {
-
+          if (!res.ok) {
+            console.error('[Client] Backend gift email sending failed with status:', res.status);
+            console.error('[Client] Response:', await res.text().catch(() => 'Unable to read response'));
+          }
         }
       } catch (err) {
         console.error('[Client] Network error when sending gift email:', err);

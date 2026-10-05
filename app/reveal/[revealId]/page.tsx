@@ -56,14 +56,48 @@ function RevealPageContent() {
   const revealId = params?.revealId as string;
   const [reveal, setReveal] = useState<any>(null);
   const [showGiftBanner, setShowGiftBanner] = useState(false);
+  const [authError, setAuthError] = useState<string>('');
   
   const recipientEmail = searchParams?.get('recipientEmail') || '';
 
   useEffect(() => {
     if (revealId) {
-      // Generate a deterministic reveal based on the revealId
-      const generatedReveal = createRevealFromId(revealId);
-      setReveal(generatedReveal);
+      // For cs_ stripe sessions, verify they are actually paid gifts via server
+      if (revealId.startsWith('cs_')) {
+        fetch(`/api/verify-session?session_id=${encodeURIComponent(revealId)}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Invalid or unpaid session');
+            return res.json();
+          })
+          .then(data => {
+            if (data.success && data.metadata?.checkoutType === 'gift_package' && data.metadata?.giftDeliveredAt) {
+               // Render actual server-verified gift data if available, fallback to deterministic
+               if (data.metadata.giftNumbers) {
+                 const numbers = data.metadata.giftNumbers.split(',').map(Number);
+                 setReveal({
+                   game: {
+                     name: numbers.length === 7 ? '7 Pick' : '6 Pick',
+                     numbers: numbers,
+                   },
+                   luckyColor: data.metadata.giftLuckyColor || 'Star Gold',
+                   luckyDay: data.metadata.giftLuckyDay || 'Friday',
+                 });
+               } else {
+                 setReveal(createRevealFromId(revealId));
+               }
+            } else {
+              setAuthError('Unable to verify this gift delivery.');
+            }
+          })
+          .catch(err => {
+            console.error('Failed to verify gift reveal:', err);
+            setAuthError('Unable to verify this gift delivery.');
+          });
+      } else {
+         // Generate a deterministic reveal based on the revealId (for legacy revealIds not starting with cs_)
+         const generatedReveal = createRevealFromId(revealId);
+         setReveal(generatedReveal);
+      }
     }
   }, [revealId]);
 
@@ -77,6 +111,18 @@ function RevealPageContent() {
     router.push('/');
   };
   
+  if (authError) {
+    return (
+      <div style={{ padding: '4rem', textAlign: 'center', color: '#fff' }}>
+        <h2>Reveal Unavailable</h2>
+        <p>{authError}</p>
+        <button onClick={handleClose} style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: '#333', color: '#fff', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+          Return Home
+        </button>
+      </div>
+    );
+  }
+
   if (!reveal) {
     return null;
   }

@@ -43,7 +43,27 @@ export default function HomePage() {
     const searchParams = new URLSearchParams(window.location.search);
 
     if (searchParams.get('payment') === 'success' && searchParams.get('session_id')) {
-      setLuckyReveal(createLuckyReveal(searchParams.get('pick')));
+      const sessionId = searchParams.get('session_id');
+      const pick = searchParams.get('pick') || '6';
+
+      // SECURITY HARDENING: Verify the session server-side before showing the reveal
+      fetch(`/api/verify-session?session_id=${encodeURIComponent(sessionId)}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Invalid session');
+          return res.json();
+        })
+        .then(data => {
+          if (data.success) {
+            setLuckyReveal(createLuckyReveal(data.game || pick));
+          } else {
+            console.error('Session verification failed:', data.error);
+            setSuggestionError('Unable to verify payment. Please contact support if you were charged.');
+          }
+        })
+        .catch(err => {
+          console.error('Session verification error:', err);
+          setSuggestionError('Unable to verify payment. Please contact support if you were charged.');
+        });
     }
 
     setSuggested(searchParams.get('suggested') === '1');
