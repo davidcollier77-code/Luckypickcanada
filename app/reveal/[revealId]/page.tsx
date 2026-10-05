@@ -70,7 +70,7 @@ function RevealPageContent() {
             return res.json();
           })
           .then(data => {
-            if (data.success && ((data.metadata?.checkoutType === 'gift_package' && data.metadata?.giftDeliveredAt) || data.metadata?.checkoutType === 'lucky_pick')) {
+if (data.success && ((data.metadata?.checkoutType === 'gift_package' && data.metadata?.giftDeliveredAt) || data.metadata?.checkoutType === 'lucky_pick')) {
                // Render actual server-verified gift data if available, fallback to deterministic
                if (data.metadata.giftNumbers) {
                  const numbers = data.metadata.giftNumbers.split(',').map(Number);
@@ -82,10 +82,25 @@ function RevealPageContent() {
                    luckyColor: data.metadata.giftLuckyColor || 'Star Gold',
                    luckyDay: data.metadata.giftLuckyDay || 'Friday',
                  });
+               } else if (data.reveal?.numbers?.length) {
+                 // Paid Lucky Pick sessions return the persisted server-generated
+                 // reveal. It must be used as-is so the same paid session always
+                 // renders the same pick.
+                 setReveal({
+                   game: {
+                     name: data.reveal.game === '7' ? '7 Pick' : '6 Pick',
+                     numbers: data.reveal.numbers,
+                   },
+                   luckyColor: data.reveal.luckyColor || 'Star Gold',
+                   luckyDay: data.reveal.luckyDay || 'Friday',
+                 });
+               } else if (data.metadata?.checkoutType === 'lucky_pick') {
+                 // Never substitute a locally derived pick for a paid Lucky Pick.
+                 setAuthError('Unable to verify this gift delivery.');
                } else {
                  setReveal(createRevealFromId(revealId));
                }
-            } else {
+             } else {
               setAuthError('Unable to verify this gift delivery.');
             }
           })
