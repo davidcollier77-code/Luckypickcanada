@@ -50,7 +50,7 @@
     "clsx-tailwind-merge": "^1.0.4",
     "cssnano": "^9.0.2",
     "date-fns": "^4.4.0",
-    "dompurify": "^3.4.14",
+    "dompurify": "^3.4.16",
     "dotenv": "^17.4.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest-dom": "^5.10.1",
