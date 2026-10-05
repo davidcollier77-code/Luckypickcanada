@@ -1,3 +1,8 @@
-Perf: Mitigate lighthouse warnings and console errors
+🛡️ Sentinel: HIGH Fix payment bypass vulnerability and duplicate gift dispatch
 
-Addresses remaining lighthouse issues by removing unused javascript from initial render via ssr:false in dynamic imports. Fixes console logging warnings when third party redis is missing. Resolves network request critical paths by preloading fonts and removing extra connection handshakes.
+- Create /api/verify-session endpoint for server-authoritative Stripe validation.
+- Harden gift idempotency in /api/gift-delivery and gift-email.js relying on giftDeliveredAt.
+- Block legacy /api/send-gift bypass endpoint in production environments.
+- Verify revealIds correctly on server instead of trusting client inputs.
+- Ensure test suite has been updated to protect security boundaries.
+- Fix broken strings causing syntax error in HomePage.js during previous rewrite.
