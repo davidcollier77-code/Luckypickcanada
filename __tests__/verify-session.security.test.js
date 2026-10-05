@@ -82,7 +82,7 @@ describe('verify-session security regressions', () => {
     expect(data.reveal).toBeUndefined();
   });
 
-  it('persists the first lucky reveal and returns the same reveal on repeat requests', async () => {
+  it('returns the same reveal for concurrent requests even before Stripe persistence completes', async () => {
     const session = {
       payment_status: 'paid',
       metadata: {
@@ -115,6 +115,6 @@ describe('verify-session security regressions', () => {
     expect(firstData.game).toBe('6');
     expect(firstData.reveal.numbers).toHaveLength(6);
     expect(new Set(firstData.reveal.numbers).size).toBe(6);
-    expect(mocks.update).toHaveBeenCalledTimes(1);
+    expect(mocks.update).toHaveBeenCalledTimes(2);
   });
 });
