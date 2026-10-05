@@ -1,30 +1,10 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { Redis } from '@upstash/redis';
 import { createLuckyReveal } from '../../lucky-reveal';
 import { getClientIp, checkApiRateLimit } from '../../spam-protection';
+import { getSql, initializeDatabase } from '../../lib/db-init';
 
 export const runtime = 'nodejs';
-
-const LUCKY_REVEAL_LOCK_TTL_SECONDS = 30;
-const RELEASE_LUCKY_REVEAL_LOCK_SCRIPT = `
-  if redis.call('GET', KEYS[1]) == ARGV[1] then
-    return redis.call('DEL', KEYS[1])
-  end
-  return 0
-`;
-
-function getRedisClient() {
-  try {
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-      return null;
-    }
-    return Redis.fromEnv();
-  } catch (error) {
-    console.error('Redis client initialization failed for lucky reveal persistence', error);
-    return null;
-  }
-}
 
 function readStoredLuckyReveal(metadata: Record<string, string>) {
   const game = metadata.luckyPickGame === '7' ? '7' : '6';
@@ -50,79 +30,6 @@ function readStoredLuckyReveal(metadata: Record<string, string>) {
     luckyColor: metadata.luckyPickLuckyColor,
     luckyDay: metadata.luckyPickLuckyDay,
   };
-}
-
-type LuckyRevealLock = {
-  /** True when this request owns the persistence lock for the session. */
-  acquired: boolean;
-  /** Ownership token to release the lock, or null when no lock was taken. */
-  token: string | null;
-  /**
-   * Status to surface when another request owns the lock (409). Null when no
-   * lock is held, including when the lock backend itself is unavailable.
-   */
-  blockedStatus: number | null;
-  /** Message to surface alongside `blockedStatus`. */
-  blockedMessage: string | null;
-};
-
-/**
- * Attempts to take the per-session persistence lock.
- *
- * A 409 means another request owns the lock and the caller must wait. The lock
- * backend being unavailable is not reported as a block, because the lock is
- * only a concurrency optimisation and not a requirement for producing a paid
- * customer's reveal.
- */
-async function claimLuckyRevealLock(sessionId: string): Promise<LuckyRevealLock> {
-  const redis = getRedisClient();
-  if (!redis) {
-    return { acquired: false, token: null, blockedStatus: null, blockedMessage: null };
-  }
-
-  const key = `lucky-reveal-lock:${sessionId}`;
-  const token = crypto.randomUUID();
-
-  try {
-    const result = await redis.set(key, token, {
-      nx: true,
-      ex: LUCKY_REVEAL_LOCK_TTL_SECONDS,
-    });
-
-    if (result === 'OK') {
-      return { acquired: true, token, blockedStatus: null, blockedMessage: null };
-    }
-
-    return {
-      acquired: false,
-      token: null,
-      blockedStatus: 409,
-      blockedMessage: 'Lucky reveal is being prepared by another request.',
-    };
-  } catch (error) {
-    console.error('Failed to claim lucky reveal lock', error);
-    return { acquired: false, token: null, blockedStatus: null, blockedMessage: null };
-  }
-}
-
-async function releaseLuckyRevealLock(sessionId: string, token: string) {
-  const redis = getRedisClient();
-  if (!redis) return;
-
-  const key = `lucky-reveal-lock:${sessionId}`;
-
-  try {
-    const result = await redis.eval(
-      RELEASE_LUCKY_REVEAL_LOCK_SCRIPT,
-      [key],
-      [token]
-    ) as number;
-    if (result === 0) {
-      console.error('Lock release failed: token mismatch or lock not found', { sessionId });
-    }
-  } catch (error) {
-    console.error('Failed to release lucky reveal lock', error);
-  }
 }
 
 export async function GET(request: Request) {
@@ -161,69 +68,147 @@ export async function GET(request: Request) {
     let reveal = null;
 
     if (checkoutType === 'lucky_pick') {
-      reveal = readStoredLuckyReveal(session.metadata || {});
+      const sql = getSql();
 
-      if (!reveal) {
-        const lock = await claimLuckyRevealLock(sessionId);
+      if (!sql) {
+        // Fallback to purely Stripe metadata if database is fundamentally unconfigured.
+        // In production we expect the Neon DB to be present.
+        reveal = readStoredLuckyReveal(session.metadata || {});
+        if (!reveal) {
+            console.error('Neon Database not configured, and no Stripe metadata exists. Cannot persist authoritative reveal.');
+            return NextResponse.json({ error: 'Database persistence unavailable' }, { status: 500 });
+        }
+      } else {
+        // Ensure DB schema is ready
+        await initializeDatabase();
 
-        if (!lock.acquired && lock.blockedStatus) {
-          // Another request may already be persisting the reveal. Re-read Stripe
-          // once so a concurrent successful write can be used immediately.
-          session = await stripe.checkout.sessions.retrieve(sessionId);
-          reveal = readStoredLuckyReveal(session.metadata || {});
+        try {
+          // 1. Check if we already have an authoritative reveal in the DB
+          let dbReveal = await sql`
+            SELECT game, numbers, lucky_color, lucky_day
+            FROM lucky_reveals
+            WHERE session_id = ${sessionId}
+          `;
 
-          if (!reveal) {
-            return NextResponse.json(
-              { error: lock.blockedMessage },
-              { status: lock.blockedStatus }
-            );
-          }
-        } else {
-          // The lock backend is only a concurrency optimisation. When it is
-          // unavailable the reveal is still generated and persisted so a paid
-          // customer is never hard-blocked by missing Redis configuration.
-          let releaseLock = lock.token !== null;
+          if (dbReveal && dbReveal.length > 0) {
+            // Authoritative reveal found - validate before using
+            const row = dbReveal[0];
+            const game = row.game === '7' ? '7' : '6';
+            const expectedCount = game === '7' ? 7 : 6;
+            const max = game === '7' ? 50 : 49;
+            const numbers = String(row.numbers || '')
+              .split(',')
+              .map((value) => Number(value.trim()));
 
-          try {
-            // Re-read after acquiring the lock so a reveal written just before
-            // the lock was acquired is reused rather than regenerated.
-            session = await stripe.checkout.sessions.retrieve(sessionId);
-            reveal = readStoredLuckyReveal(session.metadata || {});
+            if (
+              !row.lucky_color ||
+              !row.lucky_day ||
+              numbers.length !== expectedCount ||
+              numbers.some((number) => !Number.isInteger(number) || number < 1 || number > max) ||
+              new Set(numbers).size !== numbers.length
+            ) {
+              console.error('Invalid reveal data found in database for session:', sessionId);
+              return NextResponse.json({ error: 'Invalid stored reveal data' }, { status: 500 });
+            }
 
-            if (!reveal) {
+            reveal = {
+              game,
+              numbers,
+              luckyColor: row.lucky_color,
+              luckyDay: row.lucky_day,
+            };
+          } else {
+            // 2. No authoritative reveal found. Check Stripe metadata for migration.
+            const existingReveal = readStoredLuckyReveal(session.metadata || {});
+            let revealToInsert;
+
+            if (existingReveal) {
+              // Preserve existing paid reveal from Stripe metadata
+              revealToInsert = existingReveal;
+            } else {
+              // Generate a new reveal
               const generatedReveal = createLuckyReveal(session.metadata?.luckyPickGame === '7' ? '7' : '6');
-
-              session = await stripe.checkout.sessions.update(sessionId, {
-                metadata: {
-                  ...(session.metadata || {}),
-                  luckyPickNumbers: generatedReveal.game.numbers.join(','),
-                  luckyPickLuckyColor: generatedReveal.luckyColor,
-                  luckyPickLuckyDay: generatedReveal.luckyDay,
-                },
-              });
-
-              reveal = readStoredLuckyReveal(session.metadata || {});
-
-              if (!reveal) {
-                // The update returned without verifiable reveal metadata. Re-read
-                // Stripe once before treating persistence as failed.
-                session = await stripe.checkout.sessions.retrieve(sessionId);
-                reveal = readStoredLuckyReveal(session.metadata || {});
-
-                if (!reveal) {
-                  // Do not release an ownership lock after an uncertain write.
-                  // Let the short TTL expire rather than allowing another request
-                  // to generate a second reveal for the same paid session.
-                  releaseLock = false;
-                  throw new Error('Lucky reveal persistence could not be verified after Stripe update');
-                }
-              }
+              revealToInsert = {
+                game: generatedReveal.game.name.startsWith('7') ? '7' : '6',
+                game: session.metadata?.luckyPickGame === '7' ? '7' : '6',
+                luckyColor: generatedReveal.luckyColor,
+                luckyDay: generatedReveal.luckyDay,
+              };
             }
-          } finally {
-            if (releaseLock && lock.token) {
-              await releaseLuckyRevealLock(sessionId, lock.token);
+
+            const numbersString = revealToInsert.numbers.join(',');
+            const gameValue = revealToInsert.game;
+
+            // 3. Atomically attempt to insert the new reveal. ON CONFLICT DO NOTHING ensures
+            // if a concurrent request beat us to it, we don't overwrite the authoritative one.
+            await sql`
+              INSERT INTO lucky_reveals (session_id, game, numbers, lucky_color, lucky_day)
+              VALUES (
+                ${sessionId},
+                ${gameValue},
+                ${numbersString},
+                ${revealToInsert.luckyColor},
+                ${revealToInsert.luckyDay}
+              )
+              ON CONFLICT (session_id) DO NOTHING
+            `;
+
+            // 4. Re-read from DB to get the actual authoritative reveal (either ours or the concurrent winner's)
+            dbReveal = await sql`
+              SELECT game, numbers, lucky_color, lucky_day
+              FROM lucky_reveals
+              WHERE session_id = ${sessionId}
+            `;
+
+            if (dbReveal && dbReveal.length > 0) {
+              const row = dbReveal[0];
+              const game = row.game === '7' ? '7' : '6';
+              const expectedCount = game === '7' ? 7 : 6;
+              const max = game === '7' ? 50 : 49;
+              const numbers = String(row.numbers || '')
+                .split(',')
+                .map((value) => Number(value.trim()));
+
+              if (
+                !row.lucky_color ||
+                !row.lucky_day ||
+                numbers.length !== expectedCount ||
+                numbers.some((number) => !Number.isInteger(number) || number < 1 || number > max) ||
+                new Set(numbers).size !== numbers.length
+              ) {
+                console.error('Invalid reveal data found in database after insert for session:', sessionId);
+                return NextResponse.json({ error: 'Invalid stored reveal data' }, { status: 500 });
+              }
+
+              reveal = {
+                game,
+                numbers,
+                luckyColor: row.lucky_color,
+                luckyDay: row.lucky_day,
+              };
+
+              // 5. Update Stripe metadata for convenience/read-through.
+              // Ignore failures since the DB is now the absolute source of truth.
+              try {
+                session = await stripe.checkout.sessions.update(sessionId, {
+                  metadata: {
+                    ...(session.metadata || {}),
+                    luckyPickNumbers: numbers.join(','),
+                    luckyPickLuckyColor: row.lucky_color,
+                    luckyPickLuckyDay: row.lucky_day,
+                  },
+                });
+              } catch (stripeUpdateError) {
+                console.error('Non-critical: Failed to update Stripe metadata with DB authoritative reveal', stripeUpdateError);
+              }
+            } else {
+              console.error('Failed to retrieve reveal from DB immediately after insert attempt.');
+              return NextResponse.json({ error: 'Failed to retrieve authoritative reveal' }, { status: 500 });
             }
           }
+        } catch (dbError) {
+          console.error('Database error during Lucky Pick reveal persistence:', dbError);
+          return NextResponse.json({ error: 'Database persistence failed' }, { status: 500 });
         }
       }
     }
