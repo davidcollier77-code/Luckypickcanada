@@ -4,6 +4,7 @@ import { playButtonClick } from '../lib/audio';
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { createLuckyReveal } from '../lucky-reveal';
 const FAQSection = dynamic(() => import('./FAQSection'));
 
 // PERFORMANCE OPTIMIZATION (Bolt ⚡):
