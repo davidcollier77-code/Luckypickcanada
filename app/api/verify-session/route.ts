@@ -85,11 +85,14 @@ async function releaseLuckyRevealLock(sessionId: string, token: string) {
   const key = `lucky-reveal-lock:${sessionId}`;
 
   try {
-    await redis.eval(
+    const result = await redis.eval(
       RELEASE_LUCKY_REVEAL_LOCK_SCRIPT,
       [key],
       [token]
-    );
+    ) as number;
+    if (result === 0) {
+      console.error('Lock release failed: token mismatch or lock not found', { sessionId });
+    }
   } catch (error) {
     console.error('Failed to release lucky reveal lock', error);
   }
