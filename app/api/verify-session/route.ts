@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createLuckyReveal } from '../../lucky-reveal';
 import { getClientIp, checkApiRateLimit } from '../../spam-protection';
 
 export const runtime = 'nodejs';
@@ -31,15 +30,53 @@ function readStoredLuckyReveal(metadata: Record<string, string>) {
   };
 }
 
+function createStableLuckyReveal(game: '6' | '7', seedSource: string) {
+  let seed = 2166136261;
+
+  for (let index = 0; index < seedSource.length; index += 1) {
+    seed ^= seedSource.charCodeAt(index);
+    seed = Math.imul(seed, 16777619);
+  }
+
+  const random = () => {
+    seed += 0x6D2B79F5;
+    let value = seed;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+
+  const isSevenPick = game === '7';
+  const count = isSevenPick ? 7 : 6;
+  const max = isSevenPick ? 50 : 49;
+  const numbers = Array.from({ length: max }, (_, index) => index + 1);
+
+  for (let index = numbers.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [numbers[index], numbers[swapIndex]] = [numbers[swapIndex], numbers[index]];
+  }
+
+  const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
+  const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  return {
+    game,
+    numbers: numbers.slice(0, count).sort((a, b) => a - b),
+    luckyColor: luckyColors[Math.floor(random() * luckyColors.length)],
+    luckyDay: luckyDays[Math.floor(random() * luckyDays.length)],
+  };
+}
+
 /**
  * Verifies with Stripe that a checkout is paid and has a supported checkout type.
- * Lucky Pick reveals are generated server-side and persisted to the Stripe session
- * so the same paid checkout always returns the same reveal.
+ * Lucky Pick reveals are generated server-side and derived from the verified
+ * Checkout Session ID so concurrent requests resolve to the same reveal even
+ * when Stripe metadata persistence is delayed or unavailable.
  *
  * @param request - Request with the Stripe checkout ID in the session_id query parameter.
  * @returns JSON with the verified game/reveal and an allowlisted metadata subset,
  * or an error for rate limits, missing configuration, invalid sessions, unsupported
- * checkout types, unpaid checkouts, or persistence failures.
+ * checkout types, or unpaid checkouts.
  */
 export async function GET(request: Request) {
   const ip = getClientIp(request);
@@ -83,23 +120,22 @@ export async function GET(request: Request) {
       reveal = readStoredLuckyReveal(metadata);
 
       if (!reveal) {
-        const generatedReveal = createLuckyReveal(game);
+        reveal = createStableLuckyReveal(game, `${secretKey}:${sessionId}`);
 
-        await stripe.checkout.sessions.update(sessionId, {
-          metadata: {
-            ...metadata,
-            luckyPickNumbers: generatedReveal.game.numbers.join(','),
-            luckyPickLuckyColor: generatedReveal.luckyColor,
-            luckyPickLuckyDay: generatedReveal.luckyDay,
-          },
-        });
-
-        reveal = {
-          game,
-          numbers: generatedReveal.game.numbers,
-          luckyColor: generatedReveal.luckyColor,
-          luckyDay: generatedReveal.luckyDay,
-        };
+        try {
+          await stripe.checkout.sessions.update(sessionId, {
+            metadata: {
+              ...metadata,
+              luckyPickNumbers: reveal.numbers.join(','),
+              luckyPickLuckyColor: reveal.luckyColor,
+              luckyPickLuckyDay: reveal.luckyDay,
+            },
+          });
+        } catch (error) {
+          // Verification already proved payment. Persistence is best-effort because
+          // the stable server-derived reveal remains the same on subsequent requests.
+          console.error('Lucky reveal metadata persistence failed:', error);
+        }
       }
     }
 
