@@ -14,9 +14,12 @@
 
 - **Atomic duplicate protection**: Replaced the fingerprint read/write race with `SET NX PX`; verified successful claims, concurrent rejection, spam logging, and outage fallback in the 27-test suite. The Redis error-handling and atomic counter-expiry review findings were already resolved in the starting revision.
 - Integrated Cloudflare Turnstile into public forms.
-- Replaced the hardcoded 'crypto.randomUUID()' in `app/layout.js` styles path with the stable Next.js build ID/commit hash, resolving unstable style reloads.
+- Replaced the hardcoded `crypto.randomUUID()` in `app/layout.js` styles path with the stable Next.js build ID/commit hash, resolving unstable style reloads.
 - Reduced unused JavaScript and render-blocking CSS warnings in Lighthouse/PageSpeed audits for the mobile configuration.
 - Refactored `TurnstileField` to use `next/script` for reliable initialization.
 - Secured rate-limiting paths using distributed Redis state.
-
 - **Redis spam protection resilience**: Added operation failure handling and atomic counter expiry in `app/spam-protection.js`; verified outage/limit/duplicate behavior with 15 regression tests and counter TTL/concurrency behavior against local Redis.
+
+## In-Progress Corrective Work
+
+- **Paid Lucky Pick persistence follow-up (PR #1371)**: Corrected strict database `game` validation, removed the duplicate generated-reveal `game` key, and rebuilt the broken persistence regression tests from the actual merged state of PR #1370. Final CI/reviewer verification remains pending.
