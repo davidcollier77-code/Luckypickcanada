@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { deliverGiftEmailForSession } from '../../gift-email';
+import { deliverGiftEmailForSession, isGiftDelivered } from '../../gift-email';
 
 export const runtime = 'nodejs';
 
@@ -60,8 +60,9 @@ export async function GET(request) {
       return redirectHome(request, { giftError: 'Unable to verify the gift payment.' });
     }
 
-    // Only redirect to reveal if delivery was completed by webhook
-    if (metadata.giftDeliveredAt) {
+    // Only redirect to reveal if delivery was confirmed completed. An intermediate
+    // `processing` claim is not a completed delivery and must not short-circuit to success.
+    if (isGiftDelivered(metadata)) {
       const recipientEmail = metadata.recipientEmail || '';
       const url = new URL(`/reveal/${session.id}`, request.url);
       if (recipientEmail) {
