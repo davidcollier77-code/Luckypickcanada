@@ -37,7 +37,8 @@ export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
   const [luckyReveal, setLuckyReveal] = useState(null);
   const [suggested, setSuggested] = useState(false);
-  const [suggestionError, setSuggestionError] = useState('');\n  const [paymentError, setPaymentError] = useState('');
+  const [suggestionError, setSuggestionError] = useState('');
+  const [paymentError, setPaymentError] = useState('');
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -72,7 +73,7 @@ export default function HomePage() {
         })
         .catch(err => {
           console.error('Session verification error:', err);
-          setSuggestionError('Unable to verify payment. Please contact support if you were charged.');
+          setPaymentError('Unable to verify payment. Please contact support if you were charged.');
         });
     }
 
