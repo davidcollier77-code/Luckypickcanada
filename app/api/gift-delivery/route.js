@@ -65,31 +65,26 @@ export async function GET(request) {
       return redirectHome(request, { giftError: 'Unable to verify the gift payment.' });
     }
 
-    let isDelivered = !!metadata.giftDeliveredAt;
-    let result = null;
-
-    if (!isDelivered) {
-      result = await deliverGiftEmailForSession(stripe, session.id);
-
-      if (!result.ok && !result.alreadyDelivered) {
-        return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
-      }
-
-      isDelivered = true;
-    }
-
-    if (isDelivered) {
-      const recipientEmail = metadata.recipientEmail || '';
+    if (metadata.giftDeliveredAt) {
       const url = new URL(`/reveal/${session.id}`, request.url);
-
-      if (recipientEmail) {
-        url.searchParams.set('recipientEmail', recipientEmail);
+      if (metadata.recipientEmail) {
+        url.searchParams.set('recipientEmail', metadata.recipientEmail);
       }
-
       return Response.redirect(url, 303);
     }
 
-    return redirectHome(request, { giftError: result?.reason || 'Unable to send this lucky pick gift right now.' });
+    const result = await deliverGiftEmailForSession(stripe, session.id);
+
+    if (!result.ok && !result.alreadyDelivered) {
+      return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
+    }
+
+    const url = new URL(`/reveal/${session.id}`, request.url);
+    if (metadata.recipientEmail) {
+      url.searchParams.set('recipientEmail', metadata.recipientEmail);
+    }
+
+    return Response.redirect(url, 303);
   } catch (error) {
     console.error('Gift delivery failed', error);
     return redirectHome(request, { giftError: 'Unable to send this lucky pick gift right now.' });
