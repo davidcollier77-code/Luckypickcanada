@@ -52,10 +52,32 @@ function readStoredLuckyReveal(metadata: Record<string, string>) {
   };
 }
 
-async function claimLuckyRevealLock(sessionId: string) {
+type LuckyRevealLock = {
+  /** True when this request owns the persistence lock for the session. */
+  acquired: boolean;
+  /** Ownership token to release the lock, or null when no lock was taken. */
+  token: string | null;
+  /**
+   * Status to surface when another request owns the lock (409). Null when no
+   * lock is held, including when the lock backend itself is unavailable.
+   */
+  blockedStatus: number | null;
+  /** Message to surface alongside `blockedStatus`. */
+  blockedMessage: string | null;
+};
+
+/**
+ * Attempts to take the per-session persistence lock.
+ *
+ * A 409 means another request owns the lock and the caller must wait. The lock
+ * backend being unavailable is not reported as a block, because the lock is
+ * only a concurrency optimisation and not a requirement for producing a paid
+ * customer's reveal.
+ */
+async function claimLuckyRevealLock(sessionId: string): Promise<LuckyRevealLock> {
   const redis = getRedisClient();
   if (!redis) {
-    return { ok: false, reason: 'Lucky reveal persistence is temporarily unavailable.' };
+    return { acquired: false, token: null, blockedStatus: null, blockedMessage: null };
   }
 
   const key = `lucky-reveal-lock:${sessionId}`;
@@ -68,13 +90,18 @@ async function claimLuckyRevealLock(sessionId: string) {
     });
 
     if (result === 'OK') {
-      return { ok: true, token };
+      return { acquired: true, token, blockedStatus: null, blockedMessage: null };
     }
 
-    return { ok: false, reason: 'Lucky reveal is being prepared by another request.' };
+    return {
+      acquired: false,
+      token: null,
+      blockedStatus: 409,
+      blockedMessage: 'Lucky reveal is being prepared by another request.',
+    };
   } catch (error) {
     console.error('Failed to claim lucky reveal lock', error);
-    return { ok: false, reason: 'Lucky reveal persistence is temporarily unavailable.' };
+    return { acquired: false, token: null, blockedStatus: null, blockedMessage: null };
   }
 }
 
@@ -139,7 +166,7 @@ export async function GET(request: Request) {
       if (!reveal) {
         const lock = await claimLuckyRevealLock(sessionId);
 
-        if (!lock.ok) {
+        if (!lock.acquired && lock.blockedStatus) {
           // Another request may already be persisting the reveal. Re-read Stripe
           // once so a concurrent successful write can be used immediately.
           session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -147,12 +174,15 @@ export async function GET(request: Request) {
 
           if (!reveal) {
             return NextResponse.json(
-              { error: lock.reason || 'Unable to prepare lucky reveal.' },
-              { status: lock.reason?.includes('another request') ? 409 : 503 }
+              { error: lock.blockedMessage },
+              { status: lock.blockedStatus }
             );
           }
         } else {
-          let releaseLock = true;
+          // The lock backend is only a concurrency optimisation. When it is
+          // unavailable the reveal is still generated and persisted so a paid
+          // customer is never hard-blocked by missing Redis configuration.
+          let releaseLock = lock.token !== null;
 
           try {
             // Re-read after acquiring the lock so a reveal written just before
@@ -190,7 +220,7 @@ export async function GET(request: Request) {
               }
             }
           } finally {
-            if (releaseLock) {
+            if (releaseLock && lock.token) {
               await releaseLuckyRevealLock(sessionId, lock.token);
             }
           }
