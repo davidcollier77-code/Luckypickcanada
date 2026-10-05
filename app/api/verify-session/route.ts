@@ -93,7 +93,11 @@ export async function GET(request: Request) {
           if (dbReveal && dbReveal.length > 0) {
             // Authoritative reveal found - validate before using
             const row = dbReveal[0];
-            const game = row.game === '7' ? '7' : '6';
+            if (row.game !== '6' && row.game !== '7') {
+              console.error('Invalid reveal game found in database for session:', sessionId);
+              return NextResponse.json({ error: 'Invalid stored reveal data' }, { status: 500 });
+            }
+            const game = row.game;
             const expectedCount = game === '7' ? 7 : 6;
             const max = game === '7' ? 50 : 49;
             const numbers = String(row.numbers || '')
@@ -129,8 +133,8 @@ export async function GET(request: Request) {
               // Generate a new reveal
               const generatedReveal = createLuckyReveal(session.metadata?.luckyPickGame === '7' ? '7' : '6');
               revealToInsert = {
-                game: generatedReveal.game.name.startsWith('7') ? '7' : '6',
                 game: session.metadata?.luckyPickGame === '7' ? '7' : '6',
+                numbers: generatedReveal.game.numbers,
                 luckyColor: generatedReveal.luckyColor,
                 luckyDay: generatedReveal.luckyDay,
               };
@@ -162,7 +166,11 @@ export async function GET(request: Request) {
 
             if (dbReveal && dbReveal.length > 0) {
               const row = dbReveal[0];
-              const game = row.game === '7' ? '7' : '6';
+              if (row.game !== '6' && row.game !== '7') {
+                console.error('Invalid reveal game found in database after insert for session:', sessionId);
+                return NextResponse.json({ error: 'Invalid stored reveal data' }, { status: 500 });
+              }
+              const game = row.game;
               const expectedCount = game === '7' ? 7 : 6;
               const max = game === '7' ? 50 : 49;
               const numbers = String(row.numbers || '')
