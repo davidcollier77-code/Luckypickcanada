@@ -282,20 +282,20 @@ COMMAND: pnpm test __tests__/lucky-reveal-persistence.test.js
 RESULT: PASS
 EVIDENCE/OUTPUT SUMMARY: vitest 5.0.0 reported "Test Files 1 passed (1)" and "Tests 12 passed (12)" with a duration of 582ms. Dependencies were installed first with pnpm 10.30.3.
 
-COMMAND: GitHub PR check inspection for PR #1371
-RESULT: IN PROGRESS
-EVIDENCE/OUTPUT SUMMARY: Amazon Q Developer, Kilo Code Review, Visual QA, and Validate OpenNext checks were observed running against commit `8d29dc2100e392cb5fc9fae771a5e3fe3592ac3a`.
+COMMAND: gh pr checks 1371
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: All seven reported checks completed successfully: Analyze (actions), Analyze (javascript-typescript), CodeQL, CodeRabbit, Kilo Code Review, Validate OpenNext build artifacts, and Visual QA.
 
 COMMAND: local pnpm run build
 RESULT: NOT RUN
 EVIDENCE/OUTPUT SUMMARY: No production Next.js build was executed in this environment. No build-pass claim is made.
 
-REMAINING ISSUES: Repository CI/reviewer checks are still in progress at the time of this summary update.
+REMAINING ISSUES: `pnpm run build` was not executed locally. All other listed verification completed.
 
 ## 9. USEFUL RESULT
 USEFUL RESULT: NO
 
-Reason: The requested code corrections are implemented, but final verification is not yet complete. The result must not be treated as fully verified until the active PR checks finish and any findings are resolved.
+Reason: The requested code corrections are implemented, the targeted test suite passes, and the PR checks pass. `pnpm run build` was not executed locally, so no local build-pass claim is made.
 
 ## 10. PRE-SUBMISSION DOUBLE-CHECK
-Completed the implementation diff review, confirmed only the intended application/test/required-governance files are changed, and explicitly withheld any unverified test/build claims. Final verification remains pending because the active PR checks have not yet completed.
+Completed the implementation diff review, confirmed only the intended application/test/required-governance files are changed, and explicitly withheld any unverified test/build claims. Section 8 now records only outcomes actually observed in this environment.
