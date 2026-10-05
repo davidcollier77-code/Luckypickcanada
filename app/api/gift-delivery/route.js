@@ -61,37 +61,35 @@ export async function GET(request) {
 
     const metadata = session.metadata || {};
 
-    // If it's not a gift package, or not paid, redirect to home
     if (session.payment_status !== 'paid' || metadata.checkoutType !== 'gift_package') {
       return redirectHome(request, { giftError: 'Unable to verify the gift payment.' });
     }
 
-    // We should strictly rely on webhook or try local fallback but ensure idempotency is respected
     let isDelivered = !!metadata.giftDeliveredAt;
+    let result = null;
 
-    // If webhook hasn't processed it yet, attempt delivery here as fallback,
-    // but this is mostly handled by webhook now. Let's just do it securely.
     if (!isDelivered) {
-      const result = await deliverGiftEmailForSession(stripe, session.id);
-      if (result.ok) {
-        isDelivered = true;
-      } else if (!result.alreadyDelivered) {
+      result = await deliverGiftEmailForSession(stripe, session.id);
+
+      if (!result.ok && !result.alreadyDelivered) {
         return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
-      } else {
-        isDelivered = true;
       }
+
+      isDelivered = true;
     }
 
     if (isDelivered) {
-      const recipientEmail = metadata.recipientEmail || session.metadata?.recipientEmail || '';
+      const recipientEmail = metadata.recipientEmail || '';
       const url = new URL(`/reveal/${session.id}`, request.url);
+
       if (recipientEmail) {
         url.searchParams.set('recipientEmail', recipientEmail);
       }
+
       return Response.redirect(url, 303);
     }
 
-    return redirectHome(request, { giftError: result.reason || 'Unable to send this lucky pick gift right now.' });
+    return redirectHome(request, { giftError: result?.reason || 'Unable to send this lucky pick gift right now.' });
   } catch (error) {
     console.error('Gift delivery failed', error);
     return redirectHome(request, { giftError: 'Unable to send this lucky pick gift right now.' });
