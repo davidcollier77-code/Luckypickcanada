@@ -145,10 +145,25 @@ function pruneMemoryGiftLocks() {
   }
 }
 
-async function acquireGiftLock(redis, lockKey) {
+function createLockToken() {
+  const randomBuffer = new Uint32Array(4);
+  crypto.getRandomValues(randomBuffer);
+  return Array.from(randomBuffer, (value) => value.toString(36)).join('');
+}
+
+// Delete the lock only while this worker still owns it, so an expired lock that
+// was re-acquired by another worker is never released from under it.
+const RELEASE_IF_OWNER = `
+  if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+  end
+  return 0
+`;
+
+async function acquireGiftLock(redis, lockKey, lockToken) {
   if (redis) {
     try {
-      const claimed = await redis.set(lockKey, '1', { px: GIFT_LOCK_TTL_MS, nx: true });
+      const claimed = await redis.set(lockKey, lockToken, { px: GIFT_LOCK_TTL_MS, nx: true });
       if (claimed === null) {
         return { acquired: false, inProgress: true };
       }
@@ -166,18 +181,22 @@ async function acquireGiftLock(redis, lockKey) {
     return { acquired: false, inProgress: true };
   }
 
-  memoryGiftLocks.set(lockKey, { expiresAt: Date.now() + GIFT_LOCK_TTL_MS });
+  memoryGiftLocks.set(lockKey, { token: lockToken, expiresAt: Date.now() + GIFT_LOCK_TTL_MS });
   return { acquired: true };
 }
 
-async function releaseGiftLock(redis, lockKey) {
+async function releaseGiftLock(redis, lockKey, lockToken) {
   try {
     if (redis) {
-      await redis.del(lockKey);
+      await redis.eval(RELEASE_IF_OWNER, [lockKey], [lockToken]);
       return;
     }
 
-    memoryGiftLocks.delete(lockKey);
+    const entry = memoryGiftLocks.get(lockKey);
+
+    if (entry && entry.token === lockToken) {
+      memoryGiftLocks.delete(lockKey);
+    }
   } catch (e) {
     console.error('Failed to release gift lock', e);
   }
@@ -201,11 +220,13 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   // Atomic lock using Redis to prevent concurrent webhook/fallback race conditions
   const redis = getRedisClient();
   const lockKey = `gift_lock:${sessionId}`;
-  const lock = await acquireGiftLock(redis, lockKey);
+  const lockToken = createLockToken();
+  const lock = await acquireGiftLock(redis, lockKey, lockToken);
 
   if (!lock.acquired) {
     return {
       ok: false,
+      inProgress: Boolean(lock.inProgress),
       reason: lock.unavailable
         ? 'Gift fulfillment service temporarily unavailable.'
         : 'Gift fulfillment is already in progress for this session.',
@@ -216,30 +237,31 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   const reveal = createGiftReveal(metadata);
   const giftDeliveredAt = new Date().toISOString();
 
-  const emailResult = await sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal });
-
-  if (!emailResult.ok) {
-    console.error('Gift email failed', emailResult.details);
-    await releaseGiftLock(redis, lockKey);
-    return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
-  }
-
-  // Only mark as delivered AFTER successful send
   try {
-    await stripe.checkout.sessions.update(sessionId, {
-      metadata: {
-        ...metadata,
-        giftDeliveredAt,
-        giftNumbers: reveal.numbers.join(','),
-        giftLuckyColor: reveal.luckyColor,
-        giftLuckyDay: reveal.luckyDay,
-      },
-    });
-  } catch (stripeError) {
+    const emailResult = await sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal });
+
+    if (!emailResult.ok) {
+      console.error('Gift email failed', emailResult.details);
+      return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
+    }
+
+    // Only mark as delivered AFTER successful send
+    try {
+      await stripe.checkout.sessions.update(sessionId, {
+        metadata: {
+          ...metadata,
+          giftDeliveredAt,
+          giftNumbers: reveal.numbers.join(','),
+          giftLuckyColor: reveal.luckyColor,
+          giftLuckyDay: reveal.luckyDay,
+        },
+      });
+    } catch (stripeError) {
       console.error('Failed to update Stripe metadata after successful email delivery', stripeError);
+    }
+
+    return { ok: true, delivered: true, reveal };
+  } finally {
+    await releaseGiftLock(redis, lockKey, lockToken);
   }
-
-  await releaseGiftLock(redis, lockKey);
-
-  return { ok: true, delivered: true, reveal };
 }
