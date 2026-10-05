@@ -328,6 +328,38 @@ describe('gift delivery idempotency with Redis', () => {
     expect(redis.eval).toHaveBeenCalledTimes(1);
     expect(redis.eval).toHaveBeenCalledWith(expect.any(String), [`gift_lock:${SESSION_ID}`], [lockTokens[0]]);
   });
+
+  it('re-reads the sent marker under the lock when it appears between the pre-lock read and SET NX', async () => {
+    const store = useFakeRedis();
+    const stripe = createStripe();
+    // The pre-lock fast path misses. A concurrent webhook then sends the email,
+    // writes the marker, and releases the lock before this request's `SET NX`
+    // lands, so only the read taken while the lock is held can see it.
+    redis.get.mockImplementation(async (key) => {
+      if (key === `gift_sent:${SESSION_ID}`) {
+        return redis.get.mock.calls.filter(([k]) => k === key).length > 1 ? '1' : null;
+      }
+
+      return store.has(key) ? store.get(key) : null;
+    });
+
+    const result = await giftEmail.deliverGiftEmailForSession(stripe.client, SESSION_ID);
+
+    expect(result).toEqual({ ok: true, alreadyDelivered: true, metadata: stripe.session.metadata });
+    expect(sentEmailCount()).toBe(0);
+    expect(stripe.update).not.toHaveBeenCalled();
+    // Both marker reads happened, and the lock this request claimed was released
+    // with its own token rather than left behind.
+    expect(redis.get.mock.calls.filter(([key]) => key === `gift_sent:${SESSION_ID}`)).toHaveLength(2);
+    const lockToken = redis.set.mock.calls[0][1];
+    expect(redis.eval).toHaveBeenCalledWith(
+      expect.stringContaining("redis.call('get', KEYS[1]) == ARGV[1]"),
+      [`gift_lock:${SESSION_ID}`],
+      [lockToken],
+    );
+    expect(store.has(`gift_lock:${SESSION_ID}`)).toBe(false);
+    expect(errorLog).not.toHaveBeenCalled();
+  });
 });
 
 describe('gift delivery success behaviour', () => {
