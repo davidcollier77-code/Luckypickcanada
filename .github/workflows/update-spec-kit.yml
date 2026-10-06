@@ -30,24 +30,27 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm@10.30.3
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+
       - name: Upgrade Spec Kit
         continue-on-error: false
         run: |
-          # The official Spec Kit upgrade process for CLI, integrations, and extensions
-          # We must NOT use --force.
+          # The CI runner is clean, so run the current published Spec Kit CLI
+          # through the official uvx one-time execution path. This avoids relying
+          # on a preinstalled "specify" executable and picks up new CLI releases
+          # automatically on each scheduled/manual run.
+          uvx --from specify-cli specify version
 
-          # Upgrading the CLI
-          specify upgrade
+          # Upgrade the installed project integration without --force.
+          uvx --from specify-cli specify integration upgrade generic
 
-          # Upgrading integrations
-          specify integration upgrade
-
-          # Upgrading extensions
-          specify extension upgrade
+          # Update all installed Spec Kit extensions without --force.
+          uvx --from specify-cli specify extension update
 
       - name: Validate Integration Status
         continue-on-error: false
-        run: specify integration status --json
+        run: uvx --from specify-cli specify integration status --json
 
       - name: Run Governance Validation
         continue-on-error: false
