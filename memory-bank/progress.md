@@ -24,3 +24,4 @@
 
 - **Paid Lucky Pick persistence follow-up (PR #1371)**: Corrected strict database `game` validation, removed the duplicate generated-reveal `game` key, and rebuilt the broken persistence regression tests from the actual merged state of PR #1370. Final CI/reviewer verification remains pending.
 - Resolved Dependabot alerts #28 and #29 for `brace-expansion` by applying `pnpm.overrides` to versions `1.1.21` and `2.1.7`.
+- Reorganized homepage to feature better grouping structure (Play/Explore, Community, Personalized Experiences, Tip Jar) to help users differentiate free from premium interactions.

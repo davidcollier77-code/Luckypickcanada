@@ -1,1 +1,1 @@
-Perf: Mitigate lighthouse warnings and console errors
+Reorganize homepage information architecture

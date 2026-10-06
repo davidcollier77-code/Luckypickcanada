@@ -49,7 +49,7 @@ export default function ExploreLuckButton() {
   const activateExplore = useCallback(() => {
     if (isAnimatingRef.current || isCoolingDownRef.current) return;
 
-    const luckyMeter = document.getElementById('lucky-meter');
+    const luckyMeter = document.getElementById('play-explore');
     if (!luckyMeter) return;
 
     isCoolingDownRef.current = true;

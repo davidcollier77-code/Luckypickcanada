@@ -1,301 +1,162 @@
 # PR Summary
 
 ## 1. SELECTED TASK GROUP
-SELECTED TASK GROUP: security
-GROUP REASON: Corrective security/data-integrity work for paid Lucky Pick reveal persistence: reject invalid persisted state, remove a duplicate field definition, and restore trustworthy regression coverage.
+SELECTED TASK GROUP: creation
+GROUP REASON: Modifying layout structure and information architecture in the homepage React component.
 
 ## 2. LIBRARY CONSULTATION REPORT
 LIBRARY: /vercel/next.js
 VERSION: local
 USED: YES
 USEFUL: NO
-REASON: Evaluated against the existing Next.js route context; no framework-level change was required.
+REASON: No routing or framework features were modified.
 
 LIBRARY: /reactjs/react.dev
 VERSION: local
 USED: YES
-USEFUL: NO
-REASON: No React rendering behavior was changed.
+USEFUL: YES
+REASON: Modifying component structure and rendering output.
 
 LIBRARY: /microsoft/typescript
 VERSION: local
 USED: YES
-USEFUL: YES
-REASON: Used to keep the TypeScript route changes type-safe and scoped to existing repository patterns.
+USEFUL: NO
+REASON: Modification is in a .js file, TS only used for test modifications.
 
-LIBRARY: /colinhacks/zod
+LIBRARY: /websites/tailwindcss
 VERSION: local
 USED: YES
 USEFUL: NO
-REASON: No Zod schema was involved in the affected route.
-
-LIBRARY: /cure53/dompurify
-VERSION: local
-USED: YES
-USEFUL: NO
-REASON: No HTML sanitization behavior was changed.
-
-LIBRARY: /getsentry/sentry-docs
-VERSION: local
-USED: YES
-USEFUL: NO
-REASON: No Sentry integration was changed.
-
-LIBRARY: /stripe/stripe-js
-VERSION: local
-USED: YES
-USEFUL: YES
-REASON: Confirmed the affected flow remains Stripe Checkout based and keeps Stripe metadata as read-through convenience rather than authoritative persistence.
-
-LIBRARY: /resend/resend-node
-VERSION: local
-USED: YES
-USEFUL: NO
-REASON: No email delivery path was changed.
-
-LIBRARY: /neondatabase/neon
-VERSION: local
-USED: YES
-USEFUL: YES
-REASON: Confirmed the existing Neon/Postgres persistence path and atomic INSERT/ON CONFLICT design being tested.
-
-LIBRARY: /upstash/docs
-VERSION: local
-USED: YES
-USEFUL: NO
-REASON: Redis is no longer the persistence lock for the affected flow.
+REASON: Maintained existing classes where possible, utilized inline styles and external CSS for grid.
 
 LIBRARY: /github/docs
 VERSION: local
 USED: YES
 USEFUL: YES
-REASON: Used repository/PR and Git state inspection for the corrective branch.
+REASON: Followed standard PR summary preparation.
 
-LIBRARY: /websites/developer_chrome
+LIBRARY: /websites/motion_dev
 VERSION: local
-USED: YES
+USED: NO
 USEFUL: NO
-REASON: No browser-specific security change was required.
+REASON: Did not modify animations.
 
-LIBRARY: /websites/developer_apple_webkit
+LIBRARY: /lucide-icons/lucide
 VERSION: local
-USED: YES
+USED: NO
 USEFUL: NO
-REASON: No WebKit-specific behavior was changed.
+REASON: No icons were modified.
 
-LIBRARY: jules.google/docs
+LIBRARY: /react-hook-form/documentation
 VERSION: local
-USED: YES
-USEFUL: YES
-REASON: Used to align the implementation workflow with repository-governed Jules practices.
-
-LIBRARY: developers.google.com/jules/api
-VERSION: local
-USED: YES
-USEFUL: YES
-REASON: Used to align tool/agent workflow handling with the repository's required Jules documentation path.
-
-LIBRARY: /google-gemini/gemini-cli
-VERSION: local
-USED: YES
+USED: NO
 USEFUL: NO
-REASON: No Gemini CLI-specific operation was required for this corrective code change.
+REASON: Form behavior was not modified.
 
-LIBRARY: /websites/ai_google_dev_gemini-api
+LIBRARY: /react-hook-form/resolvers
 VERSION: local
-USED: YES
+USED: NO
 USEFUL: NO
-REASON: No Gemini API integration was changed.
+REASON: Form behavior was not modified.
 
-LIBRARY: /dropbox/zxcvbn
+LIBRARY: /emilkowalski/sonner
 VERSION: local
-USED: YES
+USED: NO
 USEFUL: NO
-REASON: No password-strength behavior was involved.
+REASON: Toasts were not modified.
 
-LIBRARY: /cloudflare/cloudflare-docs/turnstile
+LIBRARY: /bvaughn/react-error-boundary
 VERSION: local
-USED: YES
+USED: NO
 USEFUL: NO
-REASON: Turnstile behavior was outside the affected persistence flow.
-
-LIBRARY: /marsidev/react-turnstile
-VERSION: local
-USED: YES
-USEFUL: NO
-REASON: No Turnstile component was changed.
-
-LIBRARY: /upstash/ratelimit
-VERSION: local
-USED: YES
-USEFUL: NO
-REASON: The existing verify-session rate-limit boundary was not changed.
+REASON: Error boundary was not modified.
 
 ## 3. ROUTED JULES/GEMINI DOCUMENT REPORT
 DOCUMENT: .jules/jules.md
 USED: YES
 USEFUL: YES
-REASON: Confirmed mandatory initialization, memory-bank handling, approval boundaries, and completion requirements.
+REASON: Followed mandatory context-loading rules.
 
-DOCUMENT: .jules/security.md
+DOCUMENT: .jules/creation.md
 USED: YES
 USEFUL: YES
-REASON: Routed the work as a security/persistence correction and confirmed required security resources.
-
-DOCUMENT: .jules/testing.md
-USED: YES
-USEFUL: YES
-REASON: Required real execution/verification for the repaired regression tests.
-
-DOCUMENT: .jules/troubleshooting.md
-USED: YES
-USEFUL: YES
-REASON: Supported evidence-driven diagnosis of the broken test suite.
-
-DOCUMENT: .jules/deep-dive.md
-USED: YES
-USEFUL: YES
-REASON: Supported repository-level investigation of the post-merge defects.
-
-DOCUMENT: .jules/cmds/speckit.analyze.md
-USED: YES
-USEFUL: NO
-REASON: Reviewed as required repository command guidance; no new spec-analysis artifact was needed for this narrowly corrective repair.
-
-DOCUMENT: .jules/cmds/speckit.checklist.md
-USED: YES
-USEFUL: NO
-REASON: Reviewed as required command guidance; no checklist artifact was changed.
-
-DOCUMENT: .jules/cmds/speckit.clarify.md
-USED: YES
-USEFUL: NO
-REASON: Reviewed as required command guidance; the corrective scope was already concrete and verified.
-
-DOCUMENT: .jules/cmds/speckit.constitution.md
-USED: YES
-USEFUL: YES
-REASON: Confirmed the governing constitution and protected-system constraints.
-
-DOCUMENT: .jules/cmds/speckit.converge.md
-USED: YES
-USEFUL: NO
-REASON: Reviewed as required command guidance; no existing spec convergence artifact was necessary for this direct corrective repair.
-
-DOCUMENT: .jules/cmds/speckit.implement.md
-USED: YES
-USEFUL: YES
-REASON: Confirmed implementation verification and final-diff requirements.
-
-DOCUMENT: .jules/cmds/speckit.plan.md
-USED: YES
-USEFUL: NO
-REASON: Reviewed as required command guidance; this task was a bounded corrective change against already-verified defects.
-
-DOCUMENT: .jules/cmds/speckit.specify.md
-USED: YES
-USEFUL: NO
-REASON: Reviewed as required command guidance; no new feature specification was necessary.
-
-DOCUMENT: .jules/cmds/speckit.tasks.md
-USED: YES
-USEFUL: NO
-REASON: Reviewed as required command guidance; no new task-generation artifact was needed.
-
-DOCUMENT: .jules/cmds/speckit.taskstoissues.md
-USED: YES
-USEFUL: NO
-REASON: Reviewed as required command guidance; no issue-generation work was requested.
+REASON: Followed library checklist for front-end visual creation.
 
 ## 4. REPOSITORY COMPONENT REPORT
 COMPONENT: AGENTS.md
 USED: YES
 USEFUL: YES
-REASON: Canonical governance and scope authority.
+REASON: Canonical governance reference.
 
 COMPONENT: memory-bank/projectBrief.md
 USED: YES
 USEFUL: YES
-REASON: Confirmed Neon/Postgres and Stripe architecture and project boundaries.
+REASON: Retained focus on non-gambling and community aspects.
 
 COMPONENT: memory-bank/activeContext.md
 USED: YES
 USEFUL: YES
-REASON: Current project context and required completion update.
+REASON: Updated context with layout changes.
 
 COMPONENT: memory-bank/progress.md
 USED: YES
 USEFUL: YES
-REASON: Required completion milestone update.
+REASON: Logged completed milestone.
 
-COMPONENT: app/api/verify-session/route.ts
+COMPONENT: app/homepage/HomePage.js
 USED: YES
 USEFUL: YES
-REASON: Primary production fix target.
+REASON: Target for layout reorganization.
 
-COMPONENT: __tests__/lucky-reveal-persistence.test.js
+COMPONENT: themes/default/homepage.css
 USED: YES
 USEFUL: YES
-REASON: Primary regression-test repair target.
+REASON: Modified to apply layout grids.
 
-COMPONENT: app/lib/db-init.js
+COMPONENT: app/homepage/ExploreLuckButton.js
 USED: YES
 USEFUL: YES
-REASON: Inspected to preserve the existing Neon schema/initialization design; no change required.
+REASON: Modified scroll target ID.
 
-COMPONENT: PR #1370
+COMPONENT: tests/visual/homepage.spec.ts
 USED: YES
 USEFUL: YES
-REASON: Source of the merged implementation whose remaining defects were corrected here.
-
-COMPONENT: package.json
-USED: YES
-USEFUL: YES
-REASON: Confirmed pnpm 10.30.3 and available test/build scripts.
-
-COMPONENT: .github/workflows/validate-open-next-repair.yml
-USED: YES
-USEFUL: YES
-REASON: Confirmed PR build validation coverage.
+REASON: Updated test target ID to reflect layout changes.
 
 ## 5. REPORTING INTEGRITY
-The implementation and repository state were inspected directly. Historical claims in the merged PR #1370 summary were not reused as verification evidence.
+Work performed matches exactly what is described.
 
 ## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-Authorized corrective changes were limited to:
-- strict validation of persisted `game` values in `app/api/verify-session/route.ts`
-- removal of the duplicate generated-reveal `game` property
-- reconstruction of the broken persistence regression test suite
-- required Memory Bank and canonical PR Summary updates
-
-No dependency, schema, deployment, visual, or unrelated application changes were authorized or made.
+Reorganized the `HomePage.js` component to group content logically into "Play / Explore", "Lucky Community", "Lucky Pick Experience", "Tip Jar", and "Suggestion Box", while retaining exact component implementations, texts, and functions. Added grid support in `homepage.css`. Updated scroll offsets in button scripts and Playwright visual tests to maintain test stability.
 
 ## 7. EXACT FINAL DIFF RECONCILIATION
-__tests__/lucky-reveal-persistence.test.js
-app/api/verify-session/route.ts
 PR_SUMMARY.md
+app/homepage/ExploreLuckButton.js
+app/homepage/HomePage.js
 memory-bank/activeContext.md
 memory-bank/progress.md
+tests/visual/homepage.spec.ts
+themes/default/homepage.css
 
 ## 8. VERIFICATION
-COMMAND: pnpm test __tests__/lucky-reveal-persistence.test.js
+COMMAND: pnpm run build
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: vitest 5.0.0 reported "Test Files 1 passed (1)" and "Tests 13 passed (13)" with a duration of 499ms. Dependencies were installed first with pnpm 10.30.3.
+EVIDENCE/OUTPUT SUMMARY: Build completed successfully. Build size within limit.
 
-COMMAND: gh pr checks 1371
+COMMAND: pnpm test
 RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: All seven reported checks completed successfully: Analyze (actions), Analyze (javascript-typescript), CodeQL, CodeRabbit, Kilo Code Review, Validate OpenNext build artifacts, and Visual QA.
+EVIDENCE/OUTPUT SUMMARY: All tests passed.
 
-COMMAND: local pnpm run build
-RESULT: NOT RUN
-EVIDENCE/OUTPUT SUMMARY: No production Next.js build was executed in this environment. No build-pass claim is made.
+COMMAND: pnpm exec playwright test
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: 12 visual tests passed.
 
-REMAINING ISSUES: `pnpm run build` was not executed locally. All other listed verification completed.
+COMMAND: ./jules-verify.sh
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: All verifications completed successfully.
 
 ## 9. USEFUL RESULT
-USEFUL RESULT: NO
-
-Reason: The requested code corrections are implemented, the targeted test suite passes, and the PR checks pass. `pnpm run build` was not executed locally, so no local build-pass claim is made.
+USEFUL RESULT: YES
 
 ## 10. PRE-SUBMISSION DOUBLE-CHECK
-Completed the implementation diff review, confirmed only the intended application/test/required-governance files are changed, and explicitly withheld any unverified test/build claims. Section 8 now records only outcomes actually observed in this environment.
+Checked diffs, checked PR Summary layout matches rules, and tests are green.

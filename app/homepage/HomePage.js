@@ -363,8 +363,14 @@ export default function HomePage() {
         className="homepage-star-canvas fixed inset-0 w-full h-full pointer-events-none -z-10"
         style={{ position: 'fixed' }}
       />
-      <section className="homepage-section homepage-community-grid " aria-label="Lucky Pick Canada community">
-        <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
+
+      {/* PLAY / EXPLORE GROUP */}
+      <section id="play-explore" className="homepage-section" aria-labelledby="play-heading">
+        <SectionHeading eyebrow="Explore Your Luck" id="play-heading" title="Play & Explore">
+          Try our free digital experiences to see what your luck has in store for you today.
+        </SectionHeading>
+        <div className="homepage-play-grid">
+          <article id="lucky-meter" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY RESONANCE RITUAL</p>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">LUCKY METER</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">Take a moment, tune in to today’s energy, and discover what your luck has in store. Your daily resonance is waiting.</p>
@@ -378,31 +384,54 @@ export default function HomePage() {
             )}
           </div>
         </article>
-        <article id="daily-card-reveal" className="homepage-community-card backdrop-blur-sm bg-black/20">
+          <article id="daily-card-reveal" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Today's Lucky Card</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">A new Lucky Card awaits your collection. Open today's Lucky Card, enjoy the reveal, and keep building your collection.</p>
           <Link href="/reveal" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Reveal Today&apos;s Card <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
-        <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
+          <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Crystal Ball</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">Have a question in mind? Focus your intention, ask the Crystal Ball, and see what mysterious answer appears.</p>
           <Link href="/crystal-ball" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">CONSULT THE ORACLE <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
-        <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20">
+        </div>
+      </section>
+
+      {/* COMMUNITY GROUP */}
+      <section id="community-group" className="homepage-section" aria-labelledby="community-group-heading">
+        <SectionHeading eyebrow="Connect with others" id="community-group-heading" title="Lucky Community">
+          Share your experiences and see where luck has found others across the country.
+        </SectionHeading>
+
+        <div className="homepage-community-grid mb-8">
+          <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">COMMUNITY STORIES</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Stories</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">A community space to share your own experiences of luck and good fortune. From amazing coincidences and unexpected opportunities, to finding money or simply a small everyday moment where you felt unusually lucky—big or small, we want to hear about it! (Please note: these are not business reviews or testimonials.)</p>
           <Link href="/map" className="cta-secondary relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE LUCKY STORIES →<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
         </article>
+        </div>
+
+        <section id="community" className="homepage-community-banner" aria-labelledby="community-heading">
+        <div>
+          <p className="homepage-offer-kicker">The Lucky Pick Canada community</p>
+          <h2 id="community-heading">Keep the good energy moving.</h2>
+          <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
+        </div>
+        <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
+          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" width="769" height="1376" />
+        </a>
+      </section>
       </section>
 
+      {/* LUCKY PICK + GIFT EXPERIENCES */}
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
         <SectionHeading eyebrow="Made for your next moment" id="picks-heading" title="Lucky Pick Experience">
-          Create a personal LuckyPickCanada moment, send a thoughtful digital gift, or support the experience.
+          Create a personal LuckyPickCanada moment or send a thoughtful digital gift.
         </SectionHeading>
-        <div className="homepage-offer-grid">
+        <div className="homepage-paid-grid">
           <article className="homepage-offer homepage-offer-featured">
             <img className="homepage-offer-image" src="/1784862459046.png" alt="Personalized Lucky Pick card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">$1 Lucky Pick</p>
@@ -420,6 +449,15 @@ export default function HomePage() {
             <p className="homepage-offer-note">Gift package · CAD $2.99</p>
             <button type="button" className="cta-secondary relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}>Gift a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
           </article>
+        </div>
+      </section>
+
+      {/* TIP JAR (Standalone) */}
+      <section id="tip-jar-section" className="homepage-section" aria-labelledby="tip-jar-heading">
+         <SectionHeading eyebrow="Support the project" id="tip-jar-heading" title="Tip Jar">
+          Help keep the lights glowing on this independent Canadian project.
+        </SectionHeading>
+        <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '600px', margin: '0 auto' }}>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">Keep the lights glowing</p>
@@ -431,16 +469,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="community" className="homepage-community-banner" aria-labelledby="community-heading">
-        <div>
-          <p className="homepage-offer-kicker">The Lucky Pick Canada community</p>
-          <h2 id="community-heading">Keep the good energy moving.</h2>
-          <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
-        </div>
-        <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
-          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" width="769" height="1376" />
-        </a>
-      </section>
 
       <FAQSection />
 
