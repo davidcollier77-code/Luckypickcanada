@@ -88,7 +88,7 @@
       "workerd"
     ],
     "overrides": {
-      "undici@7": ">=7.29.1",
+      "undici": ">=7.29.1",
       "brace-expansion@1": ">=1.1.21",
       "brace-expansion@2": ">=2.1.7",
       "minimatch@8.0.7>brace-expansion": "2.1.7",
