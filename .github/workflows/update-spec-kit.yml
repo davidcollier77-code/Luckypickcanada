@@ -3,8 +3,11 @@ name: Update Spec Kit
 on:
   schedule:
     - cron: '5 1 * * 2,5' # Primary scheduled update
+      timezone: 'America/Halifax'
     - cron: '5 5 * * 2,5' # Backup scheduled update
+      timezone: 'America/Halifax'
     - cron: '5 9 * * 2,5' # Recovery scheduled update
+      timezone: 'America/Halifax'
   workflow_dispatch:
 
 permissions:
