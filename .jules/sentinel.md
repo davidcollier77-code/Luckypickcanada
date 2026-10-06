@@ -36,3 +36,7 @@ When materially necessary, consult the following approved libraries. (Requires C
 ## 2026-10-04 - Distributed Rate Limiting & Webhook Idempotency
 **Learning:** In serverless/edge environments like Cloudflare Workers (via OpenNext), in-memory data structures (like `Map`) used for rate limiting or deduplication are ephemeral per-isolate and do not provide effective global protection. Also, asynchronous payment webhooks combined with GET-based redirect flows can create race conditions if the GET route relies solely on its own invocation to finalize a transaction.
 **Action:** Migrated rate-limiting and deduplication logic in `app/spam-protection.js` to utilize Upstash Redis for distributed state, falling back to in-memory maps only if Redis is unavailable. Hardened `app/api/gift-delivery/route.js` to act strictly as a fallback mechanism, relying primarily on Stripe webhooks for delivery while ensuring idempotency by checking `metadata.giftDeliveredAt`.
+
+## 2026-10-14 - Dependency Overrides
+**Learning:** Dependabot alerts involving nested transitive dependencies (e.g. brace-expansion inside minimatch) often cannot be automatically resolved by Dependabot. Using package manager overrides (like `pnpm.overrides`) is a safe and effective way to force resolution to a patched version across the entire dependency tree.
+**Action:** Implemented overrides in `package.json` for `brace-expansion` versions 1.x and 2.x to resolve a quadratic-time CPU DoS vulnerability without upgrading unaffected libraries.
