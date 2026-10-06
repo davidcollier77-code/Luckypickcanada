@@ -13,7 +13,7 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
 
   // Check if turnstile is already loaded globally
   useEffect(() => {
-    if (window.turnstile) {
+    if (typeof window !== 'undefined' && window.turnstile) {
       setIsReady(true);
     }
   }, []);
