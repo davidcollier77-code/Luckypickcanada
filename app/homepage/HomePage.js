@@ -373,7 +373,7 @@ export default function HomePage() {
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">LUCKY METER</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">Take a moment, tune in to today’s energy, and discover what your luck has in store. Your daily resonance is waiting.</p>
           <div className="flex flex-col items-center gap-2">
-            <Link href="/lucky-meter" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Check Lucky Meter <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
+            <Link href="/lucky-meter" className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Check Lucky Meter <span aria-hidden="true">→</span></Link>
             {totalVisits !== null && (
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs font-medium tracking-wide">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
@@ -386,34 +386,31 @@ export default function HomePage() {
           <p className="homepage-offer-kicker">DAILY CARD REVEAL</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Today's Lucky Card</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">A new Lucky Card awaits your collection. Open today's Lucky Card, enjoy the reveal, and keep building your collection.</p>
-          <Link href="/reveal" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Reveal Today&apos;s Card <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
+          <Link href="/reveal" className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Reveal Today&apos;s Card <span aria-hidden="true">→</span></Link>
         </article>
         <article id="crystal-ball" className="homepage-community-card backdrop-blur-sm bg-black/20">
           <p className="homepage-offer-kicker">MYSTICAL ORACLE</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Crystal Ball</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">Have a question in mind? Focus your intention, ask the Crystal Ball, and see what mysterious answer appears.</p>
-          <Link href="/crystal-ball" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">CONSULT THE ORACLE <span aria-hidden="true">→</span><span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
+          <Link href="/crystal-ball" className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">CONSULT THE ORACLE <span aria-hidden="true">→</span></Link>
         </article>
         </div>
       </section>
 
-      <section id="community-section" className="homepage-section" aria-labelledby="community-group-heading">
-        <SectionHeading eyebrow="Shared experiences" id="community-group-heading" title="Community">
-          Connect and share with others.
-        </SectionHeading>
+      <section id="community-section" className="homepage-section" aria-labelledby="community-stories-heading">
         <div className="homepage-community-grid" style={{ gridTemplateColumns: '1fr' }}>
           <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20">
-          <p className="homepage-offer-kicker">COMMUNITY STORIES</p>
+          <p id="community-stories-heading" className="homepage-offer-kicker">COMMUNITY</p>
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Stories</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">A community space to share your own experiences of luck and good fortune. From amazing coincidences and unexpected opportunities, to finding money or simply a small everyday moment where you felt unusually lucky—big or small, we want to hear about it! (Please note: these are not business reviews or testimonials.)</p>
-          <Link href="/map" className="cta-secondary relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE LUCKY STORIES →<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></Link>
+          <Link href="/map" className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE LUCKY STORIES →</Link>
         </article>
       </div>
       </section>
 
       <section id="personalized" className="homepage-section" aria-labelledby="picks-heading">
         <SectionHeading eyebrow="Made for your next moment" id="picks-heading" title="Lucky Pick Experience">
-          Create a personal LuckyPickCanada moment, send a thoughtful digital gift, or support the experience.
+          Create a personal LuckyPickCanada moment, or send a thoughtful digital gift.
         </SectionHeading>
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
           <article className="homepage-offer homepage-offer-featured">
@@ -423,7 +420,7 @@ export default function HomePage() {
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Ready for today’s pick? Discover a fresh set of lucky numbers and see what combination finds its way to you.</p>
             <div className="homepage-choice-row"><span>6 Pick</span><span>7 Pick</span></div>
             <p className="homepage-offer-note">CAD $1 · Entertainment only</p>
-            <button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyPickCheckout(e); }}>Choose a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
+            <button type="button" className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openLuckyPickCheckout(e); }}>Choose a Lucky Pick</button>
           </article>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784889264858.png" alt="Lucky Pick gift package card artwork" width="704" height="1524" loading="lazy" />
@@ -431,30 +428,27 @@ export default function HomePage() {
             <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Gift Experience</h3>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Share a little Canadian magic with someone you know. The Gift Experience turns Lucky Pick Canada into a fun surprise made to brighten someone’s day.</p>
             <p className="homepage-offer-note">Gift package · CAD $2.99</p>
-            <button type="button" className="cta-secondary relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}>Gift a Lucky Pick<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button>
+            <button type="button" className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openGiftCheckout(e); }}>Gift a Lucky Pick</button>
           </article>
           </div>
       </section>
 
       <section id="tip-jar-section" className="homepage-section" aria-labelledby="tip-jar-heading">
-        <SectionHeading eyebrow="Keep the lights glowing" id="tip-jar-heading" title="Tip Jar">
-          Leave a tip for the journey.
-        </SectionHeading>
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '400px', margin: '0 auto' }}>
           <article className="homepage-offer">
             <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
-            <p className="homepage-offer-kicker">Keep the lights glowing</p>
-            <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Leave a tip for the journey.</h3>
+            <p id="tip-jar-heading" className="homepage-offer-kicker">Keep the lights glowing</p>
+            <h2 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Leave a tip for the journey.</h2>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Enjoying Lucky Pick Canada? If you’d like to show a little extra support, the Tip Jar is always here. Completely optional, always appreciated.</p>
             <p className="homepage-offer-note">Tip jar · Choose your amount</p>
-            <div className="inline-block"><button type="button" className="animate-donate-pulse cta-secondary relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openTipJar(e); }}>Open the tip jar<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button></div>
+            <div className="inline-block"><button type="button" className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={(e) => { playButtonClick(); openTipJar(e); }}>Open the tip jar<span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span></button></div>
           </article>
         </div>
       </section>
 
       <section id="community" className="homepage-community-banner" aria-labelledby="community-heading">
         <div>
-          <p className="homepage-offer-kicker">The Lucky Pick Canada community</p>
+          <p className="homepage-offer-kicker">Facebook Group</p>
           <h2 id="community-heading">Keep the good energy moving.</h2>
           <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
         </div>
@@ -481,7 +475,7 @@ export default function HomePage() {
           <label>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required /></label>
           <label aria-hidden="true" className="suggestion-box-honeypot">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField siteKey={TURNSTILE_SITE_KEY} submitButtonId="suggestion-box-submit" />
-          <button id="suggestion-box-submit" type="submit" onClick={playButtonClick} className="cta-glow transition-transform hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Send suggestion <span aria-hidden="true">→</span></button>
+          <button id="suggestion-box-submit" type="submit" onClick={playButtonClick} className="suggestion-btn-glow relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Send suggestion <span aria-hidden="true">→</span></button>
         </form>
       </section>
 
@@ -503,10 +497,10 @@ export default function HomePage() {
         </p>
         <Link 
           href="/about" 
-          className="relative overflow-hidden group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-r from-yellow-400 to-amber-600 text-gray-900 font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+          className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         >
           Read Our Story <span aria-hidden="true">→</span>
-          <span className="absolute inset-0 block w-full h-full bg-linear-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-none animate-shimmer pointer-events-none"></span>
+
         </Link>
       </section>
 
