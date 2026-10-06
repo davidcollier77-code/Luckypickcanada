@@ -1,9 +1,9 @@
 {
   "integration": "generic",
   "version": "1.0.13",
-  "installed_at": "2026-09-07T04:11:21.756226+00:00",
+  "installed_at": "2026-10-06T16:18:23.414501+00:00",
   "files": {
-    ".jules/cmds/speckit.analyze.md": "df220a1364bc068c1f11ed49d30372bb3779b2cf509e53b3e986f5558f32a834",
+    ".jules/cmds/speckit.analyze.md": "91fe16257ededdea9cc21d3cb27d539fcdd12d93ddcea52332cd4b68176b6a8d",
     ".jules/cmds/speckit.clarify.md": "dd11eb5b9759f7d3cd18c9d7f23a0ae2fe7973fc6ca2486dbfaf53a5569224b1",
     ".jules/cmds/speckit.constitution.md": "9a7e9296f0878cdf4ed011b0de74cfb3656938680b64e43e808553fdfd054efc",
     ".jules/cmds/speckit.implement.md": "e036ce63702db93e656e1c91ee6c02a8dc3d4a4f8624f8ba4adc69027fe68983",
