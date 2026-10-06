@@ -49,7 +49,7 @@ export default function ExploreLuckButton() {
   const activateExplore = useCallback(() => {
     if (isAnimatingRef.current || isCoolingDownRef.current) return;
 
-    const luckyMeter = document.getElementById('play-explore');
+    const luckyMeter = document.getElementById('lucky-meter');
     if (!luckyMeter) return;
 
     isCoolingDownRef.current = true;
@@ -193,7 +193,7 @@ export default function ExploreLuckButton() {
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         className="pointer-events-auto h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
-        aria-label="Explore your luck. Scroll down to Play & Explore."
+        aria-label="Explore your luck. Scroll down to the Lucky Meter."
       >
         <span className="sr-only">Explore your luck</span>
       </button>

@@ -123,7 +123,7 @@ test.describe("Homepage Visual", () => {
     expect(scrollY).toBe(0);
 
     const targetScrollY = await page.evaluate(() => {
-      const luckyMeter = document.getElementById('play-explore');
+      const luckyMeter = document.getElementById('lucky-meter');
       return luckyMeter ? window.scrollY + luckyMeter.getBoundingClientRect().top : null;
     });
     expect(targetScrollY).not.toBeNull();

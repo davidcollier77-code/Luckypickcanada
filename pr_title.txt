@@ -1,1 +1,1 @@
-Reorganize homepage information architecture
+Correct PR Summary to FULL AGENTS.md Governance Standard
