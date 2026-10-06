@@ -6,10 +6,10 @@ settings:
 
 overrides:
   undici@7: '>=7.29.1'
-  brace-expansion@1: '>=1.1.20'
-  brace-expansion@2: '>=2.1.6'
-  minimatch@8.0.7>brace-expansion: 2.1.6
-  minimatch@3.1.5>brace-expansion: 1.1.20
+  brace-expansion@1: '>=1.1.21'
+  brace-expansion@2: '>=2.1.7'
+  minimatch@8.0.7>brace-expansion: 2.1.7
+  minimatch@3.1.5>brace-expansion: 1.1.21
   minimatch@10.2.6>brace-expansion: 5.0.12
 
 importers:
@@ -2718,11 +2718,11 @@ packages:
   bowser@2.14.1:
     resolution: {integrity: sha512-tzPjzCxygAKWFOJP011oxFHs57HzIhOEracIgAePE4pqB3LikALKnSzUyU4MGs9/iCEUuHlAJTjTc5M+u7YEGg==}
 
-  brace-expansion@1.1.20:
-    resolution: {integrity: sha512-5/qk29RyvatwgzNMrvGjkIhKYzpJ0OUnPK+9TU+zS/CMJqzmb+UD0irWu42JfpUvO636fxd8IstgiydZRM/76A==}
+  brace-expansion@1.1.21:
+    resolution: {integrity: sha512-9zeA+KLZNNzglF2TPKRQEDyx6Yby7daAkuy8MiPzpXPsYDWi/DRM8jmwUDxokQjYqBpv5DgPiwD4h4ZZSy1Ujw==}
 
-  brace-expansion@2.1.6:
-    resolution: {integrity: sha512-pi/WFpBvCBmB/NsURt7hW5sDvuOqvJaDMDai7CrlT9xoehzWRzo/dhQRKqOhpPvlnicVaTzHCbzGnnTgpvMTFw==}
+  brace-expansion@2.1.7:
+    resolution: {integrity: sha512-uZbew1NqdmPDTMJ8ah1y+b+9QEJrfkXFk3RcTQw3X0jW/xRUvFKsg1CfQdSYGdTbXZWExtU3J3ccxtnfw1Fi0g==}
 
   brace-expansion@5.0.12:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
@@ -8007,12 +8007,12 @@ snapshots:
 
   bowser@2.14.1: {}
 
-  brace-expansion@1.1.20:
+  brace-expansion@1.1.21:
     dependencies:
       balanced-match: 1.0.2
       concat-map: 0.0.1
 
-  brace-expansion@2.1.6:
+  brace-expansion@2.1.7:
     dependencies:
       balanced-match: 1.0.2
 
