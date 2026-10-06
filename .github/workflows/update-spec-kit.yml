@@ -2,7 +2,9 @@ name: Update Spec Kit
 
 on:
   schedule:
-    - cron: '21 2 * * 2,5' # Scheduled periodically
+    - cron: '5 1 * * 2,5' # Primary scheduled update
+    - cron: '5 5 * * 2,5' # Backup scheduled update
+    - cron: '5 9 * * 2,5' # Recovery scheduled update
   workflow_dispatch:
 
 permissions:
