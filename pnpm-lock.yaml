@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  undici@7: '>=7.29.1'
+  undici: '>=7.29.1'
   brace-expansion@1: '>=1.1.20'
   brace-expansion@2: '>=2.1.6'
   minimatch@8.0.7>brace-expansion: 2.1.6
@@ -5224,10 +5224,6 @@ packages:
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
-  undici@7.29.1:
-    resolution: {integrity: sha512-RYONW2MeafgYlkVOKYKkA/Ag7BmXqgIWCa8t1m0JcxrQg9pI9lEqRhAOruOBCbAohOa/gkCF+iPi9hrgvTzu6Q==}
-    engines: {node: '>=20.18.1'}
-
   undici@8.10.2:
     resolution: {integrity: sha512-/y4/bH9YNU5hi9NIrpOuvGXFcxrj3CMrV+/AYpowAYTpHn8gX/XPFjNy766FPoYY0miQhdW977JFWKGNhBdwyQ==}
     engines: {node: '>=22.19.0'}
@@ -9533,7 +9529,7 @@ snapshots:
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       sharp: 0.35.4(@types/node@26.2.0)
-      undici: 7.29.1
+      undici: 8.10.2
       workerd: 1.20260925.1
       ws: 8.21.0
       youch: 4.1.0-beta.10
@@ -10756,7 +10752,6 @@ snapshots:
 
   undici-types@8.3.0: {}
 
-  undici@7.29.1: {}
   undici@8.10.2: {}
 
   unenv@2.0.0-rc.24:
