@@ -89,7 +89,7 @@ test.describe("Homepage Visual", () => {
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
-    const label = 'Explore your luck. Scroll down to the Lucky Meter.';
+    const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
     const heroStage = page.locator('.hero-image-container');
     const particles = page.locator('.animate-magic-burst');
@@ -123,7 +123,7 @@ test.describe("Homepage Visual", () => {
     expect(scrollY).toBe(0);
 
     const targetScrollY = await page.evaluate(() => {
-      const luckyMeter = document.getElementById('lucky-meter');
+      const luckyMeter = document.getElementById('play-explore');
       return luckyMeter ? window.scrollY + luckyMeter.getBoundingClientRect().top : null;
     });
     expect(targetScrollY).not.toBeNull();
@@ -201,7 +201,7 @@ test.describe("Homepage Visual", () => {
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
-    const label = 'Explore your luck. Scroll down to the Lucky Meter.';
+    const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
     await expect(exploreButton).toBeVisible();
 
