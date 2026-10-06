@@ -24,3 +24,4 @@
 
 - **Paid Lucky Pick persistence follow-up (PR #1371)**: Corrected strict database `game` validation, removed the duplicate generated-reveal `game` key, and rebuilt the broken persistence regression tests from the actual merged state of PR #1370. Final CI/reviewer verification remains pending.
 - Resolved Dependabot alerts #28 and #29 for `brace-expansion` by applying `pnpm.overrides` to versions `1.1.21` and `2.1.7`.
+- **Homepage Structure Revision**: Refined and clarified the homepage hierarchy. Grouped "Lucky Meter", "Daily Card Reveal", and "Crystal Ball" under a new "Play & Explore" section. Kept the paid "Lucky Pick Experience" focused on the $1 and $2.99 products, extracted the "Tip Jar" into a separate standalone area, and consolidated "Lucky Stories" into the overall Community section.
