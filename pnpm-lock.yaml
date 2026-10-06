@@ -9548,11 +9548,11 @@ snapshots:
 
   minimatch@3.1.5:
     dependencies:
-      brace-expansion: 1.1.20
+      brace-expansion: 1.1.21
 
   minimatch@8.0.7:
     dependencies:
-      brace-expansion: 2.1.6
+      brace-expansion: 2.1.7
 
   minimizer-webpack-plugin@5.13.0(cssnano@9.0.2(postcss@8.5.28))(esbuild@0.28.1)(postcss@8.5.28)(webpack@5.110.3(cssnano@9.0.2(postcss@8.5.28))(esbuild@0.28.1)(postcss@8.5.28)):
     dependencies:
