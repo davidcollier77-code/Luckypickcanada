@@ -289,6 +289,9 @@ body {
   .animate-magic-burst {
     animation: none;
   }
+  .suggestion-btn-glow {
+    animation: none;
+  }
 }
 
 @keyframes suggestionBtnGlow {
