@@ -256,6 +256,7 @@ Access frontier and open-source models through a single API.
 - [Gemini API](https://neon.com/docs/ai-gateway/gemini.md): Use the Google Gemini API with Neon AI Gateway
 - [Get started with Neon AI Gateway](https://neon.com/docs/ai-gateway/get-started.md): Make your first inference request in minutes
 - [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview.md): One API for open-weight and foundation models from OpenAI, Google, and more. Built into your Neon project.
+- [Neon AI Gateway data retention](https://neon.com/docs/ai-gateway/data-retention.md): What Databricks and partner model providers retain when you use Neon AI Gateway
 - [OpenAI Responses API](https://neon.com/docs/ai-gateway/openai-responses.md): Use the OpenAI Responses API with Neon AI Gateway
 
 ## Data API
@@ -305,7 +306,7 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 170 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 169 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Set up a Neon project in seconds and connect from a Next.js application
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
@@ -415,6 +416,10 @@ Contributor guides, component architecture, and documentation standards.
 - [History window](https://neon.com/docs/postgres/backup-restore/history-window.md): Control how long Neon keeps change history for instant restore, Time Travel, and branching from past states
 - [Instant restore](https://neon.com/docs/postgres/backup-restore/branch-restore.md): Learn how to revert changes or recover lost data using Neon's instant restore with Time Travel Assist
 - [Time Travel](https://neon.com/docs/postgres/backup-restore/time-travel-assist.md): Learn how to query point-in-time connections against your data's history
+
+## Serverless
+
+- [Neon serverless driver configuration](https://neon.com/docs/serverless/serverless-driver-configuration.md): Result formats, fetch options, connection parameters, and transaction options for the Neon serverless driver
 
 ## Additional Resources
 
