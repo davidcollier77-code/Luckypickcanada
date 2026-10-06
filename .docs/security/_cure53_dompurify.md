@@ -61,15 +61,15 @@
 
   
 
-  <script type="application/json" id="client-env">{"locale":"en","featureFlags":["actions_enable_background_steps","actions_new_hosted_runner_image_select_sizes_and_versions","activity_diff_file_tree","activity_repos_file_tree","activity_repos_overview_header","activity_repos_overview_sidebar","agent_author_search_expansion","agent_author_search_expansion_ui_pulls","alternate_user_config_repo","async_conversion_coverage_enabled","billing_billable_licenses_cost_center_bucket_fix","billing_budget_expiration","billing_cost_center_list_assigned_resources","billing_discount_threshold_notification","code_quality_enablement_banner_targeting","code_quality_remove_preview","code_view_raf_sticky_lines","codespaces_prebuild_region_target_update","coding_agent_third_party_model_ui","copilot_agent_snippy","copilot_api_agentic_issue_marshal_yaml","copilot_automation_repo_mcp_servers","copilot_automations_pagination","copilot_base_model_policy_row","copilot_chat_auto_mode_v2","copilot_chat_clear_model_selection_for_default_change","copilot_chat_persist_session_drafts","copilot_chat_vision_dotcom_chat_ga_gate","copilot_css_textarea_autosize","copilot_custom_copilots","copilot_custom_copilots_feature_preview","copilot_duplicate_thread","copilot_extensions_removal_on_marketplace","copilot_fix_failed_workflows_all_skus","copilot_hide_hovercard","copilot_immersive_task_hyperlinking","copilot_mc_cli_resume_any_users_task","copilot_mission_control_agent_merge_fix_ci","copilot_mission_control_agent_merge_resolve_conflicts","copilot_mission_control_early_stop","copilot_mission_control_managed_sandbox_environments","copilot_mission_control_needs_attention","copilot_mission_control_reasoning_effort","copilot_mission_control_sandbox_remote_bypass","copilot_mission_control_task_alive_updates","copilot_mission_control_task_sharing","copilot_org_policy_page_focus_mode","copilot_share_active_subthread","copilot_spaces_ga","copilot_spaces_individual_policies_ga","copilot_swe_agent_authorization_status_ui","copilot_swe_agent_automation_resource_scoped_writes","copilot_swe_agent_discussion_comment_trigger","copilot_swe_agent_discussion_opened_trigger","copilot_swe_agent_discussion_updated_trigger","copilot_swe_agent_hide_model_picker_if_only_auto","copilot_swe_agent_issue_assigned_trigger","copilot_swe_agent_issue_comment_trigger","copilot_swe_agent_issue_labeled_trigger","copilot_swe_agent_pr_comment_model_picker","copilot_swe_agent_pull_request_assigned_trigger","copilot_swe_agent_pull_request_comment_trigger","copilot_swe_agent_pull_request_labeled_trigger","copilot_swe_agent_pull_request_merged_trigger","copilot_swe_agent_pull_request_opened_trigger","copilot_swe_agent_pull_request_ready_for_review_trigger","copilot_swe_agent_pull_request_review_requested_trigger","copilot_swe_agent_pull_request_review_submitted_trigger","copilot_swe_agent_pull_request_synchronize_trigger","copilot_swe_agent_sub_issue_added_trigger","copilot_swe_agent_use_subagents","copilot_task_api_github_rest_style","copilot_task_scoped_alive_channel","copilot_token_based_billing","copilot_unconfigured_is_inherited","copilot_user_can_upgrade_plan_field","copilot_workbench_sunset_redirect","dashboard_agents_module_auth_token_check","dashboard_indexeddb_caching","dashboard_lists_max_age_filter","fgpat_permissions_selector_redesign","glc_code_quality_repo_settings_workflow_config","hyperspace_2025_logged_out_batch_1","hyperspace_2025_logged_out_batch_2","hyperspace_2025_logged_out_batch_3","in_product_messaging_datadog_monitoring","ipm_ubb_individual_budget_banner","issue_fields_multi_select","issue_inline_avatars","issue_pinned_views","issue_pinned_views_team_vs_personal","issue_relative_time_micro","issues_dashboard_sso_structured_errors","issues_expanded_file_types","issues_hide_closed_sub_issues","issues_index_data_router","issues_lazy_load_comment_box_suggestions","issues_react_chrome_container_query_fix","labels_archiving","labels_archiving_info","landing_pages_ninetailed","lifecycle_label_name_updates","marketing_cookie_consent_banner","marketing_pages_search_explore_provider","memex_default_issue_create_repository","memex_live_update_hovercard","memex_mwl_filter_field_delimiter","memex_remove_deprecated_type_issue","merge_queue_restricted_pushers_warning","merge_status_header_feedback","mergeability_refetch_dedupe","milestone_closed_issues_prioritization","milestone_show_data_router","octocaptcha_origin_optimization","primer_react_css_anchor_positioning","primer_react_merged_forwarded_refs","prs_copilot_app_open_action","prs_css_anchor_positioning","prs_docked_comments_replies","pull_request_copilot_attribution_header","pull_request_overview_panel_edit_description","pull_request_persister","pull_request_stacks_feedback_dialog","pull_request_virtualization_image_estimate","pull_request_virtualization_loader_batching","pull_request_virtualization_scroll_compensation","pull_request_virtualization_scroll_intent","quick_search_lazy_suggestions","react_blob_isolate_code_lines","react_blob_ssr_content_visibility","react_data_router_tanstack_allowed","react_query_props_with_key","react_sandbox_future_tanstack","repo_app_turbo","repo_issues_sidebar_layout","repo_pulls_dashboard_declutter","repo_pulls_dashboard_ga","repo_pulls_dashboard_persistence","repo_pulls_dashboard_sidebar_links","repos_contributors_limited_default_range","review_involves_filter","rule_ignored_file_paths","rulesets_actor_list_editor","sample_network_conn_type","security_center_artifact_filters_popover","see_who_reacted","semantic_similarity_duplicate_issue_detection","session_logs_ungroup_reasoning_text","set_sha256_on_repo_creation_form","site_banner_desktop_copilot_app","site_ghca_pixel_mona","site_github_app_ga_page","site_github_app_ga_page_highlight","site_github_app_mobile_native_share","site_global_banner_dev_days_attendee","site_global_nav_spark_models_removed","speculation_rules_ui_service","suggest_custom_property_values_copilot","suppress_automated_browser_vitals","swp_forms_disable_octocaptcha","thread_resolution_reason","universe26_banners_septsession","update_issue_suggestions","viewscreen_sandbox","warn_inaccessible_attachments","webp_support","workstream_plugin_bootstrap"],"githubDomain":"https://github.com","copilotApiOverrideUrl":"https://api.githubcopilot.com","cmcApiUrl":"https://api.github.com/cmc_internal/api"}</script>
+  <script type="application/json" id="client-env">{"locale":"en","featureFlags":["actions_caches_react_shell","actions_enable_background_steps","actions_new_hosted_runner_image_select_sizes_and_versions","actions_runners_react_shell","activity_diff_file_tree","activity_repos_file_tree","activity_repos_overview_header","activity_repos_overview_sidebar","agent_author_search_expansion","agent_author_search_expansion_ui_pulls","alternate_user_config_repo","async_conversion_coverage_enabled","billing_billable_licenses_cost_center_bucket_fix","billing_budget_expiration","billing_cost_center_list_assigned_resources","billing_discount_threshold_notification","code_quality_enablement_banner_targeting","code_quality_remove_preview","code_view_raf_sticky_lines","codespaces_prebuild_region_target_update","coding_agent_third_party_model_ui","copilot_agent_snippy","copilot_api_agentic_issue_marshal_yaml","copilot_automation_repo_mcp_servers","copilot_automations_pagination","copilot_base_model_policy_row","copilot_chat_auto_mode_v2","copilot_chat_clear_model_selection_for_default_change","copilot_chat_persist_session_drafts","copilot_chat_vision_dotcom_chat_ga_gate","copilot_css_textarea_autosize","copilot_custom_copilots","copilot_custom_copilots_feature_preview","copilot_duplicate_thread","copilot_extensions_removal_on_marketplace","copilot_fix_failed_workflows_all_skus","copilot_hide_hovercard","copilot_immersive_task_hyperlinking","copilot_mc_cli_resume_any_users_task","copilot_mission_control_agent_merge_fix_ci","copilot_mission_control_agent_merge_resolve_conflicts","copilot_mission_control_early_stop","copilot_mission_control_managed_sandbox_environments","copilot_mission_control_needs_attention","copilot_mission_control_reasoning_effort","copilot_mission_control_sandbox_remote_bypass","copilot_mission_control_task_alive_updates","copilot_mission_control_task_sharing","copilot_org_policy_page_focus_mode","copilot_share_active_subthread","copilot_spaces_ga","copilot_spaces_individual_policies_ga","copilot_swe_agent_authorization_status_ui","copilot_swe_agent_automation_resource_scoped_writes","copilot_swe_agent_discussion_comment_trigger","copilot_swe_agent_discussion_opened_trigger","copilot_swe_agent_discussion_updated_trigger","copilot_swe_agent_hide_model_picker_if_only_auto","copilot_swe_agent_issue_assigned_trigger","copilot_swe_agent_issue_comment_trigger","copilot_swe_agent_issue_labeled_trigger","copilot_swe_agent_pr_comment_model_picker","copilot_swe_agent_pull_request_assigned_trigger","copilot_swe_agent_pull_request_comment_trigger","copilot_swe_agent_pull_request_labeled_trigger","copilot_swe_agent_pull_request_merged_trigger","copilot_swe_agent_pull_request_opened_trigger","copilot_swe_agent_pull_request_ready_for_review_trigger","copilot_swe_agent_pull_request_review_requested_trigger","copilot_swe_agent_pull_request_review_submitted_trigger","copilot_swe_agent_pull_request_synchronize_trigger","copilot_swe_agent_sub_issue_added_trigger","copilot_swe_agent_use_subagents","copilot_task_api_github_rest_style","copilot_task_scoped_alive_channel","copilot_token_based_billing","copilot_unconfigured_is_inherited","copilot_user_can_upgrade_plan_field","copilot_workbench_sunset_redirect","dashboard_agents_module_auth_token_check","dashboard_indexeddb_caching","dashboard_lists_max_age_filter","fgpat_permissions_selector_redesign","glc_code_quality_repo_settings_workflow_config","hyperspace_2025_logged_out_batch_1","hyperspace_2025_logged_out_batch_2","hyperspace_2025_logged_out_batch_3","in_product_messaging_datadog_monitoring","ipm_ubb_individual_budget_banner","issue_fields_multi_select","issue_inline_avatars","issue_pinned_views","issue_pinned_views_team_vs_personal","issue_relative_time_micro","issues_dashboard_sso_structured_errors","issues_expanded_file_types","issues_hide_closed_sub_issues","issues_index_data_router","issues_lazy_load_comment_box_suggestions","issues_react_chrome_container_query_fix","labels_archiving","labels_archiving_info","landing_pages_ninetailed","lifecycle_label_name_updates","marketing_cookie_consent_banner","marketing_pages_search_explore_provider","memex_default_issue_create_repository","memex_live_update_hovercard","memex_mwl_filter_field_delimiter","memex_remove_deprecated_type_issue","merge_queue_restricted_pushers_warning","merge_status_header_feedback","mergeability_refetch_dedupe","milestone_closed_issues_prioritization","milestone_show_data_router","octocaptcha_origin_optimization","primer_react_css_anchor_positioning","primer_react_merged_forwarded_refs","prs_copilot_app_open_action","prs_css_anchor_positioning","prs_docked_comments_replies","pull_request_copilot_attribution_header","pull_request_overview_panel_edit_description","pull_request_persister","pull_request_stacks_feedback_dialog","pull_request_virtualization_image_estimate","pull_request_virtualization_loader_batching","pull_request_virtualization_scroll_compensation","pull_request_virtualization_scroll_intent","pulls_api_persistence","quick_search_lazy_suggestions","react_blob_isolate_code_lines","react_blob_ssr_content_visibility","react_data_router_tanstack_allowed","react_query_props_with_key","react_sandbox_future_tanstack","repo_app_turbo","repo_issues_sidebar_layout","repo_pulls_dashboard_declutter","repo_pulls_dashboard_ga","repo_pulls_dashboard_persistence","repo_pulls_dashboard_sidebar_links","repos_contributors_limited_default_range","review_involves_filter","rule_ignored_file_paths","rulesets_actor_list_editor","sample_network_conn_type","security_center_artifact_filters_popover","see_who_reacted","semantic_similarity_duplicate_issue_detection","session_logs_ungroup_reasoning_text","set_sha256_on_repo_creation_form","site_banner_desktop_copilot_app","site_ghca_pixel_mona","site_github_app_ga_page","site_github_app_ga_page_highlight","site_github_app_mobile_native_share","site_global_banner_dev_days_attendee","site_global_nav_spark_models_removed","speculation_rules_ui_service","suggest_custom_property_values_copilot","suppress_automated_browser_vitals","swp_forms_disable_octocaptcha","thread_resolution_reason","universe26_banners_septsession","update_issue_suggestions","viewscreen_sandbox","warn_inaccessible_attachments","webp_support","workstream_plugin_bootstrap"],"githubDomain":"https://github.com","copilotApiOverrideUrl":"https://api.githubcopilot.com","cmcApiUrl":"https://api.github.com/cmc_internal/api"}</script>
 <script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/high-contrast-cookie-b752d992928a526c.js"></script>
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/wp-runtime-f0b03a6784c05ab0.js" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/wp-runtime-87e2e1674b4b76be.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/app-foundation-2f08c823163591a8.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/app-runtime-d6b89a81948d5e0b.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/fetch-utilities-0fb4c544a797ec0d.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/ser-7c872b58ac9f1b39.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/tp-7e9817cf5c068979.js" />
-<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/environment-b3544f26c764d043.js" defer="defer"></script>
+<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/environment-658d115710f520e2.js" defer="defer"></script>
 <link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/app-runtime.a8c855b07bd678e0.module.css" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/catalyst-52ed81112a548e10.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/selector-observer-e8810f64c443fb9b.js" />
@@ -81,12 +81,12 @@
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/jz5-7aa1ff0a0e750f41.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/hj-1d800d09e9a8720a.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/j0-9697c1c8f5cbf523.js" />
-<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/github-elements-d6a6581f15d9157d.js" defer="defer"></script>
-<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/element-registry-87532848bea4698c.js" defer="defer"></script>
+<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/github-elements-1a8cf42d7c128c6c.js" defer="defer"></script>
+<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/element-registry-f406860d7ee596ad.js" defer="defer"></script>
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/runtime-helpers-5572b126263053c3.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/aria-live-524a06aa946df6fc.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/hotkey-b1ee53c2200b172a.js" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/react-core-e3b893699872d944.js" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/react-core-e1a94cfa2036411e.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/a9-ca3bc10b816bcc1f.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/ur-21ec1e439ee2d87c.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/4t-4c39f7195fc42cc8.js" />
@@ -95,14 +95,15 @@
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/zj-4d9cf83cf08e1643.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/wo-6991af5b3829ffe8.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/nf-695d8c284a9aa7c8.js" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/b5-a2fde30ce0c692b9.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/sw-9d0489dbf9a9c942.js" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/7j-2385daa9041628ac.js" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/ttf-7d5abe1b447ced2c.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/sj-c7a44023ee90d468.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/0pd-c46d8dfae89c2b64.js" />
-<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/behaviors-f0b07032adad9e05.js" defer="defer"></script>
-<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/react-core.4d3ea0d7d42f230c.module.css" />
+<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/behaviors-bdef786735b4c82e.js" defer="defer"></script>
+<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/react-core.7d0e0dc3e63c3626.module.css" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/iv-cb7aa985f1701e8e.js" />
-<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/diffs-ecb345cd222a757c.js" defer="defer"></script>
+<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/diffs-088506b1670868ef.js" defer="defer"></script>
   
   <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/primer-react-619d8b233cf7b7e2.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/ncx-66e64888bc4615bb.js" />
@@ -110,17 +111,17 @@
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/j6-148a74299e5a01ab.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/t7l-a9404625ec30bbc7.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/844-2a520bd2d44538a9.js" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/gzu-8f1bdecae5014de4.js" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/bi-b5d1816534a586e8.js" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/gzu-6ad9a0527a5d7afd.js" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/bi-b525d5650e77b6e5.js" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/c2-dbb3c71a1617290b.js" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/20-b3104bf80f84b4d6.js" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/iq-9a62928048304f68.js" />
-<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/notifications-subscriptions-menu-aac112621eda05de.js" defer="defer"></script>
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/20-f43eb09c2be69457.js" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/iq-a6ca3fbc23427877.js" />
+<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/notifications-subscriptions-menu-ea9058e339e31290.js" defer="defer"></script>
 <link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/primer-react-css.e4334163c54cccf5.module.css" />
-<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/notifications-subscriptions-menu.590f42b9856dcd74.module.css" />
+<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/notifications-subscriptions-menu.e551fab69c936bdd.module.css" />
 
   <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/yj-2291721cae60f705.js" />
-<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/wiki-e4d02e092840c076.js" defer="defer"></script>
+<script crossorigin="anonymous" type="module" src="https://github.githubassets.com/assets/wiki-fea574b3445eda64.js" defer="defer"></script>
 
 
   <title>Attack Classes &amp; Bypass History · cure53/DOMPurify Wiki · GitHub</title>
@@ -130,13 +131,13 @@
   <meta name="route-pattern" content="/:user_id/:repository/wiki/:id(.:format)" data-turbo-transient>
   <meta name="route-controller" content="wiki" data-turbo-transient>
   <meta name="route-action" content="show" data-turbo-transient>
-  <meta name="fetch-nonce" content="v2:329907dd-34fc-78f9-175e-4fe187f2c8cb">
+  <meta name="fetch-nonce" content="v2:63805119-e3a8-1b69-fde6-ef54e4daf768">
 
     
   <meta name="current-catalog-service-hash" content="27690012a2eb28b75d0bacab0f2c11870266e8db9e019fa71fea812b82397bd6">
 
 
-  <meta name="request-id" content="9440:F3A8E:395148:50AF41:6AC4E45D" data-pjax-transient="true"/><meta name="html-safe-nonce" content="c908f59aa2d1d09d8e0904501b5d72a9c0df5d6f2bb867027348ec893d964734" data-pjax-transient="true"/><meta name="visitor-payload" content="eyJyZWZlcnJlciI6IiIsInJlcXVlc3RfaWQiOiI5NDQwOkYzQThFOjM5NTE0ODo1MEFGNDE6NkFDNEU0NUQiLCJ2aXNpdG9yX2lkIjoiODczOTk2NDYwMzYxMDQ5MTgxIiwicmVnaW9uX2VkZ2UiOiJ3ZXN0dXMzIiwicmVnaW9uX3JlbmRlciI6Indlc3R1czMifQ==" data-pjax-transient="true"/><meta name="visitor-hmac" content="fea48e212042b5e1ec1e415916ab1eda2df23cdf35de18aa74be0dad08cba437" data-pjax-transient="true"/>
+  <meta name="request-id" content="C400:1DF49:F83CFC:13E4904:6AC5443A" data-pjax-transient="true"/><meta name="html-safe-nonce" content="41f58ed7b967437849d0073f8a0f1756c4f10cd3cabb13ae267788346d3da74a" data-pjax-transient="true"/><meta name="visitor-payload" content="eyJyZWZlcnJlciI6IiIsInJlcXVlc3RfaWQiOiJDNDAwOjFERjQ5OkY4M0NGQzoxM0U0OTA0OjZBQzU0NDNBIiwidmlzaXRvcl9pZCI6Ijk2ODQyMjY2NDk4MzM2NDY2NiIsInJlZ2lvbl9lZGdlIjoiaWFkIiwicmVnaW9uX3JlbmRlciI6ImlhZCJ9" data-pjax-transient="true"/><meta name="visitor-hmac" content="8d97af4f1b565f5f4acb07e442d95f1faace39fc4969bd6567c6a528dd0fce6f" data-pjax-transient="true"/>
 
 
     <meta name="hovercard-subject-tag" content="repository:16927692" data-turbo-transient>
@@ -179,8 +180,8 @@
     <meta property="fb:app_id" content="1401488693436528">
     <meta name="apple-itunes-app" content="app-id=1477376905, app-argument=https://github.com/cure53/dompurify/wiki/Attack-Classes-&amp;-Bypass-History" />
 
-      <meta name="twitter:image" content="https://opengraph.githubassets.com/822829caadcdde453bec9a58a5a877395fa4c8ca20cf0c64935c129f803293f1/cure53/DOMPurify" /><meta name="twitter:site" content="@github" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="Attack Classes &amp; Bypass History" /><meta name="twitter:description" content="DOMPurify - a DOM-only, super-fast, uber-tolerant XSS sanitizer for HTML, MathML and SVG. DOMPurify works with a secure default, but offers a lot of configurability and hooks. Demo: - cure53/DOMPurify" />
-  <meta property="og:image" content="https://opengraph.githubassets.com/822829caadcdde453bec9a58a5a877395fa4c8ca20cf0c64935c129f803293f1/cure53/DOMPurify" /><meta property="og:image:alt" content="DOMPurify - a DOM-only, super-fast, uber-tolerant XSS sanitizer for HTML, MathML and SVG. DOMPurify works with a secure default, but offers a lot of configurability and hooks. Demo: - cure53/DOMPurify" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="600" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="Attack Classes &amp; Bypass History" /><meta property="og:url" content="https://github.com/cure53/DOMPurify/wiki/Attack-Classes-&amp;-Bypass-History" /><meta property="og:description" content="DOMPurify - a DOM-only, super-fast, uber-tolerant XSS sanitizer for HTML, MathML and SVG. DOMPurify works with a secure default, but offers a lot of configurability and hooks. Demo: - cure53/DOMPurify" />
+      <meta name="twitter:image" content="https://opengraph.githubassets.com/83a2947a5e9318409155472f6636d31947550fb22ec76939982914b4c21aac5d/cure53/DOMPurify" /><meta name="twitter:site" content="@github" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="Attack Classes &amp; Bypass History" /><meta name="twitter:description" content="DOMPurify - a DOM-only, super-fast, uber-tolerant XSS sanitizer for HTML, MathML and SVG. DOMPurify works with a secure default, but offers a lot of configurability and hooks. Demo: - cure53/DOMPurify" />
+  <meta property="og:image" content="https://opengraph.githubassets.com/83a2947a5e9318409155472f6636d31947550fb22ec76939982914b4c21aac5d/cure53/DOMPurify" /><meta property="og:image:alt" content="DOMPurify - a DOM-only, super-fast, uber-tolerant XSS sanitizer for HTML, MathML and SVG. DOMPurify works with a secure default, but offers a lot of configurability and hooks. Demo: - cure53/DOMPurify" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="600" /><meta property="og:site_name" content="GitHub" /><meta property="og:type" content="object" /><meta property="og:title" content="Attack Classes &amp; Bypass History" /><meta property="og:url" content="https://github.com/cure53/DOMPurify/wiki/Attack-Classes-&amp;-Bypass-History" /><meta property="og:description" content="DOMPurify - a DOM-only, super-fast, uber-tolerant XSS sanitizer for HTML, MathML and SVG. DOMPurify works with a secure default, but offers a lot of configurability and hooks. Demo: - cure53/DOMPurify" />
   
 
 
@@ -193,10 +194,10 @@
         <meta name="expected-hostname" content="github.com">
 
 
-  <meta http-equiv="x-pjax-version" content="2c0d6dadab8a4e41fd0bbf9e09a8b1c3d3b974b0580cb565771e22067484c706" data-turbo-track="reload">
+  <meta http-equiv="x-pjax-version" content="ab0e65fcf200af94a3406c576b8119e1cdc40c350199efedae01cc01f7d0b183" data-turbo-track="reload">
   <meta http-equiv="x-pjax-csp-version" content="c4a65e47b0c850e1157ae8e66298070851d7e3b558038de5a3b4ff7a93e630ed" data-turbo-track="reload">
   <meta http-equiv="x-pjax-css-version" content="c4d0e8c275605ef38c43e2be717931727fd93a93f2c788e65560d5c9d32dd988" data-turbo-track="reload">
-  <meta http-equiv="x-pjax-js-version" content="2e11d6292df0c6c95028a38f7ba3aab7d0c3e539b06f67a3bc44e0c617230514" data-turbo-track="reload">
+  <meta http-equiv="x-pjax-js-version" content="5f0415fe207ecb4abe7e43925e7d3466de07785db601e6c97b3ca3c860e50b4e" data-turbo-track="reload">
 
   <meta name="turbo-cache-control" content="no-preview" data-turbo-transient="">
 
@@ -218,7 +219,7 @@
 
   <meta name="browser-errors-url" content="https://api.github.com/_private/browser/errors">
 
-  <meta name="release" content="5ad080942d000ac00673c54b56c1d204cafea337" data-turbo-track="reload">
+  <meta name="release" content="2500a8686b579860147ed7fd1bcd803ffa2b2dab" data-turbo-track="reload">
   <meta name="ui-target" content="full">
 
   <link rel="mask-icon" href="https://github.githubassets.com/assets/pinned-octocat-093da3e6fa40.svg" color="#000000">
@@ -245,9 +246,9 @@
     <span style="width: 0%;" data-view-component="true" class="Progress-item progress-pjax-loader-bar left-0 top-0 color-bg-accent-emphasis"></span>
 </span>      
       <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/qc-2fb858b44cd74710.js" fetchpriority="low" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/keyboard-shortcuts-dialog-0698bd05515603fc.js" fetchpriority="low" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/keyboard-shortcuts-dialog-861d51ae21d75438.js" fetchpriority="low" />
 <link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/primer-react-css.e4334163c54cccf5.module.css" />
-<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/keyboard-shortcuts-dialog.e043f2bce1f4eff6.module.css" />
+<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/keyboard-shortcuts-dialog.f913b75ea0b04005.module.css" />
 
 <react-partial
   partial-name="keyboard-shortcuts-dialog"
@@ -266,9 +267,9 @@
 
       
 
-          <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/app-install-banner-partial-8e27fef97f91c442.js" fetchpriority="low" />
+          <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/app-install-banner-partial-1a47e4e78ad7c5f3.js" fetchpriority="low" />
 <link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/primer-react-css.e4334163c54cccf5.module.css" />
-<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/app-install-banner-partial.44c3e57ef7d91008.module.css" />
+<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/app-install-banner-partial.70717e988d453ba4.module.css" />
 
 <react-partial
   partial-name="app-install-banner-partial"
@@ -290,11 +291,11 @@
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/jag-3559ee48016881a2.js" fetchpriority="low" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/3d-7f22b36f29a9dd94.js" fetchpriority="low" />
 <link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/tua-4998592d21eb16f7.js" fetchpriority="low" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/8i-17240c6af115f192.js" fetchpriority="low" />
-<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/marketing-header-872cb9f772217c67.js" fetchpriority="low" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/8i-17225bd0d7335aa0.js" fetchpriority="low" />
+<link crossorigin="anonymous" rel="modulepreload" href="https://github.githubassets.com/assets/marketing-header-fa7eac8c3f9395a1.js" fetchpriority="low" />
 <link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/primer-react-css.e4334163c54cccf5.module.css" />
 <link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/primer-react-brand-css.05b219cdb8e80c43.module.css" />
-<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/8i.a0bdbd25e189a527.module.css" />
+<link crossorigin="anonymous" media="all" rel="stylesheet" href="https://github.githubassets.com/assets/8i.d6f069519608a727.module.css" />
 
 <react-partial
   partial-name="marketing-header"
@@ -318,10 +319,10 @@
         <span class="js-stale-session-flash-signed-out" hidden>You signed out in another tab or window. <a class="Link--inTextBlock" href="">Reload</a> to refresh your session.</span>
         <span class="js-stale-session-flash-switched" hidden>You switched accounts on another tab or window. <a class="Link--inTextBlock" href="">Reload</a> to refresh your session.</span>
 
-    <button id="icon-button-00484021-9558-46d0-8e36-78b81140f2ee" aria-labelledby="tooltip-e02189c4-65a4-44ff-aedf-2f434e60ad85" type="button" data-view-component="true" class="Button Button--iconOnly Button--invisible Button--medium flash-close js-flash-close">  <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-x Button-visual">
+    <button id="icon-button-f46836c2-f07d-4a53-8b3e-2da4475193e3" aria-labelledby="tooltip-d568135d-23ca-4540-b106-28bd9a06cb2d" type="button" data-view-component="true" class="Button Button--iconOnly Button--invisible Button--medium flash-close js-flash-close">  <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-x Button-visual">
     <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"></path>
 </svg>
-</button><tool-tip id="tooltip-e02189c4-65a4-44ff-aedf-2f434e60ad85" for="icon-button-00484021-9558-46d0-8e36-78b81140f2ee" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Dismiss alert</tool-tip>
+</button><tool-tip id="tooltip-d568135d-23ca-4540-b106-28bd9a06cb2d" for="icon-button-f46836c2-f07d-4a53-8b3e-2da4475193e3" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Dismiss alert</tool-tip>
 
 
   
@@ -423,7 +424,7 @@
               <ul class="pagehead-actions flex-shrink-0 d-none d-md-inline" style="padding: 2px 0;">
     
         <li>
-          <include-fragment src="/cure53/DOMPurify/sponsor_button" data-nonce="v2:329907dd-34fc-78f9-175e-4fe187f2c8cb" data-view-component="true">
+          <include-fragment src="/cure53/DOMPurify/sponsor_button" data-nonce="v2:63805119-e3a8-1b69-fde6-ef54e4daf768" data-view-component="true">
   
   <div data-show-on-forbidden-error hidden>
     <div class="Box">
@@ -447,7 +448,7 @@
             <a href="/login?return_to=%2Fcure53%2FDOMPurify" rel="nofollow" id="repository-details-watch-button" data-hydro-click="{&quot;event_type&quot;:&quot;authentication.click&quot;,&quot;payload&quot;:{&quot;location_in_page&quot;:&quot;notification subscription menu watch&quot;,&quot;repository_id&quot;:null,&quot;auth_type&quot;:&quot;LOG_IN&quot;,&quot;originating_url&quot;:&quot;https://github.com/cure53/dompurify/wiki/Attack-Classes-&amp;-Bypass-History&quot;,&quot;user_id&quot;:null}}" data-hydro-click-hmac="3d05b6f77475fab5fa7f9c080995a63a3c80f10a6176e4c41c37c9bb603140eb" aria-label="You must be signed in to change notification settings" data-view-component="true" class="btn-sm btn">    <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-bell mr-2 tmp-mr-2">
     <path d="M8 16a2 2 0 0 0 1.985-1.75c.017-.137-.097-.25-.235-.25h-3.5c-.138 0-.252.113-.235.25A2 2 0 0 0 8 16ZM3 5a5 5 0 0 1 10 0v2.947c0 .05.015.098.042.139l1.703 2.555A1.519 1.519 0 0 1 13.482 13H2.518a1.516 1.516 0 0 1-1.263-2.36l1.703-2.554A.255.255 0 0 0 3 7.947Zm5-3.5A3.5 3.5 0 0 0 4.5 5v2.947c0 .346-.102.683-.294.97l-1.703 2.556a.017.017 0 0 0-.003.01l.001.006c0 .002.002.004.004.006l.006.004.007.001h10.964l.007-.001.006-.004.004-.006.001-.007a.017.017 0 0 0-.003-.01l-1.703-2.554a1.745 1.745 0 0 1-.294-.97V5A3.5 3.5 0 0 0 8 1.5Z"></path>
 </svg>Notifications
-</a>    <tool-tip id="tooltip-4b8dd292-0e14-4971-8b42-e4962cbc6e5e" for="repository-details-watch-button" popover="manual" data-direction="s" data-type="description" data-view-component="true" class="sr-only position-absolute">You must be signed in to change notification settings</tool-tip>
+</a>    <tool-tip id="tooltip-7b7b2e07-c813-4b46-8bc7-ff5f60dba31a" for="repository-details-watch-button" popover="manual" data-direction="s" data-type="description" data-view-component="true" class="sr-only position-absolute">You must be signed in to change notification settings</tool-tip>
 
   </li>
 
@@ -580,22 +581,22 @@
 </ul>
     <div style="visibility:hidden;" data-view-component="true" class="UnderlineNav-actions js-responsive-underlinenav-overflow position-absolute pr-3 tmp-pr-3 pr-md-4 tmp-pr-md-4 pr-lg-5 tmp-pr-lg-5 right-0">      <action-menu data-select-variant="none" data-view-component="true">
   <focus-group direction="vertical" mnemonics retain>
-    <button id="action-menu-25b15c4f-3173-4bfd-8001-3a8a14de1b68-button" popovertarget="action-menu-25b15c4f-3173-4bfd-8001-3a8a14de1b68-overlay" aria-controls="action-menu-25b15c4f-3173-4bfd-8001-3a8a14de1b68-list" aria-haspopup="true" aria-labelledby="tooltip-09875d49-122c-49c7-b2c6-fb38959d9ea9" type="button" data-view-component="true" class="Button Button--iconOnly Button--secondary Button--medium UnderlineNav-item">  <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-kebab-horizontal Button-visual">
+    <button id="action-menu-648c78e8-f0b4-4773-b245-cb88bda1cc5a-button" popovertarget="action-menu-648c78e8-f0b4-4773-b245-cb88bda1cc5a-overlay" aria-controls="action-menu-648c78e8-f0b4-4773-b245-cb88bda1cc5a-list" aria-haspopup="true" aria-labelledby="tooltip-57673452-43a0-4f39-b3c9-43e64dee4bf1" type="button" data-view-component="true" class="Button Button--iconOnly Button--secondary Button--medium UnderlineNav-item">  <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-kebab-horizontal Button-visual">
     <path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path>
 </svg>
-</button><tool-tip id="tooltip-09875d49-122c-49c7-b2c6-fb38959d9ea9" for="action-menu-25b15c4f-3173-4bfd-8001-3a8a14de1b68-button" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Additional navigation options</tool-tip>
+</button><tool-tip id="tooltip-57673452-43a0-4f39-b3c9-43e64dee4bf1" for="action-menu-648c78e8-f0b4-4773-b245-cb88bda1cc5a-button" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Additional navigation options</tool-tip>
 
 
-<anchored-position data-target="action-menu.overlay" id="action-menu-25b15c4f-3173-4bfd-8001-3a8a14de1b68-overlay" anchor="action-menu-25b15c4f-3173-4bfd-8001-3a8a14de1b68-button" align="start" side="outside-bottom" anchor-offset="normal" popover="auto" data-view-component="true">
+<anchored-position data-target="action-menu.overlay" id="action-menu-648c78e8-f0b4-4773-b245-cb88bda1cc5a-overlay" anchor="action-menu-648c78e8-f0b4-4773-b245-cb88bda1cc5a-button" align="start" side="outside-bottom" anchor-offset="normal" popover="auto" data-view-component="true">
   <div data-view-component="true" class="Overlay Overlay--size-auto">
     
       <div data-view-component="true" class="Overlay-body Overlay-body--paddingNone">          <action-list>
   <div data-view-component="true">
-    <ul aria-labelledby="action-menu-25b15c4f-3173-4bfd-8001-3a8a14de1b68-button" id="action-menu-25b15c4f-3173-4bfd-8001-3a8a14de1b68-list" role="menu" data-view-component="true" class="ActionListWrap--inset ActionListWrap">
+    <ul aria-labelledby="action-menu-648c78e8-f0b4-4773-b245-cb88bda1cc5a-button" id="action-menu-648c78e8-f0b4-4773-b245-cb88bda1cc5a-list" role="menu" data-view-component="true" class="ActionListWrap--inset ActionListWrap">
         <li hidden="hidden" data-menu-item="i0code-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-ecdeec2e-a6c6-48a0-9ed1-9a55b8811872" href="/cure53/DOMPurify" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-0fd1b4da-34ab-4e40-b6e9-42292cc0fc4b" href="/cure53/DOMPurify" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-code">
     <path d="m11.28 3.22 4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L13.94 8l-3.72-3.72a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215Zm-6.56 0a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L2.06 8l3.72 3.72a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L.47 8.53a.75.75 0 0 1 0-1.06Z"></path>
@@ -611,7 +612,7 @@
         <li hidden="hidden" data-menu-item="i1issues-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-d4ffcca2-410f-4a91-ad96-a1ed3ff66004" href="/cure53/DOMPurify/issues" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-1a35b4d4-0449-43d2-9dcc-35a9eea49803" href="/cure53/DOMPurify/issues" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-issue-opened">
     <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"></path><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z"></path>
@@ -627,7 +628,7 @@
         <li hidden="hidden" data-menu-item="i2pull-requests-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-5b5eae0f-c879-489d-a5a2-8488f7b1d3c4" href="/cure53/DOMPurify/pulls" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-803f5808-b181-47fd-9377-3be1a4c2f012" href="/cure53/DOMPurify/pulls" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-git-pull-request">
     <path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z"></path>
@@ -643,7 +644,7 @@
         <li hidden="hidden" data-menu-item="i3actions-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-10c75554-231e-4631-a9ec-ed8fc64b2457" href="/cure53/DOMPurify/actions" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-2125a78e-326f-4b41-b2bb-da0a3827cd85" href="/cure53/DOMPurify/actions" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-play">
     <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm4.879-2.773 4.264 2.559a.25.25 0 0 1 0 .428l-4.264 2.559A.25.25 0 0 1 6 10.559V5.442a.25.25 0 0 1 .379-.215Z"></path>
@@ -659,7 +660,7 @@
         <li hidden="hidden" data-menu-item="i4projects-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-59e929e4-9993-47dc-9c22-72bd4b6945ce" href="/cure53/DOMPurify/projects" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-bfacf9ac-cd4d-4877-900b-b4388d586046" href="/cure53/DOMPurify/projects" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-table">
     <path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v12.5A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25ZM6.5 6.5v8h7.75a.25.25 0 0 0 .25-.25V6.5Zm8-1.5V1.75a.25.25 0 0 0-.25-.25H6.5V5Zm-13 1.5v7.75c0 .138.112.25.25.25H5v-8ZM5 5V1.5H1.75a.25.25 0 0 0-.25.25V5Z"></path>
@@ -675,7 +676,7 @@
         <li hidden="hidden" data-menu-item="i5wiki-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-7d174cb5-0686-42bc-90bb-225c0096d046" href="/cure53/DOMPurify/wiki" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-18e763cb-115b-408f-b499-59e285d31f56" href="/cure53/DOMPurify/wiki" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-book">
     <path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.495a2.25 2.25 0 0 0-2.25 2.25Z"></path>
@@ -691,7 +692,7 @@
         <li hidden="hidden" data-menu-item="i6security-and-quality-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-03eedec0-663a-4cce-8f82-491d0a09db33" href="/cure53/DOMPurify/security" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-a930780e-56f6-4c6e-9d80-cd1e7b68ef71" href="/cure53/DOMPurify/security" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-shield">
     <path d="M7.467.133a1.748 1.748 0 0 1 1.066 0l5.25 1.68A1.75 1.75 0 0 1 15 3.48V7c0 1.566-.32 3.182-1.303 4.682-.983 1.498-2.585 2.813-5.032 3.855a1.697 1.697 0 0 1-1.33 0c-2.447-1.042-4.049-2.357-5.032-3.855C1.32 10.182 1 8.566 1 7V3.48a1.75 1.75 0 0 1 1.217-1.667Zm.61 1.429a.25.25 0 0 0-.153 0l-5.25 1.68a.25.25 0 0 0-.174.238V7c0 1.358.275 2.666 1.057 3.86.784 1.194 2.121 2.34 4.366 3.297a.196.196 0 0 0 .154 0c2.245-.956 3.582-2.104 4.366-3.298C13.225 9.666 13.5 8.36 13.5 7V3.48a.251.251 0 0 0-.174-.237l-5.25-1.68ZM8.75 4.75v3a.75.75 0 0 1-1.5 0v-3a.75.75 0 0 1 1.5 0ZM9 10.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path>
@@ -707,7 +708,7 @@
         <li hidden="hidden" data-menu-item="i7insights-tab" data-targets="action-list.items" role="none" data-view-component="true" class="ActionListItem">
     
     
-    <a tabindex="-1" id="item-22243618-278e-48ab-b486-79fd757fb64b" href="/cure53/DOMPurify/pulse" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
+    <a tabindex="-1" id="item-684f7524-5ff9-4aca-94bf-b23594da6dc0" href="/cure53/DOMPurify/pulse" role="menuitem" data-view-component="true" class="ActionListContent ActionListContent--visual16">
         <span class="ActionListItem-visual ActionListItem-visual--leading">
           <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-graph">
     <path d="M1.5 1.75V13.5h13.75a.75.75 0 0 1 0 1.5H.75a.75.75 0 0 1-.75-.75V1.75a.75.75 0 0 1 1.5 0Zm14.28 2.53-5.25 5.25a.75.75 0 0 1-1.06 0L7 7.06 4.28 9.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.25-3.25a.75.75 0 0 1 1.06 0L10 7.94l4.72-4.72a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z"></path>
@@ -2125,10 +2126,10 @@ remain true across browsers and across time.</p>
 <div class="Box Box--condensed color-shadow-small">
   <div class="Box-header px-2 py-1 js-wiki-toggle-collapse" style="cursor: pointer">
     <h2 class="Box-title d-flex flex-items-center" id="wiki-pages-box-heading">
-      <button id="icon-button-7175f16f-0d3b-4ea0-9370-32f6262cdd4c" aria-controls="wiki-pages-toc" aria-expanded="true" aria-labelledby="tooltip-f0ebe602-d62c-4bc9-bcda-81598162723a" type="button" data-view-component="true" class="Button Button--iconOnly Button--invisible Button--small js-wiki-sidebar-pages-toggle-chevron js-wiki-sidebar-pages-toggle-chevron-open">  <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-triangle-down Button-visual">
+      <button id="icon-button-5ad3b0ec-f758-4c03-8825-d3355e14ca67" aria-controls="wiki-pages-toc" aria-expanded="true" aria-labelledby="tooltip-b46ac687-ceb0-4cf2-8f08-48b265f4d00f" type="button" data-view-component="true" class="Button Button--iconOnly Button--invisible Button--small js-wiki-sidebar-pages-toggle-chevron js-wiki-sidebar-pages-toggle-chevron-open">  <svg aria-hidden="true" data-component="Octicon" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-triangle-down Button-visual">
     <path d="m4.427 7.427 3.396 3.396a.25.25 0 0 0 .354 0l3.396-3.396A.25.25 0 0 0 11.396 7H4.604a.25.25 0 0 0-.177.427Z"></path>
 </svg>
-</button><tool-tip id="tooltip-f0ebe602-d62c-4bc9-bcda-81598162723a" for="icon-button-7175f16f-0d3b-4ea0-9370-32f6262cdd4c" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Wiki pages</tool-tip>
+</button><tool-tip id="tooltip-b46ac687-ceb0-4cf2-8f08-48b265f4d00f" for="icon-button-5ad3b0ec-f758-4c03-8825-d3355e14ca67" popover="manual" data-direction="s" data-type="label" data-view-component="true" class="sr-only position-absolute">Wiki pages</tool-tip>
 
       <span>Pages <span title="5" data-view-component="true" class="Counter Counter--primary">5</span></span>
     </h2>
@@ -2159,7 +2160,7 @@ remain true across browsers and across time.</p>
       </div></a>  </div>
 
   <div id="Home-table-of-contents" class="d-none js-wiki-sidebar-toc-container">
-      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/Home/_toc" data-nonce="v2:329907dd-34fc-78f9-175e-4fe187f2c8cb" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
+      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/Home/_toc" data-nonce="v2:63805119-e3a8-1b69-fde6-ef54e4daf768" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
   
 
   <div data-show-on-forbidden-error hidden>
@@ -2199,7 +2200,7 @@ remain true across browsers and across time.</p>
       </div></a>  </div>
 
   <div id="Attack-Classes-&amp;-Bypass-History-table-of-contents" class="d-none js-wiki-sidebar-toc-container">
-      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/Attack-Classes-&amp;-Bypass-History/_toc" data-nonce="v2:329907dd-34fc-78f9-175e-4fe187f2c8cb" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
+      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/Attack-Classes-&amp;-Bypass-History/_toc" data-nonce="v2:63805119-e3a8-1b69-fde6-ef54e4daf768" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
   
 
   <div data-show-on-forbidden-error hidden>
@@ -2239,7 +2240,7 @@ remain true across browsers and across time.</p>
       </div></a>  </div>
 
   <div id="Default-TAGs-ATTRIBUTEs-allow-list-&amp;-blocklist-table-of-contents" class="d-none js-wiki-sidebar-toc-container">
-      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/Default-TAGs-ATTRIBUTEs-allow-list-&amp;-blocklist/_toc" data-nonce="v2:329907dd-34fc-78f9-175e-4fe187f2c8cb" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
+      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/Default-TAGs-ATTRIBUTEs-allow-list-&amp;-blocklist/_toc" data-nonce="v2:63805119-e3a8-1b69-fde6-ef54e4daf768" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
   
 
   <div data-show-on-forbidden-error hidden>
@@ -2279,7 +2280,7 @@ remain true across browsers and across time.</p>
       </div></a>  </div>
 
   <div id="Security-Goals-&amp;-Threat-Model-table-of-contents" class="d-none js-wiki-sidebar-toc-container">
-      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/Security-Goals-&amp;-Threat-Model/_toc" data-nonce="v2:329907dd-34fc-78f9-175e-4fe187f2c8cb" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
+      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/Security-Goals-&amp;-Threat-Model/_toc" data-nonce="v2:63805119-e3a8-1b69-fde6-ef54e4daf768" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
   
 
   <div data-show-on-forbidden-error hidden>
@@ -2319,7 +2320,7 @@ remain true across browsers and across time.</p>
       </div></a>  </div>
 
   <div id="State-of-the-Project-and-Roadmap-table-of-contents" class="d-none js-wiki-sidebar-toc-container">
-      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/State-of-the-Project-and-Roadmap/_toc" data-nonce="v2:329907dd-34fc-78f9-175e-4fe187f2c8cb" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
+      <include-fragment loading="lazy" src="https://github.com/cure53/DOMPurify/wiki/State-of-the-Project-and-Roadmap/_toc" data-nonce="v2:63805119-e3a8-1b69-fde6-ef54e4daf768" data-view-component="true" class="js-wiki-sidebar-toc-fragment">
   
 
   <div data-show-on-forbidden-error hidden>
