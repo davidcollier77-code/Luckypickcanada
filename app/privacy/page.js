@@ -2,6 +2,10 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Privacy Policy | Lucky Pick Canada',
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function PrivacyPolicy() {

@@ -3,6 +3,7 @@ import Link from 'next/link';
 export const metadata = {
   title: 'About the Creator & Our Story | Lucky Pick Canada',
   description: 'Learn about the story behind Lucky Pick Canada, a solo creative project built in Nova Scotia to bring everyday positivity and a little fun to the web.',
+  alternates: { canonical: '/about' },
 };
 
 export default function AboutPage() {
