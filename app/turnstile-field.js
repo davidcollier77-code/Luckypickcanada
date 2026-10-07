@@ -1,14 +1,131 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Turnstile } from '@marsidev/react-turnstile';
+import { loadTurnstile } from './turnstile-loader';
+
+const TURNSTILE_ERROR_MESSAGE =
+  'The security check had a problem. Please use Troubleshoot or refresh, then try again.';
 
 export default function TurnstileField({ siteKey, submitButtonId }) {
   const containerRef = useRef(null);
-  const turnstileRef = useRef(null);
+  const turnstileApiRef = useRef(null);
+  const widgetIdRef = useRef(null);
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('loading');
+
+  useEffect(() => {
+    if (!siteKey || !containerRef.current) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const initializeWidget = async () => {
+      try {
+        setStatus('loading');
+        setError('');
+        setToken('');
+
+        const turnstile = await loadTurnstile();
+
+        if (cancelled || !containerRef.current) {
+          return;
+        }
+
+        turnstileApiRef.current = turnstile;
+        widgetIdRef.current = turnstile.render(containerRef.current, {
+          sitekey: siteKey,
+          theme: 'auto',
+          'refresh-expired': 'auto',
+          'response-field': false,
+          callback: (newToken) => {
+            if (cancelled) {
+              return;
+            }
+
+            setToken(newToken || '');
+            setError('');
+            setStatus('verified');
+          },
+          'expired-callback': () => {
+            if (cancelled) {
+              return;
+            }
+
+            setToken('');
+            setStatus('loading');
+          },
+          'error-callback': () => {
+            if (cancelled) {
+              return true;
+            }
+
+            setToken('');
+            setStatus('error');
+            setError(TURNSTILE_ERROR_MESSAGE);
+
+            // Returning true tells Turnstile that the application handled the
+            // error while preserving its configured automatic retry behavior.
+            return true;
+          },
+          'timeout-callback': () => {
+            if (cancelled) {
+              return;
+            }
+
+            setToken('');
+            setStatus('loading');
+            setError('');
+
+            const currentTurnstile = turnstileApiRef.current;
+            const currentWidgetId = widgetIdRef.current;
+
+            if (currentTurnstile && currentWidgetId !== null) {
+              currentTurnstile.reset(currentWidgetId);
+            }
+          },
+          'unsupported-callback': () => {
+            if (cancelled) {
+              return;
+            }
+
+            setToken('');
+            setStatus('error');
+            setError(TURNSTILE_ERROR_MESSAGE);
+          },
+        });
+      } catch {
+        if (cancelled) {
+          return;
+        }
+
+        setToken('');
+        setStatus('error');
+        setError(TURNSTILE_ERROR_MESSAGE);
+      }
+    };
+
+    initializeWidget();
+
+    return () => {
+      cancelled = true;
+
+      const turnstile = turnstileApiRef.current;
+      const widgetId = widgetIdRef.current;
+
+      if (turnstile && widgetId !== null) {
+        try {
+          turnstile.remove(widgetId);
+        } catch {
+          // The widget may already have been removed by a browser teardown.
+        }
+      }
+
+      turnstileApiRef.current = null;
+      widgetIdRef.current = null;
+    };
+  }, [siteKey]);
 
   useEffect(() => {
     if (!submitButtonId || !containerRef.current) {
@@ -23,18 +140,22 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
     }
 
     submitButton.disabled = !token;
+
     const preventUnverifiedSubmit = (event) => {
       if (token) {
         return;
       }
 
       event.preventDefault();
-      setError(status === 'loading'
-        ? 'Security check loading, please wait a moment.'
-        : 'Please complete the security check before sending.');
+      setError(
+        status === 'loading'
+          ? 'Security check loading, please wait a moment.'
+          : 'Please complete the security check before sending.',
+      );
     };
 
     form.addEventListener('submit', preventUnverifiedSubmit);
+
     return () => {
       submitButton.disabled = false;
       form.removeEventListener('submit', preventUnverifiedSubmit);
@@ -51,29 +172,6 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
 
   return (
     <div style={{ display: 'grid', gap: '0.45rem' }} ref={containerRef}>
-      <Turnstile
-        ref={turnstileRef}
-        siteKey={siteKey}
-        options={{
-          theme: 'auto',
-          'refresh-expired': 'auto',
-          'response-field': false, // We use a hidden input for form submission
-        }}
-        onSuccess={(newToken) => {
-          setToken(newToken || '');
-          setError('');
-          setStatus('verified');
-        }}
-        onExpire={() => {
-          setToken('');
-          setStatus('loading');
-        }}
-        onError={() => {
-          setToken('');
-          setStatus('error');
-          setError('The security check had a problem. Please use Troubleshoot or refresh, then try again.');
-        }}
-      />
       <input type="hidden" name="cf-turnstile-response" value={token} readOnly />
       {error ? <p role="status" style={{ margin: 0, color: '#fecaca', fontWeight: 700 }}>{error}</p> : null}
       {status === 'loading' && !error ? <p role="status" style={{ margin: 0, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 700 }}>Security check loading, please wait a moment.</p> : null}
