@@ -38,23 +38,15 @@ const oldDesc = "Discover Lucky Pick Canada, a fun Canadian digital entertainmen
 
 // Crystal Ball
 updateFile('app/crystal-ball/page.js', oldDesc, 'Ask the Crystal Ball a question and receive a playful, mystical reading from Lucky Pick Canada.');
-updateFile('app/crystal-ball/page.js', oldDesc, 'Ask the Crystal Ball a question and receive a playful, mystical reading from Lucky Pick Canada.');
-updateFile('app/crystal-ball/page.js', oldDesc, 'Ask the Crystal Ball a question and receive a playful, mystical reading from Lucky Pick Canada.');
 
 // Lucky Meter
 // For lucky-meter, let's use the one from layout: 'Awaken your Daily Resonance with Lucky Pick Canada. Check your Lucky Meter and reveal your unique digital energy reading.'
 updateFile('app/lucky-meter/page.js', oldDesc, 'Awaken your Daily Resonance with Lucky Pick Canada. Check your Lucky Meter and reveal your unique digital energy reading.');
-updateFile('app/lucky-meter/page.js', oldDesc, 'Awaken your Daily Resonance with Lucky Pick Canada. Check your Lucky Meter and reveal your unique digital energy reading.');
-updateFile('app/lucky-meter/page.js', oldDesc, 'Awaken your Daily Resonance with Lucky Pick Canada. Check your Lucky Meter and reveal your unique digital energy reading.');
 
 // Map
 updateFile('app/map/page.js', oldDesc, 'Explore the Lucky Map of Canada to read community stories of luck and everyday magic from across the country.');
-updateFile('app/map/page.js', oldDesc, 'Explore the Lucky Map of Canada to read community stories of luck and everyday magic from across the country.');
-updateFile('app/map/page.js', oldDesc, 'Explore the Lucky Map of Canada to read community stories of luck and everyday magic from across the country.');
 
 // Reveal
-updateFile('app/reveal/page.tsx', oldDesc, 'Reveal your daily collectible digital card from Lucky Pick Canada and build your collection of lucky moments.');
-updateFile('app/reveal/page.tsx', oldDesc, 'Reveal your daily collectible digital card from Lucky Pick Canada and build your collection of lucky moments.');
 updateFile('app/reveal/page.tsx', oldDesc, 'Reveal your daily collectible digital card from Lucky Pick Canada and build your collection of lucky moments.');
 
 console.log('done');
