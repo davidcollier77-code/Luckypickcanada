@@ -9,4 +9,4 @@
 
 - **Current Task (SEO):** Cleaned up SEO configuration based on the October 2026 SEO audit. Fixed 3 non-indexable URLs in `sitemap.js` (`/about`, `/privacy`, `/terms`) by adding missing canonicals (`/about`) and explicitly applying `robots: { index: false }` (`/privacy`, `/terms`) to exclude them from indexing, subsequently removing them from the sitemap. Resolved duplicate meta-description issues by applying unique meta descriptions to indexable pages (`/crystal-ball`, `/lucky-meter`, `/map`, `/reveal`).
 
-- **Current Task (Turnstile Isolation Hardening):** In progress. The client Turnstile integration is being moved behind a dedicated loading/lifecycle boundary so the Cloudflare script starts independently of homepage rendering work. Server-side Siteverify validation and the three protected public flows remain unchanged.
+- **Current Task (Turnstile Script Load Failure Handling):** Implemented a minimal client-side recovery path by wiring `@marsidev/react-turnstile` script-level `onError` into the existing protected-form error state and added regression coverage. CI verification is pending.

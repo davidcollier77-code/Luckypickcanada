@@ -29,3 +29,5 @@
 - **Spec Kit updater manifest integrity repair**: Verified the updater CLI setup is now functional and that Run #11 was blocked by five stale generic-integration manifest hashes. Corrected the five recorded SHA-256 values for the managed Jules Spec Kit command files without enabling force or changing the updater workflow. Final end-to-end scheduled/manual updater execution remains pending merge; manifest-to-file reconciliation is verified on the repair branch.
 
 - **Legacy Meter Artwork Cleanup:** Removed the abandoned `1784862459046.png` artwork from homepage/theme references and deleted the unused public asset; current Lucky Meter functionality was preserved.
+
+- **Turnstile Script Load Failure Follow-up:** Added `scriptOptions.onError` handling to `TurnstileField` and a regression test so a Cloudflare Turnstile API script load failure becomes a visible error while protected submit buttons remain disabled. CI verification is pending.

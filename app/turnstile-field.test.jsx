@@ -76,6 +76,32 @@ describe('TurnstileField', () => {
     expect(screen.getByText('Security check loading, please wait a moment.')).toBeInTheDocument();
   });
 
+  it('shows an error state when the Turnstile script fails to load', async () => {
+    render(
+      <form>
+        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <button id="submit" type="submit">Send</button>
+      </form>,
+    );
+
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
+    expect(turnstileMock.scriptOptions?.onError).toEqual(expect.any(Function));
+
+    act(() => {
+      turnstileMock.scriptOptions.onError();
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
+        ),
+      ).toBeInTheDocument(),
+    );
+
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+  });
+
   it('shows an error state when the client integration fails', async () => {
     render(
       <form>
