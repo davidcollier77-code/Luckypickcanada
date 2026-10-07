@@ -56,10 +56,10 @@ export default function RootLayout({ children }) {
     <html lang="en-CA" className={`m-0 p-0 ${inter.variable} ${playfair.variable} ${cinzel.variable} ${manrope.variable}`}>
       <head>
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
-        <script
-          id="cloudflare-turnstile-api"
-          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-          defer
+        <link
+          rel="preload"
+          href="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+          as="script"
         />
         <link rel="preload" href="/homepage-hero-lucky-pick-canada.webp" as="image" fetchPriority="high" />
         <link rel="stylesheet" href="/themes/default/index.css" />
