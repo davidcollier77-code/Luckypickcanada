@@ -1,8 +1,6 @@
-🛡️ Sentinel: HIGH Fix payment bypass vulnerability and duplicate gift dispatch
+fix: Make Turnstile initialization independent and add retry logic
 
-- Create /api/verify-session endpoint for server-authoritative Stripe validation.
-- Harden gift idempotency in /api/gift-delivery and gift-email.js relying on giftDeliveredAt.
-- Block legacy /api/send-gift bypass endpoint in production environments.
-- Verify revealIds correctly on server instead of trusting client inputs.
-- Ensure test suite has been updated to protect security boundaries.
-- Fix broken strings causing syntax error in HomePage.js during previous rewrite.
+- Encapsulated `TURNSTILE_SITE_KEY` within `TurnstileField` instead of passing via props.
+- Removed `next/dynamic` from `HomePage.js` to ensure deterministic Turnstile script injection.
+- Implemented a "Retry" button on Turnstile error to allow simple recovery without page refresh.
+- Updated related tests to match the new recovery logic and prop structure.

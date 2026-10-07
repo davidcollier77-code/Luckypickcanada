@@ -12,7 +12,43 @@ vi.mock('@marsidev/react-turnstile', () => {
       />
     ))
   };
+
+  it('allows retrying after an error', async () => {
+    render(
+      <form>
+        <TurnstileField submitButtonId="submit" />
+        <button id="submit" type="submit">Send</button>
+      </form>,
+    );
+
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
+
+    act(() => {
+      turnstileMock.onError();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText('The security check had a problem. Please use Troubleshoot or refresh, then try again.')).toBeInTheDocument()
+    );
+
+    const retryBtn = screen.getByRole('button', { name: 'Retry' });
+
+    act(() => {
+      retryBtn.click();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText('Security check loading, please wait a moment.')).toBeInTheDocument()
+    );
+    expect(screen.queryByText('The security check had a problem. Please use Troubleshoot or refresh, then try again.')).not.toBeInTheDocument();
+  });
+
 });
+
+
+vi.mock('./turnstile-config', () => ({
+  TURNSTILE_SITE_KEY: 'test-site-key'
+}));
 
 import { Turnstile } from '@marsidev/react-turnstile';
 import TurnstileField from './turnstile-field';
@@ -29,7 +65,7 @@ describe('TurnstileField', () => {
   it('keeps the submit button disabled until a valid token is returned', async () => {
     render(
       <form>
-        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -54,7 +90,7 @@ describe('TurnstileField', () => {
   it('clears the token on expiry and sets status to loading', async () => {
     render(
       <form>
-        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -79,7 +115,7 @@ describe('TurnstileField', () => {
   it('shows an error state when the Turnstile script fails to load', async () => {
     render(
       <form>
-        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -105,7 +141,7 @@ describe('TurnstileField', () => {
   it('shows an error state when the client integration fails', async () => {
     render(
       <form>
-        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -130,7 +166,7 @@ describe('TurnstileField', () => {
   it('clears the token and resets the widget on timeout', async () => {
     render(
       <form>
-        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -155,7 +191,7 @@ describe('TurnstileField', () => {
   it('shows an error state when the browser is unsupported', async () => {
     render(
       <form>
-        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
