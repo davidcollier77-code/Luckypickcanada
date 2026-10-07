@@ -1,3 +1,4 @@
+- **Current Task (Security Hardening):** Hardened the authentication flow in `app/admin/suggestions/route.js`. Migrated the deterministic SHA-256 session cookie to a time-bound HMAC-SHA256 signature to prevent infinite replay of stolen session tokens. Implemented rate-limiting on the login POST endpoint (5 attempts per 15 minutes) using existing `checkApiRateLimit` and `getClientIp` utilities to mitigate brute-force guessing of the `ADMIN_PASSWORD`. Verified the fixes through new unit tests while preserving the existing route behavior and avoiding an unnecessary full authentication-provider migration.
 # Active Context
 - Resolved Dependabot alerts #28 and #29 for `brace-expansion`.
 - Fixed Cloudflare Turnstile integration failure on public forms by configuring Next.js environment mapping in `next.config.mjs`.
