@@ -2,6 +2,10 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Terms of Service | Lucky Pick Canada',
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function TermsOfService() {
