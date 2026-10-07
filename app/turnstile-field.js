@@ -62,7 +62,7 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
         onSuccess={(newToken) => {
           setToken(newToken || '');
           setError('');
-          setStatus(newToken ? 'verified' : 'loading');
+          setStatus('verified');
         }}
         onExpire={() => {
           setToken('');
