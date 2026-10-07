@@ -121,7 +121,7 @@ export default function TurnstileField({ submitButtonId }) {
       {error ? (
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <p role="status" style={{ margin: 0, color: '#fecaca', fontWeight: 700 }}>{error}</p>
-          <button type="button" onClick={onRetry} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}>Retry</button>
+          <button type="button" aria-label="Retry security check" onClick={onRetry} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}>Retry</button>
         </div>
       ) : null}
       {status === 'loading' && !error ? <p role="status" style={{ margin: 0, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 700 }}>Security check loading, please wait a moment.</p> : null}

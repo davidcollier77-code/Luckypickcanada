@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { listSuggestions } from '../../suggestions';
+import { getClientIp, checkApiRateLimit } from '../../spam-protection';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -48,8 +49,20 @@ function isAuthorized(request) {
     return false;
   }
 
-  const expectedCookie = crypto.createHash('sha256').update(adminPassword).digest('hex');
-  return secureCompare(providedCookie, expectedCookie);
+  const parts = providedCookie.split('.');
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const [expiresAtStr, hmac] = parts;
+  const expiresAt = parseInt(expiresAtStr, 10);
+
+  if (isNaN(expiresAt) || Date.now() > expiresAt) {
+    return false;
+  }
+
+  const expectedHmac = crypto.createHmac('sha256', adminPassword).update(expiresAtStr).digest('hex');
+  return secureCompare(hmac, expectedHmac);
 }
 
 function renderLogin(error = '') {
@@ -140,6 +153,16 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  const ip = getClientIp(request);
+  const rateLimit = await checkApiRateLimit(ip, 'admin_login', 5, 15 * 60 * 1000);
+
+  if (!rateLimit.ok) {
+    return new Response(renderLogin('Too many attempts. Please try again later.'), {
+      status: 429,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+  }
+
   const formData = await request.formData();
   const password = String(formData.get('password') || '');
   const adminPassword = process.env.ADMIN_PASSWORD;
@@ -151,7 +174,9 @@ export async function POST(request) {
     });
   }
 
-  const sessionToken = crypto.createHash('sha256').update(adminPassword).digest('hex');
+  const expiresAt = Date.now() + 86400000;
+  const hmac = crypto.createHmac('sha256', adminPassword).update(String(expiresAt)).digest('hex');
+  const sessionToken = `${expiresAt}.${hmac}`;
 
   return new Response(null, {
     status: 303,

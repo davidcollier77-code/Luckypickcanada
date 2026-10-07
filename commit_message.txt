@@ -1,6 +1,0 @@
-fix: Make Turnstile initialization independent and add retry logic
-
-- Encapsulated `TURNSTILE_SITE_KEY` within `TurnstileField` instead of passing via props.
-- Removed `next/dynamic` from `HomePage.js` to ensure deterministic Turnstile script injection.
-- Implemented a "Retry" button on Turnstile error to allow simple recovery without page refresh.
-- Updated related tests to match the new recovery logic and prop structure.
