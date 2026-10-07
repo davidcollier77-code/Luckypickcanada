@@ -1,3 +1,14 @@
-Information Architecture Update
+🛡️ Sentinel: [HIGH] Optimize Render-Blocking and Main Thread Canvas Bottlenecks
 
-Implements the requested homepage reorganization grouping content logically under PLAY / EXPLORE, COMMUNITY, LUCKY PICK + GIFT EXPERIENCES, TIP JAR, and SUGGESTION BOX without altering individual component styles, interactive behaviors, or background graphics. Directed the 'Explore Your Luck' button to the newly constructed 'play-explore' container as instructed.
+### Overview
+This PR strictly resolves two specific frontend performance issues flagged by Lighthouse, while investigating and clearing a third suspected issue.
+
+### Issues Addressed:
+1. **Heavy Main-Thread Work:** The HTML5 Canvas star rendering loop in `app/homepage/HomePage.js` was continually assigning `ctx.fillStyle` inside a loop of >1000 stars on every `requestAnimationFrame` tick. In accordance with the `.jules/bolt.md` guidelines, this state change was hoisted outside the loop, eliminating significant render overhead and garbage collection.
+2. **Render-Blocking CSS:** In `app/layout.js`, the main theme CSS was imported via JS (`import '../public/themes/default/index.css';`), which caused the Next.js bundler to inject it synchronously. Per the `CSS_FIX_GUIDE.md`, this was removed and replaced with standard `<link>` tags in the document head.
+3. **Ghost Image Investigation:** A thorough investigation of the `.homepage-sky-backdrop` CSS, Next.js image components, and HTML DOM tree confirmed that there is **NO** "ghost" or duplicate image rendering underneath the Milky Way background. The single background image logic remains intact, and no speculative patches were applied.
+
+### Verification:
+- Run `pnpm run build` (PASS)
+- Run `pnpm exec playwright test` (PASS - visual fidelity maintained)
+- Run `./jules-verify.sh` (PASS)

@@ -241,6 +241,7 @@ export default function HomePage() {
       ctx.globalAlpha = 1.0;
 
       // Draw Ambient Stars
+      ctx.fillStyle = '#ffffff'; // Bolt: Static fillStyle hoisted outside loop
       for (let i = 0; i < ambientStars.length; i++) {
         const star = ambientStars[i];
 
@@ -253,7 +254,6 @@ export default function HomePage() {
         }
 
         ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
-        ctx.fillStyle = '#ffffff';
         ctx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
       }
 
