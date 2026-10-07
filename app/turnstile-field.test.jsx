@@ -4,28 +4,26 @@ import '@testing-library/jest-dom/vitest';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./turnstile-loader', () => ({
-  loadTurnstile: vi.fn(),
-}));
+vi.mock('@marsidev/react-turnstile', () => {
+  return {
+    Turnstile: vi.fn(({ onSuccess, onError, onExpire, onTimeout, onUnsupported }) => (
+      <div
+        data-testid="turnstile-widget"
+      />
+    ))
+  };
+});
 
+import { Turnstile } from '@marsidev/react-turnstile';
 import TurnstileField from './turnstile-field';
-import { loadTurnstile } from './turnstile-loader';
 
 describe('TurnstileField', () => {
-  let turnstile;
-
   beforeEach(() => {
-    turnstile = {
-      render: vi.fn(() => 'widget-1'),
-      reset: vi.fn(),
-      remove: vi.fn(),
-    };
-    vi.mocked(loadTurnstile).mockResolvedValue(turnstile);
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
     cleanup();
-    vi.clearAllMocks();
   });
 
   it('keeps the submit button disabled until a valid token is returned', async () => {
@@ -37,14 +35,12 @@ describe('TurnstileField', () => {
     );
 
     const submitButton = screen.getByRole('button', { name: 'Send' });
-
-    await waitFor(() => expect(turnstile.render).toHaveBeenCalledTimes(1));
     expect(submitButton).toBeDisabled();
 
-    const options = turnstile.render.mock.calls[0][1];
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
 
     act(() => {
-      options.callback('valid-token');
+      turnstileMock.onSuccess('valid-token');
     });
 
     await waitFor(() => expect(submitButton).toBeEnabled());
@@ -55,7 +51,7 @@ describe('TurnstileField', () => {
     expect(screen.getByText('Security check verified.')).toBeInTheDocument();
   });
 
-  it('clears the token on expiry and resets a timed-out widget', async () => {
+  it('clears the token on expiry and sets status to loading', async () => {
     render(
       <form>
         <TurnstileField siteKey="site-key" submitButtonId="submit" />
@@ -63,35 +59,36 @@ describe('TurnstileField', () => {
       </form>,
     );
 
-    await waitFor(() => expect(turnstile.render).toHaveBeenCalledTimes(1));
-
-    const options = turnstile.render.mock.calls[0][1];
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
 
     act(() => {
-      options.callback('valid-token');
+      turnstileMock.onSuccess('valid-token');
     });
 
     await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
 
     act(() => {
-      options['expired-callback']();
-      options['timeout-callback']();
+      turnstileMock.onExpire();
     });
 
     await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled());
     expect(screen.queryByDisplayValue('valid-token')).not.toBeInTheDocument();
-    expect(turnstile.reset).toHaveBeenCalledWith('widget-1');
+    expect(screen.getByText('Security check loading, please wait a moment.')).toBeInTheDocument();
   });
 
   it('shows an error state when the client integration fails', async () => {
-    vi.mocked(loadTurnstile).mockRejectedValueOnce(new Error('network'));
-
     render(
       <form>
         <TurnstileField siteKey="site-key" submitButtonId="submit" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
+
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
+
+    act(() => {
+      turnstileMock.onError();
+    });
 
     await waitFor(() =>
       expect(
@@ -104,18 +101,53 @@ describe('TurnstileField', () => {
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 
-  it('removes the widget when the component unmounts', async () => {
-    const { unmount } = render(
+  it('clears the token and resets the widget on timeout', async () => {
+    render(
       <form>
         <TurnstileField siteKey="site-key" submitButtonId="submit" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
 
-    await waitFor(() => expect(turnstile.render).toHaveBeenCalledTimes(1));
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
 
-    unmount();
+    act(() => {
+      turnstileMock.onSuccess('valid-token');
+    });
 
-    expect(turnstile.remove).toHaveBeenCalledWith('widget-1');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
+
+    act(() => {
+      turnstileMock.onTimeout();
+    });
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled());
+    expect(screen.queryByDisplayValue('valid-token')).not.toBeInTheDocument();
+    expect(screen.getByText('Security check loading, please wait a moment.')).toBeInTheDocument();
+  });
+
+  it('shows an error state when the browser is unsupported', async () => {
+    render(
+      <form>
+        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <button id="submit" type="submit">Send</button>
+      </form>,
+    );
+
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
+
+    act(() => {
+      turnstileMock.onUnsupported();
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
+        ),
+      ).toBeInTheDocument(),
+    );
+
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 });
