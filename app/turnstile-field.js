@@ -38,8 +38,6 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
           sitekey: siteKey,
           theme: 'auto',
           'refresh-expired': 'auto',
-          retry: 'auto',
-          'retry-interval': 8000,
           'response-field': false,
           callback: (newToken) => {
             if (cancelled) {
