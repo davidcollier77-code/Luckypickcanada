@@ -414,7 +414,6 @@ export default function HomePage() {
         </SectionHeading>
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
           <article className="homepage-offer homepage-offer-featured">
-            <img className="homepage-offer-image" src="/1784862459046.png" alt="Personalized Lucky Pick card artwork" width="704" height="1524" loading="lazy" />
             <p className="homepage-offer-kicker">$1 Lucky Pick</p>
             <h3 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Make your moment personal.</h3>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Ready for today’s pick? Discover a fresh set of lucky numbers and see what combination finds its way to you.</p>

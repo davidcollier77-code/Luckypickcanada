@@ -8,7 +8,6 @@ export const DEFAULT_THEME = Object.freeze({
   assets: Object.freeze({
     logo: '/BackgroundEraser_20260724_163638777.png',
     heroCards: Object.freeze([
-      '/1784862459046.png',
       '/1784889264858.png',
       '/1784931654864.png',
     ]),

@@ -27,3 +27,5 @@
 - **Turnstile Environment Fix**: Fixed a bug where Cloudflare Turnstile public form protection failed ("Spam check is not configured") after homepage restructuring due to `NEXT_PUBLIC_TURNSTILE_SITE_KEY` not being properly inlined into statically built client chunks. Solved by mapping the variable explicitly in `nextConfig.env`.
 
 - **Spec Kit updater manifest integrity repair**: Verified the updater CLI setup is now functional and that Run #11 was blocked by five stale generic-integration manifest hashes. Corrected the five recorded SHA-256 values for the managed Jules Spec Kit command files without enabling force or changing the updater workflow. Final end-to-end scheduled/manual updater execution remains pending merge; manifest-to-file reconciliation is verified on the repair branch.
+
+- **Legacy Meter Artwork Cleanup:** Removed the abandoned `1784862459046.png` artwork from homepage/theme references and deleted the unused public asset; current Lucky Meter functionality was preserved.
