@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@marsidev/react-turnstile', () => {
   return {
-    Turnstile: vi.fn(({ onSuccess, onError, onExpire, onTimeout }) => (
+    Turnstile: vi.fn(({ onSuccess, onError, onExpire, onTimeout, onUnsupported }) => (
       <div
         data-testid="turnstile-widget"
       />
@@ -88,6 +88,56 @@ describe('TurnstileField', () => {
 
     act(() => {
       turnstileMock.onError();
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
+        ),
+      ).toBeInTheDocument(),
+    );
+
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+  });
+
+  it('clears the token and resets the widget on timeout', async () => {
+    render(
+      <form>
+        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <button id="submit" type="submit">Send</button>
+      </form>,
+    );
+
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
+
+    act(() => {
+      turnstileMock.onSuccess('valid-token');
+    });
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
+
+    act(() => {
+      turnstileMock.onTimeout();
+    });
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled());
+    expect(screen.queryByDisplayValue('valid-token')).not.toBeInTheDocument();
+    expect(screen.getByText('Security check loading, please wait a moment.')).toBeInTheDocument();
+  });
+
+  it('shows an error state when the browser is unsupported', async () => {
+    render(
+      <form>
+        <TurnstileField siteKey="site-key" submitButtonId="submit" />
+        <button id="submit" type="submit">Send</button>
+      </form>,
+    );
+
+    const turnstileMock = vi.mocked(Turnstile).mock.calls[0][0];
+
+    act(() => {
+      turnstileMock.onUnsupported();
     });
 
     await waitFor(() =>
