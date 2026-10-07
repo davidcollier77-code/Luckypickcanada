@@ -45,7 +45,6 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
     setError(TURNSTILE_ERROR_MESSAGE);
   }, []);
 
-
   useEffect(() => {
     if (!submitButtonId || !containerRef.current) {
       return undefined;
@@ -98,6 +97,9 @@ export default function TurnstileField({ siteKey, submitButtonId }) {
         options={{
           theme: 'auto',
           responseField: false,
+        }}
+        scriptOptions={{
+          onError,
         }}
         onSuccess={onSuccess}
         onError={onError}
