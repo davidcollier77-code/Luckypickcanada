@@ -13,9 +13,8 @@ const FAQSection = dynamic(() => import('./FAQSection'));
 // Expected impact: Faster initial page load and improved Time to Interactive.
 const CheckoutModal = dynamic(() => import('../checkout-modal'));
 const LuckyRevealPopup = dynamic(() => import('../lucky-reveal-popup'));
-import { TURNSTILE_SITE_KEY } from '../turnstile-config';
 import { DEFAULT_THEME } from '../../themes/default/theme';
-const TurnstileField = dynamic(() => import('../turnstile-field'), { ssr: false });
+import TurnstileField from '../turnstile-field';
 
 function SectionHeading({ eyebrow, id, title, children }) {
   return (
@@ -474,7 +473,7 @@ export default function HomePage() {
           </div>
           <label>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required /></label>
           <label aria-hidden="true" className="suggestion-box-honeypot">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
-          <TurnstileField siteKey={TURNSTILE_SITE_KEY} submitButtonId="suggestion-box-submit" />
+          <TurnstileField submitButtonId="suggestion-box-submit" />
           <button id="suggestion-box-submit" type="submit" onClick={playButtonClick} className="suggestion-btn-glow relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Send suggestion <span aria-hidden="true">→</span></button>
         </form>
       </section>
