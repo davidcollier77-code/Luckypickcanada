@@ -12,7 +12,7 @@ LIBRARY: vercel/next_js
 VERSION: 15.1.7
 USED: YES
 USEFUL: YES
-REASON: Guided the usage of next/dynamic for client-side components to successfully lazy-load Turnstile without breaking SSR logic.
+REASON: Guided the usage of next/dynamic for client-side components to successfully lazy-load Turnstile without breaking SSR logic. Also helped diagnose the next/font/google loader crash in CI by suggesting import reordering to prevent module resolution conflicts during font fetching.
 
 ROUTED JULES/GEMINI DOCUMENT REPORT:
 DOCUMENT: jules_google_docs.md
@@ -39,7 +39,7 @@ REPOSITORY COMPONENT REPORT:
 COMPONENT: app/layout.js
 USED: YES
 USEFUL: YES
-REASON: Centralized the removal of unused assets (homepage image and render-blocking CSS).
+REASON: Centralized the removal of unused assets (homepage image and render-blocking CSS). Reordered next/font/google imports to avoid a known Next.js CI font-loading crash.
 
 COMPONENT: app/lucky-map-of-canada/lucky-map-of-canada.js
 USED: YES
