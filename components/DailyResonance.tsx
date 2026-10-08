@@ -6,8 +6,8 @@ import TwinklingStars from "./TwinklingStars";
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Howl, Howler } from 'howler';
-import gsap from 'gsap';
+
+
 
 import ResonanceButton from './ResonanceButton';
 import { playButtonClick } from '../app/lib/audio';
@@ -28,9 +28,17 @@ interface DailyResonanceProps {
   isCompact?: boolean;
 }
 
+/**
+ * Renders the daily Lucky Meter with an animated, audio-backed resonance reveal.
+ * Persists the daily result in localStorage and shows a countdown to local midnight.
+ *
+ * @param props - Component display options.
+ * @param props.isCompact - Reduces layout spacing and hides the home link; defaults to false.
+ * @returns The interactive Lucky Meter and its reveal results.
+ */
 export default function DailyResonance({ isCompact = false }: DailyResonanceProps) {
 
-  const soundsRef = useRef<Record<string, Howl | null>>({
+  const soundsRef = useRef<Record<string, any>>({
     buildup: null,
     impactMeteor: null,
     impactLightning: null,
@@ -42,20 +50,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     fireworkLaunch: null
   });
 
+  // Sounds will be initialized on first reveal
   useEffect(() => {
-    soundsRef.current = {
-      buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 }),
-      impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 1.0 }),
-      impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
-      impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
-      fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
-      fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'] }),
-      crackle: new Howl({ src: ['/sounds/mixkit-magic-sparkles.mp3'], volume: 0.3, loop: true }),
-      willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0 }),
-      fireworkLaunch: new Howl({ src: ['/sounds/mixkit-firework-whistle.mp3'], volume: 0.5 })
-    };
     return () => {
-       Howler.unload();
        if (timelineRef.current) {
          timelineRef.current.kill();
          timelineRef.current = null;
@@ -63,6 +60,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
          setIsLoading(false);
          setIsRevealing(false);
        }
+       // Unload all Howl instances to prevent audio memory leaks
+       import('howler').then(({ Howler }) => {
+         Howler.unload();
+       });
     };
   }, []);
 
@@ -84,7 +85,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const auroraRef = useRef<AuroraHandle>(null);
   const requestRef = useRef<number>(0);
   const sequenceRef = useRef<number>(0);
-  const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const timelineRef = useRef<any>(null);
   const isAnimatingRef = useRef(false);
   const hasAnimatedRef = useRef(false);
   useEffect(() => { if (auroraRef.current && !isRevealing && !isRevealed) auroraRef.current.setPhase('idle'); }, [isRevealing, isRevealed]);
@@ -147,13 +148,33 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (isLoading) return;
     if (isRevealing) return;
 
-    // Play immediate physical button click sound
-    playButtonClick();
-
+    // Set busy flags BEFORE any async work to prevent double-click race
     isAnimatingRef.current = true;
     setIsLoading(true);
     setIsRevealing(true);
 
+    // Play immediate physical button click sound
+    playButtonClick();
+
+    // Dynamically load heavy visual and audio libraries
+    const { Howl } = await import('howler');
+    const gsapModule = await import('gsap');
+    const gsap = gsapModule.default || gsapModule;
+
+    // Initialize sounds if not already done
+    if (!soundsRef.current.buildup) {
+      soundsRef.current = {
+        buildup: new Howl({ src: ['/freesound_community-starship-rail-gun-charge-35904.mp3'], volume: 0.8 }),
+        impactMeteor: new Howl({ src: ['/dragon-studio-whoosh-cinematic-376875.mp3'], volume: 1.0 }),
+        impactLightning: new Howl({ src: ['/sounds/mixkit-cinematic-impact.mp3'], volume: 1.0 }),
+        impactFireworks: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'], volume: 1.0 }),
+        fireworkBurst: new Howl({ src: ['/freesound_community-fireworks-1-94483.mp3'] }),
+        fireworkBurstAlt: new Howl({ src: ['/sounds/mixkit-magical-impact.mp3'] }),
+        crackle: new Howl({ src: ['/sounds/mixkit-magic-sparkles.mp3'], volume: 0.3, loop: true }),
+        willowCrackle: new Howl({ src: ['/sounds/mixkit-firework-crackle.mp3'], volume: 1.0 }),
+        fireworkLaunch: new Howl({ src: ['/sounds/mixkit-firework-whistle.mp3'], volume: 0.5 })
+      };
+    }
     // Clear previous audio nodes
     // Increment visit counter on explicit user action (spinning the meter)
     fetch('/api/visits', { method: 'POST' })
@@ -206,7 +227,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
 
     // Setup timeline
 
-    const tl = gsap.timeline({
+    const tl = (gsap as any).timeline({
       onComplete: () => {
         isAnimatingRef.current = false;
       }
@@ -1111,7 +1132,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     } flex flex-col items-center justify-center overflow-hidden z-0`}>
       <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
-      <Image src="/images/lucky-meter-night-sky.webp" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" alt="" style={{ objectPosition: "center 40%" }} fill priority />
+      <Image src="/images/lucky-meter-night-sky.webp" alt="" role="presentation" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" style={{ objectPosition: "center 40%" }} fill priority />
       <TwinklingStars />
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />

@@ -103,7 +103,7 @@ const TwinklingStars: React.FC = () => {
         ctx.fill();
       });
 
-      if (!isReducedMotion) {
+      if (!isReducedMotion && !document.hidden) {
         animationFrameId = requestAnimationFrame(draw);
       } else {
         // Draw once if reduced motion
@@ -120,10 +120,20 @@ const TwinklingStars: React.FC = () => {
       }
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animationFrameId);
+      } else {
+        draw();
+      }
+    };
+
     window.addEventListener("resize", handleResize);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       mediaQuery?.removeEventListener?.('change', handleMotionPreferenceChange);
       cancelAnimationFrame(animationFrameId);
     };
