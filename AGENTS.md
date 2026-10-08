@@ -80,6 +80,14 @@ For EVERY task, Jules MUST use:
 No listed system may be silently skipped, substituted, ranked, reinterpreted,
 or marked "N/A".
 
+### SPEC KIT — EXECUTION IS MANDATORY
+
+For EVERY task, Jules MUST execute:
+`/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`.
+Reading Spec Kit files does NOT satisfy this requirement.
+The PR Summary MUST report the actual commands executed and resulting artifacts.
+If Spec Kit cannot be executed, Jules MUST STOP and report the blocker; it MUST NOT bypass it.
+
 ### CONTEXT7
 
 Context7 is NOT a required repository system.
