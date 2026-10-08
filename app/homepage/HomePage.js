@@ -435,7 +435,7 @@ export default function HomePage() {
       <section id="tip-jar-section" className="homepage-section" aria-labelledby="tip-jar-heading">
         <div className="homepage-offer-grid" style={{ gridTemplateColumns: '1fr', maxWidth: '400px', margin: '0 auto' }}>
           <article className="homepage-offer">
-            <img className="homepage-offer-image" src="/1784931654864.png" alt="Lucky Pick tip jar card artwork" width="704" height="1524" loading="lazy" />
+
             <p id="tip-jar-heading" className="homepage-offer-kicker">Keep the lights glowing</p>
             <h2 className="homepage-offer-title text-xl sm:text-2xl font-semibold mb-2">Leave a tip for the journey.</h2>
             <p className="text-[14px] sm:text-[15px] text-white/80 leading-relaxed mb-5">Enjoying Lucky Pick Canada? If you’d like to show a little extra support, the Tip Jar is always here. Completely optional, always appreciated.</p>
