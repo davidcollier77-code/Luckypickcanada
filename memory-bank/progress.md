@@ -31,3 +31,4 @@
 - **Legacy Meter Artwork Cleanup:** Removed the abandoned `1784862459046.png` artwork from homepage/theme references and deleted the unused public asset; current Lucky Meter functionality was preserved.
 
 - **Turnstile Script Load Failure Follow-up:** Added `scriptOptions.onError` handling to `TurnstileField` and a regression test so a Cloudflare Turnstile API script load failure becomes a visible error while protected submit buttons remain disabled. CI verification is pending.
+- Hardened `DailyResonance` audio lifecycle and dynamic imports to prevent global Howler unloads and async unmount races.

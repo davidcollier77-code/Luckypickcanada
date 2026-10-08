@@ -60,10 +60,25 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
          setIsLoading(false);
          setIsRevealing(false);
        }
-       // Unload all Howl instances to prevent audio memory leaks
-       import('howler').then(({ Howler }) => {
-         Howler.unload();
-       });
+       // Unload only the Howl instances owned by this component
+       if (soundsRef.current) {
+         Object.values(soundsRef.current).forEach((sound) => {
+           if (sound && typeof sound.unload === 'function') {
+             sound.unload();
+           }
+         });
+         soundsRef.current = {
+           buildup: null,
+           impactMeteor: null,
+           impactLightning: null,
+           impactFireworks: null,
+           fireworkBurst: null,
+           fireworkBurstAlt: null,
+           crackle: null,
+           willowCrackle: null,
+           fireworkLaunch: null
+         };
+       }
     };
   }, []);
 
@@ -88,6 +103,14 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
   const timelineRef = useRef<any>(null);
   const isAnimatingRef = useRef(false);
   const hasAnimatedRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
   useEffect(() => { if (auroraRef.current && !isRevealing && !isRevealed) auroraRef.current.setPhase('idle'); }, [isRevealing, isRevealed]);
 
 
@@ -157,9 +180,21 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     playButtonClick();
 
     // Dynamically load heavy visual and audio libraries
-    const { Howl } = await import('howler');
-    const gsapModule = await import('gsap');
-    const gsap = gsapModule.default || gsapModule;
+    let Howl, gsap;
+    try {
+      const howlerModule = await import('howler');
+      Howl = howlerModule.Howl;
+      const gsapModule = await import('gsap');
+      gsap = gsapModule.default || gsapModule;
+    } catch (err) {
+      console.error('Failed to load heavy libraries for reveal:', err);
+      isAnimatingRef.current = false;
+      setIsLoading(false);
+      setIsRevealing(false);
+      return;
+    }
+
+    if (!isMountedRef.current) return;
 
     // Initialize sounds if not already done
     if (!soundsRef.current.buildup) {
