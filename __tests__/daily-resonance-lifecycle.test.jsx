@@ -82,7 +82,7 @@ describe('DailyResonance Lifecycle & Audio', () => {
     const { unmount } = render(<DailyResonance isCompact={false} />);
 
     // Trigger reveal to initialize sounds
-    const button = screen.getByText("AWAKEN TODAY'S RESONANCE");
+    const button = screen.getByText("Reveal My Resonance");
     await act(async () => {
       fireEvent.click(button);
       // wait a tick for dynamic imports to resolve
@@ -96,17 +96,17 @@ describe('DailyResonance Lifecycle & Audio', () => {
   });
 
   it('handles dynamic import failures and resets state to allow retry', async () => {
-    // Force import failure
-    const originalImport = global.import;
-    vi.stubGlobal('import', vi.fn((moduleName) => {
-        if (moduleName === 'howler' || moduleName === 'gsap') {
-            return Promise.reject(new Error('Mock network failure'));
-        }
-    }));
+    // Force import failure by resetting the mocks to reject
+    vi.doMock('howler', () => {
+      throw new Error('Mock network failure');
+    });
+    vi.doMock('gsap', () => {
+      throw new Error('Mock network failure');
+    });
 
     render(<DailyResonance isCompact={false} />);
 
-    const button = screen.getByText("AWAKEN TODAY'S RESONANCE");
+    const button = screen.getByText("Reveal My Resonance");
 
     await act(async () => {
       fireEvent.click(button);
@@ -114,8 +114,10 @@ describe('DailyResonance Lifecycle & Audio', () => {
     });
 
     // State should be reset, meaning button is visible again and not stuck on loading/revealing
-    expect(screen.queryByText("AWAKEN TODAY'S RESONANCE")).not.toBeNull();
+    expect(screen.queryByText("Reveal My Resonance")).not.toBeNull();
 
-    vi.unstubAllGlobals();
+    // Reset mocks back to normal
+    vi.doUnmock('howler');
+    vi.doUnmock('gsap');
   });
 });
