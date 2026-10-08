@@ -1124,7 +1124,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     } flex flex-col items-center justify-center overflow-hidden z-0`}>
       <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <Aurora ref={auroraRef} />
-      <Image src="/images/lucky-meter-night-sky.webp" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" alt="" role="presentation" aria-hidden="true" style={{ objectPosition: "center 40%" }} fill priority />
+      <Image src="/images/lucky-meter-night-sky.webp" alt="" role="presentation" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" style={{ objectPosition: "center 40%" }} fill priority />
       <TwinklingStars />
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
