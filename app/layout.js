@@ -1,7 +1,8 @@
+import { Inter, Playfair_Display, Cinzel, Manrope } from 'next/font/google';
 import Link from 'next/link';
+import '../themes/default/index.css';
 import './globals.css';
 
-import { Inter, Playfair_Display, Cinzel, Manrope } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
 const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap', variable: '--font-playfair' });
@@ -57,8 +58,6 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
 
-        <link rel="preload" href="/homepage-hero-lucky-pick-canada.webp" as="image" fetchPriority="high" />
-        <link rel="stylesheet" href="/themes/default/index.css" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
