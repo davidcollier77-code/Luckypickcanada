@@ -176,7 +176,9 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       }
 
       ctx.globalCompositeOperation = 'source-over';
-      animationFrameId = requestAnimationFrame(draw);
+      if (!document.hidden) {
+        animationFrameId = requestAnimationFrame(draw);
+      }
     };
 
     const handleResize = () => {
@@ -187,15 +189,26 @@ const Aurora = forwardRef<AuroraHandle, {}>((props, ref) => {
       draw();
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animationFrameId);
+      } else {
+        cancelAnimationFrame(animationFrameId);
+        draw();
+      }
+    };
+
     initCanvas();
     draw();
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("orientationchange", handleResize);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("orientationchange", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
