@@ -52,6 +52,10 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
          setIsLoading(false);
          setIsRevealing(false);
        }
+       // Unload all Howl instances to prevent audio memory leaks
+       import('howler').then(({ Howler }) => {
+         Howler.unload();
+       });
     };
   }, []);
 
@@ -140,7 +144,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     playButtonClick();
 
     // Dynamically load heavy visual and audio libraries
-    const { Howl, Howler } = await import('howler');
+    const { Howl } = await import('howler');
     const gsapModule = await import('gsap');
     const gsap = gsapModule.default || gsapModule;
 
