@@ -140,6 +140,11 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     if (isLoading) return;
     if (isRevealing) return;
 
+    // Set busy flags BEFORE any async work to prevent double-click race
+    isAnimatingRef.current = true;
+    setIsLoading(true);
+    setIsRevealing(true);
+
     // Play immediate physical button click sound
     playButtonClick();
 
@@ -162,11 +167,6 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
         fireworkLaunch: new Howl({ src: ['/sounds/mixkit-firework-whistle.mp3'], volume: 0.5 })
       };
     }
-
-    isAnimatingRef.current = true;
-    setIsLoading(true);
-    setIsRevealing(true);
-
     // Clear previous audio nodes
     // Increment visit counter on explicit user action (spinning the meter)
     fetch('/api/visits', { method: 'POST' })
