@@ -28,6 +28,14 @@ interface DailyResonanceProps {
   isCompact?: boolean;
 }
 
+/**
+ * Renders the daily Lucky Meter with an animated, audio-backed resonance reveal.
+ * Persists the daily result in localStorage and shows a countdown to local midnight.
+ *
+ * @param props - Component display options.
+ * @param props.isCompact - Reduces layout spacing and hides the home link; defaults to false.
+ * @returns The interactive Lucky Meter and its reveal results.
+ */
 export default function DailyResonance({ isCompact = false }: DailyResonanceProps) {
 
   const soundsRef = useRef<Record<string, any>>({
