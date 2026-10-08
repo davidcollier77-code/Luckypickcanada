@@ -2,7 +2,8 @@
 import { playButtonClick } from '../lib/audio';
 
 import Image from 'next/image';
-import TurnstileField from '../turnstile-field';
+import dynamic from 'next/dynamic';
+const TurnstileField = dynamic(() => import('../turnstile-field'), { ssr: false });
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import { DEFAULT_MAP_THEME } from '../../themes/default/map-theme';
 
@@ -233,7 +234,7 @@ export default function LuckyMapOfCanada({ mapData }) {
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <a href="/" className="home-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.55rem 0.8rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.26)', background: 'rgba(1, 4, 3, 0.54)' }}>
-            <Image src={DEFAULT_THEME.assets.logo} alt="LuckyPickCanada logo with maple leaf" width={40} height={40} sizes="40px" quality={85} priority style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
+            <Image src={"/map-logo-small.png"} alt="LuckyPickCanada logo with maple leaf" width={40} height={40} sizes="40px" quality={85} style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
             Back to Home Page
           </a>
         </nav>

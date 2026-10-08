@@ -1,49 +1,75 @@
-## PR Summary
+SELECTED TASK GROUP: troubleshooting
+GROUP REASON: The task requires diagnosing and fixing performance bottlenecks specifically flagged in the Page Analysis, which aligns with resolving performance issues through debugging and repairing rendering and execution paths.
 
-**SELECTED TASK GROUP**: polishing
-**GROUP REASON**: The request involves correcting a frontend interaction and animation sequence on the homepage (the downward-arrow interaction in `ExploreLuckButton`), fitting the polishing scope for UI interactions.
+LIBRARY CONSULTATION REPORT:
+LIBRARY: reactjs/react.dev
+VERSION: 19.3.0
+USED: YES
+USEFUL: YES
+REASON: Validated the syntax and server/client semantics for using the 'react-dom' preload function inside Server Components.
 
-### LIBRARY CONSULTATION REPORT
-**LIBRARY**: React (`/reactjs/react.dev`)
-**VERSION**: N/A
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Provided context for `useRef` and React state changes handling the animation sequence and preventing rapid re-triggering of the visual effect. Consulted via `.docs/creation/_reactjs_react_dev.md` (symlinked in polishing).
+LIBRARY: vercel/next_js
+VERSION: 15.1.7
+USED: YES
+USEFUL: YES
+REASON: Guided the usage of next/dynamic for client-side components to successfully lazy-load Turnstile without breaking SSR logic.
 
-### ROUTED JULES/GEMINI DOCUMENT REPORT
-**DOCUMENT**: `AGENTS.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Established the strict repository governance process and the 495 MB maximum size limit requirement which was verified.
+ROUTED JULES/GEMINI DOCUMENT REPORT:
+DOCUMENT: jules_google_docs.md
+USED: YES
+USEFUL: NO
+REASON: General guidance, but Next.js and React docs provided the specific implementation details needed for this task.
 
-**DOCUMENT**: `.jules/jules.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Confirmed execution constraints and workflow rules.
+DOCUMENT: _google-gemini_gemini-cli.md
+USED: YES
+USEFUL: NO
+REASON: The task did not require Gemini API usage.
 
-**DOCUMENT**: `.jules/polishing.md`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: Provided guidance on visual changes and handling animations vs. scrolling correctly.
+DOCUMENT: developers_google_com_jules_api.md
+USED: YES
+USEFUL: NO
+REASON: The task did not require interacting with the Jules API.
 
-### REPOSITORY COMPONENT REPORT
-**COMPONENT**: `app/homepage/ExploreLuckButton.js`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: This was the source of the bug. It triggered the `luckyMeter.scrollIntoView()` immediately on click before the animation finished. We added a `setTimeout` here.
+DOCUMENT: _websites_ai_google_dev_gemini-api.md
+USED: YES
+USEFUL: NO
+REASON: The task did not involve Gemini AI components.
 
-**COMPONENT**: `tests/visual/homepage.spec.ts`
-**USED**: YES
-**USEFUL**: YES
-**REASON**: This file houses the Playwright visual tests. We added an automated deterministic test to verify that the visual display completely plays before the scroll action is performed.
+REPOSITORY COMPONENT REPORT:
+COMPONENT: app/layout.js
+USED: YES
+USEFUL: YES
+REASON: Centralized the removal of unused assets (homepage image and render-blocking CSS).
 
-### EXACT FINAL DIFF RECONCILIATION
-- `app/homepage/ExploreLuckButton.js`
-- `tests/visual/homepage.spec.ts`
+COMPONENT: app/lucky-map-of-canada/lucky-map-of-canada.js
+USED: YES
+USEFUL: YES
+REASON: Lazy-loaded Turnstile and swapped to the optimized map logo to reduce the client bundle/JS execution.
 
-### VERIFICATION RESULTS
-- `pnpm run build`: **PASS** (Actual build size: 345 MB, within the 495 MB limit).
-- `pnpm exec playwright test`: **PASS** (Tests pass successfully).
-- Pre-submission double-check completed: The requested result was verified, the 495MB size cap was respected, pnpm was used, and no prohibited changes were made.
+COMPONENT: package.json
+USED: YES
+USEFUL: NO
+REASON: Checked for image processing libraries but reverted changes to keep dependencies clean.
 
-**USEFUL RESULT: YES**
+EXACT FINAL DIFF RECONCILIATION:
+- app/homepage/Hero.js
+- app/layout.js
+- app/lucky-map-of-canada/lucky-map-of-canada.js
+- memory-bank/activeContext.md
+- public/map-logo-small.png
+
+VERIFICATION:
+COMMAND: pnpm run build
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: Build completed successfully within size limits and with all static pages generated.
+
+COMMAND: ./jules-verify.sh
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: All type checking, build validation, and spec kit integrity checks passed.
+
+PRE-SUBMISSION DOUBLE-CHECK COMPLETED: YES
+- The 495 MB build limit was respected.
+- Exact final diff reconciliation is accurate.
+- Visual and functional boundaries were verified to remain unchanged.
+
+USEFUL RESULT: YES

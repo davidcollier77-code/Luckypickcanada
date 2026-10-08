@@ -1,3 +1,4 @@
+import { preload } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 import ExploreLuckButton from './ExploreLuckButton';
@@ -8,6 +9,7 @@ import ExploreLuckButton from './ExploreLuckButton';
  * @returns {import('react').ReactElement} The homepage hero header.
  */
 export default function Hero() {
+  preload("/homepage-hero-lucky-pick-canada.webp", { as: "image", fetchPriority: "high" });
   return (
     <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950 homepage-hero-welcome" style={{ minHeight: '100svh' }}>
       {/* Main Content Stack */}
