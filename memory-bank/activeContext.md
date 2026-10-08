@@ -9,5 +9,4 @@
 - Removed the abandoned legacy Lucky Meter artwork from the homepage/theme asset references and deleted its unused public asset. The current Lucky Meter implementation remains unchanged.
 
 - **Current Task (SEO):** Cleaned up SEO configuration based on the October 2026 SEO audit. Fixed 3 non-indexable URLs in `sitemap.js` (`/about`, `/privacy`, `/terms`) by adding missing canonicals (`/about`) and explicitly applying `robots: { index: false }` (`/privacy`, `/terms`) to exclude them from indexing, subsequently removing them from the sitemap. Resolved duplicate meta-description issues by applying unique meta descriptions to indexable pages (`/crystal-ball`, `/lucky-meter`, `/map`, `/reveal`).
-
-- **Current Task (Turnstile Script Load Failure Handling):** Implemented a minimal client-side recovery path by wiring `@marsidev/react-turnstile` script-level `onError` into the existing protected-form error state and added regression coverage. CI verification is pending.
+- **Current Task (Polishing):** Cleaned up the stale Lucky Meter artwork reference (`1784931654864.png`) from the Tip Jar component, themes, and public assets while preserving the expected text-and-button visual design of the Tip Jar card.
