@@ -7,7 +7,7 @@ import { fetchTurnstileSiteKey } from './turnstile-actions';
 const TURNSTILE_ERROR_MESSAGE =
   'The security check had a problem. Please use Troubleshoot or refresh, then try again.';
 
-export default function TurnstileField({ submitButtonId }) {
+export default function TurnstileField({ submitButtonId, action }) {
   const containerRef = useRef(null);
   const turnstileRef = useRef(null);
   const [error, setError] = useState('');
@@ -143,6 +143,7 @@ export default function TurnstileField({ submitButtonId }) {
         options={{
           theme: 'auto',
           responseField: false,
+          action: action,
         }}
         scriptOptions={{
           onError,

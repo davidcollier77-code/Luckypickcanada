@@ -32,3 +32,10 @@
 
 - **Turnstile Script Load Failure Follow-up:** Added `scriptOptions.onError` handling to `TurnstileField` and a regression test so a Cloudflare Turnstile API script load failure becomes a visible error while protected submit buttons remain disabled. CI verification is pending.
 - Hardened `DailyResonance` audio lifecycle and dynamic imports to prevent global Howler unloads and async unmount races.
+
+## 2026-10-09 - Turnstile Security Fix
+- Modified `.github/workflows/deploy-open-next.yml` to preserve Cloudflare dashboard variables during deployment.
+- Enhanced server-side validation in `app/spam-protection.js` to ensure the submitted token matches the expected `action` and permitted `hostname` (`luckypickcanada.ca` or `www.luckypickcanada.ca`).
+- Enhanced client-side error handling in `app/turnstile-field.jsx` to forcefully remount the Turnstile widget to trigger genuine script-loading retries.
+- Mapped actions from `app/homepage/HomePage.js` and `app/lucky-map-of-canada/lucky-map-of-canada.js` to the Turnstile fields.
+- Verified `/api/luck-map` currently lacks an active user-facing submission form in the codebase (documented).

@@ -56,7 +56,7 @@ describe('TurnstileField', () => {
   it('keeps the submit button disabled until a valid token is returned', async () => {
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -85,7 +85,7 @@ describe('TurnstileField', () => {
   it('clears the token on expiry and sets status to loading', async () => {
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -116,7 +116,7 @@ describe('TurnstileField', () => {
   it('shows an error state when the Turnstile script fails to load', async () => {
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -143,7 +143,7 @@ describe('TurnstileField', () => {
   it('shows an error state when the client integration fails', async () => {
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -169,7 +169,7 @@ describe('TurnstileField', () => {
   it('clears the token and resets the widget on timeout', async () => {
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -200,7 +200,7 @@ describe('TurnstileField', () => {
   it('shows an error state when the browser is unsupported', async () => {
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -225,7 +225,7 @@ describe('TurnstileField', () => {
   it('allows retrying after an error', async () => {
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -266,7 +266,7 @@ describe('TurnstileField', () => {
     fetchTurnstileSiteKey.mockResolvedValueOnce(null);
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );
@@ -282,7 +282,7 @@ describe('TurnstileField', () => {
     fetchTurnstileSiteKey.mockRejectedValueOnce(new Error('Failed to fetch'));
     render(
       <form>
-        <TurnstileField submitButtonId="submit" />
+        <TurnstileField submitButtonId="submit" action="test-action" />
         <button id="submit" type="submit">Send</button>
       </form>,
     );

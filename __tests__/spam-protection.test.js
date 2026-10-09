@@ -42,7 +42,7 @@ beforeEach(async () => {
   redis.eval.mockResolvedValue(1);
   redis.get.mockResolvedValue(null);
   redis.set.mockResolvedValue('OK');
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) }));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true, hostname: 'luckypickcanada.ca', action: 'suggestions' }) }));
   errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   protection = await import('../app/spam-protection');

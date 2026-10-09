@@ -1,0 +1,7 @@
+fix: permanent fix and hardening for Cloudflare Turnstile
+
+- Update GitHub Actions workflow (`deploy-open-next.yml`) to add `--keep-vars` to `pnpm exec wrangler deploy`, preventing subsequent deployments from wiping Cloudflare dashboard variables (including the Turnstile site key).
+- Harden server-side Turnstile verification in `app/spam-protection.js` to strictly enforce `hostname` (only allowing `luckypickcanada.ca` and `www.luckypickcanada.ca`) and `action`.
+- Enhance Turnstile error recovery in `app/turnstile-field.jsx` by implementing a `retryKey` to forcefully unmount and remount the widget. This ensures real script-load retries instead of no-op resets when the Turnstile API fails to load.
+- Map distinct `action` props (`suggestion-box`, `lucky-stories`) from active forms to Turnstile validation.
+- Add comprehensive Vitest coverage for Turnstile server-side verification in `app/spam-protection.test.js`.

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, act, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import DailyResonance from '../components/DailyResonance';
 import * as audioLib from '../app/lib/audio';
@@ -110,7 +110,9 @@ describe('DailyResonance Lifecycle & Audio', () => {
 
     await act(async () => {
       fireEvent.click(button);
-      await new Promise(r => setTimeout(r, 0)); // let the try/catch run
+      await waitFor(() => {
+        expect(screen.queryByText("Reveal My Resonance")).not.toBeNull();
+      });
     });
 
     // State should be reset, meaning button is visible again and not stuck on loading/revealing
