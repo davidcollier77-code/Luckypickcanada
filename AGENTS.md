@@ -36,15 +36,12 @@ After AGENTS.md, read .jules/jules.md and follow its initialization, working,
 Memory Bank, and completion requirements.
 
 ## 3. Required repository systems
-For every task, use and inspect the relevant content in:
+For every task, read and follow all required guidance in:
 - memory-bank/ and its required files
 - CSS_FIX_GUIDE.md, DATABASE_SETUP.md, DEPLOYMENT_CHECKLIST.md,
   QUICK_FIX_GUIDE.md
 - every .jules/*.md and .jules/cmds/*.md, including .jules/cmds/speckit.*.md
-- .specify/
-- .specify/workflows/speckit/workflow.yml
-- .specify/memory/constitution.md
-- .specify/integrations/speckit.manifest.json
+- .specify/, its workflow, constitution, integration manifest, and active feature
 - relevant source, configuration, tests, and dependencies
 - all other guidance routed by this file
 
