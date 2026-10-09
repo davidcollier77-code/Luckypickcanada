@@ -82,11 +82,24 @@ or marked "N/A".
 
 ### SPEC KIT — EXECUTION IS MANDATORY
 
-For EVERY task, Jules MUST execute:
-`/speckit.specify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.implement`.
-Reading Spec Kit files does NOT satisfy this requirement.
-The PR Summary MUST report the actual commands executed and resulting artifacts.
-If Spec Kit cannot be executed, Jules MUST STOP and report the blocker; it MUST NOT bypass it.
+For EVERY Jules task—application, CI/CD, documentation, maintenance, or otherwise—Jules MUST complete the core Spec Kit sequence in this order:
+
+1. `/speckit.specify` — definition file: `.jules/cmds/speckit.specify.md`
+2. `/speckit.plan` — definition file: `.jules/cmds/speckit.plan.md`
+3. `/speckit.tasks` — definition file: `.jules/cmds/speckit.tasks.md`
+4. `/speckit.implement` — definition file: `.jules/cmds/speckit.implement.md`
+
+The active Spec Kit integration is `generic`; `.specify/integration.json` configures its command directory as `.jules/cmds` and its invocation separator as `.`. These Markdown files are agent command definitions, not shell executables.
+
+- If the current Jules interface natively dispatches these commands, invoke them in order.
+- If native slash-command dispatch is not available, open the corresponding definition file and carry out its full procedure in order, including required setup scripts, generated artifacts, checks, and handoffs/approval gates. Merely reading a file, listing a command, or writing a plan from memory does NOT count as execution.
+- Do NOT skip the sequence because a task is small or is classified as CI/CD, documentation, troubleshooting, maintenance, or another task type. Keep artifacts concise and scoped to the actual task.
+- Complete or update the active feature's `spec.md`, `plan.md`, and `tasks.md`, and implement the resulting approved tasks. Keep `.specify/feature.json` pointing to that active feature directory.
+- If command execution or a required approval gate genuinely cannot proceed, STOP and report the exact blocker; do not bypass it.
+
+The PR Summary MUST report each stage's command identifier, exact definition-file path, actual execution method (`NATIVE DISPATCH` or `FILE-DRIVEN PROCEDURAL EXECUTION`), outcome, and exact resulting artifact paths. Jules MUST NOT claim a slash command was natively invoked unless it actually was.
+
+Jules MUST run `./jules-verify.sh` before reporting the task complete. That script now fails closed when the active Spec Kit feature pointer or any required `spec.md`, `plan.md`, or `tasks.md` artifact is missing or invalid. Do not skip or spoof that gate.
 
 ### CONTEXT7
 
