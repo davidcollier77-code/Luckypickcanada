@@ -1,8 +1,8 @@
 <!--
 Sync Impact Report:
-Version change: 0.0.0 -> 1.0.0
-Modified principles: Populated all placeholder templates with LuckyPickCanada principles aligned with AGENTS.md.
-Added sections: Technology Stack & Constraints, Development Workflow.
+Version change: 1.0.0 -> 1.1.0
+Modified sections: Development Workflow aligned with mandatory Spec Kit execution in AGENTS.md; clarified file-driven execution when native slash-command dispatch is unavailable.
+Added sections: None.
 Removed sections: None.
 Follow-up TODOs: None.
 -->
@@ -31,7 +31,7 @@ The primary application is a Next.js App Router project deployed on Cloudflare P
 
 ## Development Workflow
 
-- **Specification**: Use the existing Spec Kit installation (`.specify/` and `.jules/cmds/speckit.*.md`) for structured feature specification and planning when required by the task scope.
+- **Specification**: Every Jules task MUST complete the core Spec Kit sequence—specify, plan, tasks, and implement—using `.specify/` and the matching `.jules/cmds/speckit.*.md` definition files, regardless of task type or size. Keep outputs concise and task-scoped, but do not waive the sequence based on scope. When native slash-command dispatch is unavailable, carry out the matching Markdown command definition directly and report that execution method accurately.
 - **Testing**: Use Playwright for browser/user-facing verification. Use `act` and `./jules-verify.sh` for local workflow/CI validation.
 - **Troubleshooting**: Apply the Scientific Debugging & Verification Protocol. Fix the verified problem; do not turn a repair task into an audit-only task.
 
@@ -42,4 +42,4 @@ This Constitution provides the durable principles for the Spec Kit workflow whil
 - Do not create Copilot instructions or secondary governance systems.
 - Any changes to these principles or the overall architecture must be authorized by the repository owner.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-11 | **Last Amended**: 2026-09-11
+**Version**: 1.1.0 | **Ratified**: 2026-09-11 | **Last Amended**: 2026-10-09
