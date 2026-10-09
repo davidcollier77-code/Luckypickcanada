@@ -306,7 +306,7 @@ Projects, branches, computes, roles, databases, and organization settings.
 
 Step-by-step integration guides for frameworks, ORMs, auth providers, and deployment platforms.
 
-- [All 169 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
+- [All 168 Guides pages](https://neon.com/docs/guides/llms.txt) — key pages below
 
 - [Connect a Next.js application to Neon](https://neon.com/docs/guides/nextjs.md): Set up a Neon project in seconds and connect from a Next.js application
 - [Connect from Prisma to Neon](https://neon.com/docs/guides/prisma.md): Learn how to connect to Neon from Prisma
