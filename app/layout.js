@@ -1,13 +1,8 @@
-import { Inter, Playfair_Display, Cinzel, Manrope } from 'next/font/google';
 import Link from 'next/link';
 import '../themes/default/index.css';
 import './globals.css';
 
 
-const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
-const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap', variable: '--font-playfair' });
-const cinzel = Cinzel({ subsets: ['latin'], display: 'swap', variable: '--font-cinzel', weight: ['600', '700', '800', '900'] });
-const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-manrope', weight: ['400', '500', '600', '700', '800'] });
 
 const siteUrl = 'https://luckypickcanada.ca';
 const socialImage = '/1785347037732.png';
@@ -54,8 +49,23 @@ export const viewport = {
  */
 export default function RootLayout({ children }) {
   return (
-    <html lang="en-CA" className={`m-0 p-0 ${inter.variable} ${playfair.variable} ${cinzel.variable} ${manrope.variable}`}>
+    <html
+      lang="en-CA"
+      className="m-0 p-0"
+      style={{
+        '--font-inter': '"Inter", sans-serif',
+        '--font-playfair': '"Playfair Display", serif',
+        '--font-cinzel': '"Cinzel", serif',
+        '--font-manrope': '"Manrope", sans-serif',
+      }}
+    >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@100..900&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@400..900&display=swap"
+        />
         <link rel="preconnect" href="https://challenges.cloudflare.com" />
 
         <script
