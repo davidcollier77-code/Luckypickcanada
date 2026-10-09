@@ -1,7 +1,20 @@
-fix: permanent fix and hardening for Cloudflare Turnstile
+feat: add automated reviewer assignment and notifications to updater workflows
 
-- Update GitHub Actions workflow (`deploy-open-next.yml`) to add `--keep-vars` to `pnpm exec wrangler deploy`, preventing subsequent deployments from wiping Cloudflare dashboard variables (including the Turnstile site key).
-- Harden server-side Turnstile verification in `app/spam-protection.js` to strictly enforce `hostname` (only allowing `luckypickcanada.ca` and `www.luckypickcanada.ca`) and `action`.
-- Enhance Turnstile error recovery in `app/turnstile-field.jsx` by implementing a `retryKey` to forcefully unmount and remount the widget. This ensures real script-load retries instead of no-op resets when the Turnstile API fails to load.
-- Map distinct `action` props (`suggestion-box`, `lucky-stories`) from active forms to Turnstile validation.
-- Add comprehensive Vitest coverage for Turnstile server-side verification in `app/spam-protection.test.js`.
+Adds automatic reviewer assignment and notification logic to the two
+automated updater workflows:
+1. Document Library Updater (.github/workflows/refresh-docs.yml)
+2. Spec Kit Updater (.github/workflows/update-spec-kit.yml)
+
+Changes:
+- Added `issues: write` permission to both workflows to allow PR commenting.
+- refresh-docs.yml:
+  - Updates `gh pr create` to use `--reviewer davidcollier77-code`.
+  - Added logic to fall back to a comment mention if reviewer assignment fails.
+  - Added logic for when PR is updated via force-push: detects if a comment containing `<!-- notify-update:$COMMIT_SHA -->` exists, and if not, comments tagging the owner that the PR is ready for review.
+- update-spec-kit.yml:
+  - Adds `reviewers: "davidcollier77-code"` to `peter-evans/create-pull-request` parameters.
+  - Checks outputs (`steps.cpr.outputs.pull-request-operation`) to conditionally execute two new steps:
+    - If updated: uses GitHub CLI to add a comment with `<!-- notify-update:$COMMIT_SHA -->` if one hasn't been posted yet for that commit.
+    - If created: verifies that a review request was attached and falls back to a comment mention if it wasn't.
+
+Fixes the issue where automated PR updates go unnoticed.
