@@ -1,1 +1,0 @@
-fix: permanent fix and hardening for Cloudflare Turnstile

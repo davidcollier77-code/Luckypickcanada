@@ -1,10 +1,11 @@
-- **Current Task:** Fix SEO issues: Correct heading hierarchy and fix duplicate meta descriptions.
+- **Current Task:** Fix Turnstile loading delays and Suggestion Box false success states.
 - **Findings:**
-  - The SEO audit identified that pages were beginning with an `H2` before an `H1`. The `app/page.js` homepage had an `H1` at the very bottom, while intermediate sections used `H2` tags.
-  - The audit also identified 3 pages with duplicate meta descriptions (`app/layout.js`, `app/lucky-map-of-canada/page.js`, and `app/where-luck-has-been-found-in-canada/page.js`).
+  - "Spam check is not configured" was caused by `keyError` rendering early and bypassing `containerRef` entirely, detaching the button disable logic and allowing unverified submission attempts.
+  - Initializing Turnstile via a Server Action caused a text flash and network latency; the site key is available immediately as a build-time constant.
+  - The false Suggestion Box success message was caused by stale `?suggested=1` URL query parameters surviving page reloads.
 - **Actions Taken:**
-  - In `app/page.js`, changed the bottom `<h1 style={{...}}>About Lucky Pick Canada</h1>` to an `<h2 style={{...}}>`.
-  - In `app/homepage/Hero.js`, added `<h1 className="sr-only">Lucky Pick Canada</h1>` so the page begins with a proper semantically hidden H1.
-  - In `app/lucky-map-of-canada/page.js`, changed the meta description to a distinct, relevant description about viewing community-shared stories.
-  - In `app/where-luck-has-been-found-in-canada/page.js`, changed the meta description to focus on discovering where luck has been found in Canada via the interactive map.
-  - Ran visual regression tests, linter, type checks, and build process. The 495 MB build limit is respected (366M output). Pre-submission double-checks were completed successfully.
+  - Updated `TurnstileField` to import `TURNSTILE_SITE_KEY` synchronously, removing the loading text flash.
+  - Wrapped `TurnstileField` returns inside a persistent `containerRef` div, ensuring the submit button disable `useEffect` cannot be bypassed if initialization fails.
+  - Updated `HomePage` to safely remove `suggested` and `suggestionError` URL parameters using `replaceState` on mount.
+  - Updated Turnstile unit tests to assert the correct button-disable state during fetch failures.
+  - Passed all verification checks (`pnpm test`, build size < 495MB, Playwright visual tests, `jules-verify.sh`).

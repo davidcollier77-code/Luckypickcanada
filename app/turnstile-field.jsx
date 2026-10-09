@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { fetchTurnstileSiteKey } from './turnstile-actions';
+import { TURNSTILE_SITE_KEY } from './turnstile-config';
 
 const TURNSTILE_ERROR_MESSAGE =
   'The security check had a problem. Please use Troubleshoot or refresh, then try again.';
@@ -13,12 +14,13 @@ export default function TurnstileField({ submitButtonId, action }) {
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('loading');
-  const [siteKey, setSiteKey] = useState(null);
+  const [siteKey, setSiteKey] = useState(TURNSTILE_SITE_KEY);
   const [keyError, setKeyError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     async function loadKey() {
+      if (TURNSTILE_SITE_KEY) return;
       try {
         const key = await fetchTurnstileSiteKey();
         if (isMounted) {
@@ -95,7 +97,7 @@ export default function TurnstileField({ submitButtonId, action }) {
     }
 
     // Submit button disabled logic correctly handles siteKey loading state
-    submitButton.disabled = !token;
+    submitButton.disabled = status !== 'verified' || !token;
 
     const preventUnverifiedSubmit = (event) => {
       if (token) {
@@ -118,24 +120,16 @@ export default function TurnstileField({ submitButtonId, action }) {
     };
   }, [status, submitButtonId, token, siteKey]);
 
-  if (keyError) {
-    return (
-      <p style={{ margin: 0, padding: '0.75rem 1rem', borderRadius: 14, background: 'rgba(185, 28, 28, 0.16)', color: '#fecaca', border: '1px solid rgba(239, 68, 68, 0.36)', fontWeight: 700 }}>
-        Spam check is not configured. Please try again later.
-      </p>
-    );
-  }
-
-  if (!siteKey) {
-    return (
-      <div style={{ display: 'grid', gap: '0.45rem' }} ref={containerRef}>
-        <p role="status" style={{ margin: 0, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 700 }}>Initializing security check...</p>
-      </div>
-    );
-  }
-
   return (
     <div style={{ display: 'grid', gap: '0.45rem' }} ref={containerRef}>
+      {keyError ? (
+        <p style={{ margin: 0, padding: '0.75rem 1rem', borderRadius: 14, background: 'rgba(185, 28, 28, 0.16)', color: '#fecaca', border: '1px solid rgba(239, 68, 68, 0.36)', fontWeight: 700 }}>
+          Spam check is not configured. Please try again later.
+        </p>
+      ) : !siteKey ? (
+        <p role="status" style={{ margin: 0, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 700 }}>Initializing security check...</p>
+      ) : (
+        <>
       <input type="hidden" name="cf-turnstile-response" value={token} readOnly />
       <Turnstile
         ref={turnstileRef}
@@ -165,6 +159,8 @@ export default function TurnstileField({ submitButtonId, action }) {
       <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255, 247, 214, 0.72)', lineHeight: 1.45 }}>
         Complete this quick check before sending. It helps keep spam out without affecting checkout or payment processing.
       </p>
+        </>
+      )}
     </div>
   );
 }
