@@ -224,6 +224,24 @@ async function checkDuplicateSubmission({ formName, ip, fields }) {
 async function verifyTurnstile({ token, ip, formName }) {
   const siteKey = getTurnstileSiteKey();
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
+  
+  // Parse permitted hostnames from environment variable or use production defaults
+  const hostnamesEnv = process.env.TURNSTILE_PERMITTED_HOSTNAMES;
+  let permittedHostnames;
+  
+  if (hostnamesEnv) {
+    permittedHostnames = hostnamesEnv
+      .split(',')
+      .map(h => h.trim())
+      .filter(h => h.length > 0);
+    
+    if (permittedHostnames.length === 0) {
+      console.error('TURNSTILE_PERMITTED_HOSTNAMES is configured but contains no valid hostnames', { formName });
+      return { ok: false, error: 'This form is temporarily unavailable. Please try again later.' };
+    }
+  } else {
+    permittedHostnames = ['luckypickcanada.ca', 'www.luckypickcanada.ca'];
+  }
 
   if (!siteKey) {
     console.error('Turnstile site key is missing for public form spam protection', { formName });
@@ -261,7 +279,7 @@ async function verifyTurnstile({ token, ip, formName }) {
 
     const result = await response.json();
 
-    if (result.hostname !== "luckypickcanada.ca" && result.hostname !== "www.luckypickcanada.ca") {
+    if (!permittedHostnames.includes(result.hostname)) {
       await recordSpamAttempt({ formName, ip, reason: "turnstile_invalid_hostname" });
       return { ok: false, error: "Spam check failed. Please try again." };
     }

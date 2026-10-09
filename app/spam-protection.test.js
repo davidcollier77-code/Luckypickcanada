@@ -7,7 +7,6 @@ vi.mock('./turnstile-config', () => ({
 }));
 
 describe('spam-protection', () => {
-  const originalFetch = global.fetch;
 
   beforeEach(() => {
     vi.clearAllMocks();
