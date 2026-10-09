@@ -53,10 +53,10 @@ export default function RootLayout({ children }) {
       lang="en-CA"
       className="m-0 p-0"
       style={{
-        '--font-inter': '"Inter", sans-serif',
-        '--font-playfair': '"Playfair Display", serif',
-        '--font-cinzel': '"Cinzel", serif',
-        '--font-manrope': '"Manrope", sans-serif',
+        '--font-inter': '"Inter"',
+        '--font-playfair': '"Playfair Display"',
+        '--font-cinzel': '"Cinzel"',
+        '--font-manrope': '"Manrope"',
       }}
     >
       <head>
