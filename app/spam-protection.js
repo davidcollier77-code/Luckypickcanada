@@ -261,6 +261,17 @@ async function verifyTurnstile({ token, ip, formName }) {
 
     const result = await response.json();
 
+    if (result.hostname !== "luckypickcanada.ca" && result.hostname !== "www.luckypickcanada.ca") {
+      await recordSpamAttempt({ formName, ip, reason: "turnstile_invalid_hostname" });
+      return { ok: false, error: "Spam check failed. Please try again." };
+    }
+
+    if (result.action !== formName) {
+      await recordSpamAttempt({ formName, ip, reason: "turnstile_invalid_action" });
+      return { ok: false, error: "Spam check failed. Please try again." };
+    }
+
+
     if (!result.success) {
       await recordSpamAttempt({ formName, ip, reason: `turnstile_failed:${(result['error-codes'] || []).join(',')}` });
       return { ok: false, error: 'Spam check failed. Please try again.' };

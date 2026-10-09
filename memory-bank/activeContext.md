@@ -1,1 +1,7 @@
-- **Current Task (Turnstile Fix):** Resolving the Cloudflare Turnstile "Spam check is not configured" error. The issue was traced to build-time injection failing to provide the `NEXT_PUBLIC_TURNSTILE_SITE_KEY` environment variable in static client chunks. A new Next.js Server Action `fetchTurnstileSiteKey()` in `app/turnstile-actions.js` fetches the configuration safely at runtime. `app/turnstile-field.jsx` was refactored to consume this action via a `useEffect` hook, preserving functionality and existing server-side integration.
+- **Current Task:** Permanent fix and hardening for Cloudflare Turnstile.
+- **Findings:**
+  - Deployment with `pnpm exec wrangler deploy` was overwriting environment variables because `--keep-vars` was not provided. This caused the runtime site key to be stripped after unrelated deployments.
+  - Server-side validation lacked verification of `hostname` and `action`, which is recommended for security.
+  - Client-side retry mechanism via `turnstileRef.current.reset()` was insufficient for genuine script load failures. Remounting the component is necessary.
+  - The `/api/luck-map` endpoint was verified not to have an active user-facing submission form in the `app/` directory (it redirects but is not actively used for new submissions).
+- **Actions Taken:** Added `--keep-vars` to OpenNext deploy workflow, enforced `hostname` and `action` server-side validation, updated `app/turnstile-field.jsx` to use a `retryKey` for remounting and accept an `action` prop, passed the `action` prop from existing forms, and added comprehensive unit tests for server-side validation and the retry mechanism. Playwright visual tests run cleanly.
