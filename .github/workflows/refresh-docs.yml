@@ -31,6 +31,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   refresh:
@@ -97,10 +98,41 @@ jobs:
             # Verify if the PR already exists
             PR_EXISTS=$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number' || echo "")
 
+            # Get the commit SHA to uniquely identify this update
+            COMMIT_SHA=$(git rev-parse HEAD)
+
             if [ -z "$PR_EXISTS" ] || [ "$PR_EXISTS" = "null" ]; then
               # Create the PR if it does not exist
-              gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory.' --base main --head auto/docs-refresh
+              # We attempt to add reviewer using gh pr create natively
+              NEW_PR_URL=$(gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory.' --base main --head auto/docs-refresh --reviewer davidcollier77-code || \
+                          gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory.' --base main --head auto/docs-refresh)
+
+              echo "Created new PR: $NEW_PR_URL"
+
+              # Determine the newly created PR number from the URL
+              # (gh pr create returns the URL, e.g., https://github.com/org/repo/pull/123)
+              NEW_PR_NUM=$(echo "$NEW_PR_URL" | awk -F/ '{print $NF}')
+
+              # Check if a review request was successfully made
+              HAS_REVIEWER=$(gh pr view $NEW_PR_NUM --json reviewRequests -q ".reviewRequests | length" || echo "0")
+
+              if [ "$HAS_REVIEWER" = "0" ]; then
+                # Fallback to comment mention if reviewer assignment wasn't possible
+                gh pr comment $NEW_PR_NUM --body "@davidcollier77-code A new Documentation Library update PR has been created and is ready for review."
+              fi
             else
               echo "PR #$PR_EXISTS already exists and has been successfully updated via force-push."
+
+              # Ensure the repo owner is notified about the new update to an existing PR
+              MARKER="<!-- notify-update:$COMMIT_SHA -->"
+
+              # Check if we already commented for this specific commit
+              COMMENT_EXISTS=$(gh pr view $PR_EXISTS --json comments -q ".comments[].body" | grep -F "$MARKER" || echo "")
+
+              if [ -z "$COMMENT_EXISTS" ]; then
+                gh pr comment $PR_EXISTS --body "@davidcollier77-code The Documentation Library update PR has been refreshed with new changes and is ready for review. $MARKER"
+              else
+                echo "Notification for commit $COMMIT_SHA was already posted."
+              fi
             fi
           fi

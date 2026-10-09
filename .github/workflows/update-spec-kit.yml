@@ -13,6 +13,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   update-spec-kit:
@@ -62,6 +63,7 @@ jobs:
           ./jules-verify.sh
 
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -75,3 +77,36 @@ jobs:
           branch: "update/spec-kit"
           base: "main"
           delete-branch: true
+          reviewers: "davidcollier77-code"
+
+      - name: Notify on PR update
+        if: steps.cpr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          COMMIT_SHA: ${{ steps.cpr.outputs.pull-request-head-sha }}
+        run: |
+          MARKER="<!-- notify-update:$COMMIT_SHA -->"
+
+          # Check if we already commented for this specific commit
+          COMMENT_EXISTS=$(gh pr view $PR_NUMBER --json comments -q ".comments[].body" | grep -F "$MARKER" || echo "")
+
+          if [ -z "$COMMENT_EXISTS" ]; then
+            gh pr comment $PR_NUMBER --body "@davidcollier77-code The GitHub Spec Kit update PR has been refreshed with new changes and is ready for review. $MARKER"
+          else
+            echo "Notification for commit $COMMIT_SHA was already posted."
+          fi
+
+      - name: Fallback Notification on PR Creation
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          # Check if a review request was successfully made
+          HAS_REVIEWER=$(gh pr view $PR_NUMBER --json reviewRequests -q ".reviewRequests | length" || echo "0")
+
+          if [ "$HAS_REVIEWER" = "0" ]; then
+            # Fallback to comment mention if reviewer assignment wasn't possible
+            gh pr comment $PR_NUMBER --body "@davidcollier77-code A new GitHub Spec Kit update PR has been created and is ready for review."
+          fi
