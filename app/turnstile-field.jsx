@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { TURNSTILE_SITE_KEY } from './turnstile-config';
+import { fetchTurnstileSiteKey } from './turnstile-actions';
 
 const TURNSTILE_ERROR_MESSAGE =
   'The security check had a problem. Please use Troubleshoot or refresh, then try again.';
@@ -13,6 +13,33 @@ export default function TurnstileField({ submitButtonId }) {
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('loading');
+  const [siteKey, setSiteKey] = useState(null);
+  const [keyError, setKeyError] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadKey() {
+      try {
+        const key = await fetchTurnstileSiteKey();
+        if (isMounted) {
+          if (!key) {
+            setKeyError(true);
+          } else {
+            setSiteKey(key);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load Turnstile configuration:', err);
+        if (isMounted) {
+          setKeyError(true);
+        }
+      }
+    }
+    loadKey();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const onSuccess = useCallback((newToken) => {
     setToken(newToken || '');
@@ -39,7 +66,6 @@ export default function TurnstileField({ submitButtonId }) {
       turnstileRef.current.reset();
     }
   }, []);
-
 
   const onRetry = useCallback(() => {
     setToken('');
@@ -68,6 +94,7 @@ export default function TurnstileField({ submitButtonId }) {
       return undefined;
     }
 
+    // Submit button disabled logic correctly handles siteKey loading state
     submitButton.disabled = !token;
 
     const preventUnverifiedSubmit = (event) => {
@@ -77,7 +104,7 @@ export default function TurnstileField({ submitButtonId }) {
 
       event.preventDefault();
       setError(
-        status === 'loading'
+        status === 'loading' || !siteKey
           ? 'Security check loading, please wait a moment.'
           : 'Please complete the security check before sending.',
       );
@@ -89,13 +116,21 @@ export default function TurnstileField({ submitButtonId }) {
       submitButton.disabled = false;
       form.removeEventListener('submit', preventUnverifiedSubmit);
     };
-  }, [status, submitButtonId, token]);
+  }, [status, submitButtonId, token, siteKey]);
 
-  if (!TURNSTILE_SITE_KEY) {
+  if (keyError) {
     return (
       <p style={{ margin: 0, padding: '0.75rem 1rem', borderRadius: 14, background: 'rgba(185, 28, 28, 0.16)', color: '#fecaca', border: '1px solid rgba(239, 68, 68, 0.36)', fontWeight: 700 }}>
         Spam check is not configured. Please try again later.
       </p>
+    );
+  }
+
+  if (!siteKey) {
+    return (
+      <div style={{ display: 'grid', gap: '0.45rem' }} ref={containerRef}>
+        <p role="status" style={{ margin: 0, color: 'rgba(255, 247, 214, 0.9)', fontWeight: 700 }}>Initializing security check...</p>
+      </div>
     );
   }
 
@@ -104,7 +139,7 @@ export default function TurnstileField({ submitButtonId }) {
       <input type="hidden" name="cf-turnstile-response" value={token} readOnly />
       <Turnstile
         ref={turnstileRef}
-        siteKey={TURNSTILE_SITE_KEY}
+        siteKey={siteKey}
         options={{
           theme: 'auto',
           responseField: false,

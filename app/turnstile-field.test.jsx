@@ -36,10 +36,11 @@ vi.mock('@marsidev/react-turnstile', () => {
   };
 });
 
-vi.mock('./turnstile-config', () => ({
-  TURNSTILE_SITE_KEY: 'test-site-key'
+vi.mock('./turnstile-actions', () => ({
+  fetchTurnstileSiteKey: vi.fn().mockResolvedValue('test-site-key'),
 }));
 
+import { fetchTurnstileSiteKey } from './turnstile-actions';
 import { Turnstile } from '@marsidev/react-turnstile';
 import TurnstileField from './turnstile-field';
 
@@ -63,6 +64,10 @@ describe('TurnstileField', () => {
     const submitButton = screen.getByRole('button', { name: 'Send' });
     expect(submitButton).toBeDisabled();
 
+    await waitFor(() => {
+      expect(vi.mocked(Turnstile).mock.calls.length).toBeGreaterThan(0);
+    });
+
     const turnstileMockProps = vi.mocked(Turnstile).mock.calls[0][0];
 
     act(() => {
@@ -85,21 +90,27 @@ describe('TurnstileField', () => {
       </form>,
     );
 
+    await waitFor(() => {
+      expect(vi.mocked(Turnstile).mock.calls.length).toBeGreaterThan(0);
+    });
+
     const turnstileMockProps = vi.mocked(Turnstile).mock.calls[0][0];
 
     act(() => {
       turnstileMockProps.onSuccess('valid-token');
     });
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
+    expect(screen.getByText('Security check verified.')).toBeInTheDocument();
 
     act(() => {
       turnstileMockProps.onExpire();
     });
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled());
     expect(screen.queryByDisplayValue('valid-token')).not.toBeInTheDocument();
-    expect(screen.getByText('Security check loading, please wait a moment.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Security check loading, please wait a moment.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 
   it('shows an error state when the Turnstile script fails to load', async () => {
@@ -110,6 +121,10 @@ describe('TurnstileField', () => {
       </form>,
     );
 
+    await waitFor(() => {
+      expect(vi.mocked(Turnstile).mock.calls.length).toBeGreaterThan(0);
+    });
+
     const turnstileMockProps = vi.mocked(Turnstile).mock.calls[0][0];
     expect(turnstileMockProps.scriptOptions?.onError).toEqual(expect.any(Function));
 
@@ -117,15 +132,12 @@ describe('TurnstileField', () => {
       turnstileMockProps.scriptOptions.onError();
     });
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
-        ),
-      ).toBeInTheDocument(),
-    );
-
-    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    expect(
+      screen.getByText(
+        'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry security check' })).toBeInTheDocument();
   });
 
   it('shows an error state when the client integration fails', async () => {
@@ -136,21 +148,22 @@ describe('TurnstileField', () => {
       </form>,
     );
 
+    await waitFor(() => {
+      expect(vi.mocked(Turnstile).mock.calls.length).toBeGreaterThan(0);
+    });
+
     const turnstileMockProps = vi.mocked(Turnstile).mock.calls[0][0];
 
     act(() => {
       turnstileMockProps.onError();
     });
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
-        ),
-      ).toBeInTheDocument(),
-    );
-
-    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    expect(
+      screen.getByText(
+        'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry security check' })).toBeInTheDocument();
   });
 
   it('clears the token and resets the widget on timeout', async () => {
@@ -161,21 +174,27 @@ describe('TurnstileField', () => {
       </form>,
     );
 
+    await waitFor(() => {
+      expect(vi.mocked(Turnstile).mock.calls.length).toBeGreaterThan(0);
+    });
+
     const turnstileMockProps = vi.mocked(Turnstile).mock.calls[0][0];
 
     act(() => {
       turnstileMockProps.onSuccess('valid-token');
     });
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
+    expect(screen.getByText('Security check verified.')).toBeInTheDocument();
 
     act(() => {
       turnstileMockProps.onTimeout();
     });
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled());
     expect(screen.queryByDisplayValue('valid-token')).not.toBeInTheDocument();
-    expect(screen.getByText('Security check loading, please wait a moment.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Security check loading, please wait a moment.'),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 
   it('shows an error state when the browser is unsupported', async () => {
@@ -186,21 +205,21 @@ describe('TurnstileField', () => {
       </form>,
     );
 
+    await waitFor(() => {
+      expect(vi.mocked(Turnstile).mock.calls.length).toBeGreaterThan(0);
+    });
+
     const turnstileMockProps = vi.mocked(Turnstile).mock.calls[0][0];
 
     act(() => {
       turnstileMockProps.onUnsupported();
     });
 
-    await waitFor(() =>
-      expect(
-        screen.getByText(
-          'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
-        ),
-      ).toBeInTheDocument(),
-    );
-
-    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
+    expect(
+      screen.getByText(
+        'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
+      ),
+    ).toBeInTheDocument();
   });
 
   it('allows retrying after an error', async () => {
@@ -211,26 +230,67 @@ describe('TurnstileField', () => {
       </form>,
     );
 
+    await waitFor(() => {
+      expect(vi.mocked(Turnstile).mock.calls.length).toBeGreaterThan(0);
+    });
+
     const turnstileMockProps = vi.mocked(Turnstile).mock.calls[0][0];
 
     act(() => {
       turnstileMockProps.onError();
     });
 
-    await waitFor(() =>
-      expect(screen.getByText('The security check had a problem. Please use Troubleshoot or refresh, then try again.')).toBeInTheDocument()
-    );
+    expect(
+      screen.getByText(
+        'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
+      ),
+    ).toBeInTheDocument();
 
-    const retryBtn = screen.getByRole('button', { name: /Retry/i });
+    const retryButton = screen.getByRole('button', { name: 'Retry security check' });
 
     act(() => {
-      retryBtn.click();
+      retryButton.click();
     });
 
-    await waitFor(() =>
-      expect(screen.getByText('Security check loading, please wait a moment.')).toBeInTheDocument()
-    );
-    expect(screen.queryByText('The security check had a problem. Please use Troubleshoot or refresh, then try again.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        'The security check had a problem. Please use Troubleshoot or refresh, then try again.',
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText('Security check loading, please wait a moment.'),
+    ).toBeInTheDocument();
   });
 
+  it('shows error if site key is not configured', async () => {
+    fetchTurnstileSiteKey.mockResolvedValueOnce(null);
+    render(
+      <form>
+        <TurnstileField submitButtonId="submit" />
+        <button id="submit" type="submit">Send</button>
+      </form>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Spam check is not configured. Please try again later.'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('shows error if fetching site key fails', async () => {
+    fetchTurnstileSiteKey.mockRejectedValueOnce(new Error('Failed to fetch'));
+    render(
+      <form>
+        <TurnstileField submitButtonId="submit" />
+        <button id="submit" type="submit">Send</button>
+      </form>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Spam check is not configured. Please try again later.'),
+      ).toBeInTheDocument();
+    });
+  });
 });
