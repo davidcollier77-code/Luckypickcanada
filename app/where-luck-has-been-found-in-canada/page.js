@@ -6,16 +6,16 @@ import LuckyMapOfCanada from '../lucky-map-of-canada/lucky-map-of-canada';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
+  description: 'Discover where luck has been found in Canada. Explore our interactive map featuring community stories of everyday magic and fortunate moments.',
   alternates: { canonical: '/map' },
   openGraph: {
-    description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
+    description: 'Discover where luck has been found in Canada. Explore our interactive map featuring community stories of everyday magic and fortunate moments.',
     url: '/where-luck-has-been-found-in-canada',
     images: [{ url: '/1785347037732.png', width: 1200, height: 630, alt: 'Lucky Pick Canada' }],
   },
   twitter: {
     title: 'Where Luck Has Been Found in Canada | LuckyPickCanada.ca',
-    description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
+    description: 'Discover where luck has been found in Canada. Explore our interactive map featuring community stories of everyday magic and fortunate moments.',
     images: ['/1785347037732.png'],
   },
 };

@@ -29,9 +29,9 @@ export default function Page() {
           color: 'rgba(255, 255, 255, 0.9)'
         }}
       >
-        <h1 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '600' }}>
+        <h2 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '600' }}>
           About Lucky Pick Canada
-        </h1>
+        </h2>
         <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
           Welcome to <strong>Lucky Pick Canada</strong>, a Canadian digital entertainment experience made to bring a little luck and a little magic to your day. Whether you are checking your daily luck meter, exploring community stories, or drawing unique cards, our site brings a fun and engaging digital experience directly to your screen.
         </p>
