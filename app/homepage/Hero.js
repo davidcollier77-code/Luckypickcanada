@@ -12,6 +12,7 @@ export default function Hero() {
   preload("/homepage-hero-lucky-pick-canada.webp", { as: "image", fetchPriority: "high" });
   return (
     <header className="relative w-full flex flex-col items-center pt-0 mt-0 pb-0 overflow-hidden text-white selection:bg-amber-500 selection:text-slate-950 homepage-hero-welcome" style={{ minHeight: '100svh' }}>
+      <h1 className="sr-only">Lucky Pick Canada</h1>
       {/* Main Content Stack */}
       <div className="relative z-10 w-full h-[100svh] min-h-0 flex flex-col items-center">
         {/* Navigation */}

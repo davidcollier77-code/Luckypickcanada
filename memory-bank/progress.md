@@ -1,41 +1,13 @@
 # Progress
 
-## Milestones
+## Completed Features
+- Implemented core Lucky Pick Canada experience
+- Added Sparkle, Reveal, Map, Crystal Ball, Tip Jar
+- Integrated Stripe, Resend, Cloudflare Turnstile
+- Deployed on Cloudflare Pages/Workers (via OpenNext)
+- Fixed SEO Issue 1: Corrected heading hierarchy on homepage by changing the H1 to an H2 and adding an sr-only H1 to the Hero section to ensure the page starts with an H1.
+- Fixed SEO Issue 2: Removed duplicate meta descriptions on three pages by writing custom, unique descriptions for `app/lucky-map-of-canada/page.js` and `app/where-luck-has-been-found-in-canada/page.js`.
 
-- **Initial Setup**: Project scaffolded using Next.js App Router, Tailwind CSS, and Framer Motion.
-- **Visual Foundation**: Hero section, sky backdrop, Milky Way HD image integration, shooting stars, and ambient star twinkle implemented.
-- **Interactivity**: Homepage interaction added with interactive Lucky Pick card reveal (6/7 picks), dynamic color and day selection logic, tip jar, and gift package.
-- **Payment & Cloud Integration**: Added Stripe checkout support and email handling configuration logic.
-- **Mobile Performance Phase 1**: Addressed LCP delays, optimized heavy hero images to WEBP, corrected fetch priorities, eliminated endless cache busting, and handled 500 errors gracefully with Upstash.
-- **Mobile Performance Phase 2**: Eliminated render-blocking CSS logic in `layout.js` by reverting to Next.js CSS asset bundling. Dynamically imported Howler.js (`audio.js`) only upon user click interactions, removing 41 KiB of unused JS from the initial page load.
-- **Security & Reliability Phase 1**: Resolved intermittent Turnstile loading issues, fixed Gift Experience pricing inconsistencies, implemented distributed rate limiting via Upstash Redis, and fortified the gift delivery webhook/GET route integration against race conditions.
-
-## Completed Tasks
-
-- **Atomic duplicate protection**: Replaced the fingerprint read/write race with `SET NX PX`; verified successful claims, concurrent rejection, spam logging, and outage fallback in the 27-test suite. The Redis error-handling and atomic counter-expiry review findings were already resolved in the starting revision.
-- Integrated Cloudflare Turnstile into public forms.
-- Replaced the hardcoded `crypto.randomUUID()` in `app/layout.js` styles path with the stable Next.js build ID/commit hash, resolving unstable style reloads.
-- Reduced unused JavaScript and render-blocking CSS warnings in Lighthouse/PageSpeed audits for the mobile configuration.
-- Refactored `TurnstileField` to use `next/script` for reliable initialization.
-- Secured rate-limiting paths using distributed Redis state.
-- **Redis spam protection resilience**: Added operation failure handling and atomic counter expiry in `app/spam-protection.js`; verified outage/limit/duplicate behavior with 15 regression tests and counter TTL/concurrency behavior against local Redis.
-
-## In-Progress Corrective Work
-
-- **Paid Lucky Pick persistence follow-up (PR #1371)**: Corrected strict database `game` validation, removed the duplicate generated-reveal `game` key, and rebuilt the broken persistence regression tests from the actual merged state of PR #1370. Final CI/reviewer verification remains pending.
-- Resolved Dependabot alerts #28 and #29 for `brace-expansion` by applying `pnpm.overrides` to versions `1.1.21` and `2.1.7`.
-- **Turnstile Environment Fix**: Fixed a bug where Cloudflare Turnstile public form protection failed ("Spam check is not configured") after homepage restructuring due to `NEXT_PUBLIC_TURNSTILE_SITE_KEY` not being properly inlined into statically built client chunks. Solved by mapping the variable explicitly in `nextConfig.env`.
-
-- **Spec Kit updater manifest integrity repair**: Verified the updater CLI setup is now functional and that Run #11 was blocked by five stale generic-integration manifest hashes. Corrected the five recorded SHA-256 values for the managed Jules Spec Kit command files without enabling force or changing the updater workflow. Final end-to-end scheduled/manual updater execution remains pending merge; manifest-to-file reconciliation is verified on the repair branch.
-
-- **Legacy Meter Artwork Cleanup:** Removed the abandoned `1784862459046.png` artwork from homepage/theme references and deleted the unused public asset; current Lucky Meter functionality was preserved.
-
-- **Turnstile Script Load Failure Follow-up:** Added `scriptOptions.onError` handling to `TurnstileField` and a regression test so a Cloudflare Turnstile API script load failure becomes a visible error while protected submit buttons remain disabled. CI verification is pending.
-- Hardened `DailyResonance` audio lifecycle and dynamic imports to prevent global Howler unloads and async unmount races.
-
-## 2026-10-09 - Turnstile Security Fix
-- Modified `.github/workflows/deploy-open-next.yml` to preserve Cloudflare dashboard variables during deployment.
-- Enhanced server-side validation in `app/spam-protection.js` to ensure the submitted token matches the expected `action` and permitted `hostname` (`luckypickcanada.ca` or `www.luckypickcanada.ca`).
-- Enhanced client-side error handling in `app/turnstile-field.jsx` to forcefully remount the Turnstile widget to trigger genuine script-loading retries.
-- Mapped actions from `app/homepage/HomePage.js` and `app/lucky-map-of-canada/lucky-map-of-canada.js` to the Turnstile fields.
-- Verified `/api/luck-map` currently lacks an active user-facing submission form in the codebase (documented).
+## Recent Updates
+- Corrected heading hierarchy on the homepage (changed H1 to H2 in the SEO text section and added a visually hidden H1 in the Hero section).
+- Addressed duplicate meta descriptions by giving `lucky-map-of-canada` and `where-luck-has-been-found-in-canada` alias routes their own distinct descriptions.

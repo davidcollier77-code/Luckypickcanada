@@ -1,7 +1,10 @@
-- **Current Task:** Permanent fix and hardening for Cloudflare Turnstile.
+- **Current Task:** Fix SEO issues: Correct heading hierarchy and fix duplicate meta descriptions.
 - **Findings:**
-  - Deployment with `pnpm exec wrangler deploy` was overwriting environment variables because `--keep-vars` was not provided. This caused the runtime site key to be stripped after unrelated deployments.
-  - Server-side validation lacked verification of `hostname` and `action`, which is recommended for security.
-  - Client-side retry mechanism via `turnstileRef.current.reset()` was insufficient for genuine script load failures. Remounting the component is necessary.
-  - The `/api/luck-map` endpoint was verified not to have an active user-facing submission form in the `app/` directory (it redirects but is not actively used for new submissions).
-- **Actions Taken:** Added `--keep-vars` to OpenNext deploy workflow, enforced `hostname` and `action` server-side validation, updated `app/turnstile-field.jsx` to use a `retryKey` for remounting and accept an `action` prop, passed the `action` prop from existing forms, and added comprehensive unit tests for server-side validation and the retry mechanism. Playwright visual tests run cleanly.
+  - The SEO audit identified that pages were beginning with an `H2` before an `H1`. The `app/page.js` homepage had an `H1` at the very bottom, while intermediate sections used `H2` tags.
+  - The audit also identified 3 pages with duplicate meta descriptions (`app/layout.js`, `app/lucky-map-of-canada/page.js`, and `app/where-luck-has-been-found-in-canada/page.js`).
+- **Actions Taken:**
+  - In `app/page.js`, changed the bottom `<h1 style={{...}}>About Lucky Pick Canada</h1>` to an `<h2 style={{...}}>`.
+  - In `app/homepage/Hero.js`, added `<h1 className="sr-only">Lucky Pick Canada</h1>` so the page begins with a proper semantically hidden H1.
+  - In `app/lucky-map-of-canada/page.js`, changed the meta description to a distinct, relevant description about viewing community-shared stories.
+  - In `app/where-luck-has-been-found-in-canada/page.js`, changed the meta description to focus on discovering where luck has been found in Canada via the interactive map.
+  - Ran visual regression tests, linter, type checks, and build process. The 495 MB build limit is respected (366M output). Pre-submission double-checks were completed successfully.
