@@ -1,8 +1,6 @@
-- **Current Task:** Fix the production Cloudflare Turnstile configuration and restore Suggestion Box submissions.
-- **Findings:**
-  - The OpenNext build step `pnpm exec opennextjs-cloudflare build` in `.github/workflows/deploy-open-next.yml` was missing the `NEXT_PUBLIC_TURNSTILE_SITE_KEY` environment variable.
-  - This caused the deployed Cloudflare worker to have a client bundle without the correct public site key, leading to the "Spam check is not configured" error.
-- **Actions Taken:**
-  - Added `NEXT_PUBLIC_TURNSTILE_SITE_KEY` to the `env` section of the `Build OpenNext for Cloudflare` step in `.github/workflows/deploy-open-next.yml`.
-  - Ran `pnpm run build` and `pnpm exec opennextjs-cloudflare build` locally to verify the build completes successfully and `.open-next` size is under 495MB (93MB actual).
-  - Ran `pnpm run test` and `pnpm exec playwright test` which passed successfully.
+# Active Context
+
+- **Current Task:** Harden the Content-Security-Policy while preserving the existing application's runtime behavior.
+- **Findings:** The production CSP keeps `'unsafe-inline'` in `script-src` and `style-src`; `'unsafe-eval'` is conditional on `NODE_ENV === 'development'` and is excluded from production. This is partial hardening, not complete removal of unsafe CSP directives.
+- **Actions Taken:** Updated the CSP in `next.config.mjs` to preserve required inline behavior and limit `'unsafe-eval'` to development. The production build, OpenNext/Cloudflare validation, and Playwright visual QA passed on commit `154877bd5fc2f1d536ae0c9abe5b5918618df722`.
+- **Remaining Work:** Investigate and verify a nonce- or hash-based strategy before removing `'unsafe-inline'`; keep that work separate from this change.
