@@ -45,6 +45,8 @@ jobs:
         run: NODE_ENV=production pnpm run build
 
       - name: Build OpenNext for Cloudflare
+        env:
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
         run: pnpm exec opennextjs-cloudflare build
 
       - name: Verify compiled Tailwind CSS
