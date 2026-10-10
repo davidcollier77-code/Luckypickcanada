@@ -41,6 +41,7 @@ jobs:
       - name: Build Next.js app
         env:
           GITHUB_SHA: ${{ github.sha }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
         run: NODE_ENV=production pnpm run build
 
       - name: Build OpenNext for Cloudflare
