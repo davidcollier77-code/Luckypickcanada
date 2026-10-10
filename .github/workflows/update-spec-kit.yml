@@ -11,6 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
   pull-requests: write
   issues: write
@@ -20,24 +21,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Skip if a successful update PR was already submitted today
+        id: daily_guard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          CURRENT_DATE="$(TZ=America/Halifax date +%F)"
+
+          # Find earlier runs of this workflow and check whether one actually
+          # created or refreshed an update PR today. The named marker step below
+          # is recorded in the run's job steps, so no extra PR comment or file
+          # is needed to remember successful completion.
+          if ! RUN_LIST="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/workflows/update-spec-kit.yml/runs?per_page=100" --jq '.workflow_runs[] | [.id, .created_at] | @tsv')"; then
+            echo "::warning::Could not inspect earlier workflow runs; proceeding so a recovery attempt remains possible."
+            exit 0
+          fi
+
+          while IFS=$'\t' read -r RUN_ID CREATED_AT; do
+            [ -n "$RUN_ID" ] || continue
+            [ "$RUN_ID" != "$GITHUB_RUN_ID" ] || continue
+
+            RUN_DATE="$(TZ=America/Halifax date -d "$CREATED_AT" +%F)"
+            [ "$RUN_DATE" = "$CURRENT_DATE" ] || continue
+
+            if ! JOBS_JSON="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs?per_page=100")"; then
+              echo "::warning::Could not inspect workflow run ${RUN_ID}; leaving recovery available."
+              continue
+            fi
+
+            if printf '%s\n' "$JOBS_JSON" | jq -e '
+              any(.jobs[]?.steps[]?;
+                .name == "Record successful update PR submission" and .conclusion == "success")
+            ' >/dev/null; then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              echo "::notice::Run ${RUN_ID} already submitted a successful Spec Kit update PR on ${CURRENT_DATE}; skipping this run."
+              exit 0
+            fi
+          done <<< "$RUN_LIST"
+
       - name: Checkout repository
+        if: steps.daily_guard.outputs.skip != 'true'
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Node.js and pnpm
+        if: steps.daily_guard.outputs.skip != 'true'
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: '22.x'
 
       - name: Install pnpm
+        if: steps.daily_guard.outputs.skip != 'true'
         run: npm install -g pnpm@10.30.3
 
       - name: Install uv
+        if: steps.daily_guard.outputs.skip != 'true'
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
 
       - name: Install dependencies
+        if: steps.daily_guard.outputs.skip != 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Upgrade Spec Kit
+        if: steps.daily_guard.outputs.skip != 'true'
         continue-on-error: false
         run: |
           # The CI runner is clean, so run the current published Spec Kit CLI
@@ -53,16 +99,19 @@ jobs:
           uvx --from specify-cli specify extension update
 
       - name: Validate Integration Status
+        if: steps.daily_guard.outputs.skip != 'true'
         continue-on-error: false
         run: uvx --from specify-cli specify integration status --json
 
       - name: Run Governance Validation
+        if: steps.daily_guard.outputs.skip != 'true'
         continue-on-error: false
         run: |
           chmod +x ./jules-verify.sh
           ./jules-verify.sh
 
       - name: Create Pull Request
+        if: steps.daily_guard.outputs.skip != 'true'
         id: cpr
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
         with:
@@ -79,8 +128,16 @@ jobs:
           delete-branch: true
           reviewers: "davidcollier77-code"
 
+      - name: Record successful update PR submission
+        if: steps.daily_guard.outputs.skip != 'true' && (steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated')
+        env:
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          PR_OPERATION: ${{ steps.cpr.outputs.pull-request-operation }}
+        run: |
+          echo "Spec Kit update PR #${PR_NUMBER} was ${PR_OPERATION} successfully."
+
       - name: Notify on PR update
-        if: steps.cpr.outputs.pull-request-operation == 'updated'
+        if: steps.daily_guard.outputs.skip != 'true' && steps.cpr.outputs.pull-request-operation == 'updated'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
@@ -98,7 +155,7 @@ jobs:
           fi
 
       - name: Fallback Notification on PR Creation
-        if: steps.cpr.outputs.pull-request-operation == 'created'
+        if: steps.daily_guard.outputs.skip != 'true' && steps.cpr.outputs.pull-request-operation == 'created'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
