@@ -1,0 +1,4 @@
+- [x] Verify existing CSP configuration.
+- [x] Determine root cause and actual risk.
+- [x] Investigate remediation options (nonce, hashes, SRI).
+- [x] Draft proposal document for approval.
