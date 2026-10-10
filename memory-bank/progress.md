@@ -11,3 +11,4 @@
 ## Recent Updates
 - Corrected heading hierarchy on the homepage (changed H1 to H2 in the SEO text section and added a visually hidden H1 in the Hero section).
 - Addressed duplicate meta descriptions by giving `lucky-map-of-canada` and `where-luck-has-been-found-in-canada` alias routes their own distinct descriptions.
+- Fixed Turnstile loading delays and Suggestion Box false success states.

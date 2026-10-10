@@ -1,11 +1,8 @@
-- **Current Task:** Fix Turnstile loading delays and Suggestion Box false success states.
+- **Current Task:** Fix the production Cloudflare Turnstile configuration and restore Suggestion Box submissions.
 - **Findings:**
-  - "Spam check is not configured" was caused by `keyError` rendering early and bypassing `containerRef` entirely, detaching the button disable logic and allowing unverified submission attempts.
-  - Initializing Turnstile via a Server Action caused a text flash and network latency; the site key is available immediately as a build-time constant.
-  - The false Suggestion Box success message was caused by stale `?suggested=1` URL query parameters surviving page reloads.
+  - The OpenNext build step `pnpm exec opennextjs-cloudflare build` in `.github/workflows/deploy-open-next.yml` was missing the `NEXT_PUBLIC_TURNSTILE_SITE_KEY` environment variable.
+  - This caused the deployed Cloudflare worker to have a client bundle without the correct public site key, leading to the "Spam check is not configured" error.
 - **Actions Taken:**
-  - Updated `TurnstileField` to import `TURNSTILE_SITE_KEY` synchronously, removing the loading text flash.
-  - Wrapped `TurnstileField` returns inside a persistent `containerRef` div, ensuring the submit button disable `useEffect` cannot be bypassed if initialization fails.
-  - Updated `HomePage` to safely remove `suggested` and `suggestionError` URL parameters using `replaceState` on mount.
-  - Updated Turnstile unit tests to assert the correct button-disable state during fetch failures.
-  - Passed all verification checks (`pnpm test`, build size < 495MB, Playwright visual tests, `jules-verify.sh`).
+  - Added `NEXT_PUBLIC_TURNSTILE_SITE_KEY` to the `env` section of the `Build OpenNext for Cloudflare` step in `.github/workflows/deploy-open-next.yml`.
+  - Ran `pnpm run build` and `pnpm exec opennextjs-cloudflare build` locally to verify the build completes successfully and `.open-next` size is under 495MB (93MB actual).
+  - Ran `pnpm run test` and `pnpm exec playwright test` which passed successfully.
