@@ -2,6 +2,10 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Terms of Service | Lucky Pick Canada',
+  description: 'Review the terms and conditions for using LuckyPickCanada.ca, including the rules that apply to its website and interactive features.',
+  alternates: {
+    canonical: '/terms',
+  },
   robots: {
     index: false,
     follow: true,

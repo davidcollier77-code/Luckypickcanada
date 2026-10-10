@@ -2,6 +2,10 @@ import Link from 'next/link';
 
 export const metadata = {
   title: 'Privacy Policy | Lucky Pick Canada',
+  description: 'Learn how LuckyPickCanada.ca handles information related to your use of the website and explains its privacy practices.',
+  alternates: {
+    canonical: '/privacy',
+  },
   robots: {
     index: false,
     follow: true,
