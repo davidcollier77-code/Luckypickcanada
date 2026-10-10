@@ -1,8 +1,8 @@
-- **Current Task:** Fix the production Cloudflare Turnstile configuration and restore Suggestion Box submissions.
+- **Current Task:** Fix the weak Content-Security-Policy (CSP) header
 - **Findings:**
-  - The OpenNext build step `pnpm exec opennextjs-cloudflare build` in `.github/workflows/deploy-open-next.yml` was missing the `NEXT_PUBLIC_TURNSTILE_SITE_KEY` environment variable.
-  - This caused the deployed Cloudflare worker to have a client bundle without the correct public site key, leading to the "Spam check is not configured" error.
+  - The CSP header included `unsafe-inline` and `unsafe-eval` tags which weaken it against XSS.
 - **Actions Taken:**
-  - Added `NEXT_PUBLIC_TURNSTILE_SITE_KEY` to the `env` section of the `Build OpenNext for Cloudflare` step in `.github/workflows/deploy-open-next.yml`.
-  - Ran `pnpm run build` and `pnpm exec opennextjs-cloudflare build` locally to verify the build completes successfully and `.open-next` size is under 495MB (93MB actual).
+  - Removed `unsafe-inline` and `unsafe-eval` from `next.config.mjs` CSP header definition.
+  - Ran `pnpm run build` locally to verify the build completes successfully.
+  - Ran `pnpm exec playwright test` which passed successfully.
   - Ran `pnpm run test` and `pnpm exec playwright test` which passed successfully.
