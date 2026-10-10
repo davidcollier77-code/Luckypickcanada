@@ -9,7 +9,7 @@
 - **Application Dependency**: The application heavily relies on inline styles and scripts.
     - **Styles**: Numerous React components use inline `style={{...}}` objects for dynamic positioning, colors, and animations (e.g., in `app/lucky-map-of-canada/lucky-map-of-canada.js`).
     - **Scripts**: The root `app/layout.js` injects JSON-LD schema using `dangerouslySetInnerHTML`. Additionally, Next.js requires `'unsafe-inline'` for hydration scripts unless a strict nonce architecture is adopted.
-- **Actual Risk Severity**: While a generic scanner flags `'unsafe-inline'` as HIGH, the actual risk in this architecture is LOW. React natively escapes standard DOM injections. The only manual injection point (`dangerouslySetInnerHTML` in `app/layout.js`) is safely constructed using `JSON.stringify` and explicit character escaping (`.replace(/</g, '\\u003c')`).
+- **Actual Risk Severity**: The current JSON-LD injection in `app/layout.js` has LOW risk because its object contains only fixed literal values, with no user-controlled content or script-closing markup. It uses `JSON.stringify`, which does not escape script-closing markup such as `</script>`. This low-risk assessment is specific to the current JSON-LD values; production `script-src 'unsafe-inline'` still weakens CSP protection against script injection.
 
 ## 2. Evidence
 - **CSP Configuration (`next.config.mjs`)**:
@@ -29,25 +29,25 @@
   "When you use nonces in your CSP, **all pages must be dynamically rendered**... Static optimization and Incremental Static Regeneration (ISR) are disabled."
 
 ## 3. Recommended Fix
-**Recommendation: Accept the current CSP state. No further action is required at this time.**
+**Recommendation: Retain production `script-src 'unsafe-inline'` as a temporary compatibility measure while investigating nonce/hash alternatives and monitoring a stricter candidate policy with `Content-Security-Policy-Report-Only` before enforcement.**
 
 Blindly adhering to the scanner's recommendation to remove `'unsafe-inline'` would severely regress the application:
 1.  **Nonce Implementation**: Implementing a nonce via `middleware.js` forces Next.js to dynamically render *every* page. This disables static caching (SSG/ISR), drastically increasing Cloudflare Worker compute costs and slowing down initial page loads (vital for SEO and UX).
 2.  **CSS Refactoring**: Removing `style-src 'unsafe-inline'` would break the cinematic animations and dynamic layouts across the site, requiring a massive rewrite of perfectly functioning UI code.
 
-The existing configuration already enforces `default-src 'self'` and restricts object/base URIs, which is a strong baseline. The perceived risk of `'unsafe-inline'` is mitigated by React's architecture and careful manual escaping.
+The existing configuration enforces `default-src 'self'` and restricts object/base URIs. The current JSON-LD injection has low risk because its values are fixed literals, but this does not eliminate the broader risk of allowing inline scripts. Follow-up work must evaluate nonce/hash coverage for Next.js hydration, JSON-LD, and Turnstile, including rendering and caching implications, before enforcing a stricter script policy. Inline style compatibility must be evaluated separately.
 
-## 4. Potential Regressions (If Fix Was Forced)
-If `'unsafe-inline'` were removed against this recommendation:
+## 4. Potential Regressions Without Compatibility Validation
+Removing `'unsafe-inline'` without validating replacements could cause:
 - **Visuals**: Complete loss of dynamic inline styles (colors, layout bounds, animation states).
 - **Performance**: Loss of static rendering cache; higher server response times.
 - **Functionality**: Next.js hydration failures; Turnstile loading failures.
 
-## 5. Verification Plan (If Fix Was Forced)
-If management dictates we must attempt removal, it must be done using `Content-Security-Policy-Report-Only` first to monitor the inevitable breakage via a reporting endpoint before enforcement.
+## 5. Follow-up Verification Plan
+Investigate nonce/hash alternatives and their rendering and caching trade-offs. Deploy a stricter candidate policy using `Content-Security-Policy-Report-Only` with a reporting endpoint while retaining the current enforced policy. Monitor violations and verify hydration, JSON-LD, Turnstile, and inline style behavior across representative routes before enforcing the stricter policy.
 
 ## 6. Exact Proposed Changes
-**None.** The current state (`commit 154877bd5fc2f1d536ae0c9abe5b5918618df722`) represents the safest, most performant balance of security and functionality for this specific Next.js App Router architecture.
+**No application configuration changes in this report update.** Production `script-src 'unsafe-inline'` remains a temporary compatibility measure pending the nonce/hash investigation and Report-Only monitoring described above.
 
 ## 7. Uncertainties and Blockers
 - How Cloudflare Turnstile's inner iframe/script execution would react to a strict nonce environment without `'unsafe-inline'` is unverified, but historically third-party challenge scripts struggle under strict CSPs.
