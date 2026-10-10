@@ -29,10 +29,16 @@ html { scroll-behavior: smooth; }
 .map-province-details { overflow: hidden; max-height: 36rem; opacity: 1; animation: province-details-reveal 300ms ease-in-out both; }
 @keyframes province-details-reveal { from { max-height: 0; opacity: 0; transform: translateY(-.35rem); } to { max-height: 36rem; opacity: 1; transform: translateY(0); } }
 .map-story-panel { position: sticky !important; top: 1rem; }
-.map-story-card { box-shadow: inset 0 1px rgba(255, 255, 255, .08), 0 10px 24px rgba(0, 0, 0, .16); }
+
 .map-community-section, .map-province-section { border-radius: 24px; }
-.map-activity-card, .map-province-card { transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
-.map-activity-card:hover, .map-activity-card:focus-visible, .map-province-card:hover, .map-province-card:focus-visible { transform: translateY(-2px); border-color: rgba(250,204,21,.7) !important; outline: none; }
+
+
+.map-activity-card:hover, .map-activity-card:focus-visible, .map-province-card:hover, .map-province-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(250,204,21,0.7) !important;
+  outline: none;
+}
+
 .story-modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.72); }
 .story-modal { position: relative; width: min(100%, 440px); padding: 1.5rem; border-radius: 20px; color: #fff7d6; background: #0b2d28; }
 .story-modal > button { position: absolute; top: .5rem; right: .8rem; border: 0; color: inherit; background: transparent; font-size: 2rem; cursor: pointer; }
@@ -65,3 +71,66 @@ html { scroll-behavior: smooth; }
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; } }
+
+/* --- Extracted Inline Styles (Visual Polish) --- */
+
+.map-primary-action {
+  color: #06110d;
+  font-weight: 950;
+  padding: 0.85rem 1.1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%);
+  border: 1px solid rgba(255, 242, 180, 0.86);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-primary-action--small {
+  padding: 0.65rem 0.9rem;
+}
+
+.map-story-card {
+  padding: 1rem;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 235, 160, 0.24);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(41, 148, 107, 0.11));
+  box-shadow: inset 0 1px rgba(255, 255, 255, .08), 0 10px 24px rgba(0, 0, 0, .16);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.map-story-card.is-selected {
+  border-color: rgba(250, 204, 21, 0.72);
+}
+
+.map-province-card {
+  text-align: left;
+  padding: 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 235, 160, 0.24);
+  color: #fff7d6;
+  background: rgba(255, 255, 255, 0.055);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.map-province-card.is-selected {
+  border-color: rgba(250, 204, 21, 0.72);
+  background: linear-gradient(135deg, rgba(244, 195, 70, 0.35), rgba(35, 140, 101, 0.25));
+}
+
+.map-activity-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.8rem;
+  border: 1px solid rgba(255, 235, 160, 0.24);
+  border-radius: 16px;
+  color: #fff7d6;
+  background: rgba(255, 255, 255, 0.055);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}

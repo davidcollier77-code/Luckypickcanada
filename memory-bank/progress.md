@@ -13,3 +13,7 @@
 - Corrected heading hierarchy on the homepage (changed H1 to H2 in the SEO text section and added a visually hidden H1 in the Hero section).
 - Addressed duplicate meta descriptions by giving `lucky-map-of-canada` and `where-luck-has-been-found-in-canada` alias routes their own distinct descriptions.
 - Fixed Turnstile loading delays and Suggestion Box false success states.
+## 2026-10-10 - Lucky Map Visual Polish
+- Extracted heavy inline styling for story cards, province selection buttons, and primary actions into `themes/default/map.css`.
+- Harmonized design tokens to create a more premium, cohesive feel aligned with the cinematic visual guidelines.
+- Preserved all core application logic, interaction states, and Turnstile security integrations.

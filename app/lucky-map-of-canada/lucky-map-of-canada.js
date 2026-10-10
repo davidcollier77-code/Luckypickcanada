@@ -248,10 +248,10 @@ export default function LuckyMapOfCanada({ mapData }) {
             Explore Community Stories from across Canada. Browse by province, see story counts, and discover what’s been happening across the community in the last 24 hours. Come back later to discover what’s new.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.35rem' }}>
-            <a href="#lucky-story-map" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)' }}>
+            <a href="#lucky-story-map" className="story-link map-primary-action">
               🍀 View Lucky Stories
             </a>
-            <button type="button" onClick={() => { playButtonClick(); setIsStoryFormOpen(true); }} className="story-link" style={{ color: '#06110d', fontWeight: 950, padding: '0.85rem 1.1rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer' }}>Share your lucky story</button>
+            <button type="button" onClick={() => { playButtonClick(); setIsStoryFormOpen(true); }} className="story-link map-primary-action">Share your lucky story</button>
           </div>
           {!currentMapData?.isConfigured ? (
             <p style={{ margin: '1rem 0 0', padding: '0.85rem 1rem', borderRadius: 16, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 800 }}>
@@ -352,7 +352,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             {selectedStories.length ? (
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
                 {selectedStories.map((story) => (
-                  <article key={story.id} className="map-story-card" style={{ padding: '1rem', borderRadius: 22, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', background: 'linear-gradient(145deg, rgba(255,255,255,0.1), rgba(41,148,107,0.11))' }}>
+                  <article key={story.id} className={`map-story-card ${selectedStory?.id === story.id ? 'is-selected' : ''}`}>
                     <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
@@ -361,7 +361,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                     <p style={{ margin: '0.5rem 0 0', color: '#9ca3af', fontSize: '0.85rem' }}>{formatRelativeTime(story.createdAt)}</p>
                     {selectedStory?.id === story.id ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center', margin: '0.65rem 0 0.85rem' }}>
-                        <button type="button" onClick={() => shareStory(story)} className="story-link" style={{ color: '#06110d', fontWeight: 950, padding: '0.65rem 0.9rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer' }}>
+                        <button type="button" onClick={() => shareStory(story)} className="story-link map-primary-action map-primary-action--small">
                           🍀 Share This Story
                         </button>
                         <button type="button" onClick={() => reactToStory(story.id)} style={{ padding: 0, border: 0, background: 'transparent', color: '#d1fae5', fontWeight: 900, cursor: 'pointer' }}>
@@ -400,7 +400,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                   <h3 style={{ margin: 0, color: '#fde68a', fontSize: '1rem' }}>{province.name}</h3>
                   <div style={{ display: 'grid', gap: '0.65rem', marginTop: '0.55rem' }}>
                     {recentStoriesByProvince[province.code].slice(0, 3).map((story) => (
-                      <button key={story.id} type="button" onClick={() => openStory(story)} style={{ display: 'grid', gap: '0.35rem', padding: '0.8rem', border: '1px solid rgba(255,235,160,0.24)', borderRadius: 16, color: '#fff7d6', background: 'rgba(255,255,255,0.055)', cursor: 'pointer', font: 'inherit', textAlign: 'left' }}>
+                      <button key={story.id} type="button" onClick={() => openStory(story)} className="map-activity-card">
                         <strong>{story.firstName || 'A Lucky Canadian'}</strong>
                         <span style={{ color: 'rgba(255,247,214,0.82)', lineHeight: 1.55 }}>{story.preview}</span>
                         <span style={{ color: '#9ca3af', fontSize: '0.8rem', marginTop: '0.2rem' }}>{formatRelativeTime(story.createdAt)}</span>
@@ -421,7 +421,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           <label className="mobile-province-select">Choose a province or territory<select value={selectedProvince} onChange={(event) => selectProvince(event.target.value)}>{provinceSelections.map((province) => <option key={province.code} value={province.code}>{province.name} ({province.count})</option>)}</select></label>
           <div className="province-selection-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginTop: '1.5rem' }}>
             {provinceSelections.map((province) => (
-              <button key={province.code} type="button" className="province-select-card map-province-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(244,195,70,0.35), rgba(35,140,101,0.25))' : 'rgba(255,255,255,0.055)', cursor: 'pointer' }}>
+              <button key={province.code} type="button" className={`province-select-card map-province-card ${selectedProvince === province.code ? 'is-selected' : ''}`} onClick={() => selectProvince(province.code)}>
                 <strong style={{ display: 'block', color: '#fde68a' }}>{province.name}</strong>
                 <span>{province.count} {province.count === 1 ? 'story' : 'stories'}</span>
               </button>
