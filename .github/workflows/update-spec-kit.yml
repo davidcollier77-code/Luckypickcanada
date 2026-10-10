@@ -26,7 +26,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "skip=false" >> "$GITHUB_OUTPUT"
           CURRENT_DATE="$(TZ=America/Halifax date +%F)"
 
           # Find earlier runs of this workflow and check whether one actually
@@ -35,6 +34,7 @@ jobs:
           # is needed to remember successful completion.
           if ! RUN_LIST="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/workflows/update-spec-kit.yml/runs?per_page=100" --jq '.workflow_runs[] | [.id, .created_at] | @tsv')"; then
             echo "::warning::Could not inspect earlier workflow runs; proceeding so a recovery attempt remains possible."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -59,6 +59,7 @@ jobs:
               exit 0
             fi
           done <<< "$RUN_LIST"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         if: steps.daily_guard.outputs.skip != 'true'
