@@ -40,6 +40,10 @@ vi.mock('./turnstile-actions', () => ({
   fetchTurnstileSiteKey: vi.fn().mockResolvedValue('test-site-key'),
 }));
 
+vi.mock('./turnstile-config', () => ({
+  TURNSTILE_SITE_KEY: null,
+}));
+
 import { fetchTurnstileSiteKey } from './turnstile-actions';
 import { Turnstile } from '@marsidev/react-turnstile';
 import TurnstileField from './turnstile-field';
@@ -262,7 +266,7 @@ describe('TurnstileField', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows error if site key is not configured', async () => {
+  it('shows error if site key is not configured and keeps button disabled', async () => {
     fetchTurnstileSiteKey.mockResolvedValueOnce(null);
     render(
       <form>
@@ -276,9 +280,11 @@ describe('TurnstileField', () => {
         screen.getByText('Spam check is not configured. Please try again later.'),
       ).toBeInTheDocument();
     });
+
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 
-  it('shows error if fetching site key fails', async () => {
+  it('shows error if fetching site key fails and keeps button disabled', async () => {
     fetchTurnstileSiteKey.mockRejectedValueOnce(new Error('Failed to fetch'));
     render(
       <form>
@@ -292,5 +298,7 @@ describe('TurnstileField', () => {
         screen.getByText('Spam check is not configured. Please try again later.'),
       ).toBeInTheDocument();
     });
+
+    expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled();
   });
 });

@@ -95,6 +95,15 @@ export default function HomePage() {
 
     setSuggested(searchParams.get('suggested') === '1');
     setSuggestionError(searchParams.get('suggestionError') || '');
+
+    // SECURITY HARDENING: Remove suggestion parameters from the URL so they
+    // do not fabricate a false success/error state on subsequent page reloads.
+    if (searchParams.has('suggested') || searchParams.has('suggestionError')) {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('suggested');
+      newUrl.searchParams.delete('suggestionError');
+      window.history.replaceState(null, '', newUrl.toString());
+    }
   }, []);
 
   // Total Visits state
