@@ -32,7 +32,7 @@ jobs:
           # created or refreshed an update PR today. The named marker step below
           # is recorded in the run's job steps, so no extra PR comment or file
           # is needed to remember successful completion.
-          if ! RUN_LIST="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/workflows/update-spec-kit.yml/runs?per_page=100" --jq '.workflow_runs[] | [.id, .created_at] | @tsv')"; then
+          if ! RUN_LIST="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/workflows/${{ github.workflow }}/runs?per_page=100" --jq '.workflow_runs[] | [.id, .created_at] | @tsv')"; then
             echo "::warning::Could not inspect earlier workflow runs; proceeding so a recovery attempt remains possible."
             echo "skip=false" >> "$GITHUB_OUTPUT"
             exit 0
