@@ -1,7 +1,7 @@
 {
   "integration": "generic",
-  "version": "1.1.2",
-  "installed_at": "2026-10-09T15:14:26.058620+00:00",
+  "version": "1.1.3",
+  "installed_at": "2026-10-10T12:53:21.312967+00:00",
   "files": {
     ".jules/cmds/speckit.analyze.md": "91fe16257ededdea9cc21d3cb27d539fcdd12d93ddcea52332cd4b68176b6a8d",
     ".jules/cmds/speckit.clarify.md": "dd11eb5b9759f7d3cd18c9d7f23a0ae2fe7973fc6ca2486dbfaf53a5569224b1",
@@ -12,6 +12,6 @@
     ".jules/cmds/speckit.checklist.md": "fa58b19e2604ce56ff5f5427061f6ee94fd44d7194e740b874824d9bf21ee15b",
     ".jules/cmds/speckit.specify.md": "21634a45dfcf642fddb1645f4ad2980f98c89778442e47663df8a6c3a1eaf8bc",
     ".jules/cmds/speckit.tasks.md": "6754ae39649c8e73a5ed376ad5cfcf04422e321a10e07c5ccd92fd1b9bccf776",
-    ".jules/cmds/speckit.taskstoissues.md": "3c7520a0294a435fa678520b695b11bd7575f0c15da89c418e50abd763677345"
+    ".jules/cmds/speckit.taskstoissues.md": "6a23057adb077af03f6d7c99a8cc3fdfd699ad72975b7d5e1457659732955095"
   }
 }
