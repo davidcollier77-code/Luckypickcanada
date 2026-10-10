@@ -9,6 +9,7 @@
 - Fixed SEO Issue 2: Removed duplicate meta descriptions on three pages by writing custom, unique descriptions for `app/lucky-map-of-canada/page.js` and `app/where-luck-has-been-found-in-canada/page.js`.
 
 ## Recent Updates
+- Investigated Page Analysis warning "Potentially Unclosed Tags: Possible unclosed: li". Verified via W3C validator and codebase grep that this is a false positive and no `<li>` tags are left unclosed.
 - Corrected heading hierarchy on the homepage (changed H1 to H2 in the SEO text section and added a visually hidden H1 in the Hero section).
 - Addressed duplicate meta descriptions by giving `lucky-map-of-canada` and `where-luck-has-been-found-in-canada` alias routes their own distinct descriptions.
 - Fixed Turnstile loading delays and Suggestion Box false success states.
