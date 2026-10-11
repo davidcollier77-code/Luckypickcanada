@@ -1,5 +1,11 @@
 # Active Context
 
+- **Current Task:** Recover Inori PR reviews after a terminal model-response validation failure
+- **Verified Findings:** The pinned Inori action reports that no review batch completed successfully and no review was published when every batch fails response validation. Its parser requires a non-empty summary string and reviews array; each review entry must have a non-empty comment. It does not retry these post-response validation failures inside the same action invocation.
+- **Actions Taken:** Added a one-time workflow retry conditioned on the explicit no-valid-batch reason, preserved the pinned action SHA and current settings, recorded initial/recovery outcomes, and added a final fail-closed guard. PR GitHub Actions checks and repository verification remain to be inspected.
+- **Verification Limitations:** A local repository checkout could not be cloned in this runtime because outbound DNS/network access is unavailable. Do not claim jules-verify.sh or local YAML checks passed unless a runnable checkout or actual CI result supplies evidence.
+
+
 - **Current Task:** Optimize modern image formats on the Lucky Card Reveal page
 - **Findings:** AVIF optimization sizes offered minimal returns over WebP with a risk to decoding quality per visual check at similar reduction rates, making WebP the safer choice for mass image delivery. Sharp efficiently batched processing resulting in substantial 80%+ file reductions for Reveal assets.
 - **Actions Taken:**
