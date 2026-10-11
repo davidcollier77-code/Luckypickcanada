@@ -1,1 +1,5 @@
-{"feature_directory": "specs/006-astronuts-investigation"}
+{
+  "active_feature_id": "007-polishing",
+  "active_feature_path": "specs/007-polishing",
+  "feature_directory": "specs/007-polishing"
+}

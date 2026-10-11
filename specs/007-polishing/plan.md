@@ -1,0 +1,1 @@
+- Apply visual polish to lucky map.
