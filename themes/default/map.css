@@ -21,7 +21,6 @@ html { scroll-behavior: smooth; }
 .province-marker-code { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .province-marker .marker-sparkle { position: absolute; inset: -.48rem; border: 1px solid rgba(255, 235, 155, .58); border-radius: inherit; animation: marker-pulse 2.1s ease-in-out infinite; }
 @keyframes marker-pulse { 0%, 100% { transform: scale(.88); opacity: .22; } 50% { transform: scale(1.28); opacity: .82; } }
-@keyframes aurora-drift { from { transform: translate3d(-8%, -2%, 0) rotate(-7deg); opacity: .34; } to { transform: translate3d(8%, 3%, 0) rotate(6deg); opacity: .62; } }
 .mobile-province-select { display: none; }
 .map-statistics { align-items: stretch; }
 .map-statistic { display: grid; align-content: center; min-height: 7.5rem; }
