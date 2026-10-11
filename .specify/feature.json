@@ -1,1 +1,4 @@
-{"feature_directory":".specify/features/010-lucky-card-redesign"}
+{
+  "feature": "012-modernize-assets",
+  "feature_directory": ".specify/features/012-modernize-assets"
+}
