@@ -253,7 +253,7 @@ export default function LuckyMapOfCanada({ mapData }) {
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <a href="/" className="home-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.55rem 0.8rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.26)', background: 'rgba(1, 4, 3, 0.54)' }}>
-            <Image src={"/map-logo-small.webp"} alt="LuckyPickCanada logo with maple leaf" width={40} height={40} sizes="40px" quality={85} style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
+            <Image src={"/map-logo-small.png"} alt="LuckyPickCanada logo with maple leaf" width={40} height={40} sizes="40px" quality={85} style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
             Back to Home Page
           </a>
         </nav>
@@ -320,7 +320,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           <div className="map-panel" style={{ ...cardStyle }}>
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
               <Image
-                src="/IMG_20260731_055452_187611.webp"
+                src="/IMG_20260731_055452_187611.png"
                 alt="Lucky Pick Canada interactive map displaying community stories across Canadian provinces"
                 width={569}
                 height={464}
@@ -372,7 +372,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             {selectedStories.length ? (
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
                 {selectedStories.map((story) => (
-                  <article key={story.id} className="map-story-card" style={{ padding: '1.2rem', borderRadius: 24, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.15)', background: selectedStory?.id === story.id ? 'linear-gradient(145deg, rgba(5,25,22,0.92), rgba(20,67,48,0.85))' : 'linear-gradient(145deg, rgba(5,25,22,0.92), rgba(10,47,38,0.8))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.25)', transition: 'all 0.2s ease-in-out' }}>
+                  <article key={story.id} className="map-story-card" style={{ padding: '1.2rem', borderRadius: 24, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(250, 204, 21, 0.38)', background: selectedStory?.id === story.id ? 'linear-gradient(145deg, rgba(6, 32, 26, 0.92), rgba(20, 75, 55, 0.85))' : 'linear-gradient(145deg, rgba(6, 32, 26, 0.8), rgba(12, 60, 48, 0.7))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.25)', transition: 'all 0.2s ease-in-out' }}>
                     <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
@@ -420,7 +420,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                   <h3 style={{ margin: 0, color: '#fde68a', fontSize: '1rem' }}>{province.name}</h3>
                   <div style={{ display: 'grid', gap: '0.65rem', marginTop: '0.55rem' }}>
                     {recentStoriesByProvince[province.code].slice(0, 3).map((story) => (
-                      <button key={story.id} type="button" onClick={() => openStory(story)} style={{ display: 'grid', gap: '0.35rem', padding: '1rem', border: '1px solid rgba(255,235,160,0.15)', borderRadius: 20, color: '#fff7d6', background: 'linear-gradient(145deg, rgba(5,25,22,0.6), rgba(10,47,38,0.4))', cursor: 'pointer', font: 'inherit', textAlign: 'left', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 12px rgba(0,0,0,0.15)' }}>
+                      <button key={story.id} type="button" onClick={() => openStory(story)} style={{ display: 'grid', gap: '0.35rem', padding: '1rem', border: '1px solid rgba(250, 204, 21, 0.38)', borderRadius: 20, color: '#fff7d6', background: 'linear-gradient(145deg, rgba(6, 32, 26, 0.92), rgba(12, 60, 48, 0.85))', cursor: 'pointer', font: 'inherit', textAlign: 'left', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 12px rgba(0,0,0,0.15)' }}>
                         <strong>{story.firstName || 'A Lucky Canadian'}</strong>
                         <span style={{ color: 'rgba(255,247,214,0.82)', lineHeight: 1.55 }}>{story.preview}</span>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}><span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>{formatRelativeTime(story.createdAt)}</span><span style={{ color: '#fde68a', fontSize: '0.85rem', fontWeight: 700 }}>Read full story &rarr;</span></div>
