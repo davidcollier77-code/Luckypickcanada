@@ -408,11 +408,11 @@ export default function HomePage() {
 
       <section id="community-section" className="homepage-section" aria-labelledby="community-stories-heading">
         <div className="homepage-community-grid" style={{ gridTemplateColumns: '1fr' }}>
-          <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20">
+          <article id="community-stories" className="homepage-community-card backdrop-blur-sm bg-black/20" style={{ padding: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: '28px', border: '1px solid rgba(255, 235, 160, 0.15)', background: 'linear-gradient(145deg, rgba(5,25,22,0.92), rgba(10,47,38,0.8))', boxShadow: '0 24px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1)' }}>
           <p className="homepage-offer-kicker">COMMUNITY</p>
           <h2 id="community-stories-heading" className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Stories</h2>
           <p className="text-[15px] sm:text-base text-white/80 leading-relaxed mb-5">A community space to share your own experiences of luck and good fortune. From amazing coincidences and unexpected opportunities, to finding money or simply a small everyday moment where you felt unusually lucky—big or small, we want to hear about it! (Please note: these are not business reviews or testimonials.)</p>
-          <Link href="/map" className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_10px_rgba(0,0,0,0.3),inset_0_2px_2px_rgba(255,255,255,0.5)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE LUCKY STORIES →</Link>
+          <Link href="/map" className="relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.8)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">EXPLORE LUCKY STORIES →</Link>
         </article>
       </div>
       </section>

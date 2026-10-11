@@ -1,5 +1,0 @@
-fix: correct metadata for privacy and terms pages
-
-- Set specific canonical URLs and descriptions for `/privacy` and `/terms` to resolve InterroBot crawl findings.
-- Maintained existing robots `noindex, follow` directives.
-- Ensured metadata does not imply any lottery affiliation.
