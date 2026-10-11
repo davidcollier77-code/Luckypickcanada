@@ -29,6 +29,15 @@ jobs:
           skip_draft: "true"
           on_update: replace
           max_requests: "4"
+          custom_instructions: |
+            RESPONSE CONTRACT — follow exactly:
+            - Return exactly one JSON object, with no Markdown fences or prose outside it.
+            - The top-level "summary" property must be a non-empty string.
+            - The top-level "reviews" property must always be an array; use [] when there are no findings.
+            - Every item in "reviews" must be an object with a non-empty string "comment".
+            - Optional item properties are "path" (string), "line" (positive integer for a confirmed added diff line only), "severity" (string), and "coding_plan" (string).
+            - Do not substitute names such as "findings", "issues", "result", or "overview" for "reviews" or "summary".
+            - Do not return a top-level array, JSON string, or null.
 
       - name: Record review outcome
         if: always()
