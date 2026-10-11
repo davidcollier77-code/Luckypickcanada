@@ -108,12 +108,9 @@ describe('DailyResonance Lifecycle & Audio', () => {
 
     const button = screen.getByText("Reveal My Resonance");
 
-    await act(async () => {
-      fireEvent.click(button);
-      await waitFor(() => {
-        expect(screen.queryByText("Reveal My Resonance")).not.toBeNull();
-      });
-    });
+    fireEvent.click(button);
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(screen.queryByText("Reveal My Resonance")).not.toBeNull();
 
     // State should be reset, meaning button is visible again and not stuck on loading/revealing
     expect(screen.queryByText("Reveal My Resonance")).not.toBeNull();
