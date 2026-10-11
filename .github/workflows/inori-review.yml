@@ -22,9 +22,9 @@ jobs:
         id: review
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
-          provider: google
+          provider: groq
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          llm_api_key: ${{ secrets.GEMINI_API_KEY }}
+          llm_api_key: ${{ secrets.GROQ_API_KEY }}
           language: en
           ignore_bots: "false"
           skip_draft: "true"
