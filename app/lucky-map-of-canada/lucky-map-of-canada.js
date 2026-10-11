@@ -320,7 +320,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           <div className="map-panel" style={{ ...cardStyle }}>
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
               <Image
-                src="/IMG_20260731_055452_187611.webp"
+                src="/IMG_20260731_055452_187611.png"
                 alt="Lucky Pick Canada interactive map displaying community stories across Canadian provinces"
                 width={569}
                 height={464}

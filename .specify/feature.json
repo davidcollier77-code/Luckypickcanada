@@ -1,1 +1,4 @@
-{"feature_directory":".specify/features/011-lucky-map-modernization"}
+{
+  "feature": "011-lucky-map-modernization",
+  "feature_directory": ".specify/features/011-lucky-map-modernization"
+}
