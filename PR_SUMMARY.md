@@ -2,7 +2,7 @@
 
 ## Task Group
 - **SELECTED TASK GROUP:** polishing
-- **GROUP REASON:** The task is focused on creating a premium, visually engaging experience for the Lucky Map and Community Stories, and optimizing image formats.
+- **GROUP REASON:** The task is focused on creating a premium, visually engaging experience for the Lucky Map and Community Stories, and fixing the CI workflow.
 
 ## Libraries
 - **LIBRARY:** Next.js
@@ -30,6 +30,10 @@
 - **USED:** YES
 - **USEFUL:** YES
 - **REASON:** Updated CSS to apply the required deep emerald glass panel styling to the modal.
+- **COMPONENT:** `.github/workflows/inori-review.yml`
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Fixed the configuration to properly pass `github_token` and use `provider: google` with `GEMINI_API_KEY`.
 - **COMPONENT:** `jules-verify.sh`
 - **USED:** YES
 - **USEFUL:** YES
@@ -49,6 +53,7 @@
 ## Changed Files
 - `app/lucky-map-of-canada/lucky-map-of-canada.js`
 - `public/themes/default/map.css`
+- `.github/workflows/inori-review.yml`
 
 ## Additional Information
 - **Protected Changes:** No protected changes.
