@@ -97,14 +97,8 @@ describe('DailyResonance Lifecycle & Audio', () => {
 
   it('handles dynamic import failures and resets state to allow retry', async () => {
     // Force import failure by resetting the mocks to reject
-    vi.doMock('howler', () => Promise.reject(new Error('Mock network failure')));
-    vi.doMock('gsap', () => Promise.reject(new Error('Mock network failure')));
-    //
-      throw new Error('Mock network failure');
-    });
-    vi.doMock('gsap', () => {
-      throw new Error('Mock network failure');
-    });
+    vi.doMock('howler', () => { throw new Error('Mock network failure'); });
+    vi.doMock('gsap', () => { throw new Error('Mock network failure'); });
 
     render(<DailyResonance isCompact={false} />);
 

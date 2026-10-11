@@ -1,6 +1,16 @@
 # Active Context
 
-- **Current Task:** Visual Polish for Lucky Stories & Lucky Map
+- **Current Task:** Optimize modern image formats on the Lucky Card Reveal page
+- **Findings:** AVIF optimization sizes offered minimal returns over WebP with a risk to decoding quality per visual check at similar reduction rates, making WebP the safer choice for mass image delivery. Sharp efficiently batched processing resulting in substantial 80%+ file reductions for Reveal assets.
+- **Actions Taken:**
+    - Established Spec Kit workflow for `009-optimize-modern-image`.
+    - Generated `.webp` outputs using Sharp CLI at `quality=85` for all `/reveal` image assets (backgrounds and all 3 card tiers).
+    - Updated `app/lucky-card-reveal.js` and `app/lucky-card-content.js` to reference the `.webp` files.
+    - Verified build passes checks and falls well under the 495MB repository size cap (317MB).
+    - Successfully passed `jules-verify.sh`.
+- **Remaining Work:** None for this specific task.
+
+- **Recent Task:** Visual Polish for Lucky Stories & Lucky Map
 - **Findings:** The visual updates were cleanly contained within the inline styles and `themes/default/map.css`. Tested safely across UI parameters without disturbing backend connectivity or modal functional state.
 - **Actions Taken:**
     - Updated map story card paddings, borders, box shadows, and background gradient colors to look premium.

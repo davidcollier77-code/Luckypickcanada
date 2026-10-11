@@ -1721,7 +1721,7 @@ export default function LuckyCardReveal() {
       {/* Cinematic Deep Space Background */}
       <div className="fixed inset-0 z-[-20] w-full h-full pointer-events-none">
         <Image
-          src="/NGC4216_crawford.jpg"
+          src="/NGC4216_crawford.webp"
           alt="Cosmic Space Background"
           fill
           priority
@@ -1761,9 +1761,9 @@ export default function LuckyCardReveal() {
             type="button"
             onClick={triggerCardDraw}
             disabled={isGenerating}
-            className="mt-2 px-6 py-2.5 rounded-full font-bold text-base shadow-lg transition-all bg-linear-to-r from-amber-400 to-amber-600 text-slate-950 hover:brightness-110 active:scale-95"
+            className="mt-4 px-8 py-3.5 rounded-full font-extrabold text-lg shadow-[0_0_40px_rgba(251,191,36,0.3)] transition-all bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-slate-900 hover:shadow-[0_0_60px_rgba(251,191,36,0.5)] hover:scale-[1.02] active:scale-[0.98] border border-amber-200/50 relative overflow-hidden group"
           >
-            {isGenerating ? 'Revealing...' : "Reveal Today's Luck"}
+            <span className="relative z-10">{isGenerating ? 'Revealing...' : "Reveal Today's Luck"}</span><div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/40 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] z-0" />
           </button>
         )}
       </div>
@@ -1793,7 +1793,7 @@ export default function LuckyCardReveal() {
                   className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
                   style={cardPolishFrameStyle}
                 >
-                  <Image alt="Card Back Face" className="object-cover rounded-2xl" fill priority quality={100} src="/IMG_20260728_220305_112042.png"/>
+                  <Image alt="Card Back Face" className="object-cover rounded-2xl" fill priority quality={100} src="/IMG_20260728_220305_112042.webp"/>
                   <div className="absolute inset-0" style={cardPolishSheenStyle} />
                   <div className="absolute inset-0" style={cardPolishEdgeStyle} />
                 </div>
@@ -1831,11 +1831,11 @@ export default function LuckyCardReveal() {
         </motion.div>
       </div>
 
-      <div className="w-full flex items-center justify-center gap-2.5 pt-1 relative z-40 shrink-0">
+      <div className="w-full flex items-center justify-center gap-3 pt-6 pb-2 relative z-40 shrink-0">
         <CollectionBinder />
         <Link
           href="/"
-          className="flex-1 min-w-0 inline-flex items-center justify-center min-h-9 px-3 py-2 rounded-xl bg-white/5 backdrop-blur-sm border border-white/15 text-white/80 text-xs font-semibold tracking-wide whitespace-nowrap shadow-xs hover:bg-white/10 hover:border-white/25 hover:text-white active:scale-[0.98] transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+          className="flex-1 min-w-0 inline-flex items-center justify-center min-h-11 px-4 py-2.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white/90 text-sm font-semibold tracking-wide whitespace-nowrap shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:bg-white/10 hover:border-white/20 hover:text-white active:scale-[0.98] transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         >
           Return to Home
         </Link>
@@ -1843,8 +1843,8 @@ export default function LuckyCardReveal() {
 
       {isReady && isRevealed && selectedCard && (
         <div className="w-full flex flex-col items-center space-y-4 pt-1 animate-fade-in">
-          <div className="w-full p-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-lg border border-white/20 text-center">
-            <p className="text-base italic text-gray-800 font-serif leading-relaxed">
+          <div className="w-full p-6 bg-black/40 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/10 text-center relative overflow-hidden">
+            <p className="text-lg italic text-amber-50/90 font-serif leading-relaxed drop-shadow-md">
               "{selectedCard.quote || 'Your lucky moment awaits.'}"
             </p>
           </div>
