@@ -28,6 +28,12 @@ const provinces = [
 const { pageStyle: origPageStyle, cardStyle } = DEFAULT_MAP_THEME;
 const { background: _bg, backgroundColor: _bgc, ...pageStyle } = origPageStyle;
 
+/**
+ * Formats a story timestamp as elapsed minutes, hours, or days.
+ * @param {string} dateString - Timestamp accepted by the Date constructor.
+ * @returns {string} Relative time, 'just now' for times under a minute, or an
+ * empty string for missing or invalid timestamps.
+ */
 function formatRelativeTime(dateString) {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -47,10 +53,23 @@ function formatRelativeTime(dateString) {
   return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
 }
 
+/**
+ * Selects stories matching a province or territory code, preserving their order.
+ * @param {Array<{province: string}>} stories - Community stories to filter.
+ * @param {string} provinceCode - Province or territory code to match.
+ * @returns {Array<{province: string}>} Stories belonging to the requested region.
+ */
 function provinceStories(stories, provinceCode) {
   return stories.filter((story) => story.province === provinceCode);
 }
 
+/**
+ * Renders the interactive Canada map with story filtering, sharing, and submission.
+ * @param {Object} props - Component properties.
+ * @param {Object} props.mapData - Initial story list, statistics, and database
+ * availability, refreshed from the stories API while the component is mounted.
+ * @returns {import('react').ReactElement} The map and community story interface.
+ */
 export default function LuckyMapOfCanada({ mapData }) {
   const [liveMapData, setLiveMapData] = useState(mapData);
   const currentMapData = liveMapData || mapData;
