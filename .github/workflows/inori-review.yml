@@ -23,9 +23,7 @@ jobs:
         uses: VOD-Studio/inori@v0
         with:
           provider: groq
-          # Prefer a dedicated Inori key when configured; otherwise use the
-          # Groq key already stored in this repository's Actions secrets.
-          llm_api_key: ${{ secrets.INORI_GROQ_API_KEY || secrets.GROQ_API_KEY }}
+          llm_api_key: ${{ secrets.GROQ_API_KEY }}
           language: en
           ignore_bots: "false"
           skip_draft: "true"
