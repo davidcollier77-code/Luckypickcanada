@@ -227,9 +227,9 @@ export default function LuckyMapOfCanada({ mapData }) {
   }
 
   return (
-    <div className="lucky-map-shell cosmic-aurora-background bg-[#030712]" style={pageStyle}>
+    <div className="lucky-map-shell" style={pageStyle}>
+      <div className="homepage-sky-backdrop" aria-hidden="true" />
 
-      <div aria-hidden="true" style={{ position: 'absolute', inset: '5% -10% auto', height: 220, background: 'linear-gradient(90deg, transparent, rgba(62, 178, 126, 0.2), rgba(247, 202, 82, 0.18), rgba(70, 133, 177, 0.16), transparent)', filter: 'blur(22px)', borderRadius: '50%', transformOrigin: 'center', animation: 'aurora-drift 10s ease-in-out infinite alternate' }} />
 
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
