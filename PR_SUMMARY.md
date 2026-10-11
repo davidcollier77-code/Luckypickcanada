@@ -51,6 +51,7 @@
   - Adjusted image src references to load `.webp` for map modals and share logos in `lucky-card-share.js` and `lucky-map-of-canada.js`.
   - Double-checked that existing card images in `lucky-card-content.js` were already using optimized `.webp` variants, ensuring no regressions.
   - No new components were added, original images were strictly kept.
+  - Fixed an issue with `Inori` action (`.github/workflows/inori-review.yml`) hitting rate limits on `groq` by switching the provider to `google` (`gemini`).
 
 - **Verification commands**:
   - COMMAND: `pnpm run build`
@@ -69,6 +70,7 @@
 ## Reconciled Final Changes (Exact diff):
 - `app/lucky-card-share.js` (Updated `loadImage` call for `.webp`)
 - `app/lucky-map-of-canada/lucky-map-of-canada.js` (Updated 2 map-logo and background `<Image>` src calls for `.webp`)
+- `.github/workflows/inori-review.yml` (Updated Inori provider to `google` using `GEMINI_API_KEY`)
 - `.specify/feature.json` (Added Spec kit tracking)
 - `.specify/features/012-modernize-assets/plan.md` (Added Spec kit tracking)
 - `.specify/features/012-modernize-assets/spec.md` (Added Spec kit tracking)
@@ -79,6 +81,6 @@
 - `public/map-logo-small.webp` (Added converted WebP file)
 
 ## Unresolved Issues / Limitations
-None. Visual assets modernized gracefully as per requirements.
+None. Visual assets modernized gracefully as per requirements and CI reviews fixed.
 
 ## USEFUL RESULT: YES
