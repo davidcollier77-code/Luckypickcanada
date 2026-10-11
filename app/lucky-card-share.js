@@ -83,7 +83,7 @@ async function createShareImage(card) {
   context.fillText('My Lucky Card', padding, 202);
 
   try {
-    const logo = await loadImage('/BackgroundEraser_20260724_163638777.png');
+    const logo = await loadImage('/BackgroundEraser_20260724_163638777.webp');
     context.drawImage(logo, width - padding - 104, 74, 104, 104);
   } catch {
     // The text branding remains visible if the logo cannot be loaded.
