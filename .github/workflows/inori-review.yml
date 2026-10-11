@@ -40,6 +40,14 @@ jobs:
             - Do not substitute names such as "findings", "issues", "result", or "overview" for "reviews" or "summary".
             - Do not return a top-level array, JSON string, or null.
 
+      # Groq can return HTTP 429 when requests arrive too close together.
+      # Back off before the workflow-level retry instead of immediately hitting
+      # the same rate limit again. This runs only after a failed review that
+      # explicitly confirms that no review was published.
+      - name: Back off before retrying rejected review
+        if: steps.review.outcome == 'failure' && contains(steps.review.outputs.reason, 'No review batch completed successfully')
+        run: sleep 60
+
       # Inori does not retry a successful HTTP response whose JSON fails review
       # validation. Retry only the terminal "no batch completed" failure, which
       # means no review was published. Keep all other failures fail-closed.
