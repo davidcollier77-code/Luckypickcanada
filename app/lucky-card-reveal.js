@@ -1721,7 +1721,7 @@ export default function LuckyCardReveal() {
       {/* Cinematic Deep Space Background */}
       <div className="fixed inset-0 z-[-20] w-full h-full pointer-events-none">
         <Image
-          src="/NGC4216_crawford.jpg"
+          src="/NGC4216_crawford.webp"
           alt="Cosmic Space Background"
           fill
           priority
@@ -1793,7 +1793,7 @@ export default function LuckyCardReveal() {
                   className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
                   style={cardPolishFrameStyle}
                 >
-                  <Image alt="Card Back Face" className="object-cover rounded-2xl" fill priority quality={100} src="/IMG_20260728_220305_112042.png"/>
+                  <Image alt="Card Back Face" className="object-cover rounded-2xl" fill priority quality={100} src="/IMG_20260728_220305_112042.webp"/>
                   <div className="absolute inset-0" style={cardPolishSheenStyle} />
                   <div className="absolute inset-0" style={cardPolishEdgeStyle} />
                 </div>
