@@ -264,7 +264,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             Where Luck Has Been Found Across Canada 🍀
           </h1>
           <p style={{ maxWidth: 760, margin: '1rem 0 0', fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.7, color: 'rgba(255, 247, 214, 0.86)' }}>
-            Explore Community Stories from across Canada. Browse by province, see story counts, and discover what’s been happening across the community in the last 24 hours. Come back later to discover what’s new.
+            Explore lucky stories from across Canada. Browse by province, discover community highlights, and switch between all-time stories and the latest 24 hours.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.35rem' }}>
             <a href="#lucky-story-map" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 900, padding: '0.85rem 1.4rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', boxShadow: '0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>
@@ -302,14 +302,14 @@ export default function LuckyMapOfCanada({ mapData }) {
             <button
               type="button"
               onClick={() => setTimeframeFilter('all-time')}
-              style={{ padding: '0.65rem 1.45rem', borderRadius: 999, border: 'none', background: timeframeFilter === 'all-time' ? 'linear-gradient(135deg, rgba(255,248,200,0.15), rgba(250,204,21,0.25))' : 'transparent', color: timeframeFilter === 'all-time' ? '#facc15' : '#a1a1aa', fontWeight: timeframeFilter === 'all-time' ? 900 : 700, cursor: 'pointer', transition: 'all 0.2s ease-in-out', boxShadow: timeframeFilter === 'all-time' ? '0 2px 8px rgba(0,0,0,0.2), inset 0 1px rgba(255,255,255,0.1)' : 'none' }}
+              style={{ padding: '0.65rem 1.45rem', borderRadius: 999, border: timeframeFilter === 'all-time' ? '1px solid rgba(250,204,21,0.3)' : '1px solid rgba(255,255,255,0.1)', background: timeframeFilter === 'all-time' ? 'linear-gradient(135deg, rgba(255,248,200,0.15), rgba(250,204,21,0.25))' : 'rgba(255,255,255,0.05)', color: timeframeFilter === 'all-time' ? '#facc15' : '#fdf6e3', fontWeight: timeframeFilter === 'all-time' ? 900 : 700, cursor: 'pointer', transition: 'all 0.2s ease-in-out', boxShadow: timeframeFilter === 'all-time' ? '0 2px 8px rgba(0,0,0,0.2), inset 0 1px rgba(255,255,255,0.1)' : 'none' }}
             >
               All-Time
             </button>
             <button
               type="button"
               onClick={() => setTimeframeFilter('24h')}
-              style={{ padding: '0.65rem 1.45rem', borderRadius: 999, border: 'none', background: timeframeFilter === '24h' ? 'linear-gradient(135deg, rgba(255,248,200,0.15), rgba(250,204,21,0.25))' : 'transparent', color: timeframeFilter === '24h' ? '#facc15' : '#a1a1aa', fontWeight: timeframeFilter === '24h' ? 900 : 700, cursor: 'pointer', transition: 'all 0.2s ease-in-out', boxShadow: timeframeFilter === '24h' ? '0 2px 8px rgba(0,0,0,0.2), inset 0 1px rgba(255,255,255,0.1)' : 'none' }}
+              style={{ padding: '0.65rem 1.45rem', borderRadius: 999, border: timeframeFilter === '24h' ? '1px solid rgba(250,204,21,0.3)' : '1px solid rgba(255,255,255,0.1)', background: timeframeFilter === '24h' ? 'linear-gradient(135deg, rgba(255,248,200,0.15), rgba(250,204,21,0.25))' : 'rgba(255,255,255,0.05)', color: timeframeFilter === '24h' ? '#facc15' : '#fdf6e3', fontWeight: timeframeFilter === '24h' ? 900 : 700, cursor: 'pointer', transition: 'all 0.2s ease-in-out', boxShadow: timeframeFilter === '24h' ? '0 2px 8px rgba(0,0,0,0.2), inset 0 1px rgba(255,255,255,0.1)' : 'none' }}
             >
               Last 24 Hours
             </button>
@@ -333,6 +333,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                 const provinceCount = province.count;
                 const active = selectedProvince === province.code;
 
+                if (stories.length === 0) return null;
                 return (
                   <button
                     key={province.code}
@@ -422,7 +423,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                       <button key={story.id} type="button" onClick={() => openStory(story)} style={{ display: 'grid', gap: '0.35rem', padding: '1rem', border: '1px solid rgba(255,235,160,0.15)', borderRadius: 20, color: '#fff7d6', background: 'linear-gradient(145deg, rgba(5,25,22,0.6), rgba(10,47,38,0.4))', cursor: 'pointer', font: 'inherit', textAlign: 'left', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 12px rgba(0,0,0,0.15)' }}>
                         <strong>{story.firstName || 'A Lucky Canadian'}</strong>
                         <span style={{ color: 'rgba(255,247,214,0.82)', lineHeight: 1.55 }}>{story.preview}</span>
-                        <span style={{ color: '#9ca3af', fontSize: '0.8rem', marginTop: '0.2rem' }}>{formatRelativeTime(story.createdAt)}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}><span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>{formatRelativeTime(story.createdAt)}</span><span style={{ color: '#fde68a', fontSize: '0.85rem', fontWeight: 700 }}>Read full story &rarr;</span></div>
                       </button>
                     ))}
                   </div>

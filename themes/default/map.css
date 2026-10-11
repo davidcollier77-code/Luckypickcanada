@@ -52,8 +52,10 @@ html { scroll-behavior: smooth; }
 @media (max-width: 560px) {
   .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
   .lucky-map-shell > div { width: 100%; }
-  .map-statistics { grid-template-columns: 1fr !important; gap: .65rem !important; }
-  .map-statistic { min-height: 0; }
+
+  .map-statistic { min-height: 0; padding: 0.8rem 1rem !important; }
+  .map-statistic strong { font-size: 1.8rem !important; margin-top: 0.2rem !important; }
+  .map-statistics { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important; gap: .5rem !important; }
   .official-map-artwork { width: min(100%, 36rem); display: grid; place-items: center; border-radius: 14px; box-shadow: 0 0 0 3px rgba(15, 9, 3, .92), 0 0 0 4px rgba(160, 103, 26, .52), 0 16px 36px rgba(0, 0, 0, .42); }
   .official-map-image { max-width: 100%; }
   .province-marker .marker-count { font-size: .68rem; }

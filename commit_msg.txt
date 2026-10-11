@@ -1,0 +1,9 @@
+Refine Community Map mobile usability and visual clarity
+
+- Improved discoverability of All-Time / Last 24 Hours Controls by updating inactive state contrast and borders.
+- Removed confusing zero-count markers when viewing empty map states (e.g., no stories in last 24 hours).
+- Reduced vertical padding and adjusted grid layout for mobile statistics to save screen space.
+- Added a "Read full story" visual cue to story cards.
+- Updated introductory wording to clarify time ranges.
+
+Completed pre-commit Spec Kit governance checks and verified via jules-verify.sh.
