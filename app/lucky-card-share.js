@@ -175,10 +175,10 @@ export default function LuckyCardShare({ card }) {
 
   return (
     <div className="lucky-card-share">
-      <button type="button" className="lucky-card-share-button" onClick={shareCard} disabled={isSharing} aria-disabled={isSharing}>
+      <button type="button" className="mt-2 w-auto min-w-[200px] px-6 py-3 rounded-full font-bold text-sm tracking-wide shadow-[0_4px_16px_rgba(16,185,129,0.2)] transition-all bg-gradient-to-r from-emerald-500/80 to-teal-600/80 hover:from-emerald-400 hover:to-teal-500 text-white hover:shadow-[0_4px_24px_rgba(16,185,129,0.4)] hover:scale-[1.02] active:scale-[0.98] border border-emerald-300/30 backdrop-blur-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400" onClick={shareCard} disabled={isSharing} aria-disabled={isSharing}>
         {isSharing ? 'Preparing Your Card…' : 'Share Your Lucky Card'}
       </button>
-      {status && <p className="lucky-card-share-status" role="status">{status}</p>}
+      {status && <p className="mt-3 text-sm font-medium text-emerald-200/90 animate-pulse" role="status">{status}</p>}
     </div>
   );
 }

@@ -27,7 +27,7 @@ describe('Lucky Card collection', () => {
       title: 'Lucky Canadian Moose',
       tier: 'premium',
       isReveal: true,
-      image: '/a_polished_high_detail_card_illustration_poster_i.png',
+      image: '/a_polished_high_detail_card_illustration_poster_i.webp',
       rarityWeight: 10,
     });
   });
