@@ -34,12 +34,14 @@ html { scroll-behavior: smooth; }
 .map-activity-card, .map-province-card { transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
 .map-activity-card:hover, .map-activity-card:focus-visible, .map-province-card:hover, .map-province-card:focus-visible { transform: translateY(-2px); border-color: rgba(250,204,21,.7) !important; outline: none; }
 .story-modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgba(0,0,0,.72); }
-.story-modal { position: relative; width: min(100%, 440px); padding: 1.5rem; border-radius: 20px; color: #fff7d6; background: #0b2d28; }
-.story-modal > button { position: absolute; top: .5rem; right: .8rem; border: 0; color: inherit; background: transparent; font-size: 2rem; cursor: pointer; }
-.story-modal form, .story-modal label { display: grid; gap: .55rem; }
+.story-modal { position: relative; width: min(100%, 460px); padding: clamp(1.5rem, 4vw, 2.2rem); border: 1px solid rgba(255, 235, 160, 0.2); border-radius: 28px; color: #fff7d6; background: linear-gradient(145deg, #0d3832, #071f1a); box-shadow: 0 24px 60px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.1); backdrop-filter: blur(12px); }
+.story-modal > button { position: absolute; top: .5rem; right: .8rem; border: 0; color: rgba(255, 247, 214, 0.6); background: transparent; font-size: 2rem; cursor: pointer; transition: color 0.2s; }
+.story-modal > button:hover { color: #fff; }
+.story-modal form, .story-modal label { display: grid; gap: .65rem; }
 .story-modal form { margin-top: 1rem; }
-.story-modal input, .story-modal textarea { padding: .65rem; border: 1px solid rgba(255,235,160,.5); border-radius: 8px; color: inherit; background: rgba(0,0,0,.18); }
-.story-modal form button { padding: .75rem; border: 0; border-radius: 999px; color: #06110d; background: #facc15; font-weight: 900; cursor: pointer; }
+.story-modal input, .story-modal textarea { padding: .85rem 1rem; border: 1px solid rgba(255,235,160,.35); border-radius: 12px; color: #fff; background: rgba(0,0,0,.35); font: inherit; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
+.story-modal input:focus-visible, .story-modal textarea:focus-visible { outline: none; border-color: rgba(250, 204, 21, 0.6); box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2); }
+.story-modal form button { /* inline styled */ }
 
 @media (max-width: 860px) {
   #lucky-story-map { grid-template-columns: 1fr !important; }

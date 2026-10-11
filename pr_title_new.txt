@@ -1,1 +1,0 @@
-Fix metadata for Privacy and Terms pages
