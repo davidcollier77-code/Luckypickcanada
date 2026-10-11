@@ -1,0 +1,54 @@
+name: Inori AI Review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+concurrency:
+  group: inori-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    name: Inori Code Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Review pull request
+        id: review
+        uses: VOD-Studio/inori@v0
+        with:
+          provider: groq
+          # Prefer a dedicated Inori key when configured; otherwise use the
+          # Groq key already stored in this repository's Actions secrets.
+          llm_api_key: ${{ secrets.INORI_GROQ_API_KEY || secrets.GROQ_API_KEY }}
+          language: en
+          ignore_bots: "false"
+          skip_draft: "true"
+          on_update: replace
+          max_requests: "4"
+
+      - name: Record review outcome
+        if: always()
+        env:
+          REVIEW_STATUS: ${{ steps.review.outputs.status }}
+          REVIEW_FINDINGS: ${{ steps.review.outputs.findings_count }}
+          REVIEWED_FILES: ${{ steps.review.outputs.reviewed_files }}
+          OMITTED_FILES: ${{ steps.review.outputs.omitted_files }}
+          REVIEW_REASON: ${{ steps.review.outputs.reason }}
+        run: |
+          {
+            echo "## Inori AI Review"
+            echo
+            echo "- **Status:** ${REVIEW_STATUS:-unknown}"
+            echo "- **Findings:** ${REVIEW_FINDINGS:-unknown}"
+            echo "- **Files reviewed:** ${REVIEWED_FILES:-unknown}"
+            echo "- **Files omitted:** ${OMITTED_FILES:-unknown}"
+            if [[ -n "${REVIEW_REASON:-}" ]]; then
+              echo "- **Reason:** ${REVIEW_REASON}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
