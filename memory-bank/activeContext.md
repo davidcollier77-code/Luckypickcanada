@@ -9,3 +9,8 @@
     - Updated the layout and inputs for the Story Submission form.
     - Ran tests, verified build and updated specs for Spec Kit.
 - **Remaining Work:** None for this specific task.
+
+- **Recent Task:** Community Map Mobile Usability and Visual Clarity
+- **Findings:** The All-Time / Last 24 Hours buttons lacked enough contrast when inactive, taking up too much vertical real-estate on mobile. There was no obvious call to action to read full stories from the cards below the map. 0-count map markers remained visible even when the 'Last 24 Hours' view had no stories, which was visually noisy.
+- **Actions Taken:** Added explicit active/inactive backgrounds and borders for timeframe buttons. Reduced mobile padding for statistics in map.css. Appended a "Read full story ->" link for story cards. Conditionally hid empty map markers if no stories are present.
+- **Remaining Work:** None.
