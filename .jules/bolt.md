@@ -15,3 +15,6 @@
 ## 2026-09-04 - Optimize Bounding Box for Radial Gradients
 **Learning:** Drawing a localized radial gradient by filling the entire canvas (`ctx.fillRect(0, 0, w, h)`) forces the GPU to process every pixel on the screen, even those far outside the gradient radius which will just end up fully transparent.
 **Action:** Constrain the `fillRect` operation strictly to the bounding box of the radial gradient (`ctx.fillRect(cx - radius, cy - radius, radius * 2, radius * 2)`). This dramatically reduces fill-rate overdraw and improves FPS for canvas animations.
+## 2025-03-09 - Optimize RegExp creation in location parsing
+**Learning:** Dynamic `RegExp` creation within nested loops or mapping operations (like processing database rows) is a significant performance bottleneck. Creating regex inside functions called frequently (e.g., `getStoryProvince` called for every row in `getLuckyStoryMap`) adds immense overhead compared to precompiling.
+**Action:** When working with static mapping data (like province aliases) that requires regex matching, always precompile the `RegExp` objects outside of the hot path/function scope.
