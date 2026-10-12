@@ -29,6 +29,32 @@ function normalizeLocation(value) {
     .trim();
 }
 
+// Helper function to escape special regex characters
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// PERFORMANCE OPTIMIZATION (Bolt ⚡):
+// Precompile regular expressions for location matching outside the function.
+// Previously, these were created dynamically on every call, which became a
+// bottleneck when processing many records (e.g., in getLuckyStoryMap).
+const PRECOMPILED_PROVINCES = storyProvinces.map((province) => {
+  return {
+    ...province,
+    codeRegex: new RegExp(`(^|[^A-Za-z])${escapeRegExp(province.code)}([^A-Za-z]|$)`, 'i'),
+    aliasRegexes: province.aliases
+      .map((alias) => {
+        const cleanAlias = normalizeLocation(alias);
+        if (cleanAlias === province.code.toLowerCase()) {
+          return null;
+        }
+        const escapedAlias = cleanAlias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`(^|\\s)${escapedAlias}(\\s|$)`, 'i');
+      })
+      .filter(Boolean),
+  };
+});
+
 export function getStoryProvince(location) {
   const rawLocation = String(location || '');
   const normalized = normalizeLocation(rawLocation);
@@ -37,26 +63,19 @@ export function getStoryProvince(location) {
     return null;
   }
 
-  const provinceCodeMatch = storyProvinces.find((province) =>
-    new RegExp(`(^|[^A-Za-z])${province.code}([^A-Za-z]|$)`, "i").test(rawLocation),
+  const provinceCodeMatch = PRECOMPILED_PROVINCES.find((province) =>
+    province.codeRegex.test(rawLocation),
   );
 
   if (provinceCodeMatch) {
     return provinceCodeMatch;
   }
 
-  return storyProvinces.find((province) =>
-    province.aliases.some((alias) => {
-      const cleanAlias = normalizeLocation(alias);
+  const aliasMatch = PRECOMPILED_PROVINCES.find((province) =>
+    province.aliasRegexes.some((regex) => regex.test(normalized)),
+  );
 
-      if (cleanAlias === province.code.toLowerCase()) {
-        return false;
-      }
-
-      const escapedAlias = cleanAlias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      return new RegExp(`(^|\\s)${escapedAlias}(\\s|$)`, 'i').test(normalized);
-    }),
-  ) || null;
+  return aliasMatch || null;
 }
 
 export function createStoryPreview(story) {
