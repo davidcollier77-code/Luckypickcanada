@@ -65,7 +65,7 @@ function isAuthorized(request) {
   return secureCompare(hmac, expectedHmac);
 }
 
-function renderLogin(error = '') {
+function renderLogin(error = '', success = '') {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -78,13 +78,14 @@ function renderLogin(error = '') {
       <form method="POST" style="width:min(100%,420px);padding:1.5rem;border-radius:22px;background:white;box-shadow:0 24px 60px rgba(0,0,0,.25);display:grid;gap:1rem;">
         <img src="/apple-touch-icon.png" alt="LuckyPickCanada logo with maple leaf" width="72" height="72" style="border-radius:18px;box-shadow:0 10px 26px rgba(0,0,0,.18);" />
         <h1 style="margin:0;color:#0f766e;">Suggestion admin</h1>
-        <p style="margin:0;line-height:1.5;">Enter the admin password to view visitor suggestions.</p>
+        <p style="margin:0;line-height:1.5;">Enter the admin email to view visitor suggestions.</p>
         ${error ? `<p style="margin:0;padding:.75rem 1rem;border-radius:12px;background:#fee2e2;color:#991b1b;font-weight:700;">${escapeHtml(error)}</p>` : ''}
+        ${success ? `<p style="margin:0;padding:.75rem 1rem;border-radius:12px;background:#d1fae5;color:#065f46;font-weight:700;">${escapeHtml(success)}</p>` : ''}
         <label style="display:grid;gap:.4rem;font-weight:700;">
-          Admin password
-          <input name="password" type="password" required style="padding:.8rem 1rem;border-radius:12px;border:1px solid #b7d9d5;font-size:1rem;" />
+          Admin email
+          <input name="email" type="email" required style="padding:.8rem 1rem;border-radius:12px;border:1px solid #b7d9d5;font-size:1rem;" />
         </label>
-        <button type="submit" style="padding:.9rem 1.2rem;border:0;border-radius:999px;background:#0f766e;color:white;font-weight:800;font-size:1rem;cursor:pointer;">View suggestions</button>
+        <button type="submit" style="padding:.9rem 1.2rem;border:0;border-radius:999px;background:#0f766e;color:white;font-weight:800;font-size:1rem;cursor:pointer;">Send login link</button>
       </form>
       </div>
   </body>
@@ -129,9 +130,66 @@ function renderSuggestions({ isConfigured, suggestions }) {
 </html>`;
 }
 
+async function sendMagicLink(email, token, requestUrl) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.SUGGESTIONS_FROM_EMAIL || process.env.GIFT_FROM_EMAIL || 'noreply@luckypickcanada.ca';
+
+  if (!resendApiKey) return false;
+
+  const loginUrl = new URL(`/admin/suggestions?auth=${token}`, requestUrl).toString();
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: email,
+      subject: 'Lucky Pick Canada Admin Login',
+      html: `<p>Click the link below to securely log into the suggestions admin area:</p>
+             <p><a href="${loginUrl}" style="padding:.8rem 1.2rem;background:#0f766e;color:white;border-radius:8px;text-decoration:none;display:inline-block;font-weight:bold;">Log in to Admin</a></p>
+             <p>This link will expire in 15 minutes.</p>`
+    }),
+  });
+
+  return response.ok;
+}
+
 export async function GET(request) {
+  const url = new URL(request.url);
+  const authCookie = url.searchParams.get('auth');
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (authCookie && adminPassword) {
+    const parts = authCookie.split('.');
+    if (parts.length === 2) {
+      const [expiresAtStr, hmac] = parts;
+      const expiresAt = parseInt(expiresAtStr, 10);
+
+      if (!isNaN(expiresAt) && Date.now() <= expiresAt) {
+        const expectedHmac = crypto.createHmac('sha256', adminPassword).update(expiresAtStr).digest('hex');
+        if (secureCompare(hmac, expectedHmac)) {
+          // Token is valid, generate a 24-hour session cookie
+          const sessionExpiresAt = Date.now() + 86400000;
+          const sessionHmac = crypto.createHmac('sha256', adminPassword).update(String(sessionExpiresAt)).digest('hex');
+          const sessionToken = `${sessionExpiresAt}.${sessionHmac}`;
+
+          return new Response(null, {
+            status: 303,
+            headers: {
+              Location: '/admin/suggestions',
+              'Set-Cookie': `suggestions_admin=${sessionToken}; HttpOnly; Secure; SameSite=Lax; Path=/admin/suggestions; Max-Age=86400`,
+            },
+          });
+        }
+      }
+    }
+  }
+
   if (!isAuthorized(request)) {
-    return new Response(renderLogin(), {
+    return new Response(renderLogin(authCookie ? 'Login link is invalid or has expired.' : ''), {
       status: 401,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
     });
@@ -164,25 +222,29 @@ export async function POST(request) {
   }
 
   const formData = await request.formData();
-  const password = String(formData.get('password') || '');
+  const email = String(formData.get('email') || '').trim().toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminEmail = (process.env.ADMIN_EMAIL || process.env.SUGGESTIONS_TO_EMAIL || 'davidcollier77@gmail.com').trim().toLowerCase();
 
-  if (!adminPassword || !secureCompare(password, adminPassword)) {
-    return new Response(renderLogin('Incorrect admin password.'), {
-      status: 401,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
-    });
+  // Use timing safe equal for the email check just in case, though hashing both and comparing is also fine
+  const isEmailMatch = secureCompare(
+    crypto.createHash('sha256').update(email).digest('hex'),
+    crypto.createHash('sha256').update(adminEmail).digest('hex')
+  );
+
+  if (isEmailMatch && adminPassword) {
+    // 15 minute token
+    const expiresAt = Date.now() + 15 * 60000;
+    const hmac = crypto.createHmac('sha256', adminPassword).update(String(expiresAt)).digest('hex');
+    const token = `${expiresAt}.${hmac}`;
+
+    // Fire and forget
+    sendMagicLink(adminEmail, token, request.url).catch(err => console.error('Magic link error', err));
   }
 
-  const expiresAt = Date.now() + 86400000;
-  const hmac = crypto.createHmac('sha256', adminPassword).update(String(expiresAt)).digest('hex');
-  const sessionToken = `${expiresAt}.${hmac}`;
-
-  return new Response(null, {
-    status: 303,
-    headers: {
-      Location: '/admin/suggestions',
-      'Set-Cookie': `suggestions_admin=${sessionToken}; HttpOnly; Secure; SameSite=Lax; Path=/admin/suggestions; Max-Age=86400`,
-    },
+  // Always return success to prevent email enumeration
+  return new Response(renderLogin('', 'If the email matches our records, a login link has been sent.'), {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
   });
 }
