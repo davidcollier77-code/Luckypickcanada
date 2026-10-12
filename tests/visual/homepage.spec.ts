@@ -74,18 +74,9 @@ test.describe("Homepage Visual", () => {
   test('explore luck hit area sequences display before scrolling', async ({ page }) => {
     test.setTimeout(60_000);
 
-    await page.addInitScript(() => {
-      window.matchMedia = (query) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: () => {},
-        removeListener: () => {},
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        dispatchEvent: () => false,
-      } as any);
-    });
+    // Use Playwright's real media emulation so JavaScript and CSS agree that
+    // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
@@ -130,12 +121,17 @@ test.describe("Homepage Visual", () => {
 
     await exploreButton.click();
 
+    // Observe the short-lived particles immediately instead of allowing slow
+    // mobile rendering to consume most of their 1.5-second animation lifetime.
+    await expect.poll(() => particles.count(), {
+      timeout: 750,
+      intervals: [25, 50, 100],
+    }).toBeGreaterThan(0);
+
     await page.waitForTimeout(300);
     const earlyScrollY = await page.evaluate(() => window.scrollY);
     expect(earlyScrollY).toBeGreaterThanOrEqual(0);
     expect(earlyScrollY).toBeLessThan(targetScrollY!);
-
-    expect(await particles.count()).toBeGreaterThan(0);
 
     await page.waitForTimeout(1_500);
 
@@ -186,18 +182,9 @@ test.describe("Homepage Visual", () => {
   test('explore luck scroll yields to user keyboard input', async ({ page }) => {
     test.skip(test.info().project.name.startsWith('mobile-'), 'Keyboard interruption check is covered on desktop');
 
-    await page.addInitScript(() => {
-      window.matchMedia = (query) => ({
-        matches: false,
-        media: query,
-        onchange: null,
-        addListener: () => {},
-        removeListener: () => {},
-        addEventListener: () => {},
-        removeEventListener: () => {},
-        dispatchEvent: () => false,
-      } as any);
-    });
+    // Use Playwright's real media emulation so JavaScript and CSS agree that
+    // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
