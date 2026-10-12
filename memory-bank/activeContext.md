@@ -1,3 +1,12 @@
+- **Current Task:** Add OpenRouter as a Safe, Free-Model Fallback for Inori AI Reviews
+- **Findings:** The Inori GitHub action supports multiple LLM providers, including OpenRouter, using the `provider` input. It's configured to run after a retry attempt fails for the specific reason "No review batch completed successfully".
+- **Actions Taken:**
+    - Modified `.github/workflows/inori-review.yml` to add a new step `Fallback to OpenRouter free model` running conditionally on the failure of `review_retry`.
+    - Selected `google/gemini-2.0-flash-lite-preview-02-05:free` as the model for the OpenRouter provider.
+    - Updated the `Record review outcome` and `Fail when review recovery is unsuccessful` steps to properly report and fail/pass based on the final OpenRouter fallback outcome.
+    - Ran `jules-verify.sh` successfully, validating the Spec Kit state and ensuring the PR will pass governance tests. Build size is 147MB (well under the 495MB limit).
+- **Remaining Work:** None for this specific task.
+
 # Active Context
 
 - **Current Task:** Optimize modern image formats on the Lucky Card Reveal page

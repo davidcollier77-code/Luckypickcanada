@@ -1,0 +1,3 @@
+- [X] T001 Modify `.github/workflows/inori-review.yml` to include the OpenRouter fallback step.
+- [X] T002 Update the summary and fail-closed steps in `.github/workflows/inori-review.yml` to account for the new fallback step.
+- [X] T003 Ensure the fail-closed logic works correctly.
