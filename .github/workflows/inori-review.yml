@@ -85,7 +85,7 @@ jobs:
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
           provider: openrouter
-          llm_model: google/gemini-2.5-flash
+          llm_model: google/gemini-3.5-flash
           github_token: ${{ secrets.GITHUB_TOKEN }}
           llm_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           language: en

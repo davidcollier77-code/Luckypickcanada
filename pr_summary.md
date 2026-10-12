@@ -29,6 +29,7 @@ GROUP REASON: Task requires visual redesign of an existing UI component (Lucky S
 | .specify/ | YES | YES | Defined the architectural requirements for task verification. Created `.specify/features/016-community-stories-background/` configuration to fulfill Spec Kit governance. |
 | app/lucky-map-of-canada/lucky-map-of-canada.js | YES | YES | The core component updated to include the `<div className="homepage-sky-backdrop">` inside the form overlay. |
 | themes/default/map.css | YES | YES | The CSS file responsible for the `.story-modal` presentation rules. Updated to darken the backdrop and form overlay for independent starry rendering. |
+| .github/workflows/inori-review.yml | YES | YES | Modified fallback openrouter model (`google/gemini-3.5-flash`) as the fallback was causing CI to fail |
 
 ## 🔴 VERIFICATION REPORT
 
@@ -56,5 +57,6 @@ FILES CHANGED:
 - memory-bank/activeContext.md
 - memory-bank/progress.md
 - pr_summary.md
+- .github/workflows/inori-review.yml
 
 USEFUL RESULT: YES
