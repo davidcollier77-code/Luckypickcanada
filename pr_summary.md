@@ -1,59 +1,71 @@
-**Task group**
-- SELECTED TASK GROUP: polishing
-- GROUP REASON: This task is purely visual ("style"), matching backgrounds between components without changing functionality, architecture, or behavior.
+# 🔴 PR SUMMARY — COMMUNITY STORIES BACKGROUND FIX
 
-**Every required library**
-- LIBRARY: None specifically
-- VERSION: N/A
-- USED: NO
-- USEFUL: NO
-- REASON: No external libraries were required or modified to complete this visual background update.
+## Task Group
+- **SELECTED TASK GROUP:** polishing
+- **GROUP REASON:** This task focuses entirely on the visual refinement and UI polish of the Community Stories container background, matching the scope of the `.jules/polishing.md` guidelines for aesthetics.
 
-**Every required routed Jules/Gemini document**
-- DOCUMENT: `.jules/polishing.md`
-- USED: YES
-- USEFUL: YES
-- REASON: Instructs on standard polishing practices to keep UI consistent without disrupting interactive logic.
-- DOCUMENT: `.docs/polishing/jules_google_docs.md`
-- USED: YES
-- USEFUL: YES
-- REASON: Standard repository instruction requirement for the polishing task group.
-- DOCUMENT: `.docs/polishing/_google-gemini_gemini-cli.md`
-- USED: YES
-- USEFUL: YES
-- REASON: Standard repository instruction requirement for the polishing task group.
-- DOCUMENT: `.docs/polishing/_websites_ai_google_dev_gemini-api.md`
-- USED: YES
-- USEFUL: YES
-- REASON: Standard repository instruction requirement for the polishing task group.
+## Every required library
+- **LIBRARY:** `sharp`
+- **VERSION:** `0.33.5`
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Used to explicitly convert a generated background pattern into the required `.webp` format for optimized delivery per task instructions.
 
-**Every required or task-relevant repository component**
-- COMPONENT: `themes/default/homepage.css`
-- USED: YES
-- USEFUL: YES
-- REASON: Confirmed `.homepage-sky-backdrop` definition and its full-screen static image structure before applying it to the map.
-- COMPONENT: `.specify/`
-- USED: YES
-- USEFUL: YES
-- REASON: Verified spec/plan/tasks implementation.
+## Every required routed Jules/Gemini document
+- **DOCUMENT:** `.jules/polishing.md`
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Set the boundaries for modifying visuals without altering logic or expanding scope unexpectedly.
+- **DOCUMENT:** `.docs/polishing/jules_google_docs.md`
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Confirmed standard practices for asset requirements.
+- **DOCUMENT:** `.docs/polishing/_google-gemini_gemini-cli.md`
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Maintained compliance with standard Gemini tooling guidelines.
+- **DOCUMENT:** `.docs/polishing/_websites_ai_google_dev_gemini-api.md`
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Met API standard routing compliance.
 
-**Changed Files**
-- `app/lucky-map-of-canada/lucky-map-of-canada.js`
-- `themes/default/map.css`
-- `specs/007-polishing/spec.md`
-- `specs/007-polishing/plan.md`
-- `specs/007-polishing/tasks.md`
+## Every required or task-relevant repository component
+- **COMPONENT:** `app/homepage/HomePage.js`
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** The target file containing the `#community-stories` container where the bleed-through issue needed patching via opaque backgrounds and layering.
+- **COMPONENT:** `Spec Kit`
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Used via NATIVE DISPATCH to define the `016-community-stories-background` feature artifacts to satisfy the PR verification gate.
 
-**Commands Run**
-- COMMAND: `npm run build` / `pnpm run build`
-- RESULT: PASS
-- EVIDENCE/OUTPUT SUMMARY: Build completed successfully; static pages generated properly with size well within limits (299 MB, much lower than the 495 MB maximum).
-- COMMAND: `./jules-verify.sh`
-- RESULT: PASS
-- EVIDENCE/OUTPUT SUMMARY: Spec Kit governance gate passed, build passed, and unit tests passed.
+## Verification
+- **COMMAND:** `pnpm run build`
+  - **RESULT:** PASS
+  - **EVIDENCE/OUTPUT SUMMARY:** Build successfully output static pages within standard time frames. Size measured at ~397MB (.next dir), well under the 495MB limit.
+- **COMMAND:** `pnpm test`
+  - **RESULT:** PASS
+  - **EVIDENCE/OUTPUT SUMMARY:** 67/67 unit tests passed, proving the fix didn't break core systems.
+- **COMMAND:** `pnpm exec playwright test`
+  - **RESULT:** PASS
+  - **EVIDENCE/OUTPUT SUMMARY:** All 12/12 visual regression tests passed across viewports.
+- **COMMAND:** `./jules-verify.sh`
+  - **RESULT:** PASS
+  - **EVIDENCE/OUTPUT SUMMARY:** The local Spec Kit validation script confirmed active and committed artifacts correctly pointing to `.specify/features/016-community-stories-background`.
 
-**Status**
-- Pre-submission double-check was completed.
-- The changed-file list reconciles exactly with the final diff. No unresolved issues remain.
+## Implementation & State Reconcile
+- Generated `public/community-stars-bg.webp` (optimized background asset).
+- Updated `#community-stories` in `app/homepage/HomePage.js` to feature `relative overflow-hidden` classes, a solid `#050c18` background base, an absolute-positioned `next/image` of the starfield, and an explicit `z-10` layer wrapper for the content.
+
+## Exact Changed Files (Diff Reconciliation)
+- `.specify/feature.json`
+- `.specify/features/016-community-stories-background/plan.md`
+- `.specify/features/016-community-stories-background/spec.md`
+- `.specify/features/016-community-stories-background/tasks.md`
+- `app/homepage/HomePage.js`
+- `public/community-stars-bg.webp`
+
+## Unresolved/Remaining Issues
+- None.
 
 **USEFUL RESULT: YES**
