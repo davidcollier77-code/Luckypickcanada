@@ -215,7 +215,7 @@ function secureResponseHeaders(extra = {}) {
 
 export async function GET(request) {
   const { adminPassword, adminEmail, resendApiKey } = getAdminConfig();
-  if (!adminPassword || !adminEmail || !resendApiKey) {
+  if (!adminPassword || !adminEmail) {
     return new Response(renderLogin('Admin login is temporarily unavailable because authentication is not fully configured.'), {
       status: 503,
       headers: secureResponseHeaders(),
@@ -254,7 +254,7 @@ export async function POST(request) {
   }
 
   const { adminPassword, adminEmail, resendApiKey } = getAdminConfig();
-  if (!adminPassword || !adminEmail || !resendApiKey) {
+  if (!adminPassword || !adminEmail) {
     return new Response(renderLogin('Admin login is temporarily unavailable because authentication is not fully configured.'), {
       status: 503,
       headers: secureResponseHeaders(),
@@ -289,6 +289,13 @@ export async function POST(request) {
         'Cache-Control': 'no-store',
         'Referrer-Policy': 'no-referrer',
       },
+    });
+  }
+
+  if (!resendApiKey) {
+    return new Response(renderLogin('Admin login is temporarily unavailable because email delivery is not configured.'), {
+      status: 503,
+      headers: secureResponseHeaders(),
     });
   }
 
