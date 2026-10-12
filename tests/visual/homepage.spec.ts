@@ -86,6 +86,7 @@ test.describe("Homepage Visual", () => {
     const particles = page.locator('.animate-magic-burst');
 
     await expect(exploreButton).toBeVisible();
+    await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
     await expect(heroStage).toBeVisible();
 
     const buttonBox = await exploreButton.boundingBox();
@@ -191,6 +192,7 @@ test.describe("Homepage Visual", () => {
     const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
     await expect(exploreButton).toBeVisible();
+    await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
 
     await exploreButton.click();
     await page.waitForTimeout(150);

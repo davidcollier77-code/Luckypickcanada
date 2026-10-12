@@ -18,6 +18,7 @@ const SCROLL_KEYS = new Set([
 export default function ExploreLuckButton() {
   const [particles, setParticles] = useState([]);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const particleIdCounter = useRef(0);
   const isAnimatingRef = useRef(false);
   const isCoolingDownRef = useRef(false);
@@ -28,6 +29,7 @@ export default function ExploreLuckButton() {
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
+    setIsHydrated(true);
 
     const handler = (event) => setPrefersReducedMotion(event.matches);
     mediaQuery.addEventListener('change', handler);
@@ -194,6 +196,7 @@ export default function ExploreLuckButton() {
         onPointerUp={handlePointerUp}
         className="pointer-events-auto h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         aria-label="Explore your luck. Scroll down to the Play and Explore section."
+        data-hydrated={isHydrated ? 'true' : 'false'}
       >
         <span className="sr-only">Explore your luck</span>
       </button>
