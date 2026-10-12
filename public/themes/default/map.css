@@ -21,7 +21,6 @@ html { scroll-behavior: smooth; }
 .province-marker-code { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .province-marker .marker-sparkle { position: absolute; inset: -.48rem; border: 1px solid rgba(255, 235, 155, .58); border-radius: inherit; animation: marker-pulse 2.1s ease-in-out infinite; }
 @keyframes marker-pulse { 0%, 100% { transform: scale(.88); opacity: .22; } 50% { transform: scale(1.28); opacity: .82; } }
-@keyframes aurora-drift { from { transform: translate3d(-8%, -2%, 0) rotate(-7deg); opacity: .34; } to { transform: translate3d(8%, 3%, 0) rotate(6deg); opacity: .62; } }
 .mobile-province-select { display: none; }
 .map-statistics { align-items: stretch; }
 .map-statistic { display: grid; align-content: center; min-height: 7.5rem; }
@@ -33,13 +32,15 @@ html { scroll-behavior: smooth; }
 .map-community-section, .map-province-section { border-radius: 24px; }
 .map-activity-card, .map-province-card { transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
 .map-activity-card:hover, .map-activity-card:focus-visible, .map-province-card:hover, .map-province-card:focus-visible { transform: translateY(-2px); border-color: rgba(250,204,21,.7) !important; outline: none; }
-.story-modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgba(4, 18, 16, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-.story-modal { position: relative; width: min(100%, 440px); padding: 1.5rem; border-radius: 20px; color: #fff7d6; background: linear-gradient(145deg, rgba(6, 32, 26, 0.92), rgba(12, 60, 48, 0.85) 52%, rgba(20, 45, 40, 0.84)); border: 1px solid rgba(250, 204, 21, 0.38); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-.story-modal > button { position: absolute; top: .5rem; right: .8rem; border: 0; color: inherit; background: transparent; font-size: 2rem; cursor: pointer; }
-.story-modal form, .story-modal label { display: grid; gap: .55rem; }
+.story-modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgba(4, 18, 16, 0.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.story-modal { position: relative; width: min(100%, 460px); padding: clamp(1.5rem, 4vw, 2.2rem); border: 1px solid rgba(250, 204, 21, 0.4); border-radius: 24px; color: #fff7d6; background: linear-gradient(145deg, rgba(6, 20, 36, 0.75), rgba(2, 8, 16, 0.85)); box-shadow: 0 24px 60px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.15); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.story-modal > button { position: absolute; top: .5rem; right: .8rem; border: 0; color: rgba(255, 247, 214, 0.6); background: transparent; font-size: 2rem; cursor: pointer; transition: color 0.2s; }
+.story-modal > button:hover { color: #fff; }
+.story-modal form, .story-modal label { display: grid; gap: .65rem; }
 .story-modal form { margin-top: 1rem; }
-.story-modal input, .story-modal textarea { padding: .65rem; border: 1px solid rgba(255,235,160,.5); border-radius: 8px; color: inherit; background: rgba(0,0,0,.18); }
-.story-modal form button { padding: .75rem; border: 0; border-radius: 999px; color: #06110d; background: #facc15; font-weight: 900; cursor: pointer; }
+.story-modal input, .story-modal textarea { padding: .85rem 1rem; border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 12px; color: #fff; background: rgba(0,0,0,.5); font: inherit; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
+.story-modal input:focus-visible, .story-modal textarea:focus-visible { outline: none; border-color: rgba(250, 204, 21, 0.6); box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2); }
+.story-modal form button { /* inline styled */ }
 
 @media (max-width: 860px) {
   #lucky-story-map { grid-template-columns: 1fr !important; }
@@ -51,8 +52,10 @@ html { scroll-behavior: smooth; }
 @media (max-width: 560px) {
   .lucky-map-shell { padding-left: 1rem !important; padding-right: 1rem !important; }
   .lucky-map-shell > div { width: 100%; }
-  .map-statistics { grid-template-columns: 1fr !important; gap: .65rem !important; }
-  .map-statistic { min-height: 0; }
+
+  .map-statistic { min-height: 0; padding: 0.8rem 1rem !important; }
+  .map-statistic strong { font-size: 1.8rem !important; margin-top: 0.2rem !important; }
+  .map-statistics { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important; gap: .5rem !important; }
   .official-map-artwork { width: min(100%, 36rem); display: grid; place-items: center; border-radius: 14px; box-shadow: 0 0 0 3px rgba(15, 9, 3, .92), 0 0 0 4px rgba(160, 103, 26, .52), 0 16px 36px rgba(0, 0, 0, .42); }
   .official-map-image { max-width: 100%; }
   .province-marker .marker-count { font-size: .68rem; }
@@ -65,4 +68,3 @@ html { scroll-behavior: smooth; }
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; } }
-.story-modal input:focus-visible, .story-modal textarea:focus-visible { outline: none; border-color: rgba(250, 204, 21, 0.7); box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15); }
