@@ -1,0 +1,3 @@
+- [ ] Task 1: Update CSS for story-modal and backdrop
+- [ ] Task 2: Update inline styling for submit button and form elements
+- [ ] Task 3: Verify visually and functionally
