@@ -448,8 +448,35 @@ export default function LuckyMapOfCanada({ mapData }) {
             ))}
           </div>
         </section>
-                {isStoryFormOpen ? <div className="story-modal-backdrop" onMouseDown={() => setIsStoryFormOpen(false)}><section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}><button type="button" aria-label="Close story form" onClick={() => setIsStoryFormOpen(false)} autoFocus className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '8px', minWidth: '44px', minHeight: '44px' }}><span aria-hidden="true">×</span></button><h2 id="story-form-title" style={{ margin: "0", color: "#fef3c7" }}>Community Stories</h2>
-          <p style={{ margin: "0.5rem 0 1.5rem", color: "rgba(254, 243, 199, 0.85)", lineHeight: 1.5 }}>Share your lucky moments, funny experiences, memorable days, or little wins with the LuckyPickCanada community.</p><form action="/api/lucky-stories" method="post"><input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} /><label style={{ color: "#fef3c7" }}>Name<input name="name" required maxLength="40" /></label><label style={{ color: "#fef3c7" }}>Province or territory<input name="location" maxLength="80" /></label><label style={{ color: "#fef3c7" }}>Tell us your story...<textarea name="story" required minLength="20" maxLength="600" rows="5" onChange={(e) => setStoryFormText(e.target.value)} /><div style={{ textAlign: 'right', fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.2rem' }}>{storyFormText.length}/600 characters</div></label><TurnstileField submitButtonId="lucky-story-submit" action="lucky-story" /><button id="lucky-story-submit" type="submit" onClick={playButtonClick} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '0.85rem', border: '1px solid rgba(250, 204, 21, 0.6)', borderRadius: 999, color: '#06110d', background: 'linear-gradient(135deg, #fef3c7 0%, #facc15 48%, #b7791f 100%)', fontWeight: 900, cursor: 'pointer', marginTop: '0.5rem', boxShadow: '0 4px 16px rgba(250, 204, 21, 0.25), inset 0 1px 2px rgba(255,255,255,0.8)' }}>Submit Story</button></form></section></div> : null}
+                {isStoryFormOpen ? (
+          <div className="story-modal-backdrop" onMouseDown={() => setIsStoryFormOpen(false)}>
+            <section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}>
+
+              {/* Independent Starry Background layer */}
+              <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit', zIndex: 0 }}>
+                 <div className="homepage-sky-backdrop" style={{ position: 'absolute', transform: 'none', zIndex: -1, backgroundAttachment: 'scroll' }} />
+                 {/* Inner gradient to ensure legibility */}
+                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(6, 20, 36, 0.85), rgba(2, 8, 16, 0.95))', zIndex: 0 }} />
+              </div>
+
+              {/* Form Content */}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <button type="button" aria-label="Close story form" onClick={() => setIsStoryFormOpen(false)} autoFocus className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '8px', minWidth: '44px', minHeight: '44px', position: 'absolute', top: '-0.5rem', right: '-0.5rem' }}><span aria-hidden="true" style={{ fontSize: '1.8rem' }}>×</span></button>
+                <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, color: '#facc15', fontWeight: 900, fontSize: '0.85rem' }}>Share your moment</p>
+                <h2 id="story-form-title" style={{ margin: "0.2rem 0 0", color: "#fff", fontSize: '2rem', lineHeight: 1.1 }}>Community Stories</h2>
+                <p style={{ margin: "0.8rem 0 1.5rem", color: "#cbd5e1", lineHeight: 1.6, fontSize: '1.05rem' }}>Share your lucky moments, funny experiences, memorable days, or little wins with the LuckyPickCanada community.</p>
+                <form action="/api/lucky-stories" method="post" style={{ display: 'grid', gap: '1.25rem' }}>
+                  <input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} />
+                  <label style={{ color: "#f8fafc", fontWeight: 700 }}>Name<input name="name" required maxLength="40" style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(250, 204, 21, 0.4)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem' }} /></label>
+                  <label style={{ color: "#f8fafc", fontWeight: 700 }}>Province or territory<input name="location" maxLength="80" style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(250, 204, 21, 0.4)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem' }} /></label>
+                  <label style={{ color: "#f8fafc", fontWeight: 700 }}>Tell us your story...<textarea name="story" required minLength="20" maxLength="600" rows="5" onChange={(e) => setStoryFormText(e.target.value)} style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(250, 204, 21, 0.4)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem', resize: 'vertical' }} /><div style={{ textAlign: 'right', fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.4rem' }}>{storyFormText.length}/600 characters</div></label>
+                  <TurnstileField submitButtonId="lucky-story-submit" action="lucky-story" />
+                  <button id="lucky-story-submit" type="submit" onClick={playButtonClick} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '1rem', border: '1px solid rgba(251, 191, 36, 0.7)', borderRadius: 999, color: '#0f172a', background: 'linear-gradient(135deg, #ffe066 0%, #f59e0b 50%, #d97706 100%)', fontWeight: 900, cursor: 'pointer', marginTop: '0.5rem', boxShadow: '0 8px 20px rgba(245, 158, 11, 0.35), inset 0 1px 2px rgba(255,255,255,0.5)', fontSize: '1.1rem', transition: 'all 0.2s' }}>Submit Story</button>
+                </form>
+              </div>
+            </section>
+          </div>
+        ) : null}
       </div>
     </div>
   );
