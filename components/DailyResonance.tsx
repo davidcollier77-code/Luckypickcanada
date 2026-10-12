@@ -185,7 +185,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       const howlerModule = await import('howler');
       Howl = howlerModule.Howl;
       const gsapModule = await import('gsap');
-      gsap = gsapModule.default || gsapModule;
+      gsap = gsapModule.default;
     } catch (err) {
       console.error('Failed to load heavy libraries for reveal:', err);
       isAnimatingRef.current = false;
