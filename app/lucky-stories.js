@@ -29,6 +29,11 @@ function normalizeLocation(value) {
     .trim();
 }
 
+// Helper function to escape special regex characters
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // PERFORMANCE OPTIMIZATION (Bolt ⚡):
 // Precompile regular expressions for location matching outside the function.
 // Previously, these were created dynamically on every call, which became a
@@ -36,7 +41,7 @@ function normalizeLocation(value) {
 const PRECOMPILED_PROVINCES = storyProvinces.map((province) => {
   return {
     ...province,
-    codeRegex: new RegExp(`(^|[^A-Za-z])${province.code}([^A-Za-z]|$)`, 'i'),
+    codeRegex: new RegExp(`(^|[^A-Za-z])${escapeRegExp(province.code)}([^A-Za-z]|$)`, 'i'),
     aliasRegexes: province.aliases
       .map((alias) => {
         const cleanAlias = normalizeLocation(alias);
@@ -63,14 +68,14 @@ export function getStoryProvince(location) {
   );
 
   if (provinceCodeMatch) {
-    return storyProvinces.find((p) => p.code === provinceCodeMatch.code) || null;
+    return provinceCodeMatch;
   }
 
   const aliasMatch = PRECOMPILED_PROVINCES.find((province) =>
     province.aliasRegexes.some((regex) => regex.test(normalized)),
   );
 
-  return aliasMatch ? storyProvinces.find((p) => p.code === aliasMatch.code) || null : null;
+  return aliasMatch || null;
 }
 
 export function createStoryPreview(story) {
