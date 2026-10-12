@@ -20,6 +20,41 @@ jobs:
     steps:
       - name: Review pull request
         id: review
+        continue-on-error: true
+        uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
+        with:
+          provider: groq
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          llm_api_key: ${{ secrets.GROQ_API_KEY }}
+          language: en
+          ignore_bots: "false"
+          skip_draft: "true"
+          on_update: replace
+          max_requests: "4"
+          custom_instructions: |
+            RESPONSE CONTRACT — follow exactly:
+            - Return exactly one JSON object, with no Markdown fences or prose outside it.
+            - The top-level "summary" property must be a non-empty string.
+            - The top-level "reviews" property must always be an array; use [] when there are no findings.
+            - Every item in "reviews" must be an object with a non-empty string "comment".
+            - Optional item properties are "path" (string), "line" (positive integer for a confirmed added diff line only), "severity" (string), and "coding_plan" (string).
+            - Do not substitute names such as "findings", "issues", "result", or "overview" for "reviews" or "summary".
+            - Do not return a top-level array, JSON string, or null.
+
+      # Groq can return HTTP 429 when requests arrive too close together.
+      # Back off before the workflow-level retry instead of immediately hitting
+      # the same rate limit again. This runs only after a failed review that
+      # explicitly confirms that no review was published.
+      - name: Back off before retrying rejected review
+        if: steps.review.outcome == 'failure' && contains(steps.review.outputs.reason, 'No review batch completed successfully')
+        run: sleep 60
+
+      # Inori does not retry a successful HTTP response whose JSON fails review
+      # validation. Retry only the terminal "no batch completed" failure, which
+      # means no review was published. Keep all other failures fail-closed.
+      - name: Retry rejected model response once
+        id: review_retry
+        if: steps.review.outcome == 'failure' && contains(steps.review.outputs.reason, 'No review batch completed successfully')
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
           provider: groq
@@ -43,11 +78,14 @@ jobs:
       - name: Record review outcome
         if: always()
         env:
-          REVIEW_STATUS: ${{ steps.review.outputs.status }}
-          REVIEW_FINDINGS: ${{ steps.review.outputs.findings_count }}
-          REVIEWED_FILES: ${{ steps.review.outputs.reviewed_files }}
-          OMITTED_FILES: ${{ steps.review.outputs.omitted_files }}
-          REVIEW_REASON: ${{ steps.review.outputs.reason }}
+          REVIEW_STATUS: ${{ steps.review_retry.outputs.status || steps.review.outputs.status }}
+          REVIEW_FINDINGS: ${{ steps.review_retry.outputs.findings_count || steps.review.outputs.findings_count }}
+          REVIEWED_FILES: ${{ steps.review_retry.outputs.reviewed_files || steps.review.outputs.reviewed_files }}
+          OMITTED_FILES: ${{ steps.review_retry.outputs.omitted_files || steps.review.outputs.omitted_files }}
+          INITIAL_OUTCOME: ${{ steps.review.outcome }}
+          INITIAL_REASON: ${{ steps.review.outputs.reason }}
+          RETRY_OUTCOME: ${{ steps.review_retry.outcome }}
+          RETRY_REASON: ${{ steps.review_retry.outputs.reason }}
         run: |
           {
             echo "## Inori AI Review"
@@ -56,7 +94,27 @@ jobs:
             echo "- **Findings:** ${REVIEW_FINDINGS:-unknown}"
             echo "- **Files reviewed:** ${REVIEWED_FILES:-unknown}"
             echo "- **Files omitted:** ${OMITTED_FILES:-unknown}"
-            if [[ -n "${REVIEW_REASON:-}" ]]; then
-              echo "- **Reason:** ${REVIEW_REASON}"
+            if [[ "${INITIAL_OUTCOME:-}" == "failure" && "${RETRY_OUTCOME:-}" != "skipped" ]]; then
+              echo "- **Recovery attempt:** ${RETRY_OUTCOME}"
+            fi
+            if [[ -n "${INITIAL_REASON:-}" ]]; then
+              echo "- **Initial attempt reason:** ${INITIAL_REASON}"
+            fi
+            if [[ -n "${RETRY_REASON:-}" ]]; then
+              echo "- **Recovery attempt reason:** ${RETRY_REASON}"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # continue-on-error is limited to the first attempt; this guard ensures a
+      # non-retriable failure or a failed recovery still fails the required check.
+      - name: Fail when review recovery is unsuccessful
+        if: always()
+        env:
+          INITIAL_OUTCOME: ${{ steps.review.outcome }}
+          RECOVERY_OUTCOME: ${{ steps.review_retry.outcome }}
+        run: |
+          set -euo pipefail
+          if [[ "${INITIAL_OUTCOME:-}" == "failure" && "${RECOVERY_OUTCOME:-}" != "success" ]]; then
+            echo "::error::Inori AI review failed and the eligible recovery attempt did not succeed."
+            exit 1
+          fi
