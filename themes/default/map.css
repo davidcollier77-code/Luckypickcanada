@@ -32,15 +32,17 @@ html { scroll-behavior: smooth; }
 .map-community-section, .map-province-section { border-radius: 24px; }
 .map-activity-card, .map-province-card { transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
 .map-activity-card:hover, .map-activity-card:focus-visible, .map-province-card:hover, .map-province-card:focus-visible { transform: translateY(-2px); border-color: rgba(250,204,21,.7) !important; outline: none; }
-.story-modal-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1rem; background: rgba(4, 18, 16, 0.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-.story-modal { position: relative; width: min(100%, 460px); padding: clamp(1.5rem, 4vw, 2.2rem); border: 1px solid rgba(250, 204, 21, 0.4); border-radius: 24px; color: #fff7d6; background: linear-gradient(145deg, rgba(6, 20, 36, 0.75), rgba(2, 8, 16, 0.85)); box-shadow: 0 24px 60px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.15); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-.story-modal > button { position: absolute; top: .5rem; right: .8rem; border: 0; color: rgba(255, 247, 214, 0.6); background: transparent; font-size: 2rem; cursor: pointer; transition: color 0.2s; }
-.story-modal > button:hover { color: #fff; }
-.story-modal form, .story-modal label { display: grid; gap: .65rem; }
-.story-modal form { margin-top: 1rem; }
-.story-modal input, .story-modal textarea { padding: .85rem 1rem; border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 12px; color: #fff; background: rgba(0,0,0,.5); font: inherit; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
-.story-modal input:focus-visible, .story-modal textarea:focus-visible { outline: none; border-color: rgba(250, 204, 21, 0.6); box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.2); }
-.story-modal form button { /* inline styled */ }
+.story-modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: safe center; padding: 1rem; background: rgba(4, 10, 16, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); overflow-y: auto; }
+.story-modal { position: relative; width: min(100%, 500px); padding: clamp(1.8rem, 5vw, 2.5rem); border: 1px solid rgba(250, 204, 21, 0.4); border-radius: 24px; color: #fff7d6; box-shadow: 0 24px 60px rgba(0,0,0,0.9), inset 0 1px 2px rgba(255,255,255,0.25); }
+.story-modal button[aria-label="Close story form"] { color: rgba(255, 247, 214, 0.7); background: transparent; cursor: pointer; transition: color 0.2s, transform 0.2s; border: 0; }
+.story-modal button[aria-label="Close story form"]:hover { color: #fff; transform: scale(1.1); }
+
+
+.story-modal input, .story-modal textarea { transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s; font-family: inherit; }
+.story-modal input:hover, .story-modal textarea:hover { border-color: rgba(250, 204, 21, 0.5); background-color: rgba(15, 23, 42, 0.8) !important; }
+.story-modal input:focus-visible, .story-modal textarea:focus-visible { outline: none; border-color: rgba(250, 204, 21, 0.8) !important; box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.25) !important; background-color: rgba(15, 23, 42, 0.9) !important; }
+
+
 
 @media (max-width: 860px) {
   #lucky-story-map { grid-template-columns: 1fr !important; }
@@ -65,6 +67,9 @@ html { scroll-behavior: smooth; }
   .mobile-province-select select { width: 100%; min-height: 3.25rem; padding: .7rem 2.5rem .7rem .9rem; border: 1px solid rgba(255,235,160,.52); border-radius: 12px; color: #fff7d6; background: linear-gradient(135deg, #0b2d28, #123a35); box-shadow: inset 0 1px rgba(255,255,255,.1), 0 8px 20px rgba(0,0,0,.18); font: inherit; }
   .mobile-province-select select:focus-visible { outline: 3px solid rgba(250,204,21,.38); outline-offset: 3px; }
   .province-selection-grid { display: none !important; }
+  .story-modal { padding: clamp(1.2rem, 4vw, 1.5rem); }
+  .story-modal h2 { font-size: 1.6rem !important; }
+  .story-modal p { font-size: 0.95rem !important; }
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; } }
