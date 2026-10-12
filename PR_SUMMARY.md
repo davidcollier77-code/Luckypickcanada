@@ -67,10 +67,10 @@
 
 ## Visual QA Follow-up — Explore Button Mobile Test
 
-- **Task group:** testing — stabilizing an existing Playwright visual interaction test that failed on the 412px mobile project.
-- **Verified failure:** GitHub Actions run `38215031913` failed at `tests/visual/homepage.spec.ts:138`; the particle locator returned 0 after activating Explore Your Luck. The test passed for desktop and mobile-390 in that run.
-- **Change:** Replaced the test's fake `window.matchMedia` overrides with Playwright's `page.emulateMedia({ reducedMotion: 'no-preference' })`, keeping JavaScript and CSS media-query behavior aligned. The particle assertion now polls promptly after activation to avoid a fixed wait consuming the short animation window on a slow mobile runner.
-- **Changed file:** `tests/visual/homepage.spec.ts`.
-- **Security/production behavior:** No application runtime code, HSTS configuration, DNS, secrets, or dependencies changed.
-- **Verification:** The GitHub Actions failure artifact and trace were inspected. No local Playwright run was performed during this API-only edit. A fresh CI run is required to verify this repair.
-- **Remaining issues:** Await fresh Visual QA result; do not treat the test as fixed until the 412px project passes.
+- **Task group:** testing — repair a flaky Playwright interaction check on the 412px mobile viewport.
+- **Verified failure:** GitHub Actions run `38215856893` was green overall, but its report marked the 412px Explore interaction test flaky: the first attempt found zero particles and the retry passed. This is not treated as a complete repair.
+- **Changes:** In `app/homepage/ExploreLuckButton.js`, expose a non-visual `data-hydrated` marker after the component's mount effect has initialized the motion preference. In `tests/visual/homepage.spec.ts`, use Playwright's native reduced-motion emulation, wait for that marker before interacting, and poll for the short-lived particles promptly after activation.
+- **Changed files for this follow-up:** `app/homepage/ExploreLuckButton.js`, `tests/visual/homepage.spec.ts`.
+- **Protected behavior:** No CSS/layout/wording, HSTS, DNS, secrets, dependencies, or payment/security configuration changed. The marker is an attribute only and does not affect rendering.
+- **Verification:** Inspected the failed run's trace/error context and the subsequent CI log. The prior run still had a first-attempt failure despite passing on retry. A fresh run for the hydration-wait commit is required; this fix is not complete until mobile-412 passes on the first attempt.
+- **Remaining issues:** Await the fresh Visual QA result and required repository verification before considering the PR ready to merge.
