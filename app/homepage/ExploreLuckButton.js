@@ -1,10 +1,38 @@
 'use client';
 
 import confetti from 'canvas-confetti';
-import { playMagicalChime } from '../lib/audio';
+import { playMagicalChime, preloadMagicalChime } from '../lib/audio';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 let mapleLeafShape = null;
+
+// Same golden maple-leaf outline used by public/images/maple-leaf.svg.
+// Its SVG viewBox is 4030 x 4030, centered at y=15. Map that geometry to a
+// 10 x 10 particle while centering it, avoiding canvas-confetti's expensive
+// path scan (which cannot infer bounds from this negative-coordinate path).
+const MAPLE_LEAF_PATH = 'm-90 2030 45-863a95 95 0 0 0-111-98l-859 151 116-320a65 65 0 0 0-20-73l-941-762 212-99a65 65 0 0 0 34-79l-186-572 542 115a65 65 0 0 0 73-38l105-247 423 454a65 65 0 0 0 111-57l-204-1052 327 189a65 65 0 0 0 91-27L0-2000l332 652a65 65 0 0 0 91 27l327-189-204 1052a65 65 0 0 0 111 57l423-454 105 247a65 65 0 0 0 73 38l542-115-186 572a65 65 0 0 0 34 79l212 99-941 762a65 65 0 0 0-20 73l116 320-859-151a95 95 0 0 0-111 98l45 863z';
+const MAPLE_LEAF_MATRIX = [0.00248138958, 0, 0, 0.00248138958, 0, -0.0372208437];
+
+/**
+ * Returns the cached normalized maple-leaf confetti shape, or null when
+ * the browser cannot create path shapes so the caller can use basic shapes.
+ */
+function getMapleLeafShape() {
+  if (mapleLeafShape) return mapleLeafShape;
+  if (typeof confetti.shapeFromPath !== 'function') return null;
+
+  try {
+    mapleLeafShape = confetti.shapeFromPath({
+      path: MAPLE_LEAF_PATH,
+      matrix: MAPLE_LEAF_MATRIX,
+    });
+  } catch (error) {
+    console.warn('Maple leaf shape creation failed; using fallback particles.', error);
+    return null;
+  }
+
+  return mapleLeafShape;
+}
 
 const COOLDOWN_MS = 15_000;
 const SCROLL_DURATION = 1_500;
@@ -18,10 +46,17 @@ const SCROLL_KEYS = new Set([
   ' ',
 ]);
 
+/**
+ * Renders the accessible hero hit target and starts the golden-leaf effect
+ * and eased scroll to the Play and Explore section.
+ */
 export default function ExploreLuckButton() {
-    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
-    const isAnimatingRef = useRef(false);
+  const [isChimeReady, setIsChimeReady] = useState(false);
+  const confettiCanvasRef = useRef(null);
+  const confettiInstanceRef = useRef(null);
+  const isAnimatingRef = useRef(false);
   const isCoolingDownRef = useRef(false);
   const cooldownTimeoutRef = useRef(null);
   const animationFrameRef = useRef(null);
@@ -38,6 +73,23 @@ export default function ExploreLuckButton() {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
+
+    // Load and decode the sound before activation so playback can start on the tap.
+    preloadMagicalChime()
+      .then(() => {
+        if (isMounted) setIsChimeReady(true);
+      })
+      .catch((error) => {
+        console.warn('Magical chime preload failed', error);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -46,7 +98,35 @@ export default function ExploreLuckButton() {
       if (cooldownTimeoutRef.current) {
         clearTimeout(cooldownTimeoutRef.current);
       }
+      confettiInstanceRef.current?.reset();
+      confettiCanvasRef.current?.remove();
+      confettiInstanceRef.current = null;
+      confettiCanvasRef.current = null;
     };
+  }, []);
+
+  const getConfettiInstance = useCallback(() => {
+    if (confettiInstanceRef.current) return confettiInstanceRef.current;
+
+    // Use a dedicated main-thread canvas: the site's restrictive script-src
+    // blocks canvas-confetti's default Blob worker, preventing any particles.
+    const canvas = document.createElement('canvas');
+    Object.assign(canvas.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100vw',
+      height: '100vh',
+      pointerEvents: 'none',
+      zIndex: '100',
+    });
+    document.body.appendChild(canvas);
+    confettiCanvasRef.current = canvas;
+    confettiInstanceRef.current = confetti.create(canvas, {
+      resize: true,
+      useWorker: false,
+    });
+    return confettiInstanceRef.current;
   }, []);
 
   const activateExplore = useCallback(() => {
@@ -76,7 +156,7 @@ export default function ExploreLuckButton() {
     playMagicalChime().catch(err => console.error("Audio playback failed", err));
 
     // Magical Golden Confetti Burst
-    const count = 40;
+    const count = 72;
 
     const fireConfetti = () => {
       // Find the button element by traversing up or querying
@@ -95,18 +175,19 @@ export default function ExploreLuckButton() {
         originY = Math.min(Math.max((lmRect.top - window.innerHeight / 2) / window.innerHeight, 0), 0.9);
       }
 
+      const leafShape = getMapleLeafShape();
       const defaults = {
         origin: { x: originX, y: originY },
         colors: ['#FBBF24', '#F59E0B', '#D97706'], // Amber, Yellow, Gold
-        shapes: mapleLeafShape ? [mapleLeafShape] : ['star', 'circle'],
+        shapes: leafShape ? [leafShape] : ['star', 'circle'],
         zIndex: 100,
         ticks: 200,
         gravity: 1.2,
-        scalar: 1.5,
+        scalar: 1.8,
       };
 
       function fire(particleRatio, opts) {
-        confetti({
+        getConfettiInstance()({
           ...defaults,
           ...opts,
           particleCount: Math.floor(count * particleRatio)
@@ -137,24 +218,8 @@ export default function ExploreLuckButton() {
       });
     };
 
-    // We try to load the webp leaf image and convert it to a shape on the fly if not yet cached.
-    if (!mapleLeafShape && typeof window !== 'undefined' && window.ImageBitmap) {
-      const img = new window.Image();
-      img.src = '/images/maple-leaf.webp';
-      img.onload = () => {
-        window.createImageBitmap(img).then((bitmap) => {
-          mapleLeafShape = { type: 'bitmap', bitmap };
-          fireConfetti();
-        }).catch(() => {
-          fireConfetti();
-        });
-      };
-      img.onerror = () => {
-        fireConfetti();
-      };
-    } else {
-      fireConfetti();
-    }
+    // Fire immediately: no image request may delay the particles until after scrolling.
+    fireConfetti();
 
     // Calculate the current scroll target and distance.
     const startY = window.scrollY;
@@ -182,7 +247,7 @@ export default function ExploreLuckButton() {
       }
       animationFrameRef.current = null;
       isAnimatingRef.current = false;
-            removeInterruptListeners();
+      removeInterruptListeners();
     };
 
     const handleUserInterrupt = (event) => {
@@ -218,7 +283,7 @@ export default function ExploreLuckButton() {
     };
 
     animationFrameRef.current = requestAnimationFrame(scrollStep);
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, getConfettiInstance]);
 
   const handleClick = useCallback(() => {
     activateExplore();
@@ -247,6 +312,7 @@ export default function ExploreLuckButton() {
         className="pointer-events-auto h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         aria-label="Explore your luck. Scroll down to the Play and Explore section."
         data-hydrated={isHydrated ? 'true' : 'false'}
+        data-chime-ready={isChimeReady ? 'true' : 'false'}
       >
         <span className="sr-only">Explore your luck</span>
       </button>
