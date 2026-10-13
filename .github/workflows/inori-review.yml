@@ -24,6 +24,7 @@ jobs:
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
           provider: groq
+          llm_model: llama-3.3-70b-versatile
           github_token: ${{ secrets.GITHUB_TOKEN }}
           llm_api_key: ${{ secrets.GROQ_API_KEY }}
           language: en
@@ -33,6 +34,7 @@ jobs:
           max_requests: "4"
           custom_instructions: |
             RESPONSE CONTRACT — follow exactly:
+            - CRITICAL: Do NOT wrap the JSON in ```json or any other markdown formatting. Return RAW JSON ONLY.
             - Return exactly one JSON object, with no Markdown fences or prose outside it.
             - The top-level "summary" property must be a non-empty string.
             - The top-level "reviews" property must always be an array; use [] when there are no findings.
@@ -60,6 +62,7 @@ jobs:
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
           provider: groq
+          llm_model: llama-3.3-70b-versatile
           github_token: ${{ secrets.GITHUB_TOKEN }}
           llm_api_key: ${{ secrets.GROQ_API_KEY }}
           language: en
@@ -69,6 +72,7 @@ jobs:
           max_requests: "4"
           custom_instructions: |
             RESPONSE CONTRACT — follow exactly:
+            - CRITICAL: Do NOT wrap the JSON in ```json or any other markdown formatting. Return RAW JSON ONLY.
             - Return exactly one JSON object, with no Markdown fences or prose outside it.
             - The top-level "summary" property must be a non-empty string.
             - The top-level "reviews" property must always be an array; use [] when there are no findings.
@@ -85,7 +89,7 @@ jobs:
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
           provider: openrouter
-          llm_model: openrouter/free
+          llm_model: google/gemini-2.0-flash-lite-preview-02-05:free
           github_token: ${{ secrets.GITHUB_TOKEN }}
           llm_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           language: en
@@ -95,6 +99,7 @@ jobs:
           max_requests: "4"
           custom_instructions: |
             RESPONSE CONTRACT — follow exactly:
+            - CRITICAL: Do NOT wrap the JSON in ```json or any other markdown formatting. Return RAW JSON ONLY.
             - Return exactly one JSON object, with no Markdown fences or prose outside it.
             - The top-level "summary" property must be a non-empty string.
             - The top-level "reviews" property must always be an array; use [] when there are no findings.
