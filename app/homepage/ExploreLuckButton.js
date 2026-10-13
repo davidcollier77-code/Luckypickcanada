@@ -5,7 +5,8 @@ import { playMagicalChime } from '../lib/audio';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 let mapleLeafShape = null;
-import Image from 'next/image';
+import { useState, useCallback, useEffect, useRef } from 'react';
+let mapleLeafShape = null;
 
 const COOLDOWN_MS = 15_000;
 const SCROLL_DURATION = 1_500;
