@@ -33,7 +33,7 @@ A visitor hears the short magical chime at the start of the celebration, not aft
 
 **Acceptance Scenarios**:
 1. **Given** the sound has been preloaded, **When** the visitor taps Explore Your Luck, **Then** playback is requested synchronously in the tap handler alongside the particle burst.
-2. **Given** preload has not completed, **When** activation occurs, **Then** the chime must not unexpectedly start late after scrolling finishes; preload can complete for a later activation.
+2. **Given** preload has not completed, **When** activation occurs, **Then** the sound must not unexpectedly start late after scrolling finishes; preload can complete for a later activation.
 3. **Given** reduced motion is preferred, **When** the button is activated, **Then** the existing direct scroll behavior remains and the decorative burst/chime do not play.
 
 ### User Story 3 - Preserve navigation behavior (Priority: P1)
@@ -75,6 +75,7 @@ The visitor reaches the same Play & Explore / Lucky Meter section with the exist
 
 ## Assumptions
 
-- The existing `/sounds/mixkit-magic-sparkles.mp3` remains the selected asset; this repair targets its timing, not its acoustic content or licensing provenance.
+- The sound is the official Mixkit `Fairy magic sparkle` short effect at `https://assets.mixkit.co/sfx/preview/mixkit-fairy-magic-sparkle-871.wav`, listed on Mixkit's free sparkle page under the Mixkit License.
+- The sound file is referenced from Mixkit's CDN rather than vendored in `public/` because outbound DNS in this execution environment prevents a command-line binary download. The narrow CSP exception is required for browser playback and will be verified in CI.
 - Modern browsers supporting `canvas-confetti` path rendering use `Path2D` and `DOMMatrix`; other browsers receive the existing fallback particles.
 - The implementation is limited to this homepage interaction and its directly related verification.
