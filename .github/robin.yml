@@ -1,0 +1,9 @@
+max-diff-size: 50000
+max-comments: 15
+request-changes: false
+skip-paths:
+  - "**/generated/**"
+  - "memory-bank/**"
+  - ".docs/**"
+  - ".specify/**"
+  - ".jules/**"
