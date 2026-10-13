@@ -38,7 +38,8 @@ export function preloadMagicalChime() {
   magicalChimeLoadPromise = import('howler')
     .then(({ Howl }) => new Promise((resolve, reject) => {
       const sound = new Howl({
-        src: ['/sounds/mixkit-magic-sparkles.mp3'],
+        src: ['https://assets.mixkit.co/sfx/preview/mixkit-fairy-magic-sparkle-871.wav'],
+        html5: true,
         volume: 0.45,
         preload: true,
       });
