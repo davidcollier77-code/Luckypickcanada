@@ -1,3 +1,5 @@
+import { MAGICAL_CHIME_URL } from './magicalChimeSource.mjs';
+
 const audioCache = {};
 
 /**
@@ -38,10 +40,14 @@ export function preloadMagicalChime() {
   magicalChimeLoadPromise = import('howler')
     .then(({ Howl }) => new Promise((resolve, reject) => {
       const sound = new Howl({
-        src: ['https://assets.mixkit.co/sfx/preview/mixkit-fairy-magic-sparkle-871.wav'],
+        src: [MAGICAL_CHIME_URL],
         html5: true,
         volume: 0.45,
         preload: true,
+      });
+      sound.on('playerror', (_id, error) => {
+        // Howler reports asynchronous HTML5 media-policy failures through this event.
+        console.error('Magical chime playback failed:', error);
       });
       audioCache.magicalChime = sound;
 
