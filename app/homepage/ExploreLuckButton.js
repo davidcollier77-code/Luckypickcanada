@@ -1,10 +1,32 @@
 'use client';
 
 import confetti from 'canvas-confetti';
-import { playMagicalChime } from '../lib/audio';
+import { playMagicalChime, preloadMagicalChime } from '../lib/audio';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 let mapleLeafShape = null;
+
+// Same golden maple-leaf outline used by public/images/maple-leaf.svg.
+// The fixed transform keeps the path at a regular confetti-particle size.
+const MAPLE_LEAF_PATH = 'm-90 2030 45-863a95 95 0 0 0-111-98l-859 151 116-320a65 65 0 0 0-20-73l-941-762 212-99a65 65 0 0 0 34-79l-186-572 542 115a65 65 0 0 0 73-38l105-247 423 454a65 65 0 0 0 111-57l-204-1052 327 189a65 65 0 0 0 91-27L0-2000l332 652a65 65 0 0 0 91 27l327-189-204 1052a65 65 0 0 0 111 57l423-454 105 247a65 65 0 0 0 73 38l542-115-186 572a65 65 0 0 0 34 79l212 99-941 762a65 65 0 0 0-20 73l116 320-859-151a95 95 0 0 0-111 98l45 863z';
+const MAPLE_LEAF_MATRIX = [0.0025, 0, 0, 0.0025, 0, 0];
+
+function getMapleLeafShape() {
+  if (mapleLeafShape) return mapleLeafShape;
+  if (typeof confetti.shapeFromPath !== 'function') return null;
+
+  try {
+    mapleLeafShape = confetti.shapeFromPath({
+      path: MAPLE_LEAF_PATH,
+      matrix: MAPLE_LEAF_MATRIX,
+    });
+  } catch {
+    // Browsers without Path2D/DOMMatrix keep using the visible gold fallback.
+    return null;
+  }
+
+  return mapleLeafShape;
+}
 
 const COOLDOWN_MS = 15_000;
 const SCROLL_DURATION = 1_500;
@@ -35,6 +57,13 @@ export default function ExploreLuckButton() {
     const handler = (event) => setPrefersReducedMotion(event.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => {
+    // Load the sound before activation so playback can start on the tap.
+    preloadMagicalChime().catch((error) => {
+      console.warn('Magical chime preload failed', error);
+    });
   }, []);
 
   useEffect(() => {
@@ -76,7 +105,7 @@ export default function ExploreLuckButton() {
     playMagicalChime().catch(err => console.error("Audio playback failed", err));
 
     // Magical Golden Confetti Burst
-    const count = 40;
+    const count = 72;
 
     const fireConfetti = () => {
       // Find the button element by traversing up or querying
@@ -95,14 +124,15 @@ export default function ExploreLuckButton() {
         originY = Math.min(Math.max((lmRect.top - window.innerHeight / 2) / window.innerHeight, 0), 0.9);
       }
 
+      const leafShape = getMapleLeafShape();
       const defaults = {
         origin: { x: originX, y: originY },
         colors: ['#FBBF24', '#F59E0B', '#D97706'], // Amber, Yellow, Gold
-        shapes: mapleLeafShape ? [mapleLeafShape] : ['star', 'circle'],
+        shapes: leafShape ? [leafShape] : ['star', 'circle'],
         zIndex: 100,
         ticks: 200,
         gravity: 1.2,
-        scalar: 1.5,
+        scalar: 1.8,
       };
 
       function fire(particleRatio, opts) {
@@ -137,24 +167,8 @@ export default function ExploreLuckButton() {
       });
     };
 
-    // We try to load the webp leaf image and convert it to a shape on the fly if not yet cached.
-    if (!mapleLeafShape && typeof window !== 'undefined' && window.ImageBitmap) {
-      const img = new window.Image();
-      img.src = '/images/maple-leaf.webp';
-      img.onload = () => {
-        window.createImageBitmap(img).then((bitmap) => {
-          mapleLeafShape = { type: 'bitmap', bitmap };
-          fireConfetti();
-        }).catch(() => {
-          fireConfetti();
-        });
-      };
-      img.onerror = () => {
-        fireConfetti();
-      };
-    } else {
-      fireConfetti();
-    }
+    // Fire immediately: no image request may delay the particles until after scrolling.
+    fireConfetti();
 
     // Calculate the current scroll target and distance.
     const startY = window.scrollY;
