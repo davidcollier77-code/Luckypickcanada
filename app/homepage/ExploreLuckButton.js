@@ -44,6 +44,10 @@ const SCROLL_KEYS = new Set([
   ' ',
 ]);
 
+/**
+ * Renders the accessible hero hit target and starts the golden-leaf effect
+ * and eased scroll to the Play and Explore section.
+ */
 export default function ExploreLuckButton() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
