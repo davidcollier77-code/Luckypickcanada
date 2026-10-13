@@ -11,9 +11,10 @@
 ## Phase 3 — Implement the repair
 - [x] T005 Replace click-time bitmap loading with a normalized path-based golden maple-leaf shape in `app/homepage/ExploreLuckButton.js`.
 - [x] T006 Increase the particle count and modestly enlarge particles without changing scroll behavior.
-- [x] T007 Preload and cache the existing chime in `app/lib/audio.js`; prevent delayed playback after activation.
+- [x] T007 Preload and cache the short Mixkit `Fairy magic sparkle` asset in `app/lib/audio.js`; prevent delayed playback after activation.
 - [x] T008 Strengthen `tests/visual/homepage.spec.ts` to verify actual rendered pixels and pre-activation sound preload.
+- [x] T009 Add only `https://assets.mixkit.co` to `media-src` in `next.config.mjs` for the selected sound; leave other CSP directives untouched.
 
 ## Phase 4 — Verify and report
-- [ ] T009 Run focused Playwright tests and `./jules-verify.sh` in a capable checkout.
-- [ ] T010 Inspect CI results, final diff, measured build output and mobile behavior before reporting the task as complete.
+- [ ] T010 Run focused Playwright tests and `./jules-verify.sh` in a capable checkout.
+- [ ] T011 Inspect CI results, final diff, measured build output and mobile behavior before reporting the task as complete.
