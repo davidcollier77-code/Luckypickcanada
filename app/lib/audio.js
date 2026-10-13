@@ -20,3 +20,24 @@ export async function playButtonClick() {
 
   audioCache.buttonClick.play();
 }
+
+/**
+ * Plays a magical chime sound in the browser for special events (e.g., golden arrow activation).
+ * Loads Howler on demand and reuses the cached sound instance. Does nothing on the server.
+ *
+ * @returns {Promise<void>} Resolves after requesting playback.
+ * Rejects on import failure or a synchronous error during sound creation.
+ */
+export async function playMagicalChime() {
+  if (typeof window === 'undefined') return;
+
+  if (!audioCache.magicalChime) {
+    const { Howl } = await import('howler');
+    audioCache.magicalChime = new Howl({
+      src: ['/sounds/mixkit-magic-sparkles.mp3'],
+      volume: 0.6,
+    });
+  }
+
+  audioCache.magicalChime.play();
+}

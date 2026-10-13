@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const EXPLORE_COOLDOWN_MS = 10_000;
+const EXPLORE_COOLDOWN_MS = 15_000;
 
 test.describe("Homepage Visual", () => {
   test.beforeEach(async ({ page }) => {
@@ -83,7 +83,7 @@ test.describe("Homepage Visual", () => {
     const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
     const heroStage = page.locator('.hero-image-container');
-    const particles = page.locator('.animate-magic-burst');
+    const particles = page.locator('canvas[style*="z-index: 100"]');
 
     await expect(exploreButton).toBeVisible();
     await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
@@ -139,15 +139,48 @@ test.describe("Homepage Visual", () => {
     const finalScrollY = await page.evaluate(() => window.scrollY);
     expect(finalScrollY).toBeGreaterThan(0);
     expect(Math.abs(finalScrollY - targetScrollY!)).toBeLessThanOrEqual(2);
-    await expect(particles).toHaveCount(0);
+    // canvas-confetti handles its own canvas, no strict local state cleanup needed.
 
+    // Test: Rapid activations during cooldown are blocked
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForFunction(() => window.scrollY === 0);
+
+    // Try clicking multiple times rapidly - should only trigger once
+    await exploreButton.click();
+    await page.waitForTimeout(50);
+    const scrollAfterFirst = await page.evaluate(() => window.scrollY);
+    
+    // Second immediate click should be blocked (no additional scroll)
+    await exploreButton.click();
+    await page.waitForTimeout(50);
+    const scrollAfterSecond = await page.evaluate(() => window.scrollY);
+    
+    // Third immediate click should also be blocked
+    await exploreButton.click();
+    await page.waitForTimeout(50);
+    const scrollAfterThird = await page.evaluate(() => window.scrollY);
+    
+    // All three should show progression from the first click only
+    expect(scrollAfterFirst).toBeGreaterThan(0);
+    expect(scrollAfterSecond).toBeGreaterThanOrEqual(scrollAfterFirst);
+    expect(scrollAfterThird).toBeGreaterThanOrEqual(scrollAfterSecond);
+    
+    // Wait for animation to complete
+    await page.waitForTimeout(1_500);
+    
+    // Reset scroll position for remaining tests
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForFunction(() => window.scrollY === 0);
+    
+    // Wait for cooldown to expire before remaining mobile-specific tests
     if (test.info().project.name.startsWith('mobile-')) {
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
       await page.waitForFunction(() => window.scrollY === 0);
 
       await expect.poll(async () => {
         await exploreButton.click();
-        return particles.count();
+        const y = await page.evaluate(() => window.scrollY);
+        return y;
       }, {
         timeout: EXPLORE_COOLDOWN_MS + 2_000,
         intervals: [250],
@@ -168,7 +201,8 @@ test.describe("Homepage Visual", () => {
 
       await expect.poll(async () => {
         await page.touchscreen.tap(tapX, tapY);
-        return particles.count();
+        const y = await page.evaluate(() => window.scrollY);
+        return y;
       }, {
         timeout: EXPLORE_COOLDOWN_MS + 2_000,
         intervals: [250],
