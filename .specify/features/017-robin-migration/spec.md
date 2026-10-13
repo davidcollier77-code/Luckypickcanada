@@ -5,7 +5,7 @@
 **US1: Setup Robin as primary reviewer**
 - Replace Inori with Robin for automated PR reviews
 - Configure Groq as the primary API provider for Robin (`LLM_API_KEY` mapped to `GROQ_API_KEY`)
-- Ensure `$0` cost by using free-tier model (`llama3-70b-8192` or compatible)
+- Ensure `$0` cost by using free-tier model (`llama-3.1-8b-instant` or compatible)
 
 **US2: Configure OpenRouter fallback**
 - Implement a fallback mechanism for Robin using OpenRouter

@@ -27,11 +27,11 @@
 **REASON**: Configured optional Robin settings, particularly skipping paths to prevent large PR diffs on internal generated/vendor paths.
 
 ### Implementation and Constraints
-Replaced `inori-review.yml` with `robin.yml` and added `.github/robin.yml` to specify Robin's ignore paths. Implemented Groq (`llama3-70b-8192`) as the primary code reviewer, and OpenRouter (`openrouter/free`) as the fallback using separate GitHub actions jobs tied via `needs: review` and `if: failure()`. The `request-changes: false` rule is kept based on the repository's rules.
+Replaced `inori-review.yml` with `robin.yml` and added `.github/robin.yml` to specify Robin's ignore paths. Implemented Groq (`llama-3.1-8b-instant`) as the primary code reviewer, and OpenRouter (`openrouter/free`) as the fallback using separate GitHub actions jobs tied via `needs: review` and `if: failure()`. The `request-changes: false` rule is kept based on the repository's rules.
 
 - **495 MB cap**: Followed.
 - **Node version & PNPM check**: Executed and passed locally via `./jules-verify.sh`.
-- **Zero cost constraint**: Verified that both `llama3-70b-8192` on Groq and `openrouter/free` on OpenRouter remain on the free tier without generating usage costs.
+- **Zero cost constraint**: Verified that both `llama-3.1-8b-instant` on Groq and `openrouter/free` on OpenRouter remain on the free tier without generating usage costs.
 
 ### Changed Files
 - `.github/robin.yml`
