@@ -1,3 +1,4 @@
+import Script from 'next/script';
 import Link from 'next/link';
 import '../themes/default/index.css';
 import './globals.css';
@@ -85,6 +86,20 @@ export default function RootLayout({ children }) {
         <div className="homepage-background-foundation fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">
         </div>
         <main className="relative z-10 w-full overflow-x-hidden max-w-[100vw] pt-0 mt-0 flex flex-col min-h-screen">
+          {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+            <>
+              <Script
+                src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
+                strategy="afterInteractive"
+              />
+              <Script id="google-analytics" strategy="afterInteractive">{`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){window.dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
+              `}</Script>
+            </>
+          )}
           <div className="flex-grow">
             {children}
           </div>
