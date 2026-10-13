@@ -4,7 +4,7 @@
 
 ## Summary
 
-Restore visible golden maple-leaf particles and prevent late chime playback while leaving the working scroll behavior untouched. Use the leaf path from the repository's existing golden maple-leaf SVG with `canvas-confetti.shapeFromPath` and a fixed transform matrix. Preload the current Howler sound during component initialization so loaded audio can play immediately on activation.
+Restore visible golden maple-leaf particles and prevent late sound playback while leaving the working scroll behavior untouched. Use the leaf path from the repository's existing golden maple-leaf SVG with `canvas-confetti.shapeFromPath` and a fixed transform matrix. Preload the short official Mixkit `Fairy magic sparkle` sound during component initialization so it can play immediately on activation.
 
 ## Technical Context
 
@@ -15,14 +15,14 @@ Restore visible golden maple-leaf particles and prevent late chime playback whil
 - **Target Platform**: Next.js homepage on desktop and mobile browsers.
 - **Project Type**: Web application.
 - **Performance Goals**: Render the first particle in under 750 ms after activation; audio asset request begins before activation.
-- **Constraints**: Preserve scroll behavior, accessibility, responsive layout, reduced-motion behavior and the 495 MB build cap. No payment, database, authentication, environment, deployment or design changes.
+- **Constraints**: Preserve scroll behavior, accessibility, responsive layout, reduced-motion behavior and the 495 MB build cap. No payment, database, authentication, environment or deployment changes. The one configuration change is limited to adding the official audio host to the existing `media-src` CSP allowlist; other security directives remain unchanged.
 - **Scale/Scope**: Directly related component, audio helper and visual test, plus task-scoped Spec Kit and Memory Bank artifacts.
 
 ## Constitution Check
 
 - Smallest scoped repair: PASS.
 - Preserve behavior outside scope: PASS by design; only particle shape/count, audio preload/playback timing, tests and task artifacts are changed.
-- User authorization: Explicitly granted for this repair.
+- User authorization: Explicitly granted for this repair, including the narrowly scoped `media-src` exception required for the selected licensed audio host.
 - Tests before approval: Required; CI and user-facing browser result must be checked before marking complete.
 - Context7: Not invoked; no authorization was given and repository-local documentation was consulted.
 - Build size: Actual build size must be measured in required verification; stop if 495 MB is reached or exceeded.
@@ -34,7 +34,7 @@ See `research.md`. The current code constructs a bitmap custom shape without the
 ## Implementation Phases
 
 1. **Repair particle shape**: Use the existing SVG path through `confetti.shapeFromPath`, with an explicit matrix; remove click-time image loading; retain a gold fallback.
-2. **Repair audio timing**: Cache one Howler preload promise and play synchronously if already loaded; never queue late playback after the current transition.
+2. **Repair audio timing**: Cache one Howler preload promise for the short Mixkit sparkle asset and play synchronously when it is loaded; never queue late playback after the current transition. Add only `https://assets.mixkit.co` to `media-src`.
 3. **Regression test**: Extend Playwright coverage to assert rendered alpha pixels and that the sound request starts before activation; retain existing scroll/cooldown/keyboard assertions.
 4. **Verify and report**: Run the Spec Kit gate and repository verification, inspect the final diff, check CI statuses and verify the real mobile interaction before marking success.
 
