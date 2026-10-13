@@ -11,6 +11,10 @@ let mapleLeafShape = null;
 const MAPLE_LEAF_PATH = 'm-90 2030 45-863a95 95 0 0 0-111-98l-859 151 116-320a65 65 0 0 0-20-73l-941-762 212-99a65 65 0 0 0 34-79l-186-572 542 115a65 65 0 0 0 73-38l105-247 423 454a65 65 0 0 0 111-57l-204-1052 327 189a65 65 0 0 0 91-27L0-2000l332 652a65 65 0 0 0 91 27l327-189-204 1052a65 65 0 0 0 111 57l423-454 105 247a65 65 0 0 0 73 38l542-115-186 572a65 65 0 0 0 34 79l212 99-941 762a65 65 0 0 0-20 73l116 320-859-151a95 95 0 0 0-111 98l45 863z';
 const MAPLE_LEAF_MATRIX = [0.0025, 0, 0, 0.0025, 0, 0];
 
+/**
+ * Returns the cached normalized maple-leaf confetti shape, or null when
+ * the browser cannot create path shapes so the caller can use basic shapes.
+ */
 function getMapleLeafShape() {
   if (mapleLeafShape) return mapleLeafShape;
   if (typeof confetti.shapeFromPath !== 'function') return null;
@@ -20,8 +24,8 @@ function getMapleLeafShape() {
       path: MAPLE_LEAF_PATH,
       matrix: MAPLE_LEAF_MATRIX,
     });
-  } catch {
-    // Browsers without Path2D/DOMMatrix keep using the visible gold fallback.
+  } catch (error) {
+    console.warn('Maple leaf shape creation failed; using fallback particles.', error);
     return null;
   }
 
@@ -41,10 +45,10 @@ const SCROLL_KEYS = new Set([
 ]);
 
 export default function ExploreLuckButton() {
-    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isChimeReady, setIsChimeReady] = useState(false);
-    const isAnimatingRef = useRef(false);
+  const isAnimatingRef = useRef(false);
   const isCoolingDownRef = useRef(false);
   const cooldownTimeoutRef = useRef(null);
   const animationFrameRef = useRef(null);
@@ -207,7 +211,7 @@ export default function ExploreLuckButton() {
       }
       animationFrameRef.current = null;
       isAnimatingRef.current = false;
-            removeInterruptListeners();
+      removeInterruptListeners();
     };
 
     const handleUserInterrupt = (event) => {
