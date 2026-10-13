@@ -32,7 +32,7 @@ Neon docs are available as markdown. Append `.md` to any doc URL or set `Accept:
 
 Architecture, features, autoscaling, branching concepts, billing, and plans.
 
-- [All 33 Introduction pages](https://neon.com/docs/introduction/llms.txt) — key pages below
+- [All 34 Introduction pages](https://neon.com/docs/introduction/llms.txt) — key pages below
 
 - [The lakebase architecture](https://neon.com/docs/introduction/architecture-overview.md): Inside Lakebase Postgres: decoupled compute and durable storage
 - [Plans and billing](https://neon.com/docs/introduction/about-billing.md): Learn about Neon's pricing plans and how to manage billing
@@ -125,11 +125,13 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: profile](https://neon.com/docs/cli/profile.md): Manage named sets of Neon credentials
 - [Neon CLI command: projects](https://neon.com/docs/cli/projects.md): List, create, update, delete, recover, and get Neon projects
 - [Neon CLI command: psql](https://neon.com/docs/cli/psql.md): Connect to a Neon database via psql
+- [Neon CLI command: realtime](https://neon.com/docs/cli/realtime.md): Enable and disable Neon Realtime on a branch from the CLI
 - [Neon CLI command: roles](https://neon.com/docs/cli/roles.md): List, create, and delete database roles in a Neon project
 - [Neon CLI command: set-context](https://neon.com/docs/cli/set-context.md): Set default project context for CLI sessions to avoid repeating project ID
 - [Neon CLI command: skills](https://neon.com/docs/cli/skills.md): Install and update Neon agent skills in your coding agents
 - [Neon CLI command: snapshots](https://neon.com/docs/cli/snapshots.md): Create, list, restore, and schedule branch snapshots from the terminal
 - [Neon CLI command: status](https://neon.com/docs/cli/status.md): Show the branch's live Neon state
+- [Neon CLI command: subscribe](https://neon.com/docs/cli/subscribe.md): Stream a live SQL query's results from the terminal with Neon Realtime
 - [Neon CLI command: triggers](https://neon.com/docs/cli/triggers.md): Create and manage function triggers that invoke a Neon Function on a cron schedule or when an object is created
 - [Neon CLI command: vpc](https://neon.com/docs/cli/vpc.md): Manage Private Networking VPC endpoints and project-level restrictions
 - [Neon CLI quickstart](https://neon.com/docs/cli/quickstart.md): Get set up with the Neon CLI in just a few steps
@@ -373,7 +375,7 @@ Postgres functions, data types, query optimization, indexing strategies, version
 
 ## Security
 
-Compliance certifications, acceptable use policies, HIPAA, and security reporting.
+Compliance certifications (SOC 2 Type 1 and Type 2, SOC 3, ISO 27001, ISO 27701, GDPR, CCPA), acceptable use policies, HIPAA, and security reporting.
 
 - [Acceptable Use Policy](https://neon.com/docs/security/acceptable-use-policy.md)
 - [AI use in Neon](https://neon.com/docs/security/ai-use-in-neon.md): How Neon integrates AI into its platform
