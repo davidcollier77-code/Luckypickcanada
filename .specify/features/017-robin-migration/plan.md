@@ -6,4 +6,4 @@
 
 ## Phases
 1. **Setup**: Create configuration for Robin, remove Inori.
-2. **Review Workflow**: Implement Robin workflow with Groq primary and OpenRouter fallback.
+2. **Review Workflow**: Implement Robin workflow with OpenRouter (`openrouter/free`) as the sole provider, correctly handling concurrency across PR and issue_comment events.
