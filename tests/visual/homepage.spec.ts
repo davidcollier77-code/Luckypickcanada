@@ -80,7 +80,7 @@ test.describe("Homepage Visual", () => {
 
     let chimePreloadRequested = false;
     page.on('request', (request) => {
-      if (request.url().includes('/sounds/mixkit-magic-sparkles.mp3')) {
+      if (request.url().includes('mixkit-fairy-magic-sparkle-871.wav')) {
         chimePreloadRequested = true;
       }
     });
