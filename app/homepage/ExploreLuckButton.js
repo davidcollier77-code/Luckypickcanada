@@ -43,6 +43,7 @@ const SCROLL_KEYS = new Set([
 export default function ExploreLuckButton() {
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isChimeReady, setIsChimeReady] = useState(false);
     const isAnimatingRef = useRef(false);
   const isCoolingDownRef = useRef(false);
   const cooldownTimeoutRef = useRef(null);
@@ -60,10 +61,20 @@ export default function ExploreLuckButton() {
   }, []);
 
   useEffect(() => {
-    // Load the sound before activation so playback can start on the tap.
-    preloadMagicalChime().catch((error) => {
-      console.warn('Magical chime preload failed', error);
-    });
+    let isMounted = true;
+
+    // Load and decode the sound before activation so playback can start on the tap.
+    preloadMagicalChime()
+      .then(() => {
+        if (isMounted) setIsChimeReady(true);
+      })
+      .catch((error) => {
+        console.warn('Magical chime preload failed', error);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -261,6 +272,7 @@ export default function ExploreLuckButton() {
         className="pointer-events-auto h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         aria-label="Explore your luck. Scroll down to the Play and Explore section."
         data-hydrated={isHydrated ? 'true' : 'false'}
+        data-chime-ready={isChimeReady ? 'true' : 'false'}
       >
         <span className="sr-only">Explore your luck</span>
       </button>
