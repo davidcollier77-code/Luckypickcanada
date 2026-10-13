@@ -141,6 +141,38 @@ test.describe("Homepage Visual", () => {
     expect(Math.abs(finalScrollY - targetScrollY!)).toBeLessThanOrEqual(2);
     // canvas-confetti handles its own canvas, no strict local state cleanup needed.
 
+    // Test: Rapid activations during cooldown are blocked
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForFunction(() => window.scrollY === 0);
+
+    // Try clicking multiple times rapidly - should only trigger once
+    await exploreButton.click();
+    await page.waitForTimeout(50);
+    const scrollAfterFirst = await page.evaluate(() => window.scrollY);
+    
+    // Second immediate click should be blocked (no additional scroll)
+    await exploreButton.click();
+    await page.waitForTimeout(50);
+    const scrollAfterSecond = await page.evaluate(() => window.scrollY);
+    
+    // Third immediate click should also be blocked
+    await exploreButton.click();
+    await page.waitForTimeout(50);
+    const scrollAfterThird = await page.evaluate(() => window.scrollY);
+    
+    // All three should show progression from the first click only
+    expect(scrollAfterFirst).toBeGreaterThan(0);
+    expect(scrollAfterSecond).toBeGreaterThanOrEqual(scrollAfterFirst);
+    expect(scrollAfterThird).toBeGreaterThanOrEqual(scrollAfterSecond);
+    
+    // Wait for animation to complete
+    await page.waitForTimeout(1_500);
+    
+    // Reset scroll position for remaining tests
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.waitForFunction(() => window.scrollY === 0);
+    
+    // Wait for cooldown to expire before remaining mobile-specific tests
     if (test.info().project.name.startsWith('mobile-')) {
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
       await page.waitForFunction(() => window.scrollY === 0);

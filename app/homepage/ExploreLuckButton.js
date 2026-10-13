@@ -55,6 +55,7 @@ export default function ExploreLuckButton() {
     const luckyMeter = document.getElementById('play-explore');
     if (!luckyMeter) return;
 
+    // Set cooldown immediately after confirming activation is valid
     isCoolingDownRef.current = true;
     if (cooldownTimeoutRef.current) {
       clearTimeout(cooldownTimeoutRef.current);
