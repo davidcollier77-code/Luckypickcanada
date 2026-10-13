@@ -1,3 +1,5 @@
+- Latest CI finding (run #384): the audio-ready assertion passed with the local WAV fixture, but pixel sampling found zero rendered particles on desktop and both mobile projects. Removed the precomputed maple-leaf transform and now let canvas-confetti calculate the path normalization matrix; run a fresh Visual QA check before treating the effect as fixed.
+
 - In progress: PR #1468's Explore Your Luck effect repair now logs asynchronous Howler playback failures and maple-leaf shape fallback errors, centralizes the audio URL/CSP origin, and uses a valid silent WAV fixture in the Playwright interaction test to avoid a CI hard dependency on Mixkit availability. Latest CI and mobile verification remain outstanding.
 
 # Progress
