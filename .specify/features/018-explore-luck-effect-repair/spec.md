@@ -52,10 +52,11 @@ The visitor reaches the same Play & Explore / Lucky Meter section with the exist
 - **FR-001**: Render the existing golden maple-leaf outline as a valid `canvas-confetti` path shape with an explicit transform matrix.
 - **FR-002**: Fire confetti synchronously on activation without waiting for a bitmap download/decode.
 - **FR-003**: Increase the burst from 40 to 72 particles and slightly enlarge the default particle scale.
-- **FR-004**: Preload the existing magical chime during component initialization and share the load promise.
-- **FR-005**: Play the chime synchronously only when the sound has loaded; do not queue delayed playback after activation.
+- **FR-004**: Preload the selected short Mixkit magical sparkle effect during component initialization and share the load promise.
+- **FR-005**: Play the sparkle sound synchronously only when the sound has loaded; do not queue delayed playback after activation.
 - **FR-006**: Preserve existing scroll target, duration, easing, cooldown, interrupt handling, keyboard activation, touch behavior and reduced-motion behavior.
 - **FR-007**: Verify actual drawn particles in Playwright rather than asserting only that a canvas element exists.
+- **FR-008**: Permit only `https://assets.mixkit.co` in the existing CSP `media-src` directive so the chosen audio file can play; do not loosen any other CSP directive.
 
 ## Edge Cases
 
