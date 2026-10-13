@@ -213,7 +213,7 @@ export default function ExploreLuckButton() {
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(scrollStep);
       } else {
-                isAnimatingRef.current = false;
+        isAnimatingRef.current = false;
         animationFrameRef.current = null;
         removeInterruptListeners();
       }
