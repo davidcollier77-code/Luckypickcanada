@@ -25,5 +25,7 @@ jobs:
       review-on-synchronize: true
     secrets:
       LLM_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      LLM_BASE_URL: https://openrouter.ai/api/v1
-      LLM_MODEL: openrouter/free
+      # Repository variables may override these defaults for deliberate provider/model changes.
+      # Keep the defaults on OpenRouter's free router to preserve the zero-cost setup.
+      LLM_BASE_URL: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
+      LLM_MODEL: ${{ vars.ROBIN_LLM_MODEL || 'openrouter/free' }}
