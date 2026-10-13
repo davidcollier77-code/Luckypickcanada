@@ -21,7 +21,7 @@ Restore visible golden maple-leaf particles and prevent late sound playback whil
 ## Constitution Check
 
 - Smallest scoped repair: PASS.
-- Preserve behavior outside scope: PASS by design; only particle shape/count, audio preload/playback timing, tests and task artifacts are changed.
+- Preserve behavior outside scope: PASS by design; only particle shape/count, audio preload/playback timing, the single-host `media-src` allowlist, tests and task artifacts are changed.
 - User authorization: Explicitly granted for this repair, including the narrowly scoped `media-src` exception required for the selected licensed audio host.
 - Tests before approval: Required; CI and user-facing browser result must be checked before marking complete.
 - Context7: Not invoked; no authorization was given and repository-local documentation was consulted.
@@ -29,7 +29,7 @@ Restore visible golden maple-leaf particles and prevent late sound playback whil
 
 ## Research Decisions
 
-See `research.md`. The current code constructs a bitmap custom shape without the transform matrix expected by the confetti bitmap renderer and delays the first burst until an image onload callback. The audio path creates Howler and requests the sound only after activation. The selected implementation uses a normalized path shape and preloads the sound before activation.
+See `research.md`. The current code constructs a bitmap custom shape without the transform matrix expected by the confetti bitmap renderer and delays the first burst until an image onload callback. The audio path creates Howler and requests the sound only after activation. The selected implementation uses a normalized path shape and preloads the short Mixkit sparkle asset before activation; the single-host `media-src` exception is required for its HTML audio request.
 
 ## Implementation Phases
 
