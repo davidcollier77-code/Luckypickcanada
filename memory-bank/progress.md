@@ -1,5 +1,7 @@
 # Progress
 
+- In progress: Explore Your Luck effect repair on branch `018-explore-luck-effect-repair`. Replaced click-time bitmap rendering with a normalized SVG path shape, increased burst size, added preloaded chime handling, and strengthened Playwright to require drawn pixels. Required CI and mobile verification remain outstanding.
+
 - Completed Golden Arrow Interaction enhancement, integrating `canvas-confetti` and `howler.js` for a richer visual and audio experience.
 - Extended cooldown logic successfully and updated Playwright test coverage.
 - Updated the Robin migration follow-up in PR #1465: endpoint/model overrides use optional GitHub repository variables while defaulting to OpenRouter's `openrouter/free` route.
