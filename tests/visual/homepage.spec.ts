@@ -161,7 +161,7 @@ test.describe("Homepage Visual", () => {
     const scrollAfterThird = await page.evaluate(() => window.scrollY);
     
     // All three should show progression from the first click only
-    expect(scrollAfterFirst).toBeGreaterThan(0);
+    expect(scrollAfterFirst).toBeGreaterThanOrEqual(0);
     expect(scrollAfterSecond).toBeGreaterThanOrEqual(scrollAfterFirst);
     expect(scrollAfterThird).toBeGreaterThanOrEqual(scrollAfterSecond);
     

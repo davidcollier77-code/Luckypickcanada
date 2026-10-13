@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { playMagicalChime } from '../lib/audio';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+let mapleLeafShape = null;
 import Image from 'next/image';
 
 const COOLDOWN_MS = 15_000;
@@ -77,44 +78,84 @@ export default function ExploreLuckButton() {
 
     // Magical Golden Confetti Burst
     const count = 40;
-    const defaults = {
-      origin: { y: 0.9 }, // bottom of the screen (adjust as needed to match button position roughly)
-      colors: ['#FBBF24', '#F59E0B', '#D97706', '#FFFFFF'], // Amber, Yellow, Gold, White
-      shapes: ['star', 'circle'],
-      zIndex: 100,
-      ticks: 200,
+
+    const fireConfetti = () => {
+      // Find the button element by traversing up or querying
+      const btn = document.querySelector('.homepage-hero-welcome button[aria-label^="Explore your luck"]');
+      let originY = 0.9;
+      let originX = 0.5;
+
+      if (btn) {
+        const btnRect = btn.getBoundingClientRect();
+        // Fire from the center of the button, relative to viewport
+        originY = Math.min((btnRect.top + btnRect.height / 2) / window.innerHeight, 1);
+        originX = (btnRect.left + btnRect.width / 2) / window.innerWidth;
+      } else {
+        // Fallback to luckyMeter element's relative position if button can't be found
+        const lmRect = luckyMeter.getBoundingClientRect();
+        originY = Math.min((lmRect.top - window.innerHeight / 2) / window.innerHeight, 0.9);
+      }
+
+      const defaults = {
+        origin: { x: originX, y: originY },
+        colors: ['#FBBF24', '#F59E0B', '#D97706'], // Amber, Yellow, Gold
+        shapes: mapleLeafShape ? [mapleLeafShape] : ['star', 'circle'],
+        zIndex: 100,
+        ticks: 200,
+        gravity: 1.2,
+        scalar: 1.5,
+      };
+
+      function fire(particleRatio, opts) {
+        confetti({
+          ...defaults,
+          ...opts,
+          particleCount: Math.floor(count * particleRatio)
+        });
+      }
+
+      fire(0.25, {
+        spread: 40,
+        startVelocity: 55,
+      });
+      fire(0.2, {
+        spread: 70,
+      });
+      fire(0.35, {
+        spread: 110,
+        decay: 0.91,
+        scalar: 1.2,
+      });
+      fire(0.1, {
+        spread: 130,
+        startVelocity: 35,
+        decay: 0.92,
+        scalar: 1.8
+      });
+      fire(0.1, {
+        spread: 130,
+        startVelocity: 45,
+      });
     };
 
-    function fire(particleRatio, opts) {
-      confetti({
-        ...defaults,
-        ...opts,
-        particleCount: Math.floor(count * particleRatio)
-      });
+    // We try to load the webp leaf image and convert it to a shape on the fly if not yet cached.
+    if (!mapleLeafShape && typeof window !== 'undefined' && window.ImageBitmap) {
+      const img = new window.Image();
+      img.src = '/images/maple-leaf.webp';
+      img.onload = () => {
+        window.createImageBitmap(img).then((bitmap) => {
+          mapleLeafShape = { type: 'bitmap', bitmap };
+          fireConfetti();
+        }).catch(() => {
+          fireConfetti();
+        });
+      };
+      img.onerror = () => {
+        fireConfetti();
+      };
+    } else {
+      fireConfetti();
     }
-
-    fire(0.25, {
-      spread: 26,
-      startVelocity: 55,
-    });
-    fire(0.2, {
-      spread: 60,
-    });
-    fire(0.35, {
-      spread: 100,
-      decay: 0.91,
-      scalar: 0.8
-    });
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 25,
-      decay: 0.92,
-      scalar: 1.2
-    });
-    fire(0.1, {
-      spread: 120,
-      startVelocity: 45,
-    });
 
     // Calculate the current scroll target and distance.
     const startY = window.scrollY;
