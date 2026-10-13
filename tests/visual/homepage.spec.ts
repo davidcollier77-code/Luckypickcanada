@@ -177,6 +177,7 @@ test.describe("Homepage Visual", () => {
 
     // A canvas element can exist even when the effect failed to draw. Sample
     // its rendered alpha pixels to prove particles actually appeared on screen.
+    /** Counts alpha-visible pixels so the test checks rendered particles, not canvas presence. */
     const visibleParticlePixels = () => particles.evaluateAll((elements) => elements.reduce((total, element) => {
       const source = element as HTMLCanvasElement;
       if (!source.width || !source.height) return total;
