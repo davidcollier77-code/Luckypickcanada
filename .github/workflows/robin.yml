@@ -6,9 +6,9 @@ on:
   issue_comment:
     types: [created]
 
-concurrency:
-  group: robin-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
+# Do not add workflow-level concurrency here. The reusable workflow filters
+# issue_comment commands before applying its own job-level concurrency, so
+# unrelated comments cannot cancel an in-flight review.
 
 permissions:
   actions: read
