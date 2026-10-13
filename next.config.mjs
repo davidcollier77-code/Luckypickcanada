@@ -25,6 +25,7 @@ const nextConfig = {
   generateBuildId: async () => {
     return process.env.GITHUB_SHA || `build-${Date.now()}`;
   },
+  /** Build security headers using the shared audio source origin for media-src. */
   async headers() {
     return [
       {
