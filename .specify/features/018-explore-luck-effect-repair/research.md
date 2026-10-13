@@ -18,6 +18,6 @@
 
 ## Assumptions and limitations
 
-- The selected `/sounds/mixkit-magic-sparkles.mp3` asset remains unchanged. Its acoustic character and licensing details were not independently assessed in this environment.
+- A local command-line download of the new audio binary could not be completed because external DNS resolution is unavailable in this environment. The short sound is therefore referenced directly from Mixkit's official CDN instead of being copied into the repository; real browser playback and license behavior remain part of required CI/mobile verification.
 - A local repository checkout and command-line asset download are unavailable because the environment cannot resolve external hosts. Branch edits were made using the connected GitHub interface; CI/browser runs must provide execution evidence.
 - Some snapshots under `.docs/audio/` were returned as compressed/non-readable bytes; the readable local Howler.js, MDN Web Audio and Chrome documentation snapshots were consulted.
