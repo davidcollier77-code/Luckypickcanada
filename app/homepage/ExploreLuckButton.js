@@ -94,7 +94,7 @@ export default function ExploreLuckButton() {
       } else {
         // Fallback to luckyMeter element's relative position if button can't be found
         const lmRect = luckyMeter.getBoundingClientRect();
-        originY = Math.min((lmRect.top - window.innerHeight / 2) / window.innerHeight, 0.9);
+        originY = Math.min(Math.max((lmRect.top - window.innerHeight / 2) / window.innerHeight, 0), 0.9);
       }
 
       const defaults = {
