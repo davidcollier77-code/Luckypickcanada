@@ -1,110 +1,78 @@
 ## Description
 
-This PR fully implements the three reported mobile Speed Analyzer findings regarding the Lucky Pick Canada homepage, establishing actual root causes and resolving them appropriately in the current codebase context.
+This PR implements the requested Google Analytics 4 integration into the Lucky Pick Canada Next.js application using the provided Measurement ID.
 
-**1. SPEED INDEX:**
-- **Finding/Baseline:** Speed index was exceptionally high. A major cause was the cache-busting behavior for `app/layout.js` which used `crypto.randomUUID()` when environment variables were not available, forcing the CSS to be re-downloaded constantly on every page load in some environments. Additionally, an unused image (`BackgroundEraser_20260724_163638777.png`) was aggressively preloaded with `fetchPriority="high"`, stealing bandwidth from critical path resources.
-- **Fix:** Swapped `crypto.randomUUID()` for a deterministic `"default-build"` fallback to preserve CSS cacheability. Removed the incorrect `BackgroundEraser` preload, and added an optimized preload for the hero image.
+**Changes Include:**
+- **Content Security Policy (CSP):** The `Content-Security-Policy` header in `next.config.mjs` was updated to securely whitelist Google Analytics and Google Tag Manager endpoints.
+- **Google Tag Injection:** The GA4 integration was implemented directly inside `app/layout.js` utilizing `next/script` (`strategy="afterInteractive"`). This ensures standard pageview tracking without causing duplicate fires across client-side router navigations in the SPA.
+- **Spec Kit Governance:** Generated required `spec.md`, `plan.md`, and `tasks.md` documents underneath the `ga4-integration` directory to align with task execution requirements and validation checks.
 
-**2. LCP (Largest Contentful Paint):**
-- **Finding/Baseline:** LCP was extremely long. The hero element is a 2MB `homepage-hero-lucky-pick-canada.png` asset. Due to Next.js image optimization being bypassed (`unoptimized: true` in `next.config.mjs` for Cloudflare compatibility), the raw 2MB file was served directly to mobile devices.
-- **Fix:** Converted the 2MB PNG to a 300KB WebP (`homepage-hero-lucky-pick-canada.webp`). Updated `app/homepage/Hero.js` to reference the WebP. Added a `fetchPriority="high"` preload to `app/layout.js` specifically for this new asset. This cuts the critical payload by ~85%.
+The implementation honors the 495MB build capacity limits, strictly stays within the allowed environment scope without initializing unapproved accounts, and ensures no other application modules, behaviors, or UI components are affected.
 
-**3. BROWSER CONSOLE ERRORS:**
-- **Finding/Baseline:** `/api/visits` was throwing a 500 server error when the Upstash Redis environment variables were not populated, leading to visible client-side console errors on every load. `HomePage.js` had potential errors related to `handleResize`.
-- **Fix:** Refactored `app/api/visits/route.js` to gracefully fall back and return a default `{ visits: 0 }` response when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are missing, instead of failing with a 500. Additionally, wrapped the `handleResize` function in `app/homepage/HomePage.js` in a 200ms `setTimeout` debounce to mitigate frantic canvas recalibrations.
+---
 
-**Visuals & Boundaries:**
-- Verified that the high-definition Milky Way background is fully preserved and un-altered.
-- Verified that Aurora was not reintroduced.
-- Verified that shooting star behavior functions correctly without interference.
-- Maintained all existing interaction sequences and visual coverage.
-- Build remains well under the 495MB safety ceiling. Playwright visual tests and Vitest passing.
-# PR Summary
+# PR Summary Canonical Record
 
-## 1. SELECTED TASK GROUP — REQUIRED
-SELECTED TASK GROUP: polishing
-GROUP REASON: Task requires resolving performance bottlenecks (Speed Index, LCP) and console errors while strictly preserving existing UI functionality and high-performance HTML5 Canvas art.
+**Task Group**
+- SELECTED TASK GROUP: seo
+- GROUP REASON: The requested work pertains to integrating Google Analytics 4, which enables SEO, traffic measurement, and related monitoring capabilities via tracking IDs and tag integration.
 
-## 2. LIBRARY CONSULTATION REPORT — REQUIRED
-LIBRARY: @next/swc
-VERSION: 16.3.6
-USED: YES
-USEFUL: YES
-REASON: Verified Next.js compiler behaviors regarding unoptimized image payloads and custom head preloads.
-LIBRARY: @playwright/test
-VERSION: 1.48.0
-USED: YES
-USEFUL: YES
-REASON: Required for updating and running visual regression snapshots against the newly optimized hero WebP image asset.
-LIBRARY: vitest
-VERSION: 2.1.2
-USED: YES
-USEFUL: YES
-REASON: Executed test suite to guarantee API fallback additions do not violate application invariants.
+**Required Library Consultation Report**
+- LIBRARY: Next.js
+- VERSION: 16.3.8
+- USED: YES
+- USEFUL: YES
+- REASON: Next.js was consulted regarding the `next/script` usage and correct way to inject custom global tracking code into a Next.js `app/layout.js` without using the `@next/third-parties` package, because it was not available.
+- LIBRARY: React
+- VERSION: 19.x (latest)
+- USED: YES
+- USEFUL: YES
+- REASON: Required to review general component updates in the Next.js `layout.js` structure.
 
-## 3. ROUTED JULES/GEMINI DOCUMENT REPORT — REQUIRED
-DOCUMENT: .jules/polishing.md
-USED: YES
-USEFUL: YES
-REASON: Supplied guidelines on avoiding rendering overlap and respecting CSS layout/cache performance rules.
-DOCUMENT: .jules/jules.md
-USED: YES
-USEFUL: YES
-REASON: Adhered to strict 495MB build boundaries and memory updating protocols.
+**Routed Jules/Gemini Document Report**
+- DOCUMENT: jules_google_docs.md
+- USED: YES
+- USEFUL: YES
+- REASON: Required context.
+- DOCUMENT: developers_google_com_jules_api.md
+- USED: YES
+- USEFUL: NO
+- REASON: Information provided was more API-driven and not required for a web layout tag injection.
+- DOCUMENT: _vercel_next_js.md
+- USED: YES
+- USEFUL: YES
+- REASON: Provided context on proper script inclusion methods.
 
-## 4. REPOSITORY COMPONENT REPORT — REQUIRED
-COMPONENT: app/homepage/HomePage.js
-USED: YES
-USEFUL: YES
-REASON: Implemented a resize debounce wrapper to correct client-side performance errors.
-COMPONENT: app/api/visits/route.js
-USED: YES
-USEFUL: YES
-REASON: Refactored to implement a 200 graceful fallback on absent Redis variables to fix 500 console errors.
-COMPONENT: app/homepage/Hero.js
-USED: YES
-USEFUL: YES
-REASON: Relinked hero layout source to use optimized .webp variant.
-COMPONENT: app/layout.js
-USED: YES
-USEFUL: YES
-REASON: Corrected CSS random UUID cache busting and repositioned image preloading priority.
+**Repository Component Report**
+- COMPONENT: AGENTS.md
+- USED: YES
+- USEFUL: YES
+- REASON: Guided absolute compliance path, PR layout, bounds on 495MB build sizes.
+- COMPONENT: Spec Kit
+- USED: YES
+- USEFUL: YES
+- REASON: Ensured proper task gating, planning, and task setup, tracked in `.specify/feature.json`.
 
-## 5. REPORTING INTEGRITY — MANDATORY
-All changes are documented truthfully as tested inside the local checkout constraints.
+**Verification Report**
+- COMMAND: `pnpm run build`
+- RESULT: PASS
+- EVIDENCE/OUTPUT SUMMARY: Created an optimized production build and collected page data. Size recorded at 319M, below the 495MB cap.
+- COMMAND: `pnpm test`
+- RESULT: PASS
+- EVIDENCE/OUTPUT SUMMARY: Test suites ran with 67 tests passing.
+- COMMAND: `./jules-verify.sh`
+- RESULT: PASS
+- EVIDENCE/OUTPUT SUMMARY: All Spec Kit, type check, build, and documentation checks passed.
 
-## 6. IMPLEMENTATION, AUTHORIZATION, AND SCOPE
-- **SPEED INDEX: RESOLVED.** Fixed cache-busting and unused asset preloads.
-- **LCP: RESOLVED.** Converted unoptimized 2MB PNG to optimized 300KB WebP.
-- **BROWSER CONSOLE ERRORS: RESOLVED.** Implemented graceful 200 return for API route and debounced resize.
-- **Milky Way Background:** Preserved.
-- **Aurora Reintroduced:** NO.
-- **Shooting Stars:** Preserved.
-
-## 7. EXACT FINAL DIFF RECONCILIATION — REQUIRED
-- `app/api/visits/route.js`
-- `app/homepage/Hero.js`
-- `app/homepage/HomePage.js`
+**Final Changed-File Reconciliation**
 - `app/layout.js`
-- `public/homepage-hero-lucky-pick-canada.webp` (ADDED)
-- `public/homepage-hero-lucky-pick-canada.png` (DELETED)
+- `next.config.mjs`
+- `ga4-integration/spec.md`
+- `ga4-integration/plan.md`
+- `ga4-integration/tasks.md`
+- `.specify/feature.json`
 
-## 8. VERIFICATION — REQUIRED
-COMMAND: `./jules-verify.sh`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Built in 5.2s; static pages generated; tests passed. Total size well under 495MB.
+**Remaining Issues**
+- None. Setup complete for Measurement ID "G-KJ761JL5FD". External data routing checking through real traffic using Google Analytics Realtime is inherently beyond Jules environment scope.
 
-COMMAND: `npm run test`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: 11 tests passed across 2 suites.
-
-COMMAND: `pnpm exec playwright test tests/visual/homepage.spec.ts`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Visual differences updated via `--update-snapshots`. Subsequent runs passed cleanly on Desktop and Mobile matrices.
-
-## 9. USEFUL RESULT — REQUIRED
-USEFUL RESULT: YES
-
-## 10. PRE-SUBMISSION DOUBLE-CHECK — REQUIRED
-Completed pre-submission double check. Diff matches exactly. No unrelated behavior changed.
+**USEFUL RESULT: YES**
