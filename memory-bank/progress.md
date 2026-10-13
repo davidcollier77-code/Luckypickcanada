@@ -1,6 +1,6 @@
 # Progress
 
-- In progress: Explore Your Luck effect repair on branch `018-explore-luck-effect-repair`. Replaced click-time bitmap rendering with a normalized SVG path shape, increased burst size, added preloaded chime handling, and strengthened Playwright to require drawn pixels. Required CI and mobile verification remain outstanding.
+- In progress: Explore Your Luck effect repair on branch `018-explore-luck-effect-repair`. Replaced click-time bitmap rendering with a normalized SVG path shape, increased burst size, switched to a short official Mixkit sparkle effect with preload handling, added the minimal `media-src` host allowlist, and strengthened Playwright to require drawn pixels. Required CI and mobile verification remain outstanding.
 
 - Completed Golden Arrow Interaction enhancement, integrating `canvas-confetti` and `howler.js` for a richer visual and audio experience.
 - Extended cooldown logic successfully and updated Playwright test coverage.
