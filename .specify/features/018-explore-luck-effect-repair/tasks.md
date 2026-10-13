@@ -18,3 +18,6 @@
 ## Phase 4 — Verify and report
 - [ ] T010 Run focused Playwright tests and `./jules-verify.sh` in a capable checkout.
 - [ ] T011 Inspect CI results, final diff, measured build output and mobile behavior before reporting the task as complete.
+- [x] T012 Address review findings by reporting confetti-shape fallback failures, reporting Howler playback errors, and sharing the chime URL/CSP origin from one module.
+- [x] T013 Keep the visual interaction test deterministic by fulfilling the production audio URL with a valid local WAV fixture instead of relying on external CDN availability.
+- [ ] T014 Re-check the final diff, current CI results, and follow-up review comments.
