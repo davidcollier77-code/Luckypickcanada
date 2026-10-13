@@ -24,7 +24,7 @@ jobs:
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
           provider: groq
-          llm_model: llama-3.3-70b-versatile
+          llm_model: llama3-70b-8192
           github_token: ${{ secrets.GITHUB_TOKEN }}
           llm_api_key: ${{ secrets.GROQ_API_KEY }}
           language: en
@@ -62,7 +62,7 @@ jobs:
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
           provider: groq
-          llm_model: llama-3.3-70b-versatile
+          llm_model: llama3-70b-8192
           github_token: ${{ secrets.GITHUB_TOKEN }}
           llm_api_key: ${{ secrets.GROQ_API_KEY }}
           language: en
@@ -89,7 +89,7 @@ jobs:
         uses: VOD-Studio/inori@f9c3535738d04b2a087ca56b306c9041e9e396b9
         with:
           provider: openrouter
-          llm_model: google/gemini-2.0-flash-lite-preview-02-05:free
+          llm_model: openrouter/auto
           github_token: ${{ secrets.GITHUB_TOKEN }}
           llm_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           language: en
