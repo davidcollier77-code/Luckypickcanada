@@ -7,9 +7,11 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 let mapleLeafShape = null;
 
 // Same golden maple-leaf outline used by public/images/maple-leaf.svg.
-// Let canvas-confetti normalize the SVG path to its own unit box so the leaf
-// is not rendered with an incorrect hand-calculated transform matrix.
+// Its SVG viewBox is 4030 x 4030, centered at y=15. Map that geometry to a
+// 10 x 10 particle while centering it, avoiding canvas-confetti's expensive
+// path scan (which cannot infer bounds from this negative-coordinate path).
 const MAPLE_LEAF_PATH = 'm-90 2030 45-863a95 95 0 0 0-111-98l-859 151 116-320a65 65 0 0 0-20-73l-941-762 212-99a65 65 0 0 0 34-79l-186-572 542 115a65 65 0 0 0 73-38l105-247 423 454a65 65 0 0 0 111-57l-204-1052 327 189a65 65 0 0 0 91-27L0-2000l332 652a65 65 0 0 0 91 27l327-189-204 1052a65 65 0 0 0 111 57l423-454 105 247a65 65 0 0 0 73 38l542-115-186 572a65 65 0 0 0 34 79l212 99-941 762a65 65 0 0 0-20 73l116 320-859-151a95 95 0 0 0-111 98l45 863z';
+const MAPLE_LEAF_MATRIX = [0.00248138958, 0, 0, 0.00248138958, 0, -0.0372208437];
 
 /**
  * Returns the cached normalized maple-leaf confetti shape, or null when
@@ -22,6 +24,7 @@ function getMapleLeafShape() {
   try {
     mapleLeafShape = confetti.shapeFromPath({
       path: MAPLE_LEAF_PATH,
+      matrix: MAPLE_LEAF_MATRIX,
     });
   } catch (error) {
     console.warn('Maple leaf shape creation failed; using fallback particles.', error);
@@ -51,6 +54,8 @@ export default function ExploreLuckButton() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [isChimeReady, setIsChimeReady] = useState(false);
+  const confettiCanvasRef = useRef(null);
+  const confettiInstanceRef = useRef(null);
   const isAnimatingRef = useRef(false);
   const isCoolingDownRef = useRef(false);
   const cooldownTimeoutRef = useRef(null);
@@ -93,7 +98,35 @@ export default function ExploreLuckButton() {
       if (cooldownTimeoutRef.current) {
         clearTimeout(cooldownTimeoutRef.current);
       }
+      confettiInstanceRef.current?.reset();
+      confettiCanvasRef.current?.remove();
+      confettiInstanceRef.current = null;
+      confettiCanvasRef.current = null;
     };
+  }, []);
+
+  const getConfettiInstance = useCallback(() => {
+    if (confettiInstanceRef.current) return confettiInstanceRef.current;
+
+    // Use a dedicated main-thread canvas: the site's restrictive script-src
+    // blocks canvas-confetti's default Blob worker, preventing any particles.
+    const canvas = document.createElement('canvas');
+    Object.assign(canvas.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100vw',
+      height: '100vh',
+      pointerEvents: 'none',
+      zIndex: '100',
+    });
+    document.body.appendChild(canvas);
+    confettiCanvasRef.current = canvas;
+    confettiInstanceRef.current = confetti.create(canvas, {
+      resize: true,
+      useWorker: false,
+    });
+    return confettiInstanceRef.current;
   }, []);
 
   const activateExplore = useCallback(() => {
@@ -154,7 +187,7 @@ export default function ExploreLuckButton() {
       };
 
       function fire(particleRatio, opts) {
-        confetti({
+        getConfettiInstance()({
           ...defaults,
           ...opts,
           particleCount: Math.floor(count * particleRatio)
@@ -250,7 +283,7 @@ export default function ExploreLuckButton() {
     };
 
     animationFrameRef.current = requestAnimationFrame(scrollStep);
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, getConfettiInstance]);
 
   const handleClick = useCallback(() => {
     activateExplore();
