@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-13T13:59:57-03:00",
+  "lastUpdated": "2026-10-13T16:53:13-03:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -418,23 +418,23 @@
     "/websites/web_dev_images"
   ],
   "githubShas": {
-    "/github/docs": "ae648a1d328cb15fb173e80984aac748cf4b5af2",
-    "/vercel/next.js": "2d5c328a2698314713b699a4ea637b0868e97f22",
+    "/github/docs": "f71bee797efc4149279c9abaf377a80aef0c8f72",
+    "/vercel/next.js": "1ef9f599679349652f9db35361b7f4564a9c1854",
     "/reactjs/react.dev": "046f17d04295ba047bb5739026b4ac3110f17028",
-    "/microsoft/typescript": "b5c34ba0c61a756c8abaf133236dddf982c27f45",
+    "/microsoft/typescript": "0a660748471910ecac1ae6e1625529908dc228f2",
     "/lucide-icons/lucide": "dab294f313897bacaa968b725b3259fa37c17bd1",
     "/react-hook-form/documentation": "3ac1fe0254947748d993cd4b1915fc5dea87ba8b",
     "/react-hook-form/resolvers": "8d088d4e022bb6e86ce100769379e2f3ae6f6902",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "d151c61a14b349283c9c3096ec6aaea847d08733",
-    "/google-gemini/gemini-cli": "51617c1bcbcb038291125b092501b4342f4e7f77",
-    "/cloudflare/cloudflare-docs/turnstile": "e49a6fabaec30cd2f9db6c6850b33319495bdeca",
-    "/cloudflare/cloudflare-docs/pages": "e49a6fabaec30cd2f9db6c6850b33319495bdeca",
+    "/google-gemini/gemini-cli": "29315e53d0c2e9b78f301f3c24db235b0f3fa597",
+    "/cloudflare/cloudflare-docs/turnstile": "8971693bf9c176c38f4600f2aad904c239ed4bc0",
+    "/cloudflare/cloudflare-docs/pages": "8971693bf9c176c38f4600f2aad904c239ed4bc0",
     "/dequelabs/axe-core": "7e287a6ab8ac547eb63c0b8ca513a223eca16772",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
-    "/microsoft/playwright": "a69a313712e43e09a53c57ae04ed6f110621875d",
-    "/vitest-dev/vitest": "f15bdac4f05d2838855d4bd4f47e4076036ea18b",
-    "/colinhacks/zod": "b500a2ee95134f81d74da7911d7378dd2853d042",
+    "/microsoft/playwright": "02890ef9f1bb92a9c80587293cce52c6dbeacf87",
+    "/vitest-dev/vitest": "9a04899cba636a37f2522409d4744abffd49cc67",
+    "/colinhacks/zod": "680d19f7d1e042e55934209caeb79bc843b94f44",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
     "/stripe/stripe-js": "e03ec565455178cd2b236f6b495ddc952397c3f0",
     "/coreyhaines31/marketingskills": "0f8d89961cdf782dd02644b9df3ddc671c21a7f0",
@@ -443,7 +443,7 @@
     "/cloudflare/workers-sdk": "d6b1c823268226754441ac79084be2cec4abcea3",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
     "/upstash/docs": "8bf2b77104ca36358a0a605a01fbae8891440ae1",
-    "/getsentry/sentry-docs": "73fcbff4976069c6ad5844988ec120e163ecd7a5",
+    "/getsentry/sentry-docs": "95a079716f287aadfc3d1ed2a081ffd2bf2e72df",
     "/pmndrs/react-three-fiber": "a9f8dc052b2c80788b3d3464d1e9eaf79b12a600",
     "/magicuidesign/magicui": "85f97fd27b053339af74ba9dd4ca428ee25989fb",
     "/marsidev/react-turnstile": "741e9f0a34cbef75d00854126ae3bd00480076b9",
@@ -452,7 +452,7 @@
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
     "/resend/resend-node": "a56aa492406c989f86fb99fc0d019706eb121ead",
     "/python-pillow/Pillow": "248b9716f3bf127b5f69b8772dac5a96070bef1c",
-    "/numpy/numpy": "adaff8f6594df6bceaecd43c64b71e8f3e1071c0",
+    "/numpy/numpy": "781541407ac5d7490e2c779fb070984eb6489413",
     "/lovell/sharp": "857281ae51452eb0e3678520d8a3462958638a4a"
   }
 }
