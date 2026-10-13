@@ -13,12 +13,12 @@
 - [x] T006 Increase the particle count and modestly enlarge particles without changing scroll behavior.
 - [x] T007 Preload and cache the short Mixkit `Fairy magic sparkle` asset in `app/lib/audio.js`; prevent delayed playback after activation.
 - [x] T008 Strengthen `tests/visual/homepage.spec.ts` to verify actual rendered pixels and pre-activation sound preload.
-- [x] T009 Add only `https://assets.mixkit.co` to `media-src` in `next.config.mjs` for the selected sound; leave other CSP directives untouched.
+- [x] T009 Centralize the audio URL and derive the `media-src` origin in `app/lib/magicalChimeSource.mjs`; leave other CSP directives untouched.
 
 ## Phase 4 — Verify and report
-- [ ] T010 Run focused Playwright tests and `./jules-verify.sh` in a capable checkout.
-- [ ] T011 Inspect CI results, final diff, measured build output and mobile behavior before reporting the task as complete.
+- [ ] T010 Run `./jules-verify.sh` in a capable local checkout; this connector environment has no local checkout/pnpm executable.
+- [ ] T011 Measure the full required build-output limit and verify live CDN chime playback/timing on an actual mobile device before marking all work complete.
 - [x] T012 Address review findings by reporting confetti-shape fallback failures, reporting Howler playback errors, and sharing the chime URL/CSP origin from one module.
 - [x] T013 Keep the visual interaction test deterministic by fulfilling the production audio URL with a valid local WAV fixture instead of relying on external CDN availability.
-- [x] T014 Inspect the fresh Visual QA failure artifact and replace the suspected hand-calculated maple-leaf matrix with automatic path normalization.
-- [ ] T015 Confirm visible particles in the new Visual QA run, confirm latest OpenNext result/build-size evidence, re-check review comments and final diff.
+- [x] T014 Diagnose the CSP-blocked Blob-worker path and switch to a dedicated `canvas-confetti` canvas with `useWorker: false`; retain an explicit transform for the existing negative-coordinate SVG path without relaxing CSP.
+- [x] T015 Verify latest implementation with Visual QA run #388 (12 passed, 3 skipped, 0 failed), OpenNext run #997 (passed), review-thread triage and source-diff checks.
