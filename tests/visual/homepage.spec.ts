@@ -71,14 +71,25 @@ test.describe("Homepage Visual", () => {
     expect(snapshot1).not.toEqual(snapshot2);
   });
 
-  test('explore luck hit area sequences display before scrolling', async ({ page }) => {
+  test('explore luck renders visible confetti and preloads its chime before scrolling', async ({ page }) => {
     test.setTimeout(60_000);
 
     // Use Playwright's real media emulation so JavaScript and CSS agree that
     // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
     await page.emulateMedia({ reducedMotion: 'no-preference' });
 
+    let chimePreloadRequested = false;
+    page.on('request', (request) => {
+      if (request.url().includes('/sounds/mixkit-magic-sparkles.mp3')) {
+        chimePreloadRequested = true;
+      }
+    });
+
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await expect.poll(() => chimePreloadRequested, {
+      timeout: 5_000,
+      intervals: [50, 100, 200],
+    }).toBe(true);
 
     const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
@@ -122,12 +133,33 @@ test.describe("Homepage Visual", () => {
 
     await exploreButton.click();
 
-    // Observe the short-lived particles immediately instead of allowing slow
-    // mobile rendering to consume most of their 1.5-second animation lifetime.
-    await expect.poll(() => particles.count(), {
+    // A canvas element can exist even when the effect failed to draw. Sample
+    // its rendered alpha pixels to prove particles actually appeared on screen.
+    const visibleParticlePixels = () => particles.evaluate((element) => {
+      const source = element as HTMLCanvasElement;
+      if (!source.width || !source.height) return 0;
+
+      const probe = document.createElement('canvas');
+      probe.width = 240;
+      probe.height = 240;
+      const context = probe.getContext('2d');
+      if (!context) return 0;
+
+      context.drawImage(source, 0, 0, probe.width, probe.height);
+      const pixels = context.getImageData(0, 0, probe.width, probe.height).data;
+      let visiblePixels = 0;
+      for (let i = 3; i < pixels.length; i += 4) {
+        if (pixels[i] > 32) visiblePixels += 1;
+      }
+      return visiblePixels;
+    });
+
+    // Observe rendered pixels immediately so mobile rendering does not consume
+    // most of the animation's 200-tick lifetime before the assertion.
+    await expect.poll(visibleParticlePixels, {
       timeout: 750,
       intervals: [25, 50, 100],
-    }).toBeGreaterThan(0);
+    }).toBeGreaterThan(5);
 
     await page.waitForTimeout(300);
     const earlyScrollY = await page.evaluate(() => window.scrollY);
