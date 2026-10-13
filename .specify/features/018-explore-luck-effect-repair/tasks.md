@@ -20,4 +20,5 @@
 - [ ] T011 Inspect CI results, final diff, measured build output and mobile behavior before reporting the task as complete.
 - [x] T012 Address review findings by reporting confetti-shape fallback failures, reporting Howler playback errors, and sharing the chime URL/CSP origin from one module.
 - [x] T013 Keep the visual interaction test deterministic by fulfilling the production audio URL with a valid local WAV fixture instead of relying on external CDN availability.
-- [ ] T014 Re-check the final diff, current CI results, and follow-up review comments.
+- [x] T014 Inspect the fresh Visual QA failure artifact and replace the suspected hand-calculated maple-leaf matrix with automatic path normalization.
+- [ ] T015 Confirm visible particles in the new Visual QA run, confirm latest OpenNext result/build-size evidence, re-check review comments and final diff.
