@@ -7,9 +7,9 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 let mapleLeafShape = null;
 
 // Same golden maple-leaf outline used by public/images/maple-leaf.svg.
-// The fixed transform keeps the path at a regular confetti-particle size.
+// Let canvas-confetti normalize the SVG path to its own unit box so the leaf
+// is not rendered with an incorrect hand-calculated transform matrix.
 const MAPLE_LEAF_PATH = 'm-90 2030 45-863a95 95 0 0 0-111-98l-859 151 116-320a65 65 0 0 0-20-73l-941-762 212-99a65 65 0 0 0 34-79l-186-572 542 115a65 65 0 0 0 73-38l105-247 423 454a65 65 0 0 0 111-57l-204-1052 327 189a65 65 0 0 0 91-27L0-2000l332 652a65 65 0 0 0 91 27l327-189-204 1052a65 65 0 0 0 111 57l423-454 105 247a65 65 0 0 0 73 38l542-115-186 572a65 65 0 0 0 34 79l212 99-941 762a65 65 0 0 0-20 73l116 320-859-151a95 95 0 0 0-111 98l45 863z';
-const MAPLE_LEAF_MATRIX = [0.0025, 0, 0, 0.0025, 0, 0];
 
 /**
  * Returns the cached normalized maple-leaf confetti shape, or null when
@@ -22,7 +22,6 @@ function getMapleLeafShape() {
   try {
     mapleLeafShape = confetti.shapeFromPath({
       path: MAPLE_LEAF_PATH,
-      matrix: MAPLE_LEAF_MATRIX,
     });
   } catch (error) {
     console.warn('Maple leaf shape creation failed; using fallback particles.', error);
