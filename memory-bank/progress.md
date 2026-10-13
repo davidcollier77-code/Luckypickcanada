@@ -1,3 +1,5 @@
+- In progress: PR #1468's Explore Your Luck effect repair now logs asynchronous Howler playback failures and maple-leaf shape fallback errors, centralizes the audio URL/CSP origin, and uses a valid silent WAV fixture in the Playwright interaction test to avoid a CI hard dependency on Mixkit availability. Latest CI and mobile verification remain outstanding.
+
 # Progress
 
 - In progress: Explore Your Luck effect repair on branch `018-explore-luck-effect-repair`. Replaced click-time bitmap rendering with a normalized SVG path shape, increased burst size, switched to a short official Mixkit sparkle effect with preload handling, added the minimal `media-src` host allowlist, and strengthened Playwright to require drawn pixels. Required CI and mobile verification remain outstanding.
