@@ -98,6 +98,7 @@ test.describe("Homepage Visual", () => {
 
     await expect(exploreButton).toBeVisible();
     await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
+    await expect(exploreButton).toHaveAttribute('data-chime-ready', 'true', { timeout: 5_000 });
     await expect(heroStage).toBeVisible();
 
     const buttonBox = await exploreButton.boundingBox();
@@ -135,15 +136,15 @@ test.describe("Homepage Visual", () => {
 
     // A canvas element can exist even when the effect failed to draw. Sample
     // its rendered alpha pixels to prove particles actually appeared on screen.
-    const visibleParticlePixels = () => particles.evaluate((element) => {
+    const visibleParticlePixels = () => particles.evaluateAll((elements) => elements.reduce((total, element) => {
       const source = element as HTMLCanvasElement;
-      if (!source.width || !source.height) return 0;
+      if (!source.width || !source.height) return total;
 
       const probe = document.createElement('canvas');
       probe.width = 240;
       probe.height = 240;
       const context = probe.getContext('2d');
-      if (!context) return 0;
+      if (!context) return total;
 
       context.drawImage(source, 0, 0, probe.width, probe.height);
       const pixels = context.getImageData(0, 0, probe.width, probe.height).data;
@@ -151,8 +152,8 @@ test.describe("Homepage Visual", () => {
       for (let i = 3; i < pixels.length; i += 4) {
         if (pixels[i] > 32) visiblePixels += 1;
       }
-      return visiblePixels;
-    });
+      return total + visiblePixels;
+    }, 0));
 
     // Observe rendered pixels immediately so mobile rendering does not consume
     // most of the animation's 200-tick lifetime before the assertion.
