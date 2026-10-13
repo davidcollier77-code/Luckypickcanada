@@ -1,10 +1,10 @@
-- Latest CI finding (run #384): the audio-ready assertion passed with the local WAV fixture, but pixel sampling found zero rendered particles on desktop and both mobile projects. Removed the precomputed maple-leaf transform and now let canvas-confetti calculate the path normalization matrix; run a fresh Visual QA check before treating the effect as fixed.
+- Verified on 2026-10-13: Visual QA run #388 passed (12 passed, 3 skipped, 0 failed), and OpenNext validation run #997 passed. Visual runs #384 and #387 had found zero rendered pixels; review of canvas-confetti's default configuration and the restrictive CSP identified its Blob-worker path as the likely cause. The component now creates a dedicated overlay canvas using `confetti.create(canvas, { resize: true, useWorker: false })`, keeping CSP unchanged, and uses a cached viewBox-derived transform for the negative-coordinate maple SVG.
 
-- In progress: PR #1468's Explore Your Luck effect repair now logs asynchronous Howler playback failures and maple-leaf shape fallback errors, centralizes the audio URL/CSP origin, and uses a valid silent WAV fixture in the Playwright interaction test to avoid a CI hard dependency on Mixkit availability. Latest CI and mobile verification remain outstanding.
+- PR #1468 also centralizes the chime URL/CSP origin, logs asynchronous Howler playback and leaf-shape errors, and isolates Playwright's sound readiness check from Mixkit CDN availability with a valid silent WAV fixture. Review findings were answered and remaining review suggestions were classified as false positives or unnecessary refactors. Local `./jules-verify.sh`, full artifact-size measurement against the 495 MB cap, and real mobile CDN playback remain outstanding.
 
 # Progress
 
-- In progress: Explore Your Luck effect repair on branch `018-explore-luck-effect-repair`. Replaced click-time bitmap rendering with a normalized SVG path shape, increased burst size, switched to a short official Mixkit sparkle effect with preload handling, added the minimal `media-src` host allowlist, and strengthened Playwright to require drawn pixels. Required CI and mobile verification remain outstanding.
+- Code changes and CI for PR #1468 are verified: canvas-confetti now draws on a dedicated main-thread canvas (no CSP-blocked Blob worker), the maple SVG uses a cached viewBox-derived transform, the WAV-fixture Playwright suite passes, and OpenNext validation passes. Only local governance/build-size and actual-device audio checks remain before calling every requirement complete.
 
 - Completed Golden Arrow Interaction enhancement, integrating `canvas-confetti` and `howler.js` for a richer visual and audio experience.
 - Extended cooldown logic successfully and updated Playwright test coverage.
