@@ -1,11 +1,13 @@
 # Active Context
 
-- **Current Goal**: Finish Robin migration review follow-up in PR #1465.
-- **Verified State**:
-  - The Robin reusable workflow declares job-level filtering for supported slash commands and applies concurrency at the job level.
-  - The caller workflow now leaves concurrency enforcement to that reusable workflow, so arbitrary comments should not cancel an active review.
-  - The Robin endpoint and model use optional repository variables with defaults of `https://openrouter.ai/api/v1` and `openrouter/free`.
-  - The current `.github/workflows/robin.yml` contains no obsolete “Inori AI review” comment; that finding from Robin's latest review does not match the file.
+- **Current Goal**: Repair the Explore Your Luck golden-leaf effect and synchronize its chime without changing its working scroll behavior.
+- **Verified Findings**:
+  - The previous component loaded the leaf bitmap on activation and used a custom bitmap shape without the transform matrix expected by the confetti renderer.
+  - The previous visual test checked only that the confetti canvas existed, not that visible particles were rendered.
+  - The chime was initialized on activation, creating avoidable module/audio loading delay.
+- **Current Branch**: `018-explore-luck-effect-repair`.
+- **Implementation Status**: The branch contains a path-based leaf shape, an increased burst, chime preload/synchronous-play handling, and stronger visual assertions. The repair is not complete until Playwright, repository verification, CI and real mobile behavior are checked.
 - **Next Steps**:
-  - Inspect CI results for the latest PR commit.
-  - Runtime behavior and `./jules-verify.sh` still need verification in an environment with repository checkout/network access.
+  - Run focused Playwright tests and `./jules-verify.sh` in a capable checkout.
+  - Inspect CI statuses, final diff and measured build size.
+  - Verify visible leaves and chime timing in a real mobile browser.
