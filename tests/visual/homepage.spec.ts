@@ -2,6 +2,36 @@ import { test, expect } from '@playwright/test';
 
 const EXPLORE_COOLDOWN_MS = 15_000;
 
+/**
+ * Builds a short, valid silent PCM WAV so interaction coverage does not
+ * depend on the Mixkit CDN being reachable from the CI runner.
+ */
+function createSilentWavFixture() {
+  const sampleRate = 8_000;
+  const durationMs = 120;
+  const channels = 1;
+  const bitsPerSample = 16;
+  const bytesPerSample = bitsPerSample / 8;
+  const dataSize = Math.round(sampleRate * durationMs / 1_000) * channels * bytesPerSample;
+  const wav = Buffer.alloc(44 + dataSize);
+
+  wav.write('RIFF', 0);
+  wav.writeUInt32LE(36 + dataSize, 4);
+  wav.write('WAVE', 8);
+  wav.write('fmt ', 12);
+  wav.writeUInt32LE(16, 16);
+  wav.writeUInt16LE(1, 20);
+  wav.writeUInt16LE(channels, 22);
+  wav.writeUInt32LE(sampleRate, 24);
+  wav.writeUInt32LE(sampleRate * channels * bytesPerSample, 28);
+  wav.writeUInt16LE(channels * bytesPerSample, 32);
+  wav.writeUInt16LE(bitsPerSample, 34);
+  wav.write('data', 36);
+  wav.writeUInt32LE(dataSize, 40);
+
+  return wav;
+}
+
 test.describe("Homepage Visual", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
@@ -77,6 +107,17 @@ test.describe("Homepage Visual", () => {
     // Use Playwright's real media emulation so JavaScript and CSS agree that
     // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
     await page.emulateMedia({ reducedMotion: 'no-preference' });
+
+    // Fulfill the production audio URL with a valid local fixture. This keeps
+    // confetti and scroll regression checks deterministic when CI has no CDN access.
+    await page.route('https://assets.mixkit.co/sfx/preview/mixkit-fairy-magic-sparkle-871.wav', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'audio/wav',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: createSilentWavFixture(),
+      });
+    });
 
     let chimePreloadRequested = false;
     page.on('request', (request) => {
