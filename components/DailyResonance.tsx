@@ -1169,9 +1169,9 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       <Aurora ref={auroraRef} />
       <picture className="absolute inset-0 w-full h-full -z-20 pointer-events-none">
         <source srcSet="/images/lucky-meter-night-sky.avif" type="image/avif" />
-        <Image src="/images/lucky-meter-night-sky.webp" alt="" role="presentation" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" style={{ objectPosition: "center 40%" }} fill priority />
+      <picture>
       </picture>
-      <TwinklingStars />
+        <Image src="/images/lucky-meter-night-sky.webp" alt="" role="presentation" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover -z-20 pointer-events-none" style={{ objectPosition: "center 40%" }} fill loading="eager" fetchPriority="high" />
       <div className="absolute inset-0 bg-slate-950/40 -z-10 pointer-events-none" />
       <canvas ref={canvasRef} className="absolute inset-0 z-10 pointer-events-none" />
 

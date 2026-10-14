@@ -480,7 +480,7 @@
       rgba(2, 5, 10, 0.1) 64%,
       rgba(1, 4, 8, 0.4) 100%
     ),
-    image-set(url('/assets/crystal-ball-bg-desktop.avif') type('image/avif'), url('/assets/crystal-ball-bg-desktop.webp') type('image/webp'), url('/assets/crystal-ball-bg-desktop.jpeg') type('image/jpeg')) center 45% / cover no-repeat;
+    image-set(url('/assets/crystal-ball-bg-desktop.webp') type('image/webp'), url('/assets/crystal-ball-bg-desktop.avif') type('image/avif'), url('/assets/crystal-ball-bg-desktop.jpeg') type('image/jpeg')) center 45% / cover no-repeat;
   background-color: #02050a;
   filter: saturate(0.92) contrast(1.05) brightness(1.0);
   transform: translateZ(0) scale(1.015);
@@ -762,6 +762,6 @@ body:has(.homepage-sky-backdrop)::after {
         rgba(2, 5, 10, 0.1) 64%,
         rgba(1, 4, 8, 0.4) 100%
       ),
-      image-set(url('/assets/crystal-ball-bg-mobile.avif') type('image/avif'), url('/assets/crystal-ball-bg-mobile.webp') type('image/webp'), url('/assets/crystal-ball-bg-mobile.jpeg') type('image/jpeg')) center 42% / cover no-repeat;
+      image-set(url('/assets/crystal-ball-bg-mobile.webp') type('image/webp'), url('/assets/crystal-ball-bg-mobile.avif') type('image/avif'), url('/assets/crystal-ball-bg-mobile.jpeg') type('image/jpeg')) center 42% / cover no-repeat;
   }
 }
