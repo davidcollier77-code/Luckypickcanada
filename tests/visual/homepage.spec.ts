@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 const EXPLORE_COOLDOWN_MS = 15_000;
 
 /**
- * Builds a short, valid silent PCM WAV so interaction coverage does not
- * depend on the Mixkit CDN being reachable from the CI runner.
+ * Builds a short, valid silent PCM WAV so interaction coverage can verify
+ * local audio loading deterministically without playing the real sound in CI.
  */
 function createSilentWavFixture() {
   const sampleRate = 8_000;
@@ -108,9 +108,9 @@ test.describe("Homepage Visual", () => {
     // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
     await page.emulateMedia({ reducedMotion: 'no-preference' });
 
-    // Fulfill the production audio URL with a valid local fixture. This keeps
-    // confetti and scroll regression checks deterministic when CI has no CDN access.
-    await page.route('https://assets.mixkit.co/sfx/preview/mixkit-fairy-magic-sparkle-871.wav', async (route) => {
+    // Fulfill the local production audio path with a valid WAV fixture. This keeps
+    // confetti and scroll regression checks deterministic in CI.
+    await page.route('**/sounds/sparkling.wav', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'audio/wav',
@@ -121,7 +121,7 @@ test.describe("Homepage Visual", () => {
 
     let chimePreloadRequested = false;
     page.on('request', (request) => {
-      if (request.url().includes('mixkit-fairy-magic-sparkle-871.wav')) {
+      if (request.url().includes('/sounds/sparkling.wav')) {
         chimePreloadRequested = true;
       }
     });
@@ -237,8 +237,8 @@ test.describe("Homepage Visual", () => {
     
     // All three should show progression from the first click only
     expect(scrollAfterFirst).toBeGreaterThanOrEqual(0);
-    expect(scrollAfterSecond).toBeGreaterThanOrEqual(scrollAfterFirst);
-    expect(scrollAfterThird).toBeGreaterThanOrEqual(scrollAfterSecond);
+    expect(scrollAfterSecond).toBe(scrollAfterFirst);
+    expect(scrollAfterThird).toBe(scrollAfterFirst);
     
     // Wait for animation to complete
     await page.waitForTimeout(1_500);
@@ -295,12 +295,22 @@ test.describe("Homepage Visual", () => {
     // Use Playwright's real media emulation so JavaScript and CSS agree that
     // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
     await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.route('**/sounds/sparkling.wav', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'audio/wav',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: createSilentWavFixture(),
+      });
+    });
+
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
     const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
     await expect(exploreButton).toBeVisible();
+    await expect(exploreButton).toHaveAttribute('data-chime-ready', 'true', { timeout: 5_000 });
     await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
 
     await exploreButton.click();
