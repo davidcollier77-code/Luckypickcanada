@@ -4,7 +4,7 @@
 
 ## Summary
 
-Restore visible golden maple-leaf particles and prevent late sound playback while leaving the working scroll behavior untouched. Use the leaf path from the repository's existing golden maple-leaf SVG with `canvas-confetti.shapeFromPath` and a fixed transform matrix. Preload the existing local `public/sounds/sparkling.wav` during component initialization so it can play immediately on activation.
+Restore visible golden maple-leaf particles and prevent late sound playback while leaving the working scroll behavior untouched. Use the leaf path from the repository's existing golden maple-leaf SVG with `canvas-confetti.shapeFromPath` and a fixed transform matrix. Preload the existing local `public/sounds/confetti-pop.wav` during component initialization so it can play immediately on activation.
 
 ## Technical Context
 
@@ -34,7 +34,7 @@ See `research.md`. The current code constructs a bitmap custom shape without the
 ## Implementation Phases
 
 1. **Repair particle shape**: Use the existing SVG path through `confetti.shapeFromPath`, with an explicit matrix; remove click-time image loading; retain a gold fallback.
-2. **Repair audio timing**: Cache one Howler preload promise for `/sounds/sparkling.wav` and play synchronously when it is loaded; never queue late playback after the current transition. Keep media access same-origin and remove the obsolete external audio-host allowance.
+2. **Repair audio timing**: Cache one Howler preload promise for `/sounds/confetti-pop.wav` and play synchronously when it is loaded; never queue late playback after the current transition. Keep media access same-origin and remove the obsolete external audio-host allowance.
 3. **Regression test**: Extend Playwright coverage to assert rendered alpha pixels and that the sound request starts before activation; retain existing scroll/cooldown/keyboard assertions.
 4. **Verify and report**: Run the Spec Kit gate and repository verification, inspect the final diff, check CI statuses and verify the real mobile interaction before marking success.
 

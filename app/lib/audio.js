@@ -1,4 +1,4 @@
-import { MAGICAL_CHIME_URL } from './magicalChimeSource.mjs';
+import { CONFETTI_POP_URL } from './confettiPopSource.mjs';
 
 const audioCache = {};
 
@@ -29,27 +29,27 @@ export async function playButtonClick() {
  *
  * @returns {Promise<void>} Resolves when the sound is ready to play.
  */
-let magicalChimeLoadPromise = null;
+let confettiPopLoadPromise = null;
 
-export function preloadMagicalChime() {
+export function preloadConfettiPop() {
   if (typeof window === 'undefined') return Promise.resolve();
 
-  if (audioCache.magicalChime?.state() === 'loaded') return Promise.resolve();
-  if (magicalChimeLoadPromise) return magicalChimeLoadPromise;
+  if (audioCache.confettiPop?.state() === 'loaded') return Promise.resolve();
+  if (confettiPopLoadPromise) return confettiPopLoadPromise;
 
-  magicalChimeLoadPromise = import('howler')
+  confettiPopLoadPromise = import('howler')
     .then(({ Howl }) => new Promise((resolve, reject) => {
       const sound = new Howl({
-        src: [MAGICAL_CHIME_URL],
+        src: [CONFETTI_POP_URL],
         html5: true,
         volume: 0.45,
         preload: true,
       });
       sound.on('playerror', (_id, error) => {
         // Howler reports asynchronous HTML5 media-policy failures through this event.
-        console.error('Magical chime playback failed:', error);
+        console.error('Confetti pop playback failed:', error);
       });
-      audioCache.magicalChime = sound;
+      audioCache.confettiPop = sound;
 
       if (sound.state() === 'loaded') {
         resolve();
@@ -58,16 +58,16 @@ export function preloadMagicalChime() {
 
       sound.once('load', () => resolve());
       sound.once('loaderror', (_id, error) => {
-        reject(new Error(`Magical chime failed to load: ${String(error)}`));
+        reject(new Error(`Confetti pop failed to load: ${String(error)}`));
       });
     }))
     .catch((error) => {
-      magicalChimeLoadPromise = null;
-      audioCache.magicalChime = null;
+      confettiPopLoadPromise = null;
+      audioCache.confettiPop = null;
       throw error;
     });
 
-  return magicalChimeLoadPromise;
+  return confettiPopLoadPromise;
 }
 
 /**
@@ -77,14 +77,14 @@ export function preloadMagicalChime() {
  *
  * @returns {Promise<void>} Resolves after requesting playback or preload.
  */
-export function playMagicalChime() {
+export function playConfettiPop() {
   if (typeof window === 'undefined') return Promise.resolve();
 
-  const sound = audioCache.magicalChime;
+  const sound = audioCache.confettiPop;
   if (sound?.state() === 'loaded') {
     sound.play();
     return Promise.resolve();
   }
 
-  return preloadMagicalChime();
+  return preloadConfettiPop();
 }
