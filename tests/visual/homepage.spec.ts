@@ -237,8 +237,8 @@ test.describe("Homepage Visual", () => {
     
     // All three should show progression from the first click only
     expect(scrollAfterFirst).toBeGreaterThanOrEqual(0);
-    expect(scrollAfterSecond).toBeGreaterThanOrEqual(scrollAfterFirst);
-    expect(scrollAfterThird).toBeGreaterThanOrEqual(scrollAfterSecond);
+    expect(scrollAfterSecond).toBe(scrollAfterFirst);
+    expect(scrollAfterThird).toBe(scrollAfterFirst);
     
     // Wait for animation to complete
     await page.waitForTimeout(1_500);
@@ -295,12 +295,22 @@ test.describe("Homepage Visual", () => {
     // Use Playwright's real media emulation so JavaScript and CSS agree that
     // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
     await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.route('**/sounds/sparkling.wav', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'audio/wav',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: createSilentWavFixture(),
+      });
+    });
+
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
     const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
     await expect(exploreButton).toBeVisible();
+    await expect(exploreButton).toHaveAttribute('data-chime-ready', 'true', { timeout: 5_000 });
     await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
 
     await exploreButton.click();
