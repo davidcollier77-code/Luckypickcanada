@@ -13,7 +13,7 @@
 - [x] T006 Increase the particle count and modestly enlarge particles without changing scroll behavior.
 - [x] T007 Preload and cache the existing local `public/sounds/sparkling.wav` asset through `app/lib/audio.js`; prevent delayed playback after activation.
 - [x] T008 Strengthen `tests/visual/homepage.spec.ts` to verify actual rendered pixels and pre-activation sound preload.
-- [x] T009 Centralize the audio URL and derive the `media-src` origin in `app/lib/magicalChimeSource.mjs`; leave other CSP directives untouched.
+- [x] T009 Centralize the local audio path in `app/lib/magicalChimeSource.mjs` and keep CSP media access same-origin.
 
 ## Phase 4 — Verify and report
 - [ ] T010 Run `./jules-verify.sh` in a capable local checkout; this connector environment has no local checkout/pnpm executable.
