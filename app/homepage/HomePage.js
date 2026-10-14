@@ -410,8 +410,7 @@ export default function HomePage() {
       <section id="community-section" className="homepage-section" aria-labelledby="community-stories-heading">
         <div className="homepage-community-grid" style={{ gridTemplateColumns: '1fr' }}>
           <article id="community-stories" className="homepage-community-card relative overflow-hidden" style={{ padding: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: '28px', border: '1px solid rgba(255, 235, 160, 0.15)', boxShadow: '0 24px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1)' }}>
-          <div className="absolute inset-0 z-0 bg-[#050c18]" />
-          <Image src="/community-stars-bg.webp" alt="" fill className="absolute inset-0 z-0 object-cover opacity-80" sizes="(max-width: 1000px) 100vw, 1000px" />
+          <Image src="/community-stars-bg.webp" alt="" fill className="absolute inset-0 z-0 object-cover opacity-40 mix-blend-screen" sizes="(max-width: 1000px) 100vw, 1000px" />
           <div className="relative z-10">
           <p className="homepage-offer-kicker">COMMUNITY</p>
           <h2 id="community-stories-heading" className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Stories</h2>

@@ -21,7 +21,6 @@ export default function Page() {
       <section
         className="homepage-seo-section premium-surface"
         style={{
-
           padding: '32px 24px',
           maxWidth: '800px',
           marginInline: 'auto',
@@ -33,13 +32,13 @@ export default function Page() {
           About Lucky Pick Canada
         </h2>
         <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
-          Welcome to <strong>Lucky Pick Canada</strong>, a Canadian digital entertainment experience made to bring a little luck and a little magic to your day. Whether you are checking your daily luck meter, exploring community stories, or drawing unique cards, our site brings a fun and engaging digital experience directly to your screen.
+          Welcome to <strong>Lucky Pick Canada</strong>, a digital entertainment destination created to bring a little everyday magic to your screen. Whether you are checking your daily luck resonance or exploring community stories, our experiences are designed to spark optimism.
         </p>
         <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '12px' }}>
-          Our digital card decks feature tiered card reveals—ranging from standard draws to premium cards like <em>Coast to Coast</em>—designed to make every pick exciting. Use our random pick tool for daily decisions, entertainment, or simply testing your fortune today.
+          Our animated card decks feature tiered reveals—ranging from standard draws to premium cards like <em>Coast to Coast</em>. Enjoy your daily draws and see what luck has in store for you!
         </p>
         <p style={{ fontSize: '0.85rem', color: '#bbb', marginTop: '16px' }}>
-          Lucky Pick Canada is intended strictly for entertainment purposes. Enjoy your daily draws and see what luck has in store for you!
+          Lucky Pick Canada is intended strictly for entertainment purposes and has no affiliation with real-world lotteries or gambling services.
         </p>
       </section>
 

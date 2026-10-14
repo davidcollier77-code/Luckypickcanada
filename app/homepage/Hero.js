@@ -65,7 +65,7 @@ export default function Hero() {
               <Image
                 className="pointer-events-none object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.8)] relative z-10"
                 src="/homepage-hero-lucky-pick-canada.webp"
-                alt="Lucky Pick Canada Hero Composition"
+                alt="Lucky Pick Canada emblem with a maple leaf and clover set against a starry sky."
                 fill
                 sizes="(max-width: 768px) 100vw, 1100px"
                 priority

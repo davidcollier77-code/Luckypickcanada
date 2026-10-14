@@ -9,16 +9,16 @@ const siteUrl = 'https://luckypickcanada.ca';
 const socialImage = '/1785347037732.png';
 
 export const metadata = {
-  title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
-  description: 'Lucky Pick Canada: fun digital entertainment with lucky picks, daily moments, collectible cards, crystal ball & community stories.',
+  title: 'Lucky Pick Canada | Daily Lucky Picks, Cards & Stories',
+  description: 'Explore daily luck readings, collectible cards, a playful crystal ball and Canadian community stories. Entertainment only, with no real lottery affiliation.',
   keywords: ['luckypickcanada', 'lucky stories', 'lucky meter', 'lucky picks', 'fun number picks', 'canada luck', 'lucky card', 'story map', 'canadian luck'],
   metadataBase: new URL('https://luckypickcanada.ca'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
-    description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
+    title: 'Lucky Pick Canada | Daily Lucky Picks, Cards & Stories',
+    description: 'Explore daily luck readings, collectible cards, a playful crystal ball and Canadian community stories. Entertainment only, with no real lottery affiliation.',
     url: 'https://luckypickcanada.ca',
     locale: 'en_CA',
     type: 'website',
@@ -26,8 +26,8 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lucky Pick Canada | Digital Random Generator & Card Reveals',
-    description: 'Discover Lucky Pick Canada, a fun Canadian digital entertainment experience featuring lucky number picks, daily lucky moments, collectible cards, a crystal ball and community stories.',
+    title: 'Lucky Pick Canada | Daily Lucky Picks, Cards & Stories',
+    description: 'Explore daily luck readings, collectible cards, a playful crystal ball and Canadian community stories. Entertainment only, with no real lottery affiliation.',
     images: ['/1785347037732.png'],
   },
   icons: {
@@ -77,7 +77,7 @@ export default function RootLayout({ children }) {
               '@type': 'WebSite',
               name: 'Lucky Pick Canada',
               url: 'https://luckypickcanada.ca',
-              description: 'Interactive tier-based pick platform in Canada.',
+              description: 'Explore daily luck readings, collectible cards, a playful crystal ball and Canadian community stories. Entertainment only, with no real lottery affiliation.',
             }),
           }}
         />
