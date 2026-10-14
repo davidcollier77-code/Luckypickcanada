@@ -1,15 +1,15 @@
 export const LUCKY_CARD_IMAGES = {
-  'number-seeker': '/standard-card-number-seeker.webp',
-  'iron-horseshoe': '/standard-card-iron-horseshoe.webp',
-  'emerald-clover': '/standard-card-emerald-four-leaf.webp',
-  'guiding-star': '/standard-card-guiding-star.webp',
-  'optimists-path': '/standard-card-optimists-path.webp',
-  'cosmic-flow': '/standard-card-cosmic-flow.webp',
-  'northern-lights': '/premium-card-northern-lights.webp',
-  'coast-to-coast-tale': '/premium-card-coast-to-coast-tale.webp',
-  'lucky-canadian-moose': '/a_polished_high_detail_card_illustration_poster_i.webp',
-  'flagship-card': '/flagship-card-golden-maple-clover.webp',
-  'lucky-golden-pick': '/flagship-card-lucky-golden-pick.webp',
+  'number-seeker': '/standard-card-number-seeker.avif',
+  'iron-horseshoe': '/standard-card-iron-horseshoe.avif',
+  'emerald-clover': '/standard-card-emerald-four-leaf.avif',
+  'guiding-star': '/standard-card-guiding-star.avif',
+  'optimists-path': '/standard-card-optimists-path.avif',
+  'cosmic-flow': '/standard-card-cosmic-flow.avif',
+  'northern-lights': '/premium-card-northern-lights.avif',
+  'coast-to-coast-tale': '/premium-card-coast-to-coast-tale.avif',
+  'lucky-canadian-moose': '/a_polished_high_detail_card_illustration_poster_i.avif',
+  'flagship-card': '/flagship-card-golden-maple-clover.avif',
+  'lucky-golden-pick': '/flagship-card-lucky-golden-pick.avif',
 };
 
 export const LUCKY_CARD_QUOTES = {

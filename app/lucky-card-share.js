@@ -104,7 +104,7 @@ async function createShareImage(card) {
 
   if (card.image) {
     try {
-      const artwork = await loadImage(card.image);
+      const artwork = await loadImage(card.image.replace('.avif', '.webp'));
       drawCoverImage(context, artwork, artworkX, artworkY, artworkWidth, artworkHeight);
       context.fillStyle = 'rgba(4, 12, 18, 0.3)';
       context.fillRect(artworkX, artworkY, artworkWidth, artworkHeight);

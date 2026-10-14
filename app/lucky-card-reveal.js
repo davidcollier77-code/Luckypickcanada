@@ -1720,16 +1720,17 @@ export default function LuckyCardReveal() {
 
       {/* Cinematic Deep Space Background */}
       <div className="fixed inset-0 z-[-20] w-full h-full pointer-events-none">
-        <Image
-          src="/NGC4216_crawford.webp"
-          alt="Cosmic Space Background"
-          fill
-          priority
-          quality={85}
-          className="object-cover object-center"
-          sizes="100vw"
-          onError={(e) => e.target.style.display = 'none'}
-        />
+        <picture className="absolute inset-0 w-full h-full">
+          <source type="image/avif" srcSet="/NGC4216_crawford.avif" sizes="100vw" />
+          <source type="image/webp" srcSet="/NGC4216_crawford.webp" sizes="100vw" />
+          <source type="image/jpeg" srcSet="/NGC4216_crawford.jpg" sizes="100vw" />
+          <img
+            src="/NGC4216_crawford.jpg"
+            alt="Cosmic Space Background"
+            className="w-full h-full object-cover object-center"
+            aria-hidden="true"
+          />
+        </picture>
       </div>
 
       {/* Existing Background Canvas */}
@@ -1794,7 +1795,11 @@ export default function LuckyCardReveal() {
                   className="absolute inset-0 rounded-2xl overflow-hidden shadow-2xl"
                   style={cardPolishFrameStyle}
                 >
-                  <Image alt="Card Back Face" className="object-cover rounded-2xl" fill priority quality={100} src="/IMG_20260728_220305_112042.webp"/>
+                  <picture className="absolute inset-0 w-full h-full">
+                    <source type="image/avif" srcSet="/IMG_20260728_220305_112042.avif" />
+                    <source type="image/webp" srcSet="/IMG_20260728_220305_112042.webp" />
+                    <img alt="Card Back Face" className="w-full h-full object-cover rounded-2xl" src="/IMG_20260728_220305_112042.webp" />
+                  </picture>
                   <div className="absolute inset-0" style={cardPolishSheenStyle} />
                   <div className="absolute inset-0" style={cardPolishEdgeStyle} />
                 </div>
@@ -1813,7 +1818,11 @@ export default function LuckyCardReveal() {
                   style={preserveCoastToCoastPolish ? undefined : cardPolishFrameStyle}
                 >
                   {selectedCard && selectedCard.image && !imageError ? (
-                    <Image alt={selectedCard.title || 'Revealed Card'} className="object-cover rounded-2xl" fill onError={() => setImageError(true)} priority quality={100} src={selectedCard.image} />
+                    <picture className="absolute inset-0 w-full h-full">
+                      <source type="image/avif" srcSet={selectedCard.image} />
+                      <source type="image/webp" srcSet={selectedCard.image.replace('.avif', '.webp')} />
+                      <img alt={selectedCard.title || 'Revealed Card'} className="w-full h-full object-cover rounded-2xl" onError={() => setImageError(true)} src={selectedCard.image.replace('.avif', '.webp')} />
+                    </picture>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-center p-4 text-amber-200">
                       Lucky Pick 🍁 Canada.ca
