@@ -458,10 +458,10 @@ export default function LuckyMapOfCanada({ mapData }) {
             <section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}>
 
               {/* Independent Starry Background layer */}
-                 <div style={{ position: 'absolute', inset: 0, background: "image-set(url('/assets/lucky-map-sky.avif') type('image/avif'), url('/assets/lucky-map-sky.webp') type('image/webp')) center / cover no-repeat", zIndex: -1 }} />
-                 <div style={{ position: 'absolute', inset: 0, background: 'image-set(url(/assets/lucky-map-sky.avif) type("image/avif"), url(/assets/lucky-map-sky.webp) type("image/webp")) center / cover no-repeat', zIndex: -1 }} />
-                 {/* Inner gradient to ensure legibility */}
-                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(6, 20, 36, 0.45), rgba(2, 8, 16, 0.65))', zIndex: 0 }} />
+              <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit', zIndex: 0 }}>
+                <div style={{ position: 'absolute', inset: 0, background: "image-set(url('/assets/lucky-map-sky.avif') type('image/avif'), url('/assets/lucky-map-sky.webp') type('image/webp')) center / cover no-repeat", zIndex: -1 }} />
+                {/* Inner gradient to ensure legibility */}
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(6, 20, 36, 0.45), rgba(2, 8, 16, 0.65))', zIndex: 0 }} />
               </div>
 
               {/* Form Content */}
