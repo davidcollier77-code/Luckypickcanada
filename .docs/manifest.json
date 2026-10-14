@@ -67,7 +67,8 @@
       "/numpy/numpy",
       "/websites/google_webp",
       "/lovell/sharp",
-      "/websites/web_dev_images"
+      "/websites/web_dev_images",
+      "/websites/mdn_image_types"
     ],
     "testing": [
       "/github/docs",
@@ -363,6 +364,10 @@
     "/websites/web_dev_images": {
       "type": "url",
       "url": "https://web.dev/learn/images"
+    },
+    "/websites/mdn_image_types": {
+      "type": "url",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types"
     }
   },
   "inventory": [
