@@ -1729,6 +1729,7 @@ export default function LuckyCardReveal() {
             alt="Cosmic Space Background"
             className="w-full h-full object-cover object-center"
             aria-hidden="true"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         </picture>
       </div>
