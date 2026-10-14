@@ -20,6 +20,13 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Chrome Developer "/websites/developer_chrome"
 - Apple WebKit Developer "/websites/developer_apple_webkit"
 
+## Required Reference for Image-Format and Raster-Asset Optimization
+When a polishing task selects, converts, or serves raster image formats (including AVIF, WebP, JPEG, and PNG), you MUST consult the repository's maintained MDN image-format reference before deciding on the format strategy:
+- `.docs/polishing/_websites_mdn_image_types.md` (manifest source ID: `/websites/mdn_image_types`; upstream: https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types)
+- Also consult the relevant project-specific image optimization guide/checklist and applicable implementation library documentation, such as Sharp or Next.js, when relevant.
+- Apply the reference to the actual task: compare browser support, quality/size trade-offs, transparency needs, and fallback behavior rather than blindly preferring one format.
+- In the PR Summary, list this MDN document under the documents actually consulted and explain its concrete contribution. Set `USED: NO` if it was not actually consulted; never infer or claim use from its presence in the manifest alone.
+
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
 When implementing, ensure you test your changes.
