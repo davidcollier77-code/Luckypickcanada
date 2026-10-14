@@ -27,6 +27,10 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Chrome Developer "/websites/developer_chrome"
 - Apple WebKit Developer "/websites/developer_apple_webkit"
 - Android Developers "/android/developers"
+- axe-core "/dequelabs/axe-core"
+- Cloudflare Pages "/cloudflare/cloudflare-docs/pages"
+- PostHog JS "/posthog/posthog-js"
+- MDN Web Audio "/websites/mdn_web_audio"
 
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 

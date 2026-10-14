@@ -20,6 +20,12 @@ When materially necessary, consult the following approved libraries. (Requires C
 - React Hook Form Resolvers "/react-hook-form/resolvers"
 - Sonner "/emilkowalski/sonner"
 - React Error Boundary "/bvaughn/react-error-boundary"
+- Dropbox zxcvbn "/dropbox/zxcvbn"
+- React Three Fiber "/pmndrs/react-three-fiber"
+- Google WebP "/websites/google_webp"
+- Sharp "/lovell/sharp"
+- web.dev Images "/websites/web_dev_images"
+- MDN Image Types "/websites/mdn_image_types"
 
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
