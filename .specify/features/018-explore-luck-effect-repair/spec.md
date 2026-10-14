@@ -1,6 +1,6 @@
 # Feature Specification: Explore Your Luck Effect Repair
 
-**Feature Branch**: `018-explore-luck-effect-repair`
+**Feature Branch**: `fix/local-sparkling-confetti-audio`
 
 **Created**: 2026-10-13
 
@@ -52,11 +52,11 @@ The visitor reaches the same Play & Explore / Lucky Meter section with the exist
 - **FR-001**: Render the existing golden maple-leaf outline as a valid `canvas-confetti` path shape with an explicit transform matrix.
 - **FR-002**: Fire confetti synchronously on activation without waiting for a bitmap download/decode.
 - **FR-003**: Increase the burst from 40 to 72 particles and slightly enlarge the default particle scale.
-- **FR-004**: Preload the selected short Mixkit magical sparkle effect during component initialization and share the load promise.
+- **FR-004**: Preload the existing same-origin `public/sounds/sparkling.wav` asset during component initialization and share the load promise.
 - **FR-005**: Play the sparkle sound synchronously only when the sound has loaded; do not queue delayed playback after activation.
 - **FR-006**: Preserve existing scroll target, duration, easing, cooldown, interrupt handling, keyboard activation, touch behavior and reduced-motion behavior.
 - **FR-007**: Verify actual drawn particles in Playwright rather than asserting only that a canvas element exists.
-- **FR-008**: Permit only `https://assets.mixkit.co` in the existing CSP `media-src` directive so the chosen audio file can play; do not loosen any other CSP directive.
+- **FR-008**: Use the existing same-origin `media-src 'self'` permission for the local sound; remove the obsolete external audio-host allowance without loosening any CSP directive.
 
 ## Edge Cases
 
@@ -75,7 +75,7 @@ The visitor reaches the same Play & Explore / Lucky Meter section with the exist
 
 ## Assumptions
 
-- The sound is the official Mixkit `Fairy magic sparkle` short effect at `https://assets.mixkit.co/sfx/preview/mixkit-fairy-magic-sparkle-871.wav`, listed on Mixkit's free sparkle page under the Mixkit License.
-- The sound file is referenced from Mixkit's CDN rather than vendored in `public/` because outbound DNS in this execution environment prevents a command-line binary download. The narrow CSP exception is required for browser playback and will be verified in CI.
+- The sound is the existing local asset at `public/sounds/sparkling.wav`, already committed on `main`.
+- Playback uses the same-origin `/sounds/sparkling.wav` path, so no external audio CDN or additional CSP host allowance is needed.
 - Modern browsers supporting `canvas-confetti` path rendering use `Path2D` and `DOMMatrix`; other browsers receive the existing fallback particles.
 - The implementation is limited to this homepage interaction and its directly related verification.
