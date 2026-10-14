@@ -1,10 +1,7 @@
 /**
- * Canonical URL for the short Explore Your Luck chime.
+ * Same-origin asset for the Explore Your Luck chime.
  *
- * The application audio loader and Next.js Content Security Policy derive
- * their configuration from this single source to prevent origin drift.
+ * Keeping this path local avoids an external audio dependency and allows the
+ * existing Content Security Policy's 'self' media source to cover playback.
  */
-export const MAGICAL_CHIME_URL =
-  'https://assets.mixkit.co/sfx/preview/mixkit-fairy-magic-sparkle-871.wav';
-
-export const MAGICAL_CHIME_CSP_ORIGIN = new URL(MAGICAL_CHIME_URL).origin;
+export const MAGICAL_CHIME_URL = '/sounds/sparkling.wav';
