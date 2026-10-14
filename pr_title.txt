@@ -1,1 +1,1 @@
-feat: Implement Google Analytics 4 (GA4) Integration
+Optimize raster images to AVIF format with WebP fallback

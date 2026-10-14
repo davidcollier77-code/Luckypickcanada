@@ -191,7 +191,11 @@ export default function ShareLuckyPickButton({ reveal }) {
         <section aria-label="Share Your Luck options" className="share-luck-card" style={{ padding: '1.25rem', borderRadius: 24, border: '1px solid rgba(255, 235, 160, 0.32)', background: 'radial-gradient(circle at 15% 10%, rgba(250,204,21,0.2), transparent 24%), linear-gradient(145deg, rgba(255,255,255,0.12), rgba(16,185,129,0.1))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 20px 48px rgba(0,0,0,0.24)' }}>
           <div style={{ position: 'relative', display: 'grid', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <Image src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada logo with maple leaf" width={48} height={48} sizes="48px" quality={85} style={{ objectFit: 'contain' }} />
+              <picture className="flex-shrink-0" style={{ width: 48, height: 48, display: 'inline-block' }}>
+                <source type="image/avif" srcSet="/BackgroundEraser_20260724_163638777.avif" />
+                <source type="image/png" srcSet="/BackgroundEraser_20260724_163638777.png" />
+                <img src="/BackgroundEraser_20260724_163638777.png" alt="LuckyPickCanada logo with maple leaf" width="48" height="48" style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
+              </picture>
               <div>
                 <p style={{ margin: 0, color: '#34d399', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.78rem', fontWeight: 950 }}>LuckyPickCanada.ca</p>
                 <h3 style={{ margin: '0.1rem 0 0', fontSize: 'clamp(1.45rem, 5vw, 2.2rem)', lineHeight: 1 }}>My LuckyPick reveal</h3>
