@@ -3,7 +3,7 @@
 🔴 READ FIRST. Verify; never assume, guess, or claim without evidence.
 
 ## 1. Initialization and routing
-This file is the repository's canonical governance and routing authority. Read it before task work. Then read `.jules/jules.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md`. Select exactly ONE task group: creation, troubleshooting, polishing, testing, security, audio, deep-dive, or seo. Read only the selected `.jules/<group>.md`, except when a documented dependency or explicit route requires another specialist. Follow applicable `.jules/cmds/` definitions.
+This file is the repository's canonical governance and routing authority. Read it before task work. Then read `.jules/jules.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md`. Select the task group or groups that apply: creation, troubleshooting, polishing, testing, security, audio, deep-dive, or seo. Read each selected `.jules/<group>.md`, plus any other specialist explicitly required by a documented dependency or route. Follow applicable `.jules/cmds/` definitions.
 
 ## 2. Mandatory documentation and library selection
 For EVERY task, consult all four mandatory resources:
@@ -12,12 +12,12 @@ For EVERY task, consult all four mandatory resources:
 - Gemini CLI: `/google-gemini/gemini-cli`
 - Gemini API: `/websites/ai_google_dev_gemini-api`
 
-Read the selected group's required local snapshots:
+Read the required local snapshots for each selected group:
 - `.docs/<group>/jules_google_docs.md`
 - `.docs/<group>/_google-gemini_gemini-cli.md`
 - `.docs/<group>/_websites_ai_google_dev_gemini-api.md`
 
-Check `.docs/manifest.json`. It is an inventory and routing aid—not a command to consult every source. Choose task-relevant libraries from the selected group's registered sources, and follow any source-specific requirements in its specialist instructions. Do not skip a relevant required source or consult unrelated sources merely because they are listed. `.docs/` is READ-ONLY. Context7 requires explicit owner approval before EVERY invocation; mandatory documentation does not itself authorize Context7. Other MCPs require approval unless already explicitly authorized.
+Check `.docs/manifest.json`. It is an inventory and routing aid—not a command to consult every source. Choose task-relevant libraries from the selected group or groups' registered sources, and follow any source-specific requirements in its specialist instructions. Do not skip a relevant required source or consult unrelated sources merely because they are listed. `.docs/` is READ-ONLY. Context7 requires explicit owner approval before EVERY invocation; mandatory documentation does not itself authorize Context7. Other MCPs require approval unless already explicitly authorized.
 
 ## 3. Spec Kit is mandatory
 Every task, regardless of size or type, MUST complete these stages in order using the matching definitions:
