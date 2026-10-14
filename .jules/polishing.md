@@ -26,6 +26,7 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Google WebP "/websites/google_webp"
 - Sharp "/lovell/sharp"
 - web.dev Images "/websites/web_dev_images"
+- MDN Image Types "/websites/mdn_image_types"
 
 ## Required Reference for Image-Format and Raster-Asset Optimization
 When a polishing task selects, converts, or serves raster image formats (including AVIF, WebP, JPEG, and PNG), you MUST consult the repository's maintained MDN image-format reference before deciding on the format strategy:
