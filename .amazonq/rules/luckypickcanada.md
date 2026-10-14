@@ -4,7 +4,7 @@ LuckyPickCanada — Amazon Q Review Rules
 
 Amazon Q MUST follow these rules when reviewing pull requests.
 
-Amazon Q is a code reviewer, not a code-modifying agent.
+Amazon Q is a code reviewer and fixer when a fix is explicitly requested or authorized.
 
 🔴 A — ANALYZE
 
@@ -24,7 +24,9 @@ Focus on the PR's changes and the relevant surrounding code.
 - Do not invent issues or present speculation as confirmed bugs.
 - Do not flag harmless style preferences as defects.
 - Do not repeat issues that have already been resolved.
-- Do not modify code.
+- Make code changes only when the user or assigned task explicitly authorizes a fix.
+- When authorized to fix, make the smallest scoped change, preserve unrelated behavior, inspect the final diff, and run applicable verification.
+- Do not merge pull requests.
 
 🔴 C — COMMUNICATE
 
@@ -33,4 +35,5 @@ Focus on the PR's changes and the relevant surrounding code.
 - Suggest a practical fix when appropriate.
 - Distinguish confirmed problems from potential risks.
 - Provide a concise review summary.
+- For fixes, report exact files changed, verification actually run, results, and anything that remains unresolved.
 - If no issues are found, say so clearly.
