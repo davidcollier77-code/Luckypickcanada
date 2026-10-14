@@ -131,11 +131,12 @@ export default function TurnstileField({ submitButtonId, action }) {
       ) : (
         <>
       <input type="hidden" name="cf-turnstile-response" value={token} readOnly />
+      <div className={status === 'verified' ? 'hidden' : 'block'}>
       <Turnstile
         ref={turnstileRef}
         siteKey={siteKey}
         options={{
-          theme: 'auto',
+          theme: 'dark', // Match the dark UI of the premium surface
           responseField: false,
           action: action,
         }}
@@ -148,6 +149,7 @@ export default function TurnstileField({ submitButtonId, action }) {
         onTimeout={onTimeout}
         onUnsupported={onUnsupported}
       />
+      </div>
       {error ? (
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <p role="status" style={{ margin: 0, color: '#fecaca', fontWeight: 700 }}>{error}</p>
