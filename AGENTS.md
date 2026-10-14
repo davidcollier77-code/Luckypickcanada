@@ -1,6 +1,6 @@
 # 🔴 AGENTS.md — Mandatory Governance
 
-🔴 READ FIRST. Verify; never guess or claim without evidence.
+🔴 READ FIRST. Verify; never guess or make unsupported claims.
 
 ## A — ANALYZE
 
@@ -32,7 +32,7 @@ Spec Kit is mandatory for EVERY task, in order:
 
 Use native dispatch or execute each definition's full file-driven procedure. These Markdown files are definitions, not commands. Report each stage's command, definition path, actual method, result, and artifact paths. Maintain the active feature's `spec.md`, `plan.md`, and `tasks.md`; keep `.specify/feature.json` pointed at it. Run `./jules-verify.sh`; never bypass gates. If blocked, stop and report the exact blocker.
 
-Inspect files, configuration, dependencies, tests, and Git state. Establish scope, resources, authorization, and verification before editing. Make the smallest scoped change; avoid unrelated refactors, redesigns, upgrades, or dependencies. Explicit user authorization is required for payments, databases/schema, authentication/security, APIs or existing functionality, deployment, secrets/environment, accessibility/responsive behavior, approved visuals/product behavior, documentation refresh systems, or `AGENTS.md`. Never expose secrets or weaken validation, sanitization, authorization, Turnstile/CAPTCHA, rate limits, duplicate protection, or environment handling. Inspect `package.json` before using scripts. Use pnpm, never `npm ci`. Measure every build: 495 MB is the hard maximum. At or above 495 MB, stop and report the safe resume point.
+Inspect files, configuration, dependencies, tests, and Git state. Before editing, establish scope, authorization, and verification. Make only scoped changes; avoid unrelated refactors, redesigns, upgrades, or dependencies. Explicit authorization is required for payments, databases/schema, authentication/security, APIs or existing functionality, deployment, secrets/environment, accessibility/responsive behavior, approved visuals/product behavior, documentation refresh systems, or `AGENTS.md`. Never expose secrets or weaken validation, sanitization, authorization, Turnstile/CAPTCHA, rate limits, duplicate protection, or environment handling. Inspect `package.json` before using scripts. Use pnpm, never `npm ci`. Measure every build: 495 MB is the hard maximum. At or above 495 MB, stop and report the safe resume point.
 
 For audio work, follow `.jules/audio.md`; Howler is primary unless routed guidance says otherwise. Consult `.docs/polishing/_goldfire_howler_js.md` when relevant; do not add prohibited public MP3 assets. Preserve accessibility, keyboard behavior, responsive behavior, and `prefers-reduced-motion`.
 
