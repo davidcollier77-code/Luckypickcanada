@@ -101,16 +101,16 @@ test.describe("Homepage Visual", () => {
     expect(snapshot1).not.toEqual(snapshot2);
   });
 
-  test('explore luck renders visible confetti and preloads its chime before scrolling', async ({ page }) => {
+  test('explore luck renders visible confetti and preloads its confetti pop sound before scrolling', async ({ page }) => {
     test.setTimeout(60_000);
 
     // Use Playwright's real media emulation so JavaScript and CSS agree that
     // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
     await page.emulateMedia({ reducedMotion: 'no-preference' });
 
-    // Fulfill the local production audio path with a valid WAV fixture. This keeps
+    // Fulfill the local production confetti audio path with a valid WAV fixture. This keeps
     // confetti and scroll regression checks deterministic in CI.
-    await page.route('**/sounds/sparkling.wav', async (route) => {
+    await page.route('**/sounds/confetti-pop.wav', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'audio/wav',
@@ -119,15 +119,15 @@ test.describe("Homepage Visual", () => {
       });
     });
 
-    let chimePreloadRequested = false;
+    let confettiPopPreloadRequested = false;
     page.on('request', (request) => {
-      if (request.url().includes('/sounds/sparkling.wav')) {
-        chimePreloadRequested = true;
+      if (request.url().includes('/sounds/confetti-pop.wav')) {
+        confettiPopPreloadRequested = true;
       }
     });
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
-    await expect.poll(() => chimePreloadRequested, {
+    await expect.poll(() => confettiPopPreloadRequested, {
       timeout: 5_000,
       intervals: [50, 100, 200],
     }).toBe(true);
@@ -139,7 +139,7 @@ test.describe("Homepage Visual", () => {
 
     await expect(exploreButton).toBeVisible();
     await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
-    await expect(exploreButton).toHaveAttribute('data-chime-ready', 'true', { timeout: 5_000 });
+    await expect(exploreButton).toHaveAttribute('data-confetti-pop-ready', 'true', { timeout: 5_000 });
     await expect(heroStage).toBeVisible();
 
     const buttonBox = await exploreButton.boundingBox();
@@ -295,7 +295,7 @@ test.describe("Homepage Visual", () => {
     // Use Playwright's real media emulation so JavaScript and CSS agree that
     // motion is enabled. Stubbing matchMedia alone can diverge from CSS media queries.
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.route('**/sounds/sparkling.wav', async (route) => {
+    await page.route('**/sounds/confetti-pop.wav', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'audio/wav',
@@ -310,7 +310,7 @@ test.describe("Homepage Visual", () => {
     const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
     await expect(exploreButton).toBeVisible();
-    await expect(exploreButton).toHaveAttribute('data-chime-ready', 'true', { timeout: 5_000 });
+    await expect(exploreButton).toHaveAttribute('data-confetti-pop-ready', 'true', { timeout: 5_000 });
     await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
 
     await exploreButton.click();

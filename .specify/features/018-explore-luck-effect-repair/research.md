@@ -13,11 +13,11 @@
 - Reuse the current gold maple-leaf SVG path with `canvas-confetti.shapeFromPath` and a fixed matrix.
 - Fire particles immediately instead of waiting for an image load.
 - Increase particle count from 40 to 72 and the base scale from 1.5 to 1.8.
-- Preload the existing chime when the component initializes; play synchronously only when loaded, preventing sound from starting unexpectedly after a transition.
+- Preload the existing confetti pop sound when the component initializes; play synchronously only when loaded, preventing sound from starting unexpectedly after a transition.
 - Strengthen Playwright coverage by sampling alpha pixels and checking that the sound request happens before activation.
 
 ## Assumptions and limitations
 
-- The prior implementation referenced Mixkit because a binary download was unavailable at that time. The local `public/sounds/sparkling.wav` asset is now committed and this task switches playback to that same-origin file; current-task browser and device verification remain outstanding.
+- The prior implementation referenced Mixkit because a binary download was unavailable at that time. The local `public/sounds/confetti-pop.wav` asset is now committed and this task switches playback to that same-origin file; current-task browser and device verification remain outstanding.
 - A local repository checkout and command-line asset download are unavailable because the environment cannot resolve external hosts. Branch edits were made using the connected GitHub interface; CI/browser runs must provide execution evidence.
 - Some snapshots under `.docs/audio/` were returned as compressed/non-readable bytes; the readable local Howler.js, MDN Web Audio and Chrome documentation snapshots were consulted.

@@ -1,7 +1,7 @@
 'use client';
 
 import confetti from 'canvas-confetti';
-import { playMagicalChime, preloadMagicalChime } from '../lib/audio';
+import { playConfettiPop, preloadConfettiPop } from '../lib/audio';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 let mapleLeafShape = null;
@@ -53,7 +53,7 @@ const SCROLL_KEYS = new Set([
 export default function ExploreLuckButton() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [isChimeReady, setIsChimeReady] = useState(false);
+  const [isConfettiPopReady, setIsConfettiPopReady] = useState(false);
   const confettiCanvasRef = useRef(null);
   const confettiInstanceRef = useRef(null);
   const isAnimatingRef = useRef(false);
@@ -76,12 +76,12 @@ export default function ExploreLuckButton() {
     let isMounted = true;
 
     // Load and decode the sound before activation so playback can start on the tap.
-    preloadMagicalChime()
+    preloadConfettiPop()
       .then(() => {
-        if (isMounted) setIsChimeReady(true);
+        if (isMounted) setIsConfettiPopReady(true);
       })
       .catch((error) => {
-        console.warn('Magical chime preload failed', error);
+        console.warn('Confetti pop preload failed', error);
       });
 
     return () => {
@@ -152,8 +152,8 @@ export default function ExploreLuckButton() {
 
     isAnimatingRef.current = true;
 
-    // Trigger magical chime
-    playMagicalChime().catch(err => console.error("Audio playback failed", err));
+    // Trigger the confetti pop sound
+    playConfettiPop().catch(err => console.error("Confetti pop playback failed", err));
 
     // Magical Golden Confetti Burst
     const count = 72;
@@ -312,7 +312,7 @@ export default function ExploreLuckButton() {
         className="pointer-events-auto h-full w-full max-w-[min(32rem,90vw)] cursor-pointer appearance-none touch-manipulation select-none rounded-xl border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
         aria-label="Explore your luck. Scroll down to the Play and Explore section."
         data-hydrated={isHydrated ? 'true' : 'false'}
-        data-chime-ready={isChimeReady ? 'true' : 'false'}
+        data-confetti-pop-ready={isConfettiPopReady ? 'true' : 'false'}
       >
         <span className="sr-only">Explore your luck</span>
       </button>

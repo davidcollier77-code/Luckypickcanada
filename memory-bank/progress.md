@@ -13,3 +13,5 @@
 - Confirmed the old Inori-comment finding does not apply to the current Robin wrapper. Local repository checkout failed because the shell could not resolve `github.com`; new runtime checks remain to be inspected via GitHub Actions.
 
 - 2026-10-14: Implemented the local Explore Your Luck chime source on branch `fix/local-sparkling-confetti-audio`. `app/lib/magicalChimeSource.mjs` now points to `/sounds/sparkling.wav`; `next.config.mjs` no longer adds the external Mixkit host to CSP; `tests/visual/homepage.spec.ts` intercepts the local WAV path with a deterministic silent fixture. Current-task Playwright, `./jules-verify.sh`, full build-size measurement, and real-device audible playback remain to be verified.
+
+- 2026-10-14: Added an original non-tonal confetti-pop WAV for the homepage interaction at `public/sounds/confetti-pop.wav`, replacing the previously merged chime-like `public/sounds/sparkling.wav`. Updated loader names, the homepage readiness test selector, and active Spec Kit guidance to the new path. Browser tests, `./jules-verify.sh`, build-size measurement, and live-device playback remain unverified in this API-only session.
