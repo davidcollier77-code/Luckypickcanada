@@ -319,16 +319,21 @@ export default function LuckyMapOfCanada({ mapData }) {
         <section id="lucky-story-map" aria-label="LuckyPickCanada lucky stories map" className="lucky-story-map" style={{ gap: '1.5rem', marginTop: '1.5rem' }}>
           <div className="map-panel" style={{ ...cardStyle }}>
             <div className="official-map-artwork" role="group" aria-label="Interactive Canada story map">
-              <Image
+              <picture className="w-full">
+                <source srcSet="/IMG_20260731_055452_187611.avif" type="image/avif" sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem" />
+                <source srcSet="/IMG_20260731_055452_187611.webp" type="image/webp" sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem" />
+                <Image
                 src="/IMG_20260731_055452_187611.png"
                 alt="Lucky Pick Canada interactive map displaying community stories across Canadian provinces"
                 width={569}
                 height={464}
                 sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem"
-                quality={100}
+                loading="eager"
+                fetchPriority="high"
                 priority
                 className="official-map-image"
               />
+              </picture>
               {provinceSelections.map((province) => {
                 const provinceCount = province.count;
                 const active = selectedProvince === province.code;
@@ -453,8 +458,8 @@ export default function LuckyMapOfCanada({ mapData }) {
             <section role="dialog" aria-modal="true" aria-labelledby="story-form-title" className="story-modal" onMouseDown={(event) => event.stopPropagation()}>
 
               {/* Independent Starry Background layer */}
-              <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: 'inherit', zIndex: 0 }}>
-                 <div style={{ position: 'absolute', inset: 0, background: 'url(/assets/lucky-map-sky.webp) center / cover no-repeat', zIndex: -1 }} />
+                 <div style={{ position: 'absolute', inset: 0, background: "image-set(url('/assets/lucky-map-sky.avif') type('image/avif'), url('/assets/lucky-map-sky.webp') type('image/webp')) center / cover no-repeat", zIndex: -1 }} />
+                 <div style={{ position: 'absolute', inset: 0, background: 'image-set(url(/assets/lucky-map-sky.avif) type("image/avif"), url(/assets/lucky-map-sky.webp) type("image/webp")) center / cover no-repeat', zIndex: -1 }} />
                  {/* Inner gradient to ensure legibility */}
                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, rgba(6, 20, 36, 0.45), rgba(2, 8, 16, 0.65))', zIndex: 0 }} />
               </div>
