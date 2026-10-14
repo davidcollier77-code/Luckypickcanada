@@ -187,12 +187,15 @@ export default function CollectionBinder() {
                           <div key={card.id} className="flex flex-col items-center group">
                             <div className={`relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 border-2 transition-all ${isUnlocked ? 'border-gray-700 group-hover:border-gray-500' : 'border-gray-800/50'}`}>
                                {isUnlocked && (
-<img
-                                  src={card.image}
+<picture className="w-full h-full">
+                                  <source type="image/avif" srcSet={card.image} />
+                                  <img
+                                  src={card.image.replace('.avif', '.webp')}
                                   alt={card.title}
                                   className="w-full h-full object-cover transition-all duration-300"
                                   loading="lazy"
                                 />
+</picture>
 )}
                                 {!isUnlocked && (
                                   <div className="absolute inset-0 flex items-center justify-center">
