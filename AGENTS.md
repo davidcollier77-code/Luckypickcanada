@@ -1,14 +1,14 @@
 # 🔴 AGENTS.md — Mandatory Governance
 
-🔴 READ FIRST. Verify; never assume, guess, or claim without evidence.
+🔴 READ FIRST. Verify; never guess or claim without evidence.
 
 ## A — ANALYZE
 
-Read `AGENTS.md` first, then `.jules/jules.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md`.
+Read `AGENTS.md`, `.jules/jules.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` first.
 
-Select the task group or groups that apply. Exact group files: `.jules/creation.md`, `.jules/troubleshooting.md`, `.jules/polishing.md`, `.jules/testing.md`, `.jules/security.md`, `.jules/audio.md`, `.jules/deep-dive.md`, and `.jules/seo.md`. Read every selected file and applicable specialist route; multiple groups are allowed.
+Select the task group or groups that apply. Exact group files: `.jules/creation.md`, `.jules/troubleshooting.md`, `.jules/polishing.md`, `.jules/testing.md`, `.jules/security.md`, `.jules/audio.md`, `.jules/deep-dive.md`, and `.jules/seo.md`. Read selected files and routes; multiple groups are allowed.
 
-For EVERY task, consult all four mandatory resources: Jules Documentation (`jules.google/docs`); Jules API (`developers.google.com/jules/api`); Gemini CLI (`/google-gemini/gemini-cli`); Gemini API (`/websites/ai_google_dev_gemini-api`).
+Every task requires these four resources: Jules Documentation (`jules.google/docs`); Jules API (`developers.google.com/jules/api`); Gemini CLI (`/google-gemini/gemini-cli`); Gemini API (`/websites/ai_google_dev_gemini-api`).
 
 Read these exact snapshots for each selected group:
 - Creation: `.docs/creation/jules_google_docs.md`, `.docs/creation/_google-gemini_gemini-cli.md`, `.docs/creation/_websites_ai_google_dev_gemini-api.md`
@@ -20,7 +20,7 @@ Read these exact snapshots for each selected group:
 - Deep-dive: `.docs/deep-dive/jules_google_docs.md`, `.docs/deep-dive/_google-gemini_gemini-cli.md`, `.docs/deep-dive/_websites_ai_google_dev_gemini-api.md`
 - SEO: `.docs/seo/jules_google_docs.md`, `.docs/seo/_google-gemini_gemini-cli.md`, `.docs/seo/_websites_ai_google_dev_gemini-api.md`
 
-Check `.docs/manifest.json` as the source inventory/routing aid, not a command to consult every library. Use relevant registered sources and follow specialist triggers; skip neither required sources nor task-specific instructions. `.docs/` is READ-ONLY. Context7 requires explicit owner approval before EVERY invocation; mandatory documentation does not authorize it. Other MCPs need approval unless already explicitly authorized. Inspect task-relevant repository guidance, including `CSS_FIX_GUIDE.md`, `DATABASE_SETUP.md`, `DEPLOYMENT_CHECKLIST.md`, and `QUICK_FIX_GUIDE.md` when applicable.
+Use `.docs/manifest.json` as an inventory, not a command to read every library. Follow relevant source registrations and specialist triggers. `.docs/` is READ-ONLY. Context7 requires explicit owner approval before EVERY invocation; mandatory documentation does not authorize it. Other MCPs need approval unless already explicitly authorized. Read relevant `CSS_FIX_GUIDE.md`, `DATABASE_SETUP.md`, `DEPLOYMENT_CHECKLIST.md`, and `QUICK_FIX_GUIDE.md`.
 
 ## B — BOUNDARIES + PLAN
 
@@ -30,14 +30,14 @@ Spec Kit is mandatory for EVERY task, in order:
 3. `/speckit.tasks` — `.jules/cmds/speckit.tasks.md`
 4. `/speckit.implement` — `.jules/cmds/speckit.implement.md`
 
-Use native dispatch if available; otherwise execute each definition's full file-driven procedure. These Markdown files are definitions, not shell commands. Report each stage's command, definition path, actual method, result, and artifact paths. Maintain the active feature's `spec.md`, `plan.md`, and `tasks.md`; keep `.specify/feature.json` pointed at it. Run `./jules-verify.sh`; never bypass gates. If blocked, stop and report the exact blocker.
+Use native dispatch or execute each definition's full file-driven procedure. These Markdown files are definitions, not commands. Report each stage's command, definition path, actual method, result, and artifact paths. Maintain the active feature's `spec.md`, `plan.md`, and `tasks.md`; keep `.specify/feature.json` pointed at it. Run `./jules-verify.sh`; never bypass gates. If blocked, stop and report the exact blocker.
 
-Inspect actual files, configuration, dependencies, tests, and Git state. Establish scope, planned files, resources, versions, authorization, and verification before editing. Make the smallest scoped change; avoid unrelated refactors, redesigns, dependency upgrades, or added dependencies. Explicit user authorization is required for payments, databases/schema, authentication/security, APIs or existing functionality, deployment, secrets/environment, accessibility/responsive behavior, approved visuals/product behavior, documentation refresh systems, or `AGENTS.md`. Never expose secrets or weaken validation, sanitization, authorization, Turnstile/CAPTCHA, rate limits, duplicate protection, or environment handling. Inspect `package.json` before using scripts. Use pnpm, never `npm ci`. Measure every build: 495 MB is the hard maximum. At or above 495 MB, stop and report the safe resume point.
+Inspect files, configuration, dependencies, tests, and Git state. Establish scope, resources, authorization, and verification before editing. Make the smallest scoped change; avoid unrelated refactors, redesigns, upgrades, or dependencies. Explicit user authorization is required for payments, databases/schema, authentication/security, APIs or existing functionality, deployment, secrets/environment, accessibility/responsive behavior, approved visuals/product behavior, documentation refresh systems, or `AGENTS.md`. Never expose secrets or weaken validation, sanitization, authorization, Turnstile/CAPTCHA, rate limits, duplicate protection, or environment handling. Inspect `package.json` before using scripts. Use pnpm, never `npm ci`. Measure every build: 495 MB is the hard maximum. At or above 495 MB, stop and report the safe resume point.
 
 For audio work, follow `.jules/audio.md`; Howler is primary unless routed guidance says otherwise. Consult `.docs/polishing/_goldfire_howler_js.md` when relevant; do not add prohibited public MP3 assets. Preserve accessibility, keyboard behavior, responsive behavior, and `prefers-reduced-motion`.
 
 ## C — EXECUTE + VERIFY
 
-Run relevant tests. For visual work, use Playwright via `playwright.config.ts`. Inspect the final diff and every changed file.
+Run relevant tests; use Playwright via `playwright.config.ts` for visual work. Inspect every changed file and the final diff.
 
 The PR Summary must truthfully report selected group(s) and reasons; every routed document, resource/library (name and version), and relevant component with USED=YES/NO, USEFUL=YES/NO, and a specific reason; exact changed paths reconciled with the diff; verification commands, results, and evidence; scope, authorization, and remaining issues; `USEFUL RESULT: YES/NO`; and the final double-check. USED=YES means actually consulted or inspected; USEFUL=YES requires a concrete contribution. Never invent results. Update `memory-bank/activeContext.md` and `memory-bank/progress.md` as required. Missing demonstrated governance or an incomplete PR Summary means no task approval.
