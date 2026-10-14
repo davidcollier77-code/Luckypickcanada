@@ -21,7 +21,8 @@
       "/pmndrs/react-three-fiber",
       "/websites/google_webp",
       "/lovell/sharp",
-      "/websites/web_dev_images"
+      "/websites/web_dev_images",
+      "/websites/mdn_image_types"
     ],
     "troubleshooting": [
       "/github/docs",
