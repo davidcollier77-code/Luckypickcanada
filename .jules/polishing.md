@@ -19,6 +19,13 @@ When materially necessary, consult the following approved libraries. (Requires C
 - Howler.js "/goldfire/howler.js"
 - Chrome Developer "/websites/developer_chrome"
 - Apple WebKit Developer "/websites/developer_apple_webkit"
+- axe-core "/dequelabs/axe-core"
+- Magic UI "/magicuidesign/magicui"
+- Pillow "/python-pillow/Pillow"
+- NumPy "/numpy/numpy"
+- Google WebP "/websites/google_webp"
+- Sharp "/lovell/sharp"
+- web.dev Images "/websites/web_dev_images"
 
 ## Required Reference for Image-Format and Raster-Asset Optimization
 When a polishing task selects, converts, or serves raster image formats (including AVIF, WebP, JPEG, and PNG), you MUST consult the repository's maintained MDN image-format reference before deciding on the format strategy:

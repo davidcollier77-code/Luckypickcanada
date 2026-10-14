@@ -22,6 +22,10 @@ When materially necessary, consult the following approved libraries. (Requires C
 - React Error Boundary "/bvaughn/react-error-boundary"
 - Chrome Developer "/websites/developer_chrome"
 - Apple WebKit Developer "/websites/developer_apple_webkit"
+- Cloudflare Turnstile "/cloudflare/cloudflare-docs/turnstile"
+- Cloudflare Pages "/cloudflare/cloudflare-docs/pages"
+- Neon Docs Website "/websites/neon"
+- MDN Web Audio "/websites/mdn_web_audio"
 
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
