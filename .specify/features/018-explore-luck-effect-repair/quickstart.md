@@ -5,4 +5,4 @@
 3. Confirm the test sees rendered alpha pixels in the confetti canvas and sees the `/sounds/confetti-pop.wav` request and ready state before activation.
 4. Confirm scrolling still reaches `#play-explore`, the 15-second cooldown blocks repeated activations, and keyboard interruption cancels the scroll.
 5. Run `./jules-verify.sh`. Measure the actual build output and stop if it reaches 495 MB.
-6. On a real mobile browser, tap Explore Your Luck and verify visible gold maple leaves and the local `sparkling.wav` confetti pop sound start together without a late sound after scrolling.
+6. On a real mobile browser, tap Explore Your Luck and verify visible gold maple leaves and the local `confetti-pop.wav` confetti pop sound start together without a late sound after scrolling.
