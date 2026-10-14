@@ -1,0 +1,1 @@
+../creation/_websites_mdn_image_types.md
