@@ -452,6 +452,9 @@
   .goldenLeafGuide {
     animation: none !important;
   }
+  .ballInnerGlow {
+    transition: none !important;
+  }
   .fortuneWord {
     transition: none !important;
     opacity: 1 !important;
