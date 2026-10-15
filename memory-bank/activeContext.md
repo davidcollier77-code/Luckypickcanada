@@ -53,3 +53,10 @@
 - **Repair branch:** `fix/crystal-ball-fortune-jsx-1491`.
 - **Change:** Restore the opening `<span>`, keep the content-derived key, and preserve the existing reveal class and word spacing.
 - **Verification status:** Source correction committed on a repair branch; CI build, `./jules-verify.sh`, Playwright, and the 495 MB build-size check must pass before the fix is considered verified.
+
+
+## Follow-on GoldenLeaf JSX Build Repair — 2026-10-15
+- **Evidence:** OpenNext validation for PR #1492 failed at `app/components/CrystalBall/GoldenLeaf.tsx:26` during `pnpm run build`; the Cloudflare-specific steps were skipped.
+- **Root cause:** A prior edit duplicated opening gradient/path JSX tags and removed the original path attributes/data.
+- **Repair:** Restored the complete original SVG gradient and maple-leaf path markup, with per-instance gradient IDs from `useId()` referenced by JSX expressions. Existing artwork and gradient stops are preserved.
+- **Status:** Fix committed on `fix/crystal-ball-fortune-jsx-1491`; a fresh CI run must prove the build and subsequent checks pass.
