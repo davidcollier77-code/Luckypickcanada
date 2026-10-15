@@ -9,20 +9,22 @@
 - The previous Playwright test checked image load/dimensions, fallback paths, glow geometry, and plaque text; it did not assert the depicted design.
 
 ## Implementation
-- Replace the incorrect raster image with a standalone transparent SVG component that depicts the intended orb and pedestal. This preserves the page's existing Milky Way background and adds no dependency.
-- Restyle responsive brand text to sit on the illustrated inset nameplate rather than rendering a separate gold pill.
-- Keep fortune flow, input, links, audio call, floating animation, and reduced-motion handling unchanged by scope.
-- Update visual regression assertions to check maple leaf, clover, sapphire, pedestal, accessible name, and responsive geometry.
+- Replace the wrong console illustration with a high-fidelity transparent foreground asset.
+- Serve the asset through a native `picture` element using AVIF first, WebP second, and PNG fallback.
+- Preserve the existing Milky Way page background and do not add aurora markup; homepage-style meteors remain out of scope for this correction.
+- Position the responsive brand text within the artwork's inset pedestal nameplate.
+- Keep fortune flow, input, links, audio, float animation, and reduced-motion handling unchanged.
+- Update Playwright coverage for image loading, source order, dimensions, glow geometry, question input, and navigation.
 
 ## Libraries
-- LIBRARY: React / TypeScript. VERSION: versions declared in package.json. USED: YES. USEFUL: YES. REASON: New artwork is implemented as a typed React SVG component.
+- LIBRARY: React / TypeScript. VERSION: versions declared in package.json. USED: YES. USEFUL: YES. REASON: The provided artwork is served as a transparent AVIF/WebP/PNG raster pipeline.
 - LIBRARY: Playwright. VERSION: @playwright/test ^1.63.0. USED: YES. USEFUL: YES. REASON: Existing visual test was updated; execution remains pending.
 
 ## Routed documents
 - DOCUMENT: AGENTS.md. USED: YES. USEFUL: YES. REASON: Read first; confirmed visual-test, governance, and 495 MB build-size requirements.
 - DOCUMENT: .jules/jules.md. USED: YES. USEFUL: YES. REASON: Reviewed initialization and Memory Bank requirements.
 - DOCUMENT: .jules/polishing.md. USED: YES. USEFUL: YES. REASON: Selected polishing as the applicable task group.
-- DOCUMENT: .docs/manifest.json and .docs/polishing/_websites_mdn_image_types.md. USED: YES. USEFUL: YES. REASON: Considered format/fallback guidance; this corrective implementation uses a transparent inline SVG instead of another potentially misleading raster source.
+- DOCUMENT: .docs/manifest.json and .docs/polishing/_websites_mdn_image_types.md. USED: YES. USEFUL: YES. REASON: Considered format/fallback guidance; this corrective implementation supports the AVIF-first raster pipeline and its fallbacks.
 - DOCUMENT: .specify/memory/constitution.md. USED: YES. USEFUL: YES. REASON: Reviewed the required inspect/plan/implement/test/report sequence.
 - DOCUMENT: Remaining mandated routed documents and command definitions. USED: NO. USEFUL: NO. REASON: Not fully consulted in this API-only session; this is a governance gap, not a claim of compliance.
 
@@ -30,7 +32,7 @@
 - COMPONENT: app/components/CrystalBall/CrystalBall.tsx. USED: YES. USEFUL: YES. REASON: Removes the wrong main image.
 - COMPONENT: app/components/CrystalBall/CrystalBallArtwork.tsx. USED: YES. USEFUL: YES. REASON: New transparent foreground illustration.
 - COMPONENT: app/components/CrystalBall/CrystalBall.module.css. USED: YES. USEFUL: YES. REASON: Styles SVG and branding on the inset nameplate.
-- COMPONENT: tests/visual/crystal-ball.spec.ts. USED: YES. USEFUL: YES. REASON: Adds meaningful visual-content assertions.
+- COMPONENT: tests/visual/crystal-ball.spec.ts. USED: YES. USEFUL: YES. REASON: Verifies raster dimensions, AVIF/WebP/PNG paths, glow geometry, form, and navigation.
 - COMPONENT: specs/018-crystal-ball-redesign/, .specify/feature.json, memory-bank/*, PR_SUMMARY.md. USED: YES. USEFUL: YES. REASON: Records requirements, scope, and outstanding verification.
 
 ## Changed files
