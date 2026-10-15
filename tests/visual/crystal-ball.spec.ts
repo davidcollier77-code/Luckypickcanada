@@ -1,61 +1,58 @@
 import { test, expect } from '@playwright/test';
 
-test('Crystal Ball artwork and inner glow keep their geometry across responsive viewports', async ({ page }) => {
+test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks at responsive sizes', async ({ page }) => {
   await page.goto('/crystal-ball', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 
-  const artwork = page.locator('svg[aria-label*="ruby maple leaf"]');
+  const artwork = page.locator('picture img[alt="Canadian crystal ball with a jeweled maple leaf, emerald clover, sapphire pendant, and ornate gold pedestal"]');
   await expect(artwork).toBeVisible({ timeout: 10_000 });
-  await expect(artwork.locator('title')).toHaveText('Lucky Pick Canada Crystal Ball');
+  await expect.poll(() => artwork.evaluate((element) => {
+    const image = element as HTMLImageElement;
+    return image.complete && image.naturalWidth === 448 && image.naturalHeight === 538;
+  })).toBe(true);
 
   const metrics = await page.evaluate(() => {
-    const svg = document.querySelector('svg[aria-label*="ruby maple leaf"]') as SVGSVGElement | null;
-    const wrapper = svg?.parentElement;
+    const image = document.querySelector('picture img[alt="Canadian crystal ball with a jeweled maple leaf, emerald clover, sapphire pendant, and ornate gold pedestal"]') as HTMLImageElement | null;
+    const picture = image?.closest('picture');
+    const wrapper = picture?.parentElement;
     const glow = wrapper?.querySelector('[class*="ballInnerGlow"]') as HTMLElement | null;
-
-    if (!svg || !wrapper || !glow) return null;
-
-    const imageBox = svg.getBoundingClientRect();
+    if (!image || !picture || !wrapper || !glow) return null;
+    const imageBox = image.getBoundingClientRect();
     const wrapperBox = wrapper.getBoundingClientRect();
     const glowBox = glow.getBoundingClientRect();
-
     return {
-      viewBox: svg.getAttribute('viewBox'),
-      hasMapleLeaf: Boolean(svg.querySelector('path[fill="url(#ruby)"]')),
-      hasEmeraldClover: Boolean(svg.querySelector('ellipse[fill="url(#emerald)"]')),
-      hasSapphire: Boolean(svg.querySelector('path[fill="url(#sapphire)"]')),
-      hasGoldPedestal: Boolean(svg.querySelector('path[stroke="url(#goldMetal)"], path[fill="url(#goldMetal)"]')),
+      imageWidth: image.naturalWidth,
+      imageHeight: image.naturalHeight,
       imageRatio: imageBox.width / imageBox.height,
-      imageWidth: imageBox.width,
-      imageHeight: imageBox.height,
-      isConnected: svg.isConnected,
+      isConnected: image.isConnected,
+      sources: Array.from(picture.querySelectorAll('source')).map((source) => ({
+        type: source.type,
+        srcSet: source.srcset,
+      })),
+      fallbackSrc: image.getAttribute('src'),
       wrapperTop: wrapperBox.top,
       wrapperHeight: wrapperBox.height,
       glowTop: glowBox.top,
-      glowLeft: glowBox.left,
       glowWidth: glowBox.width,
       glowHeight: glowBox.height,
-
     };
   });
 
   expect(metrics).not.toBeNull();
   if (!metrics) throw new Error('Crystal Ball artwork or glow element is missing.');
-
   expect(metrics.isConnected).toBe(true);
-  expect(metrics.viewBox).toBe('0 0 500 650');
-  expect(metrics.imageWidth).toBeGreaterThan(0);
-  expect(metrics.imageHeight).toBeGreaterThan(0);
-  expect(metrics.imageRatio).toBeCloseTo(500 / 650, 2);
-  expect(metrics.hasMapleLeaf).toBe(true);
-  expect(metrics.hasEmeraldClover).toBe(true);
-  expect(metrics.hasSapphire).toBe(true);
-  expect(metrics.hasGoldPedestal).toBe(true);
+  expect(metrics.imageWidth).toBe(448);
+  expect(metrics.imageHeight).toBe(538);
+  expect(metrics.imageRatio).toBeCloseTo(448 / 538, 2);
+  expect(metrics.sources).toEqual([
+    { type: 'image/avif', srcSet: '/assets/crystal-ball-pedestal.avif' },
+    { type: 'image/webp', srcSet: '/assets/crystal-ball-pedestal.webp' },
+  ]);
+  expect(metrics.fallbackSrc).toBe('/assets/crystal-ball-pedestal.png');
   expect(Math.abs(metrics.glowWidth - metrics.glowHeight)).toBeLessThanOrEqual(1);
 
   const glowCenterY = metrics.glowTop + metrics.glowHeight / 2;
-  const expectedGlowCenterY = metrics.wrapperTop + metrics.wrapperHeight * 0.36;
+  const expectedGlowCenterY = metrics.wrapperTop + metrics.wrapperHeight * 0.32;
   expect(Math.abs(glowCenterY - expectedGlowCenterY)).toBeLessThanOrEqual(1.5);
-
 
   await expect(page.getByText('LUCKYPICKCANADA.CA', { exact: true })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Your question for the crystal ball' })).toBeVisible();
