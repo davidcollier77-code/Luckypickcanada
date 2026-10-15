@@ -10,9 +10,6 @@
   --space-900: #090c1c;
   --space-800: #10142a;
 
-  --aurora-emerald: #1fa781;
-  --aurora-violet: #6b4bd6;
-  --aurora-rose: #b23a63;
 
   --brass-100: #fbe7ad;
   --brass-300: #e8c465;
@@ -38,7 +35,7 @@
 }
 
 /* =========================================================================
-   AURORA NIGHT-SKY BACKGROUND
+   LAYOUT SHELL
    ========================================================================= */
 .container {
   position: relative;
@@ -121,10 +118,11 @@
 
 .ballInnerGlow {
   position: absolute;
-  top: 40%;
+  top: 36%;
   left: 50%;
-  width: 50%;
-  height: 50%;
+  width: 62%;
+  height: auto;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(1);
   background: radial-gradient(circle, rgba(140, 180, 255, 0.4) 0%, rgba(100, 140, 255, 0.1) 50%, transparent 70%);
