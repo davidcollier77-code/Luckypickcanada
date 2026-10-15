@@ -1,7 +1,7 @@
 'use client';
 import { playButtonClick } from '../../lib/audio';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import styles from './CrystalBall.module.css';
 
@@ -45,18 +45,29 @@ export default function CrystalBall({
   const [showResult, setShowResult] = useState(false);
   const [readings, setReadings] = useState<Reading[]>([]);
 
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
   const handleSeekFortune = useCallback(async () => {
     // Dismiss keyboard if open
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
     const trimmed = question.trim();
-    if (!trimmed || status === 'loading') return;
+    if (!trimmed || status === 'loading' || status === 'revealing') return;
 
     setStatus('loading');
     setErrorMessage(null);
     try {
       const answer = await onSeekFortune(trimmed);
+      if (!answer || answer.trim() === '') {
+        throw new Error('Received an empty fortune.');
+      }
       setCurrentFortune(answer);
       setReadings((prev) => [
         { id: crypto.randomUUID(), question: trimmed, answer },
@@ -69,7 +80,7 @@ export default function CrystalBall({
       setShowResult(true);
 
       // After pulse animation, return to idle
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         setStatus('idle');
       }, 2000);
     } catch (error: any) {
@@ -105,7 +116,7 @@ export default function CrystalBall({
           <div className={styles.ballWrapper}>
             {/* Dynamic glow based on status */}
             <div className={`${styles.ballInnerGlow} ${status === 'loading' ? styles.ballInnerGlowLoading : status === 'revealing' ? styles.ballInnerGlowRevealing : ''}`} />
-            <picture className={styles.ballArtwork}>
+            {(() => { const glowClass = `${styles.ballInnerGlow} ${status === 'loading' ? styles.ballInnerGlowLoading : status === 'revealing' ? styles.ballInnerGlowRevealing : ''}`; return <div className={glowClass} />; })()}
               <source srcSet="/assets/crystal-ball-pedestal.avif" type="image/avif" />
               <source srcSet="/assets/crystal-ball-pedestal.webp" type="image/webp" />
               <img
@@ -126,7 +137,7 @@ export default function CrystalBall({
 
           {/* Display fortune directly beneath the ball */}
           {showResult && currentFortune && (
-            <div className={styles.fortunePanel} role="alert" aria-live="assertive">
+            <div className={styles.fortunePanel} aria-live="polite">
               <p className={styles.fortuneTextResult}>{currentFortune}</p>
             </div>
           )}
@@ -148,15 +159,15 @@ export default function CrystalBall({
             placeholder="What’s on your mind?"
             rows={2}
             value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            disabled={status === 'loading' || status === 'revealing'}
             disabled={status === 'loading'}
           />
 
           <button
             type="button"
             className={`${styles.seekButton} inline-flex items-center justify-center`}
-            onClick={() => { playButtonClick(); handleSeekFortune(); }}
-            disabled={status === 'loading' || !question.trim()}
+            disabled={status === 'loading' || status === 'revealing' || !question.trim()}
+            aria-disabled={status === 'loading' || status === 'revealing' || !question.trim()}
             aria-disabled={status === 'loading' || !question.trim()}
           >
             {status === 'loading' ? (

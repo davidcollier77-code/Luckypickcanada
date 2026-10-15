@@ -17,12 +17,11 @@ test('Crystal Ball interaction: seeking fortune shows gathering energy then warm
   // Submit
   await seekButton.click();
 
-  // Immediately after clicking, the button should say "Consulting the Mists…"
-  // Removed aggressive check for transitional state that may race in Playwright.
+  // Assert the loading state is reached: button should show "Consulting the Mists…"
+  await expect(page.getByRole('button', { name: /Consulting the Mists/i })).toBeVisible({ timeout: 2000 });
 
   // Glow element should have the loading class (gathering energy shimmer)
   const glowElement = page.locator('[class*="ballInnerGlow"]');
-  // Removed aggressive check for transitional state that may race in Playwright.
 
   // Wait for the fortune reveal (approx 1s delay built-in to default generator + small buffer)
   // The state transitions to "revealing"
@@ -31,6 +30,8 @@ test('Crystal Ball interaction: seeking fortune shows gathering energy then warm
   // The result should now be displayed under the ball
   const fortuneResult = page.locator('div[class*="fortunePanel"]'); // Using class to avoid strict mode violation with Next.js route announcer
   await expect(fortuneResult).toBeVisible();
+  // Assert the fortune text is non-empty
+  await expect(fortuneResult).not.toBeEmpty();
 
   // Expect the question input button to have reset to "Seek Fortune"
   // (after the 2s timeout in the revealing state, or potentially before if the timeout is still active, wait for it)
