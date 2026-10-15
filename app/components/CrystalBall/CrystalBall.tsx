@@ -99,7 +99,7 @@ export default function CrystalBall({
                 alt="Canadian crystal ball with a jeweled maple leaf, emerald clover, sapphire pendant, and ornate gold pedestal"
                 className={styles.ballImage}
                 width={716}
-                height={895}
+                height={875}
                 loading="eager"
                 decoding="async"
               />

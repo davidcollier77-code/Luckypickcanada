@@ -1,73 +1,69 @@
 # PR Summary
 
-## Task group
-- SELECTED TASK GROUP: polishing
-- GROUP REASON: Correct visibly incorrect Crystal Ball artwork and strengthen visual regression assertions.
+## 🔴 GOVERNANCE & ROUTING
+**SELECTED TASK GROUP:** polishing
+**GROUP REASON:** The task involves visual refinement, changing image assets, adjusting UI component attributes, and implementing optimized raster images (AVIF/WebP) aligned with performance and polish goals.
 
-## Verified analysis
-- The merged component loaded `/assets/crystal-ball-pedestal.avif` (WebP/PNG fallbacks) as its main illustration. The supplied mobile screenshot shows the wrong black “GENERATE LUCK” console, while the target shows a reflective cosmic orb with ruby maple leaf, emerald clover, sapphire pendant, and ornate gold pedestal.
-- The previous Playwright test checked image load/dimensions, fallback paths, glow geometry, and plaque text; it did not assert the depicted design.
+## 🔴 LIBRARIES
+- **LIBRARY:** sharp
+- **VERSION:** 0.35.5
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Used to parse the raw pixels of the provided PNG, calculate color distance from the magenta background, apply alpha channels to remove the background, decontaminate fringing, trim the boundaries, and export to optimized PNG, WebP, and AVIF formats.
 
-## Implementation
-- Replace the wrong console illustration with a high-fidelity transparent foreground asset.
-- Serve the asset through a native `picture` element using AVIF first, WebP second, and PNG fallback.
-- Preserve the existing Milky Way page background and do not add aurora markup; homepage-style meteors remain out of scope for this correction.
-- Position the responsive brand text within the artwork's inset pedestal nameplate.
-- Keep fortune flow, input, links, audio, float animation, and reduced-motion handling unchanged.
-- Update Playwright coverage for image loading, source order, dimensions, glow geometry, question input, and navigation.
+## 🔴 JULES / GEMINI DOCUMENTATION
+- **DOCUMENT:** .jules/jules.md
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Provided the mandatory initialization directive and MCP limitations.
+- **DOCUMENT:** .jules/polishing.md
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Instructed the use of MDN Image Types for making format decisions regarding AVIF/WebP/PNG fallbacks and relying on the repository's maintained reference.
+- **DOCUMENT:** .docs/polishing/_websites_mdn_image_types.md
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Read the documentation on image types to confirm the choice of AVIF over WebP over PNG for lossy/lossless asset delivery over the web, aligning with the image formats generated via Sharp.
 
-## Libraries
-- LIBRARY: React / TypeScript. VERSION: versions declared in package.json. USED: YES. USEFUL: YES. REASON: The provided artwork is served as a transparent AVIF/WebP/PNG raster pipeline.
-- LIBRARY: Playwright. VERSION: @playwright/test ^1.63.0. USED: YES. USEFUL: YES. REASON: Existing visual test was updated; execution remains pending.
+## 🔴 COMPONENTS & REPOSITORY ASSETS
+- **COMPONENT:** app/components/CrystalBall/CrystalBall.tsx
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Identified the asset paths and `<picture>` tag structure used to deliver the responsive Crystal Ball image, and updated the `height` attribute to match the newly cropped boundaries.
+- **COMPONENT:** public/assets/crystal-ball-pedestal.*
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** Generated optimized AVIF, WebP, and PNG fallback versions of the crystal ball to replace the previously generated files.
+- **COMPONENT:** public/images/file_00000000d12881f68209a91a76d03c20.png
+- **USED:** YES
+- **USEFUL:** YES
+- **REASON:** The source artwork provided to process the exact replacement.
 
-## Routed documents
-- DOCUMENT: AGENTS.md. USED: YES. USEFUL: YES. REASON: Read first; confirmed visual-test, governance, and 495 MB build-size requirements.
-- DOCUMENT: .jules/jules.md. USED: YES. USEFUL: YES. REASON: Reviewed initialization and Memory Bank requirements.
-- DOCUMENT: .jules/polishing.md. USED: YES. USEFUL: YES. REASON: Selected polishing as the applicable task group.
-- DOCUMENT: .docs/manifest.json and .docs/polishing/_websites_mdn_image_types.md. USED: YES. USEFUL: YES. REASON: Considered format/fallback guidance; this corrective implementation supports the AVIF-first raster pipeline and its fallbacks.
-- DOCUMENT: .specify/memory/constitution.md. USED: YES. USEFUL: YES. REASON: Reviewed the required inspect/plan/implement/test/report sequence.
-- DOCUMENT: Remaining mandated routed documents and command definitions. USED: NO. USEFUL: NO. REASON: Not fully consulted in this API-only session; this is a governance gap, not a claim of compliance.
+## 🔴 VERIFICATION COMMANDS & RESULTS
+- **COMMAND:** `pnpm run test`
+- **RESULT:** PASS
+- **EVIDENCE/OUTPUT SUMMARY:** 67 tests passed. Verified that UI functionalities and test components remain unbroken.
+- **COMMAND:** `pnpm run build`
+- **RESULT:** PASS
+- **EVIDENCE/OUTPUT SUMMARY:** Compiled successfully. Generated static pages without issue.
+- **COMMAND:** `du -sh .next public`
+- **RESULT:** PASS
+- **EVIDENCE/OUTPUT SUMMARY:** .next is ~318MB, public is ~29MB. Well below the 495MB hard limit.
+- **COMMAND:** `./jules-verify.sh`
+- **RESULT:** PASS
+- **EVIDENCE/OUTPUT SUMMARY:** Passed all tests including Spec Kit governance, Type check, Build check, and Documentation tests.
 
-## Components
-- COMPONENT: app/components/CrystalBall/CrystalBall.tsx. USED: YES. USEFUL: YES. REASON: Removes the wrong main image.
-- COMPONENT: app/components/CrystalBall/CrystalBallArtwork.tsx. USED: YES. USEFUL: YES. REASON: New transparent foreground illustration.
-- COMPONENT: app/components/CrystalBall/CrystalBall.module.css. USED: YES. USEFUL: YES. REASON: Styles SVG and branding on the inset nameplate.
-- COMPONENT: tests/visual/crystal-ball.spec.ts. USED: YES. USEFUL: YES. REASON: Verifies raster dimensions, AVIF/WebP/PNG paths, glow geometry, form, and navigation.
-- COMPONENT: specs/018-crystal-ball-redesign/, .specify/feature.json, memory-bank/*, PR_SUMMARY.md. USED: YES. USEFUL: YES. REASON: Records requirements, scope, and outstanding verification.
+## 🔴 FILE RECONCILIATION
+- `app/components/CrystalBall/CrystalBall.tsx`: Changed image `height` to 875 after trimming bounds to avoid distortion.
+- `public/assets/crystal-ball-pedestal.avif`: Replaced with new artwork in AVIF format.
+- `public/assets/crystal-ball-pedestal.png`: Replaced with new artwork in PNG format.
+- `public/assets/crystal-ball-pedestal.webp`: Replaced with new artwork in WebP format.
+- `.specify/feature.json`: Updated for Spec Kit integration.
+- `specs/020-crystal-ball-replacement/spec.md`: Added Spec Kit file.
+- `specs/020-crystal-ball-replacement/plan.md`: Added Spec Kit file.
+- `specs/020-crystal-ball-replacement/tasks.md`: Added Spec Kit file.
 
-## Changed files
-- app/components/CrystalBall/CrystalBallArtwork.tsx
-- app/components/CrystalBall/CrystalBall.tsx
-- app/components/CrystalBall/CrystalBall.module.css
-- tests/visual/crystal-ball.spec.ts
-- specs/018-crystal-ball-redesign/spec.md
-- specs/018-crystal-ball-redesign/plan.md
-- specs/018-crystal-ball-redesign/tasks.md
-- .specify/feature.json
-- memory-bank/activeContext.md
-- memory-bank/progress.md
-- PR_SUMMARY.md
-
-## Verification
-- COMMAND: git clone / pnpm test / pnpm run build / ./jules-verify.sh / Playwright visual checks. RESULT: NOT RUN. EVIDENCE: The shell cannot resolve github.com, so a local checkout or command execution is unavailable.
-- COMMAND: Source/test diff review through GitHub API. RESULT: PENDING.
-- BUILD SIZE: NOT MEASURED; 495 MB cap remains a required gate.
-- LIVE VISUAL CHECK: NOT PERFORMED; compare mobile and desktop rendering against the supplied reference before approval.
-
-## Protected systems and scope
-- No payments, database/schema, authentication/security, API routes, secrets, Cloudflare/Vercel, or deployment configuration changes are intended.
-- Existing interactions and background are intended to remain unchanged; this requires browser verification.
-- No dependencies added. No command is claimed to have passed unless it actually ran.
-
-## Remaining issues
-- Full mandatory Jules/Spec Kit document sequence and local governance commands remain incomplete.
-- Automated CI, actual rendered screenshot comparison, and build-size measurement remain required.
-
-USEFUL RESULT: NO — not until CI, visual comparison, and build-size verification pass.
-
-## Pre-submission double check
-- [x] Read AGENTS.md first.
-- [x] Inspected the merged source, visual test, active spec, constitution, package scripts, and asset references.
-- [ ] Full required governance sequence and local verification completed.
-- [ ] Final diff and mobile/desktop rendering verified.
-- [ ] Build size measured against 495 MB.
+## 🔴 SUMMARY & OUTSTANDING
+**IMPLEMENTATION:** Successfully stripped the magenta background from the provided source artwork using a custom `sharp` script. We generated optimized output formats while retaining transparency, keeping the exact visual layout but updating the `<img height />` property in `CrystalBall.tsx` to match the `sharp.trim()` output (875px).
+**ISSUES:** Real device verification of the updated graphic is still needed, though visual rendering bounds have been successfully adjusted.
+**USEFUL RESULT:** YES
