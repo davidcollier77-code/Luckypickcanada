@@ -111,16 +111,16 @@
   filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.48));
 }
 
-.ballArtwork :global(svg) {
+.ballImage {
   display: block;
   width: 100%;
   height: auto;
-  overflow: visible;
+  object-fit: contain;
 }
 
 .ballInnerGlow {
   position: absolute;
-  top: 36%;
+  top: 32%;
   left: 50%;
   width: 62%;
   height: auto;
@@ -142,7 +142,7 @@
 
 .plaqueOverlay {
   position: absolute;
-  bottom: 22.6%;
+  bottom: 18.5%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
