@@ -1,20 +1,8 @@
-/* =========================================================================
-   CRYSTAL BALL — Glass & Machined Brass
-   -------------------------------------------------------------------------
-   Perf notes: animated layers use `transform` only inside keyframes.
-   ========================================================================= */
-
-/* ---------- tokens ---------- */
 .page {
-  --space-950: #05060f;
-  --space-900: #090c1c;
-  --space-800: #10142a;
-
-
-  --brass-100: #fbe7ad;
+  --brass-100: #f9d77f;
   --brass-300: #e8c465;
-  --brass-500: #c89a3c;
-  --brass-700: #8b6a1e;
+  --brass-500: #b58d34;
+  --brass-700: #7a5a18;
   --brass-900: #3a2a0d;
 
   --glass-hi: rgba(255, 255, 255, 0.55);
@@ -84,6 +72,7 @@
   flex-direction: column;
   align-items: center;
   margin: 1.5rem 0 2.5rem;
+  width: 100%;
 }
 
 .ballWrapper {
@@ -128,11 +117,12 @@
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(1);
   background: radial-gradient(circle, rgba(140, 180, 255, 0.4) 0%, rgba(100, 140, 255, 0.1) 50%, transparent 70%);
-  will-change: transform;
+  will-change: transform, background;
   animation: pulseGlow 5s ease-in-out infinite;
   pointer-events: none;
   z-index: 1;
   mix-blend-mode: screen;
+  transition: background 0.5s ease;
 }
 
 @keyframes pulseGlow {
@@ -174,9 +164,9 @@
   animation: gatherEnergy 1s ease-in-out infinite alternate;
 }
 
-.ballInnerGlowRevealing {
+.ballInnerGlowPulse {
   background: radial-gradient(circle, rgba(255, 215, 100, 0.8) 0%, rgba(255, 180, 50, 0.4) 50%, transparent 70%);
-  animation: warmPulse 2s ease-out forwards;
+  animation: warmPulse 1.5s ease-out forwards;
 }
 
 @keyframes gatherEnergy {
@@ -208,8 +198,9 @@
     0 15px 35px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   text-align: center;
-  animation: revealFortune 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: revealFortuneBox 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   z-index: 5;
+  overflow: hidden;
 }
 
 .fortuneTextResult {
@@ -219,9 +210,42 @@
   line-height: 1.5;
   margin: 0;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  position: relative;
+  display: inline-block;
+  text-align: center;
 }
 
-@keyframes revealFortune {
+.fortuneWord {
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(4px);
+  display: inline-block;
+}
+
+.fortuneWordVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.goldenLeafGuide {
+  position: absolute;
+  left: -20px;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 0 4px rgba(255, 215, 100, 0.8));
+  animation: leafGlide 4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes leafGlide {
+  0% { transform: translateY(-10px) translateX(-5px) rotate(-15deg); opacity: 0; }
+  10% { opacity: 1; }
+  80% { opacity: 1; transform: translateY(80%) translateX(5px) rotate(15deg); }
+  100% { transform: translateY(100%) translateX(0px) rotate(0deg); opacity: 0; }
+}
+
+@keyframes revealFortuneBox {
   0% { opacity: 0; transform: translateY(-20px) scale(0.95); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
@@ -423,8 +447,14 @@
   .ballWrapper,
   .ballInnerGlow,
   .ballInnerGlowLoading,
-  .ballInnerGlowRevealing,
-  .fortunePanel {
-    animation: none;
+  .ballInnerGlowPulse,
+  .fortunePanel,
+  .goldenLeafGuide {
+    animation: none !important;
+  }
+  .fortuneWord {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

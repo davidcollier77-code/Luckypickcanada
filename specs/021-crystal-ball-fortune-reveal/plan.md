@@ -1,7 +1,15 @@
-# Implementation Plan — Crystal Ball Build Repair
+# Implementation Plan — Crystal Ball Fortune Reveal Enhancement
 
-1. Inspect the Cloudflare compiler error and compare the merged Crystal Ball component with its last valid version.
-2. Restore syntactically valid picture markup and consolidate the dynamic glow, disabled state, and accessibility attributes.
-3. Restore textarea state updates and the Seek Fortune button handler while preserving the existing audio feedback and fortune-reveal flow.
-4. Review the changed component and final diff for scope drift.
-5. Run the Crystal Ball Playwright interaction test, `./jules-verify.sh`, the production build, and build-size measurement; then confirm the Cloudflare build result. Do not report verification as passed until it is demonstrated.
+1. Technical Context:
+   - Component: `app/components/CrystalBall/CrystalBall.tsx` and `CrystalBall.module.css`.
+   - Backend: `/api/oracle` returns a complete JSON response (not a stream).
+
+2. Implementation Phases:
+   - **Phase 0: Interaction Overhaul.** Introduce a progressive text reveal mechanism inside `CrystalBall.tsx`. The text is split by words. A `useEffect` handles sequential word reveal using a calculated dynamic timing based on word count.
+   - **Phase 1: Cinematic Elements.** Add a lightweight SVG golden maple leaf that animates alongside the revealing text. Update CSS keyframes in `CrystalBall.module.css` to coordinate the glow and pulse states with the new progressive reveal logic.
+   - **Phase 2: Accessibility & Layout.** Wrap the animated words with `aria-hidden="true"`, adding a screen-reader-only element containing the full text inside an `aria-live` region. Implement smooth scroll into view on submit, with respect for `prefers-reduced-motion`. Prevent double submissions and clean up timeouts.
+
+3. Testing & Verification:
+   - Update/Verify Playwright interaction tests (`crystal-ball-interactions.spec.ts`).
+   - Run `pnpm run build` and ensure build size is under 495 MB.
+   - Run `./jules-verify.sh`.

@@ -4,6 +4,7 @@ import { playButtonClick } from '../../lib/audio';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import styles from './CrystalBall.module.css';
+import GoldenLeaf from './GoldenLeaf';
 
 type Reading = {
   id: string;
@@ -39,19 +40,50 @@ export default function CrystalBall({
   communityMapHref = '/map',
 }: CrystalBallProps) {
   const [question, setQuestion] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'revealing'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'revealing' | 'completionPulse'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentFortune, setCurrentFortune] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [readings, setReadings] = useState<Reading[]>([]);
 
+  // Progressive reveal state
+  const [revealedWordCount, setRevealedWordCount] = useState<number>(0);
+  const fortuneWords = currentFortune ? currentFortune.split(' ') : [];
+  const hasFinishedRevealing = currentFortune && revealedWordCount >= fortuneWords.length;
+
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ballSceneRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useRef<boolean>(false);
 
   useEffect(() => {
+    prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
     };
   }, []);
+
+  // Handle progressive text reveal
+  useEffect(() => {
+    if (status === 'revealing' && currentFortune) {
+      if (revealedWordCount < fortuneWords.length) {
+        // Calculate dynamic delay: ~150ms per word, but slightly varied or bounded if desired.
+        // For standard reading pace, 100-200ms per word feels natural. Let's use 120ms.
+        const delay = prefersReducedMotion.current ? 0 : 120;
+
+        revealTimeoutRef.current = setTimeout(() => {
+          setRevealedWordCount(prev => prev + 1);
+        }, delay);
+      } else {
+        // Finished revealing words, trigger completion pulse
+        setStatus('completionPulse');
+        timeoutRef.current = setTimeout(() => {
+          setStatus('idle');
+        }, 1500); // 1.5s warm pulse duration
+      }
+    }
+  }, [status, revealedWordCount, currentFortune, fortuneWords.length]);
 
   const handleSeekFortune = useCallback(async () => {
     if (document.activeElement instanceof HTMLElement) {
@@ -59,10 +91,25 @@ export default function CrystalBall({
     }
 
     const trimmed = question.trim();
-    if (!trimmed || status === 'loading' || status === 'revealing') return;
+    if (!trimmed || status === 'loading' || status === 'revealing' || status === 'completionPulse') return;
+
+    // Scroll scene into view if needed
+    if (ballSceneRef.current && !prefersReducedMotion.current) {
+        const rect = ballSceneRef.current.getBoundingClientRect();
+        // If the top of the scene is above viewport or bottom is below, smooth scroll.
+        if (rect.top < 0 || rect.bottom > window.innerHeight) {
+            ballSceneRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
 
     setStatus('loading');
     setErrorMessage(null);
+    setCurrentFortune(null);
+    setRevealedWordCount(0);
+    setShowResult(false);
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
 
     try {
       const answer = await onSeekFortune(trimmed);
@@ -76,14 +123,15 @@ export default function CrystalBall({
         ...prev,
       ]);
       setQuestion('');
+
       setStatus('revealing');
       setShowResult(true);
 
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = setTimeout(() => {
-        setStatus('idle');
-        timeoutRef.current = null;
-      }, 2000);
+      // If prefers reduced motion, immediately show all text
+      if (prefersReducedMotion.current) {
+          setRevealedWordCount(answer.split(' ').length);
+      }
+
     } catch (error: unknown) {
       console.error('Failed to fetch fortune:', error);
       setCurrentFortune(null);
@@ -102,6 +150,8 @@ export default function CrystalBall({
           ? 'Ask another question…'
           : 'Awaiting your question…';
 
+  const isBusy = status === 'loading' || status === 'revealing' || status === 'completionPulse';
+
   return (
     <div className={styles.page}>
       <main className={styles.container}>
@@ -112,10 +162,16 @@ export default function CrystalBall({
           </p>
         </header>
 
-        <div className={styles.ballScene}>
+        <div className={styles.ballScene} ref={ballSceneRef}>
           <div className={styles.ballWrapper}>
             <div
-              className={`${styles.ballInnerGlow} ${status === 'loading' ? styles.ballInnerGlowLoading : status === 'revealing' ? styles.ballInnerGlowRevealing : ''}`}
+              className={`${styles.ballInnerGlow} ${
+                status === 'loading'
+                  ? styles.ballInnerGlowLoading
+                  : status === 'completionPulse'
+                    ? styles.ballInnerGlowPulse
+                    : ''
+              }`}
               aria-hidden="true"
             />
             <picture className={styles.ballArtwork}>
@@ -138,7 +194,25 @@ export default function CrystalBall({
 
           {showResult && currentFortune && (
             <div className={styles.fortunePanel} aria-live="polite">
-              <p className={styles.fortuneTextResult}>{currentFortune}</p>
+              {/* Screen reader only full text */}
+              <p className="sr-only">{currentFortune}</p>
+
+              {/* Visible animated text */}
+              <div className={styles.fortuneTextResult} aria-hidden="true">
+                {/* The Golden Leaf Guide */}
+                {!prefersReducedMotion.current && status === 'revealing' && (
+                   <GoldenLeaf className={styles.goldenLeafGuide} />
+                )}
+
+                {fortuneWords.map((word, i) => (
+                  <span
+                    key={i}
+                    className={`${styles.fortuneWord} ${i < revealedWordCount ? styles.fortuneWordVisible : ''}`}
+                  >
+                    {word}{' '}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -162,7 +236,7 @@ export default function CrystalBall({
             rows={2}
             value={question}
             onChange={(event) => setQuestion(event.target.value)}
-            disabled={status === 'loading' || status === 'revealing'}
+            disabled={isBusy}
           />
 
           <button
@@ -172,8 +246,8 @@ export default function CrystalBall({
               playButtonClick();
               void handleSeekFortune();
             }}
-            disabled={status === 'loading' || status === 'revealing' || !question.trim()}
-            aria-disabled={status === 'loading' || status === 'revealing' || !question.trim()}
+            disabled={isBusy || !question.trim()}
+            aria-disabled={isBusy || !question.trim()}
           >
             {status === 'loading' ? (
               <>
