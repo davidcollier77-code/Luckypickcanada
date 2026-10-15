@@ -55,11 +55,11 @@ export default function CrystalBallArtwork(props: SVGProps<SVGSVGElement>) {
     <path d="M175 446 C188 427 202 439 190 453 C180 464 195 471 205 459 M325 446 C312 427 298 439 310 453 C320 464 305 471 295 459" fill="none" stroke="#e6b14c" strokeWidth="3" strokeLinecap="round"/>
     <rect x="145" y="464" width="210" height="39" rx="5" fill="#070910" stroke="url(#goldMetal)" strokeWidth="3"/><rect x="151" y="469" width="198" height="29" rx="3" fill="none" stroke="#926421" strokeWidth="1"/>
     <path d="M145 481 H132 L142 491 M355 481 H368 L358 491 M240 513 L250 502 L260 513 L250 527 Z" fill="none" stroke="url(#goldMetal)" strokeWidth="2.5"/>
-    <path d="M126 531 Q250 548 374 531 L392 579 Q250 603 108 579 Z" fill="url(#obsidian)" stroke="url(#goldMetal)" strokeWidth="5"/>
-    <path d="M111 565 Q250 589 389 565 M117 578 Q250 600 383 578" fill="none" stroke="#d7a13f" strokeWidth="2.5"/>
+    <path d="M75 531 Q250 552 425 531 L451 588 Q250 619 49 588 Z" fill="url(#obsidian)" stroke="url(#goldMetal)" strokeWidth="5"/>
+    <path d="M54 567 Q250 594 446 567 M61 581 Q250 607 439 581" fill="none" stroke="#d7a13f" strokeWidth="2.5"/>
     <path d="M138 551 C158 536 173 560 151 563 C140 564 141 572 154 572 M362 551 C342 536 327 560 349 563 C360 564 359 572 346 572 M250 539 L257 550 L250 561 L243 550 Z" fill="none" stroke="#f6ce69" strokeWidth="2.4" strokeLinecap="round"/>
-    <path d="M109 586 Q250 610 391 586 L402 604 Q250 633 98 604 Z" fill="url(#obsidian)" stroke="url(#goldMetal)" strokeWidth="4"/>
-    <path d="M105 604 Q250 630 395 604" fill="none" stroke="#fff0a1" strokeOpacity=".7" strokeWidth="2"/>
-    <ellipse cx="250" cy="626" rx="119" ry="5" fill="#e8b451" opacity=".2" filter="url(#softGlow)"/>
+    <path d="M52 590 Q250 615 448 590 L465 610 Q250 640 35 610 Z" fill="url(#obsidian)" stroke="url(#goldMetal)" strokeWidth="4"/>
+    <path d="M39 610 Q250 638 461 610" fill="none" stroke="#fff0a1" strokeOpacity=".7" strokeWidth="2"/>
+    <ellipse cx="250" cy="626" rx="150" ry="5 fill="#e8b451" opacity=".2" filter="url(#softGlow)"/>
   </svg>;
 }
