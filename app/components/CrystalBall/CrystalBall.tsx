@@ -48,12 +48,16 @@ export default function CrystalBall({
   const handleSeekFortune = useCallback(async () => {
     const trimmed = question.trim();
     if (!trimmed || status === 'loading') return;
+
     setStatus('loading');
     setErrorMessage(null);
     try {
       const answer = await onSeekFortune(trimmed);
       setCurrentFortune(answer);
-      setReadings((prev) => [{ id: crypto.randomUUID(), question: trimmed, answer }, ...prev]);
+      setReadings((prev) => [
+        { id: crypto.randomUUID(), question: trimmed, answer },
+        ...prev,
+      ]);
       setQuestion('');
       setStatus('idle');
     } catch (error: any) {
@@ -74,33 +78,94 @@ export default function CrystalBall({
           : 'Awaiting your question…';
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page}`}>
+
+
       <main className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>Crystal Ball</h1>
-          <p className={styles.subtitle}>Focus on a question, set your intention, and see what the Crystal Ball reveals.</p>
+          <p className={styles.subtitle}>
+            Focus on a question, set your intention, and see what the Crystal Ball reveals.
+          </p>
         </header>
+
         <div className={styles.ballScene}>
           <div className={styles.ballWrapper}>
             <div className={styles.ballInnerGlow} />
             <CrystalBallArtwork className={styles.ballArtwork} />
-            <div className={styles.plaqueOverlay}><span className={styles.plaque}>LUCKYPICKCANADA.CA</span></div>
+            <div className={styles.plaqueOverlay}>
+              <span className={styles.plaque}>LUCKYPICKCANADA.CA</span>
+            </div>
           </div>
         </div>
+
         <section className={styles.card} aria-live="polite">
           <p className={styles.cardStatus}>{statusHeadline}</p>
-          {currentFortune ? <p className={styles.fortuneText}>{currentFortune}</p> : <p className={styles.cardHint}>Focus your intent and ask the mists a question to reveal your fortune.</p>}
+
+          {currentFortune ? (
+            <p className={styles.fortuneText}>{currentFortune}</p>
+          ) : (
+            <p className={styles.cardHint}>
+              Focus your intent and ask the mists a question to reveal your fortune.
+            </p>
+          )}
+
           <label htmlFor="crystal-ball-question" className="sr-only">Your question for the crystal ball</label>
-          <textarea id="crystal-ball-question" className={styles.input} placeholder="What’s on your mind?" rows={2} value={question} onChange={(e) => setQuestion(e.target.value)} disabled={status === 'loading'} />
-          <button type="button" className={`${styles.seekButton} inline-flex items-center justify-center`} onClick={() => { playButtonClick(); handleSeekFortune(); }} disabled={status === 'loading' || !question.trim()} aria-disabled={status === 'loading' || !question.trim()}>
-            {status === 'loading' ? <><svg aria-hidden="true" className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l-2.647-3z"></path></svg>Consulting the Mists…</> : 'Seek Fortune'}
+          <textarea
+            id="crystal-ball-question"
+            className={styles.input}
+            placeholder="What’s on your mind?"
+            rows={2}
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            disabled={status === 'loading'}
+          />
+
+          <button
+            type="button"
+            className={`${styles.seekButton} inline-flex items-center justify-center`}
+            onClick={() => { playButtonClick(); handleSeekFortune(); }}
+            disabled={status === 'loading' || !question.trim()}
+            aria-disabled={status === 'loading' || !question.trim()}
+          >
+            {status === 'loading' ? (
+              <>
+                <svg aria-hidden="true" className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Consulting the Mists…
+              </>
+            ) : (
+              'Seek Fortune'
+            )}
           </button>
         </section>
-        {readings.length > 0 && <section className={styles.readings}><h2 className={styles.readingsTitle}>Session Readings</h2><ul className={styles.readingsList}>{readings.map((reading) => <li key={reading.id} className={styles.readingItem}><p className={styles.readingQ}>Q: {reading.question}</p><p className={styles.readingA}>{reading.answer}</p></li>)}</ul></section>}
+
+        {readings.length > 0 && (
+          <section className={styles.readings}>
+            <h2 className={styles.readingsTitle}>Session Readings</h2>
+            <ul className={styles.readingsList}>
+              {readings.map((reading) => (
+                <li key={reading.id} className={styles.readingItem}>
+                  <p className={styles.readingQ}>Q: {reading.question}</p>
+                  <p className={styles.readingA}>{reading.answer}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <nav className={styles.nav} aria-label="Crystal Ball navigation">
-          <Link href={backHref} className={styles.navButton}>Back to Home</Link>
-          <Link href={luckMeterHref} className={styles.navButton}>Luck Meter</Link>
-          <Link href={communityMapHref} className={styles.navButton}>Community Map</Link>
+          <Link href={backHref} className={styles.navButton}>
+            Back to Home
+          </Link>
+          <Link href={luckMeterHref} className={styles.navButton}>
+            Luck Meter
+          </Link>
+          <Link href={communityMapHref} className={styles.navButton}>
+            Community Map
+          </Link>
         </nav>
       </main>
     </div>
