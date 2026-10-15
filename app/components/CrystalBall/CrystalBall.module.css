@@ -1,31 +1,23 @@
 /* =========================================================================
    CRYSTAL BALL — Glass & Machined Brass
-   -------------------------------------------------------------------------
-   Perf notes: animated layers use `transform` only inside keyframes.
+   Perf notes: animated layers use transforms only inside keyframes.
    ========================================================================= */
-
-/* ---------- tokens ---------- */
 .page {
   --space-950: #05060f;
   --space-900: #090c1c;
   --space-800: #10142a;
-
-
   --brass-100: #fbe7ad;
   --brass-300: #e8c465;
   --brass-500: #c89a3c;
   --brass-700: #8b6a1e;
   --brass-900: #3a2a0d;
-
   --glass-hi: rgba(255, 255, 255, 0.55);
   --ink-100: #f6f1e4;
   --ink-300: #cdd3e6;
   --ink-500: #8f97b8;
-
   --font-header: var(--font-cinzel), 'Cinzel', serif;
   --font-ui: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
   --font-fortune: var(--font-cormorant), 'Cormorant Garamond', serif;
-
   position: relative;
   min-height: 100dvh;
   overflow-x: hidden;
@@ -33,331 +25,39 @@
   color: var(--ink-100);
   font-family: var(--font-ui);
 }
-
-/* =========================================================================
-   LAYOUT SHELL
-   ========================================================================= */
-.container {
-  position: relative;
-  z-index: 1;
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 2.5rem 1.25rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.title {
-  font-family: var(--font-header);
-  font-weight: 700;
-  font-size: clamp(1.9rem, 6vw, 2.6rem);
-  letter-spacing: 0.03em;
-  background: linear-gradient(180deg, var(--brass-100), var(--brass-500));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 2px 18px rgba(200, 154, 60, 0.35);
-  margin: 0 0 0.6rem;
-}
-
-.subtitle {
-  font-family: var(--font-fortune);
-  font-style: italic;
-  font-size: clamp(1.05rem, 3.6vw, 1.25rem);
-  color: var(--ink-300);
-  line-height: 1.5;
-  margin: 0;
-}
-
-/* =========================================================================
-   THE CRYSTAL BALL SCENE
-   ========================================================================= */
-.ballScene {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 1.5rem 0 2.5rem;
-}
-
-.ballWrapper {
-  position: relative;
-  width: clamp(280px, 75vw, 420px);
-  will-change: transform;
-  transform: translateZ(0);
-  animation: floatBall 6.5s ease-in-out infinite;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-@keyframes floatBall {
-  0%, 100% { transform: translateZ(0) translateY(0); }
-  50%      { transform: translateZ(0) translateY(-10px); }
-}
-
-.ballArtwork {
-  width: 100%;
-  height: auto;
-  display: block;
-  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.4));
-}
-
-.ballImage {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-}
-
-.ballInnerGlow {
-  position: absolute;
-  top: 36%;
-  left: 50%;
-  width: 62%;
-  height: auto;
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(1);
-  background: radial-gradient(circle, rgba(140, 180, 255, 0.4) 0%, rgba(100, 140, 255, 0.1) 50%, transparent 70%);
-  will-change: transform;
-  animation: pulseGlow 5s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 1;
-  mix-blend-mode: screen;
-}
-
-@keyframes pulseGlow {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50%      { transform: translate(-50%, -50%) scale(1.08); }
-}
-
-.plaqueOverlay {
-  position: absolute;
-  bottom: 8%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
-  display: flex;
-  justify-content: center;
-}
-
-.plaque {
-  font-family: var(--font-header);
-  font-size: clamp(0.85rem, 3vw, 1rem);
-  letter-spacing: 0.08em;
-  color: var(--brass-900);
-  padding: 0.55rem 1.4rem;
-  border-radius: 8px;
-  background: linear-gradient(180deg, var(--brass-100), var(--brass-300) 45%, var(--brass-500) 100%);
-  border: 1px solid rgba(255, 224, 160, 0.6);
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-/* =========================================================================
-   QUESTION CARD
-   ========================================================================= */
-.card {
-  width: 100%;
-  border-radius: 20px;
-  padding: 1.75rem 1.5rem;
-  background: linear-gradient(180deg, rgba(20, 25, 48, 0.75), rgba(10, 13, 28, 0.75));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(200, 210, 255, 0.18);
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  text-align: center;
-}
-
-.cardStatus {
-  font-family: var(--font-fortune);
-  font-style: italic;
-  font-size: clamp(1.15rem, 4vw, 1.4rem);
-  color: var(--brass-300);
-  margin: 0 0 0.9rem;
-}
-
-.cardHint,
-.fortuneText {
-  font-family: var(--font-fortune);
-  font-size: clamp(1rem, 3.4vw, 1.15rem);
-  color: var(--ink-300);
-  line-height: 1.6;
-  margin: 0 0 1.4rem;
-}
-
-.fortuneText {
-  color: var(--ink-100);
-}
-
-.input {
-  width: 100%;
-  min-height: 52px;
-  resize: none;
-  padding: 0.85rem 1rem;
-  border-radius: 12px;
-  background: rgba(6, 8, 18, 0.6);
-  border: 1px solid rgba(200, 210, 255, 0.25);
-  color: var(--ink-100);
-  font-family: var(--font-ui);
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
-
-.input::placeholder {
-  color: var(--ink-500);
-}
-
-.input:focus-visible {
-  outline: 2px solid var(--brass-300);
-  outline-offset: 2px;
-}
-
-.seekButton {
-  width: 100%;
-  padding: 0.9rem 1.5rem;
-  border: none;
-  border-radius: 12px;
-  font-family: var(--font-ui);
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #241a05;
-  cursor: pointer;
-  background: linear-gradient(180deg, var(--brass-100), var(--brass-300) 45%, var(--brass-500) 100%);
-  box-shadow:
-    0 10px 22px rgba(200, 154, 60, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.seekButton:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-
-.seekButton:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.seekButton:disabled {
-  opacity: 0.65;
-  cursor: progress;
-}
-
-.seekButton:focus-visible {
-  outline: 2px solid var(--brass-100);
-  outline-offset: 3px;
-}
-
-/* =========================================================================
-   SESSION READINGS
-   ========================================================================= */
-.readings {
-  width: 100%;
-  margin-top: 1.75rem;
-  padding: 1.5rem;
-  border-radius: 20px;
-  background: rgba(12, 15, 30, 0.55);
-  border: 1px solid rgba(200, 210, 255, 0.12);
-}
-
-.readingsTitle {
-  font-family: var(--font-header);
-  font-size: 1.15rem;
-  color: var(--brass-300);
-  letter-spacing: 0.02em;
-  margin: 0 0 0.75rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid rgba(232, 196, 101, 0.25);
-}
-
-.readingsList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.readingItem {
-  padding-left: 0.9rem;
-  border-left: 2px solid var(--brass-500);
-}
-
-.readingQ {
-  font-family: var(--font-ui);
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: var(--ink-300);
-  margin: 0 0 0.35rem;
-}
-
-.readingA {
-  font-family: var(--font-fortune);
-  font-size: 1.05rem;
-  color: var(--ink-100);
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* =========================================================================
-   BOTTOM NAV
-   ========================================================================= */
-.nav {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-top: 2.25rem;
-  flex-wrap: wrap;
-}
-
-.navButton {
-  flex: 1 1 auto;
-  min-width: 96px;
-  padding: 0.8rem 1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(232, 196, 101, 0.3);
-  background: rgba(20, 24, 44, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: var(--ink-100);
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: center;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.navButton:hover {
-  background: rgba(30, 35, 60, 0.85);
-  border-color: rgba(232, 196, 101, 0.55);
-}
-
-.navButton:focus-visible {
-  outline: 2px solid var(--brass-300);
-  outline-offset: 2px;
-}
-
-/* =========================================================================
-   ACCESSIBILITY / LOW-END FALLBACK
-   ========================================================================= */
-@media (prefers-reduced-motion: reduce) {
-  .ballWrapper,
-  .ballInnerGlow {
-    animation: none;
-  }
-}
+.container { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 2.5rem 1.25rem 2rem; display: flex; flex-direction: column; align-items: center; }
+.header { text-align: center; margin-bottom: 1.5rem; }
+.title { font-family: var(--font-header); font-weight: 700; font-size: clamp(1.9rem, 6vw, 2.6rem); letter-spacing: .03em; background: linear-gradient(180deg, var(--brass-100), var(--brass-500)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 2px 18px rgba(200,154,60,.35); margin: 0 0 .6rem; }
+.subtitle { font-family: var(--font-fortune); font-style: italic; font-size: clamp(1.05rem, 3.6vw, 1.25rem); color: var(--ink-300); line-height: 1.5; margin: 0; }
+.ballScene { position: relative; display: flex; flex-direction: column; align-items: center; margin: 1.5rem 0 2.5rem; }
+.ballWrapper { position: relative; width: clamp(280px, 75vw, 420px); will-change: transform; transform: translateZ(0); animation: floatBall 6.5s ease-in-out infinite; display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; }
+@keyframes floatBall { 0%, 100% { transform: translateZ(0) translateY(0); } 50% { transform: translateZ(0) translateY(-10px); } }
+.ballArtwork { width: 100%; height: auto; display: block; overflow: visible; filter: drop-shadow(0 24px 34px rgba(0,0,0,.48)); }
+.ballArtwork :global(svg) { display: block; width: 100%; height: auto; overflow: visible; }
+.ballInnerGlow { position: absolute; top: 36%; left: 50%; width: 62%; height: auto; aspect-ratio: 1 / 1; border-radius: 50%; transform: translate(-50%, -50%) scale(1); background: radial-gradient(circle, rgba(140,180,255,.4) 0%, rgba(100,140,255,.1) 50%, transparent 70%); will-change: transform; animation: pulseGlow 5s ease-in-out infinite; pointer-events: none; z-index: 1; mix-blend-mode: screen; }
+@keyframes pulseGlow { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.08); } }
+.plaqueOverlay { position: absolute; bottom: 22.6%; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; justify-content: center; width: 52%; pointer-events: none; }
+.plaque { font-family: var(--font-header); font-size: clamp(.62rem, 2.55vw, .9rem); font-weight: 700; letter-spacing: .045em; white-space: nowrap; color: #f9d77f; text-shadow: 0 1px 1px #120b04, 0 0 5px rgba(255,207,101,.45); padding: 0; background: transparent; border: 0; box-shadow: none; }
+.card { width: 100%; border-radius: 20px; padding: 1.75rem 1.5rem; background: linear-gradient(180deg, rgba(20,25,48,.75), rgba(10,13,28,.75)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(200,210,255,.18); box-shadow: 0 20px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06); text-align: center; }
+.cardStatus { font-family: var(--font-fortune); font-style: italic; font-size: clamp(1.15rem,4vw,1.4rem); color: var(--brass-300); margin: 0 0 .9rem; }
+.cardHint, .fortuneText { font-family: var(--font-fortune); font-size: clamp(1rem,3.4vw,1.15rem); color: var(--ink-300); line-height: 1.6; margin: 0 0 1.4rem; }
+.fortuneText { color: var(--ink-100); }
+.input { width: 100%; min-height: 52px; resize: none; padding: .85rem 1rem; border-radius: 12px; background: rgba(6,8,18,.6); border: 1px solid rgba(200,210,255,.25); color: var(--ink-100); font-family: var(--font-ui); font-size: 1rem; margin-bottom: 1rem; }
+.input::placeholder { color: var(--ink-500); }
+.input:focus-visible { outline: 2px solid var(--brass-300); outline-offset: 2px; }
+.seekButton { width: 100%; padding: .9rem 1.5rem; border: none; border-radius: 12px; font-family: var(--font-ui); font-weight: 700; font-size: .95rem; letter-spacing: .06em; text-transform: uppercase; color: #241a05; cursor: pointer; background: linear-gradient(180deg, var(--brass-100), var(--brass-300) 45%, var(--brass-500) 100%); box-shadow: 0 10px 22px rgba(200,154,60,.35), inset 0 1px 0 rgba(255,255,255,.6); transition: transform .15s ease, box-shadow .15s ease; }
+.seekButton:hover:not(:disabled) { transform: translateY(-1px); }
+.seekButton:active:not(:disabled) { transform: translateY(0); }
+.seekButton:disabled { opacity: .65; cursor: progress; }
+.seekButton:focus-visible { outline: 2px solid var(--brass-100); outline-offset: 3px; }
+.readings { width: 100%; margin-top: 1.75rem; padding: 1.5rem; border-radius: 20px; background: rgba(12,15,30,.55); border: 1px solid rgba(200,210,255,.12); }
+.readingsTitle { font-family: var(--font-header); font-size: 1.15rem; color: var(--brass-300); letter-spacing: .02em; margin: 0 0 .75rem; padding-bottom: .6rem; border-bottom: 1px solid rgba(232,196,101,.25); }
+.readingsList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1rem; }
+.readingItem { padding-left: .9rem; border-left: 2px solid var(--brass-500); }
+.readingQ { font-family: var(--font-ui); font-weight: 500; font-size: .9rem; color: var(--ink-300); margin: 0 0 .35rem; }
+.readingA { font-family: var(--font-fortune); font-size: 1.05rem; color: var(--ink-100); line-height: 1.55; margin: 0; }
+.nav { width: 100%; display: flex; justify-content: center; gap: .6rem; margin-top: 2.25rem; flex-wrap: wrap; }
+.navButton { flex: 1 1 auto; min-width: 96px; padding: .8rem 1rem; border-radius: 999px; border: 1px solid rgba(232,196,101,.3); background: rgba(20,24,44,.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--ink-100); font-family: var(--font-ui); font-size: .9rem; font-weight: 500; cursor: pointer; text-align: center; transition: background .15s ease, border-color .15s ease; }
+.navButton:hover { background: rgba(30,35,60,.85); border-color: rgba(232,196,101,.55); }
+.navButton:focus-visible { outline: 2px solid var(--brass-300); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .ballWrapper, .ballInnerGlow { animation: none; } }
