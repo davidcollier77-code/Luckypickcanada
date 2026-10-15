@@ -98,8 +98,8 @@ export default function CrystalBall({
                 src="/assets/crystal-ball-pedestal.png"
                 alt="Canadian magical crystal ball on a pedestal"
                 className={styles.ballImage}
-                width={800}
-                height={800}
+                width={716}
+                height={895}
                 loading="eager"
               />
             </picture>
