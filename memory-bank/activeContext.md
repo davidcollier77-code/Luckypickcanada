@@ -34,3 +34,6 @@
 - **Repair branch:** `fix/crystal-ball-cloudflare-build-1489`.
 - **Changes made:** Restored a single dynamic glow, valid AVIF/WebP/PNG `<picture>` structure, a controlled textarea, the Seek Fortune click handler with existing audio feedback, and consolidated disabled/accessibility attributes. Updated the active feature's repair spec, plan, and task checklist.
 - **Verification status:** Source and documentation changes are committed remotely. Local verification could not run because the environment could not resolve `github.com` during a clone attempt. Playwright, `./jules-verify.sh`, production build-size measurement, and post-fix Cloudflare build remain pending remote CI evidence.
+
+
+- **Visual QA follow-up:** PR #1490's first Visual QA run failed because the test called the real `/api/oracle`, and CI logs confirmed `GROQ_API_KEY environment variable is missing`. The API returned an error before the test could observe the loading label. Updated `tests/visual/crystal-ball-interactions.spec.ts` to mock `/api/oracle` with a deterministic delayed success response. This addresses the test's missing-credential dependency; the rerun is still required before claiming a pass.
