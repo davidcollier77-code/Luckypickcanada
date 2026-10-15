@@ -2,7 +2,7 @@
 import type { SVGProps } from 'react';
 
 export default function CrystalBallArtwork(props: SVGProps<SVGSVGElement>) {
-  return <svg viewBox="0 0 500 650" role="img" aria-label="A polished crystal ball with a ruby maple leaf, emerald clover, sapphire drop, and ornate gold pedestal" focusable="false" {...props}>
+  return <svg viewBox="0 0 500 650" {...props} role="img" aria-label="A polished crystal ball with a ruby maple leaf, emerald clover, sapphire drop, and ornate gold pedestal" focusable="false">
     <title>Lucky Pick Canada Crystal Ball</title>
     <desc>A reflective blue-violet cosmic orb with a jeweled Canadian maple leaf, four-leaf clover, blue gemstone, and ornate gold-and-obsidian pedestal.</desc>
     <defs>
