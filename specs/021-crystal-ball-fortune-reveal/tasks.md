@@ -12,3 +12,5 @@
 
 - [ ] T010 Repair malformed `fortuneWords.map` JSX in `app/components/CrystalBall/CrystalBall.tsx` by restoring the opening `<span>` and removing the duplicate `key` attribute.
 - [ ] T011 Run `./jules-verify.sh`, `pnpm run build`, and the OpenNext Cloudflare build in CI; confirm the build-size limit remains under 495 MB.
+
+- [ ] T012 Repair malformed `app/components/CrystalBall/GoldenLeaf.tsx` JSX while preserving the original gold gradient and maple-leaf path data; use unique `useId()` gradient references, then rerun production build and all governance/Cloudflare checks.
