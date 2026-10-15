@@ -54,40 +54,42 @@ export default function CrystalBall({
   }, []);
 
   const handleSeekFortune = useCallback(async () => {
-    // Dismiss keyboard if open
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
+
     const trimmed = question.trim();
     if (!trimmed || status === 'loading' || status === 'revealing') return;
 
     setStatus('loading');
     setErrorMessage(null);
+
     try {
       const answer = await onSeekFortune(trimmed);
       if (!answer || answer.trim() === '') {
         throw new Error('Received an empty fortune.');
       }
+
       setCurrentFortune(answer);
       setReadings((prev) => [
         { id: crypto.randomUUID(), question: trimmed, answer },
         ...prev,
       ]);
       setQuestion('');
-
-      // Trigger the reveal state
       setStatus('revealing');
       setShowResult(true);
 
-      // After pulse animation, return to idle
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
         setStatus('idle');
+        timeoutRef.current = null;
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to fetch fortune:', error);
       setCurrentFortune(null);
+      setShowResult(false);
       setStatus('error');
-      setErrorMessage(error.message || null);
+      setErrorMessage(error instanceof Error ? error.message : null);
     }
   }, [question, status, onSeekFortune]);
 
@@ -101,9 +103,7 @@ export default function CrystalBall({
           : 'Awaiting your question…';
 
   return (
-    <div className={`${styles.page}`}>
-
-
+    <div className={styles.page}>
       <main className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>Crystal Ball</h1>
@@ -114,9 +114,11 @@ export default function CrystalBall({
 
         <div className={styles.ballScene}>
           <div className={styles.ballWrapper}>
-            {/* Dynamic glow based on status */}
-            <div className={`${styles.ballInnerGlow} ${status === 'loading' ? styles.ballInnerGlowLoading : status === 'revealing' ? styles.ballInnerGlowRevealing : ''}`} />
-            {(() => { const glowClass = `${styles.ballInnerGlow} ${status === 'loading' ? styles.ballInnerGlowLoading : status === 'revealing' ? styles.ballInnerGlowRevealing : ''}`; return <div className={glowClass} />; })()}
+            <div
+              className={`${styles.ballInnerGlow} ${status === 'loading' ? styles.ballInnerGlowLoading : status === 'revealing' ? styles.ballInnerGlowRevealing : ''}`}
+              aria-hidden="true"
+            />
+            <picture className={styles.ballArtwork}>
               <source srcSet="/assets/crystal-ball-pedestal.avif" type="image/avif" />
               <source srcSet="/assets/crystal-ball-pedestal.webp" type="image/webp" />
               <img
@@ -132,10 +134,8 @@ export default function CrystalBall({
             <div className={styles.plaqueOverlay}>
               <span className={styles.plaque}>LUCKYPICKCANADA.CA</span>
             </div>
-
           </div>
 
-          {/* Display fortune directly beneath the ball */}
           {showResult && currentFortune && (
             <div className={styles.fortunePanel} aria-live="polite">
               <p className={styles.fortuneTextResult}>{currentFortune}</p>
@@ -152,27 +152,38 @@ export default function CrystalBall({
             </p>
           )}
 
-          <label htmlFor="crystal-ball-question" className="sr-only">Your question for the crystal ball</label>
+          <label htmlFor="crystal-ball-question" className="sr-only">
+            Your question for the crystal ball
+          </label>
           <textarea
             id="crystal-ball-question"
             className={styles.input}
             placeholder="What’s on your mind?"
             rows={2}
             value={question}
+            onChange={(event) => setQuestion(event.target.value)}
             disabled={status === 'loading' || status === 'revealing'}
-            disabled={status === 'loading'}
           />
 
           <button
             type="button"
             className={`${styles.seekButton} inline-flex items-center justify-center`}
+            onClick={() => {
+              playButtonClick();
+              void handleSeekFortune();
+            }}
             disabled={status === 'loading' || status === 'revealing' || !question.trim()}
             aria-disabled={status === 'loading' || status === 'revealing' || !question.trim()}
-            aria-disabled={status === 'loading' || !question.trim()}
           >
             {status === 'loading' ? (
               <>
-                <svg aria-hidden="true" className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg
+                  aria-hidden="true"
+                  className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4 text-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>

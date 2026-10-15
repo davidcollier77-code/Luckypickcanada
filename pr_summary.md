@@ -1,64 +1,15 @@
-## Crystal Ball Fortune Reveal & Animations
+# PR Summary — Crystal Ball Cloudflare Build Repair
 
-**Task Group:**
-- SELECTED TASK GROUP: polishing
-- GROUP REASON: This task focuses on visual enhancements, layout polishing, and animations for the Crystal Ball component.
+## Findings and changes
+- **Root cause of first Visual QA failure:** The test used the real `/api/oracle` endpoint. CI logs explicitly showed `Oracle Error: GROQ_API_KEY environment variable is missing.` The request errored before the test could observe the loading label.
+- **Code repair:** Restored valid AVIF/WebP/PNG picture markup in `CrystalBall.tsx`, removed duplicate glow markup and duplicate JSX attributes, and restored the controlled question input and Seek Fortune click/audio handler.
+- **Test correction:** Updated `tests/visual/crystal-ball-interactions.spec.ts` to intercept `/api/oracle` and return a deterministic successful fortune after a 1.2-second delay. This allows the UI test to verify loading and reveal states without production AI credentials.
+- **Verification:** First Visual QA attempt failed (17 passed, 3 skipped, 1 failed). The failure cause is identified and the test has been updated, but the rerun is pending. Do not mark Visual QA, production build, build-size gate, or Cloudflare build as passed until their post-fix runs complete.
+- **Scope:** No artwork, visual styling, environment variables, secrets, dependencies, or deployment settings changed.
 
-**Required Libraries:**
-- LIBRARY: React
-- VERSION: 19.x (latest)
-- USED: YES
-- USEFUL: YES
-- REASON: Used `useState` and `useCallback` to manage the new `revealing` state and trigger the timeout sequence for the animation.
-
-- LIBRARY: Next.js
-- VERSION: 16.3.8
-- USED: YES
-- USEFUL: YES
-- REASON: Checked how the component integrates with the overall page layout and ensured no Next.js specific optimizations were broken.
-
-**Required Routed Jules/Gemini Document:**
-- DOCUMENT: .jules/polishing.md
-- USED: YES
-- USEFUL: YES
-- REASON: Followed the directive to maintain high-quality interactive visuals using CSS and avoided structural deformation.
-
-- DOCUMENT: .docs/polishing/_websites_mdn_image_types.md
-- USED: NO
-- USEFUL: NO
-- REASON: No changes were made to image formats or raster assets in this task, only CSS and React state logic.
-
-**Required Repository Component:**
-- COMPONENT: `CrystalBall.tsx` & `CrystalBall.module.css`
-- USED: YES
-- USEFUL: YES
-- REASON: These were the core components modified to add the new gathering energy shimmer, warm pulse, and fortune panel directly beneath the orb.
-
-**Verification Commands & Results:**
-- COMMAND: `pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts`
-- RESULT: PASS
-- EVIDENCE/OUTPUT SUMMARY: Created a new test file to verify the full interaction from entering text, triggering the "revealing" animation, and showing the result below the ball. Tests passed on mobile and desktop viewports.
-
-- COMMAND: `./jules-verify.sh`
-- RESULT: PASS
-- EVIDENCE/OUTPUT SUMMARY: Spec Kit governance checks passed after creating the necessary artifacts in `specs/021-crystal-ball-fortune-reveal/`. Build checks passed and build sizes remained below the 495 MB limit (`.next` size 369MB, `public` size 29MB).
-
-**Implementation Details & Diff Reconciliation:**
-- Added a `revealing` state to `CrystalBall.tsx` to handle the warm pulse transition.
-- Extracted the fortune result from the input card and created a new `.fortunePanel` placed directly below the crystal ball.
-- Added CSS animations `.ballInnerGlowLoading` and `.ballInnerGlowRevealing` to `CrystalBall.module.css`.
-- Dismissed the keyboard automatically upon fortune submission.
-- Preserved existing artwork, Milky Way background, and fallback formats.
-
-**Changed Files:**
-- `.specify/feature.json`
-- `app/components/CrystalBall/CrystalBall.module.css`
-- `app/components/CrystalBall/CrystalBall.tsx`
-- `specs/021-crystal-ball-fortune-reveal/plan.md`
-- `specs/021-crystal-ball-fortune-reveal/spec.md`
-- `specs/021-crystal-ball-fortune-reveal/tasks.md`
-- `tests/visual/crystal-ball-interactions.spec.ts`
-
-**Pre-submission check completed:** YES
-**Build Size within limit (495MB):** YES (.next 369MB, public 29MB)
-**USEFUL RESULT:** YES
+## Required pending checks
+- Re-run `pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts`.
+- Run `./jules-verify.sh`.
+- Run `pnpm run build` and measure total build size against the 495 MB hard limit.
+- Confirm the OpenNext/Cloudflare build succeeds.
+- Review Amazon Q and Robin findings before merging.

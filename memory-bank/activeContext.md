@@ -26,3 +26,14 @@
 - **Current branch:** `task-branch` (feat: crystal ball animation).
 - **Current implementation:** Added a `revealing` state to `CrystalBall.tsx` to handle the transition. Extracted the fortune result into a new `.fortunePanel` placed directly below the crystal ball scene. Added CSS animations (`.ballInnerGlowLoading` and `.ballInnerGlowRevealing`) for the gathering energy shimmer and warm pulse.
 - **Verification:** Implemented a new Playwright visual interaction test (`tests/visual/crystal-ball-interactions.spec.ts`) that verifies the end-to-end flow. Tests (`pnpm run test`, `pnpm run build`, `./jules-verify.sh`, and `pnpm exec playwright test`) passed completely. Verified build size continues to stay well below 495MB limit (369MB .next and 29MB public). A PR summary was completed in `pr_summary.md`.
+
+## Crystal Ball Cloudflare Build Repair — 2026-10-15
+
+- **Goal:** Repair the post-PR #1489 Cloudflare production build failure in `app/components/CrystalBall/CrystalBall.tsx`.
+- **Verified failure:** The supplied OpenNext/Cloudflare log failed during Next.js compilation because the opening `<picture>` tag was missing before a remaining `</picture>`. Inspection also found duplicate glow markup, duplicate JSX attributes, a missing textarea `onChange`, and a missing fortune-button `onClick`.
+- **Repair branch:** `fix/crystal-ball-cloudflare-build-1489`.
+- **Changes made:** Restored a single dynamic glow, valid AVIF/WebP/PNG `<picture>` structure, a controlled textarea, the Seek Fortune click handler with existing audio feedback, and consolidated disabled/accessibility attributes. Updated the active feature's repair spec, plan, and task checklist.
+- **Verification status:** Source and documentation changes are committed remotely. Local verification could not run because the environment could not resolve `github.com` during a clone attempt. Playwright, `./jules-verify.sh`, production build-size measurement, and post-fix Cloudflare build remain pending remote CI evidence.
+
+
+- **Visual QA follow-up:** PR #1490's first Visual QA run failed because the test called the real `/api/oracle`, and CI logs confirmed `GROQ_API_KEY environment variable is missing`. The API returned an error before the test could observe the loading label. Updated `tests/visual/crystal-ball-interactions.spec.ts` to mock `/api/oracle` with a deterministic delayed success response. This addresses the test's missing-credential dependency; the rerun is still required before claiming a pass.
