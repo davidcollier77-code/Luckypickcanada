@@ -205,8 +205,8 @@ export default function CrystalBall({
                 )}
 
                 {fortuneWords.map((word, i) => (
+                  <span
                     key={word + '-' + i}
-                    key={i}
                     className={`${styles.fortuneWord} ${i < revealedWordCount ? styles.fortuneWordVisible : ''}`}
                   >
                     {word}{' '}

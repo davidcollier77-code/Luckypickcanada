@@ -12,3 +12,7 @@ Requirements:
 7. Accessibility: Ensure screen readers announce the full text at once, avoiding character/word-by-word spam. Wrap progressive text in aria-hidden and hide full text for sr-only. Respect prefers-reduced-motion.
 
 Scope: Preserve existing artwork, background, audio, and API routes. Use exactly one task group (polishing).
+
+8. Build correctness: Render each progressively revealed fortune word inside a valid `<span>` element with one stable `key`; do not leave JSX attributes outside an opening element.
+
+9. SVG correctness: Keep the GoldenLeaf gradients and path elements as valid, complete JSX; use per-instance gradient IDs and preserve the existing maple-leaf path artwork.
