@@ -19,3 +19,5 @@
    - Restore the opening `<span>` element in `fortuneWords.map` and retain only the content-derived `key` (`word + '-' + i`).
    - Confirm the map returns valid JSX and preserve the existing animation class names and word text.
    - Verify TypeScript, production build, Spec Kit governance, and the Cloudflare OpenNext build through CI; do not claim deployment success from source inspection alone.
+
+5. Repair the follow-on `GoldenLeaf.tsx` compile error by restoring the complete existing gradient/path JSX, binding both gradient definitions and references to their unique `useId()` values, and preserving the original maple-leaf path data. Re-run all required CI verification; OpenNext checks are not valid until `next build` passes.
