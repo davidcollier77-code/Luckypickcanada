@@ -96,11 +96,12 @@ export default function CrystalBall({
               <source srcSet="/assets/crystal-ball-pedestal.webp" type="image/webp" />
               <img
                 src="/assets/crystal-ball-pedestal.png"
-                alt="Canadian magical crystal ball on a pedestal"
+                alt="Canadian crystal ball with a jeweled maple leaf, emerald clover, sapphire pendant, and ornate gold pedestal"
                 className={styles.ballImage}
-                width={716}
-                height={895}
+                width={448}
+                height={538}
                 loading="eager"
+                decoding="async"
               />
             </picture>
             <div className={styles.plaqueOverlay}>

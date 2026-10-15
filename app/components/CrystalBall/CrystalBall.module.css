@@ -107,10 +107,12 @@
   width: 100%;
   height: auto;
   display: block;
-  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.4));
+  overflow: visible;
+  filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.48));
 }
 
 .ballImage {
+  display: block;
   width: 100%;
   height: auto;
   object-fit: contain;
@@ -118,7 +120,7 @@
 
 .ballInnerGlow {
   position: absolute;
-  top: 36%;
+  top: 32%;
   left: 50%;
   width: 62%;
   height: auto;
@@ -140,26 +142,30 @@
 
 .plaqueOverlay {
   position: absolute;
-  bottom: 8%;
+  bottom: 18.5%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
   display: flex;
   justify-content: center;
+  width: 52%;
+  pointer-events: none;
 }
 
 .plaque {
   font-family: var(--font-header);
-  font-size: clamp(0.85rem, 3vw, 1rem);
-  letter-spacing: 0.08em;
-  color: var(--brass-900);
-  padding: 0.55rem 1.4rem;
-  border-radius: 8px;
-  background: linear-gradient(180deg, var(--brass-100), var(--brass-300) 45%, var(--brass-500) 100%);
-  border: 1px solid rgba(255, 224, 160, 0.6);
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  font-size: clamp(0.62rem, 2.55vw, 0.9rem);
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  white-space: nowrap;
+  color: #f9d77f;
+  text-shadow:
+    0 1px 1px #120b04,
+    0 0 5px rgba(255, 207, 101, 0.45);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 /* =========================================================================
