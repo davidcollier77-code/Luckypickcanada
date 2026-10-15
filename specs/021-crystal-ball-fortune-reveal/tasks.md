@@ -9,3 +9,6 @@
 - [ ] T007 Run visual QA via Playwright (`tests/visual/crystal-ball-interactions.spec.ts`).
 - [ ] T008 Run `./jules-verify.sh`.
 - [ ] T009 Run `pnpm run build` and measure build size.
+
+- [ ] T010 Repair malformed `fortuneWords.map` JSX in `app/components/CrystalBall/CrystalBall.tsx` by restoring the opening `<span>` and removing the duplicate `key` attribute.
+- [ ] T011 Run `./jules-verify.sh`, `pnpm run build`, and the OpenNext Cloudflare build in CI; confirm the build-size limit remains under 495 MB.
