@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test';
 
 test('Crystal Ball interaction: seeking fortune shows gathering energy then warm pulse, and displays result under ball', async ({ page }) => {
+  // Keep this UI test independent of production AI credentials and make the loading state deterministic.
+  await page.route('**/api/oracle', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ reading: 'A promising opportunity is approaching. Trust your instincts.' }),
+    });
+  });
+
   await page.goto('/crystal-ball');
 
   // Verify initial state
