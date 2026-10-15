@@ -13,3 +13,9 @@
    - Update/Verify Playwright interaction tests (`crystal-ball-interactions.spec.ts`).
    - Run `pnpm run build` and ensure build size is under 495 MB.
    - Run `./jules-verify.sh`.
+
+
+4. Regression repair for the Cloudflare compile failure:
+   - Restore the opening `<span>` element in `fortuneWords.map` and retain only the content-derived `key` (`word + '-' + i`).
+   - Confirm the map returns valid JSX and preserve the existing animation class names and word text.
+   - Verify TypeScript, production build, Spec Kit governance, and the Cloudflare OpenNext build through CI; do not claim deployment success from source inspection alone.
