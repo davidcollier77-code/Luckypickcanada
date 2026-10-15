@@ -18,3 +18,11 @@
 - **Current branch:** `fix/crystal-ball-reference-artwork`.
 - **Current implementation:** Use a transparent foreground SVG illustration with a reflective blue-violet orb, ruby maple leaf, emerald clover, sapphire drop and ornate gold-and-obsidian pedestal. Preserve the existing page background and interactions.
 - **Verification:** Implemented a new transparent version derived directly from the provided source artwork using `sharp`. Cropped the image to its natural dimensions (716x875), converting the magenta background and fringing to true transparency while preserving shadows. Updated `app/components/CrystalBall/CrystalBall.tsx` dimensions to match. Re-generated highly optimized AVIF, WebP, and PNG assets. Tests (`pnpm run test`, `pnpm run build`, and `./jules-verify.sh`) passed completely. Verified build size continues to stay well below 495MB limit (318MB .next and 29MB public). A PR summary was completed.
+
+## Crystal Ball Fortune Reveal & Animations — 2026-10-15
+
+- **Goal:** Enhance the Crystal Ball experience with subtle lighting, a fortune-reveal animation, and move the generated fortune directly beneath the crystal ball.
+- **Verified root cause:** The fortune was previously rendered inside the question input card, causing visual disconnect and requiring scrolling. Visual states for processing were limited to the button itself.
+- **Current branch:** `task-branch` (feat: crystal ball animation).
+- **Current implementation:** Added a `revealing` state to `CrystalBall.tsx` to handle the transition. Extracted the fortune result into a new `.fortunePanel` placed directly below the crystal ball scene. Added CSS animations (`.ballInnerGlowLoading` and `.ballInnerGlowRevealing`) for the gathering energy shimmer and warm pulse.
+- **Verification:** Implemented a new Playwright visual interaction test (`tests/visual/crystal-ball-interactions.spec.ts`) that verifies the end-to-end flow. Tests (`pnpm run test`, `pnpm run build`, `./jules-verify.sh`, and `pnpm exec playwright test`) passed completely. Verified build size continues to stay well below 495MB limit (369MB .next and 29MB public). A PR summary was completed in `pr_summary.md`.
