@@ -44,3 +44,12 @@
 - **Current branch:** `task-branch`.
 - **Current implementation:** Created a lightweight inline SVG `GoldenLeaf.tsx`. Refactored `CrystalBall.tsx` to include `revealing` and `completionPulse` states. Extracted words into span tags that fade in sequentially. Hidden the visual text from screen readers using `aria-hidden` and provided the full text inside an `.sr-only` wrapper. Added a `getBoundingClientRect()` check to scroll the component into view on submit. Respects `prefers-reduced-motion`.
 - **Verification:** Updated `crystal-ball-interactions.spec.ts` to assert the correct states. Tests (`pnpm run test`, `pnpm run build`, `./jules-verify.sh`, and `pnpm exec playwright test`) passed completely. Build size is safely below 495MB (~415MB). PR Summary has been generated.
+
+
+## Crystal Ball JSX Build Repair — 2026-10-15
+
+- **Goal:** Fix the Cloudflare compile failure in `app/components/CrystalBall/CrystalBall.tsx` reported at the `fortuneWords.map` JSX.
+- **Verified root cause:** The mapped JSX had no opening `<span>` element, contained two `key` attributes, and still ended with `</span>`, causing Next.js compilation to fail.
+- **Repair branch:** `fix/crystal-ball-fortune-jsx-1491`.
+- **Change:** Restore the opening `<span>`, keep the content-derived key, and preserve the existing reveal class and word spacing.
+- **Verification status:** Source correction committed on a repair branch; CI build, `./jules-verify.sh`, Playwright, and the 495 MB build-size check must pass before the fix is considered verified.
