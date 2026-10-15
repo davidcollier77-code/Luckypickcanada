@@ -1,8 +1,3 @@
 {
-  "feature_directory": "specs/018-crystal-ball-redesign",
-  "name": "Crystal Ball Artwork Correction",
-  "description": "Replace incorrect Lucky Meter console imagery with the intended jeweled crystal-ball artwork and add visual assertions.",
-  "status": "in_progress",
-  "created_at": "2026-10-15T00:00:00Z",
-  "updated_at": "2026-10-15T07:40:00Z"
+  "feature_directory": "specs/020-crystal-ball-replacement"
 }

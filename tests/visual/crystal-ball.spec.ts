@@ -7,7 +7,7 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
   await expect(artwork).toBeVisible({ timeout: 10_000 });
   await expect.poll(() => artwork.evaluate((element) => {
     const image = element as HTMLImageElement;
-    return image.complete && image.naturalWidth === 716 && image.naturalHeight === 895;
+    return image.complete && image.naturalWidth === 716 && image.naturalHeight === 875;
   })).toBe(true);
 
   const metrics = await page.evaluate(() => {
@@ -43,10 +43,10 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
   if (!metrics) throw new Error('Crystal Ball artwork or glow element is missing.');
   expect(metrics.isConnected).toBe(true);
   expect(metrics.imageWidth).toBe(716);
-  expect(metrics.imageHeight).toBe(895);
+  expect(metrics.imageHeight).toBe(875);
   expect(metrics.declaredWidth).toBe('716');
-  expect(metrics.declaredHeight).toBe('895');
-  expect(metrics.imageRatio).toBeCloseTo(716 / 895, 2);
+  expect(metrics.declaredHeight).toBe('875');
+  expect(metrics.imageRatio).toBeCloseTo(716 / 875, 2);
   expect(metrics.sources).toEqual([
     { type: 'image/avif', srcSet: '/assets/crystal-ball-pedestal.avif' },
     { type: 'image/webp', srcSet: '/assets/crystal-ball-pedestal.webp' },
