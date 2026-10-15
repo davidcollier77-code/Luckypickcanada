@@ -168,6 +168,64 @@
   box-shadow: none;
 }
 
+
+.ballInnerGlowLoading {
+  background: radial-gradient(circle, rgba(140, 180, 255, 0.6) 0%, rgba(160, 200, 255, 0.3) 40%, transparent 70%);
+  animation: gatherEnergy 1s ease-in-out infinite alternate;
+}
+
+.ballInnerGlowRevealing {
+  background: radial-gradient(circle, rgba(255, 215, 100, 0.8) 0%, rgba(255, 180, 50, 0.4) 50%, transparent 70%);
+  animation: warmPulse 2s ease-out forwards;
+}
+
+@keyframes gatherEnergy {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+@keyframes warmPulse {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+  20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+
+/* =========================================================================
+   FORTUNE PANEL (Below Ball)
+   ========================================================================= */
+.fortunePanel {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: -1rem auto 2.5rem;
+  padding: 1.5rem 1.75rem;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(20, 25, 48, 0.85), rgba(10, 13, 28, 0.95));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(232, 196, 101, 0.25);
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  text-align: center;
+  animation: revealFortune 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 5;
+}
+
+.fortuneTextResult {
+  font-family: var(--font-fortune);
+  font-size: clamp(1.15rem, 4.5vw, 1.4rem);
+  color: var(--ink-100);
+  line-height: 1.5;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+@keyframes revealFortune {
+  0% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* =========================================================================
    QUESTION CARD
    ========================================================================= */
@@ -363,7 +421,10 @@
    ========================================================================= */
 @media (prefers-reduced-motion: reduce) {
   .ballWrapper,
-  .ballInnerGlow {
+  .ballInnerGlow,
+  .ballInnerGlowLoading,
+  .ballInnerGlowRevealing,
+  .fortunePanel {
     animation: none;
   }
 }
