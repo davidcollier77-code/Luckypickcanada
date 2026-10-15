@@ -22,6 +22,8 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
     return {
       imageWidth: image.naturalWidth,
       imageHeight: image.naturalHeight,
+      declaredWidth: image.width,
+      declaredHeight: image.height,
       imageRatio: imageBox.width / imageBox.height,
       isConnected: image.isConnected,
       sources: Array.from(picture.querySelectorAll('source')).map((source) => ({
@@ -42,6 +44,8 @@ test('Crystal Ball serves transparent AVIF artwork with WebP and PNG fallbacks a
   expect(metrics.isConnected).toBe(true);
   expect(metrics.imageWidth).toBe(716);
   expect(metrics.imageHeight).toBe(895);
+  expect(metrics.declaredWidth).toBe(716);
+  expect(metrics.declaredHeight).toBe(895);
   expect(metrics.imageRatio).toBeCloseTo(716 / 895, 2);
   expect(metrics.sources).toEqual([
     { type: 'image/avif', srcSet: '/assets/crystal-ball-pedestal.avif' },
