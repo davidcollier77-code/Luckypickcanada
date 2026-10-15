@@ -4,7 +4,6 @@ import { playButtonClick } from '../../lib/audio';
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import styles from './CrystalBall.module.css';
-import CrystalBallArtwork from './CrystalBallArtwork';
 
 type Reading = {
   id: string;
@@ -92,7 +91,19 @@ export default function CrystalBall({
         <div className={styles.ballScene}>
           <div className={styles.ballWrapper}>
             <div className={styles.ballInnerGlow} />
-            <CrystalBallArtwork className={styles.ballArtwork} />
+            <picture className={styles.ballArtwork}>
+              <source srcSet="/assets/crystal-ball-pedestal.avif" type="image/avif" />
+              <source srcSet="/assets/crystal-ball-pedestal.webp" type="image/webp" />
+              <img
+                src="/assets/crystal-ball-pedestal.png"
+                alt="Canadian crystal ball with a jeweled maple leaf, emerald clover, sapphire pendant, and ornate gold pedestal"
+                className={styles.ballImage}
+                width={448}
+                height={538}
+                loading="eager"
+                decoding="async"
+              />
+            </picture>
             <div className={styles.plaqueOverlay}>
               <span className={styles.plaque}>LUCKYPICKCANADA.CA</span>
             </div>
