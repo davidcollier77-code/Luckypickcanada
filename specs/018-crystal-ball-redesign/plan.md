@@ -1,8 +1,9 @@
 # Crystal Ball Redesign Plan
 
-1. Inspect the merged raster redesign and compare it with the supplied target; confirm the current asset depicts the wrong console-style artwork.
-2. Replace the raster illustration with a standalone transparent SVG foreground depicting the cosmic orb, jeweled Canadian emblem, and ornate gold-and-obsidian pedestal.
-3. Reposition responsive brand text to sit on the dark inset nameplate instead of rendering a separate gold pill.
-4. Preserve the Milky Way background and existing questions, fortunes, navigation, audio, and reduced-motion behavior.
-5. Update the Playwright visual check to assert the requested visual elements and responsive geometry.
-6. Verify through repository CI and real browser rendering; do not claim visual completion from source inspection alone.
+1. Inspect the incorrect merged raster asset and compare against the supplied target.
+2. Prepare a transparent foreground image from the supplied visual direction without altering the existing page background.
+3. Serve the asset AVIF first, WebP next, and PNG fallback through a native `picture` element.
+4. Align the responsive brand text to the inset nameplate in the foreground artwork.
+5. Keep the Milky Way background crisp and remove/avoid any Crystal Ball aurora layers; keep the existing interactions unchanged.
+6. Update Playwright checks for the real raster dimensions, AVIF/WebP/PNG source order, glow geometry, and existing form/navigation.
+7. Verify build/tests and compare real mobile/desktop rendering before considering the fix complete.
