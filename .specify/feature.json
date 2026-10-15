@@ -1,1 +1,8 @@
-{ "feature_directory": "specs/017-avif-optimization-part2" }
+{
+  "feature_directory": "specs/018-crystal-ball-redesign",
+  "name": "Crystal Ball Redesign",
+  "description": "Redesign the crystal ball visual with a premium, dimensional image asset",
+  "status": "in_progress",
+  "created_at": "2026-10-15T00:00:00Z",
+  "updated_at": "2026-10-15T00:00:00Z"
+}

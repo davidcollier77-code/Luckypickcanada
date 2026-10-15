@@ -1,1 +1,0 @@
-Optimize raster images to AVIF format with WebP fallback
