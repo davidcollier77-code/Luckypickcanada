@@ -1,7 +1,0 @@
-AVIF Optimization Part 2: Crystal Ball, Lucky Map, and Lucky Meter
-
-- Converted shared Pexels backgrounds (Desktop and Mobile) used by `.homepage-sky-backdrop` to local AVIF and WebP assets and updated CSS with `image-set()` fallbacks.
-- Wrapped the interactive map PNG in a `<picture>` tag serving AVIF and WebP inside `app/lucky-map-of-canada/lucky-map-of-canada.js`.
-- Converted Lucky Map sky WebP to AVIF and updated `.story-modal` inline background to use `image-set()` fallback.
-- Wrapped the `lucky-meter-night-sky.webp` `<Image>` in `components/DailyResonance.tsx` inside a `<picture>` element serving the existing AVIF asset.
-- Updated Spec Kit files with full task definitions and execution reports.

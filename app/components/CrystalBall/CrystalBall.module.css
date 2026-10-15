@@ -1,15 +1,7 @@
 /* =========================================================================
    CRYSTAL BALL — Glass & Machined Brass
    -------------------------------------------------------------------------
-   Perf notes (read before touching animations):
-   - The ONLY infinite-loop animations in this file animate `transform`
-     (translate/scale) and, for the aurora layer only, `opacity`. Nothing
-     ever animates `box-shadow` or `filter: blur()` inside a keyframe —
-     both are set once, statically, and left alone so the browser can
-     rasterize them a single time and just move the resulting layer on
-     the GPU.
-   - Every animated layer gets `will-change` + a `translateZ(0)` (or
-     `translate3d`) hint so it's promoted to its own compositor layer.
+   Perf notes: animated layers use `transform` only inside keyframes.
    ========================================================================= */
 
 /* ---------- tokens ---------- */
@@ -18,9 +10,6 @@
   --space-900: #090c1c;
   --space-800: #10142a;
 
-  --aurora-emerald: #1fa781;
-  --aurora-violet: #6b4bd6;
-  --aurora-rose: #b23a63;
 
   --brass-100: #fbe7ad;
   --brass-300: #e8c465;
@@ -43,89 +32,6 @@
   background: transparent;
   color: var(--ink-100);
   font-family: var(--font-ui);
-}
-
-/* =========================================================================
-   AURORA NIGHT-SKY BACKGROUND
-   Three pre-blurred gradient blobs. `filter: blur()` is applied once as a
-   static value — it is never inside a @keyframes block. The keyframes
-   below only ever touch transform + opacity, so each blob is painted
-   once and then cheaply moved/faded by the compositor.
-   ========================================================================= */
-.aurora {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.stars {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(1.6px 1.6px at 20% 30%, rgba(255, 255, 255, 0.9), transparent),
-    radial-gradient(1.2px 1.2px at 60% 75%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1.6px 1.6px at 82% 22%, rgba(255, 255, 255, 0.85), transparent),
-    radial-gradient(1.2px 1.2px at 35% 88%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.6px 1.6px at 92% 60%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1.2px 1.2px at 8% 62%, rgba(255, 255, 255, 0.5), transparent),
-    radial-gradient(1.6px 1.6px at 50% 8%, rgba(255, 255, 255, 0.6), transparent);
-  background-repeat: repeat;
-  background-size: 240px 240px;
-  opacity: 0.75;
-}
-
-.auroraBlob {
-  position: absolute;
-  width: 90vmax;
-  height: 90vmax;
-  border-radius: 50%;
-  filter: blur(70px);
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  mix-blend-mode: screen;
-}
-
-.auroraBlob1 {
-  top: -35vmax;
-  left: -25vmax;
-  background: radial-gradient(circle, var(--aurora-emerald) 0%, transparent 65%);
-  opacity: 0.32;
-  animation: auroraDrift1 52s ease-in-out infinite;
-}
-
-.auroraBlob2 {
-  top: -15vmax;
-  right: -30vmax;
-  background: radial-gradient(circle, var(--aurora-violet) 0%, transparent 65%);
-  opacity: 0.28;
-  animation: auroraDrift2 64s ease-in-out infinite;
-}
-
-.auroraBlob3 {
-  bottom: -40vmax;
-  left: 10vmax;
-  width: 70vmax;
-  height: 70vmax;
-  background: radial-gradient(circle, var(--aurora-rose) 0%, transparent 70%);
-  opacity: 0.16;
-  animation: auroraDrift3 76s ease-in-out infinite;
-}
-
-@keyframes auroraDrift1 {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.28; }
-  50%      { transform: translate3d(6vmax, 4vmax, 0) scale(1.12); opacity: 0.4; }
-}
-
-@keyframes auroraDrift2 {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.24; }
-  50%      { transform: translate3d(-5vmax, 5vmax, 0) scale(1.1); opacity: 0.34; }
-}
-
-@keyframes auroraDrift3 {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.14; }
-  50%      { transform: translate3d(4vmax, -3vmax, 0) scale(1.08); opacity: 0.22; }
 }
 
 /* =========================================================================
@@ -182,11 +88,14 @@
 
 .ballWrapper {
   position: relative;
-  width: clamp(220px, 62vw, 300px);
-  aspect-ratio: 1 / 1;
+  width: clamp(280px, 75vw, 420px);
   will-change: transform;
   transform: translateZ(0);
   animation: floatBall 6.5s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
 @keyframes floatBall {
@@ -194,67 +103,34 @@
   50%      { transform: translateZ(0) translateY(-10px); }
 }
 
-.ball {
-  position: relative;
+.ballArtwork {
   width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  overflow: hidden;
-  isolation: isolate;
-
-  background:
-    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.04) 32%, transparent 55%),
-    radial-gradient(circle at 68% 78%, rgba(20, 30, 60, 0.55), transparent 55%),
-    radial-gradient(circle at 50% 50%, rgba(150, 170, 220, 0.18), rgba(8, 12, 28, 0.5) 78%);
-
-  backdrop-filter: blur(7px) saturate(135%);
-  -webkit-backdrop-filter: blur(7px) saturate(135%);
-
-  border: 1px solid rgba(255, 255, 255, 0.32);
-
-  box-shadow:
-    inset -22px -22px 55px rgba(0, 0, 0, 0.5),
-    inset 18px 18px 36px rgba(255, 255, 255, 0.22),
-    inset 0 0 40px rgba(120, 160, 230, 0.15),
-    0 30px 55px rgba(0, 0, 0, 0.55),
-    0 0 70px rgba(140, 190, 255, 0.22);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.4));
 }
 
-.ballSpecular {
-  position: absolute;
-  top: 8%;
-  left: 12%;
-  width: 42%;
-  height: 26%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.65), transparent 70%);
-  transform: rotate(-18deg);
-  pointer-events: none;
-}
-
-.ballSpecularSmall {
-  position: absolute;
-  top: 14%;
-  left: 22%;
-  width: 8%;
-  height: 8%;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  filter: blur(1px);
-  pointer-events: none;
+.ballImage {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .ballInnerGlow {
   position: absolute;
-  top: 50%;
+  top: 36%;
   left: 50%;
-  width: 46%;
-  height: 46%;
+  width: 62%;
+  height: auto;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(1);
-  background: radial-gradient(circle, rgba(255, 244, 214, 0.85) 0%, rgba(232, 196, 101, 0.25) 55%, transparent 75%);
+  background: radial-gradient(circle, rgba(140, 180, 255, 0.4) 0%, rgba(100, 140, 255, 0.1) 50%, transparent 70%);
   will-change: transform;
   animation: pulseGlow 5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
 }
 
 @keyframes pulseGlow {
@@ -262,71 +138,14 @@
   50%      { transform: translate(-50%, -50%) scale(1.08); }
 }
 
-.logoRing {
+.plaqueOverlay {
   position: absolute;
-  top: 50%;
+  bottom: 8%;
   left: 50%;
-  width: 30%;
-  height: 30%;
-  transform: translate(-50%, -50%);
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
-}
-
-.logo {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-/* ---------- brass pedestal ---------- */
-.pedestalGlow {
-  width: 70%;
-  max-width: 260px;
-  height: 34px;
-  margin-top: -18px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(232, 196, 101, 0.45), transparent 70%);
-  pointer-events: none;
-}
-
-.pedestalTop {
-  position: relative;
-  width: 78%;
-  max-width: 280px;
-  height: clamp(34px, 9vw, 46px);
-  margin-top: -20px;
-  border-radius: 50%;
-  background:
-    repeating-linear-gradient(
-      100deg,
-      rgba(255, 255, 255, 0.12) 0px,
-      rgba(255, 255, 255, 0.12) 1px,
-      transparent 1px,
-      transparent 3px
-    ),
-    linear-gradient(180deg, var(--brass-100) 0%, var(--brass-300) 22%, var(--brass-500) 45%, var(--brass-700) 72%, var(--brass-900) 100%);
-  box-shadow:
-    0 10px 18px rgba(0, 0, 0, 0.55),
-    inset 0 2px 3px rgba(255, 255, 255, 0.5),
-    inset 0 -6px 10px rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 224, 160, 0.4);
-}
-
-.pedestalBase {
-  position: relative;
-  width: 100%;
-  max-width: 380px;
-  margin-top: -6px;
-  padding: 1.5rem 1rem 1.25rem;
-  border-radius: 26px;
+  transform: translateX(-50%);
+  z-index: 2;
   display: flex;
   justify-content: center;
-  background: linear-gradient(180deg, #1c1a16 0%, #0c0b09 70%, #000 100%);
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    inset 0 -12px 24px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(232, 196, 101, 0.18);
 }
 
 .plaque {
@@ -538,10 +357,7 @@
    ========================================================================= */
 @media (prefers-reduced-motion: reduce) {
   .ballWrapper,
-  .ballInnerGlow,
-  .auroraBlob1,
-  .auroraBlob2,
-  .auroraBlob3 {
+  .ballInnerGlow {
     animation: none;
   }
 }

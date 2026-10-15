@@ -4,7 +4,6 @@ import { playButtonClick } from '../../lib/audio';
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import styles from './CrystalBall.module.css';
-import MapleLeafLogo from './MapleLeafLogo';
 
 type Reading = {
   id: string;
@@ -91,19 +90,22 @@ export default function CrystalBall({
 
         <div className={styles.ballScene}>
           <div className={styles.ballWrapper}>
-            <div className={styles.ball}>
-              <div className={styles.ballInnerGlow} />
-              <div className={styles.ballSpecular} />
-              <div className={styles.ballSpecularSmall} />
-              <div className={styles.logoRing}>
-                <MapleLeafLogo className={styles.logo} />
-              </div>
+            <div className={styles.ballInnerGlow} />
+            <picture className={styles.ballArtwork}>
+              <source srcSet="/assets/crystal-ball-pedestal.avif" type="image/avif" />
+              <source srcSet="/assets/crystal-ball-pedestal.webp" type="image/webp" />
+              <img
+                src="/assets/crystal-ball-pedestal.png"
+                alt="Canadian magical crystal ball on a pedestal"
+                className={styles.ballImage}
+                width={716}
+                height={895}
+                loading="eager"
+              />
+            </picture>
+            <div className={styles.plaqueOverlay}>
+              <span className={styles.plaque}>LUCKYPICKCANADA.CA</span>
             </div>
-          </div>
-          <div className={styles.pedestalGlow} />
-          <div className={styles.pedestalTop} />
-          <div className={styles.pedestalBase}>
-            <span className={styles.plaque}>LUCKYPICKCANADA.CA</span>
           </div>
         </div>
 
