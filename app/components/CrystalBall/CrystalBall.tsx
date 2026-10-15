@@ -4,7 +4,6 @@ import { playButtonClick } from '../../lib/audio';
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import styles from './CrystalBall.module.css';
-import MapleLeafLogo from './MapleLeafLogo';
 
 type Reading = {
   id: string;

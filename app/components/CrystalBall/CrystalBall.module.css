@@ -1,15 +1,7 @@
 /* =========================================================================
    CRYSTAL BALL — Glass & Machined Brass
    -------------------------------------------------------------------------
-   Perf notes (read before touching animations):
-   - The ONLY infinite-loop animations in this file animate `transform`
-     (translate/scale) and, for the aurora layer only, `opacity`. Nothing
-     ever animates `box-shadow` or `filter: blur()` inside a keyframe —
-     both are set once, statically, and left alone so the browser can
-     rasterize them a single time and just move the resulting layer on
-     the GPU.
-   - Every animated layer gets `will-change` + a `translateZ(0)` (or
-     `translate3d`) hint so it's promoted to its own compositor layer.
+   Perf notes: animated layers use `transform` only inside keyframes.
    ========================================================================= */
 
 /* ---------- tokens ---------- */
@@ -47,89 +39,6 @@
 
 /* =========================================================================
    AURORA NIGHT-SKY BACKGROUND
-   Three pre-blurred gradient blobs. `filter: blur()` is applied once as a
-   static value — it is never inside a @keyframes block. The keyframes
-   below only ever touch transform + opacity, so each blob is painted
-   once and then cheaply moved/faded by the compositor.
-   ========================================================================= */
-.aurora {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.stars {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(1.6px 1.6px at 20% 30%, rgba(255, 255, 255, 0.9), transparent),
-    radial-gradient(1.2px 1.2px at 60% 75%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1.6px 1.6px at 82% 22%, rgba(255, 255, 255, 0.85), transparent),
-    radial-gradient(1.2px 1.2px at 35% 88%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.6px 1.6px at 92% 60%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1.2px 1.2px at 8% 62%, rgba(255, 255, 255, 0.5), transparent),
-    radial-gradient(1.6px 1.6px at 50% 8%, rgba(255, 255, 255, 0.6), transparent);
-  background-repeat: repeat;
-  background-size: 240px 240px;
-  opacity: 0.75;
-}
-
-.auroraBlob {
-  position: absolute;
-  width: 90vmax;
-  height: 90vmax;
-  border-radius: 50%;
-  filter: blur(70px);
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  mix-blend-mode: screen;
-}
-
-.auroraBlob1 {
-  top: -35vmax;
-  left: -25vmax;
-  background: radial-gradient(circle, var(--aurora-emerald) 0%, transparent 65%);
-  opacity: 0.32;
-  animation: auroraDrift1 52s ease-in-out infinite;
-}
-
-.auroraBlob2 {
-  top: -15vmax;
-  right: -30vmax;
-  background: radial-gradient(circle, var(--aurora-violet) 0%, transparent 65%);
-  opacity: 0.28;
-  animation: auroraDrift2 64s ease-in-out infinite;
-}
-
-.auroraBlob3 {
-  bottom: -40vmax;
-  left: 10vmax;
-  width: 70vmax;
-  height: 70vmax;
-  background: radial-gradient(circle, var(--aurora-rose) 0%, transparent 70%);
-  opacity: 0.16;
-  animation: auroraDrift3 76s ease-in-out infinite;
-}
-
-@keyframes auroraDrift1 {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.28; }
-  50%      { transform: translate3d(6vmax, 4vmax, 0) scale(1.12); opacity: 0.4; }
-}
-
-@keyframes auroraDrift2 {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.24; }
-  50%      { transform: translate3d(-5vmax, 5vmax, 0) scale(1.1); opacity: 0.34; }
-}
-
-@keyframes auroraDrift3 {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.14; }
-  50%      { transform: translate3d(4vmax, -3vmax, 0) scale(1.08); opacity: 0.22; }
-}
-
-/* =========================================================================
-   LAYOUT SHELL
    ========================================================================= */
 .container {
   position: relative;
@@ -450,10 +359,7 @@
    ========================================================================= */
 @media (prefers-reduced-motion: reduce) {
   .ballWrapper,
-  .ballInnerGlow,
-  .auroraBlob1,
-  .auroraBlob2,
-  .auroraBlob3 {
+  .ballInnerGlow {
     animation: none;
   }
 }
