@@ -60,6 +60,6 @@ export default function CrystalBallArtwork(props: SVGProps<SVGSVGElement>) {
     <path d="M138 551 C158 536 173 560 151 563 C140 564 141 572 154 572 M362 551 C342 536 327 560 349 563 C360 564 359 572 346 572 M250 539 L257 550 L250 561 L243 550 Z" fill="none" stroke="#f6ce69" strokeWidth="2.4" strokeLinecap="round"/>
     <path d="M52 590 Q250 615 448 590 L465 610 Q250 640 35 610 Z" fill="url(#obsidian)" stroke="url(#goldMetal)" strokeWidth="4"/>
     <path d="M39 610 Q250 638 461 610" fill="none" stroke="#fff0a1" strokeOpacity=".7" strokeWidth="2"/>
-    <ellipse cx="250" cy="626" rx="150" ry="5 fill="#e8b451" opacity=".2" filter="url(#softGlow)"/>
+    <ellipse cx="250" cy="626" rx="150" ry="5" fill="#e8b451" opacity=".2" filter="url(#softGlow)"/>
   </svg>;
 }
