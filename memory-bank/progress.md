@@ -23,3 +23,5 @@
 - 2026-10-15: PR #1490 Visual QA initially failed because the Crystal Ball visual test depended on the real oracle endpoint, while CI had no `GROQ_API_KEY`. Updated the test to mock `/api/oracle` with a delayed successful response so the loading and reveal states can be verified without secrets. Awaiting rerun; not yet marked passed.
 
 - 2026-10-15: Prepared a focused repair for the Cloudflare compile failure in `CrystalBall.tsx`: restored the opening `<span>` in `fortuneWords.map` and removed the duplicate `key`. Verification is pending CI evidence for the production build, `./jules-verify.sh`, Playwright, and the 495 MB artifact-size cap.
+
+- 2026-10-15: PR #1492's first OpenNext validation run exposed a second compile blocker in `GoldenLeaf.tsx` (duplicate gradient/path opening tags and missing original path data). Restored the original SVG markup and unique gradient references; post-fix CI verification is pending.
