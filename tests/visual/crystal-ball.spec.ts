@@ -21,10 +21,13 @@ test('Crystal Ball artwork and inner glow keep their geometry across responsive 
     return {
       viewBox: svg.getAttribute('viewBox'),
       hasMapleLeaf: Boolean(svg.querySelector('path[fill="url(#ruby)"]')),
-      hasEmeraldClover: Boolean(svg.querySelector('linearGradient#emerald')),
-      hasSapphire: Boolean(svg.querySelector('linearGradient#sapphire')),
-      hasGoldPedestal: Boolean(svg.querySelector('linearGradient#goldMetal')),
+      hasEmeraldClover: Boolean(svg.querySelector('ellipse[fill="url(#emerald)"]')),
+      hasSapphire: Boolean(svg.querySelector('path[fill="url(#sapphire)"]')),
+      hasGoldPedestal: Boolean(svg.querySelector('path[stroke="url(#goldMetal)"], path[fill="url(#goldMetal)"]')),
       imageRatio: imageBox.width / imageBox.height,
+      imageWidth: imageBox.width,
+      imageHeight: imageBox.height,
+      isConnected: svg.isConnected,
       wrapperTop: wrapperBox.top,
       wrapperHeight: wrapperBox.height,
       glowTop: glowBox.top,
@@ -38,7 +41,10 @@ test('Crystal Ball artwork and inner glow keep their geometry across responsive 
   expect(metrics).not.toBeNull();
   if (!metrics) throw new Error('Crystal Ball artwork or glow element is missing.');
 
+  expect(metrics.isConnected).toBe(true);
   expect(metrics.viewBox).toBe('0 0 500 650');
+  expect(metrics.imageWidth).toBeGreaterThan(0);
+  expect(metrics.imageHeight).toBeGreaterThan(0);
   expect(metrics.imageRatio).toBeCloseTo(500 / 650, 2);
   expect(metrics.hasMapleLeaf).toBe(true);
   expect(metrics.hasEmeraldClover).toBe(true);
