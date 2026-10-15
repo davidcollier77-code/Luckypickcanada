@@ -1,12 +1,11 @@
-# Tasks — Crystal Ball Build Repair
+# Tasks — Crystal Ball Fortune Reveal Enhancement
 
-- [x] Inspect the Cloudflare syntax error and compare the component with the last valid version.
-- [x] Restore the picture wrapper and valid AVIF/WebP/PNG fallback structure.
-- [x] Remove duplicate glow markup and duplicated JSX properties.
-- [x] Restore question input state updates and the Seek Fortune click handler with existing audio feedback.
-- [x] Review the repaired component markup and changed source.
-- [x] Make the Crystal Ball visual interaction test deterministic by mocking `/api/oracle` with a delayed successful response; rerun and confirm it passes before marking verification complete.
-- [ ] Run `pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts` and confirm it passes.
-- [ ] Run `./jules-verify.sh`.
-- [ ] Run the production build and measure build size against the 495 MB limit.
-- [ ] Verify the resulting Cloudflare build succeeds.
+- [ ] T001 Define golden maple leaf inline SVG inside `CrystalBall.tsx` or as a new component without altering `MapleLeafLogo.tsx`.
+- [ ] T002 Implement progressive word reveal logic inside `CrystalBall.tsx` along with dynamic timing calculation based on word count.
+- [ ] T003 Update `CrystalBall.tsx` markup for accessibility (aria-hidden for animated words, sr-only for full text).
+- [ ] T004 Implement scroll-into-view logic when a question is submitted.
+- [ ] T005 Update `CrystalBall.module.css` to handle the golden maple leaf animation, progressive word fade-in, and completion pulse.
+- [ ] T006 Ensure timeouts and state reset correctly on repeated submissions.
+- [ ] T007 Run visual QA via Playwright (`tests/visual/crystal-ball-interactions.spec.ts`).
+- [ ] T008 Run `./jules-verify.sh`.
+- [ ] T009 Run `pnpm run build` and measure build size.

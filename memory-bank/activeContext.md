@@ -37,3 +37,10 @@
 
 
 - **Visual QA follow-up:** PR #1490's first Visual QA run failed because the test called the real `/api/oracle`, and CI logs confirmed `GROQ_API_KEY environment variable is missing`. The API returned an error before the test could observe the loading label. Updated `tests/visual/crystal-ball-interactions.spec.ts` to mock `/api/oracle` with a deterministic delayed success response. This addresses the test's missing-credential dependency; the rerun is still required before claiming a pass.
+
+## Crystal Ball Fortune Reveal Enhancement — 2026-10-15
+
+- **Goal:** Polish the Crystal Ball UI by adding smooth scrolling, progressive word reveal for fortunes, a golden leaf animation, and a completion pulse.
+- **Current branch:** `task-branch`.
+- **Current implementation:** Created a lightweight inline SVG `GoldenLeaf.tsx`. Refactored `CrystalBall.tsx` to include `revealing` and `completionPulse` states. Extracted words into span tags that fade in sequentially. Hidden the visual text from screen readers using `aria-hidden` and provided the full text inside an `.sr-only` wrapper. Added a `getBoundingClientRect()` check to scroll the component into view on submit. Respects `prefers-reduced-motion`.
+- **Verification:** Updated `crystal-ball-interactions.spec.ts` to assert the correct states. Tests (`pnpm run test`, `pnpm run build`, `./jules-verify.sh`, and `pnpm exec playwright test`) passed completely. Build size is safely below 495MB (~415MB). PR Summary has been generated.

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('Crystal Ball interaction: seeking fortune shows gathering energy then warm pulse, and displays result under ball', async ({ page }) => {
+test('Crystal Ball interaction: seeking fortune shows gathering energy, progressive reveal, warm pulse, and displays result under ball', async ({ page }) => {
   // Keep this UI test independent of production AI credentials and make the loading state deterministic.
   await page.route('**/api/oracle', async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 1200));
@@ -33,17 +33,17 @@ test('Crystal Ball interaction: seeking fortune shows gathering energy then warm
   // Glow element should have the loading class (gathering energy shimmer)
   const glowElement = page.locator('[class*="ballInnerGlow"]');
 
-  // Wait for the fortune reveal (approx 1s delay built-in to default generator + small buffer)
-  // The state transitions to "revealing"
-  await expect(glowElement).toHaveClass(/ballInnerGlowRevealing/, { timeout: 3000 });
+  // The fortune result container should eventually appear
+  const fortuneResult = page.locator('div[class*="fortunePanel"]');
+  await expect(fortuneResult).toBeVisible({ timeout: 3000 });
 
-  // The result should now be displayed under the ball
-  const fortuneResult = page.locator('div[class*="fortunePanel"]'); // Using class to avoid strict mode violation with Next.js route announcer
-  await expect(fortuneResult).toBeVisible();
-  // Assert the fortune text is non-empty
-  await expect(fortuneResult).not.toBeEmpty();
+  // The sr-only full text should be present
+  const srText = fortuneResult.locator('.sr-only');
+  await expect(srText).not.toBeEmpty();
 
-  // Expect the question input button to have reset to "Seek Fortune"
-  // (after the 2s timeout in the revealing state, or potentially before if the timeout is still active, wait for it)
+  // The pulse class should eventually be applied after words finish revealing
+  await expect(glowElement).toHaveClass(/ballInnerGlowPulse/, { timeout: 6000 });
+
+  // Expect the question input button to have reset to "Seek Fortune" after completion pulse
   await expect(page.getByRole('button', { name: 'Seek Fortune' })).toBeVisible({ timeout: 5000 });
 });
