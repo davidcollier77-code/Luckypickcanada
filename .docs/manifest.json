@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-16T06:57:21-03:00",
+  "lastUpdated": "2026-10-16T11:00:58-03:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -425,11 +425,11 @@
     "/websites/mdn_image_types"
   ],
   "githubShas": {
-    "/github/docs": "cb051611377a0d2904411e6157154e9b4953d870",
-    "/vercel/next.js": "a6d4c15991fd2f69c14eea4e8b655b596bc162bf",
+    "/github/docs": "ff759d8d323d8794ce98d1dedd758356e2940a84",
+    "/vercel/next.js": "ddafc9905136b3bac5f1778a123fa792be705b4b",
     "/reactjs/react.dev": "046f17d04295ba047bb5739026b4ac3110f17028",
     "/microsoft/typescript": "abcbb2e69d2a86d9ffee66582a0dd0339b674733",
-    "/lucide-icons/lucide": "7b0196e249ca09ca27c584c497aca9a8cab8a7f5",
+    "/lucide-icons/lucide": "1ef60af944de207e0d5176905a0759ba12e6ee8d",
     "/react-hook-form/documentation": "2ab1b24db1292116df5f5611253017a5eafd4833",
     "/react-hook-form/resolvers": "8d088d4e022bb6e86ce100769379e2f3ae6f6902",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
