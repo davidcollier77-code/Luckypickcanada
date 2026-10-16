@@ -1,5 +1,17 @@
 # Active Context
 
+## Current Focus — Spec Kit Updater Recovery (2026-10-16)
+
+- **Goal**: Restore the managed Spec Kit command file that was accidentally reduced to one line and make the scheduled updater perform at most one retry.
+- **Verified failure**: Scheduled workflow run #24 failed at `specify integration upgrade generic` because `.jules/cmds/speckit.specify.md` differed from the hash recorded by `.specify/integrations/generic.manifest.json`.
+- **Command restoration**: The restored command is byte-for-byte the last known-good integration-managed copy; its computed SHA-256 matches the manifest entry `21634a45dfcf642fddb1645f4ad2980f98c89778442e47663df8a6c3a1eaf8bc`.
+- **Schedule**: Tuesday/Friday at 1:05 AM Halifax time with one retry at 5:05 AM; the 9:05 AM third run is removed. The daily guard still skips the retry after a PR was created or refreshed successfully.
+- **Safety**: The updater continues to run without `--force`, preserving Spec Kit's protection against overwriting genuinely modified managed files.
+- **Verification status**: Source-level failure and manifest-hash match verified. The repository build, `./jules-verify.sh`, post-merge updater run, and actual build-size measurement remain pending because this connection cannot execute repository shell commands.
+- **Next step**: Review and merge the proposed PR, then manually dispatch the workflow once to verify the full upgrade → status → governance → PR sequence before relying on the next scheduled run.
+
+## Previous Focus — AVIF Optimization (Historical)
+
 - **Current Goal**: Improve image-loading performance across the application by making AVIF the preferred delivery format for eligible raster images.
 - **Latest Verified Issue**: Large raster image assets (like the 3.1 MB card poster, 2.5 MB background, and 2.4 MB Milky Way) were being served as JPEGs, PNGs, or WebP. Given Cloudflare configuration and `images.unoptimized: true`, these were not auto-optimizing to next-gen formats beyond the original format.
 - **Verified Findings**:

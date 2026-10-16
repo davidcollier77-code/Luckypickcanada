@@ -1,3 +1,11 @@
+# Progress — 2026-10-16
+
+- **Spec Kit updater repair prepared**: Confirmed scheduled run #24 failed when `specify integration upgrade generic` rejected the one-line `.jules/cmds/speckit.specify.md` as modified. Restored the complete integration-managed command version whose SHA-256 exactly matches the version in `.specify/integrations/generic.manifest.json`.
+- **Retry schedule reduced**: Retained the 1:05 AM primary schedule and the 5:05 AM single retry on Tuesdays and Fridays in `America/Halifax`; removed the 9:05 AM third run. The existing daily guard continues to suppress a retry if a PR was successfully created/refreshed.
+- **Verification not yet complete**: Source failure and manifest checksum are verified from GitHub logs/files; local governance/type/build checks, build-size measurement, and a post-merge workflow run still need execution. Do not describe the updater as runtime-verified until those checks pass.
+
+---
+
 - Verified on 2026-10-13: Visual QA run #388 passed (12 passed, 3 skipped, 0 failed), and OpenNext validation run #997 passed. Visual runs #384 and #387 had found zero rendered pixels; review of canvas-confetti's default configuration and the restrictive CSP identified its Blob-worker path as the likely cause. The component now creates a dedicated overlay canvas using `confetti.create(canvas, { resize: true, useWorker: false })`, keeping CSP unchanged, and uses a cached viewBox-derived transform for the negative-coordinate maple SVG.
 
 - PR #1468 also centralizes the chime URL/CSP origin, logs asynchronous Howler playback and leaf-shape errors, and isolates Playwright's sound readiness check from Mixkit CDN availability with a valid silent WAV fixture. Review findings were answered and remaining review suggestions were classified as false positives or unnecessary refactors. Local `./jules-verify.sh`, full artifact-size measurement against the 495 MB cap, and real mobile CDN playback remain outstanding.
