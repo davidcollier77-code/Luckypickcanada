@@ -1,4 +1,4 @@
-- [ ] Fix the `disabled` logic in `CrystalBall.tsx`.
-- [ ] Run Playwright tests.
-- [ ] Verify build size.
-- [ ] Write PR_SUMMARY.md.
+- [x] Fix the `disabled` logic in `CrystalBall.tsx`.
+- [x] Run Playwright tests.
+- [x] Verify build size.
+- [x] Write PR_SUMMARY.md.

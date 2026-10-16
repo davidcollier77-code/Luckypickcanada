@@ -275,7 +275,7 @@ export default function CrystalBall({
               void handleSeekFortune();
             }}
             disabled={isBusy || question.trim() === ""}
-            aria-disabled={isBusy || question.trim() === ""}
+            aria-disabled={undefined}
           >
             {status === 'loading' ? (
               <>
