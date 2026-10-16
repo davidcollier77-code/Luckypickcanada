@@ -40,7 +40,7 @@ Restore the managed Spec Kit specify command to its last known-good content and 
 .github/workflows/update-spec-kit.yml
 .jules/cmds/speckit.specify.md
 .specify/feature.json
-.specs/022-spec-kit-updater-recovery/  (Spec Kit task artifacts are under specs/, not .specify/)
+specs/022-spec-kit-updater-recovery/  (active Spec Kit task artifacts)
 memory-bank/activeContext.md
 memory-bank/progress.md
 ```
