@@ -1,87 +1,67 @@
-# PR Summary: Crystal Ball Fortune Reveal Interaction and Reliability Improvements
+# PR Summary — Crystal Ball Leaf-First Fortune Reveal
 
-## Task Verification & Root Cause
+## Request and implementation
+SELECTED TASK GROUP: polishing
+GROUP REASON: Presentation-timing improvement to the existing Crystal Ball interaction; no API or stored-data changes.
 
-The "Seek Fortune" button remained disabled during testing (e.g. Playwright) when text was entered into the question textarea.
+- Keep the existing source artwork and decorative leaves in place.
+- Begin the energy-gathering glow immediately during loading.
+- Run a distinct gold pre-reveal flash after the answer is ready.
+- Animate a duplicate of the existing GoldenLeaf SVG from the artwork area into the fortune panel.
+- Keep visible answer characters paused until the leaf animation completes, then retain the existing typewriter and completion pulse.
+- Skip the decorative flight and typewriter when reduced motion is preferred.
+- Preserve repeat questions; no arbitrary cap is introduced.
 
-**Root Cause:** The `disabled={isBusy || !question.trim()}` logic failed to evaluate to `false` when text was entered into the textarea during Playwright tests. This is a known nuance when relying purely on boolean coercion (`!string`) with some test runners/hydration lifecycles.
+## Repository consultation
+- DOCUMENT: .jules/polishing.md — USED: YES — USEFUL: YES — selected workflow and required local references.
+- DOCUMENT: .docs/manifest.json — USED: YES — USEFUL: YES — identifies the approved snapshots for the task group.
+- DOCUMENT: .docs/polishing/jules_google_docs.md — USED: YES — USEFUL: YES — required Jules reference inspected.
+- DOCUMENT: .docs/polishing/developers_google_com_jules_api.md — USED: YES — USEFUL: YES — required Jules API reference inspected.
+- DOCUMENT: .docs/polishing/_google-gemini_gemini-cli.md — USED: YES — USEFUL: NO — required snapshot inspected; it contains CLI tips, not UI-animation guidance.
+- DOCUMENT: .docs/polishing/_websites_ai_google_dev_gemini-api.md — USED: YES — USEFUL: NO — required snapshot inspected; it covers Gemini API documentation rather than local UI animation.
+- DOCUMENT: .jules/jules.md — USED: YES — USEFUL: YES — establishes repository initialization and Spec Kit governance.
+- DOCUMENT: .specify/memory/constitution.md — USED: YES — USEFUL: YES — governs the implementation and verification sequence.
+- LIBRARY: React — VERSION: package.json lists latest for react — USED: YES — USEFUL: YES — component hooks manage staged state and cleanup.
+- LIBRARY: Next.js — VERSION: 16.3.8 — USED: YES — USEFUL: YES — client component and route rendering.
+- LIBRARY: Playwright — VERSION: @playwright/test ^1.63.0 — USED: YES — USEFUL: YES — browser regression assertions.
+- COMPONENT: app/components/CrystalBall/CrystalBall.tsx — USED: YES — USEFUL: YES — request/reveal state machine and measured flight coordinates.
+- COMPONENT: app/components/CrystalBall/CrystalBall.module.css — USED: YES — USEFUL: YES — pre-reveal flash and leaf-flight keyframes.
+- COMPONENT: app/components/CrystalBall/GoldenLeaf.tsx — USED: YES — USEFUL: YES — existing leaf SVG is reused as a separate clone.
+- COMPONENT: tests/visual/crystal-ball-interactions.spec.ts — USED: YES — USEFUL: YES — verifies flash → leaf → typing order and repeated questions.
 
-**Fix:** Changed the explicit falsy evaluation to `question.trim() === ""` for both `disabled` and `aria-disabled` button attributes in `app/components/CrystalBall/CrystalBall.tsx`. This makes the state deterministic and allows the button to enable properly.
+## Spec Kit artifacts
+- SPECIFY definition: .jules/cmds/speckit.specify.md; artifact specs/crystal-ball-leaf-first-reveal/spec.md.
+- PLAN definition: .jules/cmds/speckit.plan.md; artifacts plan.md, research.md, data-model.md, contracts/animation-sequence.md, quickstart.md under specs/crystal-ball-leaf-first-reveal.
+- TASKS definition: .jules/cmds/speckit.tasks.md; artifact specs/crystal-ball-leaf-first-reveal/tasks.md.
+- IMPLEMENT definition: .jules/cmds/speckit.implement.md; source and test changes listed below.
+- Execution method: artifacts were prepared through the GitHub repository API. Native slash-command dispatch and repository setup scripts could not be invoked through the available connection. The full Spec Kit command workflow and local ./jules-verify.sh are not claimed as executed.
 
-**Existing Work Re-verified:**
-- Restrained loading and energy-gathering effect is present.
-- Progressive fortune reveal logic is present and working (`revealedCharCount`).
-- Golden completion pulse and error states work as expected.
-- Existing artwork and styling logic is maintained.
+## Verification status
+- COMMAND: GitHub Actions Visual QA — RESULT: PENDING — EVIDENCE: PR check triggered; result must be confirmed before merge.
+- COMMAND: GitHub Actions Validate OpenNext build artifacts — RESULT: PENDING — EVIDENCE: PR check triggered; result must be confirmed before merge.
+- COMMAND: GitHub Actions CodeQL — RESULT: PENDING — EVIDENCE: PR check triggered; result must be confirmed before merge.
+- COMMAND: ./jules-verify.sh — RESULT: NOT RUN LOCALLY — EVIDENCE: available connection exposes GitHub API operations but no repository shell.
+- COMMAND: Local build-size measurement — RESULT: NOT RUN LOCALLY — EVIDENCE: no repository shell is available; do not treat 495 MB as measured until CI evidence confirms it.
 
-## Governance & Compliance
+## Changed files
+- .specify/feature.json
+- PR_SUMMARY.md
+- app/components/CrystalBall/CrystalBall.tsx
+- app/components/CrystalBall/CrystalBall.module.css
+- memory-bank/activeContext.md
+- memory-bank/progress.md
+- specs/crystal-ball-leaf-first-reveal/contracts/animation-sequence.md
+- specs/crystal-ball-leaf-first-reveal/data-model.md
+- specs/crystal-ball-leaf-first-reveal/plan.md
+- specs/crystal-ball-leaf-first-reveal/quickstart.md
+- specs/crystal-ball-leaf-first-reveal/research.md
+- specs/crystal-ball-leaf-first-reveal/spec.md
+- specs/crystal-ball-leaf-first-reveal/tasks.md
+- tests/visual/crystal-ball-interactions.spec.ts
 
-SELECTED TASK GROUP: troubleshooting
-GROUP REASON: Task involves diagnosing and correcting an application interaction failure (Playwright timeout) within an established component.
+## Remaining issues
+- Automated checks and measured build size must be verified before merge.
+- The leaf source point is aligned by measured viewport coordinates; visual QA must confirm alignment on mobile and desktop.
+- No question limit is introduced; repeated questions remain supported.
 
-**Required Documentation & Libraries Consulted**
-
-- DOCUMENT: .docs/troubleshooting/jules_google_docs.md
-- USED: YES
-- USEFUL: YES
-- REASON: Read for general Jules instructions to comply with required governance.
-
-- DOCUMENT: .docs/troubleshooting/_google-gemini_gemini-cli.md
-- USED: YES
-- USEFUL: NO
-- REASON: Not relevant for this React UI logic troubleshooting task.
-
-- DOCUMENT: .docs/troubleshooting/_websites_ai_google_dev_gemini-api.md
-- USED: YES
-- USEFUL: NO
-- REASON: Not relevant for this React UI logic troubleshooting task.
-
-- LIBRARY: /reactjs/react.dev
-- VERSION: Unknown (from docs index)
-- USED: YES
-- USEFUL: YES
-- REASON: Consulted React documentation for evaluating state changes (`onChange`) and hydration lifecycle.
-
-- LIBRARY: /vercel/next.js
-- VERSION: 14.x
-- USED: YES
-- USEFUL: YES
-- REASON: Understanding Next.js component boundaries (client vs server) for `use client` in `CrystalBall.tsx`.
-
-- COMPONENT: `app/components/CrystalBall/CrystalBall.tsx`
-- USED: YES
-- USEFUL: YES
-- REASON: Central file where the button UI logic and state was managed.
-
-- COMPONENT: `tests/visual/crystal-ball-interactions.spec.ts`
-- USED: YES
-- USEFUL: YES
-- REASON: Used to reproduce the defect, verify the timeout, and validate the fix.
-
-## Commands Executed
-COMMAND: `pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Passed on Chromium (mobile & desktop) resolving the 30-second timeout error that occurred before the code modification.
-
-COMMAND: `pnpm run build`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Created an optimized production build successfully in 16.9s.
-
-COMMAND: `./jules-verify.sh`
-RESULT: PASS
-EVIDENCE/OUTPUT SUMMARY: Validated `.specify/feature.json`, `spec.md`, `plan.md`, `tasks.md`, Typescript, Build, and Documentation check systems.
-
-## Files Changed
-- `app/components/CrystalBall/CrystalBall.tsx`
-- `.specify/feature.json`
-- `specs/crystal-ball-fix/spec.md`
-- `specs/crystal-ball-fix/plan.md`
-- `specs/crystal-ball-fix/tasks.md`
-
-## Build Size
-The build did not fail and remains safely under the 495 MB maximum size.
-
-## Remaining Issues
-- None. The feature interacts seamlessly with a user and all provided regression tests pass.
-
-USEFUL RESULT: YES
+USEFUL RESULT: NO — pending CI and full repository governance verification.

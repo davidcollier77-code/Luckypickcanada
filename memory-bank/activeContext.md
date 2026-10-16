@@ -1,5 +1,13 @@
 # Active Context
 
+## Current Focus — Crystal Ball Leaf-First Fortune Reveal (2026-10-16)
+
+- Goal: Orb gathers energy and flashes first, then a duplicate maple leaf falls into the answer panel; character-by-character typing begins only after the leaf flight.
+- Scope: UI animation and Playwright coverage only. Keep source artwork unchanged, reuse GoldenLeaf as a separate SVG clone, preserve reduced-motion support, and allow multiple questions in one visit.
+- Branch: feat/crystal-ball-leaf-first-reveal.
+- Verification: remote PR checks are pending. Local shell commands and build-size measurements are unavailable through the GitHub API connection.
+
+
 ## Current Focus — Spec Kit Updater Recovery (2026-10-16)
 
 - **Goal**: Restore the managed Spec Kit command file that was accidentally reduced to one line and make the scheduled updater perform at most one retry.

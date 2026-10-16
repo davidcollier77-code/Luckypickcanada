@@ -1,7 +1,7 @@
 'use client';
 import { playButtonClick } from '../../lib/audio';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import styles from './CrystalBall.module.css';
 import GoldenLeaf from './GoldenLeaf';
@@ -11,6 +11,8 @@ type Reading = {
   question: string;
   answer: string;
 };
+
+type LeafFlight = { fromX: number; fromY: number; dx: number; dy: number };
 
 const PLACEHOLDER_FORTUNES = [
   'The northern lights stir within the glass, reflecting quiet possibility. Trust your instincts today, for the currents of fortune are aligning in your favor.',
@@ -40,7 +42,7 @@ export default function CrystalBall({
   communityMapHref = '/map',
 }: CrystalBallProps) {
   const [question, setQuestion] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error' | 'revealing' | 'completionPulse'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'preRevealPulse' | 'leafFalling' | 'error' | 'revealing' | 'completionPulse'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentFortune, setCurrentFortune] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -49,11 +51,15 @@ export default function CrystalBall({
   // Progressive reveal state
   const [revealedCharCount, setRevealedCharCount] = useState<number>(0);
   const [isRevealPaused, setIsRevealPaused] = useState(false);
+  const [leafFlight, setLeafFlight] = useState<LeafFlight | null>(null);
   const fortuneChars = currentFortune ? currentFortune.split('') : [];
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ballSceneRef = useRef<HTMLDivElement>(null);
+  const ballImageRef = useRef<HTMLImageElement>(null);
+  const fortunePanelRef = useRef<HTMLDivElement>(null);
+  const phaseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prefersReducedMotion = useRef<boolean>(false);
 
   useEffect(() => {
@@ -61,6 +67,7 @@ export default function CrystalBall({
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+      if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
     };
   }, []);
 
@@ -93,13 +100,45 @@ export default function CrystalBall({
     }
   }, [status, revealedCharCount, currentFortune, fortuneChars, isRevealPaused]);
 
+  useEffect(() => {
+    if (status !== 'preRevealPulse' || !showResult || !currentFortune || prefersReducedMotion.current) return;
+
+    const phaseTimeout = setTimeout(() => {
+      const image = ballImageRef.current;
+      const panel = fortunePanelRef.current;
+      if (!image || !panel) {
+        setLeafFlight(null);
+        setStatus('revealing');
+        setIsRevealPaused(false);
+        return;
+      }
+
+      const imageRect = image.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      // Position a separate leaf over a decorative leaf detail; the source artwork stays untouched.
+      const fromX = imageRect.left + imageRect.width * 0.46;
+      const fromY = imageRect.top + imageRect.height * 0.39;
+      const toX = panelRect.left + panelRect.width * 0.5;
+      const toY = panelRect.top + Math.min(34, panelRect.height * 0.3);
+
+      setLeafFlight({ fromX, fromY, dx: toX - fromX, dy: toY - fromY });
+      setStatus('leafFalling');
+    }, 700);
+
+    phaseTimeoutRef.current = phaseTimeout;
+    return () => {
+      clearTimeout(phaseTimeout);
+      if (phaseTimeoutRef.current === phaseTimeout) phaseTimeoutRef.current = null;
+    };
+  }, [status, showResult, currentFortune]);
+
   const handleSeekFortune = useCallback(async () => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
 
     const trimmed = question.trim();
-    if (!trimmed || status === 'loading' || status === 'revealing' || status === 'completionPulse') return;
+    if (!trimmed || status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling' || status === 'revealing' || status === 'completionPulse') return;
 
     // Scroll scene into view immediately so it starts while loading
     if (ballSceneRef.current && !prefersReducedMotion.current) {
@@ -128,35 +167,33 @@ export default function CrystalBall({
         ...prev,
       ]);
       setQuestion('');
-
-      setStatus('revealing');
       setShowResult(true);
+      setRevealedCharCount(0);
+      setLeafFlight(null);
 
-      // Add a brief pause before starting text reveal so the smooth scroll can finish
-      if (!prefersReducedMotion.current) {
-         setTimeout(() => {
-             setIsRevealPaused(false);
-         }, 800);
-      } else {
-         setIsRevealPaused(false);
-      }
-
-      // If prefers reduced motion, immediately show all text
       if (prefersReducedMotion.current) {
-          setRevealedCharCount(answer.length);
+        setStatus('revealing');
+        setIsRevealPaused(false);
+        setRevealedCharCount(answer.length);
+      } else {
+        // Flash first, then let a separate leaf clone fall before typing begins.
+        setIsRevealPaused(true);
+        setStatus('preRevealPulse');
       }
 
     } catch (error: unknown) {
       console.error('Failed to fetch fortune:', error);
       setCurrentFortune(null);
       setShowResult(false);
+      setLeafFlight(null);
+      if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
       setStatus('error');
       setErrorMessage(error instanceof Error ? error.message : null);
     }
   }, [question, status, onSeekFortune]);
 
   const statusHeadline =
-    status === 'loading'
+    status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling'
       ? 'The mists are stirring…'
       : status === 'error'
         ? errorMessage || 'The connection to the ethereal realm was lost. Please try again.'
@@ -164,10 +201,32 @@ export default function CrystalBall({
           ? 'Ask another question…'
           : 'Awaiting your question…';
 
-  const isBusy = status === 'loading' || status === 'revealing' || status === 'completionPulse';
+  const isBusy = status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling' || status === 'revealing' || status === 'completionPulse';
 
   return (
     <div className={styles.page}>
+      {leafFlight && (
+        <div
+          aria-hidden="true"
+          className={styles.fallingLeafFlight}
+          style={{
+            left: leafFlight.fromX,
+            top: leafFlight.fromY,
+            '--leaf-dx': `${leafFlight.dx}px`,
+            '--leaf-dy': `${leafFlight.dy}px`,
+            '--leaf-mid-x': `${leafFlight.dx * 0.55}px`,
+            '--leaf-mid-y': `${leafFlight.dy * 0.55}px`,
+          } as CSSProperties}
+          onAnimationEnd={() => {
+            if (status !== 'leafFalling') return;
+            setLeafFlight(null);
+            setStatus('revealing');
+            setIsRevealPaused(false);
+          }}
+        >
+          <GoldenLeaf className={styles.fallingLeafArtwork} />
+        </div>
+      )}
       <main className={styles.container}>
         <header className={styles.header}>
           <h1 className={styles.title}>Crystal Ball</h1>
@@ -182,9 +241,11 @@ export default function CrystalBall({
               className={`${styles.ballInnerGlow} ${
                 (status === 'loading' || status === 'revealing')
                   ? styles.ballInnerGlowLoading
-                  : status === 'completionPulse'
-                    ? styles.ballInnerGlowPulse
-                    : ''
+                  : status === 'preRevealPulse'
+                    ? styles.ballInnerGlowPreRevealPulse
+                    : status === 'completionPulse'
+                      ? styles.ballInnerGlowPulse
+                      : ''
               }`}
               aria-hidden="true"
             />
@@ -192,6 +253,7 @@ export default function CrystalBall({
               <source srcSet="/assets/crystal-ball-pedestal.avif" type="image/avif" />
               <source srcSet="/assets/crystal-ball-pedestal.webp" type="image/webp" />
               <img
+                ref={ballImageRef}
                 src="/assets/crystal-ball-pedestal.png"
                 alt="Canadian crystal ball with a jeweled maple leaf, emerald clover, sapphire pendant, and ornate gold pedestal"
                 className={styles.ballImage}
@@ -207,7 +269,7 @@ export default function CrystalBall({
           </div>
 
           {showResult && currentFortune && (
-            <div className={styles.fortunePanel} aria-live="polite">
+            <div ref={fortunePanelRef} className={styles.fortunePanel} aria-live="polite">
               {/* Screen reader only full text */}
               <p className="sr-only">{currentFortune}</p>
 
@@ -277,7 +339,7 @@ export default function CrystalBall({
             disabled={isBusy || question.trim() === ""}
             aria-disabled={undefined}
           >
-            {status === 'loading' ? (
+            {isBusy ? (
               <>
                 <svg
                   aria-hidden="true"
@@ -289,7 +351,13 @@ export default function CrystalBall({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Consulting the Mists…
+                {status === 'loading'
+                  ? 'Consulting the Mists…'
+                  : status === 'preRevealPulse'
+                    ? 'Gathering Energy…'
+                    : status === 'leafFalling'
+                      ? 'Guiding the Leaf…'
+                      : 'Revealing Fortune…'}
               </>
             ) : (
               'Seek Fortune'

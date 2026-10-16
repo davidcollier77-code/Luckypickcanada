@@ -164,6 +164,11 @@
   animation: gatherEnergy 1s ease-in-out infinite alternate;
 }
 
+.ballInnerGlowPreRevealPulse {
+  background: radial-gradient(circle, rgba(255, 232, 150, 0.98) 0%, rgba(255, 194, 72, 0.62) 38%, rgba(255, 170, 52, 0.14) 66%, transparent 74%);
+  animation: preRevealFlash 700ms cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
+}
+
 .ballInnerGlowPulse {
   background: radial-gradient(circle, rgba(255, 215, 100, 0.8) 0%, rgba(255, 180, 50, 0.4) 50%, transparent 70%);
   animation: warmPulse 1.5s ease-out forwards;
@@ -172,6 +177,13 @@
 @keyframes gatherEnergy {
   0% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
   100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+@keyframes preRevealFlash {
+  0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.38; }
+  18% { transform: translate(-50%, -50%) scale(1.22); opacity: 1; }
+  48% { transform: translate(-50%, -50%) scale(1.12); opacity: 0.82; }
+  100% { transform: translate(-50%, -50%) scale(1.04); opacity: 0.36; }
 }
 
 @keyframes warmPulse {
@@ -246,9 +258,43 @@
   pointer-events: none;
 }
 
+.fallingLeafFlight {
+  position: fixed;
+  z-index: 1000;
+  width: 1.9rem;
+  height: 1.9rem;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform: translate(-50%, -50%);
+  animation: leafFallToFortune 880ms cubic-bezier(0.2, 0.65, 0.35, 1) forwards;
+}
+
+.fallingLeafArtwork {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 5px rgba(255, 215, 100, 0.9));
+}
+
 @keyframes leafFloat {
   0% { transform: translateY(0) rotate(-10deg) scale(0.95); opacity: 0.8; }
   100% { transform: translateY(-3px) rotate(10deg) scale(1.05); opacity: 1; }
+}
+
+@keyframes leafFallToFortune {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) rotate(-8deg) scale(0.78);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  56% {
+    transform: translate(-50%, -50%) translate(var(--leaf-mid-x), var(--leaf-mid-y)) rotate(205deg) scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--leaf-dx), var(--leaf-dy)) rotate(390deg) scale(0.68);
+    opacity: 0;
+  }
 }
 
 @keyframes revealFortuneBox {
@@ -453,13 +499,18 @@
   .ballWrapper,
   .ballInnerGlow,
   .ballInnerGlowLoading,
+  .ballInnerGlowPreRevealPulse,
   .ballInnerGlowPulse,
   .fortunePanel,
-  .goldenLeafCursor {
+  .goldenLeafCursor,
+  .fallingLeafFlight {
     animation: none !important;
   }
   .ballInnerGlow {
     transition: none !important;
+  }
+  .fallingLeafFlight {
+    display: none !important;
   }
   .fortuneChar {
     transition: none !important;
