@@ -1,6 +1,6 @@
 # Neon Postgres
 
-> Neon is a complete set of cloud backend primitives built around Lakebase Postgres, for developers, startups, and agent platforms, from Databricks. Services include Lakebase Postgres, Managed Better Auth, Data API, Functions, Object Storage, and AI Gateway. Lakebase Postgres on Neon includes autoscaling, instant restore, and scale-to-zero, and works with any language, framework, or ORM that supports Postgres.
+> Neon is a complete set of cloud backend primitives built around Lakebase Postgres, for developers, startups, and agent platforms, from Databricks. Services include Lakebase Postgres, Managed Better Auth, Realtime, Data API, Functions, Object Storage, AI Gateway. Lakebase Postgres on Neon includes autoscaling, instant restore, and scale-to-zero, with native branching, realtime and a fully reactive DX and works with any language, framework, or ORM that supports Postgres.
 
 **Get started.** Sign up for Neon or sign into an existing account. If the user cannot create an account right now, follow [Claimable Neon](https://neon.com/auth.md) to provision a Postgres project without signup. A human claims it later.
 
@@ -27,12 +27,18 @@ Neon docs are available as markdown. Append `.md` to any doc URL or set `Accept:
 - [Troubleshoot connection errors and timeouts](https://neon.com/docs/connect/connection-errors.md)
 - [Neon API reference (projects, branches, databases, endpoints)](https://neon.com/docs/reference/api.md)
 - [Neon CLI reference (neon commands, options, and usage)](https://neon.com/docs/cli.md)
+- [Make a Postgres query live](https://neon.com/docs/realtime/overview.md)
+- [Keep a UI in sync with Postgres](https://neon.com/docs/realtime/quickstart.md)
+- [Add realtime without a second system or a sync engine](https://neon.com/docs/realtime/overview.md)
+- [Replace a polling loop or refetch interval](https://neon.com/docs/realtime/examples/tanstack.md)
+- [Build a fully reactive app on Postgres](https://neon.com/docs/realtime/examples/nextjs.md)
+- [Send feedback to the Neon team (CLI, HTTP, or MCP)](https://neon.com/feedback.md)
 
 ## Introduction
 
 Architecture, features, autoscaling, branching concepts, billing, and plans.
 
-- [All 34 Introduction pages](https://neon.com/docs/introduction/llms.txt) — key pages below
+- [All 36 Introduction pages](https://neon.com/docs/introduction/llms.txt) — key pages below
 
 - [The lakebase architecture](https://neon.com/docs/introduction/architecture-overview.md): Inside Lakebase Postgres: decoupled compute and durable storage
 - [Plans and billing](https://neon.com/docs/introduction/about-billing.md): Learn about Neon's pricing plans and how to manage billing
@@ -125,13 +131,12 @@ Install: `npm i -g neon`. Use this for terminal-first workflows, scripts, and CI
 - [Neon CLI command: profile](https://neon.com/docs/cli/profile.md): Manage named sets of Neon credentials
 - [Neon CLI command: projects](https://neon.com/docs/cli/projects.md): List, create, update, delete, recover, and get Neon projects
 - [Neon CLI command: psql](https://neon.com/docs/cli/psql.md): Connect to a Neon database via psql
-- [Neon CLI command: realtime](https://neon.com/docs/cli/realtime.md): Enable and disable Neon Realtime on a branch from the CLI
+- [Neon CLI command: realtime](https://neon.com/docs/cli/realtime.md): Manage Neon Realtime and subscribe to live queries from the CLI
 - [Neon CLI command: roles](https://neon.com/docs/cli/roles.md): List, create, and delete database roles in a Neon project
 - [Neon CLI command: set-context](https://neon.com/docs/cli/set-context.md): Set default project context for CLI sessions to avoid repeating project ID
 - [Neon CLI command: skills](https://neon.com/docs/cli/skills.md): Install and update Neon agent skills in your coding agents
 - [Neon CLI command: snapshots](https://neon.com/docs/cli/snapshots.md): Create, list, restore, and schedule branch snapshots from the terminal
 - [Neon CLI command: status](https://neon.com/docs/cli/status.md): Show the branch's live Neon state
-- [Neon CLI command: subscribe](https://neon.com/docs/cli/subscribe.md): Stream a live SQL query's results from the terminal with Neon Realtime
 - [Neon CLI command: triggers](https://neon.com/docs/cli/triggers.md): Create and manage function triggers that invoke a Neon Function on a cron schedule or when an object is created
 - [Neon CLI command: vpc](https://neon.com/docs/cli/vpc.md): Manage Private Networking VPC endpoints and project-level restrictions
 - [Neon CLI quickstart](https://neon.com/docs/cli/quickstart.md): Get set up with the Neon CLI in just a few steps
@@ -168,6 +173,7 @@ Agent Skills, MCP integrations, vector search, and tools for building AI-powered
 
 Managed authentication built on Better Auth that branches with your database.
 
+- [About Managed Better Auth](https://neon.com/docs/auth/about.md): How Neon's managed Better Auth works, when to use it, and what it costs
 - [Auth production checklist](https://neon.com/docs/auth/production-checklist.md): Required configuration before launching with Managed Better Auth
 - [Auth troubleshooting](https://neon.com/docs/auth/troubleshooting.md): Common issues when implementing Managed Better Auth and how to fix them
 - [Authentication flow](https://neon.com/docs/auth/authentication-flow.md): Understanding the complete sign-in and sign-up process
@@ -237,7 +243,7 @@ S3-compatible object storage that branches with your projects.
 
 - [Buckets](https://neon.com/docs/storage/buckets.md): Create and manage storage buckets
 - [Get started with Object Storage](https://neon.com/docs/storage/get-started.md): Upload your first file in minutes
-- [Neon Object Storage](https://neon.com/docs/storage/overview.md): S3-compatible object storage that branches with your database
+- [Neon Object Storage](https://neon.com/docs/storage/overview.md): Branch-aware object storage in the Neon backend
 - [Object storage authentication](https://neon.com/docs/storage/authentication.md): How Neon credentials map to S3 access keys
 - [Object storage logs](https://neon.com/docs/storage/logs.md): View, search, and download logs for a bucket
 - [Object storage troubleshooting](https://neon.com/docs/storage/troubleshooting.md): Common errors and how to fix them
@@ -249,7 +255,6 @@ S3-compatible object storage that branches with your projects.
 Access frontier and open-source models through a single API.
 
 - [AI Gateway authentication](https://neon.com/docs/ai-gateway/authentication.md): How Neon credentials work with AI Gateway
-- [AI Gateway models](https://neon.com/docs/ai-gateway/models.md): Available models and how to specify them
 - [AI Gateway prepaid credits](https://neon.com/docs/ai-gateway/prepaid-credits.md): Buy credits, understand pricing and limits, and manage your balance for the Neon AI Gateway
 - [AI Gateway troubleshooting](https://neon.com/docs/ai-gateway/troubleshooting.md): Common errors and how to fix them
 - [Anthropic Messages API](https://neon.com/docs/ai-gateway/anthropic-messages.md): Use the Anthropic SDK with Neon AI Gateway
@@ -257,6 +262,7 @@ Access frontier and open-source models through a single API.
 - [Embeddings](https://neon.com/docs/ai-gateway/embeddings.md): The OpenAI-compatible embeddings endpoint
 - [Gemini API](https://neon.com/docs/ai-gateway/gemini.md): Use the Google Gemini API with Neon AI Gateway
 - [Get started with Neon AI Gateway](https://neon.com/docs/ai-gateway/get-started.md): Make your first inference request in minutes
+- [Model reference](https://neon.com/docs/ai-gateway/models.md): How to call models through AI Gateway, with the endpoints, limits, and rules that apply
 - [Neon AI Gateway](https://neon.com/docs/ai-gateway/overview.md): One API for open-weight and foundation models from OpenAI, Google, and more. Built into your Neon project.
 - [Neon AI Gateway data retention](https://neon.com/docs/ai-gateway/data-retention.md): What Databricks and partner model providers retain when you use Neon AI Gateway
 - [OpenAI Responses API](https://neon.com/docs/ai-gateway/openai-responses.md): Use the OpenAI Responses API with Neon AI Gateway
@@ -275,6 +281,33 @@ PostgREST-style REST interface for your Neon database.
 - [Neon Data API](https://neon.com/docs/data-api/overview.md): A fully managed REST interface for your Neon database
 - [Neon Data API tutorial](https://neon.com/docs/data-api/demo.md): Explore our demo note-taking app to learn about Data API queries with RLS
 - [SQL to PostgREST Converter](https://neon.com/docs/data-api/sql-to-rest.md): Convert SQL queries to PostgREST API calls with real-time preview
+
+## Realtime
+
+Realtime reactivity on standard Postgres. Live SQL API makes any SQL query live (full support for joins, aggregates, ordering, extensions, UDFs). Plus end-to-end reactive DX: live queries and optimistic mutations as type-safe client primitives, on standard Neon Postgres.
+
+- [Neon Realtime](https://neon.com/docs/realtime/overview.md): Realtime live SQL and reactive DX for building apps and agents.
+- [Quickstart](https://neon.com/docs/realtime/quickstart.md): Get started with Realtime.
+
+### Guides
+
+- [Client-side reactivity](https://neon.com/docs/realtime/guides/reactivity.md): Bind live queries to component and agent state.
+- [Defining queries](https://neon.com/docs/realtime/guides/queries.md): Define live SQL queries that you can subscribe to.
+- [Drizzle example](https://neon.com/docs/realtime/examples/drizzle.md): Using Realtime with your Drizzle schema and queries.
+- [How it works](https://neon.com/docs/realtime/how-it-works.md)
+- [Kysely example](https://neon.com/docs/realtime/examples/kysely.md): Using Realtime with your Kysely schema and queries.
+- [Mastra example](https://neon.com/docs/realtime/examples/mastra.md): Using Realtime with Mastra to keep users and agents in sync.
+- [Next.js example](https://neon.com/docs/realtime/examples/nextjs.md): Full-stack example app using Realtime with Next.js.
+- [Optimistic mutations](https://neon.com/docs/realtime/guides/mutations.md): Make apps and agents super fast, with instant local writes.
+- [Realtime examples](https://neon.com/docs/realtime/examples/overview.md): Code examples and demo apps for building with Realtime.
+- [Server-side rendering](https://neon.com/docs/realtime/guides/ssr.md): Render sealed queries and initial query results on the server.
+- [Subscribing to queries](https://neon.com/docs/realtime/guides/subscribing.md): Subscribe to live queries using the Realtime client.
+- [TanStack example](https://neon.com/docs/realtime/examples/tanstack.md): Full-stack example app using Realtime with TanStack.
+- [TypeScript SDK](https://neon.com/docs/realtime/sdks/typescript.md): Seal queries, subscribe from clients, and sync with frameworks
+
+### Reference
+
+- [API](https://neon.com/docs/realtime/reference/api.md): Live SQL API endpoint reference
 
 ## Branching
 
