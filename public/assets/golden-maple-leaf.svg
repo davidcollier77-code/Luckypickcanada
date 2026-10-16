@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="224" height="244" viewBox="0 0 224 244">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0.85">
+      <stop offset="0" stop-color="#89500a"/><stop offset=".18" stop-color="#e9a92f"/>
+      <stop offset=".31" stop-color="#fff0a0"/><stop offset=".46" stop-color="#b86f12"/>
+      <stop offset=".62" stop-color="#ffe98a"/><stop offset=".81" stop-color="#d28a18"/>
+      <stop offset="1" stop-color="#fff0b1"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff5c6"/><stop offset=".5" stop-color="#d48a19"/><stop offset="1" stop-color="#714006"/>
+    </linearGradient>
+    <linearGradient id="vein" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#704008"/><stop offset=".45" stop-color="#fff4bd"/><stop offset="1" stop-color="#87500d"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="34%" cy="18%" r="80%">
+      <stop offset="0" stop-color="#fffbe0" stop-opacity=".92"/><stop offset=".3" stop-color="#fff1a1" stop-opacity=".48"/><stop offset="1" stop-color="#6c3800" stop-opacity=".18"/>
+    </radialGradient>
+    <filter id="depth" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/><feOffset dy="2" result="offset"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".38"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="leaf"><path d="M112 8 L126 42 L145 25 L143 53 L179 47 L160 78 L203 88 L170 111 L181 137 L148 130 L143 161 L119 145 L112 176 L105 145 L81 161 L76 130 L43 137 L54 111 L21 88 L64 78 L45 47 L81 53 L79 25 L98 42 Z"/></clipPath>
+  </defs>
+  <g filter="url(#depth)" stroke-linejoin="round">
+    <path d="M112 143 C111 169 115 192 124 216 L118 220 C111 204 108 180 108 145 Z" fill="url(#gold)" stroke="#7b4809" stroke-width="1.1"/>
+    <path d="M112 8 L126 42 L145 25 L143 53 L179 47 L160 78 L203 88 L170 111 L181 137 L148 130 L143 161 L119 145 L112 176 L105 145 L81 161 L76 130 L43 137 L54 111 L21 88 L64 78 L45 47 L81 53 L79 25 L98 42 Z" fill="url(#gold)" stroke="url(#edge)" stroke-width="2.6"/>
+    <path d="M112 8 L126 42 L145 25 L143 53 L179 47 L160 78 L203 88 L170 111 L181 137 L148 130 L143 161 L119 145 L112 176 L105 145 L81 161 L76 130 L43 137 L54 111 L21 88 L64 78 L45 47 L81 53 L79 25 L98 42 Z" fill="url(#sheen)"/>
+    <g clip-path="url(#leaf)" fill="none" stroke-linecap="round">
+      <path d="M112 169 L112 17 M112 98 L54 111 M112 98 L45 47 M112 98 L81 53 M112 82 L79 25 M112 98 L170 111 M112 98 L179 47 M112 98 L143 53 M112 114 L143 161 M112 114 L81 161 M112 133 L119 145 M112 133 L105 145" stroke="#704008" stroke-width="5.4" opacity=".48"/>
+      <path d="M112 169 L112 17 M112 98 L54 111 M112 98 L45 47 M112 98 L81 53 M112 82 L79 25 M112 98 L170 111 M112 98 L179 47 M112 98 L143 53 M112 114 L143 161 M112 114 L81 161 M112 133 L119 145 M112 133 L105 145" stroke="url(#vein)" stroke-width="2.6"/>
+      <path d="M83 90 L63 78 M79 111 L60 118 M93 73 L88 53 M94 126 L81 143 M141 90 L161 78 M145 111 L164 118 M131 73 L136 53 M130 126 L143 143" stroke="#fff0a0" stroke-width="1.3" opacity=".82"/>
+      <path d="M112 22 L112 164" stroke="#fff6c6" stroke-width="1.1" opacity=".9"/>
+    </g>
+    <path d="M94 49 L99 35 M68 76 L54 65 M153 77 L168 63 M62 111 L49 112 M161 111 L174 112 M89 143 L93 135 M135 143 L131 135 M112 180 L118 211" fill="none" stroke="#fff8d4" stroke-width="1.8" stroke-linecap="round" opacity=".88"/>
+  </g>
+</svg>

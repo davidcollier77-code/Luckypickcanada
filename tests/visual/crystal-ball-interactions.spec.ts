@@ -48,7 +48,50 @@ test('Crystal Ball sequence: flashes, drops a duplicate leaf before typing, comp
   // Check this during the flash phase before waiting on the flight animation.
   await expect(page.locator('[class*="fortuneCharVisible"]')).toHaveCount(0);
   await expect(fallingLeaf).toBeVisible({ timeout: 2000 });
+  const flightArtwork = fallingLeaf.locator('[class*="fallingLeafArtwork"]');
+  await expect(flightArtwork).toBeVisible();
+  // Wait until the browser has fully decoded the image before the synchronous evaluate check.
+  await page.waitForFunction((el) => {
+    const img = (el as HTMLElement).querySelector('img');
+    return Boolean(img && img.complete && img.naturalWidth > 0);
+  }, await flightArtwork.elementHandle());
+  const flightAsset = await flightArtwork.evaluate((node) => {
+    const picture = node as HTMLPictureElement;
+    const image = picture.querySelector('img');
+    return {
+      tagName: picture.tagName,
+      sources: Array.from(picture.querySelectorAll('source')).map((source) => ({
+        type: source.type,
+        srcSet: source.srcset,
+      })),
+      fallback: image?.getAttribute('src'),
+      alt: image?.getAttribute('alt'),
+      loaded: Boolean(image?.complete && image.naturalWidth > 0),
+    };
+  });
+  expect(flightAsset.tagName).toBe('PICTURE');
+  expect(flightAsset.sources).toEqual([
+    { type: 'image/avif', srcSet: '/assets/golden-maple-leaf.avif' },
+    { type: 'image/webp', srcSet: '/assets/golden-maple-leaf.webp' },
+  ]);
+  expect(flightAsset.fallback).toBe('/assets/golden-maple-leaf.svg');
+  expect(flightAsset.alt).toBe('');
+  expect(flightAsset.loaded).toBe(true);
   await expect(page.locator('[class*="fortuneCharVisible"]').first()).toBeVisible({ timeout: 4000 });
+  const cursorLeaf = page.locator('[class*="goldenLeafCursor"]').first();
+  await expect(cursorLeaf).toBeVisible();
+  const cursorAsset = await cursorLeaf.evaluate((node) => {
+    const picture = node as HTMLPictureElement;
+    return {
+      sources: Array.from(picture.querySelectorAll('source')).map((source) => ({
+        type: source.type,
+        srcSet: source.srcset,
+      })),
+      fallback: picture.querySelector('img')?.getAttribute('src'),
+    };
+  });
+  expect(cursorAsset.sources).toEqual(flightAsset.sources);
+  expect(cursorAsset.fallback).toBe(flightAsset.fallback);
 
   // The pulse class should be applied again after the final typed character.
   await expect(glowElement).toHaveClass(/ballInnerGlowPulse/, { timeout: 10000 });
