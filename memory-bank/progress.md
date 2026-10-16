@@ -1,3 +1,5 @@
+- 2026-10-16: Added the Premium Golden Maple-Leaf Assets follow-up on `polish/crystal-ball-golden-leaf-assets`. GoldenLeaf now serves AVIF → WebP → SVG fallback; cursor and flying copy share it. Added source-order/load assertions and active Spec Kit artifacts. AVIF (2,316 bytes) and WebP (3,870 bytes) blob SHAs were verified against the generated local files. Automated test, governance, build-size, and OpenNext/Cloudflare results remain pending; do not merge before CI is green.
+
 # Progress — 2026-10-16
 
 - Crystal Ball leaf-first follow-up started after PR #1498 merged. Sequence requested: energy gathering / gold flash → duplicate maple-leaf flight into the fortune panel → character-by-character reveal. Preserve original artwork and repeated questions. Remote build, Playwright, and governance verification remain pending.

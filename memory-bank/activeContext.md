@@ -1,6 +1,15 @@
 # Active Context
 
-## Current Focus — Crystal Ball Leaf-First Fortune Reveal (2026-10-16)
+## Current Focus — Premium Golden Maple-Leaf Assets (2026-10-16)
+
+- Goal: Replace inline SVG leaf rendering with a shared polished asset served AVIF → WebP → SVG fallback.
+- Shared usage: The text cursor and separate flying copy both reuse GoldenLeaf; original Crystal Ball artwork, reveal order, repeat questions, and reduced-motion behavior remain protected.
+- Branch: `polish/crystal-ball-golden-leaf-assets`.
+- Asset sizes verified: AVIF 2,316 bytes; WebP 3,870 bytes at 112 × 122 pixels. Git object IDs match the local outputs.
+- Verification status: source and Playwright regression assertions prepared; test suite, `./jules-verify.sh`, production build, OpenNext/Cloudflare validation, and total build size are awaiting CI. Do not call deployment verified until those checks pass.
+
+
+## Previous Focus — Crystal Ball Leaf-First Fortune Reveal (2026-10-16)
 
 - Goal: Orb gathers energy and flashes first, then a duplicate maple leaf falls into the answer panel; character-by-character typing begins only after the leaf flight.
 - Scope: UI animation and Playwright coverage only. Keep source artwork unchanged, reuse GoldenLeaf as a separate SVG clone, preserve reduced-motion support, and allow multiple questions in one visit.

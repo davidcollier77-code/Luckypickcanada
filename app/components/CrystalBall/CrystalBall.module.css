@@ -248,6 +248,7 @@
 }
 
 .goldenLeafCursor {
+  display: inline-block;
   position: absolute;
   bottom: -0.2em;
   left: 0.1em;
