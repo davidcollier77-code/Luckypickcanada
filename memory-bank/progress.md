@@ -1,5 +1,7 @@
 # Progress — 2026-10-16
 
+- Crystal Ball leaf-first follow-up started after PR #1498 merged. Sequence requested: energy gathering / gold flash → duplicate maple-leaf flight into the fortune panel → character-by-character reveal. Preserve original artwork and repeated questions. Remote build, Playwright, and governance verification remain pending.
+
 - **Spec Kit updater repair prepared**: Confirmed scheduled run #24 failed when `specify integration upgrade generic` rejected the one-line `.jules/cmds/speckit.specify.md` as modified. Restored the complete integration-managed command version whose SHA-256 exactly matches the version in `.specify/integrations/generic.manifest.json`.
 - **Retry schedule reduced**: Retained the 1:05 AM primary schedule and the 5:05 AM single retry on Tuesdays and Fridays in `America/Halifax`; removed the 9:05 AM third run. The existing daily guard continues to suppress a retry if a PR was successfully created/refreshed.
 - **Verification not yet complete**: Source failure and manifest checksum are verified from GitHub logs/files; local governance/type/build checks, build-size measurement, and a post-merge workflow run still need execution. Do not describe the updater as runtime-verified until those checks pass.

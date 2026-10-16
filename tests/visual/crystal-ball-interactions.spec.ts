@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('Crystal Ball interaction: seeking fortune shows gathering energy, progressive reveal, warm pulse, and displays result under ball', async ({ page }) => {
+test('Crystal Ball sequence: flashes, drops a duplicate leaf before typing, completes the pulse, and supports a second question', async ({ page }) => {
   // Keep this UI test independent of production AI credentials and make the loading state deterministic.
   await page.route('**/api/oracle', async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 1200));
@@ -32,18 +32,34 @@ test('Crystal Ball interaction: seeking fortune shows gathering energy, progress
 
   // Glow element should have the loading class (gathering energy shimmer)
   const glowElement = page.locator('[class*="ballInnerGlow"]');
+  await expect(glowElement).toHaveClass(/ballInnerGlowLoading/);
 
   // The fortune result container should eventually appear
   const fortuneResult = page.locator('div[class*="fortunePanel"]');
   await expect(fortuneResult).toBeVisible({ timeout: 3000 });
 
-  // The sr-only full text should be present
+  // Full text is available to assistive technology while the visible reveal is staged.
   const srText = fortuneResult.locator('.sr-only');
   await expect(srText).not.toBeEmpty();
 
-  // The pulse class should eventually be applied after words finish revealing
+  // A gold pre-reveal flash should be followed by the duplicate leaf, with no text typed yet.
+  await expect(glowElement).toHaveClass(/ballInnerGlowPreRevealPulse/, { timeout: 3000 });
+  const fallingLeaf = page.locator('[class*="fallingLeafFlight"]');
+  // Check this during the flash phase before waiting on the flight animation.
+  await expect(page.locator('[class*="fortuneCharVisible"]')).toHaveCount(0);
+  await expect(fallingLeaf).toBeVisible({ timeout: 2000 });
+  await expect(page.locator('[class*="fortuneCharVisible"]').first()).toBeVisible({ timeout: 4000 });
+
+  // The pulse class should be applied again after the final typed character.
   await expect(glowElement).toHaveClass(/ballInnerGlowPulse/, { timeout: 10000 });
 
   // Expect the question input button to have reset to "Seek Fortune" after completion pulse
   await expect(page.getByRole('button', { name: 'Seek Fortune' })).toBeVisible({ timeout: 10000 });
+
+  // The user can submit another question in the same session.
+  await questionInput.fill('Can I ask a second question?');
+  await expect(seekButton).toBeEnabled();
+  await seekButton.click();
+  await expect(page.getByRole('button', { name: /Consulting the Mists/i })).toBeVisible({ timeout: 2000 });
+  await expect(page.locator('[class*="readingItem"]')).toHaveCount(2, { timeout: 5000 });
 });
