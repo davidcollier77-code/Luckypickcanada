@@ -45,8 +45,9 @@ test('Crystal Ball sequence: flashes, drops a duplicate leaf before typing, comp
   // A gold pre-reveal flash should be followed by the duplicate leaf, with no text typed yet.
   await expect(glowElement).toHaveClass(/ballInnerGlowPreRevealPulse/, { timeout: 3000 });
   const fallingLeaf = page.locator('[class*="fallingLeafFlight"]');
-  await expect(fallingLeaf).toBeVisible({ timeout: 2000 });
+  // Check this during the flash phase before waiting on the flight animation.
   await expect(page.locator('[class*="fortuneCharVisible"]')).toHaveCount(0);
+  await expect(fallingLeaf).toBeVisible({ timeout: 2000 });
   await expect(page.locator('[class*="fortuneCharVisible"]').first()).toBeVisible({ timeout: 4000 });
 
   // The pulse class should be applied again after the final typed character.
@@ -57,6 +58,7 @@ test('Crystal Ball sequence: flashes, drops a duplicate leaf before typing, comp
 
   // The user can submit another question in the same session.
   await questionInput.fill('Can I ask a second question?');
+  await expect(seekButton).toBeEnabled();
   await seekButton.click();
   await expect(page.getByRole('button', { name: /Consulting the Mists/i })).toBeVisible({ timeout: 2000 });
   await expect(page.locator('[class*="readingItem"]')).toHaveCount(2, { timeout: 5000 });

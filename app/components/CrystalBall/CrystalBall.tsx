@@ -60,14 +60,24 @@ export default function CrystalBall({
   const ballImageRef = useRef<HTMLImageElement>(null);
   const fortunePanelRef = useRef<HTMLDivElement>(null);
   const phaseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prefersReducedMotion = useRef<boolean>(false);
+  const leafFallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleMotionPreferenceChange = (event: MediaQueryListEvent) => {
+      setPrefersReducedMotion(event.matches);
+    };
+
+    setPrefersReducedMotion(motionQuery.matches);
+    motionQuery.addEventListener('change', handleMotionPreferenceChange);
+
     return () => {
+      motionQuery.removeEventListener('change', handleMotionPreferenceChange);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
+      if (leafFallbackTimeoutRef.current) clearTimeout(leafFallbackTimeoutRef.current);
     };
   }, []);
 
@@ -75,9 +85,9 @@ export default function CrystalBall({
   useEffect(() => {
     if (status === 'revealing' && currentFortune && !isRevealPaused) {
       if (revealedCharCount < fortuneChars.length) {
-        let delay = prefersReducedMotion.current ? 0 : 40; // Base 40ms per char
+        let delay = prefersReducedMotion ? 0 : 40; // Base 40ms per char
 
-        if (!prefersReducedMotion.current) {
+        if (!prefersReducedMotion) {
             const nextChar = fortuneChars[revealedCharCount];
             // Add natural pauses for punctuation
             if (/[.,!?:;]/.test(nextChar)) {
@@ -101,7 +111,7 @@ export default function CrystalBall({
   }, [status, revealedCharCount, currentFortune, fortuneChars, isRevealPaused]);
 
   useEffect(() => {
-    if (status !== 'preRevealPulse' || !showResult || !currentFortune || prefersReducedMotion.current) return;
+    if (status !== 'preRevealPulse' || !showResult || !currentFortune || prefersReducedMotion) return;
 
     const phaseTimeout = setTimeout(() => {
       const image = ballImageRef.current;
@@ -132,6 +142,37 @@ export default function CrystalBall({
     };
   }, [status, showResult, currentFortune]);
 
+  // Recover if an interrupted/throttled CSS animation never emits animationend.
+  useEffect(() => {
+    if (status !== 'leafFalling' || !leafFlight) return;
+
+    const fallbackTimeout = setTimeout(() => {
+      leafFallbackTimeoutRef.current = null;
+      setLeafFlight(null);
+      setStatus('revealing');
+      setIsRevealPaused(false);
+    }, 1200);
+
+    leafFallbackTimeoutRef.current = fallbackTimeout;
+    return () => {
+      clearTimeout(fallbackTimeout);
+      if (leafFallbackTimeoutRef.current === fallbackTimeout) leafFallbackTimeoutRef.current = null;
+    };
+  }, [status, leafFlight]);
+
+  // If reduced motion is enabled or changed mid-session, finish the visible reveal immediately.
+  useEffect(() => {
+    if (!prefersReducedMotion || !currentFortune) return;
+    if (status !== 'preRevealPulse' && status !== 'leafFalling' && status !== 'revealing') return;
+
+    if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
+    if (leafFallbackTimeoutRef.current) clearTimeout(leafFallbackTimeoutRef.current);
+    setLeafFlight(null);
+    setIsRevealPaused(false);
+    setRevealedCharCount(currentFortune.length);
+    if (status !== 'revealing') setStatus('revealing');
+  }, [prefersReducedMotion, status, currentFortune]);
+
   const handleSeekFortune = useCallback(async () => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
@@ -141,7 +182,7 @@ export default function CrystalBall({
     if (!trimmed || status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling' || status === 'revealing' || status === 'completionPulse') return;
 
     // Scroll scene into view immediately so it starts while loading
-    if (ballSceneRef.current && !prefersReducedMotion.current) {
+    if (ballSceneRef.current && !prefersReducedMotion) {
         ballSceneRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -171,7 +212,7 @@ export default function CrystalBall({
       setRevealedCharCount(0);
       setLeafFlight(null);
 
-      if (prefersReducedMotion.current) {
+      if (prefersReducedMotion) {
         setStatus('revealing');
         setIsRevealPaused(false);
         setRevealedCharCount(answer.length);
@@ -219,6 +260,8 @@ export default function CrystalBall({
           } as CSSProperties}
           onAnimationEnd={() => {
             if (status !== 'leafFalling') return;
+            if (leafFallbackTimeoutRef.current) clearTimeout(leafFallbackTimeoutRef.current);
+            leafFallbackTimeoutRef.current = null;
             setLeafFlight(null);
             setStatus('revealing');
             setIsRevealPaused(false);
@@ -288,7 +331,7 @@ export default function CrystalBall({
                     >
                       {displayChar}
                       {/* Render the Golden Leaf inline right after the currently revealing character */}
-                      {isCurrent && status === 'revealing' && !prefersReducedMotion.current && (
+                      {isCurrent && status === 'revealing' && !prefersReducedMotion && (
                         <span className={styles.leafCursorWrapper}>
                           <GoldenLeaf className={styles.goldenLeafCursor} />
                         </span>
@@ -297,7 +340,7 @@ export default function CrystalBall({
                   );
                 })}
                 {/* Fallback cursor at the very beginning before first char is typed */}
-                {revealedCharCount === 0 && status === 'revealing' && !prefersReducedMotion.current && !isRevealPaused && (
+                {revealedCharCount === 0 && status === 'revealing' && !prefersReducedMotion && !isRevealPaused && (
                    <span className={styles.leafCursorWrapper}>
                      <GoldenLeaf className={styles.goldenLeafCursor} />
                    </span>
@@ -307,7 +350,7 @@ export default function CrystalBall({
           )}
         </div>
 
-        <section className={styles.card} aria-live="polite">
+        <section className={styles.card}>
           <p className={styles.cardStatus}>{statusHeadline}</p>
 
           {!showResult && !currentFortune && (
