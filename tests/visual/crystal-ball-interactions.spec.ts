@@ -42,8 +42,8 @@ test('Crystal Ball interaction: seeking fortune shows gathering energy, progress
   await expect(srText).not.toBeEmpty();
 
   // The pulse class should eventually be applied after words finish revealing
-  await expect(glowElement).toHaveClass(/ballInnerGlowPulse/, { timeout: 6000 });
+  await expect(glowElement).toHaveClass(/ballInnerGlowPulse/, { timeout: 10000 });
 
   // Expect the question input button to have reset to "Seek Fortune" after completion pulse
-  await expect(page.getByRole('button', { name: 'Seek Fortune' })).toBeVisible({ timeout: 5000 });
+  await expect(page.getByRole('button', { name: 'Seek Fortune' })).toBeVisible({ timeout: 10000 });
 });

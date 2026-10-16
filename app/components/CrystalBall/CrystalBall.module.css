@@ -215,34 +215,40 @@
   text-align: center;
 }
 
-.fortuneWord {
+.fortuneChar {
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   transform: translateY(4px);
   display: inline-block;
 }
 
-.fortuneWordVisible {
+.fortuneCharVisible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.goldenLeafGuide {
+.leafCursorWrapper {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+.goldenLeafCursor {
   position: absolute;
-  left: -20px;
-  top: 0;
-  width: 20px;
-  height: 20px;
+  bottom: -0.2em;
+  left: 0.1em;
+  width: 1.2em;
+  height: 1.2em;
   filter: drop-shadow(0 0 4px rgba(255, 215, 100, 0.8));
-  animation: leafGlide 4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: leafFloat 2s ease-in-out infinite alternate;
   pointer-events: none;
 }
 
-@keyframes leafGlide {
-  0% { transform: translateY(-10px) translateX(-5px) rotate(-15deg); opacity: 0; }
-  10% { opacity: 1; }
-  80% { opacity: 1; transform: translateY(80%) translateX(5px) rotate(15deg); }
-  100% { transform: translateY(100%) translateX(0px) rotate(0deg); opacity: 0; }
+@keyframes leafFloat {
+  0% { transform: translateY(0) rotate(-10deg) scale(0.95); opacity: 0.8; }
+  100% { transform: translateY(-3px) rotate(10deg) scale(1.05); opacity: 1; }
 }
 
 @keyframes revealFortuneBox {
@@ -335,7 +341,7 @@
 }
 
 .seekButton:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(1px);
 }
 
 .seekButton:disabled {
@@ -449,13 +455,13 @@
   .ballInnerGlowLoading,
   .ballInnerGlowPulse,
   .fortunePanel,
-  .goldenLeafGuide {
+  .goldenLeafCursor {
     animation: none !important;
   }
   .ballInnerGlow {
     transition: none !important;
   }
-  .fortuneWord {
+  .fortuneChar {
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
