@@ -274,8 +274,8 @@ export default function CrystalBall({
               playButtonClick();
               void handleSeekFortune();
             }}
-            disabled={isBusy || !question.trim()}
-            aria-disabled={isBusy || !question.trim()}
+            disabled={isBusy || question.trim() === ""}
+            aria-disabled={undefined}
           >
             {status === 'loading' ? (
               <>
