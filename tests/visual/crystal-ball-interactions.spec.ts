@@ -50,6 +50,11 @@ test('Crystal Ball sequence: flashes, drops a duplicate leaf before typing, comp
   await expect(fallingLeaf).toBeVisible({ timeout: 2000 });
   const flightArtwork = fallingLeaf.locator('[class*="fallingLeafArtwork"]');
   await expect(flightArtwork).toBeVisible();
+  // Wait until the browser has fully decoded the image before the synchronous evaluate check.
+  await page.waitForFunction((el) => {
+    const img = (el as HTMLElement).querySelector('img');
+    return Boolean(img && img.complete && img.naturalWidth > 0);
+  }, await flightArtwork.elementHandle());
   const flightAsset = await flightArtwork.evaluate((node) => {
     const picture = node as HTMLPictureElement;
     const image = picture.querySelector('img');
