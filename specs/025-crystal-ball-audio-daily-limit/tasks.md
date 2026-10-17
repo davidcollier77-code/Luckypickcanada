@@ -33,15 +33,15 @@
 - [x] T017 Run pnpm run test and record the actual result from Visual QA run 39015312979: 10 test files passed, 70 tests passed.
 - [x] T018 Run pnpm exec playwright test through playwright.config.ts; Visual QA run 39015312979 completed with 21 passed, 3 skipped, and no failures.
 - [x] T019 Verify pnpm run build, OpenNext Cloudflare build, and Wrangler build in .github/workflows/validate-open-next-repair.yml; all succeeded in run 39015313418, including the Next.js TypeScript stage.
-- [ ] T020 Run pnpm tsc --noEmit and ./jules-verify.sh in a working repository shell; the standalone TypeScript command and governance verifier have not been executed in this session.
-- [ ] T021 Measure .next plus public against the hard 495 MiB maximum and verify audio on a real mobile device. The protected validation workflow was not modified; size and physical playback remain unverified.
+- [x] T020 Verify `pnpm tsc --noEmit` and `./jules-verify.sh`; Visual QA run #498 passed both the standalone TypeScript check and repository governance verifier (including 17 refresh-doc tests).
+- [ ] T021 Build-size portion PASS in OpenNext validation run #1107: `.next + public` measured 324,505,820 bytes (309.47 MiB), below the 495 MiB / 519,045,120-byte maximum. Real-device mobile audio playback is still pending; leave this combined task unchecked until that playback evidence exists.
 - [x] T022 Inspect current branch diff and reconcile its changed-file list with PR_SUMMARY.md; report all remaining verification gates honestly.
 
 ## Phase 6 — Production-build regression repair
 
 - [x] T023 Restore the stopCrystalBallEnergy export and server-side guard in app/lib/audio.js, preserving the captured sound ID and closing the delayed fade-stop callback.
 - [x] T024 Add __tests__/audio-exports.test.js to protect the separate audio helper export.
-- [ ] T025 Run unit tests, standalone TypeScript, ./jules-verify.sh, the Next.js production build, OpenNext Cloudflare build, and no-deploy Wrangler validation on the repair candidate; record actual CI results.
+- [x] T025 Repair-candidate CI passed unit tests (11 files / 72 tests), standalone TypeScript, `./jules-verify.sh`, Next.js production build, OpenNext Cloudflare build, and no-deploy Wrangler validation in Visual QA run #498 and OpenNext validation run #1107. The build-size cap also passed at 309.47 MiB. Real-device playback remains separately tracked under T021.
 
 ## Dependencies and execution order
 
