@@ -23,6 +23,24 @@ function formatCountdown(milliseconds: number): string {
   return hours + ':' + minutes + ':' + seconds;
 }
 
+function DailyQuotaCountdown({ resetAt }: { resetAt: string }) {
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    setNow(Date.now());
+    const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  if (now === null) return null;
+
+  return (
+    <p className={styles.dailyQuotaCountdown} aria-label="Time until daily allowance resets">
+      Allowance resets in {formatCountdown(Date.parse(resetAt) - now)}
+    </p>
+  );
+}
+
 const PLACEHOLDER_FORTUNES = [
   'The northern lights stir within the glass, reflecting quiet possibility. Trust your instincts today, for the currents of fortune are aligning in your favor.',
   'A path once uncertain begins to clear. What you have been waiting for is closer than the mist lets on.',
@@ -53,7 +71,6 @@ export default function CrystalBall({
   dailyQuota = null,
 }: CrystalBallProps) {
   const [question, setQuestion] = useState('');
-  const [countdownNow, setCountdownNow] = useState<number | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'preRevealPulse' | 'leafFalling' | 'error' | 'revealing' | 'completionPulse'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentFortune, setCurrentFortune] = useState<string | null>(null);
@@ -83,12 +100,9 @@ export default function CrystalBall({
     };
 
     setPrefersReducedMotion(motionQuery.matches);
-    setCountdownNow(Date.now());
-    const countdownInterval = window.setInterval(() => setCountdownNow(Date.now()), 1000);
     motionQuery.addEventListener('change', handleMotionPreferenceChange);
 
     return () => {
-      window.clearInterval(countdownInterval);
       motionQuery.removeEventListener('change', handleMotionPreferenceChange);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
@@ -408,11 +422,7 @@ export default function CrystalBall({
                 : `You’ve used all ${dailyQuota.limit} questions for today. Come back after the daily reset.`}
             </p>
           )}
-          {dailyQuota && countdownNow !== null && (
-            <p className={styles.dailyQuotaCountdown} aria-label="Time until daily allowance resets">
-              Allowance resets in {formatCountdown(Date.parse(dailyQuota.resetAt) - countdownNow)}
-            </p>
-          )}
+          {dailyQuota && <DailyQuotaCountdown resetAt={dailyQuota.resetAt} />}
 
           {!showResult && !currentFortune && (
             <p className={styles.cardHint}>
