@@ -51,3 +51,12 @@
 - [ ] T016 [US2] Verify the new quota preflight and Amazon Q fallback in a current-head run of .github/workflows/robin.yml; record whether the automated command was accepted and whether a matching Q review appeared.
 - [ ] T017 [US2] Inspect all updated-head workflow runs and amend PR_SUMMARY.md with exact results; confirm failed/missing Q review remains fail-closed.
 
+
+## Phase 6: Visual QA cold-runner timing follow-up
+
+**Purpose**: Repair false-negative browser test failures caused by slow first-load chunk compilation and the full animation sequence, while preserving the functional assertions.
+
+- [x] T018 Update `tests/visual/homepage.spec.ts` to wait up to 30 seconds for explicit client hydration before requiring the local confetti sound request and ready state; keep the request, particle-rendering, scroll, cooldown, and keyboard-interruption assertions.
+- [x] T019 Increase the per-test budget in `tests/visual/crystal-ball-daily-limit.spec.ts` to 60 seconds so cold navigation and three animated readings fit without weakening quota text, disabled-button, or POST-count assertions.
+- [ ] T020 Re-run current-head Visual QA via `.github/workflows/visual-qa.yml`; record the exact run ID and results for unit tests, TypeScript, `./jules-verify.sh`, baseline verification, and Playwright.
+- [ ] T021 Reconcile `PR_SUMMARY.md`, `memory-bank/activeContext.md`, and `memory-bank/progress.md` with final current-head workflow evidence; keep the PR unapproved for merge while any required check or reviewer gate remains unresolved.

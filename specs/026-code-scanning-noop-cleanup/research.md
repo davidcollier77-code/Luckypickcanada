@@ -42,3 +42,8 @@
 ## Final diagnostic formatting audit
 
 A repository API read-back found the new quota preflight's bearer redaction regex contained a double-escaped pattern, while the account/completion diagnostic used the correct pattern. Corrected the quota preflight regex to use standard JavaScript whitespace token matching and unified error-code/message formatting through the explicitly non-empty-secret-aware `redact` helper. Removed the redundant shorter `clean` helper.
+
+
+## Follow-up CI timing evidence — 2026-10-17
+
+Visual QA run #39038534341 had 16 Playwright tests pass, 5 fail, and 3 skip. The targeted unit tests, complete Vitest suite, standalone TypeScript check, Spec Kit verification, and committed-baseline check passed; only the Playwright step failed. The artifact trace showed the Howler browser chunk arriving approximately 7.58 seconds after the homepage document and the intercepted local WAV request at approximately 8.33 seconds, exceeding the test's former five-second readiness wait. At failure time, the server-rendered Explore button still exposed `data-hydrated="false"` and `data-confetti-pop-ready="false"`. This supports a cold-dev-server timing issue, not a missing asset or changed production sound URL. The quota-flow artifact reached the exhausted-quota message, disabled button, and three rendered session readings, but the 30-second test budget expired; trace shows the initial route navigation alone took approximately 12.7 seconds. Targeted test-only timing changes were made, with current-head re-verification pending.

@@ -51,6 +51,7 @@ The application-adjacent change is deletion of the root-level test_fix.js debugg
 6. Retain bounded, secret-safe provider diagnostics when Robin fails and sufficient quota remains.
 7. Update the canonical PR Summary and Memory Bank without overwriting previous Memory Bank history.
 8. Let the PR workflows execute the repository's actual tests and verification. Inspect their final outcomes, retry the transient Robin review once after the branch update, and do not claim full completion until required non-transient checks pass.
+9. Correct the Playwright timing assumptions exposed by run #39038534341: await explicit homepage client hydration before waiting for Howler's local audio request/readiness, and give the three-answer daily quota test a 60-second budget for cold compilation plus animated reveals. Keep all product-behavior assertions intact and change no application code.
 
 ## Verification Strategy
 
@@ -60,6 +61,7 @@ The application-adjacent change is deletion of the root-level test_fix.js debugg
 - Confirm CodeQL completes on the updated head and review the alert result.
 - Inspect Robin outcome separately. A repeat upstream stall is an external blocker, not evidence of an application defect; do not weaken the check to make it green.
 - Reconcile every changed path with the final PR diff and record run IDs/outcomes before declaring the task complete.
+- On the follow-up Visual QA run, confirm the homepage checks actually see `data-hydrated="true"`, a request for `/sounds/confetti-pop.wav`, and `data-confetti-pop-ready="true"`; confirm the daily quota test still sees three successful answers, zero remaining, a disabled button, and three POSTs. The longer timeout is a bounded allowance, not a skipped assertion.
 
 
 ## Review hardening follow-up

@@ -1,5 +1,13 @@
 # PR Summary — PR #1510: Remove No-op Code-scanning Debug Artifact
 
+## Current-head Visual QA failure and targeted follow-up — 2026-10-17
+
+- **Run inspected:** [Visual QA run #39038534341, job #117413181877](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39038534341/job/117413181877). The unit test stages, standalone TypeScript check, `./jules-verify.sh` Spec Kit gate, and committed visual baseline check passed. Playwright ended with 16 passed, 5 failed, and 3 skipped; the job failure was not Robin.
+- **Verified homepage timing cause:** The Playwright trace shows the Howler browser chunk requested/served approximately 7.58 seconds after the initial page document and `/sounds/confetti-pop.wav` at approximately 8.33 seconds. The old test required the request within five seconds and then found the SSR button still at `data-hydrated="false"` and `data-confetti-pop-ready="false"`. This is consistent with slow first-time Next dev chunk compilation; the asset URL was requested successfully in the trace.
+- **Verified daily quota timing cause:** The 30-second test deadline expired after cold navigation took about 12.7 seconds plus three intentionally animated fortune reveals. The captured page had reached the exhausted-quota message, disabled button, and three session readings. The test's overall time budget, rather than a missing quota state, was the reported failure.
+- **Targeted test-only change committed:** `tests/visual/homepage.spec.ts` now waits up to 30 seconds for hydration, the pre-activation audio request, and ready state; keyboard test readiness uses the same bounded timeout and a 60-second test budget. `tests/visual/crystal-ball-daily-limit.spec.ts` has a 60-second test budget. Functional assertions were not removed or skipped. No application implementation, dependency, security setting, reviewer workflow, or deployment configuration was changed by this follow-up.
+- **Verification status:** These changes are committed on `alert-autofix-16`; current-head Visual QA must rerun before they can be declared effective. Robin/OpenRouter/Amazon Q is a separate review gate and was not changed as part of this repair. Do not merge until all required current-head checks and the repository's review gate are resolved.
+
 ## A — Analyze
 
 - SELECTED TASK GROUP: troubleshooting
@@ -108,7 +116,7 @@ No dependency, application source, workflow, lockfile, secret, or deployment con
 
 ## Final Scope and Diff Audit
 
-The exact candidate PR file inventory was re-read from GitHub after commit `8bdd4fe`. The initial source-cleanup change contained 11 paths. The follow-up diagnostic change adds `.github/workflows/robin.yml`, bringing the total to 12 paths; this additional workflow change is documented separately and does not change fail-closed review enforcement.
+The exact candidate PR file inventory was re-read from GitHub after commit `8bdd4fe`. The original source-cleanup change contained 11 paths; the Robin diagnostic/fallback added a twelfth, and this Visual QA timing follow-up adds two test files for 14 changed paths total. The new test edits do not change runtime behavior or any review enforcement.
 
 1. `.specify/feature.json`
 2. `PR_SUMMARY.md`
@@ -122,12 +130,14 @@ The exact candidate PR file inventory was re-read from GitHub after commit `8bdd
 10. `specs/026-code-scanning-noop-cleanup/tasks.md`
 11. `test_fix.js` (deleted)
 12. `.github/workflows/robin.yml` (adds free-model quota preflight, failure diagnostics, and an Amazon Q fallback that is accepted only after a substantive review of the exact current head)
+13. `tests/visual/homepage.spec.ts` (bounded hydration and audio-readiness waits; assertion scope preserved)
+14. `tests/visual/crystal-ball-daily-limit.spec.ts` (60-second allowance for the complete animated quota flow; assertions preserved)
 
-No dependency, lockfile, application source, workflow, protected runtime behavior, environment variable, secret, or deployment configuration was changed. No deployment was performed. Current successful CI verifies the cleanup and the previous governance failure is resolved. The Robin review is still an unresolved external integration gate because no review was produced; the task is not fully green and the PR remains open.
+No dependency, lockfile, application source, environment variable, secret, or deployment configuration was changed by the Visual QA timing follow-up. The Robin workflow change remains a separately scoped change in this PR. No deployment was performed. The earlier source-cleanup CI run passed, and the initial Spec Kit gate failure is resolved; however, run #39038534341 exposed the five Playwright failures described above. The two test-only fixes now require fresh current-head evidence. Robin/Q review verification is also tracked separately, so the PR remains open and unmerged.
 
 Pre-submission double-check: the live PR file list was compared with the summary above; the source diff is limited to deletion of the inert script, and the remaining changed paths are task-governance and documentation records. Actual changed-head execution results are recorded above. The only known red check is Robin; its cause cannot be fully diagnosed without exposing the masked provider response/status or restoring a reliable review result.
 
-USEFUL RESULT: PARTIAL — the no-op artifact is removed and the Spec Kit gate, unit/type checks, visual tests, production build, build-size cap, OpenNext/Wrangler validation, and CodeQL analyses passed on source commit 8bdd4fe. The newly added Robin diagnostic has not yet run on the current workflow-edit commit. MERGE-READINESS: NO until the current head's checks complete and a valid Robin review is produced; do not describe all checks as green.
+USEFUL RESULT: PARTIAL — the no-op artifact is removed and source-cleanup checks passed on commit 8bdd4fe, but run #39038534341 later failed the Playwright stage on the reviewer-workflow update commit. The test-only timing fixes are committed and current-head verification is pending. MERGE-READINESS: NO until current-head checks pass and the required Robin/Amazon Q review gate is verified; do not describe all checks as green.
 
 
 ## Amazon Q follow-up review findings addressed

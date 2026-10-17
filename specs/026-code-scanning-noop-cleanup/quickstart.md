@@ -15,3 +15,8 @@ Use the pull-request workflows as the execution environment because the working 
 9. If Robin fails while quota remains, inspect the failure-only diagnostic. Confirm no credentials or raw response bodies are logged and review the HTTP/status and sanitized provider error fields.
 
 10. Verify the Amazon Q fallback condition includes failed, cancelled, and skipped primary outcomes; the API-key redactor guards empty keys; and the 90-second polling deadline sits inside a 3-minute step and 7-minute job. Confirm current-head workflow evidence.
+
+
+## Cold-runner timing note (2026-10-17)
+
+The Visual QA artifact for run #39038534341 showed the browser loading the Howler chunk about 7.58 seconds after the initial document and requesting `/sounds/confetti-pop.wav` about 8.33 seconds after the document; the prior five-second readiness wait expired before that request. The homepage regression tests now wait up to 30 seconds for the explicit hydrated and sound-ready states. The three-answer daily-quota test gets a 60-second per-test budget because cold navigation took about 12.7 seconds and the three reveals each include deliberate animation phases. These waits are bounded; all behavior assertions remain required.

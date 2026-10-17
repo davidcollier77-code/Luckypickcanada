@@ -100,3 +100,11 @@
 - Root cause: the stopCrystalBallEnergy declaration and server guard were removed; a stray promise assignment and semicolon were inserted after playCrystalBallEnergy. This put a return at module scope. app/components/CrystalBall/CrystalBall.tsx still depends on the named export.
 - Repair restores the helper boundary and guard, preserves the captured sound ID in the delayed stop callback, and adds an export smoke test. Spec Kit artifacts were updated.
 - Status at preparation: repair PR checks pending. Local verification, exact output size against 495 MiB, and real-device audio playback are not claimed.
+
+
+## 2026-10-17 — PR #1510 Visual QA cold-runner timing repair
+
+- Inspected Visual QA run #39038534341/job #117413181877 and its Playwright artifact rather than assuming the failure was Robin-related.
+- The latest pre-fix job passed targeted/full unit tests, TypeScript, `./jules-verify.sh`, and visual baseline checks, then failed 5 Playwright tests. Trace evidence shows the Howler chunk loading about 7.58 seconds after the homepage document and the locally intercepted confetti WAV requested at about 8.33 seconds, longer than the old 5-second readiness wait. The quota test's cold navigation took about 12.7 seconds and its 30-second test deadline expired after the exhausted-quota UI rendered.
+- Updated `tests/visual/homepage.spec.ts` to await client hydration, actual audio-request initiation, and the ready state with bounded 30-second checks; kept every particle/scroll/cooldown/keyboard assertion. Updated `tests/visual/crystal-ball-daily-limit.spec.ts` to use a 60-second timeout for its cold-load and three animated-answer flow; quota text, disabled button, and POST-count assertions remain.
+- Spec Kit artifacts and PR summary now document the evidence and the new tasks. Application implementation and the Robin workflow were not changed in this follow-up. Final status awaits current-head CI; no merge-readiness claim until that run passes and the required review gate is verified.

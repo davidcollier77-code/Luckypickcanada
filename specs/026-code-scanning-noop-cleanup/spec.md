@@ -60,6 +60,8 @@ Maintainers need a useful, credential-safe error signal when Robin cannot review
 - **FR-009**: Diagnostics must log only allow-listed quota/error fields, redact the actual API key only when it is non-empty, redact credential-shaped strings, never print raw response bodies, and use strict request time limits.
 - **FR-010**: The Amazon Q fallback must also run when the primary review outcome is skipped, unless the workflow is explicitly cancelled.
 - **FR-011**: The fallback polling window must fit inside both its step timeout and enclosing job timeout.
+- **FR-012**: Homepage interaction tests that depend on client-side effects must wait for explicit client hydration before asserting the local audio preload request, while retaining bounded checks for both hydration and sound readiness.
+- **FR-013**: The daily quota browser test must allow the cold route load and three complete animated answers to finish within a 60-second test budget without removing quota, request-count, or disabled-button assertions.
 
 
 ## Success Criteria
@@ -72,6 +74,8 @@ Maintainers need a useful, credential-safe error signal when Robin cannot review
 - **SC-006**: A low/empty free-model quota prevents futile five-attempt Robin calls and requests the backup Amazon Q reviewer.
 - **SC-007**: The reviewer job passes only when either Robin posts a valid review or Amazon Q posts a substantive review for the exact current head; otherwise it remains failed.
 - **SC-008**: Failure diagnostics reveal safe quota/provider information without exposing credentials or raw API bodies.
+- **SC-009**: The homepage confetti test waits for hydration and sound readiness for up to 30 seconds, and still verifies that the local sound request occurs before activation, particles render, scroll behavior works, cooldown applies, and keyboard input interrupts scrolling.
+- **SC-010**: The daily quota UI test completes its three-answer interaction under a 60-second test budget and still verifies the exhausted message, disabled question button, and exactly three POST requests.
 
 ## Assumptions
 
