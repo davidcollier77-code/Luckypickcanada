@@ -10,7 +10,7 @@
 ## B — Boundaries + plan
 
 - **Authorized scope:** Fix the syntax error in the existing audio stop helper; preserve the 160 ms fade, captured sound-ID race guard, shared volume reset condition, and immediate-stop fallback.
-- **Runtime change:** `app/lib/audio.js` only. No package, sound asset, API route, database, payment, authentication, deployment configuration, environment variable, visual, or product-flow changes.
+- **Application-source change:** `app/lib/audio.js` only. The additional change to `.github/workflows/validate-open-next-repair.yml` adds a post-Next.js-build measurement/enforcement step for the repository's hard 495 MiB build-output limit; it does not deploy. No packages, sound assets, API routes, database, payments, authentication, secrets, visuals, or product-flow behavior were changed.
 - **Documentation updates:** Active feature `spec.md`, `plan.md`, and `tasks.md`; Memory Bank active context and progress; this canonical PR summary.
 - **Dependencies already in use:** Howler 2.2.4; Next.js 16.3.8; Vitest 5.0.0; OpenNext Cloudflare 1.20.6. No dependency was added or upgraded.
 - **Governance boundary:** No Context7 request was made. The local repository shell/Jules command dispatcher is unavailable in this session. Required shell-based procedure steps must not be represented as completed.
@@ -38,37 +38,59 @@
 
 ## Changed files
 
-1. `app/lib/audio.js`
-2. `specs/025-crystal-ball-audio-daily-limit/spec.md`
-3. `specs/025-crystal-ball-audio-daily-limit/plan.md`
-4. `specs/025-crystal-ball-audio-daily-limit/tasks.md`
-5. `memory-bank/activeContext.md`
-6. `memory-bank/progress.md`
-7. `PR_SUMMARY.md`
+1. `.github/workflows/validate-open-next-repair.yml`
+2. `app/lib/audio.js`
+3. `specs/025-crystal-ball-audio-daily-limit/spec.md`
+4. `specs/025-crystal-ball-audio-daily-limit/plan.md`
+5. `specs/025-crystal-ball-audio-daily-limit/tasks.md`
+6. `memory-bank/activeContext.md`
+7. `memory-bank/progress.md`
+8. `PR_SUMMARY.md`
 
 ## Verification record
 
-- **COMMAND:** `git clone --depth 1 https://github.com/davidcollier77-code/Luckypickcanada.git /tmp/Luckypickcanada`
-  - **RESULT:** FAIL / BLOCKED
-  - **EVIDENCE:** `fatal: unable to access 'https://github.com/davidcollier77-code/Luckypickcanada.git/': Could not resolve host: github.com`.
+All results below are from the remote GitHub Actions runs for candidate commit `62ebcc3655586f66b4b5652d1aebff6ee1d10684`, before this summary/Memory Bank-only reconciliation commit.
+
+- **COMMAND:** `pnpm exec vitest run __tests__/oracle-usage.test.js`
+  - **RESULT:** PASS
+  - **EVIDENCE:** Visual QA run #498, 3 tests passed.
 - **COMMAND:** `pnpm run test`
-  - **RESULT:** NOT RUN LOCALLY
-  - **EVIDENCE:** No working local checkout; await candidate CI.
+  - **RESULT:** PASS
+  - **EVIDENCE:** Visual QA run #498, 11 test files passed and 72 tests passed.
 - **COMMAND:** `pnpm tsc --noEmit`
-  - **RESULT:** NOT RUN LOCALLY
-  - **EVIDENCE:** No working local checkout; await candidate CI.
+  - **RESULT:** PASS
+  - **EVIDENCE:** Visual QA run #498 completed the standalone TypeScript check successfully.
 - **COMMAND:** `./jules-verify.sh`
-  - **RESULT:** NOT RUN LOCALLY
-  - **EVIDENCE:** No working local checkout; governance verification remains outstanding.
-- **COMMAND:** `pnpm run build` and `npx @opennextjs/cloudflare build`
-  - **RESULT:** NOT RUN LOCALLY; previous main build FAIL
-  - **EVIDENCE:** User-provided log shows the parser failure before this candidate. Post-fix success has not been demonstrated.
-- **COMMAND:** Build-size check for `.next + public`
-  - **RESULT:** NOT RUN
-  - **EVIDENCE:** Exact size versus the hard 495 MiB maximum is unknown.
+  - **RESULT:** PASS
+  - **EVIDENCE:** Visual QA run #498 passed the Spec Kit task-artifact verifier and refresh-doc tests (17 passed, 0 failed).
+- **COMMAND:** `pnpm exec playwright test`
+  - **RESULT:** PASS
+  - **EVIDENCE:** Visual QA run #498: 24 tests total; 21 passed, 3 skipped, 0 failed.
+- **COMMAND:** `pnpm run build`
+  - **RESULT:** PASS
+  - **EVIDENCE:** OpenNext validation run #1107 — Next.js compiled successfully.
+- **COMMAND:** Measure `.next + public` against the 495 MiB maximum
+  - **RESULT:** PASS
+  - **EVIDENCE:** OpenNext validation run #1107 measured 324,505,820 bytes (309.47 MiB) against a maximum of 519,045,120 bytes (495 MiB). The workflow now exits before OpenNext if the measured size is at or above the cap.
+- **COMMAND:** `pnpm exec opennextjs-cloudflare build`
+  - **RESULT:** PASS
+  - **EVIDENCE:** OpenNext validation run #1107 reported `OpenNext build complete.`
+- **COMMAND:** Tailwind CSS, `.open-next/worker.js`, and `.open-next/assets` validation
+  - **RESULT:** PASS
+  - **EVIDENCE:** OpenNext validation run #1107 reported `TAILWIND CSS COMPILED`, `WORKER EXISTS`, and `ASSETS DIR EXISTS`.
+- **COMMAND:** `pnpm exec wrangler build --config ./wrangler.jsonc`
+  - **RESULT:** PASS
+  - **EVIDENCE:** OpenNext validation run #1107 completed Wrangler's no-deploy validation successfully (`--dry-run: exiting now.`).
+- **COMMAND:** Local clone and local execution of the verification commands
+  - **RESULT:** BLOCKED
+  - **EVIDENCE:** `git clone` failed with `Could not resolve host: github.com`; all passing build/test evidence above is from GitHub Actions, not a local checkout.
 - **COMMAND:** Real-device mobile audio playback
   - **RESULT:** NOT RUN
-  - **EVIDENCE:** No physical-device session is available in this environment.
+  - **EVIDENCE:** No physical-device test session is available in this environment. This is the remaining feature-level gate tracked under T021.
+
+Remote workflow links:
+- Visual QA run #498: https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39026165921
+- OpenNext validation run #1107: https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39026165958
 
 ## Pre-submission double-check
 
@@ -76,7 +98,7 @@
 - The timeout stops the captured ID; only a still-current ID triggers shared volume/cache reset.
 - The redundant second `sound.stop(stoppedId)` call inside the ID guard was removed.
 - No dependencies or runtime files outside `app/lib/audio.js` were changed.
-- The full final diff must be compared with this inventory before approval.
+- Final branch diff was inspected via GitHub comparison; the changed-path list contains the eight files listed above. The workflow change adds only a measured 495 MiB cap gate; the application code remains limited to the audio helper.
 
-**USEFUL RESULT:** NO, pending the candidate unit-test/import run and successful OpenNext/Cloudflare production build.
+**USEFUL RESULT:** YES for the scoped syntax/build repair: unit tests, TypeScript, repository verification, Playwright, Next.js, OpenNext, Wrangler no-deploy validation, and the measured build-size cap all passed on the code/workflow candidate. The broader feature is not fully governance-complete because physical mobile audio playback remains unverified; keep PR #1507 open until that outstanding gate is addressed.
 
