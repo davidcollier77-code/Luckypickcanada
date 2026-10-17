@@ -1,0 +1,84 @@
+# Feature Specification: Remove the No-op Code-scanning Debug Artifact
+
+**Feature Branch**: alert-autofix-16
+
+**Created**: 2026-10-17
+
+**Status**: Approved for implementation; remote verification pending
+
+**Input**: Fully repair PR #1510 by removing the no-op code-scanning transformation and resolving the related verification failures without changing unrelated application behavior.
+
+## User Scenarios & Testing
+
+### User Story 1 — Keep debugging artifacts out of the maintained repository (Priority: P1)
+
+Maintainers need security/code-scanning fixes to remove the actual source of the finding without leaving behind a temporary script that reads application source and does no meaningful work.
+
+**Why this priority**: A dead debugging script can continue to trigger static-analysis findings and mislead maintainers into believing it provides test coverage.
+
+**Independent Test**: Inspect the pull request tree and run the repository verification workflow. The debugging script is absent; normal unit, type, governance, build, and code-scanning checks run against the updated branch.
+
+**Acceptance Scenarios**:
+
+1. **Given** the root-level test_fix.js has no assertions or useful output after the no-op replacement is removed, **when** the cleanup is applied, **then** the entire temporary script is removed instead of being retained as an empty shell.
+2. **Given** Spec Kit verification requires the active feature artifacts to be changed for the current task, **when** the validation workflow runs, **then** the active feature pointer identifies this task's spec, plan, and task list and the governance check accepts those artifacts.
+3. **Given** the PR changes no application implementation, **when** the full validation runs, **then** application functionality and dependencies remain unchanged and the normal checks still run.
+
+### User Story 2 — Diagnose failed automated review requests (Priority: P2)
+
+Maintainers need a useful, credential-safe error signal when Robin cannot review, and an automatic backup review when its OpenRouter free-model daily request quota is exhausted or Robin fails. The backup must be a real Amazon Q review of the exact current commit; missing reviews must never be treated as success.
+
+**Independent Test**: The workflow checks free-model quota before invoking Robin. If fewer than five attempts are available, it skips wasting Robin retries and requests Amazon Q to review the current head. It only passes when Robin succeeds or a substantive Amazon Q review is verified against the exact head SHA. If neither posts a valid review, the check remains failed.
+
+**Acceptance Scenarios**:
+
+1. **Given** Robin fails before returning its first response, **when** the post-failure diagnostic runs, **then** it records HTTP status and allow-listed quota/error fields while redacting credentials and truncating provider messages.
+2. **Given** the account endpoint reports the free-model daily quota is zero, **when** diagnosis runs, **then** the workflow skips the extra inference probe to avoid consuming requests that cannot succeed.
+3. **Given** the quota is insufficient or Robin fails, **when** the backup step runs, **then** it requests Amazon Q to review the current commit and accepts only a substantive review for that exact commit SHA.
+4. **Given** Amazon Q does not respond within the bounded wait, **when** the workflow concludes, **then** the final reviewer check remains failed.
+5. **Given** the diagnostic itself fails or the API response is invalid, **when** the workflow concludes, **then** the final review-result check still fails closed if no review was posted.
+
+## Edge Cases
+
+- The script may be needed by a workflow even if it is absent from package scripts; repository code search and tracked workflow/script inventory must be checked before removing it.
+- Code-scanning alert status may not refresh until analysis runs again and/or the change is merged.
+- Robin may fail to obtain an LLM response because the upstream free-model router is unavailable; that result must be reported separately from code correctness and must not be hidden by weakening the review gate.
+- Build-size verification must remain strictly below the repository's hard 495 MiB cap.
+
+## Requirements
+
+### Functional Requirements
+
+- **FR-001**: Remove the temporary root-level test_fix.js artifact because, after its no-op transformation was removed, it only read a source file and contained no assertions, output, or productive transformation.
+- **FR-002**: No application source, runtime behavior, dependency manifest, lockfile, deployment configuration, secrets, or protected workflow is to be changed for this cleanup.
+- **FR-003**: The active Spec Kit feature pointer must reference task-specific, non-empty spec.md, plan.md, and tasks.md files that are changed on this PR branch.
+- **FR-004**: The PR Summary and Memory Bank must record the actual changes and actual verification outcomes without claiming unrun checks passed.
+- **FR-005**: External reviewer-service failures must be diagnosed and recorded without disabling or weakening the review check.
+- **FR-006**: Before invoking Robin, `.github/workflows/robin.yml` must query the configured provider’s account endpoint and skip the five-attempt primary review when fewer than five free-model daily requests remain.
+- **FR-007**: If the primary reviewer cannot run or fails, the workflow must request Amazon Q review of the current PR head and accept that fallback only if a substantive Amazon Q review is returned with `commit_id` exactly equal to the current PR head SHA.
+- **FR-008**: If the account quota is not confirmed exhausted after a Robin failure, the workflow must run one bounded minimal-completion probe to reveal status/error fields hidden by the current reviewer action.
+- **FR-009**: Diagnostics must log only allow-listed quota/error fields, redact the actual API key only when it is non-empty, redact credential-shaped strings, never print raw response bodies, and use strict request time limits.
+- **FR-010**: The Amazon Q fallback must also run when the primary review outcome is skipped, unless the workflow is explicitly cancelled.
+- **FR-011**: The fallback polling window must fit inside both its step timeout and enclosing job timeout.
+- **FR-012**: Homepage interaction tests that depend on client-side effects must wait for explicit client hydration before asserting the local audio preload request, while retaining bounded checks for both hydration and sound readiness.
+- **FR-013**: The daily quota browser test must allow the cold route load and three complete animated answers to finish within a 60-second test budget without removing quota, request-count, or disabled-button assertions.
+
+
+## Success Criteria
+
+- **SC-001**: The no-op transformation and its surrounding temporary debugging script are absent from the candidate branch.
+- **SC-002**: The Spec Kit task-artifact gate passes on the candidate branch.
+- **SC-003**: Unit tests, TypeScript validation, repository verification, production build, OpenNext validation, and code-scanning results are recorded from real workflow runs.
+- **SC-004**: Measured build output remains below 495 MiB.
+- **SC-005**: No unrelated application implementation or dependencies are changed.
+- **SC-006**: A low/empty free-model quota prevents futile five-attempt Robin calls and requests the backup Amazon Q reviewer.
+- **SC-007**: The reviewer job passes only when either Robin posts a valid review or Amazon Q posts a substantive review for the exact current head; otherwise it remains failed.
+- **SC-008**: Failure diagnostics reveal safe quota/provider information without exposing credentials or raw API bodies.
+- **SC-009**: The homepage confetti test waits for hydration and sound readiness for up to 30 seconds, and still verifies that the local sound request occurs before activation, particles render, scroll behavior works, cooldown applies, and keyboard input interrupts scrolling.
+- **SC-010**: The daily quota UI test completes its three-answer interaction under a 60-second test budget and still verifies the exhausted message, disabled question button, and exactly three POST requests.
+
+## Assumptions
+
+- The root-level file is a temporary debugging artifact, not a maintained test: the candidate content contains no assertions or useful output, and package.json does not invoke it.
+- User-facing functionality is out of scope because this PR changes no application implementation.
+- The owner wants the PR repaired and verified, not automatically merged.

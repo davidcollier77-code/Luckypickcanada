@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 test('Crystal Ball displays its allowance and disables a fourth question after three successful answers', async ({ page }) => {
+  // This end-to-end flow includes a cold Next.js dev-server compile plus three
+  // complete, intentionally animated reveals; keep the test budget realistic.
+  test.setTimeout(60_000);
+
   let usedQuestions = 0;
   let postCount = 0;
   const resetAt = '2026-10-18T00:00:00.000Z';
