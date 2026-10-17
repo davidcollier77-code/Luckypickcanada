@@ -98,9 +98,9 @@ export function playConfettiPop() {
 let crystalBallAudioLoadPromise = null;
 
 const CRYSTAL_BALL_SOUNDS = {
-  crystalEnergy: { src: ['/sounds/beam_energy.mp3'], volume: 0.16, loop: true },
-  crystalReveal: { src: ['/sounds/beam_impact.mp3'], volume: 0.28 },
-  crystalLeaf: { src: ['/sounds/chime-sound.mp3'], volume: 0.26 },
+  crystalEnergy: { src: ['/sounds/crystal-ball-energy.wav'], volume: 0.16, loop: true },
+  crystalReveal: { src: ['/sounds/crystal-ball-reveal.wav'], volume: 0.28 },
+  crystalLeaf: { src: ['/sounds/crystal-ball-leaf.wav'], volume: 0.26 },
 };
 
 export function preloadCrystalBallAudio() {
