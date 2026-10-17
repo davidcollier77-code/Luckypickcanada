@@ -10,13 +10,13 @@
 - [x] T003 Record verified findings and storage/audio decisions in specs/025-crystal-ball-audio-daily-limit/research.md.
 - [x] T004 Document architecture, constraints, and verification plan in specs/025-crystal-ball-audio-daily-limit/plan.md.
 - [x] T005 Define the quota entity in specs/025-crystal-ball-audio-daily-limit/data-model.md.
-- [x] T006 Document API contract and validation workflow in specs/025-crystal-ball-audio-daily-limit/contracts/oracle-quota.md and specs/025-crystal-ball-audio-daily-limit/quickstart.md.
+- [x] T006 Document API behavior and validation workflow in specs/025-crystal-ball-audio-daily-limit/contracts/oracle-quota.md and specs/025-crystal-ball-audio-daily-limit/quickstart.md.
 
 ## Phase 3 — User Story 1 (P1): Reveal audio
 
 - [x] T007 Add Howler-backed preloading and phase-based sound helpers in app/lib/audio.js.
 - [x] T008 Connect energy, reveal, and golden-leaf cues in app/components/CrystalBall/CrystalBall.tsx.
-- [x] T009 Preserve styling and provide quota messaging in app/components/CrystalBall/CrystalBall.module.css.
+- [x] T009 Preserve styling and provide allowance messaging in app/components/CrystalBall/CrystalBall.module.css.
 
 ## Phase 4 — User Story 2 (P1): Daily quota
 
@@ -29,16 +29,18 @@
 
 ## Phase 5 — Verify and report
 
-- [ ] T016 Run pnpm exec vitest run __tests__/oracle-usage.test.js and pnpm run test; record actual outcomes.
-- [ ] T017 Run both Crystal Ball Playwright specs through playwright.config.ts in desktop and mobile projects.
-- [ ] T018 Run pnpm tsc --noEmit, ./jules-verify.sh, and pnpm run build.
-- [ ] T019 Measure .next plus public; stop if size is at least 495 MB and verify audio on a real mobile device.
-- [ ] T020 Inspect PR CI, inspect the final diff, and reconcile the summary's changed-file list before merge.
+- [x] T016 Add the pnpm run test step to .github/workflows/visual-qa.yml so unit tests are enforced on PRs.
+- [x] T017 Run pnpm run test and record the actual result from Visual QA run 39015312979: 10 test files passed, 70 tests passed.
+- [x] T018 Run pnpm exec playwright test through playwright.config.ts; Visual QA run 39015312979 completed with 21 passed, 3 skipped, and no failures.
+- [x] T019 Verify pnpm run build, OpenNext Cloudflare build, and Wrangler build in .github/workflows/validate-open-next-repair.yml; all succeeded in run 39015313418, including the Next.js TypeScript stage.
+- [ ] T020 Run pnpm tsc --noEmit and ./jules-verify.sh in a working repository shell; the standalone TypeScript command and governance verifier have not been executed in this session.
+- [ ] T021 Measure .next plus public against the hard 495 MiB maximum and verify audio on a real mobile device. The protected validation workflow was not modified; size and physical playback remain unverified.
+- [x] T022 Inspect current branch diff and reconcile its changed-file list with PR_SUMMARY.md; report all remaining verification gates honestly.
 
 ## Dependencies and execution order
 
-Specify → plan/research → implementation → tests and final checks. Verification tasks remain open until commands and CI outcomes are observed.
+Specify → plan/research → implementation → automated tests/build → remaining governance/size/device gates. Keep the PR open until T020 and T021 have evidence.
 
 ## Parallel opportunities
 
-Once a checkout exists, unit quota tests and browser tests can run independently. Type-check, build, repository verification, and output-size checks should be recorded separately.
+Unit and Playwright testing can execute independently after dependency installation. Build, standalone TypeScript/governance verification, output-size measurement and real-device playback must be reported separately.
