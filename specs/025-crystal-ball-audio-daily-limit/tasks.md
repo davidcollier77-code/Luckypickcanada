@@ -37,6 +37,12 @@
 - [ ] T021 Measure .next plus public against the hard 495 MiB maximum and verify audio on a real mobile device. The protected validation workflow was not modified; size and physical playback remain unverified.
 - [x] T022 Inspect current branch diff and reconcile its changed-file list with PR_SUMMARY.md; report all remaining verification gates honestly.
 
+## Phase 6 — Production-build regression repair
+
+- [x] T023 Restore the missing stopCrystalBallEnergy export and server-side guard in app/lib/audio.js, preserving the captured sound ID in the fade-stop callback.
+- [x] T024 Add __tests__/audio-exports.test.js to protect the separate audio helper export.
+- [ ] T025 Run unit tests, standalone TypeScript, ./jules-verify.sh, the Next.js production build, OpenNext Cloudflare build, and no-deploy Wrangler validation on the repair candidate; record actual CI results.
+
 ## Dependencies and execution order
 
 Specify → plan/research → implementation → automated tests/build → remaining governance/size/device gates. Keep the PR open until T020 and T021 have evidence.
