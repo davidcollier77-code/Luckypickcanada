@@ -6,10 +6,6 @@ on:
   issue_comment:
     types: [created]
 
-# Do not add workflow-level concurrency here. The reusable workflow filters
-# issue_comment commands before applying its own job-level concurrency, so
-# unrelated comments cannot cancel an in-flight review.
-
 permissions:
   actions: read
   contents: read
@@ -18,14 +14,172 @@ permissions:
 jobs:
   review:
     name: Robin Code Review
-    uses: antongulin/robin/.github/workflows/review.yml@main
-    with:
-      request-changes: false
-      llm-timeout-ms: "300000"
-      review-on-synchronize: true
-    secrets:
-      LLM_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      # Repository variables may override these defaults for deliberate provider/model changes.
-      # Keep the defaults on OpenRouter's free router to preserve the zero-cost setup.
-      LLM_BASE_URL: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
-      LLM_MODEL: ${{ vars.ROBIN_LLM_MODEL || 'openrouter/free' }}
+    if: |
+      github.event_name == 'pull_request' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+        (
+          startsWith(github.event.comment.body, '/review') ||
+          startsWith(github.event.comment.body, '/robin') ||
+          startsWith(github.event.comment.body, '/summary') ||
+          startsWith(github.event.comment.body, '/help')
+        )
+      )
+    concurrency:
+      group: robin-${{ github.event.pull_request.number || github.event.issue.number }}-${{ github.workflow }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Validate API key and record review start
+        id: review_preflight
+        shell: bash
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${OPENROUTER_API_KEY:-}" ]]; then
+            echo "::error::OPENROUTER_API_KEY is unavailable to this workflow run."
+            if [[ "${ACTOR}" == "dependabot[bot]" ]]; then
+              echo "::error::For Dependabot-triggered runs, add OPENROUTER_API_KEY under Settings > Secrets and variables > Dependabot."
+            else
+              echo "::error::Add OPENROUTER_API_KEY under Settings > Secrets and variables > Actions."
+            fi
+            exit 1
+          fi
+          echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
+          echo "OpenRouter API key is present; its value was not printed."
+
+      - name: Robin review (primary — Gemma 4 31B free)
+        id: primary_review
+        uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
+        timeout-minutes: 3
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.ROBIN_TOKEN || github.token }}
+          llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+          llm-base-url: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
+          model: ${{ vars.ROBIN_LLM_MODEL || 'google/gemma-4-31b-it:free' }}
+          fail-on-high: false
+          request-changes: false
+          max-diff-size: "50000"
+          max-comments: "15"
+          max-output-tokens: "4096"
+          reasoning-effort: ""
+          llm-timeout-ms: "120000"
+          llm-temperature: "0.1"
+          min-command-permission: "write"
+          review-instructions-file: ".github/code-reviewer.md"
+          review-on-synchronize: true
+          config-file: ".github/robin.yml"
+          use-json-response-mode: ""
+          agent-mode: "off"
+
+      - name: Check whether the primary review was already posted
+        id: review_guard
+        if: ${{ steps.primary_review.outcome == 'failure' && !cancelled() }}
+        timeout-minutes: 1
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          REVIEW_START_EPOCH: ${{ steps.review_preflight.outputs.start_epoch }}
+        run: |
+          set -euo pipefail
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
+          review_ids="$(
+            HEAD_SHA="$head_sha" REVIEW_START_EPOCH="$REVIEW_START_EPOCH" \
+              gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+                --jq '.[] | select(.commit_id == env.HEAD_SHA and .user.login == "github-actions[bot]" and ((.body // "") | contains("Robin")) and .submitted_at != null and ((.submitted_at | fromdateiso8601) >= (env.REVIEW_START_EPOCH | tonumber))) | .id'
+          )"
+          if [[ -n "$review_ids" ]]; then
+            echo "posted=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::A Robin review for the current PR head was already posted in this run; fallback will be suppressed."
+          else
+            echo "posted=false" >> "$GITHUB_OUTPUT"
+            echo "No completed Robin review for the current PR head was found; fallback is safe to consider."
+          fi
+
+      - name: Robin review fallback (Qwen3 Coder free)
+        id: fallback_review
+        if: ${{ steps.primary_review.outcome == 'failure' && steps.review_guard.outcome == 'success' && steps.review_guard.outputs.posted != 'true' && !cancelled() && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
+        uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
+        timeout-minutes: 3
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.ROBIN_TOKEN || github.token }}
+          llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+          llm-base-url: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
+          model: ${{ vars.ROBIN_LLM_FALLBACK_MODEL || 'qwen/qwen3-coder:free' }}
+          fail-on-high: false
+          request-changes: false
+          max-diff-size: "50000"
+          max-comments: "15"
+          max-output-tokens: "4096"
+          reasoning-effort: ""
+          llm-timeout-ms: "120000"
+          llm-temperature: "0.1"
+          min-command-permission: "write"
+          review-instructions-file: ".github/code-reviewer.md"
+          review-on-synchronize: true
+          config-file: ".github/robin.yml"
+          use-json-response-mode: ""
+          agent-mode: "off"
+
+      - name: Record and enforce review outcome
+        if: always()
+        timeout-minutes: 1
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEY_OUTCOME: ${{ steps.review_preflight.outcome }}
+          PRIMARY_OUTCOME: ${{ steps.primary_review.outcome }}
+          GUARD_OUTCOME: ${{ steps.review_guard.outcome }}
+          GUARD_POSTED: ${{ steps.review_guard.outputs.posted }}
+          FALLBACK_OUTCOME: ${{ steps.fallback_review.outcome }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          REVIEW_START_EPOCH: ${{ steps.review_preflight.outputs.start_epoch }}
+        run: |
+          set -euo pipefail
+          {
+            echo "## Robin review outcome"
+            echo
+            echo "- Credential preflight: ${KEY_OUTCOME:-not run}"
+            echo "- Primary review: ${PRIMARY_OUTCOME:-not run}"
+            echo "- Duplicate-review guard: ${GUARD_OUTCOME:-not needed}"
+            echo "- Fallback review: ${FALLBACK_OUTCOME:-not needed}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "$KEY_OUTCOME" != "success" ]]; then
+            echo "::error::Robin review stopped before provider calls because OPENROUTER_API_KEY was unavailable."
+            exit 1
+          fi
+          if [[ "$PRIMARY_OUTCOME" == "success" ]]; then
+            echo "Primary review completed successfully."
+            exit 0
+          fi
+          if [[ "$GUARD_POSTED" == "true" ]]; then
+            echo "The primary action ended abnormally after posting a Robin review; no duplicate was created."
+            exit 0
+          fi
+          if [[ "$FALLBACK_OUTCOME" == "success" ]]; then
+            echo "Fallback review completed successfully."
+            exit 0
+          fi
+
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
+          late_review_ids="$(
+            HEAD_SHA="$head_sha" REVIEW_START_EPOCH="$REVIEW_START_EPOCH" \
+              gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+                --jq '.[] | select(.commit_id == env.HEAD_SHA and .user.login == "github-actions[bot]" and ((.body // "") | contains("Robin")) and .submitted_at != null and ((.submitted_at | fromdateiso8601) >= (env.REVIEW_START_EPOCH | tonumber))) | .id'
+          )"
+          if [[ -n "$late_review_ids" ]]; then
+            echo "A Robin review was posted before timeout; treating the job as recovered."
+            exit 0
+          fi
+
+          echo "::error::Robin primary and fallback did not complete a review. See the step logs for the bounded failure details."
+          exit 1
