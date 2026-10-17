@@ -1,14 +1,16 @@
 # Active Context
 
-## Current Focus — Follow-up Crystal Ball audio syntax correction (2026-10-17)
+## Current Focus — Crystal Ball audio timeout closure verified in CI (2026-10-17)
 
-- The Cloudflare build started after PR #1506 merged still failed at `app/lib/audio.js:208` with `Expected ',', got 'else'`.
-- The current source confirms that `stopCrystalBallEnergy` and its server-side guard exist, but the delayed `setTimeout` callback was not closed before the fallback `else`. The function therefore remains syntactically invalid despite the previous repair.
-- Follow-up branch: `fix/crystal-ball-audio-timeout-closure`.
-- Candidate change: close the callback with `}, 160);`; remove a duplicate `sound.stop(stoppedId)` from inside the same-ID guard. Preserve the 160 ms fade, captured sound ID, cache reset guard, and immediate-stop fallback.
-- Existing `__tests__/audio-exports.test.js` imports this module and should catch parser/import errors, but it has not been run on this candidate from this session.
-- Verification status: no local checkout is available because `git clone` failed on GitHub DNS resolution. Await candidate PR CI for unit tests and OpenNext/Cloudflare build; do not claim production recovery until the relevant build passes.
-- Remaining repository gates: `pnpm tsc --noEmit`, `./jules-verify.sh`, exact `.next + public` size below 495 MiB, and real mobile playback remain unverified unless a CI run supplies evidence.
+- PR #1507: https://github.com/davidcollier77-code/Luckypickcanada/pull/1507 remains open for the Crystal Ball audio timeout syntax repair.
+- Root cause: the `setTimeout` callback in `app/lib/audio.js` was not closed before the fallback `else`, causing Next.js to report `Expected ',', got 'else'` at line 208 after PR #1506 merged.
+- Fix candidate closes the callback with `}, 160);`, preserves the captured sound ID/current-ID guard, keeps the immediate-stop fallback, and removes a redundant stop call.
+- Visual QA run #498 passed: targeted quota tests (3/3), all unit tests (11 files / 72 tests), standalone TypeScript, `./jules-verify.sh` (including 17 refresh-doc tests), and Playwright (21 passed, 3 skipped).
+- OpenNext validation run #1107 passed: Next.js production build, the new hard-cap size check, OpenNext Cloudflare build, Tailwind CSS/worker/assets checks, and no-deploy Wrangler validation.
+- Measured `.next + public`: 324,505,820 bytes (309.47 MiB), below the 495 MiB / 519,045,120-byte hard maximum.
+- Validation workflow change: `.github/workflows/validate-open-next-repair.yml` now measures the combined output after the Next.js build and stops before OpenNext if it reaches 495 MiB.
+- Local checkout remains unavailable in this session (GitHub DNS resolution failed); command results above are from the authoritative remote CI logs, not a local shell.
+- Outstanding: real-device mobile audio playback has not been verified. Keep PR #1507 open until this remaining evidence is recorded; do not claim the broader Crystal Ball audio/quota feature is fully governance-complete.
 
 ## Current Focus — Crystal Ball Audio and Daily Question Limit (2026-10-17)
 
