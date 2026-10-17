@@ -1,5 +1,7 @@
 # Feature Specification: Crystal Ball Audio and Daily Question Limit
 
+> **Architecture update (2026-10-17):** The original per-IP UTC-day quota design in this historical feature has been superseded by [`specs/028-crystal-ball-browser-daily-limit/spec.md`](../028-crystal-ball-browser-daily-limit/spec.md). Daily usage is now visitor-local in browser storage, resets at local midnight, and is presented with a countdown. The audio and reveal requirements recorded here remain relevant; the active quota design is documented in feature 028.
+
 **Feature Branch**: feat/crystal-ball-audio-daily-limit
 
 **Created**: 2026-10-17
