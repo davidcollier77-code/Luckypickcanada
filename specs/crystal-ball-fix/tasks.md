@@ -1,4 +1,4 @@
-- [x] Fix the `disabled` logic in `CrystalBall.tsx`.
-- [x] Run Playwright tests.
-- [x] Verify build size.
-- [x] Write PR_SUMMARY.md.
+# Tasks
+- [x] Fix wrapping
+- [x] Refine timing
+- [x] Fix scrolling
