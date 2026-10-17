@@ -1,4 +1,4 @@
-# Tasks: Robin OpenRouter Fallback Recovery
+# Tasks: Robin Cloudflare Workers AI Fallback
 
 ## Phase 1 — Setup and specification
 
@@ -8,9 +8,9 @@
 
 ## Phase 2 — Workflow repair (US1, US2)
 
-- [x] T004 Restore a bounded second Robin action using the existing OpenRouter secret and a distinct free fallback model in `.github/workflows/robin.yml`.
+- [x] T004 Keep OpenRouter primary and configure a bounded Cloudflare Workers AI fallback with its own secret, endpoint, and free-tier safety latch in `.github/workflows/robin.yml`.
 - [x] T005 Remove the Amazon Q request/acceptance path and require an exact-current-head Robin review before the code-review check passes in `.github/workflows/robin.yml`.
-- [x] T006 Add static regression tests for fallback identity, quota handling, key reuse, and current-head verification in `tests/workflows/robin-openrouter-fallback.test.ts`.
+- [x] T006 Add static regression tests for independent provider, free-tier safety latch, quota independence, and current-head verification in `tests/workflows/robin-openrouter-fallback.test.ts`.
 - [x] T007 Update `memory-bank/activeContext.md` and `memory-bank/progress.md` with the actual scope, quota caveat, and verification status.
 
 ## Phase 3 — Verification and review
