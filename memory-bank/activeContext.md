@@ -1,13 +1,14 @@
 # Active Context
 
-## Current Focus — Repair Crystal Ball Audio Build Regression (2026-10-17)
+## Current Focus — Follow-up Crystal Ball audio syntax correction (2026-10-17)
 
-- Failed Cloudflare deployment run 39021855291 on main commit b68d3ace0eb958d2cedeccad53d4a5d75ea3a27f reports a Next.js return-outside-function syntax error in app/lib/audio.js around line 195.
-- Verified cause: commit 1c721f46075743cf2a2be1a9a801831da91cfb4c removed the stopCrystalBallEnergy function declaration and server guard, leaving a stray semicolon/promise assignment and a top-level return. CrystalBall.tsx still imports and calls this helper on completion, failure, and unmount.
-- Repair branch: fix/crystal-ball-audio-stop-helper-build. The source correction restores the separate export and preserves the captured sound ID for the delayed fade-stop callback; a Vitest export regression test is added.
-- Spec Kit follow-up updates the active feature specs/025-crystal-ball-audio-daily-limit/spec.md, plan.md, and tasks.md.
-- Verification status: repair PR checks pending. A local checkout could not be created because GitHub DNS resolution failed. Do not claim production build recovery until OpenNext/Cloudflare CI passes on the candidate.
-- Outstanding broader feature gates: pnpm tsc --noEmit, ./jules-verify.sh, exact .next plus public size below 495 MiB, and real mobile audio playback. Do not mark the overall feature governance-complete without evidence.
+- The Cloudflare build started after PR #1506 merged still failed at `app/lib/audio.js:208` with `Expected ',', got 'else'`.
+- The current source confirms that `stopCrystalBallEnergy` and its server-side guard exist, but the delayed `setTimeout` callback was not closed before the fallback `else`. The function therefore remains syntactically invalid despite the previous repair.
+- Follow-up branch: `fix/crystal-ball-audio-timeout-closure`.
+- Candidate change: close the callback with `}, 160);`; remove a duplicate `sound.stop(stoppedId)` from inside the same-ID guard. Preserve the 160 ms fade, captured sound ID, cache reset guard, and immediate-stop fallback.
+- Existing `__tests__/audio-exports.test.js` imports this module and should catch parser/import errors, but it has not been run on this candidate from this session.
+- Verification status: no local checkout is available because `git clone` failed on GitHub DNS resolution. Await candidate PR CI for unit tests and OpenNext/Cloudflare build; do not claim production recovery until the relevant build passes.
+- Remaining repository gates: `pnpm tsc --noEmit`, `./jules-verify.sh`, exact `.next + public` size below 495 MiB, and real mobile playback remain unverified unless a CI run supplies evidence.
 
 ## Current Focus — Crystal Ball Audio and Daily Question Limit (2026-10-17)
 
