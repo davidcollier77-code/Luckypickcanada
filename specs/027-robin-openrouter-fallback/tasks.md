@@ -13,6 +13,8 @@
 - [x] T006 Add static regression tests for independent provider, free-tier safety latch, quota independence, and current-head verification in `tests/workflows/robin-openrouter-fallback.test.ts`.
 - [x] T007 Update `memory-bank/activeContext.md` and `memory-bank/progress.md` with the actual scope, quota caveat, and verification status.
 
+- [x] T011 Harden fallback control flow by making review-lookup errors non-blocking, explicitly export EVENT_NAME, remove duplicate COMMENT_BODY mapping, and add regression assertions.
+
 ## Phase 3 — Verification and review
 
 - [ ] T008 Run the targeted workflow regression test and full `pnpm test` suite; record actual outcomes.

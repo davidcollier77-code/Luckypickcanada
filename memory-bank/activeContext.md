@@ -1,13 +1,14 @@
 # Active Context
 
-## Current Focus — Restore Robin's OpenRouter fallback (2026-10-17)
+## Current Focus — Robin Cloudflare fallback hardening (2026-10-17)
 
-- User-authorized task: keep Robin as the repository's automated code reviewer and restore a second, bounded Robin attempt through a distinct OpenRouter free model. Remove Amazon Q fallback dispatch and acceptance from `.github/workflows/robin.yml`; leave Amazon Q's independent reviewer workflow untouched.
-- Working branch: `fix/robin-openrouter-fallback`. Active Spec Kit feature: `specs/027-robin-openrouter-fallback`.
-- The workflow continues using the existing `secrets.OPENROUTER_API_KEY`; no secret rotation or replacement is part of this repair. Earlier run evidence reported the key accepted but free-model quota at 0/50, so a verified zero quota will correctly keep the Robin check failed until quota is available.
-- Scope is CI/workflow only: preserve the pinned Robin action, slash commands, review policy, and concurrency behavior; no application code, dependencies, Amazon Q workflow, credentials, or deployment configuration are being changed.
-- Verification: static workflow regression tests and GitHub Actions checks are expected on the PR. Local checkout/build/test commands are unavailable in this connected session because the runner cannot resolve github.com; do not claim local checks passed.
-
+- PR #1512 merged the initial Cloudflare Workers AI backup for Robin. Follow-up work is on fix/robin-cloudflare-fallback-hardening-20261017; main is not being modified directly.
+- The follow-up makes Cloudflare eligible when the preliminary GitHub review lookup errors, explicitly binds EVENT_NAME in the final enforcement step, removes the duplicate COMMENT_BODY mapping, and adds static regression assertions for those paths.
+- Observed PR #1512 run #39056953803: OpenRouter quota was 0/50; primary inference was correctly skipped. Cloudflare preflight was disabled because CLOUDFLARE_ACCOUNT_ID and ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED were empty. The masked CLOUDFLARE_API_TOKEN's actual validity was not verified.
+- Required repository configuration before inference: supply CLOUDFLARE_ACCOUNT_ID and set ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED=true only after confirming the actual Cloudflare account is on Workers Free. The latch is manual and does not query the billing plan. Do not change secret values.
+- A run from the pre-merge PR revision failed OpenNext TypeScript validation because its workflow regression test had malformed regex syntax. The currently inspected main test source is corrected, but the hardening branch must receive fresh CI verification.
+- Scope remains limited to Robin's CI workflow, its targeted test, and this task's Spec Kit/Memory Bank records. Leave Amazon Q, CodeRabbit, app runtime, dependencies, deployment configuration, and main untouched.
+- Verification status: fresh targeted/full pnpm test results, ./jules-verify.sh, Next/OpenNext/Cloudflare artifact checks, and the 495 MiB cap remain pending until current-head CI publishes results.
 
 ## Completed — PR #1511 conflict resolution (merged 2026-10-17)
 

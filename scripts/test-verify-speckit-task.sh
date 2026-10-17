@@ -121,6 +121,7 @@ expect_success "complete current feature artifacts in worktree" "$root"
 root="$TEST_ROOT/valid-branch"
 setup_repo "$root"
 git -C "$root" checkout -b task-branch >/dev/null
+export SPEC_KIT_BASE_REF=main
 mkdir -p "$root/specs/001-fixture"
 printf '# Fixture spec\n' > "$root/specs/001-fixture/spec.md"
 printf '# Fixture plan\n' > "$root/specs/001-fixture/plan.md"
