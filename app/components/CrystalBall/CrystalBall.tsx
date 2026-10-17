@@ -15,6 +15,14 @@ type Reading = {
 type LeafFlight = { fromX: number; fromY: number; dx: number; dy: number };
 type DailyQuota = { limit: number; remaining: number; resetAt: string } | null;
 
+function formatCountdown(milliseconds: number): string {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+  return hours + ':' + minutes + ':' + seconds;
+}
+
 const PLACEHOLDER_FORTUNES = [
   'The northern lights stir within the glass, reflecting quiet possibility. Trust your instincts today, for the currents of fortune are aligning in your favor.',
   'A path once uncertain begins to clear. What you have been waiting for is closer than the mist lets on.',
@@ -45,7 +53,8 @@ export default function CrystalBall({
   dailyQuota = null,
 }: CrystalBallProps) {
   const [question, setQuestion] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'preRevealPulse' | 'leafFalling' | 'error' | 'revealing' | 'completionPulse'>('idle');
+  const [countdownNow, setCountdownNow] = useState<number | null>(null);
+  const [status, setStatus = useState<'idle' | 'loading' | 'preRevealPulse' | 'leafFalling' | 'error' | 'revealing' | 'completionPulse'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentFortune, setCurrentFortune] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -74,9 +83,12 @@ export default function CrystalBall({
     };
 
     setPrefersReducedMotion(motionQuery.matches);
+    setCountdownNow(Date.now());
+    const countdownInterval = window.setInterval(() => setCountdownNow(Date.now()), 1000);
     motionQuery.addEventListener('change', handleMotionPreferenceChange);
 
     return () => {
+      window.clearInterval(countdownInterval);
       motionQuery.removeEventListener('change', handleMotionPreferenceChange);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
