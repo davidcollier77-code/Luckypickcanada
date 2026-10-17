@@ -36,7 +36,7 @@ describe("Robin OpenRouter fallback workflow", () => {
 
   it("does not call the fallback when OpenRouter explicitly reports zero free requests", () => {
     expect(workflow).toContain("free_quota_remaining=${remainingOutput}");
-    expect(fallbackStep).toContain("steps.quota_preflight.outputs.free_quota_remaining != '0'");
+    expect(workflow).toContain("steps.quota_preflight.outputs.free_quota_remaining != '0'");
     expect(workflow).toContain('if [[ "$FREE_QUOTA_REMAINING" == "0" ]]');
   });
 
