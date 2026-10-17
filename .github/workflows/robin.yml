@@ -62,7 +62,7 @@ jobs:
           echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
           echo "OpenRouter API key is present; its value was not printed."
 
-      - name: Robin review (primary — Qwen3.8 27B free)
+      - name: Robin review (primary — Dots3 Note Preview free)
         id: primary_review
         uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
         timeout-minutes: 2
