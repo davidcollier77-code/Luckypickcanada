@@ -108,3 +108,11 @@
 - The latest pre-fix job passed targeted/full unit tests, TypeScript, `./jules-verify.sh`, and visual baseline checks, then failed 5 Playwright tests. Trace evidence shows the Howler chunk loading about 7.58 seconds after the homepage document and the locally intercepted confetti WAV requested at about 8.33 seconds, longer than the old 5-second readiness wait. The quota test's cold navigation took about 12.7 seconds and its 30-second test deadline expired after the exhausted-quota UI rendered.
 - Updated `tests/visual/homepage.spec.ts` to await client hydration, actual audio-request initiation, and the ready state with bounded 30-second checks; kept every particle/scroll/cooldown/keyboard assertion. Updated `tests/visual/crystal-ball-daily-limit.spec.ts` to use a 60-second timeout for its cold-load and three animated-answer flow; quota text, disabled button, and POST-count assertions remain.
 - Spec Kit artifacts and PR summary now document the evidence and the new tasks. Application implementation and the Robin workflow were not changed in this follow-up. Final status awaits current-head CI; no merge-readiness claim until that run passes and the required review gate is verified.
+
+
+## 2026-10-17 — PR #1511 merge-conflict repair candidate
+
+- GitHub marked PR #1511 as `mergeable_state: dirty`; its branch was two commits ahead and 13 commits behind main.
+- Verified that the second PR commit appended a second `CrystalBall` component definition. Rebuilt the component from the first PR commit and reapplied the intended reduced-motion dependency and newline-rendering fixes, retaining Unicode code-point iteration and the existing word-wrapper/timing/scroll behavior.
+- Set `.specify/feature.json` to `specs/crystal-ball-fix` so the active pointer matches this task, while preserving the PR #1510 `PR_SUMMARY.md` record and appending PR #1511's repair section.
+- Candidate source integrity assertions passed during commit preparation. Current-head unit, Playwright, TypeScript, governance, build, and build-size checks remain pending until GitHub Actions completes. Do not merge until those results and the review gate are verified.

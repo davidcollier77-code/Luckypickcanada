@@ -55,7 +55,7 @@ export default function CrystalBall({
   const [revealedCharCount, setRevealedCharCount] = useState<number>(0);
   const [isRevealPaused, setIsRevealPaused] = useState(false);
   const [leafFlight, setLeafFlight] = useState<LeafFlight | null>(null);
-  const fortuneChars = currentFortune ? currentFortune.split('') : [];
+  const fortuneChars = currentFortune ? Array.from(currentFortune) : [];
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,15 +90,15 @@ export default function CrystalBall({
   useEffect(() => {
     if (status === 'revealing' && currentFortune && !isRevealPaused) {
       if (revealedCharCount < fortuneChars.length) {
-        let delay = prefersReducedMotion ? 0 : 40; // Base 40ms per char
+        let delay = prefersReducedMotion ? 0 : 20; // Base 20ms per char
 
         if (!prefersReducedMotion) {
             const nextChar = fortuneChars[revealedCharCount];
             // Add natural pauses for punctuation
             if (/[.,!?:;]/.test(nextChar)) {
-                delay = 250;
+                delay = 125;
             } else if (nextChar === ' ') {
-                delay = 60;
+                delay = 30;
             }
         }
 
@@ -113,7 +113,7 @@ export default function CrystalBall({
         }, 1500); // 1.5s warm pulse duration
       }
     }
-  }, [status, revealedCharCount, currentFortune, fortuneChars, isRevealPaused]);
+  }, [status, revealedCharCount, currentFortune, fortuneChars, isRevealPaused, prefersReducedMotion]);
 
   useEffect(() => {
     if (status !== 'preRevealPulse' || !showResult || !currentFortune || prefersReducedMotion) return;
@@ -175,7 +175,7 @@ export default function CrystalBall({
     if (leafFallbackTimeoutRef.current) clearTimeout(leafFallbackTimeoutRef.current);
     setLeafFlight(null);
     setIsRevealPaused(false);
-    setRevealedCharCount(currentFortune.length);
+    setRevealedCharCount(Array.from(currentFortune).length);
     if (status !== 'revealing') setStatus('revealing');
   }, [prefersReducedMotion, status, currentFortune]);
 
@@ -189,7 +189,7 @@ export default function CrystalBall({
 
     // Scroll scene into view immediately so it starts while loading
     if (ballSceneRef.current && !prefersReducedMotion) {
-        ballSceneRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        ballSceneRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     setStatus('loading');
@@ -223,7 +223,7 @@ export default function CrystalBall({
       if (prefersReducedMotion) {
         setStatus('revealing');
         setIsRevealPaused(false);
-        setRevealedCharCount(answer.length);
+        setRevealedCharCount(Array.from(answer).length);
       } else {
         // Flash first, then let a separate leaf clone fall before typing begins.
         setIsRevealPaused(true);
@@ -240,7 +240,7 @@ export default function CrystalBall({
       setStatus('error');
       setErrorMessage(error instanceof Error ? error.message : null);
     }
-  }, [question, status, onSeekFortune]);
+  }, [question, status, onSeekFortune, prefersReducedMotion]);
 
   const statusHeadline =
     status === 'loading' || status === 'preRevealPulse' || status === 'leafFalling'
@@ -327,27 +327,55 @@ export default function CrystalBall({
 
               {/* Visible animated text */}
               <div className={styles.fortuneTextResult} aria-hidden="true">
-                {fortuneChars.map((char, i) => {
-                  const isVisible = i < revealedCharCount;
-                  const isCurrent = i === revealedCharCount - 1;
-                  // Use a non-breaking space for actual spaces to prevent collapsing and ensure proper cursor tracking
-                  const displayChar = char === ' ' ? '\u00A0' : char;
+                {(() => {
+                  const words: { char: string; index: number }[][] = [];
+                  let currentWord: { char: string; index: number }[] = [];
+                  for (let i = 0; i < fortuneChars.length; i++) {
+                    const char = fortuneChars[i];
+                    const character = { char, index: i };
 
-                  return (
-                    <span
-                      key={`char-${i}`}
-                      className={`${styles.fortuneChar} ${isVisible ? styles.fortuneCharVisible : ''}`}
-                    >
-                      {displayChar}
-                      {/* Render the Golden Leaf inline right after the currently revealing character */}
-                      {isCurrent && status === 'revealing' && !prefersReducedMotion && (
-                        <span className={styles.leafCursorWrapper}>
-                          <GoldenLeaf className={styles.goldenLeafCursor} />
-                        </span>
-                      )}
+                    if (char === '\n') {
+                      if (currentWord.length > 0) words.push(currentWord);
+                      currentWord = [];
+                      words.push([character]);
+                      continue;
+                    }
+
+                    currentWord.push(character);
+                    if (char === ' ') {
+                      words.push(currentWord);
+                      currentWord = [];
+                    }
+                  }
+                  if (currentWord.length > 0) words.push(currentWord);
+
+                  return words.map((wordObj, wordIndex) => (
+                    wordObj.length === 1 && wordObj[0].char === '\n' ? (
+                      <br key={`br-${wordIndex}`} />
+                    ) : (
+                    <span key={`word-${wordIndex}`} className={styles.fortuneWordWrapper}>
+                      {wordObj.map(({ char, index: i }) => {
+                        const isVisible = i < revealedCharCount;
+                        const isCurrent = i === revealedCharCount - 1;
+                        const displayChar = char === ' ' ? '\u00A0' : char;
+                        return (
+                          <span
+                            key={`char-${i}`}
+                            className={`${styles.fortuneChar} ${isVisible ? styles.fortuneCharVisible : ''}`}
+                          >
+                            {displayChar}
+                            {isCurrent && status === 'revealing' && !prefersReducedMotion && (
+                              <span className={styles.leafCursorWrapper}>
+                                <GoldenLeaf className={styles.goldenLeafCursor} />
+                              </span>
+                            )}
+                          </span>
+                        );
+                      })}
                     </span>
-                  );
-                })}
+                    )
+                  ));
+                })()}
                 {/* Fallback cursor at the very beginning before first char is typed */}
                 {revealedCharCount === 0 && status === 'revealing' && !prefersReducedMotion && !isRevealPaused && (
                    <span className={styles.leafCursorWrapper}>

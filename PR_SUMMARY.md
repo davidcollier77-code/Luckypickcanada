@@ -148,3 +148,60 @@ Review `5558036445` on head `e459b24309a8b5382ea803313d2474547b713898` caught th
 ## Final diagnostic audit follow-up
 
 A read-back of the quota preflight revealed that the bearer redaction regex was over-escaped and an obsolete `clean` helper remained. Both were corrected: the regex now uses normal JavaScript whitespace matching and status/error fields consistently use the explicit non-empty-secret-aware `redact` helper. Fresh current-head validation remains required.
+
+
+---
+
+## PR #1511 — Merge-conflict resolution and Crystal Ball reveal repair (2026-10-17)
+
+### Task group and reason
+- SELECTED TASK GROUP: polishing
+- GROUP REASON: This PR refines Crystal Ball word wrapping, Unicode rendering, newline handling, reveal timing, scrolling, and reduced-motion responsiveness.
+
+### Verified findings
+- The branch head before repair was `311af3710bab2ba05887b5b33173068bc23b4933`; main had advanced 13 commits beyond the branch's prior base.
+- The second PR commit appended a second copy of `CrystalBall` to `app/components/CrystalBall/CrystalBall.tsx`, leaving two default-export declarations. This was a source defect in addition to the Git conflict.
+- The shared `.specify/feature.json` conflict is resolved in favor of this PR's active feature, `specs/crystal-ball-fix`, so the branch's active pointer matches the spec/plan/tasks being delivered.
+- The main-branch `PR_SUMMARY.md` contains the PR #1510 verification record. This repair preserves that record and appends this PR's section rather than replacing unrelated evidence.
+
+### Implementation
+- Rebuilt `CrystalBall.tsx` from the single-component implementation in the first PR commit and reapplied the intended reduced-motion dependency and newline-display fixes.
+- Kept exactly one default component export.
+- Newline tokens are emitted as standalone `<br>` elements; word wrappers continue to prevent mid-word wrapping.
+- Reveal counters now use `Array.from(...).length` so their count matches code-point iteration.
+- Preserved the 20 ms base typing delay, 125 ms punctuation pause, top-aligned smooth scrolling, audio calls, leaf-flight sequence, and reduced-motion handling.
+- Resolved `.specify/feature.json` to `specs/crystal-ball-fix`, matching the Spec Kit artifacts delivered by this PR.
+- Updated the Crystal Ball feature spec, plan, and task checklist. Final verification remains explicitly pending.
+
+### Exact changed-file list
+1. `.specify/feature.json`
+2. `app/components/CrystalBall/CrystalBall.tsx`
+3. `app/components/CrystalBall/CrystalBall.module.css`
+4. `specs/crystal-ball-fix/spec.md`
+5. `specs/crystal-ball-fix/plan.md`
+6. `specs/crystal-ball-fix/tasks.md`
+7. `PR_SUMMARY.md`
+8. `memory-bank/activeContext.md`
+9. `memory-bank/progress.md`
+
+### Routed material actually inspected
+- `AGENTS.md`, `.jules/jules.md`, `.jules/polishing.md`, `.docs/manifest.json`, `.docs/polishing/jules_google_docs.md`, `.docs/polishing/_google-gemini_gemini-cli.md`, and `.docs/polishing/_websites_ai_google_dev_gemini-api.md`.
+- `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, `memory-bank/techContext.md`, and `.specify/memory/constitution.md`.
+- The Spec Kit specify, plan, tasks, and implement command definitions were inspected for process constraints. Native dispatch and local shell-driven setup were not available in this API-only editing session; this entry does not claim these procedures or `./jules-verify.sh` were executed.
+
+### Verification status
+- Source integrity checks during candidate preparation: PASS — exactly one `export default function CrystalBall` and one component declaration remain; the newline and reduced-motion dependency fixes are present.
+- COMMAND: `pnpm run test`
+  - RESULT: NOT RUN in this editing session; requires current-head GitHub Actions evidence.
+- COMMAND: `pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts`
+  - RESULT: NOT RUN in this editing session; requires current-head GitHub Actions evidence.
+- COMMAND: `pnpm tsc --noEmit`
+  - RESULT: NOT RUN in this editing session; requires current-head GitHub Actions evidence.
+- COMMAND: `./jules-verify.sh`
+  - RESULT: NOT RUN in this editing session; requires the repository shell/setup flow.
+- COMMAND: `pnpm run build`, OpenNext/Cloudflare validation, and measured `.next + public` size
+  - RESULT: NOT RUN in this editing session; current-head build evidence is required. The 495 MB hard maximum remains mandatory.
+- Pre-submission double-check: source integrity assertions passed; full repository verification and current-head CI remain pending.
+- Remaining issue: do not merge until GitHub reports no conflict and the required checks and review gate are verified.
+
+USEFUL RESULT: PARTIAL — the conflict-repair candidate removes the duplicate component and preserves the intended behavior, but completion and merge readiness depend on current-head verification.
