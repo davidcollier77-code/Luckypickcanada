@@ -171,26 +171,32 @@ function playCrystalBallOneShot(key) {
 
 export function playCrystalBallEnergy() {
   if (typeof window === 'undefined') return;
-  const sound = audioCache.crystalEnergy;
-  if (sound?.state() === 'loaded') {
-    if (audioCache.crystalEnergyId !== undefined && audioCache.crystalEnergyId !== null) {
-      sound.stop(audioCache.crystalEnergyId);
-    }
+  audioCache.crystalEnergyRequested = true;
+
+  const startWhenReady = () => {
+    if (!audioCache.crystalEnergyRequested) return;
+    const sound = audioCache.crystalEnergy;
+    if (sound?.state() !== 'loaded') return;
+    const activeId = audioCache.crystalEnergyId;
+    if (activeId !== undefined && activeId !== null && sound.playing(activeId)) return;
     sound.volume(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume);
     audioCache.crystalEnergyId = sound.play();
-    return;
-  }
-  void preloadCrystalBallAudio();
+  };
+
+  startWhenReady();
+  // Start after decode only if the visitor is still in the loading phase.
+  void preloadCrystalBallAudio().then(startWhenReady);
 }
 
 export function stopCrystalBallEnergy() {
   if (typeof window === 'undefined') return;
+  audioCache.crystalEnergyRequested = false;
   const sound = audioCache.crystalEnergy;
   const soundId = audioCache.crystalEnergyId;
   if (!sound || soundId === undefined || soundId === null) return;
 
   if (sound.state() === 'loaded' && sound.playing(soundId)) {
-    sound.fade(sound.volume(soundId), 0, 160, soundId);
+    sound.fade(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume, 0, 160, soundId);
     setTimeout(() => {
       sound.stop(soundId);
       sound.volume(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume);

@@ -1,5 +1,14 @@
 # Active Context
 
+## Current Focus — Crystal Ball Audio and Daily Question Limit (2026-10-17)
+
+- Goal: Make the Crystal Ball reveal feel less quiet with short, synchronized sounds and bound successful AI answers to three per client IP per UTC day.
+- Branch: feat/crystal-ball-audio-daily-limit.
+- Implementation committed: Howler helpers reuse existing same-origin energy, impact, and chime files; Oracle POST now reserves/commits/releases usage, and GET reports no-store quota status; the UI displays remaining questions and disables submission at zero.
+- Spec Kit feature directory: specs/025-crystal-ball-audio-daily-limit. The active feature pointer is being advanced to this task so the repository verifier checks current-task artifacts.
+- Storage caveat: Upstash Redis scripts enforce atomic reservations across Worker isolates when configured. Existing Cloudflare KV is a durable fallback but has no cross-isolate compare-and-swap. Verify the production quota-store configuration before relying on concurrency enforcement.
+- Verification status: Source and artifacts are committed through GitHub's repository API. The local shell cannot resolve github.com; pnpm tests, Playwright, TypeScript, ./jules-verify.sh, build-size, and real-device audio checks remain unverified until CI or a working checkout provides evidence.
+
 ## Current Focus — Robin Review Reliability (2026-10-16)
 
 - Goal: Bound Robin review runtime while keeping the free router that actually completed a live review; do not add a second in-Robin model attempt.
