@@ -1,6 +1,6 @@
 # Progress — 2026-10-17
 
-- **New Crystal Ball audio sourcing work started:** selected three distinct Pixabay audio sources for energy, reveal, and leaf cues. The plan is to download using CLI with no API key, convert to same-origin WAV using FFmpeg, keep MP3 originals out of `public/`, and preserve source/artist/license details. Implementation and verification are pending remote workflow/CI evidence; do not mark completed before checks pass.
+- **New Crystal Ball audio assets generated and validated (2026-10-17):** GitHub Actions asset-preparation run #1 downloaded three Pixabay source tracks using curl without API keys, converted them with FFmpeg 6.1.1, verified WAV headers / PCM / duration / non-silent samples / clipping / size, and committed three new files. Energy: 15.700 s / 692,430 bytes; reveal: 3.192 s / 140,846 bytes; leaf: 2.038 s / 89,934 bytes. The MP3 originals remained temporary. Automated PR tests, governance, production build and the 495 MiB build-size gate remain pending; real-device playback remains unverified.
 
 ---
 
