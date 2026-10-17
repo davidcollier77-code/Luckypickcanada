@@ -15,6 +15,32 @@ type Reading = {
 type LeafFlight = { fromX: number; fromY: number; dx: number; dy: number };
 type DailyQuota = { limit: number; remaining: number; resetAt: string } | null;
 
+function formatCountdown(milliseconds: number): string {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+  return hours + ':' + minutes + ':' + seconds;
+}
+
+function DailyQuotaCountdown({ resetAt }: { resetAt: string }) {
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    setNow(Date.now());
+    const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  if (now === null) return null;
+
+  return (
+    <p className={styles.dailyQuotaCountdown} aria-label="Time until daily allowance resets">
+      Allowance resets in {formatCountdown(Date.parse(resetAt) - now)}
+    </p>
+  );
+}
+
 const PLACEHOLDER_FORTUNES = [
   'The northern lights stir within the glass, reflecting quiet possibility. Trust your instincts today, for the currents of fortune are aligning in your favor.',
   'A path once uncertain begins to clear. What you have been waiting for is closer than the mist lets on.',
@@ -396,6 +422,7 @@ export default function CrystalBall({
                 : `You’ve used all ${dailyQuota.limit} questions for today. Come back after the daily reset.`}
             </p>
           )}
+          {dailyQuota && <DailyQuotaCountdown resetAt={dailyQuota.resetAt} />}
 
           {!showResult && !currentFortune && (
             <p className={styles.cardHint}>

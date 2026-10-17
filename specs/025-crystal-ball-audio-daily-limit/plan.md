@@ -1,5 +1,7 @@
 # Implementation Plan: Crystal Ball Audio and Daily Question Limit
 
+> **Quota architecture superseded (2026-10-17):** This plan records the original server-side per-IP quota that shipped with the audio work. It has since been replaced by the visitor-local design in [`specs/028-crystal-ball-browser-daily-limit/plan.md`](../028-crystal-ball-browser-daily-limit/plan.md). Do not recreate the persistent daily IP quota or the GET status route from this historical plan.
+
 **Branch**: feat/crystal-ball-audio-daily-limit  
 **Date**: 2026-10-17  
 **Spec**: specs/025-crystal-ball-audio-daily-limit/spec.md

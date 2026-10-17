@@ -1,3 +1,7 @@
+# Historical Data Model: Server-Side Daily Oracle Usage (Superseded)
+
+> This data model belongs to the original audio-and-quota feature implementation. Its persistent per-IP quota has been removed. The current visitor-local data model is documented in `specs/028-crystal-ball-browser-daily-limit/data-model.md`.
+
 # Data Model: Daily Oracle Usage
 
 ## Daily Usage

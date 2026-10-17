@@ -10,15 +10,6 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
   const resetAt = '2026-10-18T00:00:00.000Z';
 
   await page.route('**/api/oracle', async (route) => {
-    if (route.request().method() === 'GET') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ quota: { limit: 3, used: usedQuestions, remaining: 3 - usedQuestions, resetAt } }),
-      });
-      return;
-    }
-
     postCount += 1;
     usedQuestions += 1;
     await route.fulfill({
@@ -27,13 +18,13 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
       body: JSON.stringify({
         reading: 'Clear skies.',
         source: 'ai',
-        quota: { limit: 3, used: usedQuestions, remaining: 3 - usedQuestions, resetAt },
       }),
     });
   });
 
   await page.goto('/crystal-ball');
   await expect(page.getByText('3 of 3 questions remaining today')).toBeVisible();
+  await expect(page.getByLabel('Time until daily allowance resets')).toContainText(/Allowance resets in \d{2}:\d{2}:\d{2}/);
 
   const question = page.getByRole('textbox', { name: 'Your question for the crystal ball' });
   const button = page.getByRole('button', { name: 'Seek Fortune' });
@@ -45,10 +36,11 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
     await expect(button).toBeVisible({ timeout: 8000 });
     if (index < 2) {
       await expect(page.getByText((2 - index) + ' of 3 questions remaining today')).toBeVisible();
+      await expect(button).toBeEnabled({ timeout: 15000 });
     }
   }
 
-  await expect(page.getByText('You’ve used all 3 questions for today. Come back after the daily reset.')).toBeVisible();
+  await expect(page.getByText("You've used all 3 questions for today. Come back after the daily reset.")).toBeVisible();
   await expect(button).toBeDisabled();
   expect(postCount).toBe(3);
 });

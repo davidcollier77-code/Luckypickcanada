@@ -60,3 +60,8 @@ Unit and Playwright testing can execute independently after dependency installat
 - [x] T029 Switch CRYSTAL_BALL_SOUNDS to the three new WAV assets without changing reveal sequence or volume intent.
 - [x] T030 Add automated checks for WAV headers, non-silent audio, size, and source/license provenance in __tests__/crystal-ball-audio-assets.test.js.
 - [ ] T031 Run unit, Playwright, TypeScript, Spec Kit governance, production build, OpenNext/Wrangler validation, and the 495 MiB size check; report physical-device playback separately. Audio acquisition/integrity workflow succeeded; final PR validation remains pending.
+
+
+## Follow-up — replace persistent IP quota with visitor-local daily limit (2026-10-17)
+
+The server-side quota tasks above document the original implementation and its CI history. The active replacement is tracked in `specs/028-crystal-ball-browser-daily-limit/tasks.md`; do not interpret the completed historical tasks as instructions to restore server-side quota enforcement.
