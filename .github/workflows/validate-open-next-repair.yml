@@ -32,8 +32,42 @@ jobs:
       - name: Build Next.js app
         run: pnpm run build
 
+      - name: Measure Next.js output against 495 MiB cap
+        shell: bash
+        run: |
+          set -euo pipefail
+          next_bytes="$(du -sb .next | cut -f1)"
+          public_bytes="$(du -sb public | cut -f1)"
+          total_bytes=$((next_bytes + public_bytes))
+          next_mib="$(awk -v bytes="$next_bytes" 'BEGIN { printf "%.2f", bytes / 1048576 }')"
+          public_mib="$(awk -v bytes="$public_bytes" 'BEGIN { printf "%.2f", bytes / 1048576 }')"
+          total_mib="$(awk -v bytes="$total_bytes" 'BEGIN { printf "%.2f", bytes / 1048576 }')"
+          limit_bytes=$((495 * 1024 * 1024))
+          echo "Build size: .next=$next_mib MiB; public=$public_mib MiB; total=$total_mib MiB; cap=495 MiB"
+          if (( total_bytes >= limit_bytes )); then
+            echo "::error::Build output is $total_mib MiB, reaching or exceeding the 495 MiB hard cap."
+            exit 1
+          fi
+
       - name: Build OpenNext for Cloudflare
         run: pnpm exec opennextjs-cloudflare build
+
+      - name: Measure OpenNext build output against 495 MiB cap
+        shell: bash
+        run: |
+          set -euo pipefail
+          next_bytes="$(du -sb .next | cut -f1)"
+          public_bytes="$(du -sb public | cut -f1)"
+          total_bytes=$((next_bytes + public_bytes))
+          next_mib="$(awk -v bytes="$next_bytes" 'BEGIN { printf "%.2f", bytes / 1048576 }')"
+          public_mib="$(awk -v bytes="$public_bytes" 'BEGIN { printf "%.2f", bytes / 1048576 }')"
+          total_mib="$(awk -v bytes="$total_bytes" 'BEGIN { printf "%.2f", bytes / 1048576 }')"
+          limit_bytes=$((495 * 1024 * 1024))
+          echo "OpenNext build size: .next=$next_mib MiB; public=$public_mib MiB; total=$total_mib MiB; cap=495 MiB"
+          if (( total_bytes >= limit_bytes )); then
+            echo "::error::OpenNext build output is $total_mib MiB, reaching or exceeding the 495 MiB hard cap."
+            exit 1
+          fi
 
       - name: Verify compiled Tailwind CSS
         run: |
