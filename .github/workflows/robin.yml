@@ -383,7 +383,7 @@ jobs:
           PRE_GUARD_POSTED: ${{ steps.review_guard.outputs.posted }}
           FINAL_GUARD_OUTCOME: ${{ steps.review_final_guard.outcome }}
           FINAL_GUARD_POSTED: ${{ steps.review_final_guard.outputs.posted }}
-          COMMENT_BODY: ${{ github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/review') && '/review' || github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/robin') && '/robin' || '' }}
+          EVENT_NAME: ${{ github.event_name }}
           COMMENT_BODY: ${{ github.event_name == 'issue_comment' && (startsWith(github.event.comment.body, '/review') && '/review' || startsWith(github.event.comment.body, '/robin') && '/robin') || '' }}
           REVIEW_START_EPOCH: ${{ steps.review_preflight.outputs.start_epoch }}
         run: |
@@ -410,7 +410,7 @@ jobs:
 
           # /summary and /help are Robin commands, but are not code-review requests.
           COMMENT_BODY="${COMMENT_BODY:-}"
-          if [[ "$EVENT_NAME" == "issue_comment" && "$COMMENT_BODY" != "/review" && "$COMMENT_BODY" != "/robin" ]]; then
+          if [[ "$EVENT_NAME" == "issue_comment" && "$PRIMARY_OUTCOME" == "success" && "$COMMENT_BODY" != "/review" && "$COMMENT_BODY" != "/robin" ]]; then
             echo "Robin command handled successfully; no code-review fallback is required for this command."
             exit 0
           fi
