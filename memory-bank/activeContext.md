@@ -1,5 +1,15 @@
 # Active Context
 
+## Current Focus — Newly sourced Crystal Ball audio (2026-10-17)
+
+- Authorized request: replace the three borrowed Crystal Ball cues with new, licensed online assets; preserve the reveal order and existing Howler controls.
+- Selected candidates from Pixabay: a 16-second magical aura/energy loop by Coghezzi, a 3-second spell impact by RescopicSound, and a 2-second twinkle/sparkle by ShidenBeatsMusic. The listing pages show free use under Pixabay's Content License; direct media URLs and artists are recorded in the provenance file.
+- The repository prohibits public MP3 assets. Prepare assets using a no-key CLI workflow (`curl` + FFmpeg) and commit only WAV versions under `public/sounds/`; do not reuse existing repository sound effects.
+- Branch: feat/crystal-ball-new-sourced-audio. Code path changes to `app/lib/audio.js`; Spec Kit active feature remains `specs/025-crystal-ball-audio-daily-limit`.
+- Verification remains pending until the asset-preparation workflow runs and the final PR's CI results are inspected. Do not claim actual mobile playback until a device check is performed.
+
+---
+
 ## Current Focus — Follow-up Crystal Ball audio syntax correction (2026-10-17)
 
 - The Cloudflare build started after PR #1506 merged still failed at `app/lib/audio.js:208` with `Expected ',', got 'else'`.
