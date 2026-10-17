@@ -200,9 +200,11 @@ export function stopCrystalBallEnergy() {
     const stoppedId = soundId;
     setTimeout(() => {
       sound.stop(stoppedId);
-      sound.volume(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume);
-      if (audioCache.crystalEnergyId === stoppedId) audioCache.crystalEnergyId = null;
-    }, 175);
+      if (audioCache.crystalEnergyId === stoppedId) {
+        sound.stop(stoppedId);
+        sound.volume(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume);
+        audioCache.crystalEnergyId = null;
+      }
   } else {
     sound.stop(soundId);
     audioCache.crystalEnergyId = null;
