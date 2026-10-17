@@ -186,9 +186,10 @@ export function playCrystalBallEnergy() {
   startWhenReady();
   // Start after decode only if the visitor is still in the loading phase.
   void preloadCrystalBallAudio().then(startWhenReady);
-      crystalBallAudioLoadPromise = null;
 }
-    ;
+
+export function stopCrystalBallEnergy() {
+  if (typeof window === 'undefined') return;
   audioCache.crystalEnergyRequested = false;
   const sound = audioCache.crystalEnergy;
   const soundId = audioCache.crystalEnergyId;
