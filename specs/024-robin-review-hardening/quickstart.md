@@ -1,27 +1,27 @@
-# Quickstart: Verify Robin Review Failover
+# Quickstart: Verify Robin's bounded review
 
-## Automatic path
+## Successful path
 
 1. Open or update a small pull request.
-2. Observe the Robin Code Review job after the job starts.
-3. Confirm the primary model is the configured primary ID and the step finishes no later than three minutes.
-4. Confirm that a successful primary review is posted only once and the fallback step is skipped.
-5. Confirm the workflow summary records the outcomes without printing credentials.
+2. Check the Robin Code Review job. Confirm preflight succeeds without exposing the key.
+3. Confirm the action uses the configured model (default: openrouter/free) and completes or hits its hard two-minute step cap.
+4. If Robin posts a review, confirm the final outcome step exits successfully and the review is attached to the current PR head.
 
-## Failure path
+## Failure / timeout path
 
-1. In a safe test branch, make the primary model unavailable using a temporary invalid model override only if a maintainer is willing to change and then restore the repository variable. Do not change or reveal any key.
-2. Confirm the primary step is terminated by its timeout or fails before three minutes.
-3. Confirm the duplicate-review guard checks the current PR head and timestamp.
-4. Confirm the explicit Qwen free fallback begins only when the guard succeeds and reports that the primary did not post a review.
-5. Confirm the whole job finishes within eight minutes, with a green result only if a review was posted.
+1. On a test PR, use a provider or model expected to fail only if a maintainer is willing to change and restore the repository variable. Do not change or display secrets.
+2. Confirm the action failure or cancellation triggers the review guard and that the guard matches the current PR head and timestamp.
+3. Confirm the final outcome step rechecks reviews and fails if none was posted.
+4. Confirm the action does not wait beyond two minutes and the overall job stays within four minutes after starting.
 
 ## Missing-key path
 
-1. Do not print or inspect any secret value.
-2. If the key is not available to a Dependabot-triggered run, confirm the job stops in preflight and points to repository Settings → Secrets and variables → Dependabot.
-3. Confirm no model action is attempted.
+1. Do not print or inspect the key value.
+2. If OPENROUTER_API_KEY is unavailable, preflight should stop immediately and point to repository Settings → Secrets and variables → Dependabot or Actions as appropriate.
+3. No model request should be attempted.
 
-## Verification note
+## Known boundaries
 
-A passing automatic primary run does not by itself prove the timeout/fallback branch works. Keep T008 unchecked until that branch is exercised on a controlled test PR.
+- The free router selects its model dynamically; a successful status does not guarantee findings.
+- No separate external fallback-reviewer handoff is configured in this repository. The failed Robin check by itself should not be described as triggering another tool automatically.
+- ./jules-verify.sh has not been run locally in this environment; leave that verification open until it is executed.

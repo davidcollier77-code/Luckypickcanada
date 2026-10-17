@@ -1,26 +1,26 @@
-# Tasks: Bounded Robin Review Failover
+# Tasks: Robin Review Runtime Hardening
 
 Input: Design documents in specs/024-robin-review-hardening/
 
 ## Phase 1: Specification and planning
 
-- [x] T001 Write the user-focused specification in specs/024-robin-review-hardening/spec.md.
-- [x] T002 Record evidence, timeout design, and model choices in specs/024-robin-review-hardening/plan.md and research.md.
+- [x] T001 Record the user-focused problem and measurable runtime goal in spec.md.
+- [x] T002 Document the observed stream-timeout defect and live provider evidence in plan.md and research.md.
 
 ## Phase 2: Workflow reliability (P1)
 
-- [x] T003 Replace the reusable workflow call in .github/workflows/robin.yml with the immutable Robin action reference, while preserving event filtering, permissions, concurrency, and advisor-mode review policy.
-- [x] T004 Add explicit free primary/fallback model defaults, 120-second request timeouts, three-minute action-step limits, an eight-minute job limit, and a fast secret-presence check.
-- [x] T005 Add current-head review detection before fallback and a final recheck so a primary timeout after publishing a review cannot create a duplicate review or silently produce a false failure.
-- [x] T006 Document the manual verification steps in specs/024-robin-review-hardening/quickstart.md.
+- [x] T003 Replace the moving reusable-workflow call with the immutable Robin action reference.
+- [x] T004 Preserve OpenRouter free routing as the default; set a 90-second client timeout, two-minute step cap, four-minute job cap, and safe credential preflight.
+- [x] T005 Add a failure/cancellation-aware review lookup and final recheck to prevent a timeout-after-post from becoming a duplicate or false failure.
+- [x] T006 Update quickstart.md for the one-attempt bounded flow (no second Robin model handoff).
 
 ## Phase 3: Verification (P1)
 
-- [ ] T007 Inspect the new pull request's workflow syntax and check results; confirm the primary path's actual duration and posted review.
-- [ ] T008 Exercise the fallback path under a controlled primary failure without changing repository secrets; verify fallback starts only when no review was posted and completes or fails within the limits.
-- [ ] T009 Run ./jules-verify.sh and review final changes/build results. This connected session has no working local GitHub clone/network, so this remains pending until an available runner executes it.
+- [x] T007 Observe a live successful router run and confirm the check finishes within the two-minute action cap; inspect all resulting checks.
+- [x] T008 Observe bounded provider failures and confirm the workflow fails closed when it posts no review: attempted models returned 429, 404, 502 or empty output; the slow attempts were stopped at the action cap.
+- [ ] T009 Run ./jules-verify.sh locally. This connected session could not resolve github.com for a local clone; repository CI ran the available GitHub checks instead.
 
 ## Dependencies
 
 T001 → T002 → T003/T004/T005/T006 → T007/T008/T009.
-Do not label the fix end-to-end verified until the pending verification tasks pass.
+Do not claim local verification passed; keep T009 unchecked until it actually runs.

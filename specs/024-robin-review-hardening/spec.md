@@ -3,7 +3,7 @@
 Feature Branch: fix/robin-bounded-review-fallback
 Created: 2026-10-16
 Status: In progress
-Input: User-authorized investigation and repair of slow Robin review failures and fallback behavior.
+Input: User-authorized investigation and repair of slow Robin review failures and unbounded provider waits.
 
 ## User Scenarios & Testing
 
@@ -17,8 +17,8 @@ Independent Test: Trigger the review workflow and verify that its running job re
 
 Acceptance Scenarios:
 1. Given the primary model responds, when the review runs, then Robin posts its review and the workflow succeeds.
-2. Given the primary model stalls or fails, when its bounded step ends, then the alternate free model is attempted if no review was already posted.
-3. Given both model attempts fail, when the workflow finishes, then the check fails within the overall job limit and records which attempts ran.
+2. Given the router stalls or errors, when the bounded action ends, then the check fails promptly unless a complete Robin review was posted.
+3. Given the one review attempt does not complete, when the workflow finishes, then the check fails within the overall job limit and records the result.
 
 ### User Story 2 — Avoid duplicate and misleading reviews (Priority: P1)
 
@@ -29,7 +29,7 @@ Why this priority: Duplicate comments undermine confidence in the reviewer; a mi
 Independent Test: Inspect review objects for the current pull-request head after a timeout and verify that at most one attempt posts a completed review for the current run.
 
 Acceptance Scenarios:
-1. Given the primary action posted a review before timing out, when the failure guard runs, then the fallback is skipped.
+1. Given the primary action posted a review before timing out, when the final review guard runs, then the workflow must avoid a duplicate or false failure.
 2. Given the required API key is absent, when preflight runs, then the job fails before any model request and gives a safe setup hint without printing a credential.
 3. Given a failure cannot be recovered, when the job ends, then the required check remains failed instead of silently passing.
 
@@ -44,15 +44,15 @@ Acceptance Scenarios:
 ## Requirements
 
 - FR-001: A running review job must reach success or failure within eight minutes.
-- FR-002: The primary model step and one fallback model step must each have a three-minute hard execution limit.
-- FR-003: The fallback must use a different explicitly selected free model, and must run only after primary failure when a completed review for the current head was not already posted.
+- FR-002: The single Robin review action must have a two-minute hard execution limit.
+- FR-003: The default model must be OpenRouter’s free router, with configurable overrides; the entire action must be bounded independently of the router’s internal retries.
 - FR-004: Missing API credentials must cause a fast, explicit failure before any provider request.
 - FR-005: The workflow must preserve authorized slash commands, PR review permissions, no-request-changes policy, and per-pull-request concurrency behavior.
 - FR-006: The workflow must never mark a review recovered unless an action succeeded or a completed Robin review for the current head was confirmed.
-- FR-007: The primary and fallback action versions must be pinned to an immutable commit SHA.
+- FR-007: The Robin action version must be pinned to an immutable commit SHA.
 
 ## Assumptions
 
-- Free OpenRouter models remain subject to provider rate limits and can still fail; fallback improves recovery but cannot guarantee provider availability.
+- OpenRouter’s free router can select rate-limited or unhealthy endpoints; this change bounds the wait but cannot guarantee every review finds issues.
 - Runtime budgets measure execution after a GitHub Actions job starts; they cannot control runner queue delays before a job starts.
 - The repository owner may need to configure OPENROUTER_API_KEY as a Dependabot secret if GitHub withholds ordinary Actions secrets from Dependabot workflows.

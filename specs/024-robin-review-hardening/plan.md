@@ -6,7 +6,7 @@ Spec: spec.md
 
 ## Summary
 
-Replace the moving reusable-workflow reference and unconstrained free-model router with a pinned Robin action, two explicit free models, hard per-attempt time limits, an eight-minute job budget, missing-key preflight, and a current-head duplicate-review guard.
+Replace the moving reusable-workflow reference with a pinned Robin action, keep OpenRouter’s free router as the default, cap the complete action at two minutes and the job at four minutes, preflight the API key, and guard against reporting failure if a review was already posted.
 
 ## Technical Context
 
@@ -30,11 +30,11 @@ Replace the moving reusable-workflow reference and unconstrained free-model rout
 ## Design
 
 1. Call the pinned Robin action directly rather than the reusable workflow so each action step has a hard timeout.
-2. Use xingchen-agi/xing4.0-29b-a4b:free as the primary default and qwen/qwen3.8-27b:free as the one alternate default. Keep primary model/base URL overrides and add ROBIN_LLM_FALLBACK_MODEL as an override.
-3. Set each model request timeout to 90,000 ms; cap each action step at 2 minutes and the job at 8 minutes.
+2. Keep openrouter/free as the default, honoring the existing ROBIN_LLM_MODEL and ROBIN_LLM_BASE_URL variables. Preserve known failed model aliases being redirected to the free router, but make the two-minute action cap the final bound.
+3. Set llm-timeout-ms to 90,000 ms; cap the single action step at 2 minutes and the job at 4 minutes.
 4. Fail in preflight if OPENROUTER_API_KEY is missing and give a Dependabot-specific configuration hint without printing the secret.
 5. Keep the reusable workflow's PR-event filter and job-level concurrency behavior. Do not add workflow-level concurrency.
-6. Before fallback, query submitted review objects and match the current head SHA, Robin signature, and timestamp since this run began. Recheck after attempts so timeout-after-post does not cause duplicate reviews or a false failure.
+6. On failure or cancellation, query submitted review objects matching the current head SHA, Robin signature and timestamp since this run began. Recheck in the final step to protect against a timeout after the review was posted.
 7. Preserve fail-closed behavior if both attempts fail.
 
 ## Constitution Check

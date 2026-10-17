@@ -52,3 +52,12 @@
 - Verified second model test #38987207252: Gemma 4 26B A4B also returned HTTP 429 on all attempts; Cohere North Mini Code returned empty content twice then was stopped at its two-minute action timeout. Job ended in about 2m19s.
 - Workflow updated to use explicit free model IDs with documented structured JSON output support: Xing4.0 29B A4B primary and Qwen3.8 27B fallback. Keep the per-attempt cap and fail-closed behavior. Their latest live review run is pending; do not merge until a provider successfully posts a review and checks complete.
 - Open PR #1504 remains unmerged. Local ./jules-verify.sh was not run because the session could not resolve github.com for a local clone. Repository Actions checks and an observed fallback path are the available next verification gates.
+
+
+## 2026-10-17 — Final Robin decision: restore free router with hard cap
+
+- The live run #38988422706 (Robin workflow run 248) succeeded using openrouter/free: posted review #5555193756 in about 1m52s; the review reported zero findings. This is the successful baseline to retain.
+- Fixed free endpoints tried during diagnosis proved unstable: Gemma 4 models returned 429, Qwen3 free slugs returned 404 unavailable-for-free, Xing4.0 returned 502, and Cohere/Dots3 produced empty content until the two-minute step cap. Repeatedly switching model IDs was creating noise without improving reliability.
+- Final design therefore retains openrouter/free, calls Robin pinned to immutable upstream commit fc0bf915b634bf2f8b88ff1392acefdfb54e28d9 directly, sets a 90-second client timeout, two-minute action-step cap, four-minute job cap, safe API-key preflight and timeout/cancellation-aware final review checks. No in-Robin second-model fallback exists.
+- Amazon Q's review on PR #1500 finished before Robin began. CodeRabbit's later PR #1501 review is not proof of an automatic fallback handoff; no external reviewer orchestration was found in this repository.
+- Repository checks for the successful run passed. ./jules-verify.sh was not run locally because this session could not resolve github.com for a local clone.
