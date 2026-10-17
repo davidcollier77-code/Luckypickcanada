@@ -1,5 +1,14 @@
 # Active Context
 
+## Current Focus — Repair Crystal Ball Audio Build Regression (2026-10-17)
+
+- Failed Cloudflare deployment run 39021855291 on main commit b68d3ace0eb958d2cedeccad53d4a5d75ea3a27f reports a Next.js return-outside-function syntax error in app/lib/audio.js around line 195.
+- Verified cause: commit 1c721f46075743cf2a2be1a9a801831da91cfb4c removed the stopCrystalBallEnergy function declaration and server guard, leaving a stray semicolon/promise assignment and a top-level return. CrystalBall.tsx still imports and calls this helper on completion, failure, and unmount.
+- Repair branch: fix/crystal-ball-audio-stop-helper-build. The source correction restores the separate export and preserves the captured sound ID for the delayed fade-stop callback; a Vitest export regression test is added.
+- Spec Kit follow-up updates the active feature specs/025-crystal-ball-audio-daily-limit/spec.md, plan.md, and tasks.md.
+- Verification status: repair PR checks pending. A local checkout could not be created because GitHub DNS resolution failed. Do not claim production build recovery until OpenNext/Cloudflare CI passes on the candidate.
+- Outstanding broader feature gates: pnpm tsc --noEmit, ./jules-verify.sh, exact .next plus public size below 495 MiB, and real mobile audio playback. Do not mark the overall feature governance-complete without evidence.
+
 ## Current Focus — Crystal Ball Audio and Daily Question Limit (2026-10-17)
 
 - Goal: Add understated audio to the Crystal Ball's energy/reveal/leaf phases and cap successful AI-backed answers at three per client IP per UTC day.
