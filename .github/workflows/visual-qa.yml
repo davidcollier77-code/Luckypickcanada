@@ -38,8 +38,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run targeted visitor-local daily allowance unit tests
-        run: pnpm exec vitest run __tests__/crystal-ball-daily-usage.test.js
+      - name: Run targeted Crystal Ball allowance and Oracle validation unit tests
+        run: pnpm exec vitest run __tests__/crystal-ball-daily-usage.test.js __tests__/oracle-route-validation.test.js
 
       - name: Run all unit tests
         run: pnpm run test
