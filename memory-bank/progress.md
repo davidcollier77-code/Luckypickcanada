@@ -80,3 +80,11 @@
 - CodeQL run 39015310504 passed across Actions, JavaScript/TypeScript, and Python.
 - Robin run 39015313042 failed because the free-model review timed out after two minutes; no review was posted.
 - Still outstanding: standalone ./jules-verify.sh, standalone pnpm tsc --noEmit, actual .next + public size measurement against 495 MiB, and real mobile-device audio. The protected validation workflow was left unchanged rather than bypassing its authorization gate. Do not mark this task governance-complete until those gates are satisfied.
+
+
+## 2026-10-17 — Crystal Ball audio build regression follow-up
+
+- Inspected failed Cloudflare build run 39021855291 and traced the parser error to malformed audio-helper edits in commit 1c721f46075743cf2a2be1a9a801831da91cfb4c.
+- Root cause: the stopCrystalBallEnergy declaration and server guard were removed; a stray promise assignment and semicolon were inserted after playCrystalBallEnergy. This put a return at module scope. app/components/CrystalBall/CrystalBall.tsx still depends on the named export.
+- Repair restores the helper boundary and guard, preserves the captured sound ID in the delayed stop callback, and adds an export smoke test. Spec Kit artifacts were updated.
+- Status at preparation: repair PR checks pending. Local verification, exact output size against 495 MiB, and real-device audio playback are not claimed.
