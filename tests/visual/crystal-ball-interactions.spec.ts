@@ -2,12 +2,28 @@ import { test, expect } from '@playwright/test';
 
 test('Crystal Ball sequence: flashes, drops a duplicate leaf before typing, completes the pulse, and supports a second question', async ({ page }) => {
   // Keep this UI test independent of production AI credentials and make the loading state deterministic.
+  let usedQuestions = 0;
+  const resetAt = '2026-10-18T00:00:00.000Z';
   await page.route('**/api/oracle', async (route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ quota: { limit: 3, used: usedQuestions, remaining: 3 - usedQuestions, resetAt } }),
+      });
+      return;
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 1200));
+    usedQuestions += 1;
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ reading: 'A promising opportunity is approaching. Trust your instincts.' }),
+      body: JSON.stringify({
+        reading: 'A promising opportunity is approaching. Trust your instincts.',
+        source: 'ai',
+        quota: { limit: 3, used: usedQuestions, remaining: 3 - usedQuestions, resetAt },
+      }),
     });
   });
 
