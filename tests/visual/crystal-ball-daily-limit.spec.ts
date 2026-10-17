@@ -46,6 +46,7 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
     await expect(button).toBeVisible({ timeout: 8000 });
     if (index < 2) {
       await expect(page.getByText((2 - index) + ' of 3 questions remaining today')).toBeVisible();
+      await expect(button).toBeEnabled({ timeout: 15000 });
     }
   }
 
