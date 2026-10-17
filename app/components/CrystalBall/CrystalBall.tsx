@@ -205,10 +205,10 @@ export default function CrystalBall({
     try {
       const answer = await onSeekFortune(trimmed);
       stopCrystalBallEnergy();
-      playCrystalBallReveal();
       if (!answer || answer.trim() === '') {
         throw new Error('Received an empty fortune.');
       }
+      playCrystalBallReveal();
 
       setCurrentFortune(answer);
       setReadings((prev) => [
