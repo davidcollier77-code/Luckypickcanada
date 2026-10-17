@@ -1,6 +1,6 @@
 # Feature Specification: Crystal Ball Browser-Local Daily Allowance
 
-**Feature Branch**: \`028-crystal-ball-browser-daily-limit\`
+**Feature Branch**: `028-crystal-ball-browser-daily-limit`
 
 **Created**: 2026-10-17
 
@@ -16,7 +16,7 @@ A visitor opens the Crystal Ball and can see how many of their three daily AI-ba
 
 **Why this priority**: Clear feedback prevents surprise lockout and helps the visitor understand the daily cap.
 
-**Independent Test**: Open \`/crystal-ball\` with empty local storage and verify that three questions remain and a live countdown to the visitor's next local midnight is shown.
+**Independent Test**: Open `/crystal-ball` with empty local storage and verify that three questions remain and a live countdown to the visitor's next local midnight is shown.
 
 **Acceptance Scenarios**:
 
@@ -69,7 +69,7 @@ Valid questions continue to use the current Oracle API and its short-window requ
 ### Functional Requirements
 
 - **FR-001**: Limit visitors to three successful AI-backed answers per local calendar day in browser storage.
-- **FR-002**: Store a local date key and bounded usage count in \`localStorage\`.
+- **FR-002**: Store a local date key and bounded usage count in `localStorage`.
 - **FR-003**: Reset usage when the visitor's local calendar date changes.
 - **FR-004**: Display the remaining count, exhausted message, and a live HH:MM:SS countdown to the next local midnight.
 - **FR-005**: Disable the submit button when the local allowance is exhausted.
@@ -91,7 +91,7 @@ Valid questions continue to use the current Oracle API and its short-window requ
 - **SC-003**: The timer visibly updates at one-second intervals and targets the visitor's local midnight, including across daylight-saving transitions.
 - **SC-004**: Invalid questions are rejected before any provider fetch.
 - **SC-005**: The IP-based persistent daily quota code and server-side GET status flow are removed while the ten-requests-per-minute API limiter remains.
-- **SC-006**: Automated tests, TypeScript verification, build, and build-size checks pass; the combined \`.next + public\` output remains below the hard 495 MiB cap.
+- **SC-006**: Automated tests, TypeScript verification, build, and build-size checks pass; the combined `.next + public` output remains below the hard 495 MiB cap.
 
 ## Assumptions
 
