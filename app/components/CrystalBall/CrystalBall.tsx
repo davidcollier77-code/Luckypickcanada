@@ -54,7 +54,7 @@ export default function CrystalBall({
 }: CrystalBallProps) {
   const [question, setQuestion] = useState('');
   const [countdownNow, setCountdownNow] = useState<number | null>(null);
-  const [status, setStatus = useState<'idle' | 'loading' | 'preRevealPulse' | 'leafFalling' | 'error' | 'revealing' | 'completionPulse'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'preRevealPulse' | 'leafFalling' | 'error' | 'revealing' | 'completionPulse'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentFortune, setCurrentFortune] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
