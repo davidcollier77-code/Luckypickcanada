@@ -3,7 +3,7 @@
 ## Local Validation
 
 1. Install dependencies with pnpm install --frozen-lockfile. Never use npm ci.
-2. Run pnpm exec vitest run __tests__/oracle-usage.test.js.
+2. Run pnpm exec vitest run __tests__/crystal-ball-daily-usage.test.js.
 3. Run pnpm exec playwright test tests/visual/crystal-ball-daily-limit.spec.ts.
 4. Run pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts.
 5. Run pnpm run test.
@@ -23,3 +23,6 @@
 ## Current Verification Limitation
 
 The branch is written through GitHub's content API. This session's local shell cannot resolve github.com, so pnpm, Playwright, governance, build, and build-size commands are still unrun locally and must be verified through CI or a working checkout.
+
+
+The earlier `__tests__/oracle-usage.test.js` and `app/lib/oracle-usage.js` were removed during the browser-local quota migration. For current behavior, use `specs/028-crystal-ball-browser-daily-limit/quickstart.md`.
