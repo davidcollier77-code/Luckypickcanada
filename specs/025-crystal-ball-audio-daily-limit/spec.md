@@ -41,6 +41,7 @@ Acceptance criteria: initial quota is three; each successful AI answer decrement
 - FR-010: Preserve the reveal order, artwork, existing short-term rate limiter, and repeated-question behavior within the allowance.
 - FR-011: Add no package dependency or external audio domain.
 - FR-012: Stay below the hard 495 MB build maximum.
+- FR-013: Keep Crystal Ball energy-stop logic in a separately exported helper and ensure the audio module compiles in a production build.
 
 ## Key Entities
 - Daily Oracle Usage: UTC date, one-way hash of client IP, completed answers, and pending reservations.
@@ -54,6 +55,7 @@ Acceptance criteria: initial quota is three; each successful AI answer decrement
 - SC-004: The current flash, leaf flight, and progressive typing order remains unchanged while the matching sounds are requested.
 - SC-005: Unit and Playwright tests cover quota reservations, rollback, reset, and the visitor-facing limit state.
 - SC-006: Automated tests, governance verification, build, and build-size measurement pass before merge.
+- SC-007: The audio export regression test and required Next.js/OpenNext/Wrangler build checks pass on the final repair candidate.
 
 ## Assumptions
 - The daily boundary is 00:00 UTC for deterministic server-side accounting.

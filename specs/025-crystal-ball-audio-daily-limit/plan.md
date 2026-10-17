@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add three restrained existing-asset sound cues to the Crystal Ball reveal and enforce a daily allowance of three successful AI-backed answers per client IP. Reuse the current Howler helper and Oracle route, reserve quota before provider calls, show remaining usage, and release reservations on provider failures.
+Add three restrained existing-asset sound cues to the Crystal Ball reveal and enforce a daily allowance of three successful AI-backed answers per client IP. Reuse the current Howler helper and Oracle route, reserve quota before provider calls, show remaining usage, and release reservations on provider failures. This follow-up repairs a syntax regression that removed the separate stopCrystalBallEnergy export and blocked production compilation.
 
 ## Technical Context
 
@@ -29,7 +29,7 @@ Add three restrained existing-asset sound cues to the Crystal Ball reveal and en
 
 ## Design
 
-1. Preload existing same-origin sounds through Howler. Start the quiet energy sound from visitor activation; fade or stop it on success, failure, or unmount. Request reveal and leaf cues at their matching visual phases.
+1. Preload existing same-origin sounds through Howler. Start the quiet energy sound from visitor activation; fade or stop it on success, failure, or unmount. Request reveal and leaf cues at their matching visual phases. Keep stopCrystalBallEnergy as a distinct exported function, and preserve the captured sound ID used by the delayed fade-stop callback.
 2. Store a UTC-day key and one-way hash of client IP, with completed and pending counts. Redis Lua operations reserve slots atomically, commit completed AI answers, and release unsuccessful attempts.
 3. Provide uncached GET status and include quota state with successful answers and limit responses. Client state is only informative; POST enforcement remains server-side.
 4. Use the existing Cloudflare KV binding as persistent fallback. KV does not offer cross-isolate compare-and-swap, so globally atomic concurrency requires the configured Redis path.
@@ -38,7 +38,7 @@ Add three restrained existing-asset sound cues to the Crystal Ball reveal and en
 ## Verification Plan
 
 - Run quota unit tests for three-slot admission, fourth-slot denial, rollback, different IPs, and UTC reset.
-- Run both Crystal Ball Playwright specs on configured desktop/mobile projects.
+- Run the audio export smoke test and both Crystal Ball Playwright specs on configured desktop/mobile projects.
 - Run pnpm test, pnpm tsc --noEmit, pnpm build, and ./jules-verify.sh.
 - Measure .next plus public against the 495 MB hard cap.
-- Inspect final diff and workflow checks. Do not report a command as passed unless its output is available.
+- Inspect the final diff and workflow checks. Do not report a command as passed unless its output is available. Run verification on the repair candidate, not only the earlier pre-regression revision.
