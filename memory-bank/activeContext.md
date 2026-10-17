@@ -2,7 +2,7 @@
 
 ## Current Focus — Crystal Ball audio timeout closure verified in CI (2026-10-17)
 
-- PR #1507: https://github.com/davidcollier77-code/Luckypickcanada/pull/1507 remains open for the Crystal Ball audio timeout syntax repair.
+- Source fix PR #1507 was merged into `main` at commit `b4f1f110803c3e3c5a9025718e80b30ed0fb9bdd`; documentation reconciliation is in PR #1508: https://github.com/davidcollier77-code/Luckypickcanada/pull/1508.
 - Root cause: the `setTimeout` callback in `app/lib/audio.js` was not closed before the fallback `else`, causing Next.js to report `Expected ',', got 'else'` at line 208 after PR #1506 merged.
 - Fix candidate closes the callback with `}, 160);`, preserves the captured sound ID/current-ID guard, keeps the immediate-stop fallback, and removes a redundant stop call.
 - Visual QA run #498 passed: targeted quota tests (3/3), all unit tests (11 files / 72 tests), standalone TypeScript, `./jules-verify.sh` (including 17 refresh-doc tests), and Playwright (21 passed, 3 skipped).
