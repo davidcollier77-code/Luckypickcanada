@@ -31,7 +31,7 @@ jobs:
       group: robin-${{ github.event.pull_request.number || github.event.issue.number }}-${{ github.workflow }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 4
     steps:
       - name: Validate API key and record review start
         id: review_preflight
@@ -40,7 +40,6 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           ACTOR: ${{ github.actor }}
           PRIMARY_MODEL_OVERRIDE: ${{ vars.ROBIN_LLM_MODEL }}
-          FALLBACK_MODEL_OVERRIDE: ${{ vars.ROBIN_LLM_FALLBACK_MODEL }}
         run: |
           set -euo pipefail
           if [[ -z "${OPENROUTER_API_KEY:-}" ]]; then
@@ -54,29 +53,12 @@ jobs:
           fi
 
           primary_model="${PRIMARY_MODEL_OVERRIDE:-xingchen-agi/xing4.0-29b-a4b:free}"
-          fallback_model="${FALLBACK_MODEL_OVERRIDE:-qwen/qwen3.8-27b:free}"
-          if [[ "${primary_model,,}" == openrouter/* || "${primary_model}" == "google/gemma-4-31b-it:free" || "${primary_model}" == "google/gemma-4-26b-a4b-it:free" ]]; then
-            echo "::warning::ROBIN_LLM_MODEL uses a router or a free endpoint already seen returning 429; using xingchen-agi/xing4.0-29b-a4b:free."
+          primary_model="${PRIMARY_MODEL_OVERRIDE:-xingchen-agi/xing4.0-29b-a4b:free}"
+          if [[ "${primary_model,,}" == openrouter/* || "${primary_model}" == "google/gemma-4-31b-it:free" || "${primary_model}" == "google/gemma-4-26b-a4b-it:free" || "${primary_model}" == "cohere/north-mini-code:free" || "${primary_model}" == "qwen/qwen3-coder:free" ]]; then
+            echo "::warning::ROBIN_LLM_MODEL points to a random router or a free endpoint already tested unsuccessfully; using xingchen-agi/xing4.0-29b-a4b:free."
             primary_model="xingchen-agi/xing4.0-29b-a4b:free"
           fi
-          if [[ "${fallback_model,,}" == openrouter/* || "${fallback_model}" == "qwen/qwen3-coder:free" || "${fallback_model}" == "cohere/north-mini-code:free" ]]; then
-            echo "::warning::ROBIN_LLM_FALLBACK_MODEL selects a random router or a free endpoint already tested unsuccessfully; using qwen/qwen3.8-27b:free."
-            fallback_model="qwen/qwen3.8-27b:free"
-          fi
-          if [[ "$primary_model" == "$fallback_model" ]]; then
-            if [[ "$primary_model" == "qwen/qwen3.8-27b:free" ]]; then
-              fallback_model="xingchen-agi/xing4.0-29b-a4b:free"
-            else
-              fallback_model="qwen/qwen3.8-27b:free"
-            fi
-            echo "::warning::Primary and fallback models were identical; selected a different free fallback."
-          fi
-          if [[ "$primary_model" == "$fallback_model" ]]; then
-            echo "::error::Primary and fallback model configuration did not resolve to distinct models."
-            exit 1
-          fi
           echo "primary_model=$primary_model" >> "$GITHUB_OUTPUT"
-          echo "fallback_model=$fallback_model" >> "$GITHUB_OUTPUT"
           echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
           echo "OpenRouter API key is present; its value was not printed."
 
@@ -129,32 +111,6 @@ jobs:
             echo "No completed Robin review for the current PR head was found; fallback is safe to consider."
           fi
 
-      - name: Robin review fallback (explicit free model)
-        id: fallback_review
-        if: ${{ steps.primary_review.outcome == 'failure' && steps.review_guard.outcome == 'success' && steps.review_guard.outputs.posted != 'true' && !cancelled() && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
-        uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
-        timeout-minutes: 2
-        continue-on-error: true
-        with:
-          github-token: ${{ github.token }}
-          llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}
-          llm-base-url: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
-          model: ${{ steps.review_preflight.outputs.fallback_model }}
-          fail-on-high: false
-          request-changes: false
-          max-diff-size: "50000"
-          max-comments: "15"
-          max-output-tokens: "4096"
-          reasoning-effort: ""
-          llm-timeout-ms: "90000"
-          llm-temperature: "0.1"
-          min-command-permission: "write"
-          review-instructions-file: ".github/code-reviewer.md"
-          review-on-synchronize: true
-          config-file: ".github/robin.yml"
-          use-json-response-mode: ""
-          agent-mode: "off"
-
       - name: Record and enforce review outcome
         if: always()
         timeout-minutes: 1
@@ -165,7 +121,6 @@ jobs:
           PRIMARY_OUTCOME: ${{ steps.primary_review.outcome }}
           GUARD_OUTCOME: ${{ steps.review_guard.outcome }}
           GUARD_POSTED: ${{ steps.review_guard.outputs.posted }}
-          FALLBACK_OUTCOME: ${{ steps.fallback_review.outcome }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
           REVIEW_START_EPOCH: ${{ steps.review_preflight.outputs.start_epoch }}
         run: |
@@ -176,7 +131,6 @@ jobs:
             echo "- Credential preflight: ${KEY_OUTCOME:-not run}"
             echo "- Primary review: ${PRIMARY_OUTCOME:-not run}"
             echo "- Duplicate-review guard: ${GUARD_OUTCOME:-not needed}"
-            echo "- Fallback review: ${FALLBACK_OUTCOME:-not needed}"
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [[ "$KEY_OUTCOME" != "success" ]]; then
@@ -189,10 +143,6 @@ jobs:
           fi
           if [[ "$GUARD_POSTED" == "true" ]]; then
             echo "The primary action ended abnormally after posting a Robin review; no duplicate was created."
-            exit 0
-          fi
-          if [[ "$FALLBACK_OUTCOME" == "success" ]]; then
-            echo "Fallback review completed successfully."
             exit 0
           fi
 
