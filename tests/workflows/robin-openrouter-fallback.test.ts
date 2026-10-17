@@ -69,6 +69,9 @@ describe("Robin Cloudflare Workers AI fallback workflow", () => {
     expect(enforcementStep).toContain("EVENT_NAME: ${{ github.event_name }}");
     expect((enforcementStep.match(/^\s+COMMENT_BODY:/gm) || []).length).toBe(1);
     expect(enforcementStep).toContain('if [[ "$EVENT_NAME" == "issue_comment"');
+    const commentBodyMatch = enforcementStep.match(/COMMENT_BODY:\s*(\$\{\{[^}]+\}\})/);
+    expect(commentBodyMatch).not.toBeNull();
+    expect(commentBodyMatch![1]).toMatch(/^(\$\{\{[^}]*'\/review'[^}]*\}\}|\$\{\{[^}]*'\/robin'[^}]*\}\}|\$\{\{[^}]*''\s*\}\})$/);
   });
 
 });
