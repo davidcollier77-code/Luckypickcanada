@@ -16,7 +16,7 @@ Replace the moving reusable-workflow reference with a pinned Robin action, keep 
 - Testing: GitHub Actions workflow validation and pull-request checks; static inspection of workflow conditions and API calls.
 - Target Platform: GitHub Actions.
 - Project Type: CI workflow configuration.
-- Performance Goals: Primary attempt capped at 2 minutes; at most one alternate attempt capped at 2 minutes; job capped at 8 minutes after it starts.
+- Performance Goals: Single review action capped at 2 minutes; job capped at 4 minutes after it starts.
 - Constraints: No paid models, no application or deployment changes, no credential values in logs, preserve existing review permissions and concurrency.
 
 ## Evidence and Root Cause
