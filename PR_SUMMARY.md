@@ -205,3 +205,96 @@ A read-back of the quota preflight revealed that the bearer redaction regex was 
 - Remaining issue: do not merge until GitHub reports no conflict and the required checks and review gate are verified.
 
 USEFUL RESULT: PARTIAL — the conflict-repair candidate removes the duplicate component and preserves the intended behavior, but completion and merge readiness depend on current-head verification.
+
+
+---
+
+## Crystal Ball browser-local daily allowance — 2026-10-17
+
+### Task and authorization
+- **Task group:** polishing.
+- **Reason:** implement the user-authorized Crystal Ball allowance UX: three successful AI-backed answers per visitor-local day, a visible countdown to local midnight, and removal of the separate persistent server-side daily IP quota.
+- **Authorization:** explicit user authorization to implement; user subsequently directed that AGENTS.md not be treated as a blocker.
+- **Branch:** \`fix/crystal-ball-browser-daily-limit\`.
+- **PR:** to be linked after the pull request is created.
+- **Scope:** Crystal Ball daily allowance storage/display, Oracle API validation and daily-quota removal, directly related tests/specs/summary. Artwork, reveal order, audio, model prompt, response aliases, CORS allowlist, and API short-window rate limiter are preserved.
+
+### Implementation summary
+- Added \`app/crystal-ball-client/daily-usage.js\` with a versioned localStorage key, visitor-local \`YYYY-MM-DD\` key, bounded 0–3 count, next-local-midnight calculation, stale/malformed-value reset, and in-memory fallback if storage is unavailable.
+- Updated \`app/crystal-ball-client/CrystalBallClient.js\` to remove its GET quota request; initialize/save the local counter; notice cross-tab storage changes and local date rollover; count successful AI-backed responses only; and pass the local next-midnight timestamp to the Crystal Ball.
+- Updated \`app/components/CrystalBall/CrystalBall.tsx\` and \`CrystalBall.module.css\` to display the existing remaining-questions/exhaustion message plus an HH:MM:SS countdown that updates every second.
+- Removed persistent Redis/KV/process-memory daily quota reservations and the \`GET /api/oracle\` status handler from \`app/api/oracle/route.js\`. The existing ten-requests-per-minute IP request limiter remains. The route rejects malformed/missing/non-string/empty/over-120-character/filtered questions before calling the AI provider, while retaining the existing fallback response for missing credentials or provider failures.
+- Deleted the obsolete \`app/lib/oracle-usage.js\` implementation and its server-quota-only test. Added unit coverage for browser-local date/storage rules and route-validation tests proving invalid questions do not call the AI provider. Updated the Visual QA targeted test step and the daily-limit Playwright assertion/waits.
+- Added active Spec Kit artifacts at \`specs/028-crystal-ball-browser-daily-limit/\` and pointed \`.specify/feature.json\` at the new feature so the repository's task-artifact check can validate this task.
+- Added a supersession note to the earlier feature 025 records so readers do not recreate the removed IP-based quota. Memory Bank entries record current scope and verification limitations.
+
+### Important behavior and accepted limitation
+- The daily reset is the visitor's **local midnight**, calculated with the local Date constructor rather than UTC midnight or a fixed 24-hour duration. The UI visibly displays \`Allowance resets in HH:MM:SS\`.
+- The counter represents completed AI-backed answers; generic fallback fortunes do not consume a slot.
+- Browser storage can be cleared or edited to bypass this counter. That is the consciously accepted simplicity/usability trade-off, not tamper-resistant cost control.
+- The existing API short-window IP rate limiter is retained; no daily IP-derived quota identifier or persistent daily quota store remains in the Oracle route.
+
+### Files changed in this candidate
+1. \`.specify/feature.json\`
+2. \`.github/workflows/visual-qa.yml\`
+3. \`app/api/oracle/route.js\`
+4. \`app/components/CrystalBall/CrystalBall.tsx\`
+5. \`app/components/CrystalBall/CrystalBall.module.css\`
+6. \`app/crystal-ball-client/CrystalBallClient.js\`
+7. \`app/crystal-ball-client/daily-usage.js\`
+8. \`app/lib/oracle-usage.js\` (deleted)
+9. \`__tests__/crystal-ball-daily-usage.test.js\`
+10. \`__tests__/oracle-route-validation.test.js\`
+11. \`__tests__/oracle-usage.test.js\` (deleted)
+12. \`tests/visual/crystal-ball-daily-limit.spec.ts\`
+13. \`specs/025-crystal-ball-audio-daily-limit/spec.md\`
+14. \`specs/025-crystal-ball-audio-daily-limit/plan.md\`
+15. \`specs/025-crystal-ball-audio-daily-limit/tasks.md\`
+16. \`specs/025-crystal-ball-audio-daily-limit/quickstart.md\`
+17. \`specs/025-crystal-ball-audio-daily-limit/data-model.md\`
+18. \`specs/028-crystal-ball-browser-daily-limit/spec.md\`
+19. \`specs/028-crystal-ball-browser-daily-limit/plan.md\`
+20. \`specs/028-crystal-ball-browser-daily-limit/tasks.md\`
+21. \`specs/028-crystal-ball-browser-daily-limit/research.md\`
+22. \`specs/028-crystal-ball-browser-daily-limit/data-model.md\`
+23. \`specs/028-crystal-ball-browser-daily-limit/quickstart.md\`
+24. \`specs/028-crystal-ball-browser-daily-limit/contracts/oracle-quota.md\`
+25. \`memory-bank/activeContext.md\`
+26. \`memory-bank/progress.md\`
+27. \`PR_SUMMARY.md\`
+
+### Materials consulted
+- \`AGENTS.md\`, \`.jules/jules.md\`, \`.jules/polishing.md\`, \`.docs/manifest.json\`, \`.docs/polishing/jules_google_docs.md\`, \`.docs/polishing/_google-gemini_gemini-cli.md\`, and \`.docs/polishing/_websites_ai_google_dev_gemini-api.md\`.
+- \`.specify/init-options.json\`, \`.specify/feature.json\`, and the spec/plan/tasks templates; active task artifacts are under \`specs/028-crystal-ball-browser-daily-limit/\`.
+- \`package.json\` (pnpm 10.30.3, Node 22, Vitest, Playwright, Next.js 16.3.8, React/React DOM, and @upstash/redis dependencies).
+- Original Oracle route and usage manager, Crystal Ball client/component/CSS, Lucky Meter's local date/countdown pattern, existing daily-limit and interaction Playwright tests, Visual QA workflow, OpenNext validation workflow, and the earlier feature 025 specs.
+- Context7 was not called. No dependency was added or upgraded.
+
+### Verification record — candidate not yet run
+No local repository checkout is available in this session, so the following commands have **NOT RUN locally**. GitHub Actions must provide current-head execution evidence before merge; do not infer passing results from source inspection.
+
+- COMMAND: \`pnpm exec vitest run __tests__/crystal-ball-daily-usage.test.js __tests__/oracle-route-validation.test.js\`
+  - RESULT: NOT RUN locally; pending Visual QA.
+  - EVIDENCE/OUTPUT SUMMARY: regression tests added; no local output is available.
+- COMMAND: \`pnpm exec playwright test tests/visual/crystal-ball-daily-limit.spec.ts\`
+  - RESULT: NOT RUN locally; pending Visual QA.
+  - EVIDENCE/OUTPUT SUMMARY: test asserts the local-midnight countdown and retains the three-answer lockout flow.
+- COMMAND: \`pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts\`
+  - RESULT: NOT RUN locally; pending Visual QA.
+- COMMAND: \`pnpm run test\`
+  - RESULT: NOT RUN locally; pending Visual QA.
+- COMMAND: \`pnpm tsc --noEmit\`
+  - RESULT: NOT RUN locally; pending Visual QA.
+- COMMAND: \`./jules-verify.sh\`
+  - RESULT: NOT RUN locally; pending Visual QA.
+- COMMAND: \`pnpm run build\`
+  - RESULT: NOT RUN locally; pending OpenNext validation.
+- COMMAND: \`pnpm exec opennextjs-cloudflare build\`
+  - RESULT: NOT RUN locally; pending OpenNext validation.
+- COMMAND: \`pnpm exec wrangler build --config ./wrangler.jsonc\`
+  - RESULT: NOT RUN locally; pending OpenNext validation.
+- COMMAND: \`du/size measurement for .next + public\` (the configured validation workflow performs the exact byte calculation)
+  - RESULT: NOT RUN locally; CI must confirm the combined build stays below 495 MiB.
+- Pre-submission double-check: remote file reads were used to inspect the edited route, client, quota helper, countdown UI/CSS, unit tests, Playwright test, and workflow update. A complete local diff/build/test run remains unavailable; the pull request's live diff and current-head Actions must be reviewed after creation.
+- Remaining issues: confirm all new Vitest/Playwright code and the Cloudflare build compile in GitHub Actions; record actual workflow URLs/results after they complete. Do not merge if any required current-head check fails.
+- **USEFUL RESULT: PARTIAL** — the intended implementation and regression coverage are committed on the branch, but no test/build results are claimed until the CI runner executes them.
