@@ -13,3 +13,5 @@ Use the pull-request workflows as the execution environment because the working 
 7. Confirm `.github/workflows/robin.yml` checks the free-model quota before invoking Robin and skips the five-attempt path if fewer than five requests remain.
 8. If quota is low/missing or Robin fails, verify the workflow requests Amazon Q review and accepts only a substantive review whose `commit_id` equals the current PR head SHA. The step has a bounded wait and must leave the check failed if no such review appears.
 9. If Robin fails while quota remains, inspect the failure-only diagnostic. Confirm no credentials or raw response bodies are logged and review the HTTP/status and sanitized provider error fields.
+
+10. Verify the Amazon Q fallback condition includes failed, cancelled, and skipped primary outcomes; the API-key redactor guards empty keys; and the 90-second polling deadline sits inside a 3-minute step and 7-minute job. Confirm current-head workflow evidence.

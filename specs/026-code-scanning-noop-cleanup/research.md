@@ -29,3 +29,11 @@
 - Pinned Robin v2.12.0 source (upstream `src/llm-client.ts`, lines 489–516) turns most exceptions before the first stream chunk into a generic stall error. Current action logs therefore do not establish whether the underlying response is authentication, quota/rate-limit, request validation, or route availability.
 - OpenRouter's public status page at inspection time reported inference operational. This does not establish that this repository's API key/account/quota or free route is working.
 - Add a post-failure diagnostic to `.github/workflows/robin.yml`: make a bounded GET request to the account endpoint, log only returned free-model quota fields, skip extra inference when quota is confirmed exhausted, and otherwise make one minimal bounded completion probe to record the HTTP and sanitized error status. Do not print the key or raw body. The diagnostic step itself exits successfully but the later review enforcement remains fail-closed if no review was posted.
+
+
+## Amazon Q review 5558036445 — corrective follow-up
+
+- Finding: `q_fallback` did not trigger on a skipped primary-review outcome. Corrected by adding `steps.primary_review.outcome == 'skipped'`.
+- Finding: secret redaction should explicitly guard a non-empty API key. Both diagnostic formatters now replace the actual key only when its string length is greater than zero; raw bodies remain unlogged.
+- Finding: a 100-second polling loop could exceed the 2-minute step timeout after pre-loop GitHub calls. Polling is now 90 seconds within a 3-minute step and a 7-minute job.
+- Verification requirement: re-run current-head workflow after these changes and ensure the Amazon Q fallback and all other checks behave as expected.

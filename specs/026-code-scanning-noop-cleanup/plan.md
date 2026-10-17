@@ -60,3 +60,8 @@ The application-adjacent change is deletion of the root-level test_fix.js debugg
 - Confirm CodeQL completes on the updated head and review the alert result.
 - Inspect Robin outcome separately. A repeat upstream stall is an external blocker, not evidence of an application defect; do not weaken the check to make it green.
 - Reconcile every changed path with the final PR diff and record run IDs/outcomes before declaring the task complete.
+
+
+## Review hardening follow-up
+
+Amazon Q review `5558036445` found three robustness issues before merge. The follow-up includes skipped-primary outcomes in the Q fallback trigger, explicitly redacts a non-empty API key without applying `replaceAll` to an empty pattern, and uses a 90-second polling deadline inside a 3-minute step and 7-minute job budget. Final enforcement still requires an actual review for the exact head SHA.

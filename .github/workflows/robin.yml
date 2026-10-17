@@ -31,7 +31,7 @@ jobs:
       group: robin-${{ github.event.pull_request.number || github.event.issue.number }}-${{ github.workflow }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - name: Validate API key and record review start
         id: review_preflight
@@ -84,6 +84,12 @@ jobs:
           node - "$workdir/key.json" "$status" "$GITHUB_OUTPUT" <<'NODE'
           const fs = require("node:fs");
           const [file, status, output] = process.argv.slice(2);
+          const secret = process.env.OPENROUTER_API_KEY;
+          const redact = (value) => {
+            let text = String(value ?? "");
+            if (typeof secret === "string" && secret.length > 0) text = text.replaceAll(secret, "[REDACTED]");
+            return text.replace(/Bearer\\s+\\S+/gi, "Bearer [REDACTED]").replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]").slice(0, 300);
+          };
           let body = {};
           try { body = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
           let insufficient = false;
@@ -112,7 +118,7 @@ jobs:
               .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
               .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
               .slice(0, 300);
-            console.log(`Quota preflight did not receive HTTP 200; status=${status}; error_code=${clean(err.code ?? err.status ?? "")}; message=${clean(err.message ?? body.message ?? "") || "no JSON error detail"}. Normal Robin path remains enabled.`);
+            console.log(`Quota preflight did not receive HTTP 200; status=${status}; error_code=${clean(err.code ?? err.status ?? "")}; message=${redact(err.message ?? body.message ?? "") || "no JSON error detail"}. Normal Robin path remains enabled.`);
           }
           fs.appendFileSync(output, `free_quota_insufficient=${insufficient}\n`);
           NODE
@@ -171,11 +177,17 @@ jobs:
           node - "$workdir/key.json" "$key_status" "$workdir/quota-exhausted" <<'NODE'
           const fs = require("node:fs");
           const [file, status, exhaustedPath] = process.argv.slice(2);
-          const redact = (value) => String(value ?? "")
-            .replaceAll(process.env.OPENROUTER_API_KEY || "\u0000", "[REDACTED]")
-            .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
-            .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
-            .slice(0, 400);
+          const secret = process.env.OPENROUTER_API_KEY;
+          const redact = (value) => {
+            let text = String(value ?? "");
+            if (typeof secret === "string" && secret.length > 0) {
+              text = text.replaceAll(secret, "[REDACTED]");
+            }
+            return text
+              .replace(/Bearer\\s+\\S+/gi, "Bearer [REDACTED]")
+              .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
+              .slice(0, 400);
+          };
           let body = {};
           try { body = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
           if (status === "200") {
@@ -218,11 +230,17 @@ jobs:
           node - "$workdir/probe.json" "$probe_status" "$ROBIN_MODEL" <<'NODE'
           const fs = require("node:fs");
           const [file, status, requestedModel] = process.argv.slice(2);
-          const redact = (value) => String(value ?? "")
-            .replaceAll(process.env.OPENROUTER_API_KEY || "\u0000", "[REDACTED]")
-            .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
-            .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
-            .slice(0, 400);
+          const secret = process.env.OPENROUTER_API_KEY;
+          const redact = (value) => {
+            let text = String(value ?? "");
+            if (typeof secret === "string" && secret.length > 0) {
+              text = text.replaceAll(secret, "[REDACTED]");
+            }
+            return text
+              .replace(/Bearer\\s+\\S+/gi, "Bearer [REDACTED]")
+              .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
+              .slice(0, 400);
+          };
           let body = {};
           try { body = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
           if (status === "200") {
@@ -239,8 +257,8 @@ jobs:
 
       - name: Request and verify Amazon Q fallback review
         id: q_fallback
-        if: ${{ !cancelled() && (steps.review_preflight.outputs.key_available != 'true' || steps.quota_preflight.outputs.free_quota_insufficient == 'true' || steps.primary_review.outcome == 'failure' || steps.primary_review.outcome == 'cancelled') }}
-        timeout-minutes: 2
+        if: ${{ !cancelled() && (steps.review_preflight.outputs.key_available != 'true' || steps.quota_preflight.outputs.free_quota_insufficient == 'true' || steps.primary_review.outcome == 'failure' || steps.primary_review.outcome == 'cancelled' || steps.primary_review.outcome == 'skipped') }}
+        timeout-minutes: 3
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -274,7 +292,7 @@ jobs:
 
           # Amazon Q can take a little time. Bound the wait, and only accept a real review
           # whose commit_id equals the PR's current head and whose body contains a review summary.
-          deadline=$((SECONDS + 100))
+          deadline=$((SECONDS + 90))
           while (( SECONDS < deadline )); do
             q_review_ids="$(find_q_review)"
             if [[ -n "$q_review_ids" ]]; then

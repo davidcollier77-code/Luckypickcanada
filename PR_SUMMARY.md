@@ -128,3 +128,8 @@ No dependency, lockfile, application source, workflow, protected runtime behavio
 Pre-submission double-check: the live PR file list was compared with the summary above; the source diff is limited to deletion of the inert script, and the remaining changed paths are task-governance and documentation records. Actual changed-head execution results are recorded above. The only known red check is Robin; its cause cannot be fully diagnosed without exposing the masked provider response/status or restoring a reliable review result.
 
 USEFUL RESULT: PARTIAL — the no-op artifact is removed and the Spec Kit gate, unit/type checks, visual tests, production build, build-size cap, OpenNext/Wrangler validation, and CodeQL analyses passed on source commit 8bdd4fe. The newly added Robin diagnostic has not yet run on the current workflow-edit commit. MERGE-READINESS: NO until the current head's checks complete and a valid Robin review is produced; do not describe all checks as green.
+
+
+## Amazon Q follow-up review findings addressed
+
+Review `5558036445` on head `e459b24309a8b5382ea803313d2474547b713898` caught three workflow hardening items. The follow-up commit adds `primary_review.outcome == 'skipped'` to the Amazon Q fallback condition, explicitly redacts the real API key only when non-empty, and aligns the polling budget (90 seconds) with a 3-minute step and 7-minute job timeout. The reviewer result remains fail-closed unless a substantive review for the exact current SHA exists. Current-head CI has to revalidate these final workflow changes before merge-readiness is claimed.

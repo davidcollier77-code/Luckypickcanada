@@ -57,7 +57,9 @@ Maintainers need a useful, credential-safe error signal when Robin cannot review
 - **FR-006**: Before invoking Robin, `.github/workflows/robin.yml` must query the configured provider’s account endpoint and skip the five-attempt primary review when fewer than five free-model daily requests remain.
 - **FR-007**: If the primary reviewer cannot run or fails, the workflow must request Amazon Q review of the current PR head and accept that fallback only if a substantive Amazon Q review is returned with `commit_id` exactly equal to the current PR head SHA.
 - **FR-008**: If the account quota is not confirmed exhausted after a Robin failure, the workflow must run one bounded minimal-completion probe to reveal status/error fields hidden by the current reviewer action.
-- **FR-009**: Diagnostics must log only allow-listed quota/error fields, redact credential-shaped strings, never print the raw response body, use strict request time limits, and never mark a missing review as successful.
+- **FR-009**: Diagnostics must log only allow-listed quota/error fields, redact the actual API key only when it is non-empty, redact credential-shaped strings, never print raw response bodies, and use strict request time limits.
+- **FR-010**: The Amazon Q fallback must also run when the primary review outcome is skipped, unless the workflow is explicitly cancelled.
+- **FR-011**: The fallback polling window must fit inside both its step timeout and enclosing job timeout.
 
 
 ## Success Criteria
