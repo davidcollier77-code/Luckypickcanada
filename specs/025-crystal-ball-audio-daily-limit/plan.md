@@ -46,3 +46,13 @@ Add three restrained existing-asset sound cues to the Crystal Ball reveal and en
 ## Follow-up regression repair — timeout callback closure (2026-10-17)
 
 The post-merge build identified a missing `setTimeout` callback closure in `stopCrystalBallEnergy`. Restore `}, 160);` before the existing `else` branch and remove the duplicate stop call inside the ID-equality guard. Keep the captured-ID race protection and keep the repair confined to the existing audio helper. Verify on the PR candidate using the existing unit-test/import coverage and OpenNext/Cloudflare build checks. Local shell checks, the repository governance verifier, build-size measurement, and physical mobile playback remain unverified until evidence is available.
+
+## Verification outcome — timeout-closure regression repair (2026-10-17)
+
+The targeted syntax repair is merged in PR #1507 at commit `b4f1f110803c3e3c5a9025718e80b30ed0fb9bdd`. Remote validation on the source/workflow candidate passed:
+
+- Visual QA run #498: targeted tests 3/3, all unit tests 11 files / 72 tests, standalone TypeScript, `./jules-verify.sh`, and Playwright (21 passed, 3 skipped, 0 failed).
+- OpenNext validation run #1107: Next.js production build, OpenNext Cloudflare build, CSS/worker/assets checks, and Wrangler no-deploy validation passed.
+- Build-size guard measured `.next + public` at 324,505,820 bytes (309.47 MiB), below the 495 MiB (519,045,120-byte) hard limit.
+
+The follow-up documentation PR records this verification evidence in the active feature artifacts and canonical report. Real-device mobile audio playback has not been tested and remains outstanding; the overall audio feature should not be called fully verified until that manual check is done.
