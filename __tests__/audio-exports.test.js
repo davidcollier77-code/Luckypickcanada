@@ -5,4 +5,8 @@ describe('audio helper exports', () => {
   it('exports stopCrystalBallEnergy', () => {
     expect(typeof stopCrystalBallEnergy).toBe('function');
   });
+
+  it('is a safe no-op before the energy sound has loaded', () => {
+    expect(stopCrystalBallEnergy()).toBeUndefined();
+  });
 });
