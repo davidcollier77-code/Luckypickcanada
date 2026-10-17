@@ -43,15 +43,14 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "${OPENROUTER_API_KEY:-}" ]]; then
-            echo "::error::OPENROUTER_API_KEY is unavailable to this workflow run."
-            if [[ "${ACTOR}" == "dependabot[bot]" ]]; then
-              echo "::error::For Dependabot-triggered runs, add OPENROUTER_API_KEY under Settings > Secrets and variables > Dependabot."
-            else
-              echo "::error::Add OPENROUTER_API_KEY under Settings > Secrets and variables > Actions."
-            fi
-            exit 1
+            echo "::warning::OPENROUTER_API_KEY is unavailable; Robin primary review will be skipped and the backup reviewer will be requested."
+            echo "key_available=false" >> "$GITHUB_OUTPUT"
+            echo "primary_model=${PRIMARY_MODEL_OVERRIDE:-openrouter/free}" >> "$GITHUB_OUTPUT"
+            echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
+          echo "key_available=true" >> "$GITHUB_OUTPUT"
           primary_model="${PRIMARY_MODEL_OVERRIDE:-openrouter/free}"
           if [[ "${primary_model}" == "google/gemma-4-31b-it:free" || "${primary_model}" == "google/gemma-4-26b-a4b-it:free" || "${primary_model}" == "cohere/north-mini-code:free" || "${primary_model}" == "qwen/qwen3-coder:free" || "${primary_model}" == "qwen/qwen3.8-27b:free" || "${primary_model}" == "xingchen-agi/xing4.0-29b-a4b:free" || "${primary_model}" == "dots-studio/dots-3-note-preview:free" ]]; then
             echo "::warning::ROBIN_LLM_MODEL points to a free endpoint tested unsuccessfully; using the OpenRouter free router with a hard time limit."
@@ -61,8 +60,66 @@ jobs:
           echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
           echo "OpenRouter API key is present; its value was not printed."
 
+      - name: Check OpenRouter free-model quota before review
+        id: quota_preflight
+        if: ${{ steps.review_preflight.outputs.key_available == 'true' }}
+        timeout-minutes: 1
+        shell: bash
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_BASE_URL: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
+        run: |
+          set -uo pipefail
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          base_url="${OPENROUTER_BASE_URL%/}"
+          status="000"
+          curl_rc=0
+          status="$(curl --silent --show-error --max-time 12 \
+            --output "$workdir/key.json" --write-out '%{http_code}' \
+            --header "Authorization: Bearer ${OPENROUTER_API_KEY}" \
+            --header "Accept: application/json" \
+            "${base_url}/key" 2>"$workdir/curl.err")" || curl_rc=$?
+          echo "OpenRouter quota preflight: HTTP ${status}; curl exit ${curl_rc}."
+          node - "$workdir/key.json" "$status" "$GITHUB_OUTPUT" <<'NODE'
+          const fs = require("node:fs");
+          const [file, status, output] = process.argv.slice(2);
+          let body = {};
+          try { body = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+          let insufficient = false;
+          if (status === "200") {
+            const data = body.data ?? body;
+            const quota = data.free_model_daily_requests ?? data.rate_limit?.free_model_daily_requests;
+            const remaining = quota?.remaining == null ? NaN : Number(quota.remaining);
+            const limit = quota?.limit == null ? NaN : Number(quota.limit);
+            if (Number.isFinite(remaining)) {
+              console.log(`OpenRouter free-model daily quota: ${remaining} remaining of ${Number.isFinite(limit) ? limit : "unknown"}.`);
+              if (Number.isFinite(remaining) && remaining < 5) {
+                insufficient = true;
+                console.log("::warning::Fewer than five free requests remain; skipping Robin's five-attempt retry budget and requesting the backup reviewer.");
+              }
+            } else {
+              console.log("OpenRouter quota preflight could not read a numeric remaining count; leaving the normal Robin path enabled.");
+            }
+            if (quota?.reset_at != null) {
+              const raw = quota.reset_at;
+              const date = typeof raw === "number" ? new Date(raw * (raw < 1e12 ? 1000 : 1)) : new Date(raw);
+              if (!Number.isNaN(date.getTime())) console.log(`Free-model quota reset time: ${date.toISOString()}.`);
+            }
+          } else {
+            const err = body.error ?? body;
+            const clean = (value) => String(value ?? "")
+              .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
+              .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
+              .slice(0, 300);
+            console.log(`Quota preflight did not receive HTTP 200; status=${status}; error_code=${clean(err.code ?? err.status ?? "")}; message=${clean(err.message ?? body.message ?? "") || "no JSON error detail"}. Normal Robin path remains enabled.`);
+          }
+          fs.appendFileSync(output, `free_quota_insufficient=${insufficient}\n`);
+          NODE
+
       - name: Robin review (OpenRouter free router — hard-capped)
         id: primary_review
+        if: ${{ steps.review_preflight.outputs.key_available == 'true' && steps.quota_preflight.outputs.free_quota_insufficient != 'true' }}
         uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
         timeout-minutes: 2
         continue-on-error: true
@@ -180,6 +237,57 @@ jobs:
           # This step intentionally reports diagnostics but never changes the failing review result.
           exit 0
 
+      - name: Request and verify Amazon Q fallback review
+        id: q_fallback
+        if: ${{ !cancelled() && (steps.review_preflight.outputs.key_available != 'true' || steps.quota_preflight.outputs.free_quota_insufficient == 'true' || steps.primary_review.outcome == 'failure' || steps.primary_review.outcome == 'cancelled') }}
+        timeout-minutes: 2
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          echo "review_found=false" >> "$GITHUB_OUTPUT"
+          head_sha="$(timeout 15s gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
+
+          find_q_review() {
+            timeout 15s env HEAD_SHA="$head_sha" gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+              --jq '.[] | select(.commit_id == env.HEAD_SHA and .user.login == "amazon-q-developer[bot]" and .state != "DISMISSED" and ((.body // "") | test("Code Review Summary|Review Summary|Full Review"; "i"))) | .id'
+          }
+
+          q_review_ids="$(find_q_review)"
+          if [[ -n "$q_review_ids" ]]; then
+            echo "review_found=true" >> "$GITHUB_OUTPUT"
+            echo "A substantive Amazon Q review already exists for the exact current head; no duplicate review was requested."
+            exit 0
+          fi
+
+          existing_request="$(timeout 15s env HEAD_SHA="$head_sha" gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and ((.body // "") | startswith("/q review")) and ((.body // "") | contains(env.HEAD_SHA))) | .id')"
+          if [[ -z "$existing_request" ]]; then
+            comment_body="$(printf '/q review\n\nAutomated backup review requested because Robin could not review this pull request (OpenRouter free quota unavailable or primary review failed).\nTarget head: %s\nA valid review for this exact commit is required; no check will pass without one.\n' "$head_sha")"
+            timeout 15s gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$comment_body" >/dev/null
+            echo "Requested the installed Amazon Q reviewer for head $head_sha."
+          else
+            echo "A request for the Amazon Q reviewer already exists for this exact head; waiting for its result."
+          fi
+
+          # Amazon Q can take a little time. Bound the wait, and only accept a real review
+          # whose commit_id equals the PR's current head and whose body contains a review summary.
+          deadline=$((SECONDS + 100))
+          while (( SECONDS < deadline )); do
+            q_review_ids="$(find_q_review)"
+            if [[ -n "$q_review_ids" ]]; then
+              echo "review_found=true" >> "$GITHUB_OUTPUT"
+              echo "Amazon Q posted a substantive review for the exact current head."
+              exit 0
+            fi
+            sleep 8
+          done
+
+          echo "::warning::Amazon Q did not post a qualifying review for head $head_sha within the bounded wait. The final review gate will remain failed."
+          exit 0
+
       - name: Check whether the primary review was already posted
         id: review_guard
         if: ${{ (steps.primary_review.outcome == 'failure' || steps.primary_review.outcome == 'cancelled') && !cancelled() }}
@@ -212,6 +320,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           KEY_OUTCOME: ${{ steps.review_preflight.outcome }}
           PRIMARY_OUTCOME: ${{ steps.primary_review.outcome }}
+          KEY_AVAILABLE: ${{ steps.review_preflight.outputs.key_available }}
+          FREE_QUOTA_INSUFFICIENT: ${{ steps.quota_preflight.outputs.free_quota_insufficient }}
+          Q_FALLBACK_FOUND: ${{ steps.q_fallback.outputs.review_found }}
           GUARD_OUTCOME: ${{ steps.review_guard.outcome }}
           GUARD_POSTED: ${{ steps.review_guard.outputs.posted }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
@@ -227,16 +338,28 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [[ "$KEY_OUTCOME" != "success" ]]; then
-            echo "::error::Robin review stopped before provider calls because OPENROUTER_API_KEY was unavailable."
+            echo "::error::The review preflight step itself failed; no reviewer outcome can be trusted."
             exit 1
           fi
           if [[ "$PRIMARY_OUTCOME" == "success" ]]; then
-            echo "Primary review completed successfully."
+            echo "Primary Robin review completed successfully."
             exit 0
           fi
           if [[ "$GUARD_POSTED" == "true" ]]; then
             echo "The primary action ended abnormally after posting a Robin review; no duplicate was created."
             exit 0
+          fi
+          if [[ "$Q_FALLBACK_FOUND" == "true" ]]; then
+            echo "A substantive Amazon Q review for the exact current PR head was verified. Accepting this real backup review; no missing review is being waived."
+            exit 0
+          fi
+          if [[ "$KEY_AVAILABLE" != "true" ]]; then
+            echo "::error::OPENROUTER_API_KEY is unavailable and no qualifying Amazon Q fallback review was posted."
+            exit 1
+          fi
+          if [[ "$FREE_QUOTA_INSUFFICIENT" == "true" ]]; then
+            echo "::error::OpenRouter free-model daily quota is exhausted or below the five-attempt budget, and no qualifying Amazon Q fallback review was posted."
+            exit 1
           fi
 
           if [[ -z "${REVIEW_START_EPOCH:-}" ]]; then

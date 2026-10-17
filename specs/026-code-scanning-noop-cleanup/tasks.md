@@ -46,6 +46,8 @@
 **Independent Test**: A failed Robin action prints the account endpoint HTTP status and allow-listed quota/error fields; the minimal completion probe is skipped when free quota is exhausted, otherwise it runs with a strict timeout; a missing review still causes the Robin workflow to fail.
 
 - [x] T013 [US2] Add a failure-only account/quota and minimal completion diagnostic to .github/workflows/robin.yml, with redaction, bounded curl calls, and no raw response logging.
-- [ ] T014 [US2] Verify .github/workflows/robin.yml diagnostic behavior on the next GitHub Actions run and record the actual account quota/provider error in PR_SUMMARY.md without exposing secrets.
-- [ ] T015 [US2] Confirm the Robin review enforcement step still fails when no review is posted and that the diagnostics did not mark any failed review as successful.
+- [x] T014 [US2] Add a read-only quota preflight to .github/workflows/robin.yml and skip Robin's five-attempt path when fewer than five free-model requests remain.
+- [x] T015 [US2] Add the Amazon Q fallback request/poll path to .github/workflows/robin.yml; require a substantive review on the exact head SHA and retain failure when none appears.
+- [ ] T016 [US2] Verify the new quota preflight and Amazon Q fallback in a current-head run of .github/workflows/robin.yml; record whether the automated command was accepted and whether a matching Q review appeared.
+- [ ] T017 [US2] Inspect all updated-head workflow runs and amend PR_SUMMARY.md with exact results; confirm failed/missing Q review remains fail-closed.
 

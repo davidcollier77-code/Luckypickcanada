@@ -10,4 +10,6 @@ Use the pull-request workflows as the execution environment because the working 
 6. Retry Robin review once after code/docs update. Record service timeout honestly if the upstream router again fails to produce a response.
 7. Before completion, reconcile the changed-file list with the PR diff and update tasks.md and PR_SUMMARY.md with real run IDs and outcomes.
 
-7. If Robin fails, inspect the failure-only diagnostic output from `.github/workflows/robin.yml`. Confirm no credentials or raw response bodies were logged; check whether free-model daily quota is zero; otherwise inspect the minimal completion HTTP status/error. The final Robin check must remain failed when no valid review has been posted.
+7. Confirm `.github/workflows/robin.yml` checks the free-model quota before invoking Robin and skips the five-attempt path if fewer than five requests remain.
+8. If quota is low/missing or Robin fails, verify the workflow requests Amazon Q review and accepts only a substantive review whose `commit_id` equals the current PR head SHA. The step has a bounded wait and must leave the check failed if no such review appears.
+9. If Robin fails while quota remains, inspect the failure-only diagnostic. Confirm no credentials or raw response bodies are logged and review the HTTP/status and sanitized provider error fields.

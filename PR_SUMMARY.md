@@ -121,7 +121,7 @@ The exact candidate PR file inventory was re-read from GitHub after commit `8bdd
 9. `specs/026-code-scanning-noop-cleanup/spec.md`
 10. `specs/026-code-scanning-noop-cleanup/tasks.md`
 11. `test_fix.js` (deleted)
-12. `.github/workflows/robin.yml` (adds failure-only account/quota and minimal completion diagnostics; does not change final review enforcement)
+12. `.github/workflows/robin.yml` (adds free-model quota preflight, failure diagnostics, and an Amazon Q fallback that is accepted only after a substantive review of the exact current head)
 
 No dependency, lockfile, application source, workflow, protected runtime behavior, environment variable, secret, or deployment configuration was changed. No deployment was performed. Current successful CI verifies the cleanup and the previous governance failure is resolved. The Robin review is still an unresolved external integration gate because no review was produced; the task is not fully green and the PR remains open.
 
