@@ -56,6 +56,7 @@ jobs:
             echo "::warning::ROBIN_LLM_MODEL points to a free endpoint tested unsuccessfully; using the OpenRouter free router with a hard time limit."
             primary_model="openrouter/free"
           fi
+          echo "primary_model=$primary_model" >> "$GITHUB_OUTPUT"
           echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
           echo "OpenRouter API key is present; its value was not printed."
 
