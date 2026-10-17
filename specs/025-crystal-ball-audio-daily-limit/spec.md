@@ -29,7 +29,7 @@ Acceptance criteria: initial quota is three; each successful AI answer decrement
 - Existing reduced-motion, screen-reader, responsive, and keyboard behavior stays intact.
 
 ## Functional Requirements
-- FR-001: Use existing same-origin assets for short energy, reveal, and golden-leaf cues.
+- FR-001: Use newly sourced, same-origin WAV assets for short energy, reveal, and golden-leaf cues; record source pages and license in `public/sounds/crystal-ball-audio-sources.md`.
 - FR-002: Audio must not block the AI call or the visual sequence.
 - FR-003: Limit successful AI-backed answers to three per client IP per UTC day.
 - FR-004: Reserve capacity before provider calls and commit only non-empty AI answers.
@@ -39,7 +39,7 @@ Acceptance criteria: initial quota is three; each successful AI answer decrement
 - FR-008: Display the remaining count and a clear reached-limit message.
 - FR-009: Fail closed for AI requests when the shared quota store is unavailable.
 - FR-010: Preserve the reveal order, artwork, existing short-term rate limiter, and repeated-question behavior within the allowance.
-- FR-011: Add no package dependency or external audio domain.
+- FR-011: Add no runtime package dependency or external audio domain; acquire licensed sources through a free command-line workflow and keep MP3 downloads out of `public/`.
 - FR-012: Stay below the hard 495 MB build maximum.
 - FR-013: Keep Crystal Ball energy-stop logic in a separately exported helper and ensure the audio module compiles in a production build.
 
@@ -61,7 +61,7 @@ Acceptance criteria: initial quota is three; each successful AI answer decrement
 - The daily boundary is 00:00 UTC for deterministic server-side accounting.
 - IP-derived keys are hashed before storage. Shared networks share a quota, and changing networks may change it.
 - Redis supplies cross-isolate atomic operations when configured. Cloudflare KV is a durable but not cross-isolate-atomic fallback; in-memory state is for local development/tests only.
-- Existing local sound assets and Howler.js are reused.
+- Howler.js is reused, but the three Crystal Ball cues are newly sourced online assets, not existing repository sounds. Download originals by HTTPS command line, convert to same-origin WAV, and record source/license provenance.
 - Fallback fortunes are not counted as AI-backed answers when the provider is unavailable.
 
 ## Regression follow-up — missing timeout closure (2026-10-17)
@@ -74,3 +74,8 @@ Acceptance criteria for this correction:
 - Shared audio volume and cached ID are reset only when that same sound ID remains current.
 - The immediate-stop fallback and surrounding Crystal Ball reveal sequence remain unchanged.
 - The module import, unit tests, and OpenNext/Cloudflare production build pass on the candidate before merge.
+
+
+## New Sound Asset Requirement — 2026-10-17
+
+Replace the three borrowed Crystal Ball sounds with three distinct tracks sourced from Pixabay under its Content License: a magical aura/energy loop, a short spell-impact reveal, and a brief twinkle/sparkle leaf chime. Download them directly by HTTPS CLI without API keys, convert them to WAV for same-origin hosting, keep original MP3 downloads temporary, and preserve artist, listing URL, source URL, duration, and license in the provenance record. Do not change the reveal order, volume intent, user interaction flow, or reduced-motion behavior.

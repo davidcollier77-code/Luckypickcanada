@@ -51,3 +51,12 @@ Specify → plan/research → implementation → automated tests/build → remai
 
 Unit and Playwright testing can execute independently after dependency installation. Build, standalone TypeScript/governance verification, output-size measurement and real-device playback must be reported separately.
 - [x] T026 Close the delayed `setTimeout` callback in `app/lib/audio.js` with the intended 160 ms fade-stop delay; preserve the captured-ID guard and immediate-stop fallback.
+
+
+## Phase 7 — Replace borrowed Crystal Ball sounds with new sourced assets
+
+- [x] T027 Verify the three Pixabay source listings, direct media URLs, durations, artist identities, and Content License; record provenance in public/sounds/crystal-ball-audio-sources.md.
+- [x] T028 Download the licensed originals with free curl CLI commands without API keys; convert them with FFmpeg to same-origin WAVs and keep MP3 originals out of public/. Verified in preparation workflow run #1 on 2026-10-17.
+- [x] T029 Switch CRYSTAL_BALL_SOUNDS to the three new WAV assets without changing reveal sequence or volume intent.
+- [x] T030 Add automated checks for WAV headers, non-silent audio, size, and source/license provenance in __tests__/crystal-ball-audio-assets.test.js.
+- [ ] T031 Run unit, Playwright, TypeScript, Spec Kit governance, production build, OpenNext/Wrangler validation, and the 495 MiB size check; report physical-device playback separately. Audio acquisition/integrity workflow succeeded; final PR validation remains pending.
