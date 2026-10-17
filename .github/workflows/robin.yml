@@ -53,21 +53,21 @@ jobs:
             exit 1
           fi
 
-          primary_model="${PRIMARY_MODEL_OVERRIDE:-google/gemma-4-26b-a4b-it:free}"
-          fallback_model="${FALLBACK_MODEL_OVERRIDE:-cohere/north-mini-code:free}"
-          if [[ "${primary_model,,}" == openrouter/* || "${primary_model}" == "google/gemma-4-31b-it:free" ]]; then
-            echo "::warning::ROBIN_LLM_MODEL uses a random router or the rate-limited Gemma 4 31B free endpoint; using google/gemma-4-26b-a4b-it:free."
-            primary_model="google/gemma-4-26b-a4b-it:free"
+          primary_model="${PRIMARY_MODEL_OVERRIDE:-xingchen-agi/xing4.0-29b-a4b:free}"
+          fallback_model="${FALLBACK_MODEL_OVERRIDE:-qwen/qwen3.8-27b:free}"
+          if [[ "${primary_model,,}" == openrouter/* || "${primary_model}" == "google/gemma-4-31b-it:free" || "${primary_model}" == "google/gemma-4-26b-a4b-it:free" ]]; then
+            echo "::warning::ROBIN_LLM_MODEL uses a router or a free endpoint already seen returning 429; using xingchen-agi/xing4.0-29b-a4b:free."
+            primary_model="xingchen-agi/xing4.0-29b-a4b:free"
           fi
-          if [[ "${fallback_model,,}" == openrouter/* || "${fallback_model}" == "cohere/north-mini-code:free" ]]; then
-            echo "::warning::ROBIN_LLM_FALLBACK_MODEL selects a random router or the unavailable Qwen3 Coder free endpoint; using cohere/north-mini-code:free."
-            fallback_model="cohere/north-mini-code:free"
+          if [[ "${fallback_model,,}" == openrouter/* || "${fallback_model}" == "qwen/qwen3.8-27b:free" ]]; then
+            echo "::warning::ROBIN_LLM_FALLBACK_MODEL selects a random router or the unavailable Qwen3 Coder free endpoint; using qwen/qwen3.8-27b:free."
+            fallback_model="qwen/qwen3.8-27b:free"
           fi
           if [[ "$primary_model" == "$fallback_model" ]]; then
-            if [[ "$primary_model" == "cohere/north-mini-code:free" ]]; then
-              fallback_model="google/gemma-4-26b-a4b-it:free"
+            if [[ "$primary_model" == "qwen/qwen3.8-27b:free" ]]; then
+              fallback_model="xingchen-agi/xing4.0-29b-a4b:free"
             else
-              fallback_model="cohere/north-mini-code:free"
+              fallback_model="qwen/qwen3.8-27b:free"
             fi
             echo "::warning::Primary and fallback models were identical; selected a different free fallback."
           fi
@@ -80,7 +80,7 @@ jobs:
           echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
           echo "OpenRouter API key is present; its value was not printed."
 
-      - name: Robin review (primary — Gemma 4 31B free)
+      - name: Robin review (primary — explicit free model)
         id: primary_review
         uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
         timeout-minutes: 2
@@ -129,7 +129,7 @@ jobs:
             echo "No completed Robin review for the current PR head was found; fallback is safe to consider."
           fi
 
-      - name: Robin review fallback (Qwen3 Coder free)
+      - name: Robin review fallback (explicit free model)
         id: fallback_review
         if: ${{ steps.primary_review.outcome == 'failure' && steps.review_guard.outcome == 'success' && steps.review_guard.outputs.posted != 'true' && !cancelled() && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
         uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
