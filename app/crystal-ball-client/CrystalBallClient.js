@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import CrystalBall from '../../app/components/CrystalBall/CrystalBall';
 import {
   DAILY_QUESTION_LIMIT,
+  DAILY_STORAGE_KEY,
   createFreshUsage,
   getLocalDateKey,
   getNextLocalMidnight,
@@ -41,7 +42,7 @@ export default function CrystalBallClient() {
     };
 
     const handleStorage = (event) => {
-      if (event.key !== null && event.key !== 'luckyPickCanada:crystalBallDailyQuestions:v1') return;
+      if (event.key !== null && event.key !== DAILY_STORAGE_KEY) return;
       const next = readDailyUsage(getBrowserStorage());
       usageRef.current = next;
       setUsage(next);
