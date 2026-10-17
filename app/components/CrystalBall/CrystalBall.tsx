@@ -408,6 +408,11 @@ export default function CrystalBall({
                 : `You’ve used all ${dailyQuota.limit} questions for today. Come back after the daily reset.`}
             </p>
           )}
+          {dailyQuota && countdownNow !== null && (
+            <p className={styles.dailyQuotaCountdown} aria-label="Time until daily allowance resets">
+              Allowance resets in {formatCountdown(Date.parse(dailyQuota.resetAt) - countdownNow)}
+            </p>
+          )}
 
           {!showResult && !currentFortune && (
             <p className={styles.cardHint}>
