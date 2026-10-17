@@ -74,3 +74,14 @@ Acceptance criteria for this correction:
 - Shared audio volume and cached ID are reset only when that same sound ID remains current.
 - The immediate-stop fallback and surrounding Crystal Ball reveal sequence remain unchanged.
 - The module import, unit tests, and OpenNext/Cloudflare production build pass on the candidate before merge.
+
+## Verification outcome — timeout-closure regression repair (2026-10-17)
+
+The follow-up repair was merged through PR #1507 at commit `b4f1f110803c3e3c5a9025718e80b30ed0fb9bdd`. The remote checks attached to the code/workflow candidate passed:
+
+- Visual QA run #498: targeted test 3/3; full unit suite 11 files / 72 tests; standalone TypeScript and `./jules-verify.sh` passed; Playwright 21 passed, 3 skipped, and 0 failed.
+- OpenNext validation run #1107: Next.js production build, OpenNext Cloudflare build, Tailwind CSS/worker/assets checks, and no-deploy Wrangler build validation passed.
+- `.next + public` measured 324,505,820 bytes (309.47 MiB), below the 495 MiB hard cap of 519,045,120 bytes.
+- The CI workflow now enforces this output-size threshold before it proceeds to OpenNext packaging.
+
+These results validate the parser/build repair and the measured output-size gate. They do not verify audible playback on a physical mobile device. That manual behavior check remains outstanding; do not mark the full audio feature complete until it is performed.
