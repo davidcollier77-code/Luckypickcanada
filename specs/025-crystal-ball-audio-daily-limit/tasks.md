@@ -39,7 +39,7 @@
 
 ## Phase 6 — Production-build regression repair
 
-- [x] T023 Restore the missing stopCrystalBallEnergy export and server-side guard in app/lib/audio.js, preserving the captured sound ID in the fade-stop callback.
+- [x] T023 Restore the stopCrystalBallEnergy export and server-side guard in app/lib/audio.js, preserving the captured sound ID and closing the delayed fade-stop callback.
 - [x] T024 Add __tests__/audio-exports.test.js to protect the separate audio helper export.
 - [ ] T025 Run unit tests, standalone TypeScript, ./jules-verify.sh, the Next.js production build, OpenNext Cloudflare build, and no-deploy Wrangler validation on the repair candidate; record actual CI results.
 
@@ -50,3 +50,4 @@ Specify → plan/research → implementation → automated tests/build → remai
 ## Parallel opportunities
 
 Unit and Playwright testing can execute independently after dependency installation. Build, standalone TypeScript/governance verification, output-size measurement and real-device playback must be reported separately.
+- [x] T026 Close the delayed `setTimeout` callback in `app/lib/audio.js` with the intended 160 ms fade-stop delay; preserve the captured-ID guard and immediate-stop fallback.
