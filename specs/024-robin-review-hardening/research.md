@@ -21,7 +21,7 @@ Those errors establish that pinning a specific free model is fragile; the router
 
 - Robin action pinned to immutable commit fc0bf915b634bf2f8b88ff1392acefdfb54e28d9.
 - Default model openrouter/free, with existing model/base URL repository-variable overrides retained. A small preflight redirects model aliases that were tested unsuccessfully back to the router.
-- llm-timeout-ms = 90000; action step timeout = 2 minutes; complete job timeout = 4 minutes.
+- llm-timeout-ms = 90000; action step timeout = 2 minutes; complete job timeout = 5 minutes.
 - Preflight checks that OPENROUTER_API_KEY exists without printing its value; Dependabot-specific guidance is emitted if missing.
 - On failure or cancellation, review lookup checks current PR head SHA, Robin signature and submitted timestamp. A final lookup avoids a false failure if a review was posted just before timeout. The lookup runs with small per-call limits.
 - Robin is a non-blocking advisor and does not request changes; no website/application code is changed.

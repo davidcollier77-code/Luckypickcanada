@@ -4,7 +4,7 @@
 
 - Goal: Bound Robin review runtime while keeping the free router that actually completed a live review; do not add a second in-Robin model attempt.
 - Verified root cause: .github/workflows/robin.yml called a moving reusable workflow whose internal job has a 45-minute timeout. It passed a custom 300-second timeout to Robin's openrouter/free router, overriding the two-minute router default. Robin clears the router stall timer after the first SSE chunk, so later generation was not bounded by that timer; logs show long calls, empty output and provider internal errors.
-- Fix under review on fix/robin-bounded-review-fallback: pinned Robin action, default openrouter/free, 90-second client timeout, two-minute action-step cap, four-minute job cap, safe missing-key preflight, cancellation-aware review guard and final recheck. Live run #38988422706 posted review #5555193756 and completed in about 1m52s; the review had zero findings. The failure path was also observed to exit within the cap.
+- Fix under review on fix/robin-bounded-review-fallback: pinned Robin action, default openrouter/free, 90-second client timeout, two-minute action-step cap, five-minute job cap, safe missing-key preflight, cancellation-aware review guard and final recheck. Live run #38988422706 posted review #5555193756 and completed in about 1m52s; the review had zero findings. The failure path was also observed to exit within the cap.
 - Verification: source and historical logs inspected; live success and fail-closed timeout runs observed. Local clone failed because this session could not resolve github.com; ./jules-verify.sh remains unrun locally.
 
 

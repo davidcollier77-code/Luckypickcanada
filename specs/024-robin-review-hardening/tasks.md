@@ -10,7 +10,7 @@ Input: Design documents in specs/024-robin-review-hardening/
 ## Phase 2: Workflow reliability (P1)
 
 - [x] T003 Replace the moving reusable-workflow call with the immutable Robin action reference.
-- [x] T004 Preserve OpenRouter free routing as the default; set a 90-second client timeout, two-minute step cap, four-minute job cap, and safe credential preflight.
+- [x] T004 Preserve OpenRouter free routing as the default; set a 90-second client timeout, two-minute step cap, five-minute job cap, and safe credential preflight.
 - [x] T005 Add a failure/cancellation-aware review lookup and final recheck to prevent a timeout-after-post from becoming a duplicate or false failure.
 - [x] T006 Update quickstart.md for the one-attempt bounded flow (no second Robin model handoff).
 

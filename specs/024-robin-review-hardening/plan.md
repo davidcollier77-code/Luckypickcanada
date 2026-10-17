@@ -16,7 +16,7 @@ Replace the moving reusable-workflow reference with a pinned Robin action, keep 
 - Testing: GitHub Actions workflow validation and pull-request checks; static inspection of workflow conditions and API calls.
 - Target Platform: GitHub Actions.
 - Project Type: CI workflow configuration.
-- Performance Goals: Single review action capped at 2 minutes; job capped at 4 minutes after it starts.
+- Performance Goals: Single review action capped at 2 minutes; job capped at 5 minutes after it starts.
 - Constraints: No paid models, no application or deployment changes, no credential values in logs, preserve existing review permissions and concurrency.
 
 ## Evidence and Root Cause
@@ -31,7 +31,7 @@ Replace the moving reusable-workflow reference with a pinned Robin action, keep 
 
 1. Call the pinned Robin action directly rather than the reusable workflow so each action step has a hard timeout.
 2. Keep openrouter/free as the default, honoring the existing ROBIN_LLM_MODEL and ROBIN_LLM_BASE_URL variables. Preserve known failed model aliases being redirected to the free router, but make the two-minute action cap the final bound.
-3. Set llm-timeout-ms to 90,000 ms; cap the single action step at 2 minutes and the job at 4 minutes.
+3. Set llm-timeout-ms to 90,000 ms; cap the single action step at 2 minutes and the job at 5 minutes.
 4. Fail in preflight if OPENROUTER_API_KEY is missing and give a Dependabot-specific configuration hint without printing the secret.
 5. Keep the reusable workflow's PR-event filter and job-level concurrency behavior. Do not add workflow-level concurrency.
 6. On failure or cancellation, query submitted review objects matching the current head SHA, Robin signature and timestamp since this run began. Recheck in the final step to protect against a timeout after the review was posted.

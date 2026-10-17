@@ -43,7 +43,7 @@ Acceptance Scenarios:
 
 ## Requirements
 
-- FR-001: A running review job must reach success or failure within four minutes.
+- FR-001: A running review job must reach success or failure within five minutes.
 - FR-002: The single Robin review action must have a two-minute hard execution limit.
 - FR-003: The default model must be OpenRouter’s free router, with configurable overrides; the entire action must be bounded independently of the router’s internal retries.
 - FR-004: Missing API credentials must cause a fast, explicit failure before any provider request.

@@ -12,7 +12,7 @@
 1. On a test PR, use a provider or model expected to fail only if a maintainer is willing to change and restore the repository variable. Do not change or display secrets.
 2. Confirm the action failure or cancellation triggers the review guard and that the guard matches the current PR head and timestamp.
 3. Confirm the final outcome step rechecks reviews and fails if none was posted.
-4. Confirm the action does not wait beyond two minutes and the overall job stays within four minutes after starting.
+4. Confirm the action does not wait beyond two minutes and the overall job stays within five minutes after starting.
 
 ## Missing-key path
 

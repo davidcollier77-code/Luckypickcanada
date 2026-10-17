@@ -23,7 +23,7 @@
 - Amazon Q finished before Robin started on PR #1500. CodeRabbit posted later on PR #1501, but there is no explicit automatic handoff in this repository to prove that Robin failure triggered CodeRabbit.
 - Replaced the moving reusable-workflow call with Robin action pinned at commit fc0bf915b634bf2f8b88ff1392acefdfb54e28d9.
 - Final default: openrouter/free. Several fixed free endpoints tested during implementation returned HTTP 429, 404, 502 or empty output. The router was restored after a live run completed successfully, posted review #5555193756, and finished in about 1m52s.
-- Added a 90-second client timeout, two-minute action-step limit, four-minute job limit, missing-key preflight, cancellation-aware duplicate-review guard keyed to current head and run start, and final recheck after timeout.
+- Added a 90-second client timeout, two-minute action-step limit, five-minute job limit, missing-key preflight, cancellation-aware duplicate-review guard keyed to current head and run start, and final recheck after timeout.
 - Preserved events, authorized slash commands, job-level concurrency, permissions, review limit and non-blocking advisor mode. No website, payments, database, deployment settings, secrets or secret values changed.
 - The preflight can detect a missing OPENROUTER_API_KEY quickly but cannot create secrets. If missing in a Dependabot run, the owner must add it under Settings → Secrets and variables → Dependabot.
 
