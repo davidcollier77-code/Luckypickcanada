@@ -6,7 +6,7 @@
 
 ## Summary
 
-Replace the three borrowed Crystal Ball audio cues with newly sourced, licensed same-origin WAV sound cues and preserve the existing reveal behavior and enforce a daily allowance of three successful AI-backed answers per client IP. Reuse the current Howler helper and Oracle route, reserve quota before provider calls, show remaining usage, and release reservations on provider failures. This follow-up repairs a syntax regression that removed the separate stopCrystalBallEnergy export and blocked production compilation.
+Replace the three borrowed Crystal Ball audio cues with newly sourced, licensed same-origin WAVs while preserving the reveal behavior. The same active feature also enforces a daily allowance of three successful AI-backed answers per client IP. Reuse the current Howler helper and Oracle route, reserve quota before provider calls, show remaining usage, and release reservations on provider failures. A prior follow-up in this feature repaired the syntax regression that removed the separate stopCrystalBallEnergy export and blocked production compilation.
 
 ## Technical Context
 
