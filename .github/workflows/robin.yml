@@ -59,7 +59,7 @@ jobs:
         timeout-minutes: 3
         continue-on-error: true
         with:
-          github-token: ${{ secrets.ROBIN_TOKEN || github.token }}
+          github-token: ${{ github.token }}
           llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}
           llm-base-url: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
           model: ${{ vars.ROBIN_LLM_MODEL || 'google/gemma-4-31b-it:free' }}
@@ -110,7 +110,7 @@ jobs:
         timeout-minutes: 3
         continue-on-error: true
         with:
-          github-token: ${{ secrets.ROBIN_TOKEN || github.token }}
+          github-token: ${{ github.token }}
           llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}
           llm-base-url: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
           model: ${{ vars.ROBIN_LLM_FALLBACK_MODEL || 'qwen/qwen3-coder:free' }}
