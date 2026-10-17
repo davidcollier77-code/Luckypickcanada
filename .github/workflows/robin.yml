@@ -52,17 +52,17 @@ jobs:
             exit 1
           fi
 
-          primary_model="${PRIMARY_MODEL_OVERRIDE:-xingchen-agi/xing4.0-29b-a4b:free}"
-          primary_model="${PRIMARY_MODEL_OVERRIDE:-xingchen-agi/xing4.0-29b-a4b:free}"
+          primary_model="${PRIMARY_MODEL_OVERRIDE:-qwen/qwen3.8-27b:free}"
+          primary_model="${PRIMARY_MODEL_OVERRIDE:-qwen/qwen3.8-27b:free}"
           if [[ "${primary_model,,}" == openrouter/* || "${primary_model}" == "google/gemma-4-31b-it:free" || "${primary_model}" == "google/gemma-4-26b-a4b-it:free" || "${primary_model}" == "cohere/north-mini-code:free" || "${primary_model}" == "qwen/qwen3-coder:free" ]]; then
-            echo "::warning::ROBIN_LLM_MODEL points to a random router or a free endpoint already tested unsuccessfully; using xingchen-agi/xing4.0-29b-a4b:free."
-            primary_model="xingchen-agi/xing4.0-29b-a4b:free"
+            echo "::warning::ROBIN_LLM_MODEL points to a random router or a free endpoint already tested unsuccessfully; using qwen/qwen3.8-27b:free."
+            primary_model="qwen/qwen3.8-27b:free"
           fi
           echo "primary_model=$primary_model" >> "$GITHUB_OUTPUT"
           echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
           echo "OpenRouter API key is present; its value was not printed."
 
-      - name: Robin review (primary — explicit free model)
+      - name: Robin review (primary — Qwen3.8 27B free)
         id: primary_review
         uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
         timeout-minutes: 2
@@ -156,5 +156,5 @@ jobs:
             exit 0
           fi
 
-          echo "::error::Robin primary and fallback did not complete a review. See the step logs for the bounded failure details."
+          echo "::error::Robin review did not complete within its bounded attempt. No review was posted; this failed check is ready for any external fallback reviewer."
           exit 1
