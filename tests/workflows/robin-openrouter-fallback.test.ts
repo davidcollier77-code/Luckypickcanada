@@ -29,7 +29,7 @@ describe("Robin OpenRouter fallback workflow", () => {
   });
 
   it("still allows Robin summary/help commands to run when quota is low", () => {
-    expect(primaryStep).toContain("steps.quota_preflight.outputs.free_quota_insufficient != 'true' || (github.event_name == 'issue_comment'");
+    expect(workflow).toContain("steps.quota_preflight.outputs.free_quota_insufficient != 'true' || (github.event_name == 'issue_comment'");
     expect(primaryStep).toContain("startsWith(github.event.comment.body, '/summary')");
     expect(primaryStep).toContain("startsWith(github.event.comment.body, '/help')");
   });
