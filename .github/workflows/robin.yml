@@ -59,8 +59,8 @@ jobs:
             echo "::warning::ROBIN_LLM_MODEL uses a router or a free endpoint already seen returning 429; using xingchen-agi/xing4.0-29b-a4b:free."
             primary_model="xingchen-agi/xing4.0-29b-a4b:free"
           fi
-          if [[ "${fallback_model,,}" == openrouter/* || "${fallback_model}" == "qwen/qwen3.8-27b:free" ]]; then
-            echo "::warning::ROBIN_LLM_FALLBACK_MODEL selects a random router or the unavailable Qwen3 Coder free endpoint; using qwen/qwen3.8-27b:free."
+          if [[ "${fallback_model,,}" == openrouter/* || "${fallback_model}" == "qwen/qwen3-coder:free" || "${fallback_model}" == "cohere/north-mini-code:free" ]]; then
+            echo "::warning::ROBIN_LLM_FALLBACK_MODEL selects a random router or a free endpoint already tested unsuccessfully; using qwen/qwen3.8-27b:free."
             fallback_model="qwen/qwen3.8-27b:free"
           fi
           if [[ "$primary_model" == "$fallback_model" ]]; then
