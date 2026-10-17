@@ -6,6 +6,8 @@ on:
       - feat/crystal-ball-new-sourced-audio
     paths:
       - .github/workflows/prepare-crystal-ball-audio-assets.yml
+  pull_request:
+    types: [opened, synchronize]
   workflow_dispatch:
 
 permissions:
@@ -17,6 +19,10 @@ concurrency:
 
 jobs:
   prepare-assets:
+    if: >-
+      github.ref_name == 'feat/crystal-ball-new-sourced-audio' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) &&
+      (github.event_name != 'pull_request' || hashFiles('public/sounds/crystal-ball-energy.wav') == '')
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -24,6 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
 
       - name: Install FFmpeg when needed
         shell: bash
@@ -132,4 +139,5 @@ jobs:
             exit 0
           fi
           git commit -m "feat(audio): add newly sourced Crystal Ball WAV cues"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          target_branch="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          git push origin "HEAD:${target_branch}"
