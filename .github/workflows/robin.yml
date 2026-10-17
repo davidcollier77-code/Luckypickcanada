@@ -88,7 +88,7 @@ jobs:
           const redact = (value) => {
             let text = String(value ?? "");
             if (typeof secret === "string" && secret.length > 0) text = text.replaceAll(secret, "[REDACTED]");
-            return text.replace(/Bearer\\s+\\S+/gi, "Bearer [REDACTED]").replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]").slice(0, 300);
+            return text.replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]").replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]").slice(0, 300);
           };
           let body = {};
           try { body = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
@@ -180,7 +180,7 @@ jobs:
               text = text.replaceAll(secret, "[REDACTED]");
             }
             return text
-              .replace(/Bearer\\s+\\S+/gi, "Bearer [REDACTED]")
+              .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
               .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
               .slice(0, 400);
           };
@@ -233,7 +233,7 @@ jobs:
               text = text.replaceAll(secret, "[REDACTED]");
             }
             return text
-              .replace(/Bearer\\s+\\S+/gi, "Bearer [REDACTED]")
+              .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
               .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
               .slice(0, 400);
           };
