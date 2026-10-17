@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+unset SPEC_KIT_BASE_REF
 # Regression tests for the fail-closed Spec Kit task-artifact verifier.
 set -euo pipefail
 

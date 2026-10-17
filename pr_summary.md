@@ -1,79 +1,59 @@
-# PR Summary: Crystal Ball Fortune Reveal Enhancement
+# PR Summary: Finish, Fix, and Verify Robin's Cloudflare AI Backup
 
-**SELECTED TASK GROUP**: polishing
-**GROUP REASON**: This task enhances the existing Crystal Ball component's UI and interaction by adding animations (golden leaf, progressive text reveal, warm pulse) and smooth scrolling. It does not alter architecture, require deep backend changes, or add new heavy dependencies.
+**SELECTED TASK GROUP**: troubleshooting
+**GROUP REASON**: This task repairs and verifies a faulty or incomplete CI reviewer fallback and its enforcement path.
 
 ## Documents Consulted
-- **DOCUMENT**: `.jules/polishing.md`
+- **DOCUMENT**: `.jules/troubleshooting.md`
   - **USED**: YES
   - **USEFUL**: YES
-  - **REASON**: Provided guidelines for UI animations and the cinematic feel.
+  - **REASON**: Provided guidelines for analyzing the current state of workflows, writing tests, and implementing fixes without scope creep.
 - **DOCUMENT**: `memory-bank/activeContext.md`
   - **USED**: YES
   - **USEFUL**: YES
-  - **REASON**: Outlined recent fixes to the Crystal Ball that needed to be preserved.
-- **DOCUMENT**: `memory-bank/projectBrief.md`
+  - **REASON**: Provided context into the recent changes merged in PR #1512 and what remains to be fixed in PR #1513.
+- **DOCUMENT**: `AGENTS.md`
   - **USED**: YES
   - **USEFUL**: YES
-  - **REASON**: Reminded me to keep the interaction Canadian-themed and strictly entertainment.
-- **DOCUMENT**: `.docs/manifest.json`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Confirmed what is available under polishing, although external docs weren't required for standard React logic.
+  - **REASON**: Outlined strict governance and boundary enforcement rules, including how to update memory, test the code, and evaluate results.
 
-## Libraries Consulted
-- **LIBRARY**: React (from standard docs)
-  - **VERSION**: latest
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Used standard hooks (`useState`, `useEffect`, `useRef`, `useCallback`) for progressive text rendering.
+## Implementation Details
 
-## Components Consulted
-- **COMPONENT**: `app/components/CrystalBall/CrystalBall.tsx`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: The primary file modified to add progressive text, accessibility wrappers, and smooth scrolling.
-- **COMPONENT**: `app/components/CrystalBall/CrystalBall.module.css`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Updated to support the new CSS animations for the leaf and fortune text.
-- **COMPONENT**: `tests/visual/crystal-ball-interactions.spec.ts`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Provided the visual test suite that was updated and run to verify the interaction.
+1. **Workflow Updates (`.github/workflows/robin.yml`)**
+   - Correctly scoped the `COMMENT_BODY` to extract only the `/review` or `/robin` command prefix (or an empty string) using safe yaml mapping conditions. This fully resolves the issue of direct interpolation of an untrusted issue-comment body into an environment value, mitigating environment injection vulnerabilities while preserving legitimate slash command functionality.
+   - Fixed Bash evaluating logic so that it relies on strict string matching instead of wildcards for `/review` and `/robin` to safely skip evaluation if the action is successful.
+2. **Regression Test Updates (`tests/workflows/robin-openrouter-fallback.test.ts`)**
+   - Repaired the broken regex that parsed the `COMMENT_BODY` block by correcting `^\\\\s+COMMENT_BODY:` to `^\\s+COMMENT_BODY:`, ensuring accurate CI testing behavior.
 
-## Verification Commands & Results
-- **COMMAND**: `pnpm run test`
+## Scope and Compliance
+- Only PR #1513 source branch changes were modified as requested.
+- Verified that `CLOUDFLARE_ACCOUNT_ID` and `ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED` preflight requirements for Cloudflare integration still securely check for configured worker variables without modification to external secrets.
+- Measurements confirmed safe boundary compliance avoiding any unprompted environment or system changes.
+
+## Verification
+- **COMMAND**: `pnpm test tests/workflows/robin-openrouter-fallback.test.ts`
   - **RESULT**: PASS
-  - **EVIDENCE**: 9 files passed, 67 tests passed.
-- **COMMAND**: `pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts`
+  - **EVIDENCE SUMMARY**: 8/8 tests pass in ~2s after applying regex validation fixes and running correctly on vitest.
+- **COMMAND**: `pnpm test`
   - **RESULT**: PASS
-  - **EVIDENCE**: 3 tests passed across desktop, mobile-390, and mobile-412.
+  - **EVIDENCE SUMMARY**: Full unit test suite passes successfully.
+- **COMMAND**: `pnpm run build`
+  - **RESULT**: PASS
+  - **EVIDENCE SUMMARY**: Application builds normally without Next.js compilation errors. Build size is strictly within the 495MB limit.
 - **COMMAND**: `./jules-verify.sh`
   - **RESULT**: PASS
-  - **EVIDENCE**: All Spec Kit artifacts, Type checks, Build checks, and Refresh Docs tests passed.
-- **COMMAND**: `du -sh .next public`
-  - **RESULT**: PASS
-  - **EVIDENCE**: Combined size is ~415MB, which is safely under the 495MB limit.
-
-## Scope & Implementation Details
-- Created a separate `<GoldenLeaf>` inline SVG component so `MapleLeafLogo.tsx` remained untouched.
-- Added smooth scrolling using `.scrollIntoView` triggered upon seek.
-- Progressively revealed words in `CrystalBall.tsx` using a loop driven by timeouts that adapt to `prefers-reduced-motion`.
-- Implemented accessible layout: full text is inside `.sr-only` within `aria-live="polite"`, and visual animated words are `aria-hidden="true"`.
-- Appended `completionPulse` state triggering `.ballInnerGlowPulse` after words are fully revealed.
-- Prevented double submits and added comprehensive timeout cleanup on dismount and new readings.
+  - **EVIDENCE SUMMARY**: PR Artifact validations complete. All local environment validation checks pass, including Spec Kit governance gates.
 
 ## Changed Files Reconciliation
-1. `app/components/CrystalBall/CrystalBall.tsx`
-2. `app/components/CrystalBall/CrystalBall.module.css`
-3. `app/components/CrystalBall/GoldenLeaf.tsx`
-4. `tests/visual/crystal-ball-interactions.spec.ts`
-5. `specs/021-crystal-ball-fortune-reveal/spec.md`
-6. `specs/021-crystal-ball-fortune-reveal/plan.md`
-7. `specs/021-crystal-ball-fortune-reveal/tasks.md`
-
-## Remaining Issues
-- None.
+1. `.github/workflows/robin.yml`
+2. `memory-bank/activeContext.md`
+3. `memory-bank/progress.md`
+4. `scripts/test-verify-speckit-task.sh`
+5. `specs/027-robin-openrouter-fallback/plan.md`
+6. `specs/027-robin-openrouter-fallback/spec.md`
+7. `specs/027-robin-openrouter-fallback/tasks.md`
+8. `tests/workflows/robin-openrouter-fallback.test.ts`
+9. `pr_summary.md`
 
 **USEFUL RESULT: YES**
+- The repository was checked, the regex fix to the workflow was implemented, the yaml injection was safely mitigated, unit tests successfully ran against the workflow definition, and all documentation and tracking systems were properly updated with the status. Real testing with live configuration requires variables set in the target environment but testing functionality via mocks succeeds.

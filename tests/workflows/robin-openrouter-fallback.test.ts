@@ -57,4 +57,18 @@ describe("Robin Cloudflare Workers AI fallback workflow", () => {
     expect(workflow).toContain("env.REVIEW_START_EPOCH");
     expect(workflow).toContain('if [[ "$FINAL_GUARD_POSTED" == "true" ]]');
   });
+  it("still attempts Cloudflare if the pre-fallback review lookup fails", () => {
+    const preflightCondition = cloudflarePreflight.slice(0, cloudflarePreflight.indexOf("\n        shell:"));
+    expect(preflightCondition).not.toContain("steps.review_guard.outcome == 'success'");
+    expect(preflightCondition).toContain("steps.review_guard.outputs.posted != 'true'");
+  });
+
+  it("exports the event name and defines only one safe comment-body variable", () => {
+    const enforcementStart = workflow.indexOf("      - name: Record and enforce review outcome");
+    const enforcementStep = workflow.slice(enforcementStart);
+    expect(enforcementStep).toContain("EVENT_NAME: ${{ github.event_name }}");
+    expect((enforcementStep.match(/^\s+COMMENT_BODY:/gm) || []).length).toBe(1);
+    expect(enforcementStep).toContain('if [[ "$EVENT_NAME" == "issue_comment"');
+  });
+
 });
