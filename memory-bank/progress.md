@@ -37,3 +37,10 @@
 - 2026-10-15: Prepared a focused repair for the Cloudflare compile failure in `CrystalBall.tsx`: restored the opening `<span>` in `fortuneWords.map` and removed the duplicate `key`. Verification is pending CI evidence for the production build, `./jules-verify.sh`, Playwright, and the 495 MB artifact-size cap.
 
 - 2026-10-15: PR #1492's first OpenNext validation run exposed a second compile blocker in `GoldenLeaf.tsx` (duplicate gradient/path opening tags and missing original path data). Restored the original SVG markup and unique gradient references; post-fix CI verification is pending.
+
+
+## 2026-10-16 — Robin review reliability investigation
+
+- Verified Actions logs for PRs #1500, #1501 and #1503: repeated OpenRouter router stalls, empty outputs, model switching, an upstream NVIDIA internal-server error, and a long review attempt. PR #1500's Dependabot context is confirmed, but the logs do not independently prove its API key was absent.
+- Root cause identified in Robin v2.12.0: the special OpenRouter router path is streamed; the 45-second stall timer is cleared after the first SSE chunk, and it does not bound later generation. The repository called the reusable workflow on a moving main reference with a 45-minute internal job timeout.
+- Fix prepared on fix/robin-bounded-review-fallback: direct immutable Robin action, explicitly selected free primary/fallback models, per-step and overall timeouts, safe missing-key preflight, current-head duplicate-review guard and fail-closed final result. PR runtime verification and controlled fallback-path execution remain pending.

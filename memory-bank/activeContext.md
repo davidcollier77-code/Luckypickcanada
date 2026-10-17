@@ -1,6 +1,14 @@
 # Active Context
 
-## Current Focus — Premium Golden Maple-Leaf Assets (2026-10-16)
+## Current Focus — Robin Review Reliability (2026-10-16)
+
+- Goal: Bound Robin review execution and provide one explicit, free alternate model when the primary attempt fails.
+- Verified root cause: .github/workflows/robin.yml called a moving reusable workflow whose internal job has a 45-minute timeout. It passed a custom 300-second timeout to Robin's openrouter/free router, overriding the two-minute router default. Robin clears the router stall timer after the first SSE chunk, so later generation was not bounded by that timer; logs show long calls, empty output and provider internal errors.
+- Fix under review on fix/robin-bounded-review-fallback: pinned Robin action, explicit Gemma 4 31B free primary and Qwen3 Coder free fallback, 120-second request timeouts, three-minute action-step limits, eight-minute job limit, safe missing-key preflight and duplicate-review protection.
+- Verification: source and prior logs inspected. Local clone failed because this session could not resolve github.com. PR CI and a controlled fallback-path test remain required; do not claim full runtime verification until those pass.
+
+
+## Previous Focus — Premium Golden Maple-Leaf Assets (2026-10-16)
 
 - Goal: Replace inline SVG leaf rendering with a shared polished asset served AVIF → WebP → SVG fallback.
 - Shared usage: The text cursor and separate flying copy both reuse GoldenLeaf; original Crystal Ball artwork, reveal order, repeat questions, and reduced-motion behavior remain protected.
