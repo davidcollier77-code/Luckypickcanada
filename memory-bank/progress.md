@@ -1,5 +1,9 @@
 # Progress — 2026-10-17
 
+- **New Crystal Ball audio sourcing work started:** selected three distinct Pixabay audio sources for energy, reveal, and leaf cues. The plan is to download using CLI with no API key, convert to same-origin WAV using FFmpeg, keep MP3 originals out of `public/`, and preserve source/artist/license details. Implementation and verification are pending remote workflow/CI evidence; do not mark completed before checks pass.
+
+---
+
 - **Follow-up Crystal Ball audio timeout syntax correction:** After PR #1506 merged, the October 17 Cloudflare build still reported a parser error at the `else` branch in `app/lib/audio.js`. A candidate on `fix/crystal-ball-audio-timeout-closure` closes the 160 ms timeout callback and removes the redundant duplicate stop call inside the sound-ID guard. This is a code candidate only; unit tests, governance verification, build-size and mobile playback evidence remain pending.
 
 - 2026-10-16: Added the Premium Golden Maple-Leaf Assets follow-up on `polish/crystal-ball-golden-leaf-assets`. GoldenLeaf now serves AVIF → WebP → SVG fallback; cursor and flying copy share it. Added source-order/load assertions and active Spec Kit artifacts. AVIF (2,316 bytes) and WebP (3,870 bytes) blob SHAs were verified against the generated local files. Automated test, governance, build-size, and OpenNext/Cloudflare results remain pending; do not merge before CI is green.
