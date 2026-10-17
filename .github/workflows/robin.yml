@@ -55,12 +55,12 @@ jobs:
 
           primary_model="${PRIMARY_MODEL_OVERRIDE:-google/gemma-4-26b-a4b-it:free}"
           fallback_model="${FALLBACK_MODEL_OVERRIDE:-cohere/north-mini-code:free}"
-          if [[ "${primary_model,,}" == openrouter/* ]]; then
-            echo "::warning::ROBIN_LLM_MODEL uses the random OpenRouter router; using google/gemma-4-26b-a4b-it:free to keep the primary bounded and deterministic."
+          if [[ "${primary_model,,}" == openrouter/* || "${primary_model}" == "google/gemma-4-31b-it:free" ]]; then
+            echo "::warning::ROBIN_LLM_MODEL uses a random router or the rate-limited Gemma 4 31B free endpoint; using google/gemma-4-26b-a4b-it:free."
             primary_model="google/gemma-4-26b-a4b-it:free"
           fi
-          if [[ "${fallback_model,,}" == openrouter/* || "${fallback_model}" == "qwen/qwen3-coder:free" ]]; then
-            echo "::warning::ROBIN_LLM_FALLBACK_MODEL uses the random OpenRouter router; using cohere/north-mini-code:free for bounded failover."
+          if [[ "${fallback_model,,}" == openrouter/* || "${fallback_model}" == "cohere/north-mini-code:free" ]]; then
+            echo "::warning::ROBIN_LLM_FALLBACK_MODEL selects a random router or the unavailable Qwen3 Coder free endpoint; using cohere/north-mini-code:free."
             fallback_model="cohere/north-mini-code:free"
           fi
           if [[ "$primary_model" == "$fallback_model" ]]; then
