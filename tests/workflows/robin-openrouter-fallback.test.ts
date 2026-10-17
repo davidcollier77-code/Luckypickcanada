@@ -27,7 +27,7 @@ describe("Robin Cloudflare Workers AI fallback workflow", () => {
   });
 
   it("requires explicit free-plan confirmation and a narrowly scoped token", () => {
-    expect(cloudflarePreflight).toContain("ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED: ${{ vars.ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED }}");
+    expect(cloudflarePreflight).toContain("CLOUDFLARE_FREE_TIER_CONFIRMED: ${{ vars.ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED }}");
     expect(cloudflarePreflight).toContain("CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}");
     expect(cloudflarePreflight).toContain("CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}");
     expect(cloudflarePreflight).toContain('if [[ "${CLOUDFLARE_FREE_TIER_CONFIRMED:-}" != "true" ]]');
