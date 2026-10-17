@@ -10,15 +10,6 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
   const resetAt = '2026-10-18T00:00:00.000Z';
 
   await page.route('**/api/oracle', async (route) => {
-    if (route.request().method() === 'GET') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ quota: { limit: 3, used: usedQuestions, remaining: 3 - usedQuestions, resetAt } }),
-      });
-      return;
-    }
-
     postCount += 1;
     usedQuestions += 1;
     await route.fulfill({
@@ -27,7 +18,6 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
       body: JSON.stringify({
         reading: 'Clear skies.',
         source: 'ai',
-        quota: { limit: 3, used: usedQuestions, remaining: 3 - usedQuestions, resetAt },
       }),
     });
   });
@@ -50,7 +40,7 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
     }
   }
 
-  await expect(page.getByText('You’ve used all 3 questions for today. Come back after the daily reset.')).toBeVisible();
+  await expect(page.getByText("You've used all 3 questions for today. Come back after the daily reset.")).toBeVisible();
   await expect(button).toBeDisabled();
   expect(postCount).toBe(3);
 });

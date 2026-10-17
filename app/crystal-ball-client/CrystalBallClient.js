@@ -72,7 +72,7 @@ export default function CrystalBallClient() {
     setUsage(current);
 
     if (current.used >= DAILY_QUESTION_LIMIT) {
-      throw new Error('You’ve used all 3 questions for today. Come back after the daily reset.');
+      throw new Error(`You've used all 3 questions for today. Come back after the daily reset.`);
     }
 
     const response = await fetch('/api/oracle', {
