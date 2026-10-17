@@ -16,7 +16,7 @@ Replace the moving reusable-workflow reference and unconstrained free-model rout
 - Testing: GitHub Actions workflow validation and pull-request checks; static inspection of workflow conditions and API calls.
 - Target Platform: GitHub Actions.
 - Project Type: CI workflow configuration.
-- Performance Goals: Primary attempt capped at 3 minutes; at most one alternate attempt capped at 3 minutes; job capped at 8 minutes after it starts.
+- Performance Goals: Primary attempt capped at 2 minutes; at most one alternate attempt capped at 2 minutes; job capped at 8 minutes after it starts.
 - Constraints: No paid models, no application or deployment changes, no credential values in logs, preserve existing review permissions and concurrency.
 
 ## Evidence and Root Cause
@@ -30,8 +30,8 @@ Replace the moving reusable-workflow reference and unconstrained free-model rout
 ## Design
 
 1. Call the pinned Robin action directly rather than the reusable workflow so each action step has a hard timeout.
-2. Use google/gemma-4-31b-it:free as the primary default and qwen/qwen3-coder:free as the one alternate default. Keep primary model/base URL overrides and add ROBIN_LLM_FALLBACK_MODEL as an override.
-3. Set each model request timeout to 120,000 ms; cap each action step at 3 minutes and the job at 8 minutes.
+2. Use xingchen-agi/xing4.0-29b-a4b:free as the primary default and qwen/qwen3.8-27b:free as the one alternate default. Keep primary model/base URL overrides and add ROBIN_LLM_FALLBACK_MODEL as an override.
+3. Set each model request timeout to 90,000 ms; cap each action step at 2 minutes and the job at 8 minutes.
 4. Fail in preflight if OPENROUTER_API_KEY is missing and give a Dependabot-specific configuration hint without printing the secret.
 5. Keep the reusable workflow's PR-event filter and job-level concurrency behavior. Do not add workflow-level concurrency.
 6. Before fallback, query submitted review objects and match the current head SHA, Robin signature, and timestamp since this run began. Recheck after attempts so timeout-after-post does not cause duplicate reviews or a false failure.
