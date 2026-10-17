@@ -38,3 +38,14 @@
 - [x] T010 Inspect the updated-head CodeQL analyses in run #39036390039 and record that all analyzers pass while the alert dashboard state cannot be queried through the connected API.
 - [x] T011 Retry Robin review through .github/workflows/robin.yml, inspect its two failed attempts and pinned Robin v2.12.0 pre-first-chunk error handling, and record the unresolved/masked provider outcome in PR_SUMMARY.md without weakening the reviewer gate.
 - [x] T012 Audit the live PR file inventory and reconcile all 11 changed paths exactly once in PR_SUMMARY.md.
+
+## Phase 5: User Story 2 — Diagnose failed reviewer requests without weakening enforcement
+
+**Goal**: Expose actionable, secret-safe account/quota/provider errors when Robin fails before producing a review, while retaining the fail-closed review gate.
+
+**Independent Test**: A failed Robin action prints the account endpoint HTTP status and allow-listed quota/error fields; the minimal completion probe is skipped when free quota is exhausted, otherwise it runs with a strict timeout; a missing review still causes the Robin workflow to fail.
+
+- [x] T013 [US2] Add a failure-only account/quota and minimal completion diagnostic to .github/workflows/robin.yml, with redaction, bounded curl calls, and no raw response logging.
+- [ ] T014 [US2] Verify .github/workflows/robin.yml diagnostic behavior on the next GitHub Actions run and record the actual account quota/provider error in PR_SUMMARY.md without exposing secrets.
+- [ ] T015 [US2] Confirm the Robin review enforcement step still fails when no review is posted and that the diagnostics did not mark any failed review as successful.
+

@@ -24,6 +24,18 @@ Maintainers need security/code-scanning fixes to remove the actual source of the
 2. **Given** Spec Kit verification requires the active feature artifacts to be changed for the current task, **when** the validation workflow runs, **then** the active feature pointer identifies this task's spec, plan, and task list and the governance check accepts those artifacts.
 3. **Given** the PR changes no application implementation, **when** the full validation runs, **then** application functionality and dependencies remain unchanged and the normal checks still run.
 
+### User Story 2 — Diagnose failed automated review requests (Priority: P2)
+
+Maintainers need a useful, credential-safe error signal when the Robin review action fails before it can post a review, so they can distinguish an exhausted free-model quota, an account/authentication problem, and a rejected or unavailable model route.
+
+**Independent Test**: On a failed Robin action, the workflow logs the authenticated account endpoint status, any returned free-model quota fields, and one bounded minimal-completion probe. It never prints the API key or raw response body, and the Robin result remains failed when no review was posted.
+
+**Acceptance Scenarios**:
+
+1. **Given** Robin fails before returning its first response, **when** the post-failure diagnostic runs, **then** it records HTTP status and allow-listed quota/error fields while redacting credentials and truncating provider messages.
+2. **Given** the account endpoint reports the free-model daily quota is zero, **when** diagnosis runs, **then** the workflow skips the extra inference probe to avoid consuming requests that cannot succeed.
+3. **Given** the diagnostic itself fails or the API response is invalid, **when** the workflow concludes, **then** the final review-result check still fails closed if no review was posted.
+
 ## Edge Cases
 
 - The script may be needed by a workflow even if it is absent from package scripts; repository code search and tracked workflow/script inventory must be checked before removing it.
@@ -40,6 +52,9 @@ Maintainers need security/code-scanning fixes to remove the actual source of the
 - **FR-003**: The active Spec Kit feature pointer must reference task-specific, non-empty spec.md, plan.md, and tasks.md files that are changed on this PR branch.
 - **FR-004**: The PR Summary and Memory Bank must record the actual changes and actual verification outcomes without claiming unrun checks passed.
 - **FR-005**: External reviewer-service failures must be diagnosed and recorded without disabling or weakening the review check.
+- **FR-006**: On a failed review attempt, `.github/workflows/robin.yml` must query the configured provider’s account endpoint and, unless free-model quota is confirmed exhausted, make one bounded minimal-completion probe to reveal status/error fields hidden by the current reviewer action.
+- **FR-007**: The diagnostic must log only allow-listed quota/error fields, redact credential-shaped strings, never print the raw response body, use strict request time limits, and not mask or convert the primary review outcome to success.
+
 
 ## Success Criteria
 
@@ -48,6 +63,7 @@ Maintainers need security/code-scanning fixes to remove the actual source of the
 - **SC-003**: Unit tests, TypeScript validation, repository verification, production build, OpenNext validation, and code-scanning results are recorded from real workflow runs.
 - **SC-004**: Measured build output remains below 495 MiB.
 - **SC-005**: No unrelated application implementation or dependencies are changed.
+- **SC-006**: A failed Robin attempt records the provider HTTP status and safe quota/error details when available, while the final Robin result remains failed until a valid review is posted.
 
 ## Assumptions
 

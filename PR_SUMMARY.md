@@ -17,7 +17,7 @@
 - Delete the root-level test_fix.js artifact.
 - Create the dedicated specs/026-code-scanning-noop-cleanup feature artifacts and point .specify/feature.json to that feature so the existing governance gate validates fresh, task-specific spec.md, plan.md, and tasks.md.
 - Update Memory Bank and this canonical summary.
-- No application source, UI, audio, dependency manifest/lockfile, workflow logic, secrets, API routes, payments, database schema, deployment settings, or security controls are changed.
+- No application source, UI, audio, dependency manifest/lockfile, secrets, API routes, payments, database schema, deployment settings, or security controls are changed. `.github/workflows/robin.yml` now has one failure-only, bounded diagnostic to expose account/quota/provider status; the review enforcement and fail-closed outcome remain unchanged.
 - The actual repo shell is unavailable from this session because git clone could not resolve github.com. The repository API is used for the scoped commit; GitHub Actions must provide execution evidence.
 
 ## C — Spec Kit Stages and Governance Record
@@ -108,7 +108,7 @@ No dependency, application source, workflow, lockfile, secret, or deployment con
 
 ## Final Scope and Diff Audit
 
-The exact candidate PR file inventory was re-read from GitHub after commit `8bdd4fe`. It contains exactly these 11 paths, each listed once:
+The exact candidate PR file inventory was re-read from GitHub after commit `8bdd4fe`. The initial source-cleanup change contained 11 paths. The follow-up diagnostic change adds `.github/workflows/robin.yml`, bringing the total to 12 paths; this additional workflow change is documented separately and does not change fail-closed review enforcement.
 
 1. `.specify/feature.json`
 2. `PR_SUMMARY.md`
@@ -121,9 +121,10 @@ The exact candidate PR file inventory was re-read from GitHub after commit `8bdd
 9. `specs/026-code-scanning-noop-cleanup/spec.md`
 10. `specs/026-code-scanning-noop-cleanup/tasks.md`
 11. `test_fix.js` (deleted)
+12. `.github/workflows/robin.yml` (adds failure-only account/quota and minimal completion diagnostics; does not change final review enforcement)
 
 No dependency, lockfile, application source, workflow, protected runtime behavior, environment variable, secret, or deployment configuration was changed. No deployment was performed. Current successful CI verifies the cleanup and the previous governance failure is resolved. The Robin review is still an unresolved external integration gate because no review was produced; the task is not fully green and the PR remains open.
 
 Pre-submission double-check: the live PR file list was compared with the summary above; the source diff is limited to deletion of the inert script, and the remaining changed paths are task-governance and documentation records. Actual changed-head execution results are recorded above. The only known red check is Robin; its cause cannot be fully diagnosed without exposing the masked provider response/status or restoring a reliable review result.
 
-USEFUL RESULT: YES — the no-op artifact is removed and the Spec Kit gate, unit/type checks, visual tests, production build, build-size cap, OpenNext/Wrangler validation, and CodeQL analyses pass. MERGE-READINESS: NO — Robin has not completed a review; do not describe all checks as green.
+USEFUL RESULT: PARTIAL — the no-op artifact is removed and the Spec Kit gate, unit/type checks, visual tests, production build, build-size cap, OpenNext/Wrangler validation, and CodeQL analyses passed on source commit 8bdd4fe. The newly added Robin diagnostic has not yet run on the current workflow-edit commit. MERGE-READINESS: NO until the current head's checks complete and a valid Robin review is produced; do not describe all checks as green.

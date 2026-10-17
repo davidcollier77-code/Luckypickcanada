@@ -21,3 +21,11 @@
 - Create new active feature artifacts under specs/026-code-scanning-noop-cleanup instead of editing the unrelated Crystal Ball audio spec.
 - Preserve all existing CI and review enforcement. Retry Robin after the new commit but do not convert a missing review into success by weakening its gate.
 - No application tests need to be added for deletion of this inert utility; the existing full suite, TypeScript check, code scanning, and build validation cover unintended effects.
+
+## Follow-up: Robin diagnostic
+
+- Failure repeated on unrelated pull requests #1509 and #1510, so it is not isolated to this cleanup branch.
+- On Robin run 39037221478, five attempts each reported `OpenRouter stall: no first response within 45000 ms`, but each failure was logged around 0.1–0.8 seconds after the attempt started. The timestamps are inconsistent with a true 45-second delay.
+- Pinned Robin v2.12.0 source (upstream `src/llm-client.ts`, lines 489–516) turns most exceptions before the first stream chunk into a generic stall error. Current action logs therefore do not establish whether the underlying response is authentication, quota/rate-limit, request validation, or route availability.
+- OpenRouter's public status page at inspection time reported inference operational. This does not establish that this repository's API key/account/quota or free route is working.
+- Add a post-failure diagnostic to `.github/workflows/robin.yml`: make a bounded GET request to the account endpoint, log only returned free-model quota fields, skip extra inference when quota is confirmed exhausted, and otherwise make one minimal bounded completion probe to record the HTTP and sanitized error status. Do not print the key or raw body. The diagnostic step itself exits successfully but the later review enforcement remains fail-closed if no review was posted.

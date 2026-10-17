@@ -9,3 +9,5 @@ Use the pull-request workflows as the execution environment because the working 
 5. Inspect CodeQL result and alert state.
 6. Retry Robin review once after code/docs update. Record service timeout honestly if the upstream router again fails to produce a response.
 7. Before completion, reconcile the changed-file list with the PR diff and update tasks.md and PR_SUMMARY.md with real run IDs and outcomes.
+
+7. If Robin fails, inspect the failure-only diagnostic output from `.github/workflows/robin.yml`. Confirm no credentials or raw response bodies were logged; check whether free-model daily quota is zero; otherwise inspect the minimal completion HTTP status/error. The final Robin check must remain failed when no valid review has been posted.

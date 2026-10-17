@@ -86,6 +86,100 @@ jobs:
           use-json-response-mode: ""
           agent-mode: "off"
 
+      - name: Diagnose OpenRouter account quota and model response after failed review
+        id: openrouter_diagnostic
+        if: ${{ steps.primary_review.outcome == 'failure' && !cancelled() }}
+        timeout-minutes: 1
+        shell: bash
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_BASE_URL: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
+          ROBIN_MODEL: ${{ steps.review_preflight.outputs.primary_model }}
+        run: |
+          set -uo pipefail
+          workdir="$(mktemp -d)"
+          trap 'rm -rf "$workdir"' EXIT
+          base_url="${OPENROUTER_BASE_URL%/}"
+
+          key_status="000"
+          key_curl_rc=0
+          key_status="$(curl --silent --show-error --max-time 12 \
+            --output "$workdir/key.json" --write-out '%{http_code}' \
+            --header "Authorization: Bearer ${OPENROUTER_API_KEY}" \
+            --header "Accept: application/json" \
+            "${base_url}/key" 2>"$workdir/key-curl.err")" || key_curl_rc=$?
+          echo "OpenRouter account diagnostic: HTTP ${key_status}; curl exit ${key_curl_rc}."
+
+          # Print only allow-listed account/quota fields or a short, sanitized API error.
+          node - "$workdir/key.json" "$key_status" "$workdir/quota-exhausted" <<'NODE'
+          const fs = require("node:fs");
+          const [file, status, exhaustedPath] = process.argv.slice(2);
+          const redact = (value) => String(value ?? "")
+            .replaceAll(process.env.OPENROUTER_API_KEY || "\u0000", "[REDACTED]")
+            .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
+            .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
+            .slice(0, 400);
+          let body = {};
+          try { body = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+          if (status === "200") {
+            const data = body.data ?? body;
+            const quota = data.free_model_daily_requests ?? data.rate_limit?.free_model_daily_requests;
+            console.log("OpenRouter key accepted by account endpoint (HTTP 200).");
+            if (quota && typeof quota === "object") {
+              const remaining = Number(quota.remaining);
+              const limit = Number(quota.limit);
+              console.log(`Free-model daily quota: remaining=${Number.isFinite(remaining) ? remaining : "unknown"}, limit=${Number.isFinite(limit) ? limit : "unknown"}.`);
+              if (Number.isFinite(remaining) && remaining <= 0) {
+                fs.writeFileSync(exhaustedPath, "true");
+              }
+            } else {
+              console.log("Free-model daily quota fields were not included by the account endpoint.");
+            }
+          } else {
+            const err = body.error ?? body;
+            console.log(`OpenRouter account endpoint did not return HTTP 200 (status ${status}); error_code=${redact(err.code ?? err.status ?? "")}; error_type=${redact(err.type ?? err.metadata?.error_type ?? "")}; message=${redact(err.message ?? body.message ?? "") || "no JSON error detail"}.`);
+          }
+          NODE
+
+          if [[ "$(cat "$workdir/quota-exhausted" 2>/dev/null || true)" == "true" ]]; then
+            echo "::error::OpenRouter reports that the free-model daily quota is exhausted. Skipping the extra inference probe; the Robin review check remains failed."
+            exit 0
+          fi
+
+          # Make one tiny, bounded request to expose HTTP/provider errors that Robin v2.12.0
+          # can currently mask as a generic pre-first-stream "stall". Never log the raw body.
+          request_body="$(ROBIN_MODEL="$ROBIN_MODEL" node -e 'process.stdout.write(JSON.stringify({model:process.env.ROBIN_MODEL,messages:[{role:"user",content:"Reply with exactly OK."}],max_tokens:4,stream:false}))')"
+          probe_status="000"
+          probe_curl_rc=0
+          probe_status="$(curl --silent --show-error --max-time 20 \
+            --output "$workdir/probe.json" --write-out '%{http_code}' \
+            --header "Authorization: Bearer ${OPENROUTER_API_KEY}" \
+            --header "Content-Type: application/json" \
+            --data "$request_body" \
+            "${base_url}/chat/completions" 2>"$workdir/probe-curl.err")" || probe_curl_rc=$?
+          echo "Minimal completion diagnostic: HTTP ${probe_status}; curl exit ${probe_curl_rc}."
+          node - "$workdir/probe.json" "$probe_status" "$ROBIN_MODEL" <<'NODE'
+          const fs = require("node:fs");
+          const [file, status, requestedModel] = process.argv.slice(2);
+          const redact = (value) => String(value ?? "")
+            .replaceAll(process.env.OPENROUTER_API_KEY || "\u0000", "[REDACTED]")
+            .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
+            .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
+            .slice(0, 400);
+          let body = {};
+          try { body = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+          if (status === "200") {
+            const data = body.data ?? body;
+            const content = data.choices?.[0]?.message?.content;
+            console.log(`Minimal completion accepted: requested_model=${redact(requestedModel)}, returned_model=${redact(data.model ?? "unknown")}, nonempty_content=${Boolean(typeof content === "string" && content.trim())}.`);
+          } else {
+            const err = body.error ?? body;
+            console.log(`Minimal completion error: status=${status}, code=${redact(err.code ?? err.status ?? "")}, type=${redact(err.type ?? err.metadata?.error_type ?? "")}, provider_code=${redact(err.metadata?.provider_code ?? "")}, message=${redact(err.message ?? body.message ?? "") || "no JSON error detail"}.`);
+          }
+          NODE
+          # This step intentionally reports diagnostics but never changes the failing review result.
+          exit 0
+
       - name: Check whether the primary review was already posted
         id: review_guard
         if: ${{ (steps.primary_review.outcome == 'failure' || steps.primary_review.outcome == 'cancelled') && !cancelled() }}
