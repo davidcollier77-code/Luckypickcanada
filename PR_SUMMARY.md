@@ -28,7 +28,7 @@
 - /speckit.implement — definition: .jules/cmds/speckit.implement.md; method: REPOSITORY API CHANGE PLUS GITHUB ACTIONS VERIFICATION; result: removal of the inert debugging script and governance artifacts prepared. Full completion depends on the actual updated-head CI results; no local shell/build command is claimed.
 - Active feature pointer: .specify/feature.json → specs/026-code-scanning-noop-cleanup.
 - Governance gate requirement: each active spec.md, plan.md, tasks.md must be non-empty and modified on the current branch. The new feature artifacts meet the intended gate; the updated-head workflow will confirm.
-- Final governance status: PENDING until updated-head ./jules-verify.sh, build and size check, tests, CodeQL, and final diff audit are observed.
+- Governance and code/build verification status: PASS on candidate HEAD 8bdd4fef8a7515e837da5138c6140b49cdb4e5fe. Visual QA, full tests, TypeScript, ./jules-verify.sh, Playwright, Next.js/OpenNext/Wrangler checks, the 495 MiB size gate, and all three CodeQL analyzers passed. Robin remains a separate failed review gate; it did not post a review. The underlying pre-first-chunk HTTP/provider status is masked by Robin v2.12.0 and is not proven from the current logs.
 
 ## Required Resources Consulted
 
@@ -68,43 +68,62 @@
 
 No dependency, application source, workflow, lockfile, secret, or deployment configuration changed.
 
-## Verification Record — Before Repair
-
-- COMMAND: Visual QA run 39035622659 — targeted daily-quota test
-  - RESULT: PASS
-  - EVIDENCE: Step completed successfully.
-- COMMAND: Visual QA run 39035622659 — full unit suite
-  - RESULT: PASS
-  - EVIDENCE: Step completed successfully.
-- COMMAND: Visual QA run 39035622659 — pnpm tsc --noEmit
-  - RESULT: PASS
-  - EVIDENCE: Step completed successfully.
-- COMMAND: Visual QA run 39035622659 — ./jules-verify.sh
-  - RESULT: FAIL
-  - EVIDENCE: scripts/verify-speckit-task.sh rejected specs/025-crystal-ball-audio-daily-limit/spec.md as unchanged in the task branch; build and documentation tests did not proceed.
-- COMMAND: OpenNext validation run 39035622623
-  - RESULT: PASS
-  - EVIDENCE: The earlier candidate's Next.js/OpenNext/Wrangler validation completed successfully; new-head verification is still required.
-- COMMAND: CodeQL checks on initial candidate
-  - RESULT: PASS
-  - EVIDENCE: Actions, JavaScript/TypeScript, and Python analyses reported success; new-head analysis is still required.
-- COMMAND: Robin run 39035622617
-  - RESULT: FAIL — EXTERNAL SERVICE
-  - EVIDENCE: Five attempts timed out because OpenRouter's free router provided no first response within 45 seconds; the workflow's review outcome check failed closed.
-
 ## Verification Record — Updated Candidate
 
-- COMMAND: Visual QA, pnpm run test, pnpm tsc --noEmit, ./jules-verify.sh
-  - RESULT: PENDING updated-head workflow.
-- COMMAND: Production build, OpenNext Cloudflare build, Wrangler validation, measured output size < 495 MiB
-  - RESULT: PENDING updated-head workflow.
-- COMMAND: CodeQL
-  - RESULT: PENDING updated-head workflow.
-- COMMAND: Robin review retry
-  - RESULT: PENDING after updated-head workflow starts.
-- COMMAND: Local shell/git diff
-  - RESULT: NOT AVAILABLE: container could not resolve github.com to clone the repo. Final path inventory is verified through the repository API and must be reconciled with the PR page.
+**Verified HEAD at time of checks:** `8bdd4fef8a7515e837da5138c6140b49cdb4e5fe`
 
-Pre-submission double-check: PARTIAL until the updated branch's workflow outcomes and final diff are inspected.
+- COMMAND: `pnpm exec vitest run __tests__/oracle-usage.test.js` (Visual QA run [39036393317](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39036393317))
+  - RESULT: PASS
+  - EVIDENCE/OUTPUT SUMMARY: 1 test file / 3 tests passed.
+- COMMAND: `pnpm run test` (same Visual QA run)
+  - RESULT: PASS
+  - EVIDENCE/OUTPUT SUMMARY: 12 test files / 76 tests passed.
+- COMMAND: `pnpm tsc --noEmit` (same Visual QA run)
+  - RESULT: PASS
+  - EVIDENCE/OUTPUT SUMMARY: standalone TypeScript check completed successfully.
+- COMMAND: `./jules-verify.sh` (same Visual QA run)
+  - RESULT: PASS
+  - EVIDENCE/OUTPUT SUMMARY: Spec Kit regression checks passed; `scripts/verify-speckit-task.sh` verified the task-specific `spec.md`, `plan.md`, and `tasks.md`; Next.js production build passed; `scripts/test-refresh-docs.js` completed with 17 passed and 0 failed. This explicitly resolves the original active-artifact gate failure.
+- COMMAND: `pnpm exec playwright test` (same Visual QA run)
+  - RESULT: PASS
+  - EVIDENCE/OUTPUT SUMMARY: 21 passed, 3 skipped, 0 failed. Visual QA run conclusion is success.
+- COMMAND: `pnpm run build` and size-enforcement step (OpenNext validation run [39036393128](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39036393128))
+  - RESULT: PASS
+  - EVIDENCE/OUTPUT SUMMARY: production build succeeded. Combined `.next + public` measured 325,423,721 bytes / 310.35 MiB, below 495 MiB (519,045,120 bytes).
+- COMMAND: `pnpm exec opennextjs-cloudflare build`
+  - RESULT: PASS
+  - EVIDENCE/OUTPUT SUMMARY: OpenNext Cloudflare build completed. Tailwind CSS scan, `.open-next/worker.js`, `.open-next/assets`, Wrangler `build` validation with no deployment, and final Git status checks passed in run 39036393128.
+- COMMAND: CodeQL Actions / JavaScript-TypeScript / Python analysis (workflow run [39036390039](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39036390039))
+  - RESULT: PASS
+  - EVIDENCE/OUTPUT SUMMARY: all three CodeQL analysis jobs completed successfully on this candidate.
+- COMMAND: Robin Code Review workflow run [39036393135](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39036393135), attempts 1 and 2
+  - RESULT: FAIL — review not produced
+  - EVIDENCE/OUTPUT SUMMARY: both attempts exhausted five requests and posted no review. The action reported `OpenRouter stall: no first response within 45000 ms`. The log timestamps show the rejection following each attempt almost immediately, not after 45 seconds. Inspection of Robin v2.12.0 source (`src/llm-client.ts`, pre-first-chunk catch branch around lines 489–516) shows that many errors before the first stream chunk are converted to the same generic stall error. Therefore the actual HTTP/provider status is not visible in these logs; an actual provider outage, invalid API key, rate limit, or route error cannot be distinguished from this evidence. No Robin workflow guard or review policy was weakened. Separate Amazon Q review comments exist, but they do not make the failed Robin check green.
+- COMMAND: Query current active code-scanning alert 16 status
+  - RESULT: NOT AVAILABLE through the connected GitHub API tool
+  - EVIDENCE/OUTPUT SUMMARY: the connector denied the security alert endpoint. Do not claim the dashboard alert is closed on the default branch before merge/reanalysis.
+- COMMAND: Local `git` / shell checks
+  - RESULT: NOT AVAILABLE
+  - EVIDENCE/OUTPUT SUMMARY: local repository clone failed because the session could not resolve `github.com`; all execution results above are from the remote GitHub Actions runners or read-only repository API.
 
-USEFUL RESULT: NO until the active feature gate, updated-head checks, and final diff audit are verified. Do not merge on the strength of the previous PR head's checks.
+## Final Scope and Diff Audit
+
+The exact candidate PR file inventory was re-read from GitHub after commit `8bdd4fe`. It contains exactly these 11 paths, each listed once:
+
+1. `.specify/feature.json`
+2. `PR_SUMMARY.md`
+3. `memory-bank/activeContext.md`
+4. `memory-bank/progress.md`
+5. `specs/026-code-scanning-noop-cleanup/checklists/requirements.md`
+6. `specs/026-code-scanning-noop-cleanup/plan.md`
+7. `specs/026-code-scanning-noop-cleanup/quickstart.md`
+8. `specs/026-code-scanning-noop-cleanup/research.md`
+9. `specs/026-code-scanning-noop-cleanup/spec.md`
+10. `specs/026-code-scanning-noop-cleanup/tasks.md`
+11. `test_fix.js` (deleted)
+
+No dependency, lockfile, application source, workflow, protected runtime behavior, environment variable, secret, or deployment configuration was changed. No deployment was performed. Current successful CI verifies the cleanup and the previous governance failure is resolved. The Robin review is still an unresolved external integration gate because no review was produced; the task is not fully green and the PR remains open.
+
+Pre-submission double-check: the live PR file list was compared with the summary above; the source diff is limited to deletion of the inert script, and the remaining changed paths are task-governance and documentation records. Actual changed-head execution results are recorded above. The only known red check is Robin; its cause cannot be fully diagnosed without exposing the masked provider response/status or restoring a reliable review result.
+
+USEFUL RESULT: YES — the no-op artifact is removed and the Spec Kit gate, unit/type checks, visual tests, production build, build-size cap, OpenNext/Wrangler validation, and CodeQL analyses pass. MERGE-READINESS: NO — Robin has not completed a review; do not describe all checks as green.

@@ -33,8 +33,8 @@
 
 **Purpose**: Run actual remote verification; never infer a pass from inspection.
 
-- [ ] T008 Run the targeted quota test, full unit suite, TypeScript check, and ./jules-verify.sh in the Visual QA workflow; record run ID and outcomes in PR_SUMMARY.md.
-- [ ] T009 Verify the production/OpenNext/Cloudflare build and measured output remains below the 495 MiB cap; record run ID and measured size in PR_SUMMARY.md.
-- [ ] T010 Inspect CodeQL on the final head and record the code-scanning alert status.
-- [ ] T011 Retry the Robin review after the cleanup commit; record either a completed review or the exact external timeout without weakening the check.
-- [ ] T012 Audit the final PR diff against this file list and mark only actually completed tasks [x] in tasks.md.
+- [x] T008 Run the targeted quota test, full unit suite, TypeScript check, ./jules-verify.sh, and Playwright suite in .github/workflows/visual-qa.yml; record run #39036393317 and real outcomes in PR_SUMMARY.md.
+- [x] T009 Verify the production/OpenNext/Cloudflare build in .github/workflows/validate-open-next-repair.yml and measured output below the 495 MiB cap; record run #39036393128 and exact size in PR_SUMMARY.md.
+- [x] T010 Inspect the updated-head CodeQL analyses in run #39036390039 and record that all analyzers pass while the alert dashboard state cannot be queried through the connected API.
+- [x] T011 Retry Robin review through .github/workflows/robin.yml, inspect its two failed attempts and pinned Robin v2.12.0 pre-first-chunk error handling, and record the unresolved/masked provider outcome in PR_SUMMARY.md without weakening the reviewer gate.
+- [x] T012 Audit the live PR file inventory and reconcile all 11 changed paths exactly once in PR_SUMMARY.md.
