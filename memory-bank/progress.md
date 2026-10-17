@@ -44,3 +44,11 @@
 - Verified Actions logs for PRs #1500, #1501 and #1503: repeated OpenRouter router stalls, empty outputs, model switching, an upstream NVIDIA internal-server error, and a long review attempt. PR #1500's Dependabot context is confirmed, but the logs do not independently prove its API key was absent.
 - Root cause identified in Robin v2.12.0: the special OpenRouter router path is streamed; the 45-second stall timer is cleared after the first SSE chunk, and it does not bound later generation. The repository called the reusable workflow on a moving main reference with a 45-minute internal job timeout.
 - Fix prepared on fix/robin-bounded-review-fallback: direct immutable Robin action, explicitly selected free primary/fallback models, per-step and overall timeouts, safe missing-key preflight, current-head duplicate-review guard and fail-closed final result. PR runtime verification and controlled fallback-path execution remain pending.
+
+
+## 2026-10-17 — Robin bounded failover and model selection
+
+- Verified initial bounded run #38986971422: primary Gemma 4 31B returned HTTP 429 on all three attempts; Qwen3 Coder :free returned HTTP 404 (not available for free). Job failed closed in about 15 seconds, demonstrating the cap but not successful review.
+- Verified second model test #38987207252: Gemma 4 26B A4B also returned HTTP 429 on all attempts; Cohere North Mini Code returned empty content twice then was stopped at its two-minute action timeout. Job ended in about 2m19s.
+- Workflow updated to use explicit free model IDs with documented structured JSON output support: Xing4.0 29B A4B primary and Qwen3.8 27B fallback. Keep the per-attempt cap and fail-closed behavior. Their latest live review run is pending; do not merge until a provider successfully posts a review and checks complete.
+- Open PR #1504 remains unmerged. Local ./jules-verify.sh was not run because the session could not resolve github.com for a local clone. Repository Actions checks and an observed fallback path are the available next verification gates.
