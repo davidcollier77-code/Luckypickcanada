@@ -127,19 +127,23 @@ test.describe("Homepage Visual", () => {
     });
 
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
-    await expect.poll(() => confettiPopPreloadRequested, {
-      timeout: 5_000,
-      intervals: [50, 100, 200],
-    }).toBe(true);
 
     const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
+
+    // The Playwright web server runs Next in dev mode, so the first client bundle
+    // can take longer than five seconds to compile and hydrate on a cold runner.
+    // Wait for hydration explicitly before requiring its useEffect audio preload.
+    await expect(exploreButton).toBeVisible();
+    await expect(exploreButton).toHaveAttribute('data-hydrated', 'true', { timeout: 30_000 });
+    await expect.poll(() => confettiPopPreloadRequested, {
+      timeout: 30_000,
+      intervals: [50, 100, 200],
+    }).toBe(true);
+    await expect(exploreButton).toHaveAttribute('data-confetti-pop-ready', 'true', { timeout: 30_000 });
+
     const heroStage = page.locator('.hero-image-container');
     const particles = page.locator('canvas[style*="z-index: 100"]');
-
-    await expect(exploreButton).toBeVisible();
-    await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
-    await expect(exploreButton).toHaveAttribute('data-confetti-pop-ready', 'true', { timeout: 5_000 });
     await expect(heroStage).toBeVisible();
 
     const buttonBox = await exploreButton.boundingBox();
@@ -290,6 +294,7 @@ test.describe("Homepage Visual", () => {
   });
 
   test('explore luck scroll yields to user keyboard input', async ({ page }) => {
+    test.setTimeout(60_000);
     test.skip(test.info().project.name.startsWith('mobile-'), 'Keyboard interruption check is covered on desktop');
 
     // Use Playwright's real media emulation so JavaScript and CSS agree that
@@ -310,8 +315,8 @@ test.describe("Homepage Visual", () => {
     const label = 'Explore your luck. Scroll down to the Play and Explore section.';
     const exploreButton = page.locator(`button[aria-label="${label}"]`);
     await expect(exploreButton).toBeVisible();
-    await expect(exploreButton).toHaveAttribute('data-confetti-pop-ready', 'true', { timeout: 5_000 });
-    await expect(exploreButton).toHaveAttribute('data-hydrated', 'true');
+    await expect(exploreButton).toHaveAttribute('data-hydrated', 'true', { timeout: 30_000 });
+    await expect(exploreButton).toHaveAttribute('data-confetti-pop-ready', 'true', { timeout: 30_000 });
 
     await exploreButton.click();
     await page.waitForTimeout(150);
