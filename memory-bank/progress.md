@@ -37,3 +37,27 @@
 - 2026-10-15: Prepared a focused repair for the Cloudflare compile failure in `CrystalBall.tsx`: restored the opening `<span>` in `fortuneWords.map` and removed the duplicate `key`. Verification is pending CI evidence for the production build, `./jules-verify.sh`, Playwright, and the 495 MB artifact-size cap.
 
 - 2026-10-15: PR #1492's first OpenNext validation run exposed a second compile blocker in `GoldenLeaf.tsx` (duplicate gradient/path opening tags and missing original path data). Restored the original SVG markup and unique gradient references; post-fix CI verification is pending.
+
+
+## 2026-10-16 — Robin review reliability investigation
+
+- Verified Actions logs for PRs #1500, #1501 and #1503: repeated OpenRouter router stalls, empty outputs, model switching, an upstream NVIDIA internal-server error, and a long review attempt. PR #1500's Dependabot context is confirmed, but the logs do not independently prove its API key was absent.
+- Root cause identified in Robin v2.12.0: the special OpenRouter router path is streamed; the 45-second stall timer is cleared after the first SSE chunk, and it does not bound later generation. The repository called the reusable workflow on a moving main reference with a 45-minute internal job timeout.
+- Fix prepared on fix/robin-bounded-review-fallback: direct immutable Robin action, explicitly selected free primary/fallback models, per-step and overall timeouts, safe missing-key preflight, current-head duplicate-review guard and fail-closed final result. PR runtime verification and controlled fallback-path execution remain pending.
+
+
+## 2026-10-17 — Robin bounded failover and model selection
+
+- Verified initial bounded run #38986971422: primary Gemma 4 31B returned HTTP 429 on all three attempts; Qwen3 Coder :free returned HTTP 404 (not available for free). Job failed closed in about 15 seconds, demonstrating the cap but not successful review.
+- Verified second model test #38987207252: Gemma 4 26B A4B also returned HTTP 429 on all attempts; Cohere North Mini Code returned empty content twice then was stopped at its two-minute action timeout. Job ended in about 2m19s.
+- Workflow updated to use explicit free model IDs with documented structured JSON output support: Xing4.0 29B A4B primary and Qwen3.8 27B fallback. Keep the per-attempt cap and fail-closed behavior. Their latest live review run is pending; do not merge until a provider successfully posts a review and checks complete.
+- Open PR #1504 remains unmerged. Local ./jules-verify.sh was not run because the session could not resolve github.com for a local clone. Repository Actions checks and an observed fallback path are the available next verification gates.
+
+
+## 2026-10-17 — Final Robin decision: restore free router with hard cap
+
+- The live run #38988422706 (Robin workflow run 248) succeeded using openrouter/free: posted review #5555193756 in about 1m52s; the review reported zero findings. This is the successful baseline to retain.
+- Fixed free endpoints tried during diagnosis proved unstable: Gemma 4 models returned 429, Qwen3 free slugs returned 404 unavailable-for-free, Xing4.0 returned 502, and Cohere/Dots3 produced empty content until the two-minute step cap. Repeatedly switching model IDs was creating noise without improving reliability.
+- Final design therefore retains openrouter/free, calls Robin pinned to immutable upstream commit fc0bf915b634bf2f8b88ff1392acefdfb54e28d9 directly, sets a 90-second client timeout, two-minute action-step cap, four-minute job cap, safe API-key preflight and timeout/cancellation-aware final review checks. No in-Robin second-model fallback exists.
+- Amazon Q's review on PR #1500 finished before Robin began. CodeRabbit's later PR #1501 review is not proof of an automatic fallback handoff; no external reviewer orchestration was found in this repository.
+- Repository checks for the successful run passed. ./jules-verify.sh was not run locally because this session could not resolve github.com for a local clone.
