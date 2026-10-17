@@ -145,6 +145,10 @@ jobs:
             exit 0
           fi
 
+          if [[ -z "${REVIEW_START_EPOCH:-}" ]]; then
+            echo "::error::REVIEW_START_EPOCH is unset (preflight was cancelled before it ran); cannot check for late reviews."
+            exit 1
+          fi
           head_sha="$(timeout 15s gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
           late_review_ids="$(
             timeout 15s env HEAD_SHA="$head_sha" REVIEW_START_EPOCH="$REVIEW_START_EPOCH" gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
