@@ -130,6 +130,8 @@ export function createOracleUsageManager({
     if (!reservation || reservation.storeType !== storeType) throw new Error('Invalid Oracle quota reservation.');
     let state;
     if (redis) {
+      // COMMIT_LUA returns {used, pending} where used is the post-increment value and
+      // pending is post-decrement. The early-abort branch returns {-1, used, pending}.
       const result = await redis.eval(COMMIT_LUA, [reservation.key], [String(QUOTA_TTL_MS)]);
       if (Number(result?.[0]) < 0) throw new Error('Oracle quota reservation was already finalized.');
       state = normalizeState({ used: result?.[0], pending: result?.[1] });

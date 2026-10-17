@@ -186,10 +186,9 @@ export function playCrystalBallEnergy() {
   startWhenReady();
   // Start after decode only if the visitor is still in the loading phase.
   void preloadCrystalBallAudio().then(startWhenReady);
+      crystalBallAudioLoadPromise = null;
 }
-
-export function stopCrystalBallEnergy() {
-  if (typeof window === 'undefined') return;
+    ;
   audioCache.crystalEnergyRequested = false;
   const sound = audioCache.crystalEnergy;
   const soundId = audioCache.crystalEnergyId;
@@ -197,10 +196,11 @@ export function stopCrystalBallEnergy() {
 
   if (sound.state() === 'loaded' && sound.playing(soundId)) {
     sound.fade(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume, 0, 160, soundId);
+    const stoppedId = soundId;
     setTimeout(() => {
-      sound.stop(soundId);
+      sound.stop(stoppedId);
       sound.volume(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume);
-      if (audioCache.crystalEnergyId === soundId) audioCache.crystalEnergyId = null;
+      if (audioCache.crystalEnergyId === stoppedId) audioCache.crystalEnergyId = null;
     }, 175);
   } else {
     sound.stop(soundId);

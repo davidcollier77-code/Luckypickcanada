@@ -13,13 +13,15 @@ const ALLOWED_ORIGINS = [
 
 function getCorsHeaders(request) {
   const origin = request.headers.get('origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
+  const headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Cache-Control': 'no-store',
   };
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  }
+  return headers;
 }
 
 const FALLBACK_FORTUNES = [
@@ -36,11 +38,7 @@ function getRandomFallback() {
   return FALLBACK_FORTUNES[randomBuffer[0] % FALLBACK_FORTUNES.length];
 }
 
-let oracleUsageManager;
-
 function getUsageManager() {
-  if (oracleUsageManager) return oracleUsageManager;
-
   let env = {};
   try {
     env = getCloudflareContext()?.env || {};
@@ -51,8 +49,7 @@ function getUsageManager() {
   const redisUrl = env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_URL;
   const redisToken = env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
   const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
-  oracleUsageManager = createOracleUsageManager({ redis, kv: env.LUCKYPICK_KV || null });
-  return oracleUsageManager;
+  return createOracleUsageManager({ redis, kv: env.LUCKYPICK_KV || null });
 }
 
 function getApiKey() {
@@ -188,8 +185,9 @@ export async function POST(request) {
     } catch (fetchError) {
       clearTimeout(timeoutId);
       console.error('Oracle Error:', fetchError);
-      await usageManager.release(reservation);
+      const pendingReservation = reservation;
       reservation = null;
+      await usageManager.release(pendingReservation);
       const quota = await usageManager.getStatus(clientIp);
       return NextResponse.json(fallbackPayload(quota), { status: 200, headers: corsHeaders });
     } finally {
@@ -199,8 +197,9 @@ export async function POST(request) {
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
       console.error('Oracle Error:', groqResponse.status, errorText);
-      await usageManager.release(reservation);
+      const pendingReservation = reservation;
       reservation = null;
+      await usageManager.release(pendingReservation);
       const quota = await usageManager.getStatus(clientIp);
       return NextResponse.json(fallbackPayload(quota), { status: 200, headers: corsHeaders });
     }
