@@ -110,3 +110,8 @@ PR #1513 is ready for review.
 None currently for this PR context. The Cloudflare Workers Free Tier verification remains as an external owner-side task.
 
 **USEFUL RESULT: YES**
+
+## Post-Commit CI Fix
+- Modified `.github/workflows/robin.yml` line 423 to test `KEY_AVAILABLE` and `FREE_QUOTA_REMAINING` *before* the Cloudflare configuration fallback.
+- Originally, if Cloudflare was not configured, the action returned the error that the fallback was disabled, overriding the error message regarding OpenRouter's 0 free quota.
+- Swapping the error exits properly triggers the OpenRouter quota exhaustion failure check and exits *first*.

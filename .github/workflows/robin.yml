@@ -420,16 +420,16 @@ jobs:
             exit 0
           fi
 
-          if [[ "${CLOUDFLARE_CONFIGURED:-false}" != "true" ]]; then
-            echo "::error::Cloudflare fallback is disabled or not configured. Confirm Workers Free plan, set ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED=true, define CLOUDFLARE_ACCOUNT_ID, and add CLOUDFLARE_API_TOKEN with Workers AI Read only."
-            exit 1
-          fi
           if [[ "$KEY_AVAILABLE" != "true" ]]; then
             echo "::error::OpenRouter key unavailable and Cloudflare did not post a qualifying review for the current PR head."
             exit 1
           fi
           if [[ "$FREE_QUOTA_REMAINING" == "0" ]]; then
             echo "::error::OpenRouter quota is zero and Cloudflare did not produce a qualifying review for the current PR head."
+            exit 1
+          fi
+          if [[ "${CLOUDFLARE_CONFIGURED:-false}" != "true" ]]; then
+            echo "::error::Cloudflare fallback is disabled or not configured. Confirm Workers Free plan, set ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED=true, define CLOUDFLARE_ACCOUNT_ID, and add CLOUDFLARE_API_TOKEN with Workers AI Read only."
             exit 1
           fi
           if [[ -z "${REVIEW_START_EPOCH:-}" ]]; then
