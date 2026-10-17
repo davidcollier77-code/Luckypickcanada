@@ -114,11 +114,7 @@ jobs:
             }
           } else {
             const err = body.error ?? body;
-            const clean = (value) => String(value ?? "")
-              .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
-              .replace(/sk-[A-Za-z0-9_-]{8,}/g, "[REDACTED]")
-              .slice(0, 300);
-            console.log(`Quota preflight did not receive HTTP 200; status=${status}; error_code=${clean(err.code ?? err.status ?? "")}; message=${redact(err.message ?? body.message ?? "") || "no JSON error detail"}. Normal Robin path remains enabled.`);
+            console.log(`Quota preflight did not receive HTTP 200; status=${status}; error_code=${redact(err.code ?? err.status ?? "")}; message=${redact(err.message ?? body.message ?? "") || "no JSON error detail"}. Normal Robin path remains enabled.`);
           }
           fs.appendFileSync(output, `free_quota_insufficient=${insufficient}\n`);
           NODE

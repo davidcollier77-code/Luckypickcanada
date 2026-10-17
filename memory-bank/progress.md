@@ -1,6 +1,6 @@
 # Progress — 2026-10-17
 
-- **PR #1510 no-op cleanup and quota-aware reviewer path:** Original fix verified on commit 8bdd4fe: 76 Vitest tests, TypeScript, Spec Kit/Next build/docs tests, Playwright 21 passed / 3 skipped / 0 failed, OpenNext/Wrangler, CodeQL, measured 310.35 MiB under 495 MiB cap. Diagnostic confirmed OpenRouter API key accepted but free-model quota 0/50. Quota-aware Q fallback run #39037914648 succeeded after skipping Robin and accepting Amazon Q review #5558036445 for exact head e459b24309a8b5382ea803313d2474547b713898. Amazon Q then identified three workflow-hardening improvements, now changed: skipped-primary fallback, explicit secret redaction, and polling timeout alignment. Fresh current-head verification is pending; PR stays open and unmerged.
+- **PR #1510 code-scanning cleanup / reviewer fallback:** Cleanup source commit 8bdd4fe passed 76 tests, TypeScript, Spec Kit verifier/build/docs tests, Playwright 21/3/0, OpenNext/Wrangler, CodeQL and 310.35 MiB build-size gate. OpenRouter key accepted but free quota was 0/50. On e459b243, quota-aware Robin skip + exact-head Amazon Q review #5558036445 caused reviewer check to pass. Follow-up corrections then addressed skipped-primary conditions, explicit secret redaction, 90s polling inside 3m step/7m job, and a final audit found/fixed the over-escaped preflight regex/redundant formatter. Latest current-head CI is pending for the final workflow state. PR remains open and unmerged.
 
 ---
 

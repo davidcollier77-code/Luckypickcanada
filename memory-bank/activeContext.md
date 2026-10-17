@@ -149,12 +149,12 @@
 - **Status:** Fix committed on `fix/crystal-ball-fortune-jsx-1491`; a fresh CI run must prove the build and subsequent checks pass.## Current Focus — PR #1510 code-scanning cleanup and quota-aware Amazon Q reviewer fallback (2026-10-17)
 
 - User explicitly authorized full repair of PR #1510 (code-scanning alert #16).
-- Cleanup commit 8bdd4fe deleted the inert root-level `test_fix.js`, added dedicated Spec Kit artifacts under `specs/026-code-scanning-noop-cleanup`, and fixed the active feature pointer. This cleanup source commit passed 76 unit tests, TypeScript, `./jules-verify.sh`, Playwright (21 passed / 3 skipped / 0 failed), OpenNext/Wrangler, CodeQL, and 495 MiB size gate at 310.35 MiB.
-- OpenRouter quota diagnosis in run #39037480205: HTTP 200 and key accepted; free-model quota 0 remaining of 50.
-- Quota-aware fallback verified on e459b24309a8b5382ea803313d2474547b713898 in run #39037914648: Robin skipped under quota threshold; substantive Amazon Q review #5558036445 matched that exact SHA and reviewer check passed.
-- Amazon Q review #5558036445 identified skipped-primary fallback, explicit secret redaction, and polling timeout mismatch. The next implementation commit addresses all three. Updated-head tests and a fresh exact-head Q review remain necessary before closing.
-- The workflow accepts only a substantive review from Robin or Amazon Q for exact current HEAD; otherwise it stays failed. No review bypass or auto-merge was added.
-- No app source, dependencies, secrets, UI, API routes, or deployment configuration changed. No deployment or merge performed. Local shell clone is unavailable due github.com DNS resolution; remote Actions provide execution evidence.
+- Cleanup commit 8bdd4fe removed inert `test_fix.js` and added dedicated Spec Kit artifacts. Its verification passed 76 unit tests, TypeScript, `./jules-verify.sh`, Playwright (21 passed / 3 skipped / 0 failed), OpenNext/Wrangler, CodeQL, and 495 MiB size gate at 310.35 MiB.
+- OpenRouter quota diagnostic showed HTTP 200, key accepted, free-model quota 0/50.
+- Quota-aware fallback passed on e459b24309a8b5382ea803313d2474547b713898: Robin skipped; Amazon Q review #5558036445 matched exact SHA; reviewer check passed.
+- Amazon Q identified skipped-primary handling, explicit nonempty secret redaction, and timeout alignment. These are fixed in later candidate commits. A final read-back additionally found and fixed an over-escaped bearer redaction regex and removed the redundant formatter; new current-head CI must validate these final workflow changes.
+- Final reviewer policy still fails unless a substantive Robin or Amazon Q review is found for the exact current SHA. No bypass, deployment, or merge was performed.
+- No application source, dependencies, secrets, UI, API routes, or deployment configuration changed. Local shell clone is unavailable due github.com DNS resolution; remote Actions provide actual execution evidence.
 
 ---
 

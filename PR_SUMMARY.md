@@ -133,3 +133,8 @@ USEFUL RESULT: PARTIAL — the no-op artifact is removed and the Spec Kit gate, 
 ## Amazon Q follow-up review findings addressed
 
 Review `5558036445` on head `e459b24309a8b5382ea803313d2474547b713898` caught three workflow hardening items. The follow-up commit adds `primary_review.outcome == 'skipped'` to the Amazon Q fallback condition, explicitly redacts the real API key only when non-empty, and aligns the polling budget (90 seconds) with a 3-minute step and 7-minute job timeout. The reviewer result remains fail-closed unless a substantive review for the exact current SHA exists. Current-head CI has to revalidate these final workflow changes before merge-readiness is claimed.
+
+
+## Final diagnostic audit follow-up
+
+A read-back of the quota preflight revealed that the bearer redaction regex was over-escaped and an obsolete `clean` helper remained. Both were corrected: the regex now uses normal JavaScript whitespace matching and status/error fields consistently use the explicit non-empty-secret-aware `redact` helper. Fresh current-head validation remains required.

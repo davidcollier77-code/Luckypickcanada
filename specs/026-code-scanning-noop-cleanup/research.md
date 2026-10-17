@@ -37,3 +37,8 @@
 - Finding: secret redaction should explicitly guard a non-empty API key. Both diagnostic formatters now replace the actual key only when its string length is greater than zero; raw bodies remain unlogged.
 - Finding: a 100-second polling loop could exceed the 2-minute step timeout after pre-loop GitHub calls. Polling is now 90 seconds within a 3-minute step and a 7-minute job.
 - Verification requirement: re-run current-head workflow after these changes and ensure the Amazon Q fallback and all other checks behave as expected.
+
+
+## Final diagnostic formatting audit
+
+A repository API read-back found the new quota preflight's bearer redaction regex contained a double-escaped pattern, while the account/completion diagnostic used the correct pattern. Corrected the quota preflight regex to use standard JavaScript whitespace token matching and unified error-code/message formatting through the explicitly non-empty-secret-aware `redact` helper. Removed the redundant shorter `clean` helper.
