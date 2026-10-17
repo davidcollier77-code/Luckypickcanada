@@ -1,10 +1,19 @@
 # Active Context
 
-## Current Focus — PR #1511 conflict resolution (2026-10-17)
+## Current Focus — Restore Robin's OpenRouter fallback (2026-10-17)
+
+- User-authorized task: keep Robin as the repository's automated code reviewer and restore a second, bounded Robin attempt through a distinct OpenRouter free model. Remove Amazon Q fallback dispatch and acceptance from `.github/workflows/robin.yml`; leave Amazon Q's independent reviewer workflow untouched.
+- Working branch: `fix/robin-openrouter-fallback`. Active Spec Kit feature: `specs/027-robin-openrouter-fallback`.
+- The workflow continues using the existing `secrets.OPENROUTER_API_KEY`; no secret rotation or replacement is part of this repair. Earlier run evidence reported the key accepted but free-model quota at 0/50, so a verified zero quota will correctly keep the Robin check failed until quota is available.
+- Scope is CI/workflow only: preserve the pinned Robin action, slash commands, review policy, and concurrency behavior; no application code, dependencies, Amazon Q workflow, credentials, or deployment configuration are being changed.
+- Verification: static workflow regression tests and GitHub Actions checks are expected on the PR. Local checkout/build/test commands are unavailable in this connected session because the runner cannot resolve github.com; do not claim local checks passed.
+
+
+## Completed — PR #1511 conflict resolution (merged 2026-10-17)
 
 - User-authorized repair for [PR #1511](https://github.com/davidcollier77-code/Luckypickcanada/pull/1511): reconcile the branch with current `main`, remove the accidentally duplicated `CrystalBall` component, correctly render newline tokens, align Unicode reveal counts, and fix reduced-motion dependency arrays.
 - The repair commit is built on current main while retaining the PR head as its second parent. The branch's `.specify/feature.json` pointer is set to `specs/crystal-ball-fix` to match the PR-specific Spec Kit artifacts; this is an intentional part of the PR diff.
-- Source integrity assertions confirm one default component export. Unit/Playwright/type/governance/build/size checks must be confirmed on current-head CI before merge.
+- Source integrity assertions confirmed one default component export. PR #1511 was subsequently merged; the former pre-merge verification reminder is historical.
 
 
 ## Current Focus — PR #1510 Visual QA timing repair (2026-10-17)

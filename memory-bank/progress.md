@@ -1,5 +1,9 @@
 # Progress — 2026-10-17
 
+- **Robin OpenRouter fallback restoration:** User explicitly authorized removing Amazon Q as Robin's fallback while leaving the independent Amazon Q reviewer untouched. The repair branch restores a second pinned Robin action using the existing `OPENROUTER_API_KEY` secret and a distinct OpenRouter free model. No secret value or credential configuration is changed. A previous account check reported free quota 0/50, so the workflow is designed to skip inference only when quota is confirmed at zero and otherwise require a current-head Robin review. GitHub Actions/CI verification is pending; no local pass is claimed because this connected runner could not resolve github.com.
+
+---
+
 - **PR #1510 code-scanning cleanup / reviewer fallback:** Cleanup source commit 8bdd4fe passed 76 tests, TypeScript, Spec Kit verifier/build/docs tests, Playwright 21/3/0, OpenNext/Wrangler, CodeQL and 310.35 MiB build-size gate. OpenRouter key accepted but free quota was 0/50. On e459b243, quota-aware Robin skip + exact-head Amazon Q review #5558036445 caused reviewer check to pass. Follow-up corrections then addressed skipped-primary conditions, explicit secret redaction, 90s polling inside 3m step/7m job, and a final audit found/fixed the over-escaped preflight regex/redundant formatter. Latest current-head CI is pending for the final workflow state. PR remains open and unmerged.
 
 ---
