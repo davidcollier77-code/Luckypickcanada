@@ -63,3 +63,14 @@ Acceptance criteria: initial quota is three; each successful AI answer decrement
 - Redis supplies cross-isolate atomic operations when configured. Cloudflare KV is a durable but not cross-isolate-atomic fallback; in-memory state is for local development/tests only.
 - Existing local sound assets and Howler.js are reused.
 - Fallback fortunes are not counted as AI-backed answers when the provider is unavailable.
+
+## Regression follow-up — missing timeout closure (2026-10-17)
+
+A Cloudflare build immediately after PR #1506 merged still failed to parse `app/lib/audio.js` at the `else` branch in `stopCrystalBallEnergy`. The `setTimeout` callback was missing its closing `}, 160);`, so the parser encountered `else` before the callback and conditional had been closed.
+
+Acceptance criteria for this correction:
+- The callback closes with the existing 160 ms fade interval before the surrounding `else` branch.
+- The timeout stops only the captured sound ID.
+- Shared audio volume and cached ID are reset only when that same sound ID remains current.
+- The immediate-stop fallback and surrounding Crystal Ball reveal sequence remain unchanged.
+- The module import, unit tests, and OpenNext/Cloudflare production build pass on the candidate before merge.

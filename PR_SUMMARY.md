@@ -1,114 +1,82 @@
-# PR Summary — Repair Crystal Ball Audio Build Failure
+# PR Summary — Crystal Ball audio timeout-closure repair
 
-**Task group:** audio  
-**Reason:** The deployment build fails while parsing the Crystal Ball sound helpers in app/lib/audio.js.
+## A — Analyze
 
-## Verified diagnosis
+- **SELECTED TASK GROUP:** audio
+- **GROUP REASON:** The failed OpenNext/Cloudflare production compile points to the Crystal Ball audio module, specifically an unclosed timeout callback in `stopCrystalBallEnergy`.
+- **Verified failing evidence:** Cloudflare build output from 2026-10-17 reports `app/lib/audio.js:208`, `Expected ',', got 'else'`.
+- **Verified current source:** The stop helper export is present, but `setTimeout(() => { ... }` is missing its `}, 160);` closure before the fallback `else`.
 
-- Failed Cloudflare deployment run: https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39021855291, on merge commit b68d3ace0eb958d2cedeccad53d4a5d75ea3a27f.
-- Compiler output: "Return statement is not allowed here" at app/lib/audio.js:195, followed by "Expression expected" at the closing brace.
-- Commit 1c721f46075743cf2a2be1a9a801831da91cfb4c removed the stopCrystalBallEnergy declaration and server guard, inserting a promise assignment and stray semicolon between the energy-start and energy-stop logic. The stop body consequently has a top-level return and the named export consumed by app/components/CrystalBall/CrystalBall.tsx is missing.
+## B — Boundaries + plan
 
-## Implementation and scope
+- **Authorized scope:** Fix the syntax error in the existing audio stop helper; preserve the 160 ms fade, captured sound-ID race guard, shared volume reset condition, and immediate-stop fallback.
+- **Runtime change:** `app/lib/audio.js` only. No package, sound asset, API route, database, payment, authentication, deployment configuration, environment variable, visual, or product-flow changes.
+- **Documentation updates:** Active feature `spec.md`, `plan.md`, and `tasks.md`; Memory Bank active context and progress; this canonical PR summary.
+- **Dependencies already in use:** Howler 2.2.4; Next.js 16.3.8; Vitest 5.0.0; OpenNext Cloudflare 1.20.6. No dependency was added or upgraded.
+- **Governance boundary:** No Context7 request was made. The local repository shell/Jules command dispatcher is unavailable in this session. Required shell-based procedure steps must not be represented as completed.
 
-- Restore the separate exported stopCrystalBallEnergy function and its server-side guard in app/lib/audio.js.
-- Preserve the captured sound ID so a delayed fade-stop callback does not stop a later sound instance.
-- Add __tests__/audio-exports.test.js to protect the helper export.
-- Update the active Spec Kit spec, plan, tasks, Memory Bank and this canonical summary. No packages, sound assets, API routes, deployment configuration, workflow files or secrets are changed.
-- User explicitly authorized the repair. No payment, database/schema, authentication, or direct production deployment action was performed.
+## C — Spec Kit stage and governance record
 
-## Governance
+- **`/speckit.specify`** — definition: `.jules/cmds/speckit.specify.md`; method: FILE-DRIVEN DOCUMENT UPDATE VIA REPOSITORY API; result: PARTIAL, the regression acceptance criteria were added to `specs/025-crystal-ball-audio-daily-limit/spec.md`. Native dispatch and required local setup steps were not executed.
+- **`/speckit.plan`** — definition: `.jules/cmds/speckit.plan.md`; method: FILE-DRIVEN DOCUMENT UPDATE VIA REPOSITORY API; result: PARTIAL, the targeted repair and verification requirements were recorded in `specs/025-crystal-ball-audio-daily-limit/plan.md`. Native dispatch and required local setup steps were not executed.
+- **`/speckit.tasks`** — definition: `.jules/cmds/speckit.tasks.md`; method: FILE-DRIVEN DOCUMENT UPDATE VIA REPOSITORY API; result: PARTIAL, task T023 was clarified and T026 records the timeout-closure correction in `specs/025-crystal-ball-audio-daily-limit/tasks.md`. Native dispatch and required local setup steps were not executed.
+- **`/speckit.implement`** — definition: `.jules/cmds/speckit.implement.md`; method: REPOSITORY API FILE UPDATE; result: CODE CANDIDATE COMMITTED TO THE FIX BRANCH. The shell-based implementation workflow and its local setup scripts were unavailable; remote CI is still required.
+- **Active feature pointer:** `.specify/feature.json` remains pointed at `specs/025-crystal-ball-audio-daily-limit`.
+- **Important limitation:** This is not a governance-complete result. The required local `./jules-verify.sh` and shell-based checks were not run; proceed only with honest CI evidence and outstanding gates.
 
-- SELECTED TASK GROUP: audio
-- GROUP REASON: The failure is inside the audio helper, and .jules/audio.md routes the task through the Audio specialist.
-- AGENTS.md was read first and treated as authoritative.
-- SPEC KIT METHOD: FILE-DRIVEN PROCEDURAL EXECUTION. Native Jules slash-command dispatch and a local checkout/shell are unavailable in this session. The core command definitions were inspected and the active feature artifacts were updated. Local setup scripts and ./jules-verify.sh were not executed here; remote PR CI must validate this candidate.
+## Required resources consulted
 
-## Required libraries and tools
-
-| Library / tool | Version | USED | USEFUL | Reason |
-|---|---|---:|---:|---|
-| Howler.js | ^2.2.4 (build log: 2.2.4) | YES | YES | Existing sound start/fade/stop behavior must be preserved. |
-| Vitest | 5.0.0 | YES | YES | Regression test protects the named helper export. |
-| Next.js | 16.3.8 | YES | YES | Its production compiler reported the syntax failure. |
-| OpenNext Cloudflare | 1.20.6 | YES | YES | Same build pathway must pass after repair. |
-| React | 19.3.0 | YES | YES | The importing component's expected helper export was inspected. |
-| Node.js | 22.23.3 in build log | YES | YES | Runtime context of the failed CI build. |
-| pnpm | 10.30.3 | YES | YES | Required package manager for verification. |
-| Other dependencies | Existing lockfile | NO | NO | No dependency changes are needed. |
-
-## Required Jules / Gemini documentation
-
-| Document | USED | USEFUL | Contribution |
-|---|---:|---:|---|
-| .jules/audio.md | YES | YES | Selected the required audio path and resources. |
-| .jules/jules.md | YES | YES | Initialization, Memory Bank, Spec Kit and reporting requirements. |
-| .docs/manifest.json | YES | YES | Identified the routed documentation set. |
-| .docs/audio/_goldfire_howler_js.md | YES | YES | Relevant Howler sound-ID and stop/fade guidance. |
-| .docs/audio/jules_google_docs.md | YES | NO | Required Jules reference consulted; content did not change the repair. |
-| .docs/audio/developers_google_com_jules_api.md | YES | NO | Jules API definitions are unrelated to this syntax defect. |
-| .docs/audio/_google-gemini_gemini-cli.md | YES | NO | CLI tips did not affect the JavaScript fix. |
-| .docs/audio/_websites_ai_google_dev_gemini-api.md | YES | NO | API overview did not affect the repair. |
-| .docs/audio/_websites_developer_chrome.md | YES | NO | Chrome offscreen-extension documentation is unrelated to this parser error. |
-| .docs/audio/_websites_developer_apple_webkit.md | YES | NO | The snapshot provided no useful audio guidance for this syntax issue. |
-| .docs/audio/_websites_mdn_web_audio.md | YES | NO | Web Audio API behavior is unrelated to a function-boundary error. |
-
-## Other required governance resources
-
-- USED=YES, USEFUL=YES: AGENTS.md; .specify/memory/constitution.md; .specify/integration.json; .specify/feature.json; .specify/init-options.json; .specify/templates/spec-template.md; .specify/templates/plan-template.md; .specify/templates/tasks-template.md; active feature specs/025-crystal-ball-audio-daily-limit/spec.md, plan.md, tasks.md; memory-bank/projectBrief.md; memory-bank/activeContext.md; memory-bank/progress.md; app/lib/audio.js; app/components/CrystalBall/CrystalBall.tsx; package.json; vitest.config.mts; .github/workflows/visual-qa.yml; .github/workflows/validate-open-next-repair.yml; jules-verify.sh; scripts/test-verify-speckit-task.sh; scripts/verify-speckit-task.sh.
-- USED=YES, USEFUL=NO for this narrow fix: CSS_FIX_GUIDE.md; DATABASE_SETUP.md; DEPLOYMENT_CHECKLIST.md; QUICK_FIX_GUIDE.md. They were reviewed as required by AGENTS.md, but their CSS/database/general deployment material does not affect the missing function boundary.
-- Specialist/command inventory: available .jules/*.md files and .jules/cmds/*.md definitions were inspected. The audio specialist and core Spec Kit specify/plan/tasks/implement definitions informed this task. Unrelated specialist notes and optional command definitions did not materially alter the fix. No Context7 call was made because repository policy requires separate explicit approval for every call.
-- Spec Kit status: the active pointer remains specs/025-crystal-ball-audio-daily-limit. Its spec.md, plan.md and tasks.md were updated on this repair branch. Native dispatch and local setup scripts could not be run here; do not claim that they ran.
+- **Repository authority:** `AGENTS.md` — establishes the audio task route, required Spec Kit sequence, minimal-scope rule, build checks, and 495 MiB cap.
+- **Jules governance:** `.jules/jules.md` — initialization, Memory Bank, Spec Kit, and reporting requirements.
+- **Audio specialist:** `.jules/audio.md` — routes audio-helper work through audio-specific rules.
+- **Routed documentation:** `.docs/manifest.json`, `.docs/audio/jules_google_docs.md`, `.docs/audio/_google-gemini_gemini-cli.md`, `.docs/audio/_websites_ai_google_dev_gemini-api.md`, `.docs/polishing/_goldfire_howler_js.md`.
+- **Constitution/integration:** `.specify/memory/constitution.md`, `.specify/integration.json`, `.specify/feature.json`.
+- **Memory Bank:** `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md`, `memory-bank/techContext.md`.
+- **Task-relevant source/config/test:** `app/lib/audio.js`, `__tests__/audio-exports.test.js`, `app/components/CrystalBall/CrystalBall.tsx`, `package.json`, `jules-verify.sh`.
+- **Required general guides:** `CSS_FIX_GUIDE.md`, `DATABASE_SETUP.md`, `DEPLOYMENT_CHECKLIST.md`, `QUICK_FIX_GUIDE.md` were inspected; their material does not change this audio-only correction.
+- **Inventory limitation:** The local shell is unavailable, so the complete prescribed inventory of all `.jules/*.md` and `.jules/cmds/*.md` files and their shell-based procedures has not been demonstrated in this follow-up. Do not claim full governance compliance.
 
 ## Changed files
 
-1. app/lib/audio.js
-2. __tests__/audio-exports.test.js
-3. specs/025-crystal-ball-audio-daily-limit/spec.md
-4. specs/025-crystal-ball-audio-daily-limit/plan.md
-5. specs/025-crystal-ball-audio-daily-limit/tasks.md
-6. memory-bank/activeContext.md
-7. memory-bank/progress.md
-8. PR_SUMMARY.md
+1. `app/lib/audio.js`
+2. `specs/025-crystal-ball-audio-daily-limit/spec.md`
+3. `specs/025-crystal-ball-audio-daily-limit/plan.md`
+4. `specs/025-crystal-ball-audio-daily-limit/tasks.md`
+5. `memory-bank/activeContext.md`
+6. `memory-bank/progress.md`
+7. `PR_SUMMARY.md`
 
-## Verification commands and current evidence
+## Verification record
 
-- COMMAND: npx @opennextjs/cloudflare build  
-  RESULT: FAIL on pre-repair main  
-  EVIDENCE: Run 39021855291 reports a Next.js return-outside-function syntax error in app/lib/audio.js.
-- COMMAND: pnpm run test  
-  RESULT: NOT RUN LOCALLY; repair PR CI pending  
-  EVIDENCE: No local checkout is available; require the Visual QA result for the current repair candidate.
-- COMMAND: pnpm tsc --noEmit  
-  RESULT: NOT RUN LOCALLY; repair PR CI pending  
-  EVIDENCE: The Visual QA workflow includes this standalone check.
-- COMMAND: ./jules-verify.sh  
-  RESULT: NOT RUN LOCALLY; repair PR CI pending  
-  EVIDENCE: Its Spec Kit gate, TypeScript check, production build and documentation tests have not been executed in this session.
-- COMMAND: pnpm run build  
-  RESULT: NOT RUN LOCALLY; repair PR CI pending  
-  EVIDENCE: Must pass on the post-repair candidate.
-- COMMAND: pnpm exec opennextjs-cloudflare build  
-  RESULT: NOT RUN LOCALLY; repair PR CI pending  
-  EVIDENCE: Required to confirm the deployment build no longer has the parser error.
-- COMMAND: pnpm exec wrangler build --config ./wrangler.jsonc  
-  RESULT: NOT RUN LOCALLY; repair PR CI pending  
-  EVIDENCE: No-deploy Wrangler validation must pass after the OpenNext build.
-- COMMAND: Native Spec Kit dispatch and local setup scripts  
-  RESULT: NOT AVAILABLE IN THIS SESSION  
-  EVIDENCE: GitHub API repository access is available, but no Jules command dispatcher or local checkout is attached.
-- COMMAND: du -sb .next public  
-  RESULT: NOT RUN  
-  EVIDENCE: Exact generated size against the hard 495 MiB cap is unknown and must not be inferred from an older build.
-- COMMAND: Real-device mobile audio playback  
-  RESULT: NOT RUN  
-  EVIDENCE: No physical mobile-device test session is available here.
-- COMMAND: git clone https://github.com/davidcollier77-code/Luckypickcanada.git  
-  RESULT: FAIL / BLOCKED  
-  EVIDENCE: GitHub DNS resolution failed, so no local compile or test result is claimed.
+- **COMMAND:** `git clone --depth 1 https://github.com/davidcollier77-code/Luckypickcanada.git /tmp/Luckypickcanada`
+  - **RESULT:** FAIL / BLOCKED
+  - **EVIDENCE:** `fatal: unable to access 'https://github.com/davidcollier77-code/Luckypickcanada.git/': Could not resolve host: github.com`.
+- **COMMAND:** `pnpm run test`
+  - **RESULT:** NOT RUN LOCALLY
+  - **EVIDENCE:** No working local checkout; await candidate CI.
+- **COMMAND:** `pnpm tsc --noEmit`
+  - **RESULT:** NOT RUN LOCALLY
+  - **EVIDENCE:** No working local checkout; await candidate CI.
+- **COMMAND:** `./jules-verify.sh`
+  - **RESULT:** NOT RUN LOCALLY
+  - **EVIDENCE:** No working local checkout; governance verification remains outstanding.
+- **COMMAND:** `pnpm run build` and `npx @opennextjs/cloudflare build`
+  - **RESULT:** NOT RUN LOCALLY; previous main build FAIL
+  - **EVIDENCE:** User-provided log shows the parser failure before this candidate. Post-fix success has not been demonstrated.
+- **COMMAND:** Build-size check for `.next + public`
+  - **RESULT:** NOT RUN
+  - **EVIDENCE:** Exact size versus the hard 495 MiB maximum is unknown.
+- **COMMAND:** Real-device mobile audio playback
+  - **RESULT:** NOT RUN
+  - **EVIDENCE:** No physical-device session is available in this environment.
 
-## Outstanding issues and double-check
+## Pre-submission double-check
 
-- Remaining gates: repair-branch CI must pass; run the repository verifier; measure exact generated output size below 495 MiB; perform real mobile audio playback. The active feature still records these broader outstanding gates; do not claim the full feature is governance-complete without evidence.
-- Pre-submission double-check: the patch restores the missing named export consumed by the component, removes the stray statements that caused the parse error, and retains the sound-ID race correction. The final changed-path list must be reconciled against the actual PR.
-- USEFUL RESULT: NO (pending verification). The source-level cause is established from the compiler error and commit diff, but production build recovery is not confirmed until the repair candidate passes OpenNext/Cloudflare CI.
+- The patch closes the timeout callback and supplies the existing 160 ms delay before the fallback `else`.
+- The timeout stops the captured ID; only a still-current ID triggers shared volume/cache reset.
+- The redundant second `sound.stop(stoppedId)` call inside the ID guard was removed.
+- No dependencies or runtime files outside `app/lib/audio.js` were changed.
+- The full final diff must be compared with this inventory before approval.
+
+**USEFUL RESULT:** NO, pending the candidate unit-test/import run and successful OpenNext/Cloudflare production build.
+

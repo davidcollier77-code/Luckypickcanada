@@ -1,3 +1,7 @@
+# Progress — 2026-10-17
+
+- **Follow-up Crystal Ball audio timeout syntax correction:** After PR #1506 merged, the October 17 Cloudflare build still reported a parser error at the `else` branch in `app/lib/audio.js`. A candidate on `fix/crystal-ball-audio-timeout-closure` closes the 160 ms timeout callback and removes the redundant duplicate stop call inside the sound-ID guard. This is a code candidate only; unit tests, governance verification, build-size and mobile playback evidence remain pending.
+
 - 2026-10-16: Added the Premium Golden Maple-Leaf Assets follow-up on `polish/crystal-ball-golden-leaf-assets`. GoldenLeaf now serves AVIF → WebP → SVG fallback; cursor and flying copy share it. Added source-order/load assertions and active Spec Kit artifacts. AVIF (2,316 bytes) and WebP (3,870 bytes) blob SHAs were verified against the generated local files. Automated test, governance, build-size, and OpenNext/Cloudflare results remain pending; do not merge before CI is green.
 
 # Progress — 2026-10-16

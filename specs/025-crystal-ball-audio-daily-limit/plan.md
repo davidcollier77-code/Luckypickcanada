@@ -42,3 +42,7 @@ Add three restrained existing-asset sound cues to the Crystal Ball reveal and en
 - Run pnpm test, pnpm tsc --noEmit, pnpm build, and ./jules-verify.sh.
 - Measure .next plus public against the 495 MB hard cap.
 - Inspect the final diff and workflow checks. Do not report a command as passed unless its output is available. Run verification on the repair candidate, not only the earlier pre-regression revision.
+
+## Follow-up regression repair — timeout callback closure (2026-10-17)
+
+The post-merge build identified a missing `setTimeout` callback closure in `stopCrystalBallEnergy`. Restore `}, 160);` before the existing `else` branch and remove the duplicate stop call inside the ID-equality guard. Keep the captured-ID race protection and keep the repair confined to the existing audio helper. Verify on the PR candidate using the existing unit-test/import coverage and OpenNext/Cloudflare build checks. Local shell checks, the repository governance verifier, build-size measurement, and physical mobile playback remain unverified until evidence is available.
