@@ -1,5 +1,9 @@
 # Progress — 2026-10-17
 
+- **PR #1510 no-op code-scanning cleanup prepared:** Inspected the exact diff and failed job logs. The current Visual QA failure is a real governance failure: the active feature pointer referenced the unrelated Crystal Ball audio spec, whose spec.md was not changed on this branch. The remaining test_fix.js was only a readFile plus a temporary debugging comment after the no-op operation had been removed. The repair creates task-specific Spec Kit artifacts and deletes the inert script without touching application source or CI policy. Updated-head unit, governance, build-size/OpenNext, CodeQL, and Robin review outcomes are pending; local shell execution is unavailable because this environment cannot resolve github.com.
+
+---
+
 - **New Crystal Ball audio assets generated and validated (2026-10-17):** GitHub Actions asset-preparation run #1 downloaded three Pixabay source tracks using curl without API keys, converted them with FFmpeg 6.1.1, verified WAV headers / PCM / duration / non-silent samples / clipping / size, and committed three new files. Energy: 15.700 s / 692,430 bytes; reveal: 3.192 s / 140,846 bytes; leaf: 2.038 s / 89,934 bytes. The MP3 originals remained temporary. Automated PR tests, governance, production build and the 495 MiB build-size gate remain pending; real-device playback remains unverified.
 
 ---
