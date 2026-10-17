@@ -2,10 +2,10 @@
 
 ## Stored value
 
-The versioned browser key \`luckyPickCanada:crystalBallDailyQuestions:v1\` stores:
+The versioned browser key `luckyPickCanada:crystalBallDailyQuestions:v1` stores:
 
-- \`date\`: visitor-local calendar date in \`YYYY-MM-DD\` format.
-- \`used\`: number of completed AI-backed answers for that local date, bounded from 0 to 3.
+- `date`: visitor-local calendar date in `YYYY-MM-DD` format.
+- `used`: number of completed AI-backed answers for that local date, bounded from 0 to 3.
 
 ## Reset
 
