@@ -161,7 +161,7 @@ A read-back of the quota preflight revealed that the bearer redaction regex was 
 ### Verified findings
 - The branch head before repair was `311af3710bab2ba05887b5b33173068bc23b4933`; main had advanced 13 commits beyond the branch's prior base.
 - The second PR commit appended a second copy of `CrystalBall` to `app/components/CrystalBall/CrystalBall.tsx`, leaving two default-export declarations. This was a source defect in addition to the Git conflict.
-- The branch changed the shared `.specify/feature.json` pointer while main points at `specs/026-code-scanning-noop-cleanup`. The resolution preserves main's active feature pointer rather than overwriting it.
+- The shared `.specify/feature.json` conflict is resolved in favor of this PR's active feature, `specs/crystal-ball-fix`, so the branch's active pointer matches the spec/plan/tasks being delivered.
 - The main-branch `PR_SUMMARY.md` contains the PR #1510 verification record. This repair preserves that record and appends this PR's section rather than replacing unrelated evidence.
 
 ### Implementation
@@ -170,18 +170,19 @@ A read-back of the quota preflight revealed that the bearer redaction regex was 
 - Newline tokens are emitted as standalone `<br>` elements; word wrappers continue to prevent mid-word wrapping.
 - Reveal counters now use `Array.from(...).length` so their count matches code-point iteration.
 - Preserved the 20 ms base typing delay, 125 ms punctuation pause, top-aligned smooth scrolling, audio calls, leaf-flight sequence, and reduced-motion handling.
-- Preserved main's shared `.specify/feature.json` pointer to avoid overwriting the active task state.
+- Resolved `.specify/feature.json` to `specs/crystal-ball-fix`, matching the Spec Kit artifacts delivered by this PR.
 - Updated the Crystal Ball feature spec, plan, and task checklist. Final verification remains explicitly pending.
 
 ### Exact changed-file list
-1. `app/components/CrystalBall/CrystalBall.tsx`
-2. `app/components/CrystalBall/CrystalBall.module.css`
-3. `specs/crystal-ball-fix/spec.md`
-4. `specs/crystal-ball-fix/plan.md`
-5. `specs/crystal-ball-fix/tasks.md`
-6. `PR_SUMMARY.md`
-7. `memory-bank/activeContext.md`
-8. `memory-bank/progress.md`
+1. `.specify/feature.json`
+2. `app/components/CrystalBall/CrystalBall.tsx`
+3. `app/components/CrystalBall/CrystalBall.module.css`
+4. `specs/crystal-ball-fix/spec.md`
+5. `specs/crystal-ball-fix/plan.md`
+6. `specs/crystal-ball-fix/tasks.md`
+7. `PR_SUMMARY.md`
+8. `memory-bank/activeContext.md`
+9. `memory-bank/progress.md`
 
 ### Routed material actually inspected
 - `AGENTS.md`, `.jules/jules.md`, `.jules/polishing.md`, `.docs/manifest.json`, `.docs/polishing/jules_google_docs.md`, `.docs/polishing/_google-gemini_gemini-cli.md`, and `.docs/polishing/_websites_ai_google_dev_gemini-api.md`.

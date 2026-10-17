@@ -3,7 +3,7 @@
 ## Current Focus — PR #1511 conflict resolution (2026-10-17)
 
 - User-authorized repair for [PR #1511](https://github.com/davidcollier77-code/Luckypickcanada/pull/1511): reconcile the branch with current `main`, remove the accidentally duplicated `CrystalBall` component, correctly render newline tokens, align Unicode reveal counts, and fix reduced-motion dependency arrays.
-- The repair commit is built on current main while retaining the PR head as its second parent. The shared `.specify/feature.json` pointer from main is intentionally preserved.
+- The repair commit is built on current main while retaining the PR head as its second parent. The branch's `.specify/feature.json` pointer is set to `specs/crystal-ball-fix` to match the PR-specific Spec Kit artifacts; this is an intentional part of the PR diff.
 - Source integrity assertions confirm one default component export. Unit/Playwright/type/governance/build/size checks must be confirmed on current-head CI before merge.
 
 

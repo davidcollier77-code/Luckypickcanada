@@ -114,5 +114,5 @@
 
 - GitHub marked PR #1511 as `mergeable_state: dirty`; its branch was two commits ahead and 13 commits behind main.
 - Verified that the second PR commit appended a second `CrystalBall` component definition. Rebuilt the component from the first PR commit and reapplied the intended reduced-motion dependency and newline-rendering fixes, retaining Unicode code-point iteration and the existing word-wrapper/timing/scroll behavior.
-- Preserved main's shared `.specify/feature.json` pointer and the PR #1510 `PR_SUMMARY.md` record; appended PR #1511's repair and verification section instead of overwriting the unrelated record.
+- Set `.specify/feature.json` to `specs/crystal-ball-fix` so the active pointer matches this task, while preserving the PR #1510 `PR_SUMMARY.md` record and appending PR #1511's repair section.
 - Candidate source integrity assertions passed during commit preparation. Current-head unit, Playwright, TypeScript, governance, build, and build-size checks remain pending until GitHub Actions completes. Do not merge until those results and the review gate are verified.
