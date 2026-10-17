@@ -18,8 +18,8 @@
 
 ## Implementation and boundaries
 - Replaced the moving reusable-workflow call with Robin action pinned at commit fc0bf915b634bf2f8b88ff1392acefdfb54e28d9.
-- Default primary: google/gemma-4-31b-it:free. Default fallback: qwen/qwen3-coder:free. Current OpenRouter catalog pages list both as free endpoints; primary/base URL override variables are preserved and fallback can be overridden with ROBIN_LLM_FALLBACK_MODEL.
-- Added 120-second request timeouts, three-minute action-step limits, an eight-minute job limit, missing-key preflight, duplicate-review guard keyed to current head and run start, and a final check after timeout to avoid false failure when a review was already posted.
+- Default primary: xingchen-agi/xing4.0-29b-a4b:free. Default fallback: qwen/qwen3.8-27b:free. OpenRouter currently lists both as free endpoints that support JSON-schema structured outputs; primary/base URL override variables are preserved and fallback can be overridden with ROBIN_LLM_FALLBACK_MODEL.
+- Added 90-second request timeouts, two-minute action-step limits, an eight-minute job limit, missing-key preflight, duplicate-review guard keyed to current head and run start, and a final check after timeout to avoid false failure when a review was already posted.
 - Preserved events, authorized slash commands, job-level concurrency, permissions, review limit and non-blocking advisor mode. No website, payments, database, deployment settings, secrets or secret values changed.
 - The preflight can detect a missing OPENROUTER_API_KEY quickly but cannot create secrets. If missing in a Dependabot run, the owner must add it under Settings → Secrets and variables → Dependabot.
 
