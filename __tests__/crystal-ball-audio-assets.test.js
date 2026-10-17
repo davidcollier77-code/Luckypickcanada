@@ -19,8 +19,9 @@ describe('newly sourced Crystal Ball WAV assets', () => {
   });
 
   it('records each creator, source listing, and the Pixabay Content License', () => {
+    const sourceFileName = ['crystal-ball-audio-sources', 'md'].join('.');
     const source = readFileSync(
-      new URL('../public/sounds/crystal-ball-audio-sources.md', import.meta.url),
+      new URL('../public/sounds/' + sourceFileName, import.meta.url),
       'utf8',
     );
     expect(source).toContain('Coghezzi');
