@@ -1,5 +1,5 @@
 'use client';
-import { playButtonClick } from '../../lib/audio';
+import { playButtonClick, preloadCrystalBallAudio, playCrystalBallEnergy, stopCrystalBallEnergy, playCrystalBallReveal, playCrystalBallLeaf } from '../../lib/audio';
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ type Reading = {
 };
 
 type LeafFlight = { fromX: number; fromY: number; dx: number; dy: number };
+type DailyQuota = { limit: number; remaining: number; resetAt: string } | null;
 
 const PLACEHOLDER_FORTUNES = [
   'The northern lights stir within the glass, reflecting quiet possibility. Trust your instincts today, for the currents of fortune are aligning in your favor.',
@@ -33,6 +34,7 @@ export interface CrystalBallProps {
   backHref?: string;
   luckMeterHref?: string;
   communityMapHref?: string;
+  dailyQuota?: DailyQuota;
 }
 
 export default function CrystalBall({
@@ -40,6 +42,7 @@ export default function CrystalBall({
   backHref = '/',
   luckMeterHref = '/lucky-meter',
   communityMapHref = '/map',
+  dailyQuota = null,
 }: CrystalBallProps) {
   const [question, setQuestion] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'preRevealPulse' | 'leafFalling' | 'error' | 'revealing' | 'completionPulse'>('idle');
@@ -64,6 +67,7 @@ export default function CrystalBall({
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
+    void preloadCrystalBallAudio();
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const handleMotionPreferenceChange = (event: MediaQueryListEvent) => {
       setPrefersReducedMotion(event.matches);
@@ -78,6 +82,7 @@ export default function CrystalBall({
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
       if (leafFallbackTimeoutRef.current) clearTimeout(leafFallbackTimeoutRef.current);
+      stopCrystalBallEnergy();
     };
   }, []);
 
@@ -132,6 +137,7 @@ export default function CrystalBall({
       const toY = panelRect.top + Math.min(34, panelRect.height * 0.3);
 
       setLeafFlight({ fromX, fromY, dx: toX - fromX, dy: toY - fromY });
+      playCrystalBallLeaf();
       setStatus('leafFalling');
     }, 700);
 
@@ -198,9 +204,11 @@ export default function CrystalBall({
 
     try {
       const answer = await onSeekFortune(trimmed);
+      stopCrystalBallEnergy();
       if (!answer || answer.trim() === '') {
         throw new Error('Received an empty fortune.');
       }
+      playCrystalBallReveal();
 
       setCurrentFortune(answer);
       setReadings((prev) => [
@@ -223,6 +231,7 @@ export default function CrystalBall({
       }
 
     } catch (error: unknown) {
+      stopCrystalBallEnergy();
       console.error('Failed to fetch fortune:', error);
       setCurrentFortune(null);
       setShowResult(false);
@@ -352,6 +361,13 @@ export default function CrystalBall({
 
         <section className={styles.card}>
           <p className={styles.cardStatus}>{statusHeadline}</p>
+          {dailyQuota && (
+            <p className={styles.dailyQuota} role="status" aria-live="polite">
+              {dailyQuota.remaining > 0
+                ? `${dailyQuota.remaining} of ${dailyQuota.limit} questions remaining today`
+                : `You’ve used all ${dailyQuota.limit} questions for today. Come back after the daily reset.`}
+            </p>
+          )}
 
           {!showResult && !currentFortune && (
             <p className={styles.cardHint}>
@@ -377,9 +393,10 @@ export default function CrystalBall({
             className={`${styles.seekButton} inline-flex items-center justify-center`}
             onClick={() => {
               playButtonClick();
+              playCrystalBallEnergy();
               void handleSeekFortune();
             }}
-            disabled={isBusy || question.trim() === ""}
+            disabled={isBusy || question.trim() === "" || dailyQuota?.remaining === 0}
             aria-disabled={undefined}
           >
             {isBusy ? (

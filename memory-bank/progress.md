@@ -61,3 +61,22 @@
 - Final design therefore retains openrouter/free, calls Robin pinned to immutable upstream commit fc0bf915b634bf2f8b88ff1392acefdfb54e28d9 directly, sets a 90-second client timeout, two-minute action-step cap, four-minute job cap, safe API-key preflight and timeout/cancellation-aware final review checks. No in-Robin second-model fallback exists.
 - Amazon Q's review on PR #1500 finished before Robin began. CodeRabbit's later PR #1501 review is not proof of an automatic fallback handoff; no external reviewer orchestration was found in this repository.
 - Repository checks for the successful run passed. ./jules-verify.sh was not run locally because this session could not resolve github.com for a local clone.
+
+
+## 2026-10-17 — Crystal Ball audio and daily question allowance
+
+- Added an audio/quota feature on feat/crystal-ball-audio-daily-limit. It reuses the installed Howler dependency and existing same-origin energy, impact, and chime assets.
+- The Oracle quota helper tracks completed and pending answers using a hashed client IP plus UTC date. Redis uses atomic reservation scripts; Cloudflare KV is a persistent fallback; quota-store failures are intended to fail closed for AI-backed calls.
+- POST reserves before the provider call, commits only non-empty AI content, and releases reservations on upstream errors/fallbacks. GET exposes quota without caching. The UI shows remaining count and disables new submission at zero.
+- Added Vitest quota tests and Playwright coverage for the three-answer UI; extended the reveal regression test with deterministic quota responses.
+- Local verification remains pending because the session cannot resolve github.com for a checkout. pnpm tests, Playwright, TypeScript, ./jules-verify.sh, production build, output-size check, and actual mobile playback have not been run in this session. Do not mark this task complete until these checks have evidence.
+
+
+## 2026-10-17 — Crystal Ball audio and daily question allowance: CI results
+
+- PR #1505 on feat/crystal-ball-audio-daily-limit implements short Howler cues with existing same-origin assets and a three-successful-AI-answer daily cap, with server-side reservations/releases and visitor quota messaging.
+- Added a pnpm run test step to .github/workflows/visual-qa.yml. Visual QA run 39015312979 passed: 10 Vitest files / 70 tests passed; full Playwright suite 24 total, 21 passed, 3 skipped, no failures.
+- Validate OpenNext Repair run 39015313418 passed: Next.js production build and TypeScript stage, OpenNext Cloudflare worker build, compiled CSS/worker/assets checks, and Wrangler no-deploy validation.
+- CodeQL run 39015310504 passed across Actions, JavaScript/TypeScript, and Python.
+- Robin run 39015313042 failed because the free-model review timed out after two minutes; no review was posted.
+- Still outstanding: standalone ./jules-verify.sh, standalone pnpm tsc --noEmit, actual .next + public size measurement against 495 MiB, and real mobile-device audio. The protected validation workflow was left unchanged rather than bypassing its authorization gate. Do not mark this task governance-complete until those gates are satisfied.

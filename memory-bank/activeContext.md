@@ -1,5 +1,18 @@
 # Active Context
 
+## Current Focus — Crystal Ball Audio and Daily Question Limit (2026-10-17)
+
+- Goal: Add understated audio to the Crystal Ball's energy/reveal/leaf phases and cap successful AI-backed answers at three per client IP per UTC day.
+- Branch / PR: feat/crystal-ball-audio-daily-limit / PR #1505.
+- Implementation: Existing Howler and local sound assets reused. Oracle route uses reservation/commit/release usage accounting and an uncached status endpoint. UI displays questions remaining and blocks another submission at zero.
+- Feature artifacts: specs/025-crystal-ball-audio-daily-limit; .specify/feature.json points to this active feature. PR_SUMMARY.md and tasks.md record the workflow and verification state.
+- Verified on code revision 340cc8d7ee784827a4a9faadb142ef61239a60ee: pnpm run test PASS (10 files / 70 tests); Playwright PASS (21 passed / 3 skipped); Next.js build/TypeScript stage PASS; OpenNext Cloudflare build PASS; Wrangler build validation PASS; CodeQL PASS.
+- Reviewer status: Robin Code Review timed out at two minutes and posted no review. This is not a code-review finding.
+- Outstanding: ./jules-verify.sh and standalone pnpm tsc --noEmit were not run because no repository shell is available. Exact .next + public size vs. 495 MiB and real mobile audio remain unverified. The OpenNext validation workflow is protected and was left unchanged; do not bypass the repository's authorization gate.
+- Storage caveat: Redis Lua scripts are atomic across Worker isolates when configured. Cloudflare KV is persistent but does not guarantee cross-isolate atomic reservations. Confirm production Upstash Redis configuration.
+- CI workflow change: .github/workflows/visual-qa.yml now runs pnpm run test before its full Playwright suite, so unit tests are exercised on future PRs.
+
+
 ## Current Focus — Robin Review Reliability (2026-10-16)
 
 - Goal: Bound Robin review runtime while keeping the free router that actually completed a live review; do not add a second in-Robin model attempt.

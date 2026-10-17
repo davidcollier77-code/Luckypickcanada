@@ -88,3 +88,130 @@ export function playConfettiPop() {
 
   return preloadConfettiPop();
 }
+
+
+/*
+ * Crystal Ball sound design.
+ * Same-origin sounds are preloaded on entry; playback is limited to the
+ * question action and reveal transitions. Howler is already a project dependency.
+ */
+let crystalBallAudioLoadPromise = null;
+
+const CRYSTAL_BALL_SOUNDS = {
+  crystalEnergy: { src: ['/sounds/beam_energy.mp3'], volume: 0.16, loop: true },
+  crystalReveal: { src: ['/sounds/beam_impact.mp3'], volume: 0.28 },
+  crystalLeaf: { src: ['/sounds/chime-sound.mp3'], volume: 0.26 },
+};
+
+export function preloadCrystalBallAudio() {
+  if (typeof window === 'undefined') return Promise.resolve();
+  const keys = Object.keys(CRYSTAL_BALL_SOUNDS);
+  if (keys.every((key) => audioCache[key]?.state() === 'loaded')) return Promise.resolve();
+  if (crystalBallAudioLoadPromise) return crystalBallAudioLoadPromise;
+
+  crystalBallAudioLoadPromise = import('howler')
+    .then(({ Howl }) => new Promise((resolve) => {
+      let remaining = keys.length;
+      const markSettled = () => {
+        remaining -= 1;
+        if (remaining <= 0) resolve();
+      };
+
+      for (const [key, config] of Object.entries(CRYSTAL_BALL_SOUNDS)) {
+        if (audioCache[key]) {
+          const existing = audioCache[key];
+          if (existing.state() === 'loaded' || existing.state() === 'unloaded') {
+            markSettled();
+          } else {
+            existing.once('load', markSettled);
+            existing.once('loaderror', markSettled);
+          }
+          continue;
+        }
+
+        let settled = false;
+        const settleOnce = () => {
+          if (settled) return;
+          settled = true;
+          markSettled();
+        };
+        audioCache[key] = new Howl({
+          ...config,
+          preload: true,
+          onload: settleOnce,
+          onloaderror: (_id, error) => {
+            console.error('Crystal Ball audio failed to load:', key, error);
+            settleOnce();
+          },
+        });
+        if (audioCache[key].state() === 'loaded') settleOnce();
+      }
+    }))
+    .catch((error) => {
+      console.error('Crystal Ball audio initialization failed:', error);
+    })
+    .finally(() => {
+      crystalBallAudioLoadPromise = null;
+    });
+
+  return crystalBallAudioLoadPromise;
+}
+
+function playCrystalBallOneShot(key) {
+  if (typeof window === 'undefined') return;
+  const sound = audioCache[key];
+  if (sound?.state() === 'loaded') {
+    sound.stop();
+    sound.play();
+    return;
+  }
+  // Prepare for the next visitor action; never play after the animation moves on.
+  void preloadCrystalBallAudio();
+}
+
+export function playCrystalBallEnergy() {
+  if (typeof window === 'undefined') return;
+  audioCache.crystalEnergyRequested = true;
+
+  const startWhenReady = () => {
+    if (!audioCache.crystalEnergyRequested) return;
+    const sound = audioCache.crystalEnergy;
+    if (sound?.state() !== 'loaded') return;
+    const activeId = audioCache.crystalEnergyId;
+    if (activeId !== undefined && activeId !== null && sound.playing(activeId)) return;
+    sound.volume(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume);
+    audioCache.crystalEnergyId = sound.play();
+  };
+
+  startWhenReady();
+  // Start after decode only if the visitor is still in the loading phase.
+  void preloadCrystalBallAudio().then(startWhenReady);
+      crystalBallAudioLoadPromise = null;
+}
+    ;
+  audioCache.crystalEnergyRequested = false;
+  const sound = audioCache.crystalEnergy;
+  const soundId = audioCache.crystalEnergyId;
+  if (!sound || soundId === undefined || soundId === null) return;
+
+  if (sound.state() === 'loaded' && sound.playing(soundId)) {
+    sound.fade(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume, 0, 160, soundId);
+    const stoppedId = soundId;
+    setTimeout(() => {
+      sound.stop(stoppedId);
+      sound.volume(CRYSTAL_BALL_SOUNDS.crystalEnergy.volume);
+      if (audioCache.crystalEnergyId === stoppedId) audioCache.crystalEnergyId = null;
+    }, 175);
+  } else {
+    sound.stop(soundId);
+    audioCache.crystalEnergyId = null;
+  }
+}
+
+export function playCrystalBallReveal() {
+  playCrystalBallOneShot('crystalReveal');
+}
+
+export function playCrystalBallLeaf() {
+  playCrystalBallOneShot('crystalLeaf');
+}
