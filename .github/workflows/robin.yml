@@ -53,19 +53,23 @@ jobs:
             exit 1
           fi
 
-          primary_model="${PRIMARY_MODEL_OVERRIDE:-google/gemma-4-31b-it:free}"
-          fallback_model="${FALLBACK_MODEL_OVERRIDE:-qwen/qwen3-coder:free}"
+          primary_model="${PRIMARY_MODEL_OVERRIDE:-google/gemma-4-26b-a4b-it:free}"
+          fallback_model="${FALLBACK_MODEL_OVERRIDE:-cohere/north-mini-code:free}"
           if [[ "${primary_model,,}" == openrouter/* ]]; then
-            echo "::warning::ROBIN_LLM_MODEL uses the random OpenRouter router; using google/gemma-4-31b-it:free to keep the primary bounded and deterministic."
-            primary_model="google/gemma-4-31b-it:free"
+            echo "::warning::ROBIN_LLM_MODEL uses the random OpenRouter router; using google/gemma-4-26b-a4b-it:free to keep the primary bounded and deterministic."
+            primary_model="google/gemma-4-26b-a4b-it:free"
           fi
-          if [[ "${fallback_model,,}" == openrouter/* ]]; then
-            echo "::warning::ROBIN_LLM_FALLBACK_MODEL uses the random OpenRouter router; using qwen/qwen3-coder:free for bounded failover."
-            fallback_model="qwen/qwen3-coder:free"
+          if [[ "${fallback_model,,}" == openrouter/* || "${fallback_model}" == "qwen/qwen3-coder:free" ]]; then
+            echo "::warning::ROBIN_LLM_FALLBACK_MODEL uses the random OpenRouter router; using cohere/north-mini-code:free for bounded failover."
+            fallback_model="cohere/north-mini-code:free"
           fi
           if [[ "$primary_model" == "$fallback_model" ]]; then
-            echo "::warning::Primary and fallback models are identical; using qwen/qwen3-coder:free as the fallback."
-            fallback_model="qwen/qwen3-coder:free"
+            if [[ "$primary_model" == "cohere/north-mini-code:free" ]]; then
+              fallback_model="google/gemma-4-26b-a4b-it:free"
+            else
+              fallback_model="cohere/north-mini-code:free"
+            fi
+            echo "::warning::Primary and fallback models were identical; selected a different free fallback."
           fi
           if [[ "$primary_model" == "$fallback_model" ]]; then
             echo "::error::Primary and fallback model configuration did not resolve to distinct models."
