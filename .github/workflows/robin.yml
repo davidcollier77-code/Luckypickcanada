@@ -88,7 +88,7 @@ jobs:
 
       - name: Check whether the primary review was already posted
         id: review_guard
-        if: ${{ steps.primary_review.outcome == 'failure' && !cancelled() }}
+        if: ${{ (steps.primary_review.outcome == 'failure' || steps.primary_review.outcome == 'cancelled') && !cancelled() }}
         timeout-minutes: 1
         shell: bash
         env:
@@ -104,10 +104,10 @@ jobs:
           )"
           if [[ -n "$review_ids" ]]; then
             echo "posted=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::A Robin review for the current PR head was already posted in this run; fallback will be suppressed."
+            echo "::notice::A Robin review for the current PR head was already posted in this run; the result check will avoid a duplicate or false failure."
           else
             echo "posted=false" >> "$GITHUB_OUTPUT"
-            echo "No completed Robin review for the current PR head was found; fallback is safe to consider."
+            echo "No completed Robin review for the current PR head was found; the final check will report failure unless a late review appears."
           fi
 
       - name: Record and enforce review outcome
@@ -155,5 +155,5 @@ jobs:
             exit 0
           fi
 
-          echo "::error::Robin review did not complete within its bounded attempt. No review was posted; this failed check is ready for any external fallback reviewer."
+          echo "::error::Robin review did not complete within its bounded attempt. No review was posted; the check remains failed."
           exit 1
