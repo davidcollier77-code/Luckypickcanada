@@ -2,55 +2,21 @@
 
 import { useEffect, useRef, useState } from 'react';
 import CrystalBall from '../../app/components/CrystalBall/CrystalBall';
+import {
+  DAILY_QUESTION_LIMIT,
+  createFreshUsage,
+  getLocalDateKey,
+  getNextLocalMidnight,
+  readDailyUsage,
+  writeDailyUsage,
+} from './daily-usage';
 
-const DAILY_QUESTION_LIMIT = 3;
-const DAILY_STORAGE_KEY = 'luckyPickCanada:crystalBallDailyQuestions:v1';
-
-function getLocalDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return year + '-' + month + '-' + day;
-}
-
-function createFreshUsage() {
-  return { date: getLocalDateKey(), used: 0 };
-}
-
-function readDailyUsage() {
-  const fresh = createFreshUsage();
+function getBrowserStorage() {
   try {
-    const raw = window.localStorage.getItem(DAILY_STORAGE_KEY);
-    if (!raw) return fresh;
-
-    const stored = JSON.parse(raw);
-    if (
-      stored?.date !== fresh.date ||
-      !Number.isInteger(stored?.used) ||
-      stored.used < 0 ||
-      stored.used > DAILY_QUESTION_LIMIT
-    ) {
-      return fresh;
-    }
-
-    return { date: fresh.date, used: stored.used };
+    return window.localStorage;
   } catch {
-    // Keep this visitor's allowance functional for this page view if storage is disabled.
-    return fresh;
+    return null;
   }
-}
-
-function writeDailyUsage(usage) {
-  try {
-    window.localStorage.setItem(DAILY_STORAGE_KEY, JSON.stringify(usage));
-  } catch {
-    // The in-memory state still limits questions until the page is closed or reloaded.
-  }
-}
-
-function getNextLocalMidnightIso() {
-  const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0).toISOString();
 }
 
 export default function CrystalBallClient() {
@@ -58,24 +24,25 @@ export default function CrystalBallClient() {
   const usageRef = useRef(null);
 
   useEffect(() => {
-    const initial = readDailyUsage();
+    const storage = getBrowserStorage();
+    const initial = readDailyUsage(storage);
     usageRef.current = initial;
     setUsage(initial);
-    writeDailyUsage(initial);
+    writeDailyUsage(initial, storage);
 
     const refreshForLocalDate = () => {
       const today = getLocalDateKey();
       if (usageRef.current?.date !== today) {
-        const next = { date: today, used: 0 };
+        const next = createFreshUsage();
         usageRef.current = next;
         setUsage(next);
-        writeDailyUsage(next);
+        writeDailyUsage(next, getBrowserStorage());
       }
     };
 
     const handleStorage = (event) => {
-      if (event.key !== DAILY_STORAGE_KEY) return;
-      const next = readDailyUsage();
+      if (event.key !== null && event.key !== 'luckyPickCanada:crystalBallDailyQuestions:v1') return;
+      const next = readDailyUsage(getBrowserStorage());
       usageRef.current = next;
       setUsage(next);
     };
@@ -93,13 +60,13 @@ export default function CrystalBallClient() {
     ? {
         limit: DAILY_QUESTION_LIMIT,
         remaining: Math.max(0, DAILY_QUESTION_LIMIT - usage.used),
-        resetAt: getNextLocalMidnightIso(),
+        resetAt: getNextLocalMidnight().toISOString(),
       }
     : null;
 
   const handleSeekFortune = async (question) => {
-    // Read storage at submission time so other tabs and midnight rollovers are respected.
-    const current = readDailyUsage();
+    const storage = getBrowserStorage();
+    const current = readDailyUsage(storage);
     usageRef.current = current;
     setUsage(current);
 
@@ -119,16 +86,17 @@ export default function CrystalBallClient() {
       throw new Error(data?.error || 'The Crystal Ball could not find an answer. Please try again.');
     }
 
-    // Only successful AI answers count, preserving the prior fallback behavior.
+    // Preserve the prior behavior: only a successful AI-backed answer uses a slot.
+    // Fallback fortunes are still available during provider outages without a charge.
     if (data.source === 'ai') {
-      const latest = readDailyUsage();
+      const latest = readDailyUsage(getBrowserStorage());
       const next = {
         date: latest.date,
         used: Math.min(DAILY_QUESTION_LIMIT, latest.used + 1),
       };
-      usageRef.current = next;
-      setUsage(next);
-      writeDailyUsage(next);
+      const saved = writeDailyUsage(next, getBrowserStorage());
+      usageRef.current = saved;
+      setUsage(saved);
     }
 
     return data.reading;
