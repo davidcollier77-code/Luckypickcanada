@@ -55,8 +55,8 @@ Unit and Playwright testing can execute independently after dependency installat
 
 ## Phase 7 — Replace borrowed Crystal Ball sounds with new sourced assets
 
-- [ ] T027 Verify the three Pixabay source listings, direct media URLs, durations, artist identities, and Content License; retain the provenance record.
-- [ ] T028 Download the licensed originals with a free `curl` command-line workflow without API keys; convert them to new same-origin WAV assets with FFmpeg; do not keep MP3s in `public/`.
-- [ ] T029 Switch `CRYSTAL_BALL_SOUNDS` to the three new WAV assets without changing the reveal sequence or volume intent.
-- [ ] T030 Add automated checks for WAV headers, non-silent audio, duration, and source/license provenance.
-- [ ] T031 Run unit, Playwright, TypeScript, Spec Kit governance, production build, OpenNext/Wrangler validation, and the 495 MiB size check; report physical-device playback separately.
+- [x] T027 Verify the three Pixabay source listings, direct media URLs, durations, artist identities, and Content License; record provenance in public/sounds/crystal-ball-audio-sources.md.
+- [x] T028 Download the licensed originals with free curl CLI commands without API keys; convert them with FFmpeg to same-origin WAVs and keep MP3 originals out of public/. Verified in preparation workflow run #1 on 2026-10-17.
+- [x] T029 Switch CRYSTAL_BALL_SOUNDS to the three new WAV assets without changing reveal sequence or volume intent.
+- [x] T030 Add automated checks for WAV headers, non-silent audio, size, and source/license provenance in __tests__/crystal-ball-audio-assets.test.js.
+- [ ] T031 Run unit, Playwright, TypeScript, Spec Kit governance, production build, OpenNext/Wrangler validation, and the 495 MiB size check; report physical-device playback separately. Audio acquisition/integrity workflow succeeded; final PR validation remains pending.
