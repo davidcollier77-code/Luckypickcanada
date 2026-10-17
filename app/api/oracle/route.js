@@ -12,7 +12,7 @@ const ALLOWED_ORIGINS = [
 function getCorsHeaders(request) {
   const origin = request.headers.get('origin') || '';
   const headers = {
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Cache-Control': 'no-store',
   };
