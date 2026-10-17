@@ -32,17 +32,25 @@ function isValidUsage(value, today) {
 export function readDailyUsage(storage, date = new Date()) {
   const fresh = createFreshUsage(date);
 
-  try {
-    const raw = storage?.getItem(DAILY_STORAGE_KEY);
-    if (raw) {
+  if (storage) {
+    try {
+      const raw = storage.getItem(DAILY_STORAGE_KEY);
+      if (!raw) {
+        inMemoryUsage = fresh;
+        return { ...fresh };
+      }
+
       const parsed = JSON.parse(raw);
       if (isValidUsage(parsed, fresh.date)) {
         inMemoryUsage = { date: fresh.date, used: parsed.used };
         return { ...inMemoryUsage };
       }
+
+      inMemoryUsage = fresh;
+      return { ...fresh };
+    } catch {
+      // Storage exists but is blocked. Continue with the in-memory fallback.
     }
-  } catch {
-    // Continue with the in-memory fallback below.
   }
 
   if (inMemoryUsage?.date === fresh.date && isValidUsage(inMemoryUsage, fresh.date)) {
