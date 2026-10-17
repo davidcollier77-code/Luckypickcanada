@@ -139,7 +139,7 @@ jobs:
 
       - name: Robin review (OpenRouter free router — hard-capped)
         id: primary_review
-        if: ${{ steps.review_preflight.outputs.key_available == 'true' && steps.quota_preflight.outcome == 'success' && steps.quota_preflight.outputs.free_quota_insufficient != 'true' }}
+        if: ${{ steps.review_preflight.outputs.key_available == 'true' && steps.quota_preflight.outcome == 'success' && (steps.quota_preflight.outputs.free_quota_insufficient != 'true' || (github.event_name == 'issue_comment' && (startsWith(github.event.comment.body, '/summary') || startsWith(github.event.comment.body, '/help')))) }}
         uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
         timeout-minutes: 2
         continue-on-error: true

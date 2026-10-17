@@ -28,6 +28,12 @@ describe("Robin OpenRouter fallback workflow", () => {
     expect(fallbackStep).toContain('llm-timeout-ms: "35000"');
   });
 
+  it("still allows Robin summary/help commands to run when quota is low", () => {
+    expect(primaryStep).toContain("steps.quota_preflight.outputs.free_quota_insufficient != 'true' || (github.event_name == 'issue_comment'");
+    expect(primaryStep).toContain("startsWith(github.event.comment.body, '/summary')");
+    expect(primaryStep).toContain("startsWith(github.event.comment.body, '/help')");
+  });
+
   it("does not call the fallback when OpenRouter explicitly reports zero free requests", () => {
     expect(workflow).toContain("free_quota_remaining=${remainingOutput}");
     expect(fallbackStep).toContain("steps.quota_preflight.outputs.free_quota_remaining != '0'");
