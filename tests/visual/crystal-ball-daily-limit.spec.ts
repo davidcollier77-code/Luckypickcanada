@@ -34,6 +34,7 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
 
   await page.goto('/crystal-ball');
   await expect(page.getByText('3 of 3 questions remaining today')).toBeVisible();
+  await expect(page.getByLabel('Time until daily allowance resets')).toContainText(/Allowance resets in \d{2}:\d{2}:\d{2}/);
 
   const question = page.getByRole('textbox', { name: 'Your question for the crystal ball' });
   const button = page.getByRole('button', { name: 'Seek Fortune' });
