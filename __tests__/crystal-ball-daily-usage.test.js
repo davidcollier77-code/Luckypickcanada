@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   DAILY_QUESTION_LIMIT,
   DAILY_STORAGE_KEY,
@@ -28,7 +28,7 @@ describe('Crystal Ball visitor-local daily allowance', () => {
   it('uses the visitor local calendar date and resets at the next local midnight', () => {
     const date = new Date(2026, 9, 17, 23, 30, 0, 0);
     expect(getLocalDateKey(date)).toBe(
-      date.getFullYear() + '-10-17'
+      '2026-10-17'
     );
 
     const expectedMidnight = new Date(2026, 9, 18, 0, 0, 0, 0);
