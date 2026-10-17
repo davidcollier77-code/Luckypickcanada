@@ -89,10 +89,9 @@ jobs:
           REVIEW_START_EPOCH: ${{ steps.review_preflight.outputs.start_epoch }}
         run: |
           set -euo pipefail
-          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
+          head_sha="$(timeout 30s gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
           review_ids="$(
-            HEAD_SHA="$head_sha" REVIEW_START_EPOCH="$REVIEW_START_EPOCH" \
-              gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+            timeout 30s env HEAD_SHA="$head_sha" REVIEW_START_EPOCH="$REVIEW_START_EPOCH" gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
                 --jq '.[] | select(.commit_id == env.HEAD_SHA and .user.login == "github-actions[bot]" and ((.body // "") | contains("Robin")) and .submitted_at != null and ((.submitted_at | fromdateiso8601) >= (env.REVIEW_START_EPOCH | tonumber))) | .id'
           )"
           if [[ -n "$review_ids" ]]; then
@@ -170,10 +169,9 @@ jobs:
             exit 0
           fi
 
-          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
+          head_sha="$(timeout 30s gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha')"
           late_review_ids="$(
-            HEAD_SHA="$head_sha" REVIEW_START_EPOCH="$REVIEW_START_EPOCH" \
-              gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
+            timeout 30s env HEAD_SHA="$head_sha" REVIEW_START_EPOCH="$REVIEW_START_EPOCH" gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
                 --jq '.[] | select(.commit_id == env.HEAD_SHA and .user.login == "github-actions[bot]" and ((.body // "") | contains("Robin")) and .submitted_at != null and ((.submitted_at | fromdateiso8601) >= (env.REVIEW_START_EPOCH | tonumber))) | .id'
           )"
           if [[ -n "$late_review_ids" ]]; then
