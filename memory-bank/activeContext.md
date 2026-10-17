@@ -3,7 +3,7 @@
 ## Current Focus — Crystal Ball browser-local daily allowance (2026-10-17)
 
 - User-authorized change: replace the persistent per-IP UTC-day quota with a three-successful-AI-answer allowance held in browser localStorage, reset at the visitor's local midnight, with a visible HH:MM:SS countdown.
-- Branch: `fix/crystal-ball-browser-daily-limit`.
+- Branch / PR: `fix/crystal-ball-browser-daily-limit` / [PR #1516](https://github.com/davidcollier77-code/Luckypickcanada/pull/1516).
 - Implementation: local-date storage helper with in-memory fallback, countdown in the existing allowance UI, removal of the server-side daily quota/GET status handler, and preserved ten-requests-per-minute request limiter, validation, provider behavior, and generic fallback responses.
 - Accepted limitation: visitors can clear/edit localStorage to bypass the daily allowance; this is a lightweight UX limit, not tamper-resistant server enforcement. Fallback fortunes do not consume an AI-answer slot.
 - Regression coverage: added local-date/storage unit tests and extended the daily-limit Playwright test to assert the countdown.
