@@ -227,6 +227,12 @@
   text-align: center;
 }
 
+
+.fortuneWordWrapper {
+  white-space: nowrap;
+  display: inline-block;
+}
+
 .fortuneChar {
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);

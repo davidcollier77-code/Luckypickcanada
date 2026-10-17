@@ -1,5 +1,12 @@
 # Active Context
 
+## Current Focus — PR #1511 conflict resolution (2026-10-17)
+
+- User-authorized repair for [PR #1511](https://github.com/davidcollier77-code/Luckypickcanada/pull/1511): reconcile the branch with current `main`, remove the accidentally duplicated `CrystalBall` component, correctly render newline tokens, align Unicode reveal counts, and fix reduced-motion dependency arrays.
+- The repair commit is built on current main while retaining the PR head as its second parent. The shared `.specify/feature.json` pointer from main is intentionally preserved.
+- Source integrity assertions confirm one default component export. Unit/Playwright/type/governance/build/size checks must be confirmed on current-head CI before merge.
+
+
 ## Current Focus — PR #1510 Visual QA timing repair (2026-10-17)
 
 - User-authorized task: fix Visual QA run [#39038534341, job #117413181877](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39038534341/job/117413181877) so PR #1510 can proceed toward merge; Robin itself is not the current repair target.
