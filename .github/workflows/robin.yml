@@ -40,14 +40,12 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           ACTOR: ${{ github.actor }}
           PRIMARY_MODEL_OVERRIDE: ${{ vars.ROBIN_LLM_MODEL }}
-          FALLBACK_MODEL_OVERRIDE: ${{ vars.ROBIN_LLM_FALLBACK_MODEL }}
         run: |
           set -euo pipefail
           if [[ -z "${OPENROUTER_API_KEY:-}" ]]; then
             echo "::warning::OPENROUTER_API_KEY is unavailable; Robin's OpenRouter review and fallback cannot run."
             echo "key_available=false" >> "$GITHUB_OUTPUT"
             echo "primary_model=${PRIMARY_MODEL_OVERRIDE:-openrouter/free}" >> "$GITHUB_OUTPUT"
-            echo "fallback_model=nvidia/nemotron-3-super-120b-a12b:free" >> "$GITHUB_OUTPUT"
             echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -58,21 +56,6 @@ jobs:
             echo "::warning::ROBIN_LLM_MODEL points to a free endpoint tested unsuccessfully; using the OpenRouter free router with a hard time limit."
             primary_model="openrouter/free"
           fi
-          fallback_model="${FALLBACK_MODEL_OVERRIDE:-nvidia/nemotron-3-super-120b-a12b:free}"
-          # Fallbacks must be fixed, free model IDs, never a router alias or a paid model.
-          if [[ ! "$fallback_model" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+:free$ || "$fallback_model" == "google/gemma-4-31b-it:free" || "$fallback_model" == "google/gemma-4-26b-a4b-it:free" || "$fallback_model" == "cohere/north-mini-code:free" || "$fallback_model" == "qwen/qwen3-coder:free" || "$fallback_model" == "qwen/qwen3.8-27b:free" || "$fallback_model" == "xingchen-agi/xing4.0-29b-a4b:free" || "$fallback_model" == "dots-studio/dots-3-note-preview:free" || "$fallback_model" == "$primary_model" ]]; then
-            echo "::warning::ROBIN_LLM_FALLBACK_MODEL is not a distinct, supported free model ID; using NVIDIA Nemotron 3 Super (free)."
-            fallback_model="nvidia/nemotron-3-super-120b-a12b:free"
-          fi
-          if [[ "$fallback_model" == "$primary_model" ]]; then
-            fallback_model="nvidia/nemotron-3-ultra-550b-a55b:free"
-          fi
-          if [[ "$fallback_model" == "$primary_model" || ! "$fallback_model" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+:free$ ]]; then
-            echo "::error::Could not resolve a separate free OpenRouter fallback model."
-            exit 1
-          fi
-          echo "primary_model=$primary_model" >> "$GITHUB_OUTPUT"
-          echo "fallback_model=$fallback_model" >> "$GITHUB_OUTPUT"
           echo "start_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
           echo "OpenRouter API key is present; its value was not printed."
 
@@ -188,24 +171,48 @@ jobs:
             echo "No completed Robin review for the current PR head was found; the final check will report failure unless a late review appears."
           fi
 
-      - name: Robin review fallback (OpenRouter free model)
+      - name: Validate Cloudflare Workers AI fallback configuration
+        id: cloudflare_preflight
+        if: ${{ !cancelled() && steps.review_preflight.outcome == 'success' && steps.review_guard.outcome == 'success' && steps.review_guard.outputs.posted != 'true' && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
+        shell: bash
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_FREE_TIER_CONFIRMED: ${{ vars.ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED }}
+        run: |
+          set -euo pipefail
+          if [[ "${CLOUDFLARE_FREE_TIER_CONFIRMED:-}" != "true" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Cloudflare fallback disabled until Workers Free plan is explicitly confirmed."
+          elif [[ ! "${CLOUDFLARE_ACCOUNT_ID:-}" =~ ^[[:xdigit:]]{32}$ ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Set CLOUDFLARE_ACCOUNT_ID to the 32-character Cloudflare account ID."
+          elif [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Add CLOUDFLARE_API_TOKEN with Workers AI Read permission only."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "Cloudflare fallback credentials are configured; token value not printed."
+          fi
+
+      - name: Robin review fallback (Cloudflare Workers AI)
         id: fallback_review
-        if: ${{ !cancelled() && steps.review_preflight.outcome == 'success' && steps.review_preflight.outputs.key_available == 'true' && steps.quota_preflight.outcome == 'success' && steps.quota_preflight.outputs.free_quota_remaining != '0' && steps.review_guard.outcome == 'success' && steps.review_guard.outputs.posted != 'true' && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
+        if: ${{ !cancelled() && steps.review_preflight.outcome == 'success' && steps.cloudflare_preflight.outcome == 'success' && steps.cloudflare_preflight.outputs.configured == 'true' && steps.review_guard.outcome == 'success' && steps.review_guard.outputs.posted != 'true' && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
         uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
         timeout-minutes: 2
         continue-on-error: true
         with:
           github-token: ${{ github.token }}
-          llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}
-          llm-base-url: ${{ vars.ROBIN_LLM_BASE_URL || 'https://openrouter.ai/api/v1' }}
-          model: ${{ steps.review_preflight.outputs.fallback_model }}
+          llm-api-key: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          llm-base-url: https://api.cloudflare.com/client/v4/accounts/${{ vars.CLOUDFLARE_ACCOUNT_ID }}/ai/v1
+          model: "@cf/zai-org/glm-4.7-flash"
           fail-on-high: false
           request-changes: false
           max-diff-size: "50000"
           max-comments: "15"
-          max-output-tokens: "4096"
+          max-output-tokens: "2048"
           reasoning-effort: ""
-          llm-timeout-ms: "35000"
+          llm-timeout-ms: "60000"
           llm-temperature: "0.1"
           min-command-permission: "write"
           review-instructions-file: ".github/code-reviewer.md"
@@ -368,7 +375,8 @@ jobs:
           FREE_QUOTA_INSUFFICIENT: ${{ steps.quota_preflight.outputs.free_quota_insufficient }}
           FREE_QUOTA_REMAINING: ${{ steps.quota_preflight.outputs.free_quota_remaining }}
           PRIMARY_MODEL: ${{ steps.review_preflight.outputs.primary_model }}
-          FALLBACK_MODEL: ${{ steps.review_preflight.outputs.fallback_model }}
+          FALLBACK_MODEL: "@cf/zai-org/glm-4.7-flash"
+          CLOUDFLARE_CONFIGURED: ${{ steps.cloudflare_preflight.outputs.configured }}
           PRE_GUARD_OUTCOME: ${{ steps.review_guard.outcome }}
           PRE_GUARD_POSTED: ${{ steps.review_guard.outputs.posted }}
           FINAL_GUARD_OUTCOME: ${{ steps.review_final_guard.outcome }}
@@ -385,7 +393,9 @@ jobs:
             echo "- Primary review: ${PRIMARY_OUTCOME:-not run}"
             echo "- Primary model: ${PRIMARY_MODEL:-not set}"
             echo "- Fallback review: ${FALLBACK_OUTCOME:-not run}"
+            echo "- Fallback provider: Cloudflare Workers AI"
             echo "- Fallback model: ${FALLBACK_MODEL:-not set}"
+            echo "- Cloudflare fallback configured: ${CLOUDFLARE_CONFIGURED:-false}"
             echo "- Free quota remaining at preflight: ${FREE_QUOTA_REMAINING:-unknown}"
             echo "- Pre-fallback review guard: ${PRE_GUARD_OUTCOME:-not run} (posted=${PRE_GUARD_POSTED:-unknown})"
             echo "- Final current-head review guard: ${FINAL_GUARD_OUTCOME:-not run} (posted=${FINAL_GUARD_POSTED:-unknown})"
@@ -404,16 +414,20 @@ jobs:
           fi
 
           if [[ "$FINAL_GUARD_POSTED" == "true" ]]; then
-            echo "A real Robin review for the exact current PR head was verified; accepting the primary or OpenRouter fallback review."
+            echo "A real Robin review for the exact current PR head was verified; accepting the primary OpenRouter or Cloudflare Workers AI fallback review."
             exit 0
           fi
 
+          if [[ "${CLOUDFLARE_CONFIGURED:-false}" != "true" ]]; then
+            echo "::error::Cloudflare fallback is disabled or not configured. Confirm Workers Free plan, set ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED=true, define CLOUDFLARE_ACCOUNT_ID, and add CLOUDFLARE_API_TOKEN with Workers AI Read only."
+            exit 1
+          fi
           if [[ "$KEY_AVAILABLE" != "true" ]]; then
-            echo "::error::OPENROUTER_API_KEY is unavailable; Robin's primary and OpenRouter fallback review could not run."
+            echo "::error::OpenRouter key unavailable and Cloudflare did not post a qualifying review for the current PR head."
             exit 1
           fi
           if [[ "$FREE_QUOTA_REMAINING" == "0" ]]; then
-            echo "::error::OpenRouter reports zero free-model requests remaining. The fallback was not called to avoid a guaranteed quota failure; no current-head Robin review was posted."
+            echo "::error::OpenRouter quota is zero and Cloudflare did not produce a qualifying review for the current PR head."
             exit 1
           fi
           if [[ -z "${REVIEW_START_EPOCH:-}" ]]; then
@@ -421,5 +435,5 @@ jobs:
             exit 1
           fi
 
-          echo "::error::Neither Robin's primary OpenRouter attempt nor its OpenRouter free-model fallback produced a verifiable review for the current PR head."
+          echo "::error::Neither Robin's primary OpenRouter attempt nor Cloudflare Workers AI fallback produced a verifiable review for the current PR head."
           exit 1

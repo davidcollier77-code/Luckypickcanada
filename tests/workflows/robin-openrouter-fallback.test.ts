@@ -4,43 +4,53 @@ import { describe, expect, it } from "vitest";
 
 const workflow = readFileSync(resolve(process.cwd(), ".github/workflows/robin.yml"), "utf8");
 const primaryStart = workflow.indexOf("id: primary_review");
+const cloudflarePreflightStart = workflow.indexOf("id: cloudflare_preflight");
 const fallbackStart = workflow.indexOf("id: fallback_review");
 const finalGuardStart = workflow.indexOf("id: review_final_guard");
-const primaryStep = workflow.slice(primaryStart, fallbackStart);
+const primaryStep = workflow.slice(primaryStart, cloudflarePreflightStart);
+const cloudflarePreflight = workflow.slice(cloudflarePreflightStart, fallbackStart);
 const fallbackStep = workflow.slice(fallbackStart, finalGuardStart);
 
-describe("Robin OpenRouter fallback workflow", () => {
+describe("Robin Cloudflare Workers AI fallback workflow", () => {
   it("does not call or accept Amazon Q as Robin's fallback", () => {
-    expect(workflow).not.toMatch(/amazon-q-developer\[bot\]|\/q review|q_fallback|Q_FALLBACK_FOUND|Amazon Q fallback/i);
+    expect(workflow).not.toMatch(/amazon-q-developer\\[bot\\]|\\/q review|q_fallback|Q_FALLBACK_FOUND|Amazon Q fallback/i);
   });
 
-  it("runs two pinned Robin attempts with the existing OpenRouter secret", () => {
-    expect(workflow.match(/uses: antongulin\/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9/g)).toHaveLength(2);
+  it("keeps OpenRouter primary and uses Cloudflare as an independent fallback", () => {
+    expect(workflow.match(/uses: antongulin\\/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9/g)).toHaveLength(2);
     expect(primaryStep).toContain("llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}");
-    expect(fallbackStep).toContain("llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}");
-    expect(fallbackStep).toContain("model: ${{ steps.review_preflight.outputs.fallback_model }}");
+    expect(fallbackStep).toContain("llm-api-key: ${{ secrets.CLOUDFLARE_API_TOKEN }}");
+    expect(fallbackStep).toContain("llm-base-url: https://api.cloudflare.com/client/v4/accounts/${{ vars.CLOUDFLARE_ACCOUNT_ID }}/ai/v1");
+    expect(fallbackStep).toContain('model: "@cf/zai-org/glm-4.7-flash"');
+    expect(fallbackStep).not.toContain("OPENROUTER_API_KEY");
   });
 
-  it("defaults to a separate free model and rejects paid or router aliases", () => {
-    expect(workflow).toContain('FALLBACK_MODEL_OVERRIDE: ${{ vars.ROBIN_LLM_FALLBACK_MODEL }}');
-    expect(workflow).toContain('fallback_model="${FALLBACK_MODEL_OVERRIDE:-nvidia/nemotron-3-super-120b-a12b:free}"');
-    expect(workflow).toContain('[[ ! "$fallback_model" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+:free$');
-    expect(fallbackStep).toContain('llm-timeout-ms: "35000"');
+  it("requires explicit free-plan confirmation and a minimally scoped token", () => {
+    expect(cloudflarePreflight).toContain("ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED: ${{ vars.ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED }}");
+    expect(cloudflarePreflight).toContain("CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}");
+    expect(cloudflarePreflight).toContain("CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}");
+    expect(cloudflarePreflight).toContain('if [[ "${CLOUDFLARE_FREE_TIER_CONFIRMED:-}" != "true" ]]');
+    expect(fallbackStep).toContain("steps.cloudflare_preflight.outputs.configured == 'true'");
   });
 
-  it("still allows Robin summary/help commands to run when quota is low", () => {
-    expect(workflow).toContain("steps.quota_preflight.outputs.free_quota_insufficient != 'true' || (github.event_name == 'issue_comment'");
+  it("does not gate the Cloudflare fallback on OpenRouter quota or key availability", () => {
+    const condition = fallbackStep.slice(0, fallbackStep.indexOf("\\n        uses:"));
+    expect(condition).not.toContain("free_quota_remaining");
+    expect(condition).not.toContain("key_available == 'true'");
+    expect(workflow).toContain('if [[ "$FREE_QUOTA_REMAINING" == "0" ]]');
+    expect(workflow).not.toContain("The fallback was not called to avoid a guaranteed quota failure");
+  });
+
+  it("bounds fallback time and response size", () => {
+    expect(fallbackStep).toContain("timeout-minutes: 2");
+    expect(fallbackStep).toContain('max-diff-size: "50000"');
+    expect(fallbackStep).toContain('max-output-tokens: "2048"');
+    expect(fallbackStep).toContain('llm-timeout-ms: "60000"');
+  });
+
+  it("preserves Robin command handling and current-head review verification", () => {
     expect(primaryStep).toContain("startsWith(github.event.comment.body, '/summary')");
     expect(primaryStep).toContain("startsWith(github.event.comment.body, '/help')");
-  });
-
-  it("does not call the fallback when OpenRouter explicitly reports zero free requests", () => {
-    expect(workflow).toContain("free_quota_remaining=${remainingOutput}");
-    expect(workflow).toContain("steps.quota_preflight.outputs.free_quota_remaining != '0'");
-    expect(workflow).toContain('if [[ "$FREE_QUOTA_REMAINING" == "0" ]]');
-  });
-
-  it("requires a Robin review for the exact current PR head before passing the review check", () => {
     expect(workflow).toContain("id: review_final_guard");
     expect(workflow).toContain("env.HEAD_SHA");
     expect(workflow).toContain("env.REVIEW_START_EPOCH");
