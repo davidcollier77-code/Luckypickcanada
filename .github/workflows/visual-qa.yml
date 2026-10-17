@@ -35,8 +35,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run unit tests
+      - name: Run targeted daily quota unit tests
+        run: pnpm exec vitest run __tests__/oracle-usage.test.js
+
+      - name: Run all unit tests
         run: pnpm run test
+
+      - name: Run standalone TypeScript check
+        run: pnpm tsc --noEmit
+
+      - name: Run AGENTS.md Spec Kit verification
+        run: ./jules-verify.sh
 
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
