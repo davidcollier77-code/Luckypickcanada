@@ -30,11 +30,11 @@
 - **COMPONENT**: `.github/workflows/robin.yml`
 - **USED**: YES
 - **USEFUL**: YES
-- **REASON**: Changed the fallback `model` from the deprecated `openai/gpt-oss-20b` to the valid Groq API model `llama-3.1-8b-instant`.
+- **REASON**: Changed the fallback `model` from the deprecated `openai/gpt-oss-20b` and `llama-3.1-8b-instant` to the valid Groq API model `llama3-8b-8192`.
 - **COMPONENT**: `tests/workflows/robin-groq-fallback.test.ts`
 - **USED**: YES
 - **USEFUL**: YES
-- **REASON**: Modified the integration unit test assert parameters to match the newly adopted fallback `llama-3.1-8b-instant` string.
+- **REASON**: Modified the integration unit test assert parameters to match the newly adopted fallback `llama3-8b-8192` string.
 - **COMPONENT**: `./jules-verify.sh`
 - **USED**: YES
 - **USEFUL**: YES
@@ -49,8 +49,7 @@
 The exact list of modified source files:
 - `.github/workflows/robin.yml`
 - `tests/workflows/robin-groq-fallback.test.ts`
-
-*(The working script `update-active-context.sh`, `plan.md` and `test_script.js` are in `.gitignore` or local workspace and won't be pushed)*
+- `pr_summary.md`
 
 ## 7. Visual Verification Evidence for Mobile and Desktop
 - N/A. This is a non-visual CI repair task affecting `.github/` workflows.

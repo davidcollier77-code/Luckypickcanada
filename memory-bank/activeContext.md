@@ -369,3 +369,10 @@
 - **Current branch**: `jules-fix-seo-bg`
 - **Current implementation**: Updated `themes/default/homepage.css` (and its public counterpart) to add `.homepage-seo-section` to the existing glass-surface teaser declarations and stripped its obsolete scoped declaration. The visual rhythm, content, and original UI layouts were untouched.
 - **Verification status**: Playwright visual verifications passed. `./jules-verify.sh`, tests, and the build limit (<495MB) passed successfully. PR Summary drafted.
+
+## Robin Code Review CI Repair — $(date +%Y-%m-%d)
+- **Goal**: Fix the broken GitHub Actions `Robin Code Review` job due to a deprecated/missing fallback model throwing 400 and 404 validation errors.
+- **Verified root cause**: The `model` parameter inside the `.github/workflows/robin.yml` Groq fallback job was pointing to `openai/gpt-oss-20b` and later `llama-3.1-8b-instant` which were either deprecated or nonexistent at `api.groq.com`.
+- **Current branch**: `task-ci-repair`
+- **Current implementation**: Adjusted the fallback model parameter to the verified model identifier `llama3-8b-8192` in both the GitHub Actions `.yml` workflow file and the workflow test assertions script `tests/workflows/robin-groq-fallback.test.ts`.
+- **Verification status**: Unit tests passed completely locally with `pnpm test`. Waiting for live CI verification.
