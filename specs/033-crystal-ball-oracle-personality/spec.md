@@ -2,7 +2,7 @@
 
 **Feature Branch**: `polish/crystal-ball-oracle-personality`  
 **Created**: 2026-10-18  
-**Status**: Implementation prepared; automated verification pending  
+**Status**: Initial feature merged; post-merge build/sanitization hotfix under verification  
 **Input**: Improve the Crystal Ball's AI readings so they feel specific, mysterious, and fortune-teller-like rather than generic chatbot replies.
 
 ## User Scenarios & Testing
@@ -39,15 +39,24 @@ A visitor asks a factual or practical question and receives a direct, accurate a
 - **FR-004**: Lottery readings MUST remain playful and MUST NOT promise wins, imply access to future winning numbers, or encourage additional spending/chasing losses.
 - **FR-005**: Factual/practical questions MUST remain subject to direct, accurate answering.
 - **FR-006**: Existing API validation, rate limiting, CORS, provider/model settings, response shape, quota handling, fallbacks, visual design, and reveal effects MUST remain unchanged.
+- **FR-008**: Prompt-injection patterns MUST be checked against both the original user input and the sanitized question so removal of quotes, backticks, angle brackets, or other sanitized characters cannot reconstruct a blocked phrase that is then passed to the model.
+- **FR-009**: The active Oracle route MUST remain syntactically valid and compile in the production Next.js/OpenNext build.
 - **FR-007**: A regression test MUST inspect the system prompt sent by the active Oracle route.
 
 ## Success Criteria
 
 - **SC-001**: The Oracle route's request contains explicit direction for specific, non-generic fortune readings and direct answers.
 - **SC-002**: Automated regression coverage fails if key fortune-personality and lottery-safety instructions are removed.
-- **SC-003**: The source diff contains no changes to Crystal Ball UI/artwork/animation, API protections, provider settings, dependencies, or deployment configuration.
+- **SC-003**: The source diff contains no changes to Crystal Ball UI/artwork/animation, unrelated API protections, provider settings, dependencies, or deployment configuration.
+- **SC-004**: Regression tests reject injection phrases split by characters that sanitization removes, while a normal valid question still reaches the provider.
+- **SC-005**: Current-head production/OpenNext CI completes without a JavaScript syntax error and measures build output below the repository's 495 MB hard maximum.
 
 ## Assumptions
 
 - The Next.js App Router endpoint `app/api/oracle/route.js` is the active implementation used by the current Crystal Ball client.
 - This work improves the model's instructions and cannot guarantee every live model response will follow them perfectly; real-provider behavioural validation requires a credentialed request and is not performed by the mocked unit test.
+
+
+## Corrective repair — Cloudflare build and prompt-injection regression (2026-10-18)
+
+The post-merge Cloudflare build failed to compile `app/api/oracle/route.js` because the prompt-injection block interrupted the `question` sanitization chain, leaving subsequent `.replaceAll(...)` calls detached. The corrective implementation restores the complete chain and tests injection patterns against both `rawQuestion` and the sanitized `question`. The targeted route test adds cases where quotes and angle brackets split a blocked phrase. Verification status remains pending until current-head CI provides actual test, build, governance, and build-size evidence.
