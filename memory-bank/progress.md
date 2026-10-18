@@ -1,3 +1,12 @@
+## Oracle route Cloudflare build repair — 2026-10-18
+
+- **Evidence:** The user supplied Cloudflare build output dated 2026-10-18. Next.js compilation failed at `app/api/oracle/route.js:102` with `Expression expected`; the detached `.replaceAll(...)` line showed that the sanitizer chain had been interrupted by the prompt-injection block.
+- **Fix prepared on:** `fix/oracle-route-build-and-injection-1522`, based on merged PR #1522 / current `main`. Restored the complete sanitizer chain, checked the existing injection pattern list against both raw and sanitized input, and added route-test cases for phrases split by quotes and angle brackets.
+- **Protected behavior:** Preserved the Oracle personality prompt, current provider/model parameters, validation and size limits, CORS, rate limiting, response shape, fallback behavior, quota logic, UI/artwork/animation/audio, dependencies, and deployment configuration.
+- **Verification:** No local shell was available through this connected session, so the targeted tests, full suite, TypeScript, `./jules-verify.sh`, production build and size measurement are pending actual current-head CI. The build-size hard maximum remains 495 MB. Do not claim the repair is verified until the final PR checks and diff audit complete.
+
+---
+
 # Progress — 2026-10-18
 
 - **Crystal Ball Oracle personality upgrade — implementation candidate prepared:** confirmed the active Next.js endpoint is `app/api/oracle/route.js`; the prior system prompt did not require concrete, tailored fortune readings or an in-character greeting. Prepared a stronger prompt contract and a regression test of the outbound system message on [PR #1522](https://github.com/davidcollier77-code/Luckypickcanada/pull/1522) from `polish/crystal-ball-oracle-personality`, with Spec Kit artifacts at `specs/033-crystal-ball-oracle-personality/`. No UI, artwork, animation, audio, API guard, provider/model, dependency, or deployment-setting changes are intended. Local unit/build/governance commands are unavailable in this connected session; do not claim those checks passed. Current-head CI and a real-provider behavior check remain necessary.
