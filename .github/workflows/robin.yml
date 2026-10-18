@@ -205,7 +205,7 @@ jobs:
           request-changes: false
           max-diff-size: "50000"
           max-comments: "15"
-          max-output-tokens: "2048"
+          max-output-tokens: "768"
           reasoning-effort: ""
           llm-timeout-ms: "60000"
           llm-temperature: "0.1"
