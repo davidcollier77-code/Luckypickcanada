@@ -34,6 +34,14 @@ When materially necessary, consult the following approved libraries. (Requires C
 
 **Note:** `.docs/` is READ-ONLY. Do not attempt to refresh or modify documentation during normal tasks. Local documentation snapshots are available in `.docs/`.
 
-Deep Dive / Investigation must be evidence-driven.
-It must identify causes and inform real implementation work.
-It must not become an audit-only stage producing an empty/report-only PR.
+## Investigation Scope and Audit-Only Tasks
+
+Deep Dive / Investigation must be evidence-driven. It must verify findings, identify root causes where applicable, and produce actionable conclusions.
+
+By default, investigation findings should inform concrete implementation work when that work is within the task's explicitly authorized scope.
+
+**Explicitly authorized audit-only, investigation-only, or report-only tasks are permitted.** When the repository owner specifically authorizes that scope, Jules must complete it as requested without forcing implementation, deleting files, or expanding scope merely to produce a code change.
+
+Audit-only tasks must still deliver substantive findings, supporting evidence, limitations, recommended next steps, and the required verification and reporting. They must not produce empty or unsupported reports.
+
+The owner's explicit scope and authorization take precedence over the default preference for implementation.
