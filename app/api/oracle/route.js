@@ -93,6 +93,12 @@ export async function POST(request) {
 
     const question = rawQuestion
       .replace(/["'\\]/g, '')
+    const lowercased = rawQuestion.toLowerCase();
+    const injectionPatterns = ['ignore previous', 'ignore all', 'disregard', 'system:', 'assistant:', 'prompt:', 'instructions:'];
+    if (injectionPatterns.some((pattern) => lowercased.includes(pattern))) {
+      return NextResponse.json({ error: 'Invalid question format' }, { status: 400, headers: corsHeaders });
+    }
+
       .replaceAll(String.fromCharCode(96), '')
       .replace(/[\r\n]+/g, ' ')
       .replace(/[<>]/g, '')
@@ -110,12 +116,6 @@ export async function POST(request) {
     }
 
     const lowercased = question.toLowerCase();
-    const injectionPatterns = ['ignore previous', 'ignore all', 'disregard', 'system:', 'assistant:', 'prompt:', 'instructions:'];
-    if (injectionPatterns.some((pattern) => lowercased.includes(pattern))) {
-      return NextResponse.json({ error: 'Invalid question format' }, { status: 400, headers: corsHeaders });
-    }
-
-    const apiKey = getApiKey();
     if (!apiKey) {
       console.error('Oracle Error: GROQ_API_KEY environment variable is missing.');
       return NextResponse.json(fallbackPayload(), { status: 200, headers: corsHeaders });
