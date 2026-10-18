@@ -36,7 +36,11 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
     await expect(button).toBeVisible({ timeout: 8000 });
     if (index < 2) {
       await expect(page.getByText((2 - index) + ' of 3 questions remaining today')).toBeVisible();
-      await expect(button).toBeEnabled({ timeout: 15000 });
+      // The input is cleared after a successful answer, so the button remains
+      // disabled until another question is entered. Wait for the reveal to
+      // finish by checking the input re-enables; the next loop iteration then
+      // enters the next question and checks that the submit button enables.
+      await expect(question).toBeEnabled({ timeout: 45000 });
     }
   }
 
