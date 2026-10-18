@@ -335,3 +335,11 @@
 
 - Updated the Robin Groq model, workflow assertion, and Crystal Ball daily-limit Playwright timing/text checks.
 - Verification is pending: CI showed OpenNext build/495 MiB gate passed, but Robin failed because the 8,000 TPM limit rejected a 10,763-token request. See PR Summary for evidence and remaining checks.
+
+
+## Deep-Dive Investigation Scope Clarification — 2026-10-18
+
+- Owner-authorized clarification task: correct `.jules/deep-dive.md` so substantive, evidence-driven audit-only investigations are permitted when explicitly authorized.
+- The default remains to inform implementation when implementation is within authorized scope; Jules must not force code changes, delete files, or expand scope merely to produce a code change.
+- `AGENTS.md` and `.docs/` are unchanged. Spec Kit artifacts are in `specs/032-deep-dive-scope-clarification/`.
+- Verification status: wording and scoped diff inspected through GitHub; `./jules-verify.sh` and current-head PR checks remain pending.
