@@ -44,6 +44,7 @@ describe("Robin Groq fallback workflow", () => {
 
   it("bounds fallback time and output size", () => {
     expect(fallbackStep).toContain("timeout-minutes: 2");
+    expect(workflow).toContain('FALLBACK_MODEL: "openai/gpt-oss-20b"');
     expect(fallbackStep).toContain('max-diff-size: "50000"');
     expect(fallbackStep).toContain('max-output-tokens: "256"');
     expect(fallbackStep).toContain('llm-timeout-ms: "60000"');

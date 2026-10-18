@@ -7,8 +7,6 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
 
   let usedQuestions = 0;
   let postCount = 0;
-  const resetAt = '2026-10-18T00:00:00.000Z';
-
   await page.route('**/api/oracle', async (route) => {
     postCount += 1;
     usedQuestions += 1;
