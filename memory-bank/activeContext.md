@@ -330,10 +330,8 @@
 - **Repair:** Restored the complete original SVG gradient and maple-leaf path markup, with per-instance gradient IDs from `useId()` referenced by JSX expressions. Existing artwork and gradient stops are preserved.
 - **Status:** Fix committed on `fix/crystal-ball-fortune-jsx-1491`; a fresh CI run must prove the build and subsequent checks pass.
 
-
+ 
 ## CI Stability Repair — PR #1518 Follow-up (2026-10-18)
 
-- A separate follow-up branch, `fix/ci-stability-1518`, addresses the Robin Groq fallback model 404 and the Crystal Ball daily-limit Playwright exact-text/timing issue discovered while reviewing PR #1518.
-- Groq's current deprecation documentation recommends `openai/gpt-oss-20b` as the developer-tier replacement for `llama-3.1-8b-instant`; the interim `llama-3.3-70b-versatile` value is also deprecated for developer-tier usage. See https://console.groq.com/docs/deprecations.
-- The fallback workflow and its regression expectation use `openai/gpt-oss-20b`. The visual test timeout is 90 seconds, the enabled-state checks are bounded, the between-answer re-enable assertion remains, and the final exact-text assertion matches the UI's curly apostrophe.
-- **Verification status:** No local command was run in the repository-API-only environment. Current-head GitHub Actions must verify model access, Vitest, Playwright/Visual QA, TypeScript, Spec Kit, OpenNext/Wrangler, and the 495 MB build-size gate before this follow-up can be marked complete.
+- Updated the Robin Groq model, workflow assertion, and Crystal Ball daily-limit Playwright timing/text checks.
+- Verification is pending: CI showed OpenNext build/495 MiB gate passed, but Robin failed because the 8,000 TPM limit rejected a 10,763-token request. See PR Summary for evidence and remaining checks.
