@@ -1,5 +1,7 @@
 ## Oracle route Cloudflare build repair — 2026-10-18
 
+The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f431dd3f1a139cb63d9` failed two valid-question tests because `apiKey` was undefined; comparison with the original pre-PR #1522 route confirmed the existing `const apiKey = getApiKey();` had been removed. That call has been restored in later commit `e2df4a6a1506f9ae010e55cde9227c0a25ff9125`. A fresh current-head run is required; the earlier failure must not be reported as fixed until reverified.
+
 - **Evidence:** The user supplied Cloudflare build output dated 2026-10-18. Next.js compilation failed at `app/api/oracle/route.js:102` with `Expression expected`; the detached `.replaceAll(...)` line showed that the sanitizer chain had been interrupted by the prompt-injection block.
 - **Fix prepared on:** `fix/oracle-route-build-and-injection-1522`, based on merged PR #1522 / current `main`. Restored the complete sanitizer chain, checked the existing injection pattern list against both raw and sanitized input, and added route-test cases for phrases split by quotes and angle brackets.
 - **Protected behavior:** Preserved the Oracle personality prompt, current provider/model parameters, validation and size limits, CORS, rate limiting, response shape, fallback behavior, quota logic, UI/artwork/animation/audio, dependencies, and deployment configuration.
