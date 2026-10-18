@@ -342,7 +342,7 @@ No local repository checkout is available in this session, so the following comm
 **USEFUL RESULT: PARTIAL — causes are verified and corrections prepared; latest verification is pending.**
 ---
 
-# PR #1518 — Canonical Repository Cleanup Audit (Audit-Only)
+# PR #1520 — Canonical Repository Cleanup Audit (Audit-Only; replacement for #1518)
 
 **Audit scope:** identify repository files/assets/dependencies that may be unused; report evidence and recommended follow-up only. No deletion, dependency removal, workflow edit, application-source change, or runtime behavior change is part of this PR's diff. The prerequisite CI/test corrections are isolated in PR #1519 and this PR is stacked on that branch so those changes do not appear in the audit diff.
 
@@ -408,7 +408,7 @@ The originating report also lists these as protected because it observed referen
 
 - **Originating report's command:** du -sk .next public/ | awk '{print $1 / 1024 " MB\t" $2}'.
 - **Originating report's recorded output:** .next = 287.54 MB; public/ = 29.08 MB; total reported as approximately 316.6 MB.
-- **Latest completed build evidence (clean audit candidate `decf637`):** combined `.next + public` measured **325,478,615 bytes (310.40 MiB)**; the hard 495 MiB gate, OpenNext Cloudflare build, and Wrangler validation passed. This build ran on a parent of this replacement documentation PR; the new PR must pass its own checks before merge.
+- **Latest replacement-PR build (PR #1520, commit `050a331`):** combined `.next + public` measured **325,476,391 bytes (310.40 MiB)**. The hard 495 MiB gate, OpenNext Cloudflare build, compiled Tailwind check, worker/assets checks, and Wrangler validation passed in run [39120250649](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39120250649).
 - **Constraint:** 495 MB is the hard maximum. A current production build and size check must pass in CI before any PR is considered merge-ready.
 
 ## D — Spec Kit and Task Artifacts
@@ -417,7 +417,7 @@ The originating report also lists these as protected because it observed referen
 - The audit spec, plan, tasks, and requirements checklist are substantive records of the audit-only task, its methodology, classifications, and unresolved verification. They do not authorize deletion or dependency changes.
 - The Spec Kit files are not claimed to have been run through native dispatch. The current-head CI must run the repository governance gate; local execution was unavailable.
 
-## Exact Changed-File Reconciliation — PR #1518 Audit Diff
+## Exact Changed-File Reconciliation — PR #1520 Audit Diff
 
 Relative to its stacked base branch fix/ci-stability-1518, this PR changes only:
 
@@ -435,9 +435,9 @@ The workflow/model, Crystal Ball test, workflow regression test, and empty route
 ## Remaining Issues / Verification
 
 - The candidates labelled above require a local checkout, exhaustive reference tracing, and for assets/dependencies, bundler or runtime verification before any removal decision.
-- The latest measured `.next + public` size is 310.40 MiB (325,478,615 bytes) on clean audit candidate `decf637`; the replacement PR still needs its own current-head required checks.
-- On prerequisite head `d821991`, unit tests, TypeScript, Spec Kit, OpenNext, Wrangler, size gate, and the Robin primary review passed; Groq fallback was skipped on the latest successful Robin run, so its new 256-token budget has not yet been verified by a fresh fallback invocation. A prior real fallback call at the earlier 384-token cap failed at 8,657 requested tokens vs. the account's 8,000 TPM limit. The workflow now uses a 256-token cap and a materially smaller diff. The corrected Crystal Ball Playwright run remains in progress on that prerequisite head.
+- PR #1520's build passed on commit `050a331`: `.next + public` measured 325,476,391 bytes (310.40 MiB), below 495 MiB. OpenNext, Tailwind/worker/assets, and Wrangler checks passed; Robin and CodeRabbit reviews passed. The prerequisite PR #1519 Visual QA also passed (21 passed, 3 skipped) on head `d821991`.
+- On prerequisite head `d821991`, targeted tests, all unit tests, TypeScript, Spec Kit, OpenNext, Wrangler, size gate, and Robin primary review passed. Visual QA passed with 21 tests and 3 skips. The actual Groq fallback was skipped on the latest successful Robin run, so its new 256-token budget has not been directly verified by a fresh fallback invocation. A prior real fallback call at the earlier 384-token cap failed at 8,657 requested tokens vs. the account's 8,000 TPM limit; the current workflow uses a 256-token cap and a materially smaller diff.
 - No tests/build are claimed as run locally in this repository-API-only session.
-- Pre-submission double-check for the audit will require comparing the final PR #1518 changed-file list and patches against this exact eight-file list.
+- Pre-submission double-check completed for PR #1520: GitHub's current changed-file list and every returned patch were inspected; exactly these eight reporting/specification paths are changed.
 
 **USEFUL RESULT: PARTIAL — the audit report and scope are corrected; removal decisions and current-head CI verification remain pending.**
