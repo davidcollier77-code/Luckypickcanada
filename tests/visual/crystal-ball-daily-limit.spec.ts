@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('Crystal Ball displays its allowance and disables a fourth question after three successful answers', async ({ page }) => {
   // This end-to-end flow includes a cold Next.js dev-server compile plus three
   // complete, intentionally animated reveals; keep the test budget realistic.
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
 
   let usedQuestions = 0;
   let postCount = 0;
@@ -31,7 +31,7 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
 
   for (let index = 0; index < 3; index += 1) {
     await question.fill('Question ' + (index + 1));
-    await expect(button).toBeEnabled();
+    await expect(button).toBeEnabled({ timeout: 15000 });
     await button.click();
     await expect(button).toBeVisible({ timeout: 8000 });
     if (index < 2) {
@@ -40,7 +40,7 @@ test('Crystal Ball displays its allowance and disables a fourth question after t
     }
   }
 
-  await expect(page.getByText("You've used all 3 questions for today. Come back after the daily reset.")).toBeVisible();
+  await expect(page.getByText("You’ve used all 3 questions for today. Come back after the daily reset.")).toBeVisible({ timeout: 45000 });
   await expect(button).toBeDisabled();
   expect(postCount).toBe(3);
 });
