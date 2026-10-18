@@ -124,10 +124,8 @@
 
 - **Crystal Ball browser-local daily allowance (2026-10-17):** Replaced persistent per-IP UTC-day quota accounting with a browser localStorage count of successful AI-backed answers, visitor-local date rollover, in-memory fallback when storage is blocked, and a live local-midnight countdown. Removed the old quota manager/test, retained the short-window API rate limiter, added local-usage unit tests, and extended the allowance Playwright spec. Current-head test/build/governance evidence is pending GitHub Actions; local commands were not run because this session lacks a repository checkout.
 
-
+ 
 ## 2026-10-18 — PR #1518 CI Stability Follow-up
 
-- **Verified issue:** PR #1518's discussion records a 404 for the Groq model `llama-3.1-8b-instant`. Groq's current deprecation page also marks the interim `llama-3.3-70b-versatile` as deprecated for developer-tier usage; `openai/gpt-oss-20b` is the documented replacement for the original 8B model.
-- **Change prepared:** Updated the Robin Groq fallback model and its regression assertion; corrected the Crystal Ball daily-limit test's exact apostrophe to match the UI, increased its total budget to 90 seconds, and preserved the between-answer re-enable assertion.
-- **Scope:** Workflow/test and governance records only. No application behavior, dependencies, lockfile, secrets, or deployment architecture changed.
-- **Verification:** Current-head tests/build/Spec Kit/size-gate checks are pending GitHub Actions; no local pass is claimed.
+- Replaced the deprecated Groq model ID; corrected the Crystal Ball exact-text assertion and allowed 90 seconds for its animated end-to-end test.
+- OpenNext build and 495 MiB size gate passed on CI. Robin still failed: OpenRouter returned empty completion content and Groq rejected the 10,763-token request against an 8,000 TPM limit. Reducing prompt/output budget and rerunning CI remains required.
