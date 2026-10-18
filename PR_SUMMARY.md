@@ -379,3 +379,116 @@ No application source, dependency, lockfile, workflow, API route, secret, deploy
 - **USEFUL RESULT:** NO — pending `./jules-verify.sh` and required current-head PR checks.
 - **Pre-submission double-check:** Targeted wording and intended file scope were checked; final PR diff/check review remains pending.
 - **Remaining issue:** Do not merge until required current-head verification is reviewed. No claim of full governance verification is made before then.
+
+
+---
+
+# Crystal Ball Oracle personality upgrade — 2026-10-18
+
+## Task and scope
+
+- **SELECTED TASK GROUP:** polishing
+- **GROUP REASON:** Focused quality improvement to generated readings/persona; server-side prompt wording and a regression test, not a UI redesign.
+- **Branch:** `polish/crystal-ball-oracle-personality`
+- **PR:** [#1522 — feat(crystal-ball): strengthen Oracle fortune personality](https://github.com/davidcollier77-code/Luckypickcanada/pull/1522) (draft; not merged).
+- **Owner authorization:** Explicitly provided in the conversation on 2026-10-18.
+- **Implementation:** Replace the vague active Oracle system prompt with a focused contract for direct, concrete, varied, in-character fortune readings; question-specific interpretation; accurate factual answers; and responsible handling of lottery questions. Add a regression assertion against the actual outbound system prompt.
+- **Scope compliance:** No change intended to UI, artwork, animations, audio, local daily allowance, request/validation/security logic, CORS, rate limiter, provider/model, model parameters, fallback fortunes, dependencies, or deployment settings.
+- **Protected systems:** API route behavior change is within the owner's explicit authorization. No secrets, payments, database, Cloudflare deployment controls, environment configuration, or deployment workflow changes are intended.
+
+## Spec Kit stage record
+
+The matching command-definition files were read. Native Spec Kit dispatch and local shell execution are unavailable in this connected session. Therefore these are **file-driven artifact preparations, not claims that repository shell stages ran**:
+
+- **`/speckit.specify`** — definition: `.jules/cmds/speckit.specify.md`; method: FILE-DRIVEN ARTIFACT PREPARATION THROUGH REPOSITORY API; result: `specs/033-crystal-ball-oracle-personality/spec.md` prepared with user stories and acceptance criteria. Local setup script/hook execution: NOT RUN.
+- **`/speckit.plan`** — definition: `.jules/cmds/speckit.plan.md`; method: FILE-DRIVEN ARTIFACT PREPARATION THROUGH REPOSITORY API; result: `plan.md` and `research.md` prepared. Local setup script/hook execution: NOT RUN.
+- **`/speckit.tasks`** — definition: `.jules/cmds/speckit.tasks.md`; method: FILE-DRIVEN ARTIFACT PREPARATION THROUGH REPOSITORY API; result: `tasks.md` prepared with ordered implementation and verification tasks. The local setup script was NOT RUN.
+- **`/speckit.implement`** — definition: `.jules/cmds/speckit.implement.md`; method: CANDIDATE PATCH PREPARATION THROUGH REPOSITORY API; result: source and regression test prepared. Local prerequisite/checklist and post-hook execution: NOT RUN.
+- `.specify/feature.json` is intended to point to `specs/033-crystal-ball-oracle-personality`.
+- `.specify/extensions.yml`: NOT FOUND at the repository root; no local extension hooks were available to inspect.
+- `./jules-verify.sh`: NOT RUN locally; actual CI result pending. This remains a verification blocker, not a pass.
+
+## Required Jules/Gemini documentation
+
+For each entry, **USED=YES** means the maintained repository snapshot was fetched and inspected. **USEFUL=NO** means it did not materially affect this implementation because the task does not invoke that tool or change its APIs.
+
+- `.docs/polishing/jules_google_docs.md` — USED=YES; USEFUL=NO; required snapshot consulted; no Jules CLI/API invocation.
+- `.docs/polishing/developers_google_com_jules_api.md` — USED=YES; USEFUL=NO; required snapshot consulted; this implementation uses GitHub repository APIs, not Jules API calls.
+- `.docs/polishing/_google-gemini_gemini-cli.md` — USED=YES; USEFUL=NO; required snapshot consulted; Gemini CLI was not invoked.
+- `.docs/polishing/_websites_ai_google_dev_gemini-api.md` — USED=YES; USEFUL=NO; required snapshot consulted; the live provider remains the existing Groq-compatible endpoint.
+
+## Required library/resource review
+
+All routed polishing resource snapshots were fetched and inspected. No library or dependency was added or upgraded.
+
+- Next.js — `16.3.8`; USED=YES; USEFUL=NO beyond confirming current app-router setup; no framework code changed.
+- React — `latest` in package manifest; USED=YES; USEFUL=NO; no component changed.
+- Tailwind CSS — `4.2.4`; USED=YES; USEFUL=NO; no styles changed.
+- GSAP — `^3.15.0`; USED=YES; USEFUL=NO; no animation code changed.
+- Motion — repository animation package `framer-motion ^13.1.0`; USED=YES; USEFUL=NO; no animation code changed.
+- Lucide — `lucide-react ^1.41.0`; USED=YES; USEFUL=NO; no icons changed.
+- Sonner — `^2.0.8`; USED=YES; USEFUL=NO; no toast UI changed.
+- Howler.js — `^2.2.4`; USED=YES; USEFUL=NO; no audio code changed.
+- Chrome Developer reference — USED=YES; USEFUL=NO; no browser-specific UI work.
+- Apple WebKit Developer reference — USED=YES; USEFUL=NO; no Safari-specific UI work.
+- axe-core — `^4.13.0`; USED=YES; USEFUL=NO; no accessibility markup changed.
+- Magic UI — USED=YES; USEFUL=NO; no Magic UI component introduced.
+- Pillow — USED=YES; USEFUL=NO; no raster assets processed.
+- NumPy — USED=YES; USEFUL=NO; no numerical processing needed.
+- Google WebP — USED=YES; USEFUL=NO; no image formats/assets changed.
+- Sharp — `0.35.5`; USED=YES; USEFUL=NO; no image processing performed.
+- web.dev Images — USED=YES; USEFUL=NO; no image optimization performed.
+- MDN Image Types — USED=YES; USEFUL=NO; reviewed as required; this is not an image-format task.
+
+Other mandatory guidance consulted:
+- `.jules/polishing.md` — USED=YES; USEFUL=YES; task routing and required resources.
+- `.jules/jules.md` — USED=YES; USEFUL=YES; initialization, Memory Bank and reporting rules.
+- `.specify/memory/constitution.md` — USED=YES; USEFUL=YES; implementation sequence and verification requirements.
+- `.specify/integration.json`, `.specify/integrations/generic.manifest.json`, `.specify/workflows/speckit/workflow.yml`, `.specify/workflows/workflow-registry.json`, `.specify/init-options.json`, templates — USED=YES; USEFUL=YES; active feature pointer, command definitions and artifact structure.
+- `.docs/manifest.json` — USED=YES; USEFUL=YES; confirmed routed polishing resources.
+- `AGENTS.md` — USED=YES; USEFUL=YES; task group, Spec Kit stages, scope, size gate and truthful-reporting requirements.
+
+## Repository components reviewed
+
+- `app/api/oracle/route.js` — USED=YES; USEFUL=YES; active prompt is the direct root cause and sole intended runtime source change.
+- `functions/api/oracle.js` — USED=YES; USEFUL=YES; distinguished legacy handler from active Next.js endpoint; left unchanged.
+- `app/components/CrystalBall/CrystalBall.tsx` and `app/crystal-ball-client/CrystalBallClient.js` — USED=YES; USEFUL=YES; confirmed reveal/client path and three-question allowance; left unchanged.
+- `__tests__/oracle-route-validation.test.js` — USED=YES; USEFUL=YES; existing mocked provider test extended to guard the prompt contract.
+- `package.json` — USED=YES; USEFUL=YES; confirmed pnpm 10.30.3/Vitest; no scripts or dependencies changed.
+- `memory-bank/projectBrief.md`, `memory-bank/techContext.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md` — USED=YES; USEFUL=YES; project role, stack and task history.
+- `CSS_FIX_GUIDE.md`, `DATABASE_SETUP.md`, `DEPLOYMENT_CHECKLIST.md`, `QUICK_FIX_GUIDE.md` — USED=YES; USEFUL=NO; required files consulted; no styling, database or deployment changes.
+- `.github/workflows/visual-qa.yml` — USED=YES; USEFUL=YES; confirms PR CI runs targeted Oracle validation, full Vitest, TypeScript, `./jules-verify.sh`, Playwright and visual-baseline checks.
+- `.github/workflows/deploy-open-next.yml` — USED=YES; USEFUL=YES; confirms deploy workflow runs on pushes to `main`; this task will not merge or deploy.
+
+## Verification record
+
+Local shell commands are unavailable in this connected editing session; no local pass is claimed.
+
+- COMMAND: `pnpm exec vitest run __tests__/oracle-route-validation.test.js` — RESULT: NOT RUN locally; current-head PR CI pending.
+- COMMAND: `pnpm run test` — RESULT: NOT RUN locally; current-head PR CI pending.
+- COMMAND: `pnpm tsc --noEmit` — RESULT: NOT RUN locally; current-head PR CI pending.
+- COMMAND: `./jules-verify.sh` — RESULT: NOT RUN locally; current-head PR CI pending. It must pass the task-artifact gate, type check, production build and docs-refresh tests.
+- COMMAND: `NODE_ENV=production pnpm run build` — RESULT: NOT RUN locally; current-head PR CI pending.
+- COMMAND: OpenNext/Cloudflare validation and build-size measurement — RESULT: NOT RUN locally; current-head CI evidence pending. Build output must be strictly under 495 MB.
+- COMMAND: credentialed live Oracle question checks — RESULT: NOT RUN; mocked tests verify prompt content only, not model compliance.
+- COMMAND: final diff/current-head PR check inspection — RESULT: PENDING until PR creation and Actions completion.
+
+## Changed-file inventory for this task
+
+Reconcile with the final commit diff before completion:
+- `app/api/oracle/route.js`
+- `__tests__/oracle-route-validation.test.js`
+- `.specify/feature.json`
+- `specs/033-crystal-ball-oracle-personality/spec.md`
+- `specs/033-crystal-ball-oracle-personality/plan.md`
+- `specs/033-crystal-ball-oracle-personality/research.md`
+- `specs/033-crystal-ball-oracle-personality/tasks.md`
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+- `PR_SUMMARY.md`
+
+## Remaining blockers and completion status
+
+- USEFUL RESULT: YES for the implementation candidate; the requested prompt improvement is represented in the prepared code and regression test. Full verified result remains pending.
+- Pre-submission double-check: source target, test insertion anchor, scope boundaries, feature number and CI workflow checked. Complete final diff and actual current-head CI result remain pending.
+- Do not merge or deploy while required CI/governance results are pending or failing. If a Spec Kit setup stage cannot be executed remotely, report that blocker rather than pretending it ran.

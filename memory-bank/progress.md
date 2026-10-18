@@ -1,3 +1,9 @@
+# Progress — 2026-10-18
+
+- **Crystal Ball Oracle personality upgrade — implementation candidate prepared:** confirmed the active Next.js endpoint is `app/api/oracle/route.js`; the prior system prompt did not require concrete, tailored fortune readings or an in-character greeting. Prepared a stronger prompt contract and a regression test of the outbound system message on [PR #1522](https://github.com/davidcollier77-code/Luckypickcanada/pull/1522) from `polish/crystal-ball-oracle-personality`, with Spec Kit artifacts at `specs/033-crystal-ball-oracle-personality/`. No UI, artwork, animation, audio, API guard, provider/model, dependency, or deployment-setting changes are intended. Local unit/build/governance commands are unavailable in this connected session; do not claim those checks passed. Current-head CI and a real-provider behavior check remain necessary.
+
+---
+
 # Progress — 2026-10-17
 
 - **Robin OpenRouter fallback restoration:** User explicitly authorized removing Amazon Q as Robin's fallback while leaving the independent Amazon Q reviewer untouched. The repair branch restores a second pinned Robin action using the existing `OPENROUTER_API_KEY` secret and a distinct OpenRouter free model. No secret value or credential configuration is changed. A previous account check reported free quota 0/50, so the workflow is designed to skip inference only when quota is confirmed at zero and otherwise require a current-head Robin review. GitHub Actions/CI verification is pending; no local pass is claimed because this connected runner could not resolve github.com.
