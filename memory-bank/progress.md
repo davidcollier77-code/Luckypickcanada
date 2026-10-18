@@ -129,3 +129,10 @@
 
 - Replaced the deprecated Groq model ID; corrected the Crystal Ball exact-text assertion and allowed 90 seconds for its animated end-to-end test.
 - OpenNext build and 495 MiB size gate passed on CI. Robin still failed: OpenRouter returned empty completion content and Groq rejected the 10,763-token request against an 8,000 TPM limit. Reducing prompt/output budget and rerunning CI remains required.
+
+
+## 2026-10-18 — CI regression follow-up
+
+- Reduced the Groq fallback output budget from 2,048 to 768 tokens to keep the provider request under the account's 8,000 TPM limit on this PR's observed diff size.
+- Updated the Robin workflow regression test to require the same 768-token cap.
+- The commit 6da78ec run successfully posted the primary OpenRouter review but the full unit-test step failed because the test still expected 2,048. Current-head CI must rerun; the Groq fallback itself has not yet been re-tested on this head.
