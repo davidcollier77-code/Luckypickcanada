@@ -173,41 +173,34 @@ jobs:
             echo "No completed Robin review for the current PR head was found; the final check will report failure unless a late review appears."
           fi
 
-      - name: Validate Cloudflare Workers AI fallback configuration
-        id: cloudflare_preflight
+      - name: Validate Groq fallback configuration
+        id: groq_preflight
         if: ${{ !cancelled() && steps.review_preflight.outcome == 'success' && steps.review_guard.outcome == 'success' && steps.review_guard.outputs.posted != 'true' && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
+        timeout-minutes: 1
         shell: bash
         env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_FREE_TIER_CONFIRMED: ${{ vars.ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           set -euo pipefail
-          if [[ "${CLOUDFLARE_FREE_TIER_CONFIRMED:-}" != "true" ]]; then
+          if [[ -z "${GROQ_API_KEY:-}" ]]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Cloudflare fallback disabled until Workers Free plan is explicitly confirmed."
-          elif [[ ! "${CLOUDFLARE_ACCOUNT_ID:-}" =~ ^[[:xdigit:]]{32}$ ]]; then
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Set CLOUDFLARE_ACCOUNT_ID to the 32-character Cloudflare account ID."
-          elif [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
-            echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Add CLOUDFLARE_API_TOKEN with Workers AI Read permission only."
+            echo "::warning::Groq API key is missing. Fallback disabled."
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
-            echo "Cloudflare fallback credentials are configured; token value not printed."
+            echo "Groq fallback credentials are configured."
           fi
 
-      - name: Robin review fallback (Cloudflare Workers AI)
+      - name: Robin review fallback (Groq)
         id: fallback_review
-        if: ${{ !cancelled() && steps.review_preflight.outcome == 'success' && steps.cloudflare_preflight.outcome == 'success' && steps.cloudflare_preflight.outputs.configured == 'true' && steps.review_guard.outputs.posted != 'true' && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
+        if: ${{ !cancelled() && steps.review_preflight.outcome == 'success' && steps.groq_preflight.outcome == 'success' && steps.groq_preflight.outputs.configured == 'true' && steps.review_guard.outputs.posted != 'true' && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
         uses: antongulin/robin@fc0bf915b634bf2f8b88ff1392acefdfb54e28d9
         timeout-minutes: 2
         continue-on-error: true
         with:
           github-token: ${{ github.token }}
-          llm-api-key: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          llm-base-url: https://api.cloudflare.com/client/v4/accounts/${{ vars.CLOUDFLARE_ACCOUNT_ID }}/ai/v1
-          model: "@cf/zai-org/glm-4.7-flash"
+          llm-api-key: ${{ secrets.GROQ_API_KEY }}
+          llm-base-url: https://api.groq.com/openai/v1
+          model: "llama-3.1-8b-instant"
           fail-on-high: false
           request-changes: false
           max-diff-size: "50000"
@@ -377,14 +370,14 @@ jobs:
           FREE_QUOTA_INSUFFICIENT: ${{ steps.quota_preflight.outputs.free_quota_insufficient }}
           FREE_QUOTA_REMAINING: ${{ steps.quota_preflight.outputs.free_quota_remaining }}
           PRIMARY_MODEL: ${{ steps.review_preflight.outputs.primary_model }}
-          FALLBACK_MODEL: "@cf/zai-org/glm-4.7-flash"
-          CLOUDFLARE_CONFIGURED: ${{ steps.cloudflare_preflight.outputs.configured }}
+          FALLBACK_MODEL: "llama-3.1-8b-instant"
+          GROQ_CONFIGURED: ${{ steps.groq_preflight.outputs.configured }}
           PRE_GUARD_OUTCOME: ${{ steps.review_guard.outcome }}
           PRE_GUARD_POSTED: ${{ steps.review_guard.outputs.posted }}
           FINAL_GUARD_OUTCOME: ${{ steps.review_final_guard.outcome }}
           FINAL_GUARD_POSTED: ${{ steps.review_final_guard.outputs.posted }}
           COMMENT_BODY: ${{ github.event_name == 'issue_comment' && github.event.comment.body != null && startsWith(github.event.comment.body, '/') && github.event.comment.body || '' }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
+          EVENT_NAME: ${{ github.event_name }}
           REVIEW_START_EPOCH: ${{ steps.review_preflight.outputs.start_epoch }}
         run: |
           set -euo pipefail
@@ -395,9 +388,9 @@ jobs:
             echo "- Primary review: ${PRIMARY_OUTCOME:-not run}"
             echo "- Primary model: ${PRIMARY_MODEL:-not set}"
             echo "- Fallback review: ${FALLBACK_OUTCOME:-not run}"
-            echo "- Fallback provider: Cloudflare Workers AI"
+            echo "- Fallback provider: Groq"
             echo "- Fallback model: ${FALLBACK_MODEL:-not set}"
-            echo "- Cloudflare fallback configured: ${CLOUDFLARE_CONFIGURED:-false}"
+            echo "- Groq fallback configured: ${GROQ_CONFIGURED:-false}"
             echo "- Free quota remaining at preflight: ${FREE_QUOTA_REMAINING:-unknown}"
             echo "- Pre-fallback review guard: ${PRE_GUARD_OUTCOME:-not run} (posted=${PRE_GUARD_POSTED:-unknown})"
             echo "- Final current-head review guard: ${FINAL_GUARD_OUTCOME:-not run} (posted=${FINAL_GUARD_POSTED:-unknown})"
@@ -416,20 +409,20 @@ jobs:
           fi
 
           if [[ "$FINAL_GUARD_POSTED" == "true" ]]; then
-            echo "A real Robin review for the exact current PR head was verified; accepting the primary OpenRouter or Cloudflare Workers AI fallback review."
+            echo "A real Robin review for the exact current PR head was verified; accepting the primary OpenRouter or Groq fallback review."
             exit 0
           fi
 
-          if [[ "${CLOUDFLARE_CONFIGURED:-false}" != "true" ]]; then
-            echo "::error::Cloudflare fallback is disabled or not configured. Confirm Workers Free plan, set ROBIN_CLOUDFLARE_AI_FREE_TIER_CONFIRMED=true, define CLOUDFLARE_ACCOUNT_ID, and add CLOUDFLARE_API_TOKEN with Workers AI Read only."
+          if [[ "${GROQ_CONFIGURED:-false}" != "true" ]]; then
+            echo "::error::Groq fallback is disabled or not configured. Confirm GROQ_API_KEY secret is set."
             exit 1
           fi
           if [[ "$KEY_AVAILABLE" != "true" ]]; then
-            echo "::error::OpenRouter key unavailable and Cloudflare did not post a qualifying review for the current PR head."
+            echo "::error::OpenRouter key unavailable and Groq did not post a qualifying review for the current PR head."
             exit 1
           fi
           if [[ "$FREE_QUOTA_REMAINING" == "0" ]]; then
-            echo "::error::OpenRouter quota is zero and Cloudflare did not produce a qualifying review for the current PR head."
+            echo "::error::OpenRouter quota is zero and Groq did not produce a qualifying review for the current PR head."
             exit 1
           fi
           if [[ -z "${REVIEW_START_EPOCH:-}" ]]; then
@@ -437,5 +430,5 @@ jobs:
             exit 1
           fi
 
-          echo "::error::Neither Robin's primary OpenRouter attempt nor Cloudflare Workers AI fallback produced a verifiable review for the current PR head."
+          echo "::error::Neither Robin's primary OpenRouter attempt nor Groq fallback produced a verifiable review for the current PR head."
           exit 1
