@@ -347,7 +347,8 @@ No local checkout was available, so no local command/test/build pass is claimed.
 
 ## Remaining issues
 
-- The Robin run attempted openrouter/free and received a successful HTTP response with empty completion content; the Groq fallback call was rejected with HTTP 413 because its request budget exceeded the account's 8,000 TPM limit (10,763 requested). Lower the bounded review output and reduce prompt size through an appropriately smaller review diff/report; then verify on current-head CI.
+- On commit ec24d62, the Groq fallback call was rejected with HTTP 413: 10,763 tokens requested against the account's 8,000 TPM limit. The workflow now limits fallback output to 768 tokens and the newly appended CI report was shortened while preserving the historical summary. On commit 6da78ec, the primary OpenRouter route successfully posted a review, so the Groq fallback was not exercised on that run.
+- The Visual QA workflow on commit 6da78ec reached full unit tests but failed because tests/workflows/robin-groq-fallback.test.ts still asserted the previous 2,048-token cap. That assertion is corrected in this follow-up; current-head verification must rerun.
 - Targeted Vitest/Playwright, full tests, TypeScript, Spec Kit, production/OpenNext/Wrangler, and current build-size results must be observed on CI. The prior audit's approximately 316.6 MB size is historical, not a measurement of this branch.
 
 **USEFUL RESULT: PARTIAL — source corrections prepared; model access and current-head CI verification remain pending.**
