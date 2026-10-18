@@ -340,3 +340,104 @@ No local repository checkout is available in this session, so the following comm
 
 **Remaining issues:** current-head Playwright and required CI must pass; new cap must be validated on a real Groq fallback call. Do not merge while these remain pending.
 **USEFUL RESULT: PARTIAL — causes are verified and corrections prepared; latest verification is pending.**
+---
+
+# PR #1518 — Canonical Repository Cleanup Audit (Audit-Only)
+
+**Audit scope:** identify repository files/assets/dependencies that may be unused; report evidence and recommended follow-up only. No deletion, dependency removal, workflow edit, application-source change, or runtime behavior change is part of this PR's diff. The prerequisite CI/test corrections are isolated in PR #1519 and this PR is stacked on that branch so those changes do not appear in the audit diff.
+
+## A — Analyze
+
+### Governance and conflict
+
+- **SELECTED TASK GROUP:** deep-dive.
+- **GROUP REASON:** The requested task was an evidence-driven repository inventory/reference investigation and categorized report.
+- **GOVERNANCE CONFLICT:** .jules/deep-dive.md states deep-dive must not become an audit-only stage producing a report-only PR. The user explicitly authorized an audit-only task and required conflicts with that read-only boundary to be reported instead of silently expanding scope. This PR preserves that user-authorized boundary and documents the conflict; no cleanup implementation is included.
+- **Repository governance:** AGENTS.md, .jules/jules.md, .jules/deep-dive.md, .docs/manifest.json, the three required deep-dive Jules/Gemini snapshots, the Spec Kit integration/templates/command definitions, and the relevant Memory Bank context were inspected during this work.
+- **Context7:** Not used. The repository requires explicit owner approval before each invocation; no approval was requested or needed for repository-source checks available through GitHub.
+
+### Method provenance and limitations
+
+The original Jules audit record states that its investigation used pnpm dlx depcheck, du size measurements, recursive grep, git ls-files, and tracked/ignored-file checks. This correction pass did not have a local checkout and did not rerun those local commands. It did use GitHub's repository-file API and source-search API to validate specific disputed references.
+
+Static search is not proof of non-use: it can miss dynamic paths, CSS references, bundler configuration, generated manifests, external links, and non-indexed files. Accordingly, no item below is authorized for removal by this audit. All unreferenced-resource claims are classified as candidates pending a local checkout, exhaustive reference tracing, and where relevant bundler/runtime verification.
+
+## B — Categorized Findings
+
+### Unreferenced candidates — NOT confirmed unused
+
+The originating audit reported the following sizes and said it found no application references. This correction pass did not independently measure the binary file sizes or run a local full-repository search. Estimated possible savings are only a prioritization hint, not a verified saving.
+
+- public/a_polished_high_detail_card_illustration_poster_i.png — reported about 3.1 MB.
+- public/a_polished_high_detail_card_illustration_poster_i.webp — reported about 416 KB.
+  - The active variant public/a_polished_high_detail_card_illustration_poster_i.avif is explicitly mapped in app/lucky-card-content.js and appears in __tests__/lucky-card-collection.test.js. The PNG/WebP variants were not found in the GitHub source searches used for this correction, but must remain until exhaustive checkout-based reference/bundler checks confirm they are not required.
+- public/yodguard-lightning-magic-3-378649.mp3 — reported about 252 KB; GitHub source search returned no current source matches. Verify references across all source, CSS, config, and runtime-generated paths before considering removal.
+- public/freesound_community-shaking-coins-105774.mp3 — reported about 58 KB; GitHub source search returned no current source matches. Verify references across all source, CSS, config, and runtime-generated paths before considering removal.
+- copilot_image_1785515250260.jpeg — reported about 1.1 MB and tracked at the repository root by the originating audit. Source search returned no current source matches; its purpose and ownership still need repository-history review.
+- Dependency html2canvas — present in package.json and pnpm-lock.yaml; GitHub source search used for this correction found no application import match, while project memory documentation still describes screenshot generation. Do not remove until exhaustive imports, dynamic loading, and bundle paths are checked.
+- Dependency lucide-react — present in package.json and pnpm-lock.yaml; source-index queries did not return an application import match. The index may be incomplete; do not remove until a local, exhaustive import and bundler check is completed.
+
+### Tracked stale-file candidates — do not delete in this PR
+
+The originating audit reports these as tracked conflict-recovery artifacts. Their paths and contents exist on the current default branch, but this correction pass did not execute git ls-files locally to independently reconfirm tracking status:
+
+- components/DailyResonance.tsx.orig
+- components/DailyResonance.tsx.rej
+- app/lucky-card-reveal.js.orig
+
+They resemble merge/reject leftovers, but their contents should be compared with the active source and history before any separate authorized deletion. This audit makes no file removals.
+
+### DO NOT REMOVE — actively referenced image fallback chain
+
+The earlier audit's treatment of the NGC4216 JPEG/WebP variants as possible unused fallbacks was incorrect.
+
+- public/NGC4216_crawford.webp
+- public/NGC4216_crawford.jpg
+
+GitHub source search in the current default branch confirms app/lucky-card-reveal.js uses a picture fallback chain with AVIF, WebP, and JPEG sources and a JPEG img src. These files are active fallbacks and must not be treated as unused.
+
+Also preserve the AVIF poster variant public/a_polished_high_detail_card_illustration_poster_i.avif, which is mapped to the “Lucky Canadian Moose” entry in app/lucky-card-content.js and used by its collection test.
+
+### Needs separate dependency verification — do not remove based on this report
+
+- @stripe/stripe-js: current search results showed its package and lockfile declarations and the project's technology notes, but no loadStripe or direct import matches. The current app/luck-map.js and app/api/checkout/route.js use the server-side stripe package; those imports alone do not prove the browser SDK is required. Conversely, incomplete code-search results do not prove it is unused. Leave it unchanged until a local full-source/bundler trace identifies whether it has consumers.
+
+The originating report also lists these as protected because it observed references: public/1784889264858.png, public/1785347037732.png, public/BackgroundEraser_20260724_163638777.png/AVIF, and public/FB_IMG_1785107325979.jpg. No removal is proposed; their references should be rechecked in any future cleanup implementation.
+
+## C — Build-Size Record
+
+- **Originating report's command:** du -sk .next public/ | awk '{print $1 / 1024 " MB\t" $2}'.
+- **Originating report's recorded output:** .next = 287.54 MB; public/ = 29.08 MB; total reported as approximately 316.6 MB.
+- **Latest completed build evidence (clean audit candidate `decf637`):** combined `.next + public` measured **325,478,615 bytes (310.40 MiB)**; the hard 495 MiB gate, OpenNext Cloudflare build, and Wrangler validation passed. This build ran on a parent of this replacement documentation PR; the new PR must pass its own checks before merge.
+- **Constraint:** 495 MB is the hard maximum. A current production build and size check must pass in CI before any PR is considered merge-ready.
+
+## D — Spec Kit and Task Artifacts
+
+- The active feature pointer now targets specs/031-audit-cleanup because prerequisite CI stability work is tracked in specs/030-ci-stability on stacked PR #1519.
+- The audit spec, plan, tasks, and requirements checklist are substantive records of the audit-only task, its methodology, classifications, and unresolved verification. They do not authorize deletion or dependency changes.
+- The Spec Kit files are not claimed to have been run through native dispatch. The current-head CI must run the repository governance gate; local execution was unavailable.
+
+## Exact Changed-File Reconciliation — PR #1518 Audit Diff
+
+Relative to its stacked base branch fix/ci-stability-1518, this PR changes only:
+
+1. .specify/feature.json — active feature pointer to specs/031-audit-cleanup.
+2. PR_SUMMARY.md — append audit findings after, not in place of, historical PR #1510/#1511/#1516 records and the separate PR #1519 troubleshooting record.
+3. memory-bank/activeContext.md — record the audit scope and current status.
+4. memory-bank/progress.md — record the completed reporting work and remaining validation.
+5. specs/031-audit-cleanup/spec.md — audit-only objectives, acceptance criteria, and boundaries.
+6. specs/031-audit-cleanup/plan.md — investigation method and explicit limitations.
+7. specs/031-audit-cleanup/tasks.md — evidence review completed; any removals/bundler checks remain pending future authorized work.
+8. specs/031-audit-cleanup/checklists/requirements.md — specification quality checklist.
+
+The workflow/model, Crystal Ball test, workflow regression test, and empty route file are not changes in this audit diff; their respective base-branch contents are inherited from the separate CI follow-up PR #1519. No application source, asset, dependency, lockfile, workflow, test, API route, security setting, or runtime behavior is changed by the audit-only diff.
+
+## Remaining Issues / Verification
+
+- The candidates labelled above require a local checkout, exhaustive reference tracing, and for assets/dependencies, bundler or runtime verification before any removal decision.
+- The latest measured `.next + public` size is 310.40 MiB (325,478,615 bytes) on clean audit candidate `decf637`; the replacement PR still needs its own current-head required checks.
+- On prerequisite head `d821991`, unit tests, TypeScript, Spec Kit, OpenNext, Wrangler, size gate, and the Robin primary review passed; Groq fallback was skipped on the latest successful Robin run, so its new 256-token budget has not yet been verified by a fresh fallback invocation. A prior real fallback call at the earlier 384-token cap failed at 8,657 requested tokens vs. the account's 8,000 TPM limit. The workflow now uses a 256-token cap and a materially smaller diff. The corrected Crystal Ball Playwright run remains in progress on that prerequisite head.
+- No tests/build are claimed as run locally in this repository-API-only session.
+- Pre-submission double-check for the audit will require comparing the final PR #1518 changed-file list and patches against this exact eight-file list.
+
+**USEFUL RESULT: PARTIAL — the audit report and scope are corrected; removal decisions and current-head CI verification remain pending.**
