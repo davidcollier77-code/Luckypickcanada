@@ -508,6 +508,7 @@ Reconcile with the final commit diff before completion:
 ## Root cause and repair
 
 - The prompt-injection logic had been inserted into the middle of the chained sanitizer expression. The first `.replace(...)` line ended before the remaining chained calls, making the module syntactically invalid.
+- Comparing the merged route with its pre-PR #1522 base also confirmed that the malformed edit removed the existing `const apiKey = getApiKey();` declaration. The first targeted CI run reported `ReferenceError: apiKey is not defined` for both valid-question tests; the original lookup call has been restored before the existing missing-key fallback.
 - Restored the complete sanitizer sequence and removed the duplicate unused lowercased variable.
 - Preserved the existing prompt-injection patterns and checks both the original `rawQuestion` and sanitized `question`. This guards against variants split by removable characters and keeps the filter before sanitization while also checking its normalized result.
 - Added route regression rows for quote-split and angle-bracket-split blocked phrases. Existing valid-question coverage continues to assert that an ordinary question reaches the provider.
@@ -525,7 +526,7 @@ The candidate branch currently changes:
 - `memory-bank/progress.md`
 - `PR_SUMMARY.md`
 
-This list must be reconciled again against the final PR diff after the documentation update commits finish.
+GitHub PR #1523's changed-file list matched these eight paths after the code and task-record updates; recheck the exact current-head diff and all checks before merge.
 
 ## Verification status
 
@@ -536,7 +537,7 @@ This list must be reconciled again against the final PR diff after the documenta
 - COMMAND: local `./jules-verify.sh` — RESULT: NOT RUN; no repository shell.
 - COMMAND: local `pnpm run build` / `pnpm exec opennextjs-cloudflare build` — RESULT: NOT RUN locally; require current-head CI.
 - COMMAND: inspect generated `.next + public` size — RESULT: PENDING; must be measured and strictly below the 495 MB hard maximum.
-- Final diff audit/current-head PR checks: PENDING until the repair PR is opened and Actions complete.
+- Earlier-head targeted CI: FAIL on commit `ff2bbe4207a7392336062f431dd3f1a139cb63d9` because valid Oracle requests referenced an undefined `apiKey`; fix committed as `e2df4a6a1506f9ae010e55cde9227c0a25ff9125`. Current-head test/build verification remains PENDING.
 - **USEFUL RESULT:** NO pending current-head automated verification. The source correction is prepared; build/test recovery is not yet claimed.
-- **Pre-submission double-check:** The route sanitizer expression and regression inputs were checked in the candidate source. Final complete-diff and CI recheck remain required.
+- **Pre-submission double-check:** The sanitizer expression, original+normalized injection checks, restored API-key lookup, and regression inputs were inspected in source. Final complete-diff and current-head CI recheck remain required.
 
