@@ -340,3 +340,42 @@ No local repository checkout is available in this session, so the following comm
 
 **Remaining issues:** current-head Playwright and required CI must pass; new cap must be validated on a real Groq fallback call. Do not merge while these remain pending.
 **USEFUL RESULT: PARTIAL — causes are verified and corrections prepared; latest verification is pending.**
+
+
+---
+
+# Deep-Dive Scope Clarification — PR Number Pending
+
+## Scope
+Correct the conflict in `.jules/deep-dive.md` that implied deep-dive investigations could not be audit-only/report-only. The new wording permits audit-only work only when explicitly authorized by the repository owner and keeps evidence, limitations, recommendations, verification, and reporting mandatory.
+
+## Governance
+- **SELECTED TASK GROUP:** deep-dive
+- **GROUP REASON:** The task corrects investigation-specialist scope rules.
+- `AGENTS.md` was inspected first and was not changed.
+- `.docs/manifest.json`, the required local deep-dive documentation snapshots, Spec Kit command definitions for specify/plan/tasks/implement, and `.specify/memory/constitution.md` were consulted for this scoped documentation correction.
+- Context7 was not invoked; it was not materially necessary for changing local wording and requires explicit owner approval.
+- The active Spec Kit feature pointer and feature-specific spec/plan/tasks/checklist were updated. Memory Bank records were appended rather than rewritten.
+
+## Changed-File Contract
+- `.jules/deep-dive.md`
+- `.specify/feature.json`
+- `PR_SUMMARY.md`
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+- `specs/032-deep-dive-scope-clarification/spec.md`
+- `specs/032-deep-dive-scope-clarification/plan.md`
+- `specs/032-deep-dive-scope-clarification/tasks.md`
+- `specs/032-deep-dive-scope-clarification/checklists/requirements.md`
+
+No application source, dependency, lockfile, workflow, API route, secret, deployment, or runtime behavior changed. `AGENTS.md` and `.docs/` remain untouched.
+
+## Verification
+- **Static wording review:** PASS — the intended old rule was found and replaced; the standing resources and Context7 guard above it were preserved.
+- **Final diff review:** PENDING until the complete PR patch is inspected after creation.
+- **COMMAND:** `./jules-verify.sh`
+  **RESULT:** NOT RUN in this API-only editing session; current-head CI must be checked before merge.
+- **Build/tests:** Not run locally; this is a documentation/governance-only change, and no local shell was available in this session.
+- **USEFUL RESULT:** NO — pending `./jules-verify.sh` and required current-head PR checks.
+- **Pre-submission double-check:** Targeted wording and intended file scope were checked; final PR diff/check review remains pending.
+- **Remaining issue:** Do not merge until required current-head verification is reviewed. No claim of full governance verification is made before then.
