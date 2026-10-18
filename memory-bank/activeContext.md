@@ -383,3 +383,5 @@
 - **Current branch**: `task-ci-repair`
 - **Current implementation**: Adjusted the fallback model parameter to the verified model identifier `mixtral-8x7b-32768` in both the GitHub Actions `.yml` workflow file and the workflow test assertions script `tests/workflows/robin-groq-fallback.test.ts`.
 - **Verification status**: Unit tests passed completely locally with `pnpm test`. Waiting for live CI verification.
+
+- **Robin Retirement**: Robin automated review workflows and its Groq fallback have been fully retired and removed per owner request. CodeRabbit and Amazon Q remain active. The Crystal Ball Oracle functionality remains untouched and retains its required `GROQ_API_KEY`. Obsolete secrets/variables tied to Robin (`OPENROUTER_API_KEY`, `ROBIN_LLM_MODEL`, `ROBIN_LLM_BASE_URL`) have been documented for manual removal.

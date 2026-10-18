@@ -1,0 +1,7 @@
+This commit completely removes the Robin review workflow and its Groq fallback setup, complying with the user request to simplify CI integrations down to CodeRabbit and Amazon Q.
+
+- Deleted `.github/workflows/robin.yml` and `.github/robin.yml`.
+- Deleted Robin-specific tests like `tests/workflows/robin-groq-fallback.test.ts`.
+- Retained CodeRabbit and Amazon Q setups untouched.
+- Retained `GROQ_API_KEY` for Oracle endpoint unchanged.
+- Passed local governance verification with `pnpm test`, `pnpm tsc --noEmit`, `./jules-verify.sh`, and `pnpm run build`.
