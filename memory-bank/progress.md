@@ -125,7 +125,7 @@
 - **Crystal Ball browser-local daily allowance (2026-10-17):** Replaced persistent per-IP UTC-day quota accounting with a browser localStorage count of successful AI-backed answers, visitor-local date rollover, in-memory fallback when storage is blocked, and a live local-midnight countdown. Removed the old quota manager/test, retained the short-window API rate limiter, added local-usage unit tests, and extended the allowance Playwright spec. Current-head test/build/governance evidence is pending GitHub Actions; local commands were not run because this session lacks a repository checkout.
 
  
-## 2026-10-18 — PR #1518 CI Stability Follow-up
+## 2026-10-18 — PR #1519 CI Stability Follow-up
 
 - Replaced the deprecated Groq model ID; corrected the Crystal Ball exact-text assertion and allowed 90 seconds for its animated end-to-end test.
 - OpenNext build and 495 MiB size gate passed on CI. Robin still failed: OpenRouter returned empty completion content and Groq rejected the 10,763-token request against an 8,000 TPM limit. Reducing prompt/output budget and rerunning CI remains required.
@@ -142,3 +142,12 @@
 
 - CI measured the 384-token Groq fallback at 8,657 requested tokens vs. the 8,000 TPM limit. Raised the response cap to 256 and compacted redundant task-artifact text; updated the matching test assertion.
 - Corrected the daily-limit Playwright check to wait for the input to re-enable after reveal. Current-head Playwright and a new Groq fallback attempt remain pending.
+
+
+## 2026-10-18 — PR #1520 Repository Cleanup Audit Scope Correction (replaces #1518)
+
+- Preserved historical PR Summary records for #1510, #1511, #1516 and the separate CI stability report.
+- Reclassified static-search-only resource findings as unreferenced candidates pending exhaustive checkout/bundler verification; no removal authorization is provided by the audit.
+- Corrected a specific audit error: app/lucky-card-reveal.js explicitly references NGC4216_crawford.webp and NGC4216_crawford.jpg as fallback sources. Those assets must not be removed.
+- PR #1520 is the clean replacement for the original mixed-scope PR #1518 and is stacked on PR #1519, keeping workflow/test corrections out of the audit diff.
+- Replacement PR #1520 commit `050a331` passed OpenNext/size/Wrangler at 310.40 MiB, and Robin plus CodeRabbit reviews passed. Prerequisite PR #1519 Visual QA passed (21 passed, 3 skipped). No local commands were run from this session.
