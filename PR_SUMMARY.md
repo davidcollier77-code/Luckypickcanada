@@ -492,3 +492,52 @@ Reconcile with the final commit diff before completion:
 - USEFUL RESULT: YES for the implementation candidate; the requested prompt improvement is represented in the prepared code and regression test. Full verified result remains pending.
 - Pre-submission double-check: source target, test insertion anchor, scope boundaries, feature number and CI workflow checked. Complete final diff and actual current-head CI result remain pending.
 - Do not merge or deploy while required CI/governance results are pending or failing. If a Spec Kit setup stage cannot be executed remotely, report that blocker rather than pretending it ran.
+
+ 
+---
+
+# Oracle route Cloudflare build repair — 2026-10-18
+
+## Task and evidence
+
+- **SELECTED TASK GROUP:** troubleshooting
+- **GROUP REASON:** A supplied production-build log shows a reproducible JavaScript parse failure in the active Oracle API route, with a related prompt-injection-filter ordering concern.
+- **Source evidence:** Cloudflare OpenNext log at 2026-10-18T17:14:37Z reports `./app/api/oracle/route.js:102`, `Expression expected`, on a detached `.replaceAll(String.fromCharCode(96), '')` chain.
+- **Repository state:** PR #1522 was merged at 2026-10-18T17:13:14Z. The repair is isolated on branch `fix/oracle-route-build-and-injection-1522`; no direct main change, merge, or deployment was made in this task.
+
+## Root cause and repair
+
+- The prompt-injection logic had been inserted into the middle of the chained sanitizer expression. The first `.replace(...)` line ended before the remaining chained calls, making the module syntactically invalid.
+- Comparing the merged route with its pre-PR #1522 base also confirmed that the malformed edit removed the existing `const apiKey = getApiKey();` declaration. The first targeted CI run reported `ReferenceError: apiKey is not defined` for both valid-question tests; the original lookup call has been restored before the existing missing-key fallback.
+- Restored the complete sanitizer sequence and removed the duplicate unused lowercased variable.
+- Preserved the existing prompt-injection patterns and checks both the original `rawQuestion` and sanitized `question`. This guards against variants split by removable characters and keeps the filter before sanitization while also checking its normalized result.
+- Added route regression rows for quote-split and angle-bracket-split blocked phrases. Existing valid-question coverage continues to assert that an ordinary question reaches the provider.
+- No intended change to the personality prompt, provider/model/parameters, CORS, rate limiting, existing validation or length limit, fallback behavior/response shape, daily allowance, visual assets/layout/animation/audio, dependencies, or deployment configuration.
+
+## Exact changed-file reconciliation
+
+The candidate branch currently changes:
+- `app/api/oracle/route.js`
+- `__tests__/oracle-route-validation.test.js`
+- `specs/033-crystal-ball-oracle-personality/spec.md`
+- `specs/033-crystal-ball-oracle-personality/plan.md`
+- `specs/033-crystal-ball-oracle-personality/tasks.md`
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+- `PR_SUMMARY.md`
+
+GitHub PR #1523's changed-file list matched these eight paths after the code and task-record updates; recheck the exact current-head diff and all checks before merge.
+
+## Verification status
+
+- COMMAND: inspect the supplied Cloudflare build output and current `app/api/oracle/route.js` — RESULT: PASS; the parser error and detached chain were confirmed.
+- COMMAND: local `pnpm exec vitest run __tests__/oracle-route-validation.test.js` — RESULT: NOT RUN; this connected session has no repository shell.
+- COMMAND: local `pnpm run test` — RESULT: NOT RUN; no repository shell.
+- COMMAND: local `pnpm tsc --noEmit` — RESULT: NOT RUN; no repository shell.
+- COMMAND: local `./jules-verify.sh` — RESULT: NOT RUN; no repository shell.
+- COMMAND: local `pnpm run build` / `pnpm exec opennextjs-cloudflare build` — RESULT: NOT RUN locally; require current-head CI.
+- COMMAND: inspect generated `.next + public` size — RESULT: PENDING; must be measured and strictly below the 495 MB hard maximum.
+- Earlier-head targeted CI: FAIL on commit `ff2bbe4207a7392336062f431dd3f1a139cb63d9` because valid Oracle requests referenced an undefined `apiKey`; fix committed as `e2df4a6a1506f9ae010e55cde9227c0a25ff9125`. Current-head test/build verification remains PENDING.
+- **USEFUL RESULT:** NO pending current-head automated verification. The source correction is prepared; build/test recovery is not yet claimed.
+- **Pre-submission double-check:** The sanitizer expression, original+normalized injection checks, restored API-key lookup, and regression inputs were inspected in source. Final complete-diff and current-head CI recheck remain required.
+

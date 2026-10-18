@@ -91,18 +91,28 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Please enter a question for the Crystal Ball.' }, { status: 400, headers: corsHeaders });
     }
 
-    const question = rawQuestion
-      .replace(/["'\\]/g, '')
-    const lowercased = rawQuestion.toLowerCase();
     const injectionPatterns = ['ignore previous', 'ignore all', 'disregard', 'system:', 'assistant:', 'prompt:', 'instructions:'];
-    if (injectionPatterns.some((pattern) => lowercased.includes(pattern))) {
+    const containsPromptInjection = (value) => {
+      const lowercased = value.toLowerCase();
+      return injectionPatterns.some((pattern) => lowercased.includes(pattern));
+    };
+
+    // Check both the original input and its normalized form. Checking only one
+    // form can miss patterns split by characters removed during sanitization.
+    if (containsPromptInjection(rawQuestion)) {
       return NextResponse.json({ error: 'Invalid question format' }, { status: 400, headers: corsHeaders });
     }
 
+    const question = rawQuestion
+      .replace(/["'\\]/g, '')
       .replaceAll(String.fromCharCode(96), '')
       .replace(/[\r\n]+/g, ' ')
       .replace(/[<>]/g, '')
       .trim();
+
+    if (containsPromptInjection(question)) {
+      return NextResponse.json({ error: 'Invalid question format' }, { status: 400, headers: corsHeaders });
+    }
 
     if (!question) {
       return NextResponse.json({ error: 'Please enter a question for the Crystal Ball.' }, { status: 400, headers: corsHeaders });
@@ -115,7 +125,7 @@ export async function POST(request) {
       );
     }
 
-    const lowercased = question.toLowerCase();
+    const apiKey = getApiKey();
     if (!apiKey) {
       console.error('Oracle Error: GROQ_API_KEY environment variable is missing.');
       return NextResponse.json(fallbackPayload(), { status: 200, headers: corsHeaders });
