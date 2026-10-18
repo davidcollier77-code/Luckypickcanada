@@ -1,18 +1,25 @@
 # Active Context
 
-## Current Focus — Crystal Ball Oracle personality upgrade (2026-10-18)
+## Current Focus — Oracle route Cloudflare build repair (2026-10-18)
 
-- User-authorized implementation: improve AI-generated Crystal Ball readings so they sound like a distinctive, question-specific fortune teller rather than a generic chatbot.
-- Working branch/PR: `polish/crystal-ball-oracle-personality` / [PR #1522](https://github.com/davidcollier77-code/Luckypickcanada/pull/1522) (draft); feature artifacts: `specs/033-crystal-ball-oracle-personality/`.
-- Verified root cause: active `app/api/oracle/route.js` system message requests a lighthearted, witty Canadian-themed oracle but does not direct it to give one concrete choice for “What day is my lucky day?”, avoid stock answers, use question-specific interpretation, or keep greetings in character.
-- Intended change: a focused system prompt plus a regression test in `__tests__/oracle-route-validation.test.js`. Preserve the current Groq-compatible endpoint/model, temperature, token limit, API validation, prompt-injection filter, CORS, request rate limit, fallback fortunes, response shape, client-side three-question allowance, visual design, animations, audio, dependencies, and deployment setup.
-- Verification status: source/test/artifacts are prepared on the candidate branch through the GitHub repository API. No local shell/checkout is available, so no local test/build or `./jules-verify.sh` pass is claimed. GitHub PR checks must be inspected on the exact final head. Real-provider response quality also remains unverified without a safe live-provider test.
-- Do not merge or deploy until required Spec Kit/governance checks, targeted and full unit tests, TypeScript/build checks, the under-495-MB build-size gate, and relevant current-head CI evidence pass. Readings remain entertainment and must not promise lottery outcomes.
+- **Verified failure:** The Cloudflare log from 2026-10-18 reports a Next.js compile error, `Expression expected`, at `app/api/oracle/route.js:102`. The route's input-sanitization chain was interrupted by the prompt-injection check, leaving later `.replaceAll(...)` calls detached from the expression.
+- **Repository state:** PR #1522 (Oracle personality) was merged at 2026-10-18T17:13:14Z. The supplied Cloudflare build failed shortly after. This follow-up is on `fix/oracle-route-build-and-injection-1522`; do not push a repair straight to production.
+- **User authorization:** Explicit authorization to fully repair the build failure and related route issue was given on 2026-10-18.
+- **Repair prepared:** Restored the complete sanitization chain, retained the existing injection-pattern list, and checks it against both original `rawQuestion` and the normalized sanitized `question`. Added regression cases where quote or angle-bracket characters split a blocked phrase; the existing ordinary-question provider-path test remains.
+- **Scope preserved:** No change to the Oracle personality prompt, provider/model or parameters, CORS, rate-limit configuration, error/fallback payloads, response aliases, daily quota, UI, artwork, animations, audio, dependencies, or deployment configuration.
+- **Verification status:** Edits were made through the GitHub repository API. A local shell/checkout is unavailable in this connected session, so local test/build/`./jules-verify.sh` results are not claimed. Follow-up PR CI must show targeted/full tests, TypeScript, governance verification, OpenNext/Cloudflare build, and measured build output strictly below 495 MB before the repair is treated as verified.
+- **Next step:** Open/inspect the corrective PR, then review exact current-head check results and the complete final diff. No merge or deployment was performed by this repair.
 
 ---
 
+## Previous Focus — Crystal Ball Oracle personality upgrade (2026-10-18)
 
-## Current Focus — Crystal Ball browser-local daily allowance (2026-10-17)
+- User-authorized implementation: improve AI-generated Crystal Ball readings so they sound like a distinctive, question-specific fortune teller rather than a generic chatbot.
+- Original branch/PR: `polish/crystal-ball-oracle-personality` / [PR #1522](https://github.com/davidcollier77-code/Luckypickcanada/pull/1522), merged 2026-10-18; feature artifacts: `specs/033-crystal-ball-oracle-personality/`.
+- Intended behavior: focused system prompt plus regression tests for the outbound prompt. The subsequent build failure was caused by the malformed sanitization/filter edit described in the current-focus entry above.
+- Preserve the existing Groq-compatible endpoint/model, temperature, token limit, API validation, prompt-injection protections, CORS, request rate limit, fallback fortunes, response shape, client-side daily allowance, visual design, animations, audio, dependencies, and deployment setup.
+- Real-provider answer quality remains unverified without an authorized credentialed live-provider test. Lottery readings must remain entertainment and must not promise outcomes.
+
 
 - User-authorized change: replace the persistent per-IP UTC-day quota with a three-successful-AI-answer allowance held in browser localStorage, reset at the visitor's local midnight, with a visible HH:MM:SS countdown.
 - Branch / PR: `fix/crystal-ball-browser-daily-limit` / [PR #1516](https://github.com/davidcollier77-code/Luckypickcanada/pull/1516).
