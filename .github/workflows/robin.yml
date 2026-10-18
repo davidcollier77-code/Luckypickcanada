@@ -176,6 +176,7 @@ jobs:
       - name: Validate Groq fallback configuration
         id: groq_preflight
         if: ${{ !cancelled() && steps.review_preflight.outcome == 'success' && steps.review_guard.outcome == 'success' && steps.review_guard.outputs.posted != 'true' && (github.event_name == 'pull_request' || startsWith(github.event.comment.body, '/review') || startsWith(github.event.comment.body, '/robin')) }}
+        timeout-minutes: 1
         shell: bash
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
