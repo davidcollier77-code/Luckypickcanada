@@ -344,7 +344,7 @@ No local repository checkout is available in this session, so the following comm
 
 ---
 
-# Deep-Dive Scope Clarification — PR Number Pending
+# PR #1521 — Deep-Dive Scope Clarification
 
 ## Scope
 Correct the conflict in `.jules/deep-dive.md` that implied deep-dive investigations could not be audit-only/report-only. The new wording permits audit-only work only when explicitly authorized by the repository owner and keeps evidence, limitations, recommendations, verification, and reporting mandatory.
