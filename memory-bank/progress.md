@@ -142,3 +142,12 @@
 
 - CI measured the 384-token Groq fallback at 8,657 requested tokens vs. the 8,000 TPM limit. Raised the response cap to 256 and compacted redundant task-artifact text; updated the matching test assertion.
 - Corrected the daily-limit Playwright check to wait for the input to re-enable after reveal. Current-head Playwright and a new Groq fallback attempt remain pending.
+
+
+## 2026-10-18 — PR #1518 Repository Cleanup Audit Scope Correction
+
+- Preserved historical PR Summary records for #1510, #1511, #1516 and the separate CI stability report.
+- Reclassified static-search-only resource findings as unreferenced candidates pending exhaustive checkout/bundler verification; no removal authorization is provided by the audit.
+- Corrected a specific audit error: app/lucky-card-reveal.js explicitly references NGC4216_crawford.webp and NGC4216_crawford.jpg as fallback sources. Those assets must not be removed.
+- The audit PR is being stacked on PR #1519 so workflow and test corrections remain in the prerequisite PR rather than appearing in the audit diff.
+- Current-head CI and build-size verification remain pending; no local tests or build are claimed.

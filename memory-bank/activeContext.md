@@ -335,3 +335,11 @@
 
 - Updated the Robin Groq model, workflow assertion, and Crystal Ball daily-limit Playwright timing/text checks.
 - Verification is pending: CI showed OpenNext build/495 MiB gate passed, but Robin failed because the 8,000 TPM limit rejected a 10,763-token request. See PR Summary for evidence and remaining checks.
+
+
+## Repository Cleanup Audit — PR #1518 (2026-10-18)
+
+- PR #1518 is being restricted to audit/reporting records by stacking it on the separate CI stability branch in PR #1519.
+- Cleanup findings based only on source search or the originating report are candidates, not removal authorization. The NGC4216 JPEG/WebP files are actively referenced in the current Lucky Card Reveal picture fallback chain and must be preserved. The AVIF poster asset is also actively mapped and test-referenced.
+- No asset, dependency, application source, workflow, test, API route, or runtime behavior changes are part of the audit-only diff.
+- **Status:** final diff scope needs re-check after branch update; build/test results must be obtained from CI, not inferred from historical figures.
