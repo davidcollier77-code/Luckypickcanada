@@ -125,6 +125,7 @@ export async function POST(request) {
       );
     }
 
+    const apiKey = getApiKey();
     if (!apiKey) {
       console.error('Oracle Error: GROQ_API_KEY environment variable is missing.');
       return NextResponse.json(fallbackPayload(), { status: 200, headers: corsHeaders });
