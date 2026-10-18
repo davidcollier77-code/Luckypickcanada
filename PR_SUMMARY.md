@@ -390,7 +390,7 @@ No application source, dependency, lockfile, workflow, API route, secret, deploy
 - **SELECTED TASK GROUP:** polishing
 - **GROUP REASON:** Focused quality improvement to generated readings/persona; server-side prompt wording and a regression test, not a UI redesign.
 - **Branch:** `polish/crystal-ball-oracle-personality`
-- **PR:** Pending creation.
+- **PR:** [#1522 — feat(crystal-ball): strengthen Oracle fortune personality](https://github.com/davidcollier77-code/Luckypickcanada/pull/1522) (draft; not merged).
 - **Owner authorization:** Explicitly provided in the conversation on 2026-10-18.
 - **Implementation:** Replace the vague active Oracle system prompt with a focused contract for direct, concrete, varied, in-character fortune readings; question-specific interpretation; accurate factual answers; and responsible handling of lottery questions. Add a regression assertion against the actual outbound system prompt.
 - **Scope compliance:** No change intended to UI, artwork, animations, audio, local daily allowance, request/validation/security logic, CORS, rate limiter, provider/model, model parameters, fallback fortunes, dependencies, or deployment settings.

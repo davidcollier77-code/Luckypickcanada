@@ -3,7 +3,7 @@
 ## Current Focus — Crystal Ball Oracle personality upgrade (2026-10-18)
 
 - User-authorized implementation: improve AI-generated Crystal Ball readings so they sound like a distinctive, question-specific fortune teller rather than a generic chatbot.
-- Working branch: `polish/crystal-ball-oracle-personality`; feature artifacts: `specs/033-crystal-ball-oracle-personality/`.
+- Working branch/PR: `polish/crystal-ball-oracle-personality` / [PR #1522](https://github.com/davidcollier77-code/Luckypickcanada/pull/1522) (draft); feature artifacts: `specs/033-crystal-ball-oracle-personality/`.
 - Verified root cause: active `app/api/oracle/route.js` system message requests a lighthearted, witty Canadian-themed oracle but does not direct it to give one concrete choice for “What day is my lucky day?”, avoid stock answers, use question-specific interpretation, or keep greetings in character.
 - Intended change: a focused system prompt plus a regression test in `__tests__/oracle-route-validation.test.js`. Preserve the current Groq-compatible endpoint/model, temperature, token limit, API validation, prompt-injection filter, CORS, request rate limit, fallback fortunes, response shape, client-side three-question allowance, visual design, animations, audio, dependencies, and deployment setup.
 - Verification status: source/test/artifacts are prepared on the candidate branch through the GitHub repository API. No local shell/checkout is available, so no local test/build or `./jules-verify.sh` pass is claimed. GitHub PR checks must be inspected on the exact final head. Real-provider response quality also remains unverified without a safe live-provider test.
