@@ -310,7 +310,7 @@ No local repository checkout is available in this session, so the following comm
 ## Root causes and changes
 
 - Groq 404ed on `llama-3.1-8b-instant`; Groq's current deprecation page also marks `llama-3.3-70b-versatile` deprecated for developer-tier use and recommends `openai/gpt-oss-20b` for the old 8B model: https://console.groq.com/docs/deprecations
-- A real Groq fallback request on `1502487` failed HTTP 413 at **8,657 tokens requested vs. 8,000 TPM**. The 384-token cap was too high; this change uses 128 tokens and reduces nonessential task-artifact diff size. The updated fallback is still awaiting a new observed attempt.
+- A real Groq fallback request on `1502487` failed HTTP 413 at **8,657 tokens requested vs. 8,000 TPM**. The 384-token cap was too high; this change uses 256 tokens and reduces nonessential task-artifact diff size. The updated fallback is still awaiting a new observed attempt.
 - Crystal Ball clears the question after a successful answer and keeps the input disabled during the reveal. The test now waits for the input to re-enable; the next iteration enters text before asserting the button enables.
 
 ## Governance and evidence

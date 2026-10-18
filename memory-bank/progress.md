@@ -140,5 +140,5 @@
 
 ## 2026-10-18 — Groq Fallback TPM Guard
 
-- CI measured the 384-token Groq fallback at 8,657 requested tokens vs. the 8,000 TPM limit. Reduced the response cap to 128 and compacted redundant task-artifact text; updated the matching test assertion.
+- CI measured the 384-token Groq fallback at 8,657 requested tokens vs. the 8,000 TPM limit. Raised the response cap to 256 and compacted redundant task-artifact text; updated the matching test assertion.
 - Corrected the daily-limit Playwright check to wait for the input to re-enable after reveal. Current-head Playwright and a new Groq fallback attempt remain pending.
