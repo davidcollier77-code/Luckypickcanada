@@ -30,11 +30,11 @@
 - **COMPONENT**: `.github/workflows/robin.yml`
 - **USED**: YES
 - **USEFUL**: YES
-- **REASON**: Changed the fallback `model` from the deprecated `openai/gpt-oss-20b` and `llama-3.1-8b-instant` to the valid Groq API model `llama3-8b-8192`.
+- **REASON**: Changed the fallback `model` from the deprecated `openai/gpt-oss-20b` and `llama3-8b-8192` to the valid Groq API model `mixtral-8x7b-32768`.
 - **COMPONENT**: `tests/workflows/robin-groq-fallback.test.ts`
 - **USED**: YES
 - **USEFUL**: YES
-- **REASON**: Modified the integration unit test assert parameters to match the newly adopted fallback `llama3-8b-8192` string.
+- **REASON**: Modified the integration unit test assert parameters to match the newly adopted fallback `mixtral-8x7b-32768` string.
 - **COMPONENT**: `./jules-verify.sh`
 - **USED**: YES
 - **USEFUL**: YES

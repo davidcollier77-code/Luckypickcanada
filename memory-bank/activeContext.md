@@ -376,3 +376,10 @@
 - **Current branch**: `task-ci-repair`
 - **Current implementation**: Adjusted the fallback model parameter to the verified model identifier `llama3-8b-8192` in both the GitHub Actions `.yml` workflow file and the workflow test assertions script `tests/workflows/robin-groq-fallback.test.ts`.
 - **Verification status**: Unit tests passed completely locally with `pnpm test`. Waiting for live CI verification.
+
+## Robin Code Review CI Repair — $(date +%Y-%m-%d)
+- **Goal**: Fix the broken GitHub Actions `Robin Code Review` job due to a deprecated/missing fallback model throwing 400 and 404 validation errors.
+- **Verified root cause**: The `model` parameter inside the `.github/workflows/robin.yml` Groq fallback job was pointing to `openai/gpt-oss-20b`, `llama-3.1-8b-instant`, and `llama3-8b-8192` which were either deprecated or nonexistent at `api.groq.com`.
+- **Current branch**: `task-ci-repair`
+- **Current implementation**: Adjusted the fallback model parameter to the verified model identifier `mixtral-8x7b-32768` in both the GitHub Actions `.yml` workflow file and the workflow test assertions script `tests/workflows/robin-groq-fallback.test.ts`.
+- **Verification status**: Unit tests passed completely locally with `pnpm test`. Waiting for live CI verification.

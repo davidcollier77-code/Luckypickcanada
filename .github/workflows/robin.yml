@@ -200,7 +200,7 @@ jobs:
           github-token: ${{ github.token }}
           llm-api-key: ${{ secrets.GROQ_API_KEY }}
           llm-base-url: https://api.groq.com/openai/v1
-          model: "llama3-8b-8192"
+          model: "mixtral-8x7b-32768"
           fail-on-high: false
           request-changes: false
           max-diff-size: "50000"
@@ -370,7 +370,7 @@ jobs:
           FREE_QUOTA_INSUFFICIENT: ${{ steps.quota_preflight.outputs.free_quota_insufficient }}
           FREE_QUOTA_REMAINING: ${{ steps.quota_preflight.outputs.free_quota_remaining }}
           PRIMARY_MODEL: ${{ steps.review_preflight.outputs.primary_model }}
-          FALLBACK_MODEL: "llama3-8b-8192"
+          FALLBACK_MODEL: "mixtral-8x7b-32768"
           GROQ_CONFIGURED: ${{ steps.groq_preflight.outputs.configured }}
           PRE_GUARD_OUTCOME: ${{ steps.review_guard.outcome }}
           PRE_GUARD_POSTED: ${{ steps.review_guard.outputs.posted }}
