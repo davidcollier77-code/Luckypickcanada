@@ -142,3 +142,6 @@
 
 - CI measured the 384-token Groq fallback at 8,657 requested tokens vs. the 8,000 TPM limit. Raised the response cap to 256 and compacted redundant task-artifact text; updated the matching test assertion.
 - Corrected the daily-limit Playwright check to wait for the input to re-enable after reveal. Current-head Playwright and a new Groq fallback attempt remain pending.
+
+
+- **Deep-dive scope clarification (2026-10-18):** Corrected the specialist guidance to permit substantive owner-authorized audit-only investigations while preserving evidence, limitations, recommendations, and verification requirements. Only the target wording and task-tracking artifacts are in scope; `AGENTS.md` and `.docs/` remain untouched. Required current-head verification is pending.
