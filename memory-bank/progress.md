@@ -136,3 +136,10 @@
 - Reduced the Groq fallback output budget from 2,048 to 768 tokens to keep the provider request under the account's 8,000 TPM limit on this PR's observed diff size.
 - Updated the Robin workflow regression test to require the same 768-token cap.
 - The commit 6da78ec run successfully posted the primary OpenRouter review but the full unit-test step failed because the test still expected 2,048. Current-head CI must rerun; the Groq fallback itself has not yet been re-tested on this head.
+
+
+## 2026-10-18 — Groq Fallback TPM Guard
+
+- Reduced the fallback response budget to 384 tokens after CI measured the original request at 10,763 tokens against an 8,000 TPM cap. The diff/report was also reduced; the token cap is intentionally conservative to avoid another rejected fallback request.
+- Updated tests/workflows/robin-groq-fallback.test.ts to assert the exact fallback budget.
+- The latest CI run used OpenRouter successfully and did not exercise Groq. Current-head fallback model access remains unverified; new CI is required.
