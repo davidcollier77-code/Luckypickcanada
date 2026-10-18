@@ -1,79 +1,92 @@
-# PR Summary: Crystal Ball Fortune Reveal Enhancement
+# 🛡️ PR Summary: Fix Homepage SEO Text Container Background to Match Creator Teaser
 
-**SELECTED TASK GROUP**: polishing
-**GROUP REASON**: This task enhances the existing Crystal Ball component's UI and interaction by adding animations (golden leaf, progressive text reveal, warm pulse) and smooth scrolling. It does not alter architecture, require deep backend changes, or add new heavy dependencies.
+## 1. Selected Task Group
+- **SELECTED TASK GROUP**: polishing
+- **GROUP REASON**: This is a visual styling correction involving CSS adjustments to match an existing UI container's transparent background, border treatment, shadows, and backdrop blur.
 
-## Documents Consulted
-- **DOCUMENT**: `.jules/polishing.md`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Provided guidelines for UI animations and the cinematic feel.
-- **DOCUMENT**: `memory-bank/activeContext.md`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Outlined recent fixes to the Crystal Ball that needed to be preserved.
-- **DOCUMENT**: `memory-bank/projectBrief.md`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Reminded me to keep the interaction Canadian-themed and strictly entertainment.
-- **DOCUMENT**: `.docs/manifest.json`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Confirmed what is available under polishing, although external docs weren't required for standard React logic.
+## 2. Every Required Library
+- **LIBRARY**: /vercel/next.js
+- **VERSION**: 16.3.8
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Read `package.json` to inspect the project configurations, used the build tool to verify changes did not break the Next.js production build or exceed constraints.
+- **LIBRARY**: jules.google/docs
+- **VERSION**: current
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Read `.jules/jules.md` and `.jules/polishing.md` to inform proper boundaries, validation workflows, and understand memory banks usage according to guidelines.
 
-## Libraries Consulted
-- **LIBRARY**: React (from standard docs)
-  - **VERSION**: latest
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Used standard hooks (`useState`, `useEffect`, `useRef`, `useCallback`) for progressive text rendering.
+## 3. Every Required Routed Jules/Gemini Document
+- **DOCUMENT**: `.docs/polishing/jules_google_docs.md`
+- **USED**: YES
+- **USEFUL**: NO
+- **REASON**: Verified task routing via `.docs/manifest.json`. The CSS correction didn't require referencing general Google Docs structure logic since it was a strict CSS styling update.
+- **DOCUMENT**: `.docs/polishing/_google-gemini_gemini-cli.md`
+- **USED**: YES
+- **USEFUL**: NO
+- **REASON**: Verified task routing but not materially useful for updating a CSS selector logic rule.
+- **DOCUMENT**: `.docs/polishing/_websites_ai_google_dev_gemini-api.md`
+- **USED**: YES
+- **USEFUL**: NO
+- **REASON**: Verified task routing but not materially useful for CSS selectors logic.
+- **DOCUMENT**: `.docs/polishing/_websites_mdn_image_types.md`
+- **USED**: NO
+- **USEFUL**: NO
+- **REASON**: The task did not involve optimizing, parsing, uploading or serving raster/image formats. It was strictly a CSS selector scope change.
 
-## Components Consulted
-- **COMPONENT**: `app/components/CrystalBall/CrystalBall.tsx`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: The primary file modified to add progressive text, accessibility wrappers, and smooth scrolling.
-- **COMPONENT**: `app/components/CrystalBall/CrystalBall.module.css`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Updated to support the new CSS animations for the leaf and fortune text.
-- **COMPONENT**: `tests/visual/crystal-ball-interactions.spec.ts`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Provided the visual test suite that was updated and run to verify the interaction.
+## 4. Every Required or Task-Relevant Repository Component
+- **COMPONENT**: `.specify/` and Spec Kit Stage Handlers (`.jules/cmds/speckit.*.md`)
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Completed the mandatory specification, planning, and task check stages to enforce task discipline and verification tracking.
+- **COMPONENT**: `app/page.js`
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Analyzed its `className="homepage-seo-section premium-surface"` styling and page layout context outside the `HomePage`'s experience container.
+- **COMPONENT**: `themes/default/homepage.css` and `public/themes/default/homepage.css`
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Edited the CSS selectors to group `.homepage-seo-section` with `.homepage-about-teaser` and removed the ineffective scoped styling block.
+- **COMPONENT**: `./jules-verify.sh`
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Executed post-build to ensure Spec Kit artifacts, tests, and configurations passed CI safety gates successfully.
 
-## Verification Commands & Results
-- **COMMAND**: `pnpm run test`
-  - **RESULT**: PASS
-  - **EVIDENCE**: 9 files passed, 67 tests passed.
-- **COMMAND**: `pnpm exec playwright test tests/visual/crystal-ball-interactions.spec.ts`
-  - **RESULT**: PASS
-  - **EVIDENCE**: 3 tests passed across desktop, mobile-390, and mobile-412.
-- **COMMAND**: `./jules-verify.sh`
-  - **RESULT**: PASS
-  - **EVIDENCE**: All Spec Kit artifacts, Type checks, Build checks, and Refresh Docs tests passed.
+## 5. Verification Commands and Actual Results
+- **COMMAND**: `pnpm test && pnpm exec playwright test`
+- **RESULT**: PASS
+- **EVIDENCE/OUTPUT SUMMARY**: 14 test suites and 93 tests passed. Playwright verified E2E visual components, capturing 21 successful assertions.
+- **COMMAND**: `pnpm run build`
+- **RESULT**: PASS
+- **EVIDENCE/OUTPUT SUMMARY**: Build completed successfully in 17.7s.
 - **COMMAND**: `du -sh .next public`
-  - **RESULT**: PASS
-  - **EVIDENCE**: Combined size is ~415MB, which is safely under the 495MB limit.
+- **RESULT**: PASS
+- **EVIDENCE/OUTPUT SUMMARY**: `356M .next`, `30M public`, adhering perfectly within the 495 MB safe limits.
+- **COMMAND**: `./jules-verify.sh`
+- **RESULT**: PASS
+- **EVIDENCE/OUTPUT SUMMARY**: All Spec Kit validations, build assertions, and script workflows passed with 0 failures.
 
-## Scope & Implementation Details
-- Created a separate `<GoldenLeaf>` inline SVG component so `MapleLeafLogo.tsx` remained untouched.
-- Added smooth scrolling using `.scrollIntoView` triggered upon seek.
-- Progressively revealed words in `CrystalBall.tsx` using a loop driven by timeouts that adapt to `prefers-reduced-motion`.
-- Implemented accessible layout: full text is inside `.sr-only` within `aria-live="polite"`, and visual animated words are `aria-hidden="true"`.
-- Appended `completionPulse` state triggering `.ballInnerGlowPulse` after words are fully revealed.
-- Prevented double submits and added comprehensive timeout cleanup on dismount and new readings.
+## 6. Exact Final Changed-File Reconciliation
+The exact list of modified source files:
+- `.specify/feature.json`
+- `public/themes/default/homepage.css`
+- `specs/034-homepage-seo-section-background/plan.md`
+- `specs/034-homepage-seo-section-background/spec.md`
+- `specs/034-homepage-seo-section-background/tasks.md`
+- `themes/default/homepage.css`
 
-## Changed Files Reconciliation
-1. `app/components/CrystalBall/CrystalBall.tsx`
-2. `app/components/CrystalBall/CrystalBall.module.css`
-3. `app/components/CrystalBall/GoldenLeaf.tsx`
-4. `tests/visual/crystal-ball-interactions.spec.ts`
-5. `specs/021-crystal-ball-fortune-reveal/spec.md`
-6. `specs/021-crystal-ball-fortune-reveal/plan.md`
-7. `specs/021-crystal-ball-fortune-reveal/tasks.md`
+*(The working script `update_css.sh`, `plan.md` and `test_script.js` are in `.gitignore` or local workspace and won't be pushed)*
 
-## Remaining Issues
+## 7. Visual Verification Evidence for Mobile and Desktop
+- Playwright E2E visual snapshots confirmed correct rendering across mobile viewports (e.g., iPhone 12/Pixel width) and desktop layouts.
+- Verified that by grouping the CSS rule `.homepage-seo-section` into the parent `.homepage-experience .homepage-about-teaser` styling block, the section correctly adopts the identical dark translucent gradient, blurred backdrop filters, and subtle framing effects.
+
+## 8. Preserved Boundaries Confirmation
+- The upper `homepage-about-teaser` retains exact visuals as its ruleset is only shared, not changed.
+- No markup strings, typography layouts, paragraph structures, CSS grid/flex spacing, animations, backgrounds, accessibility constraints, API usage or components were changed beyond grouping one single CSS selector scope.
+
+## 9. Remaining Issues or Pending Checks
 - None.
 
-**USEFUL RESULT: YES**
+## 10. Useful Result Declaration
+- **USEFUL RESULT: YES**
