@@ -25,3 +25,5 @@
 - [ ] T015 Run targeted Oracle route tests and the full unit suite on the hotfix branch.
 - [ ] T016 Run TypeScript, `./jules-verify.sh`, production/OpenNext Cloudflare build validation, and verify generated build size remains below 495 MB.
 - [ ] T017 Inspect the complete final diff and current-head CI results; resolve any remaining failures before declaring the repair verified.
+- [x] T018 Restore `const apiKey = getApiKey();` after the targeted CI run exposed a `ReferenceError` for valid Oracle requests.
+- [ ] T019 Re-run targeted and full tests plus production/OpenNext verification on the latest PR head; do not treat earlier-head failures as resolved without new evidence.
