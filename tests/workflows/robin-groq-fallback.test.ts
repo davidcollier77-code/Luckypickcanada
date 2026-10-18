@@ -22,7 +22,7 @@ describe("Robin Groq fallback workflow", () => {
     expect(primaryStep).toContain("llm-api-key: ${{ secrets.OPENROUTER_API_KEY }}");
     expect(fallbackStep).toContain("llm-api-key: ${{ secrets.GROQ_API_KEY }}");
     expect(fallbackStep).toContain("llm-base-url: https://api.groq.com/openai/v1");
-    expect(fallbackStep).toContain('model: "llama-3.3-70b-specdec"');
+    expect(fallbackStep).toContain('model: "llama3-70b-8192"');
     expect(fallbackStep).not.toContain("OPENROUTER_API_KEY");
   });
 
