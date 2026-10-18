@@ -577,7 +577,7 @@ body:has(.homepage-sky-backdrop)::after {
 .homepage-experience .homepage-community-banner,
 .homepage-experience .suggestion-box,
 .homepage-experience .homepage-about-teaser,
-.homepage-seo-section {
+body:has(.homepage-sky-backdrop) .homepage-seo-section {
   background:
     linear-gradient(
       145deg,
