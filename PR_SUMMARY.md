@@ -301,97 +301,53 @@ No local repository checkout is available in this session, so the following comm
 
 ---
 
-# 🔴 Troubleshooting Record — CI Stability: Groq Model + Crystal Ball Visual QA
+---
 
-**Date:** 2026-10-18  
-**Branch:** `fix/ci-stability-1518`  
-**Related audit PR:** https://github.com/davidcollier77-code/Luckypickcanada/pull/1518
+# Troubleshooting Record — CI Stability: Robin Groq Fallback + Crystal Ball Visual QA
 
-## A — Analyze
+**Date:** 2026-10-18 | **Task group:** troubleshooting | **Branch:** fix/ci-stability-1518
 
-### Verified root causes
+## Root causes and changes
 
-1. **Groq fallback model ID:** A GitHub PR comment records the provider response that `llama-3.1-8b-instant` “does not exist or you do not have access to it” (404). The interim PR #1518 change to `llama-3.3-70b-versatile` is not a durable developer-tier fix: the official [Groq deprecation documentation](https://console.groq.com/docs/deprecations) lists both model IDs as deprecated for developer-tier use, with an August 16, 2026 shutdown date, and identifies `openai/gpt-oss-20b` as the replacement for the old 8B model. Both workflow model fields and the regression expectation now use the replacement. The actual repository's Groq credential permissions still require verification in CI.
-2. **Crystal Ball exact-text mismatch:** `app/components/CrystalBall/CrystalBall.tsx` renders “You’ve used all … questions for today” with a curly apostrophe, but the prior Playwright exact-text assertion used a straight apostrophe. The test now matches the real UI copy.
-3. **Insufficient test budget:** The previous daily-limit test used a 60-second total timeout despite a cold navigation and three intentionally animated reveals. It now has a 90-second budget, a bounded pre-submit enabled assertion, and the explicit post-answer re-enable assertion remains in place.
+- GitHub's existing PR discussion records a 404 for llama-3.1-8b-instant. Groq's current deprecation page also lists llama-3.3-70b-versatile as deprecated for developer-tier use and names openai/gpt-oss-20b as the replacement for the original 8B model: https://console.groq.com/docs/deprecations. Workflow fallback and regression test now use openai/gpt-oss-20b. The configured credential's successful model access remains unverified until CI finishes.
+- The Crystal Ball UI renders “You’ve used all … questions for today” with a curly apostrophe; the Playwright assertion used an ASCII apostrophe. The test now matches the rendered text, has a 90-second total budget, and keeps bounded enabled-state checks including the between-answer re-enable assertion.
 
-## B — Boundaries and Plan
+## Governance, resources, and scope
 
-- **SELECTED TASK GROUP:** troubleshooting.
-- **GROUP REASON:** The task traces provider and browser-test failures to specific causes and applies small CI/test-only corrections.
-- **Scope:** Robin Groq fallback model configuration, its direct regression test, the Crystal Ball daily-limit Playwright test, and task-governance/reporting artifacts.
-- **Explicitly preserved:** No application runtime source, dependencies, lockfile, authentication/payment behavior, API logic, secrets, or deployment architecture changed.
-- **Context7:** Not used; repository guidance requires explicit owner approval before invoking it.
+- AGENTS.md, .jules/jules.md, .jules/troubleshooting.md, .docs/manifest.json, all three required troubleshooting Jules/Gemini snapshots, Spec Kit integration/config/templates/command definitions, relevant Memory Bank files, scripts/verify-speckit-task.sh, jules-verify.sh, and package.json were inspected.
+- Selected group: troubleshooting, because the work diagnoses specific CI/test failures and applies workflow/test-only corrections.
+- Spec Kit records: specs/030-ci-stability/spec.md, plan.md, research.md, data-model.md, quickstart.md, tasks.md, and checklists/requirements.md. Artifacts were authored through repository APIs; native slash-command dispatch is not claimed.
+- Libraries/tools: Node/pnpm, Vitest, Playwright, Next.js and GitHub Actions definitions were inspected for the scope. Context7 was not used because repository guidance requires explicit approval and no external library integration change was necessary.
+- No app runtime source, asset, dependency, lockfile, API, secrets, payment/authentication logic, or deployment architecture changed.
 
-## C — Spec Kit and Governance Record
+## Verification
 
-- **/speckit.specify** — definition: `.jules/cmds/speckit.specify.md`; method: file-driven procedural artifact authoring via repository API; result: specification and requirements checklist added at `specs/030-ci-stability/spec.md` and `specs/030-ci-stability/checklists/requirements.md`. No native dispatch is claimed.
-- **/speckit.plan** — definition: `.jules/cmds/speckit.plan.md`; method: file-driven artifact authoring; result: `plan.md`, `research.md`, `data-model.md`, and `quickstart.md` created under `specs/030-ci-stability/`.
-- **/speckit.tasks** — definition: `.jules/cmds/speckit.tasks.md`; method: file-driven artifact authoring; result: `specs/030-ci-stability/tasks.md` records completed source corrections and pending verification.
-- **/speckit.implement** — definition: `.jules/cmds/speckit.implement.md`; method: repository API edits; result: model and test changes committed to the branch. Local execution and final verification remain pending; no native dispatch or local command execution is claimed.
-- Required local scripts were inspected but could not be executed from this environment because no local repository checkout is available. Current-head GitHub Actions must establish the execution results before completion is reported.
+No local checkout was available, so no local command/test/build pass is claimed. Current-head CI must prove:
+- pnpm exec vitest run tests/workflows/robin-groq-fallback.test.ts
+- pnpm exec playwright test tests/visual/crystal-ball-daily-limit.spec.ts
+- pnpm run test; pnpm tsc --noEmit; ./jules-verify.sh
+- pnpm run build; pnpm exec opennextjs-cloudflare build; configured Wrangler validation; the 495 MB hard size gate.
 
-## Required Resources and Components
+## Exact changed-file reconciliation
 
-### Repository governance and routed documents
-- `AGENTS.md` — USED=YES, USEFUL=YES: task boundaries, Spec Kit stages, hard 495 MB limit, PR Summary and verification requirements.
-- `.jules/jules.md` — USED=YES, USEFUL=YES: initialization, Memory Bank updates, and completion reporting.
-- `.jules/troubleshooting.md` — USED=YES, USEFUL=YES: evidence-driven root-cause investigation and testing.
-- `.docs/manifest.json` — USED=YES, USEFUL=YES: identifies the routed troubleshooting snapshots.
-- `.docs/troubleshooting/jules_google_docs.md` — USED=YES, USEFUL=NO: mandatory local snapshot inspected; no Jules CLI/API call was needed for the code correction.
-- `.docs/troubleshooting/_google-gemini_gemini-cli.md` — USED=YES, USEFUL=NO: mandatory snapshot inspected; Gemini CLI was not invoked.
-- `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md` — USED=YES, USEFUL=NO: mandatory snapshot inspected; this fix does not call the Gemini API.
-- `.specify/init-options.json`, `.specify/integration.json`, `.specify/integrations/generic.manifest.json`, `.specify/workflows/speckit/workflow.yml`, `.specify/workflows/workflow-registry.json` — USED=YES, USEFUL=YES: verified the configured Spec Kit integration and sequential feature numbering.
-- `.specify/templates/spec-template.md`, `.specify/templates/plan-template.md`, `.specify/templates/tasks-template.md`, and `.jules/cmds/speckit.{specify,plan,tasks,implement}.md` — USED=YES, USEFUL=YES: shaped the task artifacts and recorded actual methods rather than claiming native dispatch.
-- `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `memory-bank/progress.md` — USED=YES, USEFUL=YES: maintained project context and historical progress without storing secrets.
-- `scripts/verify-speckit-task.sh`, `jules-verify.sh` — USED=YES, USEFUL=YES: identified the required gates; execution is pending current-head CI.
-- `package.json` — USED=YES, USEFUL=YES: confirms the repository's package scripts and testing/build toolchain.
+1. .github/workflows/robin.yml
+2. .specify/feature.json
+3. PR_SUMMARY.md
+4. memory-bank/activeContext.md
+5. memory-bank/progress.md
+6. specs/030-ci-stability/checklists/requirements.md
+7. specs/030-ci-stability/data-model.md
+8. specs/030-ci-stability/plan.md
+9. specs/030-ci-stability/quickstart.md
+10. specs/030-ci-stability/research.md
+11. specs/030-ci-stability/spec.md
+12. specs/030-ci-stability/tasks.md
+13. tests/visual/crystal-ball-daily-limit.spec.ts
+14. tests/workflows/robin-groq-fallback.test.ts
 
-### Libraries, tooling, and external evidence
-- Playwright — USED=YES, USEFUL=YES: existing daily-limit E2E test and timeout/assertion behavior were inspected; exact installed version is governed by the repository manifest/lockfile.
-- Vitest — USED=YES, USEFUL=YES: existing Robin workflow configuration test was updated to assert the model ID.
-- Next.js/React — USED=YES, USEFUL=YES: the current Crystal Ball source was checked to verify the exact rendered message; no application source changed.
-- pnpm — USED=YES, USEFUL=YES: required verification commands are specified in the task plan; no pnpm command was run locally.
-- Groq model lifecycle — USED=YES, USEFUL=YES: official deprecation page checked on 2026-10-18; `openai/gpt-oss-20b` is the documented replacement for `llama-3.1-8b-instant` on the developer tier. The source cannot prove that the repository's configured credential has permission to call it.
+## Remaining issues
 
-## Verification Record
+- The Robin run attempted openrouter/free and received a successful HTTP response with empty completion content; the Groq fallback call was rejected with HTTP 413 because its request budget exceeded the account's 8,000 TPM limit (10,763 requested). Lower the bounded review output and reduce prompt size through an appropriately smaller review diff/report; then verify on current-head CI.
+- Targeted Vitest/Playwright, full tests, TypeScript, Spec Kit, production/OpenNext/Wrangler, and current build-size results must be observed on CI. The prior audit's approximately 316.6 MB size is historical, not a measurement of this branch.
 
-**Local commands:** Not run; the current environment has no local checkout. The following are required current-head CI checks and must not be marked PASS until actual results are observed:
-
-- COMMAND: `pnpm exec vitest run tests/workflows/robin-groq-fallback.test.ts` — RESULT: PENDING CI.
-- COMMAND: `pnpm exec playwright test tests/visual/crystal-ball-daily-limit.spec.ts` — RESULT: PENDING CI.
-- COMMAND: `pnpm run test` — RESULT: PENDING CI.
-- COMMAND: `pnpm tsc --noEmit` — RESULT: PENDING CI.
-- COMMAND: `./jules-verify.sh` — RESULT: PENDING CI.
-- COMMAND: `pnpm run build` and repository build-size gate — RESULT: PENDING CI; must remain below 495 MB.
-- COMMAND: `pnpm exec opennextjs-cloudflare build` and configured Wrangler validation — RESULT: PENDING CI.
-
-### Exact changed-file reconciliation for this follow-up
-
-1. `.github/workflows/robin.yml`
-2. `.specify/feature.json`
-3. `PR_SUMMARY.md`
-4. `memory-bank/activeContext.md`
-5. `memory-bank/progress.md`
-6. `specs/030-ci-stability/checklists/requirements.md`
-7. `specs/030-ci-stability/data-model.md`
-8. `specs/030-ci-stability/plan.md`
-9. `specs/030-ci-stability/quickstart.md`
-10. `specs/030-ci-stability/research.md`
-11. `specs/030-ci-stability/spec.md`
-12. `specs/030-ci-stability/tasks.md`
-13. `tests/visual/crystal-ball-daily-limit.spec.ts`
-14. `tests/workflows/robin-groq-fallback.test.ts`
-
-No other file is included by this follow-up.
-
-## Remaining Issues
-
-- Current-head CI must prove the replacement model can be called using the configured secret/tier.
-- Daily-limit Playwright and full Visual QA must pass with the corrected message and assertions.
-- Full unit tests, TypeScript, Spec Kit gate, production/OpenNext/Wrangler checks, and the 495 MB build-size gate remain pending.
-- Re-check the final PR diff after workflow runs complete; do not merge before all required checks and review requirements are satisfied.
-
-**USEFUL RESULT: NO — implementation is committed, but the requested result is not yet verified until current-head CI passes.**
-
-**Pre-submission double-check:** not yet complete; the final diff and current-head CI results will be re-read before declaring completion.
+**USEFUL RESULT: PARTIAL — source corrections prepared; model access and current-head CI verification remain pending.**
