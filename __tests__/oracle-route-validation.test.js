@@ -54,6 +54,27 @@ describe('Oracle route validates before calling the AI provider', () => {
     expect(mocks.fetch).not.toHaveBeenCalled();
   });
 
+  it('sends a specific, non-generic fortune-teller contract to the AI provider', async () => {
+    const response = await POST(makeRequest({ question: 'What day will be my lucky day?' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.source).toBe('ai');
+
+    const requestBody = JSON.parse(mocks.fetch.mock.calls[0][1].body);
+    const systemPrompt = requestBody.messages[0].content;
+
+    expect(requestBody.messages[0].role).toBe('system');
+    expect(systemPrompt).toContain('not a generic AI assistant');
+    expect(systemPrompt).toContain('answer that specific question immediately');
+    expect(systemPrompt).toContain('choose ONE specific answer');
+    expect(systemPrompt).toContain('never default to Friday');
+    expect(systemPrompt).toContain('lottery');
+    expect(systemPrompt).toContain('never promise a win or jackpot');
+    expect(systemPrompt).toContain('answer clearly and accurately first');
+    expect(systemPrompt).toContain('1–3 sentences');
+  });
+
   it('calls the AI provider for a non-empty valid question and returns its answer', async () => {
     const response = await POST(makeRequest({ question: 'What should I focus on today?' }));
     const body = await response.json();
