@@ -143,3 +143,10 @@
 - Reduced the fallback response budget to 384 tokens after CI measured the original request at 10,763 tokens against an 8,000 TPM cap. The diff/report was also reduced; the token cap is intentionally conservative to avoid another rejected fallback request.
 - Updated tests/workflows/robin-groq-fallback.test.ts to assert the exact fallback budget.
 - The latest CI run used OpenRouter successfully and did not exercise Groq. Current-head fallback model access remains unverified; new CI is required.
+
+
+## 2026-10-18 — Crystal Ball Visual QA follow-up
+
+- Corrected the daily-limit test's assumption that the submit button should enable immediately after a successful answer. The component clears the question field, so the button is supposed to remain disabled until the next question is entered. The test now waits for the input to re-enable after the reveal; the next loop iteration fills a question and asserts the button enables.
+- The previous daily-limit Visual QA run failed consistently at that invalid button assertion on desktop and both mobile sizes.
+- Last recorded build measured 325,459,681 bytes (310.38 MiB) and the 495 MiB gate passed; TypeScript, unit tests, Spec Kit, OpenNext and Wrangler checks passed on commit b29b870. New current-head CI is required to validate this test correction.
