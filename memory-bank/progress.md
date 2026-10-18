@@ -123,3 +123,22 @@
 
 
 - **Crystal Ball browser-local daily allowance (2026-10-17):** Replaced persistent per-IP UTC-day quota accounting with a browser localStorage count of successful AI-backed answers, visitor-local date rollover, in-memory fallback when storage is blocked, and a live local-midnight countdown. Removed the old quota manager/test, retained the short-window API rate limiter, added local-usage unit tests, and extended the allowance Playwright spec. Current-head test/build/governance evidence is pending GitHub Actions; local commands were not run because this session lacks a repository checkout.
+
+ 
+## 2026-10-18 — PR #1518 CI Stability Follow-up
+
+- Replaced the deprecated Groq model ID; corrected the Crystal Ball exact-text assertion and allowed 90 seconds for its animated end-to-end test.
+- OpenNext build and 495 MiB size gate passed on CI. Robin still failed: OpenRouter returned empty completion content and Groq rejected the 10,763-token request against an 8,000 TPM limit. Reducing prompt/output budget and rerunning CI remains required.
+
+
+## 2026-10-18 — CI regression follow-up
+
+- Reduced the Groq fallback output budget from 2,048 to 768 tokens to keep the provider request under the account's 8,000 TPM limit on this PR's observed diff size.
+- Updated the Robin workflow regression test to require the same 768-token cap.
+- The commit 6da78ec run successfully posted the primary OpenRouter review but the full unit-test step failed because the test still expected 2,048. Current-head CI must rerun; the Groq fallback itself has not yet been re-tested on this head.
+
+
+## 2026-10-18 — Groq Fallback TPM Guard
+
+- CI measured the 384-token Groq fallback at 8,657 requested tokens vs. the 8,000 TPM limit. Raised the response cap to 256 and compacted redundant task-artifact text; updated the matching test assertion.
+- Corrected the daily-limit Playwright check to wait for the input to re-enable after reveal. Current-head Playwright and a new Groq fallback attempt remain pending.

@@ -329,3 +329,9 @@
 - **Root cause:** A prior edit duplicated opening gradient/path JSX tags and removed the original path attributes/data.
 - **Repair:** Restored the complete original SVG gradient and maple-leaf path markup, with per-instance gradient IDs from `useId()` referenced by JSX expressions. Existing artwork and gradient stops are preserved.
 - **Status:** Fix committed on `fix/crystal-ball-fortune-jsx-1491`; a fresh CI run must prove the build and subsequent checks pass.
+
+ 
+## CI Stability Repair — PR #1518 Follow-up (2026-10-18)
+
+- Updated the Robin Groq model, workflow assertion, and Crystal Ball daily-limit Playwright timing/text checks.
+- Verification is pending: CI showed OpenNext build/495 MiB gate passed, but Robin failed because the 8,000 TPM limit rejected a 10,763-token request. See PR Summary for evidence and remaining checks.

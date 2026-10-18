@@ -298,3 +298,45 @@ No local repository checkout is available in this session, so the following comm
 - Pre-submission double-check: remote file reads were used to inspect the edited route, client, quota helper, countdown UI/CSS, unit tests, Playwright test, and workflow update. A complete local diff/build/test run remains unavailable; the pull request's live diff and current-head Actions must be reviewed after creation.
 - Remaining issues: confirm all new Vitest/Playwright code and the Cloudflare build compile in GitHub Actions; record actual workflow URLs/results after they complete. Do not merge if any required current-head check fails.
 - **USEFUL RESULT: PARTIAL** — the intended implementation and regression coverage are committed on the branch, but no test/build results are claimed until the CI runner executes them.
+
+---
+
+---
+
+# Troubleshooting Record — CI Stability: Robin Groq Fallback + Crystal Ball Visual QA
+
+**Date:** 2026-10-18 | **Task group:** troubleshooting | **Branch:** `fix/ci-stability-1518`
+
+## Root causes and changes
+
+- Groq 404ed on `llama-3.1-8b-instant`; Groq's current deprecation page also marks `llama-3.3-70b-versatile` deprecated for developer-tier use and recommends `openai/gpt-oss-20b` for the old 8B model: https://console.groq.com/docs/deprecations
+- A real Groq fallback request on `1502487` failed HTTP 413 at **8,657 tokens requested vs. 8,000 TPM**. The 384-token cap was too high; this change uses 256 tokens and reduces nonessential task-artifact diff size. The updated fallback is still awaiting a new observed attempt.
+- Crystal Ball clears the question after a successful answer and keeps the input disabled during the reveal. The test now waits for the input to re-enable; the next iteration enters text before asserting the button enables.
+
+## Governance and evidence
+
+- Selected group: troubleshooting. Reviewed `AGENTS.md`, `.jules/jules.md`, `.jules/troubleshooting.md`, `.docs/manifest.json`, the three required troubleshooting Jules/Gemini snapshots, Spec Kit integration/registry/templates/command definitions, Memory Bank context, package scripts, and the verification scripts.
+- Spec Kit specify/plan/tasks/implement artifacts are file-driven through repository API; native dispatch and local shell execution are not claimed.
+- Vitest covers fallback configuration; Playwright covers the UI flow; GitHub Actions supplies execution evidence. Context7 was not used because repository guidance requires explicit authorization.
+- Prior commit `1502487` passed full unit tests, TypeScript and the Spec Kit gate. Its build measured **325,473,493 bytes (310.40 MiB)**; OpenNext, Wrangler and the 495 MiB gate passed. Playwright rerun is still in progress; the prior Robin job failed on the measured TPM overrun.
+- No local command is claimed. The latest output-cap/diff-size changes require fresh CI and a real Groq fallback attempt.
+
+## Exact Changed Files
+
+1. `.github/workflows/robin.yml`
+2. `.specify/feature.json`
+3. `PR_SUMMARY.md`
+4. `memory-bank/activeContext.md`
+5. `memory-bank/progress.md`
+6. `specs/030-ci-stability/checklists/requirements.md`
+7. `specs/030-ci-stability/data-model.md`
+8. `specs/030-ci-stability/plan.md`
+9. `specs/030-ci-stability/quickstart.md`
+10. `specs/030-ci-stability/research.md`
+11. `specs/030-ci-stability/spec.md`
+12. `specs/030-ci-stability/tasks.md`
+13. `tests/visual/crystal-ball-daily-limit.spec.ts`
+14. `tests/workflows/robin-groq-fallback.test.ts`
+
+**Remaining issues:** current-head Playwright and required CI must pass; new cap must be validated on a real Groq fallback call. Do not merge while these remain pending.
+**USEFUL RESULT: PARTIAL — causes are verified and corrections prepared; latest verification is pending.**

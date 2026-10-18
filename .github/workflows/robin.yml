@@ -200,12 +200,12 @@ jobs:
           github-token: ${{ github.token }}
           llm-api-key: ${{ secrets.GROQ_API_KEY }}
           llm-base-url: https://api.groq.com/openai/v1
-          model: "llama-3.1-8b-instant"
+          model: "openai/gpt-oss-20b"
           fail-on-high: false
           request-changes: false
           max-diff-size: "50000"
           max-comments: "15"
-          max-output-tokens: "2048"
+          max-output-tokens: "256"
           reasoning-effort: ""
           llm-timeout-ms: "60000"
           llm-temperature: "0.1"
@@ -370,7 +370,7 @@ jobs:
           FREE_QUOTA_INSUFFICIENT: ${{ steps.quota_preflight.outputs.free_quota_insufficient }}
           FREE_QUOTA_REMAINING: ${{ steps.quota_preflight.outputs.free_quota_remaining }}
           PRIMARY_MODEL: ${{ steps.review_preflight.outputs.primary_model }}
-          FALLBACK_MODEL: "llama-3.1-8b-instant"
+          FALLBACK_MODEL: "openai/gpt-oss-20b"
           GROQ_CONFIGURED: ${{ steps.groq_preflight.outputs.configured }}
           PRE_GUARD_OUTCOME: ${{ steps.review_guard.outcome }}
           PRE_GUARD_POSTED: ${{ steps.review_guard.outputs.posted }}

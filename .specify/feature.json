@@ -1,1 +1,3 @@
-{"feature_directory": "specs/029-robin-groq-fallback"}
+{
+  "feature_directory": "specs/030-ci-stability"
+}
