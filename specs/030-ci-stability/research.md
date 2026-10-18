@@ -1,25 +1,11 @@
 # Research — CI Stability Repair
 
-**Date**: 2026-10-18
+**Date:** 2026-10-18
 
-## Confirmed Findings
+Groq's official [deprecation page](https://console.groq.com/docs/deprecations) marks `llama-3.1-8b-instant` and `llama-3.3-70b-versatile` deprecated for developer-tier use and recommends `openai/gpt-oss-20b` for the original 8B model.
 
-### Groq model lifecycle
+CI reached that model with the configured Groq endpoint but returned HTTP 413: **8,657 requested tokens vs. 8,000 TPM**. The 384-token output cap did not suffice; this commit caps output at 128 and reduces nonessential task-artifact text. A real fallback attempt after the change is still needed.
 
-The current official Groq deprecation page lists `llama-3.1-8b-instant` and `llama-3.3-70b-versatile` as deprecated for developer-tier usage with an August 16, 2026 shutdown date. It lists `openai/gpt-oss-20b` as the recommended replacement for `llama-3.1-8b-instant`. The model change therefore uses that documented replacement rather than preserving the now-deprecated 70B interim value.
+The Crystal Ball component clears the question after success and keeps the input disabled during the animation. The test now waits for the input to enable, then fills the next question before asserting the submit button enables.
 
-Source: [Groq model deprecation documentation](https://console.groq.com/docs/deprecations) (consulted 2026-10-18).
-
-### Crystal Ball exact-text assertion
-
-The current `app/components/CrystalBall/CrystalBall.tsx` source emits `You’ve used all {dailyQuota.limit} questions for today. Come back after the daily reset.` with a curly apostrophe. The prior Playwright test used a straight apostrophe and exact text matching; these strings are not equal.
-
-### Test budget
-
-PR #1518's existing review discussion and its historical PR Summary describe slow cold navigation and animated reveals in this Playwright flow. The 90-second budget is a test-only tolerance increase; it does not change the daily allowance implementation.
-
-## Limitations
-
-- The active Groq credential's actual per-project model permissions cannot be inspected through this repository-only context. Current official documentation supports the replacement model for the developer tier, but the workflow run must still verify the configured credential can call it.
-- No local command was run during this correction because no local repository checkout is available. GitHub Actions is the required execution evidence.
-- No application bundle measurement was run for this workflow/test-only change. The size gate must run in CI.
+The last completed build on `1502487` measured `325,473,493 bytes (310.40 MiB)` and passed the 495 MiB gate. No local checkout is available; all current-head verification must come from CI.

@@ -307,25 +307,36 @@ No local repository checkout is available in this session, so the following comm
 
 **Date:** 2026-10-18 | **Task group:** troubleshooting | **Branch:** `fix/ci-stability-1518`
 
-## Root causes and corrections
+## Root causes and changes
 
-- The original Groq model `llama-3.1-8b-instant` returned 404 in prior CI. Groq's current deprecation page lists that model and the interim `llama-3.3-70b-versatile` as deprecated for developer-tier use; it recommends `openai/gpt-oss-20b` for the original 8B model. Source: https://console.groq.com/docs/deprecations
-- A Groq attempt on commit `ec24d62` was rejected with HTTP 413: request budget 10,763 tokens against 8,000 TPM. The workflow fallback is now set to `openai/gpt-oss-20b` with a conservative 384-token output budget. Its matching Vitest assertion was updated. This particular fallback has **not** yet been exercised by CI because recent Robin runs succeeded through OpenRouter.
-- The Crystal Ball component clears the question input after a successful answer. Since the submit button is disabled while the input is empty, expecting that button to become enabled immediately after the remaining-allowance text appears is incorrect. The Playwright test now waits for the input itself to re-enable after the reveal; the next iteration fills a question and asserts that the button becomes enabled.
-- The test suite retains a 90-second per-test budget and exact curly-apostrophe matching for the exhausted-allowance message.
+- Groq 404ed on `llama-3.1-8b-instant`; Groq's current deprecation page also marks `llama-3.3-70b-versatile` deprecated for developer-tier use and recommends `openai/gpt-oss-20b` for the old 8B model: https://console.groq.com/docs/deprecations
+- A real Groq fallback request on `1502487` failed HTTP 413 at **8,657 tokens requested vs. 8,000 TPM**. The 384-token cap was too high; this change uses 128 tokens and reduces nonessential task-artifact diff size. The updated fallback is still awaiting a new observed attempt.
+- Crystal Ball clears the question after a successful answer and keeps the input disabled during the reveal. The test now waits for the input to re-enable; the next iteration enters text before asserting the button enables.
 
-## Verification record
+## Governance and evidence
 
-Latest completed prerequisite run on commit `b29b870`:
-- `pnpm exec vitest run tests/workflows/robin-groq-fallback.test.ts`: PASS as part of full unit suite.
-- `pnpm run test`: PASS.
-- `pnpm tsc --noEmit`: PASS.
-- `./jules-verify.sh` / Spec Kit gate: PASS.
-- `pnpm run build`: PASS; combined `.next + public` measured **325,459,681 bytes (310.38 MiB)**, below the hard 495 MiB maximum.
-- OpenNext Cloudflare build, compiled Tailwind check, worker/assets checks and Wrangler build validation: PASS.
-- Robin code review: PASS via the OpenRouter primary path; Groq fallback step was skipped.
-- Playwright Visual QA: FAIL. In the daily-limit flow, the test expected the submit button to enable immediately after an answer, while the question input had been cleared. Corrective assertion now waits for the question input to re-enable instead.
+- Selected group: troubleshooting. Reviewed `AGENTS.md`, `.jules/jules.md`, `.jules/troubleshooting.md`, `.docs/manifest.json`, the three required troubleshooting Jules/Gemini snapshots, Spec Kit integration/registry/templates/command definitions, Memory Bank context, package scripts, and the verification scripts.
+- Spec Kit specify/plan/tasks/implement artifacts are file-driven through repository API; native dispatch and local shell execution are not claimed.
+- Vitest covers fallback configuration; Playwright covers the UI flow; GitHub Actions supplies execution evidence. Context7 was not used because repository guidance requires explicit authorization.
+- Prior commit `1502487` passed full unit tests, TypeScript and the Spec Kit gate. Its build measured **325,473,493 bytes (310.40 MiB)**; OpenNext, Wrangler and the 495 MiB gate passed. Playwright rerun is still in progress; the prior Robin job failed on the measured TPM overrun.
+- No local command is claimed. The latest output-cap/diff-size changes require fresh CI and a real Groq fallback attempt.
 
-No local commands are claimed; verification evidence above is from GitHub Actions. After this correction, all current-head checks must be rerun. Do not merge until the targeted Playwright flow and the complete current-head required checks pass.
+## Exact Changed Files
 
-**USEFUL RESULT: PARTIAL — the test expectation is corrected; current-head CI and an actual Groq fallback invocation remain unverified.**
+1. `.github/workflows/robin.yml`
+2. `.specify/feature.json`
+3. `PR_SUMMARY.md`
+4. `memory-bank/activeContext.md`
+5. `memory-bank/progress.md`
+6. `specs/030-ci-stability/checklists/requirements.md`
+7. `specs/030-ci-stability/data-model.md`
+8. `specs/030-ci-stability/plan.md`
+9. `specs/030-ci-stability/quickstart.md`
+10. `specs/030-ci-stability/research.md`
+11. `specs/030-ci-stability/spec.md`
+12. `specs/030-ci-stability/tasks.md`
+13. `tests/visual/crystal-ball-daily-limit.spec.ts`
+14. `tests/workflows/robin-groq-fallback.test.ts`
+
+**Remaining issues:** current-head Playwright and required CI must pass; new cap must be validated on a real Groq fallback call. Do not merge while these remain pending.
+**USEFUL RESULT: PARTIAL — causes are verified and corrections prepared; latest verification is pending.**

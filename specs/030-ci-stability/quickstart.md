@@ -1,12 +1,6 @@
 # Quickstart — CI Stability Repair
 
-## Prerequisites
-
-- Use the repository's configured Node.js version and pnpm.
-- Configure the existing Groq secret in GitHub Actions; never copy or commit the secret into logs or files.
-- Run these checks from the repository root.
-
-## Validation Commands
+Use repository Node.js/pnpm from the root. Do not expose secrets or deploy.
 
 ```bash
 pnpm exec vitest run tests/workflows/robin-groq-fallback.test.ts
@@ -18,10 +12,4 @@ pnpm run build
 pnpm exec opennextjs-cloudflare build
 ```
 
-Use the repository's existing Wrangler/OpenNext workflow for its configured build validation and hard 495 MB size gate. Do not deploy as part of this task.
-
-## Expected Outcomes
-
-- The Groq fallback model expectation matches `openai/gpt-oss-20b`.
-- The Crystal Ball test observes the UI's exact exhausted-allowance message, re-enable state, and three-answer lockout.
-- All required current-head CI checks pass; any provider permission, quota, timeout, or build failure remains explicitly reported.
+GitHub Actions also performs Wrangler validation and enforces the hard 495 MiB size gate. All results must be verified on the final commit, including a Groq fallback attempt when the primary reviewer fails.

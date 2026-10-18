@@ -1,34 +1,17 @@
 # Implementation Plan: CI Stability Repair
 
-**Branch**: `fix/ci-stability-1518` | **Date**: 2026-10-18 | **Spec**: [spec.md](spec.md)
+**Date:** 2026-10-18 | **Branch:** `fix/ci-stability-1518` | **Spec:** [spec.md](spec.md)
 
-## Root Cause
+## Root Causes
 
-1. GitHub PR #1518 comments record a Groq API error for `llama-3.1-8b-instant` (404). The intervening change to `llama-3.3-70b-versatile` would not be a durable fix: Groq's current deprecation notice lists both model IDs as deprecated for developer-tier usage on 2026-08-16 and recommends `openai/gpt-oss-20b` as the replacement for the old 8B model. Source: https://console.groq.com/docs/deprecations
-2. The Crystal Ball component's current exhausted-allowance message uses a curly apostrophe (`You’ve`), whereas the original Playwright assertion used a straight apostrophe (`You've`). The exact-text assertion could fail even when the expected UI state is correct.
-3. The daily-limit test's 60-second total timeout has been insufficient in the previously reported cold-start/animated-reveal Visual QA runs. The test changes remain limited to test timing and assertions.
+- Groq returned 404 for `llama-3.1-8b-instant`; the interim `llama-3.3-70b-versatile` is also deprecated for developer-tier use. Groq recommends `openai/gpt-oss-20b` for the old 8B model: https://console.groq.com/docs/deprecations
+- A real fallback attempt reached Groq but was rejected at 8,657 requested tokens against the 8,000 TPM limit. The previous 384-token output cap was insufficient. This change lowers it to 128 tokens and reduces redundant task-artifact diff size; CI must verify the next fallback request fits.
+- After a successful Crystal Ball answer, the question field is cleared and remains disabled during the animated reveal. The submit button is therefore correctly disabled until new text is entered. Playwright must wait for the input to re-enable, not expect an empty-input button to enable.
 
-## Change Plan
+## Scope
 
-1. Set the action model input and fallback diagnostic/preflight model variable to `openai/gpt-oss-20b`.
-2. Update the workflow regression test to assert that exact model ID while retaining its provider separation and fail-closed checks.
-3. Increase the daily-limit Playwright test budget to 90 seconds, give the pre-submit enabled-state check an explicit 15-second timeout, preserve the after-answer re-enable assertion, and match the curly apostrophe used by the UI.
-4. Create truthful Spec Kit artifacts and update Memory Bank context/progress.
-5. Let the repository's current-head GitHub Actions checks provide execution evidence. This environment does not have a local repository checkout, so no local build or test result is claimed.
+Only Robin workflow/test settings, the daily-limit Playwright test, Spec Kit artifacts, Memory Bank tracking, and PR Summary change. No app runtime source, dependencies, lockfile, API, secrets, payment/authentication behavior, or deployment architecture changes. Preserve fail-closed review validation and the 495 MiB build-size hard limit.
 
-## Scope and Safeguards
+## Verification
 
-- Only workflow configuration, its direct regression test, the daily-limit Playwright test, Spec Kit task artifacts, Memory Bank tracking, and the canonical PR Summary are in scope.
-- No app source, dependency, lockfile, secret, payment/authentication logic, user-facing behavior, or deployment configuration is changed.
-- The 495 MB hard build-size limit remains in force. Existing audit measurement is historical, not a measurement of this commit.
-
-## Verification Plan
-
-- `pnpm exec vitest run tests/workflows/robin-groq-fallback.test.ts`
-- `pnpm exec playwright test tests/visual/crystal-ball-daily-limit.spec.ts`
-- `pnpm run test`
-- `pnpm tsc --noEmit`
-- `./jules-verify.sh`
-- `pnpm run build` and configured build-size gate
-- `pnpm exec opennextjs-cloudflare build` and the repository's configured Wrangler validation
-- Review the full final diff and current-head workflow results before claiming completion.
+Run on the final head: targeted Vitest and Playwright, full unit tests, TypeScript, `./jules-verify.sh`, production build and size gate, OpenNext Cloudflare build, and configured Wrangler validation. No local execution is claimed; current-head GitHub Actions is the evidence source.

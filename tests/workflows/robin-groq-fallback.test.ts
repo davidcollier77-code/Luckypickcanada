@@ -45,7 +45,7 @@ describe("Robin Groq fallback workflow", () => {
   it("bounds fallback time and output size", () => {
     expect(fallbackStep).toContain("timeout-minutes: 2");
     expect(fallbackStep).toContain('max-diff-size: "50000"');
-    expect(fallbackStep).toContain('max-output-tokens: "384"');
+    expect(fallbackStep).toContain('max-output-tokens: "128"');
     expect(fallbackStep).toContain('llm-timeout-ms: "60000"');
   });
 
