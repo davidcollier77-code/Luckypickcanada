@@ -33,4 +33,5 @@ Preserve input-validation rules, rate limiter, CORS, secrets, timeout, provider 
 1. Restore the complete sanitization chain in `app/api/oracle/route.js` and remove the misplaced/duplicate detection fragment that caused the `Expression expected` build failure.
 2. Check the existing prompt-injection patterns against the unmodified string and the sanitized string, rejecting if either matches. This preserves pre-sanitization checking while preventing a phrase split by removable characters from surviving normalization.
 3. Add regression rows for quote- and angle-bracket-split phrases; retain the existing valid-question provider-path test.
+4. Restore the existing `const apiKey = getApiKey();` call before its missing-key fallback; the first targeted CI run proved that it had been lost in the malformed prior edit and caused valid questions to return a fallback.
 4. Verify with the targeted Oracle test, full unit suite, TypeScript, `./jules-verify.sh`, production/OpenNext build, under-495-MB size gate, and current-head GitHub checks. Do not claim verification until the actual results are available.
