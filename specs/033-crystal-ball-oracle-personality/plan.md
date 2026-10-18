@@ -25,4 +25,12 @@ Replace the active Oracle route's vague one-sentence persona prompt with a focus
 
 ## Safety and Non-Goals
 
-Do not change input handling, prompt-injection filters, rate limiter, CORS, secrets, timeout, provider endpoint/model, temperature, token limit, fallback responses, response aliases/source marker, daily quota, UI, artwork, animations, audio, dependencies, or deployment configuration. The API route change is limited to the system-prompt content and its constant.
+Preserve input-validation rules, rate limiter, CORS, secrets, timeout, provider endpoint/model, temperature, token limit, fallback responses, response aliases/source marker, daily quota, UI, artwork, animations, audio, dependencies, and deployment configuration. The explicitly authorized corrective repair restores valid sanitizer chaining and makes prompt-injection detection check both the raw and sanitized forms without changing the existing pattern list or rejection response.
+
+
+## Corrective build repair (2026-10-18)
+
+1. Restore the complete sanitization chain in `app/api/oracle/route.js` and remove the misplaced/duplicate detection fragment that caused the `Expression expected` build failure.
+2. Check the existing prompt-injection patterns against the unmodified string and the sanitized string, rejecting if either matches. This preserves pre-sanitization checking while preventing a phrase split by removable characters from surviving normalization.
+3. Add regression rows for quote- and angle-bracket-split phrases; retain the existing valid-question provider-path test.
+4. Verify with the targeted Oracle test, full unit suite, TypeScript, `./jules-verify.sh`, production/OpenNext build, under-495-MB size gate, and current-head GitHub checks. Do not claim verification until the actual results are available.
