@@ -576,7 +576,8 @@ body:has(.homepage-sky-backdrop)::after {
 .homepage-experience .homepage-offer,
 .homepage-experience .homepage-community-banner,
 .homepage-experience .suggestion-box,
-.homepage-experience .homepage-about-teaser {
+.homepage-experience .homepage-about-teaser,
+.homepage-seo-section {
   background:
     linear-gradient(
       145deg,
@@ -668,11 +669,6 @@ body:has(.homepage-sky-backdrop)::after {
     0 0 26px rgba(238, 189, 71, 0.1) !important;
 }
 
-.homepage-experience .homepage-seo-section {
-  background: linear-gradient(180deg, rgba(3, 8, 13, 0.26), rgba(3, 7, 12, 0.52)) !important;
-  border-top-color: rgba(255, 236, 183, 0.12) !important;
-  border-radius: 22px;
-}
 
 @media (max-width: 820px) {
   .homepage-sky-backdrop {
