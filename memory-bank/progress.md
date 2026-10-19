@@ -164,3 +164,11 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - **Deep-dive scope clarification (2026-10-18):** Corrected the specialist guidance to permit substantive owner-authorized audit-only investigations while preserving evidence, limitations, recommendations, and verification requirements. Only the target wording and task-tracking artifacts are in scope; `AGENTS.md` and `.docs/` remain untouched. Required current-head verification is pending.
 
 - 2026-10-18: Retired the Robin automated review workflow and its Groq fallback functionality, while leaving CodeRabbit, Amazon Q, and the Crystal Ball (`GROQ_API_KEY`) fully operational.
+
+
+## 2026-10-19 — Gemini PR-Agent Workflow Repair
+
+- Diagnosed the merged workflow's malformed step-level configuration and wrong model identifier.
+- Prepared a focused correction with secure secret-availability preflight, bot-event support, matching event filters, and static workflow regression coverage.
+- Added/updated active Spec Kit records and the canonical PR summary.
+- Verification is still pending GitHub Actions because the connected local shell could not resolve github.com. A live post-merge PR-Agent run and visible Gemini review remain required acceptance evidence.

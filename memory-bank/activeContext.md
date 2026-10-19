@@ -1,3 +1,15 @@
+## Current Focus — Gemini PR-Agent Workflow Repair (2026-10-19)
+
+- **User-authorized task**: Directly repair the existing Gemini PR-Agent workflow and open a focused PR; do not rely on Jules or Amazon Q for implementation.
+- **Verified cause**: `.github/workflows/pr-agent.yml` placed option entries under the `uses:` scalar without an `env:` mapping, selected `gemini/gemini-2.0-flash` instead of the intended `gemini/gemini-3.8-flash`, and excluded events sent by bots. The GitHub event filter and PR-Agent's internal event filter must agree.
+- **Implementation prepared**: Step-level `env` mapping, configured model, review-only command settings, matching event filters (opened/reopened/synchronize/ready_for_review/review_requested), no bot-sender exclusion, and a preflight that fails clearly if `GEMINI_API_KEY` is unavailable without printing its value.
+- **Scope**: Only the PR-Agent workflow, a static regression test, the active Spec Kit feature artifacts, the canonical PR summary, and Memory Bank task context/progress are changed. CodeRabbit, Amazon Q, Robin retirement, runtime API routes, dependencies, deployment workflows, and secret values remain untouched.
+- **Verification**: The session cannot resolve `github.com` from its local shell, so local Vitest/build/TypeScript/`./jules-verify.sh` results are not claimed. GitHub Actions CI results must be inspected from the PR.
+- **Unknowns / acceptance gate**: The repository interface cannot reveal whether the secret exists or is valid. A successful credentialed run and visible Gemini review on a supported PR event after the workflow reaches `main` are required before calling the reviewer operational.
+- **Candidate branch**: `fix/gemini-pr-agent-workflow-1530`.
+
+---
+
 # Active Context
 
 ## Current Focus — Oracle route Cloudflare build repair (2026-10-18)
