@@ -33,4 +33,30 @@ describe('Gemini PR-Agent workflow configuration', () => {
     expect(workflow).toContain('Gemini credential is configured; its value will not be printed.');
     expect(workflow).not.toMatch(/echo .*GEMINI_API_KEY\s*$/m);
   });
+
+  it('requests a deeper multi-area review and inline findings', () => {
+    expect(workflow).toContain('pr_reviewer.num_max_findings: "8"');
+    expect(workflow).toContain('pr_reviewer.inline_key_issues: "true"');
+    expect(workflow).toContain('pr_reviewer.require_tests_review: "true"');
+    expect(workflow).toContain('pr_reviewer.require_security_review: "true"');
+    expect(workflow).toContain('pr_reviewer.require_risk_assessment: "true"');
+    expect(workflow).toContain('pr_reviewer.require_merge_recommendation: "true"');
+    expect(workflow).toContain('pr_reviewer.require_failure_modes: "true"');
+    expect(workflow).toMatch(/pr_reviewer\\.extra_instructions:\\s*>-/);
+    for (const focus of [
+      'Correctness and bugs:',
+      'Security and integrity:',
+      'Performance:',
+      'SEO:',
+      'Visual/UI behavior:',
+      'Accessibility:',
+      'Tests:',
+      'supporting code evidence',
+      'Do not invent findings',
+      'Never claim actual visual QA',
+    ]) {
+      expect(workflow).toContain(focus);
+    }
+  });
+
 });
