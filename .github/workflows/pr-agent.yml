@@ -18,7 +18,7 @@ jobs:
       - name: PR Agent action step
         id: pragent
         uses: the-pr-agent/pr-agent@fbf7f6d3fcff6d9bf15aef7d8f4a6c2cacc7ad1f
-        env:
+          GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           config.model: "gemini/gemini-2.0-flash"
