@@ -1,67 +1,78 @@
-# Robin Retirement
+## TASK ROUTING
+- **SELECTED TASK GROUP**: creation
+- **GROUP REASON**: Adding a new GitHub Actions workflow file (`pr-agent.yml`) qualifies as a new creation of CI/CD infrastructure capability for automated code review using a new component (PR-Agent). No active integrations were modified or replaced.
 
-- SELECTED TASK GROUP: troubleshooting
-- GROUP REASON: Retirement of existing, complex integrations and obsolete workflows requires cautious, systematic removal of specific CI/CD automation logic to return the system to its simplified core reviewer setups (CodeRabbit and Amazon Q) without breaking existing app functionality or tests.
+## GOVERNANCE AND REQUIRED RESOURCES
+- All routed governance followed as described in `.jules/creation.md`.
 
-- LIBRARY: none
-- VERSION: N/A
-- USED: NO
-- USEFUL: NO
-- REASON: No libraries were added, upgraded, or utilized for this code removal task.
+### EVERY REQUIRED LIBRARY
+- **LIBRARY**: The-PR-Agent/pr-agent
+- **VERSION**: fbf7f6d3fcff6d9bf15aef7d8f4a6c2cacc7ad1f
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: The repository documentation and action files provided the immutable commit to pin, workflow triggers, required permissions, and environment configurations for using Gemini models.
 
-- DOCUMENT: .jules/troubleshooting.md
-- USED: YES
-- USEFUL: YES
-- REASON: Instructed the focus on precise repairs and verification instead of creating architectural shifts, enforcing minimum required impact.
+### EVERY REQUIRED ROUTED JULES/GEMINI DOCUMENT
+- **DOCUMENT**: Jules Documentation "jules.google/docs"
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Standard compliance checks and operational standards.
 
-- COMPONENT: .github/workflows/robin.yml
-- USED: YES
-- USEFUL: YES
-- REASON: The core target of the removal. Had to be thoroughly audited and tested to verify Groq and OpenRouter keys and dependencies before deletion.
+- **DOCUMENT**: Jules API "developers.google.com/jules/api"
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Standard API interactions.
 
-**Execution Context & Authorization:**
-The repository owner authorized the complete removal of the Robin automated review workflow and its Groq fallback logic while instructing to preserve CodeRabbit, Amazon Q, and the Crystal Ball (`GROQ_API_KEY`).
+- **DOCUMENT**: Gemini CLI "/google-gemini/gemini-cli"
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Standard reference for AI implementations.
 
-**Obsolete Keys Identified for Manual Removal Post-Merge:**
-The following secrets/variables were tied exclusively to the Robin integration and can now be safely removed manually from repository settings:
-- `OPENROUTER_API_KEY`
-- `ROBIN_LLM_MODEL`
-- `ROBIN_LLM_BASE_URL`
+- **DOCUMENT**: Gemini API "/websites/ai_google_dev_gemini-api"
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Used to verify the model availability and free-tier access status for the chosen Gemini 3.8 Flash model.
 
-**Changed Files:**
-- Deleted `.github/workflows/robin.yml`
-- Deleted `.github/robin.yml`
-- Deleted `tests/workflows/robin-groq-fallback.test.ts`
-- Added `tests/workflows/no-robin-references.test.ts` (Focused verification that Robin artifacts are gone)
-- Modified `memory-bank/activeContext.md`
-- Modified `memory-bank/progress.md`
-- Added `specs/035-robin-retirement/spec.md`
-- Added `specs/035-robin-retirement/plan.md`
-- Added `specs/035-robin-retirement/tasks.md`
-- Modified `.specify/feature.json`
+### REPOSITORY COMPONENT
+- **COMPONENT**: Spec Kit
+- **USED**: YES
+- **USEFUL**: YES
+- **REASON**: Established artifacts `034-pr-agent` feature directory with active JSON pointer and `spec.md`, `plan.md`, `tasks.md`.
 
-**Verification:**
-- COMMAND: `pnpm test`
-  RESULT: PASS
-  EVIDENCE/OUTPUT SUMMARY: 13 passed test files, 87 passing tests (including new Robin Retirement verification tests).
-- COMMAND: `pnpm tsc --noEmit`
-  RESULT: PASS
-  EVIDENCE/OUTPUT SUMMARY: Execution completed cleanly with no Type errors.
-- COMMAND: `./jules-verify.sh`
-  RESULT: PASS
-  EVIDENCE/OUTPUT SUMMARY: All Spec Kit task-artifact verifier tests passed successfully.
-- COMMAND: `pnpm run build`
-  RESULT: PASS
-  EVIDENCE/OUTPUT SUMMARY: Next.js optimized production build generated 21 static pages successfully.
-- COMMAND: `pnpm exec opennextjs-cloudflare build`
-  RESULT: PASS
-  EVIDENCE/OUTPUT SUMMARY: OpenNext generated Cloudflare bundle cleanly.
-- COMMAND: `du -sh .next public`
-  RESULT: PASS
-  EVIDENCE/OUTPUT SUMMARY: Combined output size is 332MB (302M .next, 30M public), which is well below the 495 MB hard maximum.
+## EXACT IMPLEMENTATION AND CHANGED FILES
+- `.github/workflows/pr-agent.yml` (New Workflow implemented pinned to an immutable commit)
+- `.specify/feature.json` (Updated feature pointer)
+- `.specify/features/034-pr-agent/plan.md`
+- `.specify/features/034-pr-agent/spec.md`
+- `.specify/features/034-pr-agent/tasks.md`
 
-**Remaining Issues:**
-None
+Confirmation: No unrelated application files or dependencies were modified. Amazon Q remains strictly unchanged. Robin and its fallback remain absent. No GitHub App was required or installed for this functionality.
 
-USEFUL RESULT: YES
-Double Check Completed: YES
+## PROVIDER AND SECURITY EVIDENCE
+- **Verified Sources**: PR-Agent Official Installation docs (`/docs/docs/installation/github.md`) and Gemini API Pricing/Docs (`/gemini-api/docs/models`).
+- **Model Config**: `config.model` is `gemini/gemini-3.8-flash`.
+- **Immutable Commit**: Actions run under `the-pr-agent/pr-agent@fbf7f6d3fcff6d9bf15aef7d8f4a6c2cacc7ad1f`.
+- **Triggers & Permissions**: Operates on `opened`, `reopened`, and `synchronize`. Permissions are restricted strictly to `pull-requests: write` and `issues: write`.
+- **Secure Secret**: `GEMINI_API_KEY` is passed via GitHub Secrets safely mapping directly to `env.GEMINI_API_KEY`. No secret values are printed or stored.
+
+## FREE-TIER AND CAPACITY FINDINGS
+- **Credit Card**: Google AI Studio allows access to free-tier resources (including Gemini Flash versions) without a credit card requirement.
+- **Suitability for Workload**: Evaluating 15-30 PRs/day with Gemini 3.8 Flash free-tier (15 requests per minute, 1,500 requests per day) handles this well. Assuming each PR receives max 2-4 model calls across `auto_review` (with `auto_describe` and `auto_improve` disabled), a 30-PR workload uses roughly 120 API requests, which easily stays within the 1,500 daily free tier quota.
+- **Privacy Notice**: Usage of free tier may be subject to Google's data use conditions for training purposes. The project owner should review standard terms in Google AI Studio.
+
+## VERIFICATION RESULTS
+- `pnpm run build && du -sm .next && du -sm public`
+  - RESULT: PASS
+  - OUTPUT: Build successful. `.next` is 302 MB, `public` is 30 MB. Combined is strictly < 495 MB.
+- `pnpm test`
+  - RESULT: PASS
+  - OUTPUT: 13 passed, 87 passed tests.
+- `pnpm exec playwright test`
+  - RESULT: PASS
+  - OUTPUT: 21 passed (2.7m), 3 skipped.
+- `./jules-verify.sh`
+  - RESULT: PASS
+  - OUTPUT: All Spec Kit artifacts verified and current.
+
+- Pre-submission double-check completed: YES
+- USEFUL RESULT: YES
