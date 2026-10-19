@@ -1,3 +1,13 @@
+# Progress — 2026-10-19: Sky Background Repair CI Follow-up
+
+- First repair PR CI on commit c109d46ff2ca3825d617da51f0dace56f4fa07cb: unit tests 17 passed/0 failed, TypeScript and Spec Kit verification passed. Visual QA had 22 passed, 3 skipped, 2 failures in the newly added check because it only accepted the desktop background image filename on narrow mobile viewports.
+- The computed CSS selected the intended mobile image-set at 390px/412px, and the captured homepage screenshot visibly shows the starry background. Since the loop stopped on the homepage, Crystal Ball and Lucky Map have not yet been validated by the new assertion.
+- Corrected the Playwright assertion to choose the expected background asset based on the theme's 820px CSS breakpoint; clarified the corresponding Spec Kit success criterion. This only modifies test/governance records, not page visuals.
+- OpenNext run 39327043610 passed the Next.js build, 495 MiB size gate (combined .next + public measured 325,580,929 bytes / 310.50 MiB), OpenNext Cloudflare bundle, and Wrangler no-deploy validation.
+- Final verification remains pending on the new head; do not claim the Crystal Ball/Lucky Map backgrounds are restored until route-level browser checks pass.
+
+---
+
 # Progress — 2026-10-19: Shared Sky Background Regression
 
 - Compared the supplied video report with the merged CSS performance change. The source tree still contains the shared backdrop elements and CSS rules, while PR #1532 changed the theme stylesheet import placement/order.

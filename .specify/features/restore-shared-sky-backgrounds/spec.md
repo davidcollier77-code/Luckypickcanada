@@ -42,7 +42,7 @@ As a visitor, I should see the intended cosmic sky behind the homepage, Crystal 
 
 ## Success Criteria
 
-- **SC-001**: Each target route has a .homepage-sky-backdrop whose computed image includes crystal-ball-bg-desktop.
+- **SC-001**: Each target route has a .homepage-sky-backdrop whose computed image matches the existing responsive asset rule: crystal-ball-bg-mobile at CSS viewport widths up to 820px, and crystal-ball-bg-desktop above 820px.
 - **SC-002**: Computed positioning remains fixed at z-index -30; the page background is transparent and the fallback foundation is hidden on target routes.
 - **SC-003**: Existing browser visual baselines and route behavior pass after the import order is restored.
 - **SC-004**: The production build and measured .next + public output stay strictly below the repository's 495 MiB hard limit.

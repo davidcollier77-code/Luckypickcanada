@@ -1,5 +1,13 @@
 # PR Summary — Restore Shared Sky Backgrounds
 
+## Latest CI findings — 2026-10-19
+
+- **Visual QA run #599**: [run 39327043606](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39327043606). Dependency install, targeted Crystal Ball/Oracle tests, full unit tests (17 passed, 0 failed), standalone TypeScript, Spec Kit governance verification, and committed visual-baseline verification all passed.
+- **Playwright result**: 22 passed, 3 skipped, 2 failed. Both failures were the new test at tests/visual/homepage.spec.ts:77 in mobile-390 and mobile-412 projects. The assertion incorrectly demanded the desktop background filename at every width; the computed CSS correctly returned crystal-ball-bg-mobile.webp/.avif/.jpeg at mobile widths up to 820px. The captured homepage screenshot shows the starry background visible. The loop stopped on the homepage assertion, so this run did NOT test the Crystal Ball or Lucky Map routes.
+- **Test correction**: Changed the assertion to expect the existing mobile asset at widths <=820px and desktop asset above 820px. Updated SC-001 to document the responsive rule. This is a regression-test correction, not an application CSS or visual change.
+- **OpenNext run**: [run 39327043610](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39327043610) passed Next.js build, the hard-size gate, OpenNext Cloudflare build, compiled CSS/worker/assets checks, and Wrangler no-deploy validation. Measured .next + public: 325,580,929 bytes (310.50 MiB), below 495 MiB.
+- **Remaining verification**: The repaired test must run on the new head to check /, /crystal-ball, and /map in each configured viewport. The visual issue is not considered resolved until those route assertions and the screenshot/browser checks pass. No review job or extra manual test was triggered; the next run is the normal automatic response to this correction.
+
 ## TASK ROUTING
 
 - **SELECTED TASK GROUP**: troubleshooting
@@ -20,7 +28,7 @@
 
 - **VERIFIED**: PR #1532 moved the import of themes/default/index.css out of app/layout.js and into app/globals.css after Tailwind's stylesheet import.
 - **VERIFIED**: The shared sky backdrop element and its CSS definitions still exist in the homepage, Crystal Ball, and Lucky Map markup/theme source.
-- **STRONG HYPOTHESIS**: The changed import location/order interfered with the theme's stylesheet/cascade on affected routes. The regression followed the import-only performance update.
+- **HYPOTHESIS, pending route verification**: The changed import location/order may have affected theme application/cascade on the Crystal Ball and Lucky Map. The regression followed the import-only performance update; the first CI run's screenshot confirms the homepage star field is visible after restoring import order, but its route loop stopped on a mobile-asset assertion before reaching Crystal Ball and Lucky Map.
 - Restored the known-good order: import themes/default/index.css before app/globals.css in app/layout.js, and removed the duplicate theme @import from app/globals.css. This deliberately rolls back the CSS import-consolidation part of the performance change rather than risking the page visuals. A different optimization must first prove that it preserves these visuals.
 
 ## REQUIRED LIBRARIES
@@ -67,15 +75,15 @@
 - **COMMAND**: git ls-remote https://github.com/davidcollier77-code/Luckypickcanada.git HEAD
   - **RESULT**: FAIL (environment limitation)
   - **EVIDENCE/OUTPUT SUMMARY**: The connected shell could not resolve github.com; local checkout and local command execution were unavailable.
-- **COMMAND**: pnpm exec playwright test tests/visual/homepage.spec.ts -g "shared sky backdrop remains styled"
-  - **RESULT**: PENDING CURRENT-HEAD CI
-  - **EVIDENCE/OUTPUT SUMMARY**: The new regression test was authored but has not been executed locally.
-- **COMMAND**: pnpm run test; pnpm tsc --noEmit; ./jules-verify.sh
-  - **RESULT**: PENDING CURRENT-HEAD CI
-  - **EVIDENCE/OUTPUT SUMMARY**: Not executed locally due to missing repository checkout; the current-head Visual QA gate must provide evidence.
-- **COMMAND**: pnpm run build and measured .next + public size check
-  - **RESULT**: PENDING CURRENT-HEAD CI
-  - **EVIDENCE/OUTPUT SUMMARY**: No dependencies or assets changed. OpenNext validation must still prove build success and output strictly under 495 MiB.
+- **COMMAND**: pnpm exec playwright test (Visual QA run 39327043606, job 118315466287, step 12)
+  - **RESULT**: FAIL — test assertion corrected for current head
+  - **EVIDENCE/OUTPUT SUMMARY**: 22 passed, 3 skipped, 2 failed. The failures were both the test expecting crystal-ball-bg-desktop at mobile widths 390px and 412px. Computed CSS correctly selected crystal-ball-bg-mobile. The homepage failure screenshot shows its starry background. The route loop stopped on / before testing /crystal-ball and /map. The assertion now branches at the actual CSS breakpoint (820px); current-head CI must confirm all target routes.
+- **COMMAND**: targeted Crystal Ball/Oracle Vitest tests; pnpm run test; pnpm tsc --noEmit; ./jules-verify.sh (Visual QA run 39327043606)
+  - **RESULT**: PASS
+  - **EVIDENCE/OUTPUT SUMMARY**: The relevant unit-test steps passed; the full unit suite reported 17 passed, 0 failed. TypeScript and Spec Kit governance verification passed. These passes precede the responsive-assertion correction and must be reconfirmed on the latest head.
+- **COMMAND**: pnpm run build; measured .next + public; pnpm exec opennextjs-cloudflare build; Wrangler no-deploy validation (OpenNext run 39327043610)
+  - **RESULT**: PASS
+  - **EVIDENCE/OUTPUT SUMMARY**: The Next.js/OpenNext/Cloudflare build and Wrangler validation passed. Measured .next + public was 325,580,929 bytes (310.50 MiB) against the hard maximum of 495 MiB. Re-run on the latest test-correction head before final approval.
 - **COMMAND**: visual confirmation using rendered browser screenshots
   - **RESULT**: PENDING CURRENT-HEAD CI
   - **EVIDENCE/OUTPUT SUMMARY**: Static source inspection confirmed markup and rules exist; the new computed-style test and current-head browser results are needed before claiming the backgrounds are restored.
