@@ -1,3 +1,13 @@
+## Current Focus — Restore Shared Sky Backgrounds (2026-10-19)
+
+- **User-reported regression**: After the homepage CSS performance update, the Crystal Ball and Lucky Map lost their expected sky/background treatment; the Lucky Meter and Card Reveal appeared mostly unaffected in the supplied video.
+- **Evidence**: PR #1532 moved the theme stylesheet import from app/layout.js into app/globals.css after Tailwind's import. Shared backdrop CSS and markup remain in the repository.
+- **Repair branch**: fix/restore-shared-sky-backgrounds-1534.
+- **Implementation**: Restored the previous theme-first import order in app/layout.js, removed the duplicate import from app/globals.css, and added a Playwright computed-style regression check across /, /crystal-ball, and /map. No artwork or section styling declarations were changed.
+- **Verification**: Local test/build/governance commands could not run because the connected shell cannot resolve github.com. Current-head Playwright, ./jules-verify.sh, OpenNext build and the 495 MiB gate remain pending CI. Do not call the repair verified until those results pass.
+
+---
+
 ## Current Focus — Gemini All-in-One PR Review Depth (2026-10-19)
 
 - **User authorization**: Directly improve the existing Gemini PR-Agent workflow with a more detailed all-in-one review covering bugs, security, performance, SEO, visual/UI regressions, accessibility, and missing tests.

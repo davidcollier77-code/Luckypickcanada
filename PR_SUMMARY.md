@@ -1,3 +1,92 @@
+# PR Summary — Restore Shared Sky Backgrounds
+
+## TASK ROUTING
+
+- **SELECTED TASK GROUP**: troubleshooting
+- **GROUP REASON**: A visual regression appeared after the latest shared CSS performance change; the task restores the previously working stylesheet import order and adds a focused browser regression check.
+
+## GOVERNANCE AND EXECUTION METHOD
+
+- Read root AGENTS.md first.
+- Inspected current main, merged PR #1532's source diff, app/layout.js, app/globals.css, themes/default/index.css, themes/default/homepage.css, homepage/Crystal Ball/Lucky Map markup, the existing visual test, package scripts, and Visual QA workflow.
+- Read the routed troubleshooting references for Jules, Gemini CLI/API, GitHub Actions, Next.js, and the documentation manifest; also inspected the repository troubleshooting guide and relevant CSS-loading guide.
+- Spec Kit stage definitions were inspected. Native Jules slash-command dispatch and repository-local setup scripts could not be executed because the connected shell cannot resolve github.com; the task artifacts were authored directly via the GitHub repository API. Current-head CI must run ./jules-verify.sh before any completion claim.
+- **Specify**: .jules/cmds/speckit.specify.md; method: FILE-DRIVEN ARTIFACT AUTHORING VIA GITHUB API; artifact: .specify/features/restore-shared-sky-backgrounds/spec.md; setup script not run locally.
+- **Plan**: .jules/cmds/speckit.plan.md; method: FILE-DRIVEN ARTIFACT AUTHORING VIA GITHUB API; artifact: .specify/features/restore-shared-sky-backgrounds/plan.md; setup script not run locally.
+- **Tasks**: .jules/cmds/speckit.tasks.md; method: FILE-DRIVEN ARTIFACT AUTHORING VIA GITHUB API; artifact: .specify/features/restore-shared-sky-backgrounds/tasks.md; setup script not run locally.
+- **Implement**: .jules/cmds/speckit.implement.md; method: GITHUB API SOURCE EDITS; implementation candidate committed in the repair PR. Local check-prerequisites and ./jules-verify.sh could not run in this session.
+
+## ROOT-CAUSE ASSESSMENT
+
+- **VERIFIED**: PR #1532 moved the import of themes/default/index.css out of app/layout.js and into app/globals.css after Tailwind's stylesheet import.
+- **VERIFIED**: The shared sky backdrop element and its CSS definitions still exist in the homepage, Crystal Ball, and Lucky Map markup/theme source.
+- **STRONG HYPOTHESIS**: The changed import location/order interfered with the theme's stylesheet/cascade on affected routes. The regression followed the import-only performance update.
+- Restored the known-good order: import themes/default/index.css before app/globals.css in app/layout.js, and removed the duplicate theme @import from app/globals.css. This deliberately rolls back the CSS import-consolidation part of the performance change rather than risking the page visuals. A different optimization must first prove that it preserves these visuals.
+
+## REQUIRED LIBRARIES
+
+- **LIBRARY**: Next.js | **VERSION**: 16.3.8 | **USED**: YES | **USEFUL**: YES | **REASON**: Verified App Router layouts/routes and the existing global CSS loading point.
+- **LIBRARY**: Tailwind CSS | **VERSION**: 4.2.4 | **USED**: YES | **USEFUL**: YES | **REASON**: The recent import relocation was relative to the Tailwind stylesheet import.
+- **LIBRARY**: Playwright / playwright-chromium | **VERSION**: repository package range ^1.63.0 | **USED**: YES | **USEFUL**: YES | **REASON**: Added computed-style checks for the shared backdrop across the three reported routes.
+- No dependency was added, removed, or upgraded.
+
+## REQUIRED ROUTED DOCUMENTS AND COMPONENTS
+
+- **DOCUMENT**: .docs/troubleshooting/jules_google_docs.md | **USED**: YES | **USEFUL**: NO | **REASON**: Required troubleshooting-group reference; covers Jules CLI operation, not stylesheet order.
+- **DOCUMENT**: .docs/troubleshooting/developers_google_com_jules_api.md | **USED**: YES | **USEFUL**: NO | **REASON**: Required troubleshooting-group reference; remote Jules API is not used here.
+- **DOCUMENT**: .docs/troubleshooting/_google-gemini_gemini-cli.md | **USED**: YES | **USEFUL**: NO | **REASON**: Required routed provider/CLI reference; not relevant to CSS behavior.
+- **DOCUMENT**: .docs/troubleshooting/_websites_ai_google_dev_gemini-api.md | **USED**: YES | **USEFUL**: NO | **REASON**: Required routed provider reference; this repair does not call Gemini.
+- **DOCUMENT**: .docs/troubleshooting/_github_docs.md | **USED**: YES | **USEFUL**: YES | **REASON**: Supplied the repository's GitHub workflow/PR verification context.
+- **DOCUMENT**: .docs/troubleshooting/_vercel_next_js.md | **USED**: YES | **USEFUL**: YES | **REASON**: Consulted the routed Next.js troubleshooting reference while checking global CSS import behavior.
+- **DOCUMENT**: .docs/manifest.json | **USED**: YES | **USEFUL**: YES | **REASON**: Checked the troubleshooting reference inventory.
+- **DOCUMENT**: CSS_FIX_GUIDE.md | **USED**: YES | **USEFUL**: YES | **REASON**: Reviewed its stylesheet import troubleshooting advice; compared it with actual pre-regression source history rather than blindly following its stale examples.
+- **COMPONENT**: app/layout.js and app/globals.css | **USED**: YES | **USEFUL**: YES | **REASON**: The only application source files changed; restored the previous theme-first import.
+- **COMPONENT**: themes/default/index.css and themes/default/homepage.css | **USED**: YES | **USEFUL**: YES | **REASON**: Confirmed that the existing shared backdrop assets/rules were still present and should not be redesigned.
+- **COMPONENT**: app/page.js, app/crystal-ball/page.js, app/map/page.js, app/lucky-map-of-canada/lucky-map-of-canada.js | **USED**: YES | **USEFUL**: YES | **REASON**: Confirmed the affected routes still render the shared backdrop.
+- **COMPONENT**: tests/visual/homepage.spec.ts and .github/workflows/visual-qa.yml | **USED**: YES | **USEFUL**: YES | **REASON**: Added a focused regression test and identified the existing CI verification gate.
+- **COMPONENT**: package.json | **USED**: YES | **USEFUL**: YES | **REASON**: Verified existing pnpm/test/build script names and dependency versions.
+
+## EXACT CHANGED-FILE RECONCILIATION
+
+- app/layout.js
+- app/globals.css
+- tests/visual/homepage.spec.ts
+- .specify/feature.json
+- .specify/features/restore-shared-sky-backgrounds/spec.md
+- .specify/features/restore-shared-sky-backgrounds/plan.md
+- .specify/features/restore-shared-sky-backgrounds/tasks.md
+- .specify/features/restore-shared-sky-backgrounds/research.md
+- .specify/features/restore-shared-sky-backgrounds/quickstart.md
+- .specify/features/restore-shared-sky-backgrounds/checklists/requirements.md
+- PR_SUMMARY.md
+- memory-bank/activeContext.md
+- memory-bank/progress.md
+
+## VERIFICATION RESULTS
+
+- **COMMAND**: git ls-remote https://github.com/davidcollier77-code/Luckypickcanada.git HEAD
+  - **RESULT**: FAIL (environment limitation)
+  - **EVIDENCE/OUTPUT SUMMARY**: The connected shell could not resolve github.com; local checkout and local command execution were unavailable.
+- **COMMAND**: pnpm exec playwright test tests/visual/homepage.spec.ts -g "shared sky backdrop remains styled"
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: The new regression test was authored but has not been executed locally.
+- **COMMAND**: pnpm run test; pnpm tsc --noEmit; ./jules-verify.sh
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Not executed locally due to missing repository checkout; the current-head Visual QA gate must provide evidence.
+- **COMMAND**: pnpm run build and measured .next + public size check
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: No dependencies or assets changed. OpenNext validation must still prove build success and output strictly under 495 MiB.
+- **COMMAND**: visual confirmation using rendered browser screenshots
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Static source inspection confirmed markup and rules exist; the new computed-style test and current-head browser results are needed before claiming the backgrounds are restored.
+
+## PRE-SUBMISSION DOUBLE-CHECK
+
+The final diff must contain only the three source/test changes and the task-scoped governance records listed above. No sky artwork, images, colors, copy, Lucky Meter/Card Reveal component code, interactions, dependencies, application APIs, secrets, or deployment settings are intended to change.
+
+**USEFUL RESULT**: NO — fix candidate prepared; the visual regression is not considered verified until current-head CI passes.
+---
+
 # PR Summary — Gemini All-in-One Review Depth Enhancement
 
 ## Merge-conflict repair and Amazon Q findings — 2026-10-19

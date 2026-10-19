@@ -62,6 +62,25 @@ test.describe("Homepage Visual", () => {
     });
   });
 
+  test('shared sky backdrop remains styled on homepage, Crystal Ball, and Lucky Map', async ({ page }) => {
+    for (const route of ['/', '/crystal-ball', '/map']) {
+      await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+
+      const backdrop = page.locator('.homepage-sky-backdrop').first();
+      await expect(backdrop).toBeAttached({ timeout: 10_000 });
+      await expect(backdrop).toHaveCSS('position', 'fixed');
+      await expect(backdrop).toHaveCSS('z-index', '-30');
+
+      const backgroundImage = await backdrop.evaluate((element) => (
+        window.getComputedStyle(element).backgroundImage
+      ));
+      expect(backgroundImage).toContain('crystal-ball-bg-desktop');
+
+      await expect(page.locator('body')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      await expect(page.locator('.homepage-background-foundation')).toHaveCSS('display', 'none');
+    }
+  });
+
   test('homepage viewport matches the approved visual baseline', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
 

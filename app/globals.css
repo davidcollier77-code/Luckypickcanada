@@ -1,6 +1,5 @@
 @config "../tailwind.config.js";
 @import "tailwindcss";
-@import "../themes/default/index.css";
 
 :root {
   color-scheme: dark;

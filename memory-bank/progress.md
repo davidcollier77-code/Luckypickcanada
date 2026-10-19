@@ -1,3 +1,12 @@
+# Progress — 2026-10-19: Shared Sky Background Regression
+
+- Compared the supplied video report with the merged CSS performance change. The source tree still contains the shared backdrop elements and CSS rules, while PR #1532 changed the theme stylesheet import placement/order.
+- Restored the known-good import placement in app/layout.js and removed the added theme import from app/globals.css. Added a Playwright regression check for the homepage, Crystal Ball, and Lucky Map computed backdrop styles.
+- No sky images, component styling rules, Lucky Meter/Card Reveal code, copy, interactions, dependencies, or deployment settings were changed.
+- Verification is pending: local shell cannot resolve github.com. Targeted/full Playwright, pnpm tests, TypeScript, ./jules-verify.sh, OpenNext and the measured 495 MiB build-size gate must pass on current head.
+
+---
+
 # Progress — 2026-10-19
 
 - **Gemini all-in-one PR review depth candidate**: On `fix/gemini-review-depth-1533`, expanded the existing PR-Agent workflow to allow up to eight substantiated findings, publish line-anchored findings, and request risk assessment, merge recommendation, failure modes, and an evidence-led review across bugs, security, performance, SEO, UI, accessibility, and testing. Extended the workflow regression test and added task-scoped Spec Kit artifacts.
