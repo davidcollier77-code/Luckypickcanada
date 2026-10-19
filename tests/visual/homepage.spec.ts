@@ -74,11 +74,10 @@ test.describe("Homepage Visual", () => {
       const backgroundImage = await backdrop.evaluate((element) => (
         window.getComputedStyle(element).backgroundImage
       ));
-      const expectedAsset = await page.evaluate(() => (
-        window.matchMedia('(max-width: 820px)').matches
-          ? 'crystal-ball-bg-mobile'
-          : 'crystal-ball-bg-desktop'
-      ));
+      const viewport = page.viewportSize();
+      const expectedAsset = viewport && viewport.width <= 820
+        ? 'crystal-ball-bg-mobile'
+        : 'crystal-ball-bg-desktop';
       expect(backgroundImage).toContain(expectedAsset);
 
       await expect(page.locator('body')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
