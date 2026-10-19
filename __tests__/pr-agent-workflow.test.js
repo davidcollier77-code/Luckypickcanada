@@ -42,7 +42,7 @@ describe('Gemini PR-Agent workflow configuration', () => {
     expect(workflow).toContain('pr_reviewer.require_risk_assessment: "true"');
     expect(workflow).toContain('pr_reviewer.require_merge_recommendation: "true"');
     expect(workflow).toContain('pr_reviewer.require_failure_modes: "true"');
-    expect(workflow).toMatch(/pr_reviewer\\.extra_instructions:\\s*>-/);
+    expect(workflow).toContain('pr_reviewer.extra_instructions: >-');
     for (const focus of [
       'Correctness and bugs:',
       'Security and integrity:',
