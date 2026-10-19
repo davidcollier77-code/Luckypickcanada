@@ -1,0 +1,79 @@
+🔴 SELECTED TASK GROUP: polishing
+GROUP REASON: The request is a specific visual/UX refinement of an existing page to improve usability without changing the underlying architecture. The Crystal Ball already exists, this is just polishing the fortune string parsing, layout grouping, and reset behavior.
+
+🔴 LIBRARY CONSULTATION REPORT
+LIBRARY: N/A
+VERSION: N/A
+USED: NO
+USEFUL: NO
+REASON: No external third-party libraries needed to be queried for this task since it relies purely on native JavaScript (`String.prototype.replace`) and existing React constructs within the repository.
+
+🔴 ROUTED JULES/GEMINI DOCUMENT REPORT
+DOCUMENT: .docs/polishing/jules_google_docs.md
+USED: YES
+USEFUL: NO
+REASON: This document provides context on Jules tools and release features but does not provide actionable guidelines for React implementation.
+
+DOCUMENT: .docs/polishing/_google-gemini_gemini-cli.md
+USED: YES
+USEFUL: NO
+REASON: Detailed CLI usage commands. They did not directly aid the React DOM updates or Markdown string stripping required for this UI polish fix.
+
+🔴 REPOSITORY COMPONENT REPORT
+COMPONENT: app/components/CrystalBall/CrystalBall.tsx
+USED: YES
+USEFUL: YES
+REASON: Implemented all three requested fixes inside this component: stripping the Markdown markers, moving the layout for the quota and 'Ask Another Question' logic, and removing the redundant text inside `.cardHint`.
+
+COMPONENT: app/components/CrystalBall/CrystalBall.module.css
+USED: YES
+USEFUL: YES
+REASON: Verified existing utility classes like `seekButton` and `fadeIn` existed to match the established page design.
+
+🔴 VERIFICATION REPORT
+COMMAND: pnpm run test
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: `13 passed (87 tests) in 9.01s` (Some warnings regarding node canvas, but all application logic tests passed successfully).
+
+COMMAND: pnpm run build
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: `Build completed successfully`. No compiler errors were introduced by the React DOM logic updates.
+
+COMMAND: du -sh .next
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: `302M .next` — Comfortably underneath the 495 MB hard ceiling.
+
+COMMAND: ./jules-verify.sh
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: All Spec Kit task-artifact verifier tests passed. Refresh Docs Tests passed.
+
+COMMAND: pnpm exec playwright test tests/visual/crystal-ball-daily-limit.spec.ts tests/visual/crystal-ball-interactions.spec.ts
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: `6 passed (1.1m)` - Handled visual end-to-end playwright regression testing successfully.
+
+🔴 EXACT FINAL CHANGED-FILE RECONCILIATION
+- `.specify/features/crystal-ball-fixes/plan.md`
+- `.specify/features/crystal-ball-fixes/spec.md`
+- `.specify/features/crystal-ball-fixes/tasks.md`
+- `.specify/feature.json`
+- `app/components/CrystalBall/CrystalBall.tsx`
+- `next-env.d.ts` (Auto-updated type mappings from build)
+- `tests/visual/crystal-ball-daily-limit.spec.ts`
+- `tests/visual/crystal-ball-interactions.spec.ts`
+- `pr_summary.txt`
+
+🔴 VISUAL/BEHAVIORAL CONFIRMATION
+- **Markdown Handling**: Replaced `/[\*_]{1,2}/g` dynamically at the assignment phase, preventing typewriter from flashing bold asterisks.
+- **Post-reveal Controls**: Added `status === 'idle'` block check to safely show `Ask Another Question` below the daily quota, completely replacing the form when complete.
+- **Subsequent Question**: Button successfully resets `status` to idle, clears `currentFortune`, and reveals the `textarea` + `Seek Fortune` interface again, keeping the daily count authoritative.
+- **Preserved Limits**: Did not touch `CrystalBallClient.js` which maintains the authoritative allowance logic.
+- **Removed Redundant Instruction**: Spliced out the `.cardHint` node entirely.
+
+🔴 REMAINING ISSUES
+None.
+
+🔴 PRE-SUBMISSION DOUBLE-CHECK
+Completed. Diff has been validated to strictly map to the three required changes. No unrelated files were altered.
+
+🔴 USEFUL RESULT
+YES
