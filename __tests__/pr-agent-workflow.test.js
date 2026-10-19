@@ -16,7 +16,6 @@ describe('Gemini PR-Agent workflow configuration', () => {
   it('selects Gemini 3.8 Flash with ordered 3.6 Flash and 3.5 Flash-Lite fallbacks', () => {
     expect(workflow).toMatch(/^          config\.model: "gemini\/gemini-3\.8-flash"$/m);
     expect(workflow).toContain(`          config.fallback_models: '["gemini/gemini-3.6-flash", "gemini/gemini-3.5-flash-lite"]'`);
-    expect(workflow).not.toContain('gemini/gemini-2.0-flash');
     expect(workflow).not.toContain('gpt-5.6-terra');
   });
 
@@ -33,4 +32,30 @@ describe('Gemini PR-Agent workflow configuration', () => {
     expect(workflow).toContain('Gemini credential is configured; its value will not be printed.');
     expect(workflow).not.toMatch(/echo .*GEMINI_API_KEY\s*$/m);
   });
+
+  it('requests a deeper multi-area review and inline findings', () => {
+    expect(workflow).toContain('pr_reviewer.num_max_findings: "8"');
+    expect(workflow).toContain('pr_reviewer.inline_key_issues: "true"');
+    expect(workflow).toContain('pr_reviewer.require_tests_review: "true"');
+    expect(workflow).toContain('pr_reviewer.require_security_review: "true"');
+    expect(workflow).toContain('pr_reviewer.require_risk_assessment: "true"');
+    expect(workflow).toContain('pr_reviewer.require_merge_recommendation: "true"');
+    expect(workflow).toContain('pr_reviewer.require_failure_modes: "true"');
+    expect(workflow).toContain('pr_reviewer.extra_instructions: >-');
+    for (const focus of [
+      'Correctness and bugs:',
+      'Security and integrity:',
+      'Performance:',
+      'SEO:',
+      'Visual/UI behavior:',
+      'Accessibility:',
+      'Tests:',
+      'supporting code evidence',
+      'Do not invent findings',
+      'Never claim actual visual QA',
+    ]) {
+      expect(workflow).toContain(focus);
+    }
+  });
+
 });
