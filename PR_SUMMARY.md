@@ -79,11 +79,11 @@
 
 ## IMPLEMENTATION, BOUNDARIES, AND REMAINING ISSUES
 
-- Fixed step-level workflow structure, selected `gemini/gemini-3.8-flash`, aligned the GitHub Actions and PR-Agent event filters, removed the bot-sender exclusion, added a credential-presence preflight, and configured Gemini 3.6 Flash as the fallback while keeping Gemini 3.8 Flash primary.
+- Fixed step-level workflow structure, selected `gemini/gemini-3.8-flash`, aligned the GitHub Actions and PR-Agent event filters, removed the bot-sender exclusion, added a credential-presence preflight, and configured Gemini 3.5 Flash-Lite as the fallback while keeping Gemini 3.8 Flash primary.
 - Kept the pinned PR-Agent action, existing GitHub permissions, and review-only behavior. Auto description and auto improvement remain disabled.
 - No changes to CodeRabbit, Amazon Q, Robin retirement, API routes, app UI, dependencies, deployment workflows, or the secret value.
 - **Secret status: UNKNOWN** — GitHub repository secret values and secret existence cannot be queried through the available interface. The new preflight will confirm availability on a workflow run.
-- **Live reviewer status: NOT YET VERIFIED** — the first PR-Agent run passed preflight and attempted `gemini/gemini-3.8-flash`, but Google returned HTTP 503 `UNAVAILABLE` with a temporary high-demand message. PR-Agent then attempted the unrelated default `gpt-5.6-terra` fallback, which failed because no usable OpenAI key is configured. The workflow now falls back to Gemini 3.6 Flash and does not use the unrelated default OpenAI model. A successful review is still required.
+- **Live reviewer status: NOT YET VERIFIED** — the first PR-Agent run passed preflight and attempted `gemini/gemini-3.8-flash`, but Google returned HTTP 503 `UNAVAILABLE` with a temporary high-demand message. PR-Agent then attempted the unrelated default `gpt-5.6-terra` fallback, which failed because no usable OpenAI key is configured. The workflow now falls back to Gemini 3.5 Flash-Lite and does not use the unrelated default OpenAI model. A successful review is still required.
 - A local checkout attempt failed because the execution environment could not resolve `github.com`. Local shell-based tests/build/governance checks are therefore not claimed.
 - **Scope authorization**: user explicitly authorized direct implementation and a new PR. The change only consumes the intended existing secret; it does not create or modify any secret.
 
@@ -124,7 +124,7 @@
   - **EVIDENCE/OUTPUT SUMMARY**: Validate OpenNext run 39276675103 passed Next.js build and the explicit 495 MiB size gate. Its current final outcome must still be verified for full OpenNext/Wrangler validation.
 - **COMMAND**: Live Gemini review
   - **RESULT**: FAILED TRANSIENTLY; RETRY REQUIRED
-  - **EVIDENCE/OUTPUT SUMMARY**: The credential preflight passed; PR-Agent attempted the documented `gemini/gemini-3.8-flash` primary model twice and received HTTP 503 `UNAVAILABLE` (high demand). The prior unrelated OpenAI fallback was removed; Gemini 3.6 Flash is now the fallback. A visible review is still not confirmed.
+  - **EVIDENCE/OUTPUT SUMMARY**: The credential preflight passed; PR-Agent attempted the documented `gemini/gemini-3.8-flash` primary model twice and received HTTP 503 `UNAVAILABLE` (high demand). The prior unrelated OpenAI fallback was removed; Gemini 3.5 Flash-Lite is now the fallback. A visible review is still not confirmed.
 
 ## PRE-SUBMISSION DOUBLE-CHECK
 
