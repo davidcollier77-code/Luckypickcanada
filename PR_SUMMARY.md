@@ -1,4 +1,124 @@
-# PR Summary — Gemini PR-Agent Workflow Repair
+# PR Summary — Gemini All-in-One Review Depth Enhancement
+
+## TASK ROUTING
+
+- **SELECTED TASK GROUP**: troubleshooting
+- **GROUP REASON**: Improve the output of the existing automatic Gemini PR review after sparse feedback was observed; this refines an existing review workflow, rather than adding a new reviewer/provider.
+
+## GOVERNANCE AND EXECUTION METHOD
+
+- Read root `AGENTS.md` first, then inspected `.jules/jules.md`, `.jules/troubleshooting.md`, Memory Bank context, `.docs/manifest.json`, repository-routed Gemini/GitHub references, the current workflow, test, Spec Kit pointer, and relevant active feature artifacts.
+- Consulted current PR-Agent documentation for the documented finding limit, inline issue comments, extra review instructions, risk assessment, merge recommendation, and failure-mode settings.
+- **Environment limitation**: the connected shell could not resolve `github.com` (`git ls-remote https://github.com/davidcollier77-code/Luckypickcanada.git HEAD` failed with a DNS resolution error). Changes were written through the GitHub repository API. Spec Kit setup scripts and `./jules-verify.sh` could not be executed locally. The PR must not be treated as merge-ready until current-head CI demonstrates required verification.
+- **Specify**: `.jules/cmds/speckit.specify.md`; method: artifact drafted directly via GitHub API; `.specify/features/gemini-review-depth/spec.md`; the setup script/command itself was **not executed locally**.
+- **Plan**: `.jules/cmds/speckit.plan.md`; method: artifact drafted directly via GitHub API; `.specify/features/gemini-review-depth/plan.md`; `.specify/scripts/bash/setup-plan.sh --json` was **not executed locally**.
+- **Tasks**: `.jules/cmds/speckit.tasks.md`; method: artifact drafted directly via GitHub API; `.specify/features/gemini-review-depth/tasks.md`; `.specify/scripts/bash/setup-tasks.sh --json` was **not executed locally**.
+- **Implement**: `.jules/cmds/speckit.implement.md`; implementation candidate authored through the repository API. Native Jules slash-command dispatch was unavailable; local `./jules-verify.sh` remains **pending current-head CI**.
+- `.specify/feature.json` points to the active task directory `.specify/features/gemini-review-depth`.
+
+## REQUIRED LIBRARIES
+
+- **LIBRARY**: The-PR-Agent/pr-agent
+  - **VERSION**: `fbf7f6d3fcff6d9bf15aef7d8f4a6c2cacc7ad1f` (existing pin, unchanged)
+  - **USED**: YES
+  - **USEFUL**: YES
+  - **REASON**: Its configuration reference established the supported finding ceiling, inline publication, custom instructions, and structured review options.
+- **LIBRARY**: Vitest
+  - **VERSION**: Existing repository dependency `^5.0.0`
+  - **USED**: YES
+  - **USEFUL**: YES
+  - **REASON**: Extended the existing workflow regression test; a local test execution was not available in this connected environment.
+- No dependency was added, removed, or upgraded.
+
+## REQUIRED ROUTED DOCUMENTS
+
+- **DOCUMENT**: `.docs/troubleshooting/jules_google_docs.md`
+  - **USED**: YES; **USEFUL**: NO
+  - **REASON**: Retrieved as the required repository-routed troubleshooting reference; it documents Jules CLI rather than PR-Agent settings.
+- **DOCUMENT**: `.docs/troubleshooting/developers_google_com_jules_api.md`
+  - **USED**: YES; **USEFUL**: NO
+  - **REASON**: Retrieved as the required standing agent reference; the task did not use the Jules REST API.
+- **DOCUMENT**: `.docs/troubleshooting/_google-gemini_gemini-cli.md`
+  - **USED**: YES; **USEFUL**: NO
+  - **REASON**: Retrieved as required repository documentation; Gemini CLI usage does not configure this GitHub Action.
+- **DOCUMENT**: `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md`
+  - **USED**: YES; **USEFUL**: NO
+  - **REASON**: Retrieved as the repository-routed provider documentation; the actual PR-Agent setting names were confirmed from PR-Agent's own current configuration documentation.
+- **DOCUMENT**: `.docs/troubleshooting/_github_docs.md`
+  - **USED**: YES; **USEFUL**: YES
+  - **REASON**: Consulted for repository workflow and GitHub Action context.
+- **DOCUMENT**: `.docs/manifest.json`
+  - **USED**: YES; **USEFUL**: YES
+  - **REASON**: Checked the repository's routed troubleshooting reference inventory.
+- **DOCUMENT**: PR-Agent configuration reference — https://docs.pr-agent.ai/usage-guide/configuration_reference/
+  - **USED**: YES; **USEFUL**: YES
+  - **REASON**: Verified supported configuration names and the existing default finding limit of three.
+- **DOCUMENT**: PR-Agent GitHub Action installation documentation — https://docs.pr-agent.ai/installation/github/
+  - **USED**: YES; **USEFUL**: YES
+  - **REASON**: Verified that custom review settings can be passed through the action step's environment mapping.
+
+## IMPLEMENTATION AND PRESERVATION
+
+- Added `pr_reviewer.num_max_findings: "8"`; eight is a maximum, not a required count.
+- Enabled `pr_reviewer.inline_key_issues` so actionable findings can be published inline where supported.
+- Enabled explicit test/security review, risk assessment, merge recommendation, and failure-mode review options.
+- Added evidence-first reviewer instructions for correctness/bugs, security, performance, SEO, visual/UI regressions, accessibility, and missing tests.
+- Instructions prohibit fabricated, duplicated, vague, unrelated findings and false claims of actual visual QA.
+- Extended the existing static workflow regression test.
+- Preserved the Gemini primary model, both existing Gemini fallbacks and their order, pinned action, triggers, permissions, credential preflight, and review-only behavior. Automatic description and code-improvement features remain disabled.
+- No app runtime, dependencies, secrets, payments, APIs, or deployment settings were changed.
+
+## EXACT CHANGED-FILE RECONCILIATION
+
+- `.github/workflows/pr-agent.yml`
+- `__tests__/pr-agent-workflow.test.js`
+- `.specify/feature.json`
+- `.specify/features/gemini-review-depth/spec.md`
+- `.specify/features/gemini-review-depth/plan.md`
+- `.specify/features/gemini-review-depth/tasks.md`
+- `.specify/features/gemini-review-depth/research.md`
+- `.specify/features/gemini-review-depth/quickstart.md`
+- `.specify/features/gemini-review-depth/checklists/requirements.md`
+- `PR_SUMMARY.md`
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+
+## VERIFICATION RESULTS
+
+- **COMMAND**: `git ls-remote https://github.com/davidcollier77-code/Luckypickcanada.git HEAD`
+  - **RESULT**: FAIL (environment limitation)
+  - **EVIDENCE/OUTPUT SUMMARY**: Local shell could not resolve `github.com`; no repository checkout was available.
+- **COMMAND**: `pnpm exec vitest run __tests__/pr-agent-workflow.test.js`
+  - **RESULT**: PENDING current-head CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Not executed locally because a checkout and dependency installation were unavailable.
+- **COMMAND**: `pnpm run test`
+  - **RESULT**: PENDING current-head CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Not executed locally for the same environment limitation.
+- **COMMAND**: `./jules-verify.sh`
+  - **RESULT**: PENDING current-head CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Not executed locally; repository governance remains an explicit merge gate.
+- **COMMAND**: `pnpm tsc --noEmit`
+  - **RESULT**: NOT RUN
+  - **EVIDENCE/OUTPUT SUMMARY**: Workflow/test-only change; no TypeScript source changed. Any required repository CI check still takes precedence.
+- **COMMAND**: `pnpm exec playwright test`
+  - **RESULT**: NOT RUN
+  - **EVIDENCE/OUTPUT SUMMARY**: No application UI/runtime code changed; reviewer visual claims are explicitly constrained to available screenshot/browser evidence.
+- **COMMAND**: Production/OpenNext build and `.next + public` size gate
+  - **RESULT**: NOT RUN for this candidate
+  - **EVIDENCE/OUTPUT SUMMARY**: No production source or dependency changed, but repository CI's required build-size gate remains authoritative; the 495 MiB hard maximum is unchanged.
+- **COMMAND**: Live Gemini review using the new instructions
+  - **RESULT**: PENDING
+  - **EVIDENCE/OUTPUT SUMMARY**: The settings are committed to a PR branch. One natural eligible event may run the current default-branch workflow; the new settings are not considered live-verified until the updated configuration reaches `main` and a subsequent review visibly demonstrates its behavior.
+
+## PRE-SUBMISSION DOUBLE-CHECK
+
+The workflow and test were inspected after editing. The exact changed-file inventory above is intended to match the final PR diff. Current-head CI and the Spec Kit governance gate must pass before merging; no local pass is claimed.
+
+**USEFUL RESULT**: NO — the implementation candidate is prepared, but required current-head verification and live review evidence remain pending.
+
+---
+
+## Previous task record — Gemini PR-Agent Workflow Repair
 
 ## TASK ROUTING
 
