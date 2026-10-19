@@ -84,6 +84,7 @@ export default function FAQSection() {
         {faqs.map((faq, index) => {
           const isOpen = openQuestion === faq.question;
           const contentId = `faq-answer-${index}`;
+          const buttonId = `faq-btn-${index}`;
           return (
             <div
               key={faq.question}
@@ -98,6 +99,7 @@ export default function FAQSection() {
               <button
                 onClick={() => toggleFaq(faq.question)}
                 aria-expanded={isOpen}
+                id={buttonId}
                 aria-controls={contentId}
                 className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
                 style={{
@@ -135,6 +137,9 @@ export default function FAQSection() {
 
               <div
                 id={contentId}
+                role="region"
+                aria-labelledby={buttonId}
+                hidden={!isOpen ? true : undefined}
                 style={{
                   maxHeight: isOpen ? '500px' : '0',
                   overflow: 'hidden',
