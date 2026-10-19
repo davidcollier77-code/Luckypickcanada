@@ -113,9 +113,11 @@ test('Crystal Ball sequence: flashes, drops a duplicate leaf before typing, comp
   await expect(glowElement).toHaveClass(/ballInnerGlowPulse/, { timeout: 10000 });
 
   // Expect the question input button to have reset to "Seek Fortune" after completion pulse
-  await expect(page.getByRole('button', { name: 'Seek Fortune' })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('button', { name: 'Ask Another Question' })).toBeVisible({ timeout: 10000 });
 
   // The user can submit another question in the same session.
+  await page.getByRole('button', { name: 'Ask Another Question' }).click();
+  await expect(questionInput).toBeVisible({ timeout: 2000 });
   await questionInput.fill('Can I ask a second question?');
   await expect(seekButton).toBeEnabled();
   await seekButton.click();

@@ -47,12 +47,20 @@ COMMAND: ./jules-verify.sh
 RESULT: PASS
 EVIDENCE/OUTPUT SUMMARY: All Spec Kit task-artifact verifier tests passed. Refresh Docs Tests passed.
 
+COMMAND: pnpm exec playwright test tests/visual/crystal-ball-daily-limit.spec.ts tests/visual/crystal-ball-interactions.spec.ts
+RESULT: PASS
+EVIDENCE/OUTPUT SUMMARY: `6 passed (1.1m)` - Handled visual end-to-end playwright regression testing successfully.
+
 🔴 EXACT FINAL CHANGED-FILE RECONCILIATION
 - `.specify/features/crystal-ball-fixes/plan.md`
 - `.specify/features/crystal-ball-fixes/spec.md`
 - `.specify/features/crystal-ball-fixes/tasks.md`
+- `.specify/feature.json`
 - `app/components/CrystalBall/CrystalBall.tsx`
 - `next-env.d.ts` (Auto-updated type mappings from build)
+- `tests/visual/crystal-ball-daily-limit.spec.ts`
+- `tests/visual/crystal-ball-interactions.spec.ts`
+- `pr_summary.txt`
 
 🔴 VISUAL/BEHAVIORAL CONFIRMATION
 - **Markdown Handling**: Replaced `/[\*_]{1,2}/g` dynamically at the assignment phase, preventing typewriter from flashing bold asterisks.
