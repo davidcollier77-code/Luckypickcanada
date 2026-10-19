@@ -9,13 +9,13 @@
 
 ## Phase 2: Workflow repair
 
-- [x] T003 Correct event handling, step-level secret/configuration mapping, Gemini model selection, and missing-secret diagnostics in `.github/workflows/pr-agent.yml`.
-- [x] T004 Add workflow regression coverage in `__tests__/pr-agent-workflow.test.js`.
+- [x] T003 Correct event handling, step-level secret/configuration mapping, Gemini model selection, same-provider fallback, and missing-secret diagnostics in `.github/workflows/pr-agent.yml`.
+- [x] T004 Add workflow regression coverage in `__tests__/pr-agent-workflow.test.js`, using a repository-root path that works in Vitest's runner.
 - [x] T005 Update the canonical task summary in `PR_SUMMARY.md` and current repository context in `memory-bank/activeContext.md` and `memory-bank/progress.md`.
 
 ## Phase 3: Verification and live acceptance
 
-- [ ] T006 Run `pnpm exec vitest run __tests__/pr-agent-workflow.test.js` and `pnpm run test`; resolve in-scope failures.
+- [ ] T006 Rerun `pnpm exec vitest run __tests__/pr-agent-workflow.test.js` and `pnpm run test`; resolve in-scope failures. The first full-suite run exposed a URL-base issue in the new test, now corrected.
 - [ ] T007 Run `pnpm tsc --noEmit`, `./jules-verify.sh`, Playwright, and the OpenNext/Cloudflare validation including the 495 MiB size gate.
 - [ ] T008 Inspect the full PR diff and confirm GitHub Actions checks after PR creation. Local commands are blocked in this session; use actual CI evidence and record its result in `PR_SUMMARY.md`.
 - [ ] T009 After the workflow reaches `main`, verify an eligible PR event completes the PR-Agent job and posts a Gemini review. Confirm secret availability without disclosing its value.

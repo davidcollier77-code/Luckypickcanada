@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const workflowPath = fileURLToPath(new URL('../.github/workflows/pr-agent.yml', import.meta.url));
+const workflowPath = resolve(process.cwd(), '.github', 'workflows', 'pr-agent.yml');
 const workflow = readFileSync(workflowPath, 'utf8');
 
 describe('Gemini PR-Agent workflow configuration', () => {
@@ -15,7 +15,9 @@ describe('Gemini PR-Agent workflow configuration', () => {
 
   it('selects the intended Gemini 3.8 Flash model', () => {
     expect(workflow).toMatch(/^          config\.model: "gemini\/gemini-3\.8-flash"$/m);
+    expect(workflow).toContain("          config.fallback_models: '[\"gemini/gemini-3.8-flash\"]'");
     expect(workflow).not.toContain('gemini/gemini-2.0-flash');
+    expect(workflow).not.toContain('gpt-5.6-terra');
   });
 
   it('runs a review for opened, reopened, synchronized, ready, and review-requested PRs', () => {

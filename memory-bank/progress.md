@@ -172,3 +172,10 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Prepared a focused correction with secure secret-availability preflight, bot-event support, matching event filters, and static workflow regression coverage.
 - Added/updated active Spec Kit records and the canonical PR summary.
 - Verification is still pending GitHub Actions because the connected local shell could not resolve github.com. A live post-merge PR-Agent run and visible Gemini review remain required acceptance evidence.
+
+
+## 2026-10-19 — Gemini PR-Agent CI Findings and Follow-up
+
+- First run on PR #1530 passed the safe credential-presence preflight and invoked `gemini/gemini-3.8-flash`. Google returned HTTP 503 `UNAVAILABLE` with a high-demand message; PR-Agent then tried its default `gpt-5.6-terra` fallback and failed because no usable OpenAI key is configured.
+- Current official Google model documentation lists `gemini-3.8-flash` as a stable model ID: https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash. Current PR-Agent documentation also uses `gemini/gemini-3.8-flash`: https://docs.pr-agent.ai/installation/github/. The automated review's claim that the model ID does not exist is contradicted by the official sources and logged model request.
+- Follow-up: limit the fallback to the same Gemini model, fix the new regression test's Vitest-incompatible path resolution, and rerun CI. Initial full-suite result: 13 existing files passed with 87 tests; new suite failed during module setup. Current-head rerun is required.

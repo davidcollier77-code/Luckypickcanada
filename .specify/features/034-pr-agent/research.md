@@ -9,6 +9,12 @@
 - **Verified**: A job condition on `github.event.sender.type != 'Bot'` could skip the event when a repository automation creates or updates the PR.
 - **Verified**: GitHub's trigger list and PR-Agent's internal `github_action_config.pr_actions` list must remain consistent for the desired event types.
 
+### Live PR-Agent run evidence
+
+- **Verified from run 39275836714**: the credential preflight passed. PR-Agent logged that it was generating a prediction with `gemini/gemini-3.8-flash`; the Google endpoint then returned HTTP 503 `UNAVAILABLE` with a temporary high-demand message. This was not a model-not-found response.
+- **Verified failure path**: after Gemini failed, PR-Agent attempted its unrelated default `gpt-5.6-terra` fallback, which failed because no usable OpenAI key is configured. The workflow is intended to be Gemini-only; its fallback list is now explicitly constrained to the same Gemini model, consistent with the provider's documented GitHub Action configuration.
+- **Regression-test correction**: the first full Vitest run found that `fileURLToPath(new URL(..., import.meta.url))` received a non-file URL from the Vitest transform. The test now resolves the workflow from the repository working directory; its rerun is pending.
+
 ### Provider configuration
 
 - **Decision**: Keep the existing immutable PR-Agent action reference: `the-pr-agent/pr-agent@fbf7f6d3fcff6d9bf15aef7d8f4a6c2cacc7ad1f`.

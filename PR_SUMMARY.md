@@ -79,11 +79,11 @@
 
 ## IMPLEMENTATION, BOUNDARIES, AND REMAINING ISSUES
 
-- Fixed step-level workflow structure, selected `gemini/gemini-3.8-flash`, aligned the GitHub Actions and PR-Agent event filters, removed the bot-sender exclusion, and added a credential-presence preflight that does not print the secret.
+- Fixed step-level workflow structure, selected `gemini/gemini-3.8-flash`, aligned the GitHub Actions and PR-Agent event filters, removed the bot-sender exclusion, added a credential-presence preflight, and constrained fallback to Gemini only.
 - Kept the pinned PR-Agent action, existing GitHub permissions, and review-only behavior. Auto description and auto improvement remain disabled.
 - No changes to CodeRabbit, Amazon Q, Robin retirement, API routes, app UI, dependencies, deployment workflows, or the secret value.
 - **Secret status: UNKNOWN** — GitHub repository secret values and secret existence cannot be queried through the available interface. The new preflight will confirm availability on a workflow run.
-- **Live reviewer status: NOT YET VERIFIED** — a visible Gemini review must be observed from a new supported PR event after this workflow is on the default branch.
+- **Live reviewer status: NOT YET VERIFIED** — the first PR-Agent run passed preflight and attempted `gemini/gemini-3.8-flash`, but Google returned HTTP 503 `UNAVAILABLE` with a temporary high-demand message. PR-Agent then attempted the unrelated default `gpt-5.6-terra` fallback, which failed because no usable OpenAI key is configured. The workflow now restricts fallback to the same Gemini model. A successful review is still required.
 - A local checkout attempt failed because the execution environment could not resolve `github.com`. Local shell-based tests/build/governance checks are therefore not claimed.
 - **Scope authorization**: user explicitly authorized direct implementation and a new PR. The change only consumes the intended existing secret; it does not create or modify any secret.
 
@@ -104,26 +104,26 @@
 ## VERIFICATION RESULTS
 
 - **COMMAND**: `pnpm exec vitest run __tests__/pr-agent-workflow.test.js`
-  - **RESULT**: NOT RUN LOCALLY
-  - **EVIDENCE/OUTPUT SUMMARY**: This connected session had no usable repository checkout; cloning was blocked by DNS resolution for `github.com`. The added regression test is expected to execute in PR CI.
+  - **RESULT**: FAILED ON FIRST CI RUN; PATH FIX COMMITTED
+  - **EVIDENCE/OUTPUT SUMMARY**: CI reported `TypeError: The URL must be of scheme file` from the new test's `fileURLToPath(new URL(..., import.meta.url))`. The test now uses `resolve(process.cwd(), ...)`; current-head rerun is required.
 - **COMMAND**: `pnpm run test`
-  - **RESULT**: NOT RUN LOCALLY
-  - **EVIDENCE/OUTPUT SUMMARY**: Same checkout/DNS blocker; awaiting CI result.
+  - **RESULT**: FAILED ON FIRST CI RUN; CURRENT-HEAD RERUN REQUIRED
+  - **EVIDENCE/OUTPUT SUMMARY**: Existing test cases produced 13 passing files / 87 passing tests; the only reported failure was module setup for the new workflow test, now corrected.
 - **COMMAND**: `pnpm tsc --noEmit`
-  - **RESULT**: NOT RUN LOCALLY
-  - **EVIDENCE/OUTPUT SUMMARY**: Same checkout/DNS blocker; awaiting CI result.
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Initial Visual QA stopped after the full test-suite failure, so TypeScript did not run in that attempt.
 - **COMMAND**: `./jules-verify.sh`
-  - **RESULT**: NOT RUN LOCALLY
-  - **EVIDENCE/OUTPUT SUMMARY**: Same checkout/DNS blocker; awaiting CI result.
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Initial Visual QA stopped before the governance gate.
 - **COMMAND**: `pnpm exec playwright test`
-  - **RESULT**: NOT RUN LOCALLY
-  - **EVIDENCE/OUTPUT SUMMARY**: Same checkout/DNS blocker; awaiting CI result.
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Initial Visual QA stopped before Playwright.
 - **COMMAND**: OpenNext build and measured `.next + public` size check (495 MiB hard limit)
-  - **RESULT**: NOT RUN LOCALLY
-  - **EVIDENCE/OUTPUT SUMMARY**: No local repository shell is available; existing GitHub Actions validation is expected to report the actual measured size.
-- **COMMAND**: Live Gemini review on a post-merge eligible PR event
-  - **RESULT**: PENDING
-  - **EVIDENCE/OUTPUT SUMMARY**: Cannot pass until the corrected workflow is present on `main` and a supported PR event confirms a visible review.
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: The first validation run had begun building at latest inspection; its final outcome and measured size must be retrieved.
+- **COMMAND**: Live Gemini review
+  - **RESULT**: FAILED TRANSIENTLY; RETRY REQUIRED
+  - **EVIDENCE/OUTPUT SUMMARY**: Run 39275836714 passed the credential-presence preflight and invoked the documented model `gemini/gemini-3.8-flash`; the provider returned HTTP 503 `UNAVAILABLE` (high demand). PR-Agent then tried the unrelated default `gpt-5.6-terra` fallback and failed because no usable OpenAI key is configured. The fallback has now been limited to the same Gemini model; a successful run with a visible review remains unverified.
 
 ## PRE-SUBMISSION DOUBLE-CHECK
 
