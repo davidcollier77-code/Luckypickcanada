@@ -1,3 +1,22 @@
+# Progress — 2026-10-19: Sky Background Repair CI Follow-up
+
+- First repair PR CI on commit c109d46ff2ca3825d617da51f0dace56f4fa07cb: unit tests 17 passed/0 failed, TypeScript and Spec Kit verification passed. Visual QA had 22 passed, 3 skipped, 2 failures in the newly added check because it only accepted the desktop background image filename on narrow mobile viewports.
+- The computed CSS selected the intended mobile image-set at 390px/412px, and the captured homepage screenshot visibly shows the starry background. Since the loop stopped on the homepage, Crystal Ball and Lucky Map have not yet been validated by the new assertion.
+- Corrected the Playwright assertion to choose the expected background asset based on the theme's 820px CSS breakpoint; clarified the corresponding Spec Kit success criterion. This only modifies test/governance records, not page visuals.
+- OpenNext run 39327043610 passed the Next.js build, 495 MiB size gate (combined .next + public measured 325,580,929 bytes / 310.50 MiB), OpenNext Cloudflare bundle, and Wrangler no-deploy validation.
+- Final verification remains pending on the new head; do not claim the Crystal Ball/Lucky Map backgrounds are restored until route-level browser checks pass.
+
+---
+
+# Progress — 2026-10-19: Shared Sky Background Regression
+
+- Compared the supplied video report with the merged CSS performance change. The source tree still contains the shared backdrop elements and CSS rules, while PR #1532 changed the theme stylesheet import placement/order.
+- Restored the known-good import placement in app/layout.js and removed the added theme import from app/globals.css. Added a Playwright regression check for the homepage, Crystal Ball, and Lucky Map computed backdrop styles.
+- No sky images, component styling rules, Lucky Meter/Card Reveal code, copy, interactions, dependencies, or deployment settings were changed.
+- Verification is pending: local shell cannot resolve github.com. Targeted/full Playwright, pnpm tests, TypeScript, ./jules-verify.sh, OpenNext and the measured 495 MiB build-size gate must pass on current head.
+
+---
+
 # Progress — 2026-10-19
 
 - **Gemini all-in-one PR review depth candidate**: On `fix/gemini-review-depth-1533`, expanded the existing PR-Agent workflow to allow up to eight substantiated findings, publish line-anchored findings, and request risk assessment, merge recommendation, failure modes, and an evidence-led review across bugs, security, performance, SEO, UI, accessibility, and testing. Extended the workflow regression test and added task-scoped Spec Kit artifacts.

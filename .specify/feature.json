@@ -1,1 +1,4 @@
-{"feature_directory":".specify/features/gemini-review-depth","active":true}
+{
+  "feature_directory": ".specify/features/restore-shared-sky-backgrounds",
+  "active": true
+}

@@ -1,3 +1,100 @@
+# PR Summary — Restore Shared Sky Backgrounds
+
+## Latest CI findings — 2026-10-19
+
+- **Visual QA run #599**: [run 39327043606](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39327043606). Dependency install, targeted Crystal Ball/Oracle tests, full unit tests (17 passed, 0 failed), standalone TypeScript, Spec Kit governance verification, and committed visual-baseline verification all passed.
+- **Playwright result**: 22 passed, 3 skipped, 2 failed. Both failures were the new test at tests/visual/homepage.spec.ts:77 in mobile-390 and mobile-412 projects. The assertion incorrectly demanded the desktop background filename at every width; the computed CSS correctly returned crystal-ball-bg-mobile.webp/.avif/.jpeg at mobile widths up to 820px. The captured homepage screenshot shows the starry background visible. The loop stopped on the homepage assertion, so this run did NOT test the Crystal Ball or Lucky Map routes.
+- **Test correction**: Changed the assertion to expect the existing mobile asset at widths <=820px and desktop asset above 820px. Updated SC-001 to document the responsive rule. This is a regression-test correction, not an application CSS or visual change.
+- **OpenNext run**: [run 39327043610](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39327043610) passed Next.js build, the hard-size gate, OpenNext Cloudflare build, compiled CSS/worker/assets checks, and Wrangler no-deploy validation. Measured .next + public: 325,580,929 bytes (310.50 MiB), below 495 MiB.
+- **Remaining verification**: The repaired test must run on the new head to check /, /crystal-ball, and /map in each configured viewport. The visual issue is not considered resolved until those route assertions and the screenshot/browser checks pass. No review job or extra manual test was triggered; the next run is the normal automatic response to this correction.
+
+## TASK ROUTING
+
+- **SELECTED TASK GROUP**: troubleshooting
+- **GROUP REASON**: A visual regression appeared after the latest shared CSS performance change; the task restores the previously working stylesheet import order and adds a focused browser regression check.
+
+## GOVERNANCE AND EXECUTION METHOD
+
+- Read root AGENTS.md first.
+- Inspected current main, merged PR #1532's source diff, app/layout.js, app/globals.css, themes/default/index.css, themes/default/homepage.css, homepage/Crystal Ball/Lucky Map markup, the existing visual test, package scripts, and Visual QA workflow.
+- Read the routed troubleshooting references for Jules, Gemini CLI/API, GitHub Actions, Next.js, and the documentation manifest; also inspected the repository troubleshooting guide and relevant CSS-loading guide.
+- Spec Kit stage definitions were inspected. Native Jules slash-command dispatch and repository-local setup scripts could not be executed because the connected shell cannot resolve github.com; the task artifacts were authored directly via the GitHub repository API. Current-head CI must run ./jules-verify.sh before any completion claim.
+- **Specify**: .jules/cmds/speckit.specify.md; method: FILE-DRIVEN ARTIFACT AUTHORING VIA GITHUB API; artifact: .specify/features/restore-shared-sky-backgrounds/spec.md; setup script not run locally.
+- **Plan**: .jules/cmds/speckit.plan.md; method: FILE-DRIVEN ARTIFACT AUTHORING VIA GITHUB API; artifact: .specify/features/restore-shared-sky-backgrounds/plan.md; setup script not run locally.
+- **Tasks**: .jules/cmds/speckit.tasks.md; method: FILE-DRIVEN ARTIFACT AUTHORING VIA GITHUB API; artifact: .specify/features/restore-shared-sky-backgrounds/tasks.md; setup script not run locally.
+- **Implement**: .jules/cmds/speckit.implement.md; method: GITHUB API SOURCE EDITS; implementation candidate committed in the repair PR. Local check-prerequisites and ./jules-verify.sh could not run in this session.
+
+## ROOT-CAUSE ASSESSMENT
+
+- **VERIFIED**: PR #1532 moved the import of themes/default/index.css out of app/layout.js and into app/globals.css after Tailwind's stylesheet import.
+- **VERIFIED**: The shared sky backdrop element and its CSS definitions still exist in the homepage, Crystal Ball, and Lucky Map markup/theme source.
+- **HYPOTHESIS, pending route verification**: The changed import location/order may have affected theme application/cascade on the Crystal Ball and Lucky Map. The regression followed the import-only performance update; the first CI run's screenshot confirms the homepage star field is visible after restoring import order, but its route loop stopped on a mobile-asset assertion before reaching Crystal Ball and Lucky Map.
+- Restored the known-good order: import themes/default/index.css before app/globals.css in app/layout.js, and removed the duplicate theme @import from app/globals.css. This deliberately rolls back the CSS import-consolidation part of the performance change rather than risking the page visuals. A different optimization must first prove that it preserves these visuals.
+
+## REQUIRED LIBRARIES
+
+- **LIBRARY**: Next.js | **VERSION**: 16.3.8 | **USED**: YES | **USEFUL**: YES | **REASON**: Verified App Router layouts/routes and the existing global CSS loading point.
+- **LIBRARY**: Tailwind CSS | **VERSION**: 4.2.4 | **USED**: YES | **USEFUL**: YES | **REASON**: The recent import relocation was relative to the Tailwind stylesheet import.
+- **LIBRARY**: Playwright / playwright-chromium | **VERSION**: repository package range ^1.63.0 | **USED**: YES | **USEFUL**: YES | **REASON**: Added computed-style checks for the shared backdrop across the three reported routes.
+- No dependency was added, removed, or upgraded.
+
+## REQUIRED ROUTED DOCUMENTS AND COMPONENTS
+
+- **DOCUMENT**: .docs/troubleshooting/jules_google_docs.md | **USED**: YES | **USEFUL**: NO | **REASON**: Required troubleshooting-group reference; covers Jules CLI operation, not stylesheet order.
+- **DOCUMENT**: .docs/troubleshooting/developers_google_com_jules_api.md | **USED**: YES | **USEFUL**: NO | **REASON**: Required troubleshooting-group reference; remote Jules API is not used here.
+- **DOCUMENT**: .docs/troubleshooting/_google-gemini_gemini-cli.md | **USED**: YES | **USEFUL**: NO | **REASON**: Required routed provider/CLI reference; not relevant to CSS behavior.
+- **DOCUMENT**: .docs/troubleshooting/_websites_ai_google_dev_gemini-api.md | **USED**: YES | **USEFUL**: NO | **REASON**: Required routed provider reference; this repair does not call Gemini.
+- **DOCUMENT**: .docs/troubleshooting/_github_docs.md | **USED**: YES | **USEFUL**: YES | **REASON**: Supplied the repository's GitHub workflow/PR verification context.
+- **DOCUMENT**: .docs/troubleshooting/_vercel_next_js.md | **USED**: YES | **USEFUL**: YES | **REASON**: Consulted the routed Next.js troubleshooting reference while checking global CSS import behavior.
+- **DOCUMENT**: .docs/manifest.json | **USED**: YES | **USEFUL**: YES | **REASON**: Checked the troubleshooting reference inventory.
+- **DOCUMENT**: CSS_FIX_GUIDE.md | **USED**: YES | **USEFUL**: YES | **REASON**: Reviewed its stylesheet import troubleshooting advice; compared it with actual pre-regression source history rather than blindly following its stale examples.
+- **COMPONENT**: app/layout.js and app/globals.css | **USED**: YES | **USEFUL**: YES | **REASON**: The only application source files changed; restored the previous theme-first import.
+- **COMPONENT**: themes/default/index.css and themes/default/homepage.css | **USED**: YES | **USEFUL**: YES | **REASON**: Confirmed that the existing shared backdrop assets/rules were still present and should not be redesigned.
+- **COMPONENT**: app/page.js, app/crystal-ball/page.js, app/map/page.js, app/lucky-map-of-canada/lucky-map-of-canada.js | **USED**: YES | **USEFUL**: YES | **REASON**: Confirmed the affected routes still render the shared backdrop.
+- **COMPONENT**: tests/visual/homepage.spec.ts and .github/workflows/visual-qa.yml | **USED**: YES | **USEFUL**: YES | **REASON**: Added a focused regression test and identified the existing CI verification gate.
+- **COMPONENT**: package.json | **USED**: YES | **USEFUL**: YES | **REASON**: Verified existing pnpm/test/build script names and dependency versions.
+
+## EXACT CHANGED-FILE RECONCILIATION
+
+- app/layout.js
+- app/globals.css
+- tests/visual/homepage.spec.ts
+- .specify/feature.json
+- .specify/features/restore-shared-sky-backgrounds/spec.md
+- .specify/features/restore-shared-sky-backgrounds/plan.md
+- .specify/features/restore-shared-sky-backgrounds/tasks.md
+- .specify/features/restore-shared-sky-backgrounds/research.md
+- .specify/features/restore-shared-sky-backgrounds/quickstart.md
+- .specify/features/restore-shared-sky-backgrounds/checklists/requirements.md
+- PR_SUMMARY.md
+- memory-bank/activeContext.md
+- memory-bank/progress.md
+
+## VERIFICATION RESULTS
+
+- **COMMAND**: git ls-remote https://github.com/davidcollier77-code/Luckypickcanada.git HEAD
+  - **RESULT**: FAIL (environment limitation)
+  - **EVIDENCE/OUTPUT SUMMARY**: The connected shell could not resolve github.com; local checkout and local command execution were unavailable.
+- **COMMAND**: pnpm exec playwright test (Visual QA run 39327043606, job 118315466287, step 12)
+  - **RESULT**: FAIL — test assertion corrected for current head
+  - **EVIDENCE/OUTPUT SUMMARY**: 22 passed, 3 skipped, 2 failed. The failures were both the test expecting crystal-ball-bg-desktop at mobile widths 390px and 412px. Computed CSS correctly selected crystal-ball-bg-mobile. The homepage failure screenshot shows its starry background. The route loop stopped on / before testing /crystal-ball and /map. The assertion now branches at the actual CSS breakpoint (820px); current-head CI must confirm all target routes.
+- **COMMAND**: targeted Crystal Ball/Oracle Vitest tests; pnpm run test; pnpm tsc --noEmit; ./jules-verify.sh (Visual QA run 39327043606)
+  - **RESULT**: PASS
+  - **EVIDENCE/OUTPUT SUMMARY**: The relevant unit-test steps passed; the full unit suite reported 17 passed, 0 failed. TypeScript and Spec Kit governance verification passed. These passes precede the responsive-assertion correction and must be reconfirmed on the latest head.
+- **COMMAND**: pnpm run build; measured .next + public; pnpm exec opennextjs-cloudflare build; Wrangler no-deploy validation (OpenNext run 39327043610)
+  - **RESULT**: PASS
+  - **EVIDENCE/OUTPUT SUMMARY**: The Next.js/OpenNext/Cloudflare build and Wrangler validation passed. Measured .next + public was 325,580,929 bytes (310.50 MiB) against the hard maximum of 495 MiB. Re-run on the latest test-correction head before final approval.
+- **COMMAND**: visual confirmation using rendered browser screenshots
+  - **RESULT**: PENDING CURRENT-HEAD CI
+  - **EVIDENCE/OUTPUT SUMMARY**: Static source inspection confirmed markup and rules exist; the new computed-style test and current-head browser results are needed before claiming the backgrounds are restored.
+
+## PRE-SUBMISSION DOUBLE-CHECK
+
+The final diff must contain only the three source/test changes and the task-scoped governance records listed above. No sky artwork, images, colors, copy, Lucky Meter/Card Reveal component code, interactions, dependencies, application APIs, secrets, or deployment settings are intended to change.
+
+**USEFUL RESULT**: NO — fix candidate prepared; the visual regression is not considered verified until current-head CI passes.
+---
+
 # PR Summary — Gemini All-in-One Review Depth Enhancement
 
 ## Merge-conflict repair and Amazon Q findings — 2026-10-19
