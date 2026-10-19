@@ -1,3 +1,14 @@
+## Current Focus — Gemini All-in-One PR Review Depth (2026-10-19)
+
+- **User authorization**: Directly improve the existing Gemini PR-Agent workflow with a more detailed all-in-one review covering bugs, security, performance, SEO, visual/UI regressions, accessibility, and missing tests.
+- **Branch**: `fix/gemini-review-depth-1533` (separate from merged PR #1530 and unrelated PR #1532).
+- **Changes prepared**: Workflow permits up to eight substantiated findings, enables inline key issues and risk/merge/failure-mode summaries, and supplies evidence-led multi-area review instructions. Existing Gemini 3.8 Flash primary, fallback order, pinned action, triggers, credentials, permissions, and review-only settings are preserved.
+- **Regression test**: Extended `__tests__/pr-agent-workflow.test.js` to assert the new reviewer settings and required instruction categories.
+- **Spec Kit**: New task artifacts live under `.specify/features/gemini-review-depth/`; `.specify/feature.json` points to this task. Required setup scripts and `./jules-verify.sh` were not run locally because shell access could not resolve `github.com`; current-head CI must verify the gate before merge.
+- **Verification**: GitHub API reads/writes succeeded. Local Vitest, full tests, build-size gate, and live output under the new prompt remain pending current-head CI and a post-merge Gemini run. Do not claim operational success until visible review evidence exists.
+
+---
+
 ## Current Focus — Gemini PR-Agent Workflow Repair (2026-10-19)
 
 - **User-authorized task**: Directly repair the Gemini reviewer workflow and open PR #1530; no Jules or Amazon Q implementation handoff.
