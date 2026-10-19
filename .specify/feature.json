@@ -1,1 +1,4 @@
-{"feature_directory": "specs/036-deep-dive-apps"}
+{
+  "feature_directory": ".specify/features/034-pr-agent",
+  "active": true
+}
