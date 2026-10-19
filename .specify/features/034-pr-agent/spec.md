@@ -57,7 +57,7 @@ A maintainer needs to tell whether the repository credential is available withou
 - **FR-007**: The change MUST leave CodeRabbit, Amazon Q, Robin-retirement state, application runtime code, and deployment workflows untouched.
 - **FR-008**: The workflow MUST retain least-privilege repository permissions needed to read the PR and publish review output.
 - **FR-009**: PR-Agent fallback configuration MUST remain on the Gemini provider and MUST NOT use an unrelated default provider.
-- **FR-010**: Gemini 3.8 Flash MUST remain the primary model; when it is temporarily unavailable, fallback MAY use Gemini 3.6 Flash.
+- **FR-010**: Gemini 3.8 Flash MUST remain the primary model; when it is temporarily unavailable, fallback MAY use Gemini 3.5 Flash-Lite.
 
 ## Key Entities
 
