@@ -12,7 +12,7 @@
 ### Live PR-Agent run evidence
 
 - **Verified from run 39275836714**: the credential preflight passed. PR-Agent logged that it was generating a prediction with `gemini/gemini-3.8-flash`; the Google endpoint then returned HTTP 503 `UNAVAILABLE` with a temporary high-demand message. This was not a model-not-found response.
-- **Verified failure path**: after Gemini failed, PR-Agent attempted its unrelated default `gpt-5.6-terra` fallback, which failed because no usable OpenAI key is configured. The workflow is intended to be Gemini-only; its fallback list is now explicitly constrained to the same Gemini model, consistent with the provider's documented GitHub Action configuration.
+- **Verified failure path**: after Gemini failed, PR-Agent attempted its unrelated default `gpt-5.6-terra` fallback, which failed because no usable OpenAI key is configured. The workflow is intended to be Gemini-only; its fallback list is now explicitly constrained to the Gemini 3.6 Flash, consistent with the provider's documented GitHub Action configuration.
 - **Regression-test correction**: the first full Vitest run found that `fileURLToPath(new URL(..., import.meta.url))` received a non-file URL from the Vitest transform. The test now resolves the workflow from the repository working directory; its rerun is pending.
 
 ### Provider configuration

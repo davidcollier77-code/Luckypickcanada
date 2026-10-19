@@ -12,7 +12,7 @@
 2. Open the PR's **Checks** tab and locate **Run PR Agent**.
 3. Confirm the credential-preflight step succeeds without printing the credential.
 4. Confirm the PR-Agent step succeeds and a Gemini review summary is visible in the PR conversation/review timeline.
-5. Confirm the selected and fallback model remain the intended Gemini model; a transient Gemini 503 must not switch the review to an unrelated default OpenAI model.
+5. Confirm Gemini 3.8 Flash remains primary and Gemini 3.6 Flash is the fallback; a transient Gemini 3.8 Flash 503 must fall back to Gemini 3.6 Flash rather than an unrelated OpenAI model.
 
 ## Failure diagnosis
 

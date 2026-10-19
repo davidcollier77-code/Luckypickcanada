@@ -13,9 +13,9 @@ describe('Gemini PR-Agent workflow configuration', () => {
     expect(workflow).toMatch(/^          GOOGLE_AI_STUDIO\.GEMINI_API_KEY: \$\{\{ secrets\.GEMINI_API_KEY \}\}$/m);
   });
 
-  it('selects the intended Gemini 3.8 Flash model', () => {
+  it('selects Gemini 3.8 Flash with a Gemini 3.6 Flash fallback', () => {
     expect(workflow).toMatch(/^          config\.model: "gemini\/gemini-3\.8-flash"$/m);
-    expect(workflow).toContain("          config.fallback_models: '[\"gemini/gemini-3.8-flash\"]'");
+    expect(workflow).toContain("          config.fallback_models: '[\"gemini/gemini-3.6-flash\"]'");
     expect(workflow).not.toContain('gemini/gemini-2.0-flash');
     expect(workflow).not.toContain('gpt-5.6-terra');
   });

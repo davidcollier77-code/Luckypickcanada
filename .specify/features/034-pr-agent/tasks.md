@@ -5,7 +5,7 @@
 ## Phase 1: Setup and investigation
 
 - [x] T001 Inspect the merged PR-Agent workflow, PR #1527 implementation diff, repository governance, and required troubleshooting references.
-- [x] T002 Update `.specify/features/034-pr-agent/spec.md`, `plan.md`, `research.md`, `quickstart.md`, and `checklists/requirements.md` for the verified repair.
+- [x] T002 Update `.specify/feature.json` and `.specify/features/034-pr-agent/spec.md`, `plan.md`, `research.md`, `quickstart.md`, and `checklists/requirements.md` for the verified repair.
 
 ## Phase 2: Foundational regression coverage
 

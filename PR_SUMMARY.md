@@ -79,17 +79,18 @@
 
 ## IMPLEMENTATION, BOUNDARIES, AND REMAINING ISSUES
 
-- Fixed step-level workflow structure, selected `gemini/gemini-3.8-flash`, aligned the GitHub Actions and PR-Agent event filters, removed the bot-sender exclusion, added a credential-presence preflight, and constrained fallback to Gemini only.
+- Fixed step-level workflow structure, selected `gemini/gemini-3.8-flash`, aligned the GitHub Actions and PR-Agent event filters, removed the bot-sender exclusion, added a credential-presence preflight, and configured Gemini 3.6 Flash as the fallback while keeping Gemini 3.8 Flash primary.
 - Kept the pinned PR-Agent action, existing GitHub permissions, and review-only behavior. Auto description and auto improvement remain disabled.
 - No changes to CodeRabbit, Amazon Q, Robin retirement, API routes, app UI, dependencies, deployment workflows, or the secret value.
 - **Secret status: UNKNOWN** — GitHub repository secret values and secret existence cannot be queried through the available interface. The new preflight will confirm availability on a workflow run.
-- **Live reviewer status: NOT YET VERIFIED** — the first PR-Agent run passed preflight and attempted `gemini/gemini-3.8-flash`, but Google returned HTTP 503 `UNAVAILABLE` with a temporary high-demand message. PR-Agent then attempted the unrelated default `gpt-5.6-terra` fallback, which failed because no usable OpenAI key is configured. The workflow now restricts fallback to the same Gemini model. A successful review is still required.
+- **Live reviewer status: NOT YET VERIFIED** — the first PR-Agent run passed preflight and attempted `gemini/gemini-3.8-flash`, but Google returned HTTP 503 `UNAVAILABLE` with a temporary high-demand message. PR-Agent then attempted the unrelated default `gpt-5.6-terra` fallback, which failed because no usable OpenAI key is configured. The workflow now falls back to Gemini 3.6 Flash and does not use the unrelated default OpenAI model. A successful review is still required.
 - A local checkout attempt failed because the execution environment could not resolve `github.com`. Local shell-based tests/build/governance checks are therefore not claimed.
 - **Scope authorization**: user explicitly authorized direct implementation and a new PR. The change only consumes the intended existing secret; it does not create or modify any secret.
 
 ## EXACT CHANGED-FILE RECONCILIATION
 
 - `.github/workflows/pr-agent.yml`
+- `.specify/feature.json`
 - `__tests__/pr-agent-workflow.test.js`
 - `.specify/features/034-pr-agent/spec.md`
 - `.specify/features/034-pr-agent/plan.md`
@@ -104,26 +105,26 @@
 ## VERIFICATION RESULTS
 
 - **COMMAND**: `pnpm exec vitest run __tests__/pr-agent-workflow.test.js`
-  - **RESULT**: FAILED ON FIRST CI RUN; PATH FIX COMMITTED
-  - **EVIDENCE/OUTPUT SUMMARY**: CI reported `TypeError: The URL must be of scheme file` from the new test's `fileURLToPath(new URL(..., import.meta.url))`. The test now uses `resolve(process.cwd(), ...)`; current-head rerun is required.
+  - **RESULT**: PASS (within the full test suite)
+  - **EVIDENCE/OUTPUT SUMMARY**: The updated regression file completed 4 tests successfully.
 - **COMMAND**: `pnpm run test`
-  - **RESULT**: FAILED ON FIRST CI RUN; CURRENT-HEAD RERUN REQUIRED
-  - **EVIDENCE/OUTPUT SUMMARY**: Existing test cases produced 13 passing files / 87 passing tests; the only reported failure was module setup for the new workflow test, now corrected.
+  - **RESULT**: PASS
+  - **EVIDENCE/OUTPUT SUMMARY**: Current completed CI run reported 14 test files passed and 91 tests passed.
 - **COMMAND**: `pnpm tsc --noEmit`
-  - **RESULT**: PENDING CURRENT-HEAD CI
-  - **EVIDENCE/OUTPUT SUMMARY**: Initial Visual QA stopped after the full test-suite failure, so TypeScript did not run in that attempt.
+  - **RESULT**: PASS
+  - **EVIDENCE/OUTPUT SUMMARY**: TypeScript check completed successfully in Visual QA run 39276675079.
 - **COMMAND**: `./jules-verify.sh`
-  - **RESULT**: PENDING CURRENT-HEAD CI
-  - **EVIDENCE/OUTPUT SUMMARY**: Initial Visual QA stopped before the governance gate.
+  - **RESULT**: FAIL ON THE LAST RUN; FIX COMMITTED
+  - **EVIDENCE/OUTPUT SUMMARY**: Verifier stopped because `.specify/feature.json` still pointed to the previously active Crystal Ball task. This commit updates the pointer to `.specify/features/034-pr-agent`; a current-head rerun is required.
 - **COMMAND**: `pnpm exec playwright test`
   - **RESULT**: PENDING CURRENT-HEAD CI
-  - **EVIDENCE/OUTPUT SUMMARY**: Initial Visual QA stopped before Playwright.
+  - **EVIDENCE/OUTPUT SUMMARY**: Visual QA stopped at the governance gate in run 39276675079, before Playwright ran.
 - **COMMAND**: OpenNext build and measured `.next + public` size check (495 MiB hard limit)
-  - **RESULT**: PENDING CURRENT-HEAD CI
-  - **EVIDENCE/OUTPUT SUMMARY**: The first validation run had begun building at latest inspection; its final outcome and measured size must be retrieved.
+  - **RESULT**: PASS
+  - **EVIDENCE/OUTPUT SUMMARY**: Validate OpenNext run 39276675103 passed Next.js build and the explicit 495 MiB size gate. Its current final outcome must still be verified for full OpenNext/Wrangler validation.
 - **COMMAND**: Live Gemini review
   - **RESULT**: FAILED TRANSIENTLY; RETRY REQUIRED
-  - **EVIDENCE/OUTPUT SUMMARY**: Run 39275836714 passed the credential-presence preflight and invoked the documented model `gemini/gemini-3.8-flash`; the provider returned HTTP 503 `UNAVAILABLE` (high demand). PR-Agent then tried the unrelated default `gpt-5.6-terra` fallback and failed because no usable OpenAI key is configured. The fallback has now been limited to the same Gemini model; a successful run with a visible review remains unverified.
+  - **EVIDENCE/OUTPUT SUMMARY**: The credential preflight passed; PR-Agent attempted the documented `gemini/gemini-3.8-flash` primary model twice and received HTTP 503 `UNAVAILABLE` (high demand). The prior unrelated OpenAI fallback was removed; Gemini 3.6 Flash is now the fallback. A visible review is still not confirmed.
 
 ## PRE-SUBMISSION DOUBLE-CHECK
 

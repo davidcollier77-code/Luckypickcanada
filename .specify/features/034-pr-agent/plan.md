@@ -42,7 +42,7 @@ Repair the existing pull-request review workflow by using the supported step-lev
 4. Perform a short preflight that stops clearly when the secret is unavailable.
 5. Use matching GitHub Actions and PR-Agent event lists; remove the sender-type filter so bot-originated PR events are eligible.
 6. Keep auto review enabled and auto describe/improve disabled to avoid unrelated or repetitive automated actions.
-7. Configure PR-Agent's fallback list to the same Gemini model so a temporary service error does not cause an unrelated default OpenAI model attempt.
+7. Configure PR-Agent's fallback list to the Gemini 3.6 Flash so a temporary service error does not cause an unrelated default OpenAI model attempt.
 8. Add static regression coverage for the exact prior failure pattern.
 
 ## Implementation Scope
