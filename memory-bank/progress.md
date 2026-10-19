@@ -1,3 +1,10 @@
+# Progress — 2026-10-19
+
+- **Gemini all-in-one PR review depth candidate**: On `fix/gemini-review-depth-1533`, expanded the existing PR-Agent workflow to allow up to eight substantiated findings, publish line-anchored findings, and request risk assessment, merge recommendation, failure modes, and an evidence-led review across bugs, security, performance, SEO, UI, accessibility, and testing. Extended the workflow regression test and added task-scoped Spec Kit artifacts.
+- **Outstanding evidence**: Local shell commands could not reach GitHub due DNS resolution failure. Current-head Vitest, `./jules-verify.sh`, CI/build gate, and live review behavior using the new settings remain unverified. Do not merge or declare fully operational before required checks and one successful post-merge review.
+
+---
+
 ## Oracle route Cloudflare build repair — 2026-10-18
 
 The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f431dd3f1a139cb63d9` failed two valid-question tests because `apiKey` was undefined; comparison with the original pre-PR #1522 route confirmed the existing `const apiKey = getApiKey();` had been removed. That call has been restored in later commit `e2df4a6a1506f9ae010e55cde9227c0a25ff9125`. A fresh current-head run is required; the earlier failure must not be reported as fixed until reverified.
