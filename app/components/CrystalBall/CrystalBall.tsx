@@ -252,7 +252,7 @@ export default function CrystalBall({
       if (prefersReducedMotion) {
         setStatus('revealing');
         setIsRevealPaused(false);
-        setRevealedCharCount(Array.from(answer).length);
+        setRevealedCharCount(Array.from(normalizedAnswer).length);
       } else {
         // Flash first, then let a separate leaf clone fall before typing begins.
         setIsRevealPaused(true);
