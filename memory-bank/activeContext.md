@@ -1,3 +1,15 @@
+## Current Focus — Gemini PR-Agent Workflow Repair (2026-10-19)
+
+- **User-authorized task**: Directly repair the Gemini reviewer workflow and open PR #1530; no Jules or Amazon Q implementation handoff.
+- **Verified root cause**: The original merged workflow lacked a step-level `env:` block and left PR-Agent's event filter and model configuration stale. Current official Google and PR-Agent docs confirm `gemini/gemini-3.8-flash` is supported, and live logs show it was invoked.
+- **Runtime evidence**: The credential preflight passed. Gemini 3.8 Flash returned HTTP 503 `UNAVAILABLE` twice due to high demand. The unrelated default OpenAI fallback was removed; Gemini 3.5 Flash-Lite is now the fallback while 3.8 remains primary.
+- **CI evidence**: Current completed Visual QA run reports 14 test files and 91 tests passing; the new workflow regression suite has 4 passing tests and TypeScript passed. The governance gate failed because `.specify/feature.json` still pointed to the previous Crystal Ball feature; this commit switches it to the current PR-Agent feature. Fresh CI is required.
+- **Scope**: PR #1530 changes the PR-Agent workflow, one static regression test, active Spec Kit artifacts and pointer, PR summary, and Memory Bank. No secret value was printed or modified. CodeRabbit, Amazon Q, Robin-retirement state, app runtime, dependencies, and deployment workflows are unchanged.
+- **Outstanding verification**: Current-head governance, Playwright, complete OpenNext/Wrangler result, and the 495 MiB hard cap must be confirmed. A successful live Gemini review remains required.
+- **Candidate branch**: `fix/gemini-pr-agent-workflow-1530`.
+
+---
+
 # Active Context
 
 ## Current Focus — Oracle route Cloudflare build repair (2026-10-18)
