@@ -1,5 +1,15 @@
 # PR Summary — Gemini All-in-One Review Depth Enhancement
 
+## Merge-conflict repair and Amazon Q findings — 2026-10-19
+
+- **Conflict root cause:** PR #1533 and merged PR #1532 both changed `.specify/feature.json`. This repair incorporates the current `main` tree (including PR #1532's homepage CSS changes and lower-case `pr_summary.md`) while selecting `.specify/features/gemini-review-depth` as the active feature for this branch.
+- **Amazon Q — model identifiers:** Not a valid finding. Google's official Gemini model catalogue lists `gemini-3.8-flash`, `gemini-3.6-flash`, and `gemini-3.5-flash-lite`; PR-Agent uses the `gemini/` provider prefix. References: https://ai.google.dev/gemini-api/docs/models and https://docs.pr-agent.ai/installation/github/.
+- **Amazon Q — string versus integer:** Not a demonstrated defect. GitHub Actions passes step `env` values as strings, and PR-Agent documents `pr_reviewer.num_max_findings` as supported configuration. The quoted value `"8"` is retained; eight remains an upper limit, not a required count. Reference: https://github.com/The-PR-Agent/pr-agent/blob/main/docs/docs/tools/review.md.
+- **Amazon Q — negative model assertion:** Valid maintainability point. Removed the test assertion that unnecessarily forbade `gemini/gemini-2.0-flash`; positive assertions still check the intended Gemini 3.8 primary model and ordered Gemini 3.6 / 3.5 Flash-Lite fallbacks.
+- **Verification status:** Local Vitest and `./jules-verify.sh` remain unrun because the connected shell cannot resolve GitHub. Current-head Actions checks and governance are pending after this commit; no successful run is claimed in advance.
+
+---
+
 ## TASK ROUTING
 
 - **SELECTED TASK GROUP**: troubleshooting

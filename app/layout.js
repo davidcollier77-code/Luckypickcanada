@@ -1,6 +1,6 @@
 import Script from 'next/script';
 import Link from 'next/link';
-import '../themes/default/index.css';
+
 import './globals.css';
 
 

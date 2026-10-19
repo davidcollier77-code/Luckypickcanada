@@ -1,11 +1,11 @@
 ## Current Focus — Gemini All-in-One PR Review Depth (2026-10-19)
 
 - **User authorization**: Directly improve the existing Gemini PR-Agent workflow with a more detailed all-in-one review covering bugs, security, performance, SEO, visual/UI regressions, accessibility, and missing tests.
-- **Branch**: `fix/gemini-review-depth-1533` (separate from merged PR #1530 and unrelated PR #1532).
+- **Branch**: `fix/gemini-review-depth-1533`; current `main` now includes PR #1532, and its homepage CSS changes are preserved by the conflict repair.
 - **Changes prepared**: Workflow permits up to eight substantiated findings, enables inline key issues and risk/merge/failure-mode summaries, and supplies evidence-led multi-area review instructions. Existing Gemini 3.8 Flash primary, fallback order, pinned action, triggers, credentials, permissions, and review-only settings are preserved.
 - **Regression test**: Extended `__tests__/pr-agent-workflow.test.js` to assert the new reviewer settings and required instruction categories.
 - **Spec Kit**: New task artifacts live under `.specify/features/gemini-review-depth/`; `.specify/feature.json` points to this task. Required setup scripts and `./jules-verify.sh` were not run locally because shell access could not resolve `github.com`; current-head CI must verify the gate before merge.
-- **Verification**: GitHub API reads/writes succeeded. Local Vitest, full tests, build-size gate, and live output under the new prompt remain pending current-head CI and a post-merge Gemini run. Do not claim operational success until visible review evidence exists.
+- **Merge conflict and Amazon Q follow-up (2026-10-19)**: The conflict was caused by competing `.specify/feature.json` pointers. The merged tree preserves current `main` content and selects the Gemini review-depth feature for this task. Google's model catalogue validates all three configured model IDs; PR-Agent/GitHub env docs support the quoted finding-limit setting. The unsupported negative model assertion was removed. Current-head CI/governance and successful live review evidence remain pending; no local pass is claimed.
 
 ---
 

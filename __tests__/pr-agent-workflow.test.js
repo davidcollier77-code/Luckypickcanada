@@ -16,7 +16,6 @@ describe('Gemini PR-Agent workflow configuration', () => {
   it('selects Gemini 3.8 Flash with ordered 3.6 Flash and 3.5 Flash-Lite fallbacks', () => {
     expect(workflow).toMatch(/^          config\.model: "gemini\/gemini-3\.8-flash"$/m);
     expect(workflow).toContain(`          config.fallback_models: '["gemini/gemini-3.6-flash", "gemini/gemini-3.5-flash-lite"]'`);
-    expect(workflow).not.toContain('gemini/gemini-2.0-flash');
     expect(workflow).not.toContain('gpt-5.6-terra');
   });
 

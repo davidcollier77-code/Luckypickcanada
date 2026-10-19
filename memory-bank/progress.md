@@ -2,6 +2,7 @@
 
 - **Gemini all-in-one PR review depth candidate**: On `fix/gemini-review-depth-1533`, expanded the existing PR-Agent workflow to allow up to eight substantiated findings, publish line-anchored findings, and request risk assessment, merge recommendation, failure modes, and an evidence-led review across bugs, security, performance, SEO, UI, accessibility, and testing. Extended the workflow regression test and added task-scoped Spec Kit artifacts.
 - **Outstanding evidence**: Local shell commands could not reach GitHub due DNS resolution failure. Current-head Vitest, `./jules-verify.sh`, CI/build gate, and live review behavior using the new settings remain unverified. Do not merge or declare fully operational before required checks and one successful post-merge review.
+- **2026-10-19 conflict and review follow-up**: Reconciled PR #1533 against current `main` after PR #1532 changed `.specify/feature.json`; preserved the homepage CSS changes and selected the Gemini feature pointer. Official documentation confirms the three configured Gemini model IDs and supports PR-Agent's quoted env setting. Removed the test's unnecessary negative assertion for Gemini 2.0. Verification remains pending on the repaired head.
 
 ---
 
