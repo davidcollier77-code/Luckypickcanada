@@ -81,8 +81,9 @@ export default function FAQSection() {
       </div>
 
       <div className="faq-accordion" style={{ display: 'grid', gap: '12px' }}>
-        {faqs.map((faq) => {
+        {faqs.map((faq, index) => {
           const isOpen = openQuestion === faq.question;
+          const contentId = `faq-answer-${index}`;
           return (
             <div
               key={faq.question}
@@ -97,6 +98,7 @@ export default function FAQSection() {
               <button
                 onClick={() => toggleFaq(faq.question)}
                 aria-expanded={isOpen}
+                aria-controls={contentId}
                 className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
                 style={{
                   width: '100%',
@@ -132,6 +134,7 @@ export default function FAQSection() {
               </button>
 
               <div
+                id={contentId}
                 style={{
                   maxHeight: isOpen ? '500px' : '0',
                   overflow: 'hidden',
