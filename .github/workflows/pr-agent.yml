@@ -38,3 +38,25 @@ jobs:
           github_action_config.auto_describe: "false"
           github_action_config.auto_improve: "false"
           github_action_config.pr_actions: '["opened", "reopened", "synchronize", "ready_for_review", "review_requested"]'
+          pr_reviewer.num_max_findings: "8"
+          pr_reviewer.inline_key_issues: "true"
+          pr_reviewer.require_tests_review: "true"
+          pr_reviewer.require_security_review: "true"
+          pr_reviewer.require_risk_assessment: "true"
+          pr_reviewer.require_merge_recommendation: "true"
+          pr_reviewer.require_failure_modes: "true"
+          pr_reviewer.extra_instructions: >-
+            Review the entire PR diff and the directly relevant surrounding code, callers, configuration, and tests. Focus on issues introduced by this change, not unrelated pre-existing cleanup.
+            
+            Prioritize relevant checks across:
+            - Correctness and bugs: realistic edge cases, race conditions, state transitions, error handling, broken callers, data loss, and production regressions.
+            - Security and integrity: authorization, validation, secret exposure, unsafe input, and sensitive data handling.
+            - Performance: extra work or renders, blocking work, bundle and asset size, image delivery, and Core Web Vitals risks.
+            - SEO: metadata, canonical/indexability directives, structured data, semantic links, and rendering/indexability issues.
+            - Visual/UI behavior: responsive layout, overflow, spacing, typography, contrast, asset rendering, and interactions.
+            - Accessibility: semantic markup, keyboard behavior, focus, reduced motion, and accessible names.
+            - Tests: missing regression coverage and realistic cases that could fail in production despite passing tests.
+            
+            For every material finding, provide severity (BLOCKER, HIGH, MEDIUM, or LOW), the exact changed file and line, a realistic trigger scenario, the concrete impact, supporting code evidence, and the smallest practical fix. Prefer precise, line-anchored inline findings. Distinguish confirmed defects from risks that still need verification.
+            
+            Do not report unrelated style preferences, duplicate existing findings, vague hypotheticals, or problems unsupported by code evidence. Do not invent findings to fill the configured limit. Examine SEO, visual, and accessibility concerns only when relevant to the changed files. Never claim actual visual QA without rendered screenshots or browser evidence. Finish with a concise risk assessment, a merge recommendation, and up to three realistic failure modes or test gaps when useful. If a category has no substantiated issue, do not manufacture one.
