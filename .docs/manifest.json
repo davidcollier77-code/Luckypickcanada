@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-20T07:12:03-03:00",
+  "lastUpdated": "2026-10-20T11:21:53-03:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -426,8 +426,8 @@
   ],
   "githubShas": {
     "/github/docs": "666463860bec200da6c8db9cb9334e7335d9b753",
-    "/vercel/next.js": "dd904bb796c97544d45fe68d67133abf75f04f36",
-    "/reactjs/react.dev": "046f17d04295ba047bb5739026b4ac3110f17028",
+    "/vercel/next.js": "10463c73d96a703f2d240a3f31ef03c210fde639",
+    "/reactjs/react.dev": "ae5e48074d4f73f1e349eda2a66841f9a959023e",
     "/microsoft/typescript": "28534d7609062699a68b1b66e2367f8d95dbf290",
     "/lucide-icons/lucide": "c29c276f16590cf017126671535ad8c792be64d8",
     "/react-hook-form/documentation": "c476d99332f332ca51ee47e9b3683ac4f75bce10",
@@ -435,31 +435,31 @@
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "79d96ce66f5b051e90a9b0a208b50cf395f6e09b",
     "/google-gemini/gemini-cli": "76e4d7c046c7dab5727787da378b9c06bf0948cf",
-    "/cloudflare/cloudflare-docs/turnstile": "cae88b523c014c78c24c7b94b2937547685f1f5f",
-    "/cloudflare/cloudflare-docs/pages": "cae88b523c014c78c24c7b94b2937547685f1f5f",
+    "/cloudflare/cloudflare-docs/turnstile": "371d22407a908dd996b81e83bce20d7493e2de70",
+    "/cloudflare/cloudflare-docs/pages": "371d22407a908dd996b81e83bce20d7493e2de70",
     "/dequelabs/axe-core": "f01bf5ce56ffcf1411d14d14ed75d1fb86f8023c",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
     "/microsoft/playwright": "27219bd2cc94e1ebceec58f188760a6bf458c192",
-    "/vitest-dev/vitest": "973dc84beb2f7ce92e15f7f41e166cb4fa3c4fc0",
+    "/vitest-dev/vitest": "908eb573facd2d18cfe8e3187da3bd4f5e0fbe88",
     "/colinhacks/zod": "afdac65e0f80c0ccf9e8909da97c411567908b57",
     "/cure53/dompurify": "c94ccaa959f7bf37c56b54b7694ad86108234357",
     "/stripe/stripe-js": "e03ec565455178cd2b236f6b495ddc952397c3f0",
     "/coreyhaines31/marketingskills": "e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b",
     "/opennextjs/opennextjs-cloudflare": "15f4c9e5c1c5080eb87d0634be636aeede23febd",
     "/opennextjs/docs": "c50ac62fcb2aec0904d6b58cdd523e2050c8de69",
-    "/cloudflare/workers-sdk": "3464abcfeb42bbe7fc3b30a4981cf1ef4c3970ba",
+    "/cloudflare/workers-sdk": "a4eb57d339483029fbce9d9e711515b48c60f2d7",
     "/neondatabase/neon": "fa504217c61bbcaf5c512d75830564541f917f8f",
-    "/upstash/docs": "e7527baac331e08de802886491cfd752654194f5",
-    "/getsentry/sentry-docs": "cc97b0c2f94dff268ed95b204121cdad8b65b751",
+    "/upstash/docs": "d173e39c7c828d333278c285c827c2bab89c34b1",
+    "/getsentry/sentry-docs": "d2d61f083c007f468b8d0bdc334ad4e43f9bfa38",
     "/pmndrs/react-three-fiber": "d74622ea8ed717f7212d7e19d65ff3e325508389",
     "/magicuidesign/magicui": "efe76fc5755eca1142dd4f74c1d6f0ace2887e3c",
     "/marsidev/react-turnstile": "741e9f0a34cbef75d00854126ae3bd00480076b9",
-    "/posthog/posthog-js": "89b4e097413140bc8db58c4ca7fb493ab38a2230",
+    "/posthog/posthog-js": "10ec4ba84758531465707ae36caca80175e181f9",
     "/upstash/ratelimit": "89c481bf3b836a1ef5454c0615bc201e6386826b",
     "/dropbox/zxcvbn": "67c4ece9efc40c9d0a1d7d995b2b22a91be500c2",
     "/resend/resend-node": "794310314b0d55c3889fc11335dc35d068add424",
-    "/python-pillow/Pillow": "958473258cb4b60c3c43e3b514a0d8fe7ee41dd7",
+    "/python-pillow/Pillow": "41ae2a60f26ad999e1c468a907987084459a5197",
     "/numpy/numpy": "a43563f6d7e6424a5dea38181982af284eede2d7",
-    "/lovell/sharp": "1b8fcda0c1b1f213aa4b598f81b4c1a4cbefe775"
+    "/lovell/sharp": "13a734ad7c6219fd661943e7831c25b8b95ce2c9"
   }
 }
