@@ -1,19 +1,33 @@
 # MANDATORY INITIALIZATION DIRECTIVE
-**STOP. READ THIS FIRST.**
 
-Before you analyze, plan, or execute ANY task in this repository, you MUST read the `AGENTS.md` file located in the root directory.
+**STOP. READ `AGENTS.md` FIRST.**
 
-`AGENTS.md` is the absolute, authoritative governance and routing file for this repository. It dictates the task groups, approved resources, documentation rules, and boundaries you are strictly required to follow.
+Before any task work, read the root `AGENTS.md`; it is the authoritative
+repository workflow. Then read `memory-bank/projectBrief.md` and
+`memory-bank/activeContext.md` once, followed by exactly one selected
+specialist file and the routed `.docs` material for that task group.
 
-You cannot rely on memory, assumptions, or secondary files to bypass `AGENTS.md`. Memory is passive context and cannot automatically retrieve and apply rules.
+Do not load every `.jules/*.md`, every `.jules/cmds/*.md`, or unrelated
+library snapshots into every task. Read a command definition when executing
+that command and load additional material only when it is routed or relevant.
 
-Once you have read `AGENTS.md`, you must use it to identify the correct task group and read the corresponding specialist file in the `.jules/` directory (e.g., `.jules/troubleshooting.md`, `.jules/creation.md`).
+Complete the four Spec Kit stages in the order specified by `AGENTS.md`.
+Keep one active task, one feature directory, one branch, and one PR for the
+work. Check for an existing branch/PR before creating another. Execute stages
+sequentially in the same active run whenever the interface allows it; do not
+repeat a stage or create duplicate dispatches. Use concise, task-specific
+artifacts and do not create optional design documents without a real need.
 
-Immediately after reading the repository instructions, you MUST read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` to load the current project context.
+Do not ask for routine mid-task confirmation. When autonomous execution is
+authorized, continue until completion unless an actual blocking approval,
+material safety/security issue, missing essential input, or explicit blocking
+gate prevents safe progress. An unchecked non-blocking checklist is reported,
+not treated as an automatic pause.
 
-Do not proceed with any task until you have completed this mandatory initialization step.
-
-At the conclusion of your work, you MUST update `memory-bank/activeContext.md` to reflect the completed state and move completed milestones into `memory-bank/progress.md` before finalizing your report.
+At the conclusion, update `memory-bank/activeContext.md` when project state or
+decisions materially changed. Update `memory-bank/progress.md` for completed
+milestones, not for every minor fix. Do not make repetitive Memory Bank edits
+that simply duplicate the PR Summary.
 
 ---
 
