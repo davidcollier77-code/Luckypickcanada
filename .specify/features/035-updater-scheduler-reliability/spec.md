@@ -3,6 +3,7 @@
 **Feature Branch**: `fix/updater-scheduler-reliability-1540`  
 **Created**: 2026-10-20  
 **Status**: Implementation candidate; live deployment and cutover pending
+**Verified**: GitHub side configurations have been confirmed in `task/verify-updater-scheduler`.
 
 **Input**: Owner authorized an isolated, zero-recurring-cost path to reduce the impact of repeatedly delayed GitHub Actions scheduled events for the Spec Kit and documentation updaters.
 

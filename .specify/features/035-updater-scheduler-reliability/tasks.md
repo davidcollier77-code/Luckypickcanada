@@ -21,15 +21,12 @@
 - [x] T009 Run the standalone Node.js test suite locally. The locally developed version passed 11 tests; the exact PR-head version must be confirmed by CI.
 - [x] T013 Use the documented Cloudflare `controller.noRetry()` on approved slots before dispatch and add tests that it runs before GitHub fetch and is skipped for non-target slots.
 - [x] T014 Fail closed on missing/malformed scheduled timestamps and add regression tests that confirm malformed events are ignored without a retry marker or GitHub request.
-- [ ] T010 Run `./jules-verify.sh`, repository tests, required type/build checks, and confirm the 495 MiB size gate on the exact PR head.
-- [ ] T011 Inspect the complete GitHub PR diff, verify the Wrangler dry run, and reconcile each changed file with the PR Summary.
+- [x] T010 Run `./jules-verify.sh`, repository tests, required type/build checks, and confirm the 495 MiB size gate on the exact PR head.
+- [x] T011 Inspect the complete GitHub PR diff, verify the Wrangler dry run, and reconcile each changed file with the PR Summary.
+- [x] T015 Verify GitHub-side state for updater scheduler via task branch `task/verify-updater-scheduler`.
 - [ ] T012 Confirm Cloudflare quota, deployment and secrets, then perform a separately reviewed safe cutover and verify one naturally scheduled dispatch. Keep the existing GitHub schedules until those conditions are proven.
 
 ## Dependencies
 
 - T010 and T011 require passing current-head GitHub CI.
 - T012 requires Cloudflare account access and the repository-restricted dispatch token. This PR does not perform a real dispatch or cutover.
-
-## Implementation strategy
-
-Add and validate the isolated Worker first, leaving existing GitHub automation untouched. Activate only through a later explicitly reviewed cutover after deployment, secret, and trigger registration have been verified.
