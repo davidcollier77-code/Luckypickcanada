@@ -72,11 +72,12 @@
     "react-hook-form": "^7.89.0",
     "sharp": "0.35.5",
     "sonner": "^2.0.8",
-    "stylelint": "^17.15.0",
+    "stylelint": "^17.16.0",
     "stylelint-config-standard": "^40.0.0",
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "4.2.4",
     "typescript": "^5.4.5",
+    "vite": "^8.3.4",
     "vitest": "^5.0.0",
     "wrangler": "4.141.0",
     "zod": "^4.5.4",
@@ -98,7 +99,10 @@
       "minimatch@10.2.6>brace-expansion": "5.0.12",
       "proxy-addr": "2.0.8",
       "sharp": "0.35.5",
-      "source-map-js": "1.2.2"
+      "source-map-js": "1.2.2",
+      "vite": ">=8.2.4",
+      "qs": ">=6.16.0",
+      "fast-uri": ">=3.1.8"
     }
   },
   "packageManager": "pnpm@10.30.3"

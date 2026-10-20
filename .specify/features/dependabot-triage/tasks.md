@@ -1,0 +1,6 @@
+- [ ] Initialize Spec Kit artifacts
+- [ ] Document `pnpm audit` baseline inventory
+- [ ] Implement `pnpm.overrides` for `braces`, `vite`, `qs`, and `fast-uri` in `package.json`
+- [ ] Run `pnpm install`
+- [ ] Verify 0 vulnerabilities with `pnpm audit`
+- [ ] Generate PR summary
