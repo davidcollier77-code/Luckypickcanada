@@ -15,7 +15,8 @@ setup_repo() {
   local root="$1"
   mkdir -p "$root/.specify"
   printf 'feature.json\n' > "$root/.specify/.gitignore"
-  git -C "$root" init -b main >/dev/null
+  git -C "$root" init >/dev/null
+  git -C "$root" checkout -b main >/dev/null 2>&1 || git -C "$root" symbolic-ref HEAD refs/heads/main
   git -C "$root" config user.name "Spec Kit Test"
   git -C "$root" config user.email "spec-kit-test@example.invalid"
   printf 'fixture\n' > "$root/README.md"
@@ -33,7 +34,7 @@ write_artifacts() {
 expect_failure() {
   local name="$1"
   local root="$2"
-  if bash "$VERIFY_SCRIPT" "$root" >"$TEST_ROOT/output.log" 2>&1; then
+  if env SPEC_KIT_BASE_REF= GITHUB_BASE_REF= GITHUB_ACTIONS= bash "$VERIFY_SCRIPT" "$root" >"$TEST_ROOT/output.log" 2>&1; then
     fail "$name should have been rejected"
   fi
   echo "PASS: $name"
@@ -41,7 +42,7 @@ expect_failure() {
 expect_success() {
   local name="$1"
   local root="$2"
-  if ! bash "$VERIFY_SCRIPT" "$root" >"$TEST_ROOT/output.log" 2>&1; then
+  if ! env SPEC_KIT_BASE_REF= GITHUB_BASE_REF= GITHUB_ACTIONS= bash "$VERIFY_SCRIPT" "$root" >"$TEST_ROOT/output.log" 2>&1; then
     cat "$TEST_ROOT/output.log" >&2
     fail "$name should have passed"
   fi
@@ -98,6 +99,23 @@ printf '# Fixture spec\n' > "$root/specs/001-fixture/spec.md"
 : > "$root/specs/001-fixture/plan.md"
 printf '# Fixture tasks\n' > "$root/specs/001-fixture/tasks.md"
 expect_failure "empty required artifact" "$root"
+
+# Without a base ref, committed artifacts cannot be proven current and must fail closed.
+root="$TEST_ROOT/no-base-committed"
+setup_repo "$root"
+git -C "$root" checkout -b task-branch >/dev/null
+write_artifacts "$root" "specs/001-committed"
+git -C "$root" add specs
+git -C "$root" commit -m "committed current task artifacts" >/dev/null
+git -C "$root" branch -D main >/dev/null
+if env SPEC_KIT_BASE_REF= GITHUB_BASE_REF= GITHUB_ACTIONS= bash "$VERIFY_SCRIPT" "$root" >"$TEST_ROOT/output.log" 2>&1; then
+  fail "committed artifacts without a comparison base should not pass"
+fi
+if ! grep -Fq "No comparison base was found" "$TEST_ROOT/output.log"; then
+  cat "$TEST_ROOT/output.log" >&2
+  fail "missing-base failure should explain that the comparison base is unavailable"
+fi
+echo "PASS: committed artifacts without a comparison base fail closed with a clear message"
 
 # More than one complete task feature is ambiguous and must be split.
 root="$TEST_ROOT/multiple-features"
