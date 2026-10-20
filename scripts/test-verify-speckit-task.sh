@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regression tests for the fail-closed Spec Kit task-artifact verifier.
+# Regression tests for changed-artifact Spec Kit task verification.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,7 +11,6 @@ fail() {
   echo "FAIL: $*" >&2
   exit 1
 }
-
 setup_repo() {
   local root="$1"
   mkdir -p "$root/.specify"
@@ -19,10 +18,18 @@ setup_repo() {
   git -C "$root" init -b main >/dev/null
   git -C "$root" config user.name "Spec Kit Test"
   git -C "$root" config user.email "spec-kit-test@example.invalid"
-  git -C "$root" add .specify/.gitignore
+  printf 'fixture\n' > "$root/README.md"
+  git -C "$root" add .specify/.gitignore README.md
   git -C "$root" commit -m "test fixture base" >/dev/null
 }
-
+write_artifacts() {
+  local root="$1"
+  local dir="$2"
+  mkdir -p "$root/$dir"
+  printf '# Current task spec\n' > "$root/$dir/spec.md"
+  printf '# Current task plan\n' > "$root/$dir/plan.md"
+  printf '# Current task tasks\n' > "$root/$dir/tasks.md"
+}
 expect_failure() {
   local name="$1"
   local root="$2"
@@ -31,7 +38,6 @@ expect_failure() {
   fi
   echo "PASS: $name"
 }
-
 expect_success() {
   local name="$1"
   local root="$2"
@@ -42,92 +48,55 @@ expect_success() {
   echo "PASS: $name"
 }
 
-# Missing per-checkout state must fail closed.
-root="$TEST_ROOT/missing"
+# No task artifacts must fail closed.
+root="$TEST_ROOT/no-artifacts"
 setup_repo "$root"
-expect_failure "missing feature.json" "$root"
+expect_failure "missing task artifacts" "$root"
 
-# Empty state files and invalid state JSON must fail closed.
-root="$TEST_ROOT/empty-state"
+# All three changed untracked artifacts pass without a feature.json pointer.
+root="$TEST_ROOT/local-worktree"
 setup_repo "$root"
-: > "$root/.specify/feature.json"
-expect_failure "empty feature.json" "$root"
+write_artifacts "$root" ".specify/features/001-fixture"
+expect_success "untracked task artifacts without shared pointer" "$root"
 
-root="$TEST_ROOT/malformed"
+# A valid task committed to a branch is discoverable by diff from main.
+root="$TEST_ROOT/valid-branch"
 setup_repo "$root"
-printf '{invalid json\n' > "$root/.specify/feature.json"
-expect_failure "malformed feature.json" "$root"
+git -C "$root" checkout -b task-branch >/dev/null
+write_artifacts "$root" "specs/001-fixture"
+git -C "$root" add specs
+git -C "$root" commit -m "current task Spec Kit artifacts" >/dev/null
+expect_success "committed task artifacts on feature branch" "$root"
 
-# Empty active feature path must fail closed.
-root="$TEST_ROOT/empty-pointer"
+# Previously committed artifacts on the base branch are stale and do not pass.
+root="$TEST_ROOT/stale-base"
 setup_repo "$root"
-printf '{"feature_directory":"  "}\n' > "$root/.specify/feature.json"
-expect_failure "empty feature directory pointer" "$root"
+write_artifacts "$root" "specs/001-stale"
+git -C "$root" add specs
+git -C "$root" commit -m "previous task artifacts" >/dev/null
+expect_failure "unchanged artifacts from prior task" "$root"
 
-# Paths that escape the checkout root must fail closed.
-root="$TEST_ROOT/traversal"
-setup_repo "$root"
-printf '{"feature_directory":"../../outside"}\n' > "$root/.specify/feature.json"
-expect_failure "feature directory traversal" "$root"
-
-# Required artifacts must all exist and be non-empty.
-root="$TEST_ROOT/incomplete"
+# Any missing or empty required artifact fails.
+root="$TEST_ROOT/missing-tasks"
 setup_repo "$root"
 mkdir -p "$root/specs/001-fixture"
-printf '{"feature_directory":"specs/001-fixture"}\n' > "$root/.specify/feature.json"
 printf '# Fixture spec\n' > "$root/specs/001-fixture/spec.md"
 printf '# Fixture plan\n' > "$root/specs/001-fixture/plan.md"
 expect_failure "missing tasks.md" "$root"
 
-root="$TEST_ROOT/missing-spec"
+root="$TEST_ROOT/empty-plan"
 setup_repo "$root"
-mkdir -p "$root/specs/001-fixture"
-printf '{"feature_directory":"specs/001-fixture"}\n' > "$root/.specify/feature.json"
-printf '# Fixture plan\n' > "$root/specs/001-fixture/plan.md"
-printf '# Fixture tasks\n' > "$root/specs/001-fixture/tasks.md"
-expect_failure "missing spec.md" "$root"
-
-root="$TEST_ROOT/missing-plan"
-setup_repo "$root"
-mkdir -p "$root/specs/001-fixture"
-printf '{"feature_directory":"specs/001-fixture"}\n' > "$root/.specify/feature.json"
-printf '# Fixture spec\n' > "$root/specs/001-fixture/spec.md"
-printf '# Fixture tasks\n' > "$root/specs/001-fixture/tasks.md"
-expect_failure "missing plan.md" "$root"
-
-# Existing artifacts from a prior task must not satisfy the gate by themselves.
-root="$TEST_ROOT/stale"
-setup_repo "$root"
-mkdir -p "$root/specs/001-stale"
-printf '# Old spec\n' > "$root/specs/001-stale/spec.md"
-printf '# Old plan\n' > "$root/specs/001-stale/plan.md"
-printf '# Old tasks\n' > "$root/specs/001-stale/tasks.md"
-git -C "$root" add specs
-git -C "$root" commit -m "previous task artifacts" >/dev/null
-printf '{"feature_directory":"specs/001-stale"}\n' > "$root/.specify/feature.json"
-expect_failure "stale feature artifacts unchanged for current task" "$root"
-
-# A complete active task with uncommitted artifacts must pass.
-root="$TEST_ROOT/valid-worktree"
-setup_repo "$root"
-mkdir -p "$root/specs/001-fixture"
-printf '{"feature_directory":"specs/001-fixture"}\n' > "$root/.specify/feature.json"
-printf '# Fixture spec\n' > "$root/specs/001-fixture/spec.md"
-printf '# Fixture plan\n' > "$root/specs/001-fixture/plan.md"
-printf '# Fixture tasks\n' > "$root/specs/001-fixture/tasks.md"
-expect_success "complete current feature artifacts in worktree" "$root"
-
-# A complete active task committed on a feature branch must also pass.
-root="$TEST_ROOT/valid-branch"
-setup_repo "$root"
-git -C "$root" checkout -b task-branch >/dev/null
 mkdir -p "$root/specs/001-fixture"
 printf '# Fixture spec\n' > "$root/specs/001-fixture/spec.md"
-printf '# Fixture plan\n' > "$root/specs/001-fixture/plan.md"
+: > "$root/specs/001-fixture/plan.md"
 printf '# Fixture tasks\n' > "$root/specs/001-fixture/tasks.md"
-git -C "$root" add specs
-git -C "$root" commit -m "current task Spec Kit artifacts" >/dev/null
-printf '{"feature_directory":"specs/001-fixture"}\n' > "$root/.specify/feature.json"
-expect_success "complete current feature artifacts committed on task branch" "$root"
+expect_failure "empty required artifact" "$root"
+
+# More than one complete task feature is ambiguous and must be split.
+root="$TEST_ROOT/multiple-features"
+setup_repo "$root"
+write_artifacts "$root" "specs/001-first"
+write_artifacts "$root" ".specify/features/002-second"
+expect_failure "multiple active feature directories" "$root"
 
 echo "All Spec Kit task-artifact verifier tests passed."
