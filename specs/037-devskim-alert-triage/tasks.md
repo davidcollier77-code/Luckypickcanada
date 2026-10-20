@@ -49,7 +49,7 @@
 
 - [x] T014 [US3] Perform a second secret/scope audit of every changed file and record the outcome in `specs/037-devskim-alert-triage/pr_summary.md` without copying any secret values.
 - [x] T015 [US3] Create a separate owner follow-up section in `specs/037-devskim-alert-triage/triage.md` only for genuinely plausible credential exposure; do not repeat the already owner-confirmed Neon rotation as a new action, and do not classify public hashes/placeholders as credentials.
-- [ ] T016 [US3] Verify through available GitHub/CI evidence whether the updated-head DevSkim scan ran and which alerts actually changed status; record any access/tool blocker in `specs/037-devskim-alert-triage/pr_summary.md`.
+- [x] T016 [US3] Verify through available GitHub/CI evidence whether the updated-head DevSkim scan ran and which alerts actually changed status; record any access/tool blocker in `specs/037-devskim-alert-triage/pr_summary.md`. **Evidence:** DevSkim scan/SARIF upload passed on `49b5d31`; the connector cannot expose individual alert status changes or dismissal actions.
 
 ## Final Phase: Polish and Cross-Cutting Concerns
 
