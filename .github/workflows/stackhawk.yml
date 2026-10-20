@@ -52,11 +52,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start your service
-        run: ./your-service.sh &                  # ✏️ Update this to run your own service to be scanned
+        run: |
+          # TODO: Replace this with the actual command to start your application before scanning.
+          # Example: npm start & or ./start-app.sh &
+          echo "Service startup command not configured. Update this step before merging."
+          exit 1
+
+      - name: Verify HAWK_API_KEY secret is set
+        run: |
+          if [ -z "${{ secrets.HAWK_API_KEY }}" ]; then
+            echo "ERROR: HAWK_API_KEY secret is not set. Configure it at Settings → Secrets and variables → Actions."
+            exit 1
+          fi
 
       - name: Run HawkScan
         uses: stackhawk/hawkscan-action@4c3258cd62248dac6d9fe91dd8d45928c697dee0
-        continue-on-error: true                   # ✏️ Set to false to break your build on scan errors
+        continue-on-error: false                  # Set to true only if you want to allow builds to pass despite scan findings
         with:
           apiKey: ${{ secrets.HAWK_API_KEY }}
           codeScanningAlerts: true
