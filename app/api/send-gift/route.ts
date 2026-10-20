@@ -88,7 +88,7 @@ export async function POST(req: Request) {
               <p style="color: #d1d5db; font-size: 15px; margin-bottom: 24px;">
                 Tap below to uncover your gems with the live slow reveal:
               </p>
-              <a href="${revealUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 50px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+              <a href="${revealUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; padding: 15px 36px; border-radius: 50px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
                 💎 Uncover My Jewels
               </a>
             </td>
