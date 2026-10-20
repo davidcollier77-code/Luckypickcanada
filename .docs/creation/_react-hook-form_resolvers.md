@@ -1,7 +1,7 @@
 <div align="center">
     <p align="center">
         <a href="https://react-hook-form.com" title="React Hook Form - Simple React forms validation">
-            <img src="https://raw.githubusercontent.com/bluebill1049/react-hook-form/master/docs/logo.png" alt="React Hook Form Logo - React hook custom hook for form validation" />
+            <img src="https://react-hook-form.com/images/react-hook-form-og.png" alt="React Hook Form Logo - React hook custom hook for form validation" />
         </a>
     </p>
 </div>
@@ -782,7 +782,7 @@ const App = () => {
 
 ### [effect-ts](https://github.com/Effect-TS/effect)
 
-A powerful TypeScript framework that provides a fully-fledged functional effect system with a rich standard library.
+A powerful TypeScript framework that provides a fully-fledged functional effect system with a rich standard library. Requires `effect` v4 (use `@hookform/resolvers` v5 for `effect` v3).
 
 [![npm](https://img.shields.io/bundlephobia/minzip/effect?style=for-the-badge)](https://bundlephobia.com/result?p=effect)
 
@@ -793,11 +793,11 @@ import { effectTsResolver } from '@hookform/resolvers/effect-ts';
 import { Schema } from 'effect';
 
 const schema = Schema.Struct({
-  username: Schema.String.pipe(
-    Schema.nonEmptyString({ message: () => 'username required' }),
+  username: Schema.String.check(
+    Schema.isNonEmpty({ message: 'username required' }),
   ),
-  password: Schema.String.pipe(
-    Schema.nonEmptyString({ message: () => 'password required' }),
+  password: Schema.String.check(
+    Schema.isNonEmpty({ message: 'password required' }),
   ),
 });
 
