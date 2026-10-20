@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run DevSkim scanner
-        uses: microsoft/DevSkim-Action@914fa647b406c387000300b2f09bb28691be2b6d # v1.0.14
+        uses: microsoft/DevSkim-Action@a6b6966a33b497cd3ae2ebc406edf8f4cc2feec6 # v1.0.15
         with:
           output_filename: devskim-results.sarif
 
