@@ -59,6 +59,13 @@ setup_repo "$root"
 write_artifacts "$root" ".specify/features/001-fixture"
 expect_success "untracked task artifacts without shared pointer" "$root"
 
+# A stale local feature pointer must not override the current task's artifacts.
+root="$TEST_ROOT/stale-pointer"
+setup_repo "$root"
+printf '{"feature_directory":".specify/features/previous-task"}\n' > "$root/.specify/feature.json"
+write_artifacts "$root" ".specify/features/001-current"
+expect_success "current artifacts win over a stale ignored pointer" "$root"
+
 # A valid task committed to a branch is discoverable by diff from main.
 root="$TEST_ROOT/valid-branch"
 setup_repo "$root"
