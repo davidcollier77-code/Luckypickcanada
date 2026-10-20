@@ -1,6 +1,6 @@
 # Feature Specification: Reliable Updater Scheduling
 
-**Feature Branch**: \`fix/updater-scheduler-reliability-1540\`  
+**Feature Branch**: `fix/updater-scheduler-reliability-1540`  
 **Created**: 2026-10-20  
 **Status**: Implementation candidate; live deployment and cutover pending
 
@@ -15,7 +15,7 @@ The maintainer needs the two existing updater workflows to be invoked automatica
 **Independent Test**: Unit tests map every Tuesday and Friday target in daylight and standard time to the correct existing workflow and confirm every non-target event is ignored.
 
 **Acceptance Scenarios**:
-1. Given a scheduler event at an approved local target, when the Worker is enabled, then it sends a workflow-dispatch request to the correct existing workflow on \`main\`.
+1. Given a scheduler event at an approved local target, when the Worker is enabled, then it sends a workflow-dispatch request to the correct existing workflow on `main`.
 2. Given any non-target event, when it runs, then it sends no GitHub API request.
 3. Given daylight-saving time changes, when the same local time target arrives on Tuesday or Friday, then the workflow mapping remains correct.
 
@@ -32,13 +32,13 @@ The maintainer needs the replacement to remain harmless until its configuration 
 
 ## Requirements
 
-- **FR-001**: The Worker MUST use \`America/Halifax\` and handle Atlantic daylight/standard time without a hard-coded single UTC offset.
+- **FR-001**: The Worker MUST use `America/Halifax` and handle Atlantic daylight/standard time without a hard-coded single UTC offset.
 - **FR-002**: Only the five existing Tuesday/Friday target slots may dispatch workflows.
-- **FR-003**: The Worker MUST map 1:05 AM and 5:05 AM to \`.github/workflows/update-spec-kit.yml\` and 2:21 AM, 6:21 AM, and 10:21 AM to \`.github/workflows/refresh-docs.yml\`.
+- **FR-003**: The Worker MUST map 1:05 AM and 5:05 AM to `.github/workflows/update-spec-kit.yml` and 2:21 AM, 6:21 AM, and 10:21 AM to `.github/workflows/refresh-docs.yml`.
 - **FR-004**: Dispatch MUST remain disabled by default.
 - **FR-005**: GitHub credentials MUST be a secret, with no values committed or logged.
 - **FR-006**: The implementation MUST not perform a real workflow dispatch as a test.
-- **FR-007**: This PR MUST leave the existing \`schedule\` entries intact and must not enable dispatch.
+- **FR-007**: This PR MUST leave the existing `schedule` entries intact and must not enable dispatch.
 - **FR-008**: Current-head CI MUST run the Worker tests, repository governance check, and Wrangler dry run.
 - **FR-009**: Deployment/credential checks and cutover MUST be reported separately from code test results.
 - **FR-010**: Any required repository build MUST respect the 495 MiB hard size limit.

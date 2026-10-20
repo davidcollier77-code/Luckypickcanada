@@ -6,5 +6,5 @@
 - [x] Dispatch is disabled by default and existing GitHub schedules remain active.
 - [x] Secrets are never committed or logged; dispatch request contains only the target workflow and main ref.
 - [x] Local test suite passed on the standalone implementation.
-- [ ] Current PR-head \`./jules-verify.sh\`, Wrangler dry run, repository build and hard-size gate have passed.
+- [ ] Current PR-head `./jules-verify.sh`, Wrangler dry run, repository build and hard-size gate have passed.
 - [ ] Cloudflare quota and secrets are verified, and natural scheduling has been demonstrated before cutover.
