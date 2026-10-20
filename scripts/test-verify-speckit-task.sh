@@ -106,4 +106,12 @@ write_artifacts "$root" "specs/001-first"
 write_artifacts "$root" ".specify/features/002-second"
 expect_failure "multiple active feature directories" "$root"
 
+# A partial artifact set in a second feature is still scope ambiguity.
+root="$TEST_ROOT/partial-second-feature"
+setup_repo "$root"
+write_artifacts "$root" "specs/001-current"
+mkdir -p "$root/specs/002-leftover"
+printf '# Leftover plan\n' > "$root/specs/002-leftover/plan.md"
+expect_failure "partial second feature directory" "$root"
+
 echo "All Spec Kit task-artifact verifier tests passed."
