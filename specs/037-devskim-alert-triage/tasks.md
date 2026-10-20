@@ -47,16 +47,16 @@
 
 **Independent Test**: The final diff contains no credential values, secret-store/configuration changes, lockfile edits, broad suppressions, unrelated application changes, or scanner weakening.
 
-- [ ] T014 [US3] Perform a second secret/scope audit of every changed file and record the outcome in `specs/037-devskim-alert-triage/pr_summary.md` without copying any secret values.
+- [x] T014 [US3] Perform a second secret/scope audit of every changed file and record the outcome in `specs/037-devskim-alert-triage/pr_summary.md` without copying any secret values.
 - [x] T015 [US3] Create a separate owner follow-up section in `specs/037-devskim-alert-triage/triage.md` only for genuinely plausible credential exposure; do not repeat the already owner-confirmed Neon rotation as a new action, and do not classify public hashes/placeholders as credentials.
 - [ ] T016 [US3] Verify through available GitHub/CI evidence whether the updated-head DevSkim scan ran and which alerts actually changed status; record any access/tool blocker in `specs/037-devskim-alert-triage/pr_summary.md`.
 
 ## Final Phase: Polish and Cross-Cutting Concerns
 
-- [ ] T017 Inspect the complete final diff and confirm that only the intended source/test/spec evidence is changed; report every unrun or blocked mandatory check in `specs/037-devskim-alert-triage/pr_summary.md`.
+- [x] T017 Inspect the complete final diff and confirm that only the intended source/test/spec evidence is changed; report every unrun or blocked mandatory check in `specs/037-devskim-alert-triage/pr_summary.md`.
 - [ ] T018 Run `./jules-verify.sh` and available repository tests/build checks through the supported environment; report exact actual results and the actual combined build size if a build runs. Never claim success for a skipped or unavailable command.
-- [ ] T019 Create one pull request from `security/devskim-alert-remediation-037` to `main` and leave it unmerged for owner review.
-- [ ] T020 Complete `specs/037-devskim-alert-triage/pr_summary.md` with the observed baseline, accessible-alert classification coverage, changes, verification evidence, current limitations, the explicit answer to whether actions remain, and `USEFUL RESULT: YES/NO`.
+- [x] T019 Create one pull request from `security/devskim-alert-remediation-037` to `main` and leave it unmerged for owner review.
+- [x] T020 Complete `specs/037-devskim-alert-triage/pr_summary.md` with the observed baseline, accessible-alert classification coverage, changes, verification evidence, current limitations, the explicit answer to whether actions remain, and `USEFUL RESULT: YES/NO`.
 
 ## Dependencies & Execution Order
 
