@@ -1,3 +1,103 @@
+# PR Summary — Reliable Updater Scheduling (Implementation Candidate)
+
+## Status and scope
+
+- **SELECTED TASK GROUP:** troubleshooting
+- **GROUP REASON:** verified multi-hour delays in the existing scheduled updater workflows; the work adds an isolated external time trigger without rewriting updater logic.
+- **Current branch:** `fix/updater-scheduler-reliability-1540`
+- **Status:** draft / implementation candidate. This PR does not claim the schedule issue is fully resolved or the Worker is live.
+
+## Root-cause evidence
+
+- **VERIFIED:** `.github/workflows/update-spec-kit.yml` targets Tuesday/Friday at 1:05 AM and 5:05 AM in `America/Halifax`.
+- **VERIFIED:** `.github/workflows/refresh-docs.yml` targets Tuesday/Friday at 2:21 AM, 6:21 AM and 10:21 AM in `America/Halifax`.
+- **VERIFIED:** Spec Kit scheduled run [38876818987](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/38876818987) started at 05:54 Atlantic on October 16 after the 01:05 target, and failed in the Spec Kit upgrade step.
+- **VERIFIED:** Documentation primary run [38883903516](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/38883903516) started at 06:56 Atlantic after the 02:21 target and failed at Create Pull Request. Documentation backup [38912266221](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/38912266221) started at 11:00 Atlantic and succeeded; recovery [38939679000](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/38939679000) started at 14:26 Atlantic and succeeded.
+- **Conclusion:** cron hour fields and the local IANA time zone are not the cause of the observed offsets. External scheduling may reduce dependency on GitHub schedule delivery, but does not guarantee exact completion time. The upgrade and PR-create failures remain separate findings.
+
+## Implementation design and safety
+
+- Added an isolated Worker with two UTC minute triggers, an `America/Halifax` time-zone mapper, and a fixed allowlist for the five existing target slots.
+- Worker sends only a GitHub `workflow_dispatch` request for the appropriate existing workflow on `main`.
+- For approved slots, the Worker calls Cloudflare's documented `controller.noRetry()` before the GitHub request. This prevents an ambiguous failed scheduled invocation from being automatically retried and potentially dispatching the same updater twice. The next existing backup/recovery slot is the retry path.
+- The tests now assert that `noRetry()` happens before the dispatch fetch and is not invoked for non-target dates.
+- Dispatch is disabled by default in `workers/updater-scheduler/wrangler.toml`.
+- No secrets are committed or logged. The deployment workflow reads the existing Cloudflare deployment secret and optionally pipes the repository secret `UPDATER_DISPATCH_TOKEN` to Wrangler stdin as a Worker secret.
+- Current GitHub `schedule` entries are **unchanged**. This branch neither enables the Worker nor dispatches production update jobs. A separate cutover must not be performed until account quota, deployed Worker, token permission, and secret configuration are confirmed.
+- No production website routes, Next.js/OpenNext code, UI, text, media, application dependencies, or existing updater job bodies were changed.
+## Reviewer findings and resolution
+
+- **Amazon Q — missing scheduled timestamp guard:** accepted. `resolveTarget` now ignores any `scheduledTime` that is not a finite number before formatting, and new tests verify that missing/malformed timestamps do not throw, call `noRetry()`, or dispatch to GitHub. Current-head CI for this newest guard change is pending.
+- **Amazon Q — claimed missing test before deployment:** not applicable to the inspected workflow. `.github/workflows/deploy-updater-scheduler.yml` already runs `node --test workers/updater-scheduler/test/index.node-test.mjs` inside the `deploy` job before Wrangler deploy. That existing deployment-path test is retained; no redundant step was added.
+
+
+## Governance and Spec Kit execution method
+
+- Root `AGENTS.md` was read first.
+- Selected group: `troubleshooting`.
+- Consulted task-routing guidance, Memory Bank context, Spec Kit command definitions for specify/plan/tasks/implement, the feature constitution, task-relevant GitHub and Cloudflare repository documents, and the updater workflow/run history.
+- **Execution limitation:** native Spec Kit dispatch and repository-local setup scripts were not run in this connected session. The scoped spec/plan/tasks/research/quickstart/checklist artifacts and source edits were authored through the GitHub API; that is not claimed as native Spec Kit command execution.
+- The exact PR-head `./jules-verify.sh`, Wrangler dry run, repository tests and hard build-size gate must be observed in GitHub CI before any claim that the task is verified.
+- Context7 was not invoked; the repository requires explicit approval before every Context7 invocation.
+
+## Required libraries and reference files
+
+- **GitHub Actions / REST API docs:** `.docs/troubleshooting/_github_docs.md`; consulted to confirm existing workflow dispatch is the supported invocation path. Official API reference: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
+- **Cloudflare Workers SDK / Wrangler guide:** `.docs/troubleshooting/_cloudflare_workers-sdk.md`; consulted as the available repository-local Wrangler reference. It is a styleguide, not proof of account configuration. Official Cron Trigger reference: https://developers.cloudflare.com/workers/configuration/cron-triggers/
+- **Cloudflare Scheduled Handler retry control:** https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/ and https://developers.cloudflare.com/workers/configuration/cron-triggers/; official docs confirm the supported `controller.noRetry()` behavior and its visibility in local scheduled-event test results. This materially informed the duplicate-dispatch safeguard.
+- **Cloudflare limits:** official published limits reference https://developers.cloudflare.com/workers/platform/limits/; actual current account usage remains unknown and must be checked before cutover.
+- **Node.js built-in test runner:** Node.js 22.16.0 was used for local prototype testing; no new runtime library was added.
+- **Repository Wrangler dependency:** `wrangler` version declared in `package.json` was inspected; exact-head Wrangler run remains pending CI.
+
+## Verification
+
+- **COMMAND:** `node --test workers/updater-scheduler/test/index.node-test.mjs`
+  **RESULT:** PASS on commit `71a6801c9a766b479cf244cd0b05530dac31100d`, run [39398048268](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39398048268): 12 tests passed, 0 failed on Node.js v22.23.3. The current follow-up adds malformed-timestamp cases; the new current-head run must confirm those new tests.
+- **COMMAND:** `./jules-verify.sh`
+  **RESULT:** PASS on commit `71a6801c9a766b479cf244cd0b05530dac31100d`, run [39398048268](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39398048268). The verification checkout uses `fetch-depth: 0` so the fail-closed verifier can compare the active Spec Kit artifacts with `main`. The new guard follow-up needs a current-head rerun.
+- **COMMAND:** `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml`
+  **RESULT:** PASS on the same commit in [run 39398048268](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39398048268). A dry run neither deploys nor proves live dispatch. The new guard follow-up needs a current-head rerun.
+- **COMMAND:** repository OpenNext validation including `pnpm run build`, the `.next + public` size gate, OpenNext build, worker/assets checks and Wrangler no-deploy build validation.
+  **RESULT:** PASS on commit `71a6801c9a766b479cf244cd0b05530dac31100d`, [run 39398048455](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39398048455). Actual combined build size: **325,595,902 bytes (310.51 MiB)** against the 495 MiB hard maximum. The new timestamp guard changes only Worker code and tests, and a current-head build validation is pending.
+- **Current guard follow-up:** source and regression tests for missing/non-finite timestamps have been added, but must pass current-head CI before this task can be called verified.
+- **LIVE WORKER / TOKEN / CRON QUOTA / NATURAL DISPATCH:** NOT VERIFIED; no actual Worker deployment, secret modification or production dispatch was performed.
+
+## Changed-file reconciliation
+
+**New files (12):**
+- `.github/workflows/deploy-updater-scheduler.yml`
+- `.specify/features/035-updater-scheduler-reliability/spec.md`
+- `.specify/features/035-updater-scheduler-reliability/plan.md`
+- `.specify/features/035-updater-scheduler-reliability/tasks.md`
+- `.specify/features/035-updater-scheduler-reliability/research.md`
+- `.specify/features/035-updater-scheduler-reliability/quickstart.md`
+- `.specify/features/035-updater-scheduler-reliability/checklists/requirements.md`
+- `workers/updater-scheduler/README.md`
+- `workers/updater-scheduler/package.json`
+- `workers/updater-scheduler/src/index.mjs`
+- `workers/updater-scheduler/test/index.node-test.mjs`
+- `workers/updater-scheduler/wrangler.toml`
+
+**Updated files (4):**
+- `.specify/feature.json`
+- `memory-bank/activeContext.md`
+- `memory-bank/progress.md`
+- `PR_SUMMARY.md`
+
+The original PR Summary for the prior shared-sky-background task is retained below this section. This change does not modify either existing updater workflow file, `.docs/`, `AGENTS.md`, dependencies, or the production app.
+
+## Remaining issues and acceptance gates
+
+- Current-head GitHub CI must pass and the actual final PR diff must be inspected.
+- Cloudflare account limits, token permissions, secret setup, and deployed cron registration must be verified.
+- Keep `DISPATCH_ENABLED=false` and current GitHub schedules active until a separate reviewed cutover.
+- After cutover, verify one naturally scheduled invocation. If it fails, disable Worker dispatch and restore existing schedules.
+
+**USEFUL RESULT: NO** — not yet, because the replacement scheduler is not live and the existing schedule path has not been safely cut over.  
+**PRE-SUBMISSION DOUBLE-CHECK:** source, configuration, workflow and documentation were reviewed before PR creation; current-head CI, Git diff reconciliation and live acceptance remain pending.
+
+---
+
 # PR Summary — Restore Shared Sky Backgrounds
 
 ## Latest CI findings — 2026-10-19

@@ -1,0 +1,15 @@
+name = "luckypickcanada-updater-scheduler"
+main = "src/index.mjs"
+compatibility_date = "2026-10-20"
+workers_dev = false
+
+# SAFE BY DEFAULT: deploy inactive, then complete the documented cutover before enabling.
+[vars]
+GITHUB_OWNER = "davidcollier77-code"
+GITHUB_REPO = "Luckypickcanada"
+DISPATCH_ENABLED = "false"
+
+# Cloudflare Cron Triggers are UTC. The Worker converts each scheduledTime to
+# America/Halifax and dispatches only the five approved local target slots.
+[triggers]
+crons = ["5 * * * *", "21 * * * *"]

@@ -208,3 +208,21 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Follow-up: configure Gemini 3.5 Flash-Lite as the fallback while keeping Gemini 3.8 Flash primary, fix the new regression test's Vitest-incompatible path resolution, and switch `.specify/feature.json` to the active PR-Agent feature after the governance gate caught the stale Crystal Ball pointer. On the checked commit, all 14 test files / 91 tests and the TypeScript check passed; governance needs rerun after the pointer fix. OpenNext build-size gate passed, final OpenNext/Wrangler status and a live Gemini review remain to be confirmed.
 
 - 2026-10-19: Updated `.specify/feature.json` to select the active PR-Agent feature after CI identified the stale Crystal Ball pointer. The static PR-Agent regression suite passed (4 tests), the full suite passed (14 files / 91 tests), and TypeScript passed on the checked run. Governance/Playwright must be rerun on the latest head after the pointer fix. Gemini 3.8 Flash remains primary; Gemini 3.5 Flash-Lite is the Gemini-only fallback after two 503 high-demand responses from 3.8.
+
+
+## 2026-10-20 — Reliable Updater Scheduling (Implementation Candidate)
+
+- Confirmed the Spec Kit schedule targets Tuesday/Friday at 1:05 AM and 5:05 AM Atlantic; documentation refresh targets 2:21 AM, 6:21 AM, and 10:21 AM.
+- Historical run timestamps on October 13 and 16 demonstrate multi-hour delays. The Spec Kit managed-file upgrade failure and documentation PR-creation failure are separate defects; this change does not claim to fix those failure causes.
+- Prepared a separate Cloudflare Worker to dispatch only the five approved slots, with `America/Halifax` conversion and `DISPATCH_ENABLED=false`. Added a test suite and a workflow that verifies the change, checks repository governance, performs a Wrangler dry run, and deploys the Worker disabled only after an approved merge.
+- Local prototype test evidence: Node.js 22.16.0, `node --test workers/updater-scheduler/test/index.node-test.mjs`, 11 passed / 0 failed on the initial standalone package. Exact PR-head test results are pending GitHub CI.
+- **Not done:** No real updater was dispatched manually; Worker deployment, quota, live secrets, and cutover are not verified. Existing GitHub schedule entries remain enabled. Do not enable dispatch until a separate safe cutover has been reviewed and tested.
+
+
+## 2026-10-20 — Updater Scheduler No-Retry and Invalid-Time Safeguards
+
+- Implemented the documented Cloudflare `controller.noRetry()` call for each approved slot before the GitHub dispatch attempt, with regression tests covering ordering and exclusion of non-target slots.
+- Addressed Amazon Q's missing/non-finite `scheduledTime` crash-risk finding by validating the timestamp before formatting and adding tests for missing/malformed timestamps and zero dispatch.
+- Re-checked Amazon Q's deployment job test finding against the workflow source: the `deploy` job already runs the scheduler's Node.js tests before Wrangler deploy, so no redundant step was added.
+- Latest verified PR head before the timestamp-guard follow-up: commit `71a6801c9a766b479cf244cd0b05530dac31100d`; scheduler tests 12/12, `./jules-verify.sh`, Wrangler dry run and OpenNext/build-size validation passed (325,595,902 bytes / 310.51 MiB). Current timestamp-guard follow-up needs a new CI result.
+- Live Worker activation and schedule cutover remain unperformed; existing GitHub schedules are unchanged.
