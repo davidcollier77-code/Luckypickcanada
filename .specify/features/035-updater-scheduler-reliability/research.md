@@ -21,6 +21,13 @@ Using Cloudflare as an independent time trigger should reduce dependence on dela
 - Successful live deployment, registration of both cron expressions, and one natural scheduled dispatch.
 - Whether and when to remove old GitHub schedule entries without reducing the current recovery opportunities.
 
+## Additional retry-safety finding
+
+The current official Cloudflare Scheduled Handler / Cron Trigger testing documentation exposes `controller.noRetry()`; the Local Explorer reports whether it was called. The Worker now calls it for each approved target slot before attempting a GitHub dispatch, because an ambiguous network failure may occur after GitHub accepted the request. A Cloudflare replay could create a second updater run. The existing next backup/recovery target is the retry path. Newly added regression tests assert that noRetry runs before fetch and is not called for non-target slots.
+
+- Reference: https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/
+- Local scheduled event testing reference: https://developers.cloudflare.com/workers/configuration/cron-triggers/ (Local Explorer and `noRetry` result)
+
 ## Decision
 
 Prepare an isolated disabled-by-default Worker and tests, but leave the current GitHub schedules enabled. Treat deployment, token setup, and cutover as separate gates. Do not manually dispatch the actual production updaters as a test.

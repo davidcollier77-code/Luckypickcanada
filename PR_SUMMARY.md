@@ -19,6 +19,8 @@
 
 - Added an isolated Worker with two UTC minute triggers, an `America/Halifax` time-zone mapper, and a fixed allowlist for the five existing target slots.
 - Worker sends only a GitHub `workflow_dispatch` request for the appropriate existing workflow on `main`.
+- For approved slots, the Worker calls Cloudflare's documented `controller.noRetry()` before the GitHub request. This prevents an ambiguous failed scheduled invocation from being automatically retried and potentially dispatching the same updater twice. The next existing backup/recovery slot is the retry path.
+- The tests now assert that `noRetry()` happens before the dispatch fetch and is not invoked for non-target dates.
 - Dispatch is disabled by default in `workers/updater-scheduler/wrangler.toml`.
 - No secrets are committed or logged. The deployment workflow reads the existing Cloudflare deployment secret and optionally pipes the repository secret `UPDATER_DISPATCH_TOKEN` to Wrangler stdin as a Worker secret.
 - Current GitHub `schedule` entries are **unchanged**. This branch neither enables the Worker nor dispatches production update jobs. A separate cutover must not be performed until account quota, deployed Worker, token permission, and secret configuration are confirmed.
@@ -37,21 +39,23 @@
 
 - **GitHub Actions / REST API docs:** `.docs/troubleshooting/_github_docs.md`; consulted to confirm existing workflow dispatch is the supported invocation path. Official API reference: https://docs.github.com/en/rest/actions/workflows#create-a-workflow-dispatch-event
 - **Cloudflare Workers SDK / Wrangler guide:** `.docs/troubleshooting/_cloudflare_workers-sdk.md`; consulted as the available repository-local Wrangler reference. It is a styleguide, not proof of account configuration. Official Cron Trigger reference: https://developers.cloudflare.com/workers/configuration/cron-triggers/
+- **Cloudflare Scheduled Handler retry control:** https://developers.cloudflare.com/workers/runtime-apis/handlers/scheduled/ and https://developers.cloudflare.com/workers/configuration/cron-triggers/; official docs confirm the supported `controller.noRetry()` behavior and its visibility in local scheduled-event test results. This materially informed the duplicate-dispatch safeguard.
 - **Cloudflare limits:** official published limits reference https://developers.cloudflare.com/workers/platform/limits/; actual current account usage remains unknown and must be checked before cutover.
 - **Node.js built-in test runner:** Node.js 22.16.0 was used for local prototype testing; no new runtime library was added.
 - **Repository Wrangler dependency:** `wrangler` version declared in `package.json` was inspected; exact-head Wrangler run remains pending CI.
 
 ## Verification
 
-- **COMMAND:** `node --test workers/updater-scheduler/test/index.node-test.mjs`
-  **RESULT:** PASS on the exact PR head, run [39397065580](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397065580): 10 tests passed, 0 failed on Node.js v22.23.3.
-- **COMMAND:** `./jules-verify.sh`
-  **RESULT:** First PR attempt FAILED before build/type checks. The Spec Kit task-artifact gate could not find a base ref from the shallow checkout and reported that the new `spec.md` was unchanged. This is a verification-workflow checkout issue, not a reason to bypass the gate. The verification checkout now uses `fetch-depth: 0`; the rerun is pending.
-- **COMMAND:** `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml`
-  **RESULT:** Skipped on the first attempt because the prior governance step failed. Awaiting the rerun on the corrected workflow.
-- **COMMAND:** existing full repository tests, type check, Next.js/OpenNext build and build-size gate
-  **RESULT:** PENDING current-head GitHub Actions. The repository's hard cap is 495 MiB; the build-size gate has not yet been observed for this PR.
-- **LIVE WORKER / TOKEN / CRON QUOTA / NATURAL DISPATCH:** NOT VERIFIED; no actual Worker deployment, secret modification or production dispatch was performed during branch preparation.
+- **Previous PR-head command:** `node --test workers/updater-scheduler/test/index.node-test.mjs`
+  **RESULT:** PASS on commit `b2abc3b487eb19b7f9fd191e44aba36634a9f122`, run [39397468347](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397468347): 10 tests passed, 0 failed on Node.js v22.23.3. The subsequent no-retry safeguard added two regression tests; the current head must rerun them before this result applies to all current source.
+- **Previous PR-head command:** `./jules-verify.sh`
+  **RESULT:** PASS on that same head in run [39397468347](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397468347), after adding `fetch-depth: 0` so the fail-closed verifier could compare active Spec Kit artifacts against `main`. Current-head rerun is pending after the no-retry follow-up.
+- **Previous PR-head command:** `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml`
+  **RESULT:** PASS on that same head in [run 39397468347](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397468347). This dry run does not deploy or prove live dispatch. Current-head rerun is pending.
+- **Previous PR-head command:** repository OpenNext validation including `pnpm run build`, measured `.next + public`, OpenNext build, worker/assets checks and Wrangler no-deploy build validation.
+  **RESULT:** PASS on that same head in [run 39397468342](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397468342). Actual combined build size: **325,567,739 bytes (310.49 MiB)** against the 495 MiB hard maximum. This result predates the no-retry follow-up but that follow-up adds no application assets or runtime dependency; current-head validation remains pending.
+- **Current no-retry safeguard tests and full PR checks:** PENDING. Do not treat previous-head passes as current-head evidence.
+- **LIVE WORKER / TOKEN / CRON QUOTA / NATURAL DISPATCH:** NOT VERIFIED; no actual Worker deployment, secret modification or production dispatch was performed.
 
 ## Changed-file reconciliation
 

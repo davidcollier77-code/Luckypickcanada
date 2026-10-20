@@ -102,6 +102,11 @@ export async function handleScheduled(controller, env, options = {}) {
   const target = resolveTarget(controller && controller.scheduledTime, controller && controller.cron);
   if (!target) return { outcome: "ignored", reason: "not-an-approved-slot" };
 
+  // GitHub may have accepted a dispatch even if its response is lost. Suppress
+  // platform retries for approved slots to avoid launching the same updater twice;
+  // the next scheduled backup/recovery slot is the retry opportunity.
+  if (typeof controller?.noRetry === "function") controller.noRetry();
+
   const logContext = {
     localDate: target.localDate,
     localTime: target.localTime,

@@ -217,3 +217,11 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Prepared a separate Cloudflare Worker to dispatch only the five approved slots, with `America/Halifax` conversion and `DISPATCH_ENABLED=false`. Added a test suite and a workflow that verifies the change, checks repository governance, performs a Wrangler dry run, and deploys the Worker disabled only after an approved merge.
 - Local prototype test evidence: Node.js 22.16.0, `node --test workers/updater-scheduler/test/index.node-test.mjs`, 11 passed / 0 failed on the initial standalone package. Exact PR-head test results are pending GitHub CI.
 - **Not done:** No real updater was dispatched manually; Worker deployment, quota, live secrets, and cutover are not verified. Existing GitHub schedule entries remain enabled. Do not enable dispatch until a separate safe cutover has been reviewed and tested.
+
+
+## 2026-10-20 — Updater Scheduler No-Retry Safeguard
+
+- Consulted current Cloudflare Scheduled Handler/Cron Trigger documentation for \`controller.noRetry()\`.
+- Updated the scheduler to mark only approved target slots as non-retriable before the GitHub dispatch attempt, avoiding implicit replay after an ambiguous dispatch response. Existing scheduled backup/recovery slots remain the retry strategy. Added tests for call order and non-target rejection.
+- Latest previously verified PR head \`b2abc3b487eb19b7f9fd191e44aba36634a9f122\` passed 10 scheduler tests, \`./jules-verify.sh\`, Wrangler dry run and OpenNext/build-size validation (310.49 MiB). The no-retry follow-up needs a new current-head CI run.
+- Live Worker activation and schedule cutover remain unperformed; existing GitHub schedules are unchanged.

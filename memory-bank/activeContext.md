@@ -440,3 +440,11 @@
 - **Local verification:** The first standalone prototype's Node.js test suite reported 11 passed / 0 failed. The branch's exact current-head tests, Wrangler dry run, `./jules-verify.sh`, and repository build-size gate still require current-head CI confirmation.
 - **Branch:** `fix/updater-scheduler-reliability-1540`. This remains a review candidate until the draft PR's checks are observed.
 - **Remaining gates:** Confirm Cloudflare trigger quota and deployment/secret configuration, then review a separate cutover before enabling Worker dispatch or removing existing schedule entries. Verify a natural scheduled run before claiming the scheduling issue is resolved.
+
+
+## Updater Scheduler — No-Retry Duplicate-Dispatch Safeguard — 2026-10-20
+
+- Official Cloudflare Scheduled Handler/Cron Trigger documentation confirms the scheduled controller supports \`noRetry()\`. The Worker now invokes it for an approved target before calling GitHub, because an ambiguous lost response can happen after GitHub accepts a dispatch; a runtime replay could create a duplicate update.
+- Non-target events remain ignored and do not call \`noRetry()\`. New regression tests verify the guard runs before the GitHub request and that non-target dates do not dispatch.
+- Previously verified at PR head \`b2abc3b487eb19b7f9fd191e44aba36634a9f122\`: scheduler tests 10/10, \`./jules-verify.sh\` pass, Wrangler dry run pass, OpenNext build-size gate pass at 325,567,739 bytes (310.49 MiB). Those passes predate this follow-up; current-head rerun is required.
+- Existing GitHub updater schedules stay enabled. Worker deployment, token setup, quota and live dispatch remain unverified and must not be implied.

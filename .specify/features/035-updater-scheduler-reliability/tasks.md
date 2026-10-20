@@ -19,6 +19,7 @@
 
 - [x] T008 Add/update task-specific Spec Kit artifacts, active feature pointer, PR Summary, and Memory Bank notes.
 - [x] T009 Run the standalone Node.js test suite locally. The locally developed version passed 11 tests; the exact PR-head version must be confirmed by CI.
+- [x] T013 Use the documented Cloudflare `controller.noRetry()` on approved slots before dispatch and add tests that it runs before GitHub fetch and is skipped for non-target slots.
 - [ ] T010 Run `./jules-verify.sh`, repository tests, required type/build checks, and confirm the 495 MiB size gate on the exact PR head.
 - [ ] T011 Inspect the complete GitHub PR diff, verify the Wrangler dry run, and reconcile each changed file with the PR Summary.
 - [ ] T012 Confirm Cloudflare quota, deployment and secrets, then perform a separately reviewed safe cutover and verify one naturally scheduled dispatch. Keep the existing GitHub schedules until those conditions are proven.

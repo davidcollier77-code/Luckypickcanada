@@ -74,6 +74,61 @@ test("timezone formatter reports Atlantic local date and time", () => {
   assert.throws(() => formatAtlanticParts("not-a-date"), /valid timestamp/);
 });
 
+test("marks approved scheduled attempts no-retry before dispatch", async () => {
+  const order = [];
+  const controller = {
+    scheduledTime: ts("2026-10-20T04:05:00Z"),
+    cron: "5 * * * *",
+    noRetry() { order.push("noRetry"); }
+  };
+  const result = await handleScheduled(
+    controller,
+    {
+      DISPATCH_ENABLED: "true",
+      GITHUB_OWNER: "owner",
+      GITHUB_REPO: "repo",
+      GITHUB_TOKEN: "dummy-secret"
+    },
+    {
+      logger: quiet,
+      fetchImpl: async () => {
+        order.push("fetch");
+        return new Response(null, { status: 204 });
+      }
+    }
+  );
+  assert.equal(result.outcome, "accepted");
+  assert.deepEqual(order, ["noRetry", "fetch"]);
+});
+
+test("does not mark an unapproved slot no-retry or dispatch it", async () => {
+  let noRetryCalls = 0;
+  let fetchCalls = 0;
+  const result = await handleScheduled(
+    {
+      scheduledTime: ts("2026-10-21T04:05:00Z"),
+      cron: "5 * * * *",
+      noRetry() { noRetryCalls++; }
+    },
+    {
+      DISPATCH_ENABLED: "true",
+      GITHUB_OWNER: "owner",
+      GITHUB_REPO: "repo",
+      GITHUB_TOKEN: "dummy-secret"
+    },
+    {
+      logger: quiet,
+      fetchImpl: async () => {
+        fetchCalls++;
+        return new Response(null, { status: 204 });
+      }
+    }
+  );
+  assert.equal(result.outcome, "ignored");
+  assert.equal(noRetryCalls, 0);
+  assert.equal(fetchCalls, 0);
+});
+
 test("is disabled by default and never calls GitHub when disabled", async () => {
   let calls = 0;
   const result = await handleScheduled(

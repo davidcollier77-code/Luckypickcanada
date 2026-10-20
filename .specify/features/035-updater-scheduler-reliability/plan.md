@@ -20,7 +20,7 @@ Repeated schedule history shows multi-hour delays in both existing updater workf
 1. Define a fixed allowlist for the five existing local slots and the two workflow filenames.
 2. Use `Intl.DateTimeFormat` with `America/Halifax` to convert `scheduledTime`; ignore non-target times before reading or using credentials.
 3. Use the least required GitHub REST request and send only `{ "ref": "main" }`.
-4. Make one request per approved event and avoid automatic retries after ambiguous failures to prevent duplicate runs.
+4. Call Cloudflare's documented `controller.noRetry()` for approved slots before dispatch, then make one request; an ambiguous failure must not automatically replay a dispatch that GitHub may already have accepted. Existing backup/recovery schedule slots remain the retry path.
 5. Deploy only the isolated Worker, defaulting to disabled. Preserve both existing GitHub schedule configurations.
 6. Keep account-specific prerequisites and the final scheduler cutover as a separate, reviewed step after deployment and secret availability have been confirmed.
 

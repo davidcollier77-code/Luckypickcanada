@@ -42,6 +42,7 @@ The maintainer needs the replacement to remain harmless until its configuration 
 - **FR-008**: Current-head CI MUST run the Worker tests, repository governance check, and Wrangler dry run.
 - **FR-009**: Deployment/credential checks and cutover MUST be reported separately from code test results.
 - **FR-010**: Any required repository build MUST respect the 495 MiB hard size limit.
+- **FR-011**: Before attempting dispatch for an approved slot, the Worker MUST call Cloudflare's `controller.noRetry()` when available to prevent automatic retry of an ambiguous result; existing scheduled backup/recovery slots remain the retry path.
 
 ## Unknowns and boundaries
 
