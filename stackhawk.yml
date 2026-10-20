@@ -1,0 +1,29 @@
+# StackHawk HawkScan configuration for LuckyPickCanada
+#
+# Prerequisites before this scan will succeed:
+#   1. Create an application in your StackHawk account at https://app.stackhawk.com
+#      and replace the app.applicationId placeholder below with your real Application ID.
+#   2. Ensure the HAWK_API_KEY GitHub Secret is set under
+#      Settings → Secrets and variables → Actions.
+#
+# This configuration targets the Next.js dev server started in the StackHawk workflow.
+
+app:
+  # TODO: Replace with your real StackHawk Application ID from https://app.stackhawk.com
+  applicationId: app-ID-here
+  env: Development
+  host: http://localhost:3000
+
+hawk:
+  # Fail the build only on HIGH or CRITICAL severity findings.
+  # Set to "medium" or "low" to increase strictness after baseline is established.
+  failureThreshold: high
+
+  spider:
+    base: true
+    ajax: false
+
+  scan:
+    maxDurationMinutes: 15
+
+  startupTimeoutMinutes: 3
