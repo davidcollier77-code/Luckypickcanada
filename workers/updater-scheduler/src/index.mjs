@@ -46,6 +46,7 @@ export function formatAtlanticParts(scheduledTime) {
 
 export function resolveTarget(scheduledTime, cron) {
   if (!SUPPORTED_CRONS.has(cron)) return null;
+  if (typeof scheduledTime !== "number" || !Number.isFinite(scheduledTime)) return null;
   const parts = formatAtlanticParts(scheduledTime);
   const expectedMinute = cron === "5 * * * *" ? "05" : "21";
   if (parts.minute !== expectedMinute) return null;

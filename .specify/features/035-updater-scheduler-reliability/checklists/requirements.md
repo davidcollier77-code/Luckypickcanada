@@ -6,6 +6,7 @@
 - [x] Dispatch is disabled by default and existing GitHub schedules remain active.
 - [x] Secrets are never committed or logged; dispatch request contains only the target workflow and main ref.
 - [x] Approved slots call Cloudflare `controller.noRetry()` before dispatch and tests cover order and non-target behaviour.
+- [x] Missing or malformed scheduled timestamps are handled as ignored events, with no GitHub dispatch.
 - [x] Local test suite passed on the standalone implementation.
 - [ ] Current PR-head `./jules-verify.sh`, Wrangler dry run, repository build and hard-size gate have passed.
 - [ ] Cloudflare quota and secrets are verified, and natural scheduling has been demonstrated before cutover.

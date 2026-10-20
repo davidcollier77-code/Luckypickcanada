@@ -219,9 +219,10 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - **Not done:** No real updater was dispatched manually; Worker deployment, quota, live secrets, and cutover are not verified. Existing GitHub schedule entries remain enabled. Do not enable dispatch until a separate safe cutover has been reviewed and tested.
 
 
-## 2026-10-20 — Updater Scheduler No-Retry Safeguard
+## 2026-10-20 — Updater Scheduler No-Retry and Invalid-Time Safeguards
 
-- Consulted current Cloudflare Scheduled Handler/Cron Trigger documentation for \`controller.noRetry()\`.
-- Updated the scheduler to mark only approved target slots as non-retriable before the GitHub dispatch attempt, avoiding implicit replay after an ambiguous dispatch response. Existing scheduled backup/recovery slots remain the retry strategy. Added tests for call order and non-target rejection.
-- Latest previously verified PR head \`b2abc3b487eb19b7f9fd191e44aba36634a9f122\` passed 10 scheduler tests, \`./jules-verify.sh\`, Wrangler dry run and OpenNext/build-size validation (310.49 MiB). The no-retry follow-up needs a new current-head CI run.
+- Implemented the documented Cloudflare `controller.noRetry()` call for each approved slot before the GitHub dispatch attempt, with regression tests covering ordering and exclusion of non-target slots.
+- Addressed Amazon Q's missing/non-finite `scheduledTime` crash-risk finding by validating the timestamp before formatting and adding tests for missing/malformed timestamps and zero dispatch.
+- Re-checked Amazon Q's deployment job test finding against the workflow source: the `deploy` job already runs the scheduler's Node.js tests before Wrangler deploy, so no redundant step was added.
+- Latest verified PR head before the timestamp-guard follow-up: commit `71a6801c9a766b479cf244cd0b05530dac31100d`; scheduler tests 12/12, `./jules-verify.sh`, Wrangler dry run and OpenNext/build-size validation passed (325,595,902 bytes / 310.51 MiB). Current timestamp-guard follow-up needs a new CI result.
 - Live Worker activation and schedule cutover remain unperformed; existing GitHub schedules are unchanged.

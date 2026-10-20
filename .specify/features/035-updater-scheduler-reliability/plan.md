@@ -18,6 +18,7 @@ Repeated schedule history shows multi-hour delays in both existing updater workf
 ## Design
 
 1. Define a fixed allowlist for the five existing local slots and the two workflow filenames.
+1a. Reject missing or malformed `scheduledTime` values before formatting the timestamp; only finite numeric epoch milliseconds may be mapped to an approved slot.
 2. Use `Intl.DateTimeFormat` with `America/Halifax` to convert `scheduledTime`; ignore non-target times before reading or using credentials.
 3. Use the least required GitHub REST request and send only `{ "ref": "main" }`.
 4. Call Cloudflare's documented `controller.noRetry()` for approved slots before dispatch, then make one request; an ambiguous failure must not automatically replay a dispatch that GitHub may already have accepted. Existing backup/recovery schedule slots remain the retry path.

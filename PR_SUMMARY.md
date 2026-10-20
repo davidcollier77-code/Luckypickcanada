@@ -25,6 +25,11 @@
 - No secrets are committed or logged. The deployment workflow reads the existing Cloudflare deployment secret and optionally pipes the repository secret `UPDATER_DISPATCH_TOKEN` to Wrangler stdin as a Worker secret.
 - Current GitHub `schedule` entries are **unchanged**. This branch neither enables the Worker nor dispatches production update jobs. A separate cutover must not be performed until account quota, deployed Worker, token permission, and secret configuration are confirmed.
 - No production website routes, Next.js/OpenNext code, UI, text, media, application dependencies, or existing updater job bodies were changed.
+## Reviewer findings and resolution
+
+- **Amazon Q — missing scheduled timestamp guard:** accepted. `resolveTarget` now ignores any `scheduledTime` that is not a finite number before formatting, and new tests verify that missing/malformed timestamps do not throw, call `noRetry()`, or dispatch to GitHub. Current-head CI for this newest guard change is pending.
+- **Amazon Q — claimed missing test before deployment:** not applicable to the inspected workflow. `.github/workflows/deploy-updater-scheduler.yml` already runs `node --test workers/updater-scheduler/test/index.node-test.mjs` inside the `deploy` job before Wrangler deploy. That existing deployment-path test is retained; no redundant step was added.
+
 
 ## Governance and Spec Kit execution method
 
@@ -46,15 +51,15 @@
 
 ## Verification
 
-- **Previous PR-head command:** `node --test workers/updater-scheduler/test/index.node-test.mjs`
-  **RESULT:** PASS on commit `b2abc3b487eb19b7f9fd191e44aba36634a9f122`, run [39397468347](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397468347): 10 tests passed, 0 failed on Node.js v22.23.3. The subsequent no-retry safeguard added two regression tests; the current head must rerun them before this result applies to all current source.
-- **Previous PR-head command:** `./jules-verify.sh`
-  **RESULT:** PASS on that same head in run [39397468347](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397468347), after adding `fetch-depth: 0` so the fail-closed verifier could compare active Spec Kit artifacts against `main`. Current-head rerun is pending after the no-retry follow-up.
-- **Previous PR-head command:** `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml`
-  **RESULT:** PASS on that same head in [run 39397468347](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397468347). This dry run does not deploy or prove live dispatch. Current-head rerun is pending.
-- **Previous PR-head command:** repository OpenNext validation including `pnpm run build`, measured `.next + public`, OpenNext build, worker/assets checks and Wrangler no-deploy build validation.
-  **RESULT:** PASS on that same head in [run 39397468342](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39397468342). Actual combined build size: **325,567,739 bytes (310.49 MiB)** against the 495 MiB hard maximum. This result predates the no-retry follow-up but that follow-up adds no application assets or runtime dependency; current-head validation remains pending.
-- **Current no-retry safeguard tests and full PR checks:** PENDING. Do not treat previous-head passes as current-head evidence.
+- **COMMAND:** `node --test workers/updater-scheduler/test/index.node-test.mjs`
+  **RESULT:** PASS on commit `71a6801c9a766b479cf244cd0b05530dac31100d`, run [39398048268](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39398048268): 12 tests passed, 0 failed on Node.js v22.23.3. The current follow-up adds malformed-timestamp cases; the new current-head run must confirm those new tests.
+- **COMMAND:** `./jules-verify.sh`
+  **RESULT:** PASS on commit `71a6801c9a766b479cf244cd0b05530dac31100d`, run [39398048268](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39398048268). The verification checkout uses `fetch-depth: 0` so the fail-closed verifier can compare the active Spec Kit artifacts with `main`. The new guard follow-up needs a current-head rerun.
+- **COMMAND:** `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml`
+  **RESULT:** PASS on the same commit in [run 39398048268](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39398048268). A dry run neither deploys nor proves live dispatch. The new guard follow-up needs a current-head rerun.
+- **COMMAND:** repository OpenNext validation including `pnpm run build`, the `.next + public` size gate, OpenNext build, worker/assets checks and Wrangler no-deploy build validation.
+  **RESULT:** PASS on commit `71a6801c9a766b479cf244cd0b05530dac31100d`, [run 39398048455](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39398048455). Actual combined build size: **325,595,902 bytes (310.51 MiB)** against the 495 MiB hard maximum. The new timestamp guard changes only Worker code and tests, and a current-head build validation is pending.
+- **Current guard follow-up:** source and regression tests for missing/non-finite timestamps have been added, but must pass current-head CI before this task can be called verified.
 - **LIVE WORKER / TOKEN / CRON QUOTA / NATURAL DISPATCH:** NOT VERIFIED; no actual Worker deployment, secret modification or production dispatch was performed.
 
 ## Changed-file reconciliation

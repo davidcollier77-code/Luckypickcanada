@@ -442,9 +442,10 @@
 - **Remaining gates:** Confirm Cloudflare trigger quota and deployment/secret configuration, then review a separate cutover before enabling Worker dispatch or removing existing schedule entries. Verify a natural scheduled run before claiming the scheduling issue is resolved.
 
 
-## Updater Scheduler — No-Retry Duplicate-Dispatch Safeguard — 2026-10-20
+## Updater Scheduler — No-Retry and Invalid-Time Safeguards — 2026-10-20
 
-- Official Cloudflare Scheduled Handler/Cron Trigger documentation confirms the scheduled controller supports \`noRetry()\`. The Worker now invokes it for an approved target before calling GitHub, because an ambiguous lost response can happen after GitHub accepts a dispatch; a runtime replay could create a duplicate update.
-- Non-target events remain ignored and do not call \`noRetry()\`. New regression tests verify the guard runs before the GitHub request and that non-target dates do not dispatch.
-- Previously verified at PR head \`b2abc3b487eb19b7f9fd191e44aba36634a9f122\`: scheduler tests 10/10, \`./jules-verify.sh\` pass, Wrangler dry run pass, OpenNext build-size gate pass at 325,567,739 bytes (310.49 MiB). Those passes predate this follow-up; current-head rerun is required.
-- Existing GitHub updater schedules stay enabled. Worker deployment, token setup, quota and live dispatch remain unverified and must not be implied.
+- Official Cloudflare Scheduled Handler/Cron Trigger documentation supports `controller.noRetry()`. Approved target slots invoke it before the GitHub request, avoiding platform replay if an ambiguous network failure happens after GitHub accepts the dispatch. Existing backup/recovery slots remain the retry path.
+- Amazon Q's missing-time edge case was accepted: `resolveTarget` now rejects missing, nonnumeric, or non-finite scheduled timestamps before date conversion; tests assert ignored outcome and zero dispatch/noRetry calls.
+- Amazon Q's separate claim that the deployment job lacks tests was checked against the actual workflow: the deploy job already runs the scheduler test command before Wrangler deployment, so no redundant step was added.
+- Latest verified PR head before the timestamp-guard follow-up: commit `71a6801c9a766b479cf244cd0b05530dac31100d`; 12 scheduler tests, `./jules-verify.sh`, Wrangler dry run and OpenNext/build-size gate passed. Actual combined build size was 325,595,902 bytes (310.51 MiB). Current timestamp-guard follow-up requires a new CI run.
+- Existing GitHub updater schedules remain enabled. Worker deployment, token setup, quota and live dispatch are not verified.

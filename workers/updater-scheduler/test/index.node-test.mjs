@@ -66,6 +66,41 @@ test("ignores non-target dates, times, and cron expressions", () => {
   assert.equal(resolveTarget(ts("2026-10-20T04:05:00Z"), "* * * * *"), null);
 });
 
+test("ignores missing or malformed scheduled timestamps", () => {
+  assert.equal(resolveTarget(undefined, "5 * * * *"), null);
+  assert.equal(resolveTarget(null, "5 * * * *"), null);
+  assert.equal(resolveTarget(Number.NaN, "5 * * * *"), null);
+  assert.equal(resolveTarget("2026-10-20T04:05:00Z", "5 * * * *"), null);
+});
+
+test("scheduled handler safely ignores a missing scheduled timestamp", async () => {
+  let noRetryCalls = 0;
+  let fetchCalls = 0;
+  const result = await handleScheduled(
+    {
+      scheduledTime: undefined,
+      cron: "5 * * * *",
+      noRetry() { noRetryCalls++; }
+    },
+    {
+      DISPATCH_ENABLED: "true",
+      GITHUB_OWNER: "owner",
+      GITHUB_REPO: "repo",
+      GITHUB_TOKEN: "dummy-secret"
+    },
+    {
+      logger: quiet,
+      fetchImpl: async () => {
+        fetchCalls++;
+        return new Response(null, { status: 204 });
+      }
+    }
+  );
+  assert.deepEqual(result, { outcome: "ignored", reason: "not-an-approved-slot" });
+  assert.equal(noRetryCalls, 0);
+  assert.equal(fetchCalls, 0);
+});
+
 test("timezone formatter reports Atlantic local date and time", () => {
   assert.deepEqual(formatAtlanticParts(ts("2026-10-20T04:05:00Z")), {
     weekday: "Tue", year: "2026", month: "10", day: "20",

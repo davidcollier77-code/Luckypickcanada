@@ -21,6 +21,7 @@ Cloudflare Cron Triggers operate in UTC. The Worker converts each event's `sched
 - `DISPATCH_ENABLED = "false"` in `wrangler.toml`. Deployment alone cannot dispatch workflows.
 - No token is committed. The Worker expects a Cloudflare secret named `GITHUB_TOKEN` holding a fine-grained GitHub token scoped to this repository with Actions write permission.
 - Logs record the workflow/slot and HTTP status, not the token or response body.
+- The Worker ignores missing, nonnumeric, or non-finite scheduled timestamps instead of throwing or attempting to dispatch.
 - For an approved slot the Worker calls Cloudflare's documented `controller.noRetry()` before making the GitHub request. A network failure can happen after GitHub accepted the dispatch, so platform retries could create duplicate updater runs. The next existing scheduled backup/recovery slot is the retry opportunity.
 - The existing GitHub `schedule` entries remain untouched by this PR. Do not enable Worker dispatch while those schedules remain active.
 
