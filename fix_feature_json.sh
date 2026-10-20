@@ -9,3 +9,6 @@ the task from its changed spec.md, plan.md, and tasks.md artifacts.
 
 Run ./jules-verify.sh to validate the task artifacts.
 MESSAGE
+
+# Return failure so callers cannot mistake this retired no-op for success.
+exit 1
