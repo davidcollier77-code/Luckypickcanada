@@ -449,3 +449,12 @@
 - Amazon Q's separate claim that the deployment job lacks tests was checked against the actual workflow: the deploy job already runs the scheduler test command before Wrangler deployment, so no redundant step was added.
 - Latest verified PR head before the timestamp-guard follow-up: commit `71a6801c9a766b479cf244cd0b05530dac31100d`; 12 scheduler tests, `./jules-verify.sh`, Wrangler dry run and OpenNext/build-size gate passed. Actual combined build size was 325,595,902 bytes (310.51 MiB). Current timestamp-guard follow-up requires a new CI run.
 - Existing GitHub updater schedules remain enabled. Worker deployment, token setup, quota and live dispatch are not verified.
+
+## Jules Governance Flow — 2026-10-20
+
+- **User-authorized change:** Simplify the Jules governance lifecycle while preserving the four mandatory Spec Kit stages, required verification, protected-system authorization, and the 495 MB build maximum.
+- **Root causes addressed:** Universal loading of every specialist/command file created excessive repeated context; unchecked non-blocking checklists could halt implementation for routine user confirmation; and the tracked `.specify/feature.json` pointer contradicted its machine-local/ignored design and contributed to cross-PR feature conflicts.
+- **Changes on branch `fix/jules-governance-flow`:** Rewrote `AGENTS.md` context-loading and task-sequencing rules; aligned `.jules/jules.md` and Spec Kit plan/implement instructions; aligned the Spec Kit constitution; made planning artifacts task-relevant; retired `fix_feature_json.sh`; removed the tracked `.specify/feature.json`; and changed the Spec Kit verifier to discover exactly one changed feature directory containing current, non-empty `spec.md`, `plan.md`, and `tasks.md`.
+- **Regression coverage added:** valid changed artifacts without a pointer, committed feature-branch artifacts, missing artifacts, stale base artifacts, empty required artifacts, and multiple feature directories.
+- **Verification status:** No repository shell is available in this session, so these regression tests and `./jules-verify.sh` have not been run locally. CI results are required before claiming the governance change verified or merging it.
+- **Protected scope:** No app runtime, dependencies, deployment settings, secrets, visual/audio behavior, or production configuration were intentionally changed.

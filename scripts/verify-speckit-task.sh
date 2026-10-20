@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Fail-closed guard for Jules task-level Spec Kit execution and artifact freshness.
-set -euo pipefail
+# Fail-closed Spec Kit gate. Resolve the task from changed artifacts, not the
+# shared per-checkout .specify/feature.json pointer.
+# Keep this script compatible with the system Bash shipped on macOS (3.2+).
+set -eo pipefail
 
 if [[ $# -gt 1 ]]; then
   echo "Usage: bash scripts/verify-speckit-task.sh [repository-root]" >&2
@@ -13,64 +15,58 @@ if ! REPO_ROOT="$(cd -- "$ROOT_INPUT" 2>/dev/null && pwd)"; then
   echo "❌ Spec Kit governance check: repository root does not exist: $ROOT_INPUT" >&2
   exit 1
 fi
-
 if ! git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "❌ Spec Kit governance check: root is not a Git working tree." >&2
   exit 1
 fi
 
-FEATURE_STATE="$REPO_ROOT/.specify/feature.json"
-if [[ ! -s "$FEATURE_STATE" ]]; then
-  echo "❌ Spec Kit governance check: .specify/feature.json is missing or empty." >&2
-  echo "Run the specify stage for this Jules task before verification." >&2
-  exit 1
-fi
-
-if ! FEATURE_DIR="$(node - "$REPO_ROOT" "$FEATURE_STATE" <<'NODE'
-const fs = require("node:fs");
-const path = require("node:path");
-
-const [root, featureStatePath] = process.argv.slice(2);
-try {
-  const state = JSON.parse(fs.readFileSync(featureStatePath, "utf8"));
-  if (typeof state.feature_directory !== "string" || !state.feature_directory.trim()) {
-    throw new Error('feature_directory must be a non-empty string');
-  }
-
-  const resolvedRoot = path.resolve(root);
-  const resolvedFeature = path.resolve(resolvedRoot, state.feature_directory);
-  const relative = path.relative(resolvedRoot, resolvedFeature);
-
-  if (
-    relative === "" ||
-    relative === "." ||
-    relative === ".." ||
-    relative.startsWith(`..${path.sep}`) ||
-    path.isAbsolute(relative)
-  ) {
-    throw new Error('feature_directory must resolve to a directory inside the repository root');
-  }
-
-  process.stdout.write(resolvedFeature);
-} catch (error) {
-  console.error(`Invalid .specify/feature.json: ${error.message}`);
-  process.exit(1);
+# Portable array membership: indexed arrays work on Bash 3.2; associative
+# arrays (declare -A) do not.
+contains() {
+  local needle="$1"
+  shift
+  local item
+  for item in "$@"; do
+    [[ "$item" == "$needle" ]] && return 0
+  done
+  return 1
 }
-NODE
-)"; then
-  echo "❌ Spec Kit governance check: could not resolve a safe active feature directory." >&2
-  exit 1
-fi
 
-FEATURE_RELATIVE_DIR="${FEATURE_DIR#"$REPO_ROOT"/}"
-if [[ -z "$FEATURE_RELATIVE_DIR" || "$FEATURE_RELATIVE_DIR" == "$FEATURE_DIR" ]]; then
-  echo "❌ Spec Kit governance check: could not derive a repository-relative feature path." >&2
-  exit 1
-fi
+CHANGED_PATHS=()
+add_changed_path() {
+  local candidate="$1"
+  [[ -n "$candidate" ]] || return 0
+  if ! contains "$candidate" "${CHANGED_PATHS[@]}"; then
+    CHANGED_PATHS[${#CHANGED_PATHS[@]}]="$candidate"
+  fi
+}
 
-# Prefer an explicit task/base ref; otherwise use the common remote/local
-# default branches. Fail closed if a branch-only artifact change cannot be verified.
+# Resolve a comparison base. GitHub pull_request checkouts are often shallow,
+# so fetch the declared base when its remote-tracking ref is not present.
 BASE_REF="${SPEC_KIT_BASE_REF:-}"
+if [[ -n "$BASE_REF" ]] && ! git -C "$REPO_ROOT" rev-parse --verify --quiet "${BASE_REF}^{commit}" >/dev/null; then
+  echo "❌ Spec Kit governance check: SPEC_KIT_BASE_REF '$BASE_REF' is not a valid commit." >&2
+  exit 1
+fi
+
+if [[ -z "$BASE_REF" && -n "${GITHUB_BASE_REF:-}" ]]; then
+  for candidate in "origin/${GITHUB_BASE_REF}" "${GITHUB_BASE_REF}"; do
+    if git -C "$REPO_ROOT" rev-parse --verify --quiet "${candidate}^{commit}" >/dev/null; then
+      BASE_REF="$candidate"
+      break
+    fi
+  done
+  if [[ -z "$BASE_REF" && "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    if ! git -C "$REPO_ROOT" fetch --no-tags origin "$GITHUB_BASE_REF"; then
+      echo "❌ Spec Kit governance check: could not fetch pull request base '$GITHUB_BASE_REF'." >&2
+      exit 1
+    fi
+    if git -C "$REPO_ROOT" rev-parse --verify --quiet "FETCH_HEAD^{commit}" >/dev/null; then
+      BASE_REF="FETCH_HEAD"
+    fi
+  fi
+fi
+
 if [[ -z "$BASE_REF" ]]; then
   for candidate in origin/main main origin/master master; do
     if git -C "$REPO_ROOT" rev-parse --verify --quiet "${candidate}^{commit}" >/dev/null; then
@@ -80,34 +76,69 @@ if [[ -z "$BASE_REF" ]]; then
   done
 fi
 
-for artifact in spec.md plan.md tasks.md; do
-  artifact_path="$FEATURE_RELATIVE_DIR/$artifact"
-  if [[ ! -s "$FEATURE_DIR/$artifact" ]]; then
-    echo "❌ Spec Kit governance check: required task artifact is missing or empty: $FEATURE_DIR/$artifact" >&2
+if [[ -n "$BASE_REF" ]]; then
+  if ! branch_changes="$(git -C "$REPO_ROOT" diff --name-only "${BASE_REF}...HEAD")"; then
+    echo "❌ Spec Kit governance check: could not compare HEAD with '$BASE_REF'." >&2
+    echo "Fetch the base branch or set SPEC_KIT_BASE_REF to a valid task base." >&2
     exit 1
   fi
+  while IFS= read -r path; do
+    add_changed_path "$path"
+  done <<< "$branch_changes"
+fi
 
-  # Require proof this task actually created or updated each active artifact.
-  # This blocks a stale feature.json pointing at a complete feature from a
-  # previous task. It accepts uncommitted/staged new artifacts and committed
-  # artifact changes on the current feature branch compared with its base.
-  changed=false
-  if [[ -n "$(git -C "$REPO_ROOT" status --porcelain --untracked-files=all -- "$artifact_path")" ]]; then
-    changed=true
-  fi
+# Add staged, unstaged, and untracked task artifacts too.
+while IFS= read -r path; do
+  add_changed_path "$path"
+done < <(
+  {
+    git -C "$REPO_ROOT" diff --name-only
+    git -C "$REPO_ROOT" diff --cached --name-only
+    git -C "$REPO_ROOT" ls-files --others --exclude-standard
+  } | sort -u
+)
 
-  if [[ "$changed" != true && -n "$BASE_REF" ]]; then
-    if git -C "$REPO_ROOT" diff --name-only "${BASE_REF}...HEAD" -- "$artifact_path" 2>/dev/null | grep -Fqx -- "$artifact_path"; then
-      changed=true
+CANDIDATE_DIRS=()
+for path in "${CHANGED_PATHS[@]}"; do
+  if [[ "$path" =~ ^(specs/[^/]+|\.specify/features/[^/]+)/(spec|plan|tasks)\.md$ ]]; then
+    candidate_dir="${BASH_REMATCH[1]}"
+    if ! contains "$candidate_dir" "${CANDIDATE_DIRS[@]}"; then
+      CANDIDATE_DIRS[${#CANDIDATE_DIRS[@]}]="$candidate_dir"
     fi
-  fi
-
-  if [[ "$changed" != true ]]; then
-    echo "❌ Spec Kit governance check: $artifact_path is not changed in the current task worktree/branch. A stale feature pointer does not satisfy Spec Kit execution." >&2
-    echo "Set SPEC_KIT_BASE_REF if the task branch uses a nonstandard base ref." >&2
-    exit 1
   fi
 done
 
-echo "✅ Spec Kit task artifacts verified and current:"
-printf ' - %s\n' "$FEATURE_DIR/spec.md" "$FEATURE_DIR/plan.md" "$FEATURE_DIR/tasks.md"
+# Reject even a partial second feature; otherwise a complete feature could mask
+# accidental task artifacts left in another directory.
+if [[ ${#CANDIDATE_DIRS[@]} -gt 1 ]]; then
+  echo "❌ Spec Kit governance check: multiple task feature directories changed:" >&2
+  printf ' - %s\n' "${CANDIDATE_DIRS[@]}" >&2
+  echo "Keep one feature directory per task/PR. Do not combine or duplicate task artifacts." >&2
+  exit 1
+fi
+
+if [[ ${#CANDIDATE_DIRS[@]} -eq 0 ]]; then
+  echo "❌ Spec Kit governance check: no changed task feature artifacts were found." >&2
+  if [[ -z "$BASE_REF" ]]; then
+    echo "No comparison base was found, so committed artifacts cannot be proven current." >&2
+    echo "Fetch the base branch or set SPEC_KIT_BASE_REF. The gate fails closed." >&2
+  fi
+  echo "Expected spec.md, plan.md, and tasks.md together under specs/<feature>/ or .specify/features/<feature>/." >&2
+  exit 1
+fi
+
+FEATURE_DIR="${CANDIDATE_DIRS[0]}"
+for artifact in spec plan tasks; do
+  artifact_path="$FEATURE_DIR/$artifact.md"
+  if ! contains "$artifact_path" "${CHANGED_PATHS[@]}"; then
+    echo "❌ Spec Kit governance check: required artifact was not changed for this task: $REPO_ROOT/$artifact_path" >&2
+    exit 1
+  fi
+  if [[ ! -s "$REPO_ROOT/$artifact_path" ]]; then
+    echo "❌ Spec Kit governance check: required artifact is missing or empty: $REPO_ROOT/$artifact_path" >&2
+    exit 1
+  fi
+  echo "✅ Verified changed artifact: $REPO_ROOT/$artifact_path"
+done
+
+echo "✅ Spec Kit task artifacts verified and current: $REPO_ROOT/$FEATURE_DIR"

@@ -1,10 +1,10 @@
 <!--
 Sync Impact Report:
-Version change: 1.0.0 -> 1.1.0
-Modified sections: Development Workflow aligned with mandatory Spec Kit execution in AGENTS.md; clarified file-driven execution when native slash-command dispatch is unavailable.
+Version change: 1.1.0 -> 1.2.0
+Modified sections: Implementation Sequence clarifies approval versus autonomous execution; Development Workflow adopts task-relevant context, concise artifacts, one sequential Spec Kit pass, and non-blocking checklist handling; Governance aligns Memory Bank updates with meaningful state changes.
 Added sections: None.
 Removed sections: None.
-Follow-up TODOs: None.
+Follow-up TODOs: Verify the revised workflow through the task-artifact regression tests and PR CI.
 -->
 # LuckyPickCanada Constitution
 
@@ -17,7 +17,7 @@ Follow-up TODOs: None.
 Never assume repository state, tool availability, or documentation content. Agents MUST independently inspect the actual codebase, run necessary verification commands, and confirm the environment before drafting plans or executing changes.
 
 ### III. The Implementation Sequence
-All work MUST follow the required sequence: INSPECT → IDENTIFY → UNDERSTAND → PLAN → IMPLEMENT → TEST → DOUBLE-CHECK → REPORT → CREATE PR. Plans must be presented for approval before making changes.
+All work MUST follow the required sequence: INSPECT → IDENTIFY → UNDERSTAND → PLAN → IMPLEMENT → TEST → DOUBLE-CHECK → REPORT → CREATE PR. Plans must be documented before changes. Request separate approval only when the user asks for it, the scope is genuinely unclear, or a protected action lacks authorization. Explicit authorization for autonomous execution removes a redundant approval pause but never overrides safety or scope boundaries.
 
 ### IV. Protect Core Systems
 Changes to payment processing (Stripe), authentication/authorization, databases (Neon), protected deployments (Cloudflare), and secrets are strictly prohibited unless explicitly authorized by the owner.
@@ -31,7 +31,7 @@ The primary application is a Next.js App Router project deployed on Cloudflare P
 
 ## Development Workflow
 
-- **Specification**: Every Jules task MUST complete the core Spec Kit sequence—specify, plan, tasks, and implement—using `.specify/` and the matching `.jules/cmds/speckit.*.md` definition files, regardless of task type or size. Keep outputs concise and task-scoped, but do not waive the sequence based on scope. When native slash-command dispatch is unavailable, carry out the matching Markdown command definition directly and report that execution method accurately.
+- **Specification**: Every Jules task MUST complete the core Spec Kit sequence—specify, plan, tasks, and implement—in order, using `.specify/` and each invoked `.jules/cmds/speckit.*.md` definition. Keep artifacts concise and task-scoped; create optional design artifacts only when the task needs them. Execute each stage once; do not duplicate dispatches or pause for routine confirmation. When native slash-command dispatch is unavailable, follow the invoked command definition directly and report the actual execution method.
 - **Testing**: Use Playwright for browser/user-facing verification. Use `act` and `./jules-verify.sh` for local workflow/CI validation.
 - **Troubleshooting**: Apply the Scientific Debugging & Verification Protocol. Fix the verified problem; do not turn a repair task into an audit-only task.
 
@@ -42,4 +42,4 @@ This Constitution provides the durable principles for the Spec Kit workflow whil
 - Do not create Copilot instructions or secondary governance systems.
 - Any changes to these principles or the overall architecture must be authorized by the repository owner.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-11 | **Last Amended**: 2026-10-09
+**Version**: 1.2.0 | **Ratified**: 2026-09-11 | **Last Amended**: 2026-10-20
