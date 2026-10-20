@@ -1,0 +1,11 @@
+{
+  "name": "luckypickcanada-updater-scheduler",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/index.node-test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

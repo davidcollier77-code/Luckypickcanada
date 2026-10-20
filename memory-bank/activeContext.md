@@ -429,3 +429,14 @@
 - **Verification status**: Unit tests passed completely locally with `pnpm test`. Waiting for live CI verification.
 
 - **Robin Retirement**: Robin automated review workflows and its Groq fallback have been fully retired and removed per owner request. CodeRabbit and Amazon Q remain active. The Crystal Ball Oracle functionality remains untouched and retains its required `GROQ_API_KEY`. Obsolete secrets/variables tied to Robin (`OPENROUTER_API_KEY`, `ROBIN_LLM_MODEL`, `ROBIN_LLM_BASE_URL`) have been documented for manual removal.
+
+
+## Reliable Updater Scheduling — 2026-10-20
+
+- **Goal:** Reduce dependency on GitHub's repeatedly delayed scheduled events for the Spec Kit updater and documentation refresher.
+- **Evidence inspected:** The current schedule definitions remain in \`.github/workflows/update-spec-kit.yml\` and \`.github/workflows/refresh-docs.yml\`. Historical runs on October 13 and October 16 show multi-hour start delays. Independent workflow failures were also recorded and are not assumed to be solved by a scheduler.
+- **Implementation candidate:** Isolated Cloudflare Worker under \`workers/updater-scheduler/\`, with an explicit five-slot allowlist, \`America/Halifax\` mapping, a GitHub workflow-dispatch request, and dispatch disabled by default.
+- **Safety:** Existing GitHub schedules are unchanged. The Worker is not enabled, has not been deployed from this branch, and has not dispatched a live updater. No token or other secret was added to source.
+- **Local verification:** The first standalone prototype's Node.js test suite reported 11 passed / 0 failed. The branch's exact current-head tests, Wrangler dry run, \`./jules-verify.sh\`, and repository build-size gate still require current-head CI confirmation.
+- **Branch:** \`fix/updater-scheduler-reliability-1540\`. This remains a review candidate until the draft PR's checks are observed.
+- **Remaining gates:** Confirm Cloudflare trigger quota and deployment/secret configuration, then review a separate cutover before enabling Worker dispatch or removing existing schedule entries. Verify a natural scheduled run before claiming the scheduling issue is resolved.

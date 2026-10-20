@@ -1,0 +1,101 @@
+name: Deploy Updater Scheduler
+
+on:
+  pull_request:
+    paths:
+      - 'workers/updater-scheduler/**'
+      - '.github/workflows/deploy-updater-scheduler.yml'
+      - '.specify/features/035-updater-scheduler-reliability/**'
+      - '.specify/feature.json'
+      - 'memory-bank/activeContext.md'
+      - 'memory-bank/progress.md'
+      - 'PR_SUMMARY.md'
+  push:
+    branches: [main]
+    paths:
+      - 'workers/updater-scheduler/**'
+      - '.github/workflows/deploy-updater-scheduler.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-updater-scheduler-deploy
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify updater scheduler
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.0.0
+        with:
+          version: 10.30.3
+
+      - name: Install repository dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test approved schedule mapping and safe dispatch behaviour
+        run: node --test workers/updater-scheduler/test/index.node-test.mjs
+
+      - name: Run repository governance verification
+        run: ./jules-verify.sh
+
+      - name: Wrangler dry-run (no deploy)
+        run: pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml
+
+  deploy:
+    name: Deploy disabled updater scheduler
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.0.0
+        with:
+          version: 10.30.3
+
+      - name: Install repository dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test approved schedule mapping and safe dispatch behaviour
+        run: node --test workers/updater-scheduler/test/index.node-test.mjs
+
+      - name: Deploy scheduler with dispatch disabled
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml
+
+      - name: Sync GitHub dispatch token when configured
+        env:
+          UPDATER_DISPATCH_TOKEN: ${{ secrets.UPDATER_DISPATCH_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${UPDATER_DISPATCH_TOKEN:-}" ]]; then
+            echo "::notice::UPDATER_DISPATCH_TOKEN is not configured; Worker stays disabled."
+            exit 0
+          fi
+
+          # Send the token via stdin. Never echo it or include it in command arguments.
+          printf '%s' "$UPDATER_DISPATCH_TOKEN" | pnpm exec wrangler secret put GITHUB_TOKEN --config workers/updater-scheduler/wrangler.toml
