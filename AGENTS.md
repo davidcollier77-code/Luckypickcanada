@@ -134,8 +134,9 @@ Explicit authorization is required before changing:
 - Documentation updater/refresh system
 - `AGENTS.md`
 
-This task's explicit authorization permits the governance changes described in
-the current conversation; it does not authorize unrelated protected changes.
+Protected changes are permitted only when the repository owner explicitly
+authorizes the specific system and scope; authorization never extends to
+unrelated protected changes.
 
 Never expose or commit secrets. Never weaken validation, sanitization,
 authentication, authorization, Turnstile/CAPTCHA, rate limiting, duplicate
