@@ -78,8 +78,8 @@ if [[ ${#valid_dirs[@]} -eq 0 ]]; then
 fi
 
 if [[ ${#valid_dirs[@]} -gt 1 ]]; then
-  printf '❌ Spec Kit governance check: multiple task feature directories changed:' >&2
-  printf ' - %s' "${valid_dirs[@]}" >&2
+  printf '❌ Spec Kit governance check: multiple task feature directories changed:\n' >&2
+  printf ' - %s\n' "${valid_dirs[@]}" >&2
   echo "Keep one feature directory per task/PR. Do not combine or duplicate task artifacts." >&2
   exit 1
 fi
