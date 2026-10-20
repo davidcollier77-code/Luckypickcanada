@@ -16,8 +16,8 @@
 
 **Purpose**: Record what can and cannot be verified before making alert dispositions.
 
-- [ ] T004 [US1] Create `specs/037-devskim-alert-triage/triage.md` with each alert identifier visible in the supplied recording that can be mapped to a source finding, plus the rule, file/location, evidence, classification, and limitation for items that cannot be individually retrieved.
-- [ ] T005 Confirm in `specs/037-devskim-alert-triage/triage.md` that no external secret store, credential, or secret literal is modified or reproduced and that no broad scanner suppression is introduced.
+- [x] T004 [US1] Create `specs/037-devskim-alert-triage/triage.md` with each alert identifier visible in the supplied recording that can be mapped to a source finding, plus the rule, file/location, evidence, classification, and limitation for items that cannot be individually retrieved.
+- [x] T005 Confirm in `specs/037-devskim-alert-triage/triage.md` that no external secret store, credential, or secret literal is modified or reproduced and that no broad scanner suppression is introduced.
 
 ## Phase 3: User Story 1 - Trustworthy security findings (Priority: P1) 🎯 MVP
 
@@ -25,11 +25,11 @@
 
 **Independent Test**: Every claimed classification has specific source evidence; findings without enough evidence remain unknown or are explicitly blocked from individual status changes.
 
-- [ ] T006 [US1] Document in `specs/037-devskim-alert-triage/triage.md` why the visible SHA-1/MD5 package-name matches are false positives when the corresponding lockfile integrity fields are SHA-512; leave `pnpm-lock.yaml` unchanged.
-- [ ] T007 [US1] Document in `specs/037-devskim-alert-triage/triage.md` why manifest SHA/checksum values are metadata rather than credentials; keep `.docs/manifest.json`, `.specify/integrations/generic.manifest.json`, and all other `.docs/` files unchanged.
-- [ ] T008 [US1] Record callback-based `setTimeout` findings as unsupported by the untrusted-string-code rule after checking the actual callback arguments; leave those timer call sites unchanged unless new evidence demonstrates a vulnerability.
-- [ ] T009 [US1] Record the localhost matches separately, distinguishing dev/test origins from production exposure; do not remove localhost entries solely to silence a heuristic.
-- [ ] T010 [US1] Record the Code Scanning inventory/API access blocker and identify the alert IDs whose individual source or current status could not be retrieved; do not claim the entire 113-alert snapshot was fully inventoried or cleared.
+- [x] T006 [US1] Document in `specs/037-devskim-alert-triage/triage.md` why the visible SHA-1/MD5 package-name matches are false positives when the corresponding lockfile integrity fields are SHA-512; leave `pnpm-lock.yaml` unchanged.
+- [x] T007 [US1] Document in `specs/037-devskim-alert-triage/triage.md` why manifest SHA/checksum values are metadata rather than credentials; keep `.docs/manifest.json`, `.specify/integrations/generic.manifest.json`, and all other `.docs/` files unchanged.
+- [x] T008 [US1] Record callback-based `setTimeout` findings as unsupported by the untrusted-string-code rule after checking the actual callback arguments; leave those timer call sites unchanged unless new evidence demonstrates a vulnerability.
+- [x] T009 [US1] Record the localhost matches separately, distinguishing dev/test origins from production exposure; do not remove localhost entries solely to silence a heuristic.
+- [x] T010 [US1] Record the Code Scanning inventory/API access blocker and identify the alert IDs whose individual source or current status could not be retrieved; do not claim the entire 113-alert snapshot was fully inventoried or cleared.
 
 ## Phase 4: User Story 2 - Correct genuine issues minimally (Priority: P1)
 
@@ -37,8 +37,8 @@
 
 **Independent Test**: The gift email anchor preserves its URL, text, and inline styles and includes `rel="noopener noreferrer"`; the targeted regression test passes.
 
-- [ ] T011 [US2] Add `rel="noopener noreferrer"` to the gift reveal anchor in `app/api/send-gift/route.ts`, preserving its destination, wording, and styling.
-- [ ] T012 [P] [US2] Add a targeted regression assertion for the opener-protection attribute in the relevant test file, preferably `__tests__/security-payment.test.js`, without making an external mail request.
+- [x] T011 [US2] Add `rel="noopener noreferrer"` to the gift reveal anchor in `app/api/send-gift/route.ts`, preserving its destination, wording, and styling.
+- [x] T012 [P] [US2] Add a targeted regression assertion for the opener-protection attribute in the relevant test file, preferably `__tests__/security-payment.test.js`, without making an external mail request.
 - [ ] T013 [US2] Run the targeted test `pnpm exec vitest run __tests__/security-payment.test.js` and record its actual output in `specs/037-devskim-alert-triage/pr_summary.md`.
 
 ## Phase 5: User Story 3 - Preserve credentials and safeguards (Priority: P1)
@@ -48,7 +48,7 @@
 **Independent Test**: The final diff contains no credential values, secret-store/configuration changes, lockfile edits, broad suppressions, unrelated application changes, or scanner weakening.
 
 - [ ] T014 [US3] Perform a second secret/scope audit of every changed file and record the outcome in `specs/037-devskim-alert-triage/pr_summary.md` without copying any secret values.
-- [ ] T015 [US3] Create a separate owner follow-up section in `specs/037-devskim-alert-triage/triage.md` only for genuinely plausible credential exposure; do not repeat the already owner-confirmed Neon rotation as a new action, and do not classify public hashes/placeholders as credentials.
+- [x] T015 [US3] Create a separate owner follow-up section in `specs/037-devskim-alert-triage/triage.md` only for genuinely plausible credential exposure; do not repeat the already owner-confirmed Neon rotation as a new action, and do not classify public hashes/placeholders as credentials.
 - [ ] T016 [US3] Verify through available GitHub/CI evidence whether the updated-head DevSkim scan ran and which alerts actually changed status; record any access/tool blocker in `specs/037-devskim-alert-triage/pr_summary.md`.
 
 ## Final Phase: Polish and Cross-Cutting Concerns
