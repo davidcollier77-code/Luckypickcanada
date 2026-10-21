@@ -1,0 +1,1 @@
+- [x] Check codescan_reader presence
