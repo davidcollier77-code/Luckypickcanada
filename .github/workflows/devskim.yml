@@ -7,11 +7,16 @@ name: DevSkim
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   schedule:
     - cron: '35 1 * * 1'
+
+# Prevent overlapping scans from racing while appending to the shared report.
+concurrency:
+  group: devskim-alerts-main
+  cancel-in-progress: false
 
 jobs:
   lint:
@@ -19,7 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       actions: read
-      contents: read
+      contents: write
+      issues: write
       security-events: write
     steps:
       - name: Checkout code
@@ -35,64 +41,98 @@ jobs:
         with:
           sarif_file: devskim-alerts.sarif
 
-      - name: Generate readable DevSkim alerts report
-        if: always() && hashFiles('devskim-alerts.sarif') != ''
+      - name: Append new DevSkim findings to shared report
+        id: append-findings
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        shell: bash
         run: |
           python3 - <<'PY'
+          import hashlib
           import json
+          import os
+          import re
           from pathlib import Path
 
           sarif_path = Path("devskim-alerts.sarif")
           report_path = Path("devskim-alerts.md")
+          report = report_path.read_text(encoding="utf-8") if report_path.exists() else (
+              "# DevSkim alerts\n\n"
+              "This is the running list of distinct findings detected by DevSkim. "
+              "New findings are appended once; entries are not removed automatically. "
+              "Remove an entry only after its remediation has been verified.\n\n"
+              "<!-- DevSkim findings are appended below this line. -->\n"
+          )
+          known = set(re.findall(r"<!-- devskim-id:([0-9a-f]{20}) -->", report))
           data = json.loads(sarif_path.read_text(encoding="utf-8"))
-          lines = [
-              "# DevSkim alerts",
-              "",
-              "Generated from the DevSkim CLI output for this workflow run.",
-              "This report contains findings from this scan; it is not a complete export of historical GitHub Code Scanning alerts.",
-              "",
-          ]
-          findings = []
+          additions = []
+
+          def clean(value):
+              return re.sub(r"\s+", " ", str(value or "")).replace("|", "\\|").strip()
+
           for run in data.get("runs", []):
-              rules = {
-                  rule.get("id"): rule
-                  for rule in run.get("tool", {}).get("driver", {}).get("rules", [])
-              }
               for result in run.get("results", []):
                   rule_id = result.get("ruleId", "unknown")
-                  rule = rules.get(rule_id, {})
-                  message = result.get("message", {}).get("text", "No message provided").replace("\n", " ")
-                  level = result.get("level", "unspecified")
+                  message = clean(result.get("message", {}).get("text", "No message provided"))
+                  level = clean(result.get("level", "unspecified"))
                   locations = result.get("locations", [])
-                  if not locations:
-                      findings.append((level, rule_id, message, "Location not provided"))
+                  location = locations[0] if locations else {}
+                  physical = location.get("physicalLocation", {})
+                  uri = physical.get("artifactLocation", {}).get("uri", "Location not provided")
+                  region = physical.get("region", {})
+                  line = region.get("startLine")
+                  where = f"{uri}:{line}" if line else uri
+                  fingerprints = result.get("partialFingerprints") or result.get("fingerprints") or {}
+                  stable_fingerprint = (
+                      fingerprints.get("primaryLocationLineHash")
+                      or fingerprints.get("primaryLocationStartColumnFingerprint")
+                      or ""
+                  )
+                  identity = "\\0".join([
+                      rule_id, uri, str(stable_fingerprint or line or ""), message
+                  ])
+                  finding_id = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:20]
+                  if finding_id in known:
                       continue
-                  for location in locations:
-                      physical = location.get("physicalLocation", {})
-                      artifact = physical.get("artifactLocation", {}).get("uri", "Unknown file")
-                      region = physical.get("region", {})
-                      line = region.get("startLine")
-                      where = f"{artifact}:{line}" if line else artifact
-                      findings.append((level, rule_id, message, where))
-          lines.append(f"**Finding instances in this scan: {len(findings)}**")
-          lines.append("")
-          if findings:
-              lines.extend(["| Level | Rule ID | Location | Finding |", "|---|---|---|---|"])
-              for level, rule_id, message, where in findings:
-                  clean = lambda value: str(value).replace("|", "\\|").replace("\r", " ").replace("\n", " ")
-                  lines.append(f"| {clean(level)} | {clean(rule_id)} | {clean(where)} | {clean(message)} |")
-          else:
-              lines.append("No findings were reported by this scan.")
-          report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-          print(f"Wrote {report_path} with {len(findings)} finding instances.")
+                  known.add(finding_id)
+                  additions.append(
+                      f"- **{level.upper()} — {clean(rule_id)}** — "
+                      f"`{clean(where)}` — {message} "
+                      f"<!-- devskim-id:{finding_id} -->"
+                  )
 
-      - name: Upload DevSkim alerts files
-        if: always() && hashFiles('devskim-alerts.sarif') != ''
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: DevSkim alerts
-          path: |
-            devskim-alerts.sarif
-            devskim-alerts.md
-          if-no-files-found: error
-          retention-days: 30
+          if additions:
+              if "<!-- DevSkim findings are appended below this line. -->" not in report:
+                  report = report.rstrip() + "\n"
+              report = report.rstrip() + "\n\n" + "\n".join(additions) + "\n"
+              report_path.write_text(report, encoding="utf-8")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"new_count={len(additions)}\n")
+          print(f"Appended {len(additions)} new DevSkim finding(s).")
+          PY
+
+      - name: Commit updated alert report
+        if: steps.append-findings.outputs.new_count != '0'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add devskim-alerts.md
+          git commit -m "chore: record new DevSkim alerts"
+          git push origin HEAD:main
+
+      - name: Notify about new DevSkim alerts
+        if: success() && steps.append-findings.outputs.new_count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_COUNT: ${{ steps.append-findings.outputs.new_count }}
+          REPORT_URL: https://github.com/${{ github.repository }}/blob/main/devskim-alerts.md
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          body="@davidcollier77-code **${NEW_COUNT} new DevSkim finding(s) added.**"
+          body+=$'\n\n'
+          body+="The shared report has been updated: ${REPORT_URL}"
+          body+=$'\n\n'
+          body+="Scan details: ${RUN_URL}"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/1556/comments" -f body="$body"
