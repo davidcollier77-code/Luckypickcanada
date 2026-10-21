@@ -66,7 +66,7 @@ describe('DevSkim append-only report implementation', () => {
     const result = scan([finding()]);
     expect(result.newCount).toBe(1);
     expect(result.report).toContain('DS1');
-    expect(result.report).toContain('stable-fingerprint');
+    expect(result.report).toContain('<!-- devskim-id:');
   });
 
   it('does not append a repeated finding on the next scan', () => {
