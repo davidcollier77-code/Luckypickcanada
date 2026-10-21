@@ -19,11 +19,12 @@ Keep the existing DevSkim scan and SARIF upload, add a committed `devskim-alerts
 ## Design
 
 1. Keep the scanning/SARIF job restricted to the permissions necessary to scan and upload SARIF.
-2. Restrict persistent report writes and issue comments to a separate job that runs only on `main` push or schedule.
+2. Restrict persistent report writes and issue comments to a separate job that runs only on `main` push or schedule. That trusted job reruns DevSkim to produce its own SARIF file, avoiding elevated permissions in the pull-request scan job.
 3. Append stable, deduplicated finding records into `devskim-alerts.md`; never automatically clear prior entries.
 4. Commit only when new entries exist.
 5. Post one comment to issue #1556 with count, report link, and run link only after a successful report commit.
-6. Avoid unsupported claims about completeness: DevSkim's SARIF output represents this scan, not necessarily all historical Code Scanning alerts.
+6. Ignore report-only pushes to avoid redundant runs.
+7. Avoid unsupported claims about completeness: DevSkim's SARIF output represents this scan, not necessarily all historical Code Scanning alerts.
 
 ## Security and Governance
 
