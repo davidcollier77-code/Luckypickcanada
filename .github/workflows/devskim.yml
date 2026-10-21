@@ -1,31 +1,34 @@
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+# separate terms of service, privacy policy, and support documentation.
 
 name: DevSkim
 
 on:
   push:
     branches: ["main"]
+    # Do not trigger a redundant scan after the bot updates only the report.
+    paths-ignore:
+      - "devskim-alerts.md"
   pull_request:
     branches: ["main"]
+    paths-ignore:
+      - "devskim-alerts.md"
   schedule:
     - cron: '35 1 * * 1'
 
-# Prevent overlapping scans from racing while appending to the shared report.
+# Keep scans/report updates from racing while appending to the shared report.
 concurrency:
   group: devskim-alerts-main
   cancel-in-progress: false
 
 jobs:
   lint:
-    name: DevSkim
+    name: DevSkim scan and Security upload
     runs-on: ubuntu-latest
     permissions:
       actions: read
-      contents: write
-      issues: write
+      contents: read
       security-events: write
     steps:
       - name: Checkout code
@@ -41,9 +44,26 @@ jobs:
         with:
           sarif_file: devskim-alerts.sarif
 
+  update-report:
+    name: Append new alerts and notify owner
+    needs: lint
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    # Write permissions are confined to the trusted main/schedule-only job.
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Run DevSkim scanner for report
+        uses: microsoft/DevSkim-Action@a6b6966a33b497cd3ae2ebc406edf8f4cc2feec6 # v1.0.15
+        with:
+          output-filename: devskim-alerts.sarif
+
       - name: Append new DevSkim findings to shared report
         id: append-findings
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         shell: bash
         run: |
           python3 - <<'PY'
@@ -55,19 +75,20 @@ jobs:
 
           sarif_path = Path("devskim-alerts.sarif")
           report_path = Path("devskim-alerts.md")
+          marker = "<!-- DevSkim findings are appended below this line. -->"
           report = report_path.read_text(encoding="utf-8") if report_path.exists() else (
               "# DevSkim alerts\n\n"
               "This is the running list of distinct findings detected by DevSkim. "
               "New findings are appended once; entries are not removed automatically. "
-              "Remove an entry only after its remediation has been verified.\n\n"
-              "<!-- DevSkim findings are appended below this line. -->\n"
+              "Remove an entry only after remediation has been verified.\n\n"
+              + marker + "\n"
           )
           known = set(re.findall(r"<!-- devskim-id:([0-9a-f]{20}) -->", report))
           data = json.loads(sarif_path.read_text(encoding="utf-8"))
           additions = []
 
           def clean(value):
-              return re.sub(r"\s+", " ", str(value or "")).replace("|", "\\|").strip()
+              return re.sub(r"\\s+", " ", str(value or "")).replace("|", "\\\\|").replace("`", "\\\\`").strip()
 
           for run in data.get("runs", []):
               for result in run.get("results", []):
@@ -101,8 +122,6 @@ jobs:
                   )
 
           if additions:
-              if "<!-- DevSkim findings are appended below this line. -->" not in report:
-                  report = report.rstrip() + "\n"
               report = report.rstrip() + "\n\n" + "\n".join(additions) + "\n"
               report_path.write_text(report, encoding="utf-8")
 
