@@ -15,9 +15,15 @@ This guide provides the complete database setup required to fix the "Lucky Stori
 Ensure these environment variables are set in your production environment:
 
 ```env
-POSTGRES_URL=postgresql://username:password@hostname/database?sslmode=require
-DATABASE_URL=postgresql://username:password@hostname/database?sslmode=require
+POSTGRES_URL=<your-neon-connection-string>
+DATABASE_URL=<your-neon-connection-string>
 ```
+
+**Note:** Replace `<your-neon-connection-string>` with your actual Neon PostgreSQL connection
+string, which can be found in your Neon project dashboard under **Connection Details**. It
+typically looks like `postgresql://<user>:<password>@<host>/<dbname>?sslmode=require`.
+The application checks `POSTGRES_URL` first and falls back to `DATABASE_URL`, so both
+should be set to the same connection string.
 
 **Note:** The application checks for `POSTGRES_URL` first, then falls back to `DATABASE_URL`.
 

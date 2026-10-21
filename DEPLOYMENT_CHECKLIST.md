@@ -25,10 +25,12 @@ psql "$POSTGRES_URL"
 ### 2. Verify Environment Variables
 
 Ensure these are set in your production environment:
-
 ```env
-POSTGRES_URL=postgresql://username:password@hostname/database
-DATABASE_URL=postgresql://username:password@hostname/database
+# Replace each placeholder below with your actual Neon PostgreSQL connection string.
+# Find it in your Neon project dashboard under Connection Details.
+# It typically looks like: postgresql://<user>:<password>@<host>/<dbname>?sslmode=require
+POSTGRES_URL=<your-neon-connection-string>
+DATABASE_URL=<your-neon-connection-string>
 STRIPE_SECRET_KEY=sk_live_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=...
