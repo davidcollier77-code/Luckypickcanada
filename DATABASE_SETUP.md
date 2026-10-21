@@ -15,8 +15,8 @@ This guide provides the complete database setup required to fix the "Lucky Stori
 Ensure these environment variables are set in your production environment:
 
 ```env
-POSTGRES_URL=postgresql://username:password@hostname/database?sslmode=require
-DATABASE_URL=postgresql://username:password@hostname/database?sslmode=require
+POSTGRES_URL=$DATABASE_URL
+DATABASE_URL=$DATABASE_URL
 ```
 
 **Note:** The application checks for `POSTGRES_URL` first, then falls back to `DATABASE_URL`.
