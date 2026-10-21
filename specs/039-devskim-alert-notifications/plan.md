@@ -1,40 +1,31 @@
 # Implementation Plan: Append-Only DevSkim Alert Report and Notifications
 
-**Branch**: `chore/devskim-alerts-artifact`
-**Date**: 2026-10-21
+**Branch**: `chore/devskim-alerts-artifact`  
+**Date**: 2026-10-21  
 **Spec**: [spec.md](./spec.md)
 
 ## Summary
 
-Keep the existing DevSkim scan and SARIF upload, add a committed `devskim-alerts.md` report, append only finding identities not already recorded, and post a comment on notification issue #1556 when new findings are appended. Preserve report entries until a person removes them after verified remediation.
+Keep one shared append-only `devskim-alerts.md` report, deduplicate findings by stable SARIF identity, and notify issue #1556 only when genuinely new findings require a report PR.
 
-## Technical Context
+## Technical Design
 
-- **Language/Runtime**: YAML workflow with Bash and Python 3 for report generation.
-- **Third-party Actions**: Existing repository-pinned checkout and DevSkim action; existing pinned SARIF upload action. Any additional actions should be pinned to verified commit SHAs.
-- **Data**: SARIF output from DevSkim and Markdown entries in `devskim-alerts.md`.
-- **Verification**: Inspect workflow changes; check generated-report logic against repeated and new finding examples where an execution environment is available; use PR CI and the first eligible main/schedule run to verify commit and notification behavior.
-- **Constraints**: No external secret changes; no broad scanner suppressions; maintain the repository 495 MB build cap (no app build expected for workflow-only changes).
+1. The read-only scan job runs DevSkim once, uploads that SARIF to GitHub Code Scanning, and uploads the same SARIF as the `devskim-sarif` workflow artifact.
+2. The trusted main/schedule-only job downloads only `devskim-alerts.sarif`; it must never download a scan-only Markdown file over the shared `devskim-alerts.md`.
+3. `.github/scripts/append_devskim_findings.py` implements the append-only report update and stable deduplication. It uses rule ID + file URI + stable SARIF fingerprint; if no stable fingerprint exists, it uses rule ID + file URI + source line. Human-readable wording is not part of the identity.
+4. The report-update job checks for an existing open bot report PR and updates that branch; otherwise it creates a new report branch and PR. It must fail visibly if it cannot verify the PR URL. It never pushes directly to main or merges a PR.
+5. A notification comment on issue #1556 is posted only after changes have been committed to a report branch and an open report PR URL is verified. The comment links to the PR, the shared report on main, and the workflow run.
 
-## Design
+## Security and Scope
 
-1. Keep the scanning/SARIF job restricted to the permissions necessary to scan and upload SARIF.
-2. Restrict persistent report writes and issue comments to a separate job that runs only on `main` push or schedule. That trusted job reruns DevSkim to produce its own SARIF file, avoiding elevated permissions in the pull-request scan job.
-3. Append stable, deduplicated finding records into `devskim-alerts.md`; never automatically clear prior entries.
-4. Commit only when new entries exist.
-5. Post one comment to issue #1556 with count, report link, and run link only after a successful report commit.
-6. Ignore report-only pushes to avoid redundant runs.
-7. Avoid unsupported claims about completeness: DevSkim's SARIF output represents this scan, not necessarily all historical Code Scanning alerts.
+- Pull-request scans remain read-only for repository contents; report and issue writes are restricted to the trusted main/schedule-only job.
+- Keep third-party actions pinned to full commit SHAs with version comments.
+- Do not add credentials, secrets, or external services.
+- Existing report entries are never automatically removed.
+- The report contains findings reported by these DevSkim scans; it is not presented as a complete export of historical GitHub Code Scanning alerts.
 
-## Security and Governance
+## Verification Requirements
 
-- Job-level write permissions must not be present on the pull-request scanning job.
-- The write-capable job must be gated against `pull_request` events and must not execute PR-supplied workflow code on an untrusted ref.
-- Report and comment content must be derived from scan output and fixed URLs; do not include secrets or arbitrary raw log content.
-- A failed push due to branch protection must be treated as a blocker, not as successful report persistence.
-
-## Verification Status
-
-- PR CI log reviewed: targeted Crystal Ball tests, all unit tests, and TypeScript check passed; the mandatory `./jules-verify.sh` failed because this task's Spec Kit `spec.md`, `plan.md`, and `tasks.md` were not present in the PR at that run.
-- Current changes include the three required task documents to address that governance check.
-- Workflow's write path and notification require a fresh eligible run to verify; branch-protection behavior is not yet known.
+- Unit tests exercise the actual Python report implementation for first finding, repeated finding, wording change with the same fingerprint, and a genuinely new finding.
+- Run `pnpm test -- __tests__/devskim-dedup.test.js` and `./jules-verify.sh`; record actual outcomes in the PR summary.
+- CI must verify the latest branch head. Bot-PR creation and issue-comment delivery remain pending until an eligible main/schedule run executes.
