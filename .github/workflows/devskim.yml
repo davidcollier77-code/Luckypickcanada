@@ -49,68 +49,14 @@ jobs:
         with:
           sarif_file: devskim-alerts.sarif
 
-      - name: Generate readable DevSkim alerts report
-        if: always() && hashFiles('devskim-alerts.sarif') != ''
-        run: |
-          python3 - <<'PY'
-          import json
-          import re
-          from pathlib import Path
-
-          sarif_path = Path("devskim-alerts.sarif")
-          report_path = Path("devskim-alerts.md")
-          try:
-              data = json.loads(sarif_path.read_text(encoding="utf-8"))
-          except (json.JSONDecodeError, OSError) as e:
-              report_path.write_text(f"# DevSkim alerts
-              print(f"ERROR: Could not parse {sarif_path}: {e}")
-              raise
-          lines = [
-              "# DevSkim alerts",
-              "",
-              "Generated from the DevSkim CLI output for this workflow run.",
-              "This report contains findings from this scan; it is not a complete export of historical GitHub Code Scanning alerts.",
-              "",
-          ]
-          findings = []
-          for run in data.get("runs", []):
-              for result in run.get("results", []):
-                  rule_id = result.get("ruleId", "unknown")
-                  message = re.sub(r"\s+", " ", result.get("message", {}).get("text", "No message provided")).strip()
-                  level = result.get("level", "unspecified")
-                  locations = result.get("locations", [])
-                  if not locations:
-                      findings.append((level, rule_id, message, "Location not provided"))
-                      continue
-                  for location in locations:
-                      physical = location.get("physicalLocation", {})
-                      artifact = physical.get("artifactLocation", {}).get("uri", "Unknown file")
-                      region = physical.get("region", {})
-                      line = region.get("startLine")
-                      where = f"{artifact}:{line}" if line else artifact
-                      findings.append((level, rule_id, message, where))
-          lines.append(f"**Finding instances in this scan: {len(findings)}**")
-          lines.append("")
-          if findings:
-              lines.extend(["| Level | Rule ID | Location | Finding |", "|---|---|---|---|"])
-              for level, rule_id, message, where in findings:
-                  clean = lambda value: re.sub(r"\s+", " ", str(value or "")).replace("|", "\\|").replace("`", "\\`").strip()
-                  lines.append(f"| {clean(level)} | {clean(rule_id)} | {clean(where)} | {clean(message)} |")
-          else:
-              lines.append("No findings were reported by this scan.")
-          report_path.write_text("
-          print(f"Wrote {report_path} with {len(findings)} finding instances.")
-          PY
-
       - name: Upload DevSkim alerts files
         if: always() && hashFiles('devskim-alerts.sarif') != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: devskim-sarif
-          path: |
-            devskim-alerts.sarif
-            devskim-alerts.md
-          if-no-files-found: warn
+          # Only SARIF is transferred; never overwrite the append-only shared Markdown report.
+          path: devskim-alerts.sarif
+          if-no-files-found: error
 
   update-report:
     name: Append new alerts and notify owner
@@ -134,108 +80,66 @@ jobs:
           name: devskim-sarif
           path: .
 
+      - name: Prepare report-update branch
+        id: prepare-branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXISTING_BRANCH="$(gh pr list --state open --base main --json headRefName --jq '[.[] | select(.headRefName | startswith("chore/devskim-report-update-"))][0].headRefName // empty')"
+          if [[ -n "$EXISTING_BRANCH" ]]; then
+            BRANCH="$EXISTING_BRANCH"
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            echo "Updating existing report PR branch: $BRANCH"
+          else
+            BRANCH="chore/devskim-report-update-${GITHUB_RUN_ID}"
+            git checkout -b "$BRANCH"
+            echo "Starting report PR branch: $BRANCH"
+          fi
+          echo "branch_name=$BRANCH" >> "$GITHUB_OUTPUT"
+
       - name: Append new DevSkim findings to shared report
         id: append-findings
         shell: bash
-        run: |
-          python3 - <<'PY'
-          import hashlib
-          import json
-          import os
-          import re
-          from pathlib import Path
-
-          sarif_path = Path("devskim-alerts.sarif")
-          report_path = Path("devskim-alerts.md")
-          marker = "<!-- DevSkim findings are appended below this line. -->"
-          report = report_path.read_text(encoding="utf-8") if report_path.exists() else (
-              "# DevSkim alerts\n\n"
-              "This is the running list of distinct findings detected by DevSkim. "
-              "New findings are appended once; entries are not removed automatically. "
-              "Remove an entry only after remediation has been verified.\n\n"
-              + marker + "\n"
-          )
-          known = set(re.findall(r"<!-- devskim-id:([0-9a-f]{20}) -->", report))
-          data = json.loads(sarif_path.read_text(encoding="utf-8"))
-          additions = []
-
-          def clean(value):
-              return re.sub(r"\s+", " ", str(value or "")).replace("|", "\\|").replace("`", "\\`").strip()
-
-          for run in data.get("runs", []):
-              for result in run.get("results", []):
-                  rule_id = result.get("ruleId", "unknown")
-                  message = clean(result.get("message", {}).get("text", "No message provided"))
-                  level = clean(result.get("level", "unspecified"))
-                  locations = result.get("locations", [])
-                  location = locations[0] if locations else {}
-                  physical = location.get("physicalLocation", {})
-                  uri = physical.get("artifactLocation", {}).get("uri", "Location not provided")
-                  region = physical.get("region", {})
-                  line = region.get("startLine")
-                  where = f"{uri}:{line}" if line else uri
-                  fingerprints = result.get("partialFingerprints") or result.get("fingerprints") or {}
-                  stable_fingerprint = (
-                      fingerprints.get("primaryLocationLineHash")
-                      or fingerprints.get("primaryLocationStartColumnFingerprint")
-                      or ""
-                  )
-                  # Derive identity from rule ID, file path, and stable fingerprint only.
-                  # Exclude the human-readable message so a wording change does not
-                  # create a duplicate entry for the same finding.
-                  if stable_fingerprint:
-                      identity = "\0".join([rule_id, uri, stable_fingerprint])
-                  else:
-                      identity = "\0".join([rule_id, uri, str(line or "")])
-                  finding_id = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:20]
-                  if finding_id in known:
-                      continue
-                  known.add(finding_id)
-                  additions.append(
-                      f"- **{level.upper()} — {clean(rule_id)}** — "
-                      f"`{clean(where)}` — {message} "
-                      f"<!-- devskim-id:{finding_id} -->"
-                  )
-
-          if additions:
-              report = report.rstrip() + "\n\n" + "\n".join(additions) + "\n"
-              report_path.write_text(report, encoding="utf-8")
-
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              output.write(f"new_count={len(additions)}\n")
-          print(f"Appended {len(additions)} new DevSkim finding(s).")
-          PY
+        run: python3 .github/scripts/append_devskim_findings.py
 
       # Branch protection on main may not allow direct workflow-token pushes.
       # Instead of assuming a direct push is permitted, commit the updated report
       # on a branch and open (or update) a bot PR targeting main.
       # NOTE: The shared devskim-alerts.md on main is updated only after this PR
       # is reviewed and merged. The workflow does NOT merge the PR automatically.
-      - name: Commit and open report-update PR
+      - name: Commit and open or update report PR
+        id: open-pr
         if: steps.append-findings.outputs.new_count != '0'
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.prepare-branch.outputs.branch_name }}
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          BRANCH="chore/devskim-report-update-$(date +%Y%m%d-%H%M%S)"
-          git checkout -b "$BRANCH"
           git add devskim-alerts.md
           git commit -m "chore: record new DevSkim alerts"
-          git push origin "$BRANCH"
-          # Create a PR for this branch; if one already exists for the same base,
-          # gh pr create exits non-zero — treat that as acceptable.
-          gh pr create \
-            --base main \
-            --head "$BRANCH" \
-            --title "chore: record new DevSkim alerts (automated)" \
-            --body "Automated report update from DevSkim workflow run ${{ github.run_id }}. Review and merge to publish new findings to devskim-alerts.md on main." \
-            || true
-          # Export the PR URL for the notification step.
-          PR_URL=$(gh pr list --head "$BRANCH" --json url --jq '.[0].url' 2>/dev/null || echo "")
-          echo "pr_url=${PR_URL}" >> "$GITHUB_OUTPUT"
-        id: open-pr
+          git push origin "HEAD:$BRANCH"
+
+          PR_URL="$(gh pr list --state open --base main --head "$BRANCH" --json url --jq '.[0].url // empty')"
+          if [[ -z "$PR_URL" ]]; then
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "chore: record new DevSkim alerts (automated)" \
+              --body "Automated append-only DevSkim report update from workflow run ${{ github.run_id }}. Review and merge to publish new findings to devskim-alerts.md on main."
+            PR_URL="$(gh pr list --state open --base main --head "$BRANCH" --json url --jq '.[0].url // empty')"
+          fi
+
+          if [[ -z "$PR_URL" ]]; then
+            echo "ERROR: Report changes were pushed but the open report PR URL could not be verified." >&2
+            exit 1
+          fi
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
 
       - name: Notify about new DevSkim alerts
         if: steps.append-findings.outputs.new_count != '0'
@@ -248,7 +152,13 @@ jobs:
         run: |
           body="@davidcollier77-code **${NEW_COUNT} new DevSkim finding(s) added.**"
           body+=$'\n\n'
-          body+="A report-update PR has been opened (branch protection prevents direct workflow pushes to main): ${PR_URL}"
+          body+="Report-update PR (review and merge to publish the shared report): ${PR_URL}"
+          body+=
+          body+=$'\n\n'
+          body+="Scan details: ${RUN_URL}"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${DEVSKIM_NOTIFICATION_ISSUE}/comments" -f body="$body"
+\\n\\n'
+          body+="Shared report: https://github.com/${GITHUB_REPOSITORY}/blob/main/devskim-alerts.md"
           body+=$'\n\n'
           body+="Scan details: ${RUN_URL}"
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${DEVSKIM_NOTIFICATION_ISSUE}/comments" -f body="$body"
