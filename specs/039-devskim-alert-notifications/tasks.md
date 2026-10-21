@@ -12,16 +12,16 @@
 ## Phase 2 — Shared Findings Report
 
 - [x] T005 Add `devskim-alerts.md` as the committed shared report with an append-only marker.
-- [ ] T006 Implement finding identity/deduplication against the existing report.
-- [ ] T007 Append new findings without removing existing entries.
-- [ ] T008 Commit the report only when at least one genuinely new entry has been added.
+- [x] T006 Implement finding identity/deduplication against the existing report.
+- [x] T007 Append new findings without removing existing entries.
+- [x] T008 Commit the report only when at least one genuinely new entry has been added.
 
 ## Phase 3 — Notification and Security Permissions
 
 - [x] T009 Create GitHub issue #1556 as the notification inbox.
-- [ ] T010 Notify the owner with one issue comment only when a scan adds new entries.
-- [ ] T011 Ensure the pull-request scanning job does not have repository-content write permission.
-- [ ] T012 Confirm the write-capable report path runs only on `main` push or schedule.
+- [x] T010 Notify the owner with one issue comment only when a scan adds new entries.
+- [x] T011 Ensure the pull-request scanning job does not have repository-content write permission.
+- [x] T012 Confirm the write-capable report path runs only on `main` push or schedule.
 
 ## Phase 4 — Verification
 
