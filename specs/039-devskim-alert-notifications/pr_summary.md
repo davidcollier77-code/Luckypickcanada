@@ -1,44 +1,48 @@
-# PR Summary — DevSkim Alert Report and Notifications
+# PR Summary — DevSkim Append-Only Alert Report and Notifications
 
-## Task Group
-- **Selected group**: security.
-- **Reason**: This task changes a security-scanner workflow and GitHub Actions permissions.
+## Selected Task Group
+- **Group**: security.
+- **Reason**: This task changes a security-scanner workflow, artifact handling, and GitHub Actions permissions.
 
 ## Goal
-Maintain one shared append-only `devskim-alerts.md` file and notify the repository owner only when a new finding is added.
+Maintain one shared `devskim-alerts.md` report, append only previously unrecorded findings, and notify issue #1556 when a report-update PR is available.
 
 ## Implementation
-- Added `devskim-alerts.md` as the shared report.
-- Updated the DevSkim workflow:
-  - `lint` job produces the SARIF, uploads it to GitHub Security, generates a readable `.md` summary, and uploads both as a named artifact (`devskim-sarif`).
-  - `update-report` job downloads that exact artifact instead of running DevSkim a second time, ensuring the Security tab and the report use identical data.
-  - Deduplication identity is derived from rule ID + file URI + stable SARIF fingerprint (when present) or rule ID + file URI + line number (fallback). The human-readable message is excluded so a wording change alone cannot create a duplicate.
-  - Notification issue number is defined as a workflow-level `env` variable (`DEVSKIM_NOTIFICATION_ISSUE: "1556"`) and referenced by variable in the API call.
-  - Concurrency groups are split: PR events use `devskim-pr-{number}`; main/schedule events use `devskim-alerts-main`. PR scans no longer queue behind report-update runs.
-  - Report persistence uses a bot PR (`gh pr create --base main`) instead of a direct `git push origin HEAD:main`. Branch protection on main may not permit direct workflow-token pushes; a bot PR respects those rules without requiring a PAT.
-- Split scan and report-update jobs. The pull-request scanning job has `contents: read`; only the trusted main/schedule report job receives `contents: write`, `issues: write`, and `pull-requests: write`.
-- Report-only pushes are ignored to avoid redundant scans.
-- Existing report entries are never automatically removed. The report covers findings returned by DevSkim scans; it is not claimed to be a complete export of all historical GitHub Code Scanning alerts.
+- The `lint` job runs DevSkim once, uploads that SARIF to GitHub Code Scanning, and uploads the same file as the `devskim-sarif` artifact.
+- The report job downloads only `devskim-alerts.sarif`. It does not download a scan-only Markdown file that could overwrite the shared append-only report.
+- `.github/scripts/append_devskim_findings.py` is the single implementation of append/deduplication logic and is invoked directly by the workflow.
+- Deduplication uses rule ID + file URI + SARIF stable fingerprint, with rule ID + file URI + line as fallback. Finding wording is excluded from the identity.
+- Four Vitest cases invoke that Python script directly: first finding, repeat finding, changed wording with the same fingerprint, and genuinely new finding preserving prior entries.
+- The report job finds and updates an existing open report-update PR branch. If there is no open report PR, it creates one. It does not push directly to main or auto-merge. PR lookup/creation errors are no longer silently ignored.
+- Notification issue number is configurable through workflow-level `DEVSKIM_NOTIFICATION_ISSUE: "1556"`. A notification is sent only after an open report PR URL is verified; it links to the PR, shared report, and scan run.
+- PR scans retain read-only repository-content permissions. Write permissions remain limited to the trusted main-push/schedule job. Existing report entries are never automatically deleted.
 
-## Spec Kit Artifacts
-- Added `spec.md`, `plan.md`, and `tasks.md` under `specs/039-devskim-alert-notifications/` in response to the governance failure described below.
-- The full required verification on the updated PR head is still pending; do not mark governance as passing until CI reports the actual result.
+## Governance and Routed Context
+- Read first: `AGENTS.md`.
+- Consulted: `.jules/jules.md`, `.jules/security.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `.docs/manifest.json`, the security group's routed Jules/Gemini documentation snapshots, and the existing Spec Kit command definitions and feature artifacts.
+- This work continues the existing PR/feature rather than creating another branch or PR. The existing `spec.md`, `plan.md`, and `tasks.md` were updated to reflect the fix. No application library or dependency was added; the helper uses only Python standard-library modules.
+- Spec Kit stages were not re-dispatched during this repair; doing so would repeat the existing task stages. Current-head governance verification is still required before completion.
 
-## Verification
-- **CI run**: [Visual QA #649](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39671949413), original revision.
-  - Targeted tests: PASS.
-  - All unit tests: PASS — 93 tests across 14 files.
-  - TypeScript: PASS — `pnpm tsc --noEmit` completed with exit code 0.
-  - `./jules-verify.sh`: FAIL — no changed Spec Kit feature artifacts were present in that revision. The required three files have since been added, and a fresh CI run is in progress.
-- **Local report-logic simulation**: PASS — one finding appended on first scan; same finding produced zero additions on a repeat scan; a new finding appended while preserving the existing entry. Wording-change-only scenario also confirmed stable.
-- **Unit tests**: Added `__tests__/devskim-dedup.test.js` — 4 targeted tests covering first finding, repeated finding, changed wording with same fingerprint, and genuinely new finding. Results pending CI run.
-- **Permissions review**: PASS by workflow inspection — the pull-request scan job has read-only contents permission; write permissions are scoped to the separate `main` push / schedule job.
-- **Not yet verified**: updated-head Spec Kit check and other CI steps; bot-PR creation end-to-end on first eligible main/schedule run; notification delivery in issue #1556. Those require the pending CI and first eligible run after merge.
+## Files Changed by This Repair
+- `.github/workflows/devskim.yml`
+- `.github/scripts/append_devskim_findings.py`
+- `__tests__/devskim-dedup.test.js`
+- `specs/039-devskim-alert-notifications/spec.md`
+- `specs/039-devskim-alert-notifications/plan.md`
+- `specs/039-devskim-alert-notifications/tasks.md`
+- `specs/039-devskim-alert-notifications/pr_summary.md`
+
+## Verification Evidence
+- **Local isolated helper check: PASS** — `python3 -m py_compile` accepted the helper copy, and a four-case execution passed: first append; repeat skipped; changed wording with the same fingerprint skipped; new finding appended while preserving the previous entry.
+- **Committed Vitest test against the actual helper: PENDING** — the test was changed to spawn `python3 .github/scripts/append_devskim_findings.py`; current-head CI must confirm its result.
+- **`./jules-verify.sh`: PENDING** on the latest PR commit. A local repository checkout was unavailable in this environment because the GitHub host could not be resolved; do not treat that as a pass.
+- **Current-head CI / YAML workflow validation: PENDING** until the updated revision's checks report.
+- **Live behavior pending**: report PR creation/update and notification delivery on the first eligible main/scheduled workflow run. Repository branch-rule settings remain unavailable through the connected integration; the workflow uses the PR fallback instead of assuming direct main pushes are allowed.
 
 ## Remaining Issues
-- Branch-rule inspection is unavailable through this integration. The workflow now creates a bot PR for report updates instead of pushing directly to main; this respects branch protection without requiring a PAT. The shared `devskim-alerts.md` on main is updated only after the bot PR is reviewed and merged — the workflow does not auto-merge.
-- End-to-end bot-PR creation and notification delivery must be confirmed on the first eligible run after merge.
-- No merge performed.
+- Do not merge until the current-head required CI and governance checks pass.
+- The first eligible main/scheduled run must still confirm bot-PR update/creation and issue #1556 notification delivery.
+- No PR was merged, and no second PR was created.
 
 ## Final Status
-- **USEFUL RESULT**: YES — implementation and governance artifacts have been added, but full CI and notification delivery are pending verification.
+- **USEFUL RESULT: YES, FIXES COMMITTED TO EXISTING PR; MERGE GATE STILL PENDING.**
