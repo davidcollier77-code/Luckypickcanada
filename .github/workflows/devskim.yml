@@ -88,7 +88,7 @@ jobs:
           additions = []
 
           def clean(value):
-              return re.sub(r"\\s+", " ", str(value or "")).replace("|", "\\\\|").replace("`", "\\\\`").strip()
+              return re.sub(r"\s+", " ", str(value or "")).replace("|", "\\|").replace("`", "\\`").strip()
 
           for run in data.get("runs", []):
               for result in run.get("results", []):
@@ -108,7 +108,7 @@ jobs:
                       or fingerprints.get("primaryLocationStartColumnFingerprint")
                       or ""
                   )
-                  identity = "\\0".join([
+                  identity = "\0".join([
                       rule_id, uri, str(stable_fingerprint or line or ""), message
                   ])
                   finding_id = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:20]
