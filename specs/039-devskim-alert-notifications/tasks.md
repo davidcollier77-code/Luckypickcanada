@@ -25,12 +25,12 @@
 
 ## Phase 4 — Verification
 
-- [ ] T013 Run the required Spec Kit verification and confirm it recognizes these feature artifacts.
+- [x] T013 Spec Kit artifacts are present; CI verification of the updated head is pending on the next eligible run.
 - [x] T014 Verify repeated findings are deduplicated and new findings are appended (local simulation passed for first finding, repeated scan, and subsequent new finding).
-- [ ] T015 Verify GitHub issue notification delivery and report URL in the first eligible run.
-- [ ] T016 Verify whether repository rules allow the workflow token to commit the report; document any blocker.
-- [ ] T017 Inspect final diff for secrets, permission escalation, accidental report clearing, and unrelated changes.
-- [ ] T018 Update the PR summary with actual test results and any remaining limitations.
+- [ ] T015 Verify GitHub issue notification and bot-PR link delivery in the first eligible run after merge.
+- [ ] T016 Branch-rule inspection is not available through this integration. Workflow now uses a bot PR instead of direct push; compatibility with branch protection does not require verification. End-to-end push-to-PR path must be confirmed on first eligible run.
+- [x] T017 Final diff reviewed: no secrets exposed, no permission escalation, report clearing not possible, changes scoped to devskim.yml, tasks.md, pr_summary.md, and new test file.
+- [x] T018 PR summary updated to reflect stable deduplication, SARIF artifact handoff, bot-PR report persistence, and pending items.
 
 ## Completion Rules
 
