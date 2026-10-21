@@ -1,21 +1,35 @@
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+# separate terms of service, privacy policy, and support documentation.
 
 name: DevSkim
 
+# Notification issue number for new DevSkim findings.
+env:
+  DEVSKIM_NOTIFICATION_ISSUE: "1556"
+
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+    # Do not trigger a redundant scan after the bot updates only the report.
+    paths-ignore:
+      - "devskim-alerts.md"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+    paths-ignore:
+      - "devskim-alerts.md"
   schedule:
     - cron: '35 1 * * 1'
 
+# Pull-request scans get their own concurrency group so they cannot queue
+# behind an in-progress main/schedule report-update run.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('devskim-pr-{0}', github.event.pull_request.number) || 'devskim-alerts-main' }}
+  cancel-in-progress: false
+
 jobs:
   lint:
-    name: DevSkim
+    name: DevSkim scan and Security upload
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -28,9 +42,120 @@ jobs:
       - name: Run DevSkim scanner
         uses: microsoft/DevSkim-Action@a6b6966a33b497cd3ae2ebc406edf8f4cc2feec6 # v1.0.15
         with:
-          output-filename: devskim-results.sarif
+          output-filename: devskim-alerts.sarif
 
       - name: Upload DevSkim scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
         with:
-          sarif_file: devskim-results.sarif
+          sarif_file: devskim-alerts.sarif
+
+      - name: Upload DevSkim alerts files
+        if: always() && hashFiles('devskim-alerts.sarif') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: devskim-sarif
+          # Only SARIF is transferred; never overwrite the append-only shared Markdown report.
+          path: devskim-alerts.sarif
+          if-no-files-found: error
+
+  update-report:
+    name: Append new alerts and notify owner
+    needs: lint
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    # Write permissions are confined to the trusted main/schedule-only job.
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # Download the exact SARIF artifact produced by the lint job above.
+      # This ensures the Security-tab upload and the report use identical data.
+      - name: Download DevSkim SARIF artifact
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: devskim-sarif
+          path: .
+
+      - name: Prepare report-update branch
+        id: prepare-branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXISTING_BRANCH="$(gh pr list --state open --base main --json headRefName --jq '[.[] | select(.headRefName | startswith("chore/devskim-report-update-"))][0].headRefName // empty')"
+          if [[ -n "$EXISTING_BRANCH" ]]; then
+            BRANCH="$EXISTING_BRANCH"
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            echo "Updating existing report PR branch: $BRANCH"
+          else
+            BRANCH="chore/devskim-report-update-${GITHUB_RUN_ID}"
+            git checkout -b "$BRANCH"
+            echo "Starting report PR branch: $BRANCH"
+          fi
+          echo "branch_name=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Append new DevSkim findings to shared report
+        id: append-findings
+        shell: bash
+        run: python3 .github/scripts/append_devskim_findings.py
+
+      # Branch protection on main may not allow direct workflow-token pushes.
+      # Instead of assuming a direct push is permitted, commit the updated report
+      # on a branch and open (or update) a bot PR targeting main.
+      # NOTE: The shared devskim-alerts.md on main is updated only after this PR
+      # is reviewed and merged. The workflow does NOT merge the PR automatically.
+      - name: Commit and open or update report PR
+        id: open-pr
+        if: steps.append-findings.outputs.new_count != '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.prepare-branch.outputs.branch_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add devskim-alerts.md
+          git commit -m "chore: record new DevSkim alerts"
+          git push origin "HEAD:$BRANCH"
+
+          PR_URL="$(gh pr list --state open --base main --head "$BRANCH" --json url --jq '.[0].url // empty')"
+          if [[ -z "$PR_URL" ]]; then
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "chore: record new DevSkim alerts (automated)" \
+              --body "Automated append-only DevSkim report update from workflow run ${{ github.run_id }}. Review and merge to publish new findings to devskim-alerts.md on main."
+            PR_URL="$(gh pr list --state open --base main --head "$BRANCH" --json url --jq '.[0].url // empty')"
+          fi
+
+          if [[ -z "$PR_URL" ]]; then
+            echo "ERROR: Report changes were pushed but the open report PR URL could not be verified." >&2
+            exit 1
+          fi
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Notify about new DevSkim alerts
+        if: steps.append-findings.outputs.new_count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_COUNT: ${{ steps.append-findings.outputs.new_count }}
+          PR_URL: ${{ steps.open-pr.outputs.pr_url }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="@davidcollier77-code **${NEW_COUNT} new DevSkim finding(s) added.**"
+          body+=$'\n\n'
+          body+="Report-update PR (review and merge to publish the shared report): ${PR_URL}"
+          body+=$'\n\n'
+          body+="Shared report: https://github.com/${GITHUB_REPOSITORY}/blob/main/devskim-alerts.md"
+          body+=$'\n\n'
+          body+="Scan details: ${RUN_URL}"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${DEVSKIM_NOTIFICATION_ISSUE}/comments" -f body="$body"
