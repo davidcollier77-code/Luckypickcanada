@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join, parse } from 'node:path';
 import * as securityTestTools from '../app/test-tools/reveal-testing/revealTestConfig';
 import { POST as sendGift } from '../app/api/send-gift/route';
 // Instead of importing verify-session, we just trust the integration testing as it was hard to mock it here cleanly
@@ -40,5 +42,33 @@ describe('Security Hardening: Payment & Authorization', () => {
       const data = await response.json();
       expect(data.error).toContain('restricted');
     });
+  });
+});
+
+describe('Gift email link security', () => {
+  function findRepoRoot(startDirectory = process.cwd()) {
+    const filesystemRoot = parse(startDirectory).root;
+    let directory = startDirectory;
+
+    while (true) {
+      if (existsSync(join(directory, 'app/api/send-gift/route.ts'))) {
+        return directory;
+      }
+      if (directory === filesystemRoot) break;
+      directory = dirname(directory);
+    }
+
+    throw new Error('Unable to locate repository root for gift-link security test');
+  }
+
+  it('protects the opener when a reveal link opens a new tab', () => {
+    const routeSource = readFileSync(
+      join(findRepoRoot(), 'app/api/send-gift/route.ts'),
+      'utf8'
+    );
+    const anchor = routeSource.match(/<a href="\$\{revealUrl\}" target="_blank"[^>]*>/);
+
+    expect(anchor).not.toBeNull();
+    expect(anchor[0]).toContain('rel="noopener noreferrer"');
   });
 });
