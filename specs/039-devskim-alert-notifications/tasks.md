@@ -26,7 +26,7 @@
 ## Phase 4 — Verification
 
 - [ ] T013 Run the required Spec Kit verification and confirm it recognizes these feature artifacts.
-- [ ] T014 Verify repeated findings are deduplicated and new findings are appended.
+- [x] T014 Verify repeated findings are deduplicated and new findings are appended (local simulation passed for first finding, repeated scan, and subsequent new finding).
 - [ ] T015 Verify GitHub issue notification delivery and report URL in the first eligible run.
 - [ ] T016 Verify whether repository rules allow the workflow token to commit the report; document any blocker.
 - [ ] T017 Inspect final diff for secrets, permission escalation, accidental report clearing, and unrelated changes.
