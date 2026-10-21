@@ -18,7 +18,10 @@ All stages used **FILE-DRIVEN PROCEDURAL EXECUTION** via the repository terminal
 | Implement | `.jules/cmds/speckit.implement.md` | Applied the source fix to `DATABASE_SETUP.md` and prepared this PR Summary. |
 
 ## Confirmed Fix
-
+- `DATABASE_SETUP.md`: Replaced circular `POSTGRES_URL=$DATABASE_URL` / `DATABASE_URL=$DATABASE_URL` env example with `<your-neon-connection-string>` descriptive placeholders and added explanatory guidance. This eliminates the invalid/circular example that was flagged by reviewers and resolves the security scanner finding without exposing real credentials.
+- `DEPLOYMENT_CHECKLIST.md`: Replaced dummy `postgresql://username:password@hostname/database` connection strings with `<your-neon-connection-string>` placeholders and added inline comment explaining where to find the real value. This corrects the remaining security-scanner trigger in the deployment documentation.
+- `.specify/feature.json`: Restored to base-branch value `{"feature_directory": ".specify/features/security-inventory"}`. Per `AGENTS.md` Section 2, this file is per-checkout local state and must not be committed as shared PR state; it is also listed in `.specify/.gitignore`.
+- `specs/038-security-inventory/tasks.md`: Marked T003, T004, T005 as complete (`[x]`) to reconcile with the verification evidence recorded in this PR Summary.
 - `DATABASE_SETUP.md`: Replaced the literal string `postgresql://username:password@hostname/database?sslmode=require` with the safe generic environment variable placeholder `$DATABASE_URL`. This eliminates the dummy literal which triggers security scans while retaining accurate instructional steps.
 
 ## Governance and Relevant Material
