@@ -28,9 +28,71 @@ jobs:
       - name: Run DevSkim scanner
         uses: microsoft/DevSkim-Action@a6b6966a33b497cd3ae2ebc406edf8f4cc2feec6 # v1.0.15
         with:
-          output-filename: devskim-results.sarif
+          output-filename: devskim-alerts.sarif
 
       - name: Upload DevSkim scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
         with:
-          sarif_file: devskim-results.sarif
+          sarif_file: devskim-alerts.sarif
+
+      - name: Generate readable DevSkim alerts report
+        if: always() && hashFiles('devskim-alerts.sarif') != ''
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          sarif_path = Path("devskim-alerts.sarif")
+          report_path = Path("devskim-alerts.md")
+          data = json.loads(sarif_path.read_text(encoding="utf-8"))
+          lines = [
+              "# DevSkim alerts",
+              "",
+              "Generated from the DevSkim CLI output for this workflow run.",
+              "This report contains findings from this scan; it is not a complete export of historical GitHub Code Scanning alerts.",
+              "",
+          ]
+          findings = []
+          for run in data.get("runs", []):
+              rules = {
+                  rule.get("id"): rule
+                  for rule in run.get("tool", {}).get("driver", {}).get("rules", [])
+              }
+              for result in run.get("results", []):
+                  rule_id = result.get("ruleId", "unknown")
+                  rule = rules.get(rule_id, {})
+                  message = result.get("message", {}).get("text", "No message provided").replace("\n", " ")
+                  level = result.get("level", "unspecified")
+                  locations = result.get("locations", [])
+                  if not locations:
+                      findings.append((level, rule_id, message, "Location not provided"))
+                      continue
+                  for location in locations:
+                      physical = location.get("physicalLocation", {})
+                      artifact = physical.get("artifactLocation", {}).get("uri", "Unknown file")
+                      region = physical.get("region", {})
+                      line = region.get("startLine")
+                      where = f"{artifact}:{line}" if line else artifact
+                      findings.append((level, rule_id, message, where))
+          lines.append(f"**Finding instances in this scan: {len(findings)}**")
+          lines.append("")
+          if findings:
+              lines.extend(["| Level | Rule ID | Location | Finding |", "|---|---|---|---|"])
+              for level, rule_id, message, where in findings:
+                  clean = lambda value: str(value).replace("|", "\\|").replace("\r", " ").replace("\n", " ")
+                  lines.append(f"| {clean(level)} | {clean(rule_id)} | {clean(where)} | {clean(message)} |")
+          else:
+              lines.append("No findings were reported by this scan.")
+          report_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+          print(f"Wrote {report_path} with {len(findings)} finding instances.")
+
+      - name: Upload DevSkim alerts files
+        if: always() && hashFiles('devskim-alerts.sarif') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: DevSkim alerts
+          path: |
+            devskim-alerts.sarif
+            devskim-alerts.md
+          if-no-files-found: error
+          retention-days: 30
