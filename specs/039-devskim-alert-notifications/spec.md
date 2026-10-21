@@ -50,6 +50,7 @@ The workflow must not grant write permissions to untrusted pull-request executio
 - **FR-006**: Preserve the existing DevSkim GitHub Security/SARIF upload.
 - **FR-007**: Do not give pull-request scans repository content write access.
 - **FR-008**: Be explicit that the report covers findings produced by this DevSkim scan; it is not asserted to export all historical GitHub Code Scanning alerts.
+- **FR-009**: Transfer SARIF only to the report-update job; a scan-generated Markdown artifact must never overwrite the shared append-only report.
 
 ## Constraints and Edge Cases
 
