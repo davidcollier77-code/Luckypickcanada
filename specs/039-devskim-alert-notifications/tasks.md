@@ -7,31 +7,32 @@
 - [x] T001 Create the feature specification at `specs/039-devskim-alert-notifications/spec.md`.
 - [x] T002 Create the implementation plan at `specs/039-devskim-alert-notifications/plan.md`.
 - [x] T003 Record the implementation tasks in this file.
-- [x] T004 Inspect the current DevSkim workflow and confirm its scan output is SARIF.
+- [x] T004 Inspect the existing DevSkim workflow and its SARIF output.
 
 ## Phase 2 — Shared Findings Report
 
 - [x] T005 Add `devskim-alerts.md` as the committed shared report with an append-only marker.
-- [x] T006 Implement finding identity/deduplication against the existing report.
+- [x] T006 Implement stable finding identity using rule ID + file URI + stable SARIF fingerprint; use the source line as fallback.
 - [x] T007 Append new findings without removing existing entries.
-- [x] T008 Commit the report only when at least one genuinely new entry has been added.
+- [x] T008 Create/update a report PR only when a new finding is added; do not push directly to main or auto-merge.
+- [x] T019 Transfer only the SARIF artifact so the scan job cannot overwrite the shared Markdown report.
 
 ## Phase 3 — Notification and Security Permissions
 
-- [x] T009 Create GitHub issue #1556 as the notification inbox.
-- [x] T010 Notify the owner with one issue comment only when a scan adds new entries.
-- [x] T011 Ensure the pull-request scanning job does not have repository-content write permission.
-- [x] T012 Confirm the write-capable report path runs only on `main` push or schedule.
+- [x] T009 Use existing GitHub issue #1556 as the notification inbox.
+- [x] T010 Notify the owner only after a report PR URL is verified.
+- [x] T011 Keep repository-content write permission out of the pull-request scan job.
+- [x] T012 Restrict the write-capable report job to main pushes and scheduled runs.
 
 ## Phase 4 — Verification
 
-- [x] T013 Spec Kit artifacts are present; CI verification of the updated head is pending on the next eligible run.
-- [x] T014 Verify repeated findings are deduplicated and new findings are appended (local simulation passed for first finding, repeated scan, and subsequent new finding).
-- [ ] T015 Verify GitHub issue notification and bot-PR link delivery in the first eligible run after merge.
-- [ ] T016 Branch-rule inspection is not available through this integration. Workflow now uses a bot PR instead of direct push; compatibility with branch protection does not require verification. End-to-end push-to-PR path must be confirmed on first eligible run.
-- [x] T017 Final diff reviewed: no secrets exposed, no permission escalation, report clearing not possible, changes scoped to devskim.yml, tasks.md, pr_summary.md, and new test file.
-- [x] T018 PR summary updated to reflect stable deduplication, SARIF artifact handoff, bot-PR report persistence, and pending items.
+- [ ] T013 Verify `./jules-verify.sh` and all required checks on the current PR head; results are pending.
+- [ ] T014 Verify the actual Python report implementation in CI for first finding, repeated finding, wording change with the same fingerprint, and genuinely new finding. A local four-case simulation of this implementation passed; the committed Vitest run is pending.
+- [ ] T015 Verify bot-PR creation/update and issue #1556 notification on the first eligible main/schedule run.
+- [x] T016 Use a branch-protection-compatible report PR because repository branch-rule settings could not be verified through the available integration. End-to-end execution remains pending.
+- [ ] T017 Complete a final diff/security/scope review after current-head checks finish.
+- [x] T018 Update the PR summary to describe the actual implementation and pending evidence.
 
 ## Completion Rules
 
-Do not mark a task complete without actual evidence. An eligible push/scheduled workflow run is required to verify report commit and notification delivery; a PR scan alone cannot demonstrate those effects.
+Do not mark a task complete without actual evidence. An eligible main/schedule workflow run is required to verify report PR creation/update and issue notification. A pull-request scan alone cannot demonstrate those effects.
