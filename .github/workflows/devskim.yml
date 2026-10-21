@@ -150,14 +150,11 @@ jobs:
           RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         shell: bash
         run: |
+          set -euo pipefail
           body="@davidcollier77-code **${NEW_COUNT} new DevSkim finding(s) added.**"
           body+=$'\n\n'
           body+="Report-update PR (review and merge to publish the shared report): ${PR_URL}"
-          body+=
           body+=$'\n\n'
-          body+="Scan details: ${RUN_URL}"
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${DEVSKIM_NOTIFICATION_ISSUE}/comments" -f body="$body"
-\\n\\n'
           body+="Shared report: https://github.com/${GITHUB_REPOSITORY}/blob/main/devskim-alerts.md"
           body+=$'\n\n'
           body+="Scan details: ${RUN_URL}"
