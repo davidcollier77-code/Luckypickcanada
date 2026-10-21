@@ -1,1 +1,3 @@
-{"feature_directory": ".specify/features/security-inventory"}
+{
+  "feature_directory": "specs/033-diagnose-code-scanning-alerts"
+}

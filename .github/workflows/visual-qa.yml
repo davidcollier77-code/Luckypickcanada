@@ -48,6 +48,8 @@ jobs:
         run: pnpm tsc --noEmit
 
       - name: Run AGENTS.md Spec Kit verification
+        env:
+          SPEC_KIT_BASE_REF: ${{ github.event.pull_request.base.sha }}
         run: ./jules-verify.sh
 
       - name: Install Playwright Chromium
