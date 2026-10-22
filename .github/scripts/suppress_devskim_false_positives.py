@@ -105,7 +105,7 @@ def should_suppress_metadata_finding(snippet: str, region: dict) -> bool:
             continue
 
         value_group = "string" if field.group("string") is not None else "bare"
-        safe_fields.append((field.span(value_group), field))
+        safe_fields.append((field.span("value"), field))
 
     start_column = region.get("startColumn")
     end_column = region.get("endColumn")
@@ -122,8 +122,10 @@ def should_suppress_metadata_finding(snippet: str, region: dict) -> bool:
         # SARIF columns are 1-based; endColumn is exclusive.
         finding_start = start_column - 1
         finding_end = end_column - 1
+        # Require the finding to stay inside one safe value. Mere overlap could
+        # suppress a broader finding spanning that value and an unrelated field.
         return any(
-            finding_start < value_end and finding_end > value_start
+            finding_start >= value_start and finding_end <= value_end
             for (value_start, value_end), _field in safe_fields
         )
 
