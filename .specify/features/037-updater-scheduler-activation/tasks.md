@@ -11,11 +11,11 @@
 
 ## Phase 2: User Story 1 — Enable guarded Worker dispatch (Priority: P1)
 
-- [ ] T005 [US1] Change `DISPATCH_ENABLED` to exact string `"true"` in `workers/updater-scheduler/wrangler.toml`.
-- [ ] T006 [US1] Update the scheduler config/handoff regression assertion and test description in `workers/updater-scheduler/test/index.node-test.mjs`.
-- [ ] T007 [US1] Replace preparation-only instructions with activation and rollback instructions in `workers/updater-scheduler/README.md`.
-- [ ] T008 [US1] Record verified findings, changed files, actual verification state, and pending gates in `PR_SUMMARY.md`.
-- [ ] T009 [US1] Update the current scheduler state and post-merge acceptance steps in `memory-bank/activeContext.md`.
+- [x] T005 [US1] Change `DISPATCH_ENABLED` to exact string `"true"` in `workers/updater-scheduler/wrangler.toml`.
+- [x] T006 [US1] Update the scheduler config/handoff regression assertion and test description in `workers/updater-scheduler/test/index.node-test.mjs`.
+- [x] T007 [US1] Replace preparation-only instructions with activation and rollback instructions in `workers/updater-scheduler/README.md`.
+- [x] T008 [US1] Record verified findings, changed files, actual verification state, and pending gates in `PR_SUMMARY.md`.
+- [x] T009 [US1] Update the current scheduler state and post-merge acceptance steps in `memory-bank/activeContext.md`.
 
 ## Phase 3: Verification and controlled handoff
 
