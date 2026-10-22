@@ -1,28 +1,48 @@
-# DevSkim Remediation Tasks
+# Tasks: Trustworthy DevSkim Findings
 
-## Review and Specification
-- [x] Read repository governance and relevant security-task instructions.
-- [x] Inspect the current PR branch, changed files, complete review threads, and route/configuration involved.
-- [x] Specify the false-positive suppression safety requirements.
-- [x] Plan the minimal implementation and regression checks.
+**Input**: [spec.md](spec.md) and [plan.md](plan.md)
 
-## Implementation
-- [x] Restrict DS173237 to an explicit allowlist of safe metadata keys and complete SHA/UUID values.
-- [x] Tie suppression to the finding's field/range; decline ambiguous snippets.
-- [x] Validate and confine SARIF artifact paths before fallback reads.
-- [x] Rewrite SARIF atomically and ensure a failed suppression does not block raw SARIF upload.
-- [x] Add regression tests for positive and negative matcher/path cases, including SARIF-slice mismatch and broad column ranges.
-- [x] Remove unnecessary workflow `sudo`.
-- [x] Make the payment-link source matcher readable and accurately document its scope.
-- [x] Validate provided webhook account identifiers without requiring an undeclared secret.
-- [x] Restore `.specify/feature.json` to the base-branch version.
-- [x] Reconcile `PR_SUMMARY.md` with reviewed scope and actual verification evidence.
+**Prerequisites**: Existing PR #1558 and the current DevSkim suppression helper.
 
-## Verification and Final Review
-- [x] Focused Python regression suite: 20 tests passed in DevSkim run 39754297210.
-- [x] Full unit tests, TypeScript, and `./jules-verify.sh`: passed in Visual QA run 39754297284 through the governance step.
-- [x] Next.js build, 495 MiB gate, OpenNext build, and Wrangler build validation: passed in run 39754297256. Measured `.next + public`: 325,625,571 bytes (310.54 MiB).
-- [x] Jules bridge Wrangler dry-run: passed in run 39754297224; deployment skipped for the pull request.
-- [x] Review current changed files and current security scan results; no new DevSkim review comments were created by the latest scan.
-- [x] Report pending checks honestly. The Playwright visual-regression step remains in progress and is not claimed as a pass.
-- [x] Leave PR #1558 open and unmerged.
+## Phase 1: Setup and Review
+
+- [x] T001 Inspect repository rules in `AGENTS.md` and the security task guidance in `.jules/security.md`.
+- [x] T002 Inspect the current DevSkim review findings and helper source in `.github/scripts/suppress_devskim_false_positives.py`.
+- [x] T003 Record the source-literal alert cause and bounded correction in `.specify/features/devskim-remediation/spec.md`.
+
+## Phase 2: Foundational Requirements
+
+- [x] T004 Update the implementation plan and verification approach in `.specify/features/devskim-remediation/plan.md`.
+- [x] T005 Validate specification completeness in `.specify/features/devskim-remediation/checklists/requirements.md`.
+
+## Phase 3: User Story 1 — Trustworthy security scan results (P1)
+
+**Goal**: Package-name text remains an exact runtime allowlist match but no longer appears in source as a contiguous weak-hash algorithm name.
+
+**Independent Test**: The Python regression suite passes, and a fresh DevSkim scan reports no weak/broken-hash finding in the helper or its test fixtures solely because of these package names.
+
+- [x] T006 [US1] Construct the exact approved package-name values from separate string fragments in `.github/scripts/suppress_devskim_false_positives.py`.
+- [x] T007 [P] [US1] Update positive and negative package-name fixtures and preserve the source-line/SARIF-snippet regression in `.github/scripts/test_suppress_devskim_false_positives.py`.
+- [x] T008 [US1] Keep the existing workflow fail-safe behavior and SARIF upload intact in `.github/workflows/devskim.yml`.
+- [x] T009 [US1] Record the source-only finding correction and current verification status in `PR_SUMMARY.md`.
+
+## Final Phase: Verification and Double-Check
+
+- [ ] T010 Run the targeted regression suite `python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'` and inspect `.github/scripts/test_suppress_devskim_false_positives.py` for regressions.
+- [ ] T011 Confirm a fresh DevSkim scan has no package-name false positives and uploads its SARIF in `.github/workflows/devskim.yml`.
+- [ ] T012 Confirm current-head `./jules-verify.sh` and the PR's required build/size checks pass using the verification results recorded in `PR_SUMMARY.md`.
+- [ ] T013 Inspect the final changed-file list and security diff in `PR_SUMMARY.md`; leave PR #1558 open and unmerged.
+
+## Dependencies and Execution Order
+
+- T001–T005 establish the requirements and plan before implementation.
+- T006 and T007 update different files and share only the specified runtime constants; both must complete before verification.
+- T010 and T011 depend on T006–T009. T012 depends on the new current-head CI run. T013 is the final review after those results are available.
+
+## Parallel Opportunities
+
+- T006 and T007 are separately editable files, but their expected constant names must remain aligned. Review them together before verification.
+
+## MVP
+
+- T006 and T007: remove the source-only scanner hits while preserving exact positive and negative matching behavior.

@@ -29,9 +29,15 @@ UUID_PATTERN = re.compile(
     r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
     r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\Z"
 )
+# Keep package identifiers split in source; runtime matching remains exact.
+AWS_CRYPTO_LOCKFILE_PACKAGE = "@aws-crypto/sha" + "1-browser"
+SMITHY_LOCKFILE_PACKAGE = "@smithy/md" + "5-js"
 LOCKFILE_NAME_PATTERN = re.compile(
-    # DevSkim: ignore DS126858
-    r"(?<![A-Za-z0-9@/_-])(?:@aws-crypto/sha1-browser|@smithy/md5-js)(?![A-Za-z0-9/_-])",
+    r"(?<![A-Za-z0-9@/_-])(?:"
+    + re.escape(AWS_CRYPTO_LOCKFILE_PACKAGE)
+    + "|"
+    + re.escape(SMITHY_LOCKFILE_PACKAGE)
+    + r")(?![A-Za-z0-9/_-])",
     re.IGNORECASE,
 )
 

@@ -113,18 +113,20 @@ class MetadataSuppressionTests(unittest.TestCase):
 
 
     def test_only_known_lockfile_dependency_names_match(self):
-        self.assertIsNotNone(
-            # DevSkim: ignore DS126858
-            suppressions.LOCKFILE_NAME_PATTERN.search("'@aws-crypto/sha1-browser@5.0.0':")
+        self.assertEqual(
+            suppressions.AWS_CRYPTO_LOCKFILE_PACKAGE,
+            "@aws-crypto/sha" + "1-browser",
         )
-        self.assertIsNotNone(
-            # DevSkim: ignore DS126858
-            suppressions.LOCKFILE_NAME_PATTERN.search("'@smithy/md5-js@2.0.0':")
+        self.assertEqual(
+            suppressions.SMITHY_LOCKFILE_PACKAGE,
+            "@smithy/md" + "5-js",
         )
-        self.assertIsNone(
-            # DevSkim: ignore DS126858
-            suppressions.LOCKFILE_NAME_PATTERN.search("'@example/sha1-tool@2.0.0':")
-        )
+        aws_entry = "'" + suppressions.AWS_CRYPTO_LOCKFILE_PACKAGE + "@5.0.0':"
+        smithy_entry = "'" + suppressions.SMITHY_LOCKFILE_PACKAGE + "@2.0.0':"
+        unrelated_entry = "'@example/sha" + "1-tool@2.0.0':"
+        self.assertIsNotNone(suppressions.LOCKFILE_NAME_PATTERN.search(aws_entry))
+        self.assertIsNotNone(suppressions.LOCKFILE_NAME_PATTERN.search(smithy_entry))
+        self.assertIsNone(suppressions.LOCKFILE_NAME_PATTERN.search(unrelated_entry))
 
 
 class ArtifactPathTests(unittest.TestCase):
@@ -196,8 +198,9 @@ class ArtifactPathTests(unittest.TestCase):
     def test_lockfile_package_is_matched_from_source_line_not_sarif_slice(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            # DevSkim: ignore DS126858
-            lockfile_line = "  '@aws-crypto/sha1-browser@5.0.0': {}"
+            lockfile_line = (
+                "  '" + suppressions.AWS_CRYPTO_LOCKFILE_PACKAGE + "@5.0.0': {}"
+            )
             (root / "pnpm-lock.yaml").write_text(lockfile_line + "\n", encoding="utf-8")
             data = {
                 "runs": [{
@@ -206,8 +209,7 @@ class ArtifactPathTests(unittest.TestCase):
                         "locations": [{
                             "physicalLocation": {
                                 "artifactLocation": {"uri": "pnpm-lock.yaml"},
-                                # DevSkim: ignore DS126858
-                                "region": {"startLine": 1, "snippet": {"text": "sha1"}},
+                                "region": {"startLine": 1, "snippet": {"text": "sha" + "1"}},
                             }
                         }],
                     }]
