@@ -1,69 +1,71 @@
-# Feature Specification: Updater Scheduler Cutover
+# Feature Specification: Safe Updater Scheduler Cutover
 
 **Feature Branch**: `fix/updater-scheduler-cutover-20261022`  
 **Created**: 2026-10-22  
-**Status**: Draft — cutover PR awaits review and account-level prerequisites
+**Status**: Preparation only — live cutover remains gated by external prerequisites
 
-**Input**: The repository owner authorized completing the coordinated switch from GitHub's delayed native schedules to the prepared Cloudflare updater scheduler.
+**Input**: The repository owner authorized preparing the migration from delayed native GitHub schedules to the Cloudflare updater scheduler, without risking missed updates before the Worker is proven ready.
 
 ## User Scenarios & Testing
 
-### User Story 1 — Run the updater workflows from one scheduler (Priority: P1)
+### User Story 1 — Keep updater automation reliable during preparation (Priority: P1)
 
-The maintainer needs the Spec Kit and documentation refresh tasks to run at their intended Tuesday/Friday Atlantic local times without two independent scheduler systems launching them.
+The maintainer needs the existing automatic schedules to continue until the replacement scheduler is ready and verified.
 
-**Independent Test**: A repository regression test checks that the Worker is enabled in the proposed cutover configuration, both updater workflows preserve manual dispatch, and neither retains a native scheduled trigger.
-
-**Acceptance Scenarios**:
-1. Given an approved Tuesday/Friday target, when the Cloudflare Worker receives its cron event, then it dispatches only the corresponding existing workflow.
-2. Given a non-target cron event, when the Worker receives it, then it makes no GitHub request.
-3. Given the cutover configuration, when either workflow is inspected, then it has manual dispatch available but no competing native schedule.
-4. Given a manual recovery request, when the owner uses GitHub's workflow UI, then the selected updater remains manually runnable.
-
-### User Story 2 — Avoid activating an unusable scheduler (Priority: P1)
-
-The maintainer needs an invalid or absent dispatch credential to stop deployment before the Worker is enabled.
-
-**Independent Test**: The deploy workflow's active-cutover preflight requires the repository dispatch secret and dispatches only a harmless no-op canary workflow; it does not start either production updater.
+**Independent Test**: A focused regression test confirms the Worker is disabled in the preparation state, both workflows retain native scheduling and manual dispatch, and both expose a controlled handoff gate.
 
 **Acceptance Scenarios**:
-1. Given the active configuration and no `UPDATER_DISPATCH_TOKEN` secret, when deployment runs, then the preflight fails before token synchronization or Worker deployment.
-2. Given a token that lacks Actions workflow-dispatch permission, when the preflight runs, then the canary request fails and the enabled Worker is not deployed.
-3. Given a valid token, when deployment proceeds, then the token is synchronized through stdin before the Worker deployment.
-4. Given the repository owner has not verified available Cloudflare cron quota, then the cutover is not treated as ready for production activation.
+1. Given the preparation PR is applied before external prerequisites are verified, when an existing Tuesday/Friday target arrives, then the native GitHub workflow still runs and the Worker sends no request.
+2. Given a future activation is ready, when the owner deliberately enables the Worker, then the current native schedules remain available during the short verification window.
+3. Given the owner activates the guarded handoff after a successful Worker deployment and before the next target, then native schedule events are skipped while manual workflow dispatch remains available.
+
+### User Story 2 — Verify dispatch credentials before enabling Worker scheduling (Priority: P1)
+
+The maintainer needs the dispatch credential to be shown capable of launching and completing a workflow before deployment of the enabled Worker.
+
+**Independent Test**: An enabled deployment preflight dispatches a uniquely identifiable no-op canary, identifies its exact run, waits for completion, and rejects missing, failed, or timed-out canary runs.
+
+**Acceptance Scenarios**:
+1. Given the Worker configuration is disabled, when deployment runs, then the Worker deploys disabled without launching either production updater.
+2. Given an enabled configuration and a missing token, when deployment begins, then the preflight fails before secret sync or Worker deployment.
+3. Given an enabled configuration and insufficient token permission, when the canary does not run successfully, then deployment is blocked.
+4. Given a successful canary, when deployment proceeds, then the credential is synchronized through standard input before Worker deployment.
 
 ## Edge Cases
 
-- GitHub accepts a dispatch request but later delivery fails; the Worker must not automatically replay the ambiguous request, and later approved recovery slots remain available.
-- The repository dispatch secret is missing, revoked, or lacks required permission.
+- The dispatch endpoint accepts the event but the workflow run fails or never appears.
+- The repository token is missing, revoked, or lacks workflow-dispatch/read permission.
 - The Cloudflare account has insufficient Cron Trigger quota.
-- A scheduled event arrives outside one of the five approved local target slots.
-- The owner needs an immediate manual run during a cutover or incident.
+- The Worker has been deployed, but the repository's schedule-handoff variable is not set before the next native scheduled event.
+- An operator needs a manual updater run during preparation or rollback.
 
 ## Requirements
 
-- **FR-001**: The system MUST use one automatic scheduler for the Spec Kit and documentation refresh workflows after cutover.
-- **FR-002**: The Worker MUST preserve the five approved Tuesday/Friday `America/Halifax` target slots.
-- **FR-003**: Both existing updater workflows MUST retain manual workflow dispatch.
-- **FR-004**: Neither updater workflow MAY retain a competing GitHub scheduled trigger after cutover.
-- **FR-005**: Active Worker deployment MUST require a configured GitHub token and a successful harmless canary workflow dispatch.
-- **FR-006**: The token MUST be synchronized into Cloudflare before deployment and MUST never be printed, committed, or placed in command-line arguments.
-- **FR-007**: A token preflight MUST NOT dispatch a production updater for test purposes.
-- **FR-008**: Current-head CI MUST run the focused Worker tests, repository governance verification, and Wrangler dry run.
-- **FR-009**: The owner MUST verify at least two Cloudflare Cron Trigger slots are available before merging the cutover.
-- **FR-010**: The first naturally scheduled dispatch and resulting GitHub Actions run MUST be checked after activation; tests or deployment alone do not establish live success.
-- **FR-011**: If the initial natural dispatch fails, recovery instructions MUST disable Worker dispatch and restore the native schedules.
+- **FR-001**: The Worker MUST use `America/Halifax` and preserve all five approved Tuesday/Friday local targets.
+- **FR-002**: The default checked-in Worker configuration MUST remain disabled until external prerequisites are verified.
+- **FR-003**: Both existing updater workflows MUST preserve native schedules and manual `workflow_dispatch` during preparation.
+- **FR-004**: Both workflows MUST support a deliberate handoff gate using repository variable `UPDATER_SCHEDULER_ACTIVE`, and manual dispatch MUST remain available when the gate is active.
+- **FR-005**: For an enabled Worker deployment, the preflight MUST require `UPDATER_DISPATCH_TOKEN`, dispatch a unique no-op canary, find the exact corresponding run, and wait for a successful completion before deployment.
+- **FR-006**: A missing, failed, or timed-out canary MUST block deployment.
+- **FR-007**: Token values MUST never be committed, echoed, or placed in command-line arguments.
+- **FR-008**: Regression tests MUST assert the correct workflow mapping for every Tuesday and Friday target, including each Friday row's workflow filename.
+- **FR-009**: Changes to either updater workflow MUST trigger the scheduler verification job.
+- **FR-010**: Current-head CI MUST run Worker tests, `./jules-verify.sh`, and a Wrangler dry run.
+- **FR-011**: The owner MUST confirm at least two available Cloudflare Cron Trigger slots and token permissions before the separate activation change.
+- **FR-012**: The first natural scheduled dispatch MUST be verified after activation; a deployment or unit-test pass alone does not prove live operation.
+- **FR-013**: Rollback MUST restore the native schedule execution gate and disable Worker dispatch before the next intended target if the first natural dispatch fails.
 
 ## Success Criteria
 
-- **SC-001**: All five approved local time slots still map to their intended existing workflows.
-- **SC-002**: The cutover regression test confirms the Worker-enabled setting, manual dispatch on both workflows, and zero competing native schedules.
-- **SC-003**: Missing or insufficient dispatch credentials prevent an active Worker deployment.
-- **SC-004**: The production change remains unapplied until the pull request is reviewed and account-level quota is confirmed.
-- **SC-005**: Post-activation acceptance records one natural scheduled dispatch in Cloudflare logs and its corresponding GitHub Actions run.
+- **SC-001**: All five local target slots map to the intended workflow and remain correct across daylight-saving transitions.
+- **SC-002**: The preparation state keeps Worker dispatch off and preserves the existing GitHub automatic schedules.
+- **SC-003**: The enabled preflight does not pass on a mere HTTP-accepted dispatch; it requires the exact canary run to conclude successfully.
+- **SC-004**: A missing or unsuccessful canary prevents deployment of the enabled Worker.
+- **SC-005**: Workflow changes always trigger regression verification.
+- **SC-006**: Production cutover is treated as complete only after owner-side quota/permission confirmation and a verified natural scheduled dispatch.
 
 ## Assumptions
 
-- The repository owner will review and apply the cutover only after checking the account's available Cron Trigger quota and the token's Actions write permission.
-- The configured Cloudflare `GITHUB_TOKEN` and repository `UPDATER_DISPATCH_TOKEN` are credential values, not non-secret variables; values must never be shared in chat or source.
-- Workflow jobs, PR creation behavior, daily guards, notifications, and manual recovery paths remain unchanged.
+- The repository owner will validate quota and token permissions before enabling Worker dispatch.
+- A repository variable is a deliberate operational gate, not proof by itself that deployment succeeded.
+- Existing updater jobs, daily guards, PR creation behavior, permissions, concurrency, and notifications remain unchanged.
