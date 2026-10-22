@@ -88,6 +88,17 @@ class MetadataSuppressionTests(unittest.TestCase):
             )
         )
 
+    def test_broad_range_spanning_safe_value_and_another_field_is_rejected(self):
+        snippet = '{"upstream_sha":"' + SHA + '","api_token":"deadbeefSECRET"}'
+        start = snippet.index(SHA) + 1
+        end = len(snippet) + 1
+        self.assertFalse(
+            suppressions.should_suppress_metadata_finding(
+                snippet,
+                {"startColumn": start, "endColumn": end},
+            )
+        )
+
     def test_multiple_fields_are_not_suppressed_without_columns(self):
         snippet = '{"upstream_sha":"' + SHA + '","api_token":"deadbeefSECRET"}'
         self.assertFalse(suppressions.should_suppress_metadata_finding(snippet, {}))
