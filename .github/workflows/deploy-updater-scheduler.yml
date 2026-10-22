@@ -145,20 +145,27 @@ jobs:
           echo "::error::Canary run ${CANARY_RUN_ID} did not complete successfully within 180 seconds. Worker deployment was blocked."
           exit 1
 
-      - name: Sync GitHub dispatch token before deployment
+      - name: Deploy updater scheduler from reviewed configuration
         env:
           UPDATER_DISPATCH_TOKEN: ${{ secrets.UPDATER_DISPATCH_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ -z "${UPDATER_DISPATCH_TOKEN:-}" ]]; then
-            echo "::notice::UPDATER_DISPATCH_TOKEN is not configured; Worker deployment is blocked if dispatch is enabled."
-            exit 0
-          fi
-          printf '%s' "$UPDATER_DISPATCH_TOKEN" | pnpm exec wrangler secret put GITHUB_TOKEN --config workers/updater-scheduler/wrangler.toml
+          if grep -Eq '^DISPATCH_ENABLED = "true"$' workers/updater-scheduler/wrangler.toml; then
+            if [[ -z "${UPDATER_DISPATCH_TOKEN:-}" ]]; then
+              echo "::error::DISPATCH_ENABLED is true but repository secret UPDATER_DISPATCH_TOKEN is missing. Worker deployment was blocked."
+              exit 1
+            fi
 
-      - name: Deploy updater scheduler from reviewed configuration
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml
+            # Deploy code and secret together. A separate secret-only update can
+            # fail when the latest Worker version is not currently deployed.
+            SECRETS_FILE="${RUNNER_TEMP}/updater-scheduler-secrets.json"
+            trap 'rm -f "$SECRETS_FILE"' EXIT
+            umask 077
+            node -e 'const fs = require("node:fs"); fs.writeFileSync(process.argv[1], JSON.stringify({ GITHUB_TOKEN: process.env.UPDATER_DISPATCH_TOKEN }), { mode: 0o600 });' "$SECRETS_FILE"
+            pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml --secrets-file "$SECRETS_FILE"
+          else
+            echo "::notice::Dispatch remains disabled; deploying the reviewed disabled configuration without a dispatch secret."
+            pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml
+          fi
