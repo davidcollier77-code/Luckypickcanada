@@ -35,7 +35,7 @@ describe('Admin Suggestions Route', () => {
 
       const formData = new FormData();
       formData.append('password', mockPassword);
-      const request = new Request('http://127.0.0.1/admin/suggestions', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/admin/suggestions', {
         method: 'POST',
         body: formData,
         headers: {
@@ -52,7 +52,7 @@ describe('Admin Suggestions Route', () => {
     it('returns 401 with incorrect password', async () => {
       const formData = new FormData();
       formData.append('password', 'wrong-password');
-      const request = new Request('http://127.0.0.1/admin/suggestions', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/admin/suggestions', {
         method: 'POST',
         body: formData,
       });
@@ -66,7 +66,7 @@ describe('Admin Suggestions Route', () => {
     it('sets a valid HMAC cookie and redirects on correct password', async () => {
       const formData = new FormData();
       formData.append('password', mockPassword);
-      const request = new Request('http://127.0.0.1/admin/suggestions', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/admin/suggestions', {
         method: 'POST',
         body: formData,
       });
@@ -83,7 +83,7 @@ describe('Admin Suggestions Route', () => {
 
   describe('GET suggestions', () => {
     it('returns 401 if not authorized', async () => {
-      const request = new Request('http://127.0.0.1/admin/suggestions');
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/admin/suggestions');
       const response = await GET(request);
       expect(response.status).toBe(401);
     });
@@ -93,7 +93,7 @@ describe('Admin Suggestions Route', () => {
       const hmac = crypto.createHmac('sha256', mockPassword).update(String(expiresAt)).digest('hex');
       const sessionToken = `${expiresAt}.${hmac}`;
 
-      const request = new Request('http://127.0.0.1/admin/suggestions', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/admin/suggestions', {
         headers: {
           cookie: `suggestions_admin=${sessionToken}`
         }
@@ -108,7 +108,7 @@ describe('Admin Suggestions Route', () => {
       const hmac = crypto.createHmac('sha256', mockPassword).update(String(expiresAt)).digest('hex');
       const sessionToken = `${expiresAt}.${hmac}`;
 
-      const request = new Request('http://127.0.0.1/admin/suggestions', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/admin/suggestions', {
         headers: {
           cookie: `suggestions_admin=${sessionToken}`
         }
@@ -123,7 +123,7 @@ describe('Admin Suggestions Route', () => {
       const hmac = crypto.createHmac('sha256', 'wrong-secret').update(String(expiresAt)).digest('hex');
       const sessionToken = `${expiresAt}.${hmac}`;
 
-      const request = new Request('http://127.0.0.1/admin/suggestions', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/admin/suggestions', {
         headers: {
           cookie: `suggestions_admin=${sessionToken}`
         }
@@ -136,7 +136,7 @@ describe('Admin Suggestions Route', () => {
     it('returns 401 if cookie is malformed (no timestamp)', async () => {
       const hmac = crypto.createHmac('sha256', mockPassword).update(String(Date.now() + 86400000)).digest('hex');
 
-      const request = new Request('http://127.0.0.1/admin/suggestions', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/admin/suggestions', {
         headers: {
           cookie: `suggestions_admin=${hmac}` // Missing timestamp.
         }

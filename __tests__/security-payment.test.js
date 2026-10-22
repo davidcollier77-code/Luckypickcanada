@@ -25,7 +25,7 @@ describe('Security Hardening: Payment & Authorization', () => {
     it('is blocked outside of development environment', async () => {
       process.env.NODE_ENV = 'production';
 
-      const request = new Request('http://127.0.0.1/api/send-gift', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/api/send-gift', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
