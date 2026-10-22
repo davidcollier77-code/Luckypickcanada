@@ -3,25 +3,8 @@ name: Refresh Documentation
 run-name: Refresh Documentation — ${{ github.event.schedule || 'manual' }}
 
 on:
-  schedule:
-    # Primary refresh: 2:21 AM Atlantic local time every Tuesday and Friday.
-    # GitHub handles America/Halifax daylight saving time automatically.
-    - cron: '21 2 * * 2,5'
-      timezone: 'America/Halifax'
-
-    # Backup refresh: 6:21 AM Atlantic local time every Tuesday and Friday.
-    # Provides a second independent opportunity if the 2:21 AM scheduled run
-    # was delayed, missed, or otherwise did not complete.
-    - cron: '21 6 * * 2,5'
-      timezone: 'America/Halifax'
-
-    # Recovery refresh: 10:21 AM Atlantic local time every Tuesday and Friday.
-    # Gives the schedule path another opportunity when GitHub delivers earlier
-    # scheduled events late or drops a queued event during heavy Actions load.
-    - cron: '21 10 * * 2,5'
-      timezone: 'America/Halifax'
-
-  # Manual escape hatch for an immediate refresh.
+  # Automatic runs are dispatched by the Cloudflare updater-scheduler Worker.
+  # Keep manual dispatch available for owner-initiated recovery.
   workflow_dispatch:
 
 concurrency:
