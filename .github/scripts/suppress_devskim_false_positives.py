@@ -30,7 +30,7 @@ UUID_PATTERN = re.compile(
     r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\Z"
 )
 LOCKFILE_NAME_PATTERN = re.compile(
-    # DevSkim: ignore DS126858 — dependency-name literals, not weak hash usage.
+    # DevSkim: ignore DS126858
     r"(?<![A-Za-z0-9@/_-])(?:@aws-crypto/sha1-browser|@smithy/md5-js)(?![A-Za-z0-9/_-])",
     re.IGNORECASE,
 )
