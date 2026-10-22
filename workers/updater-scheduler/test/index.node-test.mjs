@@ -235,8 +235,8 @@ test("preparation keeps native updater schedules active until Worker activation"
     ["Spec Kit updater", specKitWorkflow],
     ["documentation updater", docsWorkflow]
   ]) {
-    assert.match(workflow, /^  workflow_dispatch:\\s*$/m, name + " must retain manual dispatch");
-    assert.match(workflow, /^  schedule:\\s*$/m, name + " must keep automatic scheduling before cutover");
-    assert.match(workflow, /vars\\.UPDATER_SCHEDULER_ACTIVE != 'true'/, name + " must support guarded handoff to Worker scheduling");
+    assert.match(workflow, /^  workflow_dispatch:\s*$/m, name + " must retain manual dispatch");
+    assert.match(workflow, /^  schedule:\s*$/m, name + " must keep automatic scheduling before cutover");
+    assert.match(workflow, /vars\.UPDATER_SCHEDULER_ACTIVE != 'true'/, name + " must support guarded handoff to Worker scheduling");
   }
 });
