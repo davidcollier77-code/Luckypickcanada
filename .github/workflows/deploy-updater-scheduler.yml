@@ -128,9 +128,9 @@ jobs:
           fi
 
           for attempt in $(seq 1 60); do
-            RUN_STATE="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CANARY_RUN_ID}" --jq '[.status, (.conclusion // "")] | @tsv')"
-            RUN_STATUS="${RUN_STATE%%$'\\t'*}"
-            RUN_CONCLUSION="${RUN_STATE#*$'\\t'}"
+            RUN_STATE="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CANARY_RUN_ID}" --jq '[.status, (.conclusion // "")] | join("|")')"
+            RUN_STATUS="${RUN_STATE%%|*}"
+            RUN_CONCLUSION="${RUN_STATE#*|}"
             if [[ "$RUN_STATUS" == "completed" ]]; then
               if [[ "$RUN_CONCLUSION" == "success" ]]; then
                 echo "::notice::Canary run ${CANARY_RUN_ID} completed successfully. Production updater dispatch was not tested."
