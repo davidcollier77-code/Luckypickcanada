@@ -129,6 +129,70 @@ class MetadataSuppressionTests(unittest.TestCase):
         self.assertIsNone(suppressions.LOCKFILE_NAME_PATTERN.search(unrelated_entry))
 
 
+class Sha512IntegritySuppressionTests(unittest.TestCase):
+    DIGEST = "4GVhCkn+/0QEpXdY8UfXahg8qjF2QTH1+qej/CLketHGfRqxLhdanzHU9ILesplWX5GeuTkPn5ZTmd5CJf+KXg=="
+
+    def test_substring_inside_valid_sha512_integrity_digest_is_suppressed(self):
+        source_line = "    resolution: {integrity: sha512-" + self.DIGEST + "}"
+        start = source_line.index("md5") + 1
+        self.assertTrue(
+            suppressions.should_suppress_sha512_integrity_finding(
+                source_line,
+                {"startColumn": start, "endColumn": start + 3},
+            )
+        )
+
+    def test_hash_name_outside_digest_is_not_suppressed(self):
+        source_line = "    resolution: {integrity: sha512-" + self.DIGEST + "}"
+        start = source_line.index("sha512") + 1
+        self.assertFalse(
+            suppressions.should_suppress_sha512_integrity_finding(
+                source_line,
+                {"startColumn": start, "endColumn": start + 3},
+            )
+        )
+
+    def test_noncanonical_or_invalid_digest_is_not_suppressed(self):
+        invalid_digest = self.DIGEST[:-3] + "!" + self.DIGEST[-2:]
+        source_line = "    resolution: {integrity: sha512-" + invalid_digest + "}"
+        start = source_line.index("md5") + 1
+        self.assertFalse(
+            suppressions.should_suppress_sha512_integrity_finding(
+                source_line,
+                {"startColumn": start, "endColumn": start + 3},
+            )
+        )
+
+    def test_sarif_filter_suppresses_only_finding_inside_sha512_digest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_line = "    resolution: {integrity: sha512-" + self.DIGEST + "}"
+            (root / "pnpm-lock.yaml").write_text(source_line + "\\n", encoding="utf-8")
+            start = source_line.index("md5") + 1
+            data = {
+                "runs": [{
+                    "results": [{
+                        "ruleId": "DS126858",
+                        "locations": [{
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": "pnpm-lock.yaml"},
+                                "region": {
+                                    "startLine": 1,
+                                    "startColumn": start,
+                                    "endColumn": start + 3,
+                                    "snippet": {"text": "md5"},
+                                },
+                            }
+                        }],
+                    }]
+                }]
+            }
+            self.assertEqual(suppressions.process_sarif(data, root), 1)
+            result = data["runs"][0]["results"][0]
+            self.assertEqual(result["suppressions"][0]["kind"], "external")
+            self.assertIn("valid, canonical SHA-512", result["suppressions"][0]["justification"])
+
+
 class ArtifactPathTests(unittest.TestCase):
     def test_workspace_relative_allowlisted_path_is_accepted(self):
         with tempfile.TemporaryDirectory() as directory:

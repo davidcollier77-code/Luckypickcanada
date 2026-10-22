@@ -25,6 +25,12 @@ describe('Gemini PR-Agent workflow configuration', () => {
     expect(workflow).not.toMatch(/^\s*if:.*github\.event\.sender\.type/m);
   });
 
+  it('skips credentialed review safely for Dependabot-authored PRs', () => {
+    expect(workflow).toContain("if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && github.actor != 'dependabot[bot]' }}");
+    // Keep the missing-key preflight fail-closed for human-authored PRs.
+    expect(workflow).toContain('Repository Actions secret GEMINI_API_KEY is missing or unavailable to this run.');
+  });
+
   it('runs only the review command and never prints the secret value', () => {
     expect(workflow).toContain('github_action_config.auto_review: "true"');
     expect(workflow).toContain('github_action_config.auto_describe: "false"');

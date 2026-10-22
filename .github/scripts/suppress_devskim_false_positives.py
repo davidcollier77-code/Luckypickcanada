@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Conservatively filter verified DevSkim false positives from SARIF."""
 
+import base64
 import json
 import os
 import re
@@ -39,6 +40,9 @@ LOCKFILE_NAME_PATTERN = re.compile(
     + re.escape(SMITHY_LOCKFILE_PACKAGE)
     + r")(?![A-Za-z0-9/_-])",
     re.IGNORECASE,
+)
+SHA512_INTEGRITY_PATTERN = re.compile(
+    r"\bintegrity:\s*sha512-(?P<digest>[A-Za-z0-9+/]+={0,2})(?=[,\s}]|$)"
 )
 
 
@@ -160,6 +164,38 @@ def _source_line_for_region(region: dict, safe_path: Path) -> str:
     return ""
 
 
+def should_suppress_sha512_integrity_finding(source_line: str, region: dict) -> bool:
+    """Suppress a hash-name substring only when it is inside a valid SHA-512 SRI digest."""
+    start_column = region.get("startColumn")
+    end_column = region.get("endColumn")
+    if (
+        not isinstance(start_column, int)
+        or isinstance(start_column, bool)
+        or not isinstance(end_column, int)
+        or isinstance(end_column, bool)
+        or start_column < 1
+        or end_column <= start_column
+    ):
+        return False
+
+    # SARIF columns are 1-based and endColumn is exclusive.
+    finding_start = start_column - 1
+    finding_end = end_column - 1
+    for match in SHA512_INTEGRITY_PATTERN.finditer(source_line):
+        digest = match.group("digest")
+        try:
+            decoded = base64.b64decode(digest, validate=True)
+        except (ValueError, base64.binascii.Error):
+            continue
+        # Integrity metadata must be a canonical base64-encoded 64-byte digest.
+        if len(decoded) != 64 or base64.b64encode(decoded).decode("ascii") != digest:
+            continue
+        digest_start, digest_end = match.span("digest")
+        if finding_start >= digest_start and finding_end <= digest_end:
+            return True
+    return False
+
+
 def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
     """Add suppressions only to narrowly validated metadata/dependency findings."""
     suppression_count = 0
@@ -208,6 +244,11 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 justification = (
                     "False positive: this finding is in a specifically allowlisted "
                     "dependency package name, not a weak-hash implementation."
+                )
+            elif rule_id == "DS126858" and should_suppress_sha512_integrity_finding(snippet, region):
+                justification = (
+                    "False positive: the reported substring is inside a valid, canonical "
+                    "SHA-512 package-integrity digest, not a hash algorithm invocation."
                 )
 
             if justification:

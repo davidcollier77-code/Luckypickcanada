@@ -11,6 +11,9 @@ permissions:
 
 jobs:
   pr_agent_job:
+    # GitHub withholds repository secrets from Dependabot PR runs. Skip this credentialed
+    # review job for bot-authored PRs instead of failing the entire required check.
+    if: ${{ github.event.pull_request.user.login != 'dependabot[bot]' && github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     name: Run PR Agent
     steps:
