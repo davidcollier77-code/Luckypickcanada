@@ -1,3 +1,13 @@
+## Current Focus — Updater Scheduler Cutover (2026-10-22)
+
+- **User-authorized task:** Prepare the coordinated cutover so the Cloudflare updater-scheduler Worker becomes the single automatic dispatcher for Spec Kit and documentation refresh, with manual workflow dispatch preserved.
+- **Branch:** `fix/updater-scheduler-cutover-20261022`. The branch proposes enabling `DISPATCH_ENABLED`, removing the two workflows' native `schedule` triggers, and adding a no-op token-permission canary that must pass before Worker deployment.
+- **Verified baseline:** `GITHUB_TOKEN` exists in Cloudflare (owner-provided dashboard screenshot). GitHub Actions run `39400082110` uploaded the `UPDATER_DISPATCH_TOKEN` secret successfully on 2026-10-20. Neither the current token permission assignment nor Cloudflare cron quota has been independently verified.
+- **Safety:** Production updater workflows are not dispatched for testing. The cutover is proposed in a draft PR and no changes have been applied to `main`; do not apply it until at least two Cloudflare Cron Trigger slots are confirmed available and the token's Actions write permission is confirmed.
+- **Verification pending:** Current-head Node tests, `./jules-verify.sh`, Wrangler dry-run, PR diff review, and post-activation natural scheduled dispatch evidence. Local shell execution is unavailable in this session.
+
+---
+
 ## Current Focus — Restore Shared Sky Backgrounds — CI Follow-up (2026-10-19)
 
 - **PR**: [#1534](https://github.com/davidcollier77-code/Luckypickcanada/pull/1534), branch fix/restore-shared-sky-backgrounds-1534.
