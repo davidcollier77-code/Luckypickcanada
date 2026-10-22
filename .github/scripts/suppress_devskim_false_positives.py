@@ -132,24 +132,23 @@ def should_suppress_metadata_finding(snippet: str, region: dict) -> bool:
     return len(fields) == 1 and len(safe_fields) == 1
 
 
-def _snippet_for_region(region: dict, safe_path: Path) -> str:
-    """Use the SARIF snippet, or read one line only from a validated path."""
-    snippet_data = region.get("snippet", {})
-    snippet = snippet_data.get("text", "") if isinstance(snippet_data, dict) else ""
-    if isinstance(snippet, str) and snippet:
-        return snippet
-
-    start_line = region.get("startLine", 1)
+def _source_line_for_region(region: dict, safe_path: Path) -> str:
+    """Read the actual source line; SARIF snippets may contain only a matched slice."""
+    start_line = region.get("startLine")
     if not isinstance(start_line, int) or isinstance(start_line, bool) or start_line < 1:
         return ""
 
     if not safe_path.is_file():
         return ""
 
-    with safe_path.open("r", encoding="utf-8") as source_file:
-        for line_number, line in enumerate(source_file, start=1):
-            if line_number == start_line:
-                return line.rstrip("\r\n")
+    try:
+        with safe_path.open("r", encoding="utf-8") as source_file:
+            for line_number, line in enumerate(source_file, start=1):
+                if line_number == start_line:
+                    return line.rstrip("\\r\\n")
+    except (OSError, UnicodeDecodeError):
+        # No trusted source line means no suppression, not a fallback to SARIF text.
+        return ""
     return ""
 
 
@@ -189,7 +188,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
             else:
                 continue
 
-            snippet = _snippet_for_region(region, safe_path)
+            snippet = _source_line_for_region(region, safe_path)
 
             justification = None
             if rule_id == "DS173237" and should_suppress_metadata_finding(snippet, region):
