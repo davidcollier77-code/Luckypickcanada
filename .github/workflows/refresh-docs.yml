@@ -1,6 +1,6 @@
 name: Refresh Documentation
 
-run-name: Refresh Documentation — ${{ github.event.schedule || 'manual' }}
+run-name: Refresh Documentation — ${{ github.event_name == 'workflow_dispatch' && 'workflow_dispatch' || github.event.schedule || 'manual' }}
 
 on:
   # Automatic runs are dispatched by the Cloudflare updater-scheduler Worker.
@@ -24,9 +24,9 @@ jobs:
     steps:
       - name: Record Trigger Timing
         env:
-          SCHEDULE_CRON: ${{ github.event.schedule || 'manual' }}
+          TRIGGER_KIND: ${{ github.event_name }}
         run: |
-          echo "Trigger schedule: $SCHEDULE_CRON"
+          echo "Trigger kind: $TRIGGER_KIND"
           echo "Runner UTC: $(date -u --iso-8601=seconds)"
           echo "Atlantic time: $(TZ=America/Halifax date --iso-8601=seconds)"
 
