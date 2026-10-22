@@ -1,88 +1,56 @@
-# PR Summary
+# PR Summary — Vitest Mocker Dependabot Remediation
 
 ## Task Group
-- **SELECTED TASK GROUP**: polishing
-- **GROUP REASON**: This task concerns a narrowly scoped homepage rendering-performance improvement aiming at reducing render-blocking CSS, fitting nicely within the `polishing` task group requirements.
+- **SELECTED TASK GROUP:** security
+- **GROUP REASON:** This task addresses two open Moderate Dependabot alerts in a transitive development dependency.
 
-## Root Cause
-- **Actual Stylesheets Investigated**: The task investigated `0befc676ec2649a5.css` and `ca1b68e95021c06e.css`.
-- **Mapping**: `ca1b68e95021c06e.css` was loaded because of the `import '../themes/default/index.css'` call in `app/layout.js`, generating a secondary render-blocking CSS chunk in the critical path on top of the `globals.css` import.
-- **Evidence**: `next build` created 2 distinct CSS files inside `.next/static/css` initially.
-- **Verified Root Cause**: Next.js produced separate generated stylesheets for `app/layout.js` due to the distinct `import` directives (`index.css` and `globals.css`), delaying layout painting since the browser has to fetch both.
+## Verified Findings
+- The main-branch lockfile resolved `vitest@5.0.0`, `@vitest/mocker@5.0.0`, and `@vitest/spy@5.0.0`.
+- The two visible alerts concern Windows backslash traversal in mock redirect handling and code injection through unauthenticated manual mock registration.
+- Upstream fixes are available in `@vitest/mocker` 5.0.3 and later. This patch targets 5.0.5 while keeping the direct Vitest range unchanged.
+- **Implementation approach:** add an exact `pnpm.overrides` entry for `@vitest/mocker@5.0.5`; reconcile the lockfile's patched mocker/spy package and snapshot records and the `magic-string@1.4.3` dependency.
 
-## Implementation
-- **Optimization Performed**: Consolidated `import '../themes/default/index.css';` into `app/globals.css` by appending `@import "../themes/default/index.css";` at the top of the file, and removing the import from `app/layout.js`.
-- **Reason**: This was the smallest appropriate change to merge both styling layers into a single CSS chunk built by Next.js, eliminating one CSS request in the critical path without affecting styling rules.
-- **Effect on CSS Dependency Path**: Reduces the number of render-blocking CSS requests from two to one, directly addressing the estimated 1,740ms opportunity identified by PageSpeed Insights.
-- **Confirmation**: Confirmed that only `app/globals.css` and `app/layout.js` were modified. No unrelated changes were included.
+## Governance and Routed Material
+- `AGENTS.md`: USED=YES, USEFUL=YES — authoritative repository workflow, required verification, task summary, and 495 MiB limit.
+- `.jules/jules.md`: USED=YES, USEFUL=YES — initialization, one task/branch/PR, and governance constraints.
+- `memory-bank/projectBrief.md`: USED=YES, USEFUL=NO — project context; no application behavior or production configuration is in scope.
+- `memory-bank/activeContext.md`: USED=YES, USEFUL=NO — reviewed current project-state cautions; no Memory Bank edit is warranted for an unmerged dependency branch.
+- `.jules/security.md`: USED=YES, USEFUL=YES — required security task guidance and requirement to test.
+- `.docs/manifest.json`: USED=YES, USEFUL=YES — verified the required security-route paths.
+- `.docs/security/jules_google_docs.md`: USED=YES, USEFUL=NO — required routed documentation was inspected; its captured CLI documentation does not materially affect this dependency override.
+- `.docs/security/developers_google_com_jules_api.md`: USED=YES, USEFUL=NO — required routed documentation was inspected; it does not materially affect this dependency override.
+- `.docs/security/_google-gemini_gemini-cli.md`: USED=YES, USEFUL=NO — required routed file was inspected; its captured CLI tips do not affect this dependency patch.
+- `.docs/security/_websites_ai_google_dev_gemini-api.md`: USED=YES, USEFUL=NO — required routed documentation was inspected; it does not affect this package change.
+- **Library consultation:** no Context7 or other external library MCP was invoked. Local registry integrity/lockfile data were used only to construct the dependency resolution. The repository shell could not reach GitHub, so no local package install was performed.
 
-## Governance and Libraries
-- All routed governance (`AGENTS.md`, `.jules/jules.md`, `.jules/polishing.md`) was read and followed.
-- **LIBRARY**: Next.js
-  - **VERSION**: 16.3.8
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Provided context for Next.js CSS module and global import building behavior.
-- **DOCUMENT**: Jules Documentation "jules.google/docs"
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Standard reference for Jules workflow.
-- **DOCUMENT**: Gemini CLI "/google-gemini/gemini-cli"
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Standard reference.
-- **DOCUMENT**: Gemini API "/websites/ai_google_dev_gemini-api"
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Standard reference.
-- **DOCUMENT**: MDN Image Types ".docs/polishing/_websites_mdn_image_types.md"
-  - **USED**: NO
-  - **USEFUL**: NO
-  - **REASON**: Not an image-related polishing task.
-- **COMPONENT**: `app/layout.js`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Required modification to consolidate CSS loading.
-- **COMPONENT**: `app/globals.css`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Destination for consolidated CSS loading via `@import`.
-- **COMPONENT**: `package.json`
-  - **USED**: YES
-  - **USEFUL**: YES
-  - **REASON**: Examined dependencies and build scripts.
-- **Spec Kit**: Completed stages 1-4 via native file-driven procedural execution (modified Spec Kit definition files placed in `.specify/features/017-homepage-css-optimization/`).
+## Spec Kit Stages
+- **Specify:** FILE-DRIVEN PROCEDURAL EXECUTION — definition `.jules/cmds/speckit.specify.md` read; task-specific artifact created at `.specify/features/vitest-mocker-security-remediation/spec.md`.
+- **Plan:** FILE-DRIVEN PROCEDURAL EXECUTION — definition `.jules/cmds/speckit.plan.md` read; plan created at `.specify/features/vitest-mocker-security-remediation/plan.md`.
+- **Tasks:** FILE-DRIVEN PROCEDURAL EXECUTION — definition `.jules/cmds/speckit.tasks.md` read; task list created at `.specify/features/vitest-mocker-security-remediation/tasks.md`. Verification tasks remain unchecked until actually run.
+- **Implement:** FILE-DRIVEN PROCEDURAL EXECUTION — definition `.jules/cmds/speckit.implement.md` read. The package manifest/lockfile updates were written on the isolated branch via GitHub APIs. The full implementation verification stage is **PENDING** because local command execution is unavailable; CI results are required.
+- **Extension hooks:** `.specify/extensions.yml` was checked and is not present, so there are no repository-defined Spec Kit hooks to execute.
+- **Active feature pointer:** `.specify/feature.json` now points to this task's feature directory.
 
-## Verification
-- **COMMAND**: `pnpm run build`
-  - **RESULT**: PASS
-  - **EVIDENCE/OUTPUT SUMMARY**: Successfully completed next build in 5.2s. Output CSS files were consolidated into a single chunk.
-- **COMMAND**: `pnpm test`
-  - **RESULT**: PASS
-  - **EVIDENCE/OUTPUT SUMMARY**: Executed Vitest test suite. All 91 tests passed successfully.
-- **COMMAND**: `pnpm exec playwright test`
-  - **RESULT**: PASS
-  - **EVIDENCE/OUTPUT SUMMARY**: Passed 21 browser-based E2E scenarios across mobile and desktop, skipped 3.
-- **COMMAND**: `./jules-verify.sh`
-  - **RESULT**: PASS
-  - **EVIDENCE/OUTPUT SUMMARY**: Governance gate passed. Size checks and unit test phases passed.
-- **Build Size**: Output of `.next/` directory size measured at 322MB, remaining well under the 495MB maximum limit.
-- **Measurements**: Consolidated CSS requests in build output. Network waterfall optimization eliminates one CSS render blocking chunk. Full PageSpeed metrics must be analyzed post-deployment.
+## Changed Files
+1. `package.json` — added `pnpm.overrides["@vitest/mocker"] = "5.0.5"`.
+2. `pnpm-lock.yaml` — added the matching lockfile override; migrated mocker and spy package records/snapshots to 5.0.5; added the `magic-string@1.4.3` package and snapshot; redirected Vitest's snapshot to the patched mocker.
+3. `.specify/feature.json` — selected the new task feature directory.
+4. `.specify/features/vitest-mocker-security-remediation/spec.md` — new task specification.
+5. `.specify/features/vitest-mocker-security-remediation/plan.md` — new implementation and verification plan.
+6. `.specify/features/vitest-mocker-security-remediation/tasks.md` — implementation complete; CI verification tasks intentionally remain unchecked.
+7. `pr_summary.md` — this evidence record.
 
-## Preservation
-- Explicit confirmation that AVIF-first/WebP-fallback delivery and image settings were preserved. No images were altered.
-- Explicit confirmation that protected visuals, wording, layout, functionality, audio, animations, and unrelated areas were not changed.
-- **Changed Files List**:
-  - `app/layout.js`
-  - `app/globals.css`
-  - `.specify/features/017-homepage-css-optimization/plan.md` (new)
-  - `.specify/features/017-homepage-css-optimization/spec.md` (new)
-  - `.specify/features/017-homepage-css-optimization/tasks.md` (new)
-  - `.specify/feature.json`
-  - `memory-bank/activeContext.md`
-  - `memory-bank/progress.md`
+## Verification Evidence
+- **Static lockfile self-check:** PASS — patch-branch lockfile contains the 5.0.5 override, patched mocker/spy package entries and snapshots, the 1.4.3 magic-string entry/snapshot, and Vitest's reference to the patched mocker; no remaining `@vitest/mocker@5.0.0` or `@vitest/spy@5.0.0` strings were found.
+- **Branch state:** the patch is isolated on `security/fix-vitest-mocker-advisories-20261022`; no merge or production deployment was performed.
+- **Local shell connectivity:** attempted `git ls-remote https://github.com/davidcollier77-code/Luckypickcanada.git HEAD`; it failed because the environment could not resolve `github.com`.
+- **Not run locally:** `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm audit`, `./jules-verify.sh`, and `pnpm run build`. Do not treat these as passed. Actual PR CI must validate them and measure `.next + public` below 495 MiB.
+- **Final diff double-check:** pending final PR diff inspection and CI; ensure the patch remains limited to the seven listed files and has no app source, production, visual, or secret changes.
+
+## Preservation and Remaining Issues
+- No application source, UI, wording, artwork, animation, audio, routes, database, payment, authentication, deployment configuration, secrets, or environment variables were changed.
+- Dependabot closure is not yet verified; GitHub should refresh the two alerts after the dependency fix is merged.
+- Remaining issue: required install/test/audit/governance/build verification is pending CI.
 
 ## Final Status
-- **Remaining issues**: None.
-- **Completion**: Completed governance audit and pre-submission double-check.
-- **USEFUL RESULT**: YES
+- **USEFUL RESULT:** NO — remediation is prepared and the lockfile graph is statically reconciled, but complete verification is not yet demonstrated.
