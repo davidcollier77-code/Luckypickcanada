@@ -1,7 +1,11 @@
 name: Update Spec Kit
 
 on:
-  # Automatic runs are dispatched by the Cloudflare updater-scheduler Worker.
+  schedule:
+    - cron: '5 1 * * 2,5' # Primary scheduled update
+      timezone: 'America/Halifax'
+    - cron: '5 5 * * 2,5' # Single retry if no successful update PR was submitted
+      timezone: 'America/Halifax'
   workflow_dispatch:
 
 permissions:
@@ -12,6 +16,8 @@ permissions:
 
 jobs:
   update-spec-kit:
+    # Keep native schedules active while the Cloudflare cutover is not approved.
+    if: github.event_name != 'schedule' || vars.UPDATER_SCHEDULER_ACTIVE != 'true'
     runs-on: ubuntu-latest
 
     steps:
