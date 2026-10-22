@@ -1,12 +1,13 @@
-## Current Focus — Guarded Updater Scheduler Activation (2026-10-22)
+## Current Focus — Updater Scheduler First-Deploy Secret Bundle (2026-10-22)
 
-- **Current PR:** [#1560](https://github.com/davidcollier77-code/Luckypickcanada/pull/1560), branch `fix/updater-scheduler-activation-20261022`; open and not merged.
-- **User-confirmed configuration:** Cloudflare Production screenshot shows `DISPATCH_ENABLED = "true"`. The main-branch `workers/updater-scheduler/wrangler.toml` was still `"false"`; PR #1560 aligns the reviewed configuration with the requested setting.
-- **Secret evidence:** GitHub Settings screenshot confirms repository secret `UPDATER_DISPATCH_TOKEN` exists. Its value was not viewed. Deployment run [#62](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39788165939) confirms Wrangler uploaded `GITHUB_TOKEN` and installed both cron entries, but skipped the canary because the checked-in flag was false. Token permission sufficiency is therefore not yet proven.
-- **Changes in PR #1560:** Set the checked-in flag to the exact string `"true"`; align the config regression test; update activation/rollback guidance; add task-specific Spec Kit artifacts and the PR evidence summary. Native schedule definitions and manual `workflow_dispatch` remain present, gated only by the explicit `UPDATER_SCHEDULER_ACTIVE` repository variable.
-- **Verification:** Current-head PR CI results are pending; local Node tests, `./jules-verify.sh`, and Wrangler dry-run were not run in this connected GitHub interface. Do not claim the activation verified until the PR checks pass and the main-branch deploy runs the unique no-op canary to successful completion before deploying the enabled Worker.
-- **Controlled handoff:** After successful canary and enabled deployment, set repository variable `UPDATER_SCHEDULER_ACTIVE=true` before the next approved schedule target, then confirm the first natural Worker dispatch in Cloudflare logs and its matching GitHub Actions run. Do not treat secret existence or PR CI alone as proof of live workflow dispatch.
-- **Operational constraint:** No production updater was manually dispatched. No merge was performed.
+- **Current fix branch:** fix/updater-scheduler-secret-bundling-20261022; PR creation and current-head checks pending at the time this context was updated.
+- **Previously merged activation:** PR #1560 was merged to main as commit 74ac0288e64cfaf717bbb5583a01c214d1436031; checked-in workers/updater-scheduler/wrangler.toml sets DISPATCH_ENABLED = "true".
+- **Owner-confirmed operational state:** Repository variable UPDATER_SCHEDULER_ACTIVE=true is already set. Do not modify it as part of this repair.
+- **Verified new-token evidence:** The rerun dispatched no-op canary run [#39804841516](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39804841516), which completed successfully.
+- **Verified remaining failure:** Wrangler step "Sync GitHub dispatch token before deployment" failed because the latest Worker version was not deployed. The actual scheduler deployment step was skipped.
+- **Repair in progress:** Replace the separate Wrangler secret-only command with a mode-0600 temporary JSON secrets file passed to wrangler deploy --secrets-file, deploying code and secret together after the canary. Add a static workflow regression test and update scheduler instructions.
+- **Verification status:** Canary passed, but branch tests/governance/dry-run and a later main-branch deployment have not yet passed. The first natural dispatch and matching GitHub Actions run remain unverified.
+- **Safety:** No production updater was manually dispatched; no token value is recorded; no repository variable or main branch was modified directly by this repair.
 
 ---
 

@@ -20,7 +20,7 @@ Cloudflare Cron Triggers operate in UTC. The Worker converts each event's `sched
 
 The reviewed activation configuration sets `DISPATCH_ENABLED = "true"`, matching the production flag configured in Cloudflare. The native GitHub `schedule` triggers remain defined and continue to run until the repository variable `UPDATER_SCHEDULER_ACTIVE` is deliberately set to `true` after the enabled Worker deployment and no-op canary have been verified.
 
-The deploy workflow enforces a fail-closed credential preflight before deploying the enabled configuration. It dispatches a uniquely identified, no-op canary workflow; it then locates that exact run and waits for the run to complete successfully. If the secret is missing, the run cannot be found, or it completes unsuccessfully or times out, the Worker deployment is blocked. The canary never runs either production updater.
+The deploy workflow enforces a fail-closed credential preflight before deploying the enabled configuration. It dispatches a uniquely identified, no-op canary workflow; it then locates that exact run and waits for the run to complete successfully. If the secret is missing, the run cannot be found, or it completes unsuccessfully or times out, the Worker deployment is blocked. The canary never runs either production updater. After it succeeds, the deploy workflow creates a restrictive-permission temporary secrets file and passes it to Wrangler's --secrets-file option, so Worker code and GITHUB_TOKEN are installed in the same deployment. The temporary file is removed when the step exits. The workflow no longer attempts a separate secret update before a Worker version is deployed.
 
 Controlled activation sequence:
 1. Confirm the deployed Worker has both intended Cron Triggers. The 2026-10-22 deployment reports both trigger entries installed; re-check account quota before adding any more.
@@ -34,7 +34,7 @@ If an enabled Worker fails after activation, reset repository variable `UPDATER_
 ## Security and recovery
 
 - The Worker credential is stored only as Cloudflare secret `GITHUB_TOKEN`; no value is committed or logged.
-- The repository secret is named `UPDATER_DISPATCH_TOKEN`. The deploy workflow sends it to Wrangler through standard input and does not echo it or place it in command arguments.
+- The repository secret is named UPDATER_DISPATCH_TOKEN. For an enabled deployment, the workflow serializes it into a mode-0600 temporary JSON secrets file, passes only the file path to Wrangler, and removes the file on exit. The secret value is not echoed, committed, or included in command arguments. Worker code and secret are deployed together to avoid a secret-only update failing when no latest Worker version is deployed.
 - Logs include the intended workflow/slot and HTTP status, never the token or response body.
 - The Worker ignores missing, nonnumeric, or non-finite scheduled timestamps instead of throwing or attempting to dispatch.
 - For an approved slot the Worker calls Cloudflare's documented `controller.noRetry()` before dispatch. An ambiguous network failure can occur after GitHub accepted a dispatch, so automatic replay is avoided and later retry/recovery slots remain available.

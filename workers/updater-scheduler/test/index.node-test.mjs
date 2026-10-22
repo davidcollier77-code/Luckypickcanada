@@ -240,3 +240,16 @@ test("activation enables Worker while preserving native schedules pending explic
     assert.match(workflow, /vars\.UPDATER_SCHEDULER_ACTIVE != 'true'/, name + " must support guarded handoff to Worker scheduling");
   }
 });
+
+test("enabled scheduler bundles its dispatch secret into the same Worker deployment", async () => {
+  const workflow = await readFile(new URL("../../../.github/workflows/deploy-updater-scheduler.yml", import.meta.url), "utf8");
+  const validation = workflow.indexOf("name: Validate GitHub dispatch write permission before enabling scheduler");
+  const deployment = workflow.indexOf("name: Deploy updater scheduler from reviewed configuration");
+
+  assert.ok(validation >= 0, "credential canary validation must be present");
+  assert.ok(deployment > validation, "deployment must follow successful canary validation");
+  assert.match(workflow, /--secrets-file "\$SECRETS_FILE"/);
+  assert.match(workflow, /process\.env\.UPDATER_DISPATCH_TOKEN/);
+  assert.doesNotMatch(workflow, /wrangler secret put GITHUB_TOKEN/);
+  assert.doesNotMatch(workflow, /name: Sync GitHub dispatch token before deployment/);
+});
