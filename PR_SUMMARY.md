@@ -92,3 +92,54 @@ Follow-up changes are limited to the existing security-remediation PR, the suppr
 - `PR_SUMMARY.md`
 
 **Verification status:** Pending fresh CI on the follow-up commit. The Python regression suite, DevSkim scan and SARIF upload, `./jules-verify.sh`, and current-head build/size checks must be observed before this follow-up is called verified. The previous run results recorded above are evidence for the earlier implementation revision only and are not being reused as current-head passes. No local shell execution is claimed. PR #1558 remains open and unmerged.
+
+## Updater Scheduler Cutover — Draft PR
+
+### 1. Task group
+**Selected group:** troubleshooting.  
+**Reason:** Complete the staged migration from delayed GitHub native schedules to the prepared Cloudflare scheduler, without changing either updater's job logic.
+
+### 2. Repository rules and routed documents
+- `AGENTS.md`: USED=YES, USEFUL=YES — protected-system authorization, task sequencing, required CI evidence, no-secret policy, and canonical PR Summary requirements.
+- `.jules/jules.md`: USED=YES, USEFUL=YES — one feature/branch/PR and sequential Spec Kit stages.
+- `.jules/troubleshooting.md`: USED=YES, USEFUL=YES — troubleshooting group and test requirements.
+- `.docs/manifest.json`: USED=YES, USEFUL=YES — confirmed troubleshooting routing.
+- `.docs/troubleshooting/jules_google_docs.md`, `.docs/troubleshooting/_google-gemini_gemini-cli.md`, `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md`: USED=YES, USEFUL=NO — consulted as the mandated routed snapshots; they did not determine the scheduler design.
+- Spec Kit command definitions `.jules/cmds/speckit.specify.md`, `.jules/cmds/speckit.plan.md`, `.jules/cmds/speckit.tasks.md`, and `.jules/cmds/speckit.implement.md`: USED=YES, USEFUL=YES — applied as file-driven procedures because native command dispatch/local shell execution was not available. Artifacts created under `.specify/features/036-updater-scheduler-cutover/`. No `.specify/extensions.yml` exists at repository root, so extension hooks were not present to execute.
+
+### 3. Verified baseline
+- The earlier scheduler Worker is already present on `main` and has `DISPATCH_ENABLED = "false"`.
+- The two existing updater workflows still have native `schedule` triggers on `main`.
+- Cloudflare dashboard screenshot shows the Worker secret named `GITHUB_TOKEN` exists.
+- GitHub Actions run `39400082110` confirms that `UPDATER_DISPATCH_TOKEN` was successfully uploaded to Cloudflare as `GITHUB_TOKEN` on 2026-10-20. This establishes secret syncing at that run, but not the token's currently assigned permissions or available cron quota.
+- PR #1535 is merged; the follow-up verification PR #1540 is closed without merging. This is a separate cutover change, not a duplicate of either PR.
+
+### 4. Changes in this branch
+- `workers/updater-scheduler/wrangler.toml`: set the proposed cutover configuration to `DISPATCH_ENABLED = "true"`.
+- `.github/workflows/update-spec-kit.yml`: remove the native scheduled trigger while preserving `workflow_dispatch` and all job logic, guards, permissions, PR handling, and notifications.
+- `.github/workflows/refresh-docs.yml`: remove the native scheduled triggers while preserving `workflow_dispatch`, job logic, concurrency, permissions, and notifications; update run labeling/telemetry for dispatched runs.
+- `workers/updater-scheduler/test/index.node-test.mjs`: add a regression test that asserts the active Worker configuration, manual dispatch availability, and absence of competing workflow schedules.
+- `.github/workflows/verify-updater-dispatch-token.yml`: add a harmless workflow-dispatch canary that does not run either production updater.
+- `.github/workflows/deploy-updater-scheduler.yml`: require the repository token and successfully dispatch the canary before synchronizing the token and deploying an enabled Worker. Token synchronization occurs before deployment and does not print or pass the token as a command-line argument.
+- `workers/updater-scheduler/README.md`: document cutover, external prerequisites, verification, and rollback.
+- `.specify/features/036-updater-scheduler-cutover/{spec.md,plan.md,tasks.md,checklists/requirements.md}`: create task-specific specification, plan, ordered task list, and quality checklist.
+- `PR_SUMMARY.md` and `memory-bank/activeContext.md`: update canonical task evidence and active project status.
+
+### 5. Security and activation gates
+- No secret values were read or committed.
+- The deployment preflight will test Actions write permission by dispatching only the no-op canary, not the Spec Kit or documentation production updater.
+- **Required before applying this cutover:** repository owner must verify in Cloudflare that at least two Cron Trigger slots are available and confirm the fine-grained token is scoped to this repository with Actions write permission.
+- The branch is proposed as a draft so the cutover does not become live merely from this work session. The current `main` configuration is unchanged until the owner applies the reviewed PR.
+- After activation, verify the first natural scheduled Worker event and corresponding GitHub Actions run. No production updater was manually dispatched for testing.
+
+### 6. Verification status
+- **Local Node.js tests:** NOT RUN — connected local shell/repository checkout unavailable.
+- **`./jules-verify.sh`:** NOT RUN locally; current-head PR CI must report the actual result.
+- **Wrangler dry run:** NOT RUN locally; current-head PR CI must report the actual result.
+- **Token write permission canary:** NOT RUN in this branch; it runs in the deployment preflight only after the reviewed cutover is applied.
+- **Cloudflare cron quota, deployment, and first natural dispatch:** PENDING external verification.
+- **Diff reconciliation:** the only intended source changes are the 7 workflow/worker operating files listed above; the remaining changes are the 4 new task artifacts, this summary, and active project context. Final changed-file count and PR checks must be confirmed after PR creation.
+
+### 7. Useful result
+**USEFUL RESULT: NO (pending verification and owner-side activation gates).** Implementation is prepared as a draft review candidate; automatic updater operation has not been changed on `main` and no live dispatch is claimed.
+
