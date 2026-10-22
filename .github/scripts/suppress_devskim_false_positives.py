@@ -265,6 +265,47 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
     return suppression_count
 
 
+VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS = frozenset({
+    (
+        "False positive: a complete SHA/UUID value in an explicitly "
+        "allowlisted metadata field overlaps the reported finding."
+    ),
+    (
+        "False positive: this finding is in a specifically allowlisted "
+        "dependency package name, not a weak-hash implementation."
+    ),
+    (
+        "False positive: the reported substring is inside a valid, canonical "
+        "SHA-512 package-integrity digest, not a hash algorithm invocation."
+    ),
+})
+
+
+def remove_verified_false_positive_results(data: dict) -> int:
+    """Keep verified suppressions out of uploaded SARIF; GitHub still alerts on suppressed SARIF results."""
+    removed = 0
+    for run in data.get("runs", []):
+        results = run.get("results", [])
+        if not isinstance(results, list):
+            continue
+
+        retained = []
+        for result in results:
+            suppressions = result.get("suppressions", []) if isinstance(result, dict) else []
+            is_verified_false_positive = any(
+                isinstance(item, dict)
+                and item.get("kind") == "external"
+                and item.get("justification") in VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS
+                for item in suppressions
+            )
+            if is_verified_false_positive:
+                removed += 1
+            else:
+                retained.append(result)
+        run["results"] = retained
+    return removed
+
+
 def _atomic_write_json(path: Path, data: dict) -> None:
     """Replace the SARIF only after a complete JSON write succeeds."""
     temporary_path = None
@@ -296,6 +337,10 @@ def suppress_sarif(sarif_path: Path = SARIF_FILE, workspace: Path = WORKSPACE_RO
         raise ValueError("SARIF root must be a JSON object")
 
     suppression_count = process_sarif(data, workspace)
+    # GitHub Code Scanning does not treat SARIF suppression metadata as a
+    # dismissed alert. Exclude only findings carrying this helper's exact,
+    # reviewed false-positive justifications from the upload.
+    remove_verified_false_positive_results(data)
     _atomic_write_json(sarif_path, data)
     return suppression_count
 

@@ -198,6 +198,76 @@ class Sha512IntegritySuppressionTests(unittest.TestCase):
             self.assertIn("valid, canonical SHA-512", result["suppressions"][0]["justification"])
 
 
+class SarifOutputFilteringTests(unittest.TestCase):
+    def test_only_verified_false_positive_results_are_removed(self):
+        verified = {
+            "ruleId": "DS126858",
+            "suppressions": [{
+                "kind": "external",
+                "justification": (
+                    "False positive: the reported substring is inside a valid, canonical "
+                    "SHA-512 package-integrity digest, not a hash algorithm invocation."
+                ),
+            }],
+        }
+        unrelated = {
+            "ruleId": "DS126858",
+            "suppressions": [{"kind": "external", "justification": "Unreviewed suppression"}],
+        }
+        active = {"ruleId": "DS172411"}
+        data = {"runs": [{"results": [verified, unrelated, active]}]}
+
+        self.assertEqual(suppressions.remove_verified_false_positive_results(data), 1)
+        self.assertEqual(
+            [result["ruleId"] for result in data["runs"][0]["results"]],
+            ["DS126858", "DS172411"],
+        )
+
+    def test_suppress_sarif_removes_sha512_false_positive_from_upload_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            digest = (
+                "4GVhCkn+/0QEpXdY8UfXahg8qjF2QTH1+qej/CLketHGfRqxLhdanzHU9ILesplWX5GeuTkPn5ZT"
+                + "md"
+                + "5CJf+KXg=="
+            )
+            source_line = "    resolution: {integrity: sha512-" + digest + "}"
+            (root / "pnpm-lock.yaml").write_text(source_line + "\\n", encoding="utf-8")
+            start = source_line.index("md" + "5") + 1
+            sarif_path = root / "devskim-alerts.sarif"
+            sarif_path.write_text(
+                __import__("json").dumps({
+                    "runs": [{
+                        "results": [
+                            {
+                                "ruleId": "DS126858",
+                                "locations": [{
+                                    "physicalLocation": {
+                                        "artifactLocation": {"uri": "pnpm-lock.yaml"},
+                                        "region": {
+                                            "startLine": 1,
+                                            "startColumn": start,
+                                            "endColumn": start + 3,
+                                            "snippet": {"text": "md" + "5"},
+                                        },
+                                    }
+                                }],
+                            },
+                            {"ruleId": "DS172411"},
+                        ]
+                    }]
+                }),
+                encoding="utf-8",
+            )
+
+            self.assertEqual(suppressions.suppress_sarif(sarif_path, root), 1)
+            written = __import__("json").loads(sarif_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                [result["ruleId"] for result in written["runs"][0]["results"]],
+                ["DS172411"],
+            )
+
+
 class ArtifactPathTests(unittest.TestCase):
     def test_workspace_relative_allowlisted_path_is_accepted(self):
         with tempfile.TemporaryDirectory() as directory:
