@@ -19,6 +19,7 @@ on:
     paths:
       - 'workers/updater-scheduler/**'
       - '.github/workflows/deploy-updater-scheduler.yml'
+      - '.github/workflows/verify-updater-dispatch-token.yml'
 
 permissions:
   contents: read
@@ -73,7 +74,7 @@ jobs:
       - name: Use Node.js 22
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: '22'
+          fetch-depth: 1
 
       - name: Setup pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.0.0
@@ -128,28 +129,8 @@ jobs:
 
           for attempt in $(seq 1 60); do
             RUN_STATE="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CANARY_RUN_ID}" --jq '[.status, (.conclusion // "")] | @tsv')"
-            IFS=
-
-      - name: Sync GitHub dispatch token before deployment
-        env:
-          UPDATER_DISPATCH_TOKEN: ${{ secrets.UPDATER_DISPATCH_TOKEN }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [[ -z "${UPDATER_DISPATCH_TOKEN:-}" ]]; then
-            echo "::notice::UPDATER_DISPATCH_TOKEN is not configured; Worker stays disabled unless the preflight above rejects an active cutover."
-            exit 0
-          fi
-
-          # Send the token via stdin. Never echo it or include it in command arguments.
-          printf '%s' "$UPDATER_DISPATCH_TOKEN" | pnpm exec wrangler secret put GITHUB_TOKEN --config workers/updater-scheduler/wrangler.toml
-
-      - name: Deploy updater scheduler from reviewed cutover configuration
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml
-\\t' read -r RUN_STATUS RUN_CONCLUSION <<< "$RUN_STATE"
+            RUN_STATUS="${RUN_STATE%%$'\\t'*}"
+            RUN_CONCLUSION="${RUN_STATE#*$'\\t'}"
             if [[ "$RUN_STATUS" == "completed" ]]; then
               if [[ "$RUN_CONCLUSION" == "success" ]]; then
                 echo "::notice::Canary run ${CANARY_RUN_ID} completed successfully. Production updater dispatch was not tested."
@@ -172,14 +153,12 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "${UPDATER_DISPATCH_TOKEN:-}" ]]; then
-            echo "::notice::UPDATER_DISPATCH_TOKEN is not configured; Worker stays disabled unless the preflight above rejects an active cutover."
+            echo "::notice::UPDATER_DISPATCH_TOKEN is not configured; Worker deployment is blocked if dispatch is enabled."
             exit 0
           fi
-
-          # Send the token via stdin. Never echo it or include it in command arguments.
           printf '%s' "$UPDATER_DISPATCH_TOKEN" | pnpm exec wrangler secret put GITHUB_TOKEN --config workers/updater-scheduler/wrangler.toml
 
-      - name: Deploy updater scheduler from reviewed cutover configuration
+      - name: Deploy updater scheduler from reviewed configuration
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml
