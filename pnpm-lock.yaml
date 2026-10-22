@@ -18,6 +18,7 @@ overrides:
   qs: '>=6.16.0'
   fast-uri: '>=3.1.8'
   minimatch@9.0.9>brace-expansion: 2.1.7
+  '@vitest/mocker': 5.0.5
 
 importers:
 
