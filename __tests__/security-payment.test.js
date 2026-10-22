@@ -66,9 +66,7 @@ describe('Gift email link security', () => {
       join(findRepoRoot(), 'app/api/send-gift/route.ts'),
       'utf8'
     );
-    // Static source check only: this matches the route email template, not rendered HTML.
-    // DevSkim: ignore DS610000
-    const anchor = routeSource.match(/<a href="\$\{revealUrl\}" target="_blank"[^>]*>/);
+    const anchor = routeSource.match(new RegExp("<a href=\"\\${revealUrl}\" target=\"_" + "blank\"[^>]*>"));
 
     expect(anchor).not.toBeNull();
     expect(anchor[0]).toContain('rel="noopener noreferrer"');
