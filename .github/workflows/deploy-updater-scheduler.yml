@@ -5,6 +5,9 @@ on:
     paths:
       - 'workers/updater-scheduler/**'
       - '.github/workflows/deploy-updater-scheduler.yml'
+      - '.github/workflows/update-spec-kit.yml'
+      - '.github/workflows/refresh-docs.yml'
+      - '.github/workflows/verify-updater-dispatch-token.yml'
       - '.specify/features/035-updater-scheduler-reliability/**'
       - '.specify/features/036-updater-scheduler-cutover/**'
       - '.specify/feature.json'
@@ -99,12 +102,67 @@ jobs:
             exit 1
           fi
 
-          # Dispatch only a no-op canary workflow to prove Actions write access.
-          # Do not dispatch either production updater as a credential test.
-          GH_TOKEN="$UPDATER_DISPATCH_TOKEN" gh api --method POST \
+          # Dispatch a unique no-op canary, then verify that exact run succeeds.
+          # Never dispatch either production updater as a credential test.
+          export GH_TOKEN="$UPDATER_DISPATCH_TOKEN"
+          PROBE_ID="$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          gh api --method POST \
             "repos/${GITHUB_REPOSITORY}/actions/workflows/verify-updater-dispatch-token.yml/dispatches" \
-            -f ref=main >/dev/null
-          echo "::notice::GitHub accepted the no-op dispatch canary; production updater dispatch was not tested."
+            -f ref=main -f "inputs[probe_id]=${PROBE_ID}" >/dev/null
+
+          EXPECTED_TITLE="Updater dispatch token canary — ${PROBE_ID}"
+          CANARY_RUN_ID=""
+          for attempt in $(seq 1 40); do
+            RUNS_JSON="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/verify-updater-dispatch-token.yml/runs?event=workflow_dispatch&branch=main&per_page=20")"
+            CANARY_RUN_ID="$(printf '%s' "$RUNS_JSON" | jq -r --arg expected "$EXPECTED_TITLE" '[.workflow_runs[] | select(.display_title == $expected) | .id][0] // empty')"
+            if [[ -n "$CANARY_RUN_ID" ]]; then
+              break
+            fi
+            sleep 3
+          done
+
+          if [[ -z "$CANARY_RUN_ID" ]]; then
+            echo "::error::GitHub accepted the dispatch but the matching canary run did not appear within 120 seconds."
+            exit 1
+          fi
+
+          for attempt in $(seq 1 60); do
+            RUN_STATE="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CANARY_RUN_ID}" --jq '[.status, (.conclusion // "")] | @tsv')"
+            IFS=
+
+      - name: Sync GitHub dispatch token before deployment
+        env:
+          UPDATER_DISPATCH_TOKEN: ${{ secrets.UPDATER_DISPATCH_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${UPDATER_DISPATCH_TOKEN:-}" ]]; then
+            echo "::notice::UPDATER_DISPATCH_TOKEN is not configured; Worker stays disabled unless the preflight above rejects an active cutover."
+            exit 0
+          fi
+
+          # Send the token via stdin. Never echo it or include it in command arguments.
+          printf '%s' "$UPDATER_DISPATCH_TOKEN" | pnpm exec wrangler secret put GITHUB_TOKEN --config workers/updater-scheduler/wrangler.toml
+
+      - name: Deploy updater scheduler from reviewed cutover configuration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml
+\\t' read -r RUN_STATUS RUN_CONCLUSION <<< "$RUN_STATE"
+            if [[ "$RUN_STATUS" == "completed" ]]; then
+              if [[ "$RUN_CONCLUSION" == "success" ]]; then
+                echo "::notice::Canary run ${CANARY_RUN_ID} completed successfully. Production updater dispatch was not tested."
+                exit 0
+              fi
+              echo "::error::Canary run ${CANARY_RUN_ID} completed with conclusion '${RUN_CONCLUSION}'. Worker deployment was blocked."
+              exit 1
+            fi
+            sleep 3
+          done
+
+          echo "::error::Canary run ${CANARY_RUN_ID} did not complete successfully within 180 seconds. Worker deployment was blocked."
+          exit 1
 
       - name: Sync GitHub dispatch token before deployment
         env:
