@@ -59,7 +59,7 @@ jobs:
         run: pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml
 
   deploy:
-    name: Deploy disabled updater scheduler
+    name: Deploy updater scheduler
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
