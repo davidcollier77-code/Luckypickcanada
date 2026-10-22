@@ -1,3 +1,17 @@
+# Active Context — Cloudflare preview manifest runtime outage (2026-10-22)
+
+- **User-reported production failure:** luckypickcanada.ca returned Cloudflare Error 1101 after the successful OpenNext deployment following PR #1563.
+- **Verified exception:** Worker log for GET `/crystal-ball` reports `Unexpected loadManifest(/.next/server/preview-props.json) call!` in `NextNodeServer.getPreviewProps`, during server initialization. Fresh checks also observed Error 1101 for the homepage and `/about`.
+- **Verified starting dependency state:** Next.js `16.4.1`, `@opennextjs/cloudflare@1.20.6`, and Wrangler `4.141.0`. Upstream OpenNext PR #1356 fixes build-time inlining of `preview-props.json`; adapter 1.20.13 contains the fix and requires Wrangler `^4.148.0`.
+- **Additional verified build issue and correction:** The first OpenNext build attempt failed because `minimatch@9.0.9` resolved `brace-expansion@5.0.12`, which lacks the default export that minimatch 9 imports. Added the scoped override `minimatch@9.0.9>brace-expansion: 2.1.7`.
+- **Repair branch / PR:** `fix/cloudflare-preview-props-runtime-1101` / [PR #1564](https://github.com/davidcollier77-code/Luckypickcanada/pull/1564), still draft and unmerged.
+- **Verified CI:** Frozen pnpm install, Next.js production build, OpenNext Cloudflare build, compiled CSS, Worker/assets existence checks, Wrangler dry-run validation, unit tests, TypeScript, and repository Spec Kit verification passed. The combined `.next + public` size was 329,569,355 bytes (314.30 MiB), below the 495 MiB hard cap. Visual regression testing remains pending while CI installs Playwright Chromium.
+- **Safety / production status:** No production Worker was modified directly and no merge occurred. A successful build alone does not prove runtime recovery. After owner-approved deployment, smoke-test `/` and `/crystal-ball` and inspect Worker logs before marking the incident resolved.
+
+---
+
+---
+
 ## Current Focus — Updater Scheduler First-Deploy Secret Bundle (2026-10-22)
 
 - **Current fix branch:** fix/updater-scheduler-secret-bundling-20261022; PR creation and current-head checks pending at the time this context was updated.

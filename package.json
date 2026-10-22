@@ -37,7 +37,7 @@
   "devDependencies": {
     "@axe-core/react": "^4.13.0",
     "@hookform/resolvers": "^5.9.1",
-    "@opennextjs/cloudflare": "1.20.6",
+    "@opennextjs/cloudflare": "1.20.13",
     "@playwright/test": "^1.63.0",
     "@sentry/nextjs": "^10.75.2",
     "@tailwindcss/postcss": "4.2.4",
@@ -79,7 +79,7 @@
     "typescript": "^5.4.5",
     "vite": ">=8.2.4",
     "vitest": "^5.0.0",
-    "wrangler": "4.141.0",
+    "wrangler": "4.148.0",
     "zod": "^4.5.4",
     "zxcvbn": "^4.4.2"
   },
@@ -102,7 +102,8 @@
       "source-map-js": "1.2.2",
       "vite": ">=8.2.4",
       "qs": ">=6.16.0",
-      "fast-uri": ">=3.1.8"
+      "fast-uri": ">=3.1.8",
+      "minimatch@9.0.9>brace-expansion": "2.1.7"
     }
   },
   "packageManager": "pnpm@10.30.3"
