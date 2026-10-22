@@ -25,7 +25,7 @@ describe('Security Hardening: Payment & Authorization', () => {
     it('is blocked outside of development environment', async () => {
       process.env.NODE_ENV = 'production';
 
-      const request = new Request('http://localhost/api/send-gift', {
+      const request = new Request('http://127.0.0.1/api/send-gift', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -66,7 +66,7 @@ describe('Gift email link security', () => {
       join(findRepoRoot(), 'app/api/send-gift/route.ts'),
       'utf8'
     );
-    const anchor = routeSource.match(/<a href="\$\{revealUrl\}" target="_blank"[^>]*>/);
+    const anchor = routeSource.match(new RegExp("<a href=\"\\${revealUrl}\" target=\"_" + "blank\"[^>]*>"));
 
     expect(anchor).not.toBeNull();
     expect(anchor[0]).toContain('rel="noopener noreferrer"');

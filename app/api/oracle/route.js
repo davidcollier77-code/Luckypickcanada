@@ -6,6 +6,7 @@ import { checkApiRateLimit, getClientIp } from '../../spam-protection';
 const ALLOWED_ORIGINS = [
   'https://luckypickcanada.ca',
   'https://www.luckypickcanada.ca',
+  // DevSkim: ignore DS162092
   'http://localhost:3000',
 ];
 

@@ -32,7 +32,7 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
     res.destroy = function(err) { if(err) req.emit('error', err); };
     const req = new EventEmitter();
 
-    setTimeout(() => {
+    /* DevSkim: ignore DS172411 */ /* DevSkim: ignore DS172411 */ setTimeout(() => {
         const mockRes = mockResponses[url];
         if (!mockRes) {
             res.statusCode = 404;
@@ -45,7 +45,7 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
         res.headers = mockRes.headers || {};
 
         if (mockRes.timeout) {
-             setTimeout(() => req.emit('timeout'), 5);
+             /* DevSkim: ignore DS172411 */ /* DevSkim: ignore DS172411 */ setTimeout(() => req.emit('timeout'), 5);
              return;
         }
 
@@ -66,7 +66,7 @@ https.get = function(urlOrOptions, optionsOrCallback, callback) {
     req.on = (event, handler) => {
         originalOn(event, handler);
         if (event === 'error' && mockResponses[url] && mockResponses[url].error) {
-           setTimeout(() => handler(new Error(mockResponses[url].error)), 10);
+           /* DevSkim: ignore DS172411 */ /* DevSkim: ignore DS172411 */ setTimeout(() => handler(new Error(mockResponses[url].error)), 10);
         }
         return req;
     };
@@ -94,8 +94,8 @@ if (!getUpstreamShaMatch || !fetchDocumentationMatch) {
     process.exit(1);
 }
 
-const getUpstreamSha = eval(`(${getUpstreamShaMatch[0]})`);
-const fetchDocumentation = eval(`(${fetchDocumentationMatch[0]})`);
+const getUpstreamSha = /* DevSkim: ignore DS189424 */ eval(`(${getUpstreamShaMatch[0]})`);
+const fetchDocumentation = /* DevSkim: ignore DS189424 */ eval(`(${fetchDocumentationMatch[0]})`);
 
 
 async function runTests() {
@@ -348,7 +348,7 @@ async function runTests() {
               output = await fetchDocumentation('testLib', {});
               fetchSuccess = true;
            } catch (e) {
-              await new Promise(resolve => setTimeout(resolve, 180 * 1000));
+              await new Promise(resolve => /* DevSkim: ignore DS172411 */ /* DevSkim: ignore DS172411 */ setTimeout(resolve, 180 * 1000));
               try {
                  output = await fetchDocumentation('testLib', {});
                  fetchSuccess = true;
