@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import {
   dispatchWorkflow,
   formatAtlanticParts,
@@ -218,4 +219,22 @@ test("failed dispatch logs status without token or response body", async () => {
   const output = lines.join("\n");
   assert.match(output, /HTTP 403/);
   assert.doesNotMatch(output, /secret-token|private body/);
+});
+
+test("cutover enables the Worker and leaves manual-only updater workflow triggers", async () => {
+  const readRepoFile = (path) => readFile(new URL("../../../" + path, import.meta.url), "utf8");
+  const [config, specKitWorkflow, docsWorkflow] = await Promise.all([
+    readRepoFile("workers/updater-scheduler/wrangler.toml"),
+    readRepoFile(".github/workflows/update-spec-kit.yml"),
+    readRepoFile(".github/workflows/refresh-docs.yml")
+  ]);
+
+  assert.match(config, /^DISPATCH_ENABLED = "true"$/m);
+  for (const [name, workflow] of [
+    ["Spec Kit updater", specKitWorkflow],
+    ["documentation updater", docsWorkflow]
+  ]) {
+    assert.match(workflow, /^  workflow_dispatch:\s*$/m, name + " must retain manual dispatch");
+    assert.doesNotMatch(workflow, /^  schedule:\s*$/m, name + " must not retain a competing GitHub schedule");
+  }
 });
