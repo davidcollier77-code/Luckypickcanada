@@ -8,10 +8,10 @@
 
 ## Implementation
 - [x] Restrict DS173237 to an explicit allowlist of safe metadata keys and complete SHA/UUID values.
-- [x] Tie suppression to the finding's field/range; decline ambiguous snippets.
+- [x] Use the trusted source line; require the finding range to fit within the safe field value and decline ambiguous lines.
 - [x] Validate and confine SARIF artifact paths before fallback reads.
 - [x] Rewrite SARIF atomically and ensure a failed suppression does not block raw SARIF upload.
-- [x] Add regression tests for positive and negative matcher/path cases.
+- [x] Add regression tests for positive and negative matcher/path cases, including SARIF-slice mismatch and broad column ranges.
 - [x] Remove unnecessary workflow `sudo`.
 - [x] Make the payment-link source matcher readable and accurately document its scope.
 - [x] Validate provided webhook account identifiers without requiring an undeclared secret.
