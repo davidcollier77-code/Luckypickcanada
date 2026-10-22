@@ -149,6 +149,57 @@ class ArtifactPathTests(unittest.TestCase):
                 suppressions.resolve_safe_artifact_uri(".specify/private.json", root)
             )
 
+    def test_sarif_snippet_slice_cannot_override_trusted_source_line(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata_dir = root / ".specify"
+            metadata_dir.mkdir()
+            source_line = '{"api_token":"' + SHA + '","upstream_sha":"' + SHA + '"}'
+            (metadata_dir / "manifest.json").write_text(source_line + "\\n", encoding="utf-8")
+            token_start = source_line.index(SHA) + 1
+            token_end = token_start + len(SHA)
+            data = {
+                "runs": [{
+                    "results": [{
+                        "ruleId": "DS173237",
+                        "locations": [{
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": ".specify/manifest.json"},
+                                "region": {
+                                    "startLine": 1,
+                                    "startColumn": token_start,
+                                    "endColumn": token_end,
+                                    "snippet": {"text": '{"upstream_sha":"' + SHA + '"}'},
+                                },
+                            }
+                        }],
+                    }]
+                }]
+            }
+            self.assertEqual(suppressions.process_sarif(data, root), 0)
+            self.assertNotIn("suppressions", data["runs"][0]["results"][0])
+
+    def test_lockfile_package_is_matched_from_source_line_not_sarif_slice(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            lockfile_line = "  '@aws-crypto/sha1-browser@5.0.0': {}"
+            (root / "pnpm-lock.yaml").write_text(lockfile_line + "\\n", encoding="utf-8")
+            data = {
+                "runs": [{
+                    "results": [{
+                        "ruleId": "DS126858",
+                        "locations": [{
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": "pnpm-lock.yaml"},
+                                "region": {"startLine": 1, "snippet": {"text": "sha1"}},
+                            }
+                        }],
+                    }]
+                }]
+            }
+            self.assertEqual(suppressions.process_sarif(data, root), 1)
+            self.assertIn("suppressions", data["runs"][0]["results"][0])
+
     def test_unsafe_uri_never_suppresses_sarif_finding(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
