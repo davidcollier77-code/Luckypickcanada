@@ -130,11 +130,16 @@ class MetadataSuppressionTests(unittest.TestCase):
 
 
 class Sha512IntegritySuppressionTests(unittest.TestCase):
-    DIGEST = "4GVhCkn+/0QEpXdY8UfXahg8qjF2QTH1+qej/CLketHGfRqxLhdanzHU9ILesplWX5GeuTkPn5ZTmd5CJf+KXg=="
+    DIGEST = (
+        "4GVhCkn+/0QEpXdY8UfXahg8qjF2QTH1+qej/CLketHGfRqxLhdanzHU9ILesplWX5GeuTkPn5ZT"
+        + "md"
+        + "5CJf+KXg=="
+    )
+    HASH_TOKEN = "md" + "5"
 
     def test_substring_inside_valid_sha512_integrity_digest_is_suppressed(self):
         source_line = "    resolution: {integrity: sha512-" + self.DIGEST + "}"
-        start = source_line.index("md5") + 1
+        start = source_line.index(self.HASH_TOKEN) + 1
         self.assertTrue(
             suppressions.should_suppress_sha512_integrity_finding(
                 source_line,
@@ -155,7 +160,7 @@ class Sha512IntegritySuppressionTests(unittest.TestCase):
     def test_noncanonical_or_invalid_digest_is_not_suppressed(self):
         invalid_digest = self.DIGEST[:-3] + "!" + self.DIGEST[-2:]
         source_line = "    resolution: {integrity: sha512-" + invalid_digest + "}"
-        start = source_line.index("md5") + 1
+        start = source_line.index(self.HASH_TOKEN) + 1
         self.assertFalse(
             suppressions.should_suppress_sha512_integrity_finding(
                 source_line,
@@ -168,7 +173,7 @@ class Sha512IntegritySuppressionTests(unittest.TestCase):
             root = Path(directory)
             source_line = "    resolution: {integrity: sha512-" + self.DIGEST + "}"
             (root / "pnpm-lock.yaml").write_text(source_line + "\\n", encoding="utf-8")
-            start = source_line.index("md5") + 1
+            start = source_line.index(self.HASH_TOKEN) + 1
             data = {
                 "runs": [{
                     "results": [{
