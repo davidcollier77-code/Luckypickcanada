@@ -2,20 +2,21 @@
 
 ## Review and Specification
 - [x] Read repository governance and relevant security-task instructions.
-- [x] Inspect the current PR branch, changed files, complete review threads, and the route/configuration involved.
+- [x] Inspect the current PR branch, changed files, complete review threads, and route/configuration involved.
 - [x] Specify the false-positive suppression safety requirements.
 - [x] Plan the minimal implementation and regression checks.
 
 ## Implementation
-- [ ] Restrict DS173237 to an explicit allowlist of safe metadata keys and complete SHA/UUID values.
-- [ ] Tie suppression to the finding's field/range; decline ambiguous snippets.
-- [ ] Validate and confine SARIF artifact paths before fallback reads.
-- [ ] Rewrite SARIF atomically and ensure a failed suppression does not block raw SARIF upload.
-- [ ] Add regression tests for positive and negative matcher/path cases.
-- [ ] Remove unnecessary workflow `sudo`.
-- [ ] Make the payment-link source matcher readable and accurately document its scope.
-- [ ] Restore `.specify/feature.json` to the base-branch version.
-- [ ] Reconcile `PR_SUMMARY.md` with current code and actual verification evidence.
+- [x] Restrict DS173237 to an explicit allowlist of safe metadata keys and complete SHA/UUID values.
+- [x] Tie suppression to the finding's field/range; decline ambiguous snippets.
+- [x] Validate and confine SARIF artifact paths before fallback reads.
+- [x] Rewrite SARIF atomically and ensure a failed suppression does not block raw SARIF upload.
+- [x] Add regression tests for positive and negative matcher/path cases.
+- [x] Remove unnecessary workflow `sudo`.
+- [x] Make the payment-link source matcher readable and accurately document its scope.
+- [x] Validate provided webhook account identifiers without requiring an undeclared secret.
+- [x] Restore `.specify/feature.json` to the base-branch version.
+- [x] Reconcile `PR_SUMMARY.md` with current code and actual verification evidence.
 
 ## Verification and Final Review
 - [ ] Run the focused Python regression suite.
