@@ -40,20 +40,21 @@ for (const [label, rows] of [["daylight time", summer], ["standard time", winter
 
 test("maps all five Friday targets in daylight and standard time", () => {
   const rows = [
-    ["2026-10-23T04:05:00Z", "5 * * * *", "spec-kit-primary", "01:05"],
-    ["2026-10-23T08:05:00Z", "5 * * * *", "spec-kit-retry", "05:05"],
-    ["2026-10-23T05:21:00Z", "21 * * * *", "docs-primary", "02:21"],
-    ["2026-10-23T09:21:00Z", "21 * * * *", "docs-backup", "06:21"],
-    ["2026-10-23T13:21:00Z", "21 * * * *", "docs-recovery", "10:21"],
-    ["2026-11-06T05:05:00Z", "5 * * * *", "spec-kit-primary", "01:05"],
-    ["2026-11-06T09:05:00Z", "5 * * * *", "spec-kit-retry", "05:05"],
-    ["2026-11-06T06:21:00Z", "21 * * * *", "docs-primary", "02:21"],
-    ["2026-11-06T10:21:00Z", "21 * * * *", "docs-backup", "06:21"],
-    ["2026-11-06T14:21:00Z", "21 * * * *", "docs-recovery", "10:21"]
+    ["2026-10-23T04:05:00Z", "5 * * * *", "update-spec-kit.yml", "spec-kit-primary", "01:05"],
+    ["2026-10-23T08:05:00Z", "5 * * * *", "update-spec-kit.yml", "spec-kit-retry", "05:05"],
+    ["2026-10-23T05:21:00Z", "21 * * * *", "refresh-docs.yml", "docs-primary", "02:21"],
+    ["2026-10-23T09:21:00Z", "21 * * * *", "refresh-docs.yml", "docs-backup", "06:21"],
+    ["2026-10-23T13:21:00Z", "21 * * * *", "refresh-docs.yml", "docs-recovery", "10:21"],
+    ["2026-11-06T05:05:00Z", "5 * * * *", "update-spec-kit.yml", "spec-kit-primary", "01:05"],
+    ["2026-11-06T09:05:00Z", "5 * * * *", "update-spec-kit.yml", "spec-kit-retry", "05:05"],
+    ["2026-11-06T06:21:00Z", "21 * * * *", "refresh-docs.yml", "docs-primary", "02:21"],
+    ["2026-11-06T10:21:00Z", "21 * * * *", "refresh-docs.yml", "docs-backup", "06:21"],
+    ["2026-11-06T14:21:00Z", "21 * * * *", "refresh-docs.yml", "docs-recovery", "10:21"]
   ];
-  for (const [iso, cron, slot, time] of rows) {
+  for (const [iso, cron, workflow, slot, time] of rows) {
     const target = resolveTarget(ts(iso), cron);
     assert.ok(target, iso + " should resolve");
+    assert.equal(target.workflow, workflow);
     assert.equal(target.slot, slot);
     assert.equal(target.localTime, time);
     assert.equal(target.localWeekday, "Fri");
@@ -221,7 +222,7 @@ test("failed dispatch logs status without token or response body", async () => {
   assert.doesNotMatch(output, /secret-token|private body/);
 });
 
-test("cutover enables the Worker and leaves manual-only updater workflow triggers", async () => {
+test("preparation keeps native updater schedules active until Worker activation", async () => {
   const readRepoFile = (path) => readFile(new URL("../../../" + path, import.meta.url), "utf8");
   const [config, specKitWorkflow, docsWorkflow] = await Promise.all([
     readRepoFile("workers/updater-scheduler/wrangler.toml"),
@@ -229,12 +230,13 @@ test("cutover enables the Worker and leaves manual-only updater workflow trigger
     readRepoFile(".github/workflows/refresh-docs.yml")
   ]);
 
-  assert.match(config, /^DISPATCH_ENABLED = "true"$/m);
+  assert.match(config, /^DISPATCH_ENABLED = "false"$/m);
   for (const [name, workflow] of [
     ["Spec Kit updater", specKitWorkflow],
     ["documentation updater", docsWorkflow]
   ]) {
-    assert.match(workflow, /^  workflow_dispatch:\s*$/m, name + " must retain manual dispatch");
-    assert.doesNotMatch(workflow, /^  schedule:\s*$/m, name + " must not retain a competing GitHub schedule");
+    assert.match(workflow, /^  workflow_dispatch:\\s*$/m, name + " must retain manual dispatch");
+    assert.match(workflow, /^  schedule:\\s*$/m, name + " must keep automatic scheduling before cutover");
+    assert.match(workflow, /vars\\.UPDATER_SCHEDULER_ACTIVE != 'true'/, name + " must support guarded handoff to Worker scheduling");
   }
 });
