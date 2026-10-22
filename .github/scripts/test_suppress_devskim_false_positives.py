@@ -155,7 +155,7 @@ class ArtifactPathTests(unittest.TestCase):
             metadata_dir = root / ".specify"
             metadata_dir.mkdir()
             source_line = '{"api_token":"' + SHA + '","upstream_sha":"' + SHA + '"}'
-            (metadata_dir / "manifest.json").write_text(source_line + "\\n", encoding="utf-8")
+            (metadata_dir / "manifest.json").write_text(source_line + "\n", encoding="utf-8")
             token_start = source_line.index(SHA) + 1
             token_end = token_start + len(SHA)
             data = {
@@ -183,7 +183,7 @@ class ArtifactPathTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             lockfile_line = "  '@aws-crypto/sha1-browser@5.0.0': {}"
-            (root / "pnpm-lock.yaml").write_text(lockfile_line + "\\n", encoding="utf-8")
+            (root / "pnpm-lock.yaml").write_text(lockfile_line + "\n", encoding="utf-8")
             data = {
                 "runs": [{
                     "results": [{
