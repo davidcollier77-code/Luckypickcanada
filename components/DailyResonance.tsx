@@ -276,7 +276,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       if (auroraRef.current) auroraRef.current.setPhase('awaken');
       if (soundsRef.current.buildup) {
         // Delay the cinematic buildup slightly so the click sound breathes
-        setTimeout(() => {
+        /* DevSkim: ignore DS172411 */ /* DevSkim: ignore DS172411 */ setTimeout(() => {
           if (soundsRef.current.buildup && isAnimatingRef.current) {
             soundsRef.current.buildup.play();
           }
@@ -340,7 +340,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
     // 3. Impact Frame (at 7.5s)
     tl.call(() => {
       if (auroraRef.current) auroraRef.current.setPhase('impact', currentTier);
-      setTimeout(() => {
+      /* DevSkim: ignore DS172411 */ /* DevSkim: ignore DS172411 */ setTimeout(() => {
         if (auroraRef.current) auroraRef.current.setPhase('settled', currentTier);
       }, 1000);
 
@@ -349,7 +349,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       // Stop buildup
       if (soundsRef.current.buildup) {
         soundsRef.current.buildup.fade(0.8, 0, 500);
-        setTimeout(() => { if (soundsRef.current.buildup) soundsRef.current.buildup.stop(); }, 500);
+        /* DevSkim: ignore DS172411 */ /* DevSkim: ignore DS172411 */ setTimeout(() => { if (soundsRef.current.buildup) soundsRef.current.buildup.stop(); }, 500);
       }
 
       // Play cinematic impact sound for the visual reveal
@@ -394,7 +394,7 @@ export default function DailyResonance({ isCompact = false }: DailyResonanceProp
       try {
         await navigator.clipboard.writeText(shareText);
         setShareStatus('copied');
-        window.setTimeout(() => setShareStatus('idle'), 2200);
+        /* DevSkim: ignore DS172411 */ window./* DevSkim: ignore DS172411 */ /* DevSkim: ignore DS172411 */ setTimeout(() => setShareStatus('idle'), 2200);
       } catch(e) {}
     }
   };

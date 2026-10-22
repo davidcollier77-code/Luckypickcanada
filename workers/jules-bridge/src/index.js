@@ -1,5 +1,7 @@
 const JULES_API_URL = "https://jules.googleapis.com/v1alpha/sessions";
 const JULES_SOURCE = "sources/github/davidcollier77-code/Luckypickcanada";
+// DevSkim: ignore DS173237
+// This account ID is an identifier, not an authentication credential; CF_WEBHOOK_SECRET authenticates requests.
 const CLOUDFLARE_ACCOUNT_ID = "dbd3120f6fa0104b5fe66c201ea4251b";
 const MAX_BODY_BYTES = 256 * 1024;
 const MAX_TEXT_CHARS = 8000;
@@ -89,9 +91,11 @@ export default {
       return new Response("Invalid payload", { status: 400 });
     }
 
+    // Cloudflare omits account_id for some alert types. When present, it must be a string matching this account.
     if (
-      typeof payload.account_id === "string" &&
-      payload.account_id !== CLOUDFLARE_ACCOUNT_ID
+      payload.account_id !== undefined &&
+      (typeof payload.account_id !== "string" ||
+        payload.account_id !== CLOUDFLARE_ACCOUNT_ID)
     ) {
       return new Response("Forbidden", { status: 403 });
     }

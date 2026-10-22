@@ -25,7 +25,7 @@ describe('Security Hardening: Payment & Authorization', () => {
     it('is blocked outside of development environment', async () => {
       process.env.NODE_ENV = 'production';
 
-      const request = new Request('http://localhost/api/send-gift', {
+      const request = new Request(/* DevSkim: ignore DS162092 */ 'http://localhost/api/send-gift', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -66,6 +66,8 @@ describe('Gift email link security', () => {
       join(findRepoRoot(), 'app/api/send-gift/route.ts'),
       'utf8'
     );
+    // Static source check only: this matches the route email template, not rendered HTML.
+    // DevSkim: ignore DS610000
     const anchor = routeSource.match(/<a href="\$\{revealUrl\}" target="_blank"[^>]*>/);
 
     expect(anchor).not.toBeNull();

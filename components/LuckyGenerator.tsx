@@ -223,7 +223,7 @@ function ResonanceButton({ onClick, isLoading }: { onClick: () => void; isLoadin
     >
       {isLoading ? (
         <>
-          <svg aria-hidden="true" className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg aria-hidden="true" className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" /* DevSkim: ignore DS137138 */ xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
@@ -462,7 +462,7 @@ function useResonanceCanvas(
       if (s.impactTriggered) {
         playAudioBuffer(isHero && Math.random() > 0.5 ? 'fireworkFinale' : 'firework', isHero ? 0.8 : 0.4 + Math.random() * 0.3, 0.8 + Math.random() * 0.4);
         if (isHero && Math.random() > 0.3) {
-           setTimeout(() => { playAudioBuffer('crackle', 0.4 + Math.random() * 0.3, 0.9 + Math.random() * 0.2); }, 100 + Math.random() * 200);
+           /* DevSkim: ignore DS172411 */ setTimeout(() => { playAudioBuffer('crackle', 0.4 + Math.random() * 0.3, 0.9 + Math.random() * 0.2); }, 100 + Math.random() * 200);
         }
       }
       const count = reduced ? 25 : (isHero ? 180 : 60 + Math.floor(Math.random() * 30));
@@ -940,7 +940,7 @@ export default function LuckyGenerator() {
   const intervalIds = useRef<number[]>([]);
 
   const trackTimeout = useCallback((handler: TimerHandler, timeout?: number) => {
-      const id = window.setTimeout(handler, timeout);
+      const id = /* DevSkim: ignore DS172411 */ window.setTimeout(handler, timeout);
       timeoutIds.current.push(id);
       return id;
   }, []);
@@ -1097,7 +1097,7 @@ export default function LuckyGenerator() {
     try {
       await navigator.clipboard.writeText(text);
       setShareStatus('copied');
-      window.setTimeout(() => setShareStatus('idle'), 2200);
+      /* DevSkim: ignore DS172411 */ window.setTimeout(() => setShareStatus('idle'), 2200);
     } catch {}
   }, [score]);
 

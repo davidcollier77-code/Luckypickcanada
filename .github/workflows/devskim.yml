@@ -44,6 +44,21 @@ jobs:
         with:
           output-filename: devskim-alerts.sarif
 
+      - name: Test DevSkim suppression filter
+        id: suppression-tests
+        continue-on-error: true
+        run: python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'
+
+      - name: Suppress DevSkim false positives in SARIF
+        id: suppress-devskim
+        if: steps.suppression-tests.outcome == 'success'
+        continue-on-error: true
+        run: python3 .github/scripts/suppress_devskim_false_positives.py
+
+      - name: Warn when DevSkim suppression is skipped or fails
+        if: steps.suppression-tests.outcome == 'failure' || steps.suppress-devskim.outcome == 'failure'
+        run: echo "::warning::DevSkim suppression did not complete successfully; the original SARIF will be uploaded without these suppressions."
+
       - name: Upload DevSkim scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
         with:
