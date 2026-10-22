@@ -1,8 +1,8 @@
 # LuckyPickCanada Updater Scheduler
 
-A standalone Cloudflare Worker dispatches the existing Spec Kit and documentation update workflows at approved Atlantic local times. It does not change or deploy the Next.js application.
+A standalone Cloudflare Worker prepared to dispatch the existing Spec Kit and documentation refresh workflows at approved Atlantic local times. It does not change or deploy the Next.js application.
 
-## Automatic dispatch schedule
+## Intended dispatch schedule
 
 All targets are Tuesday and Friday in `America/Halifax`:
 
@@ -16,23 +16,29 @@ All targets are Tuesday and Friday in `America/Halifax`:
 
 Cloudflare Cron Triggers operate in UTC. The Worker converts each event's `scheduledTime` to `America/Halifax` and dispatches only if it matches one of these approved local slots. The UTC hour naturally moves with daylight-saving time; no fixed Atlantic offset is hard-coded. Two cron expressions, at UTC minutes 05 and 21, cover all approved local targets. Non-target events make no GitHub request.
 
-## Cutover behavior
+## Safe staged cutover
 
-The cutover branch coordinates three changes together: Worker dispatch is enabled, the two existing workflows retain `workflow_dispatch` but no longer define competing GitHub `schedule` triggers, and a regression test checks that this single-scheduler arrangement is preserved.
+The checked-in default remains `DISPATCH_ENABLED = "false"`. This preparation change deliberately leaves both existing GitHub `schedule` triggers in place, so the currently working automatic schedules remain available while external prerequisites are checked.
 
-The deploy workflow performs a no-op dispatch to `.github/workflows/verify-updater-dispatch-token.yml` before deploying an enabled Worker. This checks that `UPDATER_DISPATCH_TOKEN` can dispatch a workflow with Actions write permission without starting either production updater. It then synchronizes that credential to Cloudflare through stdin before deploying the Worker configuration. If the secret is missing or the canary dispatch fails, the deployment step is not reached.
+The deploy workflow includes a fail-closed credential preflight for a future enabled configuration. It dispatches a uniquely identified, no-op canary workflow; it then locates that exact run and waits for the run to complete successfully. If the secret is missing, the run cannot be found, or it completes unsuccessfully or times out, the Worker deployment is blocked. The canary never runs either production updater.
 
-**Before the cutover is applied to `main`, the repository owner must verify in Cloudflare that at least two Cron Trigger slots are available.** The Cloudflare dashboard screenshot confirms that a secret named `GITHUB_TOKEN` exists, and prior deployment logs confirm the repository secret `UPDATER_DISPATCH_TOKEN` was successfully copied to the Worker. Secret presence alone does not prove that the token can dispatch workflows; the canary preflight checks that at deployment time. The canary does not verify available Cloudflare cron quota or prove a natural scheduled run.
+Before a separate activation change:
+1. Confirm the Cloudflare account has at least two available Cron Trigger slots.
+2. Confirm the repository secret `UPDATER_DISPATCH_TOKEN` holds a fine-grained token scoped to this repository with Actions read/write permission.
+3. Confirm the deployed Worker has the expected cron triggers and the canary preflight succeeds.
+4. In the reviewed activation change, enable Worker dispatch while preserving the existing schedules temporarily. Once the Worker deployment is verified and before the next target slot, set repository variable `UPDATER_SCHEDULER_ACTIVE=true`; the updater jobs will then skip native schedule events but continue to accept manual `workflow_dispatch` events. Do not set this variable before an enabled Worker deployment is verified.
+5. Verify a natural Worker dispatch appears in Cloudflare logs and its matching GitHub Actions run. Tests or a successful deployment alone do not prove live scheduling.
+
+If an enabled Worker fails after activation, reset repository variable `UPDATER_SCHEDULER_ACTIVE` to `false` (or remove it) so the GitHub scheduled jobs can run again, then redeploy the Worker with dispatch disabled and restore the previous stable setup before the next target slot.
 
 ## Security and recovery
 
-- The Worker token is stored only as a Cloudflare secret named `GITHUB_TOKEN`; the source contains no credential value.
-- The GitHub Actions secret is named `UPDATER_DISPATCH_TOKEN`. The deploy workflow never prints it or puts it in a command-line argument.
+- The Worker credential is stored only as Cloudflare secret `GITHUB_TOKEN`; no value is committed or logged.
+- The repository secret is named `UPDATER_DISPATCH_TOKEN`. The deploy workflow sends it to Wrangler through standard input and does not echo it or place it in command arguments.
 - Logs include the intended workflow/slot and HTTP status, never the token or response body.
-- The Worker ignores missing, nonnumeric, or non-finite scheduled timestamps rather than throwing or attempting to dispatch.
-- For an approved slot the Worker calls Cloudflare's documented `controller.noRetry()` before making the GitHub request. An ambiguous network failure can occur after GitHub accepted a dispatch, so the next existing backup/recovery slot is the retry opportunity.
-- Both updater workflows retain manual `workflow_dispatch` access for owner-initiated recovery.
-- If the first natural dispatch fails after cutover, disable Worker dispatch and restore the original GitHub `schedule` entries before the next intended slot. Verify Cloudflare logs and GitHub Actions; a unit test or deploy success alone is not proof of live dispatch.
+- The Worker ignores missing, nonnumeric, or non-finite scheduled timestamps instead of throwing or attempting to dispatch.
+- For an approved slot the Worker calls Cloudflare's documented `controller.noRetry()` before dispatch. An ambiguous network failure can occur after GitHub accepted a dispatch, so automatic replay is avoided and later retry/recovery slots remain available.
+- Both updater workflows retain manual `workflow_dispatch` access.
 
 ## Verification
 
@@ -44,5 +50,4 @@ pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.
 ./jules-verify.sh
 ```
 
-Current-head GitHub Actions must pass these checks before this cutover PR is considered ready. The natural scheduled run, available Cloudflare cron quota, and real account state are external acceptance checks, not outcomes inferred from source code.
-
+Current-head GitHub Actions must pass these checks before this preparation PR is treated as repository-verified. Cron quota, exact live secret state, production deployment, and a natural scheduled dispatch are external acceptance checks, not outcomes inferred from source or unit tests. The current branch does not enable Worker dispatch or disable the existing GitHub schedules.
