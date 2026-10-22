@@ -13,6 +13,16 @@
 - **Jules bridge account field:** A supplied `account_id` must now be a string matching this account; malformed values and mismatches are rejected. Missing `account_id` remains permitted because Cloudflare documents that the field may be absent for some alert types. The account ID is an identifier, not an authentication credential; the `cf-webhook-auth` secret header remains the authentication control. No new runtime secret or deployment setting was introduced.
 - **Spec Kit governance:** Restored `.specify/feature.json` to the base-branch content so the checkout-local pointer is not a net change in this PR.
 
+## Spec Kit Stage Record
+| Stage | Definition | Method | Result / exact artifact paths |
+|---|---|---|---|
+| `/speckit.specify` | `.jules/cmds/speckit.specify.md` | FILE-DRIVEN PROCEDURAL EXECUTION | Updated `.specify/features/devskim-remediation/spec.md` with the suppression safety and acceptance requirements. |
+| `/speckit.plan` | `.jules/cmds/speckit.plan.md` | FILE-DRIVEN PROCEDURAL EXECUTION | Updated `.specify/features/devskim-remediation/plan.md` with the narrow matcher, safe-path, fail-safe workflow, test, and review sequence. |
+| `/speckit.tasks` | `.jules/cmds/speckit.tasks.md` | FILE-DRIVEN PROCEDURAL EXECUTION | Updated `.specify/features/devskim-remediation/tasks.md`; implementation tasks are checked, current-head verification tasks remain unchecked. |
+| `/speckit.implement` | `.jules/cmds/speckit.implement.md` | FILE-DRIVEN PROCEDURAL EXECUTION | Implemented `.github/scripts/suppress_devskim_false_positives.py`, `.github/scripts/test_suppress_devskim_false_positives.py`, `.github/workflows/devskim.yml`, `__tests__/security-payment.test.js`, `workers/jules-bridge/src/index.js`, and `workers/jules-bridge/src/index.test.js`. Verification remains pending. |
+
+Native slash-command dispatch was unavailable through this connected GitHub editing interface; the stage artifacts were updated sequentially using their repository definitions. No command execution is claimed for the implementation stage.
+
 ## Relevant Components
 | Component | Used | Useful | Contribution |
 |---|---|---|---|
