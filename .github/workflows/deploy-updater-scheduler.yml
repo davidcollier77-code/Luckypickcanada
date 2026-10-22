@@ -6,6 +6,7 @@ on:
       - 'workers/updater-scheduler/**'
       - '.github/workflows/deploy-updater-scheduler.yml'
       - '.specify/features/035-updater-scheduler-reliability/**'
+      - '.specify/features/036-updater-scheduler-cutover/**'
       - '.specify/feature.json'
       - 'memory-bank/activeContext.md'
       - 'memory-bank/progress.md'
@@ -82,12 +83,30 @@ jobs:
       - name: Test approved schedule mapping and safe dispatch behaviour
         run: node --test workers/updater-scheduler/test/index.node-test.mjs
 
-      - name: Deploy scheduler with dispatch disabled
+      - name: Validate GitHub dispatch write permission before enabling scheduler
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml
+          UPDATER_DISPATCH_TOKEN: ${{ secrets.UPDATER_DISPATCH_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! grep -Eq '^DISPATCH_ENABLED = "true"$' workers/updater-scheduler/wrangler.toml; then
+            echo "::notice::Dispatch remains disabled; skipping token dispatch preflight."
+            exit 0
+          fi
 
-      - name: Sync GitHub dispatch token when configured
+          if [[ -z "${UPDATER_DISPATCH_TOKEN:-}" ]]; then
+            echo "::error::DISPATCH_ENABLED is true but repository secret UPDATER_DISPATCH_TOKEN is missing. Worker deployment was blocked."
+            exit 1
+          fi
+
+          # Dispatch only a no-op canary workflow to prove Actions write access.
+          # Do not dispatch either production updater as a credential test.
+          GH_TOKEN="$UPDATER_DISPATCH_TOKEN" gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/verify-updater-dispatch-token.yml/dispatches" \
+            -f ref=main >/dev/null
+          echo "::notice::GitHub accepted the no-op dispatch canary; production updater dispatch was not tested."
+
+      - name: Sync GitHub dispatch token before deployment
         env:
           UPDATER_DISPATCH_TOKEN: ${{ secrets.UPDATER_DISPATCH_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -95,9 +114,14 @@ jobs:
         run: |
           set -euo pipefail
           if [[ -z "${UPDATER_DISPATCH_TOKEN:-}" ]]; then
-            echo "::notice::UPDATER_DISPATCH_TOKEN is not configured; Worker stays disabled."
+            echo "::notice::UPDATER_DISPATCH_TOKEN is not configured; Worker stays disabled unless the preflight above rejects an active cutover."
             exit 0
           fi
 
           # Send the token via stdin. Never echo it or include it in command arguments.
           printf '%s' "$UPDATER_DISPATCH_TOKEN" | pnpm exec wrangler secret put GITHUB_TOKEN --config workers/updater-scheduler/wrangler.toml
+
+      - name: Deploy updater scheduler from reviewed cutover configuration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm exec wrangler deploy --config workers/updater-scheduler/wrangler.toml
