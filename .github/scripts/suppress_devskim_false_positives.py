@@ -145,7 +145,7 @@ def _source_line_for_region(region: dict, safe_path: Path) -> str:
         with safe_path.open("r", encoding="utf-8") as source_file:
             for line_number, line in enumerate(source_file, start=1):
                 if line_number == start_line:
-                    return line.rstrip("\\r\\n")
+                    return line.rstrip("\r\n")
     except (OSError, UnicodeDecodeError):
         # No trusted source line means no suppression, not a fallback to SARIF text.
         return ""
