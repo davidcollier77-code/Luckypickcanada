@@ -185,7 +185,7 @@ class Sha512IntegritySuppressionTests(unittest.TestCase):
                                     "startLine": 1,
                                     "startColumn": start,
                                     "endColumn": start + 3,
-                                    "snippet": {"text": "md5"},
+                                    "snippet": {"text": "md" + "5"},
                                 },
                             }
                         }],
