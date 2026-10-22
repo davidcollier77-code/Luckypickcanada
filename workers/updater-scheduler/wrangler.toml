@@ -3,11 +3,11 @@ main = "src/index.mjs"
 compatibility_date = "2026-10-20"
 workers_dev = false
 
-# SAFE DEFAULT: keep the Worker disabled until quota and token permissions are confirmed, then complete the final cutover.
+# ACTIVATION: deployment must pass the no-op GitHub dispatch canary before this enabled Worker is deployed.
 [vars]
 GITHUB_OWNER = "davidcollier77-code"
 GITHUB_REPO = "Luckypickcanada"
-DISPATCH_ENABLED = "false"
+DISPATCH_ENABLED = "true"
 
 # Cloudflare Cron Triggers are UTC. The Worker converts each scheduledTime to
 # America/Halifax and dispatches only the five approved local target slots.

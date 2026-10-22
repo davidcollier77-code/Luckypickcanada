@@ -18,15 +18,15 @@ Cloudflare Cron Triggers operate in UTC. The Worker converts each event's `sched
 
 ## Safe staged cutover
 
-The checked-in default remains `DISPATCH_ENABLED = "false"`. This preparation change deliberately leaves both existing GitHub `schedule` triggers in place, so the currently working automatic schedules remain available while external prerequisites are checked.
+The reviewed activation configuration sets `DISPATCH_ENABLED = "true"`, matching the production flag configured in Cloudflare. The native GitHub `schedule` triggers remain defined and continue to run until the repository variable `UPDATER_SCHEDULER_ACTIVE` is deliberately set to `true` after the enabled Worker deployment and no-op canary have been verified.
 
-The deploy workflow includes a fail-closed credential preflight for a future enabled configuration. It dispatches a uniquely identified, no-op canary workflow; it then locates that exact run and waits for the run to complete successfully. If the secret is missing, the run cannot be found, or it completes unsuccessfully or times out, the Worker deployment is blocked. The canary never runs either production updater.
+The deploy workflow enforces a fail-closed credential preflight before deploying the enabled configuration. It dispatches a uniquely identified, no-op canary workflow; it then locates that exact run and waits for the run to complete successfully. If the secret is missing, the run cannot be found, or it completes unsuccessfully or times out, the Worker deployment is blocked. The canary never runs either production updater.
 
-Before a separate activation change:
-1. Confirm the Cloudflare account has at least two available Cron Trigger slots.
-2. Confirm the repository secret `UPDATER_DISPATCH_TOKEN` holds a fine-grained token scoped to this repository with Actions read/write permission.
-3. Confirm the deployed Worker has the expected cron triggers and the canary preflight succeeds.
-4. In the reviewed activation change, enable Worker dispatch while preserving the existing schedules temporarily. Once the Worker deployment is verified and before the next target slot, set repository variable `UPDATER_SCHEDULER_ACTIVE=true`; the updater jobs will then skip native schedule events but continue to accept manual `workflow_dispatch` events. Do not set this variable before an enabled Worker deployment is verified.
+Controlled activation sequence:
+1. Confirm the deployed Worker has both intended Cron Triggers. The 2026-10-22 deployment reports both trigger entries installed; re-check account quota before adding any more.
+2. Use the deployment canary to prove that the existing repository secret `UPDATER_DISPATCH_TOKEN` can dispatch and read workflow-run status. Secret presence alone is not permission proof.
+3. Treat deployment as blocked unless the exact canary run completes successfully and the enabled Worker deployment succeeds.
+4. After the enabled Worker deployment and canary are verified, set repository variable `UPDATER_SCHEDULER_ACTIVE=true` before the next target slot. The updater jobs will then skip native schedule events but continue to accept manual `workflow_dispatch` events. Do not set this variable earlier.
 5. Verify a natural Worker dispatch appears in Cloudflare logs and its matching GitHub Actions run. Tests or a successful deployment alone do not prove live scheduling.
 
 If an enabled Worker fails after activation, reset repository variable `UPDATER_SCHEDULER_ACTIVE` to `false` (or remove it) so the GitHub scheduled jobs can run again, then redeploy the Worker with dispatch disabled and restore the previous stable setup before the next target slot.
@@ -50,4 +50,4 @@ pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.
 ./jules-verify.sh
 ```
 
-Current-head GitHub Actions must pass these checks before this preparation PR is treated as repository-verified. Cron quota, exact live secret state, production deployment, and a natural scheduled dispatch are external acceptance checks, not outcomes inferred from source or unit tests. The current branch does not enable Worker dispatch or disable the existing GitHub schedules.
+Current-head GitHub Actions must pass these checks before the reviewed enabled configuration is treated as repository-verified. The checked-in configuration sets `DISPATCH_ENABLED = "true"`, but live activation still depends on a successful no-op canary and enabled Worker deployment. Cron quota, effective token permissions, the handoff variable, and a natural scheduled dispatch are external acceptance checks, not outcomes inferred from source or unit tests. The existing GitHub schedule definitions remain in place until `UPDATER_SCHEDULER_ACTIVE` is set to `true` after the enabled deployment and canary are verified.

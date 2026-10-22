@@ -1,12 +1,14 @@
-## Current Focus — Updater Scheduler Cutover Preparation (2026-10-22)
+## Current Focus — Guarded Updater Scheduler Activation (2026-10-22)
 
-- **Current PR:** [#1559](https://github.com/davidcollier77-code/Luckypickcanada/pull/1559), branch `fix/updater-scheduler-cutover-20261022`.
-- **Review remediation:** The dispatch preflight now waits for its unique no-op canary workflow to complete successfully before an enabled Worker deployment can proceed. Friday mapping tests assert the intended workflow file. The deployment workflow path filter includes both updater workflows and the canary, and the stale run-name expression was removed.
-- **Safe default:** `DISPATCH_ENABLED = "false"` remains checked in, and both native GitHub updater schedules remain present. A merge of this preparation change does not switch production automatic dispatch to Cloudflare.
-- **Controlled handoff:** Both scheduled jobs honor `UPDATER_SCHEDULER_ACTIVE`; native scheduled events continue unless the variable is exactly `true`, while manual `workflow_dispatch` remains available. The variable must only be set after enabled Worker deployment is verified and before the next scheduled target.
-- **External prerequisites:** Cloudflare screenshot confirms a `GITHUB_TOKEN` secret exists; run `39400082110` confirms repository secret sync succeeded on 2026-10-20. Current token permission assignment and available Cloudflare Cron Trigger quota remain unverified. Confirm at least two available slots and Actions read/write permission before a separate activation.
-- **Verification:** Local shell tests, `./jules-verify.sh`, and Wrangler dry-run were not run in this session; current-head PR CI must provide results. First natural scheduled dispatch remains pending.
-- **Operational constraint:** No production updater was dispatched as a credential test. No merge or production cutover has been performed.
+- **Current PR:** [#1560](https://github.com/davidcollier77-code/Luckypickcanada/pull/1560), branch `fix/updater-scheduler-activation-20261022`; open and not merged.
+- **User-confirmed configuration:** Cloudflare Production screenshot shows `DISPATCH_ENABLED = "true"`. The main-branch `workers/updater-scheduler/wrangler.toml` was still `"false"`; PR #1560 aligns the reviewed configuration with the requested setting.
+- **Secret evidence:** GitHub Settings screenshot confirms repository secret `UPDATER_DISPATCH_TOKEN` exists. Its value was not viewed. Deployment run [#62](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39788165939) confirms Wrangler uploaded `GITHUB_TOKEN` and installed both cron entries, but skipped the canary because the checked-in flag was false. Token permission sufficiency is therefore not yet proven.
+- **Changes in PR #1560:** Set the checked-in flag to the exact string `"true"`; align the config regression test; update activation/rollback guidance; add task-specific Spec Kit artifacts and the PR evidence summary. Native schedule definitions and manual `workflow_dispatch` remain present, gated only by the explicit `UPDATER_SCHEDULER_ACTIVE` repository variable.
+- **Verification:** Current-head PR CI results are pending; local Node tests, `./jules-verify.sh`, and Wrangler dry-run were not run in this connected GitHub interface. Do not claim the activation verified until the PR checks pass and the main-branch deploy runs the unique no-op canary to successful completion before deploying the enabled Worker.
+- **Controlled handoff:** After successful canary and enabled deployment, set repository variable `UPDATER_SCHEDULER_ACTIVE=true` before the next approved schedule target, then confirm the first natural Worker dispatch in Cloudflare logs and its matching GitHub Actions run. Do not treat secret existence or PR CI alone as proof of live workflow dispatch.
+- **Operational constraint:** No production updater was manually dispatched. No merge was performed.
+
+---
 
 ---
 

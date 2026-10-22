@@ -222,7 +222,7 @@ test("failed dispatch logs status without token or response body", async () => {
   assert.doesNotMatch(output, /secret-token|private body/);
 });
 
-test("preparation keeps native updater schedules active until Worker activation", async () => {
+test("activation enables Worker while preserving native schedules pending explicit handoff", async () => {
   const readRepoFile = (path) => readFile(new URL("../../../" + path, import.meta.url), "utf8");
   const [config, specKitWorkflow, docsWorkflow] = await Promise.all([
     readRepoFile("workers/updater-scheduler/wrangler.toml"),
@@ -230,7 +230,7 @@ test("preparation keeps native updater schedules active until Worker activation"
     readRepoFile(".github/workflows/refresh-docs.yml")
   ]);
 
-  assert.match(config, /^DISPATCH_ENABLED = "false"$/m);
+  assert.match(config, /^DISPATCH_ENABLED = "true"$/m);
   for (const [name, workflow] of [
     ["Spec Kit updater", specKitWorkflow],
     ["documentation updater", docsWorkflow]
