@@ -101,6 +101,18 @@ class MetadataSuppressionTests(unittest.TestCase):
         )
 
 
+    def test_only_known_lockfile_dependency_names_match(self):
+        self.assertIsNotNone(
+            suppressions.LOCKFILE_NAME_PATTERN.search("'@aws-crypto/sha1-browser@5.0.0':")
+        )
+        self.assertIsNotNone(
+            suppressions.LOCKFILE_NAME_PATTERN.search("'@smithy/md5-js@2.0.0':")
+        )
+        self.assertIsNone(
+            suppressions.LOCKFILE_NAME_PATTERN.search("'@example/sha1-tool@2.0.0':")
+        )
+
+
 class ArtifactPathTests(unittest.TestCase):
     def test_workspace_relative_allowlisted_path_is_accepted(self):
         with tempfile.TemporaryDirectory() as directory:
