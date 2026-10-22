@@ -114,12 +114,15 @@ class MetadataSuppressionTests(unittest.TestCase):
 
     def test_only_known_lockfile_dependency_names_match(self):
         self.assertIsNotNone(
+            # DevSkim: ignore DS126858 — fixture is a dependency identifier.
             suppressions.LOCKFILE_NAME_PATTERN.search("'@aws-crypto/sha1-browser@5.0.0':")
         )
         self.assertIsNotNone(
+            # DevSkim: ignore DS126858 — fixture is a dependency identifier.
             suppressions.LOCKFILE_NAME_PATTERN.search("'@smithy/md5-js@2.0.0':")
         )
         self.assertIsNone(
+            # DevSkim: ignore DS126858 — negative fixture name, not hash usage.
             suppressions.LOCKFILE_NAME_PATTERN.search("'@example/sha1-tool@2.0.0':")
         )
 
