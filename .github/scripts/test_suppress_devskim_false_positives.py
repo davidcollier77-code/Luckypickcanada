@@ -114,15 +114,15 @@ class MetadataSuppressionTests(unittest.TestCase):
 
     def test_only_known_lockfile_dependency_names_match(self):
         self.assertIsNotNone(
-            # DevSkim: ignore DS126858 — fixture is a dependency identifier.
+            # DevSkim: ignore DS126858
             suppressions.LOCKFILE_NAME_PATTERN.search("'@aws-crypto/sha1-browser@5.0.0':")
         )
         self.assertIsNotNone(
-            # DevSkim: ignore DS126858 — fixture is a dependency identifier.
+            # DevSkim: ignore DS126858
             suppressions.LOCKFILE_NAME_PATTERN.search("'@smithy/md5-js@2.0.0':")
         )
         self.assertIsNone(
-            # DevSkim: ignore DS126858 — negative fixture name, not hash usage.
+            # DevSkim: ignore DS126858
             suppressions.LOCKFILE_NAME_PATTERN.search("'@example/sha1-tool@2.0.0':")
         )
 
@@ -196,6 +196,7 @@ class ArtifactPathTests(unittest.TestCase):
     def test_lockfile_package_is_matched_from_source_line_not_sarif_slice(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+            # DevSkim: ignore DS126858
             lockfile_line = "  '@aws-crypto/sha1-browser@5.0.0': {}"
             (root / "pnpm-lock.yaml").write_text(lockfile_line + "\n", encoding="utf-8")
             data = {
@@ -205,6 +206,7 @@ class ArtifactPathTests(unittest.TestCase):
                         "locations": [{
                             "physicalLocation": {
                                 "artifactLocation": {"uri": "pnpm-lock.yaml"},
+                                # DevSkim: ignore DS126858
                                 "region": {"startLine": 1, "snippet": {"text": "sha1"}},
                             }
                         }],
