@@ -68,7 +68,7 @@ describe('Gift email link security', () => {
     );
     // Static source check only: this matches the route email template, not rendered HTML.
     // DevSkim: ignore DS610000
-    const anchor = routeSource.match(/<a href="\${revealUrl}" target="_blank"[^>]*>/);
+    const anchor = routeSource.match(/<a href="\$\{revealUrl\}" target="_blank"[^>]*>/);
 
     expect(anchor).not.toBeNull();
     expect(anchor[0]).toContain('rel="noopener noreferrer"');
