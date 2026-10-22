@@ -1,0 +1,25 @@
+name: Verify Updater Dispatch Token
+
+run-name: "Updater dispatch token canary — ${{ inputs.probe_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      probe_id:
+        description: Unique identifier supplied by the deployment preflight
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    name: Confirm workflow-dispatch capability
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Confirm harmless dispatch was accepted
+        env:
+          PROBE_ID: ${{ inputs.probe_id }}
+        run: echo "Updater dispatch canary $PROBE_ID completed; no production updater was run."

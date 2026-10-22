@@ -92,3 +92,57 @@ Follow-up changes are limited to the existing security-remediation PR, the suppr
 - `PR_SUMMARY.md`
 
 **Verification status:** Pending fresh CI on the follow-up commit. The Python regression suite, DevSkim scan and SARIF upload, `./jules-verify.sh`, and current-head build/size checks must be observed before this follow-up is called verified. The previous run results recorded above are evidence for the earlier implementation revision only and are not being reused as current-head passes. No local shell execution is claimed. PR #1558 remains open and unmerged.
+
+## Updater Scheduler Cutover Preparation — PR #1559
+
+### 1. Task group
+**Selected group:** troubleshooting.  
+**Reason:** Correct issues found during review of the staged Cloudflare updater scheduler, while protecting existing scheduled updater runs until external prerequisites are confirmed.
+
+### 2. Repository rules and routed documents
+- `AGENTS.md`: USED=YES, USEFUL=YES — protected-system authorization, no-secret policy, task sequencing, and verification/reporting requirements.
+- `.jules/jules.md`: USED=YES, USEFUL=YES — one feature/branch/PR and sequential Spec Kit stages.
+- `.jules/troubleshooting.md`: USED=YES, USEFUL=YES — focused diagnosis and regression testing.
+- `.docs/manifest.json`: USED=YES, USEFUL=YES — task-group routing.
+- `.docs/troubleshooting/jules_google_docs.md`, `.docs/troubleshooting/_google-gemini_gemini-cli.md`, `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md`: USED=YES, USEFUL=NO — required routed snapshots consulted; they did not materially change the implementation.
+- Spec Kit command definitions `.jules/cmds/speckit.specify.md`, `.jules/cmds/speckit.plan.md`, `.jules/cmds/speckit.tasks.md`, and `.jules/cmds/speckit.implement.md`: USED=YES, USEFUL=YES — file-driven procedures used to prepare feature-specific spec, plan, tasks, and checklist. No `.specify/extensions.yml` exists at the repository root, so extension hooks were not present.
+
+### 3. Review findings and fixes
+1. **Canary was accepted but not verified** — fixed. The enabled-deployment preflight now assigns a unique probe ID, dispatches the harmless canary, locates that exact run by display title, polls its result, and blocks deployment unless that run concludes successfully. Missing run, failed conclusion, or timeout blocks deployment.
+2. **A committed enabled flag could activate on merge** — fixed for this preparation PR. `wrangler.toml` is back to `DISPATCH_ENABLED = "false"`; the existing native schedules are preserved. A later activation change requires externally verified quota and token permissions.
+3. **Friday target mapping did not assert workflow filename** — fixed. Friday test rows now include the intended workflow filename and assert `target.workflow` for each date/slot.
+4. **Stale `github.event.schedule` in run-name** — fixed. Documentation workflow run-name now uses `github.event_name`.
+5. **CodeRabbit path filter omitted both updater workflows** — fixed. The deploy/verify PR path filter includes `update-spec-kit.yml`, `refresh-docs.yml`, and the canary workflow.
+
+### 4. Current preparation behavior
+- `workers/updater-scheduler/wrangler.toml`: Worker remains disabled by default.
+- Both existing GitHub updater workflows retain their native schedules and manual `workflow_dispatch`.
+- Both updater jobs contain an explicit handoff gate: native schedule events continue unless `UPDATER_SCHEDULER_ACTIVE` is exactly `true`; manual runs remain available.
+- The actual cutover is deliberately **not activated in this PR**. For a separate activation, first confirm at least two Cloudflare cron slots and Actions read/write token permission, enable/deploy the Worker with the verified canary, then set `UPDATER_SCHEDULER_ACTIVE=true` before the next target slot. Rollback is to reset that variable to false/remove it and disable Worker dispatch.
+
+### 5. Files changed
+- `.github/workflows/deploy-updater-scheduler.yml`
+- `.github/workflows/refresh-docs.yml`
+- `.github/workflows/update-spec-kit.yml`
+- `.github/workflows/verify-updater-dispatch-token.yml`
+- `.specify/features/036-updater-scheduler-cutover/checklists/requirements.md`
+- `.specify/features/036-updater-scheduler-cutover/plan.md`
+- `.specify/features/036-updater-scheduler-cutover/spec.md`
+- `.specify/features/036-updater-scheduler-cutover/tasks.md`
+- `PR_SUMMARY.md`
+- `memory-bank/activeContext.md`
+- `workers/updater-scheduler/README.md`
+- `workers/updater-scheduler/test/index.node-test.mjs`
+- `workers/updater-scheduler/wrangler.toml`
+
+### 6. Verification status
+- Node tests: NOT RUN locally; connected shell is unavailable. Current-head CI must verify the complete suite including the new assertions.
+- `./jules-verify.sh`: NOT RUN locally; current-head PR CI pending.
+- Wrangler dry run: NOT RUN locally; current-head PR CI pending.
+- Canary workflow result: not manually triggered. It runs automatically only when a future enabled deployment is attempted; production updater workflows are not dispatched as a test.
+- Cloudflare cron quota, current token permissions, and first natural Worker dispatch: external acceptance checks not yet verified.
+- Scope review: no application runtime or credential values were changed.
+
+### 7. Useful result
+**USEFUL RESULT: YES for review remediation; NO for live cutover.** The review findings are addressed in the branch, while production automatic scheduling remains on the existing GitHub workflows until the separately gated activation is verified.
+

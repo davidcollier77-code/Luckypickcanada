@@ -3,7 +3,7 @@ main = "src/index.mjs"
 compatibility_date = "2026-10-20"
 workers_dev = false
 
-# SAFE BY DEFAULT: deploy inactive, then complete the documented cutover before enabling.
+# SAFE DEFAULT: keep the Worker disabled until quota and token permissions are confirmed, then complete the final cutover.
 [vars]
 GITHUB_OWNER = "davidcollier77-code"
 GITHUB_REPO = "Luckypickcanada"

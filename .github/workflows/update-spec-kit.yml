@@ -16,6 +16,8 @@ permissions:
 
 jobs:
   update-spec-kit:
+    # Keep native schedules active while the Cloudflare cutover is not approved.
+    if: github.event_name != 'schedule' || vars.UPDATER_SCHEDULER_ACTIVE != 'true'
     runs-on: ubuntu-latest
 
     steps:

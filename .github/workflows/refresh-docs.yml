@@ -1,27 +1,19 @@
 name: Refresh Documentation
 
-run-name: Refresh Documentation — ${{ github.event.schedule || 'manual' }}
+run-name: Refresh Documentation — ${{ github.event_name }}
 
 on:
+  # Keep native schedules until the Worker is deployed and its first dispatch is verified.
   schedule:
     # Primary refresh: 2:21 AM Atlantic local time every Tuesday and Friday.
-    # GitHub handles America/Halifax daylight saving time automatically.
     - cron: '21 2 * * 2,5'
       timezone: 'America/Halifax'
-
     # Backup refresh: 6:21 AM Atlantic local time every Tuesday and Friday.
-    # Provides a second independent opportunity if the 2:21 AM scheduled run
-    # was delayed, missed, or otherwise did not complete.
     - cron: '21 6 * * 2,5'
       timezone: 'America/Halifax'
-
     # Recovery refresh: 10:21 AM Atlantic local time every Tuesday and Friday.
-    # Gives the schedule path another opportunity when GitHub delivers earlier
-    # scheduled events late or drops a queued event during heavy Actions load.
     - cron: '21 10 * * 2,5'
       timezone: 'America/Halifax'
-
-  # Manual escape hatch for an immediate refresh.
   workflow_dispatch:
 
 concurrency:
@@ -35,15 +27,15 @@ permissions:
 
 jobs:
   refresh:
+    # Keep native schedules active until the Worker is deployed and its first dispatch is verified.
+    if: github.event_name != 'schedule' || vars.UPDATER_SCHEDULER_ACTIVE != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
       - name: Record Trigger Timing
-        env:
-          SCHEDULE_CRON: ${{ github.event.schedule || 'manual' }}
         run: |
-          echo "Trigger schedule: $SCHEDULE_CRON"
+          echo "Trigger kind: ${GITHUB_EVENT_NAME}"
           echo "Runner UTC: $(date -u --iso-8601=seconds)"
           echo "Atlantic time: $(TZ=America/Halifax date --iso-8601=seconds)"
 
