@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Conservatively filter verified DevSkim false positives from SARIF."""
 
+import base64
 import json
 import os
 import re
@@ -39,6 +40,9 @@ LOCKFILE_NAME_PATTERN = re.compile(
     + re.escape(SMITHY_LOCKFILE_PACKAGE)
     + r")(?![A-Za-z0-9/_-])",
     re.IGNORECASE,
+)
+SHA512_INTEGRITY_PATTERN = re.compile(
+    r"\bintegrity:\s*sha512-(?P<digest>[A-Za-z0-9+/]+={0,2})(?=[,\s}]|$)"
 )
 
 
@@ -160,6 +164,38 @@ def _source_line_for_region(region: dict, safe_path: Path) -> str:
     return ""
 
 
+def should_suppress_sha512_integrity_finding(source_line: str, region: dict) -> bool:
+    """Suppress a hash-name substring only when it is inside a valid SHA-512 SRI digest."""
+    start_column = region.get("startColumn")
+    end_column = region.get("endColumn")
+    if (
+        not isinstance(start_column, int)
+        or isinstance(start_column, bool)
+        or not isinstance(end_column, int)
+        or isinstance(end_column, bool)
+        or start_column < 1
+        or end_column <= start_column
+    ):
+        return False
+
+    # SARIF columns are 1-based and endColumn is exclusive.
+    finding_start = start_column - 1
+    finding_end = end_column - 1
+    for match in SHA512_INTEGRITY_PATTERN.finditer(source_line):
+        digest = match.group("digest")
+        try:
+            decoded = base64.b64decode(digest, validate=True)
+        except (ValueError, base64.binascii.Error):
+            continue
+        # Integrity metadata must be a canonical base64-encoded 64-byte digest.
+        if len(decoded) != 64 or base64.b64encode(decoded).decode("ascii") != digest:
+            continue
+        digest_start, digest_end = match.span("digest")
+        if finding_start >= digest_start and finding_end <= digest_end:
+            return True
+    return False
+
+
 def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
     """Add suppressions only to narrowly validated metadata/dependency findings."""
     suppression_count = 0
@@ -209,6 +245,11 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "False positive: this finding is in a specifically allowlisted "
                     "dependency package name, not a weak-hash implementation."
                 )
+            elif rule_id == "DS126858" and should_suppress_sha512_integrity_finding(snippet, region):
+                justification = (
+                    "False positive: the reported substring is inside a valid, canonical "
+                    "SHA-512 package-integrity digest, not a hash algorithm invocation."
+                )
 
             if justification:
                 suppressions = result.setdefault("suppressions", [])
@@ -222,6 +263,47 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     suppression_count += 1
 
     return suppression_count
+
+
+VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS = frozenset({
+    (
+        "False positive: a complete SHA/UUID value in an explicitly "
+        "allowlisted metadata field overlaps the reported finding."
+    ),
+    (
+        "False positive: this finding is in a specifically allowlisted "
+        "dependency package name, not a weak-hash implementation."
+    ),
+    (
+        "False positive: the reported substring is inside a valid, canonical "
+        "SHA-512 package-integrity digest, not a hash algorithm invocation."
+    ),
+})
+
+
+def remove_verified_false_positive_results(data: dict) -> int:
+    """Keep verified suppressions out of uploaded SARIF; GitHub still alerts on suppressed SARIF results."""
+    removed = 0
+    for run in data.get("runs", []):
+        results = run.get("results", [])
+        if not isinstance(results, list):
+            continue
+
+        retained = []
+        for result in results:
+            suppressions = result.get("suppressions", []) if isinstance(result, dict) else []
+            is_verified_false_positive = any(
+                isinstance(item, dict)
+                and item.get("kind") == "external"
+                and item.get("justification") in VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS
+                for item in suppressions
+            )
+            if is_verified_false_positive:
+                removed += 1
+            else:
+                retained.append(result)
+        run["results"] = retained
+    return removed
 
 
 def _atomic_write_json(path: Path, data: dict) -> None:
@@ -255,6 +337,10 @@ def suppress_sarif(sarif_path: Path = SARIF_FILE, workspace: Path = WORKSPACE_RO
         raise ValueError("SARIF root must be a JSON object")
 
     suppression_count = process_sarif(data, workspace)
+    # GitHub Code Scanning does not treat SARIF suppression metadata as a
+    # dismissed alert. Exclude only findings carrying this helper's exact,
+    # reviewed false-positive justifications from the upload.
+    remove_verified_false_positive_results(data)
     _atomic_write_json(sarif_path, data)
     return suppression_count
 
