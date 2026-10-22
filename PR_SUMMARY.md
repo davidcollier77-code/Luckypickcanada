@@ -1,70 +1,79 @@
-# PR Summary — Guarded Updater Scheduler Activation
+# PR Summary — Bundle Updater Dispatch Secret Into Worker Deployment
 
 ## 1. Selected Task Group
+
 **Selected group:** troubleshooting  
-**Reason:** Complete the already-prepared Cloudflare scheduler handoff by enabling the checked-in Worker flag, aligning its test and operations guidance, and preserving the guarded GitHub dispatch preflight.
+**Reason:** Repair a verified Cloudflare deployment failure in the guarded updater scheduler workflow.
 
 ## 2. Governance and Routed Resources
-- `AGENTS.md` — USED=YES; USEFUL=YES. Required source of repository scope, protected deployment authorization, sequential Spec Kit, verification, and reporting rules.
-- `.jules/jules.md` — USED=YES; USEFUL=YES. Confirmed initialization, one-task/one-PR discipline, and honest evidence reporting.
-- `.jules/troubleshooting.md` — USED=YES; USEFUL=YES. Routed troubleshooting workflow and testing requirement.
-- `.docs/manifest.json` — USED=YES; USEFUL=YES. Verified the task's routed documentation group.
-- `.docs/troubleshooting/jules_google_docs.md` — USED=YES; USEFUL=NO. Mandatory routed standing resource; no implementation detail changed the decision.
-- `.docs/troubleshooting/developers_google_com_jules_api.md` — USED=YES; USEFUL=NO. Mandatory routed standing resource; no API interaction was needed.
-- `.docs/troubleshooting/_google-gemini_gemini-cli.md` — USED=YES; USEFUL=NO. Mandatory routed standing resource; no CLI integration was needed.
-- `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md` — USED=YES; USEFUL=NO. Mandatory routed standing resource; no Gemini API integration was needed.
-- `.docs/troubleshooting/_github_docs.md` — USED=YES; USEFUL=YES. Confirmed GitHub Actions is the workflow automation surface; relevant history and permissions evidence were obtained from the repository's actual workflow and deployment records.
-- `.docs/troubleshooting/_cloudflare_workers-sdk.md` — USED=YES; USEFUL=NO. Inspected the routed local Wrangler snapshot; the relevant behavior was verified from the deployed workflow logs and checked-in configuration.
-- `.specify/memory/constitution.md` — USED=YES; USEFUL=YES. Required plan gate and implementation sequence.
-- Controlled Context7 libraries — USED=NO; USEFUL=NO. No Context7 access or additional MCP invocation was required or authorized.
+
+- AGENTS.md — USED=YES; USEFUL=YES. Defined repository governance, protected deployment scope, verification, PR summary, and 495 MiB hard-cap requirements.
+- .jules/jules.md — USED=YES; USEFUL=YES. Enforced one task/branch/PR and honest evidence reporting.
+- memory-bank/projectBrief.md — USED=YES; USEFUL=NO. Stable project identity; no scope change.
+- memory-bank/activeContext.md — USED=YES; USEFUL=YES. Captured the current scheduler activation state and failure.
+- .jules/troubleshooting.md — USED=YES; USEFUL=YES. Required diagnosis and test coverage.
+- .docs/manifest.json — USED=YES; USEFUL=YES. Confirmed task-group resource routing.
+- .docs/troubleshooting/jules_google_docs.md — USED=YES; USEFUL=NO. Required standing resource; no implementation decision depended on it.
+- .docs/troubleshooting/developers_google_com_jules_api.md — USED=YES; USEFUL=NO. Required standing resource; no Jules API task was needed.
+- .docs/troubleshooting/_google-gemini_gemini-cli.md — USED=YES; USEFUL=NO. Required standing resource; no Gemini CLI integration was needed.
+- .docs/troubleshooting/_websites_ai_google_dev_gemini-api.md — USED=YES; USEFUL=NO. Required standing resource; no Gemini API integration was needed.
+- .docs/troubleshooting/_github_docs.md — USED=YES; USEFUL=YES. Helped confirm the repository's workflow/CI context.
+- .docs/troubleshooting/_cloudflare_workers-sdk.md — USED=YES; USEFUL=YES. Checked routed Wrangler material; exact failure was confirmed in deployment logs.
+- .specify/memory/constitution.md — USED=YES; USEFUL=YES. Reaffirmed inspect/plan/implement/test/double-check sequence.
+- Cloudflare official Secrets and Wrangler command documentation — USED=YES; USEFUL=YES. Confirms Wrangler deploy --secrets-file deploys secrets alongside Worker code, while Wrangler secret put creates/deploys a separate version. Sources: https://developers.cloudflare.com/workers/configuration/secrets/ and https://developers.cloudflare.com/workers/wrangler/commands/workers/
+- Wrangler — version pinned in package.json: 4.141.0; deployment log confirms that version was used. No new dependency.
+- Context7/other MCP library lookups — USED=NO; USEFUL=NO. Not required.
 
 ## 3. Spec Kit Stages
-This connected GitHub interface did not provide a repository shell or native Spec Kit command dispatch, so each command definition was followed using file-driven procedural execution. No claim is made that the literal CLI commands or hooks ran.
 
-1. **/speckit.specify** — DEFINITION: `.jules/cmds/speckit.specify.md`; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: completed. Artifacts: `.specify/features/037-updater-scheduler-activation/spec.md`, `.specify/features/037-updater-scheduler-activation/checklists/requirements.md`.
-2. **/speckit.plan** — DEFINITION: `.jules/cmds/speckit.plan.md`; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: completed. Artifact: `.specify/features/037-updater-scheduler-activation/plan.md`.
-3. **/speckit.tasks** — DEFINITION: `.jules/cmds/speckit.tasks.md`; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: completed. Artifact: `.specify/features/037-updater-scheduler-activation/tasks.md`.
-4. **/speckit.implement** — DEFINITION: `.jules/cmds/speckit.implement.md`; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: changes prepared; current-head CI and post-merge deployment verification remain pending. Artifacts: the files listed in Section 5.
+This connected GitHub interface does not provide a repository shell or native Spec Kit command dispatch. The four definitions were followed as file-driven procedural execution; literal CLI commands and extension hooks are not claimed as executed.
 
-The checkout-local `.specify/feature.json` was not committed, as required by `AGENTS.md`.
+1. **/speckit.specify** — definition .jules/cmds/speckit.specify.md; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: completed. Artifacts: .specify/features/038-updater-scheduler-secret-bundling/spec.md and .specify/features/038-updater-scheduler-secret-bundling/checklists/requirements.md.
+2. **/speckit.plan** — definition .jules/cmds/speckit.plan.md; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: completed. Artifact: .specify/features/038-updater-scheduler-secret-bundling/plan.md.
+3. **/speckit.tasks** — definition .jules/cmds/speckit.tasks.md; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: completed. Artifact: .specify/features/038-updater-scheduler-secret-bundling/tasks.md.
+4. **/speckit.implement** — definition .jules/cmds/speckit.implement.md; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: implementation prepared; current-head CI/deployment verification pending. Artifacts: exact changed files below.
 
-## 4. Verified Baseline and Reason for Change
-- PR #1559 (`chore(automation): prepare guarded updater scheduler handoff`) was merged on 2026-10-22.
-- Deployment run [#62](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39788165939) completed successfully and installed both Cloudflare Cron Trigger entries.
-- The deployment log confirms that `GITHUB_TOKEN` was uploaded to Worker secret storage.
-- The same deployment log explicitly says the canary preflight was skipped because checked-in `wrangler.toml` still specified `DISPATCH_ENABLED = "false"`.
-- User-provided GitHub Settings screenshots show repository secret `UPDATER_DISPATCH_TOKEN` exists (last updated two days ago); the secret value was not viewed or copied.
-- User-provided Cloudflare screenshot shows Production `DISPATCH_ENABLED` set to the exact string `"true"`.
-- Before this branch, checked-in `workers/updater-scheduler/wrangler.toml` still said `"false"`, so a Wrangler deployment would not preserve the dashboard's desired setting.
+The local checkout state .specify/feature.json was not committed.
+
+## 4. Verified Failure and Fix
+
+- **VERIFIED:** The rerun's GitHub no-op canary completed successfully as run [#39804841516](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/39804841516). This proves the new UPDATER_DISPATCH_TOKEN works for dispatching and observing this harmless canary.
+- **VERIFIED:** The subsequent Cloudflare secret update failed because the latest Worker version was not currently deployed. The actual Worker deployment step was skipped.
+- **Fix:** Remove the separate pre-deployment Wrangler secret-put operation. For enabled configuration, create a mode-0600 temporary JSON secrets file under runner temporary storage, pass it to Wrangler deploy --secrets-file, and remove it on exit. This deploys the Worker code and secret together. For disabled configuration, deploy without a dispatch token.
+- **Guard preserved:** The enabled deployment still runs only after successful no-op canary validation. The canary does not run either production updater.
+- **Activation variable:** The repository owner confirmed UPDATER_SCHEDULER_ACTIVE=true already. This PR does not change it.
 
 ## 5. Exact Files Changed
-1. `.specify/features/037-updater-scheduler-activation/spec.md`
-2. `.specify/features/037-updater-scheduler-activation/checklists/requirements.md`
-3. `.specify/features/037-updater-scheduler-activation/plan.md`
-4. `.specify/features/037-updater-scheduler-activation/tasks.md`
-5. `workers/updater-scheduler/wrangler.toml` — set `DISPATCH_ENABLED = "true"`; clarified that the enabled deployment must pass the no-op canary preflight.
-6. `workers/updater-scheduler/test/index.node-test.mjs` — align the configuration assertion and test description with the enabled config while retaining both native schedules and the explicit handoff guard.
-7. `workers/updater-scheduler/README.md` — document the activation sequence, secret-permission canary, deliberate native-schedule handoff, and rollback.
-8. `PR_SUMMARY.md` — this evidence record.
-9. `memory-bank/activeContext.md` — current activation branch and remaining acceptance gates.
 
-No secret values, application routes, user-facing visuals, dependencies, or updater execution logic were changed. The updater workflow schedules and manual `workflow_dispatch` entries remain intact. The repository variable `UPDATER_SCHEDULER_ACTIVE` was not changed by this branch.
+1. .github/workflows/deploy-updater-scheduler.yml — atomically deploy enabled Worker code and secret; avoid failing secret-only mutation.
+2. workers/updater-scheduler/test/index.node-test.mjs — regression assertion for canary-before-deploy order and same-operation secret bundling.
+3. workers/updater-scheduler/README.md — document temporary file, bundled deployment, and cleanup.
+4. .specify/features/038-updater-scheduler-secret-bundling/spec.md
+5. .specify/features/038-updater-scheduler-secret-bundling/plan.md
+6. .specify/features/038-updater-scheduler-secret-bundling/tasks.md
+7. .specify/features/038-updater-scheduler-secret-bundling/checklists/requirements.md
+8. PR_SUMMARY.md — canonical evidence record.
+9. memory-bank/activeContext.md — current state and safe next steps.
 
-## 6. Verification
-- **Repository/source inspection:** PASS. Read current `AGENTS.md`, the current `main` configuration, test, README, deploy workflow, both updater workflow definitions, Worker dispatch mapping, and the successful deployment job logs.
-- **Secret name existence:** PASS. Verified by the user's GitHub Settings screenshot. Token value and actual permission assignment: NOT VERIFIED.
-- **Prior deployment run #62:** PASS for the disabled deployment and secret synchronization; the canary step was intentionally skipped because the source flag was false. This is not canary evidence for the activation.
-- **Local Node tests:** NOT RUN in this connected GitHub interface; no repository shell was available.
-- **`./jules-verify.sh`:** NOT RUN locally.
-- **Wrangler dry run:** NOT RUN locally.
-- **Current-head PR CI:** PENDING; must supply the actual results for the scheduler tests, governance gate, and Wrangler dry run.
-- **Post-merge no-op canary and enabled Worker deployment:** PENDING; the existing main-branch deployment workflow is designed to block deployment if the exact canary does not complete successfully.
-- **`UPDATER_SCHEDULER_ACTIVE=true` and first natural dispatch:** PENDING; perform only after successful enabled deployment/canary, before the next approved target, then verify Cloudflare logs and the matching GitHub Actions run.
-- **Second error check:** Scope remains limited to the nine files above; no secret value or unrelated app changes were introduced. Remote diff and CI must still be checked before considering the change verified.
+No application routes, frontend visuals, cron schedule mapping, native updater schedule triggers, dependencies, credential values, or repository variables are changed.
+
+## 6. Verification Status
+
+- **Failed-run log review:** PASS; confirmed exact Cloudflare error and that deployment was skipped.
+- **GitHub token canary:** PASS; run #39804841516 completed successfully. This proves the harmless canary only, not successful production updater dispatch.
+- **Cloudflare documentation check:** PASS; confirms --secrets-file supports deploying secrets alongside Worker code.
+- **Regression test added:** YES; current-head execution is pending.
+- **Local Node tests:** NOT RUN; the connected interface has no repository shell.
+- **./jules-verify.sh:** NOT RUN locally; current-head PR CI must run it.
+- **Wrangler dry run:** NOT RUN locally; current-head PR CI must run it.
+- **Current-head PR CI:** PENDING.
+- **Enabled Worker deployment:** PENDING; this fix is not merged.
+- **First natural Worker dispatch and matching GitHub Actions run:** PENDING.
+- **Build-size hard cap:** No new application build ran for this focused Worker workflow fix; no build-pass claim is made. Scheduler CI must run the repository-required checks for this path.
+- **Second error check:** Pending review of the complete PR diff and current-head CI; no secret values are included in committed artifacts.
 
 ## 7. Remaining Issues / Stop-Go
-- Do not claim that the GitHub dispatch token's Actions read/write permissions are proven merely because the secret exists.
-- Do not mark activation complete based on PR checks alone. Post-merge canary, enabled deployment, handoff variable, and first natural dispatch are separate evidence gates.
-- No merge or manual production updater dispatch was performed.
 
-**USEFUL RESULT: NO** — the configuration and regression/docs are prepared, but current-head CI and the guarded post-merge canary/deployment have not yet provided end-to-end activation evidence.
+Do not call the scheduler healthy until current-head PR checks pass, the guarded main-branch deployment succeeds, and the first natural scheduled dispatch plus matching GitHub Actions run are verified. Do not modify UPDATER_SCHEDULER_ACTIVE=true as part of this fix.
+
+**USEFUL RESULT: NO** — the focused repair and regression guard are prepared; CI and live deployment evidence remain pending.
