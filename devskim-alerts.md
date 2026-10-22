@@ -117,3 +117,9 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **ERROR — DS173237** — `.docs/manifest.json:429` — Do not store tokens or keys in source code. <!-- devskim-id:136365367baef884a424 -->
 - **ERROR — DS173237** — `.docs/manifest.json:428` — Do not store tokens or keys in source code. <!-- devskim-id:14a89e60fa1610cfeff4 -->
 - **NOTE — DS162092** — `app/api/oracle/route.js:9` — Do not leave debug code in production <!-- devskim-id:703e9b5bcaebb3ff8c4b -->
+
+- **NOTE — DS610000** — `__tests__/security-payment.test.js:71` — HTML link missing noopener or noreferrer <!-- devskim-id:2f49eddb79a4ab71da57 -->
+- **ERROR — DS173237** — `workers/jules-bridge/src/index.js:5` — Do not store tokens or keys in source code. <!-- devskim-id:600a973f7bf6c88573b4 -->
+- **NOTE — DS172411** — `app/api/oracle/route.js:136` — Review setTimeout for untrusted data <!-- devskim-id:0e2c2596d686c28b358e -->
+- **NOTE — DS162092** — `app/api/oracle/route.js:10` — Do not leave debug code in production <!-- devskim-id:47227852867c169b6018 -->
+- **NOTE — DS162092** — `functions/api/oracle.js:7` — Do not leave debug code in production <!-- devskim-id:1a9d7b7dfc19eee475f1 -->
