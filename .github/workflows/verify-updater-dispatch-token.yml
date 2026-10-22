@@ -1,0 +1,16 @@
+name: Verify Updater Dispatch Token
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    name: Confirm workflow-dispatch capability
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Confirm harmless dispatch was accepted
+        run: echo "Updater dispatch token can start a workflow; no production updater was run."
