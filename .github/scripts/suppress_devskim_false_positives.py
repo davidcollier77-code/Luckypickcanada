@@ -104,7 +104,6 @@ def should_suppress_metadata_finding(snippet: str, region: dict) -> bool:
         if not _is_complete_safe_value(key_name, value):
             continue
 
-        value_group = "string" if field.group("string") is not None else "bare"
         safe_fields.append((field.span("value"), field))
 
     start_column = region.get("startColumn")
