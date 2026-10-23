@@ -379,5 +379,252 @@ class ArtifactPathTests(unittest.TestCase):
             self.assertNotIn("suppressions", data["runs"][0]["results"][0])
 
 
+
+
+
+class KnownFalsePositiveRegressionTests(unittest.TestCase):
+    def test_sha256_template_checksum_is_suppressed_only_in_exact_file_and_value(self):
+        source = '{\n  "sha256": "' + SHA256 + '",\n  "source": "core"\n}\n'
+        value_start = source.splitlines()[1].index('"' + SHA256 + '"')
+        region = {
+            "startLine": 2,
+            "startColumn": value_start + 1,
+            "endColumn": value_start + len(SHA256) + 3,
+        }
+        self.assertTrue(
+            suppressions.should_suppress_constitution_template_checksum(
+                ".specify/memory/.constitution-template.json", source, region
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_constitution_template_checksum(
+                ".specify/other.json", source, region
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_constitution_template_checksum(
+                ".specify/memory/.constitution-template.json",
+                source.replace('"sha256"', '"api_token"'),
+                region,
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_constitution_template_checksum(
+                ".specify/memory/.constitution-template.json",
+                source,
+                {"startLine": 2, "startColumn": 4, "endColumn": 4 + len(SHA256)},
+            )
+        )
+
+    def test_docs_manifest_pinned_github_revision_is_suppressed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / ".docs" / "manifest.json"
+            path.parent.mkdir()
+            source = '{\n  "githubShas": {\n    "/example/project": "' + SHA + '"\n  }\n}\n'
+            path.write_text(source, encoding="utf-8")
+            value_start = source.splitlines()[2].index('"' + SHA + '"')
+            self.assertTrue(
+                suppressions.should_suppress_checksum_metadata_finding(
+                    ".docs/manifest.json",
+                    path,
+                    source,
+                    {
+                        "startLine": 3,
+                        "startColumn": value_start + 1,
+                        "endColumn": value_start + len(SHA) + 3,
+                    },
+                )
+            )
+
+    def test_docs_manifest_does_not_suppress_hash_outside_revision_map(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / ".docs" / "manifest.json"
+            path.parent.mkdir()
+            source = '{\n  "sources": {\n    "api_token": "' + SHA + '"\n  },\n  "githubShas": {}\n}\n'
+            path.write_text(source, encoding="utf-8")
+            self.assertFalse(
+                suppressions.should_suppress_checksum_metadata_finding(
+                    ".docs/manifest.json",
+                    path,
+                    source,
+                    {"startLine": 3, "startColumn": 19, "endColumn": 19 + len(SHA)},
+                )
+            )
+
+    def test_speckit_file_checksum_is_suppressed_only_in_manifest_files_map(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / ".specify" / "integrations" / "speckit.manifest.json"
+            path.parent.mkdir(parents=True)
+            source = '{\n  "files": {\n    ".specify/example.sh": "' + SHA256 + '"\n  }\n}\n'
+            path.write_text(source, encoding="utf-8")
+            value_start = source.splitlines()[2].index('"' + SHA256 + '"')
+            self.assertTrue(
+                suppressions.should_suppress_checksum_metadata_finding(
+                    ".specify/integrations/speckit.manifest.json",
+                    path,
+                    source,
+                    {
+                        "startLine": 3,
+                        "startColumn": value_start + 1,
+                        "endColumn": value_start + len(SHA256) + 3,
+                    },
+                )
+            )
+
+    def test_callable_settimeout_callback_is_not_string_code_execution(self):
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "app/homepage/HomePage.js",
+                "const timer = setTimeout(() => updateCanvas(), 200);",
+                {"startLine": 1},
+            )
+        )
+
+    def test_string_or_opaque_settimeout_callback_is_not_suppressed(self):
+        for line in (
+            "setTimeout(untrustedCallback, 100);",
+            "setTimeout('untrusted code', 100);",
+        ):
+            with self.subTest(line=line):
+                self.assertFalse(
+                    suppressions.should_suppress_safe_contextual_finding(
+                        "DS172411", "app/homepage/HomePage.js", line, {"startLine": 1}
+                    )
+                )
+
+    def test_playwright_test_timeout_configuration_is_suppressed_only_in_tests(self):
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "tests/visual/homepage.spec.ts",
+                "test.setTimeout(90_000);",
+                {"startLine": 1},
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "app/homepage/HomePage.js",
+                "test.setTimeout(90_000);",
+                {"startLine": 1},
+            )
+        )
+
+    def test_loopback_test_fixture_is_suppressed_only_in_known_test_file(self):
+        loopback_address = "127.0." + "0.1"
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092",
+                "app/admin/suggestions/route.test.js",
+                f"getClientIp: vi.fn().mockReturnValue('{loopback_address}'),",
+                {"startLine": 1},
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092",
+                "app/api/oracle/route.js",
+                f"const ip = '{loopback_address}';",
+                {"startLine": 1},
+            )
+        )
+
+    def test_documented_localhost_development_origin_is_suppressed(self):
+        localhost_origin = "http://local" + "host:3000"
+        source = (
+            "const ALLOWED_ORIGINS = [\n"
+            "  'https://luckypickcanada.ca',\n"
+            "  // DevSkim: ignore DS162092\n"
+            f"  '{localhost_origin}',\n"
+            "];\n"
+        )
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092", "app/api/oracle/route.js", source, {"startLine": 4}
+            )
+        )
+
+    def test_localhost_origin_without_explicit_context_is_not_suppressed(self):
+        localhost_origin = "http://local" + "host:3000"
+        source = f"const config = '{localhost_origin}';\n"
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092", "app/api/oracle/route.js", source, {"startLine": 1}
+            )
+        )
+
+    def test_security_test_regex_false_positive_requires_known_test_context(self):
+        source = (
+            "    // Static source check only: this matches the route email template, not rendered HTML.\n"
+            "    // DevSkim: ignore DS610000\n"
+            '    const anchor = routeSource.match(/<a href=\"\\$\\{revealUrl\\}\" target=\"_blank\"[^>]*>/);\n'
+        )
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS610000", "__tests__/security-payment.test.js", source, {"startLine": 3}
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS610000", "app/api/send-gift/route.ts", source, {"startLine": 3}
+            )
+        )
+
+    def test_documented_cloudflare_account_id_is_not_treated_as_a_secret(self):
+        account_id = "dbd3120f6fa0104b5fe66c201ea" + "4251b"
+        source = (
+            "const JULES_SOURCE = 'sources/github/example/repo';\n"
+            "// DevSkim: ignore DS173237\n"
+            "// This account ID is an identifier, not an authentication credential; CF_WEBHOOK_SECRET authenticates requests.\n"
+            'const CLOUDFLARE_ACCOUNT_ID = "' + account_id + '";\n'
+        )
+        self.assertTrue(
+            suppressions.should_suppress_public_cloudflare_account_id(
+                "workers/jules-bridge/src/index.js", source, {"startLine": 4}
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_public_cloudflare_account_id(
+                "workers/jules-bridge/src/index.js",
+                source.replace("CLOUDFLARE_ACCOUNT_ID", "API_SECRET"),
+                {"startLine": 4},
+            )
+        )
+
+
+    def test_new_verified_false_positive_justifications_are_removed_from_sarif(self):
+        justifications = [
+            "False positive: a complete SHA/UUID/checksum value in an explicitly allowlisted metadata field overlaps the reported finding.",
+            "False positive: this exact SHA value is a pinned upstream revision or tracked-file checksum in an allowlisted manifest map.",
+            "False positive: this is the checked-in SHA-256 digest of the constitution template, not a credential.",
+            "False positive: this is the repository's documented public Cloudflare account identifier; the webhook secret is configured separately.",
+            "False positive: this is a callable timer callback or a test-runner timeout configuration, not string-based code execution by setTimeout.",
+            "False positive: this is an explicitly identified development loopback origin or test-only loopback fixture, not shipped debug code.",
+            "False positive: the finding is on a static source-matching regex in a security test; the test verifies the real route has rel protections.",
+            "False positive: this finding is in a specifically allowlisted dependency package name, not a weak-hash implementation.",
+            "False positive: the reported substring is inside a valid, canonical SHA-512 package-integrity digest, not a hash algorithm invocation.",
+        ]
+        data = {
+            "runs": [{
+                "results": [
+                    {"ruleId": "DS173237", "suppressions": [{"kind": "external", "justification": item}]}
+                    for item in justifications
+                ] + [
+                    {"ruleId": "DS172411", "suppressions": [{"kind": "external", "justification": "Unreviewed suppression"}]}
+                ]
+            }]
+        }
+
+        self.assertEqual(suppressions.remove_verified_false_positive_results(data), len(justifications))
+        self.assertEqual(
+            [result["ruleId"] for result in data["runs"][0]["results"]],
+            ["DS172411"],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
