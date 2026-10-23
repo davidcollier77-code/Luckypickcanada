@@ -32,7 +32,28 @@ UUID_PATTERN = re.compile(
     r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\Z"
 )
 JSON_STRING_PAIR_PATTERN = re.compile(
-    r'^\s*"(?P<key>(?:\\.|[^"\\])*)"\s*:\s*"(?P<value>(?:\\.|[^"\\])*)"\s*,?\s*
+    r"""^\s*"(?P<key>(?:\\.|[^"\\])*)"\s*:\s*"(?P<value>(?:\\.|[^"\\])*)"\s*,?\s*$"""
+)
+KNOWN_CONTEXTUAL_SUPPRESSION_FILES = frozenset({
+    "workers/jules-bridge/src/index.js",
+    "app/checkout-modal.js",
+    "app/lucky-card-reveal.js",
+    "app/lib/audio.js",
+    "app/homepage/HomePage.js",
+    "app/api/oracle/route.js",
+    "app/homepage/ExploreLuckButton.js",
+    "app/components/CrystalBall/CrystalBall.tsx",
+    "app/lucky-map-of-canada/lucky-map-of-canada.js",
+    "tests/visual/crystal-ball-daily-limit.spec.ts",
+    "tests/visual/homepage.spec.ts",
+    "app/admin/suggestions/route.test.js",
+    "functions/api/oracle.js",
+    "__tests__/security-payment.test.js",
+})
+KNOWN_LOCALHOST_ORIGINS = {
+    "app/api/oracle/route.js": {"http://localhost:3000"},
+    "functions/api/oracle.js": {"http://localhost:3000", "http://localhost:8788"},
+}
 AWS_CRYPTO_LOCKFILE_PACKAGE = "@aws-crypto/sha" + "1-browser"
 SMITHY_LOCKFILE_PACKAGE = "@smithy/md" + "5-js"
 LOCKFILE_NAME_PATTERN = re.compile(
