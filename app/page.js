@@ -1,8 +1,11 @@
+import { preload } from 'react-dom';
 import HomePage from './homepage/HomePage';
 import Hero from './homepage/Hero';
 
 export const dynamic = 'force-static';
 
+const TURNSTILE_SCRIPT_URL =
+  'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit';
 
 /**
  * Composes the static homepage with its sky backdrop, hero, interactive content,
@@ -11,13 +14,12 @@ export const dynamic = 'force-static';
  * @returns {import('react').ReactElement} The complete homepage.
  */
 export default function Page() {
+  // Emit the resource hint during server rendering so React places it in <head>.
+  // Keep this URL identical to the pinned Turnstile wrapper's injected script URL.
+  preload(TURNSTILE_SCRIPT_URL, { as: 'script' });
+
   return (
     <>
-      <link
-        rel="preload"
-        as="script"
-        href="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit"
-      />
       <div className="homepage-sky-backdrop" aria-hidden="true" />
       <Hero />
       <HomePage />
