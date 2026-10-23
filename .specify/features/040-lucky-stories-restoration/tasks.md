@@ -10,8 +10,8 @@
 - [x] T005 Extract the refresh lifecycle into `app/lucky-map-of-canada/lucky-stories-refresh.js` and test stable request URLs plus single-in-flight polling in `__tests__/lucky-map-refresh.test.jsx`.
 
 ## Phase 3 — Verification
-- [ ] T006 Run focused and full unit tests, `./jules-verify.sh`, and review the complete diff and current-head CI results.
-- [ ] T007 Measure the actual `.next + public` build size and confirm it remains below 495 MiB.
+- [x] T006 Run focused/full unit tests, TypeScript, `./jules-verify.sh`, Playwright visual regression, and review the complete implementation diff and CI results. Verified on `dd5fec9dcd61529c7c2c2e6963ec091d9ee6f205`: 18 test files / 105 tests passed; TypeScript passed; `./jules-verify.sh` passed (17 passed, 0 failed); Playwright passed (27 tests).
+- [x] T007 Measure `.next + public` and enforce the 495 MiB hard cap. Verified on the implementation commit: 332,473,620 bytes (317.07 MiB), below 519,045,120 bytes (495 MiB); OpenNext Cloudflare and Wrangler no-deploy validation passed.
 
 ## Dependencies
 T002 establishes the no-store API contract. T003 implements the client refresh against that contract. T004–T005 cover API payload/cache behavior and client refresh concurrency. Verification T006–T007 follows implementation.
