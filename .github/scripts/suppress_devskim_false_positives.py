@@ -292,7 +292,9 @@ def should_suppress_checksum_metadata_finding(
         return False
     if len(value) != expected_length or not SHA_PATTERN.fullmatch(value):
         return False
-    return _region_is_within_span(region, pair.span("value"))
+    value_span = pair.span("value")
+    # DevSkim SARIF regions include both JSON quotation marks around the hash.
+    return _region_is_within_span(region, (value_span[0] - 1, value_span[1] + 1))
 
 
 
@@ -321,7 +323,9 @@ def should_suppress_constitution_template_checksum(
     pair = JSON_STRING_PAIR_PATTERN.match(lines[line_number - 1])
     if not pair or pair.group("key") != "sha256" or pair.group("value") != value:
         return False
-    return _region_is_within_span(region, pair.span("value"))
+    value_span = pair.span("value")
+    # DevSkim SARIF regions include both JSON quotation marks around the checksum.
+    return _region_is_within_span(region, (value_span[0] - 1, value_span[1] + 1))
 
 
 def should_suppress_public_cloudflare_account_id(
