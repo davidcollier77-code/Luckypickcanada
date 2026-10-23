@@ -5,15 +5,16 @@
 
 ## Phase 2 — Implementation
 - [x] T002 [P] Add no-store behavior to the Lucky Stories API in `app/api/lucky-stories/route.js`.
-- [x] T003 Refresh the Lucky Stories API immediately on map mount and bypass browser/CDN URL cache in `app/lucky-map-of-canada/lucky-map-of-canada.js`.
-- [x] T004 [P] Add regression tests in `__tests__/lucky-stories-refresh.test.js` and existing stored-location format tests in `__tests__/lucky-stories.test.js`.
+- [x] T003 Refresh immediately on mount and use the stable no-store API URL in `app/lucky-map-of-canada/lucky-map-of-canada.js`, without a timestamp query parameter.
+- [x] T004 [P] Add API header/payload and saved-location regression tests in `__tests__/lucky-stories-refresh.test.js` and `__tests__/lucky-stories.test.js`.
+- [x] T005 Add `__tests__/lucky-map-refresh.test.jsx` to verify stable request URLs and prevent overlapping polls when a fetch remains pending.
 
 ## Phase 3 — Verification
-- [ ] T005 Run focused and full unit tests, `./jules-verify.sh`, and review the complete diff and current-head CI results.
-- [ ] T006 Measure the actual `.next + public` build size and confirm it remains below 495 MiB.
+- [ ] T006 Run focused and full unit tests, `./jules-verify.sh`, and review the complete diff and current-head CI results.
+- [ ] T007 Measure the actual `.next + public` build size and confirm it remains below 495 MiB.
 
 ## Dependencies
-T002 and T004 were implemented independently. T003 implements the client refresh using the no-store API contract. Verification T005–T006 follows implementation.
+T002 establishes the no-store API contract. T003 implements the client refresh against that contract. T004–T005 cover API payload/cache behavior and client refresh concurrency. Verification T006–T007 follows implementation.
 
 ## MVP
-T002 and T003 together restore immediate fresh API retrieval without changing user data.
+T002 and T003 restore immediate, cache-safe API retrieval; T005 prevents poll pile-ups without changing user data.

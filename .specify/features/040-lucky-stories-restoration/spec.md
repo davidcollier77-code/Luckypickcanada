@@ -9,7 +9,9 @@ The Lucky Map is showing the user none of their previous stories. The current pr
 ## Scope
 - Ensure the Lucky Map fetches current story data immediately after it mounts, rather than waiting for its first polling interval.
 - Prevent the Lucky Stories GET API from reusing or advertising stale cached responses.
-- Add regression coverage for no-store response headers and preservation of returned stories.
+- Keep the refresh request URL stable; freshness must not depend on unique timestamp query parameters.
+- Prevent overlapping API refresh requests when one poll remains pending beyond the 60-second interval.
+- Add regression coverage for no-store response headers, returned stories, stable request URLs, and single-in-flight polling.
 
 ## Explicit Exclusions
 - Do not insert, edit, delete, or approve database records.
@@ -18,6 +20,8 @@ The Lucky Map is showing the user none of their previous stories. The current pr
 
 ## Acceptance Criteria
 - The map immediately requests current story data after opening.
+- Every refresh uses the stable `/api/lucky-stories` URL with browser caching disabled.
+- At most one refresh request is active; slow requests do not cause overlapping poll pile-ups.
 - The API returns data with no-store headers for both configured and unavailable states.
 - Existing database stories remain unchanged and are eligible to display.
 - Regression tests cover response caching behavior and the story payload.

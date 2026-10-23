@@ -7,15 +7,17 @@
   - Stored locations include `Quebec canada`, `Pei canada`, `British columbia canada`, `Nova Scotia`, `saskatchewan`, and `Ontario`; the province resolver test now covers these existing formats.
   - The merged visual-polish PR #1581 changed map styling/scroll behavior, not story data.
   - The API advertised `public, s-maxage=3600, stale-while-revalidate=86400`; the client waited for its first 60-second polling interval. This is a **verified exposure to stale cached responses**; the exact live cache contents could not be inspected from this session.
+- **Reviewer findings addressed:** Amazon Q's `_refresh=Date.now()` finding is fixed by removing the timestamp query parameter; PR Reviewer Guide's slow-request finding is fixed with a single-in-flight guard. Both findings now have client regression coverage.
 - **Implementation:**
   - `app/api/lucky-stories/route.js`: explicitly dynamic GET route and no-store cache headers for success and unavailable-database responses.
-  - `app/lucky-map-of-canada/lucky-map-of-canada.js`: immediate refresh on mount, browser cache disabled, and unique refresh query parameter to avoid previously cached API URLs; existing 60-second refresh interval is preserved.
+  - `app/lucky-map-of-canada/lucky-map-of-canada.js`: immediate refresh on mount, browser cache disabled, and a stable API URL without an unnecessary timestamp query parameter; an in-flight guard prevents overlapping requests when a poll exceeds 60 seconds.
   - `__tests__/lucky-stories-refresh.test.js`: verifies returned story payload and no-store headers for configured and unavailable states.
+  - `__tests__/lucky-map-refresh.test.jsx`: regression-checks the stable request URL and ensures a pending request blocks overlapping poll attempts.
   - `__tests__/lucky-stories.test.js`: covers location formats found in existing saved records.
   - `memory-bank/activeContext.md`: records the verified data state and outstanding checks.
   - No database writes, story-content changes, visual redesign, security-control changes, or dependencies added.
 - **Spec Kit stages:** `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, and `/speckit.implement` processed sequentially via file-driven procedural execution in `.specify/features/040-lucky-stories-restoration/`. Native slash-command dispatch and local shell execution were unavailable in this session.
-- **Files changed:** `.specify/features/040-lucky-stories-restoration/{spec.md,plan.md,tasks.md}`, `app/api/lucky-stories/route.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`, `__tests__/lucky-stories-refresh.test.js`, `__tests__/lucky-stories.test.js`, `memory-bank/activeContext.md`, and this summary.
-- **Verification:** GitHub diff inspection confirms only the scoped files above. Targeted/full tests, `./jules-verify.sh`, current-head OpenNext/Cloudflare validation and measured `.next + public` build size are pending CI; live API/UI confirmation is pending because the website could not be reached from this session. No unrun check is reported as passing.
+- **Files changed:** `.specify/features/040-lucky-stories-restoration/{spec.md,plan.md,tasks.md}`, `app/api/lucky-stories/route.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`, `__tests__/lucky-map-refresh.test.jsx`, `__tests__/lucky-stories-refresh.test.js`, `__tests__/lucky-stories.test.js`, `memory-bank/activeContext.md`, and this summary.
+- **Verification:** The follow-up changes are limited to the Lucky Stories refresh client, a focused client regression test, and the related Spec Kit/PR Summary artifacts; the existing API and story data paths remain unchanged in this follow-up. Targeted/full tests, `./jules-verify.sh`, current-head OpenNext/Cloudflare validation and measured `.next + public` build size are pending current-head CI; live API/UI confirmation is pending because the website could not be reached from this session. No unrun check is reported as passing.
 - **Remaining issue:** Demonstrate that all eight saved stories display after the fix is deployed. If not, inspect the production API response/configuration before considering a database repair.
-- **USEFUL RESULT:** NO — awaiting CI and live behavior confirmation.
+- **USEFUL RESULT:** NO — reviewer fixes are committed, but test/build governance checks and live behavior confirmation remain pending.

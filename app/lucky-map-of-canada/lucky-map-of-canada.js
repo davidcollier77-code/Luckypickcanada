@@ -119,12 +119,16 @@ export default function LuckyMapOfCanada({ mapData }) {
   useEffect(() => {
     let isActive = true;
 
+    // Do not pile up requests if the network or database is slower than the polling interval.
+    let isRefreshing = false;
+
     async function refreshMapData() {
+      if (!isActive || isRefreshing) return;
+      isRefreshing = true;
+
       try {
-        const refreshUrl = new URL('/api/lucky-stories', window.location.origin);
-        // Bypass any previously cached empty API response while the route cache is being refreshed.
-        refreshUrl.searchParams.set('_refresh', String(Date.now()));
-        const response = await fetch(refreshUrl.toString(), { cache: 'no-store' });
+        // The API route is dynamic and sends no-store headers; keep the URL stable for clean logs.
+        const response = await fetch('/api/lucky-stories', { cache: 'no-store' });
 
         if (!response.ok) return;
 
@@ -135,6 +139,8 @@ export default function LuckyMapOfCanada({ mapData }) {
         }
       } catch {
         // Keep the server-rendered map values visible until the next refresh succeeds.
+      } finally {
+        isRefreshing = false;
       }
     }
 
