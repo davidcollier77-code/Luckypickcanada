@@ -108,3 +108,6 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:536` — Do not leave debug code in production <!-- devskim-id:f4823d35f898e6056457 -->
 - **WARNING — DS137138** — `.github/scripts/suppress_devskim_false_positives.py:55` — Insecure URL <!-- devskim-id:0f36d10fc0409d966846 -->
 - **WARNING — DS137138** — `.github/scripts/suppress_devskim_false_positives.py:54` — Insecure URL <!-- devskim-id:c7818a5002c283cbc44b -->
+
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:225` — Review setTimeout for untrusted data <!-- devskim-id:5f63a6802eaeb7431c82 -->
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:199` — Review setTimeout for untrusted data <!-- devskim-id:b1d79d0a75ad0f9f478a -->
