@@ -50,7 +50,7 @@ describe('Lucky Map live story refresh', () => {
 
     resolveInitialRequest(makeResponse());
     await initialRequest;
-    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+    await vi.runAllMicrotasksAsync();
     expect(setMapData).toHaveBeenCalledWith(mapData);
 
     // Once the request settles, the next regular poll may run normally.
