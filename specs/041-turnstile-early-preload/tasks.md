@@ -20,5 +20,5 @@
 
 ## Phase 3: Verification and Final Audit
 
-- [ ] T005 [US1] Run targeted and full unit/browser tests, TypeScript, `./jules-verify.sh`, Cloudflare/OpenNext build and measured build-size gate; inspect the complete final diff and current-head CI.
-- [ ] T006 [US1] Update the PR evidence summary with actual checks/results, remaining uncertainty, and untouched security behavior.
+- [X] T005 [US1] Verify current code through GitHub CI: targeted and full unit tests, TypeScript, `./jules-verify.sh`, full Playwright/visual regression suite, Cloudflare/OpenNext build, 495 MiB build-size gate, and final changed-file/diff audit all passed on PR head `511d5a69c5e60b9c48fa864ab85ce314bdb5ed0b`.
+- [X] T006 [US1] Update the PR evidence summary with actual checks/results, remaining uncertainty, and untouched security behavior. Real-browser timing after deployment remains outstanding and must not be claimed as fixed.
