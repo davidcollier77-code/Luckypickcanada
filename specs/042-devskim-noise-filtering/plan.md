@@ -6,7 +6,7 @@
 
 ## Summary
 
-Extend the existing DevSkim SARIF suppression pipeline to filter only audited, context-proven false positives observed in the report batch. Suppress narrowly verified manifest checksums, the documented public Cloudflare account identifier, safe callable timer callbacks/test-timeout configuration, exact development-origin/test fixtures, and a static regex used by a security regression test. Attach exact reviewable justifications, remove only those exact justified false positives from the uploaded SARIF, and add regression tests for both the allowlisted cases and negative cases.
+Extend the existing DevSkim SARIF suppression pipeline to filter only audited, context-proven false positives observed in the report batch. Suppress narrowly verified manifest checksums, the SHA-256 field only in the exact constitution-template file, the documented public Cloudflare account identifier, safe callable timer callbacks/test-timeout configuration, exact development-origin/test fixtures, and a static regex used by a security regression test. Attach exact reviewable justifications, remove only those exact justified false positives from the uploaded SARIF, and add regression tests for both the allowlisted cases and negative cases.
 
 The current DevSkim run after the change passed its dedicated workflow, all 39 suppression regression tests, and the suppression step reported 34 verified false positives filtered from that scan. The separate DevSkim code-scanning check still reports remaining findings; the implementation does not blanket-suppress those.
 
@@ -52,7 +52,7 @@ The current DevSkim run after the change passed its dedicated workflow, all 39 s
 2. Validate that manifest hashes are in the actual top-level checksum map, match the parsed JSON value, have the expected length/format, and overlap the reported SARIF source span.
 3. Suppress the Cloudflare account-ID warning only if the exact constant/path/value and current explanatory comments are present; do not treat credentials generically as safe.
 4. Suppress DS172411 only for inline callable callbacks or numeric test-runner timeout configuration in test files. Leave string callbacks and opaque callback variables visible.
-5. Suppress known localhost/test fixture and security-test regex findings only at their exact reviewed source locations and when expected context/comment checks pass.
+5. Suppress the SHA-256 value only in .specify/memory/.constitution-template.json when the source value, line, and reported columns match; suppress known localhost/test fixture and security-test regex findings only at their exact reviewed source locations and when expected context/comment checks pass.
 6. Add every new suppression reason to the exact justification set that removes such results from uploaded SARIF; no generic suppression metadata is trusted.
 7. Add regression tests for every new pattern, including negative cases designed to prove nearby unsafe/unknown values are not suppressed.
 
