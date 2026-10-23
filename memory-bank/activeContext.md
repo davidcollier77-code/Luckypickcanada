@@ -1,3 +1,14 @@
+# Active Context — Turnstile Early Script Preload (2026-10-22)
+
+- **User-reported symptom:** The homepage Suggestion Box Turnstile check sometimes takes about 45 seconds or longer. This timing was not independently measured by this session.
+- **Verified current setup:** `@marsidev/react-turnstile` is pinned at 1.6.1. The shared layout already preconnects to Cloudflare; the widget's API script is injected only when the client widget initializes. Its configured URL is `https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit`.
+- **Historical clue:** PR #1398 removed an earlier preload that omitted the wrapper's `onload` callback parameter. This task adds the exact URL instead, and only in the homepage document.
+- **Live inspection:** An HTTP 200 live scrape showed the Turnstile iframe in “Checking your Browser…” after the scrape wait. This confirms the widget exists but does not measure the owner's phone/browser timing or prove the reported delay's full root cause.
+- **Repair branch / PR:** `fix/turnstile-early-script-preload-20261022`; the feature is `specs/041-turnstile-early-preload/`. It adds a homepage-only resource preload and a Playwright regression test; it does not change widget lifecycle/callbacks, site-key lookup, server-side Siteverify validation, rate limiting, or spam protections.
+- **Verification status:** Source/test/spec files have been committed to the repair branch. Playwright, unit tests, TypeScript, `./jules-verify.sh`, OpenNext build, build-size measurement, and current-head CI remain pending until run by CI. Do not mark resolved or merge/deploy without current-head evidence. A preload can reduce script-fetch delay but cannot guarantee challenge completion speed under browser/network conditions.
+
+---
+
 # Active Context — Cloudflare preview manifest runtime outage (2026-10-22)
 
 - **User-reported production failure:** luckypickcanada.ca returned Cloudflare Error 1101 after the successful OpenNext deployment following PR #1563.
