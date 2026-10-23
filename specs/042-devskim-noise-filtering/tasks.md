@@ -14,7 +14,7 @@
 
 **Goal**: Remove only proven, context-matched false positives while keeping genuine or ambiguous findings visible.
 
-- [X] T004 Extend SAFE_METADATA_KEY_TYPES and add exact manifest checksum-map validation in .github/scripts/suppress_devskim_false_positives.py.
+- [X] T004 Add exact manifest checksum-map validation and a file-specific constitution-template SHA-256 checksum guard in .github/scripts/suppress_devskim_false_positives.py.
 - [X] T005 Add exact contextual predicates for the documented Cloudflare account identifier, callable timer callbacks, test-timeout settings, localhost test fixtures, development CORS origins, and the security-test regex in .github/scripts/suppress_devskim_false_positives.py.
 - [X] T006 Add the exact reviewed suppression justifications to the verified-result removal allowlist in .github/scripts/suppress_devskim_false_positives.py.
 - [X] T007 Preserve all other findings and keep the main DevSkim rules, scan triggers, and report updater unchanged.
