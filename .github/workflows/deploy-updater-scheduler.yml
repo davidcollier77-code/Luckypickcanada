@@ -64,6 +64,12 @@ jobs:
       - name: Test Spec Kit customization rebase
         run: bash scripts/test-rebase-speckit-customizations.sh
 
+      - name: Install uv for Spec Kit smoke test
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Exercise the real safe Spec Kit upgrade in this isolated PR checkout
+        run: bash scripts/update-spec-kit-safely.sh
+
       - name: Run repository governance verification
         run: ./jules-verify.sh
 
