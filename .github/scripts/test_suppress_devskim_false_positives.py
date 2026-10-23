@@ -605,6 +605,8 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             "False positive: this is a callable timer callback or a test-runner timeout configuration, not string-based code execution by setTimeout.",
             "False positive: this is an explicitly identified development loopback origin or test-only loopback fixture, not shipped debug code.",
             "False positive: the finding is on a static source-matching regex in a security test; the test verifies the real route has rel protections.",
+            "False positive: this finding is in a specifically allowlisted dependency package name, not a weak-hash implementation.",
+            "False positive: the reported substring is inside a valid, canonical SHA-512 package-integrity digest, not a hash algorithm invocation.",
         ]
         data = {
             "runs": [{
