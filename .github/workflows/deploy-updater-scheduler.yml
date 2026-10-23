@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - 'workers/updater-scheduler/**'
+      - 'scripts/update-spec-kit-safely.sh'
+      - 'scripts/rebase-speckit-customizations.sh'
+      - 'scripts/test-rebase-speckit-customizations.sh'
+      - '.github/spec-kit/customizations/**'
+      - '.specify/features/039-speckit-updater-customizations/**'
       - '.github/workflows/deploy-updater-scheduler.yml'
       - '.github/workflows/update-spec-kit.yml'
       - '.github/workflows/refresh-docs.yml'
@@ -56,8 +61,31 @@ jobs:
       - name: Test approved schedule mapping and safe dispatch behaviour
         run: node --test workers/updater-scheduler/test/index.node-test.mjs
 
+      - name: Test Spec Kit customization rebase
+        run: bash scripts/test-rebase-speckit-customizations.sh
+
+      - name: Install uv for Spec Kit smoke test
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Exercise the real safe Spec Kit upgrade in this isolated PR checkout
+        run: bash scripts/update-spec-kit-safely.sh
+
       - name: Run repository governance verification
         run: ./jules-verify.sh
+
+      - name: Enforce 495 MiB build-size ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          size_bytes="$(du -sb .next public | awk '{total += $1} END {printf "%.0f", total}')"
+          max_bytes="$((495 * 1024 * 1024))"
+          size_mib="$(awk -v bytes="$size_bytes" 'BEGIN {printf "%.2f", bytes / 1024 / 1024}')"
+          printf 'Combined .next + public: %s bytes (%s MiB)\n' "$size_bytes" "$size_mib"
+          printf 'Hard maximum: %s bytes (495 MiB)\n' "$max_bytes"
+          if (( size_bytes >= max_bytes )); then
+            echo "::error::Combined .next + public build size reached or exceeded 495 MiB; stopping before further verification."
+            exit 1
+          fi
 
       - name: Wrangler dry-run (no deploy)
         run: pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml
@@ -74,8 +102,7 @@ jobs:
       - name: Use Node.js 22
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          fetch-depth: 1
-
+          node-version: '22'
       - name: Setup pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.0.0
         with:

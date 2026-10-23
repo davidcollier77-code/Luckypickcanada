@@ -1,4 +1,15 @@
-# Active Context — Turnstile Early Script Preload (2026-10-22)
+# Active Context — Spec Kit Updater Reliability (2026-10-23)
+
+- **Verified cause:** Generic integration v1.2.2 was installed on 2026-10-20. The pre-customization command files match the manifest hashes; commit `435c4a3a54742487f07df73090bb2d3c596740bf` later added intentional Jules instructions to the two tracked command files.
+- **Repair PR:** #1571, branch `fix/speckit-updater-preserve-jules-customizations`.
+- **Verified CI on commit `0df9f6aac428c8b2cb032ab268e7537bf51906a9`:** safe real `specify-cli` integration/extension update and three-way overlay rebase passed; Worker scheduler tests passed; `./jules-verify.sh` passed; Wrangler no-deploy dry-run passed. OpenNext `.next + public` measured 329,595,402 bytes / 314.33 MiB (<495 MiB).
+- **Design:** Store the known upstream base and Jules overlays. Check overlay integrity, temporarily restore upstream files for the ordinary non-forced update, then three-way merge Jules rules onto new templates. Unknown edits and true conflicts stop safely.
+- **Trigger/notification:** Worker dispatch sends `dispatch_source=cloudflare` and the approved slot; manual Spec Kit dispatch bypasses the daily-success guard, while Cloudflare retry slots still honor it. Both updater workflows post idempotent owner mentions with source, slot, and Actions run URL when a PR is created/refreshed.
+- **Schedules:** Existing Cloudflare cron triggers and Atlantic target slots remain unchanged. PR CI does not deploy; the Worker deploy job is skipped on the PR and Wrangler validation is dry-run only.
+- **Remaining proof:** Current-head rerun after the added 495 MiB measurement step; then the first real post-deployment Cloudflare production dispatch and resulting notification.
+
+
+---
 
 - **User-reported symptom:** The homepage Suggestion Box Turnstile check sometimes takes about 45 seconds or longer. This timing was not independently measured by this session.
 - **Verified current setup:** `@marsidev/react-turnstile` is pinned at 1.6.1. The shared layout already preconnects to Cloudflare; the widget's API script is injected only when the client widget initializes. Its configured URL is `https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit`.
