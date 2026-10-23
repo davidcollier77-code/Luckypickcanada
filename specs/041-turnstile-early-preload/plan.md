@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add a homepage-only preload hint for the exact Cloudflare Turnstile API URL used by the pinned React wrapper. The existing wrapper will remain responsible for injecting/executing the widget; the browser can fetch the matching resource earlier from the server-rendered homepage response.
+Use React DOM's `preload()` API during homepage server rendering for the exact Cloudflare Turnstile API URL used by the pinned wrapper. This emits the resource hint in `<head>` while leaving the existing wrapper responsible for injecting/executing the widget after its callback is registered.
 
 ## Technical Context
 
@@ -46,7 +46,7 @@ Add a homepage-only preload hint for the exact Cloudflare Turnstile API URL used
 
 ## Phase 1: Implementation Design
 
-1. Add a `rel="preload"`, `as="script"` hint near the beginning of the server-rendered homepage tree, using the exact URL already used by the pinned React wrapper.
+1. Call React DOM's `preload(TURNSTILE_SCRIPT_URL, { as: 'script' })` while rendering the homepage server component. React's resource API emits the hint in `<head>`; do not rely on a literal `<link>` in body markup or execute the script before the wrapper registers its onload callback.
 2. Add a Playwright regression test that asserts the hint appears exactly once in the document head on `/` and does not appear on `/about`.
 3. Do not change `TurnstileField`, its state machine/callbacks, form layout, or `validatePublicFormSubmission`.
 
