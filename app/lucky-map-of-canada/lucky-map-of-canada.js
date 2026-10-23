@@ -195,6 +195,15 @@ export default function LuckyMapOfCanada({ mapData }) {
       url.searchParams.set('story', story.id);
       url.hash = 'lucky-story-map';
       window.history.replaceState(null, '', url);
+
+      setTimeout(() => {
+        const storyCard = document.getElementById(`story-${story.id}`);
+        if (storyCard) {
+          storyCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (storyPanelRef.current) {
+          storyPanelRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   }
 
@@ -212,6 +221,12 @@ export default function LuckyMapOfCanada({ mapData }) {
       url.searchParams.delete('story');
       url.hash = 'lucky-story-map';
       window.history.replaceState(null, '', url);
+
+      setTimeout(() => {
+        if (storyPanelRef.current) {
+          storyPanelRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     }
   }
 
@@ -261,16 +276,16 @@ export default function LuckyMapOfCanada({ mapData }) {
         <header className="premium-surface" style={{ ...cardStyle, padding: 'clamp(1.35rem, 4vw, 3rem)', position: 'relative', overflow: 'hidden' }}>
           <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, color: '#facc15', fontWeight: 900 }}>Lucky Map of Canada</p>
           <h1 style={{ maxWidth: 900, margin: '0.45rem 0', fontSize: 'clamp(2.5rem, 8vw, 5.4rem)', lineHeight: 0.95, letterSpacing: '-0.06em', textShadow: '0 0 28px rgba(250,204,21,0.22)' }}>
-            Where Luck Has Been Found Across Canada 🍀
+            Where Luck Has Been Found Across Canada <span className="clover-3d">🍀</span>
           </h1>
           <p style={{ maxWidth: 760, margin: '1rem 0 0', fontSize: 'clamp(1.05rem, 2vw, 1.25rem)', lineHeight: 1.7, color: 'rgba(255, 247, 214, 0.86)' }}>
             Explore lucky stories from across Canada. Browse by province, discover community highlights, and switch between all-time stories and the latest 24 hours.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.35rem' }}>
-            <a href="#lucky-story-map" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 900, padding: '0.85rem 1.4rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', boxShadow: '0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>
-              🍀 View Lucky Stories
+            <a href="#lucky-story-map" className="story-link" style={{ color: '#06110d', textDecoration: 'none', fontWeight: 900, padding: '0.85rem 1.4rem', borderRadius: 999, background: 'linear-gradient(180deg, #fef0a5 0%, #d4981a 100%)', borderTop: '1px solid rgba(255, 255, 255, 0.8)', borderBottom: '1px solid rgba(139, 79, 7, 0.8)', borderLeft: '1px solid rgba(255, 215, 100, 0.5)', borderRight: '1px solid rgba(255, 215, 100, 0.5)', boxShadow: '0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>
+              <span className="clover-3d">🍀</span> View Lucky Stories
             </a>
-            <button type="button" onClick={() => { playButtonClick(); setIsStoryFormOpen(true); }} className="story-link" style={{ color: '#06110d', fontWeight: 900, padding: '0.85rem 1.4rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>Share your lucky story</button>
+            <button type="button" onClick={() => { playButtonClick(); setIsStoryFormOpen(true); }} className="story-link" style={{ color: '#06110d', fontWeight: 900, padding: '0.85rem 1.4rem', borderRadius: 999, background: 'linear-gradient(180deg, #fef0a5 0%, #d4981a 100%)', borderTop: '1px solid rgba(255, 255, 255, 0.8)', borderBottom: '1px solid rgba(139, 79, 7, 0.8)', borderLeft: '1px solid rgba(255, 215, 100, 0.5)', borderRight: '1px solid rgba(255, 215, 100, 0.5)', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>Share your lucky story</button>
           </div>
           {!currentMapData?.isConfigured ? (
             <p style={{ margin: '1rem 0 0', padding: '0.85rem 1rem', borderRadius: 16, background: 'rgba(250, 204, 21, 0.14)', color: '#fde68a', border: '1px solid rgba(250, 204, 21, 0.32)', fontWeight: 800 }}>
@@ -359,7 +374,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                 <div className="map-empty-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.5)', borderRadius: 16 }}>
                   <p style={{ margin: 0, color: '#fde68a', fontSize: '1.2rem', fontWeight: 700 }}>{timeframeFilter === '24h' ? "No stories in the last 24 hours yet. Be the first to share!" : "No community stories with a province are ready for the map yet."}</p>
                   {timeframeFilter === '24h' && (
-                    <button type="button" onClick={() => { playButtonClick(); setIsStoryFormOpen(true); }} className="story-link" style={{ color: '#06110d', fontWeight: 900, padding: '0.65rem 1.25rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: 'none', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>
+                    <button type="button" onClick={() => { playButtonClick(); setIsStoryFormOpen(true); }} className="story-link" style={{ color: '#06110d', fontWeight: 900, padding: '0.65rem 1.25rem', borderRadius: 999, background: 'linear-gradient(180deg, #fef0a5 0%, #d4981a 100%)', borderTop: '1px solid rgba(255, 255, 255, 0.8)', borderBottom: '1px solid rgba(139, 79, 7, 0.8)', borderLeft: '1px solid rgba(255, 215, 100, 0.5)', borderRight: '1px solid rgba(255, 215, 100, 0.5)', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>
                       Share your lucky story
                     </button>
                   )}
@@ -377,7 +392,7 @@ export default function LuckyMapOfCanada({ mapData }) {
             {selectedStories.length ? (
               <div style={{ display: 'grid', gap: '0.85rem', marginTop: '1rem' }}>
                 {selectedStories.map((story) => (
-                  <article key={story.id} className="map-story-card" style={{ padding: '1.2rem', borderRadius: 24, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(250, 204, 21, 0.38)', background: selectedStory?.id === story.id ? 'linear-gradient(145deg, rgba(6, 32, 26, 0.92), rgba(20, 75, 55, 0.85))' : 'linear-gradient(145deg, rgba(6, 32, 26, 0.8), rgba(12, 60, 48, 0.7))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.25)', transition: 'all 0.2s ease-in-out' }}>
+                  <article key={story.id} id={`story-${story.id}`} className="map-story-card" style={{ padding: '1.2rem', borderRadius: 24, border: selectedStory?.id === story.id ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(250, 204, 21, 0.38)', background: selectedStory?.id === story.id ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95))' : 'linear-gradient(145deg, rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.75))', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.25)', transition: 'all 0.2s ease-in-out' }}>
                     <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#facc15', fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
                       Story from {story.firstName || 'a Lucky Canadian'}
                     </button>
@@ -386,19 +401,19 @@ export default function LuckyMapOfCanada({ mapData }) {
                     <p style={{ margin: '0.5rem 0 0', color: '#9ca3af', fontSize: '0.85rem' }}>{formatRelativeTime(story.createdAt)}</p>
                     {selectedStory?.id === story.id ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center', margin: '0.65rem 0 0.85rem' }}>
-                        <button type="button" onClick={() => shareStory(story)} className="story-link" style={{ color: '#06110d', fontWeight: 900, padding: '0.65rem 1.25rem', borderRadius: 999, background: 'linear-gradient(135deg, #fff8c8 0%, #facc15 48%, #b7791f 100%)', border: '1px solid rgba(255, 242, 180, 0.86)', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>
-                          🍀 Share This Story
+                        <button type="button" onClick={() => shareStory(story)} className="story-link" style={{ color: '#06110d', fontWeight: 900, padding: '0.65rem 1.25rem', borderRadius: 999, background: 'linear-gradient(180deg, #fef0a5 0%, #d4981a 100%)', borderTop: '1px solid rgba(255, 255, 255, 0.8)', borderBottom: '1px solid rgba(139, 79, 7, 0.8)', borderLeft: '1px solid rgba(255, 215, 100, 0.5)', borderRight: '1px solid rgba(255, 215, 100, 0.5)', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>
+                          <span className="clover-3d">🍀</span> Share This Story
                         </button>
-                        <button type="button" onClick={() => reactToStory(story.id)} style={{ padding: 0, border: 0, background: 'transparent', color: '#d1fae5', fontWeight: 900, cursor: 'pointer' }}>
+                        <button type="button" className="secondary-action-btn" onClick={() => reactToStory(story.id)} style={{ padding: '0.65rem 1.25rem', borderRadius: 999, border: '1px solid rgba(250, 204, 21, 0.4)', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', color: '#d1fae5', fontWeight: 900, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                           Celebrate {reactions[story.id] ? `(${reactions[story.id]})` : ''}
                         </button>
-                        <button type="button" onClick={returnToMap} style={{ padding: 0, border: 0, background: 'transparent', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textDecoration: 'underline' }}>
+                        <button type="button" className="secondary-action-btn" onClick={returnToMap} style={{ padding: '0.65rem 1.25rem', borderRadius: 999, border: '1px solid rgba(250, 204, 21, 0.4)', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                           ← Back to Lucky Story Map
                         </button>
                         {shareStatus ? <span style={{ color: '#d1fae5', fontWeight: 800 }}>{shareStatus}</span> : null}
                       </div>
                     ) : (
-                      <button type="button" onClick={() => openStory(story)} style={{ padding: 0, border: 0, background: 'transparent', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textAlign: 'left', textDecoration: 'underline' }}>
+                      <button type="button" className="secondary-action-btn" onClick={() => openStory(story)} style={{ padding: '0.5rem 1rem', borderRadius: 999, border: '1px solid rgba(250, 204, 21, 0.4)', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textAlign: 'left', textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', display: 'inline-block' }}>
                         View full lucky story
                       </button>
                     )}
@@ -425,7 +440,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                   <h3 style={{ margin: 0, color: '#fde68a', fontSize: '1rem' }}>{province.name}</h3>
                   <div style={{ display: 'grid', gap: '0.65rem', marginTop: '0.55rem' }}>
                     {recentStoriesByProvince[province.code].slice(0, 3).map((story) => (
-                      <button key={story.id} type="button" onClick={() => openStory(story)} style={{ display: 'grid', gap: '0.35rem', padding: '1rem', border: '1px solid rgba(250, 204, 21, 0.38)', borderRadius: 20, color: '#fff7d6', background: 'linear-gradient(145deg, rgba(6, 32, 26, 0.92), rgba(12, 60, 48, 0.85))', cursor: 'pointer', font: 'inherit', textAlign: 'left', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 12px rgba(0,0,0,0.15)' }}>
+                      <button key={story.id} type="button" onClick={() => openStory(story)} style={{ display: 'grid', gap: '0.35rem', padding: '1rem', border: '1px solid rgba(250, 204, 21, 0.38)', borderRadius: 20, color: '#fff7d6', background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.8))', cursor: 'pointer', font: 'inherit', textAlign: 'left', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 12px rgba(0,0,0,0.15)' }}>
                         <strong>{story.firstName || 'A Lucky Canadian'}</strong>
                         <span style={{ color: 'rgba(255,247,214,0.82)', lineHeight: 1.55 }}>{story.preview}</span>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.2rem' }}><span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>{formatRelativeTime(story.createdAt)}</span><span style={{ color: '#fde68a', fontSize: '0.85rem', fontWeight: 700 }}>Read full story &rarr;</span></div>
@@ -446,7 +461,7 @@ export default function LuckyMapOfCanada({ mapData }) {
           <label className="mobile-province-select">Choose a province or territory<select value={selectedProvince} onChange={(event) => selectProvince(event.target.value)}>{provinceSelections.map((province) => <option key={province.code} value={province.code}>{province.name} ({province.count})</option>)}</select></label>
           <div className="province-selection-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginTop: '1.5rem' }}>
             {provinceSelections.map((province) => (
-              <button key={province.code} type="button" className="province-select-card map-province-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(135deg, rgba(244,195,70,0.35), rgba(35,140,101,0.25))' : 'rgba(255,255,255,0.055)', cursor: 'pointer' }}>
+              <button key={province.code} type="button" className="province-select-card map-province-card" onClick={() => selectProvince(province.code)} style={{ textAlign: 'left', padding: '0.9rem', borderRadius: 18, border: selectedProvince === province.code ? '1px solid rgba(250,204,21,0.72)' : '1px solid rgba(255,235,160,0.24)', color: '#fff7d6', background: selectedProvince === province.code ? 'linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.95))' : 'linear-gradient(145deg, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.6))', cursor: 'pointer' }}>
                 <strong style={{ display: 'block', color: '#fde68a' }}>{province.name}</strong>
                 <span>{province.count} {province.count === 1 ? 'story' : 'stories'}</span>
               </button>
@@ -476,7 +491,7 @@ export default function LuckyMapOfCanada({ mapData }) {
                   <label style={{ color: "#f8fafc", fontWeight: 700 }}>Province or territory<input name="location" maxLength="80" style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem' }} /></label>
                   <label style={{ color: "#f8fafc", fontWeight: 700 }}>Tell us your story...<textarea name="story" required minLength="20" maxLength="600" rows="5" onChange={(e) => setStoryFormText(e.target.value)} style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem', resize: 'vertical' }} /><div style={{ textAlign: 'right', fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.4rem' }}>{storyFormText.length}/600 characters</div></label>
                   <TurnstileField submitButtonId="lucky-story-submit" action="lucky-story" />
-                  <button id="lucky-story-submit" type="submit" onClick={playButtonClick} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '1rem', border: '1px solid rgba(251, 191, 36, 0.7)', borderRadius: 999, color: '#0f172a', background: 'linear-gradient(135deg, #ffe066 0%, #f59e0b 50%, #d97706 100%)', fontWeight: 900, cursor: 'pointer', marginTop: '0.5rem', boxShadow: '0 8px 20px rgba(245, 158, 11, 0.35), inset 0 1px 2px rgba(255,255,255,0.5)', fontSize: '1.1rem', transition: 'all 0.2s' }}>Submit Story</button>
+                  <button id="lucky-story-submit" type="submit" onClick={playButtonClick} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.8)', borderBottom: '1px solid rgba(139, 79, 7, 0.8)', borderLeft: '1px solid rgba(255, 215, 100, 0.5)', borderRight: '1px solid rgba(255, 215, 100, 0.5)', borderRadius: 999, color: '#0f172a', background: 'linear-gradient(180deg, #fef0a5 0%, #d4981a 100%)', fontWeight: 900, cursor: 'pointer', marginTop: '0.5rem', boxShadow: '0 8px 20px rgba(245, 158, 11, 0.35), inset 0 1px 2px rgba(255,255,255,0.5)', fontSize: '1.1rem', transition: 'all 0.2s' }}>Submit Story</button>
                 </form>
               </div>
             </section>
