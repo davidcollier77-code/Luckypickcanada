@@ -1,3 +1,14 @@
+# Active Context — Turnstile Early Script Preload (2026-10-22)
+
+- **User-reported symptom:** The homepage Suggestion Box Turnstile check sometimes takes about 45 seconds or longer. This timing was not independently measured by this session.
+- **Verified current setup:** `@marsidev/react-turnstile` is pinned at 1.6.1. The shared layout already preconnects to Cloudflare; the widget's API script is injected only when the client widget initializes. Its configured URL is `https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit`.
+- **Historical clue:** PR #1398 removed an earlier preload that omitted the wrapper's `onload` callback parameter. This task adds the exact URL instead, and only in the homepage document.
+- **Live inspection:** An HTTP 200 live scrape showed the Turnstile iframe in “Checking your Browser…” after the scrape wait. This confirms the widget exists but does not measure the owner's phone/browser timing or prove the reported delay's full root cause.
+- **Repair branch / PR:** `fix/turnstile-early-script-preload-20261022` / [PR #1568](https://github.com/davidcollier77-code/Luckypickcanada/pull/1568); the feature is `specs/041-turnstile-early-preload/`. The initial literal JSX link drew an Amazon Q concern about body placement and was replaced with React DOM's `preload()` API during page render to explicitly emit the head hint. The widget lifecycle/callbacks, site-key lookup, server-side Siteverify validation, rate limiting, and spam protections remain unchanged.
+- **Verification status (PR head `511d5a69c5e60b9c48fa864ab85ce314bdb5ed0b`):** GitHub Visual QA passed, including targeted tests, full unit tests, `pnpm tsc --noEmit`, `./jules-verify.sh`, committed visual-baseline verification, and all Playwright visual tests (the new Turnstile preload regression is included by the `tests/visual/**/*.spec.ts` configuration). OpenNext validation passed: Next.js build, the 495 MiB `.next + public` cap, Cloudflare OpenNext build, CSS/worker/assets checks, and Wrangler build validation. DevSkim and PR Agent also completed successfully. The updater scheduler's deploy job was skipped; no site deployment or merge was performed. The ~45-second real-browser timing remains unverified. A preload can reduce script-fetch delay but cannot guarantee challenge completion speed under browser/network conditions.
+
+---
+
 # Active Context — Cloudflare preview manifest runtime outage (2026-10-22)
 
 - **User-reported production failure:** luckypickcanada.ca returned Cloudflare Error 1101 after the successful OpenNext deployment following PR #1563.
