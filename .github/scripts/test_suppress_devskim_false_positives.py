@@ -485,7 +485,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 "DS162092",
                 "app/admin/suggestions/route.test.js",
                 "getClientIp: vi.fn().mockReturnValue('127.0.0.1'),",
-                {"startLine": 11},
+                {"startLine": 1},
             )
         )
         self.assertFalse(
@@ -493,7 +493,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 "DS162092",
                 "app/api/oracle/route.js",
                 "const ip = '127.0.0.1';",
-                {"startLine": 11},
+                {"startLine": 1},
             )
         )
 
