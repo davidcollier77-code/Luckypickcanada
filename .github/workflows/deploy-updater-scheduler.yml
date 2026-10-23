@@ -73,6 +73,20 @@ jobs:
       - name: Run repository governance verification
         run: ./jules-verify.sh
 
+      - name: Enforce 495 MiB build-size ceiling
+        shell: bash
+        run: |
+          set -euo pipefail
+          size_bytes="$(du -sb .next public | awk '{total += $1} END {printf "%.0f", total}')"
+          max_bytes="$((495 * 1024 * 1024))"
+          size_mib="$(awk -v bytes="$size_bytes" 'BEGIN {printf "%.2f", bytes / 1024 / 1024}')"
+          printf 'Combined .next + public: %s bytes (%s MiB)\n' "$size_bytes" "$size_mib"
+          printf 'Hard maximum: %s bytes (495 MiB)\n' "$max_bytes"
+          if (( size_bytes >= max_bytes )); then
+            echo "::error::Combined .next + public build size reached or exceeded 495 MiB; stopping before further verification."
+            exit 1
+          fi
+
       - name: Wrangler dry-run (no deploy)
         run: pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml
 

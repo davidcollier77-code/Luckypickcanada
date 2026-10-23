@@ -1,12 +1,12 @@
 # Active Context — Spec Kit Updater Reliability (2026-10-23)
 
-- **Verified cause:** Generic integration v1.2.2 was installed on 2026-10-20. The original versions of `.jules/cmds/speckit.implement.md` and `.jules/cmds/speckit.plan.md` match the exact hashes in the manifest. Commit `435c4a3a54742487f07df73090bb2d3c596740bf` later added intentional Jules-governance customizations.
-- **Observed failure:** CLI 1.2.3 stops at integration upgrade because those tracked commands differ from upstream; extension update and later validation/notification steps do not run.
-- **Repair branch:** `fix/speckit-updater-preserve-jules-customizations`. Current-head verification is pending.
-- **Fix design:** Track upstream base plus Jules overlay, check for overlay drift, temporarily restore the installed base so a normal non-forced upgrade can run, then three-way merge the overlay onto new templates. Unexpected edits/conflicts abort safely.
-- **Notifications and manual trigger:** Worker dispatch carries the Cloudflare source and approved slot; an owner-requested manual Spec Kit run bypasses the daily-success guard. Both workflows mention the owner for PR creation/update with the Actions run URL.
-- **Schedule safety:** Existing cron triggers and approved Atlantic times remain unchanged. No direct production Worker deployment or production dispatch was performed by this connected session.
-- **Verification pending:** Current-head tests, `./jules-verify.sh`, Wrangler dry-run, actual Spec Kit update and a real post-deployment Worker dispatch.
+- **Verified cause:** Generic integration v1.2.2 was installed on 2026-10-20. The pre-customization command files match the manifest hashes; commit `435c4a3a54742487f07df73090bb2d3c596740bf` later added intentional Jules instructions to the two tracked command files.
+- **Repair PR:** #1571, branch `fix/speckit-updater-preserve-jules-customizations`.
+- **Verified CI on commit `0df9f6aac428c8b2cb032ab268e7537bf51906a9`:** safe real `specify-cli` integration/extension update and three-way overlay rebase passed; Worker scheduler tests passed; `./jules-verify.sh` passed; Wrangler no-deploy dry-run passed. OpenNext `.next + public` measured 329,595,402 bytes / 314.33 MiB (<495 MiB).
+- **Design:** Store the known upstream base and Jules overlays. Check overlay integrity, temporarily restore upstream files for the ordinary non-forced update, then three-way merge Jules rules onto new templates. Unknown edits and true conflicts stop safely.
+- **Trigger/notification:** Worker dispatch sends `dispatch_source=cloudflare` and the approved slot; manual Spec Kit dispatch bypasses the daily-success guard, while Cloudflare retry slots still honor it. Both updater workflows post idempotent owner mentions with source, slot, and Actions run URL when a PR is created/refreshed.
+- **Schedules:** Existing Cloudflare cron triggers and Atlantic target slots remain unchanged. PR CI does not deploy; the Worker deploy job is skipped on the PR and Wrangler validation is dry-run only.
+- **Remaining proof:** Current-head rerun after the added 495 MiB measurement step; then the first real post-deployment Cloudflare production dispatch and resulting notification.
 
 
 ---

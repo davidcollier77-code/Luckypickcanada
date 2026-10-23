@@ -39,9 +39,26 @@ The connected GitHub interface has no repository shell/native slash-command exec
 - Both updater workflows post a deduplicated owner mention for created/refreshed PRs with source/slot and Actions run URL.
 - Existing cron schedules and Worker slot mappings are unchanged.
 
-## 6. Verification
-- **Inspected:** the exact failure, current and parent command files, manifest hashes, workflows, Worker dispatch implementation and Worker tests.
-- **Regression coverage added:** upstream additions plus Jules customizations survive; real conflicts fail closed; dispatch metadata, matching workflow inputs, manual bypass, and notifications are asserted.
-- **Not run from this connected session:** repository scripts, `./jules-verify.sh`, actual `uvx specify` upgrade, Wrangler dry-run, or a fresh production workflow dispatch. The container cannot resolve github.com, and the connected GitHub interface does not expose a fresh workflow-dispatch action. Current-head CI and the first real post-deployment Worker dispatch remain required.
-- **Second error check:** no cron timing changes, no blind `--force`, no secrets or app runtime touched.
-- **USEFUL RESULT: NO (pending CI/live dispatch evidence)**
+## 6. Actual verification evidence
+
+**Verified by GitHub Actions on PR commit `0df9f6aac428c8b2cb032ab268e7537bf51906a9`:**
+- Worker schedule/dispatch tests — PASSED.
+- `bash scripts/test-rebase-speckit-customizations.sh` — PASSED.
+- `bash scripts/update-spec-kit-safely.sh` — PASSED against the real `specify-cli`. Logs confirm both Jules overlays were rebased and the integration/extensions update completed.
+- `./jules-verify.sh` — PASSED, including the Spec Kit governance gate, TypeScript, Next.js production build, and documentation-refresh tests (17 passed, 0 failed).
+- `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml` — PASSED without deployment.
+- OpenNext build-size gate — PASSED: `.next + public` measured 329,595,402 bytes (314.33 MiB), below 495 MiB.
+- Protected File Authorization, DevSkim/security, CodeQL, OpenNext artifact validation, and Actions/JavaScript/Python CodeQL analysis — PASSED.
+- Visual QA and PR Agent were still in progress at the last status check.
+- The explicit size-measurement step following `./jules-verify.sh` is being added in a follow-up revision because repository governance requires measuring every build. That new-head check remains pending.
+
+## 7. Still unverified
+- No production Worker deployment or actual Cloudflare-triggered production updater run occurred in this session. The PR job intentionally skips deployment and uses Wrangler `--dry-run` only.
+- The first real owner notification after the Worker dispatches a production updater remains unverified.
+- The connected GitHub interface cannot start a new production `workflow_dispatch`; production triggering must be verified after the repaired changes are on main and the existing Worker deployment workflow runs.
+
+## 8. Final double-check
+- No application runtime, UI, dependencies, database, payments, secrets, or environment-variable values were changed.
+- No cron expressions or approved slot times changed. The updater does not blindly force overwrite customized command files.
+- CI evidence above belongs to commit `0df9f6aac428c8b2cb032ab268e7537bf51906a9`; a fresh run is required for the newer size-measurement/reporting revision.
+- **USEFUL RESULT: NO (the safe upgrade passes isolated CI, but the first production Cloudflare dispatch/notification is not yet demonstrated).**
