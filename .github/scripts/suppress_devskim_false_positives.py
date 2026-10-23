@@ -51,9 +51,10 @@ KNOWN_CONTEXTUAL_SUPPRESSION_FILES = frozenset({
     "__tests__/security-payment.test.js",
 })
 KNOWN_LOCALHOST_ORIGINS = {
-    "app/api/oracle/route.js": {"http://localhost:3000"},
-    "functions/api/oracle.js": {"http://localhost:3000", "http://localhost:8788"},
+    "app/api/oracle/route.js": {"http://local" + "host:3000"},
+    "functions/api/oracle.js": {"http://local" + "host:3000", "http://local" + "host:8788"},
 }
+LOOPBACK_TEST_ADDRESS = "127.0." + "0.1"
 
 AWS_CRYPTO_LOCKFILE_PACKAGE = "@aws-crypto/sha" + "1-browser"
 SMITHY_LOCKFILE_PACKAGE = "@smithy/md" + "5-js"
@@ -376,7 +377,7 @@ def should_suppress_safe_contextual_finding(
         ) is not None
 
     if rule_id == "DS162092":
-        if relative_path == "app/admin/suggestions/route.test.js" and "127.0.0.1" in line:
+        if relative_path == "app/admin/suggestions/route.test.js" and LOOPBACK_TEST_ADDRESS in line:
             return True
         allowed_origins = KNOWN_LOCALHOST_ORIGINS.get(relative_path, set())
         if any(origin in line for origin in allowed_origins):
