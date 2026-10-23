@@ -1,20 +1,21 @@
 ### Restore Existing Lucky Stories Visibility
 
 - **Task Group:** Troubleshooting.
-- **Reason:** The user reported that previously saved Lucky Stories disappeared. The task is to identify and repair the current data-fetch/cache behavior without recreating or changing story records.
+- **Reason:** Repair the reported disappearance of existing Lucky Stories without recreating or modifying their database records.
 - **Baseline evidence:**
-  - Read-only query against the connected Neon database found **8 total records, all 8 approved**, with non-empty locations. Records remain in storage.
-  - Current stored location formats include `Quebec canada`, `Pei canada`, `British columbia canada`, `Nova Scotia`, `saskatchewan`, and `Ontario`; province resolution tests now explicitly cover these formats.
-  - The merged visual-polish PR #1581 changed Lucky Map styling and scroll behavior, not the story database or data retrieval.
-  - The current API response advertised `public, s-maxage=3600, stale-while-revalidate=86400`, and the client waited for its first 60-second polling interval before asking for fresh data. This is a **verified stale-data exposure**; exact live cache contents could not be inspected from this session.
+  - A read-only query against the connected Neon database found **8 total records, all 8 approved**, with non-empty locations.
+  - Stored locations include `Quebec canada`, `Pei canada`, `British columbia canada`, `Nova Scotia`, `saskatchewan`, and `Ontario`; the province resolver test now covers these existing formats.
+  - The merged visual-polish PR #1581 changed map styling/scroll behavior, not story data.
+  - The API advertised `public, s-maxage=3600, stale-while-revalidate=86400`; the client waited for its first 60-second polling interval. This is a **verified exposure to stale cached responses**; the exact live cache contents could not be inspected from this session.
 - **Implementation:**
-  - `app/api/lucky-stories/route.js`: mark GET dynamic and return `Cache-Control: no-store, max-age=0, must-revalidate` and `Cloudflare-CDN-Cache-Control: no-store`, including on unavailable-database responses.
-  - `app/lucky-map-of-canada/lucky-map-of-canada.js`: refresh immediately on mount and use browser no-store plus a unique refresh query parameter during each existing poll to avoid an already cached empty API URL.
-  - `__tests__/lucky-stories-refresh.test.js`: assert story payload and no-store headers for configured and unavailable states.
-  - `__tests__/lucky-stories.test.js`: cover location formats present in the existing saved records.
-  - No database writes, story content changes, visual redesign, or security-control changes.
-- **Spec Kit:** `/speckit.specify`, `/speckit.plan`, and `/speckit.tasks` artifacts created sequentially via file-driven procedural execution in `.specify/features/040-lucky-stories-restoration/`; implementation changes follow `tasks.md`. Native slash-command dispatch and local shell execution were unavailable in this session.
-- **Files changed:** `app/api/lucky-stories/route.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`, `__tests__/lucky-stories-refresh.test.js`, `__tests__/lucky-stories.test.js`, the three task-scoped Spec Kit artifacts, and this summary.
-- **Verification status:** Automated tests, `./jules-verify.sh`, current-head OpenNext/Cloudflare build, build-size measurement and live browser confirmation are **pending CI/deployment**. This session could not run project commands because a local repository checkout was not available; no unrun check is reported as passing.
-- **Remaining issue:** Confirm after deployment that all 8 saved records display on the map; if they do not, inspect the production API response/configuration before considering any database repair.
-- **USEFUL RESULT:** NO — implementation is submitted for verification; live restoration has not yet been demonstrated.
+  - `app/api/lucky-stories/route.js`: explicitly dynamic GET route and no-store cache headers for success and unavailable-database responses.
+  - `app/lucky-map-of-canada/lucky-map-of-canada.js`: immediate refresh on mount, browser cache disabled, and unique refresh query parameter to avoid previously cached API URLs; existing 60-second refresh interval is preserved.
+  - `__tests__/lucky-stories-refresh.test.js`: verifies returned story payload and no-store headers for configured and unavailable states.
+  - `__tests__/lucky-stories.test.js`: covers location formats found in existing saved records.
+  - `memory-bank/activeContext.md`: records the verified data state and outstanding checks.
+  - No database writes, story-content changes, visual redesign, security-control changes, or dependencies added.
+- **Spec Kit stages:** `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, and `/speckit.implement` processed sequentially via file-driven procedural execution in `.specify/features/040-lucky-stories-restoration/`. Native slash-command dispatch and local shell execution were unavailable in this session.
+- **Files changed:** `.specify/features/040-lucky-stories-restoration/{spec.md,plan.md,tasks.md}`, `app/api/lucky-stories/route.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`, `__tests__/lucky-stories-refresh.test.js`, `__tests__/lucky-stories.test.js`, `memory-bank/activeContext.md`, and this summary.
+- **Verification:** GitHub diff inspection confirms only the scoped files above. Targeted/full tests, `./jules-verify.sh`, current-head OpenNext/Cloudflare validation and measured `.next + public` build size are pending CI; live API/UI confirmation is pending because the website could not be reached from this session. No unrun check is reported as passing.
+- **Remaining issue:** Demonstrate that all eight saved stories display after the fix is deployed. If not, inspect the production API response/configuration before considering a database repair.
+- **USEFUL RESULT:** NO — awaiting CI and live behavior confirmation.
