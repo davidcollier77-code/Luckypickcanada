@@ -1,5 +1,7 @@
 name: Update Spec Kit
 
+run-name: Update Spec Kit — ${{ github.event.inputs.dispatch_source || github.event_name }}
+
 on:
   schedule:
     - cron: '5 1 * * 2,5' # Primary scheduled update
@@ -7,12 +9,30 @@ on:
     - cron: '5 5 * * 2,5' # Single retry if no successful update PR was submitted
       timezone: 'America/Halifax'
   workflow_dispatch:
+    inputs:
+      dispatch_source:
+        description: "Trigger source: manual owner request or Cloudflare scheduler."
+        type: choice
+        required: true
+        default: manual
+        options:
+          - manual
+          - cloudflare
+      scheduler_slot:
+        description: "Cloudflare scheduler slot; blank for a manual run."
+        type: string
+        required: false
+        default: ""
 
 permissions:
   actions: read
   contents: write
   pull-requests: write
   issues: write
+
+concurrency:
+  group: update-spec-kit
+  cancel-in-progress: false
 
 jobs:
   update-spec-kit:
@@ -25,7 +45,14 @@ jobs:
         id: daily_guard
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISPATCH_SOURCE: ${{ github.event.inputs.dispatch_source || 'manual' }}
         run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_SOURCE" != "cloudflare" ]]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Owner-requested manual dispatch bypasses the daily-success guard."
+            exit 0
+          fi
+
           CURRENT_DATE="$(TZ=America/Halifax date +%F)"
 
           # Find earlier runs of this workflow and check whether one actually
@@ -83,21 +110,14 @@ jobs:
         if: steps.daily_guard.outputs.skip != 'true'
         run: pnpm install --frozen-lockfile
 
+      - name: Test Spec Kit customization rebase
+        if: steps.daily_guard.outputs.skip != 'true'
+        run: bash scripts/test-rebase-speckit-customizations.sh
+
       - name: Upgrade Spec Kit
         if: steps.daily_guard.outputs.skip != 'true'
         continue-on-error: false
-        run: |
-          # The CI runner is clean, so run the current published Spec Kit CLI
-          # through the official uvx one-time execution path. This avoids relying
-          # on a preinstalled "specify" executable and picks up new CLI releases
-          # automatically on each scheduled/manual run.
-          uvx --from specify-cli specify version
-
-          # Upgrade the installed project integration without --force.
-          uvx --from specify-cli specify integration upgrade generic
-
-          # Update all installed Spec Kit extensions without --force.
-          uvx --from specify-cli specify extension update
+        run: bash scripts/update-spec-kit-safely.sh
 
       - name: Validate Integration Status
         if: steps.daily_guard.outputs.skip != 'true'
@@ -137,34 +157,22 @@ jobs:
         run: |
           echo "Spec Kit update PR #${PR_NUMBER} was ${PR_OPERATION} successfully."
 
-      - name: Notify on PR update
-        if: steps.daily_guard.outputs.skip != 'true' && steps.cpr.outputs.pull-request-operation == 'updated'
+      - name: Notify on PR submission
+        if: steps.daily_guard.outputs.skip != 'true' && (steps.cpr.outputs.pull-request-operation == 'created' || steps.cpr.outputs.pull-request-operation == 'updated')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          PR_OPERATION: ${{ steps.cpr.outputs.pull-request-operation }}
           COMMIT_SHA: ${{ steps.cpr.outputs.pull-request-head-sha }}
+          DISPATCH_SOURCE: ${{ github.event.inputs.dispatch_source || github.event_name }}
+          SCHEDULER_SLOT: ${{ github.event.inputs.scheduler_slot || 'scheduled' }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          set -euo pipefail
           MARKER="<!-- notify-update:$COMMIT_SHA -->"
-
-          # Check if we already commented for this specific commit
-          COMMENT_EXISTS=$(gh pr view $PR_NUMBER --json comments -q ".comments[].body" | grep -F "$MARKER" || echo "")
-
-          if [ -z "$COMMENT_EXISTS" ]; then
-            gh pr comment $PR_NUMBER --body "@davidcollier77-code The GitHub Spec Kit update PR has been refreshed with new changes and is ready for review. $MARKER"
+          COMMENTS="$(gh pr view "$PR_NUMBER" --json comments -q '.comments[].body' 2>/dev/null || true)"
+          if ! printf '%s\n' "$COMMENTS" | grep -Fq "$MARKER"; then
+            gh pr comment "$PR_NUMBER" --body "@davidcollier77-code The Spec Kit updater completed and $PR_OPERATION this update PR. Trigger: $DISPATCH_SOURCE ($SCHEDULER_SLOT). Please review the update. Workflow run: $WORKFLOW_URL $MARKER"
           else
             echo "Notification for commit $COMMIT_SHA was already posted."
-          fi
-
-      - name: Fallback Notification on PR Creation
-        if: steps.daily_guard.outputs.skip != 'true' && steps.cpr.outputs.pull-request-operation == 'created'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
-        run: |
-          # Check if a review request was successfully made
-          HAS_REVIEWER=$(gh pr view $PR_NUMBER --json reviewRequests -q ".reviewRequests | length" || echo "0")
-
-          if [ "$HAS_REVIEWER" = "0" ]; then
-            # Fallback to comment mention if reviewer assignment wasn't possible
-            gh pr comment $PR_NUMBER --body "@davidcollier77-code A new GitHub Spec Kit update PR has been created and is ready for review."
           fi

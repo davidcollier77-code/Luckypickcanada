@@ -1,4 +1,15 @@
-# Active Context — Turnstile Early Script Preload (2026-10-22)
+# Active Context — Spec Kit Updater Reliability (2026-10-23)
+
+- **Verified cause:** Generic integration v1.2.2 was installed on 2026-10-20. The original versions of `.jules/cmds/speckit.implement.md` and `.jules/cmds/speckit.plan.md` match the exact hashes in the manifest. Commit `435c4a3a54742487f07df73090bb2d3c596740bf` later added intentional Jules-governance customizations.
+- **Observed failure:** CLI 1.2.3 stops at integration upgrade because those tracked commands differ from upstream; extension update and later validation/notification steps do not run.
+- **Repair branch:** `fix/speckit-updater-preserve-jules-customizations`. Current-head verification is pending.
+- **Fix design:** Track upstream base plus Jules overlay, check for overlay drift, temporarily restore the installed base so a normal non-forced upgrade can run, then three-way merge the overlay onto new templates. Unexpected edits/conflicts abort safely.
+- **Notifications and manual trigger:** Worker dispatch carries the Cloudflare source and approved slot; an owner-requested manual Spec Kit run bypasses the daily-success guard. Both workflows mention the owner for PR creation/update with the Actions run URL.
+- **Schedule safety:** Existing cron triggers and approved Atlantic times remain unchanged. No direct production Worker deployment or production dispatch was performed by this connected session.
+- **Verification pending:** Current-head tests, `./jules-verify.sh`, Wrangler dry-run, actual Spec Kit update and a real post-deployment Worker dispatch.
+
+
+---
 
 - **User-reported symptom:** The homepage Suggestion Box Turnstile check sometimes takes about 45 seconds or longer. This timing was not independently measured by this session.
 - **Verified current setup:** `@marsidev/react-turnstile` is pinned at 1.6.1. The shared layout already preconnects to Cloudflare; the widget's API script is injected only when the client widget initializes. Its configured URL is `https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit`.

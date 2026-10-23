@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - 'workers/updater-scheduler/**'
+      - 'scripts/update-spec-kit-safely.sh'
+      - 'scripts/rebase-speckit-customizations.sh'
+      - 'scripts/test-rebase-speckit-customizations.sh'
+      - '.github/spec-kit/customizations/**'
+      - '.specify/features/039-speckit-updater-customizations/**'
       - '.github/workflows/deploy-updater-scheduler.yml'
       - '.github/workflows/update-spec-kit.yml'
       - '.github/workflows/refresh-docs.yml'
@@ -55,6 +60,9 @@ jobs:
 
       - name: Test approved schedule mapping and safe dispatch behaviour
         run: node --test workers/updater-scheduler/test/index.node-test.mjs
+
+      - name: Test Spec Kit customization rebase
+        run: bash scripts/test-rebase-speckit-customizations.sh
 
       - name: Run repository governance verification
         run: ./jules-verify.sh

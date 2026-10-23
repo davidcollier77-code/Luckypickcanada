@@ -177,7 +177,7 @@ test("is disabled by default and never calls GitHub when disabled", async () => 
   assert.equal(calls, 0);
 });
 
-test("posts the workflow filename and main ref with a minimal request", async () => {
+test("posts workflow filename, main ref, source, and slot", async () => {
   let request;
   const result = await dispatchWorkflow(
     { workflow: "update-spec-kit.yml", slot: "spec-kit-primary" },
@@ -188,7 +188,7 @@ test("posts the workflow filename and main ref with a minimal request", async ()
   assert.equal(request.url, "https://api.github.com/repos/davidcollier77-code/Luckypickcanada/actions/workflows/update-spec-kit.yml/dispatches");
   assert.equal(request.init.method, "POST");
   assert.equal(request.init.headers.Authorization, "Bearer dummy-secret");
-  assert.deepEqual(JSON.parse(request.init.body), { ref: "main" });
+  assert.deepEqual(JSON.parse(request.init.body), { ref: "main", inputs: { dispatch_source: "cloudflare", scheduler_slot: "spec-kit-primary" } });
 });
 
 test("accepts successful HTTP 200 responses", async () => {
@@ -236,9 +236,15 @@ test("activation enables Worker while preserving native schedules pending explic
     ["documentation updater", docsWorkflow]
   ]) {
     assert.match(workflow, /^  workflow_dispatch:\s*$/m, name + " must retain manual dispatch");
+    assert.match(workflow, /dispatch_source:/, name + " must declare the dispatch source input");
+    assert.match(workflow, /scheduler_slot:/, name + " must declare the slot input");
     assert.match(workflow, /^  schedule:\s*$/m, name + " must keep automatic scheduling before cutover");
     assert.match(workflow, /vars\.UPDATER_SCHEDULER_ACTIVE != 'true'/, name + " must support guarded handoff to Worker scheduling");
   }
+  assert.match(specKitWorkflow, /DISPATCH_SOURCE.*dispatch_source/);
+  assert.match(specKitWorkflow, /Owner-requested manual dispatch bypasses the daily-success guard/);
+  assert.match(specKitWorkflow, /name: Notify on PR submission/);
+  assert.match(docsWorkflow, /Documentation Library updater completed and \$PR_OPERATION this PR/);
 });
 
 test("enabled scheduler bundles its dispatch secret into the same Worker deployment", async () => {
