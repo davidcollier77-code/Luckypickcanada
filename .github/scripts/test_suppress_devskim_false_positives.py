@@ -385,7 +385,12 @@ class ArtifactPathTests(unittest.TestCase):
 class KnownFalsePositiveRegressionTests(unittest.TestCase):
     def test_sha256_template_checksum_is_suppressed_only_in_exact_file_and_value(self):
         source = '{\n  "sha256": "' + SHA256 + '",\n  "source": "core"\n}\n'
-        region = {"startLine": 2, "startColumn": 14, "endColumn": 14 + len(SHA256)}
+        value_start = source.splitlines()[1].index('"' + SHA256 + '"')
+        region = {
+            "startLine": 2,
+            "startColumn": value_start + 1,
+            "endColumn": value_start + len(SHA256) + 3,
+        }
         self.assertTrue(
             suppressions.should_suppress_constitution_template_checksum(
                 ".specify/memory/.constitution-template.json", source, region
@@ -418,12 +423,17 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             path.parent.mkdir()
             source = '{\n  "githubShas": {\n    "/example/project": "' + SHA + '"\n  }\n}\n'
             path.write_text(source, encoding="utf-8")
+            value_start = source.splitlines()[2].index('"' + SHA + '"')
             self.assertTrue(
                 suppressions.should_suppress_checksum_metadata_finding(
                     ".docs/manifest.json",
                     path,
                     source,
-                    {"startLine": 3, "startColumn": 26, "endColumn": 26 + len(SHA)},
+                    {
+                        "startLine": 3,
+                        "startColumn": value_start + 1,
+                        "endColumn": value_start + len(SHA) + 3,
+                    },
                 )
             )
 
@@ -450,12 +460,17 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             path.parent.mkdir(parents=True)
             source = '{\n  "files": {\n    ".specify/example.sh": "' + SHA256 + '"\n  }\n}\n'
             path.write_text(source, encoding="utf-8")
+            value_start = source.splitlines()[2].index('"' + SHA256 + '"')
             self.assertTrue(
                 suppressions.should_suppress_checksum_metadata_finding(
                     ".specify/integrations/speckit.manifest.json",
                     path,
                     source,
-                    {"startLine": 3, "startColumn": 29, "endColumn": 29 + len(SHA256)},
+                    {
+                        "startLine": 3,
+                        "startColumn": value_start + 1,
+                        "endColumn": value_start + len(SHA256) + 3,
+                    },
                 )
             )
 
