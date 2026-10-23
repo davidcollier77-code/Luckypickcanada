@@ -581,6 +581,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         justifications = [
             "False positive: a complete SHA/UUID/checksum value in an explicitly allowlisted metadata field overlaps the reported finding.",
             "False positive: this exact SHA value is a pinned upstream revision or tracked-file checksum in an allowlisted manifest map.",
+            "False positive: this is the checked-in SHA-256 digest of the constitution template, not a credential.",
             "False positive: this is the repository's documented public Cloudflare account identifier; the webhook secret is configured separately.",
             "False positive: this is a callable timer callback or a test-runner timeout configuration, not string-based code execution by setTimeout.",
             "False positive: this is an explicitly identified development loopback origin or test-only loopback fixture, not shipped debug code.",
