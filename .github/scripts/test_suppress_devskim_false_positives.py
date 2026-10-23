@@ -389,7 +389,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         self.assertTrue(
             suppressions.should_suppress_metadata_finding(
                 '{"sha256": "' + SHA256 + '"}',
-                {"startColumn": 12, "endColumn": 12 + len(SHA256)},
+                {"startColumn": 13, "endColumn": 13 + len(SHA256)},
             )
         )
 
@@ -437,7 +437,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                     ".specify/integrations/speckit.manifest.json",
                     path,
                     source,
-                    {"startLine": 3, "startColumn": 25, "endColumn": 25 + len(SHA256)},
+                    {"startLine": 3, "startColumn": 29, "endColumn": 29 + len(SHA256)},
                 )
             )
 
