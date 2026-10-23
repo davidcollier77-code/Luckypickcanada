@@ -515,3 +515,14 @@
 - **Goal:** Improve image delivery for the homepage hero emblem and Facebook community cover.
 - **Change:** Implemented responsive `<picture>` structures and preloads using dynamically generated `669w`, `551w`, and `800w` AVIF and WebP variants using sharp.
 - **Verification:** Verified via Playwright visual checks, build passing within limits, and manual check of layout and formats.
+
+
+---
+
+# Current Focus — Lucky Stories Visibility Restoration (2026-10-23)
+
+- **User-reported symptom:** Existing Lucky Stories disappeared from the Lucky Map after recent visual polish.
+- **Verified storage state:** A read-only Neon query found eight `lucky_stories` rows; all eight were approved and had non-empty locations. No database writes were performed.
+- **Verified code risks:** `app/api/lucky-stories/route.js` advertised public one-hour caching and stale-while-revalidate for up to 24 hours. The map client started polling only after the first 60-second interval.
+- **Repair in progress:** Branch `fix/lucky-stories-live-refresh-20261023`; force dynamic/no-store API responses and immediate client refresh with `cache: 'no-store'` plus a unique query parameter. Added response-header/payload and saved-location regression tests.
+- **Outstanding evidence:** The live API response and actual UI could not be reached from this session; focused/full tests, `./jules-verify.sh`, current-head OpenNext validation, build-size measurement (<495 MiB), and post-deployment visual confirmation remain pending. Do not claim the records are visible again until verified.
