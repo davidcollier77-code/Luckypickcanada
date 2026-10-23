@@ -44,6 +44,9 @@ jobs:
         with:
           output-filename: devskim-alerts.sarif
 
+      - name: Validate DevSkim suppression Python syntax
+        run: python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py
+
       - name: Test DevSkim suppression filter
         id: suppression-tests
         continue-on-error: true

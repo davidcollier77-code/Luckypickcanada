@@ -1,36 +1,44 @@
-### Restore Existing Lucky Stories Visibility
+### Restore CodeQL Python Analysis
 
-- **Task Group:** Troubleshooting.
-- **Reason:** Repair stale Lucky Stories refresh behavior and address the reviewers' request cleanup/poll-overlap findings without recreating or modifying database records.
-- **Repository guidance used:** `AGENTS.md` (read first), `.jules/jules.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `.jules/troubleshooting.md`, `.specify/memory/constitution.md`, `.docs/manifest.json`, `.docs/troubleshooting/jules_google_docs.md`, `.docs/troubleshooting/_google-gemini_gemini-cli.md`, `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md`, and the four `.jules/cmds/speckit.{specify,plan,tasks,implement}.md` definitions. **USEFUL=YES:** these established the one-task scope, file-driven Spec Kit execution when native dispatch/local shell were unavailable, verification gates, and prohibition on merging/deploying. `.docs/` remained read-only.
-- **Relevant technology versions:** Next.js `16.4.1` (USED=YES, USEFUL=YES: App Router GET handler caching/dynamic behavior); Vitest `5.0.0` with Vite `8.3.4` (USED=YES, USEFUL=YES: exposed JSX-in-`.js` parsing in the first test approach, so the refresh lifecycle was extracted into a non-JSX helper); pnpm `10.30.3` (USED=YES, USEFUL=YES: repository package manager for the CI verification commands). No dependencies were added.
-- **Baseline evidence:**
-  - A read-only query against the connected Neon database found **8 total records, all 8 approved**, with non-empty locations.
-  - Stored locations include `Quebec canada`, `Pei canada`, `British columbia canada`, `Nova Scotia`, `saskatchewan`, and `Ontario`; the province resolver test now covers these existing formats.
-  - The merged visual-polish PR #1581 changed map styling/scroll behavior, not story data.
-  - The API advertised `public, s-maxage=3600, stale-while-revalidate=86400`; the client waited for its first 60-second polling interval. This is a **verified exposure to stale cached responses**; the exact live cache contents could not be inspected from this session.
-- **Reviewer findings addressed:** Amazon Q's `_refresh=Date.now()` finding is fixed by removing the timestamp query parameter; PR Reviewer Guide's slow-request finding is fixed with a single-in-flight guard. Both findings have regression coverage in the extracted refresh helper.
-- **Implementation:**
-  - `app/api/lucky-stories/route.js`: explicitly dynamic GET route and no-store cache headers for success and unavailable-database responses.
-  - `app/lucky-map-of-canada/lucky-map-of-canada.js` delegates its effect lifecycle to `app/lucky-map-of-canada/lucky-stories-refresh.js`, which immediately refreshes with browser cache disabled and a stable API URL, and skips polls while a request is pending.
-  - `__tests__/lucky-stories-refresh.test.js`: verifies returned story payload and no-store headers for configured and unavailable states.
-  - `__tests__/lucky-map-refresh.test.jsx`: regression-checks the stable request URL and ensures a pending request blocks overlapping poll attempts.
-  - `__tests__/lucky-stories.test.js`: covers location formats found in existing saved records.
-  - `memory-bank/activeContext.md`: records the verified data state and outstanding checks.
-  - No database writes, story-content changes, visual redesign, security-control changes, or dependencies added.
-- **Spec Kit stages:** all four stages completed in order using FILE-DRIVEN PROCEDURAL EXECUTION (native slash-command dispatch/local shell execution unavailable): `/speckit.specify` — `.jules/cmds/speckit.specify.md` → `.specify/features/040-lucky-stories-restoration/spec.md`; `/speckit.plan` — `.jules/cmds/speckit.plan.md` → `plan.md`; `/speckit.tasks` — `.jules/cmds/speckit.tasks.md` → `tasks.md`; `/speckit.implement` — `.jules/cmds/speckit.implement.md` → the scoped API/client/test changes. The first client-test attempt imported JSX from the existing `.js` component and failed Vitest parsing; the follow-up commit extracted the polling lifecycle into `lucky-stories-refresh.js`, so the final regression test imports plain JavaScript.
-- **Files changed:** `.specify/features/040-lucky-stories-restoration/{spec.md,plan.md,tasks.md}`, `app/api/lucky-stories/route.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`, `app/lucky-map-of-canada/lucky-stories-refresh.js`, `__tests__/lucky-map-refresh.test.jsx`, `__tests__/lucky-stories-refresh.test.js`, `__tests__/lucky-stories.test.js`, `memory-bank/activeContext.md`, and this summary.
-- **Verification (implementation commit `dd5fec9dcd61529c7c2c2e6963ec091d9ee6f205`):**
-  - **PASS** — targeted Vitest check: 2 files / 14 tests.
-  - **PASS** — `pnpm run test`: 18 test files, 105 tests passed, 0 failed.
-  - **PASS** — `pnpm tsc --noEmit`.
-  - **PASS** — `./jules-verify.sh`: 17 passed, 0 failed.
-  - **PASS** — `pnpm exec playwright test`: 27 passed across desktop and two mobile viewport projects.
-  - **PASS** — `pnpm run build`; combined `.next + public` size **332,473,620 bytes / 317.07 MiB**, below the **495 MiB** cap (519,045,120 bytes).
-  - **PASS** — `pnpm exec opennextjs-cloudflare build`, compiled CSS/worker/assets checks, and `pnpm exec wrangler build --config ./wrangler.jsonc` (no deployment).
-  - **PASS** — CodeQL (Python, JavaScript/TypeScript, Actions), DevSkim, PR Agent review, and updater-scheduler verification. Its deploy job was skipped for this PR.
-  - Run evidence: [Visual QA](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707911), [OpenNext/Cloudflare validation](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707731), [PR Agent](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707817), [DevSkim](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707780), [CodeQL](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017702529), [updater-scheduler verification](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707712).
-  - Final diff double-check: only the task's API route, refresh lifecycle/helper, focused regression coverage, feature artifacts, active context, and PR summary changed; no DB writes, new dependencies, secrets, visual/content redesign, merge, or deployment.
-- **Remaining issue:** The eight approved story rows were verified in storage before this repair, but their actual user-visible rendering after deployment is not verified here because this task did not merge or deploy the PR. The client intentionally retains server-rendered map state if a refresh fails and continues retrying on the existing 60-second interval.
-- **Remaining issue:** Demonstrate that all eight saved stories display after the fix is deployed. If not, inspect the production API response/configuration before considering a database repair.
-- **USEFUL RESULT:** YES — both actionable reviewer findings are fixed and implementation CI verification passed. Actual production story visibility remains a post-deployment check.
+- **Task Group:** Security.
+- **Reason:** The supplied GitHub video shows CodeQL's `language:python` configuration warning that some files could not be processed due to syntax errors. The current source contains a malformed checksum-metadata `elif` block.
+- **VERIFIED baseline:** In `.github/scripts/suppress_devskim_false_positives.py`, a stray source-line extraction sits where the checksum branch's `justification = (` should begin, leaving invalid Python. The helper `_source_line_from_text` already exists. The DevSkim workflow currently marks its unittest step `continue-on-error: true`, so a dedicated syntax gate is warranted.
+- **Changes:** Repair the malformed conditional; use the already-read `source_text` for snippet extraction; add a non-tolerated `python3 -m py_compile` step ahead of the existing suppression tests. No suppression predicates, allowlists, reviewed justification strings, dependencies, application routes, UI, or deployment settings are changed.
+- **Exact implementation files:** `.github/scripts/suppress_devskim_false_positives.py`; `.github/workflows/devskim.yml`.
+- **Task artifacts:** `specs/043-codeql-python-syntax-repair/spec.md`, `specs/043-codeql-python-syntax-repair/plan.md`, `specs/043-codeql-python-syntax-repair/tasks.md`.
+
+#### Repository guidance and task-relevant material
+
+- `AGENTS.md` — USED=YES, USEFUL=YES; mandatory workflow, narrow-scope and verification requirements.
+- `.jules/jules.md` — USED=YES, USEFUL=YES; sequential Spec Kit pass and no duplicate branch/PR.
+- `memory-bank/projectBrief.md` — USED=YES, USEFUL=NO; established product context, no runtime product changes.
+- `memory-bank/activeContext.md` — USED=YES, USEFUL=YES; updated with the currently unresolved CodeQL analysis warning and verification status.
+- `.jules/security.md` — USED=YES, USEFUL=YES; reinforces testing and preservation of security controls.
+- `.docs/manifest.json` — USED=YES, USEFUL=YES; selected the security task group and confirmed its routed references.
+- `.docs/security/jules_google_docs.md` — USED=YES, USEFUL=NO; mandatory local reference inspected; no special Jules behavior was needed for the syntax repair.
+- `.docs/security/_google-gemini_gemini-cli.md` — USED=YES, USEFUL=NO; mandatory local CLI reference inspected; no CLI behavior affects this Python correction.
+- `.docs/security/_websites_ai_google_dev_gemini-api.md` — USED=YES, USEFUL=NO; mandatory local API reference inspected; no API integration is involved.
+- `.specify/memory/constitution.md` — USED=YES, USEFUL=YES; confirms minimal changes and verification-before-claims.
+- `.specify/templates/spec-template.md`, `.specify/templates/plan-template.md`, `.specify/templates/tasks-template.md` — USED=YES, USEFUL=YES; artifact structure.
+- `scripts/verify-speckit-task.sh` and `scripts/test-verify-speckit-task.sh` — USED=YES, USEFUL=YES; confirmed that this PR must change one complete feature directory's spec, plan, and tasks.
+- `.github/scripts/test_suppress_devskim_false_positives.py` — USED=YES, USEFUL=YES; existing regression suite imports and exercises this helper.
+- `.github/workflows/devskim.yml` — USED=YES, USEFUL=YES; identifies the test and suppression steps and their failure-tolerance behavior.
+- `package.json` — USED=YES, USEFUL=NO; checked that this Python-only change does not warrant dependency or build changes.
+
+#### Spec Kit stage record
+
+The native slash-command dispatcher and a local working tree were not available in this connector session. The four stages were processed sequentially as **FILE-DRIVEN PROCEDURAL EXECUTION**, using the corresponding command definitions and templates. The scripts that normally initialize a local feature directory could not be run here; CI's changed-artifact gate is expected to verify the committed artifacts.
+
+- `/speckit.specify` — definition `.jules/cmds/speckit.specify.md`; result: `spec.md` created.
+- `/speckit.plan` — definition `.jules/cmds/speckit.plan.md`; result: `plan.md` created.
+- `/speckit.tasks` — definition `.jules/cmds/speckit.tasks.md`; result: `tasks.md` created with completed implementation and pending verification items.
+- `/speckit.implement` — definition `.jules/cmds/speckit.implement.md`; result: source and workflow correction prepared for CI.
+
+#### Verification and limits
+
+- **VERIFIED:** The current main-branch file contains the malformed block shown in the video; the patch restores the intended conditional structure.
+- **Not run locally:** `python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py`, the unittest suite, and `./jules-verify.sh`. A local clone attempt was blocked because the execution container could not resolve `github.com`. No local test/build success is claimed.
+- **Pending CI:** The DevSkim workflow's new syntax-check step, existing unittest suite, PR checks, and a completed CodeQL analysis confirming the warning is cleared.
+- **Behavior preserved:** Current allowlisted paths, checksum-validation predicates, exact false-positive justification strings, and all unrelated application behavior.
+- **Pre-submission double-check:** Reviewed source replacement boundaries and workflow insertion location; no dependencies, secrets, protected systems, build artifacts, visuals, copy, audio, or deployment configuration added or changed.
+- **USEFUL RESULT: NO** — the repair is submitted for verification, but the user-requested result is not marked verified until CI and CodeQL confirm it.

@@ -456,7 +456,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 source_text = safe_path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 source_text = ""
-            snippet = _source_line_for_region(region, safe_path)
+            snippet = _source_line_from_text(source_text, region)
 
             justification = None
             if rule_id == "DS173237" and should_suppress_metadata_finding(snippet, region):
@@ -467,7 +467,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
             elif rule_id == "DS173237" and should_suppress_checksum_metadata_finding(
                 relative_path, safe_path, source_text, region
             ):
-            snippet = _source_line_from_text(source_text, region)
+                justification = (
                     "False positive: this exact SHA value is a pinned upstream revision "
                     "or tracked-file checksum in an allowlisted manifest map."
                 )

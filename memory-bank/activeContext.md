@@ -527,3 +527,13 @@
 - **Implementation verification passed:** Commit `dd5fec9dcd61529c7c2c2e6963ec091d9ee6f205` removes the unnecessary `_refresh=Date.now()` URL parameter, keeps the API URL stable with `cache: 'no-store'`, and prevents overlapping 60-second polls with a single-in-flight guard in `app/lucky-map-of-canada/lucky-stories-refresh.js`. The component delegates its effect to this helper. A client regression test checks stable URLs and confirms that pending requests suppress additional polls.
 - **Verified CI:** Full unit suite 18 test files / 105 tests; `pnpm tsc --noEmit`; `./jules-verify.sh` (17 passed, 0 failed); Playwright (27 passed across desktop/mobile); Next.js production build; OpenNext Cloudflare build; compiled CSS/worker/assets and Wrangler no-deploy validation all passed. Combined `.next + public` size: 332,473,620 bytes / 317.07 MiB (<495 MiB). CodeQL, DevSkim, PR Agent, and updater-scheduler verification passed. No dependency additions, DB writes, merge, or deployment occurred.
 - **Remaining proof:** The read-only database check found eight approved saved stories; do not claim they are visible in production until the PR is deployed and the user-facing map is checked. If rendering still fails after deployment, inspect the live API response/configuration before considering a data repair.
+
+
+---
+
+# Active Context — CodeQL Python syntax repair (2026-10-23)
+
+- **Verified baseline:** The CodeQL `language:python` configuration displayed a syntax-error warning. The current `.github/scripts/suppress_devskim_false_positives.py` contained a malformed checksum-metadata conditional: source-line extraction replaced the branch's `justification` assignment.
+- **Repair under review:** `fix/codeql-python-syntax-repair-20261023` restores the intended branch body, uses the already-loaded source text for snippet extraction, and adds a non-tolerated Python compile step to `.github/workflows/devskim.yml`.
+- **Scope preserved:** No suppression predicates/allowlists or justification text were broadened; no application runtime, dependencies, security controls, deployment settings, or assets changed.
+- **Verification status:** Local execution was unavailable in this session. Python compilation, the suppression regression suite, `./jules-verify.sh`, PR checks, and confirmation from a completed CodeQL scan remain pending. Do not consider the warning cleared until the completed analysis confirms it.
