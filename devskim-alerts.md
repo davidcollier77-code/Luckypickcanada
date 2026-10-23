@@ -111,3 +111,7 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 
 - **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:225` — Review setTimeout for untrusted data <!-- devskim-id:5f63a6802eaeb7431c82 -->
 - **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:199` — Review setTimeout for untrusted data <!-- devskim-id:b1d79d0a75ad0f9f478a -->
+
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:202` — Review setTimeout for untrusted data <!-- devskim-id:ed023ff75b88e657fc3a -->
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:176` — Review setTimeout for untrusted data <!-- devskim-id:8de8d47b8cd5594e60ab -->
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:159` — Review setTimeout for untrusted data <!-- devskim-id:6a0101041464537e54fc -->
