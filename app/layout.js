@@ -1,34 +1,6 @@
 import Script from 'next/script';
 import Link from 'next/link';
-import { Inter, Manrope, Playfair_Display, Cinzel } from 'next/font/google';
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
-});
-
-const manrope = Manrope({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-manrope',
-  weight: ['400', '500', '600', '700', '800'],
-});
-
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-playfair',
-  weight: ['400', '500', '600', '700', '800', '900'],
-});
-
-const cinzel = Cinzel({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-cinzel',
-  weight: ['600', '700', '800', '900'],
-});
+import { inter, manrope, playfair, cinzel } from './fonts';
 
 import '../themes/default/index.css';
 import './globals.css';

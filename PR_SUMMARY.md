@@ -17,7 +17,7 @@
 ## Implementations & Root Causes
 - **Render-blocking requests (VERIFIED)**: The initial issue was caused by `<link rel="stylesheet">` tags fetching Google Fonts synchronously from `fonts.googleapis.com` in `app/layout.js`. Fixed by instantiating `next/font/google` instances (`inter`, `manrope`, `playfair`, `cinzel`) inside `app/fonts.js` and injecting their variables dynamically into the `<html>` root, eliminating the network request while preserving the identical fonts.
 - **Unused CSS (VERIFIED)**: Large sections of unused CSS like `.lucky-blackjack`, `.reference-hero-*` were statically defined in `public/themes/default/homepage.css` and `default.css`. Fixed by safely stripping out only confirmed unreferenced CSS artifact classes using exact Regex matches (`^\\.classname(:[a-zA-Z0-9_-]+)*\\s*\\{[^}]+\\}`) ensuring no active styles were harmed.
-- **Unused JavaScript (VERIFIED)**: Large JS components like `CheckoutModal` and `LuckyRevealPopup` were being evaluated into the initial JS payload because they didn't have `{ ssr: false }`. Fixed by appending `{ ssr: false }` to their `next/dynamic` import definitions inside `app/homepage/HomePage.js`, deferring them successfully.
+- **Unused JavaScript (VERIFIED)**: `CheckoutModal` and `LuckyRevealPopup` are conditionally rendered with `next/dynamic`, so their chunks can load only when checkout or reveal state is needed. `{ ssr: false }` additionally disables prerendering; it is not the cause of their initial-load deferral.
 - **Visuals Preserved (VERIFIED)**: Image configuration, rendering paths, sizing, layout, and visual fidelity were strictly preserved.
 
 ## Verification Results
