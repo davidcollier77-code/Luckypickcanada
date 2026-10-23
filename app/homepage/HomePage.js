@@ -465,7 +465,7 @@ export default function HomePage() {
           <p>Share a story, celebrate a small win, and connect with fellow Lucky Pick Canada explorers.</p>
         </div>
         <a href="https://www.facebook.com/groups/1060808069624999/" target="_blank" rel="noopener noreferrer" className="homepage-community-image">
-          <img src={DEFAULT_THEME.assets.communityCover} alt="Lucky Pick Canada Community Facebook group cover" width="769" height="1376" />
+          <picture><source type="image/avif" srcSet="/FB_IMG_1785107325979-551w.avif 551w, /FB_IMG_1785107325979-800w.avif 800w, /FB_IMG_1785107325979.avif 1376w" sizes="(max-width: 768px) 100vw, 551px" /><source type="image/webp" srcSet="/FB_IMG_1785107325979-551w.webp 551w, /FB_IMG_1785107325979-800w.webp 800w, /FB_IMG_1785107325979.webp 1376w" sizes="(max-width: 768px) 100vw, 551px" /><img src={DEFAULT_THEME.assets.communityCover} srcSet="/FB_IMG_1785107325979-551w.jpg 551w, /FB_IMG_1785107325979-800w.jpg 800w, /FB_IMG_1785107325979.jpg 1376w" sizes="(max-width: 768px) 100vw, 551px" alt="Lucky Pick Canada Community Facebook group cover" width="1376" height="768" loading="lazy" /></picture>
         </a>
       </section>
 

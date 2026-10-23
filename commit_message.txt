@@ -1,8 +1,0 @@
-security: remediate glob CVE-2025-64756
-
-- Update pnpm overrides to enforce glob 10.5.0 for the 10.x line.
-- Regenerate lockfile using pinned pnpm 10.30.3.
-- Address high severity vulnerability introduced through @opennextjs/cloudflare -> @opennextjs/aws -> @node-minify/core -> glob@10.3.3.
-- Preserve other dependencies and functionality.
-- Build verified at 322MB, safely below 495MB limit.
-- Verified test suite and local verify script pass successfully.
