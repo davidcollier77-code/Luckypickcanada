@@ -379,8 +379,6 @@ class ArtifactPathTests(unittest.TestCase):
             self.assertNotIn("suppressions", data["runs"][0]["results"][0])
 
 
-if __name__ == "__main__":
-    unittest.main()
 
 
 
@@ -585,3 +583,6 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             ["DS172411"],
         )
 
+
+if __name__ == "__main__":
+    unittest.main()
