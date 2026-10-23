@@ -38,9 +38,21 @@ As the repository maintainer, I need the DevSkim suppression helper to remain va
 - **FR-004**: The DevSkim workflow MUST run a non-optional Python syntax check for the suppression helper before its suppression-test step.
 - **FR-005**: The patch MUST NOT broaden allowlists, remove security findings by new rules, change runtime application behavior, or add dependencies.
 
+## CI Verification Follow-up
+
+The initial pull-request validation found additional failures outside the original Python syntax defect:
+
+- The full Vitest suite called vi.runAllMicrotasksAsync(), which is not available in the installed Vitest 5.0.0. Replace it with the supported vi.waitFor() assertion while preserving the polling assertions.
+- Next.js 16.4.1 failed in next/font/google while parsing an extensionless Google Fonts URL. The Next.js v16.4.3 release notes explicitly include a fix for extensionless Google font URLs in both bundlers. Upgrade only the Next.js patch version and lockfile metadata; keep the font definitions untouched.
+- Amazon Q identified that a hard-failing syntax guard can skip SARIF upload. Keep the syntax check hard-failing, but make the SARIF upload and fallback warning run with always() so raw scanner findings remain available if suppression validation fails.
+- Remove the now-unused _source_line_for_region helper after adopting _source_line_from_text.
+
 ## Success Criteria
 
 - **SC-001**: `python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py` succeeds on the task head.
 - **SC-002**: `python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'` passes.
 - **SC-003**: A completed CodeQL analysis no longer reports that this Python source file could not be processed because of a syntax error.
 - **SC-004**: Existing suppression rule predicates and justification strings remain unchanged.
+- **SC-005**: The full Vitest suite uses supported APIs and passes, including the Lucky Map refresh regression test.
+- **SC-006**: The production build succeeds with Next.js 16.4.3 and retains the existing four Google font definitions and weights.
+- **SC-007**: If Python syntax validation fails, the workflow still uploads available raw DevSkim SARIF and emits a warning, while the syntax check itself continues to fail the job.

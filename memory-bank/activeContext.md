@@ -533,7 +533,8 @@
 
 # Active Context — CodeQL Python syntax repair (2026-10-23)
 
-- **Verified baseline:** The CodeQL `language:python` configuration displayed a syntax-error warning. The current `.github/scripts/suppress_devskim_false_positives.py` contained a malformed checksum-metadata conditional: source-line extraction replaced the branch's `justification` assignment.
-- **Repair under review:** `fix/codeql-python-syntax-repair-20261023` restores the intended branch body, uses the already-loaded source text for snippet extraction, and adds a non-tolerated Python compile step to `.github/workflows/devskim.yml`.
-- **Scope preserved:** No suppression predicates/allowlists or justification text were broadened; no application runtime, dependencies, security controls, deployment settings, or assets changed.
-- **Verification status:** Local execution was unavailable in this session. Python compilation, the suppression regression suite, `./jules-verify.sh`, PR checks, and confirmation from a completed CodeQL scan remain pending. Do not consider the warning cleared until the completed analysis confirms it.
+- **Verified original CI on commit a9a19762e028cd76cb36ce0147d9ee1d18bed9f4:** DevSkim passed Python syntax validation, suppressor tests, filtering, and SARIF upload. Visual QA passed 104/105 tests; the single failure was `vi.runAllMicrotasksAsync()` missing in the installed Vitest version. OpenNext validation failed in the Next.js Google font loader while parsing an extensionless Google Fonts URL from unchanged `app/fonts.js`.
+- **Verified fix path:** Next.js v16.4.3 release notes explicitly include a fix for extensionless Google font URLs in both bundlers. The follow-up pins Next.js 16.4.3 and updates Next/@next entries and integrity values in pnpm-lock.yaml, without changing font definitions or weights.
+- **Test repair:** The Lucky Map refresh test now uses Vitest's supported `vi.waitFor()` API to await the async data update.
+- **Amazon Q safety finding:** A hard-failing Python syntax check could skip SARIF upload. The updated workflow keeps syntax validation fatal but runs the SARIF upload and fallback warning with `always()` so raw DevSkim findings remain available on failure. Removed unused `_source_line_for_region` helper.
+- **Follow-up verification:** Full CI, `./jules-verify.sh`, size-cap measurement, and a completed CodeQL analysis remain pending. Do not consider the original Python syntax warning cleared until the completed analysis confirms it.
