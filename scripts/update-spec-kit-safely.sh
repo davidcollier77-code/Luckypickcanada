@@ -58,10 +58,10 @@ uvx --from specify-cli specify version
 for file in "${FILES[@]}"; do cp "$BASE_DIR/$file" "$ROOT_DIR/.jules/cmds/$file"; done
 uvx --from specify-cli specify integration upgrade generic
 
-# Record fresh upstream templates, then update installed extensions.
-for file in "${FILES[@]}"; do cp "$ROOT_DIR/.jules/cmds/$file" "$TEMP_DIR/new-base/$file"; done
+# Update installed extensions, then record the resulting upstream templates as the new base.
 uvx --from specify-cli specify extension update
-for file in "${FILES[@]}"; do cp "$TEMP_DIR/new-base/$file" "$ROOT_DIR/.jules/cmds/$file"; done
+for file in "${FILES[@]}"; do cp "$ROOT_DIR/.jules/cmds/$file" "$TEMP_DIR/new-base/$file"; done
+# new-base now reflects both integration upgrade and extension update; rebase Jules overlay onto it.
 bash "$ROOT_DIR/scripts/rebase-speckit-customizations.sh" "$ROOT_DIR" "$TEMP_DIR/new-base"
 
 for file in "${FILES[@]}"; do
