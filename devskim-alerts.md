@@ -3,3 +3,115 @@
 This is the running list of distinct findings detected by DevSkim. New findings are appended once; entries are not removed automatically. Remove an entry only after its remediation has been verified.
 
 <!-- DevSkim findings are appended below this line. -->
+
+- **NOTE — DS172411** — `app/checkout-modal.js:47` — Review setTimeout for untrusted data <!-- devskim-id:a65aa1191ad4cd4e24f8 -->
+- **NOTE — DS172411** — `app/lucky-card-reveal.js:1049` — Review setTimeout for untrusted data <!-- devskim-id:1f185873eb6532d2e3ba -->
+- **NOTE — DS610000** — `__tests__/security-payment.test.js:71` — HTML link missing noopener or noreferrer <!-- devskim-id:2f49eddb79a4ab71da57 -->
+- **ERROR — DS173237** — `.docs/manifest.json:463` — Do not store tokens or keys in source code. <!-- devskim-id:a002d479f7408390f6ae -->
+- **ERROR — DS173237** — `.docs/manifest.json:462` — Do not store tokens or keys in source code. <!-- devskim-id:9fe33186e45b4c65886c -->
+- **ERROR — DS173237** — `.docs/manifest.json:461` — Do not store tokens or keys in source code. <!-- devskim-id:997028c442e85d0b663d -->
+- **ERROR — DS173237** — `.docs/manifest.json:460` — Do not store tokens or keys in source code. <!-- devskim-id:664b4b36e2a0c8bc2f9c -->
+- **ERROR — DS173237** — `.docs/manifest.json:459` — Do not store tokens or keys in source code. <!-- devskim-id:438cbc103e503c4407cf -->
+- **ERROR — DS173237** — `.docs/manifest.json:458` — Do not store tokens or keys in source code. <!-- devskim-id:2c1b4db6c75c151ac97d -->
+- **ERROR — DS173237** — `.docs/manifest.json:457` — Do not store tokens or keys in source code. <!-- devskim-id:fbd44e9267e478f30d8c -->
+- **ERROR — DS173237** — `.docs/manifest.json:456` — Do not store tokens or keys in source code. <!-- devskim-id:f0f37536156f95806b40 -->
+- **ERROR — DS173237** — `.docs/manifest.json:455` — Do not store tokens or keys in source code. <!-- devskim-id:b32b3f420bdc6b158235 -->
+- **ERROR — DS173237** — `.docs/manifest.json:454` — Do not store tokens or keys in source code. <!-- devskim-id:597aff71635c704496fd -->
+- **ERROR — DS173237** — `.docs/manifest.json:453` — Do not store tokens or keys in source code. <!-- devskim-id:39aaaaa87dd5cfa40058 -->
+- **ERROR — DS173237** — `.docs/manifest.json:452` — Do not store tokens or keys in source code. <!-- devskim-id:2f8932c29e2729c9a676 -->
+- **ERROR — DS173237** — `.docs/manifest.json:451` — Do not store tokens or keys in source code. <!-- devskim-id:c8b63bf00ff83146a5c6 -->
+- **ERROR — DS173237** — `.docs/manifest.json:450` — Do not store tokens or keys in source code. <!-- devskim-id:c72fff7f9d4b8cfe0ac1 -->
+- **ERROR — DS173237** — `.docs/manifest.json:449` — Do not store tokens or keys in source code. <!-- devskim-id:4d7f81689629b92060af -->
+- **ERROR — DS173237** — `.docs/manifest.json:448` — Do not store tokens or keys in source code. <!-- devskim-id:c76d9e25b23559262a27 -->
+- **ERROR — DS173237** — `.docs/manifest.json:447` — Do not store tokens or keys in source code. <!-- devskim-id:6dc4951f4dc01965c8f8 -->
+- **ERROR — DS173237** — `.docs/manifest.json:446` — Do not store tokens or keys in source code. <!-- devskim-id:f088c84718e9aecbc3c8 -->
+- **ERROR — DS173237** — `.docs/manifest.json:445` — Do not store tokens or keys in source code. <!-- devskim-id:012fe3dd9095f34bb488 -->
+- **ERROR — DS173237** — `.docs/manifest.json:444` — Do not store tokens or keys in source code. <!-- devskim-id:1efeadb74f9c11a018da -->
+- **ERROR — DS173237** — `.docs/manifest.json:443` — Do not store tokens or keys in source code. <!-- devskim-id:3d02f5e298fb3c88d51a -->
+- **ERROR — DS173237** — `.docs/manifest.json:442` — Do not store tokens or keys in source code. <!-- devskim-id:1f593e2433b80dd05f0f -->
+- **ERROR — DS173237** — `.docs/manifest.json:441` — Do not store tokens or keys in source code. <!-- devskim-id:564f13404b6120f66f7b -->
+- **ERROR — DS173237** — `.docs/manifest.json:440` — Do not store tokens or keys in source code. <!-- devskim-id:7d1de37b0616313582d6 -->
+- **ERROR — DS173237** — `.docs/manifest.json:439` — Do not store tokens or keys in source code. <!-- devskim-id:dcadab711a9a18620eae -->
+- **ERROR — DS173237** — `.docs/manifest.json:438` — Do not store tokens or keys in source code. <!-- devskim-id:2c0ee31d12d99cde6cbd -->
+- **ERROR — DS173237** — `.docs/manifest.json:437` — Do not store tokens or keys in source code. <!-- devskim-id:c85bf8174b65089adefe -->
+- **ERROR — DS173237** — `.docs/manifest.json:436` — Do not store tokens or keys in source code. <!-- devskim-id:3d69622325ab951de587 -->
+- **ERROR — DS173237** — `.docs/manifest.json:435` — Do not store tokens or keys in source code. <!-- devskim-id:a320556bfe5275be1deb -->
+- **ERROR — DS173237** — `.docs/manifest.json:434` — Do not store tokens or keys in source code. <!-- devskim-id:3aa374b45b35d4f0aae9 -->
+- **ERROR — DS173237** — `.docs/manifest.json:433` — Do not store tokens or keys in source code. <!-- devskim-id:0f4173a090cbd19ed97e -->
+- **ERROR — DS173237** — `.docs/manifest.json:432` — Do not store tokens or keys in source code. <!-- devskim-id:1ec04845b209b9f1c1ae -->
+- **ERROR — DS173237** — `.docs/manifest.json:431` — Do not store tokens or keys in source code. <!-- devskim-id:dc167c487d3fddcd9cbb -->
+- **ERROR — DS173237** — `.docs/manifest.json:430` — Do not store tokens or keys in source code. <!-- devskim-id:72f4c6c1da003ecd9491 -->
+- **ERROR — DS173237** — `.docs/manifest.json:429` — Do not store tokens or keys in source code. <!-- devskim-id:136365367baef884a424 -->
+- **ERROR — DS173237** — `.docs/manifest.json:428` — Do not store tokens or keys in source code. <!-- devskim-id:14a89e60fa1610cfeff4 -->
+- **NOTE — DS172411** — `app/lib/audio.js:201` — Review setTimeout for untrusted data <!-- devskim-id:235b3304e12c35ebdf0a -->
+- **NOTE — DS172411** — `app/homepage/HomePage.js:319` — Review setTimeout for untrusted data <!-- devskim-id:4dad188c70214e6212f1 -->
+- **NOTE — DS172411** — `app/homepage/HomePage.js:221` — Review setTimeout for untrusted data <!-- devskim-id:09b810bda5cfae5b04c1 -->
+- **NOTE — DS172411** — `app/homepage/HomePage.js:215` — Review setTimeout for untrusted data <!-- devskim-id:1718e9679db0ce8a8ffb -->
+- **NOTE — DS162092** — `app/admin/suggestions/route.test.js:42` — Do not leave debug code in production <!-- devskim-id:5c0d23ccfcf13ef732d0 -->
+- **NOTE — DS162092** — `app/admin/suggestions/route.test.js:11` — Do not leave debug code in production <!-- devskim-id:f8db0374261a29636152 -->
+- **ERROR — DS173237** — `workers/jules-bridge/src/index.js:5` — Do not store tokens or keys in source code. <!-- devskim-id:600a973f7bf6c88573b4 -->
+- **NOTE — DS172411** — `app/api/oracle/route.js:136` — Review setTimeout for untrusted data <!-- devskim-id:0e2c2596d686c28b358e -->
+- **NOTE — DS162092** — `app/api/oracle/route.js:10` — Do not leave debug code in production <!-- devskim-id:47227852867c169b6018 -->
+- **NOTE — DS172411** — `app/homepage/ExploreLuckButton.js:143` — Review setTimeout for untrusted data <!-- devskim-id:e9bff0ab00080cb429f8 -->
+- **NOTE — DS172411** — `app/components/CrystalBall/CrystalBall.tsx:181` — Review setTimeout for untrusted data <!-- devskim-id:1622cc1b81d3c285a5a3 -->
+- **NOTE — DS172411** — `app/components/CrystalBall/CrystalBall.tsx:147` — Review setTimeout for untrusted data <!-- devskim-id:a04ca8e5e1a4ba9724a7 -->
+- **NOTE — DS172411** — `app/components/CrystalBall/CrystalBall.tsx:137` — Review setTimeout for untrusted data <!-- devskim-id:d5f6dd2ca84bf8f6d3dd -->
+- **NOTE — DS172411** — `app/components/CrystalBall/CrystalBall.tsx:131` — Review setTimeout for untrusted data <!-- devskim-id:2ec671c7d9d766ddbf1b -->
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:182` — Review setTimeout for untrusted data <!-- devskim-id:fdd868e5dade1d0d66ec -->
+- **NOTE — DS162092** — `functions/api/oracle.js:7` — Do not leave debug code in production <!-- devskim-id:1a9d7b7dfc19eee475f1 -->
+- **NOTE — DS162092** — `functions/api/oracle.js:5` — Do not leave debug code in production <!-- devskim-id:1a07f93a3a2fc61c6182 -->
+- **NOTE — DS172411** — `tests/visual/crystal-ball-daily-limit.spec.ts:6` — Review setTimeout for untrusted data <!-- devskim-id:6da99ceadec8ae5d96e4 -->
+- **NOTE — DS172411** — `tests/visual/homepage.spec.ts:320` — Review setTimeout for untrusted data <!-- devskim-id:15adc17668045dd62c68 -->
+- **NOTE — DS172411** — `tests/visual/homepage.spec.ts:128` — Review setTimeout for untrusted data <!-- devskim-id:0b973058bd92c4dd77a9 -->
+- **ERROR — DS173237** — `.specify/memory/.constitution-template.json:2` — Do not store tokens or keys in source code. <!-- devskim-id:81298a9d79b888769be1 -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:17` — Do not store tokens or keys in source code. <!-- devskim-id:a540bc4932d60997410f -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:16` — Do not store tokens or keys in source code. <!-- devskim-id:39cf611e6a3349fc3da2 -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:15` — Do not store tokens or keys in source code. <!-- devskim-id:3fa4e8b014613415c635 -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:14` — Do not store tokens or keys in source code. <!-- devskim-id:9d20b03f211086df5d3a -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:13` — Do not store tokens or keys in source code. <!-- devskim-id:0ccc50e698daf9b81bbe -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:12` — Do not store tokens or keys in source code. <!-- devskim-id:7f5649e8de9fe96060bb -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:11` — Do not store tokens or keys in source code. <!-- devskim-id:1327d3227b0255a1eeec -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:10` — Do not store tokens or keys in source code. <!-- devskim-id:17e32286efabfa84841f -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:9` — Do not store tokens or keys in source code. <!-- devskim-id:3f44108ebf0f79004edf -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:8` — Do not store tokens or keys in source code. <!-- devskim-id:94bc9dccbc1a76e67088 -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:7` — Do not store tokens or keys in source code. <!-- devskim-id:1f0fcbc585e353581653 -->
+- **ERROR — DS173237** — `.specify/integrations/speckit.manifest.json:6` — Do not store tokens or keys in source code. <!-- devskim-id:f8b93a7cef577c89c908 -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:15` — Do not store tokens or keys in source code. <!-- devskim-id:082b703608ea94a3cc38 -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:14` — Do not store tokens or keys in source code. <!-- devskim-id:39dd942c715b8665016a -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:13` — Do not store tokens or keys in source code. <!-- devskim-id:1ae3b98c0d0e46807393 -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:12` — Do not store tokens or keys in source code. <!-- devskim-id:27c6cb17caddd91023f3 -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:11` — Do not store tokens or keys in source code. <!-- devskim-id:5afca69eae6ba378e27d -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:10` — Do not store tokens or keys in source code. <!-- devskim-id:5179a00881c0e6796a5f -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:9` — Do not store tokens or keys in source code. <!-- devskim-id:5c0330e4f6e59de7b073 -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:8` — Do not store tokens or keys in source code. <!-- devskim-id:2a506bbbae10bbea8f1a -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:7` — Do not store tokens or keys in source code. <!-- devskim-id:64673fb8b24c14d460a8 -->
+- **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:6` — Do not store tokens or keys in source code. <!-- devskim-id:4dc9fab15c9429442bb3 -->
+
+- **ERROR — DS126858** — `pnpm-lock.yaml:7130` — Weak/Broken Hash Algorithm <!-- devskim-id:fc190a1defa9d6fb4cbc -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:5690` — Weak/Broken Hash Algorithm <!-- devskim-id:cdecba61531be56b9f42 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:5644` — Weak/Broken Hash Algorithm <!-- devskim-id:f2893e50c4918b9ed45c -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:5613` — Weak/Broken Hash Algorithm <!-- devskim-id:37711b61cefa81d7f4d6 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:5432` — Weak/Broken Hash Algorithm <!-- devskim-id:6ed74a39a3854faaa8ac -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:4261` — Weak/Broken Hash Algorithm <!-- devskim-id:f10465b0c6914436649a -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:4111` — Weak/Broken Hash Algorithm <!-- devskim-id:587b05f197dea32c5264 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:2061` — Weak/Broken Hash Algorithm <!-- devskim-id:1c1fbcbeb80c8f6e6810 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:1996` — Weak/Broken Hash Algorithm <!-- devskim-id:90fc242061887da0e991 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:1919` — Weak/Broken Hash Algorithm <!-- devskim-id:1efd61f0eb6200cf6d6a -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:301` — Weak/Broken Hash Algorithm <!-- devskim-id:81b5205e035868dd38e2 -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:553` — Do not leave debug code in production <!-- devskim-id:5c4c5c5626ce682eba5b -->
+- **WARNING — DS137138** — `.github/scripts/test_suppress_devskim_false_positives.py:552` — Insecure URL <!-- devskim-id:e6f6b95ded6092b90712 -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:552` — Do not leave debug code in production <!-- devskim-id:aea91de240c43e2a24dd -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:551` — Do not leave debug code in production <!-- devskim-id:2091fa8fa0cd201cfdf7 -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:542` — Do not leave debug code in production <!-- devskim-id:038edc8522d8eac19e43 -->
+- **WARNING — DS137138** — `.github/scripts/test_suppress_devskim_false_positives.py:537` — Insecure URL <!-- devskim-id:84daa6e29de50c96a447 -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:537` — Do not leave debug code in production <!-- devskim-id:603c02f49ca7f0c3769f -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:536` — Do not leave debug code in production <!-- devskim-id:f4823d35f898e6056457 -->
+- **WARNING — DS137138** — `.github/scripts/suppress_devskim_false_positives.py:55` — Insecure URL <!-- devskim-id:0f36d10fc0409d966846 -->
+- **WARNING — DS137138** — `.github/scripts/suppress_devskim_false_positives.py:54` — Insecure URL <!-- devskim-id:c7818a5002c283cbc44b -->
+
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:225` — Review setTimeout for untrusted data <!-- devskim-id:5f63a6802eaeb7431c82 -->
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:199` — Review setTimeout for untrusted data <!-- devskim-id:b1d79d0a75ad0f9f478a -->
+
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:202` — Review setTimeout for untrusted data <!-- devskim-id:ed023ff75b88e657fc3a -->
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:176` — Review setTimeout for untrusted data <!-- devskim-id:8de8d47b8cd5594e60ab -->
+- **NOTE — DS172411** — `app/lucky-map-of-canada/lucky-map-of-canada.js:159` — Review setTimeout for untrusted data <!-- devskim-id:6a0101041464537e54fc -->
