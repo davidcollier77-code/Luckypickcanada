@@ -122,7 +122,31 @@ jobs:
       - name: Validate Integration Status
         if: steps.daily_guard.outputs.skip != 'true'
         continue-on-error: false
-        run: uvx --from specify-cli specify integration status --json
+        run: |
+          set -euo pipefail
+          TEMP_DIR="$(mktemp -d)"
+          FILES=(speckit.implement.md speckit.plan.md)
+          restore_commands() {
+            status=$?
+            trap - EXIT
+            for file in "${FILES[@]}"; do
+              cp "$TEMP_DIR/$file" ".jules/cmds/$file" || echo "WARNING: failed to restore $file" >&2
+            done
+            rm -rf "$TEMP_DIR"
+            exit "$status"
+          }
+          trap restore_commands EXIT
+          for file in "${FILES[@]}"; do
+            cp ".jules/cmds/$file" "$TEMP_DIR/$file"
+            if ! cmp -s ".jules/cmds/$file" ".github/spec-kit/customizations/overlay/$file"; then
+              echo "::error::$file does not match the recorded Jules customization overlay."
+              exit 1
+            fi
+            cp ".github/spec-kit/customizations/base/$file" ".jules/cmds/$file"
+          done
+          # Validate the upstream-managed files against the upstream hashes in the manifest.
+          # The EXIT trap always restores the Jules-specific commands afterward.
+          uvx --from specify-cli specify integration status --json
 
       - name: Run Governance Validation
         if: steps.daily_guard.outputs.skip != 'true'
