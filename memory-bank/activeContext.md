@@ -515,3 +515,15 @@
 - **Goal:** Improve image delivery for the homepage hero emblem and Facebook community cover.
 - **Change:** Implemented responsive `<picture>` structures and preloads using dynamically generated `669w`, `551w`, and `800w` AVIF and WebP variants using sharp.
 - **Verification:** Verified via Playwright visual checks, build passing within limits, and manual check of layout and formats.
+
+
+---
+
+# Current Focus — Lucky Stories Visibility Restoration (2026-10-23)
+
+- **User-reported symptom:** Existing Lucky Stories disappeared from the Lucky Map after recent visual polish.
+- **Verified storage state:** A read-only Neon query found eight `lucky_stories` rows; all eight were approved and had non-empty locations. No database writes were performed.
+- **Verified code risks:** `app/api/lucky-stories/route.js` advertised public one-hour caching and stale-while-revalidate for up to 24 hours. The map client started polling only after the first 60-second interval.
+- **Implementation verification passed:** Commit `dd5fec9dcd61529c7c2c2e6963ec091d9ee6f205` removes the unnecessary `_refresh=Date.now()` URL parameter, keeps the API URL stable with `cache: 'no-store'`, and prevents overlapping 60-second polls with a single-in-flight guard in `app/lucky-map-of-canada/lucky-stories-refresh.js`. The component delegates its effect to this helper. A client regression test checks stable URLs and confirms that pending requests suppress additional polls.
+- **Verified CI:** Full unit suite 18 test files / 105 tests; `pnpm tsc --noEmit`; `./jules-verify.sh` (17 passed, 0 failed); Playwright (27 passed across desktop/mobile); Next.js production build; OpenNext Cloudflare build; compiled CSS/worker/assets and Wrangler no-deploy validation all passed. Combined `.next + public` size: 332,473,620 bytes / 317.07 MiB (<495 MiB). CodeQL, DevSkim, PR Agent, and updater-scheduler verification passed. No dependency additions, DB writes, merge, or deployment occurred.
+- **Remaining proof:** The read-only database check found eight approved saved stories; do not claim they are visible in production until the PR is deployed and the user-facing map is checked. If rendering still fails after deployment, inspect the live API response/configuration before considering a data repair.

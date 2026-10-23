@@ -1,15 +1,36 @@
-### Lucky Stories Visual Polish
-- **Task Group:** Polishing
-- **Reason:** The task required final visual polish, typography/color adjustments, adding a scroll offset for interactions, and visual depth—all firmly within the Polishing task group's scope.
-- **Documents / Libraries Consulted:**
-  - Jules documentation, `AGENTS.md`, and `.jules/polishing.md` (USED: YES, USEFUL: YES, reason: governed the workflow and scope definition).
-  - No new libraries were required.
-- **Implementation & Verification:**
-  - Spec Kit execution sequence completed via file-driven procedural updates to `specs/033-lucky-stories-polish/`.
-  - Updated primary buttons with crisp gold gradients and 3D shadows.
-  - Updated secondary actions to styled charcoal buttons with gold accents.
-  - Updated story cards to use translucent charcoal glass instead of green gradients.
-  - Wrapped `🍀` in a `.clover-3d` class providing drop-shadow dimensionality.
-  - Fixed full-story expansion by dynamically scrolling to the card anchor (`id="story-${story.id}"`).
-  - Validation: Build completed successfully. Build size (307 MB) is well under the 495 MB maximum. All unit tests via `./jules-verify.sh` passed.
-  - **USEFUL RESULT:** YES
+### Restore Existing Lucky Stories Visibility
+
+- **Task Group:** Troubleshooting.
+- **Reason:** Repair stale Lucky Stories refresh behavior and address the reviewers' request cleanup/poll-overlap findings without recreating or modifying database records.
+- **Repository guidance used:** `AGENTS.md` (read first), `.jules/jules.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, `.jules/troubleshooting.md`, `.specify/memory/constitution.md`, `.docs/manifest.json`, `.docs/troubleshooting/jules_google_docs.md`, `.docs/troubleshooting/_google-gemini_gemini-cli.md`, `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md`, and the four `.jules/cmds/speckit.{specify,plan,tasks,implement}.md` definitions. **USEFUL=YES:** these established the one-task scope, file-driven Spec Kit execution when native dispatch/local shell were unavailable, verification gates, and prohibition on merging/deploying. `.docs/` remained read-only.
+- **Relevant technology versions:** Next.js `16.4.1` (USED=YES, USEFUL=YES: App Router GET handler caching/dynamic behavior); Vitest `5.0.0` with Vite `8.3.4` (USED=YES, USEFUL=YES: exposed JSX-in-`.js` parsing in the first test approach, so the refresh lifecycle was extracted into a non-JSX helper); pnpm `10.30.3` (USED=YES, USEFUL=YES: repository package manager for the CI verification commands). No dependencies were added.
+- **Baseline evidence:**
+  - A read-only query against the connected Neon database found **8 total records, all 8 approved**, with non-empty locations.
+  - Stored locations include `Quebec canada`, `Pei canada`, `British columbia canada`, `Nova Scotia`, `saskatchewan`, and `Ontario`; the province resolver test now covers these existing formats.
+  - The merged visual-polish PR #1581 changed map styling/scroll behavior, not story data.
+  - The API advertised `public, s-maxage=3600, stale-while-revalidate=86400`; the client waited for its first 60-second polling interval. This is a **verified exposure to stale cached responses**; the exact live cache contents could not be inspected from this session.
+- **Reviewer findings addressed:** Amazon Q's `_refresh=Date.now()` finding is fixed by removing the timestamp query parameter; PR Reviewer Guide's slow-request finding is fixed with a single-in-flight guard. Both findings have regression coverage in the extracted refresh helper.
+- **Implementation:**
+  - `app/api/lucky-stories/route.js`: explicitly dynamic GET route and no-store cache headers for success and unavailable-database responses.
+  - `app/lucky-map-of-canada/lucky-map-of-canada.js` delegates its effect lifecycle to `app/lucky-map-of-canada/lucky-stories-refresh.js`, which immediately refreshes with browser cache disabled and a stable API URL, and skips polls while a request is pending.
+  - `__tests__/lucky-stories-refresh.test.js`: verifies returned story payload and no-store headers for configured and unavailable states.
+  - `__tests__/lucky-map-refresh.test.jsx`: regression-checks the stable request URL and ensures a pending request blocks overlapping poll attempts.
+  - `__tests__/lucky-stories.test.js`: covers location formats found in existing saved records.
+  - `memory-bank/activeContext.md`: records the verified data state and outstanding checks.
+  - No database writes, story-content changes, visual redesign, security-control changes, or dependencies added.
+- **Spec Kit stages:** all four stages completed in order using FILE-DRIVEN PROCEDURAL EXECUTION (native slash-command dispatch/local shell execution unavailable): `/speckit.specify` — `.jules/cmds/speckit.specify.md` → `.specify/features/040-lucky-stories-restoration/spec.md`; `/speckit.plan` — `.jules/cmds/speckit.plan.md` → `plan.md`; `/speckit.tasks` — `.jules/cmds/speckit.tasks.md` → `tasks.md`; `/speckit.implement` — `.jules/cmds/speckit.implement.md` → the scoped API/client/test changes. The first client-test attempt imported JSX from the existing `.js` component and failed Vitest parsing; the follow-up commit extracted the polling lifecycle into `lucky-stories-refresh.js`, so the final regression test imports plain JavaScript.
+- **Files changed:** `.specify/features/040-lucky-stories-restoration/{spec.md,plan.md,tasks.md}`, `app/api/lucky-stories/route.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`, `app/lucky-map-of-canada/lucky-stories-refresh.js`, `__tests__/lucky-map-refresh.test.jsx`, `__tests__/lucky-stories-refresh.test.js`, `__tests__/lucky-stories.test.js`, `memory-bank/activeContext.md`, and this summary.
+- **Verification (implementation commit `dd5fec9dcd61529c7c2c2e6963ec091d9ee6f205`):**
+  - **PASS** — targeted Vitest check: 2 files / 14 tests.
+  - **PASS** — `pnpm run test`: 18 test files, 105 tests passed, 0 failed.
+  - **PASS** — `pnpm tsc --noEmit`.
+  - **PASS** — `./jules-verify.sh`: 17 passed, 0 failed.
+  - **PASS** — `pnpm exec playwright test`: 27 passed across desktop and two mobile viewport projects.
+  - **PASS** — `pnpm run build`; combined `.next + public` size **332,473,620 bytes / 317.07 MiB**, below the **495 MiB** cap (519,045,120 bytes).
+  - **PASS** — `pnpm exec opennextjs-cloudflare build`, compiled CSS/worker/assets checks, and `pnpm exec wrangler build --config ./wrangler.jsonc` (no deployment).
+  - **PASS** — CodeQL (Python, JavaScript/TypeScript, Actions), DevSkim, PR Agent review, and updater-scheduler verification. Its deploy job was skipped for this PR.
+  - Run evidence: [Visual QA](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707911), [OpenNext/Cloudflare validation](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707731), [PR Agent](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707817), [DevSkim](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707780), [CodeQL](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017702529), [updater-scheduler verification](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40017707712).
+  - Final diff double-check: only the task's API route, refresh lifecycle/helper, focused regression coverage, feature artifacts, active context, and PR summary changed; no DB writes, new dependencies, secrets, visual/content redesign, merge, or deployment.
+- **Remaining issue:** The eight approved story rows were verified in storage before this repair, but their actual user-visible rendering after deployment is not verified here because this task did not merge or deploy the PR. The client intentionally retains server-rendered map state if a refresh fails and continues retrying on the existing 60-second interval.
+- **Remaining issue:** Demonstrate that all eight saved stories display after the fix is deployed. If not, inspect the production API response/configuration before considering a database repair.
+- **USEFUL RESULT:** YES — both actionable reviewer findings are fixed and implementation CI verification passed. Actual production story visibility remains a post-deployment check.

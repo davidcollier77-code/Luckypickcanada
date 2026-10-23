@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 const TurnstileField = dynamic(() => import('../turnstile-field'), { ssr: false });
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import { DEFAULT_MAP_THEME } from '../../themes/default/map-theme';
+import { startLuckyStoriesRefresh } from './lucky-stories-refresh';
 
 import { useEffect, useMemo, useState, useRef } from 'react';
 
@@ -116,31 +117,7 @@ export default function LuckyMapOfCanada({ mapData }) {
     setLiveMapData(mapData);
   }, [mapData]);
 
-  useEffect(() => {
-    let isActive = true;
-
-    async function refreshMapData() {
-      try {
-        const response = await fetch('/api/lucky-stories');
-
-        if (!response.ok) return;
-
-        const nextMapData = await response.json();
-
-        if (isActive && nextMapData.isConfigured) {
-          setLiveMapData(nextMapData);
-        }
-      } catch {
-        // Keep the server-rendered map values visible until the next refresh succeeds.
-      }
-    }
-
-    const interval = window.setInterval(refreshMapData, 60_000);
-    return () => {
-      isActive = false;
-      window.clearInterval(interval);
-    };
-  }, []);
+  useEffect(() => startLuckyStoriesRefresh(setLiveMapData), [setLiveMapData]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

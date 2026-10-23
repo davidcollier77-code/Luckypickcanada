@@ -62,6 +62,15 @@ describe('getStoryProvince', () => {
     expect(getStoryProvince('Edmonton, Alta').code).toBe('AB');
   });
 
+  it('matches the location formats used by the existing Lucky Stories records', () => {
+    expect(getStoryProvince('Quebec canada').code).toBe('QC');
+    expect(getStoryProvince('Pei canada').code).toBe('PE');
+    expect(getStoryProvince('British columbia canada').code).toBe('BC');
+    expect(getStoryProvince('Nova Scotia').code).toBe('NS');
+    expect(getStoryProvince('saskatchewan').code).toBe('SK');
+    expect(getStoryProvince('Ontario').code).toBe('ON');
+  });
+
   it('should not match partial words as codes or aliases', () => {
     // "bc" is in "abc", should not match BC
     expect(getStoryProvince('abc')).toBeNull();
