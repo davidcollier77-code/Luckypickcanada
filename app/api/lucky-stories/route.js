@@ -4,15 +4,21 @@ import { validatePublicFormSubmission } from '../../spam-protection';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-// 1. GET: Fetch the current map data with edge caching (1 hour revalidation).
+const noStoreHeaders = {
+  'Cache-Control': 'no-store, max-age=0, must-revalidate',
+  'Cloudflare-CDN-Cache-Control': 'no-store',
+};
+
+// GET always reads current map data. Do not cache empty/configuration failures or stale story lists.
 export async function GET() {
   const mapData = await getLuckyStoryMap();
   const status = mapData.isConfigured ? 200 : 500;
 
   return NextResponse.json(mapData, {
     status,
-    headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    headers: noStoreHeaders,
   });
 }
 
