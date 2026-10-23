@@ -1,5 +1,35 @@
 import Script from 'next/script';
 import Link from 'next/link';
+import { Inter, Manrope, Playfair_Display, Cinzel } from 'next/font/google';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+});
+
+const manrope = Manrope({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-manrope',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+  weight: ['400', '500', '600', '700', '800', '900'],
+});
+
+const cinzel = Cinzel({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-cinzel',
+  weight: ['600', '700', '800', '900'],
+});
+
 import '../themes/default/index.css';
 import './globals.css';
 
@@ -50,24 +80,9 @@ export const viewport = {
  */
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="en-CA"
-      className="m-0 p-0"
-      style={{
-        '--font-inter': '"Inter"',
-        '--font-playfair': '"Playfair Display"',
-        '--font-cinzel': '"Cinzel"',
-        '--font-manrope': '"Manrope"',
-      }}
-    >
+    <html lang="en-CA" className={`m-0 p-0 ${inter.variable} ${manrope.variable} ${playfair.variable} ${cinzel.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@100..900&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@400..900&display=swap"
-        />
-        <link rel="preconnect" href="https://challenges.cloudflare.com" />
+                <link rel="preconnect" href="https://challenges.cloudflare.com" />
 
         <script
           type="application/ld+json"

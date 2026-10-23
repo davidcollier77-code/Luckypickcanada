@@ -1,1 +1,3 @@
-{"feature_directory": ".specify/features/vitest-mocker-security-remediation"}
+{
+  "feature_directory": "specs/homepage-perf"
+}
