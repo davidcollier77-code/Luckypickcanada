@@ -19,7 +19,6 @@ SAFE_METADATA_KEY_TYPES = {
     "commit_sha": "sha",
     "tree_sha": "sha",
     "blob_sha": "sha",
-    "sha256": "sha",
     "uuid": "uuid",
 }
 JSON_FIELD_PATTERN = re.compile(
@@ -295,6 +294,35 @@ def should_suppress_checksum_metadata_finding(
     return _region_is_within_span(region, pair.span("value"))
 
 
+
+
+def should_suppress_constitution_template_checksum(
+    relative_path: str, source_text: str, region: dict
+) -> bool:
+    """Suppress only the exact SHA-256 checksum field in the tracked constitution template."""
+    if relative_path != ".specify/memory/.constitution-template.json":
+        return False
+    line_number = region.get("startLine")
+    if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
+        return False
+    try:
+        document = json.loads(source_text)
+    except (json.JSONDecodeError, TypeError):
+        return False
+    if not isinstance(document, dict):
+        return False
+    value = document.get("sha256")
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", value):
+        return False
+    lines = source_text.splitlines()
+    if line_number > len(lines):
+        return False
+    pair = JSON_STRING_PAIR_PATTERN.match(lines[line_number - 1])
+    if not pair or pair.group("key") != "sha256" or pair.group("value") != value:
+        return False
+    return _region_is_within_span(region, pair.span("value"))
+
+
 def should_suppress_public_cloudflare_account_id(
     relative_path: str, source_text: str, region: dict
 ) -> bool:
@@ -425,6 +453,13 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "False positive: this exact SHA value is a pinned upstream revision "
                     "or tracked-file checksum in an allowlisted manifest map."
                 )
+            elif rule_id == "DS173237" and should_suppress_constitution_template_checksum(
+                relative_path, source_text, region
+            ):
+                justification = (
+                    "False positive: this is the checked-in SHA-256 digest of the constitution "
+                    "template, not a credential."
+                )
             elif rule_id == "DS173237" and should_suppress_public_cloudflare_account_id(
                 relative_path, source_text, region
             ):
@@ -483,6 +518,10 @@ VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS = frozenset({
     (
         "False positive: this exact SHA value is a pinned upstream revision "
         "or tracked-file checksum in an allowlisted manifest map."
+    ),
+    (
+        "False positive: this is the checked-in SHA-256 digest of the constitution "
+        "template, not a credential."
     ),
     (
         "False positive: this is the repository's documented public Cloudflare "
