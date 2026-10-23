@@ -9,7 +9,7 @@
 
 ## Decision
 
-Add a homepage-only preload hint with the exact wrapper URL. The prior historical preload URL omitted the onload callback parameter, so this change intentionally avoids repeating that mismatch. Keep the existing React wrapper as the only code that injects and initializes the widget.
+Call React DOM's `preload()` API during homepage server rendering with the exact wrapper URL. This emits the resource hint through React's head-resource mechanism instead of relying on body markup being hoisted. The API is preload-only (it does not execute the script), preserving the wrapper's opportunity to register `onloadTurnstileCallback` before it injects the script. The prior historical preload URL omitted the onload callback parameter, so the exact URL is critical.
 
 ## Alternatives Considered
 
