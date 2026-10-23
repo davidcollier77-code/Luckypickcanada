@@ -86,3 +86,25 @@ This is the running list of distinct findings detected by DevSkim. New findings 
 - **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:8` — Do not store tokens or keys in source code. <!-- devskim-id:2a506bbbae10bbea8f1a -->
 - **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:7` — Do not store tokens or keys in source code. <!-- devskim-id:64673fb8b24c14d460a8 -->
 - **ERROR — DS173237** — `.specify/integrations/generic.manifest.json:6` — Do not store tokens or keys in source code. <!-- devskim-id:4dc9fab15c9429442bb3 -->
+
+- **ERROR — DS126858** — `pnpm-lock.yaml:7130` — Weak/Broken Hash Algorithm <!-- devskim-id:fc190a1defa9d6fb4cbc -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:5690` — Weak/Broken Hash Algorithm <!-- devskim-id:cdecba61531be56b9f42 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:5644` — Weak/Broken Hash Algorithm <!-- devskim-id:f2893e50c4918b9ed45c -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:5613` — Weak/Broken Hash Algorithm <!-- devskim-id:37711b61cefa81d7f4d6 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:5432` — Weak/Broken Hash Algorithm <!-- devskim-id:6ed74a39a3854faaa8ac -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:4261` — Weak/Broken Hash Algorithm <!-- devskim-id:f10465b0c6914436649a -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:4111` — Weak/Broken Hash Algorithm <!-- devskim-id:587b05f197dea32c5264 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:2061` — Weak/Broken Hash Algorithm <!-- devskim-id:1c1fbcbeb80c8f6e6810 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:1996` — Weak/Broken Hash Algorithm <!-- devskim-id:90fc242061887da0e991 -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:1919` — Weak/Broken Hash Algorithm <!-- devskim-id:1efd61f0eb6200cf6d6a -->
+- **ERROR — DS126858** — `pnpm-lock.yaml:301` — Weak/Broken Hash Algorithm <!-- devskim-id:81b5205e035868dd38e2 -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:553` — Do not leave debug code in production <!-- devskim-id:5c4c5c5626ce682eba5b -->
+- **WARNING — DS137138** — `.github/scripts/test_suppress_devskim_false_positives.py:552` — Insecure URL <!-- devskim-id:e6f6b95ded6092b90712 -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:552` — Do not leave debug code in production <!-- devskim-id:aea91de240c43e2a24dd -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:551` — Do not leave debug code in production <!-- devskim-id:2091fa8fa0cd201cfdf7 -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:542` — Do not leave debug code in production <!-- devskim-id:038edc8522d8eac19e43 -->
+- **WARNING — DS137138** — `.github/scripts/test_suppress_devskim_false_positives.py:537` — Insecure URL <!-- devskim-id:84daa6e29de50c96a447 -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:537` — Do not leave debug code in production <!-- devskim-id:603c02f49ca7f0c3769f -->
+- **NOTE — DS162092** — `.github/scripts/test_suppress_devskim_false_positives.py:536` — Do not leave debug code in production <!-- devskim-id:f4823d35f898e6056457 -->
+- **WARNING — DS137138** — `.github/scripts/suppress_devskim_false_positives.py:55` — Insecure URL <!-- devskim-id:0f36d10fc0409d966846 -->
+- **WARNING — DS137138** — `.github/scripts/suppress_devskim_false_positives.py:54` — Insecure URL <!-- devskim-id:c7818a5002c283cbc44b -->
