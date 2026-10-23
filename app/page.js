@@ -13,6 +13,11 @@ export const dynamic = 'force-static';
 export default function Page() {
   return (
     <>
+      <link
+        rel="preload"
+        as="script"
+        href="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit"
+      />
       <div className="homepage-sky-backdrop" aria-hidden="true" />
       <Hero />
       <HomePage />
