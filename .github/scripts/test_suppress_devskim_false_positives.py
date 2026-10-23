@@ -383,11 +383,31 @@ class ArtifactPathTests(unittest.TestCase):
 
 
 class KnownFalsePositiveRegressionTests(unittest.TestCase):
-    def test_sha256_metadata_digest_is_suppressed(self):
+    def test_sha256_template_checksum_is_suppressed_only_in_exact_file_and_value(self):
+        source = '{\n  "sha256": "' + SHA256 + '",\n  "source": "core"\n}\n'
+        region = {"startLine": 2, "startColumn": 14, "endColumn": 14 + len(SHA256)}
         self.assertTrue(
-            suppressions.should_suppress_metadata_finding(
-                '{"sha256": "' + SHA256 + '"}',
-                {"startColumn": 13, "endColumn": 13 + len(SHA256)},
+            suppressions.should_suppress_constitution_template_checksum(
+                ".specify/memory/.constitution-template.json", source, region
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_constitution_template_checksum(
+                ".specify/other.json", source, region
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_constitution_template_checksum(
+                ".specify/memory/.constitution-template.json",
+                source.replace('"sha256"', '"api_token"'),
+                region,
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_constitution_template_checksum(
+                ".specify/memory/.constitution-template.json",
+                source,
+                {"startLine": 2, "startColumn": 4, "endColumn": 4 + len(SHA256)},
             )
         )
 
