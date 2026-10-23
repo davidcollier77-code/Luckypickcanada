@@ -1,20 +1,31 @@
 name: Refresh Documentation
 
-run-name: Refresh Documentation — ${{ github.event_name }}
+run-name: Refresh Documentation — ${{ github.event.inputs.dispatch_source || github.event_name }}
 
 on:
-  # Keep native schedules until the Worker is deployed and its first dispatch is verified.
+  # Native schedules remain guarded until the Cloudflare Worker handoff is verified.
   schedule:
-    # Primary refresh: 2:21 AM Atlantic local time every Tuesday and Friday.
     - cron: '21 2 * * 2,5'
       timezone: 'America/Halifax'
-    # Backup refresh: 6:21 AM Atlantic local time every Tuesday and Friday.
     - cron: '21 6 * * 2,5'
       timezone: 'America/Halifax'
-    # Recovery refresh: 10:21 AM Atlantic local time every Tuesday and Friday.
     - cron: '21 10 * * 2,5'
       timezone: 'America/Halifax'
   workflow_dispatch:
+    inputs:
+      dispatch_source:
+        description: "Trigger source: manual owner request or Cloudflare scheduler."
+        type: choice
+        required: true
+        default: manual
+        options:
+          - manual
+          - cloudflare
+      scheduler_slot:
+        description: "Cloudflare scheduler slot; blank for a manual run."
+        type: string
+        required: false
+        default: ""
 
 concurrency:
   group: refresh-documentation
@@ -27,15 +38,18 @@ permissions:
 
 jobs:
   refresh:
-    # Keep native schedules active until the Worker is deployed and its first dispatch is verified.
     if: github.event_name != 'schedule' || vars.UPDATER_SCHEDULER_ACTIVE != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     steps:
       - name: Record Trigger Timing
+        env:
+          DISPATCH_SOURCE: ${{ github.event.inputs.dispatch_source || github.event_name }}
+          SCHEDULER_SLOT: ${{ github.event.inputs.scheduler_slot || 'scheduled' }}
         run: |
-          echo "Trigger kind: ${GITHUB_EVENT_NAME}"
+          echo "Trigger kind: $GITHUB_EVENT_NAME"
+          echo "Dispatch source: $DISPATCH_SOURCE"
+          echo "Scheduler slot: $SCHEDULER_SLOT"
           echo "Runner UTC: $(date -u --iso-8601=seconds)"
           echo "Atlantic time: $(TZ=America/Halifax date --iso-8601=seconds)"
 
@@ -53,8 +67,7 @@ jobs:
           pnpm install --frozen-lockfile
 
       - name: Run Documentation Refresh
-        run: |
-          node scripts/refresh-docs.js
+        run: node scripts/refresh-docs.js
 
       - name: Check for Changes
         id: changes
@@ -68,63 +81,36 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create Pull Request
+      - name: Create or Refresh Pull Request
         if: steps.changes.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISPATCH_SOURCE: ${{ github.event.inputs.dispatch_source || github.event_name }}
+          SCHEDULER_SLOT: ${{ github.event.inputs.scheduler_slot || 'scheduled' }}
         run: |
-          # Configure git identity for the automated commit
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Stage all modified documentation files produced by the updater
           git add .docs/
-
-          # Commit the changes. If there's nothing to commit despite the earlier check, skip push.
-          if git commit -m "docs: update upstream documentation snapshots"; then
-            # Force push the absolute desired state to the PR branch.
-            # This explicitly overwrites any stale previous run and perfectly mirrors main + docs,
-            # bypassing the rebase/stash-pop timestamp merge conflict that previously stalled the PR lifecycle.
-            git push --force origin HEAD:refs/heads/auto/docs-refresh
-
-            # Verify if the PR already exists
-            PR_EXISTS=$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number' || echo "")
-
-            # Get the commit SHA to uniquely identify this update
-            COMMIT_SHA=$(git rev-parse HEAD)
-
-            if [ -z "$PR_EXISTS" ] || [ "$PR_EXISTS" = "null" ]; then
-              # Create the PR if it does not exist
-              # We attempt to add reviewer using gh pr create natively
-              NEW_PR_URL=$(gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory.' --base main --head auto/docs-refresh --reviewer davidcollier77-code || \
-                          gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources.%0A%0AThis PR updates the local `.docs/` snapshots to reflect the latest upstream documentation for the approved library inventory.' --base main --head auto/docs-refresh)
-
-              echo "Created new PR: $NEW_PR_URL"
-
-              # Determine the newly created PR number from the URL
-              # (gh pr create returns the URL, e.g., https://github.com/org/repo/pull/123)
-              NEW_PR_NUM=$(echo "$NEW_PR_URL" | awk -F/ '{print $NF}')
-
-              # Check if a review request was successfully made
-              HAS_REVIEWER=$(gh pr view $NEW_PR_NUM --json reviewRequests -q ".reviewRequests | length" || echo "0")
-
-              if [ "$HAS_REVIEWER" = "0" ]; then
-                # Fallback to comment mention if reviewer assignment wasn't possible
-                gh pr comment $NEW_PR_NUM --body "@davidcollier77-code A new Documentation Library update PR has been created and is ready for review."
-              fi
-            else
-              echo "PR #$PR_EXISTS already exists and has been successfully updated via force-push."
-
-              # Ensure the repo owner is notified about the new update to an existing PR
-              MARKER="<!-- notify-update:$COMMIT_SHA -->"
-
-              # Check if we already commented for this specific commit
-              COMMENT_EXISTS=$(gh pr view $PR_EXISTS --json comments -q ".comments[].body" | grep -F "$MARKER" || echo "")
-
-              if [ -z "$COMMENT_EXISTS" ]; then
-                gh pr comment $PR_EXISTS --body "@davidcollier77-code The Documentation Library update PR has been refreshed with new changes and is ready for review. $MARKER"
-              else
-                echo "Notification for commit $COMMIT_SHA was already posted."
-              fi
-            fi
+          if ! git commit -m "docs: update upstream documentation snapshots"; then
+            echo "No staged documentation changes remain."
+            exit 0
+          fi
+          git push --force origin HEAD:refs/heads/auto/docs-refresh
+          PR_EXISTS="$(gh pr list --state open --head auto/docs-refresh --json number -q '.[0].number' || true)"
+          COMMIT_SHA="$(git rev-parse HEAD)"
+          if [[ -z "$PR_EXISTS" || "$PR_EXISTS" == "null" ]]; then
+            NEW_PR_URL="$(gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources. This PR updates the local .docs snapshots for the approved library inventory.' --base main --head auto/docs-refresh --reviewer davidcollier77-code || gh pr create --title "docs: scheduled documentation refresh" --body 'Automated documentation refresh from the configured upstream documentation sources. This PR updates the local .docs snapshots for the approved library inventory.' --base main --head auto/docs-refresh)"
+            PR_NUMBER="${NEW_PR_URL##*/}"
+            PR_OPERATION="created"
+          else
+            PR_NUMBER="$PR_EXISTS"
+            PR_OPERATION="updated"
+          fi
+          MARKER="<!-- notify-update:$COMMIT_SHA -->"
+          COMMENTS="$(gh pr view "$PR_NUMBER" --json comments -q '.comments[].body' 2>/dev/null || true)"
+          if ! printf '%s\n' "$COMMENTS" | grep -Fq "$MARKER"; then
+            gh pr comment "$PR_NUMBER" --body "@davidcollier77-code The Documentation Library updater completed and $PR_OPERATION this PR. Trigger: $DISPATCH_SOURCE ($SCHEDULER_SLOT). Please review the refreshed documentation. Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} $MARKER"
+          else
+            echo "Notification for commit $COMMIT_SHA was already posted."
           fi
