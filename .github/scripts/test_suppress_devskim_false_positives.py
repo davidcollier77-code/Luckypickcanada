@@ -558,3 +558,30 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             )
         )
 
+
+    def test_new_verified_false_positive_justifications_are_removed_from_sarif(self):
+        justifications = [
+            "False positive: a complete SHA/UUID/checksum value in an explicitly allowlisted metadata field overlaps the reported finding.",
+            "False positive: this exact SHA value is a pinned upstream revision or tracked-file checksum in an allowlisted manifest map.",
+            "False positive: this is the repository's documented public Cloudflare account identifier; the webhook secret is configured separately.",
+            "False positive: this is a callable timer callback or a test-runner timeout configuration, not string-based code execution by setTimeout.",
+            "False positive: this is an explicitly identified development loopback origin or test-only loopback fixture, not shipped debug code.",
+            "False positive: the finding is on a static source-matching regex in a security test; the test verifies the real route has rel protections.",
+        ]
+        data = {
+            "runs": [{
+                "results": [
+                    {"ruleId": "DS173237", "suppressions": [{"kind": "external", "justification": item}]}
+                    for item in justifications
+                ] + [
+                    {"ruleId": "DS172411", "suppressions": [{"kind": "external", "justification": "Unreviewed suppression"}]}
+                ]
+            }]
+        }
+
+        self.assertEqual(suppressions.remove_verified_false_positive_results(data), len(justifications))
+        self.assertEqual(
+            [result["ruleId"] for result in data["runs"][0]["results"]],
+            ["DS172411"],
+        )
+
