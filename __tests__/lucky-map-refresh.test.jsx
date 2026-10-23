@@ -1,14 +1,7 @@
 // @vitest-environment jsdom
 
-import React from 'react';
-import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-vi.mock('next/image', () => ({ default: () => null }));
-vi.mock('next/dynamic', () => ({ default: () => () => null }));
-vi.mock('../app/lib/audio', () => ({ playButtonClick: vi.fn() }));
-
-import LuckyMapOfCanada from '../app/lucky-map-of-canada/lucky-map-of-canada';
+import { startLuckyStoriesRefresh } from '../app/lucky-map-of-canada/lucky-stories-refresh';
 
 const mapData = {
   stories: [],
@@ -19,12 +12,14 @@ const mapData = {
 };
 
 describe('Lucky Map live story refresh', () => {
+  let stopRefresh;
+
   beforeEach(() => {
     vi.useFakeTimers();
   });
 
   afterEach(() => {
-    cleanup();
+    stopRefresh?.();
     vi.useRealTimers();
     vi.unstubAllGlobals();
   });
@@ -38,34 +33,28 @@ describe('Lucky Map live story refresh', () => {
       ok: true,
       json: vi.fn().mockResolvedValue(mapData),
     });
+    const setMapData = vi.fn();
     const fetchMock = vi.fn()
       .mockReturnValueOnce(initialRequest)
       .mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue(mapData) });
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<LuckyMapOfCanada mapData={mapData} />);
+    stopRefresh = startLuckyStoriesRefresh(setMapData);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith('/api/lucky-stories', { cache: 'no-store' });
 
     // Two intervals pass while the initial response is still pending. Neither may start a second request.
-    await act(async () => {
-      vi.advanceTimersByTime(120_000);
-      await Promise.resolve();
-    });
+    vi.advanceTimersByTime(120_000);
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    await act(async () => {
-      resolveInitialRequest(makeResponse());
-      await Promise.resolve();
-      await Promise.resolve();
-    });
+    resolveInitialRequest(makeResponse());
+    await initialRequest;
+    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+    expect(setMapData).toHaveBeenCalledWith(mapData);
 
     // Once the request settles, the next regular poll may run normally.
-    await act(async () => {
-      vi.advanceTimersByTime(60_000);
-      await Promise.resolve();
-    });
+    vi.advanceTimersByTime(60_000);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock).toHaveBeenLastCalledWith('/api/lucky-stories', { cache: 'no-store' });
   });

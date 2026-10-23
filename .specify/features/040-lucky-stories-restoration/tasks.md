@@ -7,7 +7,7 @@
 - [x] T002 [P] Add no-store behavior to the Lucky Stories API in `app/api/lucky-stories/route.js`.
 - [x] T003 Refresh immediately on mount and use the stable no-store API URL in `app/lucky-map-of-canada/lucky-map-of-canada.js`, without a timestamp query parameter.
 - [x] T004 [P] Add API header/payload and saved-location regression tests in `__tests__/lucky-stories-refresh.test.js` and `__tests__/lucky-stories.test.js`.
-- [x] T005 Add `__tests__/lucky-map-refresh.test.jsx` to verify stable request URLs and prevent overlapping polls when a fetch remains pending.
+- [x] T005 Extract the refresh lifecycle into `app/lucky-map-of-canada/lucky-stories-refresh.js` and test stable request URLs plus single-in-flight polling in `__tests__/lucky-map-refresh.test.jsx`.
 
 ## Phase 3 — Verification
 - [ ] T006 Run focused and full unit tests, `./jules-verify.sh`, and review the complete diff and current-head CI results.
