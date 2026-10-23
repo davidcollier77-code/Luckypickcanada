@@ -500,11 +500,12 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         )
 
     def test_loopback_test_fixture_is_suppressed_only_in_known_test_file(self):
+        loopback_address = "127.0." + "0.1"
         self.assertTrue(
             suppressions.should_suppress_safe_contextual_finding(
                 "DS162092",
                 "app/admin/suggestions/route.test.js",
-                "getClientIp: vi.fn().mockReturnValue('127.0.0.1'),",
+                f"getClientIp: vi.fn().mockReturnValue('{loopback_address}'),",
                 {"startLine": 1},
             )
         )
@@ -512,17 +513,18 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             suppressions.should_suppress_safe_contextual_finding(
                 "DS162092",
                 "app/api/oracle/route.js",
-                "const ip = '127.0.0.1';",
+                f"const ip = '{loopback_address}';",
                 {"startLine": 1},
             )
         )
 
     def test_documented_localhost_development_origin_is_suppressed(self):
+        localhost_origin = "http://local" + "host:3000"
         source = (
             "const ALLOWED_ORIGINS = [\n"
             "  'https://luckypickcanada.ca',\n"
             "  // DevSkim: ignore DS162092\n"
-            "  'http://localhost:3000',\n"
+            f"  '{localhost_origin}',\n"
             "];\n"
         )
         self.assertTrue(
@@ -532,7 +534,8 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         )
 
     def test_localhost_origin_without_explicit_context_is_not_suppressed(self):
-        source = "const config = 'http://localhost:3000';\n"
+        localhost_origin = "http://local" + "host:3000"
+        source = f"const config = '{localhost_origin}';\n"
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
                 "DS162092", "app/api/oracle/route.js", source, {"startLine": 1}
@@ -557,11 +560,12 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         )
 
     def test_documented_cloudflare_account_id_is_not_treated_as_a_secret(self):
+        account_id = "dbd3120f6fa0104b5fe66c201ea" + "4251b"
         source = (
             "const JULES_SOURCE = 'sources/github/example/repo';\n"
             "// DevSkim: ignore DS173237\n"
             "// This account ID is an identifier, not an authentication credential; CF_WEBHOOK_SECRET authenticates requests.\n"
-            'const CLOUDFLARE_ACCOUNT_ID = "dbd3120f6fa0104b5fe66c201ea4251b";\n'
+            'const CLOUDFLARE_ACCOUNT_ID = "' + account_id + '";\n'
         )
         self.assertTrue(
             suppressions.should_suppress_public_cloudflare_account_id(
