@@ -1,0 +1,1 @@
+Safely improving image delivery for the homepage hero emblem and Facebook community cover using responsive image variants, while preserving original visual quality, AVIF/WebP fallback behavior, and Cloudflare Turnstile loading.

@@ -1,0 +1,1 @@
+- Update Hero.js preload and picture tag\n- Update HomePage.js facebook cover image tag

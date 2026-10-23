@@ -509,3 +509,9 @@
 - **Regression coverage added:** valid changed artifacts without a pointer, committed feature-branch artifacts, missing artifacts, stale base artifacts, empty required artifacts, and multiple feature directories.
 - **Verification status:** No repository shell is available in this session, so these regression tests and `./jules-verify.sh` have not been run locally. CI results are required before claiming the governance change verified or merging it.
 - **Protected scope:** No app runtime, dependencies, deployment settings, secrets, visual/audio behavior, or production configuration were intentionally changed.
+
+
+## Image Delivery Optimization - 2026-10-23
+- **Goal:** Improve image delivery for the homepage hero emblem and Facebook community cover.
+- **Change:** Implemented responsive `<picture>` structures and preloads using dynamically generated `669w`, `551w`, and `800w` AVIF and WebP variants using sharp.
+- **Verification:** Verified via Playwright visual checks, build passing within limits, and manual check of layout and formats.
