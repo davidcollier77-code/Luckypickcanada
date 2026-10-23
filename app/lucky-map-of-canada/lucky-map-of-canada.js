@@ -223,10 +223,7 @@ export default function LuckyMapOfCanada({ mapData }) {
       window.history.replaceState(null, '', url);
 
       setTimeout(() => {
-        const storyCard = document.getElementById(`story-${story.id}`);
-        if (storyCard) {
-          storyCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else if (storyPanelRef.current) {
+        if (storyPanelRef.current) {
           storyPanelRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
