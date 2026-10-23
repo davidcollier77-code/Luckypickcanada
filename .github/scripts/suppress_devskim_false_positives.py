@@ -324,7 +324,7 @@ def should_suppress_public_cloudflare_account_id(
         return False
     line = lines[line_number - 1]
     match = re.fullmatch(
-        r'\s*const\s+CLOUDFLARE_ACCOUNT_ID\s*=\s*["\\']([0-9a-fA-F]{32})["\\'];?\s*',
+        r"""[ \t]*const\s+CLOUDFLARE_ACCOUNT_ID\s*=\s*["']([0-9a-fA-F]{32})["'];?\s*""",
         line,
     )
     if not match:
