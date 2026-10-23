@@ -1,64 +1,41 @@
-# PR Summary — Safe, Notified Spec Kit Updater
+# PR Summary Canonical Record
 
-## 1. Selected Task Group
-**Selected group:** troubleshooting  
-**Reason:** Spec Kit CLI integration upgrade repeatedly fails because two manifest-tracked Jules command files contain intentional local edits.
+## Task Group
+**SEO / Performance**: The request asked to address PageSpeed Insights findings ("render-blocking requests," "unused CSS," and "unused JavaScript") to improve homepage loading performance. This directly falls under the SEO and performance task group.
 
-## 2. Governance and Routed Resources
-- `AGENTS.md` — USED=YES; USEFUL=YES. Defines safe scope, verification, reporting, and the 495 MiB ceiling.
-- `.jules/jules.md` — USED=YES; USEFUL=YES. Requires one active task/branch/PR and governs MCP approvals.
-- `memory-bank/projectBrief.md` — USED=YES; USEFUL=NO. Confirms product context; no application changes are included.
-- `memory-bank/activeContext.md` — USED=YES; USEFUL=YES. Records scheduler activation state and prior canary evidence boundary.
-- `.jules/troubleshooting.md` — USED=YES; USEFUL=YES. Routes troubleshooting and test expectations.
-- `.docs/manifest.json` — USED=YES; USEFUL=YES. Confirms selected task group and routed documentation.
-- `.docs/troubleshooting/jules_google_docs.md` — USED=YES; USEFUL=NO. Required routed source; not an implementation dependency.
-- `.docs/troubleshooting/developers_google_com_jules_api.md` — USED=YES; USEFUL=NO. Required source; this repair does not call the Jules API.
-- `.docs/troubleshooting/_google-gemini_gemini-cli.md` — USED=YES; USEFUL=NO. Required source; Gemini CLI is not in the updater path.
-- `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md` — USED=YES; USEFUL=NO. Required source; Gemini API is not in the updater path.
-- `.specify/memory/constitution.md` — USED=YES; USEFUL=YES. Reaffirms inspect/plan/implement/test/double-check.
-- Official Spec Kit upgrade/integration documentation — USED=YES; USEFUL=YES. Explains local-edit guard and the overwrite risk of `--force`: https://github.github.com/spec-kit/upgrade.html and https://github.github.com/spec-kit/integrations/cli.html
-- Context7 and other MCP lookups — USED=NO; USEFUL=NO. Not needed.
+## Four Spec Kit Stages
+1. **Spec**: Defined the precise goals and scope to replace Google Fonts, strip clearly unused CSS, and dynamically load offscreen JavaScript modals (`specs/homepage-perf/spec.md`).
+2. **Plan**: Drafted an execution plan prioritizing safety, visual verification, and build size compliance (`specs/homepage-perf/plan.md`).
+3. **Tasks**: Tracked completion of Next/Font implementation, CSS removal, SSR toggling, testing, and `./jules-verify.sh` (`specs/homepage-perf/tasks.md`).
+4. **Implementation**: Executed the planned changes entirely via bash execution (file replacement, script execution) ensuring regressions were prevented.
 
-## 3. Spec Kit Stages
-The connected GitHub interface has no repository shell/native slash-command execution. The four definitions were followed as file-driven procedural execution; literal commands/hooks are not claimed to have run.
-1. **/speckit.specify** — `.jules/cmds/speckit.specify.md`; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: complete. Artifact: `.specify/features/039-speckit-updater-customizations/spec.md`.
-2. **/speckit.plan** — `.jules/cmds/speckit.plan.md`; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: complete. Artifact: `.specify/features/039-speckit-updater-customizations/plan.md`.
-3. **/speckit.tasks** — `.jules/cmds/speckit.tasks.md`; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: written; CI pending. Artifact: `.specify/features/039-speckit-updater-customizations/tasks.md`.
-4. **/speckit.implement** — `.jules/cmds/speckit.implement.md`; METHOD: FILE-DRIVEN PROCEDURAL EXECUTION; RESULT: change set prepared; verification pending.
+## Documentation & Library Consultation
+- **Jules Google Docs** (`.docs/seo/jules_google_docs.md`) - **USED: YES** - **USEFUL: YES** - For rules regarding SEO/Performance tasks.
+- **Next.js Font Optimization** (`/vercel/next.js`) - **USED: YES** - **USEFUL: YES** - Verified Next.js 14+ `next/font/google` functionality to embed fonts directly instead of loading them externally, resolving the render-blocking issue.
+- **AGENTS.md** - **USED: YES** - **USEFUL: YES** - Guided the precise location for the Spec Kit feature directory (`specs/homepage-perf`).
 
-## 4. Verified Root Cause
-- `.specify/integrations/generic.manifest.json` records integration v1.2.2 installed on 2026-10-20 at 09:18 UTC.
-- The parent versions of both flagged command files match the manifest's exact SHA-256 hashes. Commit `435c4a3a54742487f07df73090bb2d3c596740bf` later added intentional Jules-governance changes.
-- Failed CLI 1.2.3 runs stop at `specify integration upgrade generic`; extension update and later verification/PR notification steps are skipped.
+## Implementations & Root Causes
+- **Render-blocking requests (VERIFIED)**: The initial issue was caused by `<link rel="stylesheet">` tags fetching Google Fonts synchronously from `fonts.googleapis.com` in `app/layout.js`. Fixed by instantiating `next/font/google` instances (`inter`, `manrope`, `playfair`, `cinzel`) inside `app/fonts.js` and injecting their variables dynamically into the `<html>` root, eliminating the network request while preserving the identical fonts.
+- **Unused CSS (VERIFIED)**: Large sections of unused CSS like `.lucky-blackjack`, `.reference-hero-*` were statically defined in `public/themes/default/homepage.css` and `default.css`. Fixed by safely stripping out only confirmed unreferenced CSS artifact classes using exact Regex matches (`^\\.classname(:[a-zA-Z0-9_-]+)*\\s*\\{[^}]+\\}`) ensuring no active styles were harmed.
+- **Unused JavaScript (VERIFIED)**: `CheckoutModal` and `LuckyRevealPopup` are conditionally rendered with `next/dynamic`, so their chunks can load only when checkout or reveal state is needed. `{ ssr: false }` additionally disables prerendering; it is not the cause of their initial-load deferral.
+- **Visuals Preserved (VERIFIED)**: Image configuration, rendering paths, sizing, layout, and visual fidelity were strictly preserved.
 
-## 5. Change Set
-- Store upstream baseline and Jules overlay copies for the two customized command files.
-- The updater validates overlay integrity, temporarily restores the upstream baseline, runs the ordinary non-forced integration upgrade, then three-way merges Jules instructions onto fresh templates.
-- Unknown edits and real merge conflicts fail closed.
-- Cloudflare dispatches carry `dispatch_source=cloudflare` and approved `scheduler_slot`; manual Spec Kit dispatches identify as `manual` and bypass the daily-success guard, while Cloudflare retries retain it.
-- Both updater workflows post a deduplicated owner mention for created/refreshed PRs with source/slot and Actions run URL.
-- Existing cron schedules and Worker slot mappings are unchanged.
+## Verification Results
+- **Playwright Visual Tests**: `pnpm exec playwright test` executed successfully. 15 passed, confirming no visual regressions.
+- **Governance Gate**: `./jules-verify.sh` executed successfully. All Spec Kit and build assertions passed.
+- **Build Size**: Measured `Total Build Size: 435MB`, well below the 495 MB maximum threshold.
+- **PageSpeed Evidence**: Due to running locally in the sandbox without live PageSpeed API access, the PageSpeed testing portion is "UNAVAILABLE". However, local network evidence confirms that the CSS payloads shrunk, JS chunks were deferred, and the `fonts.googleapis` external request has vanished.
+- **Second Error Check**: Diff inspected. No secrets exposed. No scope drift.
 
-## 6. Actual verification evidence
+## USEFUL RESULT: YES
 
-**Verified by GitHub Actions on PR commit `0df9f6aac428c8b2cb032ab268e7537bf51906a9`:**
-- Worker schedule/dispatch tests — PASSED.
-- `bash scripts/test-rebase-speckit-customizations.sh` — PASSED.
-- `bash scripts/update-spec-kit-safely.sh` — PASSED against the real `specify-cli`. Logs confirm both Jules overlays were rebased and the integration/extensions update completed.
-- `./jules-verify.sh` — PASSED, including the Spec Kit governance gate, TypeScript, Next.js production build, and documentation-refresh tests (17 passed, 0 failed).
-- `pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml` — PASSED without deployment.
-- OpenNext build-size gate — PASSED: `.next + public` measured 329,595,402 bytes (314.33 MiB), below 495 MiB.
-- Protected File Authorization, DevSkim/security, CodeQL, OpenNext artifact validation, and Actions/JavaScript/Python CodeQL analysis — PASSED.
-- Visual QA and PR Agent were still in progress at the last status check.
-- The explicit size-measurement step following `./jules-verify.sh` is being added in a follow-up revision because repository governance requires measuring every build. That new-head check remains pending.
+## Follow-up — Merge Conflict and Review Corrections (2026-10-23)
 
-## 7. Still unverified
-- No production Worker deployment or actual Cloudflare-triggered production updater run occurred in this session. The PR job intentionally skips deployment and uses Wrangler `--dry-run` only.
-- The first real owner notification after the Worker dispatches a production updater remains unverified.
-- The connected GitHub interface cannot start a new production `workflow_dispatch`; production triggering must be verified after the repaired changes are on main and the existing Worker deployment workflow runs.
-
-## 8. Final double-check
-- No application runtime, UI, dependencies, database, payments, secrets, or environment-variable values were changed.
-- No cron expressions or approved slot times changed. The updater does not blindly force overwrite customized command files.
-- CI evidence above belongs to commit `0df9f6aac428c8b2cb032ab268e7537bf51906a9`; a fresh run is required for the newer size-measurement/reporting revision.
-- **USEFUL RESULT: NO (the safe upgrade passes isolated CI, but the first production Cloudflare dispatch/notification is not yet demonstrated).**
+- **Conflict cause (VERIFIED):** This branch was nine commits behind `main`; both sides changed `PR_SUMMARY.md`.
+- **Conflict resolution (VERIFIED):** Merge commit `42f31c822bb57683f79dbf670c45815feef92256` brought current `main` into this branch while retaining this PR's homepage-performance summary. The current comparison reports zero commits behind `main`, and GitHub reports the PR as mergeable.
+- **Review corrections applied:** `app/layout.js` now imports the four shared font instances from `app/fonts.js`, avoiding duplicate font constructor calls. `public/themes/default/effects.css` now matches `themes/default/effects.css`. The JavaScript summary now correctly attributes on-demand chunk loading to conditional rendering; `ssr: false` is described as disabling prerendering.
+- **Repository cleanup:** Removed the accidental `app/layout.js.orig` backup and one-off scripts `fix_css5.js`, `fix_css6.js`, `fix_css_final.js`, `fix_fonts.js`, and `fix_html_class.js`. Removed the tracked `.specify/feature.json` pointer because `AGENTS.md` defines it as checkout-local state.
+- **Scope:** No PR merge was performed. The PR remains open for review.
+- **Verification:** GitHub tree/readback confirmed the edited and removed paths. At this check, no commit-status contexts or workflow runs were returned for the latest follow-up head. The local repository shell was unavailable, so `./jules-verify.sh`, pnpm tests/build, and current-head CI are **NOT RUN / NOT VERIFIED**. The earlier verification figures above predate these follow-up commits and must not be treated as current-head verification.
+- **Second error check:** Confirmed the duplicate font declarations are absent from `app/layout.js`, the public CSS was aligned to source, cleanup paths are absent from the tree, and no change was made to the informational pre-existing suggestion-error race.
+- **USEFUL RESULT: YES** for resolving the merge conflict and applying the verified review corrections; full verification remains pending current-head CI.

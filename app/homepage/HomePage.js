@@ -12,8 +12,8 @@ const FAQSection = dynamic(() => import('./FAQSection'));
 // Lazy load non-critical modal components to reduce the initial JS bundle size.
 // These components are only needed upon user interaction (e.g. checkout or reveal completion).
 // Expected impact: Faster initial page load and improved Time to Interactive.
-const CheckoutModal = dynamic(() => import('../checkout-modal'));
-const LuckyRevealPopup = dynamic(() => import('../lucky-reveal-popup'));
+const CheckoutModal = dynamic(() => import('../checkout-modal'), { ssr: false });
+const LuckyRevealPopup = dynamic(() => import('../lucky-reveal-popup'), { ssr: false });
 import { DEFAULT_THEME } from '../../themes/default/theme';
 import TurnstileField from '../turnstile-field';
 
