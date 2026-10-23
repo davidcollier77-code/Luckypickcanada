@@ -381,3 +381,180 @@ class ArtifactPathTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+
+class KnownFalsePositiveRegressionTests(unittest.TestCase):
+    def test_sha256_metadata_digest_is_suppressed(self):
+        self.assertTrue(
+            suppressions.should_suppress_metadata_finding(
+                '{"sha256": "' + SHA256 + '"}',
+                {"startColumn": 12, "endColumn": 12 + len(SHA256)},
+            )
+        )
+
+    def test_docs_manifest_pinned_github_revision_is_suppressed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / ".docs" / "manifest.json"
+            path.parent.mkdir()
+            source = '{\n  "githubShas": {\n    "/example/project": "' + SHA + '"\n  }\n}\n'
+            path.write_text(source, encoding="utf-8")
+            self.assertTrue(
+                suppressions.should_suppress_checksum_metadata_finding(
+                    ".docs/manifest.json",
+                    path,
+                    source,
+                    {"startLine": 3, "startColumn": 26, "endColumn": 26 + len(SHA)},
+                )
+            )
+
+    def test_docs_manifest_does_not_suppress_hash_outside_revision_map(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / ".docs" / "manifest.json"
+            path.parent.mkdir()
+            source = '{\n  "sources": {\n    "api_token": "' + SHA + '"\n  },\n  "githubShas": {}\n}\n'
+            path.write_text(source, encoding="utf-8")
+            self.assertFalse(
+                suppressions.should_suppress_checksum_metadata_finding(
+                    ".docs/manifest.json",
+                    path,
+                    source,
+                    {"startLine": 3, "startColumn": 19, "endColumn": 19 + len(SHA)},
+                )
+            )
+
+    def test_speckit_file_checksum_is_suppressed_only_in_manifest_files_map(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / ".specify" / "integrations" / "speckit.manifest.json"
+            path.parent.mkdir(parents=True)
+            source = '{\n  "files": {\n    ".specify/example.sh": "' + SHA256 + '"\n  }\n}\n'
+            path.write_text(source, encoding="utf-8")
+            self.assertTrue(
+                suppressions.should_suppress_checksum_metadata_finding(
+                    ".specify/integrations/speckit.manifest.json",
+                    path,
+                    source,
+                    {"startLine": 3, "startColumn": 25, "endColumn": 25 + len(SHA256)},
+                )
+            )
+
+    def test_callable_settimeout_callback_is_not_string_code_execution(self):
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "app/homepage/HomePage.js",
+                "const timer = setTimeout(() => updateCanvas(), 200);",
+                {"startLine": 1},
+            )
+        )
+
+    def test_string_or_opaque_settimeout_callback_is_not_suppressed(self):
+        for line in (
+            "setTimeout(untrustedCallback, 100);",
+            "setTimeout('untrusted code', 100);",
+        ):
+            with self.subTest(line=line):
+                self.assertFalse(
+                    suppressions.should_suppress_safe_contextual_finding(
+                        "DS172411", "app/homepage/HomePage.js", line, {"startLine": 1}
+                    )
+                )
+
+    def test_playwright_test_timeout_configuration_is_suppressed_only_in_tests(self):
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "tests/visual/homepage.spec.ts",
+                "test.setTimeout(90_000);",
+                {"startLine": 1},
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "app/homepage/HomePage.js",
+                "test.setTimeout(90_000);",
+                {"startLine": 1},
+            )
+        )
+
+    def test_loopback_test_fixture_is_suppressed_only_in_known_test_file(self):
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092",
+                "app/admin/suggestions/route.test.js",
+                "getClientIp: vi.fn().mockReturnValue('127.0.0.1'),",
+                {"startLine": 11},
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092",
+                "app/api/oracle/route.js",
+                "const ip = '127.0.0.1';",
+                {"startLine": 11},
+            )
+        )
+
+    def test_documented_localhost_development_origin_is_suppressed(self):
+        source = (
+            "const ALLOWED_ORIGINS = [\n"
+            "  'https://luckypickcanada.ca',\n"
+            "  // DevSkim: ignore DS162092\n"
+            "  'http://localhost:3000',\n"
+            "];\n"
+        )
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092", "app/api/oracle/route.js", source, {"startLine": 4}
+            )
+        )
+
+    def test_localhost_origin_without_explicit_context_is_not_suppressed(self):
+        source = "const config = 'http://localhost:3000';\n"
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092", "app/api/oracle/route.js", source, {"startLine": 1}
+            )
+        )
+
+    def test_security_test_regex_false_positive_requires_known_test_context(self):
+        source = (
+            "    // Static source check only: this matches the route email template, not rendered HTML.\n"
+            "    // DevSkim: ignore DS610000\n"
+            '    const anchor = routeSource.match(/<a href=\"\\$\\{revealUrl\\}\" target=\"_blank\"[^>]*>/);\n'
+        )
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS610000", "__tests__/security-payment.test.js", source, {"startLine": 3}
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS610000", "app/api/send-gift/route.ts", source, {"startLine": 3}
+            )
+        )
+
+    def test_documented_cloudflare_account_id_is_not_treated_as_a_secret(self):
+        source = (
+            "const JULES_SOURCE = 'sources/github/example/repo';\n"
+            "// DevSkim: ignore DS173237\n"
+            "// This account ID is an identifier, not an authentication credential; CF_WEBHOOK_SECRET authenticates requests.\n"
+            'const CLOUDFLARE_ACCOUNT_ID = "dbd3120f6fa0104b5fe66c201ea4251b";\n'
+        )
+        self.assertTrue(
+            suppressions.should_suppress_public_cloudflare_account_id(
+                "workers/jules-bridge/src/index.js", source, {"startLine": 4}
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_public_cloudflare_account_id(
+                "workers/jules-bridge/src/index.js",
+                source.replace("CLOUDFLARE_ACCOUNT_ID", "API_SECRET"),
+                {"startLine": 4},
+            )
+        )
+
