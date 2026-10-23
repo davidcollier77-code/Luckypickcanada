@@ -50,8 +50,7 @@ describe('Lucky Map live story refresh', () => {
 
     resolveInitialRequest(makeResponse());
     await initialRequest;
-    await vi.runAllMicrotasksAsync();
-    expect(setMapData).toHaveBeenCalledWith(mapData);
+    await vi.waitFor(() => expect(setMapData).toHaveBeenCalledWith(mapData));
 
     // Once the request settles, the next regular poll may run normally.
     vi.advanceTimersByTime(60_000);

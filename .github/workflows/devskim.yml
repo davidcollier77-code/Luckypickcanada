@@ -45,6 +45,7 @@ jobs:
           output-filename: devskim-alerts.sarif
 
       - name: Validate DevSkim suppression Python syntax
+        id: python-syntax
         run: python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py
 
       - name: Test DevSkim suppression filter
@@ -59,10 +60,11 @@ jobs:
         run: python3 .github/scripts/suppress_devskim_false_positives.py
 
       - name: Warn when DevSkim suppression is skipped or fails
-        if: steps.suppression-tests.outcome == 'failure' || steps.suppress-devskim.outcome == 'failure'
+        if: always() && (steps.python-syntax.outcome == 'failure' || steps.suppression-tests.outcome == 'failure' || steps.suppress-devskim.outcome == 'failure')
         run: echo "::warning::DevSkim suppression did not complete successfully; the original SARIF will be uploaded without these suppressions."
 
       - name: Upload DevSkim scan results to GitHub Security tab
+        if: always() && hashFiles('devskim-alerts.sarif') != ''
         uses: github/codeql-action/upload-sarif@ff0a06e83cb2de871e5a09832bc6a81e7276941f # v3.28.18
         with:
           sarif_file: devskim-alerts.sarif
