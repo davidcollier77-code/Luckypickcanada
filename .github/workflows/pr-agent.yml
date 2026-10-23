@@ -31,7 +31,7 @@ jobs:
 
       - name: Review pull request with Gemini
         id: pragent
-        uses: the-pr-agent/pr-agent@fbf7f6d3fcff6d9bf15aef7d8f4a6c2cacc7ad1f
+        uses: the-pr-agent/pr-agent@a5d2260d810837d0878eb52aa9680ff936ae1150
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
