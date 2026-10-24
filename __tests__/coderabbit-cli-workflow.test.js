@@ -53,7 +53,7 @@ describe('CodeRabbit CLI pull-request review workflow', () => {
 
   it('updates one comment and clearly separates incomplete reviews from clean results', () => {
     expect(workflow).toContain('<!-- coderabbit-cli-review -->');
-    expect(workflow).toContain('gh api --paginate \\');
+    expect(workflow).toContain('gh api --paginate');
     expect(workflow).toContain("--jq '.[] | select(.user.login == \"github-actions[bot]\"");
     expect(workflow).toContain('| tail -n 1)"');
     expect(workflow).not.toContain('--paginate --slurp');
