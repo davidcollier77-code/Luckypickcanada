@@ -452,7 +452,7 @@ def _region_is_within_span(region: dict, span: tuple[int, int]) -> bool:
         or start_column < 1 or end_column <= start_column
     ):
         return False
-    return start_column - 1 >= span[0] - 1 and end_column - 1 <= span[1] + 1
+    return start_column - 1 >= span[0] and end_column - 1 <= span[1]
 
 
 def should_suppress_checksum_metadata_finding(

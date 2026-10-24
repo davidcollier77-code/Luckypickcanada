@@ -204,7 +204,7 @@ class Sha512IntegritySuppressionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source_line = "    resolution: {integrity: sha512-" + self.DIGEST + "}"
-            (root / "pnpm-lock.yaml").write_text(source_line + "\\n", encoding="utf-8")
+            (root / "pnpm-lock.yaml").write_text(source_line + "
             start = source_line.index(self.HASH_TOKEN) + 1
             data = {
                 "runs": [{
@@ -264,7 +264,7 @@ class SarifOutputFilteringTests(unittest.TestCase):
                 + "5CJf+KXg=="
             )
             source_line = "    resolution: {integrity: sha512-" + digest + "}"
-            (root / "pnpm-lock.yaml").write_text(source_line + "\\n", encoding="utf-8")
+            (root / "pnpm-lock.yaml").write_text(source_line + "
             start = source_line.index("md" + "5") + 1
             sarif_path = root / "devskim-alerts.sarif"
             sarif_path.write_text(
