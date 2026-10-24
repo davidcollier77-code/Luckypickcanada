@@ -74,4 +74,4 @@ As a developer with a local clone, I want an optional wrapper that explicitly su
 - Availability and review allowance depend on the user's CodeRabbit account/plan. No fixed free quota is assumed.
 - The secret must be added by a repository administrator; the repository connection cannot create or retrieve its value.
 - The workflow runs only after its workflow file is merged into `main`. Pull-request events from forks cannot access repository secrets and will be skipped.
-- The workflow is an advisory reviewer; it does not replace CI, required tests, security scans, or human review.
+- The workflow is an advisory reviewer; it does not replace CI, required tests, security scans, or human review. The bootstrap PR is expected to skip its own CLI review until the instructions file exists on the base branch.

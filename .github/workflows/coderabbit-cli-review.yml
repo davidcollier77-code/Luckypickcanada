@@ -19,6 +19,8 @@ jobs:
     name: CodeRabbit CLI PR review
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      CODERABBIT_CLI_DISABLE_AUTO_UPDATE: "true"
     steps:
       # Check credentials before checking out any pull-request content.
       - name: Check for CodeRabbit Agentic API key
@@ -50,10 +52,44 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Install pinned CodeRabbit CLI
+      # Use the base commit's instructions so a PR cannot rewrite its own review rules.
+      # The first setup PR may not have this file in its base yet; skip cleanly in that case.
+      - name: Prepare trusted review instructions and base ref
+        id: instructions
         if: ${{ steps.credentials.outputs.configured == 'true' }}
         env:
-          CODERABBIT_VERSION: 0.9.0
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Base commit is not available; skipping the CLI review."
+            {
+              echo "## CodeRabbit CLI review"
+              echo
+              echo "Skipped: the PR base commit is not available in the checkout. No review was attempted."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if ! git show "${BASE_SHA}:.coderabbit-cli-instructions.md" > "$RUNNER_TEMP/coderabbit-cli-instructions.md"; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Trusted base-commit CodeRabbit instructions are not present. This is expected for the bootstrap PR that first adds this workflow."
+            {
+              echo "## CodeRabbit CLI review"
+              echo
+              echo "Skipped: the base branch does not yet contain `.coderabbit-cli-instructions.md`. This is expected for the bootstrap PR that adds this workflow; after that change is merged, later PRs can be reviewed automatically."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          git branch --force "$BASE_REF" "$BASE_SHA"
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Install pinned CodeRabbit CLI
+        if: ${{ steps.credentials.outputs.configured == 'true' && steps.instructions.outputs.available == 'true' }}
+        env:
+          CODERABBIT_VERSION: v0.9.0
         shell: bash
         run: |
           set -euo pipefail
@@ -63,22 +99,9 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           cr --version
 
-      # Use the base commit's instructions so a PR cannot rewrite its own review rules.
-      - name: Prepare trusted review instructions and base ref
-        if: ${{ steps.credentials.outputs.configured == 'true' }}
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          git cat-file -e "${BASE_SHA}^{commit}"
-          git show "${BASE_SHA}:.coderabbit-cli-instructions.md" > "$RUNNER_TEMP/coderabbit-cli-instructions.md"
-          git branch --force "$BASE_REF" "$BASE_SHA"
-
       - name: Run CodeRabbit CLI review
         id: review
-        if: ${{ steps.credentials.outputs.configured == 'true' }}
+        if: ${{ steps.credentials.outputs.configured == 'true' && steps.instructions.outputs.available == 'true' }}
         continue-on-error: true
         env:
           CODERABBIT_API_KEY: ${{ secrets.CODERABBIT_API_KEY }}
@@ -103,7 +126,7 @@ jobs:
           exit "$review_exit_code"
 
       - name: Publish or update the pull-request review comment
-        if: ${{ always() && steps.credentials.outputs.configured == 'true' && steps.review.outcome != 'skipped' }}
+        if: ${{ always() && steps.credentials.outputs.configured == 'true' && steps.instructions.outputs.available == 'true' && steps.review.outcome != 'skipped' }}
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}

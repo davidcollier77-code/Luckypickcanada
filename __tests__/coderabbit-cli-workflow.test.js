@@ -21,12 +21,17 @@ describe('CodeRabbit CLI pull-request review workflow', () => {
     expect(workflow).toContain('secrets.CODERABBIT_API_KEY');
     expect(workflow).toContain('configured=false');
     expect(workflow).toContain('configured=true');
+    expect(workflow).toContain('available=false');
+    expect(workflow).toContain('available=true');
+    expect(workflow).toContain('bootstrap PR that adds this workflow');
     expect(workflow).toContain('CODERABBIT_API_KEY is missing or unavailable');
   });
 
   it('uses pinned Actions, a pinned CLI version, and the base revision instructions', () => {
     expect(workflow).toMatch(/^        uses: actions\/checkout@[0-9a-f]{40} # v\d/m);
-    expect(workflow).toContain('CODERABBIT_VERSION: 0.9.0');
+    expect(workflow).toContain('CODERABBIT_VERSION: v0.9.0');
+    expect(workflow).toContain('CODERABBIT_CLI_DISABLE_AUTO_UPDATE: "true"');
+    expect(workflow).toContain('steps.instructions.outputs.available == \'true\'');
     expect(workflow).toContain('git show "${BASE_SHA}:.coderabbit-cli-instructions.md"');
     expect(workflow).toContain('--config "$RUNNER_TEMP/coderabbit-cli-instructions.md"');
   });

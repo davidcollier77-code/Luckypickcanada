@@ -6,7 +6,7 @@ LuckyPickCanada's CodeRabbit CLI layer is designed to add an independent review 
 
 The dedicated workflow `.github/workflows/coderabbit-cli-review.yml` reviews pull requests targeting `main` when a PR is opened, reopened, updated with new commits, or marked ready for review. It publishes or updates one CodeRabbit CLI review comment on the pull request, rather than adding a new comment for every commit.
 
-The workflow copies `.coderabbit-cli-instructions.md` from the PR's **base commit**, so a proposed change cannot rewrite the review instructions used to review itself. It checks for the API-key secret before checking out the PR head. If the secret is missing or unavailable (including for fork PRs), the workflow skips the review with a warning and a job-summary explanation.
+The workflow copies `.coderabbit-cli-instructions.md` from the PR's **base commit**, so a proposed change cannot rewrite the review instructions used to review itself. It checks for the API-key secret before checking out the PR head. If the secret is missing or unavailable (including for fork PRs), the workflow skips the review with a warning and a job-summary explanation. The initial setup PR also skips itself if its base revision does not yet contain the new instructions file; this bootstrap guard avoids trusting instructions supplied only by the PR being reviewed.
 
 ### One-time setup (phone browser is sufficient)
 
@@ -20,7 +20,7 @@ Keep the key in GitHub Secrets. Do not paste it into a chat, issue, pull request
 
 ### Cost and safety controls
 
-- The workflow deliberately does **not** pass CodeRabbit CLI's `--use-credits` option. It does not opt into paid over-limit review credits. If the account has no eligible allowance or the key lacks access, the comment is marked incomplete rather than showing a false clean result.
+- The workflow installs the pinned CLI release `v0.9.0` and disables automatic CLI self-updates for reproducibility. It deliberately does **not** pass CodeRabbit CLI's `--use-credits` option. It does not opt into paid over-limit review credits. If the account has no eligible allowance or the key lacks access, the comment is marked incomplete rather than showing a false clean result.
 - The workflow does not auto-fix, push commits, approve, or merge pull requests.
 - The workflow uses read-only repository contents permission and only the permissions needed to publish/update its PR comment.
 - The API key is checked before PR code is checked out. GitHub does not expose repository secrets to fork-originated `pull_request` runs, so those reviews are skipped safely.
@@ -78,4 +78,4 @@ Review findings are advisory. Check each reported issue against the diff and sup
 
 ## Verification status
 
-The workflow and supporting regression test are proposed in the current pull request. Full repository CI and the first authenticated live CLI review have not yet been verified. The workflow must be merged to `main` and configured with `CODERABBIT_API_KEY` before it can run on new PR events.
+The workflow and supporting regression test are proposed in the current pull request. Full repository CI and the first authenticated live CLI review have not yet been verified. The workflow must be merged to `main` and configured with `CODERABBIT_API_KEY` before it can review later PRs. The first setup PR is expected to skip because the instructions file is not yet present on its base branch.
