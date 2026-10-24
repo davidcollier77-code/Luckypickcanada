@@ -170,26 +170,6 @@ def should_suppress_metadata_finding(snippet: str, region: dict) -> bool:
     return len(fields) == 1 and len(safe_fields) == 1
 
 
-def _source_line_for_region(region: dict, safe_path: Path) -> str:
-    """Read the actual source line; SARIF snippets may contain only a matched slice."""
-    start_line = region.get("startLine")
-    if not isinstance(start_line, int) or isinstance(start_line, bool) or start_line < 1:
-        return ""
-
-    if not safe_path.is_file():
-        return ""
-
-    try:
-        with safe_path.open("r", encoding="utf-8") as source_file:
-            for line_number, line in enumerate(source_file, start=1):
-                if line_number == start_line:
-                    return line.rstrip("\r\n")
-    except (OSError, UnicodeDecodeError):
-        # No trusted source line means no suppression, not a fallback to SARIF text.
-        return ""
-    return ""
-
-
 def _source_line_from_text(source_text: str, region: dict) -> str:
     """Extract the source line at region startLine from already-loaded text."""
     start_line = region.get("startLine")
@@ -456,7 +436,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 source_text = safe_path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 source_text = ""
-            snippet = _source_line_for_region(region, safe_path)
+            snippet = _source_line_from_text(source_text, region)
 
             justification = None
             if rule_id == "DS173237" and should_suppress_metadata_finding(snippet, region):
@@ -467,7 +447,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
             elif rule_id == "DS173237" and should_suppress_checksum_metadata_finding(
                 relative_path, safe_path, source_text, region
             ):
-            snippet = _source_line_from_text(source_text, region)
+                justification = (
                     "False positive: this exact SHA value is a pinned upstream revision "
                     "or tracked-file checksum in an allowlisted manifest map."
                 )

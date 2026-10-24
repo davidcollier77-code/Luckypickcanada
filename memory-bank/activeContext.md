@@ -527,3 +527,14 @@
 - **Implementation verification passed:** Commit `dd5fec9dcd61529c7c2c2e6963ec091d9ee6f205` removes the unnecessary `_refresh=Date.now()` URL parameter, keeps the API URL stable with `cache: 'no-store'`, and prevents overlapping 60-second polls with a single-in-flight guard in `app/lucky-map-of-canada/lucky-stories-refresh.js`. The component delegates its effect to this helper. A client regression test checks stable URLs and confirms that pending requests suppress additional polls.
 - **Verified CI:** Full unit suite 18 test files / 105 tests; `pnpm tsc --noEmit`; `./jules-verify.sh` (17 passed, 0 failed); Playwright (27 passed across desktop/mobile); Next.js production build; OpenNext Cloudflare build; compiled CSS/worker/assets and Wrangler no-deploy validation all passed. Combined `.next + public` size: 332,473,620 bytes / 317.07 MiB (<495 MiB). CodeQL, DevSkim, PR Agent, and updater-scheduler verification passed. No dependency additions, DB writes, merge, or deployment occurred.
 - **Remaining proof:** The read-only database check found eight approved saved stories; do not claim they are visible in production until the PR is deployed and the user-facing map is checked. If rendering still fails after deployment, inspect the live API response/configuration before considering a data repair.
+
+
+---
+
+# Active Context — CodeQL Python syntax repair (2026-10-23)
+
+- **Verified original CI on commit a9a19762e028cd76cb36ce0147d9ee1d18bed9f4:** DevSkim passed Python syntax validation, suppressor tests, filtering, and SARIF upload. Visual QA passed 104/105 tests; the single failure was `vi.runAllMicrotasksAsync()` missing in the installed Vitest version. OpenNext validation failed in the Next.js Google font loader while parsing an extensionless Google Fonts URL from unchanged `app/fonts.js`.
+- **Verified fix path:** Next.js v16.4.3 release notes explicitly include a fix for extensionless Google font URLs in both bundlers. The follow-up pins Next.js 16.4.3 and updates Next/@next entries and integrity values in pnpm-lock.yaml, without changing font definitions or weights.
+- **Test repair:** The Lucky Map refresh test now uses Vitest's supported `vi.waitFor()` API to await the async data update.
+- **Amazon Q safety finding:** A hard-failing Python syntax check could skip SARIF upload. The updated workflow keeps syntax validation fatal but runs the SARIF upload and fallback warning with `always()` so raw DevSkim findings remain available on failure. Removed unused `_source_line_for_region` helper.
+- **Follow-up verification:** Full CI, `./jules-verify.sh`, size-cap measurement, and a completed CodeQL analysis remain pending. Do not consider the original Python syntax warning cleared until the completed analysis confirms it.
