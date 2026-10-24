@@ -60,3 +60,5 @@ PR_SUMMARY.md
 ```
 
 **Structure Decision**: Continue the existing DevSkim remediation feature and PR branch; create no duplicate feature, branch, or pull request. No data model, external contract, or quickstart artifact applies.
+
+<!-- Updated for current run -->

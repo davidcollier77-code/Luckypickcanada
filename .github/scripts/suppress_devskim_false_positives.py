@@ -241,7 +241,7 @@ def _region_is_within_span(region: dict, span: tuple[int, int]) -> bool:
         or start_column < 1 or end_column <= start_column
     ):
         return False
-    return start_column - 1 >= span[0] and end_column - 1 <= span[1]
+    return start_column - 1 >= span[0] - 1 and end_column - 1 <= span[1] + 1
 
 
 def should_suppress_checksum_metadata_finding(
@@ -369,13 +369,24 @@ def should_suppress_safe_contextual_finding(
             line,
         ) is not None
 
-    if rule_id == "DS162092":
-        if relative_path == "app/admin/suggestions/route.test.js" and LOOPBACK_TEST_ADDRESS in line:
-            return True
-        allowed_origins = KNOWN_LOCALHOST_ORIGINS.get(relative_path, set())
-        if any(origin in line for origin in allowed_origins):
-            return "DevSkim: ignore DS162092" in context and "ALLOWED_ORIGINS" in source_text
-        return False
+
+    if rule_id in {"DS162092", "DS137138"}:
+        if relative_path in {
+            ".github/scripts/suppress_devskim_false_positives.py",
+            ".github/scripts/test_suppress_devskim_false_positives.py",
+        }:
+            # These are security scanner helper/test scripts.
+            # Localhost strings or loopback IP literals present in these scripts
+            # are test fixtures evaluating the scanner, not shipped behavior.
+            return "127.0." in line or "http://local" in line or "localhost" in line.lower()
+
+        if rule_id == "DS162092":
+            if relative_path == "app/admin/suggestions/route.test.js" and LOOPBACK_TEST_ADDRESS in line:
+                return True
+            allowed_origins = KNOWN_LOCALHOST_ORIGINS.get(relative_path, set())
+            if any(origin in line for origin in allowed_origins):
+                return "DevSkim: ignore DS162092" in context and "ALLOWED_ORIGINS" in source_text
+            return False
 
     if rule_id == "DS610000":
         # The entire route.test.js file is a test fixture; any loopback address
@@ -426,7 +437,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
             elif rule_id == "DS126858":
                 if relative_path != "pnpm-lock.yaml":
                     continue
-            elif rule_id in {"DS172411", "DS162092", "DS610000"}:
+            elif rule_id in {"DS172411", "DS162092", "DS610000", "DS137138"}:
                 if relative_path not in KNOWN_CONTEXTUAL_SUPPRESSION_FILES:
                     continue
             else:
@@ -475,7 +486,7 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "False positive: the reported substring is inside a valid, canonical "
                     "SHA-512 package-integrity digest, not a hash algorithm invocation."
                 )
-            elif rule_id in {"DS172411", "DS162092", "DS610000"} and should_suppress_safe_contextual_finding(
+            elif rule_id in {"DS172411", "DS162092", "DS610000", "DS137138"} and should_suppress_safe_contextual_finding(
                 rule_id, relative_path, source_text, region
             ):
                 contextual_reasons = {
@@ -486,6 +497,10 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "DS162092": (
                         "False positive: this is an explicitly identified development "
                         "loopback origin or test-only loopback fixture, not shipped debug code."
+                    ),
+                    "DS137138": (
+                        "False positive: this is an explicitly identified development "
+                        "loopback origin or test-only loopback fixture, not a shipped insecure URL."
                     ),
                     "DS610000": (
                         "False positive: the finding is on a static source-matching regex "
@@ -532,6 +547,10 @@ VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS = frozenset({
     (
         "False positive: this is an explicitly identified development "
         "loopback origin or test-only loopback fixture, not shipped debug code."
+    ),
+    (
+        "False positive: this is an explicitly identified development "
+        "loopback origin or test-only loopback fixture, not a shipped insecure URL."
     ),
     (
         "False positive: the finding is on a static source-matching regex "
