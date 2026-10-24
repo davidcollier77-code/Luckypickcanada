@@ -2,69 +2,73 @@
 
 **Branch**: `chore/coderabbit-cli-review-layer-20261024` | **Date**: 2026-10-24 | **Spec**: [spec.md](spec.md)
 
-**Input**: Feature specification in `specs/048-coderabbit-cli-review-layer/spec.md`
+**Input**: Updated feature specification in `specs/048-coderabbit-cli-review-layer/spec.md`
 
 ## Summary
 
-Add a small, optional local CodeRabbit CLI review path: a dedicated Markdown instruction file, a safe Bash wrapper that passes it with the CLI's documented `--config` flag, and a developer guide. Keep the setup deliberately distinct from conventional repository CodeRabbit app configuration files so existing PR review behavior is not intentionally changed.
+Keep the existing optional local CLI wrapper and add an independent GitHub Actions review workflow. On PR events targeting `main`, the workflow checks for an Agentic API key, checks out the PR head only when the key is available, uses review instructions from the base commit, calls CodeRabbit CLI without opting into usage credits, and creates/updates a single PR comment with structured findings or an explicit incomplete status.
 
 ## Technical Context
 
-**Language/Version**: Bash compatible with standard macOS/Linux shells; Markdown instructions and docs.
+**Language/Version**: GitHub Actions YAML, Bash, Python 3 from `ubuntu-latest`, Markdown, and the existing Vitest test setup.
 
-**Primary Dependencies**: Existing Git, installed CodeRabbit CLI executable `cr`; no new application dependency.
+**Primary Dependencies**: Existing GitHub Actions runner and GitHub CLI; pinned `actions/checkout`; CodeRabbit CLI pinned to 0.9.0. No application dependency or package-manifest change.
 
-**Storage**: Repository text files only. CLI authentication remains local to the maintainer's computer.
+**Authentication and storage**: `CODERABBIT_API_KEY` is a GitHub repository Actions secret created by the owner. Its value is never stored in the repository or printed. The CLI gets the key only at runtime.
 
-**Testing**: Source review of shell argument forwarding and error branches, remote PR/CI checks, and first live CLI review after maintainer installation and authentication.
+**Testing**: A Vitest source-level regression test guards the workflow contract; repository CI and the Spec Kit verifier must run on the final PR head. A real review also requires the secret and an account with eligible CLI access.
 
-**Target Platform**: Local developer machines with Git, Bash, and CodeRabbit CLI; installation instructions cover macOS/Linux and Windows PowerShell.
-
-**Project Type**: Developer tooling/documentation for an existing Next.js repository.
+**Target platform**: GitHub Actions for PRs targeting `main`, with optional local CLI usage for developers with a computer.
 
 **Constraints**:
-- Do not modify `AGENTS.md` or import repository governance into the CLI instruction file.
-- Do not add conventional `.coderabbit.yaml`, `.coderabbit.yml`, or `.coderabbit.config.ts`.
-- Do not change the GitHub App, scanner workflows, checks, dependencies, app source, deployment, or secrets.
-- Do not assert an exact free-review quota; use `cr usage`.
-- Do not claim local CLI auth/installation/review or shell-based verification occurred in this API-only session.
-
-**Scale/Scope**: One CLI-specific instruction file, one wrapper script, one user guide, and the Spec Kit artifacts plus a scoped PR summary. No extra data models, contracts, or research artifacts are required.
+- Read `AGENTS.md` first and keep it unchanged.
+- Do not alter existing CodeRabbit GitHub App settings, current scanner/reviewer workflows, application code, dependencies, deployment, or production secrets.
+- Add exactly one independent CLI review workflow; do not add a conventional CodeRabbit app configuration file.
+- Check the key before PR checkout; use base-revision instructions so a PR cannot rewrite its own review rules.
+- Use least-privilege token permissions and a stable updatable PR comment.
+- Do not include `--use-credits`; do not explicitly authorize paid over-limit usage.
+- Report quota/API-key prerequisites and unrun live validation honestly.
 
 ## Constitution Check
 
-- **Single source of truth**: Pass; no changes to repository governance. The CLI rules are review guidance only, separate from `AGENTS.md`.
-- **Verify before acting**: Pass; default branch, existing files, task context, and absence of conventional CodeRabbit config files were inspected.
-- **Protected systems**: Pass; no application, API, authentication, payment, database, deployment, secret, or CI behavior is intended to change.
-- **Resource conservation**: Pass; no new package or service is added.
-- **Verification**: Pending implementation and final branch checks. Local command execution is unavailable from the GitHub API connection; do not report local validation as passed.
+- **Governance**: Pass in design; preserve `AGENTS.md` and follow the repository's Creation path and Spec Kit artifacts.
+- **Scope**: Pass in design; the only new automation is the dedicated CodeRabbit CLI workflow and its regression test. Existing scanner workflows are untouched.
+- **Security**: The workflow reads the secret in a preflight step before checking out PR content; fork-originated `pull_request` events do not receive the key; the base commit supplies instruction rules; no auto-fix, push, approve, or merge behavior.
+- **Cost control**: No `--use-credits` flag. A rate-limited or unauthorized review is surfaced as incomplete, not retried with a paid option.
+- **Verification**: Pending final branch CI, `./jules-verify.sh`, and a first live run after merge and secret setup.
 
 ## Design Decisions
 
-1. Use a Markdown instruction file named `.coderabbit-cli-instructions.md` and pass it explicitly with `cr review --config`. This is intentionally not one of CodeRabbit's conventionally discovered repository configuration filenames.
-2. Provide a wrapper invoked as `bash scripts/coderabbit-cli-review.sh ...` so the dedicated instructions are always passed without requiring users to remember the flag. The wrapper checks for a Git worktree, the instructions file, and the CLI executable.
-3. Keep reviews manual and opt-in. Do not add a GitHub Actions workflow, mandatory check, scheduled run, or auto-fix behavior.
-4. Provide a separate `docs/coderabbit-cli.md` guide for local installation, sign-in, readiness/quota checks, pre-commit reviews, deep branch comparisons, structured findings, and safety expectations.
-5. Preserve normal test, CI, security scan, human review and merge processes. The CLI is a second opinion, not an authority or replacement for CI.
-6. Keep all review rules specific, high-signal and read-only. Avoid asking the CLI to load `AGENTS.md` or to change the repository's governance.
-7. Do not include optional README edits unless needed for discoverability; the dedicated guide's path is recorded in this PR.
+1. Keep `.coderabbit-cli-instructions.md` as a dedicated instruction file passed explicitly via CLI `--config`; do not add conventional repository CodeRabbit configuration filenames.
+2. Preserve `scripts/coderabbit-cli-review.sh` for optional local use.
+3. Add `.github/workflows/coderabbit-cli-review.yml` for PR events `opened`, `reopened`, `synchronize`, and `ready_for_review` against `main`, with concurrency cancellation for stale runs.
+4. Preflight `secrets.CODERABBIT_API_KEY` before checkout; when missing, add a workflow warning and job summary, then stop successfully without accessing PR content.
+5. Pin the CLI to 0.9.0 and use the documented headless API-key flag. Source custom review instructions and the local base branch from the PR base SHA, not the changed PR head.
+6. Parse CodeRabbit's documented agent-mode NDJSON output; distinguish `review_completed`/successful skip from missing, invalid, or incomplete completion events; update a single bot comment marked with a stable HTML comment.
+7. Keep the reviewer advisory. Do not write to code, auto-fix, create commits, approve, or merge. Do not pass `--use-credits`.
+8. Add `__tests__/coderabbit-cli-workflow.test.js` to guard event conditions, preflight ordering, action pinning, trusted instruction source, no paid credits, and comment upsert behavior.
+9. Update documentation for mobile-browser setup of a CodeRabbit Agentic API key as the repository secret, alongside existing local commands.
+10. No other architectural, data-model, API contract, or application-runtime changes are required.
 
 ## Project Structure
 
-- `.coderabbit-cli-instructions.md` — project-specific independent local review guidance.
-- `scripts/coderabbit-cli-review.sh` — forwards supported `cr review` arguments with the explicit instructions file.
-- `docs/coderabbit-cli.md` — installation/authentication/usage guide.
-- `specs/048-coderabbit-cli-review-layer/{spec.md,plan.md,tasks.md,pr_summary.md}` — task records.
+- `.coderabbit-cli-instructions.md` — independent reviewer instructions, copied from the PR base by the workflow.
+- `.github/workflows/coderabbit-cli-review.yml` — automatic PR review job and one-comment publisher.
+- `__tests__/coderabbit-cli-workflow.test.js` — workflow regression contract checks.
+- `scripts/coderabbit-cli-review.sh` — optional local wrapper.
+- `docs/coderabbit-cli.md` — automated secret setup and optional local usage.
+- `specs/048-coderabbit-cli-review-layer/{spec.md,plan.md,tasks.md,pr_summary.md}` — task artifacts and evidence record.
 
 ## Verification Plan
 
-1. Inspect the wrapper for safe quoting, strict error handling, and correct argument forwarding.
-2. Inspect the instruction file for separation from `AGENTS.md`, the GitHub App, and auto-fix/deploy behavior.
-3. Inspect the complete branch diff twice for unrequested file changes.
-4. Allow GitHub CI to run; local shell commands cannot be executed through this interface.
-5. After merge, install/authenticate the CLI on the user's machine, run `cr doctor` and `cr usage`, then perform one actual review. Record that live result separately from repository CI.
+1. Inspect the workflow's credential preflight, secret exposure boundaries, action pin, base-ref handling, CLI arguments, output parser, comment upsert, and paid-credit flag absence.
+2. Run the new workflow regression test as part of the repo test suite.
+3. Inspect the complete final diff twice for unrequested file changes and secrets.
+4. Wait for GitHub PR CI, including `./jules-verify.sh`; do not claim local checks ran through the connector-only environment.
+5. After merge, have the owner create the Agentic API key and add `CODERABBIT_API_KEY` to repository Actions secrets, then verify one successful or clearly incomplete live review. Do not enable pay-as-you-go just to make the workflow green.
 
 ## Remaining Unknowns
 
-- The user's local operating system, CLI installation state, sign-in state, and CodeRabbit account quota are not visible through this repository connection.
-- CLI and remote service compatibility for `--deep` must be checked against the user's installed version.
+- Whether the owner's CodeRabbit account exposes an Agentic API key and an eligible assigned seat.
+- The account's included review quota; the workflow will not opt into paid over-limit credits.
+- Final CI, live CLI API authentication, and the first posted PR comment remain unverified.

@@ -65,8 +65,8 @@ pnpm dev
 ```
 
 
-### Optional Local CodeRabbit CLI Review
+### Automatic CodeRabbit CLI Review
 
-Run an independent, on-demand review before opening a pull request. This optional
-local layer complements the existing GitHub App and security checks. Setup,
-authentication, and commands are documented in [`docs/coderabbit-cli.md`](docs/coderabbit-cli.md).
+A dedicated GitHub Actions workflow adds an independent CodeRabbit CLI review to pull requests, without requiring the maintainer to run a terminal. It complements—but does not replace—the existing CodeRabbit GitHub App, security scanners, tests, and human review. One-time setup for the `CODERABBIT_API_KEY` GitHub Actions secret and optional local CLI use are documented in [`docs/coderabbit-cli.md`](docs/coderabbit-cli.md).
+
+The workflow does not auto-fix or merge code and deliberately does not enable paid over-limit review credits.

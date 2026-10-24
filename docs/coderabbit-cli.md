@@ -1,42 +1,49 @@
-# CodeRabbit CLI — Local Review Layer
+# CodeRabbit CLI — Automatic PR Review Layer
 
-CodeRabbit CLI is an **optional, local, on-demand second opinion** for
-LuckyPickCanada. It complements the existing CodeRabbit GitHub App, DevSkim,
-CodeQL, tests, and other checks. It does not replace them.
+LuckyPickCanada's CodeRabbit CLI layer is designed to add an independent review to the existing CodeRabbit GitHub App, PR Agent, DevSkim, CodeQL, tests, and other checks. It does not replace those systems and does not edit or merge code.
 
-## Why this setup is separate
+## Automatic GitHub Actions review
 
-- Local CLI instructions live in `.coderabbit-cli-instructions.md`.
-- Run reviews through `bash scripts/coderabbit-cli-review.sh`; the wrapper
-  passes that instruction file explicitly using CodeRabbit CLI's `--config`
-  option.
-- We deliberately do **not** add `.coderabbit.yaml`, `.coderabbit.yml`, or
-  `.coderabbit.config.ts`. Those conventional repository configuration files
-  can also affect the GitHub App integration.
-- The rules are an independent review aid, not repository governance. Jules
-  and any agent required to follow repository governance must continue to read
-  `AGENTS.md` as required. This setup does not edit that file.
-- No dependency, GitHub workflow, scanner, deployment, secret, or application
-  runtime change is needed.
+The dedicated workflow `.github/workflows/coderabbit-cli-review.yml` reviews pull requests targeting `main` when a PR is opened, reopened, updated with new commits, or marked ready for review. It publishes or updates one CodeRabbit CLI review comment on the pull request, rather than adding a new comment for every commit.
 
-## Install and sign in (on your own computer)
+The workflow copies `.coderabbit-cli-instructions.md` from the PR's **base commit**, so a proposed change cannot rewrite the review instructions used to review itself. It checks for the API-key secret before checking out the PR head. If the secret is missing or unavailable (including for fork PRs), the workflow skips the review with a warning and a job-summary explanation.
 
-Install the CodeRabbit CLI using the current official instructions:
-<https://docs.coderabbit.ai/cli>
+### One-time setup (phone browser is sufficient)
 
-For macOS/Linux, the documented installer is:
+**The CLI needs its own CodeRabbit Agentic API key.** The existing CodeRabbit GitHub App installation does not automatically authenticate the CLI. CodeRabbit's official headless setup says the key must belong to an organization where the user has an assigned seat. Access and included review allowance depend on the CodeRabbit account and plan; this workflow does not promise that CLI reviews are available for free.
+
+1. Sign in to CodeRabbit and create an Agentic API key on the [CodeRabbit API Keys page](https://app.coderabbit.ai/settings/api-keys). Follow CodeRabbit's [headless CLI setup guide](https://docs.coderabbit.ai/cli/headless-cli-integration).
+2. Open [LuckyPickCanada's GitHub Actions secrets](https://github.com/davidcollier77-code/Luckypickcanada/settings/secrets/actions) in your browser. Choose **New repository secret**.
+3. Set the **Name** to `CODERABBIT_API_KEY` and the **Secret** to the Agentic API key, then save it.
+
+Keep the key in GitHub Secrets. Do not paste it into a chat, issue, pull request, workflow file, or commit. The repository connection cannot create or read this secret on your behalf.
+
+### Cost and safety controls
+
+- The workflow deliberately does **not** pass CodeRabbit CLI's `--use-credits` option. It does not opt into paid over-limit review credits. If the account has no eligible allowance or the key lacks access, the comment is marked incomplete rather than showing a false clean result.
+- The workflow does not auto-fix, push commits, approve, or merge pull requests.
+- The workflow uses read-only repository contents permission and only the permissions needed to publish/update its PR comment.
+- The API key is checked before PR code is checked out. GitHub does not expose repository secrets to fork-originated `pull_request` runs, so those reviews are skipped safely.
+- The new workflow is separate from the existing CodeRabbit GitHub App configuration. It does not change scanner workflows or add `.coderabbit.yaml`, `.coderabbit.yml`, or `.coderabbit.config.ts`.
+- Because GitHub loads a new `pull_request` workflow from the base branch, this workflow becomes active for PR events after this change is merged into `main`. The first live run still requires a valid secret and eligible CodeRabbit CLI access.
+
+## Optional local CLI review
+
+The local wrapper remains available to anyone using a computer with the repository checked out. It is not needed for the automatic GitHub Actions path.
+
+Official installation details are maintained at <https://docs.coderabbit.ai/cli>. For macOS/Linux, CodeRabbit currently documents:
 
 ```bash
 curl -fsSL https://cli.coderabbit.ai/install.sh | sh
 ```
 
-For Windows PowerShell, the documented installer is:
+For Windows PowerShell:
 
 ```powershell
 irm https://cli.coderabbit.ai/install.ps1 | iex
 ```
 
-Then, from a terminal, sign in and check readiness:
+Then sign in and inspect readiness and quota:
 
 ```bash
 cr auth login
@@ -45,53 +52,30 @@ cr doctor
 cr usage
 ```
 
-Sign-in is interactive and must be completed by you on the computer where
-you will run reviews. `cr usage` shows the included-review availability and
-current usage for the account/plan; use it rather than assuming a fixed free
-review quota.
-
-## Common review commands
-
-From the repository root, inspect staged/unstaged tracked changes and untracked
-(non-ignored) files before committing:
+Review uncommitted tracked changes plus untracked files:
 
 ```bash
 bash scripts/coderabbit-cli-review.sh --uncommitted --include-untracked
 ```
 
-Review the current branch against `main` using the deeper PR-style policy
-(requires CLI 0.8.0 or later and a compatible CodeRabbit service):
+Review the current branch against `main`:
 
 ```bash
-bash scripts/coderabbit-cli-review.sh --base main --deep
+bash scripts/coderabbit-cli-review.sh --base main
 ```
 
-Produce structured findings for an AI coding assistant to interpret (this
-outputs findings; it does not authorize the CLI to edit code):
+Produce structured findings for an AI coding assistant (without authorizing it to edit files):
 
 ```bash
 bash scripts/coderabbit-cli-review.sh --agent --uncommitted --include-untracked
 ```
 
-You can pass other supported `cr review` flags through the wrapper. For the
-complete current options, run `cr review --help` or consult the official
-<https://docs.coderabbit.ai/cli/reference>.
+The wrapper explicitly supplies `.coderabbit-cli-instructions.md`. The current CLI reference documents `--config` as an additional-instructions option and includes Markdown instruction-file examples: <https://docs.coderabbit.ai/cli/reference>.
 
-## Safe operating practice
+## Review expectations
 
-1. Review important, complex, or security-sensitive changes before the PR is
-   opened. This is optional; it does not need to run on every change.
-2. Evaluate each finding against the actual code and diff. Do not apply a fix
-   solely because an AI reviewer suggested it.
-3. Continue using normal tests, CI checks, security scan, and human review. A
-   clean CLI result is not proof that the code is defect-free.
-4. Keep authentication local. Do not commit API keys, tokens, or CLI state.
-5. Do not run a deep review just to chase a quota; prioritize high-risk changes.
+Review findings are advisory. Check each reported issue against the diff and supporting code. Continue running the normal test suite, security scanners, and human review. An empty finding list is not proof that a change is defect-free.
 
 ## Verification status
 
-The repository configuration and wrapper are introduced through this pull
-request. The CLI cannot be installed or authenticated through the GitHub
-repository connection. After merging, install/sign in on the local development
-computer, run `cr doctor` and `cr usage`, then run the review command above
-to verify the first live review.
+The workflow and supporting regression test are proposed in the current pull request. Full repository CI and the first authenticated live CLI review have not yet been verified. The workflow must be merged to `main` and configured with `CODERABBIT_API_KEY` before it can run on new PR events.

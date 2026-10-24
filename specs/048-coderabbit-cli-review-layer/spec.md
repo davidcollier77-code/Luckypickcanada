@@ -6,53 +6,72 @@
 
 **Status**: Draft
 
-**Input**: User request to add CodeRabbit CLI as an optional second review layer, preserving existing GitHub App and scanners, with separate CLI-specific review instructions rather than importing the repository's AGENTS.md governance.
+**Input**: User requested an additional automatic CodeRabbit CLI review layer for GitHub pull requests because the maintainer has no computer, while preserving the existing CodeRabbit GitHub App and all current scanners and checks. An optional local wrapper may remain for developers who do have a computer.
 
 ## User Scenarios & Testing
 
-### User Story 1 — Run an independent local review (Priority: P1)
+### User Story 1 — Automatic PR review without a local computer (Priority: P1)
 
-As the repository maintainer, I want a repeatable local command that runs CodeRabbit CLI with a dedicated LuckyPickCanada instruction file so I can inspect important changes before opening a pull request without changing the existing GitHub App configuration.
+As the repository maintainer, I want GitHub Actions to run an independent CodeRabbit CLI review on pull requests to `main` and put the result in the PR conversation so the extra review works without requiring me to run terminal commands.
 
-**Why this priority**: This is the requested capability and the primary outcome.
+**Acceptance scenarios**
 
-**Independent Test**: In a clone with CodeRabbit CLI installed and authenticated, invoke the wrapper on a worktree containing a known change and confirm the CLI receives the dedicated instruction file and reviews only the selected local changes.
+1. Given a pull request targets `main` and the secret is configured, when it is opened, reopened, synchronized, or marked ready for review, then a CodeRabbit CLI review is attempted.
+2. Given a CLI review completes, when the workflow publishes results, then it creates or updates one stable review comment and distinguishes findings from a completed clean review.
+3. Given CLI output is missing, malformed, incomplete, or the command fails, when the workflow publishes its result, then it identifies the review as incomplete and never implies that no findings means the review succeeded.
+4. Given `CODERABBIT_API_KEY` is absent or unavailable, when the workflow starts, then it warns and skips before checking out PR content.
+5. Given a PR is changed to alter its own review instructions, when the workflow runs, then the CLI instructions are sourced from the base commit, not the proposed PR revision.
+6. Given included CodeRabbit CLI allowance is unavailable, when the CLI review is rate-limited, then the workflow does not opt into paid over-limit credits.
 
-**Acceptance Scenarios**:
+### User Story 2 — Keep a deliberate local review option (Priority: P2)
 
-1. **Given** the CLI is installed and authenticated, **When** the maintainer invokes the wrapper with review flags, **Then** it runs `cr review` with the explicit CLI-only instructions file and forwards the flags.
-2. **Given** the CLI is not installed, **When** the wrapper is invoked, **Then** it exits clearly with a setup hint instead of failing cryptically.
-3. **Given** an unrelated file or a high-risk code path is changed, **When** CodeRabbit reviews the diff, **Then** its independent instructions prioritize actionable correctness, security, data-integrity and regression findings.
+As a developer with a local clone, I want an optional wrapper that explicitly supplies LuckyPickCanada-specific review guidance and accepts standard CLI review flags.
 
-### Edge Cases
+**Acceptance scenarios**
 
-- Invoking the wrapper outside a Git worktree.
-- Missing CLI instruction file.
-- CodeRabbit CLI is missing or not authenticated.
-- The CLI account's included-review limit is exhausted.
-- New CLI versions alter supported flags or local-review behavior.
-- A review finds no issue; this must not be described as proof of defect-free code.
+1. Given the CLI is installed, when the wrapper is invoked inside a Git worktree, then it runs `cr review` with the dedicated instructions file and forwards the requested flags.
+2. Given the CLI is missing or the command is invoked outside a Git worktree, then the wrapper returns a clear setup error.
+3. Given code changes are reviewed, then findings focus on actionable correctness, security, integrity, regression, and performance risks rather than broad style changes.
+
+## Edge Cases
+
+- The API key is missing, invalid, unavailable to a fork PR, or lacks CodeRabbit CLI seat access.
+- The included review allowance is exhausted or the service rate-limits the review.
+- A CLI run emits findings but later reports failure, incomplete coverage, malformed output, or unreviewed files.
+- A PR gets new commits while a previous review is running; the older run should be cancelled where GitHub Actions concurrency allows.
+- A PR changes its own reviewer instruction file; the base revision must remain authoritative for that run.
+- A PR has no diff changes for the CLI comparison.
+- Repeated PR updates should edit the existing bot comment rather than create an accumulating thread of duplicate comments.
+- CLI flags or output fields change in future versions.
 
 ## Requirements
 
-- **FR-001**: The setup MUST provide a dedicated local CLI instruction file and explicitly pass it to `cr review`.
-- **FR-002**: The instruction file MUST define independent review priorities for application/API code, security workflows, tests, dependencies, and Workers.
-- **FR-003**: The setup MUST NOT change `AGENTS.md`, add `.coderabbit.yaml` / `.coderabbit.yml` / `.coderabbit.config.ts`, or configure automatic GitHub App behavior.
-- **FR-004**: The setup MUST leave current scanners, workflows, dependencies, application behavior, and deployment configuration unchanged.
-- **FR-005**: The wrapper MUST fail with clear guidance when it is outside a worktree, missing its instruction file, or cannot find `cr`.
-- **FR-006**: Documentation MUST explain local installation, interactive authentication, readiness/quota checks, a pre-commit review, a branch comparison, and structured agent output.
-- **FR-007**: Documentation MUST NOT promise a fixed free-review quota; it MUST direct the maintainer to `cr usage` to inspect account-specific included reviews.
-- **FR-008**: Any unverified check, CLI installation, authentication step, or live review MUST be reported as pending rather than claimed as passed.
+- **FR-001**: Provide a dedicated `.coderabbit-cli-instructions.md` instruction file and explicitly pass it to the CLI.
+- **FR-002**: Instructions define review priorities for application/API code, security workflows, tests, dependencies, and Cloudflare Workers.
+- **FR-003**: Do not modify `AGENTS.md`, existing CodeRabbit GitHub App settings, or the existing CodeRabbit/DevSkim/CodeQL/PR Agent workflows. Do not add conventional `.coderabbit.yaml`, `.coderabbit.yml`, or `.coderabbit.config.ts` configuration files.
+- **FR-004**: Add one separate GitHub Actions workflow for CLI review on PR events targeting `main`; do not alter application code, dependencies, deployments, or other security scanners.
+- **FR-005**: The workflow MUST check the key before checkout, skip clearly when unavailable, use instructions copied from the PR base commit, and never expose secret values.
+- **FR-006**: The workflow MUST create or update one recognizable PR comment and identify incomplete reviews honestly. It MUST NOT edit source, push commits, approve, or merge PRs.
+- **FR-007**: The workflow MUST NOT pass `--use-credits`; it must not opt in to paid over-limit review credits.
+- **FR-008**: Documentation MUST explain Agentic API key prerequisites, safe GitHub secret setup from a browser, local optional usage, and account-specific quota limits without promising fixed free usage.
+- **FR-009**: The local wrapper MUST fail with clear guidance when outside a worktree, missing its instruction file, or unable to find the CLI.
+- **FR-010**: Any unrun test, unavailable secret, unauthenticated CLI, or unverified live review MUST be reported as pending rather than passed.
+- **FR-011**: A regression test MUST guard key workflow events, preflight order, least-privilege permissions, pinned tooling, stable-comment behavior, and non-use of paid credits.
 
 ## Success Criteria
 
-- **SC-001**: One documented local command uses the explicit CLI-only instruction file for reviews.
-- **SC-002**: No automatic GitHub workflow or existing CodeRabbit GitHub App configuration is altered.
-- **SC-003**: The wrapper gives clear setup errors for missing prerequisites.
-- **SC-004**: The repository PR review and CI verify the final file set; local installation/authentication and a first live review are recorded separately because they require the maintainer's computer/account.
+- **SC-001**: A PR event can trigger the added CodeRabbit CLI workflow without requiring the maintainer to use a computer or terminal.
+- **SC-002**: Existing GitHub App reviews and scanners remain intact; the new workflow stays independent and advisory.
+- **SC-003**: Missing or unavailable secrets cause a clear safe skip before checkout, not a misleading clean review.
+- **SC-004**: Completed CLI findings are posted through one updated PR comment, with failure/incomplete results clearly labeled.
+- **SC-005**: Paid over-limit review credits are not explicitly enabled by the workflow.
+- **SC-006**: The local wrapper and optional documentation remain usable for other developers.
+- **SC-007**: Full repository checks and a real review run are reported only after actual evidence is available.
 
-## Assumptions
+## Assumptions and Limitations
 
-- The user will install and authenticate the CLI on the machine where the repository is cloned.
-- CodeRabbit CLI availability and included review quota depend on the installed version and account/plan.
-- The new layer is opt-in and on-demand, not a required CI check.
+- The official CodeRabbit headless CLI flow requires an Agentic API key from an organization where the user has an assigned seat. The existing GitHub App installation alone is not that credential.
+- Availability and review allowance depend on the user's CodeRabbit account/plan. No fixed free quota is assumed.
+- The secret must be added by a repository administrator; the repository connection cannot create or retrieve its value.
+- The workflow runs only after its workflow file is merged into `main`. Pull-request events from forks cannot access repository secrets and will be skipped.
+- The workflow is an advisory reviewer; it does not replace CI, required tests, security scans, or human review.
