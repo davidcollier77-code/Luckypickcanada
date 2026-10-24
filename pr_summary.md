@@ -2,12 +2,12 @@
 
 ## Task and Scope
 - **Task group:** Security. **Reason:** The current DevSkim ledger contained 12 findings in the scanner's own suppressor and its regression tests; this is security-tooling false-positive handling.
-- **Status:** Implementation committed to `fix/devskim-self-suppression-20261024`; current-head CI and live DevSkim result have not yet been observed. Report cleanup remains pending until those checks prove the narrow exception works.
+- **Status:** The initial implementation head `d7017d31d4d154a079e989efd3d180522032526d` passed the focused Python syntax/test steps and the DevSkim check reported **no new alerts**. After that evidence, the 12 reviewed ledger rows were removed on this PR branch. A fresh CI run for the latest report-cleanup head remains pending.
 - **Baseline verified:** `devskim-alerts.md` had exactly 12 finding rows, all in `.github/scripts/suppress_devskim_false_positives.py` or `.github/scripts/test_suppress_devskim_false_positives.py`.
 - **Verified root cause:** `resolve_safe_artifact_uri()` rejected both helper/test paths because they were not in `is_allowed_relative_path()`. Separately, `process_sarif()` permitted contextual findings only for `KNOWN_CONTEXTUAL_SUPPRESSION_FILES`, excluding these two files. Consequently, the existing DS137138/DS162092 test-fixture predicate could not run for those SARIF locations.
 - **Change:** Added `DEVSKIM_SELF_TEST_FILES` containing only the two exact helper/test paths, allowed them through safe source resolution, and extended the existing contextual file allowlist only for DS137138 and DS162092. DS172411, DS610000, other paths, and other rules retain their pre-existing restrictions.
 - **Regression coverage:** Added a SARIF integration test that sends four intended helper/test rule/path findings through `suppress_sarif()` and asserts they are removed, while a DS162092 finding on `README.md` and a DS172411 finding on an allowed helper path remain visible.
-- **Report:** Not yet cleared. The 12 rows must be removed only after current-head CI confirms the findings are filtered. Preserve the title, explanation, and append marker. No global DevSkim rule or scan path is disabled.
+- **Report:** The 12 reviewed finding rows have now been removed on this PR branch after the initial head's focused syntax/test steps and DevSkim check passed. `devskim-alerts.md` retains its title, explanatory sentence, and append marker; the report currently contains **0 finding rows**. Latest-head rerun remains required. No global DevSkim rule or scan path is disabled.
 
 ## Governance and Routed Documents
 - `AGENTS.md` — read first (USED=YES, USEFUL=YES): mandates safe scoping, security-group routing, Spec Kit sequence, explicit verification and evidence-based reporting.
@@ -26,7 +26,7 @@
 - `/speckit.specify` — definition `.jules/cmds/speckit.specify.md`; method: FILE-DRIVEN PROCEDURAL EXECUTION; completed artifact: `specs/045-devskim-self-suppression/spec.md`.
 - `/speckit.plan` — definition `.jules/cmds/speckit.plan.md`; method: FILE-DRIVEN PROCEDURAL EXECUTION; completed artifact: `specs/045-devskim-self-suppression/plan.md`.
 - `/speckit.tasks` — definition `.jules/cmds/speckit.tasks.md`; method: FILE-DRIVEN PROCEDURAL EXECUTION; completed artifact: `specs/045-devskim-self-suppression/tasks.md`.
-- `/speckit.implement` — definition `.jules/cmds/speckit.implement.md`; method: FILE-DRIVEN PROCEDURAL EXECUTION; implementation is committed, but current-head verification and report reconciliation remain pending.
+- `/speckit.implement` — definition `.jules/cmds/speckit.implement.md`; method: FILE-DRIVEN PROCEDURAL EXECUTION; implementation and report reconciliation are committed to this PR branch. Latest-head verification remains pending.
 
 ## Files Changed So Far
 - `.github/scripts/suppress_devskim_false_positives.py`
@@ -37,16 +37,17 @@
 
 ## Verification Status — PENDING
 - No local test/build/gate is claimed. The connected shell could not resolve `github.com`, so local checkout/testing could not be performed.
-- **PENDING:** `python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py`.
-- **PENDING:** `python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'`.
-- **PENDING:** current-head DevSkim scan and SARIF upload; confirm those 12 fixture locations disappear and no broader suppression occurs.
+- **PASS on initial implementation head `d7017d31d4d154a079e989efd3d180522032526d`:** `python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py` — workflow step completed successfully.
+- **PASS on initial implementation head `d7017d31d4d154a079e989efd3d180522032526d`:** `python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'` — workflow step completed successfully.
+- **PASS on initial implementation head:** [DevSkim check](https://github.com/davidcollier77-code/Luckypickcanada/runs/120862745316) concluded success with title “No new alerts in code changed by this pull request”; [DevSkim workflow job](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40090736353/job/120862684245) shows scan, syntax, regression tests, suppressor and SARIF upload all succeeded.
+- **PENDING:** repeat all relevant checks on the latest report-cleanup head.
 - **PENDING:** `./jules-verify.sh`, TypeScript, production build, refresh-docs tests, OpenNext/Cloudflare build validation and 495 MiB size limit as required by CI.
-- **PENDING:** final report reconciliation, current diff double-check and verification of finding-row count.
+- **PASS for report reconciliation:** `devskim-alerts.md` was reduced from exactly 12 finding rows to 0, keeping the header, explanatory sentence and append marker. **PENDING:** final current-head diff double-check and scan.
 - No changes to production application behavior, APIs, database, payment/authentication controls, deployment settings, secrets, assets or dependencies have been made.
 
 ## Final Evidence and Remaining Issues
-- **Useful result:** NO (not yet verified). The narrow fix and regression test are committed, but the alert ledger will not be marked clean until CI and the DevSkim result provide current-head evidence.
-- Update this section before merge with observed check URLs/results, exact final changed-file list, report row count, build size, and any unrun checks. Do not infer that GitHub Code Scanning alert lifecycle status has changed solely because SARIF filtering/report rows are cleaned.
+- **Useful result:** NO (provisional; latest-head verification pending). The scoped suppression fix, negative-control regression, and zero-row report reconciliation are committed. Initial DevSkim and focused tests passed, but the latest head and all required repository gates must pass before completion can be claimed.
+- Final report count verified from the branch content: **0 finding rows**. This ledger cleanup does not by itself prove all corresponding GitHub Code Scanning alert records were dismissed or resolved.
 
 ---
 
