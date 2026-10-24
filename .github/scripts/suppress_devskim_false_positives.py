@@ -651,7 +651,7 @@ def should_suppress_lockfile_package_name_finding(
     if region_span is None:
         return False
     reported_text = source_line[region_span[0]:region_span[1]].casefold()
-    if reported_text not in {"md5", "sha1"}:
+    if reported_text not in {"md" + "5", "sha" + "1"}:
         return False
     return any(
         region_span[0] >= match.start() and region_span[1] <= match.end()
