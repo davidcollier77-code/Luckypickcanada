@@ -15,5 +15,5 @@
 - [ ] T007 Run `./jules-verify.sh` and inspect current-head checks. Shell execution is unavailable through the connected repository interface; keep this pending until GitHub checks provide evidence.
 
 ## Phase 3: Final audit
-- [ ] T008 Inspect the complete changed-file diff and confirm only `AGENTS.md` plus these required Spec Kit artifacts changed.
-- [ ] T009 Confirm the PR remains open and unmerged; reconcile its body summary with actual files and verification results.
+- [x] T008 Inspect the complete changed-file diff and confirm only `AGENTS.md` plus these required Spec Kit artifacts changed.
+- [x] T009 Confirm the PR remains open and unmerged; reconcile its body summary with actual files and verification results.
