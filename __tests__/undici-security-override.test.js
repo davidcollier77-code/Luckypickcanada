@@ -7,12 +7,16 @@ const packageJson = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf
 const lockfile = readFileSync(join(repoRoot, 'pnpm-lock.yaml'), 'utf8');
 
 describe('Undici security override', () => {
-  it('requires the patched Undici version across the pnpm dependency graph', () => {
+  it('requires only the patched Undici version across the pnpm dependency graph', () => {
     expect(packageJson.pnpm?.overrides?.undici).toBe('8.12.2');
-    expect(lockfile).toMatch(/^  undici: 8\.12\.2$/m);
-    expect(lockfile).toContain('  undici@8.12.2:');
-    expect(lockfile).toContain('  undici@8.12.2: {}');
-    expect(lockfile).not.toMatch(/^  undici@8\.10\.2:/m);
-    expect(lockfile).not.toMatch(/^[ \t]+undici:[ \t]+8\.10\.2[ \t]*$/m);
+
+    const undiciPackageVersions = [...lockfile.matchAll(/^  undici@(\d+\.\d+\.\d+):/gm)]
+      .map((match) => match[1]);
+    expect(undiciPackageVersions).toEqual(['8.12.2', '8.12.2']);
+
+    const resolvedUndiciVersions = [...lockfile.matchAll(/^[ \t]+undici:[ \t]+(\d+\.\d+\.\d+)[ \t]*$/gm)]
+      .map((match) => match[1]);
+    expect(resolvedUndiciVersions.length).toBeGreaterThan(0);
+    expect([...new Set(resolvedUndiciVersions)]).toEqual(['8.12.2']);
   });
 });
