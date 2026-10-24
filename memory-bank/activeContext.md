@@ -1,14 +1,15 @@
 # Active Context — DevSkim Self-Test False Positives (2026-10-24)
 
-- **Task:** Safely reconcile the 12 historical DevSkim ledger rows that pointed to the scanner helper and its regression test.
+- **Task:** Completed remediation of the 12 historical DevSkim ledger rows from the scanner helper and its regression test.
 - **Verified cause:** Safe source resolution and contextual-rule eligibility excluded `.github/scripts/suppress_devskim_false_positives.py` and `.github/scripts/test_suppress_devskim_false_positives.py`, so existing narrow DS137138/DS162092 fixture logic was unreachable for their results.
 - **Branch / PR:** `fix/devskim-self-suppression-20261024` / [PR #1588](https://github.com/davidcollier77-code/Luckypickcanada/pull/1588).
 - **Implementation:** Exact two-file allowlist for source inspection; contextual exception limited to DS137138/DS162092 on those paths; regression processes synthetic SARIF and checks four expected removals plus two negative controls.
-- **Observed initial verification:** On implementation head `d7017d31d4d154a079e989efd3d180522032526d`, Python syntax validation, the focused suppression tests, suppression step, SARIF upload, and the DevSkim PR check passed. DevSkim reported “No new alerts in code changed by this pull request.” Amazon Q review found no blocking defects and confirmed the intended narrow scope.
-- **Ledger:** Removed exactly 12 previously reported rows in this PR branch after the above evidence; `devskim-alerts.md` retains its header/explanation/append marker and currently has zero finding rows. New report-cleanup head must be rerun through CI before declaring task completion or merge readiness.
-- **Safety:** No app runtime, API, secrets, dependency, authentication, payment, database, or deployment changes. No direct changes to `main` and no global scanner rules or scan paths disabled.
-- **Spec Kit:** `specs/045-devskim-self-suppression/{spec.md,plan.md,tasks.md}`; file-driven sequential stage execution (native dispatch/local checkout unavailable).
-- **Still pending:** Latest-head rerun of DevSkim, full repository gates including `./jules-verify.sh`, Visual QA, OpenNext/Cloudflare build validation and measured build-size cap, final complete diff review, and final PR summary. Local shell could not resolve GitHub, so no local checks are claimed.
+- **Current-head verification passed:** DevSkim syntax/suppression/SARIF upload, DevSkim PR check with no new alerts, CodeQL (Python, JavaScript/TypeScript, Actions) with no new alerts, unit suite (106/106), targeted unit tests (14/14), TypeScript, `./jules-verify.sh`, Playwright (27 passed, 3 skipped, 0 failed), production build, OpenNext/Cloudflare and Wrangler no-deploy validation, and updater scheduler tests. PR Agent and Amazon Q reviews reported no blocking concerns.
+- **Build size:** `.next + public` = 330,821,072 bytes / 315.50 MiB, under the hard 495 MiB ceiling.
+- **Ledger:** Exactly 12 finding rows removed; `devskim-alerts.md` keeps its title/explanation/append marker and has 0 finding rows on the PR branch.
+- **Scope/security:** No application runtime, API, secret, dependency, authentication/payment, database, or deployment changes. No broad rule suppression and no direct edits to `main`. Deployment workflow was not run.
+- **Governance:** Task group Security; all four Spec Kit stages are recorded in `specs/045-devskim-self-suppression/{spec.md,plan.md,tasks.md}` and the canonical PR summary. `.docs/` remained read-only. Local execution was unavailable due to this session's DNS limitation; remote current-head CI is the evidence source.
+- **Status:** Verified and ready for merge. No known in-scope outstanding issues. Zero ledger rows and a PR “no new alerts” result do not by themselves dismiss older Code Scanning alert objects.
 
 ---
 
