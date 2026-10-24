@@ -50,12 +50,13 @@
 - `specs/049-coderabbit-cli-retirement/spec.md` — added
 - `specs/049-coderabbit-cli-retirement/tasks.md` — added
 
-## Verification Status — PENDING REMOTE CHECKS
-- **Source/tree reconciliation:** PASS after inspecting the exact changed paths; no application, dependency, deployment, secret-value, or unrelated workflow changes are included.
-- **`pnpm test` and `./jules-verify.sh`:** NOT RUN; repository shell execution is unavailable through this connected GitHub API interface. Do not infer success.
-- **Remote PR checks:** PENDING inspection after this commit; report each actual result and any pre-existing unrelated failure.
-- **Build size:** Not applicable; no application/build/dependency inputs changed.
-- **Manual secret cleanup:** The repository owner still needs to delete `CODERABBIT_API_KEY` in GitHub Settings. This tool did not read or modify secrets.
+## Verification Status — PARTIAL; LATEST HEAD CHECKS PENDING
+- **Source/tree reconciliation:** PASS; exact active CLI files are absent from the branch, and SHA comparisons confirm `.github/workflows/pr-agent.yml`, `.github/workflows/devskim.yml`, `.github/workflows/protected-files.yml`, `package.json`, `pnpm-lock.yaml`, and `AGENTS.md` match `main`.
+- **`pnpm test` and `./jules-verify.sh`:** NOT RUN; this connected GitHub API interface cannot execute repository shell commands.
+- **Observed remote runs on cleanup commit `052bec40e878edb174be29d1b1fb970528a405db`:** DevSkim run [40139585438](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40139585438) failed because unchanged `.github/scripts/test_suppress_devskim_false_positives.py` has an unterminated string literal at line 207. PR Agent run [40139585433](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40139585433) failed after a GitHub API `503 Service Unavailable` when fetching PR metadata. Neither workflow's source file is changed by this PR.
+- **At last inspection:** OpenNext validation run [40139585427](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40139585427) and Visual QA run [40139585436](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40139585436) were in progress; updater-scheduler run [40139585442](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40139585442) was pending. Recheck the latest PR-head statuses before merge.
+- **Build size:** Application build inputs and dependencies are unchanged; OpenNext build-size enforcement remains in its remote run.
+- **Manual secret cleanup:** The repository owner still needs to delete `CODERABBIT_API_KEY` in GitHub Settings. No secret was read or changed by this tool.
 - **Merge:** Not attempted; human-owned merge decision preserved.
 
 ## Second Error Check

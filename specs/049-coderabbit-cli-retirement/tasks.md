@@ -18,7 +18,7 @@
 ## Phase 3 — Final verification and reporting
 
 - [x] T007 Reconcile the intended file changes and ensure the diff preserves the CodeRabbit GitHub App and unrelated checks.
-- [ ] T008 Inspect final PR-head checks and run `pnpm test` plus `./jules-verify.sh` if shell execution is available; report all unavailable or pending checks honestly.
+- [x] T008 Inspect the available remote run logs/statuses and record the confirmed failures and pending jobs; local `pnpm test` and `./jules-verify.sh` remain unavailable through this API-only interface. Recheck final-head statuses before merge.
 - [ ] T009 Confirm the owner deletes `CODERABBIT_API_KEY` from GitHub Actions secrets; secret management is not performed by this repository edit.
 
 ## Dependencies
