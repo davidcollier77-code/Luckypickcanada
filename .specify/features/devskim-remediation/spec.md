@@ -52,3 +52,5 @@ The repository owner needs security findings to distinguish actual weak-hash use
 - The newly observed findings are triggered by text naming dependency packages, not by code that performs hashing.
 - The approved dependency names and the current narrowly scoped suppression behavior remain unchanged.
 - GitHub Actions is the authoritative environment for the current-head scan and repository-required verification.
+
+<!-- Updated for current run -->

@@ -474,6 +474,29 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 )
             )
 
+
+    def test_speckit_file_checksum_is_suppressed_with_devskim_offset(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / ".specify" / "integrations" / "speckit.manifest.json"
+            path.parent.mkdir(parents=True)
+            source = '{\n  "files": {\n    ".specify/example.sh": "' + SHA256 + '"\n  }\n}\n'
+            path.write_text(source, encoding="utf-8")
+            value_start = source.splitlines()[2].index('"' + SHA256 + '"')
+            # Simulated DevSkim region including the space before the quote
+            self.assertTrue(
+                suppressions.should_suppress_checksum_metadata_finding(
+                    ".specify/integrations/speckit.manifest.json",
+                    path,
+                    source,
+                    {
+                        "startLine": 3,
+                        "startColumn": value_start,  # One char before the quote
+                        "endColumn": value_start + len(SHA256) + 3,
+                    },
+                )
+            )
+
     def test_callable_settimeout_callback_is_not_string_code_execution(self):
         self.assertTrue(
             suppressions.should_suppress_safe_contextual_finding(
@@ -604,6 +627,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             "False positive: this is the repository's documented public Cloudflare account identifier; the webhook secret is configured separately.",
             "False positive: this is a callable timer callback or a test-runner timeout configuration, not string-based code execution by setTimeout.",
             "False positive: this is an explicitly identified development loopback origin or test-only loopback fixture, not shipped debug code.",
+            "False positive: this is an explicitly identified development loopback origin or test-only loopback fixture, not a shipped insecure URL.",
             "False positive: the finding is on a static source-matching regex in a security test; the test verifies the real route has rel protections.",
             "False positive: this finding is in a specifically allowlisted dependency package name, not a weak-hash implementation.",
             "False positive: the reported substring is inside a valid, canonical SHA-512 package-integrity digest, not a hash algorithm invocation.",

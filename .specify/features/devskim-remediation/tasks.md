@@ -46,3 +46,5 @@
 ## MVP
 
 - T006 and T007: remove the source-only scanner hits while preserving exact positive and negative matching behavior.
+
+<!-- Updated for current run -->
