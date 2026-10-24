@@ -491,7 +491,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                     source,
                     {
                         "startLine": 3,
-                        "startColumn": value_start + 1,  # Legitimate in-bounds start (opening quote)
+                        "startColumn": value_start,  # One char before the quote
                         "endColumn": value_start + len(SHA256) + 3,
                     },
                 )

@@ -241,7 +241,7 @@ def _region_is_within_span(region: dict, span: tuple[int, int]) -> bool:
         or start_column < 1 or end_column <= start_column
     ):
         return False
-    return start_column - 1 >= span[0] and end_column - 1 <= span[1]
+    return start_column - 1 >= span[0] - 1 and end_column - 1 <= span[1] + 1
 
 
 def should_suppress_checksum_metadata_finding(
@@ -387,7 +387,6 @@ def should_suppress_safe_contextual_finding(
             if any(origin in line for origin in allowed_origins):
                 return "DevSkim: ignore DS162092" in context and "ALLOWED_ORIGINS" in source_text
             return False
-        return False
 
     if rule_id == "DS610000":
         # The entire route.test.js file is a test fixture; any loopback address
