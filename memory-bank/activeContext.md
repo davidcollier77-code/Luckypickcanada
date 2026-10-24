@@ -1,3 +1,14 @@
+# Current Task — CodeRabbit CLI Integration Retirement (2026-10-24)
+
+- **Decision:** At the repository owner's direction, retire the active CodeRabbit CLI review integration after the GitHub Actions run reported `Invalid or expired API key` (run [40117926386](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40117926386)). The CLI route could not be made to authenticate using the available credential.
+- **Branch / PR:** `fix/coderabbit-cli-workflow-reliability-20261024`, PR [#1594](https://github.com/davidcollier77-code/Luckypickcanada/pull/1594).
+- **Retirement scope:** Remove the CLI Actions workflow and its workflow-specific test, local CLI wrapper, CLI instructions file, CLI setup guide, and README advertisement. Keep the CodeRabbit GitHub App and all unrelated workflows, scanners, tests, application code, dependencies, deployment settings, and governance unchanged.
+- **Historical record:** Preserve `specs/048-coderabbit-cli-review-layer/` as the record of the previously implemented experiment. The current retirement task is documented in `specs/049-coderabbit-cli-retirement/`.
+- **Manual secret cleanup:** The repository owner removes the `CODERABBIT_API_KEY` repository Actions secret in GitHub settings. This connected repository tool cannot inspect or delete that secret; no secret value was read or changed here.
+- **Verification:** Repository shell commands (`pnpm test` and `./jules-verify.sh`) cannot be executed through this GitHub API interface. Reconcile the final PR diff and inspect remote checks before merging.
+
+---
+
 # Active Context — DevSkim Source-Span Precision (2026-10-24)
 
 - **Task:** Make DevSkim false-positive filtering more source-aware without hiding valid findings.
