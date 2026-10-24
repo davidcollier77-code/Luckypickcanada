@@ -766,6 +766,63 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             )
         )
 
+    def test_scanner_self_test_localhost_and_http_warnings_match_exact_fixture_tokens(self):
+        localhost_line = 'localhost_origin = "http://local" + "host:3000"; eval(userInput)'
+        localhost_start = localhost_line.index("localhost") + 1
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092",
+                ".github/scripts/test_suppress_devskim_false_positives.py",
+                localhost_line,
+                {
+                    "startLine": 1,
+                    "startColumn": localhost_start,
+                    "endColumn": localhost_start + len("localhost"),
+                },
+            )
+        )
+        eval_start = localhost_line.index("eval") + 1
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092",
+                ".github/scripts/test_suppress_devskim_false_positives.py",
+                localhost_line,
+                {
+                    "startLine": 1,
+                    "startColumn": eval_start,
+                    "endColumn": eval_start + len("eval"),
+                },
+            )
+        )
+
+        http_line = 'KNOWN_LOCALHOST_ORIGINS = {"test": {"http://local" + "host:3000"}}'
+        http_start = http_line.index("http://local") + 1
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS137138",
+                ".github/scripts/suppress_devskim_false_positives.py",
+                http_line,
+                {
+                    "startLine": 1,
+                    "startColumn": http_start,
+                    "endColumn": http_start + len("http://local"),
+                },
+            )
+        )
+        other_start = http_line.index("KNOWN_LOCALHOST_ORIGINS") + 1
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS137138",
+                ".github/scripts/suppress_devskim_false_positives.py",
+                http_line,
+                {
+                    "startLine": 1,
+                    "startColumn": other_start,
+                    "endColumn": other_start + len("KNOWN_LOCALHOST_ORIGINS"),
+                },
+            )
+        )
+
     def test_security_test_regex_false_positive_requires_known_test_context(self):
         source = (
             "    // Static source check only: this matches the route email template, not rendered HTML.\n"
