@@ -1,3 +1,14 @@
+# Active Context — DevSkim Source-Span Precision (2026-10-24)
+
+- **Task:** Make DevSkim false-positive filtering more source-aware without hiding valid findings.
+- **Verified baseline:** Historical raw DevSkim SARIF from run [40024403456](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40024403456) had 106 results across DS173237, DS172411, DS162092, DS126858, DS137138, and DS610000. This is historical artifact evidence, not today's live Code Scanning alert count.
+- **Change branch:** `fix/devskim-source-span-precision-20261024`. Contextual suppressions now require precise reported columns/token agreement; lockfile package exceptions require the reported hash-name token to lie inside the reviewed package identifier. Missing, malformed, truncated, or mismatched spans remain visible. Added regression coverage for these negative controls.
+- **Scope:** Python DevSkim helper and tests plus feature Spec Kit records. No rule disablement, path exclusion, dependency, workflow, application, API, secret, deployment, or `.docs/` change.
+- **Verification:** Remote CI pending; local Python tests and `./jules-verify.sh` were not run in this interface. Do not report success until CI and the final PR diff are reviewed.
+- **PR status:** New scanner-improvement PR not yet opened at the time this context was written. PR #1589 was confirmed merged on `main`; its report-failure guard remains separate.
+
+---
+
 # Active Context — DevSkim Report Failure Guard (2026-10-24)
 
 - **Task:** Add a regression guard for the append-only DevSkim report when suppression checks fail.
@@ -5,7 +16,7 @@
 - **Current baseline:** The main report contains zero finding rows. Latest main run [40092171712](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40092171712) completed successfully; the report updater added zero rows.
 - **Change on branch:** `fix/devskim-report-failure-guard-20261024` removes `continue-on-error` from the suppression test/filter steps and adds workflow regression coverage. A failure will fail the lint job, causing the dependent report updater to skip; raw SARIF and its artifact are still uploaded with `if: always()` to preserve security evidence.
 - **Scope:** No broad suppressions, rule changes, report edits, application/dependency/configuration changes, or deployment changes.
-- **Verification:** Remote PR CI is required; no local test result is claimed because the shell cannot resolve GitHub. Leave the PR open for owner review; do not merge.
+- **Status:** PR #1589 was merged by the repository owner. Its failure guard remains separate from the source-span precision task.
 
 ---
 

@@ -128,6 +128,38 @@ class MetadataSuppressionTests(unittest.TestCase):
         self.assertIsNotNone(suppressions.LOCKFILE_NAME_PATTERN.search(smithy_entry))
         self.assertIsNone(suppressions.LOCKFILE_NAME_PATTERN.search(unrelated_entry))
 
+    def test_lockfile_package_exception_requires_the_reported_span_inside_the_package_name(self):
+        line = (
+            "  '" + suppressions.AWS_CRYPTO_LOCKFILE_PACKAGE
+            + "@5.0.0': { algorithm: '" + "sha" + "1" + "' }"
+        )
+        package_offset = line.index("sha" + "1")
+        self.assertTrue(
+            suppressions.should_suppress_lockfile_package_name_finding(
+                line,
+                {
+                    "startLine": 1,
+                    "startColumn": package_offset + 1,
+                    "endColumn": package_offset + len("sha" + "1") + 1,
+                },
+            )
+        )
+
+        algorithm_offset = line.rindex("sha" + "1")
+        self.assertFalse(
+            suppressions.should_suppress_lockfile_package_name_finding(
+                line,
+                {
+                    "startLine": 1,
+                    "startColumn": algorithm_offset + 1,
+                    "endColumn": algorithm_offset + len("sha" + "1") + 1,
+                },
+            )
+        )
+        self.assertFalse(
+            suppressions.should_suppress_lockfile_package_name_finding(line, {"startLine": 1})
+        )
+
 
 class Sha512IntegritySuppressionTests(unittest.TestCase):
     DIGEST = (
@@ -172,7 +204,7 @@ class Sha512IntegritySuppressionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source_line = "    resolution: {integrity: sha512-" + self.DIGEST + "}"
-            (root / "pnpm-lock.yaml").write_text(source_line + "\\n", encoding="utf-8")
+            (root / "pnpm-lock.yaml").write_text(source_line + "
             start = source_line.index(self.HASH_TOKEN) + 1
             data = {
                 "runs": [{
@@ -232,7 +264,7 @@ class SarifOutputFilteringTests(unittest.TestCase):
                 + "5CJf+KXg=="
             )
             source_line = "    resolution: {integrity: sha512-" + digest + "}"
-            (root / "pnpm-lock.yaml").write_text(source_line + "\\n", encoding="utf-8")
+            (root / "pnpm-lock.yaml").write_text(source_line + "
             start = source_line.index("md" + "5") + 1
             sarif_path = root / "devskim-alerts.sarif"
             sarif_path.write_text(
@@ -282,12 +314,18 @@ class SarifOutputFilteringTests(unittest.TestCase):
                 source_path.parent.mkdir(parents=True, exist_ok=True)
                 source_path.write_text(source_line + "\n", encoding="utf-8")
                 for rule_id in ("DS137138", "DS162092"):
+                    fixture_token = url_prefix if rule_id == "DS137138" else fixture_host
+                    token_start = source_line.index(fixture_token) + 1
                     results.append({
                         "ruleId": rule_id,
                         "locations": [{
                             "physicalLocation": {
                                 "artifactLocation": {"uri": relative_path},
-                                "region": {"startLine": 1},
+                                "region": {
+                                    "startLine": 1,
+                                    "startColumn": token_start,
+                                    "endColumn": token_start + len(fixture_token),
+                                },
                             }
                         }],
                     })
@@ -420,7 +458,12 @@ class ArtifactPathTests(unittest.TestCase):
                         "locations": [{
                             "physicalLocation": {
                                 "artifactLocation": {"uri": "pnpm-lock.yaml"},
-                                "region": {"startLine": 1, "snippet": {"text": "sha" + "1"}},
+                                "region": {
+                    "startLine": 1,
+                    "startColumn": lockfile_line.index("sha" + "1") + 1,
+                    "endColumn": lockfile_line.index("sha" + "1") + len("sha" + "1") + 1,
+                    "snippet": {"text": "sha" + "1"},
+                },
                             }
                         }],
                     }]
@@ -570,11 +613,92 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             )
 
     def test_callable_settimeout_callback_is_not_string_code_execution(self):
+        line = "const timer = setTimeout(() => updateCanvas(), 200);"
+        start_column = line.index("setTimeout") + 1
+        region = {
+            "startLine": 1,
+            "startColumn": start_column,
+            "endColumn": start_column + len("setTimeout"),
+        }
         self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411", "app/homepage/HomePage.js", line, region
+            )
+        )
+
+    def test_safe_timer_elsewhere_on_a_line_cannot_hide_an_unrelated_finding(self):
+        line = "const timer = setTimeout(() => updateCanvas(), 200); unrelatedCall(userInput);"
+        start_column = line.index("unrelatedCall") + 1
+        region = {
+            "startLine": 1,
+            "startColumn": start_column,
+            "endColumn": start_column + len("unrelatedCall"),
+        }
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411", "app/homepage/HomePage.js", line, region
+            )
+        )
+
+    def test_timer_finding_with_truncated_source_range_is_not_suppressed(self):
+        line = "setTimeout(() => updateCanvas(), 200);"
+        self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
                 "DS172411",
                 "app/homepage/HomePage.js",
-                "const timer = setTimeout(() => updateCanvas(), 200);",
+                line,
+                {"startLine": 1, "startColumn": 1, "endColumn": 2},
+            )
+        )
+
+    def test_contextual_timer_with_out_of_file_end_line_is_not_suppressed(self):
+        line = "setTimeout(() => updateCanvas(), 200);"
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "app/homepage/HomePage.js",
+                line,
+                {
+                    "startLine": 1,
+                    "startColumn": 1,
+                    "endLine": 2,
+                    "endColumn": 1,
+                },
+            )
+        )
+
+    def test_devskim_absolute_source_span_handles_off_by_one_columns(self):
+        line = "      setTimeout(() => updateCanvas(), 200);"
+        region = {
+            "startLine": 1,
+            # Historical DevSkim SARIF column fields can be one column early.
+            "startColumn": 6,
+            "endLine": 1,
+            "endColumn": 16,
+            "charOffset": line.index("setTimeout"),
+            "charLength": len("setTimeout"),
+            "snippet": {"text": "setTimeout"},
+        }
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411", "app/homepage/HomePage.js", line, region
+            )
+        )
+
+        wrong_offset_region = dict(region)
+        wrong_offset_region["charOffset"] += 1
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411", "app/homepage/HomePage.js", line, wrong_offset_region
+            )
+        )
+
+    def test_contextual_timer_finding_without_columns_is_not_suppressed(self):
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "app/homepage/HomePage.js",
+                "setTimeout(() => updateCanvas(), 200);",
                 {"startLine": 1},
             )
         )
@@ -585,38 +709,63 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             "setTimeout('untrusted code', 100);",
         ):
             with self.subTest(line=line):
+                start_column = line.index("setTimeout") + 1
                 self.assertFalse(
                     suppressions.should_suppress_safe_contextual_finding(
-                        "DS172411", "app/homepage/HomePage.js", line, {"startLine": 1}
+                        "DS172411",
+                        "app/homepage/HomePage.js",
+                        line,
+                        {
+                            "startLine": 1,
+                            "startColumn": start_column,
+                            "endColumn": start_column + len("setTimeout"),
+                        },
                     )
                 )
 
     def test_playwright_test_timeout_configuration_is_suppressed_only_in_tests(self):
+        line = "test.setTimeout(90_000);"
+        start_column = line.index("setTimeout") + 1
+        region = {
+            "startLine": 1,
+            "startColumn": start_column,
+            "endColumn": start_column + len("setTimeout"),
+        }
         self.assertTrue(
             suppressions.should_suppress_safe_contextual_finding(
-                "DS172411",
-                "tests/visual/homepage.spec.ts",
-                "test.setTimeout(90_000);",
-                {"startLine": 1},
+                "DS172411", "tests/visual/homepage.spec.ts", line, region
             )
         )
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
-                "DS172411",
-                "app/homepage/HomePage.js",
-                "test.setTimeout(90_000);",
-                {"startLine": 1},
+                "DS172411", "app/homepage/HomePage.js", line, region
             )
         )
 
     def test_loopback_test_fixture_is_suppressed_only_in_known_test_file(self):
         loopback_address = "127.0." + "0.1"
+        line = f"getClientIp: vi.fn().mockReturnValue('{loopback_address}'),"
+        start_column = line.index(loopback_address) + 1
+        region = {
+            "startLine": 1,
+            "startColumn": start_column,
+            "endColumn": start_column + len(loopback_address),
+        }
         self.assertTrue(
             suppressions.should_suppress_safe_contextual_finding(
-                "DS162092",
-                "app/admin/suggestions/route.test.js",
-                f"getClientIp: vi.fn().mockReturnValue('{loopback_address}'),",
-                {"startLine": 1},
+                "DS162092", "app/admin/suggestions/route.test.js", line, region
+            )
+        )
+
+        unrelated_offset = line.index("getClientIp")
+        unrelated_region = {
+            "startLine": 1,
+            "startColumn": unrelated_offset + 1,
+            "endColumn": unrelated_offset + len("getClientIp") + 1,
+        }
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092", "app/admin/suggestions/route.test.js", line, unrelated_region
             )
         )
         self.assertFalse(
@@ -624,7 +773,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 "DS162092",
                 "app/api/oracle/route.js",
                 f"const ip = '{loopback_address}';",
-                {"startLine": 1},
+                region,
             )
         )
 
@@ -637,18 +786,102 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             f"  '{localhost_origin}',\n"
             "];\n"
         )
+        origin_line = source.splitlines()[3]
+        start_column = origin_line.index("localhost") + 1
+        region = {
+            "startLine": 4,
+            "startColumn": start_column,
+            "endColumn": start_column + len("localhost"),
+        }
         self.assertTrue(
             suppressions.should_suppress_safe_contextual_finding(
-                "DS162092", "app/api/oracle/route.js", source, {"startLine": 4}
+                "DS162092", "app/api/oracle/route.js", source, region
+            )
+        )
+        wrong_offset = origin_line.index("http")
+        wrong_region = {
+            "startLine": 4,
+            "startColumn": wrong_offset + 1,
+            "endColumn": wrong_offset + len("http") + 1,
+        }
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092", "app/api/oracle/route.js", source, wrong_region
             )
         )
 
     def test_localhost_origin_without_explicit_context_is_not_suppressed(self):
         localhost_origin = "http://local" + "host:3000"
         source = f"const config = '{localhost_origin}';\n"
+        line = source.splitlines()[0]
+        start_column = line.index("localhost") + 1
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
-                "DS162092", "app/api/oracle/route.js", source, {"startLine": 1}
+                "DS162092",
+                "app/api/oracle/route.js",
+                source,
+                {
+                    "startLine": 1,
+                    "startColumn": start_column,
+                    "endColumn": start_column + len("localhost"),
+                },
+            )
+        )
+
+    def test_scanner_self_test_localhost_and_http_warnings_match_exact_fixture_tokens(self):
+        localhost_line = 'localhost_origin = "http://local" + "host:3000"; unrelatedCall(userInput)'
+        localhost_start = localhost_line.index("localhost") + 1
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092",
+                ".github/scripts/test_suppress_devskim_false_positives.py",
+                localhost_line,
+                {
+                    "startLine": 1,
+                    "startColumn": localhost_start,
+                    "endColumn": localhost_start + len("localhost"),
+                },
+            )
+        )
+        eval_start = localhost_line.index("unrelatedCall") + 1
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS162092",
+                ".github/scripts/test_suppress_devskim_false_positives.py",
+                localhost_line,
+                {
+                    "startLine": 1,
+                    "startColumn": eval_start,
+                    "endColumn": eval_start + len("unrelatedCall"),
+                },
+            )
+        )
+
+        http_line = 'KNOWN_LOCALHOST_ORIGINS = {"test": {"http://local" + "host:3000"}}'
+        http_start = http_line.index("http://local") + 1
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS137138",
+                ".github/scripts/suppress_devskim_false_positives.py",
+                http_line,
+                {
+                    "startLine": 1,
+                    "startColumn": http_start,
+                    "endColumn": http_start + len("http://local"),
+                },
+            )
+        )
+        other_start = http_line.index("KNOWN_LOCALHOST_ORIGINS") + 1
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS137138",
+                ".github/scripts/suppress_devskim_false_positives.py",
+                http_line,
+                {
+                    "startLine": 1,
+                    "startColumn": other_start,
+                    "endColumn": other_start + len("KNOWN_LOCALHOST_ORIGINS"),
+                },
             )
         )
 
@@ -658,14 +891,33 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             "    // DevSkim: ignore DS610000\n"
             '    const anchor = routeSource.match(/<a href=\"\\$\\{revealUrl\\}\" target=\"_blank\"[^>]*>/);\n'
         )
+        regex_line = source.splitlines()[2]
+        start_offset = regex_line.index("<a href=")
+        end_offset = regex_line.index('target="_blank"', start_offset) + len('target="_blank"')
+        region = {
+            "startLine": 3,
+            "startColumn": start_offset + 1,
+            "endColumn": end_offset + 1,
+        }
         self.assertTrue(
             suppressions.should_suppress_safe_contextual_finding(
-                "DS610000", "__tests__/security-payment.test.js", source, {"startLine": 3}
+                "DS610000", "__tests__/security-payment.test.js", source, region
+            )
+        )
+        wrong_offset = regex_line.index("routeSource.match")
+        wrong_region = {
+            "startLine": 3,
+            "startColumn": wrong_offset + 1,
+            "endColumn": wrong_offset + len("routeSource.match") + 1,
+        }
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS610000", "__tests__/security-payment.test.js", source, wrong_region
             )
         )
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
-                "DS610000", "app/api/send-gift/route.ts", source, {"startLine": 3}
+                "DS610000", "app/api/send-gift/route.ts", source, region
             )
         )
 
@@ -677,9 +929,28 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             "// This account ID is an identifier, not an authentication credential; CF_WEBHOOK_SECRET authenticates requests.\n"
             'const CLOUDFLARE_ACCOUNT_ID = "' + account_id + '";\n'
         )
+        id_line = source.splitlines()[3]
+        id_literal = '"' + account_id + '"'
+        start_column = id_line.index(id_literal) + 1
+        region = {
+            "startLine": 4,
+            "startColumn": start_column,
+            "endColumn": start_column + len(id_literal),
+        }
         self.assertTrue(
             suppressions.should_suppress_public_cloudflare_account_id(
-                "workers/jules-bridge/src/index.js", source, {"startLine": 4}
+                "workers/jules-bridge/src/index.js", source, region
+            )
+        )
+        unrelated_offset = id_line.index("CLOUDFLARE_ACCOUNT_ID")
+        unrelated_region = {
+            "startLine": 4,
+            "startColumn": unrelated_offset + 1,
+            "endColumn": unrelated_offset + len("CLOUDFLARE_ACCOUNT_ID") + 1,
+        }
+        self.assertFalse(
+            suppressions.should_suppress_public_cloudflare_account_id(
+                "workers/jules-bridge/src/index.js", source, unrelated_region
             )
         )
         self.assertFalse(

@@ -185,23 +185,228 @@ def _source_line_from_text(source_text: str, region: dict) -> str:
     return lines[start_line - 1] if start_line <= len(lines) else ""
 
 
-def should_suppress_sha512_integrity_finding(source_line: str, region: dict) -> bool:
-    """Suppress a hash-name substring only when it is inside a valid SHA-512 SRI digest."""
+def _absolute_source_span(
+    region: dict, source_text: str
+) -> tuple[int, int] | None:
+    """Validate DevSkim's absolute character span against its source snippet and line numbers."""
+    has_offset = "charOffset" in region
+    has_length = "charLength" in region
+    if not has_offset and not has_length:
+        return None
+    if not has_offset or not has_length:
+        return None
+
+    start = region.get("charOffset")
+    length = region.get("charLength")
+    if (
+        not isinstance(start, int) or isinstance(start, bool) or start < 0
+        or not isinstance(length, int) or isinstance(length, bool) or length <= 0
+        or start + length > len(source_text)
+    ):
+        return None
+
+    end = start + length
+    source_fragment = source_text[start:end]
+    snippet = region.get("snippet")
+    snippet_text = snippet.get("text") if isinstance(snippet, dict) else None
+    if isinstance(snippet_text, str) and source_fragment != snippet_text:
+        return None
+
+    actual_start_line = source_text.count("\n", 0, start) + 1
+    actual_end_line = source_text.count("\n", 0, end - 1) + 1
+    start_line = region.get("startLine")
+    end_line = region.get("endLine", start_line)
+    if (
+        not isinstance(start_line, int) or isinstance(start_line, bool)
+        or not isinstance(end_line, int) or isinstance(end_line, bool)
+        or start_line != actual_start_line
+        or end_line != actual_end_line
+    ):
+        return None
+    return start, end
+
+
+def _source_region_span_on_line(
+    region: dict,
+    line_number: int,
+    line: str,
+    source_text: str | None = None,
+) -> tuple[int, int] | None:
+    """Return a validated zero-based, end-exclusive source span for one source line."""
+    if source_text is not None and (
+        "charOffset" in region or "charLength" in region
+    ):
+        absolute_span = _absolute_source_span(region, source_text)
+        if absolute_span is None:
+            return None
+        start, end = absolute_span
+        start_line = source_text.count("\n", 0, start) + 1
+        end_line = source_text.count("\n", 0, end - 1) + 1
+        if start_line != line_number or end_line != line_number:
+            return None
+        line_start = source_text.rfind("\n", 0, start) + 1
+        actual_line_end = source_text.find("\n", start)
+        if actual_line_end == -1:
+            actual_line_end = len(source_text)
+        if source_text[line_start:actual_line_end] != line:
+            return None
+        return start - line_start, end - line_start
+
+    # Test fixtures that do not model DevSkim's absolute-offset fields use
+    # validated SARIF columns; production DevSkim output prefers charOffset.
+    start_line = region.get("startLine")
+    end_line = region.get("endLine", start_line)
     start_column = region.get("startColumn")
     end_column = region.get("endColumn")
     if (
-        not isinstance(start_column, int)
-        or isinstance(start_column, bool)
-        or not isinstance(end_column, int)
-        or isinstance(end_column, bool)
-        or start_column < 1
-        or end_column <= start_column
+        not isinstance(start_line, int) or isinstance(start_line, bool)
+        or not isinstance(end_line, int) or isinstance(end_line, bool)
+        or not isinstance(start_column, int) or isinstance(start_column, bool)
+        or not isinstance(end_column, int) or isinstance(end_column, bool)
+        or start_line != line_number or end_line != line_number
+        or start_column < 1 or end_column <= start_column
+    ):
+        return None
+    start = start_column - 1
+    end = end_column - 1
+    if end > len(line):
+        return None
+    return start, end
+
+
+def _region_starts_at_pattern(
+    region: dict,
+    line_number: int,
+    line: str,
+    pattern: re.Pattern[str],
+    source_text: str | None = None,
+) -> bool:
+    """Require a SARIF finding to start at a validated source pattern on its reported line."""
+    if source_text is not None and (
+        "charOffset" in region or "charLength" in region
+    ):
+        absolute_span = _absolute_source_span(region, source_text)
+        if absolute_span is None:
+            return False
+        absolute_start, absolute_end = absolute_span
+        start_line = source_text.count("\n", 0, absolute_start) + 1
+        if start_line != line_number:
+            return False
+        line_start = source_text.rfind("\n", 0, absolute_start) + 1
+        if source_text[line_start:line_start + len(line)] != line:
+            return False
+        start_offset = absolute_start - line_start
+        end_line = region.get("endLine", start_line)
+        for match in pattern.finditer(line):
+            match_start = (
+                match.start("call") if "call" in match.re.groupindex else match.start()
+            )
+            if match_start != start_offset:
+                continue
+            token_end = (
+                match.end("call")
+                if "call" in match.re.groupindex
+                else match_start + len("setTimeout")
+            )
+            if end_line == start_line and absolute_end < line_start + token_end:
+                continue
+            return True
+        return False
+
+    # Synthetic unit tests may omit DevSkim's absolute-offset extension. Use
+    # strict SARIF columns for those inputs and fail open when they are invalid.
+    start_line = region.get("startLine")
+    end_line = region.get("endLine", start_line)
+    start_column = region.get("startColumn")
+    end_column = region.get("endColumn")
+    if (
+        not isinstance(start_line, int) or isinstance(start_line, bool)
+        or not isinstance(end_line, int) or isinstance(end_line, bool)
+        or not isinstance(start_column, int) or isinstance(start_column, bool)
+        or not isinstance(end_column, int) or isinstance(end_column, bool)
+        or start_line != line_number or end_line < start_line
+        or start_column < 1 or end_column < 1
+        or start_column > len(line) + 1
+        or (
+            end_line == start_line
+            and (end_column <= start_column or end_column > len(line) + 1)
+        )
     ):
         return False
 
-    # SARIF columns are 1-based and endColumn is exclusive.
-    finding_start = start_column - 1
-    finding_end = end_column - 1
+    if source_text is not None:
+        source_lines = source_text.splitlines()
+        if start_line > len(source_lines) or end_line > len(source_lines):
+            return False
+        if source_lines[start_line - 1] != line:
+            return False
+        if end_column > len(source_lines[end_line - 1]) + 1:
+            return False
+
+    start_offset = start_column - 1
+    for match in pattern.finditer(line):
+        match_start = (
+            match.start("call") if "call" in match.re.groupindex else match.start()
+        )
+        if match_start != start_offset:
+            continue
+        token_end = (
+            match.end("call")
+            if "call" in match.re.groupindex
+            else match_start + len("setTimeout")
+        )
+        if end_line == start_line and end_column - 1 < token_end:
+            continue
+        return True
+    return False
+
+
+def _reported_source_text(
+    region: dict,
+    line_number: int,
+    line: str,
+    source_text: str | None = None,
+) -> str | None:
+    """Return source text only for a valid, single-line SARIF region."""
+    span = _source_region_span_on_line(region, line_number, line, source_text)
+    if span is None:
+        return None
+    return line[span[0]:span[1]]
+
+
+def should_suppress_sha512_integrity_finding(
+    source_line: str, region: dict, source_text: str | None = None
+) -> bool:
+    """Suppress a hash-name substring only when it is inside a valid SHA-512 SRI digest."""
+    if source_text is not None and (
+        "charOffset" in region or "charLength" in region
+    ):
+        line_number = region.get("startLine")
+        if not isinstance(line_number, int) or isinstance(line_number, bool):
+            return False
+        span = _source_region_span_on_line(
+            region, line_number, source_line, source_text
+        )
+        if span is None:
+            return False
+        finding_start, finding_end = span
+    else:
+        start_column = region.get("startColumn")
+        end_column = region.get("endColumn")
+        if (
+            not isinstance(start_column, int)
+            or isinstance(start_column, bool)
+            or not isinstance(end_column, int)
+            or isinstance(end_column, bool)
+            or start_column < 1
+            or end_column <= start_column
+        ):
+            return False
+
+        # SARIF columns are 1-based and endColumn is exclusive.
+        finding_start = start_column - 1
+        finding_end = end_column - 1
+
     for match in SHA512_INTEGRITY_PATTERN.finditer(source_line):
         digest = match.group("digest")
         try:
@@ -247,7 +452,7 @@ def _region_is_within_span(region: dict, span: tuple[int, int]) -> bool:
         or start_column < 1 or end_column <= start_column
     ):
         return False
-    return start_column - 1 >= span[0] - 1 and end_column - 1 <= span[1] + 1
+    return start_column - 1 >= span[0] and end_column - 1 <= span[1]
 
 
 def should_suppress_checksum_metadata_finding(
@@ -342,9 +547,16 @@ def should_suppress_public_cloudflare_account_id(
     )
     if not match:
         return False
+    # DevSkim reports the account literal, including quotes; never let another
+    # finding on this declaration line inherit the account-ID exception.
+    region_span = _source_region_span_on_line(region, line_number, line, source_text)
+    literal_span = (match.start(1) - 1, match.end(1) + 1)
     context = "\n".join(lines[max(0, line_number - 3):line_number - 1])
     return (
-        "account ID is an identifier, not an authentication credential" in context
+        region_span is not None
+        and region_span[0] >= literal_span[0]
+        and region_span[1] <= literal_span[1]
+        and "account ID is an identifier, not an authentication credential" in context
         and "CF_WEBHOOK_SECRET authenticates requests" in context
     )
 
@@ -352,7 +564,7 @@ def should_suppress_public_cloudflare_account_id(
 def should_suppress_safe_contextual_finding(
     rule_id: str, relative_path: str, source_text: str, region: dict
 ) -> bool:
-    """Suppress only audited project-specific DevSkim review-pattern false positives."""
+    """Suppress audited contextual false positives only when SARIF points at their exact source."""
     line_number = region.get("startLine")
     if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
         return False
@@ -361,52 +573,99 @@ def should_suppress_safe_contextual_finding(
         return False
     line = lines[line_number - 1]
     context = "\n".join(lines[max(0, line_number - 3):line_number])
+    region_span = _source_region_span_on_line(region, line_number, line, source_text)
+    reported_text = (
+        line[region_span[0]:region_span[1]] if region_span is not None else None
+    )
 
     if rule_id == "DS172411":
-        # Inline callable callbacks are not string code execution; preserve other patterns.
-        if re.search(r"\btest\.setTimeout\s*\(\s*\d[\d_]*\s*\)", line):
+        # The source location must begin at this safe call, not merely share its line.
+        # DevSkim's historical SARIF regions point at "setTimeout", not the
+        # preceding "test." prefix, so validate that exact reported token.
+        test_timeout_pattern = re.compile(r"\btest\.(?P<call>setTimeout)\s*\(\s*\d[\d_]*\s*\)")
+        if _region_starts_at_pattern(
+            region, line_number, line, test_timeout_pattern, source_text
+        ):
             return (
-                relative_path.startswith(("tests/", "__tests__/"))
+                relative_path.startswith(("tests/", "test/", "__tests__/"))
                 or ".test." in relative_path
                 or ".spec." in relative_path
             )
-        return re.search(
-            r"\bsetTimeout\s*\(\s*(?:(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>|function\b)",
-            line,
-        ) is not None
-
+        callable_timeout_pattern = re.compile(
+            r"\bsetTimeout\s*\(\s*(?:(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>|function\b)"
+        )
+        return _region_starts_at_pattern(
+            region, line_number, line, callable_timeout_pattern, source_text
+        )
 
     if rule_id in {"DS162092", "DS137138"}:
-        if relative_path in {
-            ".github/scripts/suppress_devskim_false_positives.py",
-            ".github/scripts/test_suppress_devskim_false_positives.py",
-        }:
-            # These are security scanner helper/test scripts.
-            # Localhost strings or loopback IP literals present in these scripts
-            # are test fixtures evaluating the scanner, not shipped behavior.
-            return "127.0." in line or "http://local" in line or "localhost" in line.lower()
+        if relative_path in DEVSKIM_SELF_TEST_FILES:
+            # Only the exact scanner-test fixture token qualifies. A different
+            # finding on the same test line must still be reviewed.
+            if rule_id == "DS137138":
+                return reported_text == "http://local"
+            return reported_text in {"localhost", LOOPBACK_TEST_ADDRESS}
 
         if rule_id == "DS162092":
-            if relative_path == "app/admin/suggestions/route.test.js" and LOOPBACK_TEST_ADDRESS in line:
+            if (
+                relative_path == "app/admin/suggestions/route.test.js"
+                and reported_text == LOOPBACK_TEST_ADDRESS
+                and LOOPBACK_TEST_ADDRESS in line
+            ):
                 return True
             allowed_origins = KNOWN_LOCALHOST_ORIGINS.get(relative_path, set())
-            if any(origin in line for origin in allowed_origins):
-                return "DevSkim: ignore DS162092" in context and "ALLOWED_ORIGINS" in source_text
+            if reported_text == "localhost" and region_span is not None:
+                for origin in allowed_origins:
+                    origin_start = line.find(origin)
+                    if origin_start < 0:
+                        continue
+                    localhost_start = origin_start + origin.find("localhost")
+                    if region_span == (
+                        localhost_start,
+                        localhost_start + len("localhost"),
+                    ):
+                        return (
+                            "DevSkim: ignore DS162092" in context
+                            and "ALLOWED_ORIGINS" in source_text
+                        )
             return False
+        return False
 
     if rule_id == "DS610000":
-        # The entire route.test.js file is a test fixture; any loopback address
-        # present in it is fixture data by design, so no inline comment context is
-        # required. This is intentionally asymmetric with KNOWN_LOCALHOST_ORIGINS
-        # below, where the files are production modules requiring an explicit ignore annotation.
+        # The range must be within the literal regex passed to routeSource.match.
+        if relative_path != "__tests__/security-payment.test.js" or region_span is None:
+            return False
+        regex_match = re.search(r"routeSource\.match\(\s*/(?P<pattern>.*?)/\s*\)", line)
+        if regex_match is None:
+            return False
+        pattern_start, pattern_end = regex_match.span("pattern")
         return (
-            relative_path == "__tests__/security-payment.test.js"
-            and "routeSource.match(" in line
-            and "revealUrl" in line
-            and "target=" in line
+            region_span[0] >= pattern_start
+            and region_span[1] <= pattern_end
+            and "revealUrl" in reported_text
+            and 'target="_blank"' in reported_text
             and "DevSkim: ignore DS610000" in context
         )
     return False
+
+
+def should_suppress_lockfile_package_name_finding(
+    source_line: str, region: dict, source_text: str | None = None
+) -> bool:
+    """Suppress DS126858 only when its reported token sits inside an approved package name."""
+    line_number = region.get("startLine")
+    if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
+        return False
+    region_span = _source_region_span_on_line(region, line_number, source_line, source_text)
+    if region_span is None:
+        return False
+    reported_text = source_line[region_span[0]:region_span[1]].casefold()
+    if reported_text not in {"md" + "5", "sha" + "1"}:
+        return False
+    return any(
+        region_span[0] >= match.start() and region_span[1] <= match.end()
+        for match in LOCKFILE_NAME_PATTERN.finditer(source_line)
+    )
 
 
 def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
@@ -459,10 +718,10 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 source_text = safe_path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 source_text = ""
-            snippet = _source_line_from_text(source_text, region)
+            source_line = _source_line_from_text(source_text, region)
 
             justification = None
-            if rule_id == "DS173237" and should_suppress_metadata_finding(snippet, region):
+            if rule_id == "DS173237" and should_suppress_metadata_finding(source_line, region):
                 justification = (
                     "False positive: a complete SHA/UUID/checksum value in an explicitly "
                     "allowlisted metadata field overlaps the reported finding."
@@ -488,12 +747,16 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "False positive: this is the repository's documented public Cloudflare "
                     "account identifier; the webhook secret is configured separately."
                 )
-            elif rule_id == "DS126858" and LOCKFILE_NAME_PATTERN.search(snippet):
+            elif rule_id == "DS126858" and should_suppress_lockfile_package_name_finding(
+                source_line, region, source_text
+            ):
                 justification = (
                     "False positive: this finding is in a specifically allowlisted "
                     "dependency package name, not a weak-hash implementation."
                 )
-            elif rule_id == "DS126858" and should_suppress_sha512_integrity_finding(snippet, region):
+            elif rule_id == "DS126858" and should_suppress_sha512_integrity_finding(
+                source_line, region, source_text
+            ):
                 justification = (
                     "False positive: the reported substring is inside a valid, canonical "
                     "SHA-512 package-integrity digest, not a hash algorithm invocation."
