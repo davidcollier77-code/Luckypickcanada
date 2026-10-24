@@ -47,7 +47,7 @@ describe('CodeRabbit CLI pull-request review workflow', () => {
   it('updates one comment and clearly separates incomplete reviews from clean results', () => {
     expect(workflow).toContain('<!-- coderabbit-cli-review -->');
     expect(workflow).toContain('gh api --paginate --slurp');
-    expect(workflow).toContain('The output did not confirm a complete successful review');
+    expect(workflow).toContain('the output did not confirm a complete successful review');
     expect(workflow).toContain('This is not a guarantee that the pull request is defect-free.');
     expect(workflow).toContain('issues: write');
     expect(workflow).toContain('pull-requests: write');
