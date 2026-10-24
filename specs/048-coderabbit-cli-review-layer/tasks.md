@@ -19,7 +19,7 @@
 ## Phase 3: Automatic GitHub Actions Review
 
 - [X] T007 Add `.github/workflows/coderabbit-cli-review.yml` for main-targeted PR events with concurrency cancellation, least-privilege permissions, and a missing-secret preflight before checkout.
-- [X] T008 Pin the CodeRabbit CLI release to `v0.9.0`, disable auto-update, pass base-commit instructions explicitly, handle first-PR bootstrap absence safely, use headless API-key authentication, and omit `--use-credits`.
+- [X] T008 Pin the CodeRabbit CLI release to `0.9.0`, disable auto-update, pass base-commit instructions explicitly, handle first-PR bootstrap absence safely, use headless API-key authentication, and omit `--use-credits`.
 - [X] T009 Parse agent-mode results, distinguish completed from incomplete reviews, and create/update one PR comment without code modification or merge behavior.
 - [X] T010 Add `__tests__/coderabbit-cli-workflow.test.js` to guard trigger events, preflight ordering, pinned tooling, trusted instructions, non-use of paid credits, and comment behavior.
 

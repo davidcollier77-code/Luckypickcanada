@@ -29,7 +29,7 @@ describe('CodeRabbit CLI pull-request review workflow', () => {
 
   it('uses pinned Actions, a pinned CLI version, and the base revision instructions', () => {
     expect(workflow).toMatch(/^        uses: actions\/checkout@[0-9a-f]{40} # v\d/m);
-    expect(workflow).toContain('CODERABBIT_VERSION: v0.9.0');
+    expect(workflow).toContain('CODERABBIT_VERSION: 0.9.0');
     expect(workflow).toContain('CODERABBIT_CLI_DISABLE_AUTO_UPDATE: "true"');
     expect(workflow).toContain('steps.instructions.outputs.available == \'true\'');
     expect(workflow).toContain('git show "${BASE_SHA}:.coderabbit-cli-instructions.md"');

@@ -89,7 +89,7 @@ jobs:
       - name: Install pinned CodeRabbit CLI
         if: ${{ steps.credentials.outputs.configured == 'true' && steps.instructions.outputs.available == 'true' }}
         env:
-          CODERABBIT_VERSION: v0.9.0
+          CODERABBIT_VERSION: 0.9.0
         shell: bash
         run: |
           set -euo pipefail

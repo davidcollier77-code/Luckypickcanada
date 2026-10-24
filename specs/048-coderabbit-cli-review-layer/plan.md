@@ -43,7 +43,7 @@ Keep the existing optional local CLI wrapper and add an independent GitHub Actio
 2. Preserve `scripts/coderabbit-cli-review.sh` for optional local use.
 3. Add `.github/workflows/coderabbit-cli-review.yml` for PR events `opened`, `reopened`, `synchronize`, and `ready_for_review` against `main`, with concurrency cancellation for stale runs.
 4. Preflight `secrets.CODERABBIT_API_KEY` before checkout; when missing, add a workflow warning and job summary, then stop successfully without accessing PR content.
-5. Pin the CLI to `v0.9.0`, disable CLI self-updates, and use the documented headless API-key flag. Source custom review instructions and the local base branch from the PR base SHA, not the changed PR head. If the base lacks the instruction file, report a clean bootstrap skip.
+5. Pin the CLI to `0.9.0`, disable CLI self-updates, and use the documented headless API-key flag. Source custom review instructions and the local base branch from the PR base SHA, not the changed PR head. If the base lacks the instruction file, report a clean bootstrap skip.
 6. Parse CodeRabbit's documented agent-mode NDJSON output; distinguish `review_completed`/successful skip from missing, invalid, or incomplete completion events; update a single bot comment marked with a stable HTML comment.
 7. Keep the reviewer advisory. Do not write to code, auto-fix, create commits, approve, or merge. Do not pass `--use-credits`.
 8. Add `__tests__/coderabbit-cli-workflow.test.js` to guard event conditions, preflight ordering, action pinning, trusted instruction source, no paid credits, and comment upsert behavior.

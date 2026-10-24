@@ -10,6 +10,8 @@ The workflow copies `.coderabbit-cli-instructions.md` from the PR's **base commi
 
 ### One-time setup (phone browser is sufficient)
 
+**Important:** Follow these steps only after pull request #1591 has been merged into `main`. Do not add this API key to GitHub Secrets while the workflow change is still under review.
+
 **The CLI needs its own CodeRabbit Agentic API key.** The existing CodeRabbit GitHub App installation does not automatically authenticate the CLI. CodeRabbit's official headless setup says the key must belong to an organization where the user has an assigned seat. Access and included review allowance depend on the CodeRabbit account and plan; this workflow does not promise that CLI reviews are available for free.
 
 1. Sign in to CodeRabbit and create an Agentic API key on the [CodeRabbit API Keys page](https://app.coderabbit.ai/settings/api-keys). Follow CodeRabbit's [headless CLI setup guide](https://docs.coderabbit.ai/cli/headless-cli-integration).
@@ -20,7 +22,7 @@ Keep the key in GitHub Secrets. Do not paste it into a chat, issue, pull request
 
 ### Cost and safety controls
 
-- The workflow installs the pinned CLI release `v0.9.0` and disables automatic CLI self-updates for reproducibility. It deliberately does **not** pass CodeRabbit CLI's `--use-credits` option. It does not opt into paid over-limit review credits. If the account has no eligible allowance or the key lacks access, the comment is marked incomplete rather than showing a false clean result.
+- The workflow installs the pinned CLI release `0.9.0` and disables automatic CLI self-updates for reproducibility. It deliberately does **not** pass CodeRabbit CLI's `--use-credits` option. It does not opt into paid over-limit review credits. If the account has no eligible allowance or the key lacks access, the comment is marked incomplete rather than showing a false clean result.
 - The workflow does not auto-fix, push commits, approve, or merge pull requests.
 - The workflow uses read-only repository contents permission and only the permissions needed to publish/update its PR comment.
 - The API key is checked before PR code is checked out. GitHub does not expose repository secrets to fork-originated `pull_request` runs, so those reviews are skipped safely.

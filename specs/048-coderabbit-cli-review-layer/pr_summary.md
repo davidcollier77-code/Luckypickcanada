@@ -44,7 +44,7 @@
 - **Secret/account access:** Not verified. The repository integration cannot create or read `CODERABBIT_API_KEY`. A live CI run of the new workflow completed successfully in its safe missing-secret branch: the credential preflight ran and checkout/install/review/comment steps were all skipped. This proves only the missing-key guard works, not a live review.
 - **Bootstrap guard:** If the API key is added before this setup PR merges, the workflow explicitly skips when the base commit lacks `.coderabbit-cli-instructions.md` rather than trusting unreviewed PR instructions.
 - **Live CLI review and PR comment:** Not run. Requires merge to `main`, owner-configured Agentic API key, and eligible CodeRabbit CLI access.
-- **Cost guard:** Source inspection confirms no `--use-credits` argument exists in the workflow. CLI installation is pinned to `v0.9.0` and self-updates are disabled. Included allowance/rate limits remain account-specific.
+- **Cost guard:** Source inspection confirms no `--use-credits` argument exists in the workflow. CLI installation is pinned to `0.9.0` and self-updates are disabled. Included allowance/rate limits remain account-specific.
 
 ## Behavior Preserved
 - Existing CodeRabbit GitHub App behavior and its configuration.
@@ -54,7 +54,7 @@
 - Repository governance and `AGENTS.md`.
 
 ## Second Error Check
-The planned diff is scoped to the CLI review instructions, the new dedicated workflow and its regression test, README/guide, existing local wrapper, and this task's Spec Kit/summary artifacts. The workflow preflights the secret before checkout, sources instructions from the base commit, skips safely when bootstrap instructions are missing, pins the CLI to `v0.9.0` with auto-update disabled, uses least-privilege permissions, avoids `pull_request_target`, omits paid-credit authorization, and upserts a single bot comment. The final file diff, regression tests, remote CI, and `./jules-verify.sh` remain pending verification.
+The planned diff is scoped to the CLI review instructions, the new dedicated workflow and its regression test, README/guide, existing local wrapper, and this task's Spec Kit/summary artifacts. The workflow preflights the secret before checkout, sources instructions from the base commit, skips safely when bootstrap instructions are missing, pins the CLI to `0.9.0` with auto-update disabled, uses least-privilege permissions, avoids `pull_request_target`, omits paid-credit authorization, and upserts a single bot comment. The final file diff, regression tests, remote CI, and `./jules-verify.sh` remain pending verification.
 
 ## USEFUL RESULT: NO (PENDING)
 The automation and setup guidance are drafted but not yet demonstrated by final CI, an owner-provided secret, eligible CodeRabbit CLI access, or a live review. Reassess usefulness only after the workflow runs successfully or records a real account/plan blocker.
