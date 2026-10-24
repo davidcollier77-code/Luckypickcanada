@@ -212,8 +212,8 @@ def _absolute_source_span(
     if isinstance(snippet_text, str) and source_fragment != snippet_text:
         return None
 
-    actual_start_line = source_text.count("\\n", 0, start) + 1
-    actual_end_line = source_text.count("\\n", 0, end - 1) + 1
+    actual_start_line = source_text.count("\n", 0, start) + 1
+    actual_end_line = source_text.count("\n", 0, end - 1) + 1
     start_line = region.get("startLine")
     end_line = region.get("endLine", start_line)
     if (
@@ -240,12 +240,12 @@ def _source_region_span_on_line(
         if absolute_span is None:
             return None
         start, end = absolute_span
-        start_line = source_text.count("\\n", 0, start) + 1
-        end_line = source_text.count("\\n", 0, end - 1) + 1
+        start_line = source_text.count("\n", 0, start) + 1
+        end_line = source_text.count("\n", 0, end - 1) + 1
         if start_line != line_number or end_line != line_number:
             return None
-        line_start = source_text.rfind("\\n", 0, start) + 1
-        actual_line_end = source_text.find("\\n", start)
+        line_start = source_text.rfind("\n", 0, start) + 1
+        actual_line_end = source_text.find("\n", start)
         if actual_line_end == -1:
             actual_line_end = len(source_text)
         if source_text[line_start:actual_line_end] != line:
