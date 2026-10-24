@@ -12,14 +12,14 @@
 
 ## Phase 2: Local CLI Wrapper and Instructions (US1)
 
-- [ ] T004 Add `.coderabbit-cli-instructions.md` with focused, high-confidence, read-only review rules independent of `AGENTS.md`.
-- [ ] T005 Add `scripts/coderabbit-cli-review.sh` with clear worktree/config/CLI prerequisite failures and safely quoted argument forwarding.
+- [X] T004 Add `.coderabbit-cli-instructions.md` with focused, high-confidence, read-only review rules independent of `AGENTS.md`.
+- [X] T005 Add `scripts/coderabbit-cli-review.sh` with clear worktree/config/CLI prerequisite failures and safely quoted argument forwarding.
 - [ ] T006 Review shell syntax and wrapper behavior when a local shell is available; otherwise mark as not run and rely only on source inspection until local/CI validation.
 
 ## Phase 3: Developer Setup Guide (US1)
 
-- [ ] T007 Add `docs/coderabbit-cli.md` with install, auth, doctor/usage, pre-commit, branch-comparison, and agent-output commands.
-- [ ] T008 Document that the layer is optional, uses account-reported quota, and does not alter existing GitHub App checks or CI.
+- [X] T007 Add `docs/coderabbit-cli.md` with install, auth, doctor/usage, pre-commit, branch-comparison, and agent-output commands.
+- [X] T008 Document that the layer is optional, uses account-reported quota, and does not alter existing GitHub App checks or CI.
 
 ## Phase 4: Verification and Handoff
 
