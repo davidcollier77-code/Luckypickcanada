@@ -36,16 +36,19 @@
 3. `/speckit.tasks` — FILE-DRIVEN PROCEDURAL EXECUTION; `specs/049-coderabbit-cli-retirement/tasks.md`.
 4. `/speckit.implement` — FILE-DRIVEN PROCEDURAL EXECUTION; CLI-only implementation/documentation files deleted and README/Memory Bank updated in this PR branch.
 
-## Exact Changed Files
-- Deleted `.github/workflows/coderabbit-cli-review.yml`
-- Deleted `__tests__/coderabbit-cli-workflow.test.js`
-- Deleted `.coderabbit-cli-instructions.md`
-- Deleted `scripts/coderabbit-cli-review.sh`
-- Deleted `docs/coderabbit-cli.md`
-- Updated `README.md`
-- Updated `memory-bank/activeContext.md`
-- Deleted the superseded unmerged `specs/049-coderabbit-cli-workflow-reliability/{spec.md,plan.md,tasks.md,pr_summary.md,checklists/requirements.md}`
-- Added `specs/049-coderabbit-cli-retirement/{spec.md,plan.md,tasks.md,pr_summary.md,checklists/requirements.md}`
+## Exact Changed Files (PR comparison against `main`)
+- `.coderabbit-cli-instructions.md` — deleted
+- `.github/workflows/coderabbit-cli-review.yml` — deleted
+- `README.md` — updated to remove the CLI section
+- `__tests__/coderabbit-cli-workflow.test.js` — deleted
+- `docs/coderabbit-cli.md` — deleted
+- `memory-bank/activeContext.md` — updated
+- `scripts/coderabbit-cli-review.sh` — deleted
+- `specs/049-coderabbit-cli-retirement/checklists/requirements.md` — added
+- `specs/049-coderabbit-cli-retirement/plan.md` — added
+- `specs/049-coderabbit-cli-retirement/pr_summary.md` — added
+- `specs/049-coderabbit-cli-retirement/spec.md` — added
+- `specs/049-coderabbit-cli-retirement/tasks.md` — added
 
 ## Verification Status — PENDING REMOTE CHECKS
 - **Source/tree reconciliation:** PASS after inspecting the exact changed paths; no application, dependency, deployment, secret-value, or unrelated workflow changes are included.
