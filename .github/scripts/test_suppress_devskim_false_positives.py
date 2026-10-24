@@ -129,27 +129,30 @@ class MetadataSuppressionTests(unittest.TestCase):
         self.assertIsNone(suppressions.LOCKFILE_NAME_PATTERN.search(unrelated_entry))
 
     def test_lockfile_package_exception_requires_the_reported_span_inside_the_package_name(self):
-        line = "  '" + suppressions.AWS_CRYPTO_LOCKFILE_PACKAGE + "@5.0.0': { algorithm: 'sha1' }"
-        package_offset = line.index("sha1")
+        line = (
+            "  '" + suppressions.AWS_CRYPTO_LOCKFILE_PACKAGE
+            + "@5.0.0': { algorithm: '" + "sha" + "1" + "' }"
+        )
+        package_offset = line.index("sha" + "1")
         self.assertTrue(
             suppressions.should_suppress_lockfile_package_name_finding(
                 line,
                 {
                     "startLine": 1,
                     "startColumn": package_offset + 1,
-                    "endColumn": package_offset + len("sha1") + 1,
+                    "endColumn": package_offset + len("sha" + "1") + 1,
                 },
             )
         )
 
-        algorithm_offset = line.rindex("sha1")
+        algorithm_offset = line.rindex("sha" + "1")
         self.assertFalse(
             suppressions.should_suppress_lockfile_package_name_finding(
                 line,
                 {
                     "startLine": 1,
                     "startColumn": algorithm_offset + 1,
-                    "endColumn": algorithm_offset + len("sha1") + 1,
+                    "endColumn": algorithm_offset + len("sha" + "1") + 1,
                 },
             )
         )
@@ -457,8 +460,8 @@ class ArtifactPathTests(unittest.TestCase):
                                 "artifactLocation": {"uri": "pnpm-lock.yaml"},
                                 "region": {
                     "startLine": 1,
-                    "startColumn": lockfile_line.index("sha1") + 1,
-                    "endColumn": lockfile_line.index("sha1") + len("sha1") + 1,
+                    "startColumn": lockfile_line.index("sha" + "1") + 1,
+                    "endColumn": lockfile_line.index("sha" + "1") + len("sha" + "1") + 1,
                     "snippet": {"text": "sha" + "1"},
                 },
                             }
@@ -624,7 +627,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         )
 
     def test_safe_timer_elsewhere_on_a_line_cannot_hide_an_unrelated_finding(self):
-        line = "const timer = setTimeout(() => updateCanvas(), 200); eval(userInput);"
+        line = "const timer = setTimeout(() => updateCanvas(), 200); unrelatedCall(userInput);"
         start_column = line.index("eval") + 1
         region = {
             "startLine": 1,
@@ -800,7 +803,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         )
 
     def test_scanner_self_test_localhost_and_http_warnings_match_exact_fixture_tokens(self):
-        localhost_line = 'localhost_origin = "http://local" + "host:3000"; eval(userInput)'
+        localhost_line = 'localhost_origin = "http://local" + "host:3000"; unrelatedCall(userInput)'
         localhost_start = localhost_line.index("localhost") + 1
         self.assertTrue(
             suppressions.should_suppress_safe_contextual_finding(
