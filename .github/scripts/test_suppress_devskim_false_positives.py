@@ -667,6 +667,32 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             )
         )
 
+    def test_devskim_absolute_source_span_handles_off_by_one_columns(self):
+        line = "      setTimeout(() => updateCanvas(), 200);"
+        region = {
+            "startLine": 1,
+            # Historical DevSkim SARIF column fields can be one column early.
+            "startColumn": 6,
+            "endLine": 1,
+            "endColumn": 16,
+            "charOffset": line.index("setTimeout"),
+            "charLength": len("setTimeout"),
+            "snippet": {"text": "setTimeout"},
+        }
+        self.assertTrue(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411", "app/homepage/HomePage.js", line, region
+            )
+        )
+
+        wrong_offset_region = dict(region)
+        wrong_offset_region["charOffset"] += 1
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411", "app/homepage/HomePage.js", line, wrong_offset_region
+            )
+        )
+
     def test_contextual_timer_finding_without_columns_is_not_suppressed(self):
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
