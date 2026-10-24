@@ -40,6 +40,7 @@ As the repository maintainer, I want the current, source-verified false positive
 ## Edge Cases
 
 - The safe pattern and an unrelated suspicious expression share one source line.
+- DevSkim's reported columns are one character early, while its absolute offset and snippet still identify the exact source token.
 - SARIF coordinates are missing, invalid, point at another token, or span multiple lines.
 - The safe pattern remains in the source but its documented justification/comment changes.
 - A false-positive-looking match appears in an unapproved file or an unknown rule.
@@ -50,8 +51,8 @@ As the repository maintainer, I want the current, source-verified false positive
 ### Functional Requirements
 
 - **FR-001**: The filter MUST continue scanning the repository; it MUST NOT disable DevSkim rules globally or exclude directories.
-- **FR-002**: A contextual suppression MUST verify the reported source location against the exact reviewed token or expression, in addition to the existing rule, file, and context checks.
-- **FR-003**: Findings with missing or invalid coordinates MUST remain visible unless the existing non-contextual matcher can independently prove the complete safe value.
+- **FR-002**: A contextual suppression MUST verify the reported source location against the exact reviewed token or expression, in addition to the existing rule, file, and context checks. When DevSkim supplies `charOffset` and `charLength`, the filter MUST verify that absolute span against the source text, snippet, and line range before considering column fields.
+- **FR-003**: Findings with missing or invalid coordinates, an invalid absolute span, or a snippet that does not match source text MUST remain visible unless an existing non-contextual matcher independently proves the complete safe value. Column-only fallback is permitted for synthetic inputs without absolute-offset fields; production absolute-offset fields must not be silently ignored.
 - **FR-004**: A known package-name false positive MUST be suppressed only when the reported range falls inside the explicitly allowlisted package identifier, not merely because that identifier occurs elsewhere on the same line.
 - **FR-005**: Findings about strings, opaque timer callbacks, unknown source spans, and unrelated same-line expressions MUST remain visible.
 - **FR-006**: Every behavior change MUST have positive tests for reviewed safe cases and negative tests for wrong-span, missing-coordinate, and same-line unrelated cases.
