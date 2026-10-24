@@ -230,11 +230,23 @@ def _region_starts_at_pattern(
     ):
         return False
     start_offset = start_column - 1
-    return any(
-        match.start("call") == start_offset if "call" in match.re.groupindex
-        else match.start() == start_offset
-        for match in pattern.finditer(line)
-    )
+    for match in pattern.finditer(line):
+        match_start = (
+            match.start("call") if "call" in match.re.groupindex else match.start()
+        )
+        if match_start != start_offset:
+            continue
+        # A one-character or otherwise truncated range starting at the right
+        # location is not enough evidence for a safe setTimeout finding.
+        token_end = (
+            match.end("call")
+            if "call" in match.re.groupindex
+            else match_start + len("setTimeout")
+        )
+        if end_line == start_line and end_column - 1 < token_end:
+            continue
+        return True
+    return False
 
 
 def _reported_source_text(region: dict, line_number: int, line: str) -> str | None:
