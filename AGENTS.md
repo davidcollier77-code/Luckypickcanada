@@ -98,7 +98,17 @@ check for scope drift, unintended files/dependencies, exposed secrets, and
 mismatches with the request. Reconcile every changed file exactly with the
 final diff.
 
-The GitHub PR Summary is the canonical evidence record. Its creation and maintenance are required task work, not an optional deliverable or a request for approval. Create or update it without asking the owner whether it should be created or updated. Maintain one report: update the existing summary in place, do not create duplicate reports or duplicate PRs for the same task, and keep it aligned with actual work and evidence. Prepare the summary during the task workflow, publish it in the PR body when creating the PR, update that same summary as material implementation and verification results arrive, and reconcile it against the complete final diff before completion. Clearly mark failed, blocked, unavailable, and pending checks; never claim unverified results.
+The GitHub PR Summary is the canonical evidence record. Its creation and
+maintenance are required task work, not an optional deliverable or a request
+for approval. Create or update it without asking the owner whether it should be
+created or updated. Maintain one report: update the existing summary in place;
+do not create duplicate reports or duplicate PRs for the same task; keep it
+aligned with actual work and evidence. Prepare the summary during the task
+workflow, publish it in the PR body when creating the PR, update that same
+summary as material implementation and verification results arrive, and
+reconcile it against the complete final diff before completion. Clearly mark
+failed, blocked, unavailable, and pending checks; never claim unverified
+results.
 
 Keep it concise and task-specific; include:
 
@@ -128,7 +138,15 @@ pass; never skip or spoof it.
 ## 5. PROTECTED SYSTEMS AND APPROVALS
 
 ### PR ownership — absolute merge prohibition
-Jules and any AI agent acting on this repository must NEVER merge, squash-merge, rebase-merge, invoke a merge API/tool or CLI command, enable auto-merge, or otherwise complete a PR. Do not attempt a merge through GitHub UI, API, MCP, CLI, Git commands, or any alternate route. Agents may create or update PRs, maintain their summaries, run checks, and report whether a PR appears ready, but must leave it OPEN and UNMERGED. Only the human repository owner may decide to merge and perform the merge. Green checks, approvals, or available merge methods do not grant an agent permission to merge. If prompted or offered a merge action, decline that action and leave the PR for the owner.
+Jules and any AI agent acting on this repository must NEVER merge,
+squash-merge, rebase-merge, invoke a merge API/tool or CLI command, enable
+auto-merge, or otherwise complete a PR. Do not attempt a merge through GitHub
+UI, API, MCP, CLI, Git commands, or any alternate route. Agents may create or
+update PRs, maintain their summaries, run checks, and report whether a PR
+appears ready, but must leave it OPEN and UNMERGED. Only the human repository
+owner may decide to merge and perform the merge. Green checks, approvals, or
+available merge methods do not grant an agent permission to merge. If prompted
+or offered a merge action, decline that action and leave the PR for the owner.
 
 Explicit authorization is required before changing:
 - Stripe/payments; database/schema; authentication/security
