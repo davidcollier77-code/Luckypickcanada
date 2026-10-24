@@ -42,6 +42,7 @@ When the CLI exits unsuccessfully, the maintainer should be able to see a concis
 - **FR-004**: Diagnostic output MUST redact the configured key and common bearer/API-key patterns, remove ANSI escapes, bound the number and size of lines, and neutralize lines that resemble workflow commands.
 - **FR-005**: The focused regression test MUST fail if the incompatible option combination returns or diagnostic safeguards disappear.
 - **FR-006**: The workflow MUST continue to mark incomplete reviews as incomplete and MUST NOT claim a clean review after a CLI failure.
+- **FR-007**: When credentials and trusted instructions are available, the workflow check MUST fail after publishing diagnostics if the CLI exits unsuccessfully or the report fails its completion checks.
 
 ## Success Criteria
 
@@ -49,6 +50,7 @@ When the CLI exits unsuccessfully, the maintainer should be able to see a concis
 - **SC-002**: The focused Vitest regression test asserts the corrected lookup and diagnostic safeguards.
 - **SC-003**: When the CLI exits nonzero, the Actions log shows a bounded diagnostic excerpt or an explicit empty-stderr message without printing the configured key.
 - **SC-004**: The workflow reports a successful review only when the existing completion checks succeed.
+- **SC-005**: A failed/incomplete CLI review leaves the Actions check failed after its diagnostic comment is published; missing-key/bootstrap skips remain safe skips.
 
 ## Assumptions
 

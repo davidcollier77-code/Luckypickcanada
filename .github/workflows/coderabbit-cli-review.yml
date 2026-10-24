@@ -146,7 +146,7 @@ jobs:
                   excerpt = excerpt[-4000:]
               for line in excerpt.splitlines():
                   # Prevent untrusted CLI text from being interpreted as a workflow command.
-                  if line.lstrip().startswith("::"):
+                  if line.lstrip().startswith(("::", "##[")):
                       line = " " + line
                   print(line[:500])
           PY
@@ -155,6 +155,7 @@ jobs:
           exit "$review_exit_code"
 
       - name: Publish or update the pull-request review comment
+        id: publish
         if: ${{ always() && steps.credentials.outputs.configured == 'true' && steps.instructions.outputs.available == 'true' && steps.review.outcome != 'skipped' }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -305,3 +306,11 @@ jobs:
             gh api --method POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --input "$COMMENT_JSON" >/dev/null
           fi
           echo "Posted or updated the CodeRabbit CLI review comment."
+
+
+      - name: Fail when CodeRabbit CLI review is incomplete
+        if: ${{ always() && steps.credentials.outputs.configured == 'true' && steps.instructions.outputs.available == 'true' && (steps.review.outcome == 'failure' || steps.publish.outputs.review_complete != 'true') }}
+        shell: bash
+        run: |
+          echo "::error::CodeRabbit CLI review is incomplete. See the published review comment and sanitized stderr above."
+          exit 1

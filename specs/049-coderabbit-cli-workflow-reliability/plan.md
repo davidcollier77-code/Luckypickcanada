@@ -27,6 +27,8 @@ Correct the existing CodeRabbit CLI workflow's comment lookup by removing the un
 - The recorded log explicitly reports that `--slurp` is incompatible with `--jq` or `--template`. With `--paginate`, remove `--slurp`, run the jq filter per page, and pipe matching IDs to `tail -n 1`.
 - The CLI review step already captures stderr to a temp file; add sanitized log output only on a nonzero result.
 - The source-level Vitest test already targets the upsert contract; replace the outdated assertion that expected the broken command and add diagnostic assertions.
+- Because the first repaired run revealed that continue-on-error made the overall workflow green despite an invalid API key, add a final gate after comment publication so incomplete reviews still fail the check. Keep intentional missing-key/bootstrap skips unchanged.
+- Neutralize both current and legacy workflow-command-looking stderr prefixes.
 - No optional research, data-model, API-contract, or quickstart artifact is needed.
 
 ## Project Structure

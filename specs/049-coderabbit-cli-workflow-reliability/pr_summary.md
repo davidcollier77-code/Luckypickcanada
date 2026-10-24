@@ -8,12 +8,14 @@
 
 ## Verified Findings
 - PR #1592 run [40115002923](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40115002923) shows CodeRabbit CLI exit code 0 followed by a publishing-step failure: `the --slurp option is not supported with --jq or --template`.
-- PR #1593 run [40116622333](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40116622333) shows the same publishing defect. The CLI itself also returned exit code 1 on that run; its stderr was captured but not surfaced, so the CLI's separate root cause is unverified.
+- PR #1593 run [40116622333](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40116622333) shows the same publishing defect. The CLI itself also returned exit code 1 on that run; its stderr was captured but not surfaced.
+- First repaired live run [40117674491](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40117674491) successfully published/updated the comment, confirming the pagination fix. The new sanitized diagnostic then exposed the independent CLI error: Invalid or expired API key.
 - The existing source-level test asserted `gh api --paginate --slurp`, unintentionally codifying the broken option combination.
 
 ## Changes
 - Remove `--slurp` and use the supported paginated `--jq` output, selecting the last matching comment ID with `tail -n 1`.
-- When CLI exit code is nonzero, print a bounded stderr excerpt after redacting the configured key and common bearer/API-key patterns, stripping ANSI escapes, and neutralizing lines that look like GitHub Actions workflow commands.
+- When CLI exit code is nonzero, print a bounded stderr excerpt after redacting the configured key and common bearer/API-key patterns, stripping ANSI escapes, and neutralizing current/legacy workflow-command-looking lines.
+- Add a post-publication gate so a failed/incomplete review remains a failed Actions check rather than silently appearing green. Missing-key and bootstrap skips remain unchanged.
 - Update regression assertions for the corrected pagination and the diagnostic safeguards.
 
 ## Required Context Consulted

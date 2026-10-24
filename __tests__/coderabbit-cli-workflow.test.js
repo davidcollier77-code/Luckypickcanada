@@ -49,6 +49,16 @@ describe('CodeRabbit CLI pull-request review workflow', () => {
     expect(workflow).toContain('diagnostic = diagnostic.replace(secret, "[REDACTED]")');
     expect(workflow).toContain('No diagnostic text was written to stderr.');
     expect(workflow).toContain('untrusted CLI text from being interpreted as a workflow command');
+    expect(workflow).toContain('startswith(("::", "##["))');
+  });
+
+  it('keeps the workflow failed when CLI review is incomplete after publishing diagnostics', () => {
+    const publisher = workflow.indexOf('name: Publish or update the pull-request review comment');
+    const failureGate = workflow.indexOf('name: Fail when CodeRabbit CLI review is incomplete');
+    expect(publisher).toBeGreaterThanOrEqual(0);
+    expect(failureGate).toBeGreaterThan(publisher);
+    expect(workflow).toContain("steps.review.outcome == 'failure'");
+    expect(workflow).toContain("steps.publish.outputs.review_complete != 'true'");
   });
 
   it('updates one comment and clearly separates incomplete reviews from clean results', () => {
