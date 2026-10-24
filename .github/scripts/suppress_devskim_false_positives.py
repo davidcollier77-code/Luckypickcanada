@@ -208,7 +208,11 @@ def _source_region_span_on_line(region: dict, line_number: int, line: str) -> tu
 
 
 def _region_starts_at_pattern(
-    region: dict, line_number: int, line: str, pattern: re.Pattern[str]
+    region: dict,
+    line_number: int,
+    line: str,
+    pattern: re.Pattern[str],
+    source_text: str | None = None,
 ) -> bool:
     """Require a SARIF finding to start at a validated source pattern on its reported line."""
     start_line = region.get("startLine")
@@ -229,6 +233,17 @@ def _region_starts_at_pattern(
         )
     ):
         return False
+
+    if source_text is not None:
+        source_lines = source_text.splitlines()
+        if start_line > len(source_lines) or end_line > len(source_lines):
+            return False
+        if source_lines[start_line - 1] != line:
+            return False
+        end_line_text = source_lines[end_line - 1]
+        if end_column > len(end_line_text) + 1:
+            return False
+
     start_offset = start_column - 1
     for match in pattern.finditer(line):
         match_start = (
@@ -450,7 +465,9 @@ def should_suppress_safe_contextual_finding(
         # DevSkim's historical SARIF regions point at "setTimeout", not the
         # preceding "test." prefix, so validate that exact reported token.
         test_timeout_pattern = re.compile(r"\btest\.(?P<call>setTimeout)\s*\(\s*\d[\d_]*\s*\)")
-        if _region_starts_at_pattern(region, line_number, line, test_timeout_pattern):
+        if _region_starts_at_pattern(
+            region, line_number, line, test_timeout_pattern, source_text
+        ):
             return (
                 relative_path.startswith(("tests/", "test/", "__tests__/"))
                 or ".test." in relative_path
@@ -460,7 +477,7 @@ def should_suppress_safe_contextual_finding(
             r"\bsetTimeout\s*\(\s*(?:(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>|function\b)"
         )
         return _region_starts_at_pattern(
-            region, line_number, line, callable_timeout_pattern
+            region, line_number, line, callable_timeout_pattern, source_text
         )
 
     if rule_id in {"DS162092", "DS137138"}:
