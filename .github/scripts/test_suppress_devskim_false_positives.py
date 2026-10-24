@@ -268,6 +268,78 @@ class SarifOutputFilteringTests(unittest.TestCase):
             )
 
 
+
+    def test_self_test_fixture_findings_are_filtered_only_for_approved_files_and_rules(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture_host = "local" + "host"
+            url_prefix = "http" + "://local"
+            source_line = f'{fixture_host}_origin = "{url_prefix}" + "host:3000"'
+            results = []
+
+            for relative_path in sorted(suppressions.DEVSKIM_SELF_TEST_FILES):
+                source_path = root / relative_path
+                source_path.parent.mkdir(parents=True, exist_ok=True)
+                source_path.write_text(source_line + "\\n", encoding="utf-8")
+                for rule_id in ("DS137138", "DS162092"):
+                    results.append({
+                        "ruleId": rule_id,
+                        "locations": [{
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": relative_path},
+                                "region": {"startLine": 1},
+                            }
+                        }],
+                    })
+
+            # An unrelated path and an unrelated rule must remain visible.
+            results.extend([
+                {
+                    "ruleId": "DS162092",
+                    "locations": [{
+                        "physicalLocation": {
+                            "artifactLocation": {"uri": "README.md"},
+                            "region": {"startLine": 1},
+                        }
+                    }],
+                },
+                {
+                    "ruleId": "DS172411",
+                    "locations": [{
+                        "physicalLocation": {
+                            "artifactLocation": {
+                                "uri": sorted(suppressions.DEVSKIM_SELF_TEST_FILES)[0]
+                            },
+                            "region": {"startLine": 1},
+                        }
+                    }],
+                },
+            ])
+
+            sarif_path = root / "devskim-alerts.sarif"
+            sarif_path.write_text(
+                __import__("json").dumps({"runs": [{"results": results}]}),
+                encoding="utf-8",
+            )
+            self.assertEqual(suppressions.suppress_sarif(sarif_path, root), 4)
+
+            written = __import__("json").loads(sarif_path.read_text(encoding="utf-8"))
+            remaining = written["runs"][0]["results"]
+            self.assertEqual(len(remaining), 2)
+            remaining_ids = {
+                (
+                    result["ruleId"],
+                    result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"],
+                )
+                for result in remaining
+            }
+            self.assertIn(("DS162092", "README.md"), remaining_ids)
+            self.assertIn(
+                ("DS172411", sorted(suppressions.DEVSKIM_SELF_TEST_FILES)[0]),
+                remaining_ids,
+            )
+
+
 class ArtifactPathTests(unittest.TestCase):
     def test_workspace_relative_allowlisted_path_is_accepted(self):
         with tempfile.TemporaryDirectory() as directory:
