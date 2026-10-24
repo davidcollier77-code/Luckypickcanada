@@ -631,6 +631,17 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             )
         )
 
+    def test_timer_finding_with_truncated_source_range_is_not_suppressed(self):
+        line = "setTimeout(() => updateCanvas(), 200);"
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "app/homepage/HomePage.js",
+                line,
+                {"startLine": 1, "startColumn": 1, "endColumn": 2},
+            )
+        )
+
     def test_contextual_timer_finding_without_columns_is_not_suppressed(self):
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
