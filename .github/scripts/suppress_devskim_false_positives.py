@@ -334,6 +334,15 @@ def _region_starts_at_pattern(
     ):
         return False
 
+    if source_text is not None:
+        source_lines = source_text.splitlines()
+        if start_line > len(source_lines) or end_line > len(source_lines):
+            return False
+        if source_lines[start_line - 1] != line:
+            return False
+        if end_column > len(source_lines[end_line - 1]) + 1:
+            return False
+
     start_offset = start_column - 1
     for match in pattern.finditer(line):
         match_start = (
