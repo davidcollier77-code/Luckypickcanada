@@ -50,6 +50,11 @@ KNOWN_CONTEXTUAL_SUPPRESSION_FILES = frozenset({
     "functions/api/oracle.js",
     "__tests__/security-payment.test.js",
 })
+DEVSKIM_SELF_TEST_FILES = frozenset({
+    ".github/scripts/suppress_devskim_false_positives.py",
+    ".github/scripts/test_suppress_devskim_false_positives.py",
+})
+
 KNOWN_LOCALHOST_ORIGINS = {
     "app/api/oracle/route.js": {"http://local" + "host:3000"},
     "functions/api/oracle.js": {"http://local" + "host:3000", "http://local" + "host:8788"},
@@ -77,6 +82,7 @@ def is_allowed_relative_path(path: Path) -> bool:
     return (
         normalized in {".docs/manifest.json", "pnpm-lock.yaml"}
         or normalized in KNOWN_CONTEXTUAL_SUPPRESSION_FILES
+        or normalized in DEVSKIM_SELF_TEST_FILES
         or (len(path.parts) >= 2 and path.parts[0] == ".specify")
     )
 
@@ -438,7 +444,13 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 if relative_path != "pnpm-lock.yaml":
                     continue
             elif rule_id in {"DS172411", "DS162092", "DS610000", "DS137138"}:
-                if relative_path not in KNOWN_CONTEXTUAL_SUPPRESSION_FILES:
+                allowed_contextual_files = KNOWN_CONTEXTUAL_SUPPRESSION_FILES
+                # The scanner helper/test files contain deliberate development fixtures.
+                # Permit only DS162092/DS137138 contextual checks on those exact files;
+                # other rules and all other paths retain the original allowlist.
+                if rule_id in {"DS162092", "DS137138"}:
+                    allowed_contextual_files = allowed_contextual_files | DEVSKIM_SELF_TEST_FILES
+                if relative_path not in allowed_contextual_files:
                     continue
             else:
                 continue
