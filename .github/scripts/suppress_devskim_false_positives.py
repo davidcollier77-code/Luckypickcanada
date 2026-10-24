@@ -718,10 +718,10 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                 source_text = safe_path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 source_text = ""
-            snippet = _source_line_from_text(source_text, region)
+            source_line = _source_line_from_text(source_text, region)
 
             justification = None
-            if rule_id == "DS173237" and should_suppress_metadata_finding(snippet, region):
+            if rule_id == "DS173237" and should_suppress_metadata_finding(source_line, region):
                 justification = (
                     "False positive: a complete SHA/UUID/checksum value in an explicitly "
                     "allowlisted metadata field overlaps the reported finding."
@@ -748,14 +748,14 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "account identifier; the webhook secret is configured separately."
                 )
             elif rule_id == "DS126858" and should_suppress_lockfile_package_name_finding(
-                snippet, region, source_text
+                source_line, region, source_text
             ):
                 justification = (
                     "False positive: this finding is in a specifically allowlisted "
                     "dependency package name, not a weak-hash implementation."
                 )
             elif rule_id == "DS126858" and should_suppress_sha512_integrity_finding(
-                snippet, region, source_text
+                source_line, region, source_text
             ):
                 justification = (
                     "False positive: the reported substring is inside a valid, canonical "
