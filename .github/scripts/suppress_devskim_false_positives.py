@@ -185,8 +185,75 @@ def _source_line_from_text(source_text: str, region: dict) -> str:
     return lines[start_line - 1] if start_line <= len(lines) else ""
 
 
-def _source_region_span_on_line(region: dict, line_number: int, line: str) -> tuple[int, int] | None:
-    """Return a validated zero-based, end-exclusive source span for a single-line SARIF region."""
+def _absolute_source_span(
+    region: dict, source_text: str
+) -> tuple[int, int] | None:
+    """Validate DevSkim's absolute character span against its source snippet and line numbers."""
+    has_offset = "charOffset" in region
+    has_length = "charLength" in region
+    if not has_offset and not has_length:
+        return None
+    if not has_offset or not has_length:
+        return None
+
+    start = region.get("charOffset")
+    length = region.get("charLength")
+    if (
+        not isinstance(start, int) or isinstance(start, bool) or start < 0
+        or not isinstance(length, int) or isinstance(length, bool) or length <= 0
+        or start + length > len(source_text)
+    ):
+        return None
+
+    end = start + length
+    source_fragment = source_text[start:end]
+    snippet = region.get("snippet")
+    snippet_text = snippet.get("text") if isinstance(snippet, dict) else None
+    if isinstance(snippet_text, str) and source_fragment != snippet_text:
+        return None
+
+    actual_start_line = source_text.count("\\n", 0, start) + 1
+    actual_end_line = source_text.count("\\n", 0, end - 1) + 1
+    start_line = region.get("startLine")
+    end_line = region.get("endLine", start_line)
+    if (
+        not isinstance(start_line, int) or isinstance(start_line, bool)
+        or not isinstance(end_line, int) or isinstance(end_line, bool)
+        or start_line != actual_start_line
+        or end_line != actual_end_line
+    ):
+        return None
+    return start, end
+
+
+def _source_region_span_on_line(
+    region: dict,
+    line_number: int,
+    line: str,
+    source_text: str | None = None,
+) -> tuple[int, int] | None:
+    """Return a validated zero-based, end-exclusive source span for one source line."""
+    if source_text is not None and (
+        "charOffset" in region or "charLength" in region
+    ):
+        absolute_span = _absolute_source_span(region, source_text)
+        if absolute_span is None:
+            return None
+        start, end = absolute_span
+        start_line = source_text.count("\\n", 0, start) + 1
+        end_line = source_text.count("\\n", 0, end - 1) + 1
+        if start_line != line_number or end_line != line_number:
+            return None
+        line_start = source_text.rfind("\\n", 0, start) + 1
+        actual_line_end = source_text.find("\\n", start)
+        if actual_line_end == -1:
+            actual_line_end = len(source_text)
+        if source_text[line_start:actual_line_end] != line:
+            return None
+        return start - line_start, end - line_start
+
+    # Test fixtures that do not model DevSkim's absolute-offset fields use
+    # validated SARIF columns; production DevSkim output prefers charOffset.
     start_line = region.get("startLine")
     end_line = region.get("endLine", start_line)
     start_column = region.get("startColumn")
