@@ -230,7 +230,11 @@ def _region_starts_at_pattern(
     ):
         return False
     start_offset = start_column - 1
-    return any(match.start() == start_offset for match in pattern.finditer(line))
+    return any(
+        match.start("call") == start_offset if "call" in match.re.groupindex
+        else match.start() == start_offset
+        for match in pattern.finditer(line)
+    )
 
 
 def _reported_source_text(region: dict, line_number: int, line: str) -> str | None:
@@ -431,7 +435,9 @@ def should_suppress_safe_contextual_finding(
 
     if rule_id == "DS172411":
         # The source location must begin at this safe call, not merely share its line.
-        test_timeout_pattern = re.compile(r"\btest\.setTimeout\s*\(\s*\d[\d_]*\s*\)")
+        # DevSkim's historical SARIF regions point at "setTimeout", not the
+        # preceding "test." prefix, so validate that exact reported token.
+        test_timeout_pattern = re.compile(r"\btest\.(?P<call>setTimeout)\s*\(\s*\d[\d_]*\s*\)")
         if _region_starts_at_pattern(region, line_number, line, test_timeout_pattern):
             return (
                 relative_path.startswith(("tests/", "test/", "__tests__/"))
