@@ -33,8 +33,9 @@
 
 ## Verification Status — PENDING
 - **Repository inspection:** Confirmed base branch, no existing conventional CodeRabbit configuration file, no matching open setup PR, and inspected task files.
-- **Local shell / YAML parser / CodeRabbit CLI:** NOT RUN. This connected interface can operate on repository files through GitHub APIs but has no mounted repository checkout or interactive local terminal.
-- **Required before merge:** Review all changed files and diff on the PR head; observe remote CI, including `./jules-verify.sh` and required checks. Review shell/script behavior on a local clone.
+- **Wrapper shell test:** PASS in an isolated temporary Git worktree. `bash -n` passed; a mock `cr` confirmed `review`, the explicit absolute `--config` path, and all review flags are forwarded exactly; the missing-CLI branch returned exit 127 with setup guidance; the non-worktree branch returned exit 2 with guidance. This checks the wrapper but does not test the real CodeRabbit service.
+- **Full repository verification / YAML parser / live CodeRabbit CLI:** NOT RUN. This interface has no mounted checkout of the actual repository and no interactive authenticated CodeRabbit session. No YAML config was introduced.
+- **Required before merge:** Observe remote CI, including `./jules-verify.sh` and required checks. The branch change list and all eight changed file contents were inspected against `main`; no unrelated runtime or automation files are included.
 - **Required after merge on maintainer machine:** Install CLI, complete `cr auth login`, inspect `cr auth status`, `cr doctor`, and `cr usage`, and run one live local review.
 - **Potential limitations:** The wrapper is a text file and is documented to be run via `bash`; it does not require executable bit metadata.
 
@@ -42,7 +43,7 @@
 No intended changes to the GitHub App configuration, PR automation, scanner workflows, package/dependency files, application behavior, deployment, secrets, or repository governance. CLI reviews are opt-in and local.
 
 ## Second Error Check
-Pending complete PR-head diff and remote CI. No local test or live CLI result is claimed.
+The compare-to-main result was `ahead`, `behind_by: 0`, with exactly these eight changed paths: `.coderabbit-cli-instructions.md`, `README.md`, `docs/coderabbit-cli.md`, `scripts/coderabbit-cli-review.sh`, and the four files under `specs/048-coderabbit-cli-review-layer/`. All eight were re-read. The wrapper passed isolated shell checks. Remote CI, the full `./jules-verify.sh` gate, and the first live CodeRabbit review remain unverified.
 
 ## USEFUL RESULT: NO (PENDING)
 The setup files are drafted on the branch, but readiness, authenticated quota, shell execution, and a first live review cannot yet be demonstrated from this interface. Reassess only after the real checks run.
