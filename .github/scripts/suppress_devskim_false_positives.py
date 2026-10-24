@@ -223,7 +223,10 @@ def _region_starts_at_pattern(
         or start_line != line_number or end_line < start_line
         or start_column < 1 or end_column < 1
         or start_column > len(line) + 1
-        or (end_line == start_line and end_column <= start_column)
+        or (
+            end_line == start_line
+            and (end_column <= start_column or end_column > len(line) + 1)
+        )
     ):
         return False
     start_offset = start_column - 1
