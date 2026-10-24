@@ -63,3 +63,10 @@ This project uses `pnpm`.
 pnpm install
 pnpm dev
 ```
+
+
+### Optional Local CodeRabbit CLI Review
+
+Run an independent, on-demand review before opening a pull request. This optional
+local layer complements the existing GitHub App and security checks. Setup,
+authentication, and commands are documented in [`docs/coderabbit-cli.md`](docs/coderabbit-cli.md).
