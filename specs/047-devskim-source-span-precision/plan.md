@@ -73,7 +73,7 @@ No separate research, data model, API contract, or quickstart is needed for this
 ## Verification Status at Planning
 
 - **PASS — source inspection**: Historical raw SARIF records contain source coordinates; safe examples were checked against those actual region shapes.
-- **PENDING**: Implement precise contextual and lockfile source-span checks and negative tests.
-- **PENDING**: Run local Python syntax and unittest checks where possible.
+- **DONE (implementation committed on branch)**: Added source-coordinate checks for reviewed timer callbacks, test loopback fixtures, allowlisted localhost origins, the static security-test regex, the public Cloudflare account literal, and allowlisted lockfile package-name matches. Added positive/negative tests including wrong-span, missing-column, truncated-range, and same-line unrelated-expression cases.
+- **PENDING / NOT RUN LOCALLY**: This interface does not provide a mounted repository worktree; let the DevSkim PR workflow run its Python syntax and unittest checks.
 - **PENDING**: Observe current-head remote CI, including DevSkim suppression count and uploaded SARIF, CodeQL, ./jules-verify.sh, and PR summary validation. No result is claimed until observed.
 - **NOT RUN HERE**: Production build and visual QA are unrelated to scanner-only changes; no application/build files are changed.
