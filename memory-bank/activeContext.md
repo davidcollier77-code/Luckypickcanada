@@ -1,3 +1,16 @@
+# Active Context — DevSkim Self-Test False Positives (2026-10-24)
+
+- **Task:** Resolve 12 DevSkim ledger rows in the scanner suppressor and its regression test without hiding genuine findings elsewhere.
+- **Verified cause:** Safe source resolution and the contextual-rule file allowlist both excluded `.github/scripts/suppress_devskim_false_positives.py` and `.github/scripts/test_suppress_devskim_false_positives.py`. The existing test-fixture suppression predicate therefore never ran for their DS137138/DS162092 findings.
+- **Branch:** `fix/devskim-self-suppression-20261024`.
+- **Implementation committed:** Exact two-file allowlist for source inspection; contextual rule exception limited to DS137138/DS162092; integration regression sends four expected findings through SARIF filtering and retains negative controls.
+- **Spec Kit:** `specs/045-devskim-self-suppression/{spec.md,plan.md,tasks.md}`. Four stages are being performed in sequence using file-driven procedures; native dispatch/local checkout is unavailable in this session.
+- **Safety:** No app runtime, API, secret, dependency, authentication, payment, database, or deployment changes. `devskim-alerts.md` has not been cleared yet; hold report cleanup until CI verifies the current head. No repository or production state was modified directly on `main`.
+- **Verification status:** Pending current-head CI: Python syntax, focused suppressor tests, `./jules-verify.sh`, and required build/OpenNext/size checks. Local shell could not resolve GitHub; do not claim local checks passed.
+- **Next steps:** Open one PR for this branch; inspect actual DevSkim SARIF/CI; if all expected findings are filtered and negative tests pass, remove the 12 stale ledger rows only, update `tasks.md`, this context and `pr_summary.md`, and perform the final diff/reconciliation review. If CI fails or other findings remain, repair them without widening the allowlist.
+
+---
+
 # Active Context — Undici CVE-2026-109869 Dependency Remediation (2026-10-24)
 
 - **Verified finding:** Dependabot alert #66 reports transitive `undici@8.10.2` and GHSA-xjj6-f33q-929c / CVE-2026-109869 (high severity). The root pnpm override `>=7.29.1` allowed 8.10.2 to remain selected.
