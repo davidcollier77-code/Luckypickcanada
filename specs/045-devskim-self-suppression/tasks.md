@@ -25,5 +25,5 @@
 
 ## Final Verification
 
-- [ ] T007 Run the required syntax checks, focused Python tests, `./jules-verify.sh`, and required current-head CI gates; record actual outcomes in `pr_summary.md`
-- [ ] T008 Double-check the full diff and report count, verify unrelated files/rules remain unsuppressed, and record whether the useful result is verified in `pr_summary.md`
+- [X] T007 Run the required syntax checks, focused Python tests, `./jules-verify.sh`, and required current-head CI gates; record actual outcomes in `pr_summary.md`
+- [X] T008 Double-check the full diff and report count, verify unrelated files/rules remain unsuppressed, and record whether the useful result is verified in `pr_summary.md`
