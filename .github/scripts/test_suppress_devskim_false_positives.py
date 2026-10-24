@@ -628,11 +628,11 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
 
     def test_safe_timer_elsewhere_on_a_line_cannot_hide_an_unrelated_finding(self):
         line = "const timer = setTimeout(() => updateCanvas(), 200); unrelatedCall(userInput);"
-        start_column = line.index("eval") + 1
+        start_column = line.index("unrelatedCall") + 1
         region = {
             "startLine": 1,
             "startColumn": start_column,
-            "endColumn": start_column + len("eval"),
+            "endColumn": start_column + len("unrelatedCall"),
         }
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
@@ -843,7 +843,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 },
             )
         )
-        eval_start = localhost_line.index("eval") + 1
+        eval_start = localhost_line.index("unrelatedCall") + 1
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
                 "DS162092",
@@ -852,7 +852,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 {
                     "startLine": 1,
                     "startColumn": eval_start,
-                    "endColumn": eval_start + len("eval"),
+                    "endColumn": eval_start + len("unrelatedCall"),
                 },
             )
         )
