@@ -48,15 +48,16 @@ jobs:
         id: python-syntax
         run: python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py
 
+      # If suppression verification fails, fail this job. The always() upload steps below
+      # still preserve the raw scan and SARIF artifact, while this failed dependency prevents
+      # the append-only Markdown report updater from publishing unfiltered findings.
       - name: Test DevSkim suppression filter
         id: suppression-tests
-        continue-on-error: true
         run: python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'
 
       - name: Suppress DevSkim false positives in SARIF
         id: suppress-devskim
         if: steps.suppression-tests.outcome == 'success'
-        continue-on-error: true
         run: python3 .github/scripts/suppress_devskim_false_positives.py
 
       - name: Warn when DevSkim suppression is skipped or fails

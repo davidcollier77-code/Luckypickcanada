@@ -722,5 +722,42 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         )
 
 
+
+class DevSkimWorkflowFailureSafetyTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.workflow_path = Path(__file__).resolve().parents[1] / "workflows" / "devskim.yml"
+        cls.workflow_text = cls.workflow_path.read_text(encoding="utf-8")
+
+    def _step_block(self, name):
+        marker = f"      - name: {name}"
+        start = self.workflow_text.index(marker)
+        next_step = self.workflow_text.find("\n      - name: ", start + len(marker))
+        return self.workflow_text[start:] if next_step < 0 else self.workflow_text[start:next_step]
+
+    def test_suppression_failures_fail_the_scan_job(self):
+        for name in (
+            "Test DevSkim suppression filter",
+            "Suppress DevSkim false positives in SARIF",
+        ):
+            with self.subTest(step=name):
+                self.assertNotIn("continue-on-error:", self._step_block(name))
+
+    def test_report_update_depends_on_successful_lint_without_always_override(self):
+        start = self.workflow_text.index("  update-report:\n")
+        end = self.workflow_text.index("    steps:\n", start)
+        report_header = self.workflow_text[start:end]
+        self.assertIn("needs: lint", report_header)
+        self.assertNotIn("always()", report_header)
+
+    def test_raw_sarif_and_artifact_are_still_uploaded_after_a_suppression_failure(self):
+        for name in (
+            "Upload DevSkim scan results to GitHub Security tab",
+            "Upload DevSkim alerts files",
+        ):
+            with self.subTest(step=name):
+                step = self._step_block(name)
+                self.assertIn("if: always() && hashFiles('devskim-alerts.sarif') != ''", step)
+
 if __name__ == "__main__":
     unittest.main()

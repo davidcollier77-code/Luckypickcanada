@@ -1,3 +1,14 @@
+# Active Context — DevSkim Report Failure Guard (2026-10-24)
+
+- **Task:** Add a regression guard for the append-only DevSkim report when suppression checks fail.
+- **Verified failure path:** Workflow run [40024403456](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40024403456) had an `IndentationError` in the suppression helper; the suppression step was skipped, `continue-on-error: true` let the lint job continue, and the notification inbox recorded three findings from that run.
+- **Current baseline:** The main report contains zero finding rows. Latest main run [40092171712](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40092171712) completed successfully; the report updater added zero rows.
+- **Change on branch:** `fix/devskim-report-failure-guard-20261024` removes `continue-on-error` from the suppression test/filter steps and adds workflow regression coverage. A failure will fail the lint job, causing the dependent report updater to skip; raw SARIF and its artifact are still uploaded with `if: always()` to preserve security evidence.
+- **Scope:** No broad suppressions, rule changes, report edits, application/dependency/configuration changes, or deployment changes.
+- **Verification:** Remote PR CI is required; no local test result is claimed because the shell cannot resolve GitHub. Leave the PR open for owner review; do not merge.
+
+---
+
 # Active Context — DevSkim Self-Test False Positives (2026-10-24)
 
 - **Task:** Completed remediation of the 12 historical DevSkim ledger rows from the scanner helper and its regression test.
