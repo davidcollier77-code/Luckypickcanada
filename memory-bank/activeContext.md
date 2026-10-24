@@ -1,13 +1,14 @@
 # Active Context — DevSkim Self-Test False Positives (2026-10-24)
 
-- **Task:** Resolve 12 DevSkim ledger rows in the scanner suppressor and its regression test without hiding genuine findings elsewhere.
-- **Verified cause:** Safe source resolution and the contextual-rule file allowlist both excluded `.github/scripts/suppress_devskim_false_positives.py` and `.github/scripts/test_suppress_devskim_false_positives.py`. The existing test-fixture suppression predicate therefore never ran for their DS137138/DS162092 findings.
-- **Branch:** `fix/devskim-self-suppression-20261024`.
-- **Implementation committed:** Exact two-file allowlist for source inspection; contextual rule exception limited to DS137138/DS162092; integration regression sends four expected findings through SARIF filtering and retains negative controls.
-- **Spec Kit:** `specs/045-devskim-self-suppression/{spec.md,plan.md,tasks.md}`. Four stages are being performed in sequence using file-driven procedures; native dispatch/local checkout is unavailable in this session.
-- **Safety:** No app runtime, API, secret, dependency, authentication, payment, database, or deployment changes. `devskim-alerts.md` has not been cleared yet; hold report cleanup until CI verifies the current head. No repository or production state was modified directly on `main`.
-- **Verification status:** Pending current-head CI: Python syntax, focused suppressor tests, `./jules-verify.sh`, and required build/OpenNext/size checks. Local shell could not resolve GitHub; do not claim local checks passed.
-- **Next steps:** Open one PR for this branch; inspect actual DevSkim SARIF/CI; if all expected findings are filtered and negative tests pass, remove the 12 stale ledger rows only, update `tasks.md`, this context and `pr_summary.md`, and perform the final diff/reconciliation review. If CI fails or other findings remain, repair them without widening the allowlist.
+- **Task:** Safely reconcile the 12 historical DevSkim ledger rows that pointed to the scanner helper and its regression test.
+- **Verified cause:** Safe source resolution and contextual-rule eligibility excluded `.github/scripts/suppress_devskim_false_positives.py` and `.github/scripts/test_suppress_devskim_false_positives.py`, so existing narrow DS137138/DS162092 fixture logic was unreachable for their results.
+- **Branch / PR:** `fix/devskim-self-suppression-20261024` / [PR #1588](https://github.com/davidcollier77-code/Luckypickcanada/pull/1588).
+- **Implementation:** Exact two-file allowlist for source inspection; contextual exception limited to DS137138/DS162092 on those paths; regression processes synthetic SARIF and checks four expected removals plus two negative controls.
+- **Observed initial verification:** On implementation head `d7017d31d4d154a079e989efd3d180522032526d`, Python syntax validation, the focused suppression tests, suppression step, SARIF upload, and the DevSkim PR check passed. DevSkim reported “No new alerts in code changed by this pull request.” Amazon Q review found no blocking defects and confirmed the intended narrow scope.
+- **Ledger:** Removed exactly 12 previously reported rows in this PR branch after the above evidence; `devskim-alerts.md` retains its header/explanation/append marker and currently has zero finding rows. New report-cleanup head must be rerun through CI before declaring task completion or merge readiness.
+- **Safety:** No app runtime, API, secrets, dependency, authentication, payment, database, or deployment changes. No direct changes to `main` and no global scanner rules or scan paths disabled.
+- **Spec Kit:** `specs/045-devskim-self-suppression/{spec.md,plan.md,tasks.md}`; file-driven sequential stage execution (native dispatch/local checkout unavailable).
+- **Still pending:** Latest-head rerun of DevSkim, full repository gates including `./jules-verify.sh`, Visual QA, OpenNext/Cloudflare build validation and measured build-size cap, final complete diff review, and final PR summary. Local shell could not resolve GitHub, so no local checks are claimed.
 
 ---
 
