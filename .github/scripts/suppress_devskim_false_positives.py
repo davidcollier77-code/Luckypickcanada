@@ -352,31 +352,52 @@ def _region_starts_at_pattern(
     return False
 
 
-def _reported_source_text(region: dict, line_number: int, line: str) -> str | None:
+def _reported_source_text(
+    region: dict,
+    line_number: int,
+    line: str,
+    source_text: str | None = None,
+) -> str | None:
     """Return source text only for a valid, single-line SARIF region."""
-    span = _source_region_span_on_line(region, line_number, line)
+    span = _source_region_span_on_line(region, line_number, line, source_text)
     if span is None:
         return None
     return line[span[0]:span[1]]
 
 
-def should_suppress_sha512_integrity_finding(source_line: str, region: dict) -> bool:
+def should_suppress_sha512_integrity_finding(
+    source_line: str, region: dict, source_text: str | None = None
+) -> bool:
     """Suppress a hash-name substring only when it is inside a valid SHA-512 SRI digest."""
-    start_column = region.get("startColumn")
-    end_column = region.get("endColumn")
-    if (
-        not isinstance(start_column, int)
-        or isinstance(start_column, bool)
-        or not isinstance(end_column, int)
-        or isinstance(end_column, bool)
-        or start_column < 1
-        or end_column <= start_column
+    if source_text is not None and (
+        "charOffset" in region or "charLength" in region
     ):
-        return False
+        line_number = region.get("startLine")
+        if not isinstance(line_number, int) or isinstance(line_number, bool):
+            return False
+        span = _source_region_span_on_line(
+            region, line_number, source_line, source_text
+        )
+        if span is None:
+            return False
+        finding_start, finding_end = span
+    else:
+        start_column = region.get("startColumn")
+        end_column = region.get("endColumn")
+        if (
+            not isinstance(start_column, int)
+            or isinstance(start_column, bool)
+            or not isinstance(end_column, int)
+            or isinstance(end_column, bool)
+            or start_column < 1
+            or end_column <= start_column
+        ):
+            return False
 
-    # SARIF columns are 1-based and endColumn is exclusive.
-    finding_start = start_column - 1
-    finding_end = end_column - 1
+        # SARIF columns are 1-based and endColumn is exclusive.
+        finding_start = start_column - 1
+        finding_end = end_column - 1
+
     for match in SHA512_INTEGRITY_PATTERN.finditer(source_line):
         digest = match.group("digest")
         try:
@@ -519,7 +540,7 @@ def should_suppress_public_cloudflare_account_id(
         return False
     # DevSkim reports the account literal, including quotes; never let another
     # finding on this declaration line inherit the account-ID exception.
-    region_span = _source_region_span_on_line(region, line_number, line)
+    region_span = _source_region_span_on_line(region, line_number, line, source_text)
     literal_span = (match.start(1) - 1, match.end(1) + 1)
     context = "\n".join(lines[max(0, line_number - 3):line_number - 1])
     return (
@@ -543,7 +564,7 @@ def should_suppress_safe_contextual_finding(
         return False
     line = lines[line_number - 1]
     context = "\n".join(lines[max(0, line_number - 3):line_number])
-    region_span = _source_region_span_on_line(region, line_number, line)
+    region_span = _source_region_span_on_line(region, line_number, line, source_text)
     reported_text = (
         line[region_span[0]:region_span[1]] if region_span is not None else None
     )
@@ -619,12 +640,14 @@ def should_suppress_safe_contextual_finding(
     return False
 
 
-def should_suppress_lockfile_package_name_finding(source_line: str, region: dict) -> bool:
+def should_suppress_lockfile_package_name_finding(
+    source_line: str, region: dict, source_text: str | None = None
+) -> bool:
     """Suppress DS126858 only when its reported token sits inside an approved package name."""
     line_number = region.get("startLine")
     if not isinstance(line_number, int) or isinstance(line_number, bool) or line_number < 1:
         return False
-    region_span = _source_region_span_on_line(region, line_number, source_line)
+    region_span = _source_region_span_on_line(region, line_number, source_line, source_text)
     if region_span is None:
         return False
     reported_text = source_line[region_span[0]:region_span[1]].casefold()
@@ -715,12 +738,16 @@ def process_sarif(data: dict, workspace: Path = WORKSPACE_ROOT) -> int:
                     "False positive: this is the repository's documented public Cloudflare "
                     "account identifier; the webhook secret is configured separately."
                 )
-            elif rule_id == "DS126858" and should_suppress_lockfile_package_name_finding(snippet, region):
+            elif rule_id == "DS126858" and should_suppress_lockfile_package_name_finding(
+                snippet, region, source_text
+            ):
                 justification = (
                     "False positive: this finding is in a specifically allowlisted "
                     "dependency package name, not a weak-hash implementation."
                 )
-            elif rule_id == "DS126858" and should_suppress_sha512_integrity_finding(snippet, region):
+            elif rule_id == "DS126858" and should_suppress_sha512_integrity_finding(
+                snippet, region, source_text
+            ):
                 justification = (
                     "False positive: the reported substring is inside a valid, canonical "
                     "SHA-512 package-integrity digest, not a hash algorithm invocation."
