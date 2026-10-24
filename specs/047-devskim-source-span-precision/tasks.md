@@ -14,19 +14,19 @@
 
 **Goal**: A suppression must match the precise location reported by SARIF, not only a safe-looking line.
 
-- [ ] T004 Add source-region extraction and coordinate-validation helpers to .github/scripts/suppress_devskim_false_positives.py.
-- [ ] T005 Require DS172411 results to start at the exact safe setTimeout / test timeout call before applying existing callback checks.
-- [ ] T006 Require DS162092 and DS137138 results in test fixtures and allowlisted local origins to match the exact reported source token.
-- [ ] T007 Require DS610000's reported range to point inside the known static source-matching regex in the security test.
-- [ ] T008 Require Cloudflare account-ID results to overlap the known ID literal and lockfile package-name results to overlap the exact allowlisted package identifier; keep SHA-512 digest checks intact.
+- [X] T004 Add source-region extraction and coordinate-validation helpers to .github/scripts/suppress_devskim_false_positives.py.
+- [X] T005 Require DS172411 results to start at the exact safe setTimeout / test timeout call before applying existing callback checks.
+- [X] T006 Require DS162092 and DS137138 results in test fixtures and allowlisted local origins to match the exact reported source token.
+- [X] T007 Require DS610000's reported range to point inside the known static source-matching regex in the security test.
+- [X] T008 Require Cloudflare account-ID results to overlap the known ID literal and lockfile package-name results to overlap the exact allowlisted package identifier; keep SHA-512 digest checks intact.
 
 ## Phase 3: Regression Tests (US1, US2)
 
 **Goal**: Prove safe matches are still suppressed while unrelated/unsafe matches remain visible.
 
-- [ ] T009 Add positive tests using valid source columns matching known real DevSkim region formats.
-- [ ] T010 Add negative tests for unrelated expressions on the same line, the wrong token/columns, missing columns, and cross-line regions.
-- [ ] T011 Add lockfile tests showing a known package-name warning is suppressed only when the reported range is inside that package name, not another same-line hash-looking value.
+- [X] T009 Add positive tests using valid source columns matching known real DevSkim region formats.
+- [X] T010 Add negative tests for unrelated expressions on the same line, the wrong token/columns, missing columns, and cross-line regions.
+- [X] T011 Add lockfile tests showing a known package-name warning is suppressed only when the reported range is inside that package name, not another same-line hash-looking value.
 - [ ] T012 Run Python syntax validation and the full DevSkim suppression unittest discovery command.
 
 ## Phase 4: Verification and Handoff
