@@ -31,9 +31,12 @@
 ## Files Changed So Far
 - `.github/scripts/suppress_devskim_false_positives.py`
 - `.github/scripts/test_suppress_devskim_false_positives.py`
+- `devskim-alerts.md` — removed the 12 verified false-positive rows after the initial targeted scanner/test run passed.
 - `specs/045-devskim-self-suppression/spec.md`
 - `specs/045-devskim-self-suppression/plan.md`
 - `specs/045-devskim-self-suppression/tasks.md`
+- `memory-bank/activeContext.md`
+- `pr_summary.md`
 
 ## Verification Status — PENDING
 - No local test/build/gate is claimed. The connected shell could not resolve `github.com`, so local checkout/testing could not be performed.
