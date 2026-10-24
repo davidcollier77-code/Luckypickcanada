@@ -648,6 +648,22 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
             )
         )
 
+    def test_contextual_timer_with_out_of_file_end_line_is_not_suppressed(self):
+        line = "setTimeout(() => updateCanvas(), 200);"
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411",
+                "app/homepage/HomePage.js",
+                line,
+                {
+                    "startLine": 1,
+                    "startColumn": 1,
+                    "endLine": 2,
+                    "endColumn": 1,
+                },
+            )
+        )
+
     def test_contextual_timer_finding_without_columns_is_not_suppressed(self):
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
