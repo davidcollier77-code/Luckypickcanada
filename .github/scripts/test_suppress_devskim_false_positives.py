@@ -280,7 +280,7 @@ class SarifOutputFilteringTests(unittest.TestCase):
             for relative_path in sorted(suppressions.DEVSKIM_SELF_TEST_FILES):
                 source_path = root / relative_path
                 source_path.parent.mkdir(parents=True, exist_ok=True)
-                source_path.write_text(source_line + "\\n", encoding="utf-8")
+                source_path.write_text(source_line + "\n", encoding="utf-8")
                 for rule_id in ("DS137138", "DS162092"):
                     results.append({
                         "ruleId": rule_id,
