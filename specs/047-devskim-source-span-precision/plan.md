@@ -44,11 +44,11 @@ Make the existing DevSkim false-positive filter location-aware. Contextual suppr
 
 ## Design Decisions
 
-1. Add small helpers to validate SARIF start-column alignment and to extract a source region only when it is a valid, single-line range.
+1. Prefer DevSkim's absolute `charOffset`/`charLength` span when present, and require it to match the exact source snippet and calculated start/end lines. Use strict columns only for synthetic fixtures without absolute-offset fields. This is necessary because reviewed historical DevSkim SARIF columns were sometimes one character early even when the absolute offset correctly identified the token.
 2. For DS172411, require the finding to begin at the actual setTimeout or test timeout call, and retain the existing safe-callback / test-timeout checks. A string callback, opaque callback, wrong token, or missing start column remains visible.
 3. For DS162092 and DS137138, require the reported source text to match the known loopback / development-origin or test-fixture token, in the exact reviewed file and existing context.
 4. For DS610000, require the reported range to be inside the known static regex text in the security test, alongside its existing comment and file checks.
-5. For the public Cloudflare account ID and allowlisted lockfile package names, validate that the finding span overlaps only the exact ID literal or package identifier; do not infer safety from another token on the same line.
+5. For the public Cloudflare account ID and allowlisted lockfile package names, validate that the absolute span and snippet overlap only the exact ID literal or package identifier; do not infer safety from another token on the same line. Use the same absolute-span validation for SHA-512 integrity fragments.
 6. Keep existing justifications, remove_verified_false_positive_results, scan coverage, workflow behavior, and negative-control philosophy unchanged.
 7. Add positive and negative tests, including a same-line unrelated expression, incorrect token columns, and missing coordinates. Do not add an exemption for any new rule or file.
 
