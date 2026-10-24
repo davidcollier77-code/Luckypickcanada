@@ -1,9 +1,11 @@
-# Current Task — CodeRabbit CLI Workflow Reliability (2026-10-24)
+# Current Task — CodeRabbit CLI Integration Retirement (2026-10-24)
 
-- **Verified failure:** PR #1592 Actions run 40115002923 and PR #1593 run 40116622333 both fail in the comment publisher because `gh api --paginate --slurp` is incompatible with `--jq`. PR #1592's CLI itself exited 0; PR #1593's CLI also exited 1, but its stderr was captured and not surfaced, so the CLI's separate cause is unknown.
-- **Implementation scope:** Fix the paginated comment lookup, add bounded/sanitized CLI stderr diagnostics for nonzero exits, and correct the existing Vitest assertion that expected the broken flag combination. No application, secret, deployment, dependency, reviewer App, or site visual changes.
-- **Branch:** `fix/coderabbit-cli-workflow-reliability-20261024`; task artifacts: `specs/049-coderabbit-cli-workflow-reliability/`.
-- **Verification:** Local Vitest, full test suite, and `./jules-verify.sh` cannot be executed through this connected repository API. Keep verification pending until the current PR head's checks and workflow logs are inspected. Do not claim the CLI root cause is resolved unless a fresh run provides evidence.
+- **Decision:** At the repository owner's direction, retire the active CodeRabbit CLI review integration after the GitHub Actions run reported `Invalid or expired API key` (run [40117926386](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40117926386)). The CLI route could not be made to authenticate using the available credential.
+- **Branch / PR:** `fix/coderabbit-cli-workflow-reliability-20261024`, PR [#1594](https://github.com/davidcollier77-code/Luckypickcanada/pull/1594).
+- **Retirement scope:** Remove the CLI Actions workflow and its workflow-specific test, local CLI wrapper, CLI instructions file, CLI setup guide, and README advertisement. Keep the CodeRabbit GitHub App and all unrelated workflows, scanners, tests, application code, dependencies, deployment settings, and governance unchanged.
+- **Historical record:** Preserve `specs/048-coderabbit-cli-review-layer/` as the record of the previously implemented experiment. The current retirement task is documented in `specs/049-coderabbit-cli-retirement/`.
+- **Manual secret cleanup:** The repository owner removes the `CODERABBIT_API_KEY` repository Actions secret in GitHub settings. This connected repository tool cannot inspect or delete that secret; no secret value was read or changed here.
+- **Verification:** Repository shell commands (`pnpm test` and `./jules-verify.sh`) cannot be executed through this GitHub API interface. Reconcile the final PR diff and inspect remote checks before merging.
 
 ---
 
