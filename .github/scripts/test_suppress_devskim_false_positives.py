@@ -663,11 +663,11 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
 
     def test_playwright_test_timeout_configuration_is_suppressed_only_in_tests(self):
         line = "test.setTimeout(90_000);"
-        start_column = line.index("test.setTimeout") + 1
+        start_column = line.index("setTimeout") + 1
         region = {
             "startLine": 1,
             "startColumn": start_column,
-            "endColumn": start_column + len("test.setTimeout"),
+            "endColumn": start_column + len("setTimeout"),
         }
         self.assertTrue(
             suppressions.should_suppress_safe_contextual_finding(
