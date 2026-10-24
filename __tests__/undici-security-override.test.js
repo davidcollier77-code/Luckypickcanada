@@ -12,7 +12,8 @@ describe('Undici security override', () => {
 
     const undiciPackageVersions = [...lockfile.matchAll(/^  undici@(\d+\.\d+\.\d+):/gm)]
       .map((match) => match[1]);
-    expect(undiciPackageVersions).toEqual(['8.12.2', '8.12.2']);
+    expect(undiciPackageVersions.length).toBeGreaterThan(0);
+    expect([...new Set(undiciPackageVersions)]).toEqual(['8.12.2']);
 
     const resolvedUndiciVersions = [...lockfile.matchAll(/^[ \t]+undici:[ \t]+(\d+\.\d+\.\d+)[ \t]*$/gm)]
       .map((match) => match[1]);
