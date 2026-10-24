@@ -1,3 +1,12 @@
+# Current Task — CodeRabbit CLI Workflow Reliability (2026-10-24)
+
+- **Verified failure:** PR #1592 Actions run 40115002923 and PR #1593 run 40116622333 both fail in the comment publisher because `gh api --paginate --slurp` is incompatible with `--jq`. PR #1592's CLI itself exited 0; PR #1593's CLI also exited 1, but its stderr was captured and not surfaced, so the CLI's separate cause is unknown.
+- **Implementation scope:** Fix the paginated comment lookup, add bounded/sanitized CLI stderr diagnostics for nonzero exits, and correct the existing Vitest assertion that expected the broken flag combination. No application, secret, deployment, dependency, reviewer App, or site visual changes.
+- **Branch:** `fix/coderabbit-cli-workflow-reliability-20261024`; task artifacts: `specs/049-coderabbit-cli-workflow-reliability/`.
+- **Verification:** Local Vitest, full test suite, and `./jules-verify.sh` cannot be executed through this connected repository API. Keep verification pending until the current PR head's checks and workflow logs are inspected. Do not claim the CLI root cause is resolved unless a fresh run provides evidence.
+
+---
+
 # Active Context — DevSkim Source-Span Precision (2026-10-24)
 
 - **Task:** Make DevSkim false-positive filtering more source-aware without hiding valid findings.

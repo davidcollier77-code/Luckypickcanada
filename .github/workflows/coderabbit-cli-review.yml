@@ -122,6 +122,35 @@ jobs:
           echo "exit_code=$review_exit_code" >> "$GITHUB_OUTPUT"
           if [[ "$review_exit_code" -ne 0 ]]; then
             echo "::warning::CodeRabbit CLI did not complete successfully (exit code $review_exit_code). The PR comment will clearly mark the review as incomplete."
+            echo "::group::Sanitized CodeRabbit CLI stderr (last 30 lines)"
+            python3 - "$STDERR_FILE" <<'PY'
+          import os
+          import re
+          import sys
+          from pathlib import Path
+
+          diagnostic_path = Path(sys.argv[1])
+          diagnostic = diagnostic_path.read_text(encoding="utf-8", errors="replace") if diagnostic_path.exists() else ""
+          secret = os.environ.get("CODERABBIT_API_KEY", "")
+          if secret:
+              diagnostic = diagnostic.replace(secret, "[REDACTED]")
+          diagnostic = re.sub(r"(?i)(authorization\s*:\s*bearer\s+)[^\s]+", r"\1[REDACTED]", diagnostic)
+          diagnostic = re.sub(r"(?i)(api[_ -]?key\s*[:=]\s*)[^\s,;]+", r"\1[REDACTED]", diagnostic)
+          diagnostic = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", diagnostic)
+          lines = [line.rstrip() for line in diagnostic.splitlines() if line.strip()]
+          if not lines:
+              print("No diagnostic text was written to stderr.")
+          else:
+              excerpt = "\n".join(lines[-30:])
+              if len(excerpt) > 4000:
+                  excerpt = excerpt[-4000:]
+              for line in excerpt.splitlines():
+                  # Prevent untrusted CLI text from being interpreted as a workflow command.
+                  if line.lstrip().startswith("::"):
+                      line = " " + line
+                  print(line[:500])
+          PY
+            echo "::endgroup::"
           fi
           exit "$review_exit_code"
 
@@ -263,9 +292,12 @@ jobs:
               output.write(f"finding_count={len(findings)}\n")
           PY
 
-          existing_comment_id="$(gh api --paginate --slurp \
+          # --slurp is incompatible with --jq. With --paginate, gh applies --jq to each page;
+          # tail selects the last matching comment ID across the paginated output.
+          existing_comment_id="$(gh api --paginate \
             "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
-            --jq '[.[][] | select(.user.login == "github-actions[bot]" and ((.body // "") | contains("<!-- coderabbit-cli-review -->")))] | last | .id // empty')"
+            --jq '.[] | select(.user.login == "github-actions[bot]" and ((.body // "") | contains("<!-- coderabbit-cli-review -->"))) | .id' \
+            | tail -n 1)"
 
           if [[ -n "$existing_comment_id" ]]; then
             gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing_comment_id" --input "$COMMENT_JSON" >/dev/null

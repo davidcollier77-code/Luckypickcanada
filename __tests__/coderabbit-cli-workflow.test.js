@@ -44,9 +44,19 @@ describe('CodeRabbit CLI pull-request review workflow', () => {
     expect(workflow).not.toContain('gh pr merge');
   });
 
+  it('surfaces sanitized CLI stderr when the review command fails', () => {
+    expect(workflow).toContain('Sanitized CodeRabbit CLI stderr (last 30 lines)');
+    expect(workflow).toContain('diagnostic = diagnostic.replace(secret, "[REDACTED]")');
+    expect(workflow).toContain('No diagnostic text was written to stderr.');
+    expect(workflow).toContain('untrusted CLI text from being interpreted as a workflow command');
+  });
+
   it('updates one comment and clearly separates incomplete reviews from clean results', () => {
     expect(workflow).toContain('<!-- coderabbit-cli-review -->');
-    expect(workflow).toContain('gh api --paginate --slurp');
+    expect(workflow).toContain('gh api --paginate \\');
+    expect(workflow).toContain("--jq '.[] | select(.user.login == \"github-actions[bot]\"");
+    expect(workflow).toContain('| tail -n 1)"');
+    expect(workflow).not.toContain('--paginate --slurp');
     expect(workflow).toContain('the output did not confirm a complete successful review');
     expect(workflow).toContain('This is not a guarantee that the pull request is defect-free.');
     expect(workflow).toContain('issues: write');
