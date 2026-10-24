@@ -311,12 +311,18 @@ class SarifOutputFilteringTests(unittest.TestCase):
                 source_path.parent.mkdir(parents=True, exist_ok=True)
                 source_path.write_text(source_line + "\n", encoding="utf-8")
                 for rule_id in ("DS137138", "DS162092"):
+                    fixture_token = url_prefix if rule_id == "DS137138" else fixture_host
+                    token_start = source_line.index(fixture_token) + 1
                     results.append({
                         "ruleId": rule_id,
                         "locations": [{
                             "physicalLocation": {
                                 "artifactLocation": {"uri": relative_path},
-                                "region": {"startLine": 1},
+                                "region": {
+                                    "startLine": 1,
+                                    "startColumn": token_start,
+                                    "endColumn": token_start + len(fixture_token),
+                                },
                             }
                         }],
                     })
@@ -747,11 +753,11 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 "DS162092", "app/api/oracle/route.js", source, region
             )
         )
-        wrong_offset = origin_line.index("ALLOWED_ORIGINS")
+        wrong_offset = origin_line.index("http")
         wrong_region = {
             "startLine": 4,
             "startColumn": wrong_offset + 1,
-            "endColumn": wrong_offset + len("ALLOWED_ORIGINS") + 1,
+            "endColumn": wrong_offset + len("http") + 1,
         }
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
