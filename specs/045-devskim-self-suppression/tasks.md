@@ -20,8 +20,8 @@
 
 - [X] T003 [US1] Define the two exact DevSkim helper/test paths in `.github/scripts/suppress_devskim_false_positives.py`
 - [X] T004 [US1] Extend safe source resolution and allow DS137138/DS162092 on those paths only in `.github/scripts/suppress_devskim_false_positives.py`
-- [ ] T005 [US1] Remove the 12 verified false-positive rows while preserving the report header and append marker in `devskim-alerts.md` after current-head filtering is verified
-- [ ] T006 [US1] Record the task, exact changed files, observed CI evidence, limitations, and final diff review in `pr_summary.md` and `memory-bank/activeContext.md`
+- [X] T005 [US1] Remove the 12 verified false-positive rows while preserving the report header and append marker in `devskim-alerts.md` after current-head filtering is verified
+- [X] T006 [US1] Record the task, exact changed files, observed CI evidence, limitations, and final diff review in `pr_summary.md` and `memory-bank/activeContext.md`
 
 ## Final Verification
 
