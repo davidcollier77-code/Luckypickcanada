@@ -39,3 +39,11 @@
 
 ## Important Qualification
 This is a recurrence guard for one proven fail-open reporting path; it does not establish that every historical DevSkim finding was a false positive. Current main's ledger is already at zero. When suppression fails, raw SARIF remains uploaded for security visibility, so Code Scanning may still show unfiltered results until the suppression pipeline is repaired and a successful scan is uploaded.
+
+
+## Review follow-up on initial PR head `489e6afbdc94d0bcd595e0997942e8acab7a152b`
+- **PASS — DevSkim CI:** scan and suppressor passed; focused suite reported **44 tests, OK**; SARIF and artifact upload passed. The report updater is skipped for pull-request events as expected.
+- **PASS — CodeQL:** JavaScript/TypeScript, Python, and Actions analysis completed successfully.
+- **PASS — PR Agent:** no blocking concerns reported.
+- **Applied review refinements:** the workflow regression helper now raises a clear assertion when a named step is missing, and the obsolete filter-step `if` guard is removed so the job's fail-fast behavior is explicit.
+- **Current-head verification:** these refinements create a new commit; rerun the checks on the updated head before merge. The PR remains open and unmerged.

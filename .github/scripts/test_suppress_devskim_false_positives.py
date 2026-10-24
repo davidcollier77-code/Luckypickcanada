@@ -731,7 +731,8 @@ class DevSkimWorkflowFailureSafetyTests(unittest.TestCase):
 
     def _step_block(self, name):
         marker = f"      - name: {name}"
-        start = self.workflow_text.index(marker)
+        start = self.workflow_text.find(marker)
+        self.assertGreaterEqual(start, 0, f"Workflow step not found: {name}")
         next_step = self.workflow_text.find("\n      - name: ", start + len(marker))
         return self.workflow_text[start:] if next_step < 0 else self.workflow_text[start:next_step]
 
