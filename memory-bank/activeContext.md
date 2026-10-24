@@ -1,3 +1,13 @@
+# Active Context — Undici CVE-2026-109869 Dependency Remediation (2026-10-24)
+
+- **Verified finding:** Dependabot alert #66 reports transitive `undici@8.10.2` and GHSA-xjj6-f33q-929c / CVE-2026-109869 (high severity). The root pnpm override `>=7.29.1` allowed 8.10.2 to remain selected.
+- **Change on branch:** `fix/security-undici-cve-2026-109869`. Root pnpm override and lockfile are being updated to exact patched release `undici@8.12.2` with the verified npm integrity metadata. A focused lockfile/config regression test is included.
+- **Scope protection:** No application source, UI, assets, runtime APIs, deployment configuration, or visual behavior is intentionally changed.
+- **Verification status:** Remote PR CI must confirm the frozen pnpm lockfile installs, regression test passes, `./jules-verify.sh`, production build, and OpenNext/Cloudflare validation all pass. This session cannot run pnpm locally; do not claim CI checks passed until observed. If a build runs, confirm combined `.next + public` output remains below 495 MiB.
+- **Separate advisory note:** Node.js 22.23.4 is a security release for CVE-2026-111497 in Node's bundled Brotli decoder; this is distinct from the Undici package alert. The repo's `.nvmrc` and `engines.node` specify the 22.x line rather than a vulnerable fixed patch. Do not broaden this PR into a separate runtime/deployment change without verifying the actual CI and deployment runtime.
+
+---
+
 # Active Context — Spec Kit Updater Reliability (2026-10-23)
 
 - **Verified cause:** Generic integration v1.2.2 was installed on 2026-10-20. The pre-customization command files match the manifest hashes; commit `435c4a3a54742487f07df73090bb2d3c596740bf` later added intentional Jules instructions to the two tracked command files.
