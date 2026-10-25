@@ -1,0 +1,5 @@
+Temporary DeepSource PR smoke test.
+
+This plain-text file is intentionally inert and does not affect the website or its behavior. It exists only to help check whether DeepSource automatically reacts to a newly opened pull request.
+
+Please leave this test PR unmerged. Close it after the smoke-test result has been observed.
