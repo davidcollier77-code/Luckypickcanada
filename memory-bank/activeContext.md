@@ -604,3 +604,13 @@
 - **Test repair:** The Lucky Map refresh test now uses Vitest's supported `vi.waitFor()` API to await the async data update.
 - **Amazon Q safety finding:** A hard-failing Python syntax check could skip SARIF upload. The updated workflow keeps syntax validation fatal but runs the SARIF upload and fallback warning with `always()` so raw DevSkim findings remain available on failure. Removed unused `_source_line_for_region` helper.
 - **Follow-up verification:** Full CI, `./jules-verify.sh`, size-cap measurement, and a completed CodeQL analysis remain pending. Do not consider the original Python syntax warning cleared until the completed analysis confirms it.
+
+## Performance Optimization — $(date +%Y-%m-%d)
+- **Goal:** Improve performance for mobile loading/LCP scores.
+- **Changes Implemented:**
+  1. Extracted `Math.sin()` logic out of `requestAnimationFrame` loop conditionally to optimize rendering inside `HomePage.js` star animation.
+  2. Extracted `ctx.globalAlpha = 1.0; ctx.globalCompositeOperation = 'source-over';` into simpler if-else conditional flows inside `HomePage.js`.
+  3. Removed unused `import Image from 'next/image'` across `HomePage.js`, `lucky-map-of-canada.js`, `lucky-card-reveal.js`, and `share-lucky-pick-button.js`.
+  4. Converted `<Image />` component tags in `app/lucky-map-of-canada/lucky-map-of-canada.js` and `app/homepage/HomePage.js` that were improperly mixing with `unoptimized: true` to standard `<img>` tags inside `<picture>` elements.
+  5. Removed unnecessary `mix-blend-screen` from `app/homepage/HomePage.js` overlay image.
+- **Validation:** Build completes successfully within the 495 MB cap. Tests and verification passing.

@@ -1,7 +1,7 @@
 'use client';
 import { playButtonClick } from '../lib/audio';
 
-import Image from 'next/image';
+
 import dynamic from 'next/dynamic';
 const TurnstileField = dynamic(() => import('../turnstile-field'), { ssr: false });
 import { DEFAULT_THEME } from '../../themes/default/theme';
@@ -245,7 +245,7 @@ export default function LuckyMapOfCanada({ mapData }) {
       <div style={{ position: 'relative', maxWidth: 1180, margin: '0 auto' }}>
         <nav aria-label="Lucky Map navigation" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <a href="/" className="home-link" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: '#fff7d6', textDecoration: 'none', fontWeight: 950, padding: '0.55rem 0.8rem', borderRadius: 999, border: '1px solid rgba(255,235,160,0.26)', background: 'rgba(1, 4, 3, 0.54)' }}>
-            <Image src="/map-logo-small.png" alt="LuckyPickCanada logo with maple leaf" width={40} height={40} sizes="40px" style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
+            <img src="/map-logo-small.png" alt="LuckyPickCanada logo with maple leaf" width={40} height={40} sizes="40px" style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
             Back to Home Page
           </a>
         </nav>
@@ -314,7 +314,7 @@ export default function LuckyMapOfCanada({ mapData }) {
               <picture className="w-full">
                 <source srcSet="/IMG_20260731_055452_187611.avif" type="image/avif" sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem" />
                 <source srcSet="/IMG_20260731_055452_187611.webp" type="image/webp" sizes="(max-width: 560px) calc(100vw - 2rem), (max-width: 860px) min(100vw - 2rem, 44rem), 44rem" />
-                <Image
+                <img
                 src="/IMG_20260731_055452_187611.png"
                 alt="Lucky Pick Canada interactive map displaying community stories across Canadian provinces"
                 width={569}

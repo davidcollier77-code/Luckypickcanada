@@ -1,0 +1,4 @@
+- [x] T001 [P] Remove unused `next/image` imports from `app/homepage/HomePage.js`, `app/lucky-card-reveal.js`, `app/share-lucky-pick-button.js`, and `app/lucky-map-of-canada/lucky-map-of-canada.js`
+- [x] T002 [P] Optimize CSS transitions in `globals.css` - check if properties triggering layout recalculations (like `width`, `height`, `top`, `left`, `border`) are animated instead of composited properties (`transform`, `opacity`).
+- [x] T003 [P] Investigate `app/homepage/HomePage.js` canvas loop for further `Math.sin()` optimizations or caching if appropriate.
+- [x] T004 [P] Update PR_SUMMARY.md with investigation results.

@@ -226,3 +226,13 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Re-checked Amazon Q's deployment job test finding against the workflow source: the `deploy` job already runs the scheduler's Node.js tests before Wrangler deploy, so no redundant step was added.
 - Latest verified PR head before the timestamp-guard follow-up: commit `71a6801c9a766b479cf244cd0b05530dac31100d`; scheduler tests 12/12, `./jules-verify.sh`, Wrangler dry run and OpenNext/build-size validation passed (325,595,902 bytes / 310.51 MiB). Current timestamp-guard follow-up needs a new CI result.
 - Live Worker activation and schedule cutover remain unperformed; existing GitHub schedules are unchanged.
+
+## Performance Optimization — $(date +%Y-%m-%d)
+- **Goal:** Improve performance for mobile loading/LCP scores.
+- **Changes Implemented:**
+  1. Extracted `Math.sin()` logic out of `requestAnimationFrame` loop conditionally to optimize rendering inside `HomePage.js` star animation.
+  2. Extracted `ctx.globalAlpha = 1.0; ctx.globalCompositeOperation = 'source-over';` into simpler if-else conditional flows inside `HomePage.js`.
+  3. Removed unused `import Image from 'next/image'` across `HomePage.js`, `lucky-map-of-canada.js`, `lucky-card-reveal.js`, and `share-lucky-pick-button.js`.
+  4. Converted `<Image />` component tags in `app/lucky-map-of-canada/lucky-map-of-canada.js` and `app/homepage/HomePage.js` that were improperly mixing with `unoptimized: true` to standard `<img>` tags inside `<picture>` elements.
+  5. Removed unnecessary `mix-blend-screen` from `app/homepage/HomePage.js` overlay image.
+- **Validation:** Build completes successfully within the 495 MB cap. Tests and verification passing.

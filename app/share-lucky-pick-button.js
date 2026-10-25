@@ -1,7 +1,7 @@
 'use client';
 import { playButtonClick } from './lib/audio';
 
-import Image from 'next/image';
+
 
 import { useEffect, useMemo, useState } from 'react';
 
