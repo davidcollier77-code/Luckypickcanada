@@ -1,16 +1,17 @@
-# Implementation Plan — Gemini PR Reviewer and Opt-In Auto-Fix
+# Implementation Plan — Gemini PR Reviewer and Optional Fix Suggestions
 
 ## Approach
-1. Add a dedicated .gemini/rules/luckypickcanada.md, carrying over Amazon Q's review-analysis, evidence, boundary, and communication standards with document-library and opt-in fix requirements.
-2. Add a GitHub Actions workflow using pull_request_target only with a trusted base-branch checkout. Review PR diffs through the GitHub API; never execute PR-head scripts.
-3. Implement a dependency-free Node script using the official Gemini generateContent API. Retry transient failures once per model, then use the configured fallback model.
-4. Use a Gemini document-selection pass over .docs/manifest.json and the available local snapshot paths; load only selected snapshots, with a deterministic documented fallback if selection fails.
-5. Format model output as validated JSON. Publish inline review comments only when file paths and lines correspond to changed diff lines, and put other validated findings in the review summary.
-6. For explicit fix requests, require a trusted comment author or manual workflow dispatch. Generate only safe GitHub inline suggestion blocks for eligible added lines in existing changed files; the workflow never commits or pushes code. Keep protected paths excluded.
-7. Add focused Vitest regression tests and document exact checks/results in this PR summary.
+1. Add `.gemini/rules/luckypickcanada.md` as a separate file based on Amazon Q's review-analysis, evidence, boundaries, and communication standards. Preserve the existing Amazon Q rules unchanged.
+2. Add a GitHub Actions workflow that uses `pull_request_target` only with trusted base-branch workflow/scripts and never executes code from the pull-request branch.
+3. Use a dependency-free Node script and Gemini `generateContent` API. Retry transient errors once per model before falling back to Gemini 3.6 Flash.
+4. Use Gemini to select relevant local `.docs/` snapshots based on `.docs/manifest.json`. Accept any number of groups as needed and apply a deterministic path/group fallback if selection fails.
+5. Validate the model's JSON output, only comment on exact changed file paths, and attach inline comments only to added lines. Report documents actually loaded, useful/not useful, and reasons.
+6. For explicit fix requests, generate GitHub inline suggestion blocks only for eligible added lines in changed files. The owner must click GitHub's native Commit suggestion button to apply a chosen change. No model-generated code is directly committed or pushed.
+7. Add focused tests for workflow configuration, rules, model fallback, path restrictions, and JavaScript syntax. Record what CI verifies and what cannot be run in this API-only session.
 
 ## Safety
-- No API key or secret value is committed or logged.
-- PR content and library snippets are treated as data, not as prompt-level instructions.
-- The review and suggestion jobs never run project build/test/lifecycle commands or write code from the pull-request branch. Use minimal token permissions and disable checkout credential persistence.
-- No app files, dependency manifests, deployment settings, Amazon Q configuration, or the .docs/ library are intentionally changed.
+- Do not print or commit secret values.
+- Treat PR contents and document snippets as untrusted data.
+- Use the minimum token permissions needed to read diffs and post reviews/comments; do not persist checkout credentials.
+- Do not edit protected files, application APIs, authentication/security/payment/database/deployment paths, dependencies, Amazon Q rules, or `.docs/` snapshots.
+- Never merge a pull request. The workflow never executes PR-head code and never writes generated code to a branch.
