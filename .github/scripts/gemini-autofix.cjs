@@ -82,6 +82,8 @@ async function askFixModel(prompt, rules) {
         return { data: parseJson(text), model: models[ix] };
       } catch (error) {
         lastError = error;
+        const reason = error && error.message ? error.message : "unknown error";
+        process.stderr.write("[Gemini PR Reviewer] Fix model " + models[ix] + " attempt " + attempt + " failed: " + reason + "\\n");
         if (attempt === 1 && error && error.retryable) {
           await new Promise((done) => setTimeout(done, 900));
           continue;
@@ -90,7 +92,7 @@ async function askFixModel(prompt, rules) {
       }
     }
   }
-  throw new Error("Gemini could not generate additional fix suggestions. Last failure: " +
+  throw new Error("All configured Gemini models failed while generating fix suggestions. Last failure: " +
     (lastError && lastError.message ? lastError.message : "unknown error"));
 }
 
