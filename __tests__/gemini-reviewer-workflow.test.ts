@@ -13,7 +13,7 @@ const fixScript = readFileSync(fixPath, "utf8");
 describe("Gemini PR reviewer", () => {
   it("uses separate rules based on Amazon Q's review standards", () => {
     expect(existsSync(rulesPath)).toBe(true);
-    expect(rules).toContain("Bugs and logic errors.");
+    expect(rules).toContain("Review bugs, logic errors");
     expect(rules).toContain("Security vulnerabilities.");
     expect(rules).toContain("confidence of at least 0.80");
     expect(rules).toContain("🔴 A — ANALYZE");
@@ -59,7 +59,7 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain('".docs/" + group + "/_google-gemini_gemini-cli.md"');
     expect(script).toContain('".docs/" + group + "/_websites_ai_google_dev_gemini-api.md"');
     expect(script).toContain('const allDocPaths = walkDocs(resolve(ROOT, ".docs")).filter((path) => !isJulesSpecificDoc(path));');
-    expect(script).toContain('"**Selected task group(s):** "');
+    expect(script).toContain("Selected task group(s):**");
     expect(script).toContain('USED: YES; USEFUL: ');
     expect(script).toContain('USED: NO; USEFUL: NO;');
     expect(script).toContain('const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);');
