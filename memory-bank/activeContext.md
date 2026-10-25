@@ -1,3 +1,16 @@
+# Active Context — Gemini Reviewer Replacement (2026-10-25)
+
+- **Task:** Build a separate Gemini-powered automatic PR reviewer to replace the retired Gemini PR-Agent integration after the owner requested a strong Amazon Q alternative.
+- **Branch:** `feat/gemini-reviewer-autofix-20261025`; PR #1603 is open and unmerged.
+- **Design:** Separate rules file `.gemini/rules/luckypickcanada.md`, based on Amazon Q's review standards without modifying `.amazonq/rules/luckypickcanada.md`; Gemini 3.8 Flash primary and Gemini 3.6 Flash fallback using the existing Actions secret name `GEMINI_API_KEY`.
+- **Review behavior:** Automatic evidence-based review, validated inline findings, concrete GitHub suggestion blocks, bounded model retries/fallback, and local `.docs/` selection with no one-group limit and honest USED/USEFUL reporting.
+- **Opt-in fixes:** A trusted `/gemini-fix` comment or manual workflow-dispatch `fix` mode asks Gemini for focused inline suggestions. The workflow does not write source files, create commits, or push; the owner decides whether to use GitHub's native Commit suggestion action. No PR is merged by the workflow.
+- **Safety:** Trusted base-branch code only; PR-head code is never executed. Token permissions are limited to reading contents and writing PR reviews/issues comments. No app runtime, dependencies, deployment settings, secret values, Amazon Q rules, or `.docs/` files are intended to change.
+- **Verification:** GitHub API authoring only. Local `pnpm test` and `./jules-verify.sh` could not be run. Current-head CI and syntax-test results are pending. The workflow is not live until the owner merges it and eligible PR events verify operation.
+- **Prior failure evidence:** The retired Gemini workflow received a 503/timeout on Gemini 3.8 Flash and then returned through the 3.6 Flash fallback on PR #1598. The replacement uses bounded retry/fallback, but live reliability and review quality remain unverified.
+
+---
+
 # Current Task — Gemini PR-Agent Review Retirement (2026-10-25)
 
 - **Owner decision:** Retire the separate Gemini PR-Agent code-review workflow; use PR Insights Tagger for PR triage and Amazon Q for code review while evaluating a stronger reviewer.
