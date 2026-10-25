@@ -126,6 +126,7 @@ async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, 
   const comments = [];
   const seen = new Set();
   for (const item of Array.isArray(response.data.suggestions) ? response.data.suggestions : []) {
+    if (comments.length >= 25) break;
     const key = String(item.path) + ":" + Number(item.line);
     if (seen.has(key) || !allowed.has(key) || !isEligiblePath(item.path)) continue;
     const replacement = typeof item.replacement === "string" ? item.replacement : "";
