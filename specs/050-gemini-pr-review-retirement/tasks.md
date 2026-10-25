@@ -18,9 +18,9 @@
 
 ## Phase 3 — Verification and reporting
 
-- [ ] T008 Inspect the final changed-file list and verify no unrelated workflow, application, dependency, runtime secret, or deployment file changed.
+- [x] T008 Inspect the final changed-file list and verify no unrelated workflow, application, dependency, runtime secret, or deployment file changed; the PR comparison contains exactly the two intended deletions, four task-artifact additions, and one Memory Bank update.
 - [ ] T009 Inspect current-head GitHub Actions results and record each actual conclusion.
-- [ ] T010 Run `pnpm test` and `./jules-verify.sh` if repository shell access is available; otherwise mark not run, never passed.
+- [x] T010 Record `pnpm test` and `./jules-verify.sh` as NOT RUN locally because repository shell access is unavailable; remote CI remains the available verification path.
 - [ ] T011 Reconcile the canonical PR body summary with the final diff and leave the PR open and unmerged.
 
 ## Dependencies
