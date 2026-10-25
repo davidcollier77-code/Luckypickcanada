@@ -263,14 +263,18 @@ async function main() {
     number = event.pull_request.number;
   } else if (EVENT_NAME === "issue_comment") {
     const command = String(event.comment?.body || "").trim().toLowerCase();
-    if (!event.issue?.pull_request || !["@gemini full review", "@gemini repair all"].includes(command)) {
-      log("Skipping non-command issue comment."); return;
+    const fullReviewCommand = /^@gemini\s+full\s+review$/.test(command);
+    const repairAllCommand = /^@gemini\s+repair\s+all$/.test(command);
+    if (!event.issue?.pull_request || (!fullReviewCommand && !repairAllCommand)) {
+      log("Skipping comment; use exactly @gemini full review or @gemini repair all.");
+      return;
     }
     if (!TRUSTED.has(String(event.comment?.author_association || "").toUpperCase())) {
-      log("Skipping Gemini command from a non-collaborator."); return;
+      log("Skipping Gemini command from a non-collaborator.");
+      return;
     }
     number = event.issue.number;
-    mode = command === "@gemini repair all" ? "fix" : "review";
+    mode = repairAllCommand ? "fix" : "review";
   } else if (EVENT_NAME === "workflow_dispatch") {
     number = Number(process.env.GEMINI_PR_NUMBER);
     mode = String(process.env.GEMINI_MODE || "review").toLowerCase();
