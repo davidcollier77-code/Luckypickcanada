@@ -159,7 +159,7 @@
 
 ---
 
-## Current Focus — Gemini All-in-One PR Review Depth (2026-10-19)
+## Historical Task — Gemini All-in-One PR Review Depth (2026-10-19; superseded by retirement on 2026-10-25)
 
 - **User authorization**: Directly improve the existing Gemini PR-Agent workflow with a more detailed all-in-one review covering bugs, security, performance, SEO, visual/UI regressions, accessibility, and missing tests.
 - **Branch**: `fix/gemini-review-depth-1533`; current `main` now includes PR #1532, and its homepage CSS changes are preserved by the conflict repair.
