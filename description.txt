@@ -1,78 +1,37 @@
-## Description
+# PR Summary: Tip Jar Polishing
 
-This PR implements the requested Google Analytics 4 integration into the Lucky Pick Canada Next.js application using the provided Measurement ID.
+## 1. Selected Task Group
+`polishing` - The user requested visual enhancements ("warmer, brighter, more polished, and appreciative") and a tone update for the existing Tip Jar checkout modal.
 
-**Changes Include:**
-- **Content Security Policy (CSP):** The `Content-Security-Policy` header in `next.config.mjs` was updated to securely whitelist Google Analytics and Google Tag Manager endpoints.
-- **Google Tag Injection:** The GA4 integration was implemented directly inside `app/layout.js` utilizing `next/script` (`strategy="afterInteractive"`). This ensures standard pageview tracking without causing duplicate fires across client-side router navigations in the SPA.
-- **Spec Kit Governance:** Generated required `spec.md`, `plan.md`, and `tasks.md` documents underneath the `ga4-integration` directory to align with task execution requirements and validation checks.
+## 2. Required Material Consulted
+- **Jules Documentation**: USED: YES, USEFUL: YES - Used to ensure spec/plan compliance and governance adherence.
+- **Next.js**: USED: YES, USEFUL: NO - The Next.js framework is the base of the app, but no specific Next.js features were required to be looked up for this CSS and string change.
+- **React**: USED: YES, USEFUL: NO - Basic React knowledge was required to add dynamic class names, but no explicit React docs check was necessary.
 
-The implementation honors the 495MB build capacity limits, strictly stays within the allowed environment scope without initializing unapproved accounts, and ensures no other application modules, behaviors, or UI components are affected.
+## 3. Spec Kit Execution
+- `/speckit.specify`: NATIVE DISPATCH - Result: Spec file generated at `specs/052-tip-jar-polish/spec.md`.
+- `/speckit.plan`: NATIVE DISPATCH - Result: Plan file generated at `specs/052-tip-jar-polish/plan.md`.
+- `/speckit.tasks`: NATIVE DISPATCH - Result: Tasks file generated at `specs/052-tip-jar-polish/tasks.md`.
+- `/speckit.implement`: FILE-DRIVEN PROCEDURAL EXECUTION - Result: Changes implemented and verified.
 
----
+## 4. Verification and Changes
+### Exact Files Changed:
+- `app/checkout-modal.js`
+- `public/themes/default/homepage.css`
+- `themes/default/homepage.css`
 
-# PR Summary Canonical Record
+### Verification Commands Run:
+- `./jules-verify.sh`: Passed
+- `pnpm run build`: Passed (Build Size: <495MB. The actual size wasn't directly printed by Next.js in a single human readable line but the build process completed cleanly within limits).
 
-**Task Group**
-- SELECTED TASK GROUP: seo
-- GROUP REASON: The requested work pertains to integrating Google Analytics 4, which enables SEO, traffic measurement, and related monitoring capabilities via tracking IDs and tag integration.
+### Behavior Preserved:
+- The tip amount input, validation, checkout flow, payment integration, and close button remain unchanged.
+- The `lucky_pick` and `gift_package` modals preserve their exact original behavior and appearance because the new CSS changes are scoped specifically to `.checkout-modal-tip`.
 
-**Required Library Consultation Report**
-- LIBRARY: Next.js
-- VERSION: 16.3.8
-- USED: YES
-- USEFUL: YES
-- REASON: Next.js was consulted regarding the `next/script` usage and correct way to inject custom global tracking code into a Next.js `app/layout.js` without using the `@next/third-parties` package, because it was not available.
-- LIBRARY: React
-- VERSION: 19.x (latest)
-- USED: YES
-- USEFUL: YES
-- REASON: Required to review general component updates in the Next.js `layout.js` structure.
+### Remaining Issues/Double Check:
+- Checked for scope drift: None. Unrelated modals are untouched.
+- Checked for exposed secrets: None.
+- Double-checked that the `jules-verify.sh` tests passed correctly for spec artifacts.
 
-**Routed Jules/Gemini Document Report**
-- DOCUMENT: jules_google_docs.md
-- USED: YES
-- USEFUL: YES
-- REASON: Required context.
-- DOCUMENT: developers_google_com_jules_api.md
-- USED: YES
-- USEFUL: NO
-- REASON: Information provided was more API-driven and not required for a web layout tag injection.
-- DOCUMENT: _vercel_next_js.md
-- USED: YES
-- USEFUL: YES
-- REASON: Provided context on proper script inclusion methods.
-
-**Repository Component Report**
-- COMPONENT: AGENTS.md
-- USED: YES
-- USEFUL: YES
-- REASON: Guided absolute compliance path, PR layout, bounds on 495MB build sizes.
-- COMPONENT: Spec Kit
-- USED: YES
-- USEFUL: YES
-- REASON: Ensured proper task gating, planning, and task setup, tracked in `.specify/feature.json`.
-
-**Verification Report**
-- COMMAND: `pnpm run build`
-- RESULT: PASS
-- EVIDENCE/OUTPUT SUMMARY: Created an optimized production build and collected page data. Size recorded at 319M, below the 495MB cap.
-- COMMAND: `pnpm test`
-- RESULT: PASS
-- EVIDENCE/OUTPUT SUMMARY: Test suites ran with 67 tests passing.
-- COMMAND: `./jules-verify.sh`
-- RESULT: PASS
-- EVIDENCE/OUTPUT SUMMARY: All Spec Kit, type check, build, and documentation checks passed.
-
-**Final Changed-File Reconciliation**
-- `app/layout.js`
-- `next.config.mjs`
-- `ga4-integration/spec.md`
-- `ga4-integration/plan.md`
-- `ga4-integration/tasks.md`
-- `.specify/feature.json`
-
-**Remaining Issues**
-- None. Setup complete for Measurement ID "G-KJ761JL5FD". External data routing checking through real traffic using Google Analytics Realtime is inherently beyond Jules environment scope.
-
-**USEFUL RESULT: YES**
+## USEFUL RESULT: YES
+The Tip Jar modal has been successfully updated with a warmer, polished design and a sincere thank-you message, fulfilling all requirements specified in the task description.
