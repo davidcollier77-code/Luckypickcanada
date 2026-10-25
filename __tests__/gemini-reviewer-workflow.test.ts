@@ -29,7 +29,8 @@ describe("Gemini PR reviewer", () => {
     expect(workflow).toContain("issue_comment:");
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("options: [review, fix]");
-    expect(script).toContain("/gemini-fix");
+    expect(script).toContain("@gemini full review");
+    expect(script).toContain("@gemini repair all");
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
   });
 
