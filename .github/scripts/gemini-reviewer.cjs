@@ -112,6 +112,8 @@ async function askModel(prompt, tokens = 7000) {
         return { result: parseJson(text), model: models[index] };
       } catch (error) {
         lastError = error;
+        const reason = error && error.message ? error.message : "unknown error";
+        log("Model " + models[index] + " attempt " + attempt + " failed: " + reason);
         if (attempt === 1 && error && error.retryable) {
           await new Promise((done) => setTimeout(done, 900));
           continue;
@@ -120,7 +122,7 @@ async function askModel(prompt, tokens = 7000) {
       }
     }
   }
-  throw new Error("Both configured Gemini models failed. Last failure: " +
+  throw new Error("All configured Gemini models failed after bounded retries. Last failure: " +
     (lastError && lastError.message ? lastError.message : "unknown model error"));
 }
 function patchPreview(files) {
