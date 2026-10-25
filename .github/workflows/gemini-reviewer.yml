@@ -50,6 +50,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_PRIMARY_MODEL: gemini-3.8-flash
           GEMINI_FALLBACK_MODEL: gemini-3.6-flash
+          GEMINI_SECOND_FALLBACK_MODEL: gemini-3.5-flash-lite
           GEMINI_MODE: ${{ inputs.mode || 'review' }}
           GEMINI_PR_NUMBER: ${{ inputs.pr_number || '' }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
