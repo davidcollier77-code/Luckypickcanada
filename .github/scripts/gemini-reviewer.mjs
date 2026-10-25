@@ -293,6 +293,12 @@ async function main() {
   const linesByPath = new Map(files.map((f) => [f.filename, addedLines(f.patch || "")]));
   const skippedFiles = files.filter((f) => !f.patch);
   const batches = makeBatches(files);
+  if (!batches.length) {
+    await comment(number, "Gemini could not review this PR because GitHub returned no text patches for its changed files. No findings or fixes are claimed.");
+    return;
+  }
+  const truncatedFiles = batches.flat().filter((file) => file.truncated).map((file) => file.filename);
+  const reviewableFiles = files.filter((file) => file.patch);
   const reviewResults = [];
   const models = [selection.model].filter(Boolean);
 
@@ -310,7 +316,7 @@ async function main() {
     const answer = await askModel(prompt, 8000);
     models.push(answer.model);
     reviewResults.push({ summary: String(answer.result.summary || ""),
-      findings: normalizeFindings(answer.result.findings, files, linesByPath),
+      findings: normalizeFindings(answer.result.findings, reviewableFiles, linesByPath),
       assessments: Array.isArray(answer.result.document_assessments) ? answer.result.document_assessments : [] });
   }
 
@@ -342,7 +348,8 @@ async function main() {
     "",
     "**Models used:** " + [...new Set(models)].join(", "),
     "**Coverage:** " + (list.capped ? "file listing capped at 250 files; " : "") +
-      skippedFiles.length + " file(s) had no text patch and could not be reviewed line-by-line.",
+      skippedFiles.length + " file(s) had no text patch and could not be reviewed line-by-line." +
+      (truncatedFiles.length ? " Patch content was truncated for " + truncatedFiles.length + " large file(s): " + truncatedFiles.join(", ") + "." : ""),
     "**Document selection:** " + selection.method + ".",
     "",
     reviewResults.map((r) => r.summary).filter(Boolean).join("\n"),
