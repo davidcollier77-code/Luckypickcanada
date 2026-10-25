@@ -1,41 +1,37 @@
-# PR Summary — DevSkim Regression and Checksum Span Repair
+# PR Summary — Gemini Reviewer Fresh Base Checkout
 
-## Task and verified root cause
-**Task group:** `security` — repairs the repository's DevSkim security scanning gate.
+## Task and Verified Root Cause
 
-DevSkim runs #246–#249 repeatedly failed at `Test DevSkim suppression filter`. The scanner and SARIF upload succeeded, but two malformed newline fixture writes caused an import-time `SyntaxError`; consequently suppression was skipped and the dependent report-update job did not run.
+**Task group:** troubleshooting — restore automatic Gemini reviews by eliminating a stale trusted-base checkout.
 
-After correcting those strings, PR CI confirmed syntax validation passed and the unit suite executed 51 tests. It then exposed one separate failing regression: `test_speckit_file_checksum_is_suppressed_with_devskim_offset` (50 passed, 1 failed). The fixture represented the historical one-column-early SARIF coordinate but did not provide verified absolute-source coordinates, while the current strict span logic correctly rejected that coordinate alone.
+After PR #1606 fixed the malformed JavaScript and was merged, automatic reviewer run [#40240151685](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40240151685) on PR #1605 still failed with SyntaxError: Unexpected token 'if'. The workflow explicitly checked out github.event.pull_request.base.sha; the PR event's recorded SHA remained 7e766078cbe674a7d6221bc98c087b160c647a20, an older commit. Comment-triggered run [#40240145268](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40240145268) succeeded using default-branch code, corroborating the stale checkout diagnosis.
 
-Evidence:
-- [Main run #249](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40183792859)
-- [First repair run #250](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40190718446)
-- [PR #1597](https://github.com/davidcollier77-code/Luckypickcanada/pull/1597)
+## Implemented Changes
 
-## Implemented changes
-- `.github/scripts/test_suppress_devskim_false_positives.py`: repaired two unterminated fixture-write strings; adjusted the checksum offset regression fixture to include absolute offset, length, and exact source snippet.
-- `.github/scripts/suppress_devskim_false_positives.py`: checksum exception now prefers a verified absolute source span when present and still requires the span to stay fully inside the exact quoted checksum. The inaccurate column alone does not qualify.
-- `.specify/features/devskim-test-syntax-repair/{spec,plan,tasks}.md`: task artifacts.
-- `memory-bank/activeContext.md`: current DevSkim repair status.
-- `PR_SUMMARY.md`: this evidence record.
+- .github/workflows/gemini-reviewer.yml: checkout by github.event.pull_request.base.ref, falling back to the repository default branch. This resolves the current trusted branch tip without checking out PR-head code.
+- __tests__/gemini-reviewer-workflow.test.ts: require the branch-ref expression and fail if the stale base-SHA expression is reintroduced.
+- specs/053-gemini-reviewer-fresh-base-checkout/spec.md, plan.md, tasks.md, and checklists/requirements.md: task artifacts.
+- memory-bank/activeContext.md: update the verified cause and current verification state.
+- PR_SUMMARY.md: canonical evidence record.
 
-## Preserved
-No rules were disabled; no paths were excluded; no suppression allowlist was broadened. Workflow triggers/permissions, SARIF upload, application behavior, dependencies, secrets, and deployment configuration were not changed.
+## Governance and Resources
 
-## Governance / resources
-- `AGENTS.md`: USED YES — repository rules and verification/PR requirements.
-- `.jules/jules.md`: USED YES — feature initialization/sequence and context loading.
-- `.jules/security.md`: USED YES — selected task group.
-- `.docs/manifest.json` and the routed security Jules/Gemini snapshots: USED YES — consulted task routing and required resources; `.docs/` remains read-only.
-- Spec Kit artifact paths: `.specify/features/devskim-test-syntax-repair/spec.md`, `plan.md`, and `tasks.md`.
+- AGENTS.md: USED YES; USEFUL YES — establishes required workflow, verification, and no-agent-merge rules.
+- .jules/jules.md and .jules/troubleshooting.md: USED YES; USEFUL YES — initialization, task-group routing, and test requirements.
+- .docs/manifest.json and routed troubleshooting resources for Jules and Gemini: USED YES; USEFUL NO for diagnosing the checkout defect — consulted as required, but the root cause was directly established from workflow source and run records.
+- Spec Kit stages: FILE-DRIVEN PROCEDURAL EXECUTION. Artifacts: specs/053-gemini-reviewer-fresh-base-checkout/spec.md, plan.md, tasks.md, and checklists/requirements.md.
 
-## Verification status
-- Main run #249: scanner passed; syntax-validation passed; regression-test import failed with the malformed literal.
-- First PR run #250: syntax-validation passed; 50/51 tests passed; one checksum-offset regression failed and drove the follow-up fix.
-- **Current-head full unit suite, fresh DevSkim workflow, `./jules-verify.sh`, and any other required CI: PENDING.** No completion claim until current-head results are verified.
-- Production build not run: no application/runtime code or dependencies changed. If a build becomes required, report measured size; the hard maximum is 495 MB.
+## Verification Status
 
-## Diff audit
-The intended implementation scope is limited to the suppression helper, its regression tests, task artifacts, Memory Bank active context, and PR Summary. Current CI must validate the follow-up. The PR remains open and unmerged for owner review.
+- VERIFIED: PR #1606 is merged; main contains the corrected reviewer script.
+- VERIFIED: automatic run #40240151685 failed with the old syntax error and the workflow pinned the stale base SHA.
+- VERIFIED: comment-triggered run #40240145268 completed successfully.
+- PENDING: focused reviewer test, full pnpm test, and ./jules-verify.sh on the current head. This API-connected session cannot run those local commands; CI must provide the evidence.
+- PENDING: a fresh automatic pull_request_target run after owner-controlled merge of this change. Existing failed runs do not validate this revision.
+- No production build is necessary for this workflow/test-only change. No dependencies, secrets, workflow permissions, triggers, or application behavior are changed.
 
-**USEFUL RESULT: NO — implementation is updated, current-head verification remains pending.**
+## Scope and Diff Audit
+
+Intended scope: workflow checkout ref, regression assertion, this task's Spec Kit artifacts, active context, and this summary. The PR is open and unmerged for owner review.
+
+**USEFUL RESULT: NO — the targeted repair is proposed, but current-head CI and post-merge automatic-run verification remain pending.**

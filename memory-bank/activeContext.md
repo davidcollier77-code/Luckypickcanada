@@ -1,10 +1,12 @@
-# Active Context — Gemini Reviewer Syntax Repair (2026-10-25)
+# Active Context — Gemini Reviewer Fresh Base Checkout (2026-10-25)
 
-- **Verified failure:** GitHub Actions run `40237180514`, job `121301125039`, failed in `Run Gemini reviewer` because `.github/scripts/gemini-reviewer.cjs` contains an event-mode validation statement inside the prompt array. Node reports `SyntaxError: Unexpected token 'if'`.
-- **Base context:** The workflow checked out trusted base commit `7e766078cbe674a7d6221bc98c087b160c647a20`, the merge commit for PR #1604. The failure is in the trusted reviewer script on `main`, not in PR #1605's Tip Jar source changes.
-- **Repair branch:** `fix/gemini-reviewer-syntax-repair-20261025`. The repair restores event-specific mode validation to the initial validation block, removes the stray prompt-array line, and adds regression coverage for validation placement and uniqueness.
-- **Safety:** The trusted-base checkout, least-privilege workflow permissions, model fallback chain, secret handling, prompt-data boundaries, and app runtime remain unchanged.
-- **Verification status:** Repository API inspection confirms the malformed line and existing Node syntax-check test. Local `pnpm test` and `./jules-verify.sh` are not executable from this API-connected session; current-head GitHub CI and a post-merge natural reviewer run remain required. No PR is merged.
+- **Verified failure:** Automatic Gemini reviewer run 40240151685 failed in “Run Gemini reviewer” with SyntaxError: Unexpected token 'if'.
+- **Verified cause:** PR #1606 fixed the malformed script and was merged, but a new pull_request_target run on PR #1605 still checked out the older base SHA 7e766078cbe674a7d6221bc98c087b160c647a20. The workflow used github.event.pull_request.base.sha, which remained stale for that PR.
+- **Corroborating evidence:** Comment-triggered Gemini run 40240145268 completed successfully using default-branch code on main.
+- **Proposed correction:** Change the checkout ref to github.event.pull_request.base.ref || github.event.repository.default_branch. This resolves the current trusted branch tip at checkout time and does not check out PR-head code.
+- **Regression protection:** The workflow test now requires the branch-ref expression and rejects the stale base-SHA expression.
+- **Verification:** Local shell tests are not available in this API-connected session. Current-head CI and a fresh automatic reviewer event after this PR is merged remain pending. This repair PR must remain open for owner review.
+
 ---
 
 # Current Task — Gemini PR-Agent Review Retirement (2026-10-25)
