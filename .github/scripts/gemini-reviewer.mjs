@@ -279,11 +279,15 @@ async function main() {
   if (!RULES || !AGENTS || !MANIFEST) throw new Error("Required trusted rules, AGENTS.md, or document manifest is missing.");
 
   const pr = await gh("/repos/" + REPO + "/pulls/" + number);
-  if (pr.state !== "open") { if (mode === "fix") await comment(number, "Gemini fix suggestions were not generated because this PR is not open."); return; }
+  if (!pr || typeof pr !== "object") throw new Error("GitHub did not return valid pull-request metadata.");
+  if (pr.state !== "open") {
+    if (mode === "fix") await comment(number, "Gemini fix suggestions were not generated because this PR is not open.");
+    return;
+  }
+  if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing. Verify it under Settings → Secrets and variables → Actions; its value is never printed.");
   const list = await getFiles(number);
   const files = list.files;
   if (!files.length) { await comment(number, "Gemini PR Reviewer could not retrieve changed-file patches; no review or suggestions were made."); return; }
-  if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing. Verify it under Settings → Secrets and variables → Actions; its value is never printed.");
 
   const allDocPaths = walkDocs(resolve(ROOT, ".docs"));
   const selection = await chooseDocs(pr, files, allDocPaths);
