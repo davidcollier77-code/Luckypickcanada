@@ -425,7 +425,7 @@ async function main() {
     summary.push("- **[" + f.severity + "] " + f.title + "** — " + f.path + (f.line ? ":" + f.line : "") +
       ". " + f.problem + " Impact: " + f.impact + " Suggested fix: " + f.fix);
   }
-  summary.push("", docReport(docState.loaded, docState.unloaded, assessments), "",
+  summary.push("", documentReport, "",
     "### Optional auto-fix",
     "Commands: comment exactly @gemini full review to run a full review, or @gemini repair all to request additional safe fix suggestions. In repair mode, Gemini posts GitHub inline suggestions; use the native Commit suggestion button only for changes you choose to apply. No code is pushed automatically, and the PR is never merged.");
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
