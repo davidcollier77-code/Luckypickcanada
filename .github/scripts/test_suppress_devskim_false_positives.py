@@ -606,8 +606,11 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                     source,
                     {
                         "startLine": 3,
-                        "startColumn": value_start,  # One char before the quote
+                        "startColumn": value_start,  # Simulate the historical one-column-early field
                         "endColumn": value_start + len(SHA256) + 3,
+                        "charOffset": source.index('"' + SHA256 + '"'),
+                        "charLength": len(SHA256) + 2,
+                        "snippet": {"text": '"' + SHA256 + '"'},
                     },
                 )
             )
