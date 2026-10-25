@@ -32,6 +32,9 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("@gemini full review");
     expect(script).toContain("@gemini repair all");
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
+    expect(script).toContain("@gemini\\s+full\\s+review");
+    expect(script).toContain("@gemini\\s+repair\\s+all");
+    expect(script).toContain("Commands: comment exactly @gemini full review");
   });
 
   it("checks out trusted base code with limited permissions", () => {
@@ -80,7 +83,7 @@ describe("Gemini PR reviewer", () => {
       ".github/workflows/gemini-reviewer.yml",
       ".github/scripts/gemini-reviewer.cjs",
       ".github/scripts/gemini-autofix.cjs",
-      "__tests__/gemini-reviewer-workflow.test.js"
+      "__tests__/gemini-reviewer-workflow.test.ts"
     ];
     expect(paths).not.toContain(".amazonq/rules/luckypickcanada.md");
   });
