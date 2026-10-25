@@ -1,16 +1,18 @@
-# Specification — Gemini PR Reviewer and Optional Fix Suggestions
+# Specification — Independent Gemini PR Reviewer
 
 ## Goal
-Provide an independent Gemini-powered reviewer for LuckyPickCanada with evidence-based review quality comparable to the existing Amazon Q review standards, plus an explicit, optional way to request code suggestions.
+Provide a lightweight Gemini-powered PR reviewer based on Amazon Q's concise A–B–C review standards, with optional GitHub inline suggestions on explicit request.
 
 ## Requirements
 - Automatically review pull requests when opened, reopened, updated with commits, made ready for review, or review-requested.
-- Use Gemini 3.8 Flash as the primary model and Gemini 3.6 Flash as fallback, with a bounded retry policy.
-- Load and follow `.gemini/rules/luckypickcanada.md` on every review and suggestion run. Leave Amazon Q's original rule file unchanged.
-- Review bugs, regressions, security, error handling, material performance, and test gaps. Publish only evidence-based findings with confidence at least 0.80.
-- Select relevant local `.docs/` groups and snapshots from the manifest without an arbitrary one-group limit. Report exact snapshots consulted, whether each was materially useful, and why.
-- Post one review summary with inline comments for validated changed lines. Include native GitHub suggestion blocks when a safe one-line replacement is possible.
-- Support two exact pull-request comment commands: `@Gemini full review` for a full review and `@Gemini repair all` for review plus optional fix suggestions. Normal review must not change repository code. Commands are accepted only from trusted repository collaborators.
-- Suggestions are limited to eligible added lines in already-changed files. The workflow never directly edits files, creates commits, or pushes generated code; the owner chooses whether to click GitHub's native Commit suggestion button.
-- Use trusted base-branch workflow/script/rules. Never execute code from the PR head, modify protected paths, or merge a pull request.
-- Use existing Actions secret name `GEMINI_API_KEY` without exposing its value. Add no dependencies, and do not change application runtime behavior, Amazon Q's rules, or `.docs/` snapshots.
+- Use only `.gemini/rules/luckypickcanada.md` as Gemini's agent instructions; do not load or follow separate repository instruction or governance files.
+- Keep initial automatic reviews lightweight: load Gemini's own rules and review the changed patches without a separate document-selection model call or library-snapshot loading.
+- For explicit `@gemini full review` and `@gemini repair all` requests, select the smallest relevant task group(s) using `.docs/manifest.json`.
+- For every selected group, load both Gemini references: `_google-gemini_gemini-cli.md` and `_websites_ai_google_dev_gemini-api.md`.
+- Consult only additional relevant technical snapshots within the selected group(s); do not load unrelated agent instructions or documents.
+- Report selected groups, exact snapshots actually supplied to the model, whether each was used and materially useful, and why. Disclose missing or unloaded snapshots.
+- Review bugs, regressions, security, error handling, material performance, and important test gaps. Publish actionable, evidence-based findings with confidence at least 0.80.
+- Support exactly two trusted PR comment commands: `@gemini full review` for a full review and `@gemini repair all` for review plus optional fix suggestions.
+- Suggestions are limited to eligible added lines in files already changed by the PR. Never write generated code directly, create commits, push code, approve, or merge a pull request.
+- Use the ordered model chain Gemini 3.8 Flash (primary), Gemini 3.6 Flash (first fallback), and Gemini 3.5 Flash-Lite (second fallback). Apply the same bounded retry behavior to each model, using the existing `GEMINI_API_KEY` Actions secret.
+- Use trusted base-branch workflow/scripts/rules. Never execute PR-head code, expose secrets, add dependencies, change application runtime behavior, modify Amazon Q's rules, or change library snapshots.

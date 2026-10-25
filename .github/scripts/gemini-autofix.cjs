@@ -2,6 +2,7 @@ const API = (process.env.GITHUB_API_URL || "https://api.github.com").replace(/\/
 const KEY = process.env.GEMINI_API_KEY || "";
 const PRIMARY = process.env.GEMINI_PRIMARY_MODEL || "gemini-3.8-flash";
 const FALLBACK = process.env.GEMINI_FALLBACK_MODEL || "gemini-3.6-flash";
+const SECOND_FALLBACK = process.env.GEMINI_SECOND_FALLBACK_MODEL || "gemini-3.5-flash-lite";
 
 function safePath(path) {
   return typeof path === "string" && path.length > 0 && !path.startsWith("/") &&
@@ -51,9 +52,9 @@ function parseJson(text) {
   if (value.startsWith(fence)) value = value.slice(fence.length).replace(/^json\s*/i, "").replace(/\s*\x60{3}\s*$/, "");
   return JSON.parse(value);
 }
-async function askFixModel(prompt, rules, agents) {
+async function askFixModel(prompt, rules) {
   if (!KEY) throw new Error("GEMINI_API_KEY is missing or unavailable.");
-  const models = [PRIMARY, FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);
+  const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);
   let lastError = null;
   for (let ix = 0; ix < models.length; ix += 1) {
     for (let attempt = 1; attempt <= 2; attempt += 1) {
@@ -63,7 +64,7 @@ async function askFixModel(prompt, rules, agents) {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": KEY },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: rules + "\n\nTrusted AGENTS.md governance:\n" + agents }] },
+            systemInstruction: { parts: [{ text: rules }] },
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 6000 }
           }),
@@ -81,6 +82,8 @@ async function askFixModel(prompt, rules, agents) {
         return { data: parseJson(text), model: models[ix] };
       } catch (error) {
         lastError = error;
+        const reason = error && error.message ? error.message : "unknown error";
+        console.error("[Gemini PR Reviewer] Fix model " + models[ix] + " attempt " + attempt + " failed: " + reason);
         if (attempt === 1 && error && error.retryable) {
           await new Promise((done) => setTimeout(done, 900));
           continue;
@@ -89,11 +92,11 @@ async function askFixModel(prompt, rules, agents) {
       }
     }
   }
-  throw new Error("Gemini could not generate additional fix suggestions. Last failure: " +
+  throw new Error("All configured Gemini models failed while generating fix suggestions. Last failure: " +
     (lastError && lastError.message ? lastError.message : "unknown error"));
 }
 
-async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, reviewRules, agents }) {
+async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, reviewRules, documentReport }) {
   const byPath = new Map(files.map((file) => [file.filename, file]));
   const candidates = [];
   for (const finding of findings) {
@@ -121,7 +124,7 @@ async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, 
     "Consulted documentation snippets:\n" + String(docs || "").slice(0, 28000),
     "Documentation paths supplied: " + (docPaths || []).join("\n")
   ].join("\n\n");
-  const response = await askFixModel(prompt, reviewRules, agents);
+  const response = await askFixModel(prompt, reviewRules);
   const allowed = new Map(candidates.map((item) => [item.path + ":" + item.line, item]));
   const comments = [];
   const seen = new Set();
@@ -148,7 +151,7 @@ async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, 
   }
   const body = "## Gemini On-Demand Fix Suggestions\n\n" +
     String(response.data.summary || "Gemini produced focused suggestions for the reported findings.") +
-    "\n\nNo code has been changed automatically. Use GitHub's native Commit suggestion button only for a fix you choose to apply. Suggestions are limited to eligible changed lines. The pull request remains open and unmerged.\n\n**Model:** " + response.model;
+    "\n\nNo code has been changed automatically. Use GitHub's native Commit suggestion button only for a fix you choose to apply. Suggestions are limited to eligible changed lines. The pull request remains open and unmerged.\n\n**Model:** " + response.model + "\n\n" + String(documentReport || "Document-library report unavailable.");
   await github("/repos/" + REPO + "/pulls/" + pr.number + "/reviews", TOKEN, {
     method: "POST", body: JSON.stringify({ event: "COMMENT", body, comments })
   });
