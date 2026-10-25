@@ -80,12 +80,21 @@ describe("Gemini PR reviewer", () => {
     expect(fixScript).toContain("documentReport");
   });
 
-  it("uses the configured Gemini primary and fallback models without adding dependencies", () => {
+  it("uses the configured three-model Gemini fallback chain without adding dependencies", () => {
     expect(workflow).toContain("GEMINI_PRIMARY_MODEL: gemini-3.8-flash");
     expect(workflow).toContain("GEMINI_FALLBACK_MODEL: gemini-3.6-flash");
+    expect(workflow).toContain("GEMINI_SECOND_FALLBACK_MODEL: gemini-3.5-flash-lite");
+    expect(script).toContain('const PRIMARY = process.env.GEMINI_PRIMARY_MODEL || "gemini-3.8-flash";');
+    expect(script).toContain('const FALLBACK = process.env.GEMINI_FALLBACK_MODEL || "gemini-3.6-flash";');
+    expect(script).toContain('const SECOND_FALLBACK = process.env.GEMINI_SECOND_FALLBACK_MODEL || "gemini-3.5-flash-lite";');
+    expect(fixScript).toContain('const SECOND_FALLBACK = process.env.GEMINI_SECOND_FALLBACK_MODEL || "gemini-3.5-flash-lite";');
+    expect(script).toContain("const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((x, i, a) => x && a.indexOf(x) === i);");
+    expect(fixScript).toContain("const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);");
     expect(script).toContain("generativelanguage.googleapis.com/v1beta/models/");
     expect(script).toContain("GEMINI_API_KEY");
     expect(script).toContain("luckypickcanada.md");
+    expect(script).toContain("for (let attempt = 1; attempt <= 2; attempt += 1)");
+    expect(fixScript).toContain("for (let attempt = 1; attempt <= 2; attempt += 1)");
   });
 
   it("generates opt-in GitHub suggestions rather than directly writing code", () => {
