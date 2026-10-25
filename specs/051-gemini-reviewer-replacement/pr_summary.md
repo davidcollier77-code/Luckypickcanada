@@ -21,6 +21,7 @@
 - API-authored branch; local shell access is unavailable in this session.
 - pnpm test: NOT RUN locally.
 - ./jules-verify.sh: NOT RUN locally.
+- Formal Spec Kit stage scripts/setup commands: NOT EXECUTED in this API-only session; the spec/plan/tasks artifacts were authored through GitHub's repository API. The current-head CI Spec Kit verifier is the remaining compliance check.
 - Live Gemini API and Actions secret: NOT tested/inspectable in this session.
 - Current-head CI and final workflow test results: PENDING.
 - Owner must merge before this workflow can run from the default branch and prove live operation.
