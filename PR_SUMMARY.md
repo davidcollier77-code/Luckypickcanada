@@ -1,37 +1,46 @@
-# PR Summary — Gemini Reviewer Fresh Base Checkout
+# PR Summary — Remove Verified DevSkim Checksum False Positive
 
-## Task and Verified Root Cause
+## Task and Verified Finding
 
-**Task group:** troubleshooting — restore automatic Gemini reviews by eliminating a stale trusted-base checkout.
+**Task group:** `security` — remove one stale false-positive row from the append-only DevSkim report after verifying the existing fix.
 
-After PR #1606 fixed the malformed JavaScript and was merged, automatic reviewer run [#40240151685](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40240151685) on PR #1605 still failed with SyntaxError: Unexpected token 'if'. The workflow explicitly checked out github.event.pull_request.base.sha; the PR event's recorded SHA remained 7e766078cbe674a7d6221bc98c087b160c647a20, an older commit. Comment-triggered run [#40240145268](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40240145268) succeeded using default-branch code, corroborating the stale checkout diagnosis.
+The sole row in `devskim-alerts.md` was DS173237 at `.specify/memory/.constitution-template.json:2`. The value is the SHA-256 checksum for the core constitution template, not a credential. Prior triage in `specs/037-devskim-alert-triage/triage.md` classified this exact match as a verified false positive.
 
-## Implemented Changes
+## Verification Evidence
 
-- .github/workflows/gemini-reviewer.yml: checkout by github.event.pull_request.base.ref, falling back to the repository default branch. This resolves the current trusted branch tip without checking out PR-head code.
-- __tests__/gemini-reviewer-workflow.test.ts: require the branch-ref expression and fail if the stale base-SHA expression is reintroduced.
-- specs/053-gemini-reviewer-fresh-base-checkout/spec.md, plan.md, tasks.md, and checklists/requirements.md: task artifacts.
-- memory-bank/activeContext.md: update the verified cause and current verification state.
-- PR_SUMMARY.md: canonical evidence record.
+Latest main scan: [DevSkim run #40241837558](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40241837558) succeeded.
 
-## Governance and Resources
+- `python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py`: PASS.
+- `python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'`: PASS, 51 tests.
+- `python3 .github/scripts/suppress_devskim_false_positives.py`: PASS; log reported 133 verified false positives suppressed.
+- `python3 .github/scripts/append_devskim_findings.py`: PASS; log reported 0 new findings appended.
+- The existing suppression function is file-, key-, digest-format-, and source-span-specific; its regression test checks the expected match and rejects wrong file/key/region cases.
 
-- AGENTS.md: USED YES; USEFUL YES — establishes required workflow, verification, and no-agent-merge rules.
-- .jules/jules.md and .jules/troubleshooting.md: USED YES; USEFUL YES — initialization, task-group routing, and test requirements.
-- .docs/manifest.json and routed troubleshooting resources for Jules and Gemini: USED YES; USEFUL NO for diagnosing the checkout defect — consulted as required, but the root cause was directly established from workflow source and run records.
-- Spec Kit stages: FILE-DRIVEN PROCEDURAL EXECUTION. Artifacts: specs/053-gemini-reviewer-fresh-base-checkout/spec.md, plan.md, tasks.md, and checklists/requirements.md.
+These checks ran on `main` before this report-cleanup PR. Current-head CI and `./jules-verify.sh` remain **PENDING**; this API-connected session cannot run the repository shell locally.
 
-## Verification Status
+## Changes
 
-- VERIFIED: PR #1606 is merged; main contains the corrected reviewer script.
-- VERIFIED: automatic run #40240151685 failed with the old syntax error and the workflow pinned the stale base SHA.
-- VERIFIED: comment-triggered run #40240145268 completed successfully.
-- PENDING: focused reviewer test, full pnpm test, and ./jules-verify.sh on the current head. This API-connected session cannot run those local commands; CI must provide the evidence.
-- PENDING: a fresh automatic pull_request_target run after owner-controlled merge of this change. Existing failed runs do not validate this revision.
-- No production build is necessary for this workflow/test-only change. No dependencies, secrets, workflow permissions, triggers, or application behavior are changed.
+- `devskim-alerts.md`: remove only row marker `81298a9d79b888769be1`; retain the header and append marker.
+- `specs/054-devskim-checksum-alert-cleanup/{spec,plan,tasks}.md` and `checklists/requirements.md`: task artifacts.
+- `memory-bank/activeContext.md`: record the verified finding disposition and honest status.
+- `PR_SUMMARY.md`: this canonical evidence record.
 
-## Scope and Diff Audit
+## Preserved
 
-Intended scope: workflow checkout ref, regression assertion, this task's Spec Kit artifacts, active context, and this summary. The PR is open and unmerged for owner review.
+No change to the checksum/template, suppression code, regression tests, scanner rules, allowlists, workflow triggers, secrets, dependencies, or application code. No other report row exists in the current file, and no other alert is removed by this change.
 
-**USEFUL RESULT: NO — the targeted repair is proposed, but current-head CI and post-merge automatic-run verification remain pending.**
+## Spec Kit and Governance
+
+Stages completed through file-driven procedural execution, in required order, using the repository's command definitions and templates:
+- Specify: `specs/054-devskim-checksum-alert-cleanup/spec.md`
+- Plan: `specs/054-devskim-checksum-alert-cleanup/plan.md`
+- Tasks: `specs/054-devskim-checksum-alert-cleanup/tasks.md`
+- Requirements checklist: `specs/054-devskim-checksum-alert-cleanup/checklists/requirements.md`
+
+No optional research or data-model artifacts are needed for this report-only cleanup.
+
+## Scope Audit
+
+Exact intended files: `devskim-alerts.md`, `PR_SUMMARY.md`, `memory-bank/activeContext.md`, and the four new task artifacts. The PR remains open for owner review.
+
+**USEFUL RESULT: NO — the stale row is removed in this candidate branch; current-head CI and owner-controlled merge remain pending.**
