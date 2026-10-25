@@ -6,11 +6,11 @@
 3. Implement a dependency-free Node script using the official Gemini generateContent API. Retry transient failures once per model, then use the configured fallback model.
 4. Use a Gemini document-selection pass over .docs/manifest.json and the available local snapshot paths; load only selected snapshots, with a deterministic documented fallback if selection fails.
 5. Format model output as validated JSON. Publish inline review comments only when file paths and lines correspond to changed diff lines, and put other validated findings in the review summary.
-6. For explicit fixes, require a trusted comment author or manual workflow dispatch; reject fork-owned PR branches and protected reviewer/governance paths. Apply only a validated unified diff against eligible changed files, run git diff --check, commit and push to the PR head without merging.
+6. For explicit fix requests, require a trusted comment author or manual workflow dispatch. Generate only safe GitHub inline suggestion blocks for eligible added lines in existing changed files; the workflow never commits or pushes code. Keep protected paths excluded.
 7. Add focused Vitest regression tests and document exact checks/results in this PR summary.
 
 ## Safety
 - No API key or secret value is committed or logged.
 - PR content and library snippets are treated as data, not as prompt-level instructions.
-- The fix job does not run project build/test/lifecycle commands from pull-request code.
+- The review and suggestion jobs never run project build/test/lifecycle commands or write code from the pull-request branch. Use minimal token permissions and disable checkout credential persistence.
 - No app files, dependency manifests, deployment settings, Amazon Q configuration, or the .docs/ library are intentionally changed.
