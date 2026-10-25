@@ -51,7 +51,7 @@ function parseJson(text) {
   if (value.startsWith(fence)) value = value.slice(fence.length).replace(/^json\s*/i, "").replace(/\s*\x60{3}\s*$/, "");
   return JSON.parse(value);
 }
-async function askFixModel(prompt, rules, agents) {
+async function askFixModel(prompt, rules) {
   if (!KEY) throw new Error("GEMINI_API_KEY is missing or unavailable.");
   const models = [PRIMARY, FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);
   let lastError = null;
@@ -63,7 +63,7 @@ async function askFixModel(prompt, rules, agents) {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": KEY },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: rules + "\n\nTrusted AGENTS.md governance:\n" + agents }] },
+            systemInstruction: { parts: [{ text: rules }] },
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 6000 }
           }),
@@ -93,7 +93,7 @@ async function askFixModel(prompt, rules, agents) {
     (lastError && lastError.message ? lastError.message : "unknown error"));
 }
 
-async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, reviewRules, agents, documentReport }) {
+async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, reviewRules, documentReport }) {
   const byPath = new Map(files.map((file) => [file.filename, file]));
   const candidates = [];
   for (const finding of findings) {
@@ -121,7 +121,7 @@ async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, 
     "Consulted documentation snippets:\n" + String(docs || "").slice(0, 28000),
     "Documentation paths supplied: " + (docPaths || []).join("\n")
   ].join("\n\n");
-  const response = await askFixModel(prompt, reviewRules, agents);
+  const response = await askFixModel(prompt, reviewRules);
   const allowed = new Map(candidates.map((item) => [item.path + ":" + item.line, item]));
   const comments = [];
   const seen = new Set();
