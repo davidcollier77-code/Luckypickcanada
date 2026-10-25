@@ -11,26 +11,35 @@ const fixPath = ".github/scripts/gemini-autofix.cjs";
 const fixScript = readFileSync(fixPath, "utf8");
 
 describe("Gemini PR reviewer", () => {
-  it("uses separate rules based on Amazon Q's review standards", () => {
+  it("uses concise Gemini-only rules based on Amazon Q's A-B-C structure", () => {
     expect(existsSync(rulesPath)).toBe(true);
-    expect(rules).toContain("Review bugs, logic errors");
-    expect(rules).toContain("security issues");
+    expect(rules).toContain("Gemini's only agent-instruction file.");
+    expect(rules).toContain("Review the pull request for:");
+    expect(rules).toContain("security vulnerabilities");
     expect(rules).toContain("confidence of at least 0.80");
     expect(rules).toContain("🔴 A — ANALYZE");
     expect(rules).toContain("🔴 B — BOUNDARIES");
     expect(rules).toContain("🔴 C — COMMUNICATE");
-    expect(rules).toContain("For EVERY selected group");
+    expect(rules).toContain("Use `.docs/manifest.json` to choose the smallest relevant task group(s).");
     expect(rules).toContain("_google-gemini_gemini-cli.md");
     expect(rules).toContain("_websites_ai_google_dev_gemini-api.md");
-    expect(rules).toContain("Do not use Jules-specific documentation");
+    expect(rules).toContain("USED: YES/NO");
     expect(rules).toContain("USEFUL: YES/NO");
-    expect(rules).toContain("approve a pull request, or merge it.");
-    expect(rules).toContain("GitHub inline suggestions");
     expect(rules).toContain("@gemini full review");
     expect(rules).toContain("@gemini repair all");
+    expect(rules).not.toMatch(/AGENTS\.md|jules/i);
   });
 
-  it("runs automatic reviews and accepts explicit suggestion requests", () => {
+  it("passes only Gemini's own rules as model system instructions", () => {
+    expect(script).toContain('systemInstruction: { parts: [{ text: RULES }] }');
+    expect(fixScript).toContain('systemInstruction: { parts: [{ text: rules }] }');
+    expect(script).not.toContain("AGENTS.md");
+    expect(fixScript).not.toContain("AGENTS.md");
+    expect(script).not.toContain("Trusted repository governance");
+    expect(fixScript).not.toContain("Trusted AGENTS.md governance");
+  });
+
+  it("runs automatic reviews and accepts the two explicit requests", () => {
     expect(workflow).toContain("pull_request_target:");
     expect(workflow).toContain("opened, reopened, synchronize, ready_for_review, review_requested");
     expect(workflow).toContain("issue_comment:");
@@ -42,7 +51,7 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("Commands: comment exactly @gemini full review");
   });
 
-  it("checks out trusted base code with limited permissions", () => {
+  it("uses trusted base-branch code and limited workflow permissions", () => {
     expect(workflow).toContain("github.event.pull_request.base.sha || github.event.repository.default_branch");
     expect(workflow).toContain("persist-credentials: false");
     expect(workflow).toContain("contents: read");
@@ -51,26 +60,27 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("author_association");
     expect(script).toContain('if (!pr || typeof pr !== "object")');
     expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const list = await getFiles(number)"));
-    expect(script).toContain("AGENTS.md");
   });
 
-  it("requires Gemini references for selected groups and reports actual document use", () => {
-    expect(script).toContain('function isRequiredGeminiDoc(path)');
+  it("uses selected task groups to constrain library documents and reports actual usage", () => {
+    expect(script).toContain("function isRequiredGeminiDoc(path)");
     expect(script).toContain('".docs/" + group + "/_google-gemini_gemini-cli.md"');
     expect(script).toContain('".docs/" + group + "/_websites_ai_google_dev_gemini-api.md"');
-    expect(script).toContain('const allDocPaths = walkDocs(resolve(ROOT, ".docs")).filter((path) => !isJulesSpecificDoc(path));');
+    expect(script).toContain("const groupPrefixes = groups.map");
+    expect(script).toContain("const availableSet = new Set(groupPaths)");
+    expect(script).toContain("function geminiManifestGroups()");
+    expect(script).toContain('const allDocPaths = mode === "initial" ? [] : walkDocs(resolve(ROOT, ".docs")).filter((path) => !isJulesSpecificDoc(path));');
     expect(script).toContain("Selected task group(s):**");
-    expect(script).toContain('USED: YES; USEFUL: ');
-    expect(script).toContain('USED: NO; USEFUL: NO;');
-    expect(script).toContain('const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);');
+    expect(script).toContain("USED: YES; USEFUL: ");
+    expect(script).toContain("USED: NO; USEFUL: NO;");
+    expect(script).toContain("const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);");
     expect(script).toContain('mode = "initial";');
     expect(script).toContain('const selection = mode === "initial"');
-    expect(script).toContain('method: "skipped for initial automatic review"');
     expect(script).toContain('mode === "initial" ? { loaded: [], unloaded: [] } : loadDocs(selection)');
-    expect(fixScript).toContain('documentReport');
+    expect(fixScript).toContain("documentReport");
   });
 
-  it("uses the configured Gemini primary and fallback models without dependencies", () => {
+  it("uses the configured Gemini primary and fallback models without adding dependencies", () => {
     expect(workflow).toContain("GEMINI_PRIMARY_MODEL: gemini-3.8-flash");
     expect(workflow).toContain("GEMINI_FALLBACK_MODEL: gemini-3.6-flash");
     expect(script).toContain("generativelanguage.googleapis.com/v1beta/models/");
@@ -78,7 +88,7 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("luckypickcanada.md");
   });
 
-  it("generates optional native suggestions instead of writing repository code", () => {
+  it("generates opt-in GitHub suggestions rather than directly writing code", () => {
     expect(fixScript).toContain("isEligiblePath");
     expect(fixScript).toContain("suggestion");
     expect(fixScript).toContain("Commit suggestion");
@@ -98,7 +108,7 @@ describe("Gemini PR reviewer", () => {
     }
   });
 
-  it("does not add Amazon Q's original rules file to its implementation scope", () => {
+  it("keeps Amazon Q's original rules outside Gemini's implementation scope", () => {
     const paths = [
       ".gemini/rules/luckypickcanada.md",
       ".github/workflows/gemini-reviewer.yml",
