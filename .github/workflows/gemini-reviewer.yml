@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "Review a PR or explicitly request Gemini to apply fixes"
+        description: "Review a PR or ask Gemini for optional code suggestions"
         type: choice
         options: [review, fix]
         default: review
@@ -20,7 +20,7 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
   issues: write
 
@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   gemini-review:
-    name: Review or explicitly fix pull request
+    name: Review or suggest fixes for pull request
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # actions/checkout v4.2.2
         with:
           ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
-          persist-credentials: true
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Verify Node runtime
