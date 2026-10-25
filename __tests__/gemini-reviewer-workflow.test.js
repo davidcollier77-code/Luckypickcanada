@@ -5,9 +5,9 @@ import { spawnSync } from "node:child_process";
 const workflow = readFileSync(".github/workflows/gemini-reviewer.yml", "utf8");
 const rulesPath = ".gemini/rules/luckypickcanada.md";
 const rules = readFileSync(rulesPath, "utf8");
-const scriptPath = ".github/scripts/gemini-reviewer.mjs";
+const scriptPath = ".github/scripts/gemini-reviewer.cjs";
 const script = readFileSync(scriptPath, "utf8");
-const fixPath = ".github/scripts/gemini-autofix.mjs";
+const fixPath = ".github/scripts/gemini-autofix.cjs";
 const fixScript = readFileSync(fixPath, "utf8");
 
 describe("Gemini PR reviewer", () => {
@@ -38,7 +38,10 @@ describe("Gemini PR reviewer", () => {
     expect(workflow).toContain("persist-credentials: false");
     expect(workflow).toContain("contents: read");
     expect(workflow).toContain("pull-requests: write");
+    expect(workflow).toContain("git diff --exit-code -- .gemini/rules .github/workflows .github/scripts");
     expect(script).toContain("author_association");
+    expect(script).toContain('if (!pr || typeof pr !== "object")');
+    expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const list = await getFiles(number)"));
     expect(script).toContain("AGENTS.md");
   });
 
@@ -73,8 +76,8 @@ describe("Gemini PR reviewer", () => {
     const paths = [
       ".gemini/rules/luckypickcanada.md",
       ".github/workflows/gemini-reviewer.yml",
-      ".github/scripts/gemini-reviewer.mjs",
-      ".github/scripts/gemini-autofix.mjs",
+      ".github/scripts/gemini-reviewer.cjs",
+      ".github/scripts/gemini-autofix.cjs",
       "__tests__/gemini-reviewer-workflow.test.js"
     ];
     expect(paths).not.toContain(".amazonq/rules/luckypickcanada.md");
