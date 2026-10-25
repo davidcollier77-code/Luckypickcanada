@@ -20,13 +20,14 @@
 - `.jules/cmds/speckit.specify.md`, `.jules/cmds/speckit.plan.md`, `.jules/cmds/speckit.tasks.md`, and `.jules/cmds/speckit.implement.md` — USED=YES; USEFUL=YES; guided the task artifacts and sequential stage records.
 - `package.json` — USED=YES; USEFUL=YES; confirmed `pnpm test` is available but was not run; no package scripts were executed.
 - Prior temporary PR #1598 — USED=YES; USEFUL=YES; confirmed an inert one-file smoke-test PR is an established low-impact pattern.
+- Official DeepSource billing and AI review docs — USED=YES; USEFUL=YES; confirmed AI review is on-demand and free Individual/Open Source plans have no bundled AI credits; the on-demand request was not triggered to avoid possibly metered use without owner approval.
 
 ## Spec Kit stage record
 
 1. **Specify** — FILE-DRIVEN PROCEDURAL EXECUTION using `.jules/cmds/speckit.specify.md`; result: `specs/051-deepsource-autofix-smoke-test/spec.md` created.
 2. **Plan** — FILE-DRIVEN PROCEDURAL EXECUTION using `.jules/cmds/speckit.plan.md`; result: `specs/051-deepsource-autofix-smoke-test/plan.md` created.
 3. **Tasks** — FILE-DRIVEN PROCEDURAL EXECUTION using `.jules/cmds/speckit.tasks.md`; result: `specs/051-deepsource-autofix-smoke-test/tasks.md` created and updated with PR evidence.
-4. **Implement** — FILE-DRIVEN PROCEDURAL EXECUTION using `.jules/cmds/speckit.implement.md`; result: added only `DEEPSOURCE_AUTOFIX_SMOKE_TEST.txt` and the required task records.
+4. **Implement** — FILE-DRIVEN PROCEDURAL EXECUTION using `.jules/cmds/speckit.implement.md`; result: added only `DEEPSOURCE_AUTOFIX_SMOKE_TEST.txt` and required task records.
 
 The Spec Kit setup scripts could not be executed through this GitHub API-only interface. No `.specify/feature.json` was committed.
 
@@ -36,9 +37,9 @@ The Spec Kit setup scripts could not be executed through this GitHub API-only in
 - **Duplicate check**: existing branches and PRs searched; no matching DeepSource smoke-test branch or PR found.
 - **PR state**: #1601 is open and unmerged.
 - **Diff audit**: five added files only — the inert text marker plus `spec.md`, `plan.md`, `tasks.md`, and this summary. No application source or configuration changed.
-- **PR Insights Tagger**: posted an automated summary on the PR ([comment](https://github.com/davidcollier77-code/Luckypickcanada/pull/1601#issuecomment-6399221200)).
-- **DeepSource status activity**: JavaScript, Python, Shell, SQL, and Secrets status checks were present, each reporting `Analysis in progress...` at inspection time. This verifies PR-level analysis started; final conclusions are pending completion.
-- **Other checks at inspection**: Amazon Q Developer was in progress; GitHub Actions check runs were queued/in progress. No final CI pass is claimed.
+- **PR Insights Tagger**: posted an automated summary on the PR ([comment](https://github.com/davidcollier77-code/Luckypickcanada/pull/1601#issuecomment-6399221200)). Multiple summaries were posted while task records were updated.
+- **DeepSource Code Review**: posted a PR-level report ([comment](https://github.com/davidcollier77-code/Luckypickcanada/pull/1601#issuecomment-6399223699)) with an overall **Grade A**. JavaScript, Python, and Shell were marked passed; SQL and Secrets were marked cancelled for this run. This verifies automatic PR-triggered static analysis/reporting.
+- **DeepSource AI Review**: NOT TRIGGERED. DeepSource's comment says AI Review runs only on demand via `@deepsourcebot review`. Official billing documentation states Individual/Open Source plans have no bundled AI credits, and AI features can be metered when a payment method is on file. Avoided triggering potentially billable AI use without owner approval.
 - **`./jules-verify.sh`**: NOT RUN — repository shell unavailable in this session.
 - **`pnpm test`**: NOT RUN — no application code or tests changed, and repository shell unavailable.
 - **Production build / 495 MB gate**: NOT RUN — no build inputs changed and no repository shell available.
@@ -47,4 +48,4 @@ The Spec Kit setup scripts could not be executed through this GitHub API-only in
 
 ## Final status
 
-- **USEFUL RESULT**: PARTIAL — verified that DeepSource posted five PR status contexts and began analysis. Whether analysis completes successfully and whether the separate Autofix clone/fix action works are still unverified.
+- **USEFUL RESULT**: YES for automatic PR-level static analysis/reporting (Grade A report observed). AI Review and the separate Autofix clone/fix action remain unverified.
