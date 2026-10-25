@@ -57,6 +57,7 @@ describe("Gemini PR reviewer", () => {
     expect(fixScript).toContain("isEligiblePath");
     expect(fixScript).toContain("suggestion");
     expect(fixScript).toContain("Commit suggestion");
+    expect(fixScript).toContain("comments.length >= 25");
     expect(fixScript).not.toContain('["push"');
     expect(fixScript).not.toContain('["commit"');
     expect(fixScript).toContain(".docs/");
