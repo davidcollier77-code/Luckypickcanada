@@ -15,7 +15,7 @@ describe("Gemini PR reviewer", () => {
     expect(existsSync(rulesPath)).toBe(true);
     expect(rules).toContain("Gemini's only agent-instruction file.");
     expect(rules).toContain("Review the pull request for:");
-    expect(rules).toContain("security vulnerabilities");
+    expect(rules).toContain("Security vulnerabilities.");
     expect(rules).toContain("confidence of at least 0.80");
     expect(rules).toContain("🔴 A — ANALYZE");
     expect(rules).toContain("🔴 B — BOUNDARIES");
