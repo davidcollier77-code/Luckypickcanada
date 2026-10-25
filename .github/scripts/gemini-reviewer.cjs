@@ -288,10 +288,14 @@ function docReport(loaded, unloaded, assessments, selection) {
   const groups = selection && Array.isArray(selection.groups) ? selection.groups : [];
   const rows = [
     "### Task group and local document-library report",
-    "- **Selected task group(s):** " + (groups.length ? groups.join(", ") : "None reported."),
+    "- **Selected task group(s):** " + (groups.length ? groups.join(", ") : "None; initial automatic review does not select library groups."),
     "- **Selection method:** " + String(selection && selection.method || "Unknown.")
   ];
-  if (!loaded.length) rows.push("- No .docs snapshot content was loaded into the review prompt; no snapshot is claimed as used.");
+  if (selection && selection.method === "skipped for initial automatic review") {
+    rows.push("- Document-library selection is reserved for explicit @gemini full review and @gemini repair all requests; no .docs snapshots were loaded for this initial review.");
+  } else if (!loaded.length) {
+    rows.push("- No .docs snapshot content was loaded into the review prompt; no snapshot is claimed as used.");
+  }
   for (const doc of loaded) {
     const a = byPath.get(doc.path);
     const reason = a && a.reason ? String(a.reason) : "The review response did not identify a material contribution.";
@@ -315,6 +319,7 @@ async function main() {
   if (EVENT_NAME === "pull_request_target") {
     if (!event.pull_request || event.pull_request.draft) { log("Skipping draft/non-PR event."); return; }
     number = event.pull_request.number;
+    mode = "initial";
   } else if (EVENT_NAME === "issue_comment") {
     const command = String(event.comment?.body || "").trim().toLowerCase();
     const fullReviewCommand = /^@gemini\s+full\s+review$/.test(command);
@@ -333,7 +338,7 @@ async function main() {
     number = Number(process.env.GEMINI_PR_NUMBER);
     mode = String(process.env.GEMINI_MODE || "review").toLowerCase();
   } else { log("Unsupported event; no action taken."); return; }
-  if (!Number.isInteger(Number(number)) || Number(number) < 1 || !["review", "fix"].includes(mode)) throw new Error("Invalid review mode or PR number.");
+  if (!Number.isInteger(Number(number)) || Number(number) < 1 || !["initial", "review", "fix"].includes(mode)) throw new Error("Invalid review mode or PR number.");
   if (!REPO || !TOKEN) throw new Error("GitHub workflow context is missing.");
   if (!RULES || !AGENTS || !MANIFEST) throw new Error("Required trusted rules, AGENTS.md, or document manifest is missing.");
 
@@ -349,8 +354,11 @@ async function main() {
   if (!files.length) { await comment(number, "Gemini PR Reviewer could not retrieve changed-file patches; no review or suggestions were made."); return; }
 
   const allDocPaths = walkDocs(resolve(ROOT, ".docs")).filter((path) => !isJulesSpecificDoc(path));
-  const selection = await chooseDocs(pr, files, allDocPaths);
-  const docState = loadDocs(selection);
+  // Keep the automatic first review lightweight; full review and repair-all perform library selection.
+  const selection = mode === "initial"
+    ? { groups: [], selected: [], method: "skipped for initial automatic review", model: null }
+    : await chooseDocs(pr, files, allDocPaths);
+  const docState = mode === "initial" ? { loaded: [], unloaded: [] } : loadDocs(selection);
   const docBundle = docState.loaded.map((d) => "DOCUMENT: " + d.path + (d.truncated ? " [TRUNCATED]" : "") + "\n" + d.content).join("\n\n");
   const docPaths = docState.loaded.map((d) => d.path);
   const linesByPath = new Map(files.map((f) => [f.filename, addedLines(f.patch || "")]));
