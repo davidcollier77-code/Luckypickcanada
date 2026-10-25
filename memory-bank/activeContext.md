@@ -1,12 +1,10 @@
-# Active Context — Gemini Reviewer Replacement (2026-10-25)
+# Active Context — Gemini Reviewer Syntax Repair (2026-10-25)
 
-- **Current task:** Extend the independent Gemini PR reviewer in PR #1604 with a third, last-resort model fallback, as authorized by the repository owner.
-- **PR state:** PR #1603 was merged; PR #1604 remains open and unmerged on branch `fix/gemini-library-guided-reviews`.
-- **Ordered model chain:** Gemini 3.8 Flash primary → Gemini 3.6 Flash first fallback → Gemini 3.5 Flash-Lite second fallback. The review and opt-in fix-suggestion paths use the same ordered chain and retain two-attempt bounded retry behavior per model.
-- **Review behavior:** Automatic evidence-based review; explicit `@gemini full review` and `@gemini repair all` commands; task-group-based library selection/reporting for explicit requests; no direct source writes, commits, pushes, approvals, or merges.
-- **Safety:** Trusted base-branch workflow/scripts only; PR-head code is never executed. Existing `GEMINI_API_KEY` secret name, least-privilege permissions, Amazon Q rules, document-library snapshots, app runtime, dependencies, and deployment settings remain outside the change.
-- **Verification:** Workflow, review script, fix-suggestion script, Spec Kit artifacts, and model-order regression assertions have been updated on the PR branch. Local `pnpm test` and `./jules-verify.sh` have not been run from this API-connected session; current-head GitHub checks still need confirmation. Do not claim live operation until CI passes and a natural review demonstrates the third fallback.
-
+- **Verified failure:** GitHub Actions run `40237180514`, job `121301125039`, failed in `Run Gemini reviewer` because `.github/scripts/gemini-reviewer.cjs` contains an event-mode validation statement inside the prompt array. Node reports `SyntaxError: Unexpected token 'if'`.
+- **Base context:** The workflow checked out trusted base commit `7e766078cbe674a7d6221bc98c087b160c647a20`, the merge commit for PR #1604. The failure is in the trusted reviewer script on `main`, not in PR #1605's Tip Jar source changes.
+- **Repair branch:** `fix/gemini-reviewer-syntax-repair-20261025`. The repair restores event-specific mode validation to the initial validation block, removes the stray prompt-array line, and adds regression coverage for validation placement and uniqueness.
+- **Safety:** The trusted-base checkout, least-privilege workflow permissions, model fallback chain, secret handling, prompt-data boundaries, and app runtime remain unchanged.
+- **Verification status:** Repository API inspection confirms the malformed line and existing Node syntax-check test. Local `pnpm test` and `./jules-verify.sh` are not executable from this API-connected session; current-head GitHub CI and a post-merge natural reviewer run remain required. No PR is merged.
 ---
 
 # Current Task — Gemini PR-Agent Review Retirement (2026-10-25)
