@@ -83,7 +83,7 @@ async function askFixModel(prompt, rules) {
       } catch (error) {
         lastError = error;
         const reason = error && error.message ? error.message : "unknown error";
-        process.stderr.write("[Gemini PR Reviewer] Fix model " + models[ix] + " attempt " + attempt + " failed: " + reason + "\\n");
+        console.error("[Gemini PR Reviewer] Fix model " + models[ix] + " attempt " + attempt + " failed: " + reason);
         if (attempt === 1 && error && error.retryable) {
           await new Promise((done) => setTimeout(done, 900));
           continue;
