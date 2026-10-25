@@ -372,7 +372,7 @@ async function main() {
   }
   summary.push("", docReport(docState.loaded, docState.unloaded, assessments), "",
     "### Optional auto-fix",
-    "To request more focused fixes, add a PR comment containing /gemini-fix, or open Actions → Gemini PR Reviewer → Run workflow and select mode=fix with this PR number. Gemini will post opt-in inline suggestions; use GitHub's native Commit suggestion button only for changes you choose to apply. No code is pushed automatically, and the PR is never merged.");
+    "Commands: comment exactly @gemini full review to run a full review, or @gemini repair all to request additional safe fix suggestions. In repair mode, Gemini posts GitHub inline suggestions; use the native Commit suggestion button only for changes you choose to apply. No code is pushed automatically, and the PR is never merged.");
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
   await gh("/repos/" + REPO + "/pulls/" + number + "/reviews", {
     method: "POST",
