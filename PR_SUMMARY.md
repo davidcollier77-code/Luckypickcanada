@@ -1,41 +1,41 @@
-# PR Summary — DevSkim Regression Test Syntax Repair
+# PR Summary — DevSkim Regression and Checksum Span Repair
 
-## Task and root cause
-**Task group:** `security` — the affected workflow is the repository's DevSkim security scan.
+## Task and verified root cause
+**Task group:** `security` — repairs the repository's DevSkim security scanning gate.
 
-Verified current-main evidence: DevSkim workflow runs #246, #247, #248, and #249 failed at `Test DevSkim suppression filter`. The scanner step passed, SARIF upload succeeded, but the test module failed to import due to an unterminated string literal in two lockfile-fixture `write_text` calls in `.github/scripts/test_suppress_devskim_false_positives.py`. The suppression step was skipped and the dependent report-update job did not run.
+DevSkim runs #246–#249 repeatedly failed at `Test DevSkim suppression filter`. The scanner and SARIF upload succeeded, but two malformed newline fixture writes caused an import-time `SyntaxError`; consequently suppression was skipped and the dependent report-update job did not run.
 
-- [Run #249](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40183792859)
-- [Run #248](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40181619284)
-- [Run #247](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40176847598)
-- [Run #246](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40175008869)
+After correcting those strings, PR CI confirmed syntax validation passed and the unit suite executed 51 tests. It then exposed one separate failing regression: `test_speckit_file_checksum_is_suppressed_with_devskim_offset` (50 passed, 1 failed). The fixture represented the historical one-column-early SARIF coordinate but did not provide verified absolute-source coordinates, while the current strict span logic correctly rejected that coordinate alone.
 
-## Fix
-- Corrected the two malformed string literals to write a newline-terminated fixture with UTF-8 encoding.
-- Did not change scanner rules, suppression logic/allowlists, workflow triggers or permissions, SARIF upload, application code, dependencies, secrets, or deployment configuration.
+Evidence:
+- [Main run #249](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40183792859)
+- [First repair run #250](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40190718446)
+- [PR #1597](https://github.com/davidcollier77-code/Luckypickcanada/pull/1597)
 
-## Governance and artifacts
-- `AGENTS.md`: USED YES — authoritative repository workflow, Spec Kit order, verification and PR rules.
-- `.jules/jules.md`: USED YES — initialization and sequential feature-work guidance.
-- `.jules/security.md`: USED YES — selected security task group.
-- `.docs/manifest.json` and the security group's routed Jules/Gemini snapshots: USED YES — checked repository routing requirements; `.docs/` remains unchanged/read-only.
+## Implemented changes
+- `.github/scripts/test_suppress_devskim_false_positives.py`: repaired two unterminated fixture-write strings; adjusted the checksum offset regression fixture to include absolute offset, length, and exact source snippet.
+- `.github/scripts/suppress_devskim_false_positives.py`: checksum exception now prefers a verified absolute source span when present and still requires the span to stay fully inside the exact quoted checksum. The inaccurate column alone does not qualify.
+- `.specify/features/devskim-test-syntax-repair/{spec,plan,tasks}.md`: task artifacts.
+- `memory-bank/activeContext.md`: current DevSkim repair status.
+- `PR_SUMMARY.md`: this evidence record.
+
+## Preserved
+No rules were disabled; no paths were excluded; no suppression allowlist was broadened. Workflow triggers/permissions, SARIF upload, application behavior, dependencies, secrets, and deployment configuration were not changed.
+
+## Governance / resources
+- `AGENTS.md`: USED YES — repository rules and verification/PR requirements.
+- `.jules/jules.md`: USED YES — feature initialization/sequence and context loading.
+- `.jules/security.md`: USED YES — selected task group.
+- `.docs/manifest.json` and the routed security Jules/Gemini snapshots: USED YES — consulted task routing and required resources; `.docs/` remains read-only.
 - Spec Kit artifact paths: `.specify/features/devskim-test-syntax-repair/spec.md`, `plan.md`, and `tasks.md`.
 
-## Changed files
-- `.github/scripts/test_suppress_devskim_false_positives.py` — fix two syntax errors.
-- `.specify/features/devskim-test-syntax-repair/spec.md`
-- `.specify/features/devskim-test-syntax-repair/plan.md`
-- `.specify/features/devskim-test-syntax-repair/tasks.md`
-- `memory-bank/activeContext.md`
-- `PR_SUMMARY.md`
+## Verification status
+- Main run #249: scanner passed; syntax-validation passed; regression-test import failed with the malformed literal.
+- First PR run #250: syntax-validation passed; 50/51 tests passed; one checksum-offset regression failed and drove the follow-up fix.
+- **Current-head full unit suite, fresh DevSkim workflow, `./jules-verify.sh`, and any other required CI: PENDING.** No completion claim until current-head results are verified.
+- Production build not run: no application/runtime code or dependencies changed. If a build becomes required, report measured size; the hard maximum is 495 MB.
 
-## Verification
-- **Verified before fix:** DevSkim scanner succeeded; the focused test step failed to import the test module with `SyntaxError: unterminated string literal` at line 207. The same malformed string pattern appeared a second time in the same test module.
-- **Post-fix syntax check, focused test suite, fresh workflow, and `./jules-verify.sh`: PENDING GitHub CI / unavailable in this remote editing session.** Do not treat the fix as verified until those checks are reviewed.
-- Production build not run: this change only repairs test-fixture strings and task documentation; no application/runtime source or dependencies changed.
-- Build size hard limit remains 495 MB if a build becomes required.
+## Diff audit
+The intended implementation scope is limited to the suppression helper, its regression tests, task artifacts, Memory Bank active context, and PR Summary. Current CI must validate the follow-up. The PR remains open and unmerged for owner review.
 
-## Final diff audit
-Initial scope is limited to the two malformed test-fixture writes and task governance/report artifacts. Reconcile the final diff and update the pending checks after CI completes. No PR merge is authorized.
-
-**USEFUL RESULT: NO — the repair is implemented, but post-fix verification is still pending.**
+**USEFUL RESULT: NO — implementation is updated, current-head verification remains pending.**
