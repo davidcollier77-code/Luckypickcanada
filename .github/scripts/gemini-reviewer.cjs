@@ -262,14 +262,15 @@ async function main() {
     if (!event.pull_request || event.pull_request.draft) { log("Skipping draft/non-PR event."); return; }
     number = event.pull_request.number;
   } else if (EVENT_NAME === "issue_comment") {
-    if (!event.issue?.pull_request || !/^\/gemini-fix(?:\s|$)/i.test(String(event.comment?.body || "").trim())) {
+    const command = String(event.comment?.body || "").trim().toLowerCase();
+    if (!event.issue?.pull_request || !["@gemini full review", "@gemini repair all"].includes(command)) {
       log("Skipping non-command issue comment."); return;
     }
     if (!TRUSTED.has(String(event.comment?.author_association || "").toUpperCase())) {
-      log("Skipping auto-fix command from a non-collaborator."); return;
+      log("Skipping Gemini command from a non-collaborator."); return;
     }
     number = event.issue.number;
-    mode = "fix";
+    mode = command === "@gemini repair all" ? "fix" : "review";
   } else if (EVENT_NAME === "workflow_dispatch") {
     number = Number(process.env.GEMINI_PR_NUMBER);
     mode = String(process.env.GEMINI_MODE || "review").toLowerCase();
