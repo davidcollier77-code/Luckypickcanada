@@ -1,5 +1,4 @@
 'use client';
-import { playButtonClick } from './lib/audio';
 
 import { useState, useEffect } from 'react';
 import { canBypassRevealPayment } from './test-tools/reveal-testing/revealTestConfig';
@@ -7,13 +6,16 @@ import { canBypassRevealPayment } from './test-tools/reveal-testing/revealTestCo
 const COPY = {
   lucky_pick: { title: 'Choose your Lucky Pick', description: 'Select a game to continue to the secure checkout.' },
   gift_package: { title: 'Gift a Lucky Pick', description: 'Add the recipient details before continuing to the secure checkout.' },
-  tip: { title: 'Leave a tip', description: 'Choose an amount in Canadian dollars to continue to the secure checkout.' },
+  tip: { title: 'Leave a tip', description: 'Thank you so much for your support! Your generosity keeps the magic alive. Choose an amount in Canadian dollars to continue to the secure checkout.' },
 };
 
 export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
   const [luckyPickGame, setLuckyPickGame] = useState('6');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const copy = COPY[type];
+  if (!copy) {
+    return null;
+  }
   const isRevealTestMode = canBypassRevealPayment(type);
 
   useEffect(() => {
@@ -92,7 +94,7 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
 
   return (
     <div className="checkout-modal-backdrop" role="presentation" onMouseDown={onClose}>
-      <section className="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title" onMouseDown={(event) => event.stopPropagation()}>
+      <section className={`checkout-modal checkout-modal-${type}`} role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title" onMouseDown={(event) => event.stopPropagation()}>
         <button type="button" className="checkout-modal-close focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" onClick={onClose} aria-label="Close checkout options" autoFocus>×</button>
         <p className="homepage-offer-kicker">Lucky Pick Canada</p>
         <h2 id="checkout-modal-title">{copy.title}</h2>
