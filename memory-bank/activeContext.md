@@ -1,3 +1,11 @@
+# Active Context — Mobile Performance Improvements (2026-10-25)
+
+- **Task:** Safely improve LuckyPickCanada's mobile website performance by optimizing the 675KB Gift Experience PNG.
+- **Change:** Implemented a responsive <picture> element in app/homepage/HomePage.js serving AVIF and WebP formats using srcSet. Added suppressHydrationWarning to prevent Playwright test failures due to React hydration mismatch on the new <picture> structure.
+- **Additional Fix:** Removed an invalid quality={85} prop from the map logo Image component to resolve Next.js build warnings.
+- **Verification:** All 106 unit tests passed, all 18 visual regression tests (Playwright) passed, and the production build size is well under the 495MB limit (428MB).
+- **Scope:** Kept strictly to replacing the static image with an optimized picture tag and removing one invalid prop. No redesign, layout changes, or functionality adjustments.
+
 # Current Task — CodeRabbit CLI Integration Retirement (2026-10-24)
 
 - **Decision:** At the repository owner's direction, retire the active CodeRabbit CLI review integration after the GitHub Actions run reported `Invalid or expired API key` (run [40117926386](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40117926386)). The CLI route could not be made to authenticate using the available credential.
