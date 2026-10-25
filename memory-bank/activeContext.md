@@ -1,7 +1,7 @@
 # Active Context — Gemini Reviewer Replacement (2026-10-25)
 
 - **Task:** Build a separate Gemini-powered automatic PR reviewer to replace the retired Gemini PR-Agent integration after the owner requested a strong Amazon Q alternative.
-- **Branch:** `feat/gemini-reviewer-autofix-20261025`; the replacement PR is not yet open or merged.
+- **Branch:** `feat/gemini-reviewer-autofix-20261025`; PR #1603 is open and unmerged.
 - **Design:** Separate rules file `.gemini/rules/luckypickcanada.md`, based on Amazon Q's review standards without modifying `.amazonq/rules/luckypickcanada.md`; Gemini 3.8 Flash primary and Gemini 3.6 Flash fallback using the existing Actions secret name `GEMINI_API_KEY`.
 - **Review behavior:** Automatic evidence-based review, validated inline findings, concrete GitHub suggestion blocks, bounded model retries/fallback, and local `.docs/` selection with no one-group limit and honest USED/USEFUL reporting.
 - **Opt-in fixes:** A trusted `/gemini-fix` comment or manual workflow-dispatch `fix` mode asks Gemini for focused inline suggestions. The workflow does not write source files, create commits, or push; the owner decides whether to use GitHub's native Commit suggestion action. No PR is merged by the workflow.
