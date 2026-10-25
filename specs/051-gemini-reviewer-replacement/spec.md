@@ -1,17 +1,16 @@
-# Specification — Gemini PR Reviewer and Opt-In Auto-Fix
+# Specification — Gemini PR Reviewer and Optional Fix Suggestions
 
 ## Goal
-Provide an independent Gemini-powered code reviewer for LuckyPickCanada with actionable review quality comparable to or better than the existing Amazon Q review standards, plus explicit, optional auto-fix.
+Provide an independent Gemini-powered reviewer for LuckyPickCanada with evidence-based review quality comparable to the existing Amazon Q review standards, plus an explicit, optional way to request code suggestions.
 
 ## Requirements
 - Automatically review pull requests when opened, reopened, updated with commits, made ready for review, or review-requested.
-- Use Gemini 3.8 Flash as the primary model and Gemini 3.6 Flash as fallback when the primary call is unavailable or fails after a bounded retry.
-- Load and follow .gemini/rules/luckypickcanada.md on every review and fix run. Leave Amazon Q's original rule file unchanged.
-- Inspect relevant changes, report evidence-based bugs/regressions/security/error-handling/performance/test findings, filter low-confidence findings, and offer concise explanations and practical fixes.
-- Select relevant local .docs/ groups and snapshots from the manifest without an arbitrary one-group restriction. Report exact snapshots actually consulted, whether they were materially useful, and why.
-- Post one review summary plus inline comments for verified changed-line findings; include GitHub suggestion blocks when a safe targeted code suggestion is available.
-- Never edit code during review or fix-suggestion generation. Only generate extra inline suggestions after a trusted /gemini-fix comment or manual fix workflow dispatch; the owner applies a suggestion manually.
-- Restrict on-demand fix suggestions to eligible added lines in files already changed in the same-repository PR. Publish safe one-line GitHub suggestion blocks so the owner can choose whether to click the native Commit suggestion button. The workflow itself never edits files, creates commits, or pushes code.
-- Use trusted base-branch workflow/script/rules for pull-request events. Never execute code from PR head during review or auto-fix.
-- Use the existing Actions secret name GEMINI_API_KEY; never expose its value or alter secrets.
-- Do not add dependencies, change application runtime behavior, or modify Amazon Q's rules.
+- Use Gemini 3.8 Flash as the primary model and Gemini 3.6 Flash as fallback, with a bounded retry policy.
+- Load and follow `.gemini/rules/luckypickcanada.md` on every review and suggestion run. Leave Amazon Q's original rule file unchanged.
+- Review bugs, regressions, security, error handling, material performance, and test gaps. Publish only evidence-based findings with confidence at least 0.80.
+- Select relevant local `.docs/` groups and snapshots from the manifest without an arbitrary one-group limit. Report exact snapshots consulted, whether each was materially useful, and why.
+- Post one review summary with inline comments for validated changed lines. Include native GitHub suggestion blocks when a safe one-line replacement is possible.
+- Normal review must not change repository code. Additional suggestions require a trusted `/gemini-fix` comment or manual workflow-dispatch selection of `fix`.
+- Suggestions are limited to eligible added lines in already-changed files. The workflow never directly edits files, creates commits, or pushes generated code; the owner chooses whether to click GitHub's native Commit suggestion button.
+- Use trusted base-branch workflow/script/rules. Never execute code from the PR head, modify protected paths, or merge a pull request.
+- Use existing Actions secret name `GEMINI_API_KEY` without exposing its value. Add no dependencies, and do not change application runtime behavior, Amazon Q's rules, or `.docs/` snapshots.
