@@ -493,8 +493,17 @@ def should_suppress_checksum_metadata_finding(
     if len(value) != expected_length or not SHA_PATTERN.fullmatch(value):
         return False
     value_span = pair.span("value")
-    # DevSkim SARIF regions include both JSON quotation marks around the hash.
-    return _region_is_within_span(region, (value_span[0] - 1, value_span[1] + 1))
+    # Prefer DevSkim's absolute source span when available; its SARIF column
+    # fields have historically been one character early for some checksum findings.
+    # The validated span must still lie entirely inside this exact quoted digest.
+    line = source_lines[line_number - 1]
+    region_span = _source_region_span_on_line(region, line_number, line, source_text)
+    if region_span is None:
+        return False
+    return (
+        region_span[0] >= value_span[0] - 1
+        and region_span[1] <= value_span[1] + 1
+    )
 
 
 
