@@ -21,6 +21,8 @@ describe("Gemini PR reviewer", () => {
     expect(rules).toContain("which were materially useful, and why");
     expect(rules).toContain("Never approve or merge a pull request.");
     expect(rules).toContain("GitHub's native inline suggestion format");
+    expect(rules).toContain("@Gemini full review");
+    expect(rules).toContain("@Gemini repair all");
   });
 
   it("runs automatic reviews and accepts explicit suggestion requests", () => {
