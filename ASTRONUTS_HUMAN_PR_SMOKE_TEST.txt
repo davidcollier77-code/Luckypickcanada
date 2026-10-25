@@ -1,0 +1,5 @@
+Temporary Astronuts trigger test.
+
+This inert text file exists only to test whether Astronuts automatically reviews a newly opened PR created through the repository owner's GitHub account after the app was installed.
+
+Do not merge this test PR. Close it after observing the result.
