@@ -24,10 +24,10 @@ describe("Gemini PR reviewer", () => {
     expect(rules).toContain("_websites_ai_google_dev_gemini-api.md");
     expect(rules).toContain("Do not use Jules-specific documentation");
     expect(rules).toContain("USEFUL: YES/NO");
-    expect(rules).toContain("Never approve or merge a pull request.");
-    expect(rules).toContain("GitHub's native inline suggestion format");
-    expect(rules).toContain("@Gemini full review");
-    expect(rules).toContain("@Gemini repair all");
+    expect(rules).toContain("approve a pull request, or merge it.");
+    expect(rules).toContain("GitHub inline suggestions");
+    expect(rules).toContain("@gemini full review");
+    expect(rules).toContain("@gemini repair all");
   });
 
   it("runs automatic reviews and accepts explicit suggestion requests", () => {
@@ -63,6 +63,10 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain('USED: YES; USEFUL: ');
     expect(script).toContain('USED: NO; USEFUL: NO;');
     expect(script).toContain('const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);');
+    expect(script).toContain('mode = "initial";');
+    expect(script).toContain('const selection = mode === "initial"');
+    expect(script).toContain('method: "skipped for initial automatic review"');
+    expect(script).toContain('mode === "initial" ? { loaded: [], unloaded: [] } : loadDocs(selection)');
     expect(fixScript).toContain('documentReport');
   });
 
