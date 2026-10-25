@@ -58,8 +58,8 @@ jobs:
           GITHUB_API_URL: ${{ github.api_url }}
         run: node .github/scripts/gemini-reviewer.mjs
 
-      - name: Verify no trusted-base reviewer files were changed
+      - name: Verify trusted reviewer files remain unchanged
         if: always()
         run: |
-          git diff --exit-code -- .gemini/rules/luckypickcanada.md .github/workflows/gemini-reviewer.yml .github/scripts/gemini-reviewer.mjs
+          git diff --exit-code -- .gemini/rules .github/workflows .github/scripts
 
