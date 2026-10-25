@@ -1,3 +1,14 @@
+# Current Task — Gemini PR-Agent Review Retirement (2026-10-25)
+
+- **Owner decision:** Retire the separate Gemini PR-Agent code-review workflow; use PR Insights Tagger for PR triage and Amazon Q for code review while evaluating a stronger reviewer.
+- **Evidence:** Smoke-test PR #1598 received an automated PR Insights Tagger summary and an Amazon Q formal review. The Gemini PR-Agent run attempted Gemini 3.8 Flash, encountered a 503/high-demand response and timeout, then completed through the configured Gemini 3.6 Flash fallback with no findings on the intentionally trivial one-line test.
+- **Implementation branch:** `chore/retire-gemini-pr-agent-20261025`. The active `.github/workflows/pr-agent.yml` workflow and its dedicated `__tests__/pr-agent-workflow.test.js` were removed on this branch; historical Spec Kit records remain unchanged.
+- **Preserved:** PR Insights, Amazon Q, DevSkim, all other workflows and tests, app source, Oracle/Crystal Ball runtime usage, packages/lockfile, Cloudflare configuration, and secrets.
+- **Secret distinction:** After the retirement PR is merged, the owner can remove the now-unused GitHub Actions `GEMINI_API_KEY` secret only after confirming no other workflow references it. Do not remove the separate Cloudflare runtime secret used by the site Oracle.
+- **Verification:** PR-head CI and final diff review are pending. This API-connected session cannot run local `pnpm test` or `./jules-verify.sh`; do not treat them as passed.
+
+---
+
 # Current Task — DevSkim Regression and Checksum Span Repair (2026-10-25)
 
 - **Root cause verified:** DevSkim runs #246–#249 passed the scanner/SARIF upload but failed at the suppression unit-test step because two test-fixture string literals were unterminated. After those literals were fixed, first PR CI ran 51 tests and exposed one remaining checksum-offset regression (50 passed, 1 failed).
