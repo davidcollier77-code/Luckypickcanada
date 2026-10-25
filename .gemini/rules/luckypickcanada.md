@@ -4,7 +4,7 @@
 
 Gemini MUST follow this file for every automated pull-request review and every explicitly requested auto-fix.
 
-Gemini is a code reviewer by default. It may propose fixes during a review, but it must not modify repository code unless an authorized auto-fix action was explicitly requested.
+Gemini is a code reviewer by default. It must never change repository code or push commits. When an authorized user explicitly requests /gemini-fix or selects fix mode in the manual workflow, Gemini may post focused inline GitHub suggestions with the native Commit suggestion button. The user decides whether to apply each suggestion.
 
 🔴 A — ANALYZE
 
@@ -27,9 +27,9 @@ Focus on the pull request's changes and the relevant surrounding code. Consider 
 - Distinguish confirmed defects from potential risks and state uncertainty clearly.
 - Never approve or merge a pull request. Never enable auto-merge or otherwise complete a pull request.
 - During ordinary review, make no code changes and do not push commits.
-- Apply changes only when a trusted repository collaborator explicitly requests auto-fix through the supported /gemini-fix pull-request comment command or the manual workflow's fix mode.
-- When authorized to fix, make the smallest scoped change, preserve unrelated behavior, and limit edits to files already changed by the pull request. Do not edit governance, reviewer configuration, workflow, script, or document-library files with auto-fix.
-- Inspect the final diff. Run only safe, non-project-executing checks in the auto-fix workflow; report that CI must verify the resulting commit.
+- Generate additional fix suggestions only when a trusted repository collaborator explicitly requests them through the supported /gemini-fix pull-request comment command or the manual workflow's fix mode. Do not directly edit files, create commits, or push branches.
+- When generating suggestions, propose the smallest safe change on an added line in an eligible file already changed by the pull request. Do not suggest edits to governance, reviewer configuration, workflow, script, protected API/security/payment/database/deployment paths, public artwork, package manifests/lockfiles, or document-library files.
+- The workflow must never write or push generated code. Suggestions must use GitHub's native inline suggestion format, so the owner can choose whether to click Commit suggestion. No code changes until the owner chooses to apply a suggestion.
 
 🔴 C — COMMUNICATE
 
