@@ -14,7 +14,7 @@ describe("Gemini PR reviewer", () => {
   it("uses separate rules based on Amazon Q's review standards", () => {
     expect(existsSync(rulesPath)).toBe(true);
     expect(rules).toContain("Review bugs, logic errors");
-    expect(rules).toContain("Security vulnerabilities.");
+    expect(rules).toContain("security issues");
     expect(rules).toContain("confidence of at least 0.80");
     expect(rules).toContain("🔴 A — ANALYZE");
     expect(rules).toContain("🔴 B — BOUNDARIES");
