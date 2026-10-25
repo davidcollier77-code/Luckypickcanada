@@ -1,13 +1,11 @@
 # Active Context — Gemini Reviewer Replacement (2026-10-25)
 
-- **Task:** Build a separate Gemini-powered automatic PR reviewer to replace the retired Gemini PR-Agent integration after the owner requested a strong Amazon Q alternative.
-- **Branch:** `feat/gemini-reviewer-autofix-20261025`; PR #1603 is open and unmerged.
-- **Design:** Separate rules file `.gemini/rules/luckypickcanada.md`, based on Amazon Q's review standards without modifying `.amazonq/rules/luckypickcanada.md`; Gemini 3.8 Flash primary and Gemini 3.6 Flash fallback using the existing Actions secret name `GEMINI_API_KEY`.
-- **Review behavior:** Automatic evidence-based review, validated inline findings, concrete GitHub suggestion blocks, bounded model retries/fallback, and local `.docs/` selection with no one-group limit and honest USED/USEFUL reporting.
-- **Opt-in fixes:** A trusted `/gemini-fix` comment or manual workflow-dispatch `fix` mode asks Gemini for focused inline suggestions. The workflow does not write source files, create commits, or push; the owner decides whether to use GitHub's native Commit suggestion action. No PR is merged by the workflow.
-- **Safety:** Trusted base-branch code only; PR-head code is never executed. Token permissions are limited to reading contents and writing PR reviews/issues comments. No app runtime, dependencies, deployment settings, secret values, Amazon Q rules, or `.docs/` files are intended to change.
-- **Verification:** GitHub API authoring only. Local `pnpm test` and `./jules-verify.sh` could not be run. Current-head CI and syntax-test results are pending. The workflow is not live until the owner merges it and eligible PR events verify operation.
-- **Prior failure evidence:** The retired Gemini workflow received a 503/timeout on Gemini 3.8 Flash and then returned through the 3.6 Flash fallback on PR #1598. The replacement uses bounded retry/fallback, but live reliability and review quality remain unverified.
+- **Current task:** Extend the independent Gemini PR reviewer in PR #1604 with a third, last-resort model fallback, as authorized by the repository owner.
+- **PR state:** PR #1603 was merged; PR #1604 remains open and unmerged on branch `fix/gemini-library-guided-reviews`.
+- **Ordered model chain:** Gemini 3.8 Flash primary → Gemini 3.6 Flash first fallback → Gemini 3.5 Flash-Lite second fallback. The review and opt-in fix-suggestion paths use the same ordered chain and retain two-attempt bounded retry behavior per model.
+- **Review behavior:** Automatic evidence-based review; explicit `@gemini full review` and `@gemini repair all` commands; task-group-based library selection/reporting for explicit requests; no direct source writes, commits, pushes, approvals, or merges.
+- **Safety:** Trusted base-branch workflow/scripts only; PR-head code is never executed. Existing `GEMINI_API_KEY` secret name, least-privilege permissions, Amazon Q rules, document-library snapshots, app runtime, dependencies, and deployment settings remain outside the change.
+- **Verification:** Workflow, review script, fix-suggestion script, Spec Kit artifacts, and model-order regression assertions have been updated on the PR branch. Local `pnpm test` and `./jules-verify.sh` have not been run from this API-connected session; current-head GitHub checks still need confirmation. Do not claim live operation until CI passes and a natural review demonstrates the third fallback.
 
 ---
 
