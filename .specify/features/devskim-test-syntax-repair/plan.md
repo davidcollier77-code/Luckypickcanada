@@ -1,13 +1,14 @@
-# Implementation Plan: DevSkim Regression Test Syntax Repair
+# Implementation Plan: DevSkim Regression Test and Checksum Span Repair
 
 ## Scope
-Correct only the two malformed string literals in `.github/scripts/test_suppress_devskim_false_positives.py`; keep the existing scanner, suppression logic, workflow permissions, triggers, and report-update guard unchanged.
+Repair two malformed fixture string literals and make the known checksum suppression use a verified absolute source span when DevSkim supplies one. Do not alter scan rules, allowlists, workflow triggers/permissions, report deduplication, or unrelated application/deployment code.
 
 ## Steps
-1. Replace each split/unterminated fixture-write string with a valid `source_line + "\\n"` argument and explicit UTF-8 encoding.
-2. Run Python syntax compilation and the focused unit test suite where a repository shell is available.
-3. Use the resulting GitHub Actions run to verify the filter and report pipeline.
-4. Inspect the full diff, check the two replacements, and ensure no suppression rules changed.
+1. Restore newline-terminated UTF-8 fixture writes in both affected unit tests.
+2. Update checksum suppression to prefer the checked absolute span/snippet when available, while requiring the span to remain inside the exact quoted checksum.
+3. Update the regression test to model the historical off-by-one SARIF columns alongside a correct absolute offset and snippet; retain the strict span-boundary condition.
+4. Verify Python syntax, run the complete suppression suite, and inspect the fresh GitHub Actions results.
+5. Audit every changed file and update the PR Summary with verified results and remaining checks.
 
-## Risk and rollback
-Low risk: test-fixture syntax only. If tests reveal unrelated or substantive failures after import succeeds, do not weaken tests or widen suppressions; record the failing assertions and repair only in-scope defects.
+## Safety
+Do not make the old off-by-one column alone sufficient for suppression. If absolute source evidence is absent or inconsistent, the normal strict coordinate validation must reject out-of-range regions.
