@@ -93,7 +93,7 @@ async function askFixModel(prompt, rules, agents) {
     (lastError && lastError.message ? lastError.message : "unknown error"));
 }
 
-async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, reviewRules, agents }) {
+async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, reviewRules, agents, documentReport }) {
   const byPath = new Map(files.map((file) => [file.filename, file]));
   const candidates = [];
   for (const finding of findings) {
@@ -148,7 +148,7 @@ async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, 
   }
   const body = "## Gemini On-Demand Fix Suggestions\n\n" +
     String(response.data.summary || "Gemini produced focused suggestions for the reported findings.") +
-    "\n\nNo code has been changed automatically. Use GitHub's native Commit suggestion button only for a fix you choose to apply. Suggestions are limited to eligible changed lines. The pull request remains open and unmerged.\n\n**Model:** " + response.model;
+    "\n\nNo code has been changed automatically. Use GitHub's native Commit suggestion button only for a fix you choose to apply. Suggestions are limited to eligible changed lines. The pull request remains open and unmerged.\n\n**Model:** " + response.model + "\n\n" + String(documentReport || "Document-library report unavailable.");
   await github("/repos/" + REPO + "/pulls/" + pr.number + "/reviews", TOKEN, {
     method: "POST", body: JSON.stringify({ event: "COMMENT", body, comments })
   });
