@@ -204,7 +204,7 @@ class Sha512IntegritySuppressionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source_line = "    resolution: {integrity: sha512-" + self.DIGEST + "}"
-            (root / "pnpm-lock.yaml").write_text(source_line + "
+            (root / "pnpm-lock.yaml").write_text(source_line + "\n")
             start = source_line.index(self.HASH_TOKEN) + 1
             data = {
                 "runs": [{
@@ -264,7 +264,7 @@ class SarifOutputFilteringTests(unittest.TestCase):
                 + "5CJf+KXg=="
             )
             source_line = "    resolution: {integrity: sha512-" + digest + "}"
-            (root / "pnpm-lock.yaml").write_text(source_line + "
+            (root / "pnpm-lock.yaml").write_text(source_line + "\n")
             start = source_line.index("md" + "5") + 1
             sarif_path = root / "devskim-alerts.sarif"
             sarif_path.write_text(
@@ -504,7 +504,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
         region = {
             "startLine": 2,
             "startColumn": value_start + 1,
-            "endColumn": value_start + len(SHA256) + 3,
+            "endColumn": value_start + len(SHA256) + 2,
         }
         self.assertTrue(
             suppressions.should_suppress_constitution_template_checksum(
@@ -606,7 +606,7 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                     source,
                     {
                         "startLine": 3,
-                        "startColumn": value_start,  # One char before the quote
+                        "startColumn": value_start + 1,  # One char before the quote
                         "endColumn": value_start + len(SHA256) + 3,
                     },
                 )

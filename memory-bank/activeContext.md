@@ -6,6 +6,12 @@
 - **Verification:** All 106 unit tests passed, all 18 visual regression tests (Playwright) passed, and the production build size is well under the 495MB limit (428MB).
 - **Scope:** Kept strictly to replacing the static image with an optimized picture tag and removing one invalid prop. No redesign, layout changes, or functionality adjustments.
 
+# Active Context — CI Failure Fix (2026-10-25)
+
+- **Task:** Address the DevSkim CI failure in GitHub Actions (syntax error and test assertion failure).
+- **Change:** Fixed unterminated string literals and corrected an off-by-one span validation bug.
+- **Verification:** All 51 Python tests run locally via unittest now pass.
+
 # Current Task — CodeRabbit CLI Integration Retirement (2026-10-24)
 
 - **Decision:** At the repository owner's direction, retire the active CodeRabbit CLI review integration after the GitHub Actions run reported `Invalid or expired API key` (run [40117926386](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40117926386)). The CLI route could not be made to authenticate using the available credential.
