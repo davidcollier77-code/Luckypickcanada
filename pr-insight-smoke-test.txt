@@ -1,0 +1,1 @@
+Temporary smoke-test note for verifying automatic pull-request review behavior. This file is not application code and should be removed after the test.
