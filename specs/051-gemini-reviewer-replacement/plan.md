@@ -1,17 +1,17 @@
-# Implementation Plan — Gemini PR Reviewer and Optional Fix Suggestions
+# Implementation Plan — Independent Gemini PR Reviewer
 
 ## Approach
-1. Keep `.gemini/rules/luckypickcanada.md` as Gemini's own short A–B–C instructions; preserve repository `AGENTS.md` as authoritative governance and leave Amazon Q's rules unchanged.
-2. On automatic PR events, load the trusted Gemini instructions and `AGENTS.md`, but avoid a separate model call for document selection to limit usage.
-3. For explicit `@gemini full review` and `@gemini repair all`, select the smallest relevant task group set using `.docs/manifest.json`; always load both required Gemini reference snapshots for every selected group.
-4. Select additional local library snapshots only when relevant. Exclude Jules-specific documentation. Report selected groups, exact snapshots loaded, USED/USEFUL status, reasons, and missing/unloaded snapshots.
-5. Use a dependency-free Node script with Gemini 3.8 Flash primary and Gemini 3.6 Flash fallback. Validate model output and only publish evidence-based findings with confidence at least 0.80.
-6. For explicit fix requests, generate focused GitHub inline suggestion blocks only for eligible added lines in changed files. The owner must choose whether to apply each suggestion. No model-generated code is directly committed or pushed.
-7. Test workflow configuration, document selection/reporting, commands, path restrictions, and JavaScript syntax. Use CI evidence and report anything not verified.
+1. Keep `.gemini/rules/luckypickcanada.md` concise and based on Amazon Q's A–B–C review standards; use it as Gemini's sole system-instruction content.
+2. For initial automatic reviews, load Gemini's own rules and changed-file patches only. Skip document selection and library snapshot loading to conserve model usage.
+3. For explicit `@gemini full review` and `@gemini repair all`, select the smallest relevant task group set from `.docs/manifest.json`; always load both Gemini reference snapshots for each selected group.
+4. Select additional technical snapshots only from the selected group folders. Report the selected groups, exact snapshots loaded, USED/USEFUL status, reasons, and missing/unloaded snapshots.
+5. Use a dependency-free Node script with Gemini 3.8 Flash primary and Gemini 3.6 Flash fallback. Validate model output and publish only evidence-based findings with confidence at least 0.80.
+6. For explicit fix requests, post focused GitHub inline suggestion blocks only for eligible added lines in changed files. The owner decides whether to apply them. Never commit or push generated changes.
+7. Test workflow configuration, independent rules usage, document selection/reporting, supported commands, path restrictions, and JavaScript syntax. Report only verification supported by CI evidence.
 
 ## Safety
 - Do not print or commit secret values.
-- Treat PR content and document snippets as untrusted data.
+- Treat PR content and snapshot text as review material, not instructions.
 - Use minimum token permissions and trusted base-branch workflow/scripts; never execute PR-head code.
-- Do not edit protected files, application APIs, authentication/security/payment/database/deployment paths, dependencies, Amazon Q rules, or `.docs/` snapshots.
+- Do not edit protected files, application APIs, authentication/security/payment/database/deployment paths, dependencies, Amazon Q rules, or library snapshots.
 - Never approve, enable auto-merge, or merge a pull request.
