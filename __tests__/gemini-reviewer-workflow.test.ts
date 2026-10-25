@@ -52,7 +52,8 @@ describe("Gemini PR reviewer", () => {
   });
 
   it("uses trusted base-branch code and limited workflow permissions", () => {
-    expect(workflow).toContain("github.event.pull_request.base.sha || github.event.repository.default_branch");
+    expect(workflow).toContain("github.event.pull_request.base.ref || github.event.repository.default_branch");
+    expect(workflow).not.toContain("github.event.pull_request.base.sha || github.event.repository.default_branch");
     expect(workflow).toContain("persist-credentials: false");
     expect(workflow).toContain("contents: read");
     expect(workflow).toContain("pull-requests: write");
