@@ -111,6 +111,15 @@ describe("Gemini PR reviewer", () => {
     expect(fixScript).toContain(".docs/");
   });
 
+  it("validates event-specific modes once before prompt construction", () => {
+    const validations = script.match(/if \(!Number\.isInteger\(Number\(number\)\)/g) || [];
+    expect(validations).toHaveLength(1);
+    const validationIndex = script.indexOf("if (!Number.isInteger(Number(number))");
+    const promptIndex = script.indexOf("const prompt = [");
+    expect(validationIndex).toBeGreaterThan(-1);
+    expect(validationIndex).toBeLessThan(promptIndex);
+    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix"].includes(mode))');
+  });
   it("parses the reviewer scripts without executing them", () => {
     for (const path of [scriptPath, fixPath]) {
       const result = spawnSync(process.execPath, ["--check", path], {
