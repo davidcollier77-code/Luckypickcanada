@@ -1,4 +1,5 @@
 'use client';
+import { playButtonClick } from './lib/audio';
 
 import { useState, useEffect } from 'react';
 import { canBypassRevealPayment } from './test-tools/reveal-testing/revealTestConfig';
@@ -13,9 +14,6 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
   const [luckyPickGame, setLuckyPickGame] = useState('6');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const copy = COPY[type];
-  if (!copy) {
-    return null;
-  }
   const isRevealTestMode = canBypassRevealPayment(type);
 
   useEffect(() => {

@@ -391,5 +391,4 @@ main().catch(async (error) => {
     if (Number.isInteger(Number(number)) && Number(number) > 0 && REPO && TOKEN)
       await comment(Number(number), "Gemini PR Reviewer stopped. Reason: " + message + "\n\nNo pull request was merged.");
   } catch { /* Do not expose secondary API failures or secrets. */ }
-  process.exitCode = 1;
 });
