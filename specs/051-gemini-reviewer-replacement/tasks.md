@@ -10,5 +10,5 @@
 - [ ] T008 After owner-approved activation, verify a naturally occurring automatic review and one explicitly requested suggestion run before claiming live operation is proven.
 - [x] T009 Keep automatic initial reviews lightweight; reserve task-group selection and library-document loading for explicit full-review and repair-all requests.
 - [x] T010 Restrict supporting snapshots to the selected task group(s) and report exactly which were loaded and useful.
-- [ ] T011 Add Gemini 3.5 Flash-Lite as the second fallback in `.github/workflows/gemini-reviewer.yml`, `.github/scripts/gemini-reviewer.cjs`, and `.github/scripts/gemini-autofix.cjs`; add ordered-chain regression assertions in `__tests__/gemini-reviewer-workflow.test.ts`.
+- [x] T011 Add Gemini 3.5 Flash-Lite as the second fallback in `.github/workflows/gemini-reviewer.yml`, `.github/scripts/gemini-reviewer.cjs`, and `.github/scripts/gemini-autofix.cjs`; add ordered-chain regression assertions in `__tests__/gemini-reviewer-workflow.test.ts`.
 - [ ] T012 Run the focused regression test, full `pnpm test`, `./jules-verify.sh`, and verify all current-head GitHub checks; record unavailable or failed checks honestly.
