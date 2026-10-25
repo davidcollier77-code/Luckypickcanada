@@ -14,5 +14,5 @@ Provide a lightweight Gemini-powered PR reviewer based on Amazon Q's concise Aâ€
 - Review bugs, regressions, security, error handling, material performance, and important test gaps. Publish actionable, evidence-based findings with confidence at least 0.80.
 - Support exactly two trusted PR comment commands: `@gemini full review` for a full review and `@gemini repair all` for review plus optional fix suggestions.
 - Suggestions are limited to eligible added lines in files already changed by the PR. Never write generated code directly, create commits, push code, approve, or merge a pull request.
-- Use Gemini 3.8 Flash as primary and Gemini 3.6 Flash as fallback, with bounded retries and the existing `GEMINI_API_KEY` Actions secret.
+- Use the ordered model chain Gemini 3.8 Flash (primary), Gemini 3.6 Flash (first fallback), and Gemini 3.5 Flash-Lite (second fallback). Apply the same bounded retry behavior to each model, using the existing `GEMINI_API_KEY` Actions secret.
 - Use trusted base-branch workflow/scripts/rules. Never execute PR-head code, expose secrets, add dependencies, change application runtime behavior, modify Amazon Q's rules, or change library snapshots.
