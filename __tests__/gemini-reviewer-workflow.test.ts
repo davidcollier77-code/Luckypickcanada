@@ -95,6 +95,10 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("luckypickcanada.md");
     expect(script).toContain("for (let attempt = 1; attempt <= 2; attempt += 1)");
     expect(fixScript).toContain("for (let attempt = 1; attempt <= 2; attempt += 1)");
+    expect(script).toContain('log("Model " + models[index] + " attempt " + attempt + " failed: " + reason);');
+    expect(fixScript).toContain('process.stderr.write("[Gemini PR Reviewer] Fix model " + models[ix] + " attempt " + attempt + " failed: " + reason + "\\n");');
+    expect(script).toContain("All configured Gemini models failed after bounded retries.");
+    expect(fixScript).toContain("All configured Gemini models failed while generating fix suggestions.");
   });
 
   it("generates opt-in GitHub suggestions rather than directly writing code", () => {
