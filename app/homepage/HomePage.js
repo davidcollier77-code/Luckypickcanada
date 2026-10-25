@@ -1,5 +1,5 @@
 'use client';
-import Image from 'next/image';
+
 import { playButtonClick } from '../lib/audio';
 
 import { useState, useEffect, useRef } from 'react';
@@ -254,15 +254,15 @@ export default function HomePage() {
       for (let i = 0; i < ambientStars.length; i++) {
         const star = ambientStars[i];
 
-        let currentAlpha = star.baseAlpha;
-
         // Add subtle independent twinkling for the sparse subset of active stars
         if (star.canTwinkle && !reducedMotion) {
           // Slow sine wave based on time, phase, and speed
-          currentAlpha += Math.sin(currentTime * star.twinkleSpeed + star.twinklePhase) * 0.4;
+          const currentAlpha = star.baseAlpha + Math.sin(currentTime * star.twinkleSpeed + star.twinklePhase) * 0.4;
+          if (currentAlpha <= 0) continue;
+          ctx.globalAlpha = currentAlpha > 1 ? 1 : currentAlpha;
+        } else {
+          ctx.globalAlpha = star.baseAlpha;
         }
-
-        ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha));
 
         ctx.fillRect(star.x - star.radius, star.y - star.radius, star.radius * 2, star.radius * 2);
       }
@@ -410,7 +410,7 @@ export default function HomePage() {
       <section id="community-section" className="homepage-section" aria-labelledby="community-stories-heading">
         <div className="homepage-community-grid" style={{ gridTemplateColumns: '1fr' }}>
           <article id="community-stories" className="homepage-community-card relative overflow-hidden" style={{ padding: 'clamp(1.5rem, 4vw, 2.5rem)', borderRadius: '28px', border: '1px solid rgba(255, 235, 160, 0.15)', boxShadow: '0 24px 70px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1)' }}>
-          <Image src="/community-stars-bg.webp" alt="" fill className="absolute inset-0 z-0 object-cover opacity-40 mix-blend-screen" sizes="(max-width: 1000px) 100vw, 1000px" />
+          <img src="/community-stars-bg.webp" alt="" className="absolute inset-0 z-0 object-cover opacity-40 mix-blend-screen" sizes="(max-width: 1000px) 100vw, 1000px" />
           <div className="relative z-10">
           <p className="homepage-offer-kicker">COMMUNITY</p>
           <h2 id="community-stories-heading" className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Lucky Stories</h2>
