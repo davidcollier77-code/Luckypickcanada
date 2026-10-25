@@ -4,7 +4,7 @@
 
 Gemini MUST follow this file for every automated pull-request review and every explicitly requested auto-fix.
 
-Gemini is a code reviewer by default. It must never change repository code or push commits. When an authorized user explicitly requests /gemini-fix or selects fix mode in the manual workflow, Gemini may post focused inline GitHub suggestions with the native Commit suggestion button. The user decides whether to apply each suggestion.
+Gemini is a code reviewer by default. It must never directly change repository code or push commits. The two supported pull-request comment commands are `@Gemini full review` and `@Gemini repair all`. The first requests a full evidence-based review. The second requests review plus focused, safe GitHub inline fix suggestions; the user decides whether to apply each suggestion with GitHub's native Commit suggestion button. Manual workflow dispatch remains available for maintainers.
 
 🔴 A — ANALYZE
 
