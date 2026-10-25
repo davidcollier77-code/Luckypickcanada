@@ -2,6 +2,7 @@ const API = (process.env.GITHUB_API_URL || "https://api.github.com").replace(/\/
 const KEY = process.env.GEMINI_API_KEY || "";
 const PRIMARY = process.env.GEMINI_PRIMARY_MODEL || "gemini-3.8-flash";
 const FALLBACK = process.env.GEMINI_FALLBACK_MODEL || "gemini-3.6-flash";
+const SECOND_FALLBACK = process.env.GEMINI_SECOND_FALLBACK_MODEL || "gemini-3.5-flash-lite";
 
 function safePath(path) {
   return typeof path === "string" && path.length > 0 && !path.startsWith("/") &&
@@ -53,7 +54,7 @@ function parseJson(text) {
 }
 async function askFixModel(prompt, rules) {
   if (!KEY) throw new Error("GEMINI_API_KEY is missing or unavailable.");
-  const models = [PRIMARY, FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);
+  const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);
   let lastError = null;
   for (let ix = 0; ix < models.length; ix += 1) {
     for (let attempt = 1; attempt <= 2; attempt += 1) {
