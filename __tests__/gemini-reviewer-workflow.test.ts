@@ -122,13 +122,12 @@ describe("Gemini PR reviewer", () => {
   });
 
   it("keeps Amazon Q's original rules outside Gemini's implementation scope", () => {
-    const paths = [
-      ".gemini/rules/luckypickcanada.md",
-      ".github/workflows/gemini-reviewer.yml",
-      ".github/scripts/gemini-reviewer.cjs",
-      ".github/scripts/gemini-autofix.cjs",
-      "__tests__/gemini-reviewer-workflow.test.ts"
-    ];
-    expect(paths).not.toContain(".amazonq/rules/luckypickcanada.md");
+    const aqRulesPath = ".amazonq/rules/luckypickcanada.md";
+    // The Amazon Q rules file must remain present and unchanged.
+    expect(existsSync(aqRulesPath)).toBe(true);
+    // Gemini's scripts and workflow must not reference the Amazon Q rules file.
+    expect(script).not.toContain(aqRulesPath);
+    expect(fixScript).not.toContain(aqRulesPath);
+    expect(workflow).not.toContain(aqRulesPath);
   });
 });
