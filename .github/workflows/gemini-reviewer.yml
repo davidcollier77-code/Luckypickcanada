@@ -1,0 +1,65 @@
+name: Gemini PR Reviewer
+
+on:
+  # Use trusted base-branch workflow and scripts while treating PR content as untrusted data.
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review, review_requested]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Review a PR or explicitly request Gemini to apply fixes"
+        type: choice
+        options: [review, fix]
+        default: review
+        required: true
+      pr_number:
+        description: "Pull request number"
+        type: number
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: gemini-reviewer-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  gemini-review:
+    name: Review or explicitly fix pull request
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted base-branch code only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # actions/checkout v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Verify Node runtime
+        run: node --version
+
+      - name: Run Gemini reviewer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_PRIMARY_MODEL: gemini-3.8-flash
+          GEMINI_FALLBACK_MODEL: gemini-3.6-flash
+          GEMINI_MODE: ${{ inputs.mode || 'review' }}
+          GEMINI_PR_NUMBER: ${{ inputs.pr_number || '' }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_API_URL: ${{ github.api_url }}
+        run: node .github/scripts/gemini-reviewer.mjs
+
+      - name: Verify no trusted-base reviewer files were changed
+        if: always()
+        run: |
+          git diff --exit-code -- .gemini/rules/luckypickcanada.md .github/workflows/gemini-reviewer.yml .github/scripts/gemini-reviewer.mjs
+
