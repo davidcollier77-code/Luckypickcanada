@@ -14,7 +14,7 @@
 ## Safety and behavior
 - Automatic review runs use the trusted base-branch workflow/scripts and retrieve PR diffs through the GitHub API.
 - Ordinary reviews only comment; they do not change code, approve, request changes, or merge.
-- Auto-fix requires the explicit /gemini-fix command from a trusted collaborator or a manual workflow_dispatch selection of fix. Fork-owned PR branches and protected reviewer/governance files are rejected.
+- Auto-fix requires the explicit @gemini repair all command from a trusted collaborator or a manual workflow_dispatch selection of fix. Fork-owned PR branches and protected reviewer/governance files are rejected.
 - Explicit fix mode asks Gemini for optional inline GitHub suggestion blocks on safe added lines. The owner chooses whether to click GitHub's native Commit suggestion button. The workflow itself never writes source files, creates commits, or pushes; it does not execute PR-head code or project scripts.
 
 ## Verification
