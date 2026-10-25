@@ -16,9 +16,14 @@ describe("Gemini PR reviewer", () => {
     expect(rules).toContain("Bugs and logic errors.");
     expect(rules).toContain("Security vulnerabilities.");
     expect(rules).toContain("confidence of at least 0.80");
-    expect(rules).toContain("DOCUMENT-LIBRARY SELECTION AND EVIDENCE");
-    expect(rules).toContain("There is no one-group limit.");
-    expect(rules).toContain("which were materially useful, and why");
+    expect(rules).toContain("🔴 A — ANALYZE");
+    expect(rules).toContain("🔴 B — BOUNDARIES");
+    expect(rules).toContain("🔴 C — COMMUNICATE");
+    expect(rules).toContain("For EVERY selected group");
+    expect(rules).toContain("_google-gemini_gemini-cli.md");
+    expect(rules).toContain("_websites_ai_google_dev_gemini-api.md");
+    expect(rules).toContain("Do not use Jules-specific documentation");
+    expect(rules).toContain("USEFUL: YES/NO");
     expect(rules).toContain("Never approve or merge a pull request.");
     expect(rules).toContain("GitHub's native inline suggestion format");
     expect(rules).toContain("@Gemini full review");
@@ -47,6 +52,18 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain('if (!pr || typeof pr !== "object")');
     expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const list = await getFiles(number)"));
     expect(script).toContain("AGENTS.md");
+  });
+
+  it("requires Gemini references for selected groups and reports actual document use", () => {
+    expect(script).toContain('function isRequiredGeminiDoc(path)');
+    expect(script).toContain('".docs/" + group + "/_google-gemini_gemini-cli.md"');
+    expect(script).toContain('".docs/" + group + "/_websites_ai_google_dev_gemini-api.md"');
+    expect(script).toContain('const allDocPaths = walkDocs(resolve(ROOT, ".docs")).filter((path) => !isJulesSpecificDoc(path));');
+    expect(script).toContain('"**Selected task group(s):** "');
+    expect(script).toContain('USED: YES; USEFUL: ');
+    expect(script).toContain('USED: NO; USEFUL: NO;');
+    expect(script).toContain('const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);');
+    expect(fixScript).toContain('documentReport');
   });
 
   it("uses the configured Gemini primary and fallback models without dependencies", () => {
