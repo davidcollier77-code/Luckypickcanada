@@ -9,11 +9,13 @@ import ExploreLuckButton from './ExploreLuckButton';
  */
 export default function Hero() {
   // Use imageSrcSet and imageSizes for accurate preloading of responsive images
-  preload("/homepage-hero-lucky-pick-canada.avif", {
+  // Preloading the WEBP fallback aligns with the primary <img> src
+  // to ensure browsers discover it early even if they don't support AVIF preloading.
+  preload("/homepage-hero-lucky-pick-canada.webp", {
     as: "image",
     fetchPriority: "high",
-    type: "image/avif",
-    imageSrcSet: "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w",
+    type: "image/webp",
+    imageSrcSet: "/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w",
     imageSizes: "(max-width: 768px) 100vw, 1024px"
   });
 
