@@ -64,6 +64,20 @@ describe("Gemini reviewer source context", () => {
       {title: "integrate Gemini Deep Research agent", body: "Use the Interactions API."},
       [{filename: "lib/deep-research.js"}]
     )).toBe(true);
+    const selected = reviewer.selectRelevantGeminiReferenceDocs([
+      ".docs/deep-dive/_google-gemini_gemini-cli.md",
+      ".docs/security/_google-gemini_gemini-cli.md",
+      ".docs/deep-dive/_websites_ai_google_dev_gemini-api.md",
+      ".docs/security/_websites_ai_google_dev_gemini-api.md"
+    ], {
+      title: "Integrate Gemini CLI config and Gemini Deep Research",
+      body: "Use Interactions API for the deep research workflow."
+    }, [
+      {filename: ".gemini/GEMINI.md"},
+      {filename: "lib/deep-research.js"}
+    ]);
+    expect(selected.map((item) => item.kind)).toEqual(["cli", "deep-research"]);
+    expect(selected).toHaveLength(2);
   });
   it("selects relevant groups based on paths/domain, not generic fix wording", () => {
     const groups = ["polishing", "troubleshooting", "testing", "seo", "security", "deep-dive"];
