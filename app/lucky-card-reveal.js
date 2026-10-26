@@ -1189,6 +1189,10 @@ export default function LuckyCardReveal() {
     if (initialMetrics) {
       cardMetricsRef.current = initialMetrics;
     }
+  // cardMetricsRef.current is updated here (synchronously), before renderCanvas
+  // runs. renderCanvas is launched via a nested requestAnimationFrame inside the
+  // outer RAF above, so it always executes at least one frame later and will see
+  // the updated metrics. There is no synchronous call path to renderCanvas.
 
 
     const { cx, cy, w: cardW, h: cardH } = cardMetricsRef.current;
