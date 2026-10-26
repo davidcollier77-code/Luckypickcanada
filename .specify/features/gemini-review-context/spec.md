@@ -37,7 +37,7 @@ As the repository owner, I need each finding to provide a complete copy/paste im
 
 **Acceptance Scenarios**:
 1. **Given** a review contains multiple findings, **When** the report is rendered, **Then** each finding has its own collapsed prompt containing the issue, path/location, evidence, impact, suggested direction, constraints, tests, verification/reporting, and no-merge instruction.
-2. **Given** a finding is on an eligible added line, **When** the owner comments `@gemini repair one <path>:<line>`, **Then** the trusted workflow re-reviews and offers a native suggestion only if the same finding remains at that exact path and line.
+2. **Given** a finding is on an eligible added line, **When** the owner comments `@gemini repair one <path>:<line> -- <finding title>`, **Then** the trusted workflow re-reviews and offers a native suggestion only if the same finding remains at that exact path and line.
 3. **Given** the owner comments `@gemini repair all`, **When** Gemini processes the request, **Then** it considers all current findings but only posts safe suggestions for eligible changed added lines.
 4. **Given** a requested finding is stale, ineligible, or cannot be fixed as a safe one-line suggestion, **When** repair mode completes, **Then** Gemini explains the limitation and does not write, push, or merge code.
 
@@ -53,7 +53,7 @@ As the repository owner, I need each finding to provide a complete copy/paste im
 - **FR-008**: Existing model fallback order, trusted-base workflow, prompt-injection boundaries, confidence threshold, inline-comment anchoring, opt-in fix suggestions, and no-merge behavior MUST remain unchanged.
 - **FR-009**: Tests MUST cover default source-context collection, bounded coverage disclosures, relevant-versus-irrelevant document selection, and existing reviewer regressions.
 - **FR-010**: Every finding's collapsed section MUST contain a standalone, copy/paste implementation prompt with the finding, exact location, scope constraints, regression tests, verification/reporting, and no-merge boundary.
-- **FR-011**: The reviewer MUST support trusted-collaborator commands for a targeted finding (`@gemini repair one <path>:<line>`) and all eligible findings (`@gemini repair all`); targeted requests MUST be re-reviewed and matched to the exact path/line before suggestions are generated.
+- **FR-011**: The reviewer MUST support trusted-collaborator commands for a targeted finding (`@gemini repair one <path>:<line> -- <finding title>`) and all eligible findings (`@gemini repair all`); targeted requests MUST be re-reviewed and matched to the exact path/line before suggestions are generated.
 - **FR-012**: Fix requests MUST remain opt-in native suggestions on eligible changed added lines. No direct repository edits, pushes, commits, merges, or auto-merge activation are permitted.
 
 ## Constraints and exclusions
