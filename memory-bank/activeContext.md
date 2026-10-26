@@ -1,3 +1,23 @@
+# Active Context — Gemini Traffic-Light Review and Copyable Fixes (2026-10-26)
+
+- **Current PR:** `#1611`, branch `improve/gemini-review-context`; review-summary presentation is added to the existing reviewer improvement.
+- **Output format:** red 🔴 issues with location/problem/impact; each suggested fix is hidden in a clickable details dropdown with copy-friendly text and safe replacement code when available; green 🟢 observations are evidence-backed; yellow 🟡 marks unresolved coverage.
+- **Merge signal:** a green Gemini verdict means no actionable finding and no known coverage gap in the reviewed scope; it is not merge approval. Required GitHub checks, reviews, and branch protection remain separate.
+- **Verification:** syntax parsing and source-level assertions are performed during editing; Vitest, `./jules-verify.sh`, and PR-head workflow results must be independently checked before completion.
+
+---
+
+# Active Context — Amazon Q-Derived Gemini Reviewer Improvements (2026-10-26)
+
+- **Current reviewer PR:** `#1611`, branch `improve/gemini-review-context`; the existing reviewer source-context task is being updated in place.
+- **Verified case study:** Amazon Q's review of merged PR #1610 found that a WebP-only preload mismatched the AVIF-first `picture` selection. The reviewed code now contains AVIF and WebP preload hints, but MDN confirms that browsers supporting both formats may preload both files, even though the picture uses only one. This is a potential duplicate-transfer cost to evaluate; this reviewer task changes guidance only and does not modify application code.
+- **Additional lesson:** Q's nested `requestAnimationFrame` comment demonstrates why ordering concerns must be traced through callback registration, execution, state reads/writes, and every reachable direct/synchronous call path before being called a defect.
+- **Verified regression in candidate branch:** commit `85746cc3` introduced a malformed `clipSource` marker string. This follow-up repairs that parser-breaking string and retains the clip-length regression test.
+- **Reviewer change:** `.github/scripts/gemini-reviewer.cjs` and `.gemini/rules/luckypickcanada.md` now explicitly reason about both patterns; dedicated assertions were added to `__tests__/gemini-reviewer-context.test.ts`.
+- **Verification:** JavaScript syntax compilation passed in the connected analysis runtime. Vitest, `./jules-verify.sh`, CI, and live-model acceptance remain pending until actually verified. No app code, dependencies, workflow permissions, secrets, or protected visuals were changed.
+
+---
+
 # Active Context — Verified DevSkim Checksum Alert Cleanup (2026-10-25)
 
 - **Finding disposition:** The only row in `devskim-alerts.md` was DS173237 at `.specify/memory/.constitution-template.json:2`. The value is the 64-character SHA-256 checksum for the core constitution template, not a credential. This finding was previously classified as a false positive in `specs/037-devskim-alert-triage/triage.md`.
@@ -647,3 +667,13 @@
   4. Converted `<Image />` component tags in `app/lucky-map-of-canada/lucky-map-of-canada.js` and `app/homepage/HomePage.js` that were improperly mixing with `unoptimized: true` to standard `<img>` tags inside `<picture>` elements.
   5. Removed unnecessary `mix-blend-screen` from `app/homepage/HomePage.js` overlay image.
 - **Validation:** Build completes successfully within the 495 MB cap. Tests and verification passing.
+
+
+---
+
+# Current Task — Gemini Reviewer Source Context (2026-10-26)
+
+- **Objective:** Improve the custom Gemini PR reviewer after Amazon Q identified the AVIF/WebP LCP preload mismatch on merged PR #1610 and Gemini missed it.
+- **Implementation candidate:** PR #1611 adds bounded, read-only retrieval of changed-file source at immutable PR head SHAs, selected base versions, and relevant relative imports. Review prompts now require end-to-end before/after reasoning and explicit image preload/type/srcSet/sizes matching; deterministic task-group fallback relies on changed paths and defect domain.
+- **Safety and preservation:** PR content is passed only as untrusted text and is never executed. Existing trusted base-branch workflow, Gemini rules, opt-in suggestions, fallback order (3.8 → 3.6 → 3.5), application behavior, and Amazon Q rules are preserved.
+- **Verification:** JavaScript syntax compilation passed in the connected analysis runtime. PR-head CI and Vitest are pending; no live-model accuracy claim is made until a real review demonstrates the regression catch.
