@@ -18,3 +18,4 @@ Gemini must review code in context rather than as disconnected diff hunks. It sh
 - The review summary uses consistent red/yellow/green verdicts, lists issues and evidence-backed positives in point form, and places each suggested fix in a collapsible section with copy-friendly text/code blocks.
 - A green review is explicitly distinguished from merge approval; required GitHub checks and reviews must also pass.
 - Unit tests cover import extraction, path traversal rejection, task-group selection, clipping, line anchors, batch-relevant context, evidence-led async ordering guidance, duplicate-format preload guidance, and review-formatting/verdict helpers.
+- TypeScript test sources remain syntactically valid so the Cloudflare production build type-check can complete before deployment.
