@@ -21,3 +21,8 @@
 - [x] Focused reviewer tests, full unit tests, TypeScript, Spec Kit, production build/size gate, OpenNext/Wrangler, DevSkim, updater governance, and visual regression checks passed on the code-reviewed head.
 - [ ] A completed live review confirms the intended default source context and selective document behavior.
 
+
+- [x] Every finding's collapsed section contains a standalone copy/paste implementation prompt with exact location, problem, impact, constraints, tests, verification, and reporting requirements.
+- [x] A targeted `@gemini repair one <path>:<line>` request is only presented for eligible added lines and rechecks the exact path/line before suggesting a change.
+- [x] `@gemini repair all` is clearly identified as a request for suggestions across all currently eligible findings; no code is applied automatically.
+- [ ] New targeted-repair and copy/paste prompt tests pass on the final PR head.
