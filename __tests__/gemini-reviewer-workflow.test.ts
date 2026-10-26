@@ -41,15 +41,21 @@ describe("Gemini PR reviewer", () => {
     expect(fixScript).not.toContain("Trusted AGENTS.md governance");
   });
 
-  it("runs automatic reviews and accepts the two explicit requests", () => {
+  it("runs automatic reviews and accepts full review plus single/all targeted repair requests", () => {
     expect(workflow).toContain("pull_request_target:");
     expect(workflow).toContain("opened, reopened, synchronize, ready_for_review, review_requested");
     expect(workflow).toContain("issue_comment:");
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("options: [review, fix]");
     expect(script).toContain("@gemini full review");
+    expect(script).toContain("@gemini repair one");
     expect(script).toContain("@gemini repair all");
+    expect(script).toContain("parseRepairCommand");
+    expect(script).toContain("requestedFindings = mode ===");
+    expect(script).toContain("Gemini Targeted Fix");
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
+    expect(script).toContain("Fix all findings");
+    expect(script).toContain("Copy/paste implementation prompt");
     expect(script).toContain("Commands: comment exactly @gemini full review");
   });
 
