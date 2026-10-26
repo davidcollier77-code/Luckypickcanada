@@ -1,6 +1,7 @@
 import Script from 'next/script';
 import Link from 'next/link';
 import { inter, manrope, playfair, cinzel } from './fonts';
+import JsonLd from './components/JsonLd';
 
 import '../themes/default/index.css';
 import './globals.css';
@@ -51,23 +52,20 @@ export const viewport = {
  * @returns {import('react').ReactElement} The document wrapping the route content.
  */
 export default function RootLayout({ children }) {
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Lucky Pick Canada',
+    url: 'https://luckypickcanada.ca',
+    description: 'Explore daily luck readings, collectible cards, a playful crystal ball and Canadian community stories. Entertainment only, with no real lottery affiliation.',
+  };
+
   return (
     <html lang="en-CA" className={`m-0 p-0 ${inter.variable} ${manrope.variable} ${playfair.variable} ${cinzel.variable}`}>
       <head>
                 <link rel="preconnect" href="https://challenges.cloudflare.com" />
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: 'Lucky Pick Canada',
-              url: 'https://luckypickcanada.ca',
-              description: 'Explore daily luck readings, collectible cards, a playful crystal ball and Canadian community stories. Entertainment only, with no real lottery affiliation.',
-            }),
-          }}
-        />
+        <JsonLd data={websiteSchema} />
       </head>
       <body className="m-0 p-0">
         <div className="homepage-background-foundation fixed inset-0 z-0 h-[100dvh] pointer-events-none overflow-hidden bg-slate-950">

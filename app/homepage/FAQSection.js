@@ -6,7 +6,7 @@ import { useState } from 'react';
  * Renders the homepage FAQ accordion with all answers initially collapsed.
  * Opening a question closes the previous one; selecting it again collapses it.
  *
- * @returns {import('react').ReactElement} The FAQ section with FAQPage JSON-LD.
+ * @returns {import('react').ReactElement} The interactive FAQ accordion.
  */
 export default function FAQSection() {
   const [openQuestion, setOpenQuestion] = useState(null);
@@ -46,19 +46,6 @@ export default function FAQSection() {
     setOpenQuestion(openQuestion === question ? null : question);
   };
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": faqs.map(faq => ({
-      "@type": "Question",
-      "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
-    }))
-  };
-
   return (
     <section
       className="homepage-section faq-section"
@@ -67,14 +54,8 @@ export default function FAQSection() {
         maxWidth: '800px',
         marginInline: 'auto',
         padding: '32px 16px',
-
       }}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, '\\u003c').replace(/>/g, '\\u003e') }}
-      />
-
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <p className="homepage-offer-kicker" style={{ color: '#eabe52', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Got Questions?</p>
         <h2 id="faq-heading" style={{ color: 'white', fontSize: '2rem', marginTop: '8px' }}>Frequently Asked Questions</h2>
