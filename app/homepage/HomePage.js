@@ -58,9 +58,9 @@ async function fetchVerifiedSession(sessionId, attempt = 0) {
 export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
   const [luckyReveal, setLuckyReveal] = useState(null);
+  const [suggested, setSuggested] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingTimeoutRef = useRef(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [suggestionError, setSuggestionError] = useState('');
 
   useEffect(() => {
@@ -74,19 +74,19 @@ export default function HomePage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
 
-  function handleSuggestionSubmit(event) {
   useEffect(() => {
     return () => clearTimeout(submittingTimeoutRef.current);
   }, []);
 
+  function handleSuggestionSubmit(event) {
     if (isSubmitting) {
       event.preventDefault();
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 8000);
     if (submittingTimeoutRef.current) clearTimeout(submittingTimeoutRef.current);
     submittingTimeoutRef.current = setTimeout(() => setIsSubmitting(false), 8000);
+  }
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);

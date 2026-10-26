@@ -146,8 +146,8 @@ export default function LuckyMapOfCanada({ mapData }) {
 
   useEffect(() => {
     const handlePageShow = (e) => {
-        clearTimeout(submittingTimeoutRef.current);
       if (e.persisted) {
+        clearTimeout(submittingTimeoutRef.current);
         setIsSubmitting(false);
       }
     };
@@ -155,20 +155,19 @@ export default function LuckyMapOfCanada({ mapData }) {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
 
-  function handleFormSubmit(event) {
   useEffect(() => {
     return () => clearTimeout(submittingTimeoutRef.current);
   }, []);
 
+  function handleFormSubmit(event) {
     if (isSubmitting) {
       event.preventDefault();
       return;
     }
     setIsSubmitting(true);
-    // Timeout to reset state in case the form submission hangs
-    setTimeout(() => setIsSubmitting(false), 8000);
     if (submittingTimeoutRef.current) clearTimeout(submittingTimeoutRef.current);
     submittingTimeoutRef.current = setTimeout(() => setIsSubmitting(false), 8000);
+  }
 
   function storyUrl(storyId) {
     if (typeof window === 'undefined') return '/lucky-map-of-canada';
