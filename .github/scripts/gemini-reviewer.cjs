@@ -108,8 +108,10 @@ function classifyReviewGroups(pr, files, availableGroups) {
 function clipSource(source, limit) {
   const value = String(source || "");
   if (value.length <= limit) return { content: value, truncated: false };
-  const head = Math.floor(limit * 0.7), tail = limit - head;
-  return { content: value.slice(0, head) + "\n[...middle of source omitted by reviewer context budget...]\n" + value.slice(-tail), truncated: true };
+  const MARKER = "
+  const available = Math.max(0, limit - MARKER.length);
+  const head = Math.floor(available * 0.7), tail = available - head;
+  return { content: value.slice(0, head) + MARKER + (tail > 0 ? value.slice(-tail) : ""), truncated: true };
 }
 async function getRepositoryFile(path, ref, repository = REPO) {
   if (!safePath(path) || !/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
@@ -125,7 +127,7 @@ async function getRepositoryFile(path, ref, repository = REPO) {
   }
 }
 async function getRepositoryPathSet(ref, repository = REPO) {
-  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
+  if (!/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
   try {
     const tree = await gh("/repos/" + repository + "/git/trees/" + encodeURIComponent(ref) + "?recursive=1");
     if (!tree || !Array.isArray(tree.tree) || tree.truncated) return null;
@@ -477,7 +479,7 @@ async function main() {
   const files = list.files;
   if (!files.length) { await comment(number, "Gemini PR Reviewer could not retrieve changed-file patches; no review or suggestions were made."); return; }
 
-  const sourceContext = await collectSourceContext(pr, files);
+  const sourceContext = mode === "initial" ? { records: [], limitations: ["Source context skipped for initial automatic review."] } : await collectSourceContext(pr, files);
   const allDocPaths = mode === "initial" ? [] : walkDocs(resolve(ROOT, ".docs")).filter((path) => !isJulesSpecificDoc(path));
   // Keep the automatic first review lightweight; full review and repair-all perform library selection.
   const selection = mode === "initial"

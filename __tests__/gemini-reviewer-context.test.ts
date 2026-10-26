@@ -25,6 +25,7 @@ describe("Gemini reviewer source context", () => {
     const clipped = reviewer.clipSource("BEGIN" + "x".repeat(1000) + "END", 100);
     expect(clipped.truncated).toBe(true); expect(clipped.content.startsWith("BEGIN")).toBe(true);
     expect(clipped.content.endsWith("END")).toBe(true); expect(clipped.content).toContain("middle of source omitted");
+    expect(clipped.content.length).toBeLessThanOrEqual(100);
   });
   it("anchors findings only to added lines", () => {
     expect([...reviewer.addedLines("@@ -1,2 +1,3 @@\n a\n+new line\n b")]).toEqual([2]);
