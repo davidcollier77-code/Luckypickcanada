@@ -533,8 +533,18 @@ def should_suppress_constitution_template_checksum(
     if not pair or pair.group("key") != "sha256" or pair.group("value") != value:
         return False
     value_span = pair.span("value")
-    # DevSkim SARIF regions include both JSON quotation marks around the checksum.
-    return _region_is_within_span(region, (value_span[0] - 1, value_span[1] + 1))
+    # DevSkim's reported columns can be one character early for this finding.
+    # Prefer the validated absolute span and snippet when present; the helper
+    # falls back to columns only when absolute-offset metadata is absent.
+    region_span = _source_region_span_on_line(
+        region, line_number, lines[line_number - 1], source_text
+    )
+    # The reported token may include the checksum's quotes, but no other source.
+    return (
+        region_span is not None
+        and region_span[0] >= value_span[0] - 1
+        and region_span[1] <= value_span[1] + 1
+    )
 
 
 def should_suppress_public_cloudflare_account_id(
