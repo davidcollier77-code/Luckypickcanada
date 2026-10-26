@@ -59,7 +59,6 @@
       "/websites/developer_apple_webkit",
       "jules.google/docs",
       "developers.google.com/jules/api",
-      "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
       "/dequelabs/axe-core",
       "/magicuidesign/magicui",
@@ -85,7 +84,6 @@
       "/getsentry/sentry-docs",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
       "/dequelabs/axe-core"
     ],
@@ -105,7 +103,6 @@
       "/websites/developer_apple_webkit",
       "jules.google/docs",
       "developers.google.com/jules/api",
-      "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
       "/dropbox/zxcvbn",
       "/cloudflare/cloudflare-docs/turnstile",
@@ -117,7 +114,6 @@
       "/websites/developer_apple_webkit",
       "jules.google/docs",
       "developers.google.com/jules/api",
-      "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
       "/goldfire/howler.js",
       "/websites/mdn_web_audio"
@@ -161,7 +157,6 @@
       "/websites/developer_apple_webkit",
       "jules.google/docs",
       "developers.google.com/jules/api",
-      "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api"
     ]
   },
