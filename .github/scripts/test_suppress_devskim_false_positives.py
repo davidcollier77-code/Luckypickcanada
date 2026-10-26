@@ -1,3 +1,4 @@
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -530,6 +531,61 @@ class KnownFalsePositiveRegressionTests(unittest.TestCase):
                 {"startLine": 2, "startColumn": 4, "endColumn": 4 + len(SHA256)},
             )
         )
+
+    def test_actual_devskim_sarif_checksum_span_is_suppressed_and_removed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative_path = Path(".specify/memory/.constitution-template.json")
+            source = '{\n  "sha256": "' + SHA256 + '",\n  "source": "core"\n}\n'
+            source_path = root / relative_path
+            source_path.parent.mkdir(parents=True)
+            source_path.write_text(source, encoding="utf-8")
+
+            quoted_checksum = '"' + SHA256 + '"'
+            region = {
+                "startLine": 2,
+                "startColumn": 12,
+                "endLine": 2,
+                "endColumn": 78,
+                "charOffset": source.index(quoted_checksum),
+                "charLength": len(quoted_checksum),
+                "snippet": {"text": quoted_checksum},
+            }
+
+            # The actual DevSkim columns are one character early. Without the
+            # validated absolute source span, this range must not be accepted.
+            columns_only = {
+                key: value
+                for key, value in region.items()
+                if key not in {"charOffset", "charLength", "snippet"}
+            }
+            self.assertFalse(
+                suppressions.should_suppress_constitution_template_checksum(
+                    relative_path.as_posix(), source, columns_only
+                )
+            )
+
+            sarif_path = root / "devskim-alerts.sarif"
+            sarif = {
+                "runs": [{
+                    "results": [{
+                        "ruleId": "DS173237",
+                        "level": "error",
+                        "message": {"text": "Do not store tokens or keys in source code."},
+                        "locations": [{
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": relative_path.as_posix()},
+                                "region": region,
+                            }
+                        }],
+                    }]
+                }]
+            }
+            sarif_path.write_text(json.dumps(sarif), encoding="utf-8")
+
+            self.assertEqual(suppressions.suppress_sarif(sarif_path, root), 1)
+            filtered = json.loads(sarif_path.read_text(encoding="utf-8"))
+            self.assertEqual(filtered["runs"][0]["results"], [])
 
     def test_docs_manifest_pinned_github_revision_is_suppressed(self):
         with tempfile.TemporaryDirectory() as directory:

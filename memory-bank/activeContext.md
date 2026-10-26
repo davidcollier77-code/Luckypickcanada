@@ -1,3 +1,14 @@
+# Active Context — DevSkim Checksum SARIF Span Fix (2026-10-26)
+
+- **Selected task group:** `security`; repair a narrow false-positive suppression failure confirmed in the actual scheduled scan artifact.
+- **Branch:** `fix/devskim-checksum-sarif-span-20261026`; the associated PR will remain open and unmerged for owner review.
+- **Evidence:** Scheduled DevSkim run [#40282205671](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40282205671) passed both jobs, but its post-filter SARIF still held one DS173237 result. The result points to the quoted 64-character SHA-256 checksum in `.specify/memory/.constitution-template.json`, with `charOffset`/`charLength` and a matching snippet, while the SARIF columns are one character early.
+- **Implementation:** `should_suppress_constitution_template_checksum()` now uses `_source_region_span_on_line()` to validate the actual source span and snippet when available, requiring the full span to stay inside the exact quoted checksum. A regression test covers production-shaped SARIF and checks that the false positive is removed from filtered SARIF while the columns-only mismatch remains unsuppressed.
+- **Report:** Remove only stale row `devskim-id:81298a9d79b888769be1`; preserve the report heading, append marker, template file, checksum, and all future genuine findings.
+- **Verification status:** Raw artifact inspection is verified. Local repository execution is unavailable in this session (GitHub clone failed because `github.com` could not be resolved). Focused Python tests, full checks, `./jules-verify.sh`, and current-head CI remain pending until actual results are inspected.
+
+---
+
 # Active Context — Cloudflare Build Syntax Repair (2026-10-26)
 
 - **Trigger:** The Cloudflare/OpenNext build for merged PR #1611 failed after Next.js compilation while TypeScript checked `__tests__/gemini-reviewer-context.test.ts`, reporting TS1128 at line 11.
@@ -28,14 +39,14 @@
 
 ---
 
-# Active Context — Verified DevSkim Checksum Alert Cleanup (2026-10-25)
+# Historical Context — DevSkim Checksum Alert Cleanup (2026-10-25; superseded)
 
-- **Finding disposition:** The only row in `devskim-alerts.md` was DS173237 at `.specify/memory/.constitution-template.json:2`. The value is the 64-character SHA-256 checksum for the core constitution template, not a credential. This finding was previously classified as a false positive in `specs/037-devskim-alert-triage/triage.md`.
-- **Existing protection verified:** `.github/scripts/suppress_devskim_false_positives.py` contains an exact-path, exact-key, valid-digest, source-region guard for this checksum. `.github/scripts/test_suppress_devskim_false_positives.py` includes positive and negative regression cases. No source or checksum change is needed or safe.
-- **Latest main scan evidence:** [DevSkim run 40241837558](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40241837558) passed. The suppression unit suite passed all 51 tests; the filter reported 133 verified false positives suppressed; the report updater appended 0 new findings. The alert row remained only because the report is intentionally append-only.
-- **Current task:** Remove that one stale report row in PR `chore/remove-verified-devskim-checksum-alert-20261025`. Preserve all other findings and the checksum/template contents.
-- **Verification status:** The latest completed scan validates the existing filter on `main`; current-head CI and the required `./jules-verify.sh` remain pending for this report-cleanup PR. Leave it open for owner review.
-
+- **Earlier cleanup:** PR #1608 removed the exact row with marker `81298a9d79b888769be1` from `devskim-alerts.md`.
+- **Reintroduction:** Automated report PR #1609 was merged four minutes later and re-added that row after a subsequent scan. The earlier cleanup did not correct why the scanner result survived filtering.
+- **Corrected diagnosis (VERIFIED from artifact):** Scheduled DevSkim run [#40282205671](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40282205671) completed successfully on 2026-10-26. Its post-filter SARIF still contained one DS173237 result for `.specify/memory/.constitution-template.json:2`. The snippet is the quoted 64-character SHA-256 checksum; the SARIF region has `startColumn: 12`, `endColumn: 78`, `charOffset: 14`, and `charLength: 66`.
+- **Root cause (VERIFIED):** `should_suppress_constitution_template_checksum()` checked only the reported columns, which are one character early, although `_source_region_span_on_line()` already validates the absolute offset, length, snippet, and source-line match. The filter therefore missed this exact false positive.
+- **Follow-up:** The current task fixes the exact-span validation, adds a regression test using the production-shaped SARIF, and removes only the corresponding report row. No source checksum, broad suppression, scan rule, or workflow trigger is changed.
+- **Verification boundary:** The scheduled scan and both jobs succeeded, but their success did not prove this finding was suppressed. Current follow-up PR checks and `./jules-verify.sh` must pass before cleanup is considered verified or merged.
 ---
 
 # Current Task — Gemini PR-Agent Review Retirement (2026-10-25)
