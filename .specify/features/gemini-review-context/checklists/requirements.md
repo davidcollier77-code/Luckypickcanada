@@ -14,4 +14,10 @@
 - [x] Unit regression tests added.
 - [ ] CI tests pass on exact PR head.
 - [ ] Live-model review demonstrates the intended regression catch.
+- [x] Automatic initial review invokes bounded source context instead of pre-declaring itself patch-only.
+- [x] Changed-source file and character budgets produce explicit coverage limitations; all text patches remain in review batches.
+- [x] Gemini CLI and Gemini Deep Research references are optional and blocked unless task relevance is directly supported.
+- [x] Regression assertions cover source-context limits, all-patch batching, ordinary tasks, CLI tasks, Deep Research tasks, and document-routing meta tasks.
+- [ ] Focused reviewer tests and full repository CI pass on the exact PR head.
+- [ ] A completed live review confirms the intended default source context and selective document behavior.
 
