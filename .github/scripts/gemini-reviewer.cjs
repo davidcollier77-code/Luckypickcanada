@@ -576,14 +576,14 @@ function parseRepairCommand(value) {
   const command = String(value || "").trim();
   if (/^@gemini\s+full\s+review$/i.test(command)) return { mode: "review" };
   if (/^@gemini\s+repair\s+all$/i.test(command)) return { mode: "fix" };
-  const match = command.match(/^@gemini\s+repair\s+one\s+(.+):([1-9]\d*)$/i);
+  const match = command.match(/^@gemini\s+repair\s+one\s+(.+):([1-9]\d*)\s+--\s+(.+)$/i);
   if (!match) return null;
   const path = match[1].trim();
   const line = Number(match[2]);
-  if (!safePath(path) || /[\r\n\0]/.test(path) || !Number.isSafeInteger(line) || line < 1) return null;
-  return { mode: "fix-one", target: { path, line } };
+  const title = match[3].replace(/\s+/g, " ").trim();
+  if (!safePath(path) || /[\r\n\0]/.test(path) || !Number.isSafeInteger(line) || line < 1 || !title || title.length > 200) return null;
+  return { mode: "fix-one", target: { path, line, title } };
 }
-
 function normalizePositiveObservations(items, files) {
   const paths = new Set(files.map((f) => f.filename));
   const output = [];
@@ -635,7 +635,7 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
         rows.push("**Request a targeted Gemini suggestion for this finding**");
         rows.push("Comment with exactly this command on the PR:");
         rows.push("");
-        rows.push(fencedText("@gemini repair one " + location));
+        rows.push(fencedText("@gemini repair one " + location + " -- " + tidy(finding.title)));
         rows.push("");
         rows.push("Gemini re-runs the review and only posts a native GitHub suggestion if the same finding is still present on this exact eligible added line and a safe one-line replacement is possible. Nothing is applied or pushed automatically.");
       } else {
@@ -738,7 +738,7 @@ async function main() {
   const pr = await gh("/repos/" + REPO + "/pulls/" + number);
   if (!pr || typeof pr !== "object") throw new Error("GitHub did not return valid pull-request metadata.");
   if (pr.state !== "open") {
-    if (mode === "fix") await comment(number, "Gemini fix suggestions were not generated because this PR is not open.");
+    if (mode === "fix" || mode === "fix-one") await comment(number, "Gemini fix suggestions were not generated because this PR is not open.");
     return;
   }
   if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing. Verify it under Settings → Secrets and variables → Actions; its value is never printed.");
@@ -808,7 +808,7 @@ async function main() {
   if (mode === "fix" || mode === "fix-one") {
     const fixModule = require("./gemini-autofix.cjs");
     const requestedFindings = mode === "fix-one"
-      ? findings.filter((finding) => finding.path === targetFinding.path && finding.line === targetFinding.line)
+      ? findings.filter((finding) => finding.path === targetFinding.path && finding.line === targetFinding.line && String(finding.title || "").replace(/\s+/g, " ").trim().toLowerCase() === targetFinding.title.toLowerCase())
       : findings;
     if (mode === "fix-one" && !requestedFindings.length) {
       await comment(number, "## Gemini Targeted Fix\n\nThe requested finding at " + targetFinding.path + ":" + targetFinding.line +
