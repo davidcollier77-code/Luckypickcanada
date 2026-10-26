@@ -7,15 +7,15 @@ describe("Gemini reviewer source context", () => {
   it("parses single-finding and all-finding repair commands safely", () => {
     expect(reviewer.parseRepairCommand("@gemini full review")).toEqual({ mode: "review" });
     expect(reviewer.parseRepairCommand("@gemini repair all")).toEqual({ mode: "fix" });
-    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:42")).toEqual({
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:42 -- Duplicate submit guard")).toEqual({
+      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42, title: "Duplicate submit guard" }
+    });
+    expect(reviewer.parseRepairCommand("@GEMINI REPAIR ONE app/homepage/HomePage.js:42 -- Duplicate submit guard")).toEqual({
       mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42 }
     });
-    expect(reviewer.parseRepairCommand("@GEMINI REPAIR ONE app/homepage/HomePage.js:42")).toEqual({
-      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42 }
-    });
-    expect(reviewer.parseRepairCommand("@gemini repair one ../secret.js:42")).toBeNull();
-    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0")).toBeNull();
-    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:-1")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair one ../secret.js:42 -- Bad path")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0 -- Bad line")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:-1 -- Bad line")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair all extra")).toBeNull();
   });
   it("builds a standalone implementation prompt and exposes targeted suggestions only for eligible added lines", () => {
@@ -177,7 +177,7 @@ describe("Gemini reviewer source context", () => {
     expect(formatted).toContain("**Copy/paste implementation prompt**");
     expect(formatted).toContain("Task: Investigate and fix one reported code-review finding.");
     expect(formatted).toContain("Read the repository's root AGENTS.md first");
-    expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42");
+    expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42 -- Broken preload");
     expect(formatted).toContain("### Fix all findings");
     expect(formatted).toContain("@gemini repair all");
     expect(formatted).toContain("Nothing is applied or pushed automatically.");
