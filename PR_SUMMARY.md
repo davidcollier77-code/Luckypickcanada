@@ -12,6 +12,12 @@
 - **Regression tests added/updated:** `__tests__/gemini-reviewer-context.test.ts` covers file/character limits, preservation of review batches, removed-source candidates, and task-relevance rules. `__tests__/gemini-reviewer-workflow.test.ts` checks initial source-context invocation and optional document behavior.
 - **Gemini-only rules updated:** `.gemini/rules/luckypickcanada.md` now explains when each of the two reference snapshots is actually relevant.
 
+## Independent review follow-up
+- **Document relevance routing:** adjusted the document-routing branch to restrict special-case handling to the two known Gemini reference types, allowing other future reference types to fall through to their own checks rather than being silently rejected by the special-case branch.
+- **Source budget priority:** current/head source files are now placed ahead of deleted files for the bounded source-context slots. Deleted-file source is still retrieved at the base SHA when within the budget, and deleted-file patches remain available to the review batches.
+- **API-key guard ordering:** verified in the current source that the `GEMINI_API_KEY` guard runs before changed-file/source-context retrieval; added a regression assertion to keep that order.
+- These are follow-ups to Amazon Q's independent comments. The API-key ordering claim did not match the current source order, but the explicit test now guards the behavior.
+
 ## Routed documentation and references
 - `AGENTS.md`, `.jules/jules.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, and `.specify/memory/constitution.md` — USED: YES; USEFUL: YES — governance, existing task context, sequencing, and boundaries.
 - `.jules/deep-dive.md` — USED: YES; USEFUL: YES — selects evidence-led implementation for the cross-cutting reviewer pipeline.
