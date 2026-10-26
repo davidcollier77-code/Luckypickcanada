@@ -27,8 +27,8 @@
 ## Phase 4 — Verification and reporting
 
 - [x] T014 Update the existing requirements checklist and `PR_SUMMARY.md` with exact changed files and honest pending verification.
-- [ ] T015 Run focused reviewer tests, full `pnpm test`, `./jules-verify.sh`, production/TypeScript build checks as applicable; record exact outcomes.
-- [ ] T016 Inspect all current-head GitHub Actions, validate mergeability, inspect the complete diff, and confirm the PR remains open and unmerged.
+- [x] T015 Verified focused reviewer tests, full Vitest, TypeScript, `./jules-verify.sh`, production build, 495 MiB size gate, OpenNext/Cloudflare and Wrangler no-deploy checks through GitHub Actions. Current measured build output: 315.74 MiB.
+- [x] T016 Inspected the complete changed-file list/diff and current-head GitHub Actions; DevSkim, unit tests, TypeScript, Spec Kit verification, build/size gate, OpenNext, Wrangler, updater governance and visual regression tests passed. GitHub reports mergeable; PR remains open and unmerged.
 - [ ] T017 After a naturally occurring or safely dispatched review completes, inspect its report to ensure ordinary reviews have source context and do not load irrelevant Gemini snapshots; do not claim live quality is proven without this evidence.
 
 ## Dependencies and execution order
