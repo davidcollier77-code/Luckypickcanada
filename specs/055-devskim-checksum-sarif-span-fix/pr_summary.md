@@ -64,7 +64,7 @@ The repository helper scripts `.specify/scripts/bash/setup-plan.sh`, `.specify/s
 
 ## Final scope audit
 
-- Exact changed paths: `.github/scripts/suppress_devskim_false_positives.py`, `.github/scripts/test_suppress_devskim_false_positives.py`, `devskim-alerts.md`, `memory-bank/activeContext.md`, and four files under `specs/055-devskim-checksum-sarif-span-fix/`.
+- Exact changed paths: `.github/scripts/suppress_devskim_false_positives.py`, `.github/scripts/test_suppress_devskim_false_positives.py`, `devskim-alerts.md`, `memory-bank/activeContext.md`, and five files under `specs/055-devskim-checksum-sarif-span-fix/`.
 - The exact false-positive row is absent; the report heading and append marker remain. The source template/checksum, unrelated report entries, other suppression predicates/allowlists, workflow schedule/triggers/permissions, dependencies, application behavior, and deployment settings remain unchanged.
 - All task-specific behavior is proven by the focused regression suite and zero-result SARIF artifact. The broad unit suite has one separately documented, unrelated failure in the Gemini reviewer `MARKER` handling; it is not hidden or claimed as passed.
 - No merge or deployment was performed.

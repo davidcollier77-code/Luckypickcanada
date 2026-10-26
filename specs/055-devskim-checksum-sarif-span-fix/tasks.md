@@ -34,6 +34,6 @@
 
 ## Final scope audit
 
-- Changed files: `.github/scripts/suppress_devskim_false_positives.py`, `.github/scripts/test_suppress_devskim_false_positives.py`, `devskim-alerts.md`, `memory-bank/activeContext.md`, and four artifacts under `specs/055-devskim-checksum-sarif-span-fix/`.
+- Changed files: `.github/scripts/suppress_devskim_false_positives.py`, `.github/scripts/test_suppress_devskim_false_positives.py`, `devskim-alerts.md`, `memory-bank/activeContext.md`, and five artifacts under `specs/055-devskim-checksum-sarif-span-fix/`.
 - The exact false-positive row is absent; the report heading and append marker remain. The source template/checksum, unrelated report entries, other suppression predicates/allowlists, workflow schedule/triggers/permissions, dependencies, application behavior, and deployment settings remain unchanged.
 - The only failed broad check is the unrelated Gemini `MARKER` test noted above. It is not hidden or claimed as passed. No merge or deployment was performed.
