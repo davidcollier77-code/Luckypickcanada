@@ -329,16 +329,25 @@ function isGeminiReferenceDoc(path) {
   return isGeminiCliDoc(path) || isGeminiDeepResearchDoc(path);
 }
 function isGeminiReferenceRelevant(path, pr, files) {
-  const text = [
-    String(pr && pr.title || ""),
-    String(pr && pr.body || ""),
-    ...(Array.isArray(files) ? files.map((file) => String(file && file.filename || "")) : [])
-  ].join("\n");
+  const title = String(pr && pr.title || "");
+  const body = String(pr && pr.body || "");
+  const changedPaths = Array.isArray(files) ? files.map((file) => String(file && file.filename || "")) : [];
+  const text = title + "\n" + body;
+  const isDocumentRoutingTask = /(?:documents?|snapshots?|references?).{0,80}(?:select|selection|relevance|load|loading|routing|filter)|(?:select|selection|relevance|load|loading|routing|filter).{0,80}(?:documents?|snapshots?|references?)/i.test(text);
+  if (isDocumentRoutingTask) {
+    return isGeminiCliDoc(path)
+      ? changedPaths.some((item) => /(^|\/)(?:GEMINI\.md|gemini-cli)(?:\/|$)|(^|\/)packages\/cli\//i.test(item))
+      : isGeminiDeepResearchDoc(path)
+        ? changedPaths.some((item) => /deep[-_]?research|interactions(?:[-_]?api)?/i.test(item))
+        : false;
+  }
   if (isGeminiCliDoc(path)) {
-    return /gemini[\s-]*cli|gemini\.md|cli configuration|cli commands?|command[- ]line interface/i.test(text);
+    return changedPaths.some((item) => /(^|\/)(?:GEMINI\.md|gemini-cli)(?:\/|$)|(^|\/)packages\/cli\//i.test(item)) ||
+      /(?:implement|integrate|debug|fix|configure|upgrade|migrate|support|test)\s+(?:the\s+)?Gemini\s+CLI|Gemini CLI (?:config(?:uration)?|commands?|integration|support|workflow|behavior)/i.test(text);
   }
   if (isGeminiDeepResearchDoc(path)) {
-    return /gemini deep research|deep[- ]research (?:agent|api|workflow)|interactions api|interactions\.create|deep-research-preview|agent_config/i.test(text);
+    return changedPaths.some((item) => /deep[-_]?research|interactions(?:[-_]?api)?/i.test(item)) ||
+      /Gemini Deep Research(?: agent)? (?:API|integration|workflow|support|implementation)|(?:implement|integrate|debug|fix|use|test)\s+(?:the\s+)?Gemini Deep Research|Interactions API|interactions\.create|deep-research-preview|agent_config/i.test(text);
   }
   return false;
 }
