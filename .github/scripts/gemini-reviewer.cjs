@@ -366,6 +366,18 @@ function geminiReferenceReason(path) {
   if (isGeminiDeepResearchDoc(path)) return "The PR directly concerns the Gemini Deep Research agent or Interactions API.";
   return "Not a Gemini reference snapshot.";
 }
+function selectRelevantGeminiReferenceDocs(paths, pr, files) {
+  const selected = [];
+  const selectedKinds = new Set();
+  for (const path of paths) {
+    if (!isGeminiReferenceDoc(path) || !isGeminiReferenceRelevant(path, pr, files)) continue;
+    const kind = isGeminiCliDoc(path) ? "cli" : "deep-research";
+    if (selectedKinds.has(kind)) continue;
+    selectedKinds.add(kind);
+    selected.push({ path, reason: geminiReferenceReason(path), kind });
+  }
+  return selected;
+}
 function selectChangedSourceCandidates(files) {
   const all = files.filter((f) => f.patch && safePath(f.filename) &&
     /\.(?:[cm]?[jt]sx?|css|scss|json|ya?ml|html|md)$/i.test(f.filename));
@@ -414,17 +426,18 @@ async function chooseDocs(pr, files, paths, sourceContext) {
   };
 
   // Gemini references are candidates only when task content proves direct relevance.
-  for (const path of groupPaths) {
-    if (isGeminiReferenceDoc(path) && isGeminiReferenceRelevant(path, pr, files)) {
-      addDocument(path, geminiReferenceReason(path));
-    }
-  }
+  const selectedReferenceDocs = selectRelevantGeminiReferenceDocs(groupPaths, pr, files);
+  for (const doc of selectedReferenceDocs) addDocument(doc.path, doc.reason);
 
   const modelDocuments = answer && Array.isArray(answer.result.selected_documents) ? answer.result.selected_documents : [];
   for (const item of modelDocuments) {
     const path = typeof item === "string" ? item : item && item.path;
     if (!availableSet.has(path) || isJulesSpecificDoc(path)) continue;
-    if (isGeminiReferenceDoc(path) && !isGeminiReferenceRelevant(path, pr, files)) continue;
+    if (isGeminiReferenceDoc(path)) {
+      if (!isGeminiReferenceRelevant(path, pr, files)) continue;
+      const kind = isGeminiCliDoc(path) ? "cli" : "deep-research";
+      if (selectedReferenceDocs.some((doc) => doc.kind === kind)) continue;
+    }
     addDocument(path, typeof item === "object" && item.reason ? String(item.reason) : "Selected as relevant by Gemini.");
   }
 
@@ -781,6 +794,6 @@ if (require.main === module) main().catch(async (error) => {
 
 module.exports = { addedLines, extractLocalImports, resolveImportCandidates, limitImportCandidates, MAX_IMPORT_SOURCE_PROBES,
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, selectChangedSourceCandidates,
-  isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant,
+  isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, renderSourceContext, makeBatches, normalizePositiveObservations,
   buildReviewVerdict, formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
