@@ -344,12 +344,13 @@ function isGeminiReferenceRelevant(path, pr, files) {
   const changedPaths = Array.isArray(files) ? files.map((file) => String(file && file.filename || "")) : [];
   const text = title + "\n" + body;
   const isDocumentRoutingTask = /(?:documents?|snapshots?|references?).{0,80}(?:select|selection|relevance|load|loading|routing|filter)|(?:select|selection|relevance|load|loading|routing|filter).{0,80}(?:documents?|snapshots?|references?)/i.test(text);
-  if (isDocumentRoutingTask) {
-    return isGeminiCliDoc(path)
-      ? changedPaths.some((item) => /(^|\/)(?:GEMINI\.md|gemini-cli)(?:\/|$)|(^|\/)packages\/cli\//i.test(item))
-      : isGeminiDeepResearchDoc(path)
-        ? changedPaths.some((item) => /deep[-_]?research|interactions(?:[-_]?api)?/i.test(item))
-        : false;
+  if (isDocumentRoutingTask && isGeminiReferenceDoc(path)) {
+    if (isGeminiCliDoc(path)) {
+      return changedPaths.some((item) => /(^|\/)(?:GEMINI\.md|gemini-cli)(?:\/|$)|(^|\/)packages\/cli\//i.test(item));
+    }
+    if (isGeminiDeepResearchDoc(path)) {
+      return changedPaths.some((item) => /deep[-_]?research|interactions(?:[-_]?api)?/i.test(item));
+    }
   }
   if (isGeminiCliDoc(path)) {
     return changedPaths.some((item) => /(^|\/)(?:GEMINI\.md|gemini-cli)(?:\/|$)|(^|\/)packages\/cli\//i.test(item)) ||
@@ -381,6 +382,9 @@ function selectRelevantGeminiReferenceDocs(paths, pr, files) {
 function selectChangedSourceCandidates(files) {
   const all = files.filter((f) => f.patch && safePath(f.filename) &&
     /\.(?:[cm]?[jt]sx?|css|scss|json|ya?ml|html|md)$/i.test(f.filename));
+  // Inspect live/head files first; deleted files remain eligible using base-SHA source,
+  // but must not consume the bounded context slots before currently present changed code.
+  all.sort((a, b) => Number(a.status === "removed") - Number(b.status === "removed"));
   return {
     candidates: all.slice(0, MAX_CHANGED_SOURCE_FILES),
     totalCount: all.length,
