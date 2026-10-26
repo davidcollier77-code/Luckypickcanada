@@ -6,6 +6,8 @@ const reviewer = require("../.github/scripts/gemini-reviewer.cjs");
 describe("Gemini reviewer source context", () => {
   it("extracts local imports but ignores package imports", () => {
     expect(reviewer.extractLocalImports('import Hero from "./Hero"; export { x } from "../lib/x.js"; const p = require("react"); require("./local.cjs"); import("next/image");'))
+    // Template-literal and fully dynamic specifiers are intentionally not matched (statically unresolvable)
+    expect(reviewer.extractLocalImports('import x from `./foo`; import(`./dynamic/${name}`);')).toEqual([]);
       .toEqual(["./Hero", "../lib/x.js", "./local.cjs"]);
   });
   it("resolves relative modules and rejects repository escapes", () => {
@@ -27,12 +29,22 @@ describe("Gemini reviewer source context", () => {
     const groups = ["polishing", "troubleshooting", "testing", "seo", "security", "deep-dive"];
     expect(reviewer.classifyReviewGroups({title:"fix: homepage performance",body:"Improve image preload"},[{filename:"app/homepage/Hero.js",patch:"+preload"}],groups)).toContain("polishing");
     expect(reviewer.classifyReviewGroups({title:"fix: metadata",body:""},[{filename:"app/metadata.js",patch:"+metadata"}],groups)).toContain("seo");
+    // deep-dive: file path matching gemini-reviewer routes to deep-dive
+    expect(reviewer.classifyReviewGroups({title:"feat: improve gemini reviewer",body:""},[{filename:".github/scripts/gemini-reviewer.cjs",patch:"+code"}],groups)).toContain("deep-dive");
+    // deep-dive: PR body containing "reviewer pipeline" keyword routes to deep-dive
+    expect(reviewer.classifyReviewGroups({title:"chore: update workflow",body:"Improve the reviewer pipeline"},[{filename:"README.md",patch:"+text"}],groups)).toContain("deep-dive");
     expect(reviewer.classifyReviewGroups({title:"fix typo",body:""},[{filename:"lib/math.js",patch:"+return value"}],groups)).not.toContain("polishing");
   });
   it("clips source while preserving the beginning and end", () => {
     const clipped = reviewer.clipSource("BEGIN" + "x".repeat(1000) + "END", 100);
     expect(clipped.truncated).toBe(true); expect(clipped.content.startsWith("BEGIN")).toBe(true);
     expect(clipped.content.endsWith("END")).toBe(true); expect(clipped.content).toContain("middle of source omitted");
+    // Boundary: limit = 0 must yield empty content, not the full 55-char marker string
+    const zeroLimited = reviewer.clipSource("x".repeat(200), 0);
+    expect(zeroLimited.truncated).toBe(true); expect(zeroLimited.content.length).toBe(0);
+    // Boundary: limit below marker length (55 chars) must produce content no longer than limit
+    const tinyLimited = reviewer.clipSource("x".repeat(200), 10);
+    expect(tinyLimited.truncated).toBe(true); expect(tinyLimited.content.length).toBeLessThanOrEqual(10);
     expect(clipped.content.length).toBeLessThanOrEqual(100);
   });
   it("anchors findings only to added lines", () => {

@@ -74,6 +74,10 @@ async function getFiles(number) {
 
 function extractLocalImports(source) {
   const found = new Set();
+    // NOTE: Only static string-literal specifiers (single or double quotes) are matched.
+    // Template-literal specifiers (e.g. import x from `./foo`) and fully dynamic expressions
+    // (e.g. import(`./dir/${name}`)) are intentionally skipped — they cannot be resolved
+    // statically without evaluating the expression, so conservative omission is correct.
   const patterns = [
     /\b(?:import|export)\s+(?:[^"'`]*?\s+from\s*)?["'](\.{1,2}\/[^"']+)["']/g,
     /\bimport\s*\(\s*["'](\.{1,2}\/[^"']+)["']\s*\)/g,
@@ -121,6 +125,8 @@ function classifyReviewGroups(pr, files, availableGroups) {
 function clipSource(source, limit) {
   const value = String(source || "");
   if (value.length <= limit) return { content: value, truncated: false };
+  // Guard: if limit is at or below the marker length, return only a prefix of value.
+  if (limit <= MARKER.length) return { content: value.slice(0, Math.max(0, limit)), truncated: true };
   const MARKER = "\n[...middle of source omitted by reviewer context budget...]\n";
   const available = Math.max(0, limit - MARKER.length);
   const head = Math.floor(available * 0.7), tail = available - head;
@@ -140,12 +146,13 @@ async function getRepositoryFile(path, ref, repository = REPO) {
   }
 }
 async function getRepositoryPathSet(ref, repository = REPO) {
-  if (!/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
+  if (!/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return { set: null, truncated: false };
   try {
     const tree = await gh("/repos/" + repository + "/git/trees/" + encodeURIComponent(ref) + "?recursive=1");
-    if (!tree || !Array.isArray(tree.tree) || tree.truncated) return null;
-    return new Set(tree.tree.filter((e) => e.type === "blob" && e.mode !== "120000").map((e) => e.path));
-  } catch { return null; }
+    if (!tree || !Array.isArray(tree.tree)) return { set: null, truncated: false };
+    if (tree.truncated) return { set: null, truncated: true };
+    return { set: new Set(tree.tree.filter((e) => e.type === "blob" && e.mode !== "120000").map((e) => e.path)), truncated: false };
+  } catch { return { set: null, truncated: false }; }
 }
 async function collectSourceContext(pr, files) {
   const records = [], limitations = [], cache = new Map();
@@ -175,7 +182,12 @@ async function collectSourceContext(pr, files) {
       }
     }
   }
-  const pathSet = await getRepositoryPathSet(headSha, headRepo), seen = new Set(changed.map((x) => x.path));
+  const pathSetResult = await getRepositoryPathSet(headSha, headRepo);
+  const pathSet = pathSetResult ? pathSetResult.set : null;
+  if (pathSetResult && pathSetResult.truncated) {
+    limitations.push("Repository file tree was truncated by the GitHub API; import-path filtering is unavailable and fallback probing applies (up to " + MAX_IMPORT_SOURCE_PROBES + " probes, capped).");
+  }
+  const seen = new Set(changed.map((x) => x.path));
   let relatedCount = 0, importProbeCount = 0;
   for (const file of changed) {
     if (relatedCount >= 7 || budget < 3000 || importProbeCount >= MAX_IMPORT_SOURCE_PROBES) break;
