@@ -11,7 +11,7 @@ describe("Gemini reviewer source context", () => {
       mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42, title: "Duplicate submit guard" }
     });
     expect(reviewer.parseRepairCommand("@GEMINI REPAIR ONE app/homepage/HomePage.js:42 -- Duplicate submit guard")).toEqual({
-      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42 }
+      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42, title: "Duplicate submit guard" }
     });
     expect(reviewer.parseRepairCommand("@gemini repair one ../secret.js:42 -- Bad path")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0 -- Bad line")).toBeNull();
