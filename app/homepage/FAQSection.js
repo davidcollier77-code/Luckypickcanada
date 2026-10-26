@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import JsonLd from '../components/JsonLd';
 
 /**
  * Renders the homepage FAQ accordion with all answers initially collapsed.
@@ -70,10 +71,7 @@ export default function FAQSection() {
 
       }}
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema).replace(/</g, '\\u003c').replace(/>/g, '\\u003e') }}
-      />
+      <JsonLd data={faqSchema} />
 
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <p className="homepage-offer-kicker" style={{ color: '#eabe52', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.85rem' }}>Got Questions?</p>
