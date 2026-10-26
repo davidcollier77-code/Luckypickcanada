@@ -1,3 +1,12 @@
+## Finding-level repair UX — new work, verification pending
+
+- **One finding at a time:** each issue now has its own collapsed dropdown with a complete copy/paste implementation prompt suitable for a coding agent. It includes the finding/path, problem, impact, suggested direction to verify, scope boundary, regression-test expectations, repository verification/reporting and no-merge instruction.
+- **Target one issue:** eligible findings show `@gemini repair one <path>:<line>`. The trusted reviewer reruns its analysis and requests a native GitHub suggestion only if the same finding is still reported at the exact path/line. Stale findings are declined.
+- **All findings:** the review footer explains `@gemini repair all`, which asks Gemini for suggestions for all current findings that qualify. Suggestions remain limited to safe one-line replacements on eligible changed added lines; other issues remain available through their copy/paste prompts.
+- **No automatic edits:** these are comment commands, not custom buttons—GitHub review Markdown cannot host an arbitrary live action button. Gemini does not edit repository files, push/commit, or merge. The owner chooses whether to apply a native GitHub suggestion.
+- **Verification status:** the reviewer, autofix export, regression tests and rules have changed on this PR since the prior code-verified SHA. Focused/full tests and GitHub Actions for the new head are **PENDING**. The earlier CI evidence documented below applies to the prior source-context/document-routing implementation only.
+
+---
 # PR Summary — Gemini Default Review Coverage and Relevant Documentation
 
 ## Task group
