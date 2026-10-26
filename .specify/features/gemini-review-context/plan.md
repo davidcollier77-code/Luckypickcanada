@@ -5,7 +5,7 @@
 
 ## Summary
 
-Use the reviewer's existing bounded, immutable-SHA source retrieval on automatic first-pass reviews. Raise the explicit changed-source budget and disclose caps clearly. Keep initial reviews free of document-selection model calls, while changing full-review and repair-all selection so Gemini CLI tips and the Deep Research agent snapshot are optional and task-relevant rather than mandatory for every selected group.
+Use the reviewer's existing bounded, immutable-SHA source retrieval on automatic first-pass reviews. Raise the explicit changed-source budget and disclose caps clearly. Keep Gemini CLI and Deep Research references task-specific. Improve the finding UI with complete, copy/paste implementation prompts, a trusted one-finding repair command, and a fix-all request that continues to produce opt-in native GitHub suggestions only.
 
 ## Technical Context
 
@@ -23,10 +23,12 @@ Use the reviewer's existing bounded, immutable-SHA source retrieval on automatic
 4. **Task-scoped documents**: keep full-review/repair-all task-group selection and selected-group path restrictions for other snapshots. Apply a deterministic relevance guard to Gemini reference snapshots even if the selector requests them. Initial review still skips the extra document-selection model call and library snapshots.
 5. **Evidence reporting**: report source retrieval record count, exact limitations, selected/loaded documents, and whether the model found each loaded document materially useful. A yellow verdict remains mandatory when any coverage gap exists.
 6. **Tests**: add helper-level tests for CLI/API document relevance, bounded file selection/disclosure, and initial-mode source collection code path; update rule/config assertions to reflect optional references.
+7. **Finding-level repair UX**: generate the implementation prompt deterministically from each validated finding so it is complete even when the model's fix direction is brief. Support `@gemini repair one <path>:<line>` only for eligible added lines; re-run the current review and match the exact path/line before requesting a single suggestion. Keep `@gemini repair all` as an explicit all-findings request, restricted to safe native one-line suggestions. No repository writes, pushes, commits, or merges.
 
 ## Project Structure
 
 - `.github/scripts/gemini-reviewer.cjs`
+- `.github/scripts/gemini-autofix.cjs`
 - `.gemini/rules/luckypickcanada.md`
 - `__tests__/gemini-reviewer-context.test.ts`
 - `__tests__/gemini-reviewer-workflow.test.ts`
