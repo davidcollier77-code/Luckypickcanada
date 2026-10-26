@@ -36,8 +36,11 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(100000);
     expect(selected.totalCount).toBe(files.length);
     expect(selected.candidates).toHaveLength(reviewer.MAX_CHANGED_SOURCE_FILES);
+    expect(selected.candidates.every((file) => file.status !== "removed")).toBe(true);
     expect(selected.omittedCount).toBe(3);
-    expect(reviewer.makeBatches(files).flat()).toHaveLength(files.length);
+    const reviewedPatches = reviewer.makeBatches(files).flat();
+    expect(reviewedPatches).toHaveLength(files.length);
+    expect(reviewedPatches.some((file) => file.filename === "src/module-0.js" && file.patch)).toBe(true);
   });
   it("loads Gemini reference snapshots only when the task directly concerns them", () => {
     const cliDoc = ".docs/deep-dive/_google-gemini_gemini-cli.md";
