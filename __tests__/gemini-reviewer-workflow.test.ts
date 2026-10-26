@@ -35,7 +35,7 @@ describe("Gemini PR reviewer", () => {
   it("passes only Gemini's own rules as model system instructions", () => {
     expect(script).toContain('systemInstruction: { parts: [{ text: RULES }] }');
     expect(fixScript).toContain('systemInstruction: { parts: [{ text: rules }] }');
-    expect(script).not.toContain("AGENTS.md");
+    expect(script).toContain("Read the repository's root AGENTS.md first");
     expect(fixScript).not.toContain("AGENTS.md");
     expect(script).not.toContain("Trusted repository governance");
     expect(fixScript).not.toContain("Trusted AGENTS.md governance");
@@ -139,7 +139,7 @@ describe("Gemini PR reviewer", () => {
     const promptIndex = script.indexOf("const prompt = [");
     expect(validationIndex).toBeGreaterThan(-1);
     expect(validationIndex).toBeLessThan(promptIndex);
-    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix"].includes(mode))');
+    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix", "fix-one"].includes(mode))');
   });
   it("parses the reviewer scripts without executing them", () => {
     for (const path of [scriptPath, fixPath]) {
