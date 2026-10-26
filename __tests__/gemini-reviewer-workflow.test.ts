@@ -73,7 +73,10 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("_google-gemini_gemini-cli.md");
     expect(script).toContain("_websites_ai_google_dev_gemini-api.md");
     expect(script).toContain("Gemini reference snapshots are OPTIONAL, not required per group.");
-    expect(script).toContain("if (isGeminiReferenceDoc(path) && !isGeminiReferenceRelevant(path, pr, files)) continue;");
+    expect(script).toContain("const selectedReferenceDocs = selectRelevantGeminiReferenceDocs(groupPaths, pr, files);");
+    expect(script).toContain("if (isGeminiReferenceDoc(path)) {");
+    expect(script).toContain("if (!isGeminiReferenceRelevant(path, pr, files)) continue;");
+    expect(script).toContain("if (selectedReferenceDocs.some((doc) => doc.kind === kind)) continue;");
     expect(script).toContain("const groupPrefixes = groups.map");
     expect(script).toContain("const availableSet = new Set(groupPaths)");
     expect(script).toContain("function geminiManifestGroups()");
