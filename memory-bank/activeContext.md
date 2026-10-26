@@ -1,3 +1,13 @@
+# Active Context — Gemini Reviewer MARKER Initialization Fix (2026-10-26)
+
+- **Selected task group:** `troubleshooting` — repairs the verified full-review runtime crash in the Gemini reviewer source-clipping helper.
+- **Branch:** `fix/gemini-marker-tdz-20261026`; PR number will be recorded after creation. Keep this PR open and unmerged for owner review.
+- **Root cause (VERIFIED):** `.github/scripts/gemini-reviewer.cjs` read `MARKER.length` in a boundary check before initializing the block-scoped `MARKER` constant. The existing test `__tests__/gemini-reviewer-context.test.ts` already exercises a zero limit, a small limit below marker length, and ordinary truncation.
+- **Implementation:** moved the existing `MARKER` declaration above its first reference; clipping algorithm and reviewer behavior are otherwise unchanged.
+- **Verification:** the source ordering was checked statically. Focused Vitest, `./jules-verify.sh`, and PR-head CI are pending; this connected session cannot run repository shell commands locally.
+
+---
+
 # Active Context — DevSkim Checksum SARIF Span Fix (2026-10-26)
 
 - **Selected task group:** `security`; exact-span false-positive suppression regression verified against the actual scheduled scan artifact.
