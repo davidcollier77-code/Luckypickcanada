@@ -15,6 +15,14 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.resolveImportCandidates("/etc/passwd", "app/homepage/HomePage.js")).toEqual([]);
     expect(reviewer.resolveImportCandidates("react", "app/homepage/HomePage.js")).toEqual([]);
   });
+  it("strictly bounds import candidate probes when the tree is unavailable", () => {
+    const candidates = Array.from({length: 12}, (_, i) => "app/homepage/Module" + i + ".js");
+    expect(reviewer.MAX_IMPORT_SOURCE_PROBES).toBe(12);
+    expect(reviewer.limitImportCandidates(candidates, false, 12)).toHaveLength(3);
+    expect(reviewer.limitImportCandidates(candidates, false, 2)).toHaveLength(2);
+    expect(reviewer.limitImportCandidates(candidates, false, 0)).toEqual([]);
+    expect(reviewer.limitImportCandidates(candidates, true, 12)).toHaveLength(1);
+  });
   it("selects relevant groups based on paths/domain, not generic fix wording", () => {
     const groups = ["polishing", "troubleshooting", "testing", "seo", "security", "deep-dive"];
     expect(reviewer.classifyReviewGroups({title:"fix: homepage performance",body:"Improve image preload"},[{filename:"app/homepage/Hero.js",patch:"+preload"}],groups)).toContain("polishing");

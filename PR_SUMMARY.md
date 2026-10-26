@@ -15,7 +15,7 @@
 Help Gemini detect context-dependent regressions by reading bounded, immutable-commit source context and reasoning about actual runtime behavior, using Amazon Q's PR #1610 review as a case study without blindly copying a suggested fix.
 
 ## Changes
-- `.github/scripts/gemini-reviewer.cjs`: bounded read-only source retrieval at immutable PR head/base SHAs; relative-import context; honest budget/coverage limits; path/domain-based fallback task-group selection; explicit reasoning for asynchronous callback order, reads/writes, direct synchronous call paths, and typed image-preload behavior.
+- `.github/scripts/gemini-reviewer.cjs`: bounded read-only source retrieval at immutable PR head/base SHAs; relative-import context; honest budget/coverage limits; fallback import probing capped at 12 API reads when the tree index is unavailable; path/domain-based task-group selection; explicit reasoning for asynchronous callback order, reads/writes, direct synchronous call paths, and typed image-preload behavior.
 - Fixed a malformed `clipSource` marker string in the previous candidate commit that made the reviewer JavaScript fail to parse.
 - `.gemini/rules/luckypickcanada.md`: concise evidence-led cross-file, control-flow, and browser format-selection guidance. It requires independent verification of other reviewers' suggestions.
 - `__tests__/gemini-reviewer-context.test.ts`: regression tests assert the async-ordering and non-mutually-exclusive image-preload guidance, in addition to import resolution, traversal protection, group selection, clipping, line anchors, and relevant context.
@@ -26,6 +26,7 @@ Help Gemini detect context-dependent regressions by reading bounded, immutable-c
 - **Verified from Amazon Q's PR #1610 review:** a WebP-only preload did not align with the AVIF-first `picture` source selected by AVIF-capable browsers.
 - **Additional browser-semantic check:** the proposed dual typed preload strategy is not automatically safe. MDN explicitly notes that browsers supporting both AVIF and WebP can preload both resources while using only one in the `picture`, wasting bandwidth. The reviewer prompt now requires checking this cost rather than automatically recommending both preloads.
 - **Control-flow lesson:** Q also examined a nested `requestAnimationFrame` ordering and correctly treated it as a path-verification question, not a confirmed defect. The reviewer now must trace callback scheduling and reachable direct/synchronous call paths before declaring a race.
+- **API-budget lesson:** Q flagged that failed repository-tree lookup could cause repeated speculative import-path fetches. Fallback source retrieval now has a hard, tested 12-request probe budget and reports when that cap is reached.
 
 ## Spec Kit stages
 - Specify: existing `.specify/features/gemini-review-context/spec.md` updated in place.

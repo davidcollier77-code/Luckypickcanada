@@ -6,7 +6,7 @@
 - [x] T004 Add bounded read-only source retrieval at immutable PR head/base SHAs and relevant relative-import context in `.github/scripts/gemini-reviewer.cjs`.
 - [x] T005 Repair the malformed `clipSource` marker string in `.github/scripts/gemini-reviewer.cjs` that caused a JavaScript syntax error in the previous commit.
 - [x] T006 Add explicit async scheduling/call-path and browser image-preload reasoning to `.github/scripts/gemini-reviewer.cjs` and `.gemini/rules/luckypickcanada.md`.
-- [x] T007 Add focused reasoning regression tests in `__tests__/gemini-reviewer-context.test.ts`.
+- [x] T007 Add focused reasoning regression tests in `__tests__/gemini-reviewer-context.test.ts`, including fallback import-probe limits.
 - [ ] T008 Run targeted/full Vitest and `./jules-verify.sh`; verify results on the exact PR head.
 - [ ] T009 Inspect all current-head checks and the complete final diff.
 - [ ] T010 Confirm live Gemini reviewer behavior against the preload and async-ordering examples when a suitable PR review can be run.

@@ -8,7 +8,7 @@ Gemini must review code in context rather than as disconnected diff hunks. It sh
 
 ## Acceptance criteria
 - Changed source is fetched read-only by immutable PR head SHA; selected base versions use immutable base SHA.
-- Source/import context has strict file and character budgets and honest missing/truncated coverage.
+- Source/import context has strict file, character, and fallback import-API probe budgets plus honest missing/truncated coverage.
 - Relative imports are resolved against the repository tree; source is never executed.
 - The review prompt traces asynchronous scheduling, reads/writes, and reachable direct/synchronous call paths; it distinguishes verified ordering defects from unproven timing risks.
 - The review prompt checks image preload URL/type/srcSet/sizes and actual browser format selection. It must not assume two typed AVIF/WebP preloads are mutually exclusive; browsers supporting both formats may fetch both files even when the picture uses one.

@@ -90,6 +90,11 @@ function resolveImportCandidates(specifier, fromPath) {
   const ext = [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".json"];
   return [...ext.map((x) => base + x), ...ext.map((x) => base + "/index" + x)];
 }
+const MAX_IMPORT_SOURCE_PROBES = 12;
+function limitImportCandidates(candidates, pathSetAvailable, remainingBudget) {
+  const remaining = Number.isInteger(remainingBudget) ? Math.max(0, remainingBudget) : 0;
+  return candidates.slice(0, pathSetAvailable ? Math.min(1, remaining) : Math.min(3, remaining));
+}
 function classifyReviewGroups(pr, files, availableGroups) {
   const available = new Set(Array.isArray(availableGroups) ? availableGroups : []);
   const paths = files.map((f) => String(f.filename || "").toLowerCase());
@@ -171,16 +176,18 @@ async function collectSourceContext(pr, files) {
     }
   }
   const pathSet = await getRepositoryPathSet(headSha, headRepo), seen = new Set(changed.map((x) => x.path));
-  let relatedCount = 0;
+  let relatedCount = 0, importProbeCount = 0;
   for (const file of changed) {
-    if (relatedCount >= 7 || budget < 3000) break;
+    if (relatedCount >= 7 || budget < 3000 || importProbeCount >= MAX_IMPORT_SOURCE_PROBES) break;
     for (const specifier of extractLocalImports(file.source)) {
-      if (relatedCount >= 7 || budget < 3000) break;
+      if (relatedCount >= 7 || budget < 3000 || importProbeCount >= MAX_IMPORT_SOURCE_PROBES) break;
       let imports = resolveImportCandidates(specifier, file.path);
       if (pathSet) imports = imports.filter((p) => pathSet.has(p));
-      for (const path of imports.slice(0, pathSet ? 1 : 3)) {
+      const candidatesToProbe = limitImportCandidates(imports, Boolean(pathSet), MAX_IMPORT_SOURCE_PROBES - importProbeCount);
+      for (const path of candidatesToProbe) {
         if (seen.has(path)) continue;
         seen.add(path);
+        importProbeCount += 1;
         const source = await read(path, headSha, headRepo);
         if (source === null) continue;
         const clipped = clipSource(source, Math.min(3600, budget));
@@ -189,6 +196,7 @@ async function collectSourceContext(pr, files) {
       }
     }
   }
+  if (importProbeCount >= MAX_IMPORT_SOURCE_PROBES) limitations.push("Import-source probe budget reached; further local import candidates may be omitted.");
   if (records.some((r) => r.truncated)) limitations.push("Some source was clipped to fit the bounded context budget.");
   if (candidates.length > changed.length) limitations.push("Some changed files did not receive full-source context.");
   if (!records.length) limitations.push("No full-source context could be retrieved; review is patch-only.");
@@ -597,4 +605,4 @@ if (require.main === module) main().catch(async (error) => {
   process.exitCode = 1;
 });
 
-module.exports = { addedLines, extractLocalImports, resolveImportCandidates, classifyReviewGroups, clipSource, renderSourceContext, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
+module.exports = { addedLines, extractLocalImports, resolveImportCandidates, limitImportCandidates, MAX_IMPORT_SOURCE_PROBES, classifyReviewGroups, clipSource, renderSourceContext, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
