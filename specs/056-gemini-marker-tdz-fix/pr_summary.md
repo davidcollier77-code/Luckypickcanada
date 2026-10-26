@@ -1,42 +1,42 @@
 # PR Summary — Gemini Reviewer Marker Initialization Repair
 
 ## Task group
-**troubleshooting** — fixes a verified runtime error in the reviewer source-clipping helper that prevents a full review from completing.
+**troubleshooting** — repairs a verified runtime crash in the reviewer source-clipping helper that prevents an explicit full review from completing.
 
 ## Root cause and implementation
-- **VERIFIED**: `clipSource` checked `MARKER.length` before the block-scoped `MARKER` constant was initialized, causing `ReferenceError: Cannot access 'MARKER' before initialization`.
-- **Change**: moved the existing marker declaration above all references to its length. The truncation algorithm, boundary behavior, imports, dependencies, reviewer permissions, triggers, prompt content, and provider fallback behavior are otherwise unchanged.
-- **Regression coverage**: the existing `__tests__/gemini-reviewer-context.test.ts` already exercises a zero limit, a small limit shorter than the marker, ordinary truncation, retention of the source beginning/end, and the output-length bound. The test file is intentionally unchanged.
+- **VERIFIED**: `clipSource` read `MARKER.length` before the block-scoped `MARKER` constant was initialized, causing `ReferenceError: Cannot access 'MARKER' before initialization`.
+- **Change**: moved the existing marker declaration above its first reference. The clipping algorithm and boundary behavior are unchanged.
+- **Regression coverage**: the existing `__tests__/gemini-reviewer-context.test.ts` already covers zero/small limits, ordinary truncation, source beginning/end retention, and the output-length bound. The test file is intentionally unchanged.
+- **Scope preserved**: no permissions, reviewer triggers, trusted-base checkout behavior, prompt construction, model fallback, app/UI behavior, dependencies, secrets, or deployment configuration changed.
 
 ## Required routed resources
 
 | Resource | Used | Useful | Reason |
 |---|---:|---:|---|
-| `AGENTS.md` | YES | YES | Authoritative governance, sequential Spec Kit stages, verification, and no-merge rule. |
-| `.jules/jules.md` | YES | YES | Initialization and one-feature/one-PR workflow. |
-| `.jules/troubleshooting.md` | YES | YES | Selected specialist; requires testing after fixing the runtime failure. |
-| `.docs/manifest.json` | YES | YES | Confirmed the task group's routed material. |
-| `.docs/troubleshooting/jules_google_docs.md` | YES | NO | Inspected as required; Jules CLI documentation does not affect this JavaScript initialization defect. |
-| `.docs/troubleshooting/_google-gemini_gemini-cli.md` | YES | NO | Inspected as required; snapshot is Gemini CLI UI tips, unrelated to the repository's reviewer helper. |
-| `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md` | YES | NO | Inspected as required; Gemini API reference material does not affect the local JavaScript declaration order. |
-| `.specify/memory/constitution.md` | YES | YES | Governs the required workflow and evidence-based verification. |
-| `.specify/templates/spec-template.md`, `plan-template.md` | YES | YES | Used to shape the task-specific Spec Kit artifacts. |
-| `package.json` | YES | YES | Confirms Node.js 22.x, `pnpm`, and `vitest run` as the test script. |
-| `.github/scripts/gemini-reviewer.cjs` | YES | YES | Contains the failing code and the minimal correction. |
-| `__tests__/gemini-reviewer-context.test.ts` | YES | YES | Confirms the existing regression assertions cover the failing case. |
+| `AGENTS.md` | YES | YES | Governs the sequential Spec Kit flow, verification, accurate reporting, and no-merge rule. |
+| `.jules/jules.md` | YES | YES | Governs initialization and one-feature/one-PR workflow. |
+| `.jules/troubleshooting.md` | YES | YES | Selected specialist; requires testing after fixing a runtime failure. |
+| `.docs/manifest.json` | YES | YES | Confirms the selected task group's required routed resources. |
+| `.docs/troubleshooting/jules_google_docs.md` | YES | NO | Inspected; Jules CLI documentation does not affect this JavaScript defect. |
+| `.docs/troubleshooting/_google-gemini_gemini-cli.md` | YES | NO | Inspected; the snapshot is Gemini CLI UI tips, unrelated to the reviewer helper. |
+| `.docs/troubleshooting/_websites_ai_google_dev_gemini-api.md` | YES | NO | Inspected; API reference material does not affect the local declaration-order bug. |
+| `.specify/memory/constitution.md` | YES | YES | Governs the task workflow and verification. |
+| `.specify/templates/spec-template.md`, `plan-template.md` | YES | YES | Used to shape task-specific Spec Kit artifacts. |
+| `package.json` | YES | YES | Confirms Node.js 22.x, `pnpm`, and `vitest run`. |
+| `.github/scripts/gemini-reviewer.cjs` | YES | YES | Contains the failing function and minimal fix. |
+| `__tests__/gemini-reviewer-context.test.ts` | YES | YES | Existing assertions cover the boundary that failed. |
 
-No new libraries were added. Relevant test tooling: Vitest `^5.0.0` and Node.js `22.x`, taken from the repository's `package.json`.
+No new libraries added. Relevant runtime/test tooling: Node.js `22.x`, Vitest `^5.0.0`.
 
 ## Spec Kit stages
-
-Native slash-command dispatch and repository shell execution were unavailable in this connected GitHub session. The command definitions were followed through **FILE-DRIVEN PROCEDURAL EXECUTION**; artifacts were authored sequentially on the same task branch. Setup scripts were not claimed as executed.
+Native slash-command dispatch and repository shell execution were unavailable in this connected GitHub session. The command definitions were followed through **FILE-DRIVEN PROCEDURAL EXECUTION**. The artifacts were created sequentially on one branch; setup scripts were not claimed as executed.
 
 | Stage | Definition | Result | Artifact |
 |---|---|---|---|
 | `/speckit.specify` | `.jules/cmds/speckit.specify.md` | Completed procedurally | `specs/056-gemini-marker-tdz-fix/spec.md` |
 | `/speckit.plan` | `.jules/cmds/speckit.plan.md` | Completed procedurally | `specs/056-gemini-marker-tdz-fix/plan.md` |
 | `/speckit.tasks` | `.jules/cmds/speckit.tasks.md` | Completed procedurally | `specs/056-gemini-marker-tdz-fix/tasks.md` |
-| `/speckit.implement` | `.jules/cmds/speckit.implement.md` | Source change applied; verification pending | `.github/scripts/gemini-reviewer.cjs` |
+| `/speckit.implement` | `.jules/cmds/speckit.implement.md` | Implemented; CI verification recorded below | `.github/scripts/gemini-reviewer.cjs` |
 
 ## Exact files changed
 - `.github/scripts/gemini-reviewer.cjs`
@@ -46,17 +46,22 @@ Native slash-command dispatch and repository shell execution were unavailable in
 - `specs/056-gemini-marker-tdz-fix/pr_summary.md`
 - `memory-bank/activeContext.md`
 
-## Verification status
-- **Static source check: PASS** — verified the `MARKER` declaration appears before the first `MARKER.length` reference in the updated source.
-- **Focused Vitest suite**: PENDING PR-head CI; not run locally.
-- **`./jules-verify.sh`**: PENDING PR-head CI; not run locally.
-- **GitHub Actions**: PENDING — update this summary only after inspecting actual PR-head results.
-- No production build was run in this API-only session; no build-size claim is made.
+## Verification evidence on code-bearing commit `ba6ded1d6809d3ed324d7c568b79efbeb5b9b242`
+- **Full unit-test step: PASS** — Visual QA workflow's “Run all unit tests” step succeeded, including the existing source-clipping boundary regression.
+- **Standalone TypeScript check: PASS.**
+- **AGENTS.md Spec Kit verification: PASS.**
+- **`./jules-verify.sh`: PASS** — 17 passed, 0 failed; task artifacts for feature 056 were detected and verified.
+- **Next.js/OpenNext build and Wrangler validation: PASS** — no deployment was performed. Build size was **330,947,926 bytes (315.62 MiB)** against the 495 MiB maximum.
+- **Updater verification and dry-run: PASS** — repository verification passed 17/17; separate build size was **331,177,148 bytes (315.84 MiB)** against the 495 MiB maximum; Wrangler used `--dry-run`, not deployment.
+- **CodeQL: PASS** — Python, Actions, and JavaScript/TypeScript analyzers succeeded.
+- **DevSkim: PASS.**
+- **Amazon Q: PASS** — review reported no actionable findings in this change.
+- **Gemini automatic review: completed, but review coverage remains incomplete** — its normal initial pass is patch-only and asks for a full review; it is not evidence that an explicit full review succeeded.
+- **Playwright visual-regression stage: PENDING** at last inspection; Visual QA was still installing Chromium. No failure was reported, and the changed code is confined to reviewer script logic.
 
-## Behavior preserved and final review
-- Preserves early return for source within limit, tiny-limit prefix behavior, normal 70/30 head/tail split, omission marker, and length bound.
-- No app/UI behavior, reviewer permissions, workflow triggers, secrets, dependencies, environment settings, or deployment configuration changed.
-- Final pre-submission check: changed source is limited to declaration ordering; existing boundary test was reviewed and intentionally left unchanged; no generated local state or secrets were added.
-- PR is to remain **OPEN and UNMERGED** for owner review.
+## Final error check and remaining dependency
+The final code patch changes only the declaration order inside `clipSource`; existing tests already cover the failing branch. The documentation-only evidence update does not alter source behavior. No secrets, dependencies, generated local state, application visuals, or deployment settings were changed.
 
-**USEFUL RESULT: NO** — implementation is applied, but final success is pending focused tests and PR-head CI evidence.
+The explicit full review uses trusted base-branch code. This fix will affect full-review requests on other PRs after the owner merges this repair and retries the full review; an agent must not merge it.
+
+**USEFUL RESULT: YES** — the existing full unit-test step passed on the corrected code, along with repository governance and build/security checks. Playwright visual-regression completion remains pending.

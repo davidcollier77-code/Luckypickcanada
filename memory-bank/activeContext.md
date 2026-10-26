@@ -1,10 +1,12 @@
 # Active Context — Gemini Reviewer MARKER Initialization Fix (2026-10-26)
 
 - **Selected task group:** `troubleshooting` — repairs the verified full-review runtime crash in the Gemini reviewer source-clipping helper.
-- **Branch:** `fix/gemini-marker-tdz-20261026`; PR number will be recorded after creation. Keep this PR open and unmerged for owner review.
-- **Root cause (VERIFIED):** `.github/scripts/gemini-reviewer.cjs` read `MARKER.length` in a boundary check before initializing the block-scoped `MARKER` constant. The existing test `__tests__/gemini-reviewer-context.test.ts` already exercises a zero limit, a small limit below marker length, and ordinary truncation.
-- **Implementation:** moved the existing `MARKER` declaration above its first reference; clipping algorithm and reviewer behavior are otherwise unchanged.
-- **Verification:** the source ordering was checked statically. Focused Vitest, `./jules-verify.sh`, and PR-head CI are pending; this connected session cannot run repository shell commands locally.
+- **Branch / PR:** `fix/gemini-marker-tdz-20261026`, [PR #1615](https://github.com/davidcollier77-code/Luckypickcanada/pull/1615), open and unmerged for owner review.
+- **Root cause (VERIFIED):** `.github/scripts/gemini-reviewer.cjs` read `MARKER.length` in a boundary check before the block-scoped `MARKER` constant was initialized. The existing test `__tests__/gemini-reviewer-context.test.ts` covers zero/small limits and ordinary truncation.
+- **Implementation:** moved the existing `MARKER` declaration above its first reference; clipping behavior and reviewer logic are otherwise unchanged.
+- **Verification on code-bearing commit `ba6ded1d6809d3ed324d7c568b79efbeb5b9b242`:** full unit-test step, TypeScript check, AGENTS Spec Kit verification, CodeQL (all three analyzers), DevSkim, Amazon Q review, OpenNext build/Wrangler validation, and `./jules-verify.sh` passed. The governance script reported 17 passed / 0 failed. Build-size gates measured 315.62 MiB and 315.84 MiB, both below 495 MiB; Wrangler was run without deployment.
+- **Remaining check:** Playwright visual QA was still in the Chromium-install step at last inspection; visual regression tests have not yet reported a result.
+- **Full-review dependency:** the explicit Gemini full-review request uses trusted base-branch code. The owner must merge PR #1615 before retrying the full review on another PR; do not merge from an agent session.
 
 ---
 

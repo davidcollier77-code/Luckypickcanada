@@ -15,15 +15,15 @@
 **Independent test**: Run `pnpm test -- __tests__/gemini-reviewer-context.test.ts`; the source-clipping regression must pass without a `MARKER` initialization exception.
 
 - [x] T003 Move the `MARKER` constant above all references to `MARKER.length` inside `clipSource` in `.github/scripts/gemini-reviewer.cjs`, retaining the existing truncation behavior.
-- [ ] T004 Verify the focused reviewer context suite, `./jules-verify.sh`, and PR-head workflow results; record only checks with actual evidence in `specs/056-gemini-marker-tdz-fix/pr_summary.md`.
-- [ ] T005 Reconcile final changed-file list, behavior-preservation check, and the current reviewer failure status in `memory-bank/activeContext.md`.
+- [x] T004 Record actual PR-head verification outcomes in `specs/056-gemini-marker-tdz-fix/pr_summary.md`: the full unit-test step, TypeScript/Spec Kit checks, `./jules-verify.sh`, build-size gates, security checks, and the remaining Playwright status.
+- [x] T005 Reconcile the final changed-file list, behavior-preservation check, PR #1615, actual CI evidence, and the remaining post-merge full-review dependency in `memory-bank/activeContext.md`.
 
 ## Dependencies and execution order
 
 - T001 and T002 are complete baseline inspection.
 - T003 is implemented.
-- T004 depends on T003 and records actual verification. Local shell tests are not available in the current API-connected session, so use the workflow runs on the PR head when available.
-- T005 follows implementation and verification so the summary matches the actual diff and evidence.
+- T004 records actual workflow evidence. The full unit-test, TypeScript, Spec Kit gate, repository verification, build, and security steps passed on the code-bearing commit; the Visual QA job was still waiting on Playwright Chromium when last checked.
+- T005 is complete; the active context matches the PR and the recorded evidence.
 
 ## Implementation strategy
 
