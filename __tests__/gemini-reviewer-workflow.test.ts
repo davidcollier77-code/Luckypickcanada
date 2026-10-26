@@ -98,7 +98,8 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((x, i, a) => x && a.indexOf(x) === i);");
     expect(script).toContain("const sourceContext = await collectSourceContext(pr, files);");
     expect(script).not.toContain("Source context skipped for initial automatic review.");
-    expect(script).toContain("exceeded the \" +\n      MAX_CHANGED_SOURCE_FILES + \"-file full-source context cap");
+    expect(script).toContain("changed text file(s) exceeded the ");
+    expect(script).toContain("patches remain included in review batches.");
     expect(fixScript).toContain("const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);");
     expect(script).toContain("generativelanguage.googleapis.com/v1beta/models/");
     expect(script).toContain("GEMINI_API_KEY");
