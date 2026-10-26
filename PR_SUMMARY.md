@@ -1,28 +1,32 @@
-# PR Summary — Secure JSON-LD Injection
+# PR Summary — Gemini Reviewer Test Syntax Repair
 
-## Task and Verified Finding
+## Task group
+**troubleshooting** — the post-merge Cloudflare/OpenNext build fails during TypeScript checking of the Gemini reviewer regression test.
 
-**Task group:** `security` — improve XSS protection for dynamically inserted JSON-LD metadata.
+## Verified failure and root cause
+The 2026-10-26 Cloudflare log shows the Next.js app compiled successfully, then TypeScript stopped at `__tests__/gemini-reviewer-context.test.ts(11,7)` with `TS1128: Declaration or statement expected`. The import assertion's chained `.toEqual([...])` had been moved below a comment and a separate `expect(...)`, leaving a dangling member-access line.
 
-The application previously used raw `dangerouslySetInnerHTML` with `JSON.stringify` to inject structured schema data. This pattern lacks explicit escaping for `<` and `>` characters within the JSON structure, allowing potential XSS vulnerabilities if user input ever populates the JSON-LD attributes (as a user could break out of the script tag using `</script>`).
+## Change
+- Reattached the expected-array `.toEqual([...])` to the original `extractLocalImports(...)` assertion.
+- Kept the template-literal/dynamic-import assertion as a separate independent assertion.
+- No application code, dependencies, Cloudflare configuration, secrets, workflows, or Amazon Q/Gemini reviewer behavior changed.
 
-## Changes
-- Created a new, reusable `<JsonLd>` component in `app/components/JsonLd.js` to securely serialize and escape `<` and `>` characters within the schema before injection.
-- Refactored `app/layout.js` to use the `<JsonLd>` component instead of raw `dangerouslySetInnerHTML`. This fixes an instance where escaping was entirely missing.
-- Refactored `app/homepage/FAQSection.js` to use the `<JsonLd>` component, DRYing up existing inline string-replacement logic.
-- Added corresponding spec kit tracking artifacts (`specs/055-secure-jsonld/`).
+## Spec Kit stages
+- **Specify:** updated `.specify/features/gemini-review-context/spec.md` with the requirement that test sources remain syntactically valid for the production build's TypeScript check.
+- **Plan:** updated `.specify/features/gemini-review-context/plan.md` to include repairing the assertion and verifying the focused test/build.
+- **Tasks:** updated `.specify/features/gemini-review-context/tasks.md`; repair is implemented, verification remains pending.
+- **Implement:** updated `__tests__/gemini-reviewer-context.test.ts` on branch `fix/gemini-reviewer-test-syntax-20261026`.
+- **Execution method:** file-driven procedural edits through GitHub repository APIs; native Spec Kit dispatch and repository shell execution were unavailable in this session. No `.specify/extensions.yml` file exists, so no extension hooks were registered.
 
-## Verification Evidence
-- Full test suite passed via `pnpm test`.
-- Application built successfully via `pnpm run build`.
-- Typescript checks passed via `pnpm tsc --noEmit`.
-- Governance checks passed via `./jules-verify.sh`.
+## Verification
+- **Source comparison:** PASS — verified that the original assertion's expected array is now attached directly to that assertion and the dynamic-import check is separate.
+- **Focused Vitest:** PENDING — `pnpm test -- __tests__/gemini-reviewer-context.test.ts` was not run locally.
+- **Next.js production build / TypeScript check:** PENDING — `pnpm build` was not run locally.
+- **Repository verification:** PENDING — `./jules-verify.sh` was not run locally.
+- **Cloudflare/OpenNext build on the repair PR head:** PENDING — must be confirmed by a fresh build/check after this change.
+- **Build size:** not measured; no app source or build inputs were changed.
 
-## Scope Audit
-Exact files changed:
-- `app/components/JsonLd.js` (Created)
-- `app/homepage/FAQSection.js`
-- `app/layout.js`
-- `specs/055-secure-jsonld/*` (Created)
+## Final diff and preservation check
+The intended functional diff is limited to the test assertion ordering. The additional changed files record the task specification, plan, task status, active context, and this PR summary. Application runtime behavior and all deployment configuration remain unchanged.
 
-**USEFUL RESULT: YES**
+**USEFUL RESULT: NO** — the malformed test syntax is repaired in the branch, but the requested outcome is not considered verified until the new PR's required checks and Cloudflare/OpenNext build complete successfully.
