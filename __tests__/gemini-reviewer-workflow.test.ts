@@ -23,6 +23,8 @@ describe("Gemini PR reviewer", () => {
     expect(rules).toContain("Use `.docs/manifest.json` to choose the smallest relevant task group(s).");
     expect(rules).toContain("_google-gemini_gemini-cli.md");
     expect(rules).toContain("_websites_ai_google_dev_gemini-api.md");
+    expect(rules).toContain("Treat Gemini reference snapshots as optional, task-specific references");
+    expect(rules).toContain("MUST still attempt bounded read-only source-context retrieval");
     expect(rules).toContain("USED: YES/NO");
     expect(rules).toContain("USEFUL: YES/NO");
     expect(rules).toContain("@gemini full review");
@@ -63,10 +65,14 @@ describe("Gemini PR reviewer", () => {
     expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const list = await getFiles(number)"));
   });
 
-  it("uses selected task groups to constrain library documents and reports actual usage", () => {
-    expect(script).toContain("function isRequiredGeminiDoc(path)");
-    expect(script).toContain('".docs/" + group + "/_google-gemini_gemini-cli.md"');
-    expect(script).toContain('".docs/" + group + "/_websites_ai_google_dev_gemini-api.md"');
+  it("uses selected task groups, relevance-guards Gemini references, and reports actual usage", () => {
+    expect(script).toContain("function isGeminiCliDoc(path)");
+    expect(script).toContain("function isGeminiDeepResearchDoc(path)");
+    expect(script).toContain("function isGeminiReferenceRelevant(path, pr, files)");
+    expect(script).toContain("_google-gemini_gemini-cli.md");
+    expect(script).toContain("_websites_ai_google_dev_gemini-api.md");
+    expect(script).toContain("Gemini reference snapshots are OPTIONAL, not required per group.");
+    expect(script).toContain("if (isGeminiReferenceDoc(path) && !isGeminiReferenceRelevant(path, pr, files)) continue;");
     expect(script).toContain("const groupPrefixes = groups.map");
     expect(script).toContain("const availableSet = new Set(groupPaths)");
     expect(script).toContain("function geminiManifestGroups()");
@@ -90,6 +96,9 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain('const SECOND_FALLBACK = process.env.GEMINI_SECOND_FALLBACK_MODEL || "gemini-3.5-flash-lite";');
     expect(fixScript).toContain('const SECOND_FALLBACK = process.env.GEMINI_SECOND_FALLBACK_MODEL || "gemini-3.5-flash-lite";');
     expect(script).toContain("const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((x, i, a) => x && a.indexOf(x) === i);");
+    expect(script).toContain("const sourceContext = await collectSourceContext(pr, files);");
+    expect(script).not.toContain("Source context skipped for initial automatic review.");
+    expect(script).toContain("exceeded the \" +\n      MAX_CHANGED_SOURCE_FILES + \"-file full-source context cap");
     expect(fixScript).toContain("const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);");
     expect(script).toContain("generativelanguage.googleapis.com/v1beta/models/");
     expect(script).toContain("GEMINI_API_KEY");
