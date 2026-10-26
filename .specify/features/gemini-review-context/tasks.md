@@ -11,18 +11,18 @@
 
 ## Phase 2 — Default source-context coverage
 
-- [ ] T005 In `.github/scripts/gemini-reviewer.cjs`, run bounded source retrieval for automatic initial review as well as full review and fix modes.
-- [ ] T006 Replace silent changed-source candidate slicing with named file/character limits and explicit coverage limitations; keep all available text patches in review batches.
-- [ ] T007 Ensure missing source, truncated source, unavailable base source, and candidate/file caps are reflected in the yellow coverage verdict and review report.
-- [ ] T008 Add focused regression assertions in `__tests__/gemini-reviewer-context.test.ts` for the source budget, explicit cap disclosure, and the default source-context path.
+- [x] T005 In `.github/scripts/gemini-reviewer.cjs`, run bounded source retrieval for automatic initial review as well as full review and fix modes.
+- [x] T006 Replace silent changed-source candidate slicing with named file/character limits and explicit coverage limitations; keep all available text patches in review batches.
+- [x] T007 Ensure missing source, truncated source, unavailable base source, and candidate/file caps are reflected in the yellow coverage verdict and review report.
+- [x] T008 Add focused regression assertions in `__tests__/gemini-reviewer-context.test.ts` for the source budget, explicit cap disclosure, and the default source-context path.
 
 ## Phase 3 — Task-relevant Gemini documents
 
-- [ ] T009 In `.github/scripts/gemini-reviewer.cjs`, make Gemini CLI and Deep Research snapshots optional rather than automatically required per selected task group.
-- [ ] T010 Permit the CLI snapshot only for direct Gemini CLI/configuration/command work; permit the Deep Research snapshot only for Deep Research/Interactions API work.
-- [ ] T011 Keep additional snapshots confined to selected groups and preserve the lightweight initial path without a document-selection model call.
-- [ ] T012 Update `.gemini/rules/luckypickcanada.md` so it describes the two Gemini snapshots accurately and requires task relevance.
-- [ ] T013 Add unit tests for ordinary tasks, direct CLI tasks, and Deep Research/Interactions API tasks; update `__tests__/gemini-reviewer-workflow.test.ts` expectations.
+- [x] T009 In `.github/scripts/gemini-reviewer.cjs`, make Gemini CLI and Deep Research snapshots optional rather than automatically required per selected task group.
+- [x] T010 Permit the CLI snapshot only for direct Gemini CLI/configuration/command work; permit the Deep Research snapshot only for Deep Research/Interactions API work.
+- [x] T011 Keep additional snapshots confined to selected groups and preserve the lightweight initial path without a document-selection model call.
+- [x] T012 Update `.gemini/rules/luckypickcanada.md` so it describes the two Gemini snapshots accurately and requires task relevance.
+- [x] T013 Add unit tests for ordinary tasks, direct CLI tasks, and Deep Research/Interactions API tasks; update `__tests__/gemini-reviewer-workflow.test.ts` expectations.
 
 ## Phase 4 — Verification and reporting
 
