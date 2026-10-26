@@ -8,12 +8,20 @@ import ExploreLuckButton from './ExploreLuckButton';
  * @returns {import('react').ReactElement} The homepage hero header.
  */
 export default function Hero() {
-  // Use imageSrcSet and imageSizes for accurate preloading of responsive images
+  // Preload both AVIF and WebP so each browser matches exactly one hint.
+  // AVIF-capable browsers will use the AVIF source; all others fall back to WebP.
   preload("/homepage-hero-lucky-pick-canada.avif", {
     as: "image",
     fetchPriority: "high",
     type: "image/avif",
     imageSrcSet: "/homepage-hero-lucky-pick-canada-669w.avif 669w, /homepage-hero-lucky-pick-canada.avif 1024w",
+    imageSizes: "(max-width: 768px) 100vw, 1024px"
+  });
+  preload("/homepage-hero-lucky-pick-canada.webp", {
+    as: "image",
+    fetchPriority: "high",
+    type: "image/webp",
+    imageSrcSet: "/homepage-hero-lucky-pick-canada-669w.webp 669w, /homepage-hero-lucky-pick-canada.webp 1024w",
     imageSizes: "(max-width: 768px) 100vw, 1024px"
   });
 

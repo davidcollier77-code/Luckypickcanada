@@ -1154,14 +1154,30 @@ export default function LuckyCardReveal() {
       }
     }
 
+    const innerWidth = window.innerWidth;
+    const innerHeight = window.innerHeight;
+
+    let initialMetrics = null;
+    if (cardRef.current) {
+        const rect = cardRef.current.getBoundingClientRect();
+        if (rect && rect.width > 0 && rect.height > 0) {
+            initialMetrics = {
+                cx: rect.left + rect.width / 2,
+                cy: rect.top + rect.height / 2,
+                w: rect.width,
+                h: rect.height
+            };
+        }
+    }
+
     requestAnimationFrame(() => {
       if (bgCanvasRef.current) {
-        bgCanvasRef.current.width = window.innerWidth;
-        bgCanvasRef.current.height = window.innerHeight;
+        if (bgCanvasRef.current.width !== innerWidth) bgCanvasRef.current.width = innerWidth;
+        if (bgCanvasRef.current.height !== innerHeight) bgCanvasRef.current.height = innerHeight;
       }
       if (fgCanvasRef.current) {
-        fgCanvasRef.current.width = window.innerWidth;
-        fgCanvasRef.current.height = window.innerHeight;
+        if (fgCanvasRef.current.width !== innerWidth) fgCanvasRef.current.width = innerWidth;
+        if (fgCanvasRef.current.height !== innerHeight) fgCanvasRef.current.height = innerHeight;
       }
 
       if (!shouldReduceMotion) {
@@ -1170,17 +1186,13 @@ export default function LuckyCardReveal() {
     });
     rafStartTimeRef.current = 0;
 
-    if (cardRef.current) {
-        const rect = cardRef.current.getBoundingClientRect();
-        if (rect && rect.width > 0 && rect.height > 0) {
-            cardMetricsRef.current = {
-                cx: rect.left + rect.width / 2,
-                cy: rect.top + rect.height / 2,
-                w: rect.width,
-                h: rect.height
-            };
-        }
+    if (initialMetrics) {
+      cardMetricsRef.current = initialMetrics;
     }
+  // cardMetricsRef.current is updated here (synchronously), before renderCanvas
+  // runs. renderCanvas is launched via a nested requestAnimationFrame inside the
+  // outer RAF above, so it always executes at least one frame later and will see
+  // the updated metrics. There is no synchronous call path to renderCanvas.
 
 
     const { cx, cy, w: cardW, h: cardH } = cardMetricsRef.current;

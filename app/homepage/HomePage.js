@@ -191,15 +191,19 @@ export default function HomePage() {
     };
 
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      ambientStars = initAmbientStars(canvas.width, canvas.height);
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+      if (canvas.width !== newWidth || canvas.height !== newHeight) {
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        ambientStars = initAmbientStars(canvas.width, canvas.height);
+      }
     };
 
     // Initial setup
     canvas.width = window.innerWidth || 1024;
     canvas.height = window.innerHeight || 768;
-    resizeCanvas();
+    ambientStars = initAmbientStars(canvas.width, canvas.height);
 
     // Timers
     let shootingStarTimeout;
