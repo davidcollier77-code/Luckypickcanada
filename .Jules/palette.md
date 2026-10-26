@@ -9,3 +9,7 @@
 ## 2026-09-12 - Prevent screen readers from announcing loading spinners redundantly
 **Learning:** Decorative SVG elements like loading spinners inside interactive elements (e.g., `<button>`) with text can cause screen readers to announce confusing or redundant information. This is an accessibility issue found in the `LuckyGenerator` loading state.
 **Action:** Always add `aria-hidden="true"` to loading spinners or decorative `<svg>` icons when semantic text like "Loading..." is already present.
+## 2026-10-26 - Form Double-Submission Prevention
+
+**Learning:** When using forms combined with Turnstile or other native submit actions, simply managing React state (`isSubmitting`) without `event.preventDefault()` can result in the button being disabled forever if the page doesn't unload quickly or if a user navigates back using bfcache.
+**Action:** Implemented `pageshow` event listener to reset `isSubmitting` on `e.persisted`, combined with a fallback `setTimeout` for hanging requests, for both the Lucky Map submission and Homepage suggestion forms.

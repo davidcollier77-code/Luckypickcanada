@@ -99,6 +99,8 @@ export default function LuckyMapOfCanada({ mapData }) {
   const [selectedStoryId, setSelectedStoryId] = useState('');
   const [shareStatus, setShareStatus] = useState('');
   const [isStoryFormOpen, setIsStoryFormOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingTimeoutRef = useRef(null);
   const [reactions, setReactions] = useState({});
   const selectedProvinceInfo = provinces.find((province) => province.code === selectedProvince) || provinces[4];
   const selectedStories = provinceStories(stories, selectedProvince);
@@ -141,6 +143,31 @@ export default function LuckyMapOfCanada({ mapData }) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isStoryFormOpen]);
+
+  useEffect(() => {
+    const handlePageShow = (e) => {
+      if (e.persisted) {
+        clearTimeout(submittingTimeoutRef.current);
+        setIsSubmitting(false);
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimeout(submittingTimeoutRef.current);
+  }, []);
+
+  function handleFormSubmit(event) {
+    if (isSubmitting) {
+      event.preventDefault();
+      return;
+    }
+    setIsSubmitting(true);
+    if (submittingTimeoutRef.current) clearTimeout(submittingTimeoutRef.current);
+    submittingTimeoutRef.current = setTimeout(() => setIsSubmitting(false), 8000);
+  }
 
   function storyUrl(storyId) {
     if (typeof window === 'undefined') return '/lucky-map-of-canada';
@@ -462,13 +489,13 @@ export default function LuckyMapOfCanada({ mapData }) {
                 <p style={{ margin: 0, textTransform: 'uppercase', letterSpacing: 2, color: '#facc15', fontWeight: 900, fontSize: '0.85rem' }}>Share your moment</p>
                 <h2 id="story-form-title" style={{ margin: "0.2rem 0 0", color: "#fff", fontSize: '2rem', lineHeight: 1.1 }}>Community Stories</h2>
                 <p style={{ margin: "0.8rem 0 1.5rem", color: "#cbd5e1", lineHeight: 1.6, fontSize: '1.05rem' }}>Share your lucky moments, funny experiences, memorable days, or little wins with the LuckyPickCanada community.</p>
-                <form action="/api/lucky-stories" method="post" style={{ display: 'grid', gap: '1rem' }}>
+                <form action="/api/lucky-stories" method="post" onSubmit={handleFormSubmit} style={{ display: 'grid', gap: '1rem' }}>
                   <input name="website" tabIndex="-1" autoComplete="off" style={{ display: 'none' }} />
                   <label style={{ color: "#f8fafc", fontWeight: 700 }}>Name<input name="name" required maxLength="40" style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem' }} /></label>
                   <label style={{ color: "#f8fafc", fontWeight: 700 }}>Province or territory<input name="location" maxLength="80" style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem' }} /></label>
                   <label style={{ color: "#f8fafc", fontWeight: 700 }}>Tell us your story...<textarea name="story" required minLength="20" maxLength="600" rows="5" onChange={(e) => setStoryFormText(e.target.value)} style={{ display: 'block', width: '100%', marginTop: '0.5rem', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(250, 204, 21, 0.3)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: '12px', padding: '0.9rem 1rem', color: '#fff', fontSize: '1.05rem', resize: 'vertical' }} /><div style={{ textAlign: 'right', fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.4rem' }}>{storyFormText.length}/600 characters</div></label>
                   <TurnstileField submitButtonId="lucky-story-submit" action="lucky-story" />
-                  <button id="lucky-story-submit" type="submit" onClick={playButtonClick} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.8)', borderBottom: '1px solid rgba(139, 79, 7, 0.8)', borderLeft: '1px solid rgba(255, 215, 100, 0.5)', borderRight: '1px solid rgba(255, 215, 100, 0.5)', borderRadius: 999, color: '#0f172a', background: 'linear-gradient(180deg, #fef0a5 0%, #d4981a 100%)', fontWeight: 900, cursor: 'pointer', marginTop: '0.5rem', boxShadow: '0 8px 20px rgba(245, 158, 11, 0.35), inset 0 1px 2px rgba(255,255,255,0.5)', fontSize: '1.1rem', transition: 'all 0.2s' }}>Submit Story</button>
+                  <button id="lucky-story-submit" type="submit" disabled={isSubmitting} onClick={playButtonClick} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400" style={{ padding: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.8)', borderBottom: '1px solid rgba(139, 79, 7, 0.8)', borderLeft: '1px solid rgba(255, 215, 100, 0.5)', borderRight: '1px solid rgba(255, 215, 100, 0.5)', borderRadius: 999, color: '#0f172a', background: 'linear-gradient(180deg, #fef0a5 0%, #d4981a 100%)', fontWeight: 900, cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1, marginTop: '0.5rem', boxShadow: '0 8px 20px rgba(245, 158, 11, 0.35), inset 0 1px 2px rgba(255,255,255,0.5)', fontSize: '1.1rem', transition: 'all 0.2s' }}>{isSubmitting ? 'Please wait...' : 'Submit Story'}</button>
                 </form>
               </div>
             </section>

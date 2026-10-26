@@ -59,7 +59,34 @@ export default function HomePage() {
   const [checkoutType, setCheckoutType] = useState(null);
   const [luckyReveal, setLuckyReveal] = useState(null);
   const [suggested, setSuggested] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingTimeoutRef = useRef(null);
   const [suggestionError, setSuggestionError] = useState('');
+
+  useEffect(() => {
+    const handlePageShow = (e) => {
+      if (e.persisted) {
+        clearTimeout(submittingTimeoutRef.current);
+        setIsSubmitting(false);
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
+  useEffect(() => {
+    return () => clearTimeout(submittingTimeoutRef.current);
+  }, []);
+
+  function handleSuggestionSubmit(event) {
+    if (isSubmitting) {
+      event.preventDefault();
+      return;
+    }
+    setIsSubmitting(true);
+    if (submittingTimeoutRef.current) clearTimeout(submittingTimeoutRef.current);
+    submittingTimeoutRef.current = setTimeout(() => setIsSubmitting(false), 8000);
+  }
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -483,7 +510,7 @@ export default function HomePage() {
         </div>
         {suggested && <p className="suggestion-box-notice suggestion-box-notice-success" role="status">Thanks for the suggestion. I’ll review it soon.</p>}
         {suggestionError && <p className="suggestion-box-notice suggestion-box-notice-error" role="alert">{suggestionError}</p>}
-        <form action="/api/suggestions" method="post" className="suggestion-box-form">
+        <form action="/api/suggestions" method="post" onSubmit={handleSuggestionSubmit} className="suggestion-box-form">
           <div className="suggestion-box-fields">
             <label>Name <span>(optional)</span><input name="name" type="text" maxLength="40" placeholder="Your name" /></label>
             <label>Email <span>(optional)</span><input name="email" type="email" maxLength="120" placeholder="you@example.com" /></label>
@@ -491,7 +518,7 @@ export default function HomePage() {
           <label>Your suggestion<textarea name="message" minLength="10" maxLength="1000" rows={5} placeholder="What would make this site better?" required /></label>
           <label aria-hidden="true" className="suggestion-box-honeypot">Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label>
           <TurnstileField submitButtonId="suggestion-box-submit" action="suggestion-box" />
-          <button id="suggestion-box-submit" type="submit" onClick={playButtonClick} className="suggestion-btn-glow relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">Send suggestion <span aria-hidden="true">→</span></button>
+          <button id="suggestion-box-submit" type="submit" disabled={isSubmitting} onClick={playButtonClick} className={`suggestion-btn-glow relative group inline-flex items-center justify-center px-6 py-3 rounded-full bg-linear-to-b from-yellow-400 to-amber-600 text-slate-900 font-bold transition-all duration-300 hover:shadow-[0_6px_20px_rgba(251,191,36,0.6),inset_0_2px_2px_rgba(255,255,255,0.6)] hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${isSubmitting ? 'opacity-70 cursor-not-allowed hover:scale-100' : ''}`}>{isSubmitting ? 'Please wait...' : 'Send suggestion'} {!isSubmitting && <span aria-hidden="true">→</span>}</button>
         </form>
       </section>
 
