@@ -16,7 +16,7 @@ The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` remains ava
 
 ## 2. SPEC KIT AND EXECUTION
 
-Use the required Spec Kit stages in order: `specify → plan → tasks → implement`, following the matching `.jules/cmds/speckit.*.md` definitions. Reuse current artifacts for the same task, keep them concise, and do not repeat completed stages or create duplicate feature directories. If a stage genuinely does not apply, briefly explain why as requested by the Master Work Request; never fabricate a stage, result, or artifact. Run the verification gate and report its actual outcome.
+Every Jules task must complete the four core Spec Kit stages in order: `specify → plan → tasks → implement`, following the matching `.jules/cmds/speckit.*.md` definitions. All four stages apply under this repository's workflow; do not mark one N/A or invent a result. Reuse current artifacts for the same task, keep them concise, and do not repeat completed stages or create duplicate feature directories. If a stage cannot run because of a genuine blocker, report the exact blocker and do not claim completion. Run the verification gate and report its actual outcome.
 
 Keep one active task per run and one branch/PR per task. Check for existing work before creating anything new. Respect Jules's active execution/authorization mode: continue without routine confirmation only when that mode authorizes it; never bypass a required approval. Pause only for a genuine blocker, missing essential input, required approval, explicit blocking gate, or material safety/security risk. Do not ask generic "continue?" questions for non-blocking checklist items.
 
@@ -26,7 +26,7 @@ Establish the baseline, make the smallest correct change, and preserve unrelated
 
 ## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
 
-Run `./jules-verify.sh` and the checks required by the selected task group. Record the commands actually run and their real results. If a required check fails, fix the in-scope cause or report the exact failure. A failed or pending check blocks a claim of completion, but does **not by itself** block creating/updating an otherwise safe, reviewable PR.
+Run `./jules-verify.sh` and the checks required by the selected task group. Record the commands actually run and their real results. If a check fails, fix the in-scope cause or report the exact failure. If a required check is unavailable, explain why and run an applicable documented alternative where practical. A failed or pending check blocks a claim of completion, but does **not by itself** block creating/updating an otherwise safe, reviewable PR.
 
 Inspect the complete final diff before submission. The PR body is the single canonical summary: draft it during the work, publish it when creating the PR, and update that same body as implementation or verification evidence changes. Never create duplicate reports or PRs, and do not ask whether the required summary should be created or updated. Clearly label checks as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. Pending checks are a truthful status, not a reason to withhold a safe PR; they must never be presented as passed.
 
