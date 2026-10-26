@@ -1,32 +1,43 @@
-# PR Summary — Gemini Reviewer Test Syntax Repair
+# PR Summary — Gemini Default Review Coverage and Relevant Documentation
 
 ## Task group
-**troubleshooting** — the post-merge Cloudflare/OpenNext build fails during TypeScript checking of the Gemini reviewer regression test.
+**deep-dive** — this is a cross-cutting review-pipeline change involving immutable-source retrieval, context budgets, document selection, model prompting, and regression tests.
 
-## Verified failure and root cause
-The 2026-10-26 Cloudflare log shows the Next.js app compiled successfully, then TypeScript stopped at `__tests__/gemini-reviewer-context.test.ts(11,7)` with `TS1128: Declaration or statement expected`. The import assertion's chained `.toEqual([...])` had been moved below a comment and a separate `expect(...)`, leaving a dangling member-access line.
+## Objective and changes
+- **Automatic reviews now attempt bounded source context:** `.github/scripts/gemini-reviewer.cjs` calls `collectSourceContext(pr, files)` for initial reviews as well as explicit full reviews and repair-all runs. The initial review still avoids the extra document-selection model call and library snapshot loading.
+- **Explicit source limits:** the current limits are 22 changed text files, up to 3,600 characters per changed source file, 100,000 total source-context characters, 7 related import files, and 12 fallback import probes. Missing/truncated/unavailable source and exhausted limits are reported as coverage gaps; all available text patches remain in review batches.
+- **Removed-file source is included:** for deleted text files the reviewer fetches source from the immutable base SHA; renamed files use `previous_filename` for base comparison when supplied.
+- **Gemini reference snapshots are optional:** the CLI reference is only eligible for direct Gemini CLI/configuration/command tasks. The `_websites_ai_google_dev_gemini-api.md` snapshot is specifically about the Gemini Deep Research agent and Interactions API, and is only eligible for those tasks. A document-routing task cannot self-trigger these references merely by discussing them.
+- **Task-specific technical docs remain constrained:** the explicit full-review/repair-all selector still chooses relevant task groups; other library snapshots remain confined to the selected groups. The initial automatic review loads no `.docs` snapshots to conserve tokens.
+- **Regression tests added/updated:** `__tests__/gemini-reviewer-context.test.ts` covers file/character limits, preservation of review batches, removed-source candidates, and task-relevance rules. `__tests__/gemini-reviewer-workflow.test.ts` checks initial source-context invocation and optional document behavior.
+- **Gemini-only rules updated:** `.gemini/rules/luckypickcanada.md` now explains when each of the two reference snapshots is actually relevant.
 
-## Change
-- Reattached the expected-array `.toEqual([...])` to the original `extractLocalImports(...)` assertion.
-- Kept the template-literal/dynamic-import assertion as a separate independent assertion.
-- No application code, dependencies, Cloudflare configuration, secrets, workflows, or Amazon Q/Gemini reviewer behavior changed.
+## Routed documentation and references
+- `AGENTS.md`, `.jules/jules.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, and `.specify/memory/constitution.md` — USED: YES; USEFUL: YES — governance, existing task context, sequencing, and boundaries.
+- `.jules/deep-dive.md` — USED: YES; USEFUL: YES — selects evidence-led implementation for the cross-cutting reviewer pipeline.
+- `.docs/deep-dive/jules_google_docs.md` — USED: YES; USEFUL: NO — inspected as required by the selected group; unrelated to reviewer source retrieval.
+- `.docs/deep-dive/_google-gemini_gemini-cli.md` — USED: YES; USEFUL: YES — confirmed this snapshot contains CLI tips/commands rather than general code-review guidance; it should only load for direct CLI tasks.
+- `.docs/deep-dive/_websites_ai_google_dev_gemini-api.md` — USED: YES; USEFUL: YES — confirmed this snapshot is the Gemini Deep Research agent/Interactions API documentation, not a generic code-review guide.
+- `.docs/manifest.json` — USED: YES; USEFUL: YES — task-group routing and selected-group boundaries.
+- `.gemini/rules/luckypickcanada.md`, `.github/workflows/gemini-reviewer.yml`, reviewer and regression-test sources — USED: YES; USEFUL: YES — preserve model, trusted workflow, permissions, and optional-suggestion behavior.
+- `.docs/` snapshots were not changed. No Context7 calls or dependency changes were made.
 
 ## Spec Kit stages
-- **Specify:** updated `.specify/features/gemini-review-context/spec.md` with the requirement that test sources remain syntactically valid for the production build's TypeScript check.
-- **Plan:** updated `.specify/features/gemini-review-context/plan.md` to include repairing the assertion and verifying the focused test/build.
-- **Tasks:** updated `.specify/features/gemini-review-context/tasks.md`; repair is implemented, verification remains pending.
-- **Implement:** updated `__tests__/gemini-reviewer-context.test.ts` on branch `fix/gemini-reviewer-test-syntax-20261026`.
-- **Execution method:** file-driven procedural edits through GitHub repository APIs; native Spec Kit dispatch and repository shell execution were unavailable in this session. No `.specify/extensions.yml` file exists, so no extension hooks were registered.
+- **Specify:** updated `.specify/features/gemini-review-context/spec.md`.
+- **Plan:** updated `.specify/features/gemini-review-context/plan.md`.
+- **Tasks:** updated `.specify/features/gemini-review-context/tasks.md`.
+- **Implement:** updated the existing reviewer script, Gemini-only rules, and regression tests.
+- **Execution method:** file-driven procedural edits through the GitHub repository API; native Spec Kit command dispatch and local repository shell access are unavailable in this session. `.specify/extensions.yml` was not found, so no extension hooks were present to execute.
 
-## Verification
-- **Source comparison:** PASS — verified that the original assertion's expected array is now attached directly to that assertion and the dynamic-import check is separate.
-- **Focused Vitest:** PENDING — `pnpm test -- __tests__/gemini-reviewer-context.test.ts` was not run locally.
-- **Next.js production build / TypeScript check:** PENDING — `pnpm build` was not run locally.
-- **Repository verification:** PENDING — `./jules-verify.sh` was not run locally.
-- **Cloudflare/OpenNext build on the repair PR head:** PENDING — must be confirmed by a fresh build/check after this change.
-- **Build size:** not measured; no app source or build inputs were changed.
+## Verification status
+- **Source inspection:** PASS — source collection now executes in initial mode; source caps and missing context generate limitations; removed source is read from the base; both document references have explicit relevance guards.
+- **Regression tests added:** YES, but **not yet run in this session**.
+- **Focused/full Vitest, TypeScript/build, and `./jules-verify.sh`: PENDING** — local shell execution is unavailable; current-head GitHub Actions must provide evidence.
+- **Live-model acceptance: PENDING** — CI/static assertions alone do not prove real-world review quality. A completed review still needs to be inspected to confirm ordinary reviews include source context without irrelevant snapshots.
+- **Build-size measurement:** not applicable; no app runtime/build inputs changed.
+- **Current result: PARTIAL** — implementation is committed on the topic branch; verification and a live-review check remain pending.
 
-## Final diff and preservation check
-The intended functional diff is limited to the test assertion ordering. The additional changed files record the task specification, plan, task status, active context, and this PR summary. Application runtime behavior and all deployment configuration remain unchanged.
+## Boundaries
+No application runtime behavior, Gemini model order, API request mechanism, workflow permissions, dependencies, Amazon Q rules, secrets, or deployment behavior were changed. PR must remain open and unmerged.
 
-**USEFUL RESULT: NO** — the malformed test syntax is repaired in the branch, but the requested outcome is not considered verified until the new PR's required checks and Cloudflare/OpenNext build complete successfully.
+**USEFUL RESULT: PENDING** — the reviewer changes are implemented; final usefulness depends on passing current-head checks and inspecting actual review behavior.
