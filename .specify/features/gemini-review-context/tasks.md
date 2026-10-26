@@ -26,7 +26,7 @@
 
 ## Phase 4 — Verification and reporting
 
-- [ ] T014 Update the existing requirements checklist and `PR_SUMMARY.md` with exact changed files and honest pending verification.
+- [x] T014 Update the existing requirements checklist and `PR_SUMMARY.md` with exact changed files and honest pending verification.
 - [ ] T015 Run focused reviewer tests, full `pnpm test`, `./jules-verify.sh`, production/TypeScript build checks as applicable; record exact outcomes.
 - [ ] T016 Inspect all current-head GitHub Actions, validate mergeability, inspect the complete diff, and confirm the PR remains open and unmerged.
 - [ ] T017 After a naturally occurring or safely dispatched review completes, inspect its report to ensure ordinary reviews have source context and do not load irrelevant Gemini snapshots; do not claim live quality is proven without this evidence.
