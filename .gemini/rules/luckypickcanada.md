@@ -27,9 +27,12 @@ Focus on the PR's changes and relevant surrounding code.
 
 For `@gemini full review` and `@gemini repair all`:
 - Use `.docs/manifest.json` to choose the smallest relevant task group(s).
-- Load and consult both Gemini reference snapshots for each selected group: `_google-gemini_gemini-cli.md` and `_websites_ai_google_dev_gemini-api.md`.
-- Consult only additional relevant technical snapshots inside the selected group(s).
-- Do not select a task group or load snapshots for the initial automatic review.
+- Treat Gemini reference snapshots as optional, task-specific references, not mandatory content for every group.
+- Load `_google-gemini_gemini-cli.md` only when the PR directly concerns Gemini CLI, its configuration, or its commands.
+- The `_websites_ai_google_dev_gemini-api.md` snapshot is specifically about the Gemini Deep Research agent and Interactions API, not general code-review guidance. Load it only when the PR directly concerns Deep Research or the Interactions API.
+- Never load a Gemini reference merely because its filename includes Gemini or because it exists in the selected group. Use the relevant technical snapshots in the selected group(s) instead.
+- Keep all selected snapshots within the selected group(s), report only documents actually loaded, and explain whether each materially helped.
+- Initial automatic reviews skip the document-selection model call and library snapshots to conserve tokens, but MUST still attempt bounded read-only source-context retrieval; report source caps and missing context honestly.
 
 🔴 B — BOUNDARIES
 
