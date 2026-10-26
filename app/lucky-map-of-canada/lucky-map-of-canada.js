@@ -100,6 +100,7 @@ export default function LuckyMapOfCanada({ mapData }) {
   const [shareStatus, setShareStatus] = useState('');
   const [isStoryFormOpen, setIsStoryFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingTimeoutRef = useRef(null);
   const [reactions, setReactions] = useState({});
   const selectedProvinceInfo = provinces.find((province) => province.code === selectedProvince) || provinces[4];
   const selectedStories = provinceStories(stories, selectedProvince);
@@ -145,6 +146,7 @@ export default function LuckyMapOfCanada({ mapData }) {
 
   useEffect(() => {
     const handlePageShow = (e) => {
+        clearTimeout(submittingTimeoutRef.current);
       if (e.persisted) {
         setIsSubmitting(false);
       }
@@ -154,6 +156,10 @@ export default function LuckyMapOfCanada({ mapData }) {
   }, []);
 
   function handleFormSubmit(event) {
+  useEffect(() => {
+    return () => clearTimeout(submittingTimeoutRef.current);
+  }, []);
+
     if (isSubmitting) {
       event.preventDefault();
       return;
@@ -161,7 +167,8 @@ export default function LuckyMapOfCanada({ mapData }) {
     setIsSubmitting(true);
     // Timeout to reset state in case the form submission hangs
     setTimeout(() => setIsSubmitting(false), 8000);
-  }
+    if (submittingTimeoutRef.current) clearTimeout(submittingTimeoutRef.current);
+    submittingTimeoutRef.current = setTimeout(() => setIsSubmitting(false), 8000);
 
   function storyUrl(storyId) {
     if (typeof window === 'undefined') return '/lucky-map-of-canada';
