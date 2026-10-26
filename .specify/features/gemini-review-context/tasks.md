@@ -34,7 +34,7 @@
 ## Phase 5 — Finding-level fix UX
 
 - [x] T018 Build a complete, standalone copy/paste implementation prompt for every finding in the existing collapsed review section.
-- [x] T019 Add a trusted `@gemini repair one <path>:<line>` command that re-reviews and only targets the exact reproduced finding; preserve `@gemini repair all` for all eligible findings.
+- [x] T019 Add a trusted `@gemini repair one <path>:<line> -- <finding title>` command that re-reviews and only targets the exact reproduced finding; preserve `@gemini repair all` for all eligible findings.
 - [x] T020 Add regression tests for standalone prompts, eligible-target visibility, command parsing/path safety, stale target rejection, and all-findings footer instructions.
 - [x] T021 Update Gemini's review rules, the feature spec/plan/checklist, PR summary, and active context to describe targeted and all-findings opt-in suggestions accurately.
 - [ ] T022 Verify the new code and tests on the final PR head with GitHub Actions; inspect generated review formatting and keep live-model acceptance distinct from static/unit-test coverage.
