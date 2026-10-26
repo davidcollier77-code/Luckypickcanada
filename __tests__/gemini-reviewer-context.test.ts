@@ -6,9 +6,9 @@ const reviewer = require("../.github/scripts/gemini-reviewer.cjs");
 describe("Gemini reviewer source context", () => {
   it("extracts local imports but ignores package imports", () => {
     expect(reviewer.extractLocalImports('import Hero from "./Hero"; export { x } from "../lib/x.js"; const p = require("react"); require("./local.cjs"); import("next/image");'))
+      .toEqual(["./Hero", "../lib/x.js", "./local.cjs"]);
     // Template-literal and fully dynamic specifiers are intentionally not matched (statically unresolvable)
     expect(reviewer.extractLocalImports('import x from `./foo`; import(`./dynamic/${name}`);')).toEqual([]);
-      .toEqual(["./Hero", "../lib/x.js", "./local.cjs"]);
   });
   it("resolves relative modules and rejects repository escapes", () => {
     expect(reviewer.resolveImportCandidates("./Hero", "app/homepage/HomePage.js").slice(0, 4))
