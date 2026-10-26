@@ -1,3 +1,15 @@
+# Active Context — Gemini Default Review Coverage and Relevant Documentation (2026-10-26)
+
+- **Selected task group:** `deep-dive` — this task extends the already-merged Gemini reviewer context work across source retrieval, review prompts, document selection, and regression tests.
+- **Branch:** `improve/gemini-default-review-coverage-20261026`; prepare a PR against `main` and leave it open/unmerged.
+- **User-approved objective:** Make automatic Gemini reviews inspect bounded changed-source/import context by default and load Gemini CLI / Gemini Deep Research documentation only for directly relevant tasks.
+- **Implementation:** `.github/scripts/gemini-reviewer.cjs` now calls source collection for automatic reviews, uses explicit 22-file / 3,600-character-per-file / 100,000-character-total limits, reports context gaps, keeps all text patches in review batches, and loads deleted-file source from the base SHA. CLI and Deep Research reference snapshots are optional, selected-group-constrained, and relevance-guarded.
+- **Tests/specification:** Reused and updated `.specify/features/gemini-review-context/spec.md`, `plan.md`, `tasks.md`, and `checklists/requirements.md`; added test assertions in `__tests__/gemini-reviewer-context.test.ts` and updated `__tests__/gemini-reviewer-workflow.test.ts`. Updated `.gemini/rules/luckypickcanada.md` and `PR_SUMMARY.md`.
+- **Relevant document conclusion:** `.docs/deep-dive/_google-gemini_gemini-cli.md` is a CLI tips/commands snapshot. `.docs/deep-dive/_websites_ai_google_dev_gemini-api.md` is specifically a Gemini Deep Research/Interactions API page. Neither belongs in an ordinary code review just because the task group contains them; `.docs/` remains read-only.
+- **Verification:** Source changes and test additions are committed to the topic branch. Focused/full Vitest, TypeScript/build, `./jules-verify.sh`, current-head Actions, and live-model acceptance remain pending. The current session cannot run repository shell commands locally; do not claim those checks passed until CI confirms them.
+
+---
+
 # Active Context — Gemini Reviewer MARKER Initialization Fix (2026-10-26)
 
 - **Selected task group:** `troubleshooting` — repairs the verified full-review runtime crash in the Gemini reviewer source-clipping helper.
