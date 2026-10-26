@@ -1,3 +1,25 @@
+# Active Context — Gemini Finding-Level Fix UX (2026-10-26)
+
+- **Selected task group:** `deep-dive` — extends the existing reviewer pipeline with finding-specific implementation prompts and user-selected repair scope.
+- **Branch / PR:** `improve/gemini-default-review-coverage-20261026`, [PR #1617](https://github.com/davidcollier77-code/Luckypickcanada/pull/1617); keep open and unmerged.
+- **User goal:** Every finding has a collapsed, ready-to-copy implementation prompt. Owners can request a targeted suggestion for one eligible issue or ask Gemini for suggestions across all eligible findings.
+- **Design:** `@gemini repair one <path>:<line> -- <finding title>` reruns the review and targets only the same finding at that exact path/line, including its title. `@gemini repair all` requests suggestions across eligible findings. Both remain opt-in native GitHub suggestions on safe one-line changes only; no direct repository edits, pushes, commits or merges.
+- **GitHub UI limitation:** Review Markdown cannot host a custom live action button. The report therefore displays exact comment commands; the native GitHub Commit suggestion action remains the apply step.
+- **Verification:** New reviewer and regression-test changes are on this branch. Final-head tests, `./jules-verify.sh`, PR-head CI and live-model output review remain pending; previously passing CI pertains to an earlier code-reviewed SHA.
+
+---
+# Active Context — Gemini Default Review Coverage and Relevant Documentation (2026-10-26)
+
+- **Selected task group:** `deep-dive` — this task extends the already-merged Gemini reviewer context work across source retrieval, review prompts, document selection, and regression tests.
+- **Branch:** `improve/gemini-default-review-coverage-20261026`; prepare a PR against `main` and leave it open/unmerged.
+- **User-approved objective:** Make automatic Gemini reviews inspect bounded changed-source/import context by default and load Gemini CLI / Gemini Deep Research documentation only for directly relevant tasks.
+- **Implementation:** `.github/scripts/gemini-reviewer.cjs` now calls source collection for automatic reviews, uses explicit 22-file / 3,600-character-per-file / 100,000-character-total limits, reports context gaps, keeps all text patches in review batches, and loads deleted-file source from the base SHA. CLI and Deep Research reference snapshots are optional, selected-group-constrained, and relevance-guarded.
+- **Tests/specification:** Reused and updated `.specify/features/gemini-review-context/spec.md`, `plan.md`, `tasks.md`, and `checklists/requirements.md`; added test assertions in `__tests__/gemini-reviewer-context.test.ts` and updated `__tests__/gemini-reviewer-workflow.test.ts`. Updated `.gemini/rules/luckypickcanada.md` and `PR_SUMMARY.md`.
+- **Relevant document conclusion:** `.docs/deep-dive/_google-gemini_gemini-cli.md` is a CLI tips/commands snapshot. `.docs/deep-dive/_websites_ai_google_dev_gemini-api.md` is specifically a Gemini Deep Research/Interactions API page. Neither belongs in an ordinary code review just because the task group contains them; `.docs/` remains read-only.
+- **Verification:** On the code-reviewed head `486a071dd132b24dea309bafe404a65b0796798f`, DevSkim, focused/full Vitest, TypeScript, Spec Kit verification, production build, the 495 MiB size gate (315.74 MiB), OpenNext/Cloudflare, Wrangler dry-run, updater governance/`./jules-verify.sh`, and visual regression tests passed. No local shell execution is claimed; checks ran in GitHub Actions. Live-model acceptance remains pending because the trusted-base workflow does not execute unmerged PR-head reviewer code. Four related Amazon Q review threads were resolved after applying/validating their feedback.
+
+---
+
 # Active Context — Gemini Reviewer MARKER Initialization Fix (2026-10-26)
 
 - **Selected task group:** `troubleshooting` — repairs the verified full-review runtime crash in the Gemini reviewer source-clipping helper.

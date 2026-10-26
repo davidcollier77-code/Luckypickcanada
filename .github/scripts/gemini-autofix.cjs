@@ -159,4 +159,4 @@ async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, 
     message: "Posted " + comments.length + " opt-in GitHub suggestion(s). No code or branch was changed. Use GitHub's Commit suggestion button to apply a selected fix." };
 }
 
-module.exports = { applyAutoFix };
+module.exports = { applyAutoFix, isEligiblePath };

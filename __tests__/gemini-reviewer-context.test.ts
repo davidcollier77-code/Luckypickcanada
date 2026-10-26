@@ -4,6 +4,37 @@ const require = createRequire(import.meta.url);
 const reviewer = require("../.github/scripts/gemini-reviewer.cjs");
 
 describe("Gemini reviewer source context", () => {
+  it("parses single-finding and all-finding repair commands safely", () => {
+    expect(reviewer.parseRepairCommand("@gemini full review")).toEqual({ mode: "review" });
+    expect(reviewer.parseRepairCommand("@gemini repair all")).toEqual({ mode: "fix" });
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:42 -- Duplicate submit guard")).toEqual({
+      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42, title: "Duplicate submit guard" }
+    });
+    expect(reviewer.parseRepairCommand("@GEMINI REPAIR ONE app/homepage/HomePage.js:42 -- Duplicate submit guard")).toEqual({
+      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42, title: "Duplicate submit guard" }
+    });
+    expect(reviewer.parseRepairCommand("@gemini repair one ../secret.js:42 -- Bad path")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0 -- Bad line")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:-1 -- Bad line")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair all extra")).toBeNull();
+  });
+  it("builds a standalone implementation prompt and exposes targeted suggestions only for eligible added lines", () => {
+    const finding = {severity:"HIGH", title:"Broken preload", path:"app/homepage/Hero.js", line:42,
+      inline:true, problem:"The preload type does not match the selected source.", impact:"The LCP image may not use the preload.",
+      fix:"Align the preload with the actual selected source.", suggestion:null};
+    const prompt = reviewer.buildFixPrompt(finding, 1617);
+    expect(prompt).toContain("Repository: davidcollier77-code/Luckypickcanada");
+    expect(prompt).toContain("Pull request: #1617");
+    expect(prompt).toContain("Read the repository's root AGENTS.md first");
+    expect(prompt).toContain("Add or update focused regression tests");
+    expect(prompt).toContain("Leave the PR open and unmerged");
+    expect(reviewer.canRequestTargetedFix(finding)).toBe(true);
+    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:finding.title})).toEqual([finding]);
+    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:"Different issue"})).toEqual([]);
+    expect(reviewer.matchTargetFinding([finding], {path:"app/homepage/Other.js", line:finding.line, title:finding.title})).toEqual([]);
+    expect(reviewer.canRequestTargetedFix({...finding, path:".github/scripts/gemini-reviewer.cjs"})).toBe(false);
+    expect(reviewer.canRequestTargetedFix({...finding, inline:false})).toBe(false);
+  });
   it("extracts local imports but ignores package imports", () => {
     expect(reviewer.extractLocalImports('import Hero from "./Hero"; export { x } from "../lib/x.js"; const p = require("react"); require("./local.cjs"); import("next/image");'))
       .toEqual(["./Hero", "../lib/x.js", "./local.cjs"]);
@@ -24,6 +55,63 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.limitImportCandidates(candidates, false, 2)).toHaveLength(2);
     expect(reviewer.limitImportCandidates(candidates, false, 0)).toEqual([]);
     expect(reviewer.limitImportCandidates(candidates, true, 12)).toHaveLength(1);
+  });
+  it("bounds full-source retrieval but keeps every available text patch in review batches", () => {
+    const files = Array.from({length: reviewer.MAX_CHANGED_SOURCE_FILES + 3}, (_, i) => ({
+      filename: "src/module-" + i + ".js",
+      status: i === 0 ? "removed" : "modified",
+      patch: "@@ -1 +1 @@\\n-old\\n+new"
+    }));
+    const selected = reviewer.selectChangedSourceCandidates(files);
+    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(3600);
+    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(100000);
+    expect(selected.totalCount).toBe(files.length);
+    expect(selected.candidates).toHaveLength(reviewer.MAX_CHANGED_SOURCE_FILES);
+    expect(selected.candidates.every((file) => file.status !== "removed")).toBe(true);
+    expect(selected.omittedCount).toBe(3);
+    const reviewedPatches = reviewer.makeBatches(files).flat();
+    expect(reviewedPatches).toHaveLength(files.length);
+    expect(reviewedPatches.some((file) => file.filename === "src/module-0.js" && file.patch)).toBe(true);
+  });
+  it("loads Gemini reference snapshots only when the task directly concerns them", () => {
+    const cliDoc = ".docs/deep-dive/_google-gemini_gemini-cli.md";
+    const deepResearchDoc = ".docs/deep-dive/_websites_ai_google_dev_gemini-api.md";
+    const ordinaryPr = {title: "feat: improve Gemini reviewer", body: "Improve default source coverage."};
+    const ordinaryFiles = [{filename: ".github/scripts/gemini-reviewer.cjs"}];
+    expect(reviewer.isGeminiCliDoc(cliDoc)).toBe(true);
+    expect(reviewer.isGeminiDeepResearchDoc(deepResearchDoc)).toBe(true);
+    expect(reviewer.isGeminiReferenceRelevant(cliDoc, ordinaryPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiReferenceRelevant(deepResearchDoc, ordinaryPr, ordinaryFiles)).toBe(false);
+    const referenceRoutingPr = {
+      title: "improve Gemini reviewer documentation selection",
+      body: "Make the CLI and Deep Research snapshots optional and select them only when relevant."
+    };
+    expect(reviewer.isGeminiReferenceRelevant(cliDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiReferenceRelevant(deepResearchDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiReferenceRelevant(
+      cliDoc,
+      {title: "fix: Gemini CLI config", body: ""},
+      [{filename: ".gemini/GEMINI.md"}]
+    )).toBe(true);
+    expect(reviewer.isGeminiReferenceRelevant(
+      deepResearchDoc,
+      {title: "integrate Gemini Deep Research agent", body: "Use the Interactions API."},
+      [{filename: "lib/deep-research.js"}]
+    )).toBe(true);
+    const selected = reviewer.selectRelevantGeminiReferenceDocs([
+      ".docs/deep-dive/_google-gemini_gemini-cli.md",
+      ".docs/security/_google-gemini_gemini-cli.md",
+      ".docs/deep-dive/_websites_ai_google_dev_gemini-api.md",
+      ".docs/security/_websites_ai_google_dev_gemini-api.md"
+    ], {
+      title: "Integrate Gemini CLI config and Gemini Deep Research",
+      body: "Use Interactions API for the deep research workflow."
+    }, [
+      {filename: ".gemini/GEMINI.md"},
+      {filename: "lib/deep-research.js"}
+    ]);
+    expect(selected.map((item) => item.kind)).toEqual(["cli", "deep-research"]);
+    expect(selected).toHaveLength(2);
   });
   it("selects relevant groups based on paths/domain, not generic fix wording", () => {
     const groups = ["polishing", "troubleshooting", "testing", "seo", "security", "deep-dive"];
@@ -84,12 +172,19 @@ describe("Gemini reviewer source context", () => {
         problem:"The preload type does not match the selected source.",impact:"The LCP image may not use the preload.",
         fix:"Align the preload with the selected source.",suggestion:'preload("/hero.avif", { type: "image/avif" });'}],
       positiveObservations:[{path:"app/homepage/Hero.js",title:"Fallback preserved",details:"The WebP fallback remains available.",confidence:0.91}],
-      coverageGaps:["One source file was unavailable."]
+      coverageGaps:["One source file was unavailable."],
+      pullRequestNumber:1617
     });
     expect(formatted).toContain("🔴 **[HIGH] Broken preload**");
-    expect(formatted).toContain("<summary>🛠️ Suggested fix for Broken preload — click to expand and copy</summary>");
-    expect(formatted).toContain("**Recommended fix (copyable)**");
-    expect(formatted).toContain("**Copyable code replacement**");
+    expect(formatted).toContain("<summary>🧰 Copy/paste prompt for Broken preload — expand to copy or request a fix</summary>");
+    expect(formatted).toContain("**Copy/paste implementation prompt**");
+    expect(formatted).toContain("Task: Investigate and fix one reported code-review finding.");
+    expect(formatted).toContain("Read the repository's root AGENTS.md first");
+    expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42 -- Broken preload");
+    expect(formatted).toContain("### Fix all findings");
+    expect(formatted).toContain("@gemini repair all");
+    expect(formatted).toContain("Nothing is applied or pushed automatically.");
+    expect(formatted).toContain("**Optional code replacement (not a substitute for the implementation prompt)**");
     expect(formatted).toContain('preload("/hero.avif", { type: "image/avif" });');
     expect(formatted).toContain("🟢 **Fallback preserved**");
     expect(formatted).toContain("🟡 One source file was unavailable.");

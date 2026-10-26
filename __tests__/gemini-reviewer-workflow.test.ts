@@ -23,6 +23,8 @@ describe("Gemini PR reviewer", () => {
     expect(rules).toContain("Use `.docs/manifest.json` to choose the smallest relevant task group(s).");
     expect(rules).toContain("_google-gemini_gemini-cli.md");
     expect(rules).toContain("_websites_ai_google_dev_gemini-api.md");
+    expect(rules).toContain("Treat Gemini reference snapshots as optional, task-specific references");
+    expect(rules).toContain("MUST still attempt bounded read-only source-context retrieval");
     expect(rules).toContain("USED: YES/NO");
     expect(rules).toContain("USEFUL: YES/NO");
     expect(rules).toContain("@gemini full review");
@@ -33,22 +35,28 @@ describe("Gemini PR reviewer", () => {
   it("passes only Gemini's own rules as model system instructions", () => {
     expect(script).toContain('systemInstruction: { parts: [{ text: RULES }] }');
     expect(fixScript).toContain('systemInstruction: { parts: [{ text: rules }] }');
-    expect(script).not.toContain("AGENTS.md");
+    expect(script).toContain("Read the repository's root AGENTS.md first");
     expect(fixScript).not.toContain("AGENTS.md");
     expect(script).not.toContain("Trusted repository governance");
     expect(fixScript).not.toContain("Trusted AGENTS.md governance");
   });
 
-  it("runs automatic reviews and accepts the two explicit requests", () => {
+  it("runs automatic reviews and accepts full review plus single/all targeted repair requests", () => {
     expect(workflow).toContain("pull_request_target:");
     expect(workflow).toContain("opened, reopened, synchronize, ready_for_review, review_requested");
     expect(workflow).toContain("issue_comment:");
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("options: [review, fix]");
     expect(script).toContain("@gemini full review");
+    expect(script).toContain("@gemini repair one");
     expect(script).toContain("@gemini repair all");
+    expect(script).toContain("parseRepairCommand");
+    expect(script).toContain("requestedFindings = mode ===");
+    expect(script).toContain("Gemini Targeted Fix");
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
-    expect(script).toContain("Commands: comment exactly @gemini full review");
+    expect(script).toContain("Fix all findings");
+    expect(script).toContain("Copy/paste implementation prompt");
+    expect(script).toContain("Comment exactly @gemini full review to run a full review");
   });
 
   it("uses trusted base-branch code and limited workflow permissions", () => {
@@ -61,12 +69,20 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("author_association");
     expect(script).toContain('if (!pr || typeof pr !== "object")');
     expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const list = await getFiles(number)"));
+    expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const sourceContext = await collectSourceContext(pr, files)"));
   });
 
-  it("uses selected task groups to constrain library documents and reports actual usage", () => {
-    expect(script).toContain("function isRequiredGeminiDoc(path)");
-    expect(script).toContain('".docs/" + group + "/_google-gemini_gemini-cli.md"');
-    expect(script).toContain('".docs/" + group + "/_websites_ai_google_dev_gemini-api.md"');
+  it("uses selected task groups, relevance-guards Gemini references, and reports actual usage", () => {
+    expect(script).toContain("function isGeminiCliDoc(path)");
+    expect(script).toContain("function isGeminiDeepResearchDoc(path)");
+    expect(script).toContain("function isGeminiReferenceRelevant(path, pr, files)");
+    expect(script).toContain("_google-gemini_gemini-cli.md");
+    expect(script).toContain("_websites_ai_google_dev_gemini-api.md");
+    expect(script).toContain("Gemini reference snapshots are OPTIONAL, not required per group.");
+    expect(script).toContain("const selectedReferenceDocs = selectRelevantGeminiReferenceDocs(groupPaths, pr, files);");
+    expect(script).toContain("if (isGeminiReferenceDoc(path)) {");
+    expect(script).toContain("if (!isGeminiReferenceRelevant(path, pr, files)) continue;");
+    expect(script).toContain("if (selectedReferenceDocs.some((doc) => doc.kind === kind)) continue;");
     expect(script).toContain("const groupPrefixes = groups.map");
     expect(script).toContain("const availableSet = new Set(groupPaths)");
     expect(script).toContain("function geminiManifestGroups()");
@@ -90,6 +106,10 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain('const SECOND_FALLBACK = process.env.GEMINI_SECOND_FALLBACK_MODEL || "gemini-3.5-flash-lite";');
     expect(fixScript).toContain('const SECOND_FALLBACK = process.env.GEMINI_SECOND_FALLBACK_MODEL || "gemini-3.5-flash-lite";');
     expect(script).toContain("const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((x, i, a) => x && a.indexOf(x) === i);");
+    expect(script).toContain("const sourceContext = await collectSourceContext(pr, files);");
+    expect(script).not.toContain("Source context skipped for initial automatic review.");
+    expect(script).toContain("changed text file(s) exceeded the ");
+    expect(script).toContain("patches remain included in review batches.");
     expect(fixScript).toContain("const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((model, index, all) => model && all.indexOf(model) === index);");
     expect(script).toContain("generativelanguage.googleapis.com/v1beta/models/");
     expect(script).toContain("GEMINI_API_KEY");
@@ -119,7 +139,7 @@ describe("Gemini PR reviewer", () => {
     const promptIndex = script.indexOf("const prompt = [");
     expect(validationIndex).toBeGreaterThan(-1);
     expect(validationIndex).toBeLessThan(promptIndex);
-    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix"].includes(mode))');
+    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix", "fix-one"].includes(mode))');
   });
   it("parses the reviewer scripts without executing them", () => {
     for (const path of [scriptPath, fixPath]) {
