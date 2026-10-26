@@ -8,7 +8,7 @@ This is the repository's authoritative workflow and safety policy. The user's ta
 
 1. Read this file first.
 2. Read `.jules/jules.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once.
-3. Select exactly one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`.
+3. Select exactly one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. For Gemini CLI tasks, use `creation` for implementation/configuration, `troubleshooting` for diagnosing failures, or `deep-dive` for investigation.
 4. Read that group's `.jules/<group>.md`, `.docs/<group>/jules_google_docs.md`, and `.docs/<group>/_websites_ai_google_dev_gemini-api.md`. Check `.docs/manifest.json` for routing.
 5. Inspect the current branch/worktree, relevant files and task artifacts, plus any existing branch or PR for the same task. Consult library/version references only when materially relevant.
 
