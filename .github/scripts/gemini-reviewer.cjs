@@ -713,7 +713,7 @@ async function main() {
   } else if (EVENT_NAME === "issue_comment") {
     const parsedCommand = parseRepairCommand(event.comment?.body);
     if (!event.issue?.pull_request || !parsedCommand) {
-      log("Skipping comment; use exactly @gemini full review, @gemini repair all, or @gemini repair one <path>:<line>.");
+      log("Skipping comment; use exactly @gemini full review, @gemini repair all, or @gemini repair one <path>:<line> -- <finding title>.");
       return;
     }
     if (!TRUSTED.has(String(event.comment?.author_association || "").toUpperCase())) {
@@ -854,7 +854,7 @@ async function main() {
     documentReport,
     "",
     "### Request fixes",
-    "Comment exactly @gemini full review to run a full review, @gemini repair one <path>:<line> to request a safe suggestion for one finding, or @gemini repair all to request suggestions for all eligible findings. Targeted requests recheck the exact path and line before suggesting anything. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
+    "Comment exactly @gemini full review to run a full review, @gemini repair one <path>:<line> -- <finding title> to request a safe suggestion for one finding, or @gemini repair all to request suggestions for all eligible findings. Targeted requests recheck the exact path and line before suggesting anything. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
   ];
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
   await gh("/repos/" + REPO + "/pulls/" + number + "/reviews", {
