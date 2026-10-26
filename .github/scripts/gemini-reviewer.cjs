@@ -149,13 +149,13 @@ async function getRepositoryFile(path, ref, repository = REPO) {
   }
 }
 async function getRepositoryPathSet(ref, repository = REPO) {
-  if (!/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return { set: null, truncated: false };
+  if (!/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return { set: null, truncated: false, available: false };
   try {
     const tree = await gh("/repos/" + repository + "/git/trees/" + encodeURIComponent(ref) + "?recursive=1");
-    if (!tree || !Array.isArray(tree.tree)) return { set: null, truncated: false };
-    if (tree.truncated) return { set: null, truncated: true };
-    return { set: new Set(tree.tree.filter((e) => e.type === "blob" && e.mode !== "120000").map((e) => e.path)), truncated: false };
-  } catch { return { set: null, truncated: false }; }
+    if (!tree || !Array.isArray(tree.tree)) return { set: null, truncated: false, available: false };
+    if (tree.truncated) return { set: null, truncated: true, available: false };
+    return { set: new Set(tree.tree.filter((e) => e.type === "blob" && e.mode !== "120000").map((e) => e.path)), truncated: false, available: true };
+  } catch { return { set: null, truncated: false, available: false }; }
 }
 async function collectSourceContext(pr, files) {
   const records = [], limitations = [], cache = new Map();
@@ -180,16 +180,21 @@ async function collectSourceContext(pr, files) {
         (candidates.length - index) + " selected changed text file(s) could be loaded; their available patches remain included in review batches.");
       break;
     }
-    const source = await read(file.filename, headSha, headRepo);
+    const removed = file.status === "removed";
+    const sourcePath = removed ? (file.previous_filename || file.filename) : file.filename;
+    const source = await read(sourcePath, removed ? baseSha : headSha, removed ? baseRepo : headRepo);
     if (source === null) {
-      limitations.push("Full head source unavailable for " + file.filename + "; its patch remains included in review batches.");
+      limitations.push((removed ? "Base source for removed file unavailable for " : "Full head source unavailable for ") +
+        file.filename + "; its patch remains included in review batches.");
       continue;
     }
     const clipped = clipSource(source, Math.min(MAX_CHANGED_SOURCE_CHARS, budget));
-    records.push({ path: file.filename, role: "changed file at PR head", content: clipped.content, truncated: clipped.truncated });
-    budget -= clipped.content.length; changed.push({ path: file.filename, source });
-    if (changed.length <= 3 && file.status !== "added" && budget > 6000) {
-      const baseline = await read(file.filename, baseSha, baseRepo);
+    records.push({ path: file.filename, role: removed ? "removed file at PR base before deletion" : "changed file at PR head",
+      content: clipped.content, truncated: clipped.truncated });
+    budget -= clipped.content.length; changed.push({ path: file.filename, source, status: file.status });
+    if (changed.length <= 3 && !removed && file.status !== "added" && budget > 6000) {
+      const basePath = file.previous_filename || file.filename;
+      const baseline = await read(basePath, baseSha, baseRepo);
       if (baseline !== null) {
         const old = clipSource(baseline, Math.min(1800, Math.floor(budget / 3)));
         records.push({ path: file.filename, role: "same file at PR base before change", content: old.content, truncated: old.truncated });
@@ -203,10 +208,13 @@ async function collectSourceContext(pr, files) {
   const pathSet = pathSetResult ? pathSetResult.set : null;
   if (pathSetResult && pathSetResult.truncated) {
     limitations.push("Repository file tree was truncated by the GitHub API; import-path filtering is unavailable and fallback probing applies (up to " + MAX_IMPORT_SOURCE_PROBES + " probes, capped).");
+  } else if (!pathSetResult || !pathSetResult.available) {
+    limitations.push("Repository file tree was unavailable; bounded fallback import-source probing was used.");
   }
   const seen = new Set(changed.map((x) => x.path));
   let relatedCount = 0, importProbeCount = 0;
   for (const file of changed) {
+    if (file.status === "removed") continue;
     if (relatedCount >= 7 || budget < 3000 || importProbeCount >= MAX_IMPORT_SOURCE_PROBES) break;
     for (const specifier of extractLocalImports(file.source)) {
       if (relatedCount >= 7 || budget < 3000 || importProbeCount >= MAX_IMPORT_SOURCE_PROBES) break;
@@ -226,6 +234,7 @@ async function collectSourceContext(pr, files) {
     }
   }
   if (importProbeCount >= MAX_IMPORT_SOURCE_PROBES) limitations.push("Import-source probe budget reached; further local import candidates may be omitted.");
+  if (budget < 3000) limitations.push("Remaining source-context budget fell below 3000 characters; further local-import context was not attempted.");
   if (records.some((r) => r.truncated)) limitations.push("Some source was clipped to fit the bounded context budget.");
   if (candidates.length > changed.length && !limitations.some((item) => /before .* selected changed text file|Full head source unavailable/.test(item))) {
     limitations.push((candidates.length - changed.length) + " selected changed text file(s) did not receive full-source context; patches remain included in review batches.");
@@ -357,7 +366,7 @@ function geminiReferenceReason(path) {
   return "Not a Gemini reference snapshot.";
 }
 function selectChangedSourceCandidates(files) {
-  const all = files.filter((f) => f.patch && f.status !== "removed" && safePath(f.filename) &&
+  const all = files.filter((f) => f.patch && safePath(f.filename) &&
     /\.(?:[cm]?[jt]sx?|css|scss|json|ya?ml|html|md)$/i.test(f.filename));
   return {
     candidates: all.slice(0, MAX_CHANGED_SOURCE_FILES),
