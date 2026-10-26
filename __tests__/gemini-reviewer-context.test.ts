@@ -48,6 +48,12 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.isGeminiDeepResearchDoc(deepResearchDoc)).toBe(true);
     expect(reviewer.isGeminiReferenceRelevant(cliDoc, ordinaryPr, ordinaryFiles)).toBe(false);
     expect(reviewer.isGeminiReferenceRelevant(deepResearchDoc, ordinaryPr, ordinaryFiles)).toBe(false);
+    const referenceRoutingPr = {
+      title: "improve Gemini reviewer documentation selection",
+      body: "Make the CLI and Deep Research snapshots optional and select them only when relevant."
+    };
+    expect(reviewer.isGeminiReferenceRelevant(cliDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiReferenceRelevant(deepResearchDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
     expect(reviewer.isGeminiReferenceRelevant(
       cliDoc,
       {title: "fix: Gemini CLI config", body: ""},
