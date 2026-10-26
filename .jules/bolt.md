@@ -18,3 +18,6 @@
 ## 2025-03-09 - Optimize RegExp creation in location parsing
 **Learning:** Dynamic `RegExp` creation within nested loops or mapping operations (like processing database rows) is a significant performance bottleneck. Creating regex inside functions called frequently (e.g., `getStoryProvince` called for every row in `getLuckyStoryMap`) adds immense overhead compared to precompiling.
 **Action:** When working with static mapping data (like province aliases) that requires regex matching, always precompile the `RegExp` objects outside of the hot path/function scope.
+## 2026-10-26 - Optimize Canvas Radial Gradients with Bounding Box `fillRect()`
+**Learning:** Using `ctx.beginPath()`, `ctx.arc()`, and `ctx.fill()` when filling a shape with a radial gradient that fades to transparent introduces unnecessary CPU overhead for path calculation. However, replacing `arc()` with `fillRect()` for solid colors creates a severe visual regression (circles become squares).
+**Action:** ONLY use `fillRect()` to replace `arc()` when the `fillStyle` is a `createRadialGradient` whose outer color stop is fully transparent (`rgba(..., 0)`). This provides the performance benefit of drawing a rectangle while relying on the gradient's transparency mask to render smooth, circular edges without visual artifacts.

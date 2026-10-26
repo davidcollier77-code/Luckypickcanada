@@ -743,7 +743,7 @@ export default function LuckyCardReveal() {
 
         ctx.save(); ctx.globalCompositeOperation = 'screen';
         const g = ctx.createRadialGradient(x, y, 0, x, y, r * 4); g.addColorStop(0, rgba(electricHot, alpha * 0.45)); g.addColorStop(0.2, rgba(electricRgb, alpha * 0.34)); g.addColorStop(1, rgba(electricRgb, 0));
-        ctx.beginPath(); ctx.arc(x, y, r * 4, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill(); ctx.restore();
+        ctx.fillStyle = g; ctx.fillRect(x - r * 4, y - r * 4, r * 8, r * 8); ctx.restore();
       });
       material.splatter.filter((drop) => drop.behind).forEach((drop) => drawDroplet(drop, true));
       return;
