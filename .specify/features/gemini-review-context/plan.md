@@ -6,3 +6,4 @@
 4. Improve deterministic task-group fallback to avoid over-selecting groups due to generic title words.
 5. Add focused Vitest tests for control-flow evidence, non-mutually-exclusive typed image preloads, traffic-light verdict logic, positive-observation filtering, and collapsible copy-friendly fix formatting while preserving trusted base-branch execution and opt-in-only suggestions.
 6. Verify syntax/tests through CI and inspect a live review against the PR #1610 preload mismatch and the possible double-preload consequence; live-model correctness remains unproven until actually exercised.
+7. Repair the malformed chained assertion in `__tests__/gemini-reviewer-context.test.ts` and verify the focused test, TypeScript build check, and Cloudflare/OpenNext build on the repair PR head.
