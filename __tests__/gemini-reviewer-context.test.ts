@@ -28,7 +28,7 @@ describe("Gemini reviewer source context", () => {
   it("bounds full-source retrieval but keeps every available text patch in review batches", () => {
     const files = Array.from({length: reviewer.MAX_CHANGED_SOURCE_FILES + 3}, (_, i) => ({
       filename: "src/module-" + i + ".js",
-      status: "modified",
+      status: i === 0 ? "removed" : "modified",
       patch: "@@ -1 +1 @@\\n-old\\n+new"
     }));
     const selected = reviewer.selectChangedSourceCandidates(files);
