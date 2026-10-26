@@ -13,6 +13,7 @@ Keep the master request unchanged; tighten the root workflow, shorten the Jules 
 - Replace `.jules/jules.md` with a shorter entrypoint that points to root governance rather than duplicating it.
 - Remove the mandatory Gemini CLI resource line from the eight task-group specialists and Sentinel. Add conditional local-snapshot pointers only to `.jules/creation.md`, `.jules/troubleshooting.md`, and `.jules/deep-dive.md`; keep Gemini API and Jules documentation/API requirements.
 - Update `.docs/manifest.json` so the Tuesday/Friday refresher maintains Gemini CLI snapshots only for Creation, Troubleshooting, and Deep-dive. Confirm `scripts/refresh-docs.js` uses the manifest and writes `.docs/`, not `.jules/`.
+- Remove stale generated Gemini CLI snapshot symlinks from the five non-target `.docs/<group>/` folders because the refresher does not prune files removed from the manifest; retain the canonical snapshot and its links for Creation, Troubleshooting, and Deep-dive.
 - Preserve all existing safety, explicit-authorization, verification, build-size, and no-merge requirements.
 - Add no application changes and do not modify the library Master Work Request.
 
