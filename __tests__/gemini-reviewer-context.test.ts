@@ -25,6 +25,40 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.limitImportCandidates(candidates, false, 0)).toEqual([]);
     expect(reviewer.limitImportCandidates(candidates, true, 12)).toHaveLength(1);
   });
+  it("bounds full-source retrieval but keeps every available text patch in review batches", () => {
+    const files = Array.from({length: reviewer.MAX_CHANGED_SOURCE_FILES + 3}, (_, i) => ({
+      filename: "src/module-" + i + ".js",
+      status: "modified",
+      patch: "@@ -1 +1 @@\\n-old\\n+new"
+    }));
+    const selected = reviewer.selectChangedSourceCandidates(files);
+    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(3600);
+    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(100000);
+    expect(selected.totalCount).toBe(files.length);
+    expect(selected.candidates).toHaveLength(reviewer.MAX_CHANGED_SOURCE_FILES);
+    expect(selected.omittedCount).toBe(3);
+    expect(reviewer.makeBatches(files).flat()).toHaveLength(files.length);
+  });
+  it("loads Gemini reference snapshots only when the task directly concerns them", () => {
+    const cliDoc = ".docs/deep-dive/_google-gemini_gemini-cli.md";
+    const deepResearchDoc = ".docs/deep-dive/_websites_ai_google_dev_gemini-api.md";
+    const ordinaryPr = {title: "feat: improve Gemini reviewer", body: "Improve default source coverage."};
+    const ordinaryFiles = [{filename: ".github/scripts/gemini-reviewer.cjs"}];
+    expect(reviewer.isGeminiCliDoc(cliDoc)).toBe(true);
+    expect(reviewer.isGeminiDeepResearchDoc(deepResearchDoc)).toBe(true);
+    expect(reviewer.isGeminiReferenceRelevant(cliDoc, ordinaryPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiReferenceRelevant(deepResearchDoc, ordinaryPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiReferenceRelevant(
+      cliDoc,
+      {title: "fix: Gemini CLI config", body: ""},
+      [{filename: ".gemini/GEMINI.md"}]
+    )).toBe(true);
+    expect(reviewer.isGeminiReferenceRelevant(
+      deepResearchDoc,
+      {title: "integrate Gemini Deep Research agent", body: "Use the Interactions API."},
+      [{filename: "lib/deep-research.js"}]
+    )).toBe(true);
+  });
   it("selects relevant groups based on paths/domain, not generic fix wording", () => {
     const groups = ["polishing", "troubleshooting", "testing", "seo", "security", "deep-dive"];
     expect(reviewer.classifyReviewGroups({title:"fix: homepage performance",body:"Improve image preload"},[{filename:"app/homepage/Hero.js",patch:"+preload"}],groups)).toContain("polishing");
