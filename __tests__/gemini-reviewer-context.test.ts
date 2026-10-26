@@ -57,4 +57,42 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.IMAGE_PRELOAD_REVIEW_GUIDANCE).toMatch(/supporting both AVIF and WebP may preload both files/i);
     expect(reviewer.IMAGE_PRELOAD_REVIEW_GUIDANCE).toMatch(/Do not recommend dual-format preloading by default/i);
   });
+
+  it("sets red, yellow, and green verdicts according to findings and coverage", () => {
+    expect(reviewer.buildReviewVerdict([{severity:"HIGH"}], []).label).toBe("FIXES NEEDED");
+    expect(reviewer.buildReviewVerdict([], ["Source context unavailable"]).label).toBe("REVIEW INCOMPLETE");
+    expect(reviewer.buildReviewVerdict([], []).label).toBe("NO ACTIONABLE FINDINGS");
+    expect(reviewer.buildReviewVerdict([{severity:"HIGH"}], []).marker).toBe("🔴");
+    expect(reviewer.buildReviewVerdict([], ["coverage gap"]).marker).toBe("🟡");
+    expect(reviewer.buildReviewVerdict([], []).marker).toBe("🟢");
+  });
+  it("formats issue details with a collapsible copy-friendly suggested fix", () => {
+    const formatted = reviewer.formatReviewSections({
+      findings:[{severity:"HIGH",title:"Broken preload",path:"app/homepage/Hero.js",line:42,inline:true,
+        problem:"The preload type does not match the selected source.",impact:"The LCP image may not use the preload.",
+        fix:"Align the preload with the selected source.",suggestion:'preload("/hero.avif", { type: "image/avif" });'}],
+      positiveObservations:[{path:"app/homepage/Hero.js",title:"Fallback preserved",details:"The WebP fallback remains available.",confidence:0.91}],
+      coverageGaps:["One source file was unavailable."]
+    });
+    expect(formatted).toContain("🔴 **[HIGH] Broken preload**");
+    expect(formatted).toContain("<summary>🛠️ Suggested fix for Broken preload — click to expand and copy</summary>");
+    expect(formatted).toContain("**Recommended fix (copyable)**");
+    expect(formatted).toContain("**Copyable code replacement**");
+    expect(formatted).toContain('preload("/hero.avif", { type: "image/avif" });');
+    expect(formatted).toContain("🟢 **Fallback preserved**");
+    expect(formatted).toContain("🟡 One source file was unavailable.");
+    expect(formatted).toContain("not merge approval");
+    expect(formatted).toContain("required GitHub Actions checks");
+  });
+  it("keeps positive observations tied to changed paths and confidence threshold", () => {
+    const changedFiles=[{filename:"app/homepage/Hero.js"},{filename:"app/homepage/HomePage.js"}];
+    const normalized=reviewer.normalizePositiveObservations([
+      {path:"app/homepage/Hero.js",title:"Fallback preserved",details:"WebP source remains available.",confidence:0.92},
+      {path:"docs/unknown.md",title:"Unchanged",details:"Not in supplied changed paths.",confidence:0.99},
+      {path:"app/homepage/HomePage.js",title:"Speculative",details:"Might be fast.",confidence:0.61}
+    ],changedFiles);
+    expect(normalized).toHaveLength(1);
+    expect(normalized[0].title).toBe("Fallback preserved");
+  });
+
 });

@@ -1,3 +1,12 @@
+# Active Context — Gemini Traffic-Light Review and Copyable Fixes (2026-10-26)
+
+- **Current PR:** `#1611`, branch `improve/gemini-review-context`; review-summary presentation is added to the existing reviewer improvement.
+- **Output format:** red 🔴 issues with location/problem/impact; each suggested fix is hidden in a clickable details dropdown with copy-friendly text and safe replacement code when available; green 🟢 observations are evidence-backed; yellow 🟡 marks unresolved coverage.
+- **Merge signal:** a green Gemini verdict means no actionable finding and no known coverage gap in the reviewed scope; it is not merge approval. Required GitHub checks, reviews, and branch protection remain separate.
+- **Verification:** syntax parsing and source-level assertions are performed during editing; Vitest, `./jules-verify.sh`, and PR-head workflow results must be independently checked before completion.
+
+---
+
 # Active Context — Amazon Q-Derived Gemini Reviewer Improvements (2026-10-26)
 
 - **Current reviewer PR:** `#1611`, branch `improve/gemini-review-context`; the existing reviewer source-context task is being updated in place.

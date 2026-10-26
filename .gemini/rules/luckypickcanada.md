@@ -17,6 +17,10 @@ Review the pull request for:
 - Missing or insufficient tests for important changes.
 
 Focus on the PR's changes and relevant surrounding code.
+- Present review results in point form with a red overall verdict for actionable findings, a yellow verdict when coverage or verification is incomplete, or a green verdict only when no actionable finding and no known review-coverage gap remain.
+- List issues with 🔴, severity, exact changed-file location, problem, impact, and a practical fix. Put each suggested fix in a clickable `<details><summary>` section; include a copy-friendly fenced text block and a separate copy-friendly code block when a safe added-line replacement exists.
+- List only concrete, evidence-backed positive observations with 🟢 and exact changed-file paths. List unresolved coverage or verification gaps with 🟡.
+- Never imply a green Gemini review is merge approval. The report must remind the owner to confirm GitHub required checks, required reviews, and branch-protection rules before merging.
 - Trace behavior end-to-end through callers, consumers, state changes, browser decisions, and relevant imported code rather than reviewing changed lines in isolation.
 - For async ordering concerns, trace when callbacks are registered and executed, where values are written/read, and any reachable direct or synchronous call path. Report a timing defect only when the execution path supports it; label missing context as uncertainty.
 - For image preloads, compare the actual selected picture/source format and responsive candidate with each preload. MIME type hints skip unsupported formats but do not make supported formats mutually exclusive: two AVIF/WebP preload hints can download both files in browsers supporting both. Do not repeat another reviewer's fix suggestion without independently checking its runtime consequences.

@@ -1,4 +1,4 @@
-# PR Summary — Gemini Reviewer Context and Evidence-Led Regression Reasoning
+# PR Summary — Gemini Reviewer Context, Traffic-Light Summaries, and Copyable Fixes
 
 ## Task group
 **deep-dive** — improves a cross-cutting review pipeline spanning read-only GitHub source retrieval, context assembly, model prompting, task-group selection, and regression tests.
@@ -19,6 +19,7 @@ Help Gemini detect context-dependent regressions by reading bounded, immutable-c
 - Fixed a malformed `clipSource` marker string in the previous candidate commit that made the reviewer JavaScript fail to parse.
 - `.gemini/rules/luckypickcanada.md`: concise evidence-led cross-file, control-flow, and browser format-selection guidance. It requires independent verification of other reviewers' suggestions.
 - `__tests__/gemini-reviewer-context.test.ts`: regression tests assert the async-ordering and non-mutually-exclusive image-preload guidance, in addition to import resolution, traversal protection, group selection, clipping, line anchors, and relevant context.
+- Review output uses red actionable issues, green evidence-backed positives, and yellow unresolved coverage. Each issue's suggested fix is collapsed under a clickable dropdown with copy-friendly text and code blocks. The green review verdict explicitly does not replace GitHub merge gates.
 - `.specify/features/gemini-review-context/`: updated specification, plan, tasks, and requirements checklist.
 - `PR_SUMMARY.md` and `memory-bank/activeContext.md`: updated evidence and current task status.
 
@@ -37,6 +38,7 @@ Help Gemini detect context-dependent regressions by reading bounded, immutable-c
 ## Verification
 - **JavaScript syntax compilation:** PASS — the updated `.github/scripts/gemini-reviewer.cjs` compiles with the connected analysis runtime's syntax parser.
 - **Vitest and `./jules-verify.sh`: PENDING** — repository shell execution is unavailable through this GitHub API session; do not treat these as passed.
+- Traffic-light verdict and dropdown formatting regression assertions have been added but await Vitest execution on the PR head.
 - **Current-head CI:** pending until the pushed commit's checks are inspected.
 - **Live Gemini behavior:** pending. Prompt-level unit assertions do not prove that the model catches a real regression.
 - **Build-size measurement:** not applicable; no app build inputs or application code changed.

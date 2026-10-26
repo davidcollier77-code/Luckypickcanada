@@ -10,3 +10,6 @@
 - [ ] T008 Run targeted/full Vitest and `./jules-verify.sh`; verify results on the exact PR head.
 - [ ] T009 Inspect all current-head checks and the complete final diff.
 - [ ] T010 Confirm live Gemini reviewer behavior against the preload and async-ordering examples when a suitable PR review can be run.
+- [x] T011 Format reviews as red issues, evidence-backed green positives, and yellow coverage gaps in `.github/scripts/gemini-reviewer.cjs`.
+- [x] T012 Put suggested fixes in collapsible details sections with copy-friendly text/code blocks and add formatting regression tests.
+- [ ] T013 Verify the exact PR-head CI, including new review formatting tests.

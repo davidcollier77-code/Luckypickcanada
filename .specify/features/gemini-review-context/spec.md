@@ -15,4 +15,6 @@ Gemini must review code in context rather than as disconnected diff hunks. It sh
 - Amazon Q's review of merged PR #1610 is used as evidence to improve the reasoning pattern, not as unquestioned authority for a proposed fix.
 - Fallback task-group selection uses changed paths and defect domain rather than generic title words alone.
 - Trusted workflow boundaries, Gemini rules, opt-in fix behavior, and Gemini 3.8 → 3.6 → 3.5 fallback order remain unchanged.
-- Unit tests cover import extraction, path traversal rejection, task-group selection, clipping, line anchors, batch-relevant context, evidence-led async ordering guidance, and duplicate-format preload guidance.
+- The review summary uses consistent red/yellow/green verdicts, lists issues and evidence-backed positives in point form, and places each suggested fix in a collapsible section with copy-friendly text/code blocks.
+- A green review is explicitly distinguished from merge approval; required GitHub checks and reviews must also pass.
+- Unit tests cover import extraction, path traversal rejection, task-group selection, clipping, line anchors, batch-relevant context, evidence-led async ordering guidance, duplicate-format preload guidance, and review-formatting/verdict helpers.
