@@ -13,3 +13,5 @@
 - [x] T011 Format reviews as red issues, evidence-backed green positives, and yellow coverage gaps in `.github/scripts/gemini-reviewer.cjs`.
 - [x] T012 Put suggested fixes in collapsible details sections with copy-friendly text/code blocks and add formatting regression tests.
 - [ ] T013 Verify the exact PR-head CI, including new review formatting tests.
+- [x] T014 Repair the malformed chained assertion in `__tests__/gemini-reviewer-context.test.ts` and keep the template-literal import assertion separate.
+- [ ] T015 Run focused Vitest, `pnpm build`, `./jules-verify.sh`, and verify a successful Cloudflare/OpenNext build for the repair PR head.

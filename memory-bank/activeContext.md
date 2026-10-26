@@ -1,3 +1,13 @@
+# Active Context — Cloudflare Build Syntax Repair (2026-10-26)
+
+- **Trigger:** The Cloudflare/OpenNext build for merged PR #1611 failed after Next.js compilation while TypeScript checked `__tests__/gemini-reviewer-context.test.ts`, reporting TS1128 at line 11.
+- **Root cause:** The first `extractLocalImports` assertion's `.toEqual([...])` was separated from the assertion by a comment and another `expect`, leaving a dangling member-access line.
+- **Repair branch:** `fix/gemini-reviewer-test-syntax-20261026`; the expected-array assertion is reattached and the template-literal/dynamic-import assertion remains separate.
+- **Scope:** No application logic, dependencies, Cloudflare configuration, secrets, workflows, or reviewer behavior changed.
+- **Verification:** Fix is present in the branch; focused Vitest, `pnpm build`, `./jules-verify.sh`, and the new Cloudflare/OpenNext result remain pending until actually run.
+
+---
+
 # Active Context — Gemini Traffic-Light Review and Copyable Fixes (2026-10-26)
 
 - **Current PR:** `#1611`, branch `improve/gemini-review-context`; review-summary presentation is added to the existing reviewer improvement.
