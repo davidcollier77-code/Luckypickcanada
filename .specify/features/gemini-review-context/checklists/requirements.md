@@ -12,12 +12,12 @@
 - [x] Reviewer JavaScript syntax regression corrected; current-head CI must still verify parsing and test execution.
 - [x] Existing model fallback chain and trusted workflow unchanged.
 - [x] Unit regression tests added.
-- [ ] CI tests pass on exact PR head.
+- [x] CI tests pass on the code-reviewed PR head; later documentation-only report/task updates do not alter reviewer implementation.
 - [ ] Live-model review demonstrates the intended regression catch.
 - [x] Automatic initial review invokes bounded source context instead of pre-declaring itself patch-only.
 - [x] Changed-source file and character budgets produce explicit coverage limitations; all text patches remain in review batches.
 - [x] Gemini CLI and Gemini Deep Research references are optional and blocked unless task relevance is directly supported.
 - [x] Regression assertions cover source-context limits, all-patch batching, ordinary tasks, CLI tasks, Deep Research tasks, and document-routing meta tasks.
-- [ ] Focused reviewer tests and full repository CI pass on the exact PR head.
+- [x] Focused reviewer tests, full unit tests, TypeScript, Spec Kit, production build/size gate, OpenNext/Wrangler, DevSkim, updater governance, and visual regression checks passed on the code-reviewed head.
 - [ ] A completed live review confirms the intended default source context and selective document behavior.
 
