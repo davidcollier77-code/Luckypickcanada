@@ -4,6 +4,34 @@ const require = createRequire(import.meta.url);
 const reviewer = require("../.github/scripts/gemini-reviewer.cjs");
 
 describe("Gemini reviewer source context", () => {
+  it("parses single-finding and all-finding repair commands safely", () => {
+    expect(reviewer.parseRepairCommand("@gemini full review")).toEqual({ mode: "review" });
+    expect(reviewer.parseRepairCommand("@gemini repair all")).toEqual({ mode: "fix" });
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:42")).toEqual({
+      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42 }
+    });
+    expect(reviewer.parseRepairCommand("@GEMINI REPAIR ONE app/homepage/HomePage.js:42")).toEqual({
+      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42 }
+    });
+    expect(reviewer.parseRepairCommand("@gemini repair one ../secret.js:42")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:-1")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair all extra")).toBeNull();
+  });
+  it("builds a standalone implementation prompt and exposes targeted suggestions only for eligible added lines", () => {
+    const finding = {severity:"HIGH", title:"Broken preload", path:"app/homepage/Hero.js", line:42,
+      inline:true, problem:"The preload type does not match the selected source.", impact:"The LCP image may not use the preload.",
+      fix:"Align the preload with the actual selected source.", suggestion:null};
+    const prompt = reviewer.buildFixPrompt(finding, 1617);
+    expect(prompt).toContain("Repository: davidcollier77-code/Luckypickcanada");
+    expect(prompt).toContain("Pull request: #1617");
+    expect(prompt).toContain("Read the repository's root AGENTS.md first");
+    expect(prompt).toContain("Add or update focused regression tests");
+    expect(prompt).toContain("Leave the PR open and unmerged");
+    expect(reviewer.canRequestTargetedFix(finding)).toBe(true);
+    expect(reviewer.canRequestTargetedFix({...finding, path:".github/scripts/gemini-reviewer.cjs"})).toBe(false);
+    expect(reviewer.canRequestTargetedFix({...finding, inline:false})).toBe(false);
+  });
   it("extracts local imports but ignores package imports", () => {
     expect(reviewer.extractLocalImports('import Hero from "./Hero"; export { x } from "../lib/x.js"; const p = require("react"); require("./local.cjs"); import("next/image");'))
       .toEqual(["./Hero", "../lib/x.js", "./local.cjs"]);
@@ -141,12 +169,19 @@ describe("Gemini reviewer source context", () => {
         problem:"The preload type does not match the selected source.",impact:"The LCP image may not use the preload.",
         fix:"Align the preload with the selected source.",suggestion:'preload("/hero.avif", { type: "image/avif" });'}],
       positiveObservations:[{path:"app/homepage/Hero.js",title:"Fallback preserved",details:"The WebP fallback remains available.",confidence:0.91}],
-      coverageGaps:["One source file was unavailable."]
+      coverageGaps:["One source file was unavailable."],
+      pullRequestNumber:1617
     });
     expect(formatted).toContain("🔴 **[HIGH] Broken preload**");
-    expect(formatted).toContain("<summary>🛠️ Suggested fix for Broken preload — click to expand and copy</summary>");
-    expect(formatted).toContain("**Recommended fix (copyable)**");
-    expect(formatted).toContain("**Copyable code replacement**");
+    expect(formatted).toContain("<summary>🧰 Copy/paste prompt for Broken preload — expand to copy or request a fix</summary>");
+    expect(formatted).toContain("**Copy/paste implementation prompt**");
+    expect(formatted).toContain("Task: Investigate and fix one reported code-review finding.");
+    expect(formatted).toContain("Read the repository's root AGENTS.md first");
+    expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42");
+    expect(formatted).toContain("### Fix all findings");
+    expect(formatted).toContain("@gemini repair all");
+    expect(formatted).toContain("Nothing is applied or pushed automatically.");
+    expect(formatted).toContain("**Optional code replacement (not a substitute for the implementation prompt)**");
     expect(formatted).toContain('preload("/hero.avif", { type: "image/avif" });');
     expect(formatted).toContain("🟢 **Fallback preserved**");
     expect(formatted).toContain("🟡 One source file was unavailable.");
