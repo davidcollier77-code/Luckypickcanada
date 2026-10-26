@@ -53,16 +53,19 @@ The repository helper scripts `.specify/scripts/bash/setup-plan.sh`, `.specify/s
 
 ## Verification status
 
-- **VERIFIED** — raw SARIF artifact and exact source snippet/offset values inspected.
-- **VERIFIED** — exact report row removed in candidate content; heading and append marker preserved.
-- **PENDING** — `python3 -m unittest discover -s .github/scripts -p 'test_suppress_devskim_false_positives.py'`.
-- **PENDING** — `python3 -m py_compile .github/scripts/suppress_devskim_false_positives.py .github/scripts/test_suppress_devskim_false_positives.py`.
-- **PENDING** — full `pnpm test`, `./jules-verify.sh`, and current-head GitHub Actions results.
-- **NOT RUN locally** — focused/full test commands and Spec Kit shell gates; no repository shell was available. Do not treat these as passed until CI evidence is inspected.
+- **PASS — DevSkim run #40316115098**: suppressor syntax check; focused Python suppression suite, **52 tests passed**; suppression script and Security-tab upload succeeded.
+- **PASS — Filter result**: suppression log reports **134 verified false positives suppressed**. Downloaded and inspected SARIF artifact [#12647450099](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40316115098/artifacts/12647450099); its `runs[].results` contains **zero results**, including no lingering checksum finding.
+- **PASS — OpenNext run #40316115088**: Next.js build; `.next + public` = **330,947,295 bytes / 315.62 MiB**, below 495 MiB; OpenNext Cloudflare build; compiled Tailwind CSS; Worker/assets checks; Wrangler build validation with no deployment.
+- **PASS — Updater scheduler verification #40316115113**: `./jules-verify.sh` returned **17 passed / 0 failed**; scheduler tests, Spec Kit customization-rebase tests, 495 MiB build-size gate, and Wrangler dry run passed. Deployment was skipped as expected.
+- **PASS — CodeQL**: Python, JavaScript/TypeScript, and GitHub Actions analyses.
+- **PASS — Reviewer checks**: Amazon Q Developer and Gemini PR Reviewer.
+- **FAIL — Visual QA full unit suite**: **121 passed / 1 failed (122 total)**. The failing test is outside this task: `__tests__/gemini-reviewer-context.test.ts > clips source while preserving the beginning and end`, with `ReferenceError: Cannot access 'MARKER' before initialization` at `.github/scripts/gemini-reviewer.cjs:129`. The failure is unrelated to the DevSkim code and is not modified by this scoped PR. Visual QA skipped its later TypeScript and embedded Spec Kit steps after the full-suite failure; the separate `./jules-verify.sh` job passed.
+- **Local execution limitation**: The API-connected session could not clone the repository because its environment could not resolve `github.com`. The results above are from actual GitHub Actions logs and the downloaded SARIF artifact; no local test run is claimed.
 
 ## Final scope audit
 
-- Exact changes: `.github/scripts/suppress_devskim_false_positives.py`, `.github/scripts/test_suppress_devskim_false_positives.py`, `devskim-alerts.md`, `memory-bank/activeContext.md`, and four files under `specs/055-devskim-checksum-sarif-span-fix/`.
-- No other security suppressions were broadened, no template/checksum data or dependencies changed, no workflow trigger or permission changed, and no production build/deploy occurred.
-- The final diff must be checked again against these exact paths; verification is still pending.
-- **USEFUL RESULT: NO** — the fix and regression coverage are prepared, but current-head tests and the required verification gates have not yet been observed passing.
+- Exact changed paths: `.github/scripts/suppress_devskim_false_positives.py`, `.github/scripts/test_suppress_devskim_false_positives.py`, `devskim-alerts.md`, `memory-bank/activeContext.md`, and four files under `specs/055-devskim-checksum-sarif-span-fix/`.
+- The exact false-positive row is absent; the report heading and append marker remain. The source template/checksum, unrelated report entries, other suppression predicates/allowlists, workflow schedule/triggers/permissions, dependencies, application behavior, and deployment settings remain unchanged.
+- All task-specific behavior is proven by the focused regression suite and zero-result SARIF artifact. The broad unit suite has one separately documented, unrelated failure in the Gemini reviewer `MARKER` handling; it is not hidden or claimed as passed.
+- No merge or deployment was performed.
+- **USEFUL RESULT: YES** — the corrected exact-span filter passed the 52-test DevSkim suppression suite and the post-filter SARIF contains zero findings, including no checksum false positive.
