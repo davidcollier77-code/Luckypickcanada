@@ -46,19 +46,6 @@ export default function FAQSection() {
     setOpenQuestion(openQuestion === question ? null : question);
   };
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": faqs.map(faq => ({
-      "@type": "Question",
-      "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
-    }))
-  };
-
   return (
     <section
       className="homepage-section faq-section"
