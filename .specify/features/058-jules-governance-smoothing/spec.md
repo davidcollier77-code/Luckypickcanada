@@ -21,6 +21,8 @@ As the repository owner, I want the master request, root governance, and Jules e
 3. Given a failed mandatory check, Jules reports the failure and does not declare the task complete.
 4. Given a Gemini CLI task assigned to Creation, Troubleshooting, or Deep-dive, Jules has a conditional pointer to the relevant local snapshot; unrelated tasks do not load it.
 5. Given the scheduled documentation refresh, `.docs/manifest.json` routes the Gemini CLI snapshot only to Creation, Troubleshooting, and Deep-dive.
+4. Given a Gemini CLI task assigned to Creation, Troubleshooting, or Deep-dive, Jules has a conditional pointer to the relevant local snapshot; unrelated tasks do not load it.
+5. Given the scheduled documentation refresh, `.docs/manifest.json` routes the Gemini CLI snapshot only to Creation, Troubleshooting, and Deep-dive.
 
 ## Requirements
 
@@ -29,6 +31,7 @@ As the repository owner, I want the master request, root governance, and Jules e
 - **FR-003**: Remove Gemini CLI from standing per-task requirements while retaining the Gemini API reference requirement; provide conditional Gemini CLI snapshot guidance only in Creation, Troubleshooting, and Deep-dive.
 - **FR-004**: Require one concise, evolving PR summary rather than exhaustive resource matrices or duplicate reports.
 - **FR-005**: Preserve required verification, explicit approval gates, the 495 MB build limit, and the prohibition on agent merges.
+- **FR-006**: Configure `.docs/manifest.json` so the scheduled documentation updater maintains Gemini CLI snapshots only for Creation, Troubleshooting, and Deep-dive.
 - **FR-006**: Configure `.docs/manifest.json` so the scheduled documentation updater maintains Gemini CLI snapshots only for Creation, Troubleshooting, and Deep-dive.
 
 ## Out of Scope
