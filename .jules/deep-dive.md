@@ -4,8 +4,10 @@
 For all tasks, you MUST actually consult the following resources:
 - Jules Documentation "jules.google/docs"
 - Jules API "developers.google.com/jules/api"
-- Gemini CLI "/google-gemini/gemini-cli"
 - Gemini API "/websites/ai_google_dev_gemini-api"
+
+## Conditional Gemini CLI Reference
+Consult the Gemini CLI reference only when an investigation directly concerns Gemini CLI commands, configuration, runtime behavior, or integrations. Start with the local snapshot `.docs/deep-dive/_google-gemini_gemini-cli.md` (read-only); do not load it for unrelated tasks. If the snapshot is insufficient and live documentation is materially necessary, use `/google-gemini/gemini-cli` only under the repository's explicit MCP approval rules.
 
 ## Controlled Context7 Libraries
 When materially necessary, consult the following approved libraries. (Requires Context7 approval if not available in `.docs/`):

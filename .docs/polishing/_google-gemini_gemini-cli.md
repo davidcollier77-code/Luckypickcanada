@@ -1,1 +1,0 @@
-../creation/_google-gemini_gemini-cli.md
