@@ -29,6 +29,9 @@ describe("Gemini reviewer source context", () => {
     expect(prompt).toContain("Add or update focused regression tests");
     expect(prompt).toContain("Leave the PR open and unmerged");
     expect(reviewer.canRequestTargetedFix(finding)).toBe(true);
+    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:finding.title})).toEqual([finding]);
+    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:"Different issue"})).toEqual([]);
+    expect(reviewer.matchTargetFinding([finding], {path:"app/homepage/Other.js", line:finding.line, title:finding.title})).toEqual([]);
     expect(reviewer.canRequestTargetedFix({...finding, path:".github/scripts/gemini-reviewer.cjs"})).toBe(false);
     expect(reviewer.canRequestTargetedFix({...finding, inline:false})).toBe(false);
   });
