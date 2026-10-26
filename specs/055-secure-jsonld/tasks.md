@@ -21,14 +21,15 @@
 **Independent test**: Verify valid JSX and current-main preservation, then check exact-head CI and mergeability.
 
 - [x] T004 Fix the missing opening-tag `>` and correct the outdated comment in `app/homepage/FAQSection.js`.
-- [x] T005 Reconcile `PR_SUMMARY.md` with current `main` content and append PR #1612's evidence without discarding the newer main summary.
-- [ ] T006 Run `pnpm test`, `pnpm build`, and `./jules-verify.sh`; report actual results and confirm build output stays below the 495 MB hard limit.
-- [ ] T007 Inspect exact-head GitHub Actions results, compare the final diff, and confirm PR #1612 is mergeable with `main` while remaining open and unmerged.
+- [x] T005 Reconcile `PR_SUMMARY.md` to current `main` content so newer summary evidence is preserved and the shared-file conflict clears.
+- [x] T006 Remove the unused client-side `faqSchema` object from `app/homepage/FAQSection.js`; the server component remains the sole FAQ JSON-LD renderer.
+- [ ] T007 Run `pnpm test`, `pnpm build`, and `./jules-verify.sh` locally if the environment permits; record exact outcomes and ensure a successful build remains below the 495 MB hard limit.
+- [ ] T008 Inspect current-head GitHub Actions, audit the exact final diff, and confirm PR #1612 remains open, unmerged, and mergeable with `main`.
 
 ## Dependencies and execution order
 
-- T001 precedes all changes.
-- T002 establishes the security/schema baseline.
-- T003 preserves the existing server-rendered schema.
-- T004 and T005 address the confirmed syntax and branch-overlap issues.
-- T006 and T007 remain pending until actual command/CI evidence is available.
+- T001 establishes the baseline before edits.
+- T002 verifies the existing security helper and matching schema data.
+- T003 preserves the server-rendered JSON-LD behavior.
+- T004–T006 repair the syntax and remove the now-unused client-side schema object while preserving current `main` evidence.
+- T007–T008 remain pending until current-head checks and the final review provide actual evidence.
