@@ -63,6 +63,7 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("author_association");
     expect(script).toContain('if (!pr || typeof pr !== "object")');
     expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const list = await getFiles(number)"));
+    expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const sourceContext = await collectSourceContext(pr, files)"));
   });
 
   it("uses selected task groups, relevance-guards Gemini references, and reports actual usage", () => {
