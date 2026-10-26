@@ -111,11 +111,11 @@ function clipSource(source, limit) {
   const head = Math.floor(limit * 0.7), tail = limit - head;
   return { content: value.slice(0, head) + "\n[...middle of source omitted by reviewer context budget...]\n" + value.slice(-tail), truncated: true };
 }
-async function getRepositoryFile(path, ref) {
-  if (!safePath(path) || !/^[a-f0-9]{40}$/i.test(String(ref || ""))) return null;
+async function getRepositoryFile(path, ref, repository = REPO) {
+  if (!safePath(path) || !/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
   try {
     const encoded = path.split("/").map(encodeURIComponent).join("/");
-    const file = await gh("/repos/" + REPO + "/contents/" + encoded + "?ref=" + encodeURIComponent(ref));
+    const file = await gh("/repos/" + repository + "/contents/" + encoded + "?ref=" + encodeURIComponent(ref));
     if (!file || file.type !== "file" || file.encoding !== "base64" || typeof file.content !== "string") return null;
     return Buffer.from(file.content.replace(/\s/g, ""), "base64").toString("utf8");
   } catch (error) {
@@ -124,9 +124,10 @@ async function getRepositoryFile(path, ref) {
     return null;
   }
 }
-async function getRepositoryPathSet(ref) {
+async function getRepositoryPathSet(ref, repository = REPO) {
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
   try {
-    const tree = await gh("/repos/" + REPO + "/git/trees/" + encodeURIComponent(ref) + "?recursive=1");
+    const tree = await gh("/repos/" + repository + "/git/trees/" + encodeURIComponent(ref) + "?recursive=1");
     if (!tree || !Array.isArray(tree.tree) || tree.truncated) return null;
     return new Set(tree.tree.filter((e) => e.type === "blob" && e.mode !== "120000").map((e) => e.path));
   } catch { return null; }
@@ -135,21 +136,23 @@ async function collectSourceContext(pr, files) {
   const records = [], limitations = [], cache = new Map();
   let budget = 52000;
   const headSha = String(pr.head && pr.head.sha || ""), baseSha = String(pr.base && pr.base.sha || "");
+  const headRepo = String(pr.head && pr.head.repo && pr.head.repo.full_name || REPO);
+  const baseRepo = String(pr.base && pr.base.repo && pr.base.repo.full_name || REPO);
   if (!/^[a-f0-9]{40}$/i.test(headSha) || !/^[a-f0-9]{40}$/i.test(baseSha))
     return { records, limitations: ["Base/head commit SHA unavailable; full-source context skipped."] };
-  const read = async (path, ref) => { const key = ref + ":" + path; if (!cache.has(key)) cache.set(key, await getRepositoryFile(path, ref)); return cache.get(key); };
+  const read = async (path, ref, repository) => { const key = repository + ":" + ref + ":" + path; if (!cache.has(key)) cache.set(key, await getRepositoryFile(path, ref, repository)); return cache.get(key); };
   const candidates = files.filter((f) => f.patch && f.status !== "removed" && safePath(f.filename) &&
     /\.(?:[cm]?[jt]sx?|css|scss|json|ya?ml|html|md)$/i.test(f.filename)).slice(0, 12);
   const changed = [];
   for (const file of candidates) {
     if (budget < 3500) { limitations.push("Source budget reached before every changed file was loaded."); break; }
-    const source = await read(file.filename, headSha);
+    const source = await read(file.filename, headSha, headRepo);
     if (source === null) { limitations.push("Full head source unavailable for " + file.filename + "; patch-only review applies."); continue; }
     const clipped = clipSource(source, Math.min(5800, budget));
     records.push({ path: file.filename, role: "changed file at PR head", content: clipped.content, truncated: clipped.truncated });
     budget -= clipped.content.length; changed.push({ path: file.filename, source });
     if (changed.length <= 3 && budget > 4000) {
-      const baseline = await read(file.filename, baseSha);
+      const baseline = await read(file.filename, baseSha, baseRepo);
       if (baseline !== null) {
         const old = clipSource(baseline, Math.min(2500, Math.floor(budget / 2)));
         records.push({ path: file.filename, role: "same file at PR base before change", content: old.content, truncated: old.truncated });
@@ -157,7 +160,7 @@ async function collectSourceContext(pr, files) {
       }
     }
   }
-  const pathSet = await getRepositoryPathSet(headSha), seen = new Set(changed.map((x) => x.path));
+  const pathSet = await getRepositoryPathSet(headSha, headRepo), seen = new Set(changed.map((x) => x.path));
   let relatedCount = 0;
   for (const file of changed) {
     if (relatedCount >= 7 || budget < 3000) break;
@@ -168,7 +171,7 @@ async function collectSourceContext(pr, files) {
       for (const path of imports.slice(0, pathSet ? 1 : 3)) {
         if (seen.has(path)) continue;
         seen.add(path);
-        const source = await read(path, headSha);
+        const source = await read(path, headSha, headRepo);
         if (source === null) continue;
         const clipped = clipSource(source, Math.min(3600, budget));
         records.push({ path, role: "local module imported by " + file.path, relatedTo: file.path, content: clipped.content, truncated: clipped.truncated });
