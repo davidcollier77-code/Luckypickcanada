@@ -125,9 +125,9 @@ function classifyReviewGroups(pr, files, availableGroups) {
 function clipSource(source, limit) {
   const value = String(source || "");
   if (value.length <= limit) return { content: value, truncated: false };
+  const MARKER = "\n[...middle of source omitted by reviewer context budget...]\n";
   // Guard: if limit is at or below the marker length, return only a prefix of value.
   if (limit <= MARKER.length) return { content: value.slice(0, Math.max(0, limit)), truncated: true };
-  const MARKER = "\n[...middle of source omitted by reviewer context budget...]\n";
   const available = Math.max(0, limit - MARKER.length);
   const head = Math.floor(available * 0.7), tail = available - head;
   return { content: value.slice(0, head) + MARKER + (tail > 0 ? value.slice(-tail) : ""), truncated: true };
