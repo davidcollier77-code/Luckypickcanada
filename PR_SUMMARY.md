@@ -7,7 +7,7 @@
 - **Verification status:** the reviewer, autofix export, regression tests and rules have changed on this PR since the prior code-verified SHA. Focused/full tests and GitHub Actions for the new head are **PENDING**. The earlier CI evidence documented below applies to the prior source-context/document-routing implementation only.
 
 ---
-# PR Summary — Gemini Default Review Coverage and Relevant Documentation
+# PR Summary — Gemini Review Coverage, Relevant Documentation, and Finding-Level Repair UX
 
 ## Task group
 **deep-dive** — this is a cross-cutting review-pipeline change involving immutable-source retrieval, context budgets, document selection, model prompting, and regression tests.
