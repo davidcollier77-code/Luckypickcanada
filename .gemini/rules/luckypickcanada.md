@@ -17,6 +17,9 @@ Review the pull request for:
 - Missing or insufficient tests for important changes.
 
 Focus on the PR's changes and relevant surrounding code.
+- Trace behavior end-to-end through callers, consumers, state changes, browser decisions, and relevant imported code rather than reviewing changed lines in isolation.
+- For async ordering concerns, trace when callbacks are registered and executed, where values are written/read, and any reachable direct or synchronous call path. Report a timing defect only when the execution path supports it; label missing context as uncertainty.
+- For image preloads, compare the actual selected picture/source format and responsive candidate with each preload. MIME type hints skip unsupported formats but do not make supported formats mutually exclusive: two AVIF/WebP preload hints can download both files in browsers supporting both. Do not repeat another reviewer's fix suggestion without independently checking its runtime consequences.
 
 For `@gemini full review` and `@gemini repair all`:
 - Use `.docs/manifest.json` to choose the smallest relevant task group(s).

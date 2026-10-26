@@ -10,7 +10,9 @@ Gemini must review code in context rather than as disconnected diff hunks. It sh
 - Changed source is fetched read-only by immutable PR head SHA; selected base versions use immutable base SHA.
 - Source/import context has strict file and character budgets and honest missing/truncated coverage.
 - Relative imports are resolved against the repository tree; source is never executed.
-- The review prompt checks end-to-end behavior and image preload/type/srcSet/sizes matching, using merged PR #1610 as the regression reference.
+- The review prompt traces asynchronous scheduling, reads/writes, and reachable direct/synchronous call paths; it distinguishes verified ordering defects from unproven timing risks.
+- The review prompt checks image preload URL/type/srcSet/sizes and actual browser format selection. It must not assume two typed AVIF/WebP preloads are mutually exclusive; browsers supporting both formats may fetch both files even when the picture uses one.
+- Amazon Q's review of merged PR #1610 is used as evidence to improve the reasoning pattern, not as unquestioned authority for a proposed fix.
 - Fallback task-group selection uses changed paths and defect domain rather than generic title words alone.
 - Trusted workflow boundaries, Gemini rules, opt-in fix behavior, and Gemini 3.8 → 3.6 → 3.5 fallback order remain unchanged.
-- Unit tests cover import extraction, path traversal rejection, task-group selection, clipping, line anchors, and batch-relevant context.
+- Unit tests cover import extraction, path traversal rejection, task-group selection, clipping, line anchors, batch-relevant context, evidence-led async ordering guidance, and duplicate-format preload guidance.

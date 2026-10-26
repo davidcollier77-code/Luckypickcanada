@@ -1,38 +1,46 @@
-# PR Summary — Gemini Reviewer Source Context
+# PR Summary — Gemini Reviewer Context and Evidence-Led Regression Reasoning
 
 ## Task group
-**deep-dive** — this change improves a cross-cutting review pipeline spanning GitHub source retrieval, context assembly, model prompting, and documentation selection.
+**deep-dive** — improves a cross-cutting review pipeline spanning read-only GitHub source retrieval, context assembly, model prompting, task-group selection, and regression tests.
 
 ## Routed documentation and evidence
-- `.jules/deep-dive.md` — USED: YES; USEFUL: YES — defines evidence-led investigation and task-scoped implementation.
-- `.docs/deep-dive/jules_google_docs.md` — USED: YES; USEFUL: NO — required routed snapshot inspected; it describes Jules CLI behavior, not reviewer source-context implementation.
-- `.docs/deep-dive/_google-gemini_gemini-cli.md` — USED: YES; USEFUL: NO — required Gemini CLI snapshot inspected; it does not materially inform this GitHub API workflow change.
-- `.docs/deep-dive/_websites_ai_google_dev_gemini-api.md` — USED: YES; USEFUL: YES — consulted for Gemini API integration context; existing model request/fallback contract is preserved.
-- `AGENTS.md` — USED: YES; USEFUL: YES — authoritative scope, security, Spec Kit, verification, and PR-summary requirements.
+- `.jules/deep-dive.md` — USED: YES; USEFUL: YES — requires evidence-led investigation and task-scoped implementation.
+- `.docs/deep-dive/jules_google_docs.md` — USED: YES; USEFUL: NO — inspected as required; Jules CLI material does not change this implementation.
+- `.docs/deep-dive/_google-gemini_gemini-cli.md` — USED: YES; USEFUL: NO — inspected as required; no material guidance for GitHub API source retrieval or the reviewed findings.
+- `.docs/deep-dive/_websites_ai_google_dev_gemini-api.md` — USED: YES; USEFUL: YES — relevant to preserving the existing Gemini API request/fallback contract.
+- `AGENTS.md` and `.gemini/rules/luckypickcanada.md` — USED: YES; USEFUL: YES — repository governance and reviewer behavior constraints.
+- [MDN preload documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/rel/preload) — USED: YES; USEFUL: YES — verifies that browsers supporting both AVIF and WebP can preload both typed resources even if a picture ultimately selects only one.
 
 ## Objective
-Make Gemini reason about full changed-file source and relevant local imports, compare selected code with the PR base, and improve detection of context-dependent regressions such as the AVIF/WebP LCP preload issue identified by Amazon Q on merged PR #1610.
+Help Gemini detect context-dependent regressions by reading bounded, immutable-commit source context and reasoning about actual runtime behavior, using Amazon Q's PR #1610 review as a case study without blindly copying a suggested fix.
 
 ## Changes
-- `.github/scripts/gemini-reviewer.cjs`: bounded read-only full-source retrieval at immutable PR head/base SHAs; relative-import context; context limits and honest coverage notes; end-to-end and image-preload reasoning; path/domain-based fallback task-group selection; exported pure helpers for regression tests.
-- `__tests__/gemini-reviewer-context.test.ts`: import resolution, traversal protection, group selection, clipping, added-line anchors, and relevant-context tests.
-- `.specify/features/gemini-review-context/`: specification, plan, tasks, requirements checklist.
-- `memory-bank/activeContext.md`: record the active reviewer improvement and honest verification state.
-- Existing Gemini rules, workflow permissions/triggers, auto-fix behavior, dependencies, site behavior, artwork, and Amazon Q rules are intentionally unchanged.
+- `.github/scripts/gemini-reviewer.cjs`: bounded read-only source retrieval at immutable PR head/base SHAs; relative-import context; honest budget/coverage limits; path/domain-based fallback task-group selection; explicit reasoning for asynchronous callback order, reads/writes, direct synchronous call paths, and typed image-preload behavior.
+- Fixed a malformed `clipSource` marker string in the previous candidate commit that made the reviewer JavaScript fail to parse.
+- `.gemini/rules/luckypickcanada.md`: concise evidence-led cross-file, control-flow, and browser format-selection guidance. It requires independent verification of other reviewers' suggestions.
+- `__tests__/gemini-reviewer-context.test.ts`: regression tests assert the async-ordering and non-mutually-exclusive image-preload guidance, in addition to import resolution, traversal protection, group selection, clipping, line anchors, and relevant context.
+- `.specify/features/gemini-review-context/`: updated specification, plan, tasks, and requirements checklist.
+- `PR_SUMMARY.md` and `memory-bank/activeContext.md`: updated evidence and current task status.
+
+## Findings that informed the improvement
+- **Verified from Amazon Q's PR #1610 review:** a WebP-only preload did not align with the AVIF-first `picture` source selected by AVIF-capable browsers.
+- **Additional browser-semantic check:** the proposed dual typed preload strategy is not automatically safe. MDN explicitly notes that browsers supporting both AVIF and WebP can preload both resources while using only one in the `picture`, wasting bandwidth. The reviewer prompt now requires checking this cost rather than automatically recommending both preloads.
+- **Control-flow lesson:** Q also examined a nested `requestAnimationFrame` ordering and correctly treated it as a path-verification question, not a confirmed defect. The reviewer now must trace callback scheduling and reachable direct/synchronous call paths before declaring a race.
 
 ## Spec Kit stages
-- Specify: `.specify/features/gemini-review-context/spec.md` — created.
-- Plan: `.specify/features/gemini-review-context/plan.md` — created.
-- Tasks: `.specify/features/gemini-review-context/tasks.md` — created.
-- Implement: reviewer and tests updated; verification awaits PR-head CI.
+- Specify: existing `.specify/features/gemini-review-context/spec.md` updated in place.
+- Plan: existing `.specify/features/gemini-review-context/plan.md` updated in place.
+- Tasks: existing `.specify/features/gemini-review-context/tasks.md` and `checklists/requirements.md` updated in place.
+- Implement: reviewer prompt, Gemini rules, syntax repair, and regression tests updated in place. This connected GitHub API session uses file-driven procedural edits; it cannot invoke the repository shell or native Spec Kit commands.
 
 ## Verification
-- Repository governance, reviewer implementation, workflow, rules, regression tests, routed deep-dive documents, and Amazon Q findings on merged PR #1610 inspected.
-- JavaScript syntax compilation: PASS in the connected analysis runtime.
-- Vitest, `./jules-verify.sh`, and current-head CI: pending; this API-connected session cannot run the repository shell directly.
-- Live Gemini accuracy remains unverified until a suitable post-change review runs. PR #1610 is the regression reference, not a claim that the model has passed it.
+- **JavaScript syntax compilation:** PASS — the updated `.github/scripts/gemini-reviewer.cjs` compiles with the connected analysis runtime's syntax parser.
+- **Vitest and `./jules-verify.sh`: PENDING** — repository shell execution is unavailable through this GitHub API session; do not treat these as passed.
+- **Current-head CI:** pending until the pushed commit's checks are inspected.
+- **Live Gemini behavior:** pending. Prompt-level unit assertions do not prove that the model catches a real regression.
+- **Build-size measurement:** not applicable; no app build inputs or application code changed.
 
-## Safety
-PR content is treated as untrusted text and never executed. Source retrieval is read-only. No secrets or dependencies changed.
+## Scope and safety
+Read-only source retrieval remains bounded to immutable PR commit SHAs. PR source is treated as untrusted input and never executed. Workflow permissions/triggers, opt-in suggestion behavior, model fallback order, dependencies, application runtime, visuals, and Amazon Q rules are unchanged. No secrets were read or modified.
 
-**USEFUL RESULT: PENDING** — implementation is proposed; CI and live-model acceptance remain pending.
+**USEFUL RESULT: PENDING** — the reviewer guidance and regression assertions are prepared; CI, repository verification, and live-model acceptance remain unverified.

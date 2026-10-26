@@ -39,4 +39,14 @@ describe("Gemini reviewer source context", () => {
     const result=reviewer.renderSourceContext([{filename:"app/homepage/Hero.js"}],context);
     expect(result).toContain("hero source"); expect(result).toContain("image source"); expect(result).not.toContain("unrelated");
   });
+  it("requires evidence-led asynchronous control-flow reasoning", () => {
+    expect(reviewer.CONTROL_FLOW_REVIEW_GUIDANCE).toMatch(/registration.*callback execution.*state writes.*reads/i);
+    expect(reviewer.CONTROL_FLOW_REVIEW_GUIDANCE).toMatch(/every reachable direct or synchronous call path/i);
+    expect(reviewer.CONTROL_FLOW_REVIEW_GUIDANCE).toMatch(/rather than asserting a race/i);
+  });
+  it("checks whether typed image preloads can fetch multiple supported formats", () => {
+    expect(reviewer.IMAGE_PRELOAD_REVIEW_GUIDANCE).toMatch(/preload URL.*MIME type.*imageSrcSet\/imageSizes/i);
+    expect(reviewer.IMAGE_PRELOAD_REVIEW_GUIDANCE).toMatch(/supporting both AVIF and WebP may preload both files/i);
+    expect(reviewer.IMAGE_PRELOAD_REVIEW_GUIDANCE).toMatch(/Do not recommend dual-format preloading by default/i);
+  });
 });
