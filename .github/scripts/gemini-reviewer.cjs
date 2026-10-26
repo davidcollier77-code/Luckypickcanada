@@ -526,6 +526,64 @@ function normalizeFindings(items, files, lineMap) {
   return output;
 }
 
+
+function buildFixPrompt(finding, pullRequestNumber) {
+  const location = String(finding.path || "unknown file") + (Number.isInteger(finding.line) ? ":" + finding.line : "");
+  const clip = (value, limit, fallback) => {
+    const text = String(value || "").replace(/\r\n?/g, "\n").trim();
+    return (text || fallback).slice(0, limit);
+  };
+  return [
+    "Task: Investigate and fix one reported code-review finding.",
+    "Repository: " + (REPO || "davidcollier77-code/Luckypickcanada"),
+    "Pull request: " + (Number.isInteger(Number(pullRequestNumber)) ? "#" + Number(pullRequestNumber) : "the current pull request"),
+    "Finding: " + clip(finding.title, 200, "Reported defect"),
+    "Affected location: " + location,
+    "",
+    "Problem reported by the reviewer:",
+    clip(finding.problem, 1600, "The reviewer did not supply a detailed problem statement."),
+    "",
+    "Impact:",
+    clip(finding.impact, 1000, "The impact was not specified; verify it from the current source."),
+    "",
+    "Suggested direction (verify it before applying):",
+    clip(finding.fix, 1000, "Independently determine the smallest correct fix from the current source."),
+    "",
+    "Instructions:",
+    "1. Read the repository's root AGENTS.md first and follow its authoritative workflow, applicable routed instructions, and required Spec Kit stages. This prompt does not override repository governance.",
+    "2. Inspect the current PR head, relevant full source, callers/imports, surrounding control flow, and existing tests. Verify the finding against the current code before editing; if it is stale or not reproducible, do not make a speculative change and explain the evidence.",
+    "3. Fix this finding only. Make the smallest correct change, including directly related tests or coupled code only when required by the verified root cause. Do not mix in unrelated cleanup or other findings.",
+    "4. Preserve intended behavior, existing UI/layout/artwork, accessibility, security controls, API contracts, and fallbacks unless a verified part of this finding specifically requires changing them.",
+    "5. Add or update focused regression tests for the root cause and relevant edge cases.",
+    "6. Run the focused tests and all repository-required verification using pnpm. Report exact commands and actual results; never claim an unrun or unavailable check passed.",
+    "7. Inspect the complete final diff for scope creep, unintended files/dependencies, secrets, and regressions. Report the verified root cause, exact files changed, checks actually run, and remaining concerns.",
+    "8. Leave the PR open and unmerged. Do not merge it or enable auto-merge."
+  ].join("\n");
+}
+function fencedText(value, language = "text") {
+  const content = String(value || "").replace(/\r\n?/g, "\n").trim();
+  const backtick = String.fromCharCode(96);
+  const runs = content.match(new RegExp(backtick + "+", "g")) || [];
+  const width = Math.max(3, ...runs.map((run) => run.length + 1));
+  const fence = backtick.repeat(width);
+  return fence + language + "\n" + content + "\n" + fence;
+}
+function canRequestTargetedFix(finding) {
+  if (!finding || finding.inline !== true || !Number.isInteger(finding.line) || !safePath(finding.path)) return false;
+  return require("./gemini-autofix.cjs").isEligiblePath(finding.path) === true;
+}
+function parseRepairCommand(value) {
+  const command = String(value || "").trim();
+  if (/^@gemini\s+full\s+review$/i.test(command)) return { mode: "review" };
+  if (/^@gemini\s+repair\s+all$/i.test(command)) return { mode: "fix" };
+  const match = command.match(/^@gemini\s+repair\s+one\s+(.+):([1-9]\d*)$/i);
+  if (!match) return null;
+  const path = match[1].trim();
+  const line = Number(match[2]);
+  if (!safePath(path) || /[\r\n\0]/.test(path) || !Number.isSafeInteger(line) || line < 1) return null;
+  return { mode: "fix-one", target: { path, line } };
+}
+
 function normalizePositiveObservations(items, files) {
   const paths = new Set(files.map((f) => f.filename));
   const output = [];
@@ -550,11 +608,9 @@ function buildReviewVerdict(findings, coverageGaps) {
   if (coverageGaps.length) return { marker: "🟡", label: "REVIEW INCOMPLETE", detail: "No actionable finding was identified, but review coverage has gaps to check." };
   return { marker: "🟢", label: "NO ACTIONABLE FINDINGS", detail: "Gemini found no actionable issues in the reviewed scope." };
 }
-function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [] }) {
+function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], pullRequestNumber = null }) {
   const tidy = (value) => String(value || "").replace(/\s+/g, " ").trim();
-  const tidyCode = (value) => String(value || "").replace(/\r\n/g, "\n").trim();
   const tick = String.fromCharCode(96);
-  const fence = tick.repeat(3);
   const verdict = buildReviewVerdict(findings, coverageGaps);
   const rows = ["### Overall Gemini review status",
     verdict.marker + " **" + verdict.label + "** — " + verdict.detail, "", "### Issues to fix"];
@@ -569,20 +625,28 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
       rows.push("  - **Impact:** " + tidy(finding.impact));
       rows.push("");
       rows.push("<details>");
-      rows.push("<summary>🛠️ Suggested fix for " + tidy(finding.title) + " — click to expand and copy</summary>");
+      rows.push("<summary>🧰 Copy/paste prompt for " + tidy(finding.title) + " — expand to copy or request a fix</summary>");
       rows.push("");
-      rows.push("**Recommended fix (copyable)**");
+      rows.push("**Copy/paste implementation prompt** — ready for ChatGPT, Jules, Amazon Q, or another coding agent.");
       rows.push("");
-      rows.push(fence + "text");
-      rows.push(tidyCode(finding.fix || "No concrete fix was supplied. Review the problem and implement the smallest verified correction."));
-      rows.push(fence);
-      if (finding.inline && finding.suggestion && !finding.suggestion.includes(fence)) {
+      rows.push(fencedText(buildFixPrompt(finding, pullRequestNumber)));
+      if (canRequestTargetedFix(finding)) {
         rows.push("");
-        rows.push("**Copyable code replacement**");
+        rows.push("**Request a targeted Gemini suggestion for this finding**");
+        rows.push("Comment with exactly this command on the PR:");
         rows.push("");
-        rows.push(fence + "text");
-        rows.push(tidyCode(finding.suggestion));
-        rows.push(fence);
+        rows.push(fencedText("@gemini repair one " + location));
+        rows.push("");
+        rows.push("Gemini re-runs the review and only posts a native GitHub suggestion if the same finding is still present on this exact eligible added line and a safe one-line replacement is possible. Nothing is applied or pushed automatically.");
+      } else {
+        rows.push("");
+        rows.push("**Targeted Gemini suggestion unavailable for this finding.** Use the copy/paste prompt above. On-demand code suggestions are limited to eligible added lines and never edit or push code automatically.");
+      }
+      if (finding.inline && finding.suggestion && !String(finding.suggestion).includes(String.fromCharCode(96).repeat(3))) {
+        rows.push("");
+        rows.push("**Optional code replacement (not a substitute for the implementation prompt)**");
+        rows.push("");
+        rows.push(fencedText(finding.suggestion, "suggestion"));
       }
       rows.push("");
       rows.push("</details>");
@@ -602,6 +666,10 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
   else for (const gap of coverageGaps) rows.push("- 🟡 " + tidy(gap));
   rows.push("", "### Before merging",
     "A green Gemini review means no actionable finding was identified in the reviewed scope; it is not merge approval. Confirm all required GitHub Actions checks, required reviews, and branch-protection conditions are green before deciding to merge.");
+  if (findings.length) {
+    rows.push("", "### Fix all findings",
+      "To request safe GitHub suggestions for all findings Gemini can address, comment exactly " + tick + "@gemini repair all" + tick + " on this pull request. Gemini rechecks the current PR and may post native one-line suggestions for eligible findings; multi-line or ineligible issues are covered by the copy/paste prompts above. Nothing is committed, pushed, or applied automatically.");
+  }
   return rows.join("\n");
 }
 function docReport(loaded, unloaded, assessments, selection) {
@@ -613,7 +681,7 @@ function docReport(loaded, unloaded, assessments, selection) {
     "- **Selection method:** " + String(selection && selection.method || "Unknown.")
   ];
   if (selection && selection.method === "skipped for initial automatic review") {
-    rows.push("- Document-library selection is reserved for explicit @gemini full review and @gemini repair all requests; no .docs snapshots were loaded for this initial review.");
+    rows.push("- Document-library selection is reserved for explicit @gemini full review, @gemini repair one, and @gemini repair all requests; no .docs snapshots were loaded for this initial review.");
   } else if (!loaded.length) {
     rows.push("- No .docs snapshot content was loaded into the review prompt; no snapshot is claimed as used.");
   }
@@ -637,16 +705,15 @@ async function main() {
   const event = eventData();
   let mode = "review";
   let number = null;
+  let targetFinding = null;
   if (EVENT_NAME === "pull_request_target") {
     if (!event.pull_request || event.pull_request.draft) { log("Skipping draft/non-PR event."); return; }
     number = event.pull_request.number;
     mode = "initial";
   } else if (EVENT_NAME === "issue_comment") {
-    const command = String(event.comment?.body || "").trim().toLowerCase();
-    const fullReviewCommand = /^@gemini\s+full\s+review$/.test(command);
-    const repairAllCommand = /^@gemini\s+repair\s+all$/.test(command);
-    if (!event.issue?.pull_request || (!fullReviewCommand && !repairAllCommand)) {
-      log("Skipping comment; use exactly @gemini full review or @gemini repair all.");
+    const parsedCommand = parseRepairCommand(event.comment?.body);
+    if (!event.issue?.pull_request || !parsedCommand) {
+      log("Skipping comment; use exactly @gemini full review, @gemini repair all, or @gemini repair one <path>:<line>.");
       return;
     }
     if (!TRUSTED.has(String(event.comment?.author_association || "").toUpperCase())) {
@@ -654,12 +721,17 @@ async function main() {
       return;
     }
     number = event.issue.number;
-    mode = repairAllCommand ? "fix" : "review";
+    mode = parsedCommand.mode;
+    targetFinding = parsedCommand.target || null;
   } else if (EVENT_NAME === "workflow_dispatch") {
     number = Number(process.env.GEMINI_PR_NUMBER);
     mode = String(process.env.GEMINI_MODE || "review").toLowerCase();
   } else { log("Unsupported event; no action taken."); return; }
-  if (!Number.isInteger(Number(number)) || Number(number) < 1 || (EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix"].includes(mode))) throw new Error("Invalid review mode or PR number.");
+  if (!Number.isInteger(Number(number)) || Number(number) < 1 ||
+      (EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix", "fix-one"].includes(mode)) ||
+      (mode === "fix-one" && (!targetFinding || !safePath(targetFinding.path) || !Number.isInteger(targetFinding.line) || targetFinding.line < 1))) {
+    throw new Error("Invalid review mode, targeted finding, or PR number.");
+  }
   if (!REPO || !TOKEN) throw new Error("GitHub workflow context is missing.");
   if (!RULES || !MANIFEST) throw new Error("Gemini rules or document manifest is missing.");
 
@@ -733,16 +805,25 @@ async function main() {
   }
   const assessments = reviewResults.flatMap((r) => r.assessments);
   const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);
-  if (mode === "fix") {
+  if (mode === "fix" || mode === "fix-one") {
     const fixModule = require("./gemini-autofix.cjs");
+    const requestedFindings = mode === "fix-one"
+      ? findings.filter((finding) => finding.path === targetFinding.path && finding.line === targetFinding.line)
+      : findings;
+    if (mode === "fix-one" && !requestedFindings.length) {
+      await comment(number, "## Gemini Targeted Fix\n\nThe requested finding at " + targetFinding.path + ":" + targetFinding.line +
+        " was not reproduced in the current review. No suggestion was posted, and no code was changed. Re-run the review or use the copy/paste implementation prompt in the original finding.");
+      return;
+    }
     const fixResult = await fixModule.applyAutoFix({
-      pr, files, findings, docs: docBundle.slice(0, 32000), docPaths, REPO, TOKEN,
+      pr, files, findings: requestedFindings, docs: docBundle.slice(0, 32000), docPaths, REPO, TOKEN,
       reviewRules: RULES, documentReport
     });
     if (fixResult.suggestionsPosted) {
       log(fixResult.message);
     } else {
-      await comment(number, "## Gemini On-Demand Fix Suggestions\n\n" + fixResult.message +
+      const title = mode === "fix-one" ? "## Gemini Targeted Fix Suggestion" : "## Gemini On-Demand Fix Suggestions";
+      await comment(number, title + "\n\n" + fixResult.message +
         "\n\nNo code, branch, or commit was changed.\n\n" + documentReport);
     }
     return;
@@ -754,7 +835,7 @@ async function main() {
   if (skippedFiles.length) coverageGaps.push(skippedFiles.length + " changed file(s) had no text patch and could not be reviewed line-by-line.");
   if (truncatedFiles.length) coverageGaps.push("Patch content was truncated for " + truncatedFiles.length + " large file(s): " + truncatedFiles.join(", ") + ".");
   for (const limitation of sourceContext.limitations) if (!coverageGaps.includes(limitation)) coverageGaps.push(limitation);
-  const reviewSections = formatReviewSections({ findings, positiveObservations, coverageGaps });
+  const reviewSections = formatReviewSections({ findings, positiveObservations, coverageGaps, pullRequestNumber: number });
   const summary = [
     "## Gemini PR Review",
     "",
@@ -772,8 +853,8 @@ async function main() {
     "",
     documentReport,
     "",
-    "### Optional auto-fix",
-    "Commands: comment exactly @gemini full review to run a full review, or @gemini repair all to request additional safe fix suggestions. In repair mode, Gemini posts GitHub inline suggestions; use the native Commit suggestion button only for changes you choose to apply. No code is pushed automatically."
+    "### Request fixes",
+    "Comment exactly @gemini full review to run a full review, @gemini repair one <path>:<line> to request a safe suggestion for one finding, or @gemini repair all to request suggestions for all eligible findings. Targeted requests recheck the exact path and line before suggesting anything. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
   ];
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
   await gh("/repos/" + REPO + "/pulls/" + number + "/reviews", {
@@ -800,4 +881,5 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, selectChangedSourceCandidates,
   isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, renderSourceContext, makeBatches, normalizePositiveObservations,
-  buildReviewVerdict, formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
+  buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand,
+  formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
