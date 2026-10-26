@@ -234,7 +234,8 @@ async function collectSourceContext(pr, files) {
     }
   }
   if (importProbeCount >= MAX_IMPORT_SOURCE_PROBES) limitations.push("Import-source probe budget reached; further local import candidates may be omitted.");
-  if (budget < 3000) limitations.push("Remaining source-context budget fell below 3000 characters; further local-import context was not attempted.");
+  const hasLocalImports = changed.some((file) => file.status !== "removed" && extractLocalImports(file.source).length > 0);
+  if (budget < 3000 && hasLocalImports) limitations.push("Remaining source-context budget fell below 3000 characters; further local-import context was not attempted.");
   if (records.some((r) => r.truncated)) limitations.push("Some source was clipped to fit the bounded context budget.");
   if (candidates.length > changed.length && !limitations.some((item) => /before .* selected changed text file|Full head source unavailable/.test(item))) {
     limitations.push((candidates.length - changed.length) + " selected changed text file(s) did not receive full-source context; patches remain included in review batches.");
