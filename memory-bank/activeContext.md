@@ -647,3 +647,13 @@
   4. Converted `<Image />` component tags in `app/lucky-map-of-canada/lucky-map-of-canada.js` and `app/homepage/HomePage.js` that were improperly mixing with `unoptimized: true` to standard `<img>` tags inside `<picture>` elements.
   5. Removed unnecessary `mix-blend-screen` from `app/homepage/HomePage.js` overlay image.
 - **Validation:** Build completes successfully within the 495 MB cap. Tests and verification passing.
+
+
+---
+
+# Current Task — Gemini Reviewer Source Context (2026-10-26)
+
+- **Objective:** Improve the custom Gemini PR reviewer after Amazon Q identified the AVIF/WebP LCP preload mismatch on merged PR #1610 and Gemini missed it.
+- **Implementation candidate:** PR #1611 adds bounded, read-only retrieval of changed-file source at immutable PR head SHAs, selected base versions, and relevant relative imports. Review prompts now require end-to-end before/after reasoning and explicit image preload/type/srcSet/sizes matching; deterministic task-group fallback relies on changed paths and defect domain.
+- **Safety and preservation:** PR content is passed only as untrusted text and is never executed. Existing trusted base-branch workflow, Gemini rules, opt-in suggestions, fallback order (3.8 → 3.6 → 3.5), application behavior, and Amazon Q rules are preserved.
+- **Verification:** JavaScript syntax compilation passed in the connected analysis runtime. PR-head CI and Vitest are pending; no live-model accuracy claim is made until a real review demonstrates the regression catch.
