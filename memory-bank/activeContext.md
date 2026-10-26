@@ -3,7 +3,7 @@
 - **Selected task group:** `deep-dive` — extends the existing reviewer pipeline with finding-specific implementation prompts and user-selected repair scope.
 - **Branch / PR:** `improve/gemini-default-review-coverage-20261026`, [PR #1617](https://github.com/davidcollier77-code/Luckypickcanada/pull/1617); keep open and unmerged.
 - **User goal:** Every finding has a collapsed, ready-to-copy implementation prompt. Owners can request a targeted suggestion for one eligible issue or ask Gemini for suggestions across all eligible findings.
-- **Design:** `@gemini repair one <path>:<line>` reruns the review and targets only the finding reported at that exact path/line. `@gemini repair all` requests suggestions across eligible findings. Both remain opt-in native GitHub suggestions on safe one-line changes only; no direct repository edits, pushes, commits or merges.
+- **Design:** `@gemini repair one <path>:<line> -- <finding title>` reruns the review and targets only the same finding at that exact path/line, including its title. `@gemini repair all` requests suggestions across eligible findings. Both remain opt-in native GitHub suggestions on safe one-line changes only; no direct repository edits, pushes, commits or merges.
 - **GitHub UI limitation:** Review Markdown cannot host a custom live action button. The report therefore displays exact comment commands; the native GitHub Commit suggestion action remains the apply step.
 - **Verification:** New reviewer and regression-test changes are on this branch. Final-head tests, `./jules-verify.sh`, PR-head CI and live-model output review remain pending; previously passing CI pertains to an earlier code-reviewed SHA.
 
