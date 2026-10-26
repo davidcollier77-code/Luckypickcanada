@@ -4,7 +4,6 @@
 For all tasks, you MUST actually consult the following resources:
 - Jules Documentation "jules.google/docs"
 - Jules API "developers.google.com/jules/api"
-- Gemini CLI "/google-gemini/gemini-cli"
 - Gemini API "/websites/ai_google_dev_gemini-api"
 
 ## Controlled Context7 Libraries

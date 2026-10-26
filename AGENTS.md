@@ -1,202 +1,69 @@
-# AGENTS.md — MANDATORY GOVERNANCE
+# AGENTS.md — REPOSITORY GOVERNANCE
 
-🔴 READ FIRST. FOLLOW COMPLETELY. DEMONSTRATE COMPLIANCE.
-🔴 DO NOT ASSUME. VERIFY. DO NOT CLAIM. DEMONSTRATE.
+🔴 READ FIRST. VERIFY BEFORE CLAIMING.
 
-This is the repository's authoritative governance. Follow it and any applicable
-specialist or task-specific instructions. When two instructions genuinely
-conflict, stop only the conflicting action, identify the exact conflict, and
-resolve it through the governing source. Do not restart the whole workflow.
+This is the repository's authoritative workflow and safety policy. The user's task request defines the requested outcome and scope. `.jules/jules.md` is a short entrypoint; specialist files add task-specific guidance but must not create competing repo-wide rules. When instructions appear inconsistent, resolve the wording against this file and the task request; pause only the affected action if a genuine authorization, safety, or prerequisite blocker remains.
 
-## 1. INITIALIZE ONCE, IN ORDER
+## 1. INITIALIZE ONCE
 
 1. Read this file first.
-2. Read `.jules/jules.md`, `memory-bank/projectBrief.md`, and
-   `memory-bank/activeContext.md`.
-3. Select exactly ONE applicable `.docs` task group:
-   `creation / troubleshooting / polishing / testing / security / audio /
-   deep-dive / seo`.
-4. Read that group's `.jules/<group>.md`, its
-   `.docs/<group>/jules_google_docs.md`,
-   `.docs/<group>/_google-gemini_gemini-cli.md`, and
-   `.docs/<group>/_websites_ai_google_dev_gemini-api.md`.
-   Check `.docs/manifest.json`.
-5. Inspect the current branch, worktree, relevant source/configuration/tests,
-   active task feature, and any existing branch or PR for the same task.
-6. Check the version and local documentation for libraries materially relevant
-   to the selected task. Consult routed library files; do not invent versions.
+2. Read `.jules/jules.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once.
+3. Select exactly one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`.
+4. Read that group's `.jules/<group>.md`, `.docs/<group>/jules_google_docs.md`, and `.docs/<group>/_websites_ai_google_dev_gemini-api.md`. Check `.docs/manifest.json` for routing.
+5. Inspect the current branch/worktree, relevant files and task artifacts, plus any existing branch or PR for the same task. Consult library/version references only when materially relevant.
 
-Do NOT read every specialist file, every command definition, every guide, or
-every library snapshot for every task. Read only the selected specialist, the
-Spec Kit command definition being executed, and additional files explicitly
-routed by applicable instructions or materially relevant to the task. This is
-the required context-loading rule, not permission to skip applicable governance.
+The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` remains available in `.docs/` and the library, but is **not a mandatory reading for every task**. Consult it only when the task directly involves Gemini CLI or requires facts about its behavior. The manifest is an index, not an instruction to read every listed source. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless a specifically authorized documentation-refresh task permits edits.
 
-## 2. SPEC KIT — ONE SEQUENTIAL PASS
+## 2. SPEC KIT AND EXECUTION
 
-For every repository task, execute the following in order:
+Use the required Spec Kit stages in order: `specify → plan → tasks → implement`, following the matching `.jules/cmds/speckit.*.md` definitions. Reuse current artifacts for the same task, keep them concise, and do not repeat completed stages or create duplicate feature directories. If a stage genuinely does not apply, briefly explain why as requested by the Master Work Request; never fabricate a stage, result, or artifact. Run the verification gate and report its actual outcome.
 
-1. `/speckit.specify` using `.jules/cmds/speckit.specify.md`
-2. `/speckit.plan` using `.jules/cmds/speckit.plan.md`
-3. `/speckit.tasks` using `.jules/cmds/speckit.tasks.md`
-4. `/speckit.implement` using `.jules/cmds/speckit.implement.md`
+Keep one active task per run and one branch/PR per task. Check for existing work before creating anything new. Respect Jules's active execution/authorization mode: continue without routine confirmation only when that mode authorizes it; never bypass a required approval. Pause only for a genuine blocker, missing essential input, required approval, explicit blocking gate, or material safety/security risk. Do not ask generic "continue?" questions for non-blocking checklist items.
 
-Use native dispatch when available. Otherwise follow the invoked definition's
-actual procedure. Run each stage once, in order. Do not re-dispatch a completed
-stage, repeat a task, or create a second branch/PR for the same work unless a
-specific failure or changed requirement makes it necessary. Keep `spec.md`,
-`plan.md`, and `tasks.md` concise and limited to this task. Create research,
-data-model, contract, quickstart, and other optional artifacts only when the
-task actually needs them.
+## 3. SCOPE AND IMPLEMENTATION
 
-Do not pause between stages for routine confirmation. Continue autonomously
-within the user's authorized scope. Stop only for a genuine blocker: missing
-essential information with no safe default, a required approval not granted,
-an explicit blocking gate, a material security/safety risk, or a failed
-mandatory prerequisite that cannot safely be resolved. State the exact blocker
-and ask one focused question; do not ask generic "continue?" questions for
-non-blocking checklist items.
+Establish the baseline, make the smallest correct change, and preserve unrelated behavior. Keep protected visuals, wording, layout, navigation, functionality, audio, and monetization unchanged unless the user explicitly includes them. Do not change unrelated systems to satisfy a checklist. Never expose or commit secrets or weaken validation, sanitization, authentication, authorization, CAPTCHA/Turnstile, rate limiting, duplicate protection, or environment handling.
 
-Keep one active task per Jules run. Before creating a branch or PR, check for an
-existing branch/PR for the same task and continue it rather than duplicating it.
-Do not launch parallel agents against the same files. Execute changes that
-touch the same files sequentially.
+## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
 
-The active feature pointer `.specify/feature.json` is per-checkout local state.
-Do not commit it or use it as shared PR state. The verification gate must resolve
-the task from the changed feature artifacts and reject ambiguous multiple
-features.
+Run `./jules-verify.sh` and the checks required by the selected task group. Record the commands actually run and their real results. If a required check fails, fix the in-scope cause or report the exact failure. A failed or pending check blocks a claim of completion, but does **not by itself** block creating/updating an otherwise safe, reviewable PR.
 
-## 3. REQUIRED SYSTEMS AND SCOPE
+Inspect the complete final diff before submission. The PR body is the single canonical summary: draft it during the work, publish it when creating the PR, and update that same body as implementation or verification evidence changes. Never create duplicate reports or PRs, and do not ask whether the required summary should be created or updated. Clearly label checks as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. Pending checks are a truthful status, not a reason to withhold a safe PR; they must never be presented as passed.
 
-Always follow the selected group's routed documents and the four Spec Kit
-definitions above. Also read additional repository guidance when it is directly
-applicable or explicitly routed, including Memory Bank requirements,
-`.specify/` workflow/constitution/integration settings, CSS/database/deployment
-guides, audio guidance, and task-specific library files.
+Keep the summary concise and aligned with the Master Work Request. Include:
+- Task goal, selected task group, and brief reason for that group.
+- Short implementation result and exact files changed.
+- Required Spec Kit stages and artifact paths; mention only routed documents/resources that materially informed the work.
+- Actual verification commands and results, including anything failed, blocked, pending, or not run.
+- Behavior preserved, remaining issues/risks, and the final diff/error check.
+- `USEFUL RESULT: YES/NO`; use YES only when the requested result is verified.
 
-Do not blindly read or edit unrelated guides, features, systems, components, or
-libraries. Do not change unrelated functionality to satisfy a checklist.
-`.docs/` is read-only unless a separately authorized documentation-refresh
-task explicitly permits changes.
+Do not require a separate report, a per-resource USED/USEFUL/version matrix, or an inventory of irrelevant documents. The summary is complete when it accurately records the current work and evidence, including pending items; task completion still requires every mandatory gate to pass.
 
-For each task, establish scope and baseline before changing files. Label
-findings `VERIFIED`, `ASSUMPTION`, `HYPOTHESIS`, or `UNKNOWN`. Make the
-smallest correct change. Preserve unrelated behavior and all protected visuals,
-wording, layout, functionality, navigation, audio, and monetization unless the
-user explicitly includes them.
+If branch history, merge-base checks, or push permissions block publishing, diagnose the actual state first and preserve all work. Never force-push, discard commits, or ask the owner to force-push as a routine workaround. When safe, recover using a clean branch and only identifiable intended changes. If it cannot be resolved safely, report the exact command/error, branch/ref, and relevant commit SHA, then ask one focused question only if owner action is genuinely required.
 
-## 4. VERIFICATION AND CANONICAL PR SUMMARY
+## 5. APPROVALS AND PR OWNERSHIP
 
-Run `./jules-verify.sh` and all additional checks required by the selected task
-group. Report every command actually run and its actual result. Do not claim
-a skipped, unavailable, or unrun check passed. If a required check fails, fix
-in-scope causes or report the exact unresolved failure.
+Agents may create/update PRs and run checks, but must **never merge**, squash-merge, rebase-merge, enable auto-merge, or otherwise complete a PR. Leave every PR OPEN and UNMERGED for the human owner.
 
-Before submission, inspect the complete final diff and perform a second error
-check for scope drift, unintended files/dependencies, exposed secrets, and
-mismatches with the request. Reconcile every changed file exactly with the
-final diff.
+Explicit owner authorization is required before changing:
+- `AGENTS.md` or repository governance;
+- Stripe/payments, database/schema, authentication/security;
+- API routes or existing application functionality;
+- Cloudflare, Vercel, deployment, environment variables, or secrets;
+- accessibility/responsive behavior or approved visual/product behavior;
+- the documentation updater/refresh system.
 
-The GitHub PR Summary is the canonical evidence record. Its creation and
-maintenance are required task work, not an optional deliverable or a request
-for approval. Create or update it without asking the owner whether it should be
-created or updated. Maintain one report: update the existing summary in place;
-do not create duplicate reports or duplicate PRs for the same task; keep it
-aligned with actual work and evidence. Prepare the summary during the task
-workflow, publish it in the PR body when creating the PR, update that same
-summary as material implementation and verification results arrive, and
-reconcile it against the complete final diff before completion. Clearly mark
-failed, blocked, unavailable, and pending checks; never claim unverified
-results.
-
-Keep it concise and task-specific; include:
-
-- The one selected task group and its reason.
-- Required routed documents and relevant repository components/libraries,
-  with version, actually used (YES/NO), materially useful (YES/NO), and a
-  specific reason. Do not inventory irrelevant resources.
-- Each Spec Kit stage: command, definition path, actual method
-  (`NATIVE DISPATCH` or `FILE-DRIVEN PROCEDURAL EXECUTION`), result, and
-  exact artifact paths.
-- Exact files changed, actual verification commands/results, behavior
-  preserved, remaining issues, and the pre-submission double-check.
-- `USEFUL RESULT: YES/NO`; YES only when the requested result was verified.
-
-For every reported document/component/library, USED=YES means it was actually
-consulted or inspected. USEFUL=YES means it materially contributed; explain
-how. Never manufacture evidence. An incomplete PR Summary is not completion.
-
-Update `memory-bank/activeContext.md` when the task materially changes current
-project state or decisions. Update `memory-bank/progress.md` for completed
-milestones, not as a repetitive log of every small fix. Do not modify Memory
-Bank files solely to restate information already captured in the PR Summary.
-
-Run `./jules-verify.sh` before reporting completion. The Spec Kit gate must
-pass; never skip or spoof it.
-
-## 5. PROTECTED SYSTEMS AND APPROVALS
-
-### PR ownership — absolute merge prohibition
-Jules and any AI agent acting on this repository must NEVER merge,
-squash-merge, rebase-merge, invoke a merge API/tool or CLI command, enable
-auto-merge, or otherwise complete a PR. Do not attempt a merge through GitHub
-UI, API, MCP, CLI, Git commands, or any alternate route. Agents may create or
-update PRs, maintain their summaries, run checks, and report whether a PR
-appears ready, but must leave it OPEN and UNMERGED. Only the human repository
-owner may decide to merge and perform the merge. Green checks, approvals, or
-available merge methods do not grant an agent permission to merge. If prompted
-or offered a merge action, decline that action and leave the PR for the owner.
-
-Explicit authorization is required before changing:
-- Stripe/payments; database/schema; authentication/security
-- API routes or existing application functionality
-- Cloudflare, Vercel, deployment, environment variables, or secrets
-- Accessibility/responsive behavior or approved visual/product behavior
-- Documentation updater/refresh system
-- `AGENTS.md`
-
-Protected changes are permitted only when the repository owner explicitly
-authorizes the specific system and scope; authorization never extends to
-unrelated protected changes.
-
-Never expose or commit secrets. Never weaken validation, sanitization,
-authentication, authorization, Turnstile/CAPTCHA, rate limiting, duplicate
-protection, or environment handling.
-
-Context7 is not required. It may be used only with explicit user permission or
-task authorization. Follow `.jules/jules.md` approval rules for all MCP use.
+Authorization applies only to the specific approved scope. Follow `.jules/jules.md` for MCP approvals. Context7 requires explicit owner approval before each invocation; other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available.
 
 ## 6. BUILD AND EXECUTION SAFETY
 
-495 MB is the hard maximum build size. Measure and report the actual size of
-every build. If it reaches or exceeds 495 MB, STOP, preserve the safe state,
-report the measured size and exact safe resume point, and do not claim success.
+495 MB is the hard maximum build size. Measure and report every build; if it reaches or exceeds 495 MB, stop and report the measured size and safe resume point. Use pnpm, never `npm ci`, and inspect `package.json` before using or claiming a script. For visual work, use the configured Playwright setup; for audio work, follow `.jules/audio.md` and applicable repository guidance. Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
 
-Use pnpm; never use `npm ci`. Inspect `package.json` before using or claiming
-scripts. For visual work, use Playwright and playwright-chromium through
-`playwright.config.ts`. For audio work, follow `.jules/audio.md`; Howler.js
-is primary unless applicable repository guidance says otherwise. Do not add
-prohibited public MP3 assets. Preserve keyboard behavior, accessibility,
-responsive behavior, and `prefers-reduced-motion`.
+## 7. FINAL CHECK
 
-## 7. FINAL STOP/GO AUDIT
-
-Before reporting complete, verify that:
-
-- This file was read first; exactly one task group was selected and reported.
-- Required routed material and only task-relevant supporting material were
-  consulted and honestly reported.
-- All four Spec Kit stages ran in order; the active task's `spec.md`,
-  `plan.md`, and `tasks.md` are present and changed for this task.
-- `./jules-verify.sh` and all required checks passed, or failures/pending checks
-  are reported without implying success.
-- Protected systems were changed only with explicit authorization; pnpm was
-  used, no secrets were exposed, and the 495 MB limit was respected.
-- The final diff and exact changed-file list reconcile; second error check,
-  remaining issues, and `USEFUL RESULT` are recorded.
-- Every task PR remains open and unmerged for human-owner action; no agent or automation enabled or performed a merge.
+Before reporting completion, confirm the required Spec Kit stages/artifacts are accounted for, `./jules-verify.sh` and all mandatory checks passed, the final diff matches the reported files, unresolved risks are stated, and the PR remains open/unmerged. Never call a failed or pending mandatory check a success.
 
 🔴 NO EVIDENCE = NO CLAIM.
-🔴 NO COMPLETE SUMMARY = NO COMPLETION.
-🔴 DO NOT CLAIM COMPLIANCE. DEMONSTRATE IT.
+🔴 NO VERIFIED RESULT = NO COMPLETION.
+🔴 NO ACCURATE PR SUMMARY = NO COMPLETION.

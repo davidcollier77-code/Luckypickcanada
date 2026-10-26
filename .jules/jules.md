@@ -1,63 +1,15 @@
-# MANDATORY INITIALIZATION DIRECTIVE
+# Jules — Repository Entry Point
 
-**STOP. READ `AGENTS.md` FIRST.**
+Read `AGENTS.md` first. It is the single source of repository-wide workflow and safety rules. This file is a short entrypoint, not a second governance system.
 
-Before any task work, read the root `AGENTS.md`; it is the authoritative
-repository workflow. Then read `memory-bank/projectBrief.md` and
-`memory-bank/activeContext.md` once, followed by exactly one selected
-specialist file and the routed `.docs` material for that task group.
+## Every task
+- Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once; inspect the current branch, worktree, relevant files, task artifacts, and any existing branch/PR.
+- Choose one task group. Read only its `.jules/<group>.md`, `.docs/<group>/jules_google_docs.md`, and `.docs/<group>/_websites_ai_google_dev_gemini-api.md`; check `.docs/manifest.json`. Read additional material only when routed or materially relevant.
+- The Gemini CLI snapshot is available for reference but is required only for tasks that directly involve Gemini CLI. Do not load it just because a task has started.
+- Follow the Spec Kit sequence, verification, concise PR summary, scope, and no-merge rules in `AGENTS.md`. Keep one task, branch, and PR; reuse existing work.
 
-Do not load every `.jules/*.md`, every `.jules/cmds/*.md`, or unrelated
-library snapshots into every task. Read a command definition when executing
-that command and load additional material only when it is routed or relevant.
+## Execution and approvals
+Respect Jules's active execution/authorization mode. Continue without routine confirmations only when that mode permits it; never bypass a required approval or blocking gate. Neon and Stitch may be used without additional approval when materially relevant and within authorized scope. Context7 requires explicit owner approval before every invocation. Other MCPs require explicit approval unless separately authorized. Connection/initialization alone is not use.
 
-Complete the four Spec Kit stages in the order specified by `AGENTS.md`.
-Keep one active task, one feature directory, one branch, and one PR for the
-work. Check for an existing branch/PR before creating another. Execute stages
-sequentially in the same active run whenever the interface allows it; do not
-repeat a stage or create duplicate dispatches. Use concise, task-specific
-artifacts and do not create optional design documents without a real need.
-
-Do not ask for routine mid-task confirmation. When autonomous execution is
-authorized, continue until completion unless an actual blocking approval,
-material safety/security issue, missing essential input, or explicit blocking
-gate prevents safe progress. An unchecked non-blocking checklist is reported,
-not treated as an automatic pause.
-
-At the conclusion, update `memory-bank/activeContext.md` when project state or
-decisions materially changed. Update `memory-bank/progress.md` for completed
-milestones, not for every minor fix. Do not make repetitive Memory Bank edits
-that simply duplicate the PR Summary.
-
----
-
-## 🚨 ABSOLUTE MCP APPROVAL GATE — HARD STOP
-
-MCP usage is governed per-MCP as defined in AGENTS.md.
-
-**Neon:** May be used without additional approval when materially applicable and within authorized scope.
-
-**Stitch:** May be used without additional approval when materially applicable and within authorized scope.
-
-**Context7:** Requires explicit repository-owner approval before every invocation.
-*Note on Mandatory Documentation:* The requirement to consult Jules and Gemini documentation does NOT automatically authorize Context7 usage to retrieve them. Use local and approved resources first.
-If you determine Context7 is needed for any library, you must **STOP IMMEDIATELY** and ask David for explicit approval first, providing:
-- MCP/service being requested
-- tool/action that will be invoked
-- reason it is materially necessary
-- what information it is expected to retrieve
-- whether the action is read-only or modifies anything
-
-**Other MCPs:** Require explicit approval unless separately authorized.
-
-**Important:** MCP connection/initialization/availability never counts as actual MCP usage. Only an actual invocation/query/retrieval constitutes MCP usage.
-
----
-
-## 2024-10-30 - Premium Cinematic Lucky Card Reveal
-**Learning:** Using Howler for layered audio allows for synchronized, high-quality environmental soundscapes without relying on synthesized browser `OscillatorNode` logic that can sometimes feel synthetic or arcade-like. Coupling this with Framer Motion's `stagger` and dynamic scaling (rather than linear coordinate shakes) transforms flat interactions into premium cinematic events.
-**Action:** Implemented a new, cinematic reveal structure for the Lucky Card experience that utilizes a multi-phase buildup involving deep atmospheric drones, floating motion physics, converging/bursting particles, and a final sweeping glow. The flash/burn-out effects and 3D flip now accurately reflect the "magic/cinematic" project guideline, removing the previously harsh yellow rectangle flash.
-
-## 2026-09-07 - [Governance] Persistent Memory Clarification
-**Learning:** Jules memory is a passive contextual layer for historical reference. It does NOT replace reading `AGENTS.md`. It cannot be relied upon to automatically enforce rules.
-**Action:** The previous incorrect assumption that Jules could automatically retrieve and apply rules via memory has been corrected. `AGENTS.md` remains the sole authoritative governance document that must be manually read during initialization.
+## PR reporting
+Maintain one concise, evidence-based summary in the PR body. Open/update a safe, reviewable PR with truthful pending or failed-check statuses instead of treating those statuses as an automatic PR-creation blocker. A pending or failed mandatory check still prevents declaring the task complete. Leave the PR open and unmerged.
