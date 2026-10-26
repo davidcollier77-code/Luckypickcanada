@@ -64,8 +64,8 @@ export default function Page() {
   preload(TURNSTILE_SCRIPT_URL, { as: 'script' });
 
   return (
-      <JsonLd data={faqSchema} />
     <>
+      <JsonLd data={faqSchema} />
       <div className="homepage-sky-backdrop" aria-hidden="true" />
       <Hero />
       <HomePage />
