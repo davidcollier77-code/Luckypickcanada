@@ -584,6 +584,14 @@ function parseRepairCommand(value) {
   if (!safePath(path) || /[\r\n\0]/.test(path) || !Number.isSafeInteger(line) || line < 1 || !title || title.length > 200) return null;
   return { mode: "fix-one", target: { path, line, title } };
 }
+function matchTargetFinding(findings, target) {
+  if (!target || typeof target.path !== "string" || !Number.isInteger(target.line) || typeof target.title !== "string") return [];
+  const title = target.title.replace(/\s+/g, " ").trim().toLowerCase();
+  return (Array.isArray(findings) ? findings : []).filter((finding) =>
+    finding && finding.path === target.path && finding.line === target.line &&
+    String(finding.title || "").replace(/\s+/g, " ").trim().toLowerCase() === title);
+}
+
 function normalizePositiveObservations(items, files) {
   const paths = new Set(files.map((f) => f.filename));
   const output = [];
@@ -808,7 +816,7 @@ async function main() {
   if (mode === "fix" || mode === "fix-one") {
     const fixModule = require("./gemini-autofix.cjs");
     const requestedFindings = mode === "fix-one"
-      ? findings.filter((finding) => finding.path === targetFinding.path && finding.line === targetFinding.line && String(finding.title || "").replace(/\s+/g, " ").trim().toLowerCase() === targetFinding.title.toLowerCase())
+      ? matchTargetFinding(findings, targetFinding)
       : findings;
     if (mode === "fix-one" && !requestedFindings.length) {
       await comment(number, "## Gemini Targeted Fix\n\nThe requested finding at " + targetFinding.path + ":" + targetFinding.line +
@@ -881,5 +889,5 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, selectChangedSourceCandidates,
   isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, renderSourceContext, makeBatches, normalizePositiveObservations,
-  buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand,
+  buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, matchTargetFinding,
   formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
