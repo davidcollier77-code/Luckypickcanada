@@ -56,7 +56,7 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
     expect(script).toContain("Fix all findings");
     expect(script).toContain("Copy/paste implementation prompt");
-    expect(script).toContain("Commands: comment exactly @gemini full review");
+    expect(script).toContain("Comment exactly @gemini full review to run a full review");
   });
 
   it("uses trusted base-branch code and limited workflow permissions", () => {
