@@ -1,8 +1,8 @@
 # Plan: Gemini Reviewer Reliability and Clickable Controls
 
-1.  **Workflows:** Update `.github/workflows/gemini-reviewer.yml` to trigger on `issue_comment` (created, edited) and `pull_request_review` (submitted, edited).
-2.  **State & UI:** In `.github/scripts/gemini-reviewer.cjs`, implement `generateFindingId()` and state serialization. Output interactive checkboxes in `formatReviewSections`.
-3.  **Coverage:** Wrap `askModel` loop batches in `try/catch`. Push errors to `coverageGaps` and fix coverage logic to check `coverageGaps.length`.
-4.  **Event Handling:** Parse `edited` events to detect checkbox transitions. Read the hidden state, validate the SHA, and extract selected finding IDs. Map IDs back to original finding details.
-5.  **Testing:** Add regression tests in a new `.github/scripts/gemini-reviewer.test.cjs` file to cover state extraction, transition detection, and command parsing.
-6.  **Verification:** Run `./jules-verify.sh`.
+1. **Workflow events:** Trigger on `issue_comment` (created, edited) and `pull_request_review` (submitted, edited) while executing trusted base-branch code.
+2. **State and UI:** Generate SHA-256-derived finding IDs, serialize review state with the PR head SHA, and render finding-selection checkboxes plus `Fix selected findings` and `Fix all findings` action checkboxes.
+3. **Coverage:** Catch each model batch failure, record it in coverage gaps, and never report complete coverage when a required batch fails.
+4. **Event handling:** Use a shared action parser for newly checked boxes. Verify review state against the current PR head, map selected IDs internally, and preserve only `repair one` and `repair all` as text fallbacks.
+5. **Testing:** Keep focused state, selection, and action-transition tests in `__tests__/gemini-reviewer-context.test.ts`, discovered by the Vitest runner.
+6. **Verification:** Run `./jules-verify.sh` and all required PR CI checks; report the actual results.
