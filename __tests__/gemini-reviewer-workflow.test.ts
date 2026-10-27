@@ -59,7 +59,7 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("Select one or more finding checkboxes above");
     expect(script).toContain("function parseReviewAction(body, previousBody = \"\")");
     expect(script).not.toContain("@gemini repair selected");
-    expect(script).toContain("findCurrentReviewState");
+    expect(script).toContain('"/pulls/" + number + "/reviews?per_page=100"');
     expect(script).toContain("serializeReviewState(pr.head.sha, findings)");
   });
 
