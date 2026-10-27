@@ -181,7 +181,7 @@ describe("Gemini reviewer source context", () => {
     expect(formatted).toContain("Task: Investigate and fix one reported code-review finding.");
     expect(formatted).toContain("Read the repository's root AGENTS.md first");
     expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42 -- Broken preload");
-    expect(formatted).toContain("### Fix all findings");
+    expect(formatted).toContain("### Automated Fixes");
     expect(formatted).toContain("@gemini repair all");
     expect(formatted).toContain("Nothing is applied or pushed automatically.");
     expect(formatted).toContain("**Optional code replacement (not a substitute for the implementation prompt)**");
