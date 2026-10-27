@@ -136,7 +136,7 @@ function formatTruncatedSourceNote(records) {
   const remaining = paths.length - shown.length;
   return "Source shortened: " + shown.join(", ") +
     (remaining > 0 ? " and " + remaining + " more" : "") +
-    ". Changed-file diffs were still reviewed.";
+    ". Available diffs were still reviewed.";
 }
 function clipSource(source, limit) {
   const value = String(source || "");
