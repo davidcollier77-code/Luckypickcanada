@@ -30,9 +30,9 @@ describe("Gemini reviewer source context", () => {
     expect(prompt).toContain("Leave the PR open and unmerged");
     expect(reviewer.canRequestTargetedFix(finding)).toBe(true);
     expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:finding.title})).toEqual([finding]);
-    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:"Different issue"})).toEqual([]);
+    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:"Different issue"})).toEqual([]); // DevSkim: ignore DS173237
     expect(reviewer.matchTargetFinding([finding], {path:"app/homepage/Other.js", line:finding.line, title:finding.title})).toEqual([]);
-    expect(reviewer.canRequestTargetedFix({...finding, path:".github/scripts/gemini-reviewer.cjs"})).toBe(false);
+    expect(reviewer.canRequestTargetedFix({...finding, path:".github/scripts/gemini-reviewer.cjs"})).toBe(false); // DevSkim: ignore DS173237
     expect(reviewer.canRequestTargetedFix({...finding, inline:false})).toBe(false);
   });
   it("extracts local imports but ignores package imports", () => {
@@ -56,6 +56,86 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.limitImportCandidates(candidates, false, 0)).toEqual([]);
     expect(reviewer.limitImportCandidates(candidates, true, 12)).toHaveLength(1);
   });
+  it("uses stronger stable IDs and parses checkbox actions only on a new checked transition", () => {
+    const finding = { path: "src/app.js", line: 10, title: "Missing await", problem: "Not awaiting", impact: "Wrong order", fix: "Add await", inline: true };
+    const id = reviewer.generateFindingId(finding);
+    expect(id).toMatch(/^[a-f0-9]{12}$/);
+    expect(reviewer.generateFindingId({ ...finding, title: "missing await" })).toBe(id);
+    const stateText = reviewer.serializeReviewState("test-current-pr-head-sha", [finding]);
+    const state = reviewer.extractReviewState("Review body" + stateText);
+    expect(state.sha).toBe("test-current-pr-head-sha");
+    expect(state.findings[0].id).toBe(id);
+    const tick = String.fromCharCode(96);
+    const checkedFinding = "- [x] Finding " + tick + id + tick + ": 🔴 **[HIGH] Missing await**";
+    expect(reviewer.parseSelectedIds(checkedFinding)).toEqual([id]);
+    expect(reviewer.parseReviewAction(checkedFinding, "")).toBeNull();
+    const actionBody = checkedFinding + "\n- [x] 🛠️ **Fix selected findings**";
+    expect(reviewer.parseReviewAction(actionBody, "")).toEqual({ mode: "fix-selected", targetFinding: [id] });
+    expect(reviewer.parseReviewAction(actionBody, actionBody)).toBeNull();
+    expect(reviewer.parseReviewAction("- [x] 🪄 **Fix all findings**", "")).toEqual({ mode: "fix" });
+    expect(reviewer.parseReviewAction("- [ ] 🪄 **Fix all findings**", "")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair selected " + id)).toBeNull();
+  });
+  it("rejects selected checkbox lists over an explicit limit without silently truncating", () => {
+    expect(reviewer.MAX_SELECTED_IDS).toBe(25);
+    const tick = String.fromCharCode(96);
+    const line = (id: string) => "- [x] Finding " + tick + id + tick + ": Finding";
+    const id = "000000000001";
+    expect(reviewer.parseSelectedIds(line(id))).toEqual([id]);
+    expect(reviewer.parseSelectedIds(line(id) + "\n" + line(id))).toEqual([id]);
+    expect(reviewer.parseSelectedIds("- [x] Finding " + tick + "not-a-valid-id" + tick + ": Finding")).toEqual([]);
+    const tooMany = Array.from({length: reviewer.MAX_SELECTED_IDS + 1}, (_, i) =>
+      line((i + 1).toString(16).padStart(12, "0"))).join("\n");
+    expect(reviewer.parseSelectedIds(tooMany)).toBeNull();
+    expect(reviewer.parseReviewAction(tooMany + "\n- [x] 🛠️ **Fix selected findings**", ""))
+      .toEqual({ mode: "fix-selected", selectionLimitExceeded: true });
+  });
+
+  it("resolves supported commands on newly submitted reviews and checkbox actions only on edits", () => {
+    expect(reviewer.resolveEventAction("@gemini repair all", "", "submitted")).toEqual({mode:"fix"});
+    expect(reviewer.resolveEventAction("@gemini full review", "", "submitted")).toEqual({mode:"review"});
+    expect(reviewer.resolveEventAction("- [x] 🪄 **Fix all findings**", "", "submitted")).toBeNull();
+    expect(reviewer.resolveEventAction("- [x] 🪄 **Fix all findings**", "", "edited")).toEqual({mode:"fix"});
+  });
+
+  it("paginates review state and finds a current-head review beyond the first 100 entries", async () => {
+    expect(reviewer.MAX_REVIEW_PAGES).toBe(100);
+    const sha = "test-current-head-sha";
+    const stateBody = reviewer.serializeReviewState(sha, [{
+      path:"src/app.js", line:7, title:"Current-head finding", problem:"Problem", impact:"Impact", fix:"Fix", inline:false
+    }]);
+    const firstPage = Array.from({length:100}, (_, i) => ({body:"older review " + i}));
+    const pages: number[] = [];
+    const reviews = await reviewer.fetchAllReviews(1620, async (path: string) => {
+      const page = Number(path.match(/[?&]page=(\d+)/)?.[1]);
+      pages.push(page);
+      return page === 1 ? firstPage : page === 2 ? [{body:stateBody}] : [];
+    }, "owner/repo");
+    expect(pages).toEqual([1,2]);
+    expect(reviewer.findReviewStateForHead(reviews, sha)).toEqual(reviewer.extractReviewState(stateBody));
+  });
+
+  it("does not accept stale review state as the current-head state", () => {
+    const staleBody = reviewer.serializeReviewState("test-stale-pr-head-sha", [{
+      path:"src/app.js", line:7, title:"Stale finding", problem:"Problem", impact:"Impact", fix:"Fix", inline:false
+    }]);
+    expect(reviewer.findReviewStateForHead([{body:staleBody},{body:"review with no state"}],
+      "test-expected-pr-head-sha")).toBeNull();
+  });
+
+  it("fails explicitly rather than silently stopping at the review-history page limit", async () => {
+    let calls = 0;
+    await expect(reviewer.fetchAllReviews(1620, async () => {
+      calls += 1;
+      return Array.from({length:100}, () => ({body:"review without state"}));
+    }, "owner/repo")).rejects.toThrow(/100 pages/);
+    expect(calls).toBe(reviewer.MAX_REVIEW_PAGES);
+  });
+  it("names files in the context clipping note", () => {
+    expect(reviewer.formatTruncatedSourceNote([{ path: "src/large.js", truncated: true }]))
+      .toBe("Source shortened: src/large.js. Available diffs were still reviewed.");
+    expect(reviewer.formatTruncatedSourceNote([{ path: "src/full.js", truncated: false }])).toBeNull();
+  });
   it("bounds full-source retrieval but keeps every available text patch in review batches", () => {
     const files = Array.from({length: reviewer.MAX_CHANGED_SOURCE_FILES + 3}, (_, i) => ({
       filename: "src/module-" + i + ".js",
@@ -63,8 +143,10 @@ describe("Gemini reviewer source context", () => {
       patch: "@@ -1 +1 @@\\n-old\\n+new"
     }));
     const selected = reviewer.selectChangedSourceCandidates(files);
-    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(3600);
-    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(100000);
+    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(6000);
+    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(160000);
+    expect(reviewer.MAX_BASE_SOURCE_CHARS).toBe(2200);
+    expect(reviewer.MAX_RELATED_SOURCE_CHARS).toBe(3200);
     expect(selected.totalCount).toBe(files.length);
     expect(selected.candidates).toHaveLength(reviewer.MAX_CHANGED_SOURCE_FILES);
     expect(selected.candidates.every((file) => file.status !== "removed")).toBe(true);
@@ -181,8 +263,10 @@ describe("Gemini reviewer source context", () => {
     expect(formatted).toContain("Task: Investigate and fix one reported code-review finding.");
     expect(formatted).toContain("Read the repository's root AGENTS.md first");
     expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42 -- Broken preload");
-    expect(formatted).toContain("### Fix all findings");
-    expect(formatted).toContain("@gemini repair all");
+    expect(formatted).toContain("### Automated Fixes");
+    expect(formatted).toContain("**Fix selected findings**");
+    expect(formatted).toContain("**Fix all findings**");
+    expect(formatted).not.toContain("@gemini repair selected");
     expect(formatted).toContain("Nothing is applied or pushed automatically.");
     expect(formatted).toContain("**Optional code replacement (not a substitute for the implementation prompt)**");
     expect(formatted).toContain('preload("/hero.avif", { type: "image/avif" });');
