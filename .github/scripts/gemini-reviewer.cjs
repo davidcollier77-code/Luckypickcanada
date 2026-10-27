@@ -597,7 +597,7 @@ function generateFindingId(f) {
 }
 function serializeReviewState(sha, findings) {
   const state = { sha, findings: findings.map(f => ({ id: generateFindingId(f), path: f.path, line: f.line, title: f.title, problem: f.problem, fix: f.fix, suggestion: f.suggestion, inline: f.inline })) };
-  return "\n\n<!-- gemini-review-state: " + JSON.stringify(state).replace(/-->/g, "--\\>") + " -->";
+  return "\n\n<!-- gemini-review-state: " + JSON.stringify(state).replace(/--!?>/g, "--\\>") + " -->";
 }
 function extractReviewState(body) {
   const match = String(body || "").match(/<!-- gemini-review-state: ([\s\S]*?)(?:-->|--!>)/);
