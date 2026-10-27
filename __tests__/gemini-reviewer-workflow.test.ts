@@ -56,7 +56,11 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
     expect(script).toContain("Fix all findings");
     expect(script).toContain("Copy/paste implementation prompt");
-    expect(script).toContain("Comment exactly @gemini full review to run a full review");
+    expect(script).toContain("Select one or more finding checkboxes above");
+    expect(script).toContain("function parseReviewAction(body, previousBody = \"\")");
+    expect(script).not.toContain("@gemini repair selected");
+    expect(script).toContain("findCurrentReviewState");
+    expect(script).toContain("serializeReviewState(pr.head.sha, findings)");
   });
 
   it("uses trusted base-branch code and limited workflow permissions", () => {
