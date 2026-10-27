@@ -586,14 +586,12 @@ function parseRepairCommand(value) {
 }
 
 function parseSelectedIds(body) {
-  const matches = [...String(body || "").matchAll(/- \[x\] Finding \`([a-z0-9]{6})\`:/g)];
+  const matches = [...String(body || "").matchAll(/- \[x\] Finding \`([a-f0-9]{12})\`:/g)];
   return matches.map(m => m[1]);
 }
 function generateFindingId(f) {
   const str = f.path + ":" + f.line + ":" + f.title.toLowerCase();
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0;
-  return Math.abs(h).toString(36).padStart(6, "0").slice(0, 6);
+  return require("node:crypto").createHash("sha256").update(str).digest("hex").slice(0, 12);
 }
 function serializeReviewState(sha, findings) {
   const state = { sha, findings: findings.map(f => ({ id: generateFindingId(f), path: f.path, line: f.line, title: f.title, problem: f.problem, fix: f.fix, suggestion: f.suggestion, inline: f.inline })) };
@@ -753,7 +751,7 @@ async function main() {
     number = event.issue.number;
 
     const isEdited = event.action === "edited";
-    const body = event.comment ? event.comment.body : (event.review ? event.review.body : "");
+    const body = (event.comment ? event.comment.body : (event.review ? event.review.body : "")) || "";
     let prevBody = "";
     if (isEdited && event.changes && event.changes.body && typeof event.changes.body.from === "string") {
       prevBody = event.changes.body.from;
@@ -793,11 +791,11 @@ async function main() {
 
   } else if (EVENT_NAME === "pull_request_review") {
     if (!event.pull_request) { log("Missing PR object."); return; }
-    if (!TRUSTED.has(String(event.review?.author_association || "").toUpperCase())) { log("Unauthorized."); return; }
+    if (!TRUSTED.has(String(event.sender?.author_association || event.review?.author_association || "").toUpperCase())) { log("Unauthorized."); return; }
     number = event.pull_request.number;
 
     const isEdited = event.action === "edited";
-    const body = event.review ? event.review.body : (event.review ? event.review.body : "");
+    const body = (event.review ? event.review.body : (event.comment ? event.comment.body : "")) || "";
     let prevBody = "";
     if (isEdited && event.changes && event.changes.body && typeof event.changes.body.from === "string") {
       prevBody = event.changes.body.from;
@@ -850,7 +848,10 @@ async function main() {
 
   const pr = await gh("/repos/" + REPO + "/pulls/" + number);
   if (!pr || typeof pr !== "object") throw new Error("GitHub did not return valid pull-request metadata.");
-  if (pr.state !== "open") {
+    if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
+      await comment(number, "Gemini fix suggestions were not generated because this PR is not open.");
+    }
+    return;
       return;
   }
   if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing. Verify it under Settings → Secrets and variables → Actions; its value is never printed.");
@@ -858,9 +859,14 @@ async function main() {
   const files = list.files;
   if (!files.length) { await comment(number, "Gemini PR Reviewer could not retrieve changed-file patches; no review or suggestions were made."); return; }
 
-  if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
-    const body = event.comment ? event.comment.body : (event.review ? event.review.body : "");
-    const state = extractReviewState(body);
+    let stateBody = (event.comment ? event.comment.body : (event.review ? event.review.body : "")) || "";
+    let state = extractReviewState(stateBody);
+    if (!state || !state.sha || !Array.isArray(state.findings)) {
+      const reviews = await gh("/repos/" + REPO + "/pulls/" + number + "/reviews?per_page=100").catch(() => []);
+      const geminiReview = Array.isArray(reviews) ? [...reviews].reverse().find((r) => extractReviewState(r.body || "")) : null;
+      if (geminiReview) state = extractReviewState(geminiReview.body || "");
+    }
+    if (!state || !state.sha || !Array.isArray(state.findings)) {
     if (!state || !state.sha || !Array.isArray(state.findings)) {
       await comment(number, "Gemini could not find valid review state in the comment body. Please run a new full review.");
       return;
