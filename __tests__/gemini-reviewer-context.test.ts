@@ -40,7 +40,7 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.parseSelectedIds(findingCheckbox)).toEqual([id]);
     expect(reviewer.parseReviewAction(findingCheckbox, "")).toBeNull();
 
-    const selectedAction = findingCheckbox + "\\n- [x] 🛠️ **Fix selected findings**";
+    const selectedAction = findingCheckbox + "\n- [x] 🛠️ **Fix selected findings**";
     expect(reviewer.parseReviewAction(selectedAction, "")).toEqual({
       mode: "fix-selected", targetFinding: [id]
     });
