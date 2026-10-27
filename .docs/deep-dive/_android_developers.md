@@ -287,26 +287,6 @@
                 </li>
               
                 <li class="devsite-nav-item">
-                  <a href="https://developer.android.com/developer-verification"
-                    
-                     track-type="nav"
-                     track-metadata-eventdetail="https://developer.android.com/developer-verification"
-                     track-metadata-position="nav - essentials"
-                     track-metadata-module="tertiary nav"
-                     
-                       track-metadata-module_headline="get started"
-                     
-                     tooltip
-                  >
-                    
-                    <div class="devsite-nav-item-title">
-                      Developer Verification
-                    </div>
-                    
-                  </a>
-                </li>
-              
-                <li class="devsite-nav-item">
                   <a href="https://developer.android.com/adaptive-apps"
                     
                      track-type="nav"
@@ -367,26 +347,6 @@
                 </li>
               
                 <li class="devsite-nav-item">
-                  <a href="https://developer.android.com/courses"
-                    
-                     track-type="nav"
-                     track-metadata-eventdetail="https://developer.android.com/courses"
-                     track-metadata-position="nav - essentials"
-                     track-metadata-module="tertiary nav"
-                     
-                       track-metadata-module_headline="get started"
-                     
-                     tooltip
-                  >
-                    
-                    <div class="devsite-nav-item-title">
-                      Training
-                    </div>
-                    
-                  </a>
-                </li>
-              
-                <li class="devsite-nav-item">
                   <a href="https://google.play/business/guides/play-commerce/"
                     
                      track-type="nav"
@@ -401,6 +361,46 @@
                     
                     <div class="devsite-nav-item-title">
                       Monetization with Play ↗️
+                    </div>
+                    
+                  </a>
+                </li>
+              
+                <li class="devsite-nav-item">
+                  <a href="https://developer.android.com/developer-verification"
+                    
+                     track-type="nav"
+                     track-metadata-eventdetail="https://developer.android.com/developer-verification"
+                     track-metadata-position="nav - essentials"
+                     track-metadata-module="tertiary nav"
+                     
+                       track-metadata-module_headline="get started"
+                     
+                     tooltip
+                  >
+                    
+                    <div class="devsite-nav-item-title">
+                      Developer Verification
+                    </div>
+                    
+                  </a>
+                </li>
+              
+                <li class="devsite-nav-item">
+                  <a href="https://developer.android.com/registered-app-stores"
+                    
+                     track-type="nav"
+                     track-metadata-eventdetail="https://developer.android.com/registered-app-stores"
+                     track-metadata-position="nav - essentials"
+                     track-metadata-module="tertiary nav"
+                     
+                       track-metadata-module_headline="get started"
+                     
+                     tooltip
+                  >
+                    
+                    <div class="devsite-nav-item-title">
+                      Registered App Stores
                     </div>
                     
                   </a>
@@ -4081,35 +4081,6 @@
 <li class="devsite-nav-item">
 
   
-  <a href="/developer-verification"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Developer Verification"
-     track-type="navMenu"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Developer Verification
-   </span>
-    
-  
-  </a>
-  
-
-</li>
-
-            
-              
-<li class="devsite-nav-item">
-
-  
   <a href="/adaptive-apps"
     
        class="devsite-nav-title gc-analytics-event
@@ -4197,35 +4168,6 @@
 <li class="devsite-nav-item">
 
   
-  <a href="/courses"
-    
-       class="devsite-nav-title gc-analytics-event
-              
-              "
-    
-
-    
-     data-category="Site-Wide Custom Events"
-     data-label="Responsive Tab: Training"
-     track-type="navMenu"
-     track-metadata-eventDetail="globalMenu"
-     track-metadata-position="nav">
-  
-    <span class="devsite-nav-text" tooltip >
-      Training
-   </span>
-    
-  
-  </a>
-  
-
-</li>
-
-            
-              
-<li class="devsite-nav-item">
-
-  
   <a href="https://google.play/business/guides/play-commerce/"
     
        class="devsite-nav-title gc-analytics-event
@@ -4242,6 +4184,64 @@
   
     <span class="devsite-nav-text" tooltip >
       Monetization with Play ↗️
+   </span>
+    
+  
+  </a>
+  
+
+</li>
+
+            
+              
+<li class="devsite-nav-item">
+
+  
+  <a href="/developer-verification"
+    
+       class="devsite-nav-title gc-analytics-event
+              
+              "
+    
+
+    
+     data-category="Site-Wide Custom Events"
+     data-label="Responsive Tab: Developer Verification"
+     track-type="navMenu"
+     track-metadata-eventDetail="globalMenu"
+     track-metadata-position="nav">
+  
+    <span class="devsite-nav-text" tooltip >
+      Developer Verification
+   </span>
+    
+  
+  </a>
+  
+
+</li>
+
+            
+              
+<li class="devsite-nav-item">
+
+  
+  <a href="/registered-app-stores"
+    
+       class="devsite-nav-title gc-analytics-event
+              
+              "
+    
+
+    
+     data-category="Site-Wide Custom Events"
+     data-label="Responsive Tab: Registered App Stores"
+     track-type="navMenu"
+     track-metadata-eventDetail="globalMenu"
+     track-metadata-position="nav">
+  
+    <span class="devsite-nav-text" tooltip >
+      Registered App Stores
    </span>
     
   
@@ -10091,9 +10091,9 @@
     
     
       
-        data-label="dev-center-media"
-      
         data-value="0"
+      
+        data-label="dev-center-media"
       
         data-category="feature-card"
       
@@ -10217,11 +10217,11 @@
     
     
       
-        data-label="dev-center-games"
+        data-category="feature-card"
       
         data-value="0"
       
-        data-category="feature-card"
+        data-label="dev-center-games"
       
     
     >Learn more</a>
@@ -10370,9 +10370,9 @@
       
         data-value="0"
       
-        data-category="feature-card"
-      
         data-label="dev-center-health-fitness"
+      
+        data-category="feature-card"
       
     
     >Learn more</a>
@@ -10487,11 +10487,11 @@
     
     
       
-        data-category="feature-card"
-      
         data-value="0"
       
         data-label="dev-center-social-messaging"
+      
+        data-category="feature-card"
       
     
     >Learn more</a>
@@ -13396,12 +13396,12 @@
         .fully-clickable"
     watch=".android-editorial-and-updates-cards, .android-samples, devsite-content"></android-fully-clickable>
     
-<script nonce="KB6BAy2JBJUZ3LinEfG2JShVkTkrMr">
+<script nonce="gId3AIonht5hcy/qzBj5jNSY+MqtKs">
   
   (function(d,e,v,s,i,t,E){d['GoogleDevelopersObject']=i;
     t=e.createElement(v);t.async=1;t.src=s;E=e.getElementsByTagName(v)[0];
     E.parentNode.insertBefore(t,E);})(window, document, 'script',
-    'https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/android/js/app_loader.js', '[3,"en",null,"/js/devsite_app_module.js","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/android","https://android-dot-devsite-v2-prod.appspot.com",1,null,["/_pwa/android/manifest.json","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/images/video-placeholder.svg","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/android/images/favicon.svg","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/android/images/lockup.png","https://fonts.googleapis.com/css?family=Google+Sans:400,500,600,700|Google+Sans+Text:400,400italic,500,500italic,600,600italic,700,700italic|Roboto+Mono:400,500,700&display=swap"],1,null,[1,6,8,12,14,17,21,25,50,52,63,70,75,76,80,87,91,92,93,97,98,100,101,102,103,104,105,107,108,109,110,112,113,117,118,120,122,124,125,126,127,129,130,131,132,133,134,135,136,138,140,141,147,148,149,151,152,156,157,158,159,161,163,164,168,169,170,179,180,182,183,186,191,193,196],"AIzaSyAP-jjEJBzmIyKR4F-3XITp8yM9T1gEEI8","AIzaSyB6xiKGDR5O3Ak2okS4rLkauxGUG7XP0hg","developer.android.com","AIzaSyAQk0fBONSGUqCNznf6Krs82Ap1-NV6J4o","AIzaSyCCxcqdrZ_7QMeLCRY20bh_SXdAYqy70KY",null,null,null,["DevPro__enable_nvidia_credits_card","DevPro__enable_devpro_offers","DevPro__enable_devsite_captcha","DevPro__enable_firebase_workspaces_card","Cloud__enable_legacy_calculator_redirect","Cloud__enable_cloud_shell_fte_user_flow","Profiles__enable_release_notes_notifications","Profiles__enable_dashboard_curated_recommendations","DevPro__remove_eu_tax_intake_form","TpcFeatures__proxy_prod_host","MiscFeatureFlags__enable_explain_this_code","DevPro__enable_google_one_card","BookNav__enable_tenant_cache_key","Profiles__enable_awarding_url","Profiles__enable_complete_playlist_endpoint","Concierge__enable_remove_info_panel_tags","MiscFeatureFlags__enable_appearance_cookies","Profiles__enable_completequiz_endpoint","DevPro__enable_enterprise","Profiles__enable_user_type","Cloud__fast_free_trial","DevPro__enable_google_payments_buyflow","Cloud__cache_serialized_dynamic_content","Profiles__enable_purchase_prompts","MiscFeatureFlags__developers_footer_dark_image","Search__enable_ai_eligibility_checks","Analytics__enable_devpro_interaction_logging","Profiles__enable_recognition_badges","DevPro__enable_cloud_innovators_plus","Profiles__enable_auto_apply_credits","Cloud__enable_cloud_shell","MiscFeatureFlags__enable_firebase_utm","Profiles__enable_join_program_group_endpoint","Profiles__enable_profile_collections","Search__enable_ai_search_summaries_for_all","MiscFeatureFlags__gdp_dashboard_reskin_enabled","MiscFeatureFlags__enable_view_transitions","Profiles__enable_public_developer_profiles","Concierge__enable_actions_menu","Profiles__enable_targeted_hero","MiscFeatureFlags__developers_footer_image","Profiles__enable_developer_profiles_callout","MiscFeatureFlags__enable_dark_theme","MiscFeatureFlags__fix_lower_breadcrumbs","DevPro__enable_developer_subscriptions","MiscFeatureFlags__remove_cross_domain_tracking_params","Search__enable_suggestions_from_borg","DevPro__enable_google_payments","DevPro__enable_g1_integration","Significatio__enable_by_tenant","Profiles__enable_page_saving","Profiles__enable_callout_notifications","DevPro__enable_vertex_credit_card","Concierge__enable_devsite_llm_tools","MiscFeatureFlags__enable_framebox_badge_methods","Analytics__enable_clearcut_logging","MiscFeatureFlags__enable_project_variables","Profiles__enable_developer_profile_benefits_ui_redesign","Search__enable_ai_search_summaries","SignIn__enable_l1_signup_flow","DevPro__enable_code_assist","EngEduTelemetry__enable_engedu_telemetry","Concierge__enable_pushui","Search__enable_page_map","Profiles__enable_playlist_community_acl","Search__enable_dynamic_content_confidential_banner","Cloud__enable_free_trial_server_call","Profiles__enable_stripe_subscription_management","DevPro__enable_free_benefits","Cloud__enable_cloudx_experiment_ids","Profiles__enable_developer_profile_pages_as_content","MiscFeatureFlags__enable_llms_txt","CloudShell__cloud_code_overflow_menu","CloudShell__cloud_shell_button","MiscFeatureFlags__enable_explicit_template_dependencies","DevPro__enable_credits_banner","TpcFeatures__enable_unmirrored_page_left_nav","DevPro__enable_g1_ineligible_redirect","DevPro__enable_embed_profile_creation","Profiles__require_profile_eligibility_for_signin","MiscFeatureFlags__enable_variable_operator","AIStudioInteractionsToggle__interactions_are_default","Experiments__reqs_query_experiments","Cloud__enable_cloud_dlp_service","Profiles__enable_completecodelab_endpoint","MiscFeatureFlags__enable_variable_operator_index_yaml"],null,null,"AIzaSyBLEMok-5suZ67qRPzx0qUtbnLmyT_kCVE","https://developerscontentserving-pa.googleapis.com","AIzaSyCM4QpTRSqP5qI4Dvjt4OAScIN8sOUlO-k","https://developerscontentsearch-pa.googleapis.com",2,4,null,"https://developerprofiles-pa.googleapis.com",[3,"android","Android Developers","developer.android.com",null,"android-dot-devsite-v2-prod.appspot.com",null,null,[null,1,null,null,null,null,null,null,null,null,null,[1],null,null,null,null,null,null,[1],[1,null,null,[1,20],"/recommendations"],null,null,null,[1,null,1],[1,1,null,1,1],null,null,null,null,[1],[1]],null,[18,null,null,null,null,null,"/images/lockup.png","/images/touchicon-180.png",null,null,null,null,null,null,null,null,null,null,null,null,null,2,null,null,null,"/images/lockup-dark-theme.png",[]],[],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[6,1,14,15,20,22,23,28,29,37,43],null,[[],[1,1]],[[null,null,null,null,null,null,null,[["G-QFRN08RN6E"],null,null,[["G-QFRN08RN6E",1]]],null,null,null,null,1],null,[[2,2],[1,1]]],null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,"android.devsite.google"],null,"pk_live_5170syrHvgGVmSx9sBrnWtA5luvk9BwnVcvIi7HizpwauFG96WedXsuXh790rtij9AmGllqPtMLfhe2RSwD6Pn38V00uBCydV4m",1,1,"https://developerscontentinsights-pa.googleapis.com","AIzaSyCg-ZUslalsEbXMfIo9ZP8qufZgo3LSBDU","AIzaSyDxT0vkxnY_KeINtA4LSePJO-4MAZPMRsE","https://developers.googleapis.com",null,null,"AIzaSyBQom12tzI-rybN7Sf-KfeL4nwm-Rf7PmI\n",null,null,"https://developers.googleapis.com"]')
+    'https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/android/js/app_loader.js', '[3,"en",null,"/js/devsite_app_module.js","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/android","https://android-dot-devsite-v2-prod.appspot.com",1,null,["/_pwa/android/manifest.json","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/images/video-placeholder.svg","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/android/images/favicon.svg","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/android/images/lockup.png","https://fonts.googleapis.com/css?family=Google+Sans:400,500,600,700|Google+Sans+Text:400,400italic,500,500italic,600,600italic,700,700italic|Roboto+Mono:400,500,700&display=swap"],1,null,[1,6,8,12,14,17,21,25,50,52,63,70,75,76,80,87,91,92,93,97,98,100,101,102,103,104,105,107,108,109,110,112,113,117,118,120,122,124,125,126,127,129,130,131,132,133,134,135,136,138,140,141,147,148,149,151,152,156,157,158,159,161,163,164,168,169,170,179,180,182,183,186,191,193,196],"AIzaSyAP-jjEJBzmIyKR4F-3XITp8yM9T1gEEI8","AIzaSyB6xiKGDR5O3Ak2okS4rLkauxGUG7XP0hg","developer.android.com","AIzaSyAQk0fBONSGUqCNznf6Krs82Ap1-NV6J4o","AIzaSyCCxcqdrZ_7QMeLCRY20bh_SXdAYqy70KY",null,null,null,["Cloud__enable_free_trial_server_call","Profiles__enable_awarding_url","Profiles__enable_complete_playlist_endpoint","TpcFeatures__enable_unmirrored_page_left_nav","DevPro__enable_developer_subscriptions","Profiles__enable_dashboard_curated_recommendations","MiscFeatureFlags__enable_dark_theme","DevPro__enable_code_assist","Concierge__enable_actions_menu","Profiles__enable_playlist_community_acl","DevPro__enable_g1_ineligible_redirect","Cloud__enable_cloud_shell","Search__enable_ai_search_summaries_for_all","Search__enable_dynamic_content_confidential_banner","Significatio__enable_by_tenant","DevPro__enable_devsite_captcha","Profiles__enable_purchase_prompts","Concierge__enable_pushui","DevPro__enable_google_payments","AIStudioInteractionsToggle__interactions_are_default","MiscFeatureFlags__enable_variable_operator","DevPro__enable_embed_profile_creation","Cloud__enable_cloudx_experiment_ids","MiscFeatureFlags__enable_firebase_utm","Cloud__cache_serialized_dynamic_content","Profiles__enable_page_saving","MiscFeatureFlags__developers_footer_image","MiscFeatureFlags__enable_explicit_template_dependencies","DevPro__enable_firebase_workspaces_card","DevPro__remove_eu_tax_intake_form","DevPro__enable_free_benefits","MiscFeatureFlags__enable_project_variables","Profiles__enable_join_program_group_endpoint","DevPro__enable_credits_banner","DevPro__enable_cloud_innovators_plus","Profiles__enable_callout_notifications","Profiles__enable_developer_profiles_callout","Concierge__enable_devsite_llm_tools","MiscFeatureFlags__fix_lower_breadcrumbs","Analytics__enable_clearcut_logging","DevPro__enable_google_payments_buyflow","DevPro__enable_google_one_card","MiscFeatureFlags__enable_view_transitions","Profiles__enable_completequiz_endpoint","Profiles__enable_targeted_hero","DevPro__enable_g1_integration","Profiles__enable_developer_profile_benefits_ui_redesign","Cloud__fast_free_trial","MiscFeatureFlags__enable_framebox_badge_methods","BookNav__enable_tenant_cache_key","Profiles__enable_auto_apply_credits","Profiles__enable_public_developer_profiles","Concierge__enable_remove_info_panel_tags","Profiles__require_profile_eligibility_for_signin","MiscFeatureFlags__enable_appearance_cookies","Profiles__enable_developer_profile_pages_as_content","Search__enable_ai_search_summaries","SignIn__enable_l1_signup_flow","Profiles__enable_profile_collections","Cloud__enable_cloud_shell_fte_user_flow","MiscFeatureFlags__enable_llms_txt","Profiles__enable_stripe_subscription_management","TpcFeatures__proxy_prod_host","Cloud__enable_cloud_dlp_service","MiscFeatureFlags__enable_variable_operator_index_yaml","Search__enable_page_map","Profiles__enable_completecodelab_endpoint","DevPro__enable_devpro_offers","DevPro__enable_vertex_credit_card","Search__enable_ai_eligibility_checks","MiscFeatureFlags__remove_cross_domain_tracking_params","Experiments__reqs_query_experiments","Analytics__enable_devpro_interaction_logging","Cloud__enable_legacy_calculator_redirect","DevPro__enable_enterprise","Profiles__enable_release_notes_notifications","Profiles__enable_recognition_badges","MiscFeatureFlags__gdp_dashboard_reskin_enabled","MiscFeatureFlags__enable_explain_this_code","MiscFeatureFlags__developers_footer_dark_image","CloudShell__cloud_code_overflow_menu","EngEduTelemetry__enable_engedu_telemetry","Profiles__enable_user_type","Search__enable_suggestions_from_borg","DevPro__enable_nvidia_credits_card","CloudShell__cloud_shell_button"],null,null,"AIzaSyBLEMok-5suZ67qRPzx0qUtbnLmyT_kCVE","https://developerscontentserving-pa.googleapis.com","AIzaSyCM4QpTRSqP5qI4Dvjt4OAScIN8sOUlO-k","https://developerscontentsearch-pa.googleapis.com",2,4,null,"https://developerprofiles-pa.googleapis.com",[3,"android","Android Developers","developer.android.com",null,"android-dot-devsite-v2-prod.appspot.com",null,null,[null,1,null,null,null,null,null,null,null,null,null,[1],null,null,null,null,null,null,[1],[1,null,null,[1,20],"/recommendations"],null,null,null,[1,null,1],[1,1,null,1,1],null,null,null,null,[1],[1]],null,[18,null,null,null,null,null,"/images/lockup.png","/images/touchicon-180.png",null,null,null,null,null,null,null,null,null,null,null,null,null,2,null,null,null,"/images/lockup-dark-theme.png",[]],[],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[6,1,14,15,20,22,23,28,29,37,43],null,[[],[1,1]],[[null,null,null,null,null,null,null,[["G-QFRN08RN6E"],null,null,[["G-QFRN08RN6E",1]]],null,null,null,null,1],null,[[1,1],[2,2]]],null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,"android.devsite.google"],null,"pk_live_5170syrHvgGVmSx9sBrnWtA5luvk9BwnVcvIi7HizpwauFG96WedXsuXh790rtij9AmGllqPtMLfhe2RSwD6Pn38V00uBCydV4m",1,1,"https://developerscontentinsights-pa.googleapis.com","AIzaSyCg-ZUslalsEbXMfIo9ZP8qufZgo3LSBDU","AIzaSyDxT0vkxnY_KeINtA4LSePJO-4MAZPMRsE","https://developers.googleapis.com",null,null,"AIzaSyBQom12tzI-rybN7Sf-KfeL4nwm-Rf7PmI\n",null,null,"https://developers.googleapis.com"]')
   
 </script>
 
