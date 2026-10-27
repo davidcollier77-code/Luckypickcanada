@@ -751,7 +751,7 @@ function docReport(loaded, unloaded, assessments, selection) {
     "- **Selection method:** " + String(selection && selection.method || "Unknown.")
   ];
   if (selection && selection.method === "skipped for initial automatic review") {
-    rows.push("- Document-library selection is reserved for explicit @gemini full review, @gemini repair one, and @gemini repair all requests; no .docs snapshots were loaded for this initial review.");
+    rows.push("- Library snapshots were not loaded for this initial automatic review; a deeper full review is an explicit follow-up operation.");
   } else if (!loaded.length) {
     rows.push("- No .docs snapshot content was loaded into the review prompt; no snapshot is claimed as used.");
   }
