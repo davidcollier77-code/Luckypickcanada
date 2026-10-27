@@ -78,7 +78,7 @@ describe("Gemini reviewer source context", () => {
   });
   it("names files in the context clipping note", () => {
     expect(reviewer.formatTruncatedSourceNote([{ path: "src/large.js", truncated: true }]))
-      .toBe("Source shortened: src/large.js. Changed-file diffs were still reviewed.");
+      .toBe("Source shortened: src/large.js. Available diffs were still reviewed.");
     expect(reviewer.formatTruncatedSourceNote([{ path: "src/full.js", truncated: false }])).toBeNull();
   });
   it("bounds full-source retrieval but keeps every available text patch in review batches", () => {
