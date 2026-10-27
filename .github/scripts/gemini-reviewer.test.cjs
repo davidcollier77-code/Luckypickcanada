@@ -12,7 +12,7 @@ const id3 = generateFindingId(finding3);
 
 assert.strictEqual(id1, id2, 'Finding IDs should be case-insensitive on title');
 assert.notStrictEqual(id1, id3, 'Different findings should have different IDs');
-assert.strictEqual(id1.length, 6, 'Finding ID should be 6 characters long');
+assert.strictEqual(id1.length, 12, 'Finding ID should be 12 characters long');
 
 // Test serializeReviewState and extractReviewState
 const sha = 'abcdef1234567890abcdef1234567890abcdef12';
