@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-27T06:11:41-03:00",
+  "lastUpdated": "2026-10-27T07:42:47-03:00",
   "groups": {
     "creation": [
       "/github/docs",
@@ -421,17 +421,17 @@
   ],
   "githubShas": {
     "/github/docs": "9568e964d18d76267faf57050dc662c450a13214",
-    "/vercel/next.js": "cc0cdc8bd93f946177b8d34cb23790b2b01934cd",
+    "/vercel/next.js": "c15cede559f5096167b26e1732ea12a56fffc496",
     "/reactjs/react.dev": "ae5e48074d4f73f1e349eda2a66841f9a959023e",
     "/microsoft/typescript": "49e69830214c55a8cc361aa3c4e7412d0afd02fe",
-    "/lucide-icons/lucide": "59d138796d9dd8970bf3e91479d4c499b45aed96",
+    "/lucide-icons/lucide": "48af002e94b443be04f1fd64193b3ff2a581d351",
     "/react-hook-form/documentation": "fa89d47d63ea202a066a1df3e30cbaf5e146d458",
     "/react-hook-form/resolvers": "04303409ece5caf2842f51b8cb0865a10c497f12",
     "/emilkowalski/sonner": "8e4662b39255120b62138312058f5d77c0139a5e",
     "/bvaughn/react-error-boundary": "f93fc8c9e57b4e119f23e5d57b1f782acac32748",
     "/google-gemini/gemini-cli": "363a13119a57354f469732577518b9d6b319d1d6",
-    "/cloudflare/cloudflare-docs/turnstile": "1ad2be0778acac23cafade2b788d6876150528e8",
-    "/cloudflare/cloudflare-docs/pages": "1ad2be0778acac23cafade2b788d6876150528e8",
+    "/cloudflare/cloudflare-docs/turnstile": "62ac2c7c6b72ee5f030a1094af973a4bb89a4866",
+    "/cloudflare/cloudflare-docs/pages": "62ac2c7c6b72ee5f030a1094af973a4bb89a4866",
     "/dequelabs/axe-core": "6b52b841461bd23345970b91ec75fdaff6bad31a",
     "/testing-library/react-testing-library": "20ce75f2907ca0e5c5a8ae595c0e9a4e368c7800",
     "/microsoft/playwright": "c409f8c83ec04485e829809beceb722d9cf8ff38",
