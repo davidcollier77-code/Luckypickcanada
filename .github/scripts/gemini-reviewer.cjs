@@ -13,8 +13,10 @@ const EVENT_NAME = process.env.GITHUB_EVENT_NAME || "";
 const EVENT_PATH = process.env.GITHUB_EVENT_PATH || "";
 const RULE_PATH = ".gemini/rules/luckypickcanada.md";
 const MAX_CHANGED_SOURCE_FILES = 22;
-const MAX_CHANGED_SOURCE_CHARS = 3600;
-const MAX_TOTAL_SOURCE_CHARS = 100000;
+const MAX_CHANGED_SOURCE_CHARS = 6000;
+const MAX_TOTAL_SOURCE_CHARS = 160000;
+const MAX_BASE_SOURCE_CHARS = 2200;
+const MAX_RELATED_SOURCE_CHARS = 3200;
 const CONTROL_FLOW_REVIEW_GUIDANCE = [
   "For asynchronous/control-flow concerns (including requestAnimationFrame, timers, promises, effects, and event handlers), trace registration, actual callback execution, state writes, reads, and every reachable direct or synchronous call path.",
   "Distinguish a potential timing hazard from a verified defect. Do not report an ordering issue when the supplied execution order proves the read occurs after the write; when a needed call path or source is missing, state the uncertainty rather than asserting a race."
@@ -196,7 +198,7 @@ async function collectSourceContext(pr, files) {
       const basePath = file.previous_filename || file.filename;
       const baseline = await read(basePath, baseSha, baseRepo);
       if (baseline !== null) {
-        const old = clipSource(baseline, Math.min(1800, Math.floor(budget / 3)));
+        const old = clipSource(baseline, Math.min(MAX_BASE_SOURCE_CHARS, Math.floor(budget / 3)));
         records.push({ path: file.filename, role: "same file at PR base before change", content: old.content, truncated: old.truncated });
         budget -= old.content.length;
       } else {
@@ -227,7 +229,7 @@ async function collectSourceContext(pr, files) {
         importProbeCount += 1;
         const source = await read(path, headSha, headRepo);
         if (source === null) continue;
-        const clipped = clipSource(source, Math.min(2400, budget));
+        const clipped = clipSource(source, Math.min(MAX_RELATED_SOURCE_CHARS, budget));
         records.push({ path, role: "local module imported by " + file.path, relatedTo: file.path, content: clipped.content, truncated: clipped.truncated });
         budget -= clipped.content.length; relatedCount += 1; break;
       }
@@ -236,7 +238,14 @@ async function collectSourceContext(pr, files) {
   if (importProbeCount >= MAX_IMPORT_SOURCE_PROBES) limitations.push("Import-source probe budget reached; further local import candidates may be omitted.");
   const hasLocalImports = changed.some((file) => file.status !== "removed" && extractLocalImports(file.source).length > 0);
   if (budget < 3000 && hasLocalImports) limitations.push("Remaining source-context budget fell below 3000 characters; further local-import context was not attempted.");
-  if (records.some((r) => r.truncated)) limitations.push("Some source was clipped to fit the bounded context budget.");
+  const clippedPaths = [...new Set(records.filter((record) => record.truncated).map((record) => record.path))];
+  if (clippedPaths.length) {
+    const shownPaths = clippedPaths.slice(0, 5);
+    const remainingCount = clippedPaths.length - shownPaths.length;
+    limitations.push("Supporting source was shortened in " + shownPaths.join(", ") +
+      (remainingCount > 0 ? " and " + remainingCount + " additional file(s)" : "") +
+      ". Changed-file patches remain included in their review batches.");
+  }
   if (candidates.length > changed.length && !limitations.some((item) => /before .* selected changed text file|Full head source unavailable/.test(item))) {
     limitations.push((candidates.length - changed.length) + " selected changed text file(s) did not receive full-source context; patches remain included in review batches.");
   }
@@ -1040,7 +1049,7 @@ if (require.main === module) main().catch(async (error) => {
 });
 
 module.exports = { addedLines, extractLocalImports, resolveImportCandidates, limitImportCandidates, MAX_IMPORT_SOURCE_PROBES,
-  MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, selectChangedSourceCandidates,
+  MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, renderSourceContext, makeBatches, normalizePositiveObservations,
   buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, matchTargetFinding, generateFindingId, serializeReviewState, extractReviewState,
