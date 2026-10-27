@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { generateFindingId, serializeReviewState, extractReviewState, buildReviewVerdict } = require('./gemini-reviewer.cjs');
+const { generateFindingId, serializeReviewState, extractReviewState, parseSelectedIds, parseReviewAction, buildReviewVerdict } = require('./gemini-reviewer.cjs');
 
 // Test generateFindingId
 const finding1 = { path: 'src/app.js', line: 10, title: 'Missing await' };
@@ -12,7 +12,7 @@ const id3 = generateFindingId(finding3);
 
 assert.strictEqual(id1, id2, 'Finding IDs should be case-insensitive on title');
 assert.notStrictEqual(id1, id3, 'Different findings should have different IDs');
-assert.strictEqual(id1.length, 6, 'Finding ID should be 6 characters long');
+assert.match(id1, /^[a-f0-9]{12}$/, 'Finding ID should be a 12-character SHA-256 prefix');
 
 // Test serializeReviewState and extractReviewState
 const sha = 'abcdef1234567890abcdef1234567890abcdef12';
@@ -31,6 +31,21 @@ assert.deepStrictEqual(extracted.sha, sha, 'Extracted SHA should match');
 assert.strictEqual(extracted.findings.length, 2, 'Should extract all findings');
 assert.strictEqual(extracted.findings[0].id, id1, 'Extracted finding should have correct ID');
 assert.strictEqual(extracted.findings[0].title, finding1.title, 'Extracted finding should have correct title');
+
+// Test the checkbox-selection flow without exposing finding IDs as user commands.
+const tick = String.fromCharCode(96);
+const findingCheckbox = '- [x] Finding ' + tick + id1 + tick + ': selected finding';
+assert.deepStrictEqual(parseSelectedIds(findingCheckbox), [id1], 'Selected finding checkbox should resolve to its internal ID');
+assert.strictEqual(parseReviewAction(findingCheckbox, ''), null, 'Selecting a finding alone must not start a repair');
+const selectedActionBody = findingCheckbox + '\n- [x] 🛠️ **Fix selected findings**';
+assert.deepStrictEqual(parseReviewAction(selectedActionBody, ''), {
+  mode: 'fix-selected', targetFinding: [id1]
+}, 'Selected-repair action should target only checked findings');
+assert.strictEqual(parseReviewAction(selectedActionBody, selectedActionBody), null, 'An already-checked action should not trigger twice');
+assert.deepStrictEqual(parseReviewAction('- [x] 🪄 **Fix all findings**', ''), {
+  mode: 'fix'
+}, 'Fix-all action should request the full eligible finding set');
+assert.strictEqual(parseReviewAction('- [ ] 🪄 **Fix all findings**', ''), null, 'Unchecked action must not trigger a repair');
 
 // Test coverage reporting check (Coverage Gaps logic)
 const noGaps = buildReviewVerdict([{path: 'x', title: 'y'}], []);
