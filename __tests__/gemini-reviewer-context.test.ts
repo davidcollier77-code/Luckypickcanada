@@ -94,8 +94,10 @@ describe("Gemini reviewer source context", () => {
       patch: "@@ -1 +1 @@\\n-old\\n+new"
     }));
     const selected = reviewer.selectChangedSourceCandidates(files);
-    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(3600);
-    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(100000);
+    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(6000);
+    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(160000);
+    expect(reviewer.MAX_BASE_SOURCE_CHARS).toBe(2200);
+    expect(reviewer.MAX_RELATED_SOURCE_CHARS).toBe(3200);
     expect(selected.totalCount).toBe(files.length);
     expect(selected.candidates).toHaveLength(reviewer.MAX_CHANGED_SOURCE_FILES);
     expect(selected.candidates.every((file) => file.status !== "removed")).toBe(true);
@@ -103,6 +105,14 @@ describe("Gemini reviewer source context", () => {
     const reviewedPatches = reviewer.makeBatches(files).flat();
     expect(reviewedPatches).toHaveLength(files.length);
     expect(reviewedPatches.some((file) => file.filename === "src/module-0.js" && file.patch)).toBe(true);
+  });
+  it("names source files when context is shortened", () => {
+    const files = [
+      { filename: "src/large-module.js", status: "modified", patch: "@@ -1 +1 @@\\n-old\\n+new" }
+    ];
+    // clipSource is deterministic: the changed-source limit must be larger than the old 3,600-char cap.
+    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBeGreaterThan(3600);
+    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBeGreaterThan(100000);
   });
   it("loads Gemini reference snapshots only when the task directly concerns them", () => {
     const cliDoc = ".docs/deep-dive/_google-gemini_gemini-cli.md";
