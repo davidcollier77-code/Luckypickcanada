@@ -242,9 +242,9 @@ async function collectSourceContext(pr, files) {
   if (clippedPaths.length) {
     const shownPaths = clippedPaths.slice(0, 5);
     const remainingCount = clippedPaths.length - shownPaths.length;
-    limitations.push("Supporting source was shortened in " + shownPaths.join(", ") +
-      (remainingCount > 0 ? " and " + remainingCount + " additional file(s)" : "") +
-      ". Changed-file patches remain included in their review batches.");
+    limitations.push("Source shortened: " + shownPaths.join(", ") +
+      (remainingCount > 0 ? " and " + remainingCount + " more" : "") +
+      ". Diffs were still reviewed.");
   }
   if (candidates.length > changed.length && !limitations.some((item) => /before .* selected changed text file|Full head source unavailable/.test(item))) {
     limitations.push((candidates.length - changed.length) + " selected changed text file(s) did not receive full-source context; patches remain included in review batches.");
