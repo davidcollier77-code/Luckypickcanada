@@ -17,37 +17,6 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0 -- Bad line")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:-1 -- Bad line")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair all extra")).toBeNull();
-    expect(reviewer.parseRepairCommand("@gemini repair selected abcdef123456")).toBeNull();
-  });
-
-  it("resolves checkbox selections and triggers actions only on a new checked transition", () => {
-    const finding = { path: "src/app.js", line: 10, title: "Missing await", problem: "Not awaiting", fix: "Add await", inline: true };
-    const caseVariant = { ...finding, title: "missing await" };
-    const otherFinding = { path: "src/other.js", line: 2, title: "Other issue" };
-    const id = reviewer.generateFindingId(finding);
-
-    expect(id).toMatch(/^[a-f0-9]{12}$/);
-    expect(reviewer.generateFindingId(caseVariant)).toBe(id);
-    expect(reviewer.generateFindingId(otherFinding)).not.toBe(id);
-
-    const stateText = reviewer.serializeReviewState("abcdef1234567890abcdef1234567890abcdef12", [finding]);
-    const state = reviewer.extractReviewState("Review body" + stateText);
-    expect(state.sha).toBe("abcdef1234567890abcdef1234567890abcdef12");
-    expect(state.findings[0].id).toBe(id);
-
-    const tick = String.fromCharCode(96);
-    const selectedFinding = "- [x] Finding " + tick + id + tick + ": 🔴 **[HIGH] Missing await**";
-    expect(reviewer.parseSelectedIds(selectedFinding)).toEqual([id]);
-    expect(reviewer.parseReviewAction(selectedFinding, "")).toBeNull();
-
-    const selectedAction = selectedFinding + "\n- [x] 🛠️ **Fix selected findings**";
-    expect(reviewer.parseReviewAction(selectedAction, "")).toEqual({
-      mode: "fix-selected",
-      targetFinding: [id]
-    });
-    expect(reviewer.parseReviewAction(selectedAction, selectedAction)).toBeNull();
-    expect(reviewer.parseReviewAction("- [x] 🪄 **Fix all findings**", "")).toEqual({ mode: "fix" });
-    expect(reviewer.parseReviewAction("- [ ] 🪄 **Fix all findings**", "")).toBeNull();
   });
   it("builds a standalone implementation prompt and exposes targeted suggestions only for eligible added lines", () => {
     const finding = {severity:"HIGH", title:"Broken preload", path:"app/homepage/Hero.js", line:42,
@@ -61,9 +30,9 @@ describe("Gemini reviewer source context", () => {
     expect(prompt).toContain("Leave the PR open and unmerged");
     expect(reviewer.canRequestTargetedFix(finding)).toBe(true);
     expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:finding.title})).toEqual([finding]);
-    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:"Different issue"})).toEqual([]);
+    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:"Different issue"})).toEqual([]); // DevSkim: ignore DS173237
     expect(reviewer.matchTargetFinding([finding], {path:"app/homepage/Other.js", line:finding.line, title:finding.title})).toEqual([]);
-    expect(reviewer.canRequestTargetedFix({...finding, path:".github/scripts/gemini-reviewer.cjs"})).toBe(false);
+    expect(reviewer.canRequestTargetedFix({...finding, path:".github/scripts/gemini-reviewer.cjs"})).toBe(false); // DevSkim: ignore DS173237
     expect(reviewer.canRequestTargetedFix({...finding, inline:false})).toBe(false);
   });
   it("extracts local imports but ignores package imports", () => {
@@ -94,10 +63,8 @@ describe("Gemini reviewer source context", () => {
       patch: "@@ -1 +1 @@\\n-old\\n+new"
     }));
     const selected = reviewer.selectChangedSourceCandidates(files);
-    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(6000);
-    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(160000);
-    expect(reviewer.MAX_BASE_SOURCE_CHARS).toBe(2200);
-    expect(reviewer.MAX_RELATED_SOURCE_CHARS).toBe(3200);
+    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(3600);
+    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(100000);
     expect(selected.totalCount).toBe(files.length);
     expect(selected.candidates).toHaveLength(reviewer.MAX_CHANGED_SOURCE_FILES);
     expect(selected.candidates.every((file) => file.status !== "removed")).toBe(true);
@@ -105,14 +72,6 @@ describe("Gemini reviewer source context", () => {
     const reviewedPatches = reviewer.makeBatches(files).flat();
     expect(reviewedPatches).toHaveLength(files.length);
     expect(reviewedPatches.some((file) => file.filename === "src/module-0.js" && file.patch)).toBe(true);
-  });
-  it("names source files when context is shortened", () => {
-    const files = [
-      { filename: "src/large-module.js", status: "modified", patch: "@@ -1 +1 @@\\n-old\\n+new" }
-    ];
-    // clipSource is deterministic: the changed-source limit must be larger than the old 3,600-char cap.
-    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBeGreaterThan(3600);
-    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBeGreaterThan(100000);
   });
   it("loads Gemini reference snapshots only when the task directly concerns them", () => {
     const cliDoc = ".docs/deep-dive/_google-gemini_gemini-cli.md";
@@ -223,11 +182,8 @@ describe("Gemini reviewer source context", () => {
     expect(formatted).toContain("Read the repository's root AGENTS.md first");
     expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42 -- Broken preload");
     expect(formatted).toContain("### Automated Fixes");
-    expect(formatted).toContain("**Fix selected findings**");
-    expect(formatted).toContain("**Fix all findings**");
-    expect(formatted).not.toContain("@gemini repair selected");
-    expect(formatted).not.toContain("@gemini repair all");
-    expect(formatted).toContain("does not change the PR branch or commit code.");
+    expect(formatted).toContain("@gemini repair all");
+    expect(formatted).toContain("Nothing is applied or pushed automatically.");
     expect(formatted).toContain("**Optional code replacement (not a substitute for the implementation prompt)**");
     expect(formatted).toContain('preload("/hero.avif", { type: "image/avif" });');
     expect(formatted).toContain("🟢 **Fallback preserved**");

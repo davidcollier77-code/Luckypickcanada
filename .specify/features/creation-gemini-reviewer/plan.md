@@ -1,9 +1,8 @@
 # Plan: Gemini Reviewer Reliability and Clickable Controls
 
-1. **Workflow events:** Trigger on `issue_comment` (created, edited) and `pull_request_review` (submitted, edited) while executing trusted base-branch code.
-2. **State and UI:** Generate SHA-256-derived finding IDs, serialize review state with the PR head SHA, and render finding-selection checkboxes plus `Fix selected findings` and `Fix all findings` action checkboxes.
-3. **Coverage:** Catch each model batch failure, record it in coverage gaps, and never report complete coverage when a required batch fails.
-4. **Source context:** Raise changed-file source from 3,600 to 6,000 characters, total source context from 100,000 to 160,000 characters, and expand base/import context limits modestly. Keep per-patch and file-count caps; report which supporting files were shortened rather than using a vague warning.
-5. **Event handling:** Use a shared action parser for newly checked boxes. Verify review state against the current PR head, map selected IDs internally, and preserve only `repair one` and `repair all` as text fallbacks.
-6. **Testing:** Keep focused state, selection, action-transition, and context-budget tests in `__tests__/gemini-reviewer-context.test.ts`, discovered by the Vitest runner.
-7. **Verification:** Run `./jules-verify.sh` and all required PR CI checks; report the actual results.
+1.  **Workflows:** Update `.github/workflows/gemini-reviewer.yml` to trigger on `issue_comment` (created, edited) and `pull_request_review` (submitted, edited).
+2.  **State & UI:** In `.github/scripts/gemini-reviewer.cjs`, implement `generateFindingId()` and state serialization. Output interactive checkboxes in `formatReviewSections`.
+3.  **Coverage:** Wrap `askModel` loop batches in `try/catch`. Push errors to `coverageGaps` and fix coverage logic to check `coverageGaps.length`.
+4.  **Event Handling:** Parse `edited` events to detect checkbox transitions. Read the hidden state, validate the SHA, and extract selected finding IDs. Map IDs back to original finding details.
+5.  **Testing:** Add regression tests in a new `.github/scripts/gemini-reviewer.test.cjs` file to cover state extraction, transition detection, and command parsing.
+6.  **Verification:** Run `./jules-verify.sh`.
