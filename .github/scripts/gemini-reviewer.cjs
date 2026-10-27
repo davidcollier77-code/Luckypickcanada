@@ -1017,7 +1017,7 @@ async function main() {
     documentReport,
     "",
     "### Request fixes",
-    "Use the checkboxes in the review below to request suggestions for selected findings or all findings. Each finding also retains its existing targeted-repair command inside its details. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
+    "Use the checkboxes in the review below to request suggestions for selected findings or all findings. Eligible findings retain their existing targeted-repair command inside their details. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
   ];
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
   const reviewBody = summary.join("\n") + serializeReviewState(pr.head.sha, findings);
