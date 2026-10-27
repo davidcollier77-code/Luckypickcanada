@@ -623,14 +623,10 @@ function generateFindingId(finding) {
   return require("node:crypto").createHash("sha256").update(key).digest("hex").slice(0, 12);
 }
 function serializeReviewState(sha, findings) {
-  const state = {
-    sha,
-    findings: findings.map((finding) => ({
-      id: generateFindingId(finding), path: finding.path, line: finding.line,
-      title: finding.title, problem: finding.problem, impact: finding.impact,
-      fix: finding.fix, suggestion: finding.suggestion, inline: finding.inline
-    }))
-  };
+  const state = { sha, findings: findings.map((finding) => ({
+    id: generateFindingId(finding), path: finding.path, line: finding.line, title: finding.title,
+    problem: finding.problem, impact: finding.impact, fix: finding.fix, suggestion: finding.suggestion, inline: finding.inline
+  })) };
   return "\n\n<!-- gemini-review-state: " + JSON.stringify(state).replace(/--!?>/g, "--\\>") + " -->";
 }
 function extractReviewState(body) {
@@ -1052,5 +1048,5 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
-  buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, matchTargetFinding, generateFindingId, serializeReviewState, extractReviewState,
+  buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, matchTargetFinding, generateFindingId, serializeReviewState, extractReviewState, parseSelectedIds, parseReviewAction,
   formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
