@@ -76,6 +76,61 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.parseReviewAction("- [ ] 🪄 **Fix all findings**", "")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair selected " + id)).toBeNull();
   });
+  it("rejects selected checkbox lists over an explicit limit without silently truncating", () => {
+    expect(reviewer.MAX_SELECTED_IDS).toBe(25);
+    const tick = String.fromCharCode(96);
+    const line = (id: string) => "- [x] Finding " + tick + id + tick + ": Finding";
+    const id = "000000000001";
+    expect(reviewer.parseSelectedIds(line(id))).toEqual([id]);
+    expect(reviewer.parseSelectedIds(line(id) + "\n" + line(id))).toEqual([id]);
+    expect(reviewer.parseSelectedIds("- [x] Finding " + tick + "not-a-valid-id" + tick + ": Finding")).toEqual([]);
+    const tooMany = Array.from({length: reviewer.MAX_SELECTED_IDS + 1}, (_, i) =>
+      line((i + 1).toString(16).padStart(12, "0"))).join("\n");
+    expect(reviewer.parseSelectedIds(tooMany)).toBeNull();
+    expect(reviewer.parseReviewAction(tooMany + "\n- [x] 🛠️ **Fix selected findings**", ""))
+      .toEqual({ mode: "fix-selected", selectionLimitExceeded: true });
+  });
+
+  it("resolves supported commands on newly submitted reviews and checkbox actions only on edits", () => {
+    expect(reviewer.resolveEventAction("@gemini repair all", "", "submitted")).toEqual({mode:"fix"});
+    expect(reviewer.resolveEventAction("@gemini full review", "", "submitted")).toEqual({mode:"review"});
+    expect(reviewer.resolveEventAction("- [x] 🪄 **Fix all findings**", "", "submitted")).toBeNull();
+    expect(reviewer.resolveEventAction("- [x] 🪄 **Fix all findings**", "", "edited")).toEqual({mode:"fix"});
+  });
+
+  it("paginates review state and finds a current-head review beyond the first 100 entries", async () => {
+    expect(reviewer.MAX_REVIEW_PAGES).toBe(100);
+    const sha = "0123456789abcdef0123456789abcdef01234567";
+    const stateBody = reviewer.serializeReviewState(sha, [{
+      path:"src/app.js", line:7, title:"Current-head finding", problem:"Problem", impact:"Impact", fix:"Fix", inline:false
+    }]);
+    const firstPage = Array.from({length:100}, (_, i) => ({body:"older review " + i}));
+    const pages: number[] = [];
+    const reviews = await reviewer.fetchAllReviews(1620, async (path: string) => {
+      const page = Number(path.match(/[?&]page=(\d+)/)?.[1]);
+      pages.push(page);
+      return page === 1 ? firstPage : page === 2 ? [{body:stateBody}] : [];
+    }, "owner/repo");
+    expect(pages).toEqual([1,2]);
+    expect(reviewer.findReviewStateForHead(reviews, sha)).toEqual(reviewer.extractReviewState(stateBody));
+  });
+
+  it("does not accept stale review state as the current-head state", () => {
+    const staleBody = reviewer.serializeReviewState("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", [{
+      path:"src/app.js", line:7, title:"Stale finding", problem:"Problem", impact:"Impact", fix:"Fix", inline:false
+    }]);
+    expect(reviewer.findReviewStateForHead([{body:staleBody},{body:"review with no state"}],
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")).toBeNull();
+  });
+
+  it("fails explicitly rather than silently stopping at the review-history page limit", async () => {
+    let calls = 0;
+    await expect(reviewer.fetchAllReviews(1620, async () => {
+      calls += 1;
+      return Array.from({length:100}, () => ({body:"review without state"}));
+    }, "owner/repo")).rejects.toThrow(/100 pages/);
+    expect(calls).toBe(reviewer.MAX_REVIEW_PAGES);
+  });
   it("names files in the context clipping note", () => {
     expect(reviewer.formatTruncatedSourceNote([{ path: "src/large.js", truncated: true }]))
       .toBe("Source shortened: src/large.js. Available diffs were still reviewed.");

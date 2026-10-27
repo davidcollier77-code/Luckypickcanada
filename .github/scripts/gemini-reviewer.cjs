@@ -17,6 +17,8 @@ const MAX_CHANGED_SOURCE_CHARS = 6000;
 const MAX_TOTAL_SOURCE_CHARS = 160000;
 const MAX_BASE_SOURCE_CHARS = 2200;
 const MAX_RELATED_SOURCE_CHARS = 3200;
+const MAX_SELECTED_IDS = 25;
+const MAX_REVIEW_PAGES = 100;
 const CONTROL_FLOW_REVIEW_GUIDANCE = [
   "For asynchronous/control-flow concerns (including requestAnimationFrame, timers, promises, effects, and event handlers), trace registration, actual callback execution, state writes, reads, and every reachable direct or synchronous call path.",
   "Distinguish a potential timing hazard from a verified defect. Do not report an ordering issue when the supplied execution order proves the read occurs after the write; when a needed call path or source is missing, state the uncertainty rather than asserting a race."
@@ -76,6 +78,21 @@ async function getFiles(number) {
   }
   return { files: all.slice(0, 250), capped: all.length > 250 };
 }
+
+async function fetchAllReviews(number, fetchPage = gh, repo = REPO) {
+  if (!Number.isSafeInteger(Number(number)) || Number(number) < 1 || !repo) {
+    throw new Error("Invalid pull-request review lookup context.");
+  }
+  const all = [];
+  for (let page = 1; page <= MAX_REVIEW_PAGES; page += 1) {
+    const items = await fetchPage("/repos/" + repo + "/pulls/" + number + "/reviews?per_page=100&page=" + page);
+    if (!Array.isArray(items)) throw new Error("GitHub returned an invalid pull-request review list.");
+    all.push(...items);
+    if (items.length < 100) return all;
+  }
+  throw new Error("Review history exceeded the safe lookup limit of " + MAX_REVIEW_PAGES + " pages; latest review state could not be verified.");
+}
+
 
 function extractLocalImports(source) {
   const found = new Set();
@@ -600,8 +617,12 @@ function parseRepairCommand(value) {
 }
 
 function parseSelectedIds(body) {
-  const matches = [...String(body || "").matchAll(/- \[x\] Finding \`([a-f0-9]{12})\`:/gi)];
-  return [...new Set(matches.map((match) => match[1].toLowerCase()))];
+  const ids = new Set();
+  for (const match of String(body || "").matchAll(/- \[x\] Finding \x60([a-f0-9]{12})\x60:/gi)) {
+    ids.add(match[1].toLowerCase());
+    if (ids.size > MAX_SELECTED_IDS) return null;
+  }
+  return [...ids];
 }
 function generateFindingId(finding) {
   const key = String(finding && finding.path || "") + ":" +
@@ -621,6 +642,14 @@ function extractReviewState(body) {
   if (!match) return null;
   try { return JSON.parse(match[1].replace(/--\\>/g, "-->")); } catch (error) { return null; }
 }
+function findReviewStateForHead(reviews, sha) {
+  if (!Array.isArray(reviews) || typeof sha !== "string" || !sha) return null;
+  for (const review of reviews.slice().reverse()) {
+    const candidate = extractReviewState(review && review.body || "");
+    if (candidate && candidate.sha === sha && Array.isArray(candidate.findings)) return candidate;
+  }
+  return null;
+}
 function parseReviewAction(body, previousBody = "") {
   const current = String(body || "");
   const previous = String(previousBody || "");
@@ -628,9 +657,17 @@ function parseReviewAction(body, previousBody = "") {
   const fixSelected = "- [x] 🛠️ **Fix selected findings**";
   if (current.includes(fixAll) && !previous.includes(fixAll)) return { mode: "fix" };
   if (current.includes(fixSelected) && !previous.includes(fixSelected)) {
-    return { mode: "fix-selected", targetFinding: parseSelectedIds(current) };
+    const targetFinding = parseSelectedIds(current);
+    if (targetFinding === null) return { mode: "fix-selected", selectionLimitExceeded: true };
+    return { mode: "fix-selected", targetFinding };
   }
   return null;
+}
+function resolveEventAction(body, previousBody = "", action = "") {
+  const command = parseRepairCommand(body);
+  if (command) return command;
+  if (action !== "edited") return null;
+  return parseReviewAction(body, previousBody);
 }
 function matchTargetFinding(findings, target) {
   if (!target || typeof target.path !== "string" || !Number.isInteger(target.line) || typeof target.title !== "string") return [];
@@ -782,24 +819,20 @@ async function main() {
     const body = String(event.comment?.body || "");
     const isEdited = event.action === "edited";
     const previousBody = isEdited ? String(event.changes?.body?.from || "") : "";
-    const command = parseRepairCommand(body);
-    if (command) {
-      mode = command.mode;
-      if (mode === "fix-one") targetFinding = command.target;
-    } else if (isEdited) {
-      const action = parseReviewAction(body, previousBody);
-      if (!action) { log("No actionable command or newly checked repair control found."); return; }
-      mode = action.mode;
-      if (mode === "fix-selected") {
-        targetFinding = action.targetFinding;
-        if (!targetFinding.length) {
-          await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
-          return;
-        }
+    const action = resolveEventAction(body, previousBody, event.action);
+    if (!action) { log("No actionable command or newly checked repair control found."); return; }
+    mode = action.mode;
+    if (mode === "fix-one") targetFinding = action.target;
+    if (mode === "fix-selected") {
+      if (action.selectionLimitExceeded) {
+        await comment(number, "Too many findings were selected. Select no more than " + MAX_SELECTED_IDS + " findings; no suggestions were requested.");
+        return;
       }
-    } else {
-      log("Skipping non-actionable comment event.");
-      return;
+      targetFinding = action.targetFinding;
+      if (!targetFinding.length) {
+        await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
+        return;
+      }
     }
 
   } else if (EVENT_NAME === "pull_request_review") {
@@ -812,24 +845,20 @@ async function main() {
     const body = String(event.review?.body || "");
     const isEdited = event.action === "edited";
     const previousBody = isEdited ? String(event.changes?.body?.from || "") : "";
-    const command = parseRepairCommand(body);
-    if (command) {
-      mode = command.mode;
-      if (mode === "fix-one") targetFinding = command.target;
-    } else if (isEdited) {
-      const action = parseReviewAction(body, previousBody);
-      if (!action) { log("No actionable command or newly checked repair control found."); return; }
-      mode = action.mode;
-      if (mode === "fix-selected") {
-        targetFinding = action.targetFinding;
-        if (!targetFinding.length) {
-          await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
-          return;
-        }
+    const action = resolveEventAction(body, previousBody, event.action);
+    if (!action) { log("No actionable command or newly checked repair control found."); return; }
+    mode = action.mode;
+    if (mode === "fix-one") targetFinding = action.target;
+    if (mode === "fix-selected") {
+      if (action.selectionLimitExceeded) {
+        await comment(number, "Too many findings were selected. Select no more than " + MAX_SELECTED_IDS + " findings; no suggestions were requested.");
+        return;
       }
-    } else {
-      log("Skipping non-actionable review event.");
-      return;
+      targetFinding = action.targetFinding;
+      if (!targetFinding.length) {
+        await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
+        return;
+      }
     }
 
   } else if (EVENT_NAME === "workflow_dispatch") {
@@ -863,16 +892,16 @@ async function main() {
     let state = extractReviewState(actionBody);
     // Separate text commands do not contain state; locate the latest review for this current PR head.
     if (!state || !state.sha || !Array.isArray(state.findings)) {
-      const reviews = await gh("/repos/" + REPO + "/pulls/" + number + "/reviews?per_page=100").catch(() => []);
-      if (Array.isArray(reviews)) {
-        for (const review of reviews.slice().reverse()) {
-          const candidate = extractReviewState(review && review.body || "");
-          if (candidate && candidate.sha === pr.head.sha && Array.isArray(candidate.findings)) {
-            state = candidate;
-            break;
-          }
-        }
+      let reviews;
+      try {
+        reviews = await fetchAllReviews(number);
+      } catch (error) {
+        const reason = String(error && error.message || "unknown error").slice(0, 240);
+        log("Could not verify complete review history: " + reason);
+        await comment(number, "Gemini could not safely retrieve the complete review history, so no fix suggestions were generated. Please retry when the GitHub API is available.");
+        return;
       }
+      state = findReviewStateForHead(reviews, pr.head.sha);
     }
     if (!state || !state.sha || !Array.isArray(state.findings)) {
       await comment(number, "Gemini could not find a valid review for the current PR head. Run a fresh full review, then retry.");
@@ -1035,5 +1064,7 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
-  buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, matchTargetFinding, generateFindingId, serializeReviewState, extractReviewState, parseSelectedIds, parseReviewAction,
+  buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, resolveEventAction, matchTargetFinding,
+  generateFindingId, serializeReviewState, extractReviewState, findReviewStateForHead, fetchAllReviews,
+  parseSelectedIds, parseReviewAction, MAX_SELECTED_IDS, MAX_REVIEW_PAGES,
   formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
