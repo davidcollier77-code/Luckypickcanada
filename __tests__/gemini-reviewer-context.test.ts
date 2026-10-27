@@ -212,7 +212,7 @@ describe("Gemini reviewer source context", () => {
     expect(formatted).toContain("**Fix selected findings**");
     expect(formatted).toContain("**Fix all findings**");
     expect(formatted).not.toContain("@gemini repair selected");
-    expect(formatted).toContain("does not change the PR branch or commit code.");
+    expect(formatted).toContain("Nothing is applied or pushed automatically.");
     expect(formatted).toContain("**Optional code replacement (not a substitute for the implementation prompt)**");
     expect(formatted).toContain('preload("/hero.avif", { type: "image/avif" });');
     expect(formatted).toContain("🟢 **Fallback preserved**");
