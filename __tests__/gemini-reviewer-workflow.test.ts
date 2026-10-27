@@ -51,12 +51,15 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("@gemini repair one");
     expect(script).toContain("@gemini repair all");
     expect(script).toContain("parseRepairCommand");
-    expect(script).toContain("requestedFindings = mode ===");
+    expect(script).toContain('if (mode === "fix-selected")');
+    expect(script).toContain("findCurrentReviewState");
+    expect(script).toContain("parseReviewAction");
+    expect(script).not.toContain("@gemini repair selected");
     expect(script).toContain("Gemini Targeted Fix");
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
     expect(script).toContain("Fix all findings");
     expect(script).toContain("Copy/paste implementation prompt");
-    expect(script).toContain("Comment exactly @gemini full review to run a full review");
+    expect(script).toContain("Use the checkboxes in the review below");
   });
 
   it("uses trusted base-branch code and limited workflow permissions", () => {
@@ -139,7 +142,7 @@ describe("Gemini PR reviewer", () => {
     const promptIndex = script.indexOf("const prompt = [");
     expect(validationIndex).toBeGreaterThan(-1);
     expect(validationIndex).toBeLessThan(promptIndex);
-    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix", "fix-one"].includes(mode))');
+    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix", "fix-one", "fix-selected"].includes(mode))');
   });
   it("parses the reviewer scripts without executing them", () => {
     for (const path of [scriptPath, fixPath]) {
