@@ -1,10 +1,11 @@
 # Tasks: Gemini Reviewer Reliability and Clickable Controls
 
-- [x] Create Spec Kit files.
-- [ ] Update `gemini-reviewer.yml` triggers.
-- [ ] Implement `coverageGaps` error tracking in `gemini-reviewer.cjs`.
-- [ ] Implement finding IDs, hidden state serialization, and checkbox UI.
-- [ ] Implement `edited` event parsing, transition detection, and SHA validation.
-- [ ] Implement `@gemini repair selected` text command.
-- [ ] Write regression tests for parsing and state handling.
-- [ ] Run `./jules-verify.sh` and ensure tests pass.
+- [x] Create Spec Kit feature artifacts.
+- [x] Update reviewer workflow event triggers.
+- [x] Track batch and source-context coverage gaps.
+- [x] Add SHA-256-derived finding IDs and serialized current-head review state.
+- [x] Add selected-finding and fix-all checkbox actions with one-shot transition detection.
+- [x] Keep `repair all` and `repair one` as fallbacks without a `repair selected` text command.
+- [x] Expand source context bounds and make truncation notes identify shortened files.
+- [x] Add Vitest regression tests for finding selection, action transitions, state serialization, and context limits.
+- [ ] Complete final-head `./jules-verify.sh` and required CI checks.
