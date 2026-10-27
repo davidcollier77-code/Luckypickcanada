@@ -61,9 +61,9 @@ describe("Gemini reviewer source context", () => {
     const id = reviewer.generateFindingId(finding);
     expect(id).toMatch(/^[a-f0-9]{12}$/);
     expect(reviewer.generateFindingId({ ...finding, title: "missing await" })).toBe(id);
-    const stateText = reviewer.serializeReviewState("abcdef1234567890abcdef1234567890abcdef12", [finding]);
+    const stateText = reviewer.serializeReviewState("test-current-pr-head-sha", [finding]);
     const state = reviewer.extractReviewState("Review body" + stateText);
-    expect(state.sha).toBe("abcdef1234567890abcdef1234567890abcdef12");
+    expect(state.sha).toBe("test-current-pr-head-sha");
     expect(state.findings[0].id).toBe(id);
     const tick = String.fromCharCode(96);
     const checkedFinding = "- [x] Finding " + tick + id + tick + ": 🔴 **[HIGH] Missing await**";
@@ -100,7 +100,7 @@ describe("Gemini reviewer source context", () => {
 
   it("paginates review state and finds a current-head review beyond the first 100 entries", async () => {
     expect(reviewer.MAX_REVIEW_PAGES).toBe(100);
-    const sha = "0123456789abcdef0123456789abcdef01234567";
+    const sha = "test-current-head-sha";
     const stateBody = reviewer.serializeReviewState(sha, [{
       path:"src/app.js", line:7, title:"Current-head finding", problem:"Problem", impact:"Impact", fix:"Fix", inline:false
     }]);
@@ -116,11 +116,11 @@ describe("Gemini reviewer source context", () => {
   });
 
   it("does not accept stale review state as the current-head state", () => {
-    const staleBody = reviewer.serializeReviewState("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", [{
+    const staleBody = reviewer.serializeReviewState("test-stale-pr-head-sha", [{
       path:"src/app.js", line:7, title:"Stale finding", problem:"Problem", impact:"Impact", fix:"Fix", inline:false
     }]);
     expect(reviewer.findReviewStateForHead([{body:staleBody},{body:"review with no state"}],
-      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")).toBeNull();
+      "test-expected-pr-head-sha")).toBeNull();
   });
 
   it("fails explicitly rather than silently stopping at the review-history page limit", async () => {
