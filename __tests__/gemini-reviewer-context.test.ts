@@ -17,6 +17,7 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0 -- Bad line")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:-1 -- Bad line")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair all extra")).toBeNull();
+    expect(reviewer.parseRepairCommand("@gemini repair selected abcdef123456")).toBeNull();
   });
   it("builds a standalone implementation prompt and exposes targeted suggestions only for eligible added lines", () => {
     const finding = {severity:"HIGH", title:"Broken preload", path:"app/homepage/Hero.js", line:42,
