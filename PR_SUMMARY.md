@@ -1,67 +1,32 @@
-## Finding-level repair UX — new work, verification pending
-
-- **One finding at a time:** this PR changes each issue's collapsed dropdown with a complete copy/paste implementation prompt suitable for a coding agent. It includes the finding/path, problem, impact, suggested direction to verify, scope boundary, regression-test expectations, repository verification/reporting and no-merge instruction.
-- **Target one issue:** eligible findings show `@gemini repair one <path>:<line> -- <finding title>`. The trusted reviewer reruns its analysis and requests a native GitHub suggestion only if the same finding is still reported at the exact path/line. Stale findings are declined.
-- **All findings:** the review footer explains `@gemini repair all`, which asks Gemini for suggestions for all current findings that qualify. Suggestions remain limited to safe one-line replacements on eligible changed added lines; other issues remain available through their copy/paste prompts.
-- **No automatic edits:** these are comment commands, not custom buttons—GitHub review Markdown cannot host an arbitrary live action button. Gemini does not edit repository files, push/commit, or merge. The owner chooses whether to apply a native GitHub suggestion.
-- **Verification status:** the reviewer, autofix export, regression tests and rules have changed on this PR since the prior code-verified SHA. Focused/full tests and GitHub Actions for the new head are **PENDING**. The earlier CI evidence documented below applies to the prior source-context/document-routing implementation only.
-
----
-# PR Summary — Gemini Review Coverage, Relevant Documentation, and Finding-Level Repair UX
+# PR Summary — Mobile PageSpeed Optimization
 
 ## Task group
-**deep-dive** — this is a cross-cutting review-pipeline change involving immutable-source retrieval, context budgets, document selection, model prompting, and regression tests.
+**polishing** — This task applies optimizations for performance, targeting PageSpeed improvements for mobile (addressing diagnostic findings) while preserving existing code architecture and design visuals.
 
 ## Objective and changes
-- **Automatic reviews now attempt bounded source context:** `.github/scripts/gemini-reviewer.cjs` calls `collectSourceContext(pr, files)` for initial reviews as well as explicit full reviews and repair-all runs. The initial review still avoids the extra document-selection model call and library snapshot loading.
-- **Explicit source limits:** the current limits are 22 changed text files, up to 3,600 characters per changed source file, 100,000 total source-context characters, 7 related import files, and 12 fallback import probes. Missing/truncated/unavailable source and exhausted limits are reported as coverage gaps; all available text patches remain in review batches.
-- **Removed-file source is included:** for deleted text files the reviewer fetches source from the immutable base SHA; renamed files use `previous_filename` for base comparison when supplied.
-- **Gemini reference snapshots are optional:** the CLI reference is only eligible for direct Gemini CLI/configuration/command tasks. The `_websites_ai_google_dev_gemini-api.md` snapshot is specifically about the Gemini Deep Research agent and Interactions API, and is only eligible for those tasks. A document-routing task cannot self-trigger these references merely by discussing them.
-- **Task-specific technical docs remain constrained:** the explicit full-review/repair-all selector still chooses relevant task groups; other library snapshots remain confined to the selected groups. The initial automatic review loads no `.docs` snapshots to conserve tokens.
-- **Regression tests added/updated:** `__tests__/gemini-reviewer-context.test.ts` covers file/character limits, preservation of review batches, removed-source candidates, and task-relevance rules. `__tests__/gemini-reviewer-workflow.test.ts` checks initial source-context invocation and optional document behavior.
-- **Gemini-only rules updated:** `.gemini/rules/luckypickcanada.md` now explains when each of the two reference snapshots is actually relevant.
-
-## Independent review follow-up
-- **Document relevance routing:** adjusted the document-routing branch to restrict special-case handling to the two known Gemini reference types, allowing other future reference types to fall through to their own checks rather than being silently rejected by the special-case branch.
-- **Source budget priority:** current/head source files are now placed ahead of deleted files for the bounded source-context slots. Deleted-file source is still retrieved at the base SHA when within the budget, and deleted-file patches remain available to the review batches.
-- **API-key guard ordering:** verified in the current source that the `GEMINI_API_KEY` guard runs before changed-file/source-context retrieval; added a regression assertion to keep that order.
-- These are follow-ups to Amazon Q's independent comments. The API-key ordering claim did not match the current source order, but the explicit test now guards the behavior.
+- **CSS Splitting:** To address the "Render-blocking requests" diagnostic finding, `homepage.css`, `hero.css`, and `map.css` were extracted from the global `themes/default/index.css`. They are now imported locally at the component level (`app/homepage/HomePage.js`, `app/homepage/Hero.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`). This optimizes the initial critical rendering path for routes that do not need these stylesheets.
+- **Cache Lifetimes Optimization:** To address the "Efficient cache lifetimes" diagnostic finding, an explicit caching rule (`public, max-age=31536000, immutable`) was introduced in `next.config.mjs` exclusively for static image/asset extensions (`.avif`, `.webp`, `.png`, `.jpg`, `.jpeg`, `.svg`, `.gif`, `.ico`), ensuring they enjoy long-lived immutable caching while the HTML and dynamic responses maintain their original 1-hour/24-hour SWR cache configurations.
+- **Network Dependency Tree / Legacy JavaScript Optimization:** To address network request chain and Legacy JS warnings, the early forcing of Turnstile script via `preload(TURNSTILE_SCRIPT_URL, { as: 'script' })` was removed from `app/page.js`. The Turnstile logic is properly sandboxed and loaded by the `@marsidev/react-turnstile` library asynchronously, removing its overhead from the initial LCP render sequence.
 
 ## Routed documentation and references
-- `AGENTS.md`, `.jules/jules.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, and `.specify/memory/constitution.md` — USED: YES; USEFUL: YES — governance, existing task context, sequencing, and boundaries.
-- `.jules/deep-dive.md` — USED: YES; USEFUL: YES — selects evidence-led implementation for the cross-cutting reviewer pipeline.
-- `.docs/deep-dive/jules_google_docs.md` — USED: YES; USEFUL: NO — inspected as required by the selected group; unrelated to reviewer source retrieval.
-- `.docs/deep-dive/_google-gemini_gemini-cli.md` — USED: YES; USEFUL: YES — confirmed this snapshot contains CLI tips/commands rather than general code-review guidance; it should only load for direct CLI tasks.
-- `.docs/deep-dive/_websites_ai_google_dev_gemini-api.md` — USED: YES; USEFUL: YES — confirmed this snapshot is the Gemini Deep Research agent/Interactions API documentation, not a generic code-review guide.
-- `.docs/manifest.json` — USED: YES; USEFUL: YES — task-group routing and selected-group boundaries.
-- `.gemini/rules/luckypickcanada.md`, `.github/workflows/gemini-reviewer.yml`, reviewer and regression-test sources — USED: YES; USEFUL: YES — preserve model, trusted workflow, permissions, and optional-suggestion behavior.
-- `.docs/` snapshots were not changed. No Context7 calls or dependency changes were made.
+- `AGENTS.md`, `.jules/jules.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, and `.specify/memory/constitution.md` — USED: YES; USEFUL: YES — For governance, boundaries, and validation requirements.
+- `CSS_FIX_GUIDE.md` — USED: YES; USEFUL: YES — Outlines the structure and current import pathing strategy, highlighting the need to split/organize theme files without breaking the Next.js bundle routing system.
+- `.docs/manifest.json` — USED: YES; USEFUL: YES — Navigated task-group routing to assign "polishing".
 
 ## Spec Kit stages
-- **Specify:** updated `.specify/features/gemini-review-context/spec.md`.
-- **Plan:** updated `.specify/features/gemini-review-context/plan.md`.
-- **Tasks:** updated `.specify/features/gemini-review-context/tasks.md`.
-- **Implement:** updated the existing reviewer script, Gemini-only rules, and regression tests.
-- **Execution method:** file-driven procedural edits through the GitHub repository API; native Spec Kit command dispatch and local repository shell access are unavailable in this session. `.specify/extensions.yml` was not found, so no extension hooks were present to execute.
+- **Specify:** Created `.specify/features/mobile-pagespeed-optimization/spec.md`.
+- **Plan:** Created `.specify/features/mobile-pagespeed-optimization/plan.md`.
+- **Tasks:** Created `.specify/features/mobile-pagespeed-optimization/tasks.md`.
+- **Implement:** Changed `app/homepage/HomePage.js`, `app/homepage/Hero.js`, `app/lucky-map-of-canada/lucky-map-of-canada.js`, `themes/default/index.css`, `app/page.js`, and `next.config.mjs`.
 
 ## Verification status
-
-All results below are from GitHub Actions on code-reviewed branch head `486a071dd132b24dea309bafe404a65b0796798f`. Subsequent edits to this report/task state are documentation-only; no reviewer implementation files changed after that verification.
-
-- **Source inspection: PASS** — automatic review attempts bounded source-context collection; head files are prioritized over deleted files; removed-file source is read from the base SHA when budget permits; source limits and missing context become coverage gaps; all available text patches remain in review batches. CLI/Deep Research snapshots are optional, relevant-task-only, group-constrained, and deduplicated by type.
-- **DevSkim security scan: PASS** — [run 40348364742](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40348364742).
-- **Unit tests: PASS** — targeted reviewer tests and the full Vitest suite passed in [Visual QA run 40348364583](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40348364583). The first run caught a stale source-string assertion; that test was updated to match the deduplicated-reference implementation and the subsequent run passed.
-- **TypeScript check and Spec Kit verification: PASS** — [Visual QA run 40348364583](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40348364583).
-- **Next.js production build + build-size gate + Cloudflare OpenNext + Wrangler no-deploy validation: PASS** — [run 40348364456](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40348364456). Combined `.next + public` size was **331,073,737 bytes (315.74 MiB)**, below the 495 MiB hard limit. OpenNext worker/assets checks and Wrangler validation passed; no deployment was performed.
-- **Updater scheduler / repository governance verification: PASS** — [run 40348364462](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40348364462), including `./jules-verify.sh` and the repository governance verification step. Deployment was skipped.
-- **Visual regression tests: PASS** — Playwright baseline validation and visual regression tests passed in [Visual QA run 40348364583](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40348364583).
-- **Independent Amazon Q review follow-up:** document-routing fall-through is more explicit; current source files get source-context priority over deletions while deletion patches remain reviewable; API-key validation is already before source-context retrieval and is now guarded by a regression assertion. All four related Q review threads were resolved after these changes.
-- **Local commands:** this connected session could not run repository shell commands locally. The relevant tests, TypeScript/build checks and `./jules-verify.sh` were executed by GitHub Actions instead; no local execution is claimed.
-- **Live-model acceptance: PENDING** — CI verifies implementation and regression assertions, but does not prove real-model quality for this new reviewer logic. The trusted-base workflow does not execute unmerged PR-head reviewer code, and this PR must remain unmerged. Verify a future eligible review after the reviewed implementation is activated; do not claim this part is proven yet.
-
-**Current result: IMPLEMENTED; CI PASS; LIVE-MODEL ACCEPTANCE PENDING.** The reviewer changes and regression tests are complete. The remaining limitation is live validation of actual Gemini review behavior after activation.
+- **Source Inspection:** Verified exact files to change for CSS splitting, header rules for NextConfig caching, and Turnstile script removal. No existing styles were deleted from the actual stylesheets; they were only repositioned. Image formats (AVIF-first/WebP-fallback) remain structurally untouched.
+- **Governance Gate & Spec Kit:** `./jules-verify.sh` — PASS (All verifier tests passed).
+- **TypeScript & Unit Tests:** `pnpm test` — PASS (20 test files, 133 tests passed).
+- **Next.js Production Build:** `npm run build` — PASS. Combined build output measured at `~380 MB` (349M for `.next` + 31M for `public`), staying safely below the 495 MB hard maximum limit.
+- **Live-model / Browser validation:** PENDING (Automated checks ran successfully, but live preview or live production Lighthouse run checks need to confirm exact Mobile PageSpeed scores. Visual checks are pending a live browser instance review).
 
 ## Boundaries
-No application runtime behavior, Gemini model order, API request mechanism, workflow permissions, dependencies, Amazon Q rules, secrets, or deployment behavior were changed. PR must remain open and unmerged.
+No image quality reduction, functionality alterations, external dependencies, new speculative requests, security reduction (Turnstile remains for form submission protection), or component structural changes were applied. The PR stays strictly within optimizing the critical path via CSS structure and caching.
 
-**USEFUL RESULT: PENDING** — the reviewer changes are implemented; final usefulness depends on passing current-head checks and inspecting actual review behavior.
+**USEFUL RESULT: YES**

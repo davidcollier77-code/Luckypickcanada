@@ -1,4 +1,6 @@
 'use client';
+import "../../themes/default/homepage.css";
+
 
 import { playButtonClick } from '../lib/audio';
 

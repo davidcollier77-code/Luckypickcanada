@@ -1,4 +1,6 @@
 'use client';
+import "../../themes/default/map.css";
+
 import { playButtonClick } from '../lib/audio';
 
 

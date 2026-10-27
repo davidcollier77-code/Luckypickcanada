@@ -1,3 +1,4 @@
+import '../../themes/default/homepage.css';
 import { Suspense } from 'react';
 import { MapErrorBoundary } from '../components/map-error-boundary';
 import { getLuckyStoryMap } from '../lucky-stories';
