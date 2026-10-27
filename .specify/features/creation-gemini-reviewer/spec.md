@@ -1,12 +1,13 @@
 # Spec: Gemini Reviewer Reliability and Clickable Controls
 
 ## Overview
-Improve the Gemini PR Reviewer action to guarantee accurate coverage reporting and provide native GitHub clickable controls for finding-level fixes, replacing manual commands while preserving fallback options and safety guarantees.
+Improve the Gemini PR Reviewer to report coverage honestly, provide checkbox-driven repair controls, and use relevant source context efficiently while preserving safety guarantees.
 
 ## Requirements
-1. **Coverage Reliability:** Track all failed batches (model timeouts, malformed JSON, truncated responses) in `coverageGaps`. Never claim a review is "Complete." if any required batch failed.
-2. **Clickable Controls:** Inject GitHub markdown checkboxes (`- [ ]`) into the review comment for "Fix all findings", "Apply fixes for selected findings", and individual finding selection.
-3. **State Management:** Generate collision-resistant short IDs for findings. Serialize finding details and the PR head SHA into a hidden HTML comment (`<!-- gemini-review-state: {...} -->`).
-4. **Validation:** On an `edited` event, extract the state. Reject if the PR head SHA is stale. Compare `[x]` vs `[ ]` transitions to trigger actions exactly once.
-5. **Fallback Commands:** Preserve `@gemini repair all`, `@gemini repair one`, and add `@gemini repair selected <id1> <id2>`.
-6. **Safety:** Do not automatically edit files, commit, push, or merge. Preserve model fallback order, trust checks, and path exclusions.
+1. **Coverage reliability:** Track failed model batches, unavailable files, and clipped source in coverage gaps. Never imply full coverage when source was omitted.
+2. **Source context:** Increase bounded full-source context to 6,000 characters per changed file and 160,000 total characters; modestly expand base and local-import context. Preserve patch caps and report which supporting files were shortened.
+3. **Clickable controls:** Show checkboxes beside findings and action checkboxes for "Fix selected findings" and "Fix all findings". GitHub Markdown comments do not support custom executable buttons, so newly checked action checkboxes trigger the workflow.
+4. **State management:** Use 12-character SHA-256-derived finding IDs and serialize findings with the PR head SHA in a hidden review comment marker.
+5. **Validation:** On edited review/comment events, trigger only when an action changes from unchecked to checked. Reject stale PR-head state and map selected finding IDs internally.
+6. **Fallback commands:** Preserve `@gemini repair all` and `@gemini repair one` as optional fallbacks. Do not introduce or advertise a `repair selected` text command.
+7. **Safety:** Only request eligible native one-line suggestions. Do not automatically edit files, commit, push, or merge. Preserve model fallback order, trusted event checks, path exclusions, and base-branch workflow execution.
