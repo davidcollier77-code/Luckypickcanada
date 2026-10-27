@@ -17,38 +17,7 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0 -- Bad line")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:-1 -- Bad line")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair all extra")).toBeNull();
-    expect(reviewer.parseRepairCommand("@gemini repair selected abcdef123456")).toBeNull();
   });
-  it("uses stable strong finding IDs and runs checkbox repairs only on an action transition", () => {
-    const finding = { path: "src/app.js", line: 10, title: "Missing await" };
-    const caseVariant = { ...finding, title: "missing await" };
-    const otherFinding = { path: "src/utils.js", line: 5, title: "No return" };
-    const id = reviewer.generateFindingId(finding);
-
-    expect(id).toMatch(/^[a-f0-9]{12}$/);
-    expect(reviewer.generateFindingId(caseVariant)).toBe(id);
-    expect(reviewer.generateFindingId(otherFinding)).not.toBe(id);
-
-    const stateText = reviewer.serializeReviewState("abcdef1234567890abcdef1234567890abcdef12", [
-      { ...finding, problem: "Not awaiting", impact: "Incorrect sequencing", fix: "Add await", suggestion: null, inline: true }
-    ]);
-    const state = reviewer.extractReviewState("Review body" + stateText);
-    expect(state.findings[0].id).toBe(id);
-
-    const tick = String.fromCharCode(96);
-    const findingCheckbox = "- [x] Finding " + tick + id + tick + ": 🔴 **[HIGH] Missing await**";
-    expect(reviewer.parseSelectedIds(findingCheckbox)).toEqual([id]);
-    expect(reviewer.parseReviewAction(findingCheckbox, "")).toBeNull();
-
-    const selectedAction = findingCheckbox + "\n- [x] 🛠️ **Fix selected findings**";
-    expect(reviewer.parseReviewAction(selectedAction, "")).toEqual({
-      mode: "fix-selected", targetFinding: [id]
-    });
-    expect(reviewer.parseReviewAction(selectedAction, selectedAction)).toBeNull();
-    expect(reviewer.parseReviewAction("- [x] 🪄 **Fix all findings**", "")).toEqual({ mode: "fix" });
-    expect(reviewer.parseRepairCommand("@gemini repair selected " + id)).toBeNull();
-  });
-
   it("builds a standalone implementation prompt and exposes targeted suggestions only for eligible added lines", () => {
     const finding = {severity:"HIGH", title:"Broken preload", path:"app/homepage/Hero.js", line:42,
       inline:true, problem:"The preload type does not match the selected source.", impact:"The LCP image may not use the preload.",
@@ -212,12 +181,8 @@ describe("Gemini reviewer source context", () => {
     expect(formatted).toContain("Task: Investigate and fix one reported code-review finding.");
     expect(formatted).toContain("Read the repository's root AGENTS.md first");
     expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42 -- Broken preload");
-    expect(formatted).toContain("### Automated Fixes");
-    expect(formatted).toContain("**Fix all findings**");
-    expect(formatted).toContain("**Fix selected findings**");
-    expect(formatted).toContain("GitHub checkbox controls");
-    expect(formatted).not.toContain("@gemini repair selected");
-    expect(formatted).not.toContain("@gemini repair all");
+    expect(formatted).toContain("### Fix all findings");
+    expect(formatted).toContain("@gemini repair all");
     expect(formatted).toContain("Nothing is applied or pushed automatically.");
     expect(formatted).toContain("**Optional code replacement (not a substitute for the implementation prompt)**");
     expect(formatted).toContain('preload("/hero.avif", { type: "image/avif" });');
