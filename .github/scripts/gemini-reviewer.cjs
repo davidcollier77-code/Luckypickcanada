@@ -17,6 +17,8 @@ const MAX_CHANGED_SOURCE_CHARS = 6000;
 const MAX_TOTAL_SOURCE_CHARS = 160000;
 const MAX_BASE_SOURCE_CHARS = 2200;
 const MAX_RELATED_SOURCE_CHARS = 3200;
+const MAX_BASE_SOURCE_CHARS = 2200;
+const MAX_RELATED_SOURCE_CHARS = 3200;
 const CONTROL_FLOW_REVIEW_GUIDANCE = [
   "For asynchronous/control-flow concerns (including requestAnimationFrame, timers, promises, effects, and event handlers), trace registration, actual callback execution, state writes, reads, and every reachable direct or synchronous call path.",
   "Distinguish a potential timing hazard from a verified defect. Do not report an ordering issue when the supplied execution order proves the read occurs after the write; when a needed call path or source is missing, state the uncertainty rather than asserting a race."
@@ -126,6 +128,17 @@ function classifyReviewGroups(pr, files, availableGroups) {
       /\b(regression|runtime error|incorrect result|data loss|crash)\b/i.test(text)) add("troubleshooting");
   if (!groups.length) add("troubleshooting");
   return groups.length ? groups : available.has("testing") ? ["testing"] : [...available].slice(0, 1);
+}
+function formatTruncatedSourceNote(records) {
+  const paths = [...new Set((Array.isArray(records) ? records : [])
+    .filter((record) => record && record.truncated && typeof record.path === "string")
+    .map((record) => record.path))];
+  if (!paths.length) return null;
+  const shown = paths.slice(0, 3);
+  const remaining = paths.length - shown.length;
+  return "Source shortened: " + shown.join(", ") +
+    (remaining > 0 ? " and " + remaining + " more" : "") +
+    ". Changed-file diffs were still reviewed.";
 }
 function formatTruncatedSourceNote(records) {
   const paths = [...new Set((Array.isArray(records) ? records : [])
