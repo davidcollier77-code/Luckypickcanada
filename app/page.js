@@ -1,4 +1,3 @@
-import { preload } from 'react-dom';
 import HomePage from './homepage/HomePage';
 import Hero from './homepage/Hero';
 import JsonLd from './components/JsonLd';
@@ -49,8 +48,6 @@ const faqSchema = {
 
 export const dynamic = 'force-static';
 
-const TURNSTILE_SCRIPT_URL =
-  'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit';
 
 /**
  * Composes the static homepage with its sky backdrop, hero, interactive content,
@@ -59,9 +56,6 @@ const TURNSTILE_SCRIPT_URL =
  * @returns {import('react').ReactElement} The complete homepage.
  */
 export default function Page() {
-  // Emit the resource hint during server rendering so React places it in <head>.
-  // Keep this URL identical to the pinned Turnstile wrapper's injected script URL.
-  preload(TURNSTILE_SCRIPT_URL, { as: 'script' });
 
   return (
     <>

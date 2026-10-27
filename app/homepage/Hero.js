@@ -1,3 +1,4 @@
+import "../../themes/default/hero.css";
 import Link from 'next/link';
 import { preload } from 'react-dom';
 import ExploreLuckButton from './ExploreLuckButton';

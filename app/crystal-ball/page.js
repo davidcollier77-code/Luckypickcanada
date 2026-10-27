@@ -1,3 +1,4 @@
+import '../../themes/default/homepage.css';
 import CrystalBallClient from '../crystal-ball-client/CrystalBallClient';
 
 export const metadata = {
