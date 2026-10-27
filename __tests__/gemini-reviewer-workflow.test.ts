@@ -47,9 +47,9 @@ describe("Gemini PR reviewer", () => {
     expect(workflow).toContain("issue_comment:");
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("options: [review, fix]");
-    expect(script).toContain("@gemini full review");
+    expect(script).toContain("parseRepairCommand");
     expect(script).toContain("@gemini repair one");
-    expect(script).toContain("@gemini repair all");
+    expect(script).not.toContain("@gemini repair selected");
     expect(script).toContain("parseRepairCommand");
     expect(script).toContain('if (mode === "fix-selected")');
     expect(script).toContain("findCurrentReviewState");
