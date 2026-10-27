@@ -19,6 +19,36 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.parseRepairCommand("@gemini repair all extra")).toBeNull();
     expect(reviewer.parseRepairCommand("@gemini repair selected abcdef123456")).toBeNull();
   });
+  it("uses stable strong finding IDs and runs checkbox repairs only on an action transition", () => {
+    const finding = { path: "src/app.js", line: 10, title: "Missing await" };
+    const caseVariant = { ...finding, title: "missing await" };
+    const otherFinding = { path: "src/utils.js", line: 5, title: "No return" };
+    const id = reviewer.generateFindingId(finding);
+
+    expect(id).toMatch(/^[a-f0-9]{12}$/);
+    expect(reviewer.generateFindingId(caseVariant)).toBe(id);
+    expect(reviewer.generateFindingId(otherFinding)).not.toBe(id);
+
+    const stateText = reviewer.serializeReviewState("abcdef1234567890abcdef1234567890abcdef12", [
+      { ...finding, problem: "Not awaiting", impact: "Incorrect sequencing", fix: "Add await", suggestion: null, inline: true }
+    ]);
+    const state = reviewer.extractReviewState("Review body" + stateText);
+    expect(state.findings[0].id).toBe(id);
+
+    const tick = String.fromCharCode(96);
+    const findingCheckbox = "- [x] Finding " + tick + id + tick + ": 🔴 **[HIGH] Missing await**";
+    expect(reviewer.parseSelectedIds(findingCheckbox)).toEqual([id]);
+    expect(reviewer.parseReviewAction(findingCheckbox, "")).toBeNull();
+
+    const selectedAction = findingCheckbox + "\\n- [x] 🛠️ **Fix selected findings**";
+    expect(reviewer.parseReviewAction(selectedAction, "")).toEqual({
+      mode: "fix-selected", targetFinding: [id]
+    });
+    expect(reviewer.parseReviewAction(selectedAction, selectedAction)).toBeNull();
+    expect(reviewer.parseReviewAction("- [x] 🪄 **Fix all findings**", "")).toEqual({ mode: "fix" });
+    expect(reviewer.parseRepairCommand("@gemini repair selected " + id)).toBeNull();
+  });
+
   it("builds a standalone implementation prompt and exposes targeted suggestions only for eligible added lines", () => {
     const finding = {severity:"HIGH", title:"Broken preload", path:"app/homepage/Hero.js", line:42,
       inline:true, problem:"The preload type does not match the selected source.", impact:"The LCP image may not use the preload.",
