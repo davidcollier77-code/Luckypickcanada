@@ -586,21 +586,46 @@ function parseRepairCommand(value) {
 }
 
 function parseSelectedIds(body) {
-  const matches = [...String(body || "").matchAll(/- \[x\] Finding \`([a-f0-9]{12})\`:/g)];
-  return matches.map(m => m[1]);
+  const matches = [...String(body || "").matchAll(/- \[x\] Finding \`([a-f0-9]{12})\`:/gi)];
+  return [...new Set(matches.map((match) => match[1].toLowerCase()))];
 }
-function generateFindingId(f) {
-  const str = f.path + ":" + f.line + ":" + f.title.toLowerCase();
-  return require("node:crypto").createHash("sha256").update(str).digest("hex").slice(0, 12);
+function generateFindingId(finding) {
+  const stableKey = String(finding && finding.path || "") + ":" +
+    String(finding && finding.line || "") + ":" +
+    String(finding && finding.title || "").toLowerCase();
+  return require("node:crypto").createHash("sha256").update(stableKey).digest("hex").slice(0, 12);
 }
 function serializeReviewState(sha, findings) {
-  const state = { sha, findings: findings.map(f => ({ id: generateFindingId(f), path: f.path, line: f.line, title: f.title, problem: f.problem, fix: f.fix, suggestion: f.suggestion, inline: f.inline })) };
+  const state = {
+    sha,
+    findings: findings.map((finding) => ({
+      id: generateFindingId(finding),
+      path: finding.path,
+      line: finding.line,
+      title: finding.title,
+      problem: finding.problem,
+      fix: finding.fix,
+      suggestion: finding.suggestion,
+      inline: finding.inline
+    }))
+  };
   return "\n\n<!-- gemini-review-state: " + JSON.stringify(state).replace(/--!?>/g, "--\\>") + " -->";
 }
 function extractReviewState(body) {
   const match = String(body || "").match(/<!-- gemini-review-state: ([\s\S]*?)(?:-->|--!>)/);
   if (!match) return null;
-  try { return JSON.parse(match[1].replace(/--\\>/g, "-->")); } catch (e) { return null; }
+  try { return JSON.parse(match[1].replace(/--\\>/g, "-->")); } catch (error) { return null; }
+}
+function parseReviewAction(body, previousBody = "") {
+  const current = String(body || "");
+  const previous = String(previousBody || "");
+  const fixAll = "- [x] 🪄 **Fix all findings**";
+  const fixSelected = "- [x] 🛠️ **Fix selected findings**";
+  if (current.includes(fixAll) && !previous.includes(fixAll)) return { mode: "fix" };
+  if (current.includes(fixSelected) && !previous.includes(fixSelected)) {
+    return { mode: "fix-selected", targetFinding: parseSelectedIds(current) };
+  }
+  return null;
 }
 function matchTargetFinding(findings, target) {
   if (!target || typeof target.path !== "string" || !Number.isInteger(target.line) || typeof target.title !== "string") return [];
@@ -695,12 +720,12 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
     "A green Gemini review means no actionable finding was identified in the reviewed scope; it is not merge approval. Confirm all required GitHub Actions checks, required reviews, and branch-protection conditions are green before deciding to merge.");
   if (findings.length) {
     rows.push("", "### Automated Fixes",
-      "Select findings above and use the controls below, or comment exactly " + tick + "@gemini repair all" + tick + ", " + tick + "@gemini repair one <path>:<line> -- <title>" + tick + ", or " + tick + "@gemini repair selected <id1> <id2>" + tick + ".",
+      "Select the finding checkboxes above, then check one action below. GitHub Markdown comments support clickable task-list checkboxes rather than custom executable buttons. Uncheck an action before using it again.",
       "",
+      "- [ ] 🛠️ **Fix selected findings**",
       "- [ ] 🪄 **Fix all findings**",
-      "- [ ] 🛠️ **Apply fixes for selected findings**",
       "",
-      "Gemini rechecks the current PR and may post native one-line suggestions for eligible findings; multi-line or ineligible issues are covered by the copy/paste prompts above. Nothing is committed, pushed, or applied automatically.");
+      "Gemini requests suggestions for the selected scope and may post native one-line suggestions for eligible findings. It does not change the PR branch or commit code. Existing repair commands remain optional fallbacks.");
   }
   return rows.join("\n");
 }
@@ -757,32 +782,24 @@ async function main() {
       prevBody = event.changes.body.from;
     }
 
-    // Command overrides transitions
+    // Existing all/one commands are fallbacks; selected findings use the checkbox action.
     const parsedCommand = parseRepairCommand(body);
-    const selectedIdsCommandMatch = body.match(/^@gemini\s+repair\s+selected\s+([a-z0-9\s]+)$/i);
-
     if (parsedCommand) {
       mode = parsedCommand.mode;
       if (mode === "fix-one") targetFinding = parsedCommand.target;
-    } else if (selectedIdsCommandMatch) {
-      mode = "fix-selected";
-      targetFinding = selectedIdsCommandMatch[1].trim().split(/\s+/);
     } else if (isEdited) {
-      const fixAllNowChecked = body.includes("- [x] 🪄 **Fix all findings**") && !prevBody.includes("- [x] 🪄 **Fix all findings**");
-      const applySelectedNowChecked = body.includes("- [x] 🛠️ **Apply fixes for selected findings**") && !prevBody.includes("- [x] 🛠️ **Apply fixes for selected findings**");
-
-      if (fixAllNowChecked) {
-        mode = "fix";
-      } else if (applySelectedNowChecked) {
-        mode = "fix-selected";
-        targetFinding = parseSelectedIds(body);
+      const action = parseReviewAction(body, prevBody);
+      if (!action) {
+        log("No actionable command or newly checked repair control found in edit.");
+        return;
+      }
+      mode = action.mode;
+      if (mode === "fix-selected") {
+        targetFinding = action.targetFinding;
         if (!targetFinding.length) {
-          log("No findings were selected.");
+          await comment(number, "Select one or more finding checkboxes before checking **Fix selected findings**. No suggestions were requested.");
           return;
         }
-      } else {
-        log("No actionable command or newly checked box found in edit.");
-        return;
       }
     } else {
       log("Skipping non-actionable comment/review event.");
@@ -801,32 +818,24 @@ async function main() {
       prevBody = event.changes.body.from;
     }
 
-    // Command overrides transitions
+    // Existing all/one commands are fallbacks; selected findings use the checkbox action.
     const parsedCommand = parseRepairCommand(body);
-    const selectedIdsCommandMatch = body.match(/^@gemini\s+repair\s+selected\s+([a-z0-9\s]+)$/i);
-
     if (parsedCommand) {
       mode = parsedCommand.mode;
       if (mode === "fix-one") targetFinding = parsedCommand.target;
-    } else if (selectedIdsCommandMatch) {
-      mode = "fix-selected";
-      targetFinding = selectedIdsCommandMatch[1].trim().split(/\s+/);
     } else if (isEdited) {
-      const fixAllNowChecked = body.includes("- [x] 🪄 **Fix all findings**") && !prevBody.includes("- [x] 🪄 **Fix all findings**");
-      const applySelectedNowChecked = body.includes("- [x] 🛠️ **Apply fixes for selected findings**") && !prevBody.includes("- [x] 🛠️ **Apply fixes for selected findings**");
-
-      if (fixAllNowChecked) {
-        mode = "fix";
-      } else if (applySelectedNowChecked) {
-        mode = "fix-selected";
-        targetFinding = parseSelectedIds(body);
+      const action = parseReviewAction(body, prevBody);
+      if (!action) {
+        log("No actionable command or newly checked repair control found in edit.");
+        return;
+      }
+      mode = action.mode;
+      if (mode === "fix-selected") {
+        targetFinding = action.targetFinding;
         if (!targetFinding.length) {
-          log("No findings were selected.");
+          await comment(number, "Select one or more finding checkboxes before checking **Fix selected findings**. No suggestions were requested.");
           return;
         }
-      } else {
-        log("No actionable command or newly checked box found in edit.");
-        return;
       }
     } else {
       log("Skipping non-actionable comment/review event.");
@@ -848,27 +857,36 @@ async function main() {
 
   const pr = await gh("/repos/" + REPO + "/pulls/" + number);
   if (!pr || typeof pr !== "object") throw new Error("GitHub did not return valid pull-request metadata.");
+  if (pr.state !== "open") {
     if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
       await comment(number, "Gemini fix suggestions were not generated because this PR is not open.");
     }
     return;
-      return;
   }
   if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing. Verify it under Settings → Secrets and variables → Actions; its value is never printed.");
   const list = await getFiles(number);
   const files = list.files;
   if (!files.length) { await comment(number, "Gemini PR Reviewer could not retrieve changed-file patches; no review or suggestions were made."); return; }
 
-    let stateBody = (event.comment ? event.comment.body : (event.review ? event.review.body : "")) || "";
+  if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
+    const stateBody = (event.comment ? event.comment.body : (event.review ? event.review.body : "")) || "";
     let state = extractReviewState(stateBody);
+    // A text command is a separate comment and carries no serialized review state.
+    // Find a review for this exact PR head rather than selecting a stale review first.
     if (!state || !state.sha || !Array.isArray(state.findings)) {
       const reviews = await gh("/repos/" + REPO + "/pulls/" + number + "/reviews?per_page=100").catch(() => []);
-      const geminiReview = Array.isArray(reviews) ? [...reviews].reverse().find((r) => extractReviewState(r.body || "")) : null;
-      if (geminiReview) state = extractReviewState(geminiReview.body || "");
+      if (Array.isArray(reviews)) {
+        for (const review of reviews.slice().reverse()) {
+          const candidate = extractReviewState(review && review.body || "");
+          if (candidate && candidate.sha === pr.head.sha && Array.isArray(candidate.findings)) {
+            state = candidate;
+            break;
+          }
+        }
+      }
     }
     if (!state || !state.sha || !Array.isArray(state.findings)) {
-    if (!state || !state.sha || !Array.isArray(state.findings)) {
-      await comment(number, "Gemini could not find valid review state in the comment body. Please run a new full review.");
+      await comment(number, "Gemini could not find a valid review for the current PR head. Run a fresh full review, then retry the repair.");
       return;
     }
     if (pr.head.sha !== state.sha) {
@@ -881,7 +899,7 @@ async function main() {
       requestedFindings = matchTargetFinding(state.findings, targetFinding);
     } else if (mode === "fix-selected") {
       const idsToFix = new Set(targetFinding);
-      requestedFindings = state.findings.filter(f => idsToFix.has(f.id));
+      requestedFindings = state.findings.filter((finding) => idsToFix.has(finding.id));
     } else {
       requestedFindings = state.findings;
     }
@@ -892,12 +910,9 @@ async function main() {
     }
 
     const fixModule = require("./gemini-autofix.cjs");
-    const docBundle = ""; // Empty since we skip review
-    const docPaths = [];
     const documentReport = "Documentation skipped for targeted fix from state.";
-
     const fixResult = await fixModule.applyAutoFix({
-      pr, files, findings: requestedFindings, docs: docBundle, docPaths, REPO, TOKEN,
+      pr, files, findings: requestedFindings, docs: "", docPaths: [], REPO, TOKEN,
       reviewRules: RULES, documentReport
     });
     if (fixResult.suggestionsPosted) {
@@ -1000,7 +1015,7 @@ async function main() {
     documentReport,
     "",
     "### Request fixes",
-    "Comment exactly @gemini full review to run a full review, @gemini repair one <path>:<line> -- <finding title> to request a safe suggestion for one finding, or @gemini repair all to request suggestions for all eligible findings. Targeted requests recheck the exact path and line before suggesting anything. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
+    "Select the finding checkboxes and check Fix selected findings or Fix all findings to request suggestions. The existing @gemini repair one <path>:<line> -- <finding title> and @gemini repair all commands remain optional fallbacks. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
   ];
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
   const reviewBody = summary.join("\n") + serializeReviewState(pr.head.sha, findings);
@@ -1029,4 +1044,4 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, renderSourceContext, makeBatches, normalizePositiveObservations,
   buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, matchTargetFinding, generateFindingId, serializeReviewState, extractReviewState,
-  formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
+  parseSelectedIds, parseReviewAction, formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
