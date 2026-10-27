@@ -5,6 +5,7 @@ import rehypeMdxCodeProps from "rehype-mdx-code-props"
 import emoji from "remark-emoji"
 import * as sidebar from "./src/components/Menu/MenuLinks"
 import { rehypeHeadingAnchors } from "./src/components/logic/rehypeHeadingAnchors"
+import { rehypeTipsSections } from "./src/components/logic/rehypeTipsSections"
 import type { Pages } from "./src/types/types"
 
 export const Doc = defineDocumentType(() => ({
@@ -13,6 +14,7 @@ export const Doc = defineDocumentType(() => ({
   filePathPattern: "**/*.mdx",
   fields: {
     title: { type: "string", required: true },
+    seoTitle: { type: "string", required: true },
     description: { type: "string", required: true },
     metaDescription: { type: "string", required: false },
     sidebar: {
@@ -23,6 +25,7 @@ export const Doc = defineDocumentType(() => ({
         "tsLinks",
         "faqLinks",
         "getStartedLinks",
+        "integrationLinks",
         "migrateV7ToV8Links",
       ],
       required: true,
@@ -62,6 +65,10 @@ export default makeSource({
   documentTypes: [Doc],
   mdx: {
     remarkPlugins: [remarkGfm, remarkHeadingId, emoji],
-    rehypePlugins: [rehypeMdxCodeProps, rehypeHeadingAnchors],
+    rehypePlugins: [
+      rehypeMdxCodeProps,
+      rehypeHeadingAnchors,
+      rehypeTipsSections,
+    ],
   },
 })

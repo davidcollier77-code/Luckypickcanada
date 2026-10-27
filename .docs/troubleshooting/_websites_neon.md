@@ -126,7 +126,7 @@ Managed authentication built on Better Auth that branches with your database.
 
 Long-running serverless compute, close to your database.
 
-- [All 16 Neon Functions pages](https://neon.com/docs/compute/llms.txt) — key pages below
+- [All 18 Neon Functions pages](https://neon.com/docs/compute/llms.txt) — key pages below
 
 - [Neon Functions](https://neon.com/docs/compute/functions/overview.md): Long-running serverless functions on your Neon branch, next to your data.
 - [Get started with Neon Functions](https://neon.com/docs/compute/functions/get-started.md): Deploy your first Neon Function and call it over HTTP.
@@ -315,6 +315,10 @@ Contributor guides, component architecture, and documentation standards.
 - [Branch your backend](https://neon.com/docs/concepts/branch-your-backend.md): How branching works across the backend
 - [Credentials & access](https://neon.com/docs/concepts/credentials-access.md): How API keys, scoped credentials, permissions, and network controls govern access to your backend
 - [The Neon object model](https://neon.com/docs/concepts/the-object-model.md): How the Neon backend is structured
+
+## Legal
+
+- [Neon Service Level Agreement](https://neon.com/docs/legal/sla.md)
 
 ## Postgres
 
