@@ -13,8 +13,10 @@ const EVENT_NAME = process.env.GITHUB_EVENT_NAME || "";
 const EVENT_PATH = process.env.GITHUB_EVENT_PATH || "";
 const RULE_PATH = ".gemini/rules/luckypickcanada.md";
 const MAX_CHANGED_SOURCE_FILES = 22;
-const MAX_CHANGED_SOURCE_CHARS = 3600;
-const MAX_TOTAL_SOURCE_CHARS = 100000;
+const MAX_CHANGED_SOURCE_CHARS = 6000;
+const MAX_TOTAL_SOURCE_CHARS = 160000;
+const MAX_BASE_SOURCE_CHARS = 2200;
+const MAX_RELATED_SOURCE_CHARS = 3200;
 const CONTROL_FLOW_REVIEW_GUIDANCE = [
   "For asynchronous/control-flow concerns (including requestAnimationFrame, timers, promises, effects, and event handlers), trace registration, actual callback execution, state writes, reads, and every reachable direct or synchronous call path.",
   "Distinguish a potential timing hazard from a verified defect. Do not report an ordering issue when the supplied execution order proves the read occurs after the write; when a needed call path or source is missing, state the uncertainty rather than asserting a race."
@@ -125,6 +127,17 @@ function classifyReviewGroups(pr, files, availableGroups) {
   if (!groups.length) add("troubleshooting");
   return groups.length ? groups : available.has("testing") ? ["testing"] : [...available].slice(0, 1);
 }
+function formatTruncatedSourceNote(records) {
+  const paths = [...new Set((Array.isArray(records) ? records : [])
+    .filter((record) => record && record.truncated && typeof record.path === "string")
+    .map((record) => record.path))];
+  if (!paths.length) return null;
+  const shown = paths.slice(0, 3);
+  const remaining = paths.length - shown.length;
+  return "Source shortened: " + shown.join(", ") +
+    (remaining > 0 ? " and " + remaining + " more" : "") +
+    ". Changed-file diffs were still reviewed.";
+}
 function clipSource(source, limit) {
   const value = String(source || "");
   if (value.length <= limit) return { content: value, truncated: false };
@@ -196,7 +209,7 @@ async function collectSourceContext(pr, files) {
       const basePath = file.previous_filename || file.filename;
       const baseline = await read(basePath, baseSha, baseRepo);
       if (baseline !== null) {
-        const old = clipSource(baseline, Math.min(1800, Math.floor(budget / 3)));
+        const old = clipSource(baseline, Math.min(MAX_BASE_SOURCE_CHARS, Math.floor(budget / 3)));
         records.push({ path: file.filename, role: "same file at PR base before change", content: old.content, truncated: old.truncated });
         budget -= old.content.length;
       } else {
@@ -227,7 +240,7 @@ async function collectSourceContext(pr, files) {
         importProbeCount += 1;
         const source = await read(path, headSha, headRepo);
         if (source === null) continue;
-        const clipped = clipSource(source, Math.min(2400, budget));
+        const clipped = clipSource(source, Math.min(MAX_RELATED_SOURCE_CHARS, budget));
         records.push({ path, role: "local module imported by " + file.path, relatedTo: file.path, content: clipped.content, truncated: clipped.truncated });
         budget -= clipped.content.length; relatedCount += 1; break;
       }
@@ -236,7 +249,8 @@ async function collectSourceContext(pr, files) {
   if (importProbeCount >= MAX_IMPORT_SOURCE_PROBES) limitations.push("Import-source probe budget reached; further local import candidates may be omitted.");
   const hasLocalImports = changed.some((file) => file.status !== "removed" && extractLocalImports(file.source).length > 0);
   if (budget < 3000 && hasLocalImports) limitations.push("Remaining source-context budget fell below 3000 characters; further local-import context was not attempted.");
-  if (records.some((r) => r.truncated)) limitations.push("Some source was clipped to fit the bounded context budget.");
+  const truncationNote = formatTruncatedSourceNote(records);
+  if (truncationNote) limitations.push(truncationNote);
   if (candidates.length > changed.length && !limitations.some((item) => /before .* selected changed text file|Full head source unavailable/.test(item))) {
     limitations.push((candidates.length - changed.length) + " selected changed text file(s) did not receive full-source context; patches remain included in review batches.");
   }
@@ -586,23 +600,41 @@ function parseRepairCommand(value) {
 }
 
 function parseSelectedIds(body) {
-  const matches = [...String(body || "").matchAll(/- \[x\] Finding \`([a-z0-9]{6})\`:/g)];
-  return matches.map(m => m[1]);
+  const matches = [...String(body || "").matchAll(/- \[x\] Finding \`([a-f0-9]{12})\`:/gi)];
+  return [...new Set(matches.map((match) => match[1].toLowerCase()))];
 }
-function generateFindingId(f) {
-  const str = f.path + ":" + f.line + ":" + f.title.toLowerCase();
-  let h = 0;
-  for (let i = 0; i < str.length; i++) h = Math.imul(31, h) + str.charCodeAt(i) | 0;
-  return Math.abs(h).toString(36).padStart(6, "0").slice(0, 6);
+function generateFindingId(finding) {
+  const key = String(finding && finding.path || "") + ":" +
+    String(finding && finding.line || "") + ":" +
+    String(finding && finding.title || "").toLowerCase();
+  return require("node:crypto").createHash("sha256").update(key).digest("hex").slice(0, 12);
 }
 function serializeReviewState(sha, findings) {
-  const state = { sha, findings: findings.map(f => ({ id: generateFindingId(f), path: f.path, line: f.line, title: f.title, problem: f.problem, fix: f.fix, suggestion: f.suggestion, inline: f.inline })) };
+  const state = {
+    sha,
+    findings: findings.map((finding) => ({
+      id: generateFindingId(finding), path: finding.path, line: finding.line,
+      title: finding.title, problem: finding.problem, impact: finding.impact,
+      fix: finding.fix, suggestion: finding.suggestion, inline: finding.inline
+    }))
+  };
   return "\n\n<!-- gemini-review-state: " + JSON.stringify(state).replace(/--!?>/g, "--\\>") + " -->";
 }
 function extractReviewState(body) {
   const match = String(body || "").match(/<!-- gemini-review-state: ([\s\S]*?)(?:-->|--!>)/);
   if (!match) return null;
-  try { return JSON.parse(match[1].replace(/--\\>/g, "-->")); } catch (e) { return null; }
+  try { return JSON.parse(match[1].replace(/--\\>/g, "-->")); } catch (error) { return null; }
+}
+function parseReviewAction(body, previousBody = "") {
+  const current = String(body || "");
+  const previous = String(previousBody || "");
+  const fixAll = "- [x] 🪄 **Fix all findings**";
+  const fixSelected = "- [x] 🛠️ **Fix selected findings**";
+  if (current.includes(fixAll) && !previous.includes(fixAll)) return { mode: "fix" };
+  if (current.includes(fixSelected) && !previous.includes(fixSelected)) {
+    return { mode: "fix-selected", targetFinding: parseSelectedIds(current) };
+  }
+  return null;
 }
 function matchTargetFinding(findings, target) {
   if (!target || typeof target.path !== "string" || !Number.isInteger(target.line) || typeof target.title !== "string") return [];
@@ -697,12 +729,12 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
     "A green Gemini review means no actionable finding was identified in the reviewed scope; it is not merge approval. Confirm all required GitHub Actions checks, required reviews, and branch-protection conditions are green before deciding to merge.");
   if (findings.length) {
     rows.push("", "### Automated Fixes",
-      "Select findings above and use the controls below, or comment exactly " + tick + "@gemini repair all" + tick + ", " + tick + "@gemini repair one <path>:<line> -- <title>" + tick + ", or " + tick + "@gemini repair selected <id1> <id2>" + tick + ".",
+      "Select one or more finding checkboxes above, then check one action below. These are clickable GitHub checkbox controls; uncheck an action before using it again.",
       "",
+      "- [ ] 🛠️ **Fix selected findings**",
       "- [ ] 🪄 **Fix all findings**",
-      "- [ ] 🛠️ **Apply fixes for selected findings**",
       "",
-      "Gemini rechecks the current PR and may post native one-line suggestions for eligible findings; multi-line or ineligible issues are covered by the copy/paste prompts above. Nothing is committed, pushed, or applied automatically.");
+      "Gemini may post native one-line suggestions for eligible findings. It does not change the PR branch or commit code; use the copy/paste prompts above for other fixes.");
   }
   return rows.join("\n");
 }
@@ -751,87 +783,56 @@ async function main() {
       return;
     }
     number = event.issue.number;
-
+    const body = String(event.comment?.body || "");
     const isEdited = event.action === "edited";
-    const body = event.comment ? event.comment.body : (event.review ? event.review.body : "");
-    let prevBody = "";
-    if (isEdited && event.changes && event.changes.body && typeof event.changes.body.from === "string") {
-      prevBody = event.changes.body.from;
-    }
-
-    // Command overrides transitions
-    const parsedCommand = parseRepairCommand(body);
-    const selectedIdsCommandMatch = body.match(/^@gemini\s+repair\s+selected\s+([a-z0-9\s]+)$/i);
-
-    if (parsedCommand) {
-      mode = parsedCommand.mode;
-      if (mode === "fix-one") targetFinding = parsedCommand.target;
-    } else if (selectedIdsCommandMatch) {
-      mode = "fix-selected";
-      targetFinding = selectedIdsCommandMatch[1].trim().split(/\s+/);
+    const previousBody = isEdited ? String(event.changes?.body?.from || "") : "";
+    const command = parseRepairCommand(body);
+    if (command) {
+      mode = command.mode;
+      if (mode === "fix-one") targetFinding = command.target;
     } else if (isEdited) {
-      const fixAllNowChecked = body.includes("- [x] 🪄 **Fix all findings**") && !prevBody.includes("- [x] 🪄 **Fix all findings**");
-      const applySelectedNowChecked = body.includes("- [x] 🛠️ **Apply fixes for selected findings**") && !prevBody.includes("- [x] 🛠️ **Apply fixes for selected findings**");
-
-      if (fixAllNowChecked) {
-        mode = "fix";
-      } else if (applySelectedNowChecked) {
-        mode = "fix-selected";
-        targetFinding = parseSelectedIds(body);
+      const action = parseReviewAction(body, previousBody);
+      if (!action) { log("No actionable command or newly checked repair control found."); return; }
+      mode = action.mode;
+      if (mode === "fix-selected") {
+        targetFinding = action.targetFinding;
         if (!targetFinding.length) {
-          log("No findings were selected.");
+          await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
           return;
         }
-      } else {
-        log("No actionable command or newly checked box found in edit.");
-        return;
       }
     } else {
-      log("Skipping non-actionable comment/review event.");
+      log("Skipping non-actionable comment event.");
       return;
     }
 
   } else if (EVENT_NAME === "pull_request_review") {
     if (!event.pull_request) { log("Missing PR object."); return; }
-    if (!TRUSTED.has(String(event.review?.author_association || "").toUpperCase())) { log("Unauthorized."); return; }
-    number = event.pull_request.number;
-
-    const isEdited = event.action === "edited";
-    const body = event.review ? event.review.body : (event.review ? event.review.body : "");
-    let prevBody = "";
-    if (isEdited && event.changes && event.changes.body && typeof event.changes.body.from === "string") {
-      prevBody = event.changes.body.from;
+    if (!TRUSTED.has(String(event.sender?.author_association || event.review?.author_association || "").toUpperCase())) {
+      log("Unauthorized.");
+      return;
     }
-
-    // Command overrides transitions
-    const parsedCommand = parseRepairCommand(body);
-    const selectedIdsCommandMatch = body.match(/^@gemini\s+repair\s+selected\s+([a-z0-9\s]+)$/i);
-
-    if (parsedCommand) {
-      mode = parsedCommand.mode;
-      if (mode === "fix-one") targetFinding = parsedCommand.target;
-    } else if (selectedIdsCommandMatch) {
-      mode = "fix-selected";
-      targetFinding = selectedIdsCommandMatch[1].trim().split(/\s+/);
+    number = event.pull_request.number;
+    const body = String(event.review?.body || "");
+    const isEdited = event.action === "edited";
+    const previousBody = isEdited ? String(event.changes?.body?.from || "") : "";
+    const command = parseRepairCommand(body);
+    if (command) {
+      mode = command.mode;
+      if (mode === "fix-one") targetFinding = command.target;
     } else if (isEdited) {
-      const fixAllNowChecked = body.includes("- [x] 🪄 **Fix all findings**") && !prevBody.includes("- [x] 🪄 **Fix all findings**");
-      const applySelectedNowChecked = body.includes("- [x] 🛠️ **Apply fixes for selected findings**") && !prevBody.includes("- [x] 🛠️ **Apply fixes for selected findings**");
-
-      if (fixAllNowChecked) {
-        mode = "fix";
-      } else if (applySelectedNowChecked) {
-        mode = "fix-selected";
-        targetFinding = parseSelectedIds(body);
+      const action = parseReviewAction(body, previousBody);
+      if (!action) { log("No actionable command or newly checked repair control found."); return; }
+      mode = action.mode;
+      if (mode === "fix-selected") {
+        targetFinding = action.targetFinding;
         if (!targetFinding.length) {
-          log("No findings were selected.");
+          await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
           return;
         }
-      } else {
-        log("No actionable command or newly checked box found in edit.");
-        return;
       }
     } else {
-      log("Skipping non-actionable comment/review event.");
+      log("Skipping non-actionable review event.");
       return;
     }
 
@@ -851,7 +852,10 @@ async function main() {
   const pr = await gh("/repos/" + REPO + "/pulls/" + number);
   if (!pr || typeof pr !== "object") throw new Error("GitHub did not return valid pull-request metadata.");
   if (pr.state !== "open") {
-      return;
+    if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
+      await comment(number, "Gemini fix suggestions were not generated because this PR is not open.");
+    }
+    return;
   }
   if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing. Verify it under Settings → Secrets and variables → Actions; its value is never printed.");
   const list = await getFiles(number);
@@ -859,10 +863,23 @@ async function main() {
   if (!files.length) { await comment(number, "Gemini PR Reviewer could not retrieve changed-file patches; no review or suggestions were made."); return; }
 
   if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
-    const body = event.comment ? event.comment.body : (event.review ? event.review.body : "");
-    const state = extractReviewState(body);
+    const actionBody = String(event.comment?.body || event.review?.body || "");
+    let state = extractReviewState(actionBody);
+    // Separate text commands do not contain state; locate the latest review for this current PR head.
     if (!state || !state.sha || !Array.isArray(state.findings)) {
-      await comment(number, "Gemini could not find valid review state in the comment body. Please run a new full review.");
+      const reviews = await gh("/repos/" + REPO + "/pulls/" + number + "/reviews?per_page=100").catch(() => []);
+      if (Array.isArray(reviews)) {
+        for (const review of reviews.slice().reverse()) {
+          const candidate = extractReviewState(review && review.body || "");
+          if (candidate && candidate.sha === pr.head.sha && Array.isArray(candidate.findings)) {
+            state = candidate;
+            break;
+          }
+        }
+      }
+    }
+    if (!state || !state.sha || !Array.isArray(state.findings)) {
+      await comment(number, "Gemini could not find a valid review for the current PR head. Run a fresh full review, then retry.");
       return;
     }
     if (pr.head.sha !== state.sha) {
@@ -1019,8 +1036,8 @@ if (require.main === module) main().catch(async (error) => {
 });
 
 module.exports = { addedLines, extractLocalImports, resolveImportCandidates, limitImportCandidates, MAX_IMPORT_SOURCE_PROBES,
-  MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, selectChangedSourceCandidates,
+  MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   isGeminiCliDoc, isGeminiDeepResearchDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
-  classifyReviewGroups, clipSource, renderSourceContext, makeBatches, normalizePositiveObservations,
+  classifyReviewGroups, clipSource, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
   buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, matchTargetFinding, generateFindingId, serializeReviewState, extractReviewState,
   formatReviewSections, CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE };
