@@ -733,3 +733,21 @@
 - **Implementation candidate:** PR #1611 adds bounded, read-only retrieval of changed-file source at immutable PR head SHAs, selected base versions, and relevant relative imports. Review prompts now require end-to-end before/after reasoning and explicit image preload/type/srcSet/sizes matching; deterministic task-group fallback relies on changed paths and defect domain.
 - **Safety and preservation:** PR content is passed only as untrusted text and is never executed. Existing trusted base-branch workflow, Gemini rules, opt-in suggestions, fallback order (3.8 → 3.6 → 3.5), application behavior, and Amazon Q rules are preserved.
 - **Verification:** JavaScript syntax compilation passed in the connected analysis runtime. PR-head CI and Vitest are pending; no live-model accuracy claim is made until a real review demonstrates the regression catch.
+
+
+
+# Current Task — Gemini Reviewer Select-Findings Workflow (2026-10-28)
+
+- **Objective:** Improve the Gemini PR Reviewer to support a select-findings-then-fix-selected workflow, allowing users to explicitly choose which findings they want fix suggestions for.
+- **Implementation:**
+  - Modified `.github/scripts/gemini-reviewer.cjs` to emit findings as markdown checklists instead of a bulleted list.
+  - Added a `- [ ] 🛠️ **Fix selected findings**` action item.
+  - Added robust validation in the `main` script block to handle an empty selection gracefully when parsing checkboxes.
+  - Updated the summary instructions to detail the checkbox usage.
+  - `parseSelectedIds` was reused to securely pull up to the maximum number of allowed finding IDs from the submitted markdown comment body.
+  - Spec Kit task artifacts initialized to `specs/057-gemini-reviewer-selected-findings`.
+- **Verification:**
+  - `__tests__/gemini-reviewer-context.test.ts` was expanded to cover the empty, single, and multiple selected findings cases.
+  - `./jules-verify.sh` tests passed locally.
+  - The Next.js build runs cleanly under the repository's 495MB size cap constraint.
+  - A PR was created on branch `fix-gemini-selected-findings` for review.
