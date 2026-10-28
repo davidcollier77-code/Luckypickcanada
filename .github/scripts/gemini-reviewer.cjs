@@ -927,12 +927,6 @@ async function main() {
       requestedFindings = state.findings;
     }
 
-    if (mode === "fix-selected" && targetFinding.length === 0) {
-      await comment(number, "## Gemini Targeted Fix\n\nNo findings were selected. No fix suggestions were generated.");
-      return;
-    }
-
-    if (!requestedFindings.length) {
       await comment(number, "## Gemini Targeted Fix\n\nThe requested finding(s) could not be matched. No suggestion was posted, and no code was changed.");
       return;
     }
