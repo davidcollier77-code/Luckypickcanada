@@ -1,25 +1,23 @@
 # GitHub PR Workflow & Governance Investigation Report
 
 ## 1. Verified Environment and Connectivity
-- **Git Operations:** The agent can successfully run `git remote -v`, `git status`, and `git log`. Pushing to branches and submitting PRs (via the provided `submit` tool) works.
-- **REST API Access:** Using `curl` with the injected `$JULES_ACCESS` token, the agent can successfully query the GitHub REST API (e.g., retrieving repository permissions and listing PRs). The token grants full push/pull/admin rights.
-- **Missing Capabilities:** The `gh` CLI tool is **not installed** in the agent's environment (`gh: command not found`).
-- **Submit Tool Limitations:** The `submit` tool provided to the agent allows for *creating* a pull request with a title and description, but the agent lacks a dedicated tool for *updating* the body of an already opened pull request dynamically during an active session, except by manual `curl` requests which are not part of the standard workflow.
+- **Git Operations:** The investigation reports successful use of `git remote -v`, `git status`, and `git log`, along with branch pushes and initial PR creation.
+- **REST API Access:** The investigation reports successful authenticated GitHub REST API requests for repository/PR information. This report intentionally omits the injected credential's environment-variable name and does not assert a permission scope that has not been independently demonstrated here.
+- **Missing Capability:** The investigation reports that the `gh` CLI is not installed in the agent environment (`gh: command not found`).
+- **PR update capability:** The available `submit` tool is described as creating a PR. The investigation did not demonstrate a successful authenticated REST API update to an existing PR body, nor did it demonstrate that such an update is impossible.
 
 ## 2. Investigation into Repeated PR Workflow Problems
-The core problem is a hard conflict between the agent's environmental capabilities and the repository's strict governance rules.
-
-The failures occur because the agent is instructed to continuously "update that same body as implementation or verification evidence changes", but lacks a native tool or the `gh` CLI to easily edit an existing PR description. It only has a `submit` tool designed for initial PR creation. When the agent tries to follow the instruction to update the canonical PR body, it either fails (due to missing `gh`) or hallucinates success.
+A possible mismatch exists between repository instructions to keep the PR body current and the tools Jules reported using. However, the absence of the `gh` CLI alone does not establish that updating a PR body is impossible: GitHub's REST API also supports pull-request updates when the caller has appropriate permission.
 
 ## 3. Governance Audit
 - **Rule in Question:** Section 4 of `AGENTS.md` states: "The PR body is the single canonical summary: draft it during the work, publish it when creating the PR, and update that same body as implementation or verification evidence changes."
-- **Conflict:** This rule is incompatible with the agent's actual capabilities. The agent cannot natively update the PR body after the initial submission without resorting to complex, error-prone `curl` scripting. This governance requirement actively forces the agent into a failure loop.
+- **Current finding:** Whether this rule conflicts with Jules's actual capabilities remains unproven. The investigation needs to test the supported authenticated update path, or establish a specific permission/tool restriction, before recommending a governance change.
 
 ## 4. Diagnosis
-- **Working Correctly:** Code generation, local git commits, branch creation, local script execution, and initial PR creation via the `submit` tool.
-- **Failing:** Updating existing PR bodies, querying PR status natively via `gh`.
-- **Root Cause (Confirmed):** The agent environment does not include `gh` and lacks an `update_pr` tool. `AGENTS.md` mandates an action (updating the PR body dynamically) that the agent cannot reliably perform.
-- **Corrective Action Required:** A governance change is required. The "canonical PR summary" requirement must be shifted from the GitHub PR description body to a committed local file within the repository (e.g., `PR_SUMMARY.md` or within the `.specify` artifacts). The agent can easily modify and commit files, aligning the reporting requirement with its actual capabilities.
+- **Reported as working:** Code generation, local commits, branch creation, local script execution, and initial PR creation.
+- **Reported limitation:** The `gh` CLI is absent, and the `submit` tool does not expose a dedicated existing-PR-body update operation.
+- **Not yet confirmed:** That Jules cannot update an existing PR body by another supported method, or that the repository's governance rules are the root cause of the repeated failures.
+- **Corrective action:** Do not change `AGENTS.md` on the evidence currently recorded. First verify the existing-PR update path and inspect a concrete failed example. If a capability limitation is demonstrated, propose the smallest change that preserves the repository's governance intent.
 
 ## 5. Next Step
-Because changing `AGENTS.md` requires explicit owner authorization according to Section 5, I am pausing to present these findings and request approval to modify `AGENTS.md` to shift the canonical summary to a committed file.
+Gather reproducible evidence for an existing-PR body update attempt and the resulting response, while avoiding disclosure of credential names, credential values, or unverified permission scopes. Revisit governance only if that evidence establishes a genuine incompatibility.
