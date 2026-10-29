@@ -34,7 +34,7 @@ const ADVERSARIAL_REVIEW_GUIDANCE = [
   "High-value examples are patterns, not assumptions: a non-OK response that fails to roll back optimistic state; a thrown network exception that leaves the UI falsely marked as successful; background polling that overwrites a newer count with stale cached data; loose identifiers that reach a typed database query; or a sentinel such as \"unknown\" that makes unrelated clients share one identity.",
   "Trace the relevant data and execution path across callers, callees, state writers/readers, consumers, and cleanup. Separate defects introduced by this PR from pre-existing behavior.",
   "Compare against the first-pass findings only to avoid duplicates. Return additional issues only when exact supplied code evidence establishes a realistic failure path at confidence >= 0.80. Do not force findings for irrelevant checklist categories, speculate, report style preferences, or treat missing context as a confirmed bug; disclose uncertainty as a coverage gap.",
-  "Return the same strict JSON schema as the primary pass: { summary: string, findings: [{ path: string, line: number|null, severity: 'CRITICAL'|'HIGH'|'MEDIUM'|'LOW', confidence: number, title: string, problem: string, impact: string, suggested_fix: string, suggestion: string|null }], positive_observations: [], document_assessments: [{ path: string, useful: boolean, reason: string }] }. Use exact paths and anchor inline lines only to added lines."
+  "Return the same strict JSON schema as the primary pass: { summary: string, findings: [{ path: string, line: number|null, severity: 'CRITICAL'|'HIGH'|'MEDIUM'|'LOW', confidence: number, title: string, problem: string, impact: string, suggested_fix: string, suggestion: string|null }], positive_observations: [{ path: string, title: string, details: string, confidence: number }], document_assessments: [{ path: string, useful: boolean, reason: string }] }. Use exact paths and anchor inline lines only to added lines."
 ].join(" ");
 const TRUSTED = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const RULES = existsSync(resolve(ROOT, RULE_PATH)) ? readFileSync(resolve(ROOT, RULE_PATH), "utf8") : "";
@@ -1180,5 +1180,5 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, resolveEventAction, matchTargetFinding,
   generateFindingId, serializeReviewState, extractReviewState, findReviewStateForHead, fetchAllReviews,
   parseSelectedIds, parseReviewAction, MAX_SELECTED_IDS, MAX_REVIEW_PAGES,
-  formatReviewSections, docReport, describeTaskGroupReason, buildAdversarialReviewPrompt, headMatchesReview,
+  formatReviewSections, docReport, normalizeFindings, describeTaskGroupReason, buildAdversarialReviewPrompt, headMatchesReview,
   CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE, ADVERSARIAL_REVIEW_GUIDANCE };

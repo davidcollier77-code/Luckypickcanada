@@ -354,4 +354,16 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.headMatchesReview("", "abc123")).toBe(false);
   });
 
+  it("rejects findings about files outside the patch batch supplied to a model", () => {
+    const batch = [{ filename: "app/feature/current.js" }];
+    const lineMap = new Map([["app/feature/current.js", new Set([12])]]);
+    const findings = reviewer.normalizeFindings([
+      { path: "app/feature/current.js", line: 12, severity: "HIGH", confidence: 0.93, title: "Broken state rollback", problem: "Failure state is not restored." },
+      { path: "app/feature/not-in-this-batch.js", line: 7, severity: "HIGH", confidence: 0.95, title: "Uninspected file", problem: "This path was not supplied to the model." }
+    ], batch, lineMap);
+    expect(findings).toHaveLength(1);
+    expect(findings[0].path).toBe("app/feature/current.js");
+    expect(findings[0].inline).toBe(true);
+  });
+
 });
