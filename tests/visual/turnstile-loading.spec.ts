@@ -7,10 +7,9 @@ test('does not preload the Turnstile API on initial page documents', async ({ pa
   // The mobile PageSpeed optimization intentionally removed the eager preload
   // so the third-party script does not compete with critical homepage resources.
   // The Turnstile wrapper remains responsible for loading the script when needed.
-  await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await expect(page.locator(TURNSTILE_PRELOAD_SELECTOR)).toHaveCount(0);
-
-  // Unrelated routes must not add a global Turnstile preload either.
-  await page.goto('/about', { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await expect(page.locator(TURNSTILE_PRELOAD_SELECTOR)).toHaveCount(0);
+  // This test checks resource hints only; it does not modify Turnstile validation.
+  for (const route of ['/', '/about', '/map']) {
+    await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await expect(page.locator(TURNSTILE_PRELOAD_SELECTOR)).toHaveCount(0);
+  }
 });
