@@ -170,6 +170,22 @@ describe("Gemini PR reviewer", () => {
     }
   });
 
+  it("renders compact review context through the actual reviewer function", () => {
+    const probe = [
+      'const { docReport } = require("./.github/scripts/gemini-reviewer.cjs");',
+      'const report = docReport([{ path: ".jules/troubleshooting.md", truncated: false }], [], [{ path: ".jules/troubleshooting.md", useful: true, reason: "Failure-path routing" }], { groups: ["troubleshooting"], groupReasons: { troubleshooting: "reviewer startup regression" }, method: "manifest" });',
+      'process.stdout.write(report);'
+    ].join("\\n");
+    const result = spawnSync(process.execPath, ["-e", probe], {
+      cwd: process.cwd(),
+      encoding: "utf8"
+    });
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(result.stdout).toContain("**Task group:** troubleshooting — reviewer startup regression");
+    expect(result.stdout).toContain(".jules/troubleshooting.md — Failure-path routing");
+    expect(result.stdout).not.toContain("undefined");
+  });
+
   it("keeps Amazon Q's original rules outside Gemini's implementation scope", () => {
     const aqRulesPath = ".amazonq/rules/luckypickcanada.md";
     // The Amazon Q rules file must remain present and unchanged.
