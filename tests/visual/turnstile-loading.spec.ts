@@ -1,32 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-const TURNSTILE_SCRIPT_URL =
-  'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit';
+const TURNSTILE_PRELOAD_SELECTOR =
+  'head link[rel="preload"][as="script"][href^="https://challenges.cloudflare.com/turnstile/v0/api.js"]';
 
-test('preloads the exact Turnstile API script on the homepage and map pages only', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
-
-  const homepagePreload = page.locator(
-    'head link[rel="preload"][as="script"][href^="https://challenges.cloudflare.com/turnstile/v0/api.js"]',
-  );
-
-  await expect(homepagePreload).toHaveCount(1);
-  await expect(homepagePreload).toHaveAttribute('href', TURNSTILE_SCRIPT_URL);
-
-  // The hint is deliberately page-scoped so unrelated routes do not download
-  // the Turnstile API when they have no form requiring it.
-  await page.goto('/about', { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await expect(
-    page.locator(
-      'head link[rel="preload"][as="script"][href^="https://challenges.cloudflare.com/turnstile/v0/api.js"]',
-    ),
-  ).toHaveCount(0);
-
-  await page.goto('/map', { waitUntil: 'domcontentloaded', timeout: 30_000 });
-  await expect(
-    page.locator(
-      'head link[rel="preload"][as="script"][href^="https://challenges.cloudflare.com/turnstile/v0/api.js"]',
-    ),
-  ).toHaveCount(1);
-
+test('does not eagerly preload the Turnstile API on initial page documents', async ({ page }) => {
+  // The existing PageSpeed plan removes the third-party preload from the
+  // critical path. This checks only resource hints, not Turnstile validation.
+  for (const route of ['/', '/about', '/map']) {
+    await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await expect(page.locator(TURNSTILE_PRELOAD_SELECTOR)).toHaveCount(0);
+  }
 });
