@@ -37,3 +37,11 @@ Improve Gemini's ability to find important defects by adding an independent adve
 - Findings from different passes are restricted to changed files in the batch under review.
 - The footer is concise and only names documents confirmed materially useful.
 - New deterministic tests protect the review prompt and reporting behavior.
+
+## Post-merge runtime regression guard
+
+- The checked-in reviewer entry point MUST parse successfully under the workflow's Node runtime before any event is processed.
+- The document-context footer MUST render valid task-group and relevant-document summaries without malformed expressions or duplicated fragments.
+- The published top-level review body MUST include the serialized current-head finding state needed by opt-in targeted repair controls.
+- The independent adversarial pass MUST be attempted for every patch batch, even when the primary pass returns no findings or fails. Failures of either pass MUST be disclosed as coverage gaps.
+- Regression tests MUST assert parser validity, serialized review-state publication, and explicit adversarial-pass failure reporting.
