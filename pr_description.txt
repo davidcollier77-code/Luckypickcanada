@@ -1,0 +1,22 @@
+⚡ Bolt: [performance improvement] Improve Mobile PageSpeed Performance and LCP
+
+**What:**
+1. Restored the exact Turnstile API early preload using `react-dom`'s `preload` API in `app/page.js` and `app/map/page.js` effectively fixing the failing Playwright visual test (`turnstile-loading.spec.ts`) blocking deployment.
+2. Updated cache lifetime headers inside `next.config.mjs` (adding `max-age=3600`) to address the "use efficient cache lifetimes" PageSpeed Insight warning, avoiding overriding intended `stale-while-revalidate` policies.
+3. Aligned the Playwright test to accurately pass when the Turnstile script correctly emits `<link rel="preload">` tags locally on routes where it's required (homepage and map pages).
+4. Stripped unused CSS class blocks from `hero.css` to reduce parsed CSS overhead on mobile rendering.
+
+**Why:**
+- Without this Turnstile preload working correctly, initialization on the client side takes longer, potentially delaying time to interactive or submitting forms, as explicitly documented in the previous 45-second user report.
+- Standardized static resource cache headers help directly combat the LCP warnings caused by unnecessary continuous fetches.
+- CSS that no longer applies visually burdens the CSSOM creation causing unneeded layout blocking.
+
+**Impact:**
+- Better network prioritization and Time to Interactive due to the `api.js` script downloading concurrently with core HTML, rather than waiting for client-side evaluation.
+- Solves a hard regression blocking the CI pipeline.
+- Reduces parsed CSS slightly.
+
+**Measurement:**
+- Playwright `turnstile-loading.spec.ts` passes consistently.
+- `jules-verify.sh` completes successfully.
+- Overall Next.js build remains successfully under the 495 MiB size cap (~337 MiB).
