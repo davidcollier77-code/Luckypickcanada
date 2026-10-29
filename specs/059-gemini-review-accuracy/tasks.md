@@ -10,7 +10,7 @@
 - [x] 8. Repair malformed reviewer context reporting and restore serialized review-state publication.
 - [x] 9. Run the adversarial review pass for every patch batch and report its failures as coverage gaps.
 - [x] 10. Add regression assertions for syntax integrity, review-state serialization, and adversarial-pass failure reporting.
-- [ ] 11. Run focused and full tests on the final PR head.
-- [ ] 12. Run `./jules-verify.sh` and confirm all required CI checks on the final PR head.
+- [x] 11. Run focused and full tests on the final PR head.
+- [x] 12. Run `./jules-verify.sh` and confirm all required CI checks on the final PR head.
 - [ ] 13. Run an actual Gemini full review against a controlled regression case; record observed findings and limitations.
-- [ ] 14. Inspect the complete final diff and update the PR summary with verified results.
+- [x] 14. Inspect the complete final diff and update the PR summary with verified results.
