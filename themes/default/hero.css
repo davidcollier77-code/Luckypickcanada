@@ -13,6 +13,9 @@ html { scroll-behavior: smooth; }
 
 
 
+.hero-nav,
+.hero-content { position: relative; z-index: 1; width: min(1200px, 100%); margin-inline: auto; }
+
 .hero-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem 2rem; }
 .hero-brand { display: inline-flex; min-width: 0; align-items: center; gap: .65rem; color: #fff8dd; font-family: var(--lpc-display, sans-serif); font-size: clamp(.95rem, 1.6vw, 1.2rem); font-weight: 900; letter-spacing: .025em; text-decoration: none; text-transform: uppercase; }
 .hero-brand img { width: 48px; height: 48px; object-fit: contain; }
