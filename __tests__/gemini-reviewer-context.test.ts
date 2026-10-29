@@ -140,7 +140,7 @@ describe("Gemini reviewer source context", () => {
     const files = Array.from({length: reviewer.MAX_CHANGED_SOURCE_FILES + 3}, (_, i) => ({
       filename: "src/module-" + i + ".js",
       status: i === 0 ? "removed" : "modified",
-      patch: "@@ -1 +1 @@\\n-old\\n+new"
+      patch: "@@ -1 +1 @@\n-old\n+new"
     }));
     const selected = reviewer.selectChangedSourceCandidates(files);
     expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(6000);
@@ -289,9 +289,9 @@ describe("Gemini reviewer source context", () => {
   it("builds an independent adversarial second-pass prompt with concrete missed-defect patterns", () => {
     const prompt = reviewer.buildAdversarialReviewPrompt({
       pr: { number: 1634, title: "Fix story reaction consistency", body: "", head: { sha: "head-sha" } },
-      batch: [{ filename: "app/lucky-map-of-canada/lucky-map-of-canada.js", status: "modified", patch: "@@ -1 +1 @@\\n-old\\n+new" }],
+      batch: [{ filename: "app/lucky-map-of-canada/lucky-map-of-canada.js", status: "modified", patch: "@@ -1 +1 @@\n-old\n+new" }],
       sourceContext: { records: [{ path: "app/lucky-map-of-canada/lucky-map-of-canada.js", role: "head source", content: "catch (error) { /* state unchanged */ }" }], limitations: [] },
-      docBundle: "DOCUMENT: .docs/troubleshooting/react.md\\nState lifecycle reference.",
+      docBundle: "DOCUMENT: .docs/troubleshooting/react.md\nState lifecycle reference.",
       primaryFindings: [{ path: "app/lucky-map-of-canada/lucky-map-of-canada.js", line: 15, severity: "HIGH", title: "Existing finding", problem: "One failure path is incomplete." }],
       batchIndex: 0,
       batchCount: 1

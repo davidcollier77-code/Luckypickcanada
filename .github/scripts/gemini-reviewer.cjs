@@ -848,7 +848,7 @@ function docReport(loaded, unloaded, assessments, selection) {
   const groups = selection && Array.isArray(selection.groups) ? selection.groups : [];
   const groupReasons = selection && selection.groupReasons || {};
   const groupText = groups.length
-    ? groups.map((group) => group + (groupReasons[group] ? " — " + String(groupReasons[group]).replace(/\\s+/g, " ").trim() : "")).join("; ")
+    ? groups.map((group) => group + (groupReasons[group] ? " — " + String(groupReasons[group]).replace(/\s+/g, " ").trim() : "")).join("; ")
     : selection && selection.method === "skipped for initial automatic review"
       ? "Not selected — initial automatic review intentionally skips local document selection."
       : "No task group was confirmed.";
@@ -859,7 +859,7 @@ function docReport(loaded, unloaded, assessments, selection) {
     "- **Relevant documents:** " + (usefulDocs.length
       ? usefulDocs.map((doc) => {
           const item = byPath.get(doc.path);
-          const reason = String(item && item.reason || "Material contribution confirmed.").replace(/\\s+/g, " ").trim().slice(0, 220);
+          const reason = String(item && item.reason || "Material contribution confirmed.").replace(/\s+/g, " ").trim().slice(0, 220);
           return doc.path + " — " + reason + (doc.truncated ? " (content truncated)" : "");
         }).join("; ")
       : selection && selection.method === "skipped for initial automatic review"
