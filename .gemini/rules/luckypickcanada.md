@@ -27,11 +27,13 @@ Focus on the PR's changes and relevant surrounding code.
 
 For `@gemini full review`, `@gemini repair one <path>:<line> -- <finding title>`, and `@gemini repair all`:
 - Use `.docs/manifest.json` to choose the smallest relevant task group(s).
+- For every review batch, run an independent adversarial second pass using the supplied patches and relevant context. Search for overlooked failure paths and state/validation/identity/cache edge cases; do not merely confirm the first pass. A failed primary or adversarial pass is a coverage gap. Avoid duplicate findings and never claim complete review when a pass fails.
+- Re-fetch PR metadata immediately before publishing and do not publish if the head SHA changed during review.
 - Treat Gemini reference snapshots as optional, task-specific references, not mandatory content for every group.
 - Load `_google-gemini_gemini-cli.md` only when the PR directly concerns Gemini CLI, its configuration, or its commands.
 - The `_websites_ai_google_dev_gemini-api.md` snapshot is specifically about the Gemini Deep Research agent and Interactions API, not general code-review guidance. Load it only when the PR directly concerns Deep Research or the Interactions API.
 - Never load a Gemini reference merely because its filename includes Gemini or because it exists in the selected group. Use the relevant technical snapshots in the selected group(s) instead.
-- Keep all selected snapshots within the selected group(s), report only documents actually loaded, and explain whether each materially helped.
+- Keep selected snapshots within the selected group(s). In the compact Review context footer, name each selected task group with a short reason and list only loaded snapshots explicitly confirmed to have materially helped, with a brief contribution. If none qualify, say so. Do not list every irrelevant, unassessed, or unloaded document.
 - Initial automatic reviews skip the document-selection model call and library snapshots to conserve tokens, but MUST still attempt bounded read-only source-context retrieval; report source caps and missing context honestly.
 
 🔴 B — BOUNDARIES
@@ -45,6 +47,6 @@ For `@gemini full review`, `@gemini repair one <path>:<line> -- <finding title>`
 
 - Identify the affected file and relevant lines; explain the problem and impact. Each finding's dropdown must provide a copy/paste implementation prompt. When a safe targeted suggestion is possible, provide the exact `@gemini repair one <path>:<line> -- <finding title>` command. The review footer must explain `@gemini repair all` for requesting suggestions for all eligible findings.
 - Provide a concise review summary. If no actionable issues are found, say so clearly.
-- Report selected task group(s) and each library snapshot's exact path, marking `USED: YES/NO` and `USEFUL: YES/NO` with a brief reason. Report documents that were missing or could not be loaded.
+- Keep the bottom Review context concise: selected task group(s) with brief reasons, materially useful document paths and contributions only, and one aggregate coverage note for genuine selection/loading/truncation limitations. Do not produce a per-document USED/USEFUL inventory.
 - Never claim a document was used, a test was run, or verification passed without evidence.
 - Confirm that no code was applied automatically and the PR remains open and unmerged.

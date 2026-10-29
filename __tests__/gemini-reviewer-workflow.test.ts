@@ -25,8 +25,8 @@ describe("Gemini PR reviewer", () => {
     expect(rules).toContain("_websites_ai_google_dev_gemini-api.md");
     expect(rules).toContain("Treat Gemini reference snapshots as optional, task-specific references");
     expect(rules).toContain("MUST still attempt bounded read-only source-context retrieval");
-    expect(rules).toContain("USED: YES/NO");
-    expect(rules).toContain("USEFUL: YES/NO");
+    expect(rules).toContain("Do not produce a per-document USED/USEFUL inventory.");
+    expect(rules).toContain("materially useful document paths and contributions only");
     expect(rules).toContain("@gemini full review");
     expect(rules).toContain("@gemini repair all");
     expect(rules).not.toMatch(/AGENTS\.md|jules/i);
@@ -86,7 +86,7 @@ describe("Gemini PR reviewer", () => {
     expect(script.indexOf("if (!API_KEY)")).toBeLessThan(script.indexOf("const sourceContext = await collectSourceContext(pr, files)"));
   });
 
-  it("uses selected task groups, relevance-guards Gemini references, and reports actual usage", () => {
+  it("uses selected task groups, relevance-guards Gemini references, and reports compact review context", () => {
     expect(script).toContain("function isGeminiCliDoc(path)");
     expect(script).toContain("function isGeminiDeepResearchDoc(path)");
     expect(script).toContain("function isGeminiReferenceRelevant(path, pr, files)");
@@ -101,9 +101,10 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("const availableSet = new Set(groupPaths)");
     expect(script).toContain("function geminiManifestGroups()");
     expect(script).toContain('const allDocPaths = mode === "initial" ? [] : walkDocs(resolve(ROOT, ".docs")).filter((path) => !isJulesSpecificDoc(path));');
-    expect(script).toContain("Selected task group(s):**");
-    expect(script).toContain("USED: YES; USEFUL: ");
-    expect(script).toContain("USED: NO; USEFUL: NO;");
+    expect(script).toContain("**Task group:**");
+    expect(script).toContain("**Relevant documents:**");
+    expect(script).toContain("**Coverage note:**");
+    expect(script).toContain("None were explicitly confirmed as materially useful.");
     expect(script).toContain("const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);");
     expect(script).toContain('mode = "initial";');
     expect(script).toContain('const selection = mode === "initial"');

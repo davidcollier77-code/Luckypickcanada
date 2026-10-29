@@ -1,3 +1,12 @@
+# Progress — 2026-10-29: Gemini Full-Review Accuracy
+
+- Added an independent adversarial review pass for every changed-patch batch, separate from the primary pass, with explicit checks for failure-path state rollback, stale asynchronous refreshes, input validation, fallback identity collisions, idempotency/cache issues, and test gaps.
+- Constrained finding normalization to the active batch, made pass failures and document-selection fallback affect coverage status, shortened the bottom report to a compact Review context section, and added a pre-publication PR-head freshness check.
+- Added deterministic regression tests and Spec Kit artifacts under specs/059-gemini-review-accuracy.
+- Verification remains pending until PR-head CI, ./jules-verify.sh, and a live Gemini full review have actually run and their results have been inspected.
+
+---
+
 # Progress — 2026-10-19: Sky Background Repair CI Follow-up
 
 - First repair PR CI on commit c109d46ff2ca3825d617da51f0dace56f4fa07cb: unit tests 17 passed/0 failed, TypeScript and Spec Kit verification passed. Visual QA had 22 passed, 3 skipped, 2 failures in the newly added check because it only accepted the desktop background image filename on narrow mobile viewports.

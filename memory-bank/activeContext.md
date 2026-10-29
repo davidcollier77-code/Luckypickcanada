@@ -1,3 +1,13 @@
+# Active Context — Gemini Full-Review Accuracy (2026-10-29)
+
+- **Selected task group:** troubleshooting — address confirmed review-coverage gaps involving failure paths, state consistency, input validation, and context reporting.
+- **Branch:** fix/gemini-adversarial-review-accuracy-20261029; target main; leave the PR open and unmerged.
+- **Objective:** Add an independent adversarial review pass per patch batch, scope each pass's findings to that batch, report review-pass failures as coverage gaps, shorten the review-context footer, and prevent publication when the PR head changes during analysis.
+- **Regression basis:** Amazon Q's four findings on PR #1634 are used as patterns; current code must independently substantiate any finding.
+- **Verification:** GitHub API is used to prepare the change because the local shell cannot resolve github.com. Test/build/governance CI and an actual Gemini API review remain pending until their results are observed.
+
+---
+
 # Active Context — Gemini Reviewer Targeted-Fix Guard Repair (2026-10-28)
 
 - **Selected task group:** `troubleshooting` — a verified GitHub Actions reviewer startup crash.
