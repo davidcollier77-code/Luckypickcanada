@@ -1,3 +1,14 @@
+# Active Context — Gemini Reviewer Runtime Recovery (2026-10-29)
+
+- **Selected task group:** troubleshooting — PR #1636 exposed a post-merge Gemini reviewer startup failure in trusted main.
+- **Branch:** fix/gemini-reviewer-runtime-1636-20261029; target main; leave the repair PR open and unmerged.
+- **Verified baseline failure:** the Visual QA run failed at .github/scripts/gemini-reviewer.cjs because docReport() had malformed duplicated expressions. The workflow test also showed review-state serialization was missing from the published review body. The adversarial pass had an unintended condition that skipped it when the primary pass returned no findings, and its catch did not report a coverage gap.
+- **Implementation prepared:** reconstructed docReport(); restored review-state serialization and balanced the publication block; run the independent adversarial pass for every patch batch and report pass failures; map pull_request_review to safe failure reporting; added deterministic regression assertions.
+- **Spec Kit:** amended specs/059-gemini-review-accuracy/spec.md, plan.md, and tasks.md for this directly related post-merge repair.
+- **Verification:** GitHub Actions validation is pending on the repair PR. Do not claim completion until the parser test, focused/full tests, ./jules-verify.sh, and final-head checks are observed. No live Gemini API acceptance test is claimed.
+
+---
+
 # Active Context — Gemini Full-Review Accuracy (2026-10-29)
 
 - **Selected task group:** troubleshooting — address confirmed review-coverage gaps involving failure paths, state consistency, input validation, and context reporting.
