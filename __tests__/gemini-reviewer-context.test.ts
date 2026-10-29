@@ -286,4 +286,72 @@ describe("Gemini reviewer source context", () => {
     expect(normalized[0].title).toBe("Fallback preserved");
   });
 
+  it("builds an independent adversarial second-pass prompt with concrete missed-defect patterns", () => {
+    const prompt = reviewer.buildAdversarialReviewPrompt({
+      pr: { number: 1634, title: "Fix story reaction consistency", body: "", head: { sha: "head-sha" } },
+      batch: [{ filename: "app/lucky-map-of-canada/lucky-map-of-canada.js", status: "modified", patch: "@@ -1 +1 @@\\n-old\\n+new" }],
+      sourceContext: { records: [{ path: "app/lucky-map-of-canada/lucky-map-of-canada.js", role: "head source", content: "catch (error) { /* state unchanged */ }" }], limitations: [] },
+      docBundle: "DOCUMENT: .docs/troubleshooting/react.md\\nState lifecycle reference.",
+      primaryFindings: [{ path: "app/lucky-map-of-canada/lucky-map-of-canada.js", line: 15, severity: "HIGH", title: "Existing finding", problem: "One failure path is incomplete." }],
+      batchIndex: 0,
+      batchCount: 1
+    });
+    expect(prompt).toContain("independent adversarial second-pass reviewer");
+    expect(prompt).toContain("head-sha");
+    expect(prompt).toContain("Existing finding");
+    expect(prompt).toContain("non-OK response");
+    expect(prompt).toContain("thrown network exception");
+    expect(prompt).toContain("background polling");
+    expect(prompt).toContain("generic fallback collisions");
+    expect(prompt).toContain("app/lucky-map-of-canada/lucky-map-of-canada.js");
+    expect(prompt).toContain("State lifecycle reference.");
+    expect(reviewer.ADVERSARIAL_REVIEW_GUIDANCE).toMatch(/confidence >= 0\.80/);
+  });
+
+  it("keeps review-context footer short and lists only documents explicitly confirmed useful", () => {
+    const report = reviewer.docReport(
+      [
+        { path: ".docs/troubleshooting/react.md", truncated: false },
+        { path: ".docs/troubleshooting/next.md", truncated: false },
+        { path: ".docs/troubleshooting/unassessed.md", truncated: false }
+      ],
+      [{ path: ".docs/troubleshooting/missing.md", reason: "Missing from checkout." }],
+      [
+        { path: ".docs/troubleshooting/react.md", useful: true, reason: "Clarified state update and effect lifecycle." },
+        { path: ".docs/troubleshooting/next.md", useful: false, reason: "Generic framework background." }
+      ],
+      {
+        groups: ["troubleshooting"],
+        groupReasons: { troubleshooting: "diagnosing failure-path behavior." },
+        method: "Gemini group/document selection"
+      }
+    );
+    expect(report).toContain("### Review context");
+    expect(report).toContain("**Task group:** troubleshooting — diagnosing failure-path behavior.");
+    expect(report).toContain(".docs/troubleshooting/react.md — Clarified state update and effect lifecycle.");
+    expect(report).not.toContain(".docs/troubleshooting/next.md");
+    expect(report).not.toContain(".docs/troubleshooting/unassessed.md");
+    expect(report).not.toContain("USED: YES");
+    expect(report).toContain("Coverage note:");
+    expect(report).toContain("1 selected document snapshot(s) could not be loaded");
+    expect(report.length).toBeLessThan(900);
+  });
+
+  it("renders a compact report for the initial automatic review without inventing a task group", () => {
+    const report = reviewer.docReport([], [], [], {
+      groups: [],
+      groupReasons: {},
+      method: "skipped for initial automatic review"
+    });
+    expect(report).toContain("initial automatic review intentionally skips local document selection");
+    expect(report).toContain("None — local document selection is skipped");
+    expect(report).not.toContain("Selection method:");
+  });
+
+  it("detects a stale PR head before a generated review can be published", () => {
+    expect(reviewer.headMatchesReview("abc123", "abc123")).toBe(true);
+    expect(reviewer.headMatchesReview("abc123", "def456")).toBe(false);
+    expect(reviewer.headMatchesReview("", "abc123")).toBe(false);
+  });
+
 });
