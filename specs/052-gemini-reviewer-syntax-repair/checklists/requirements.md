@@ -32,3 +32,11 @@
 ## Notes
 
 - This checklist records requirements-quality review only. Implementation verification remains pending in `tasks.md` until actual current-head CI results are inspected.
+
+## Targeted-fix guard regression follow-up — 2026-10-28
+
+- [x] Current failed Actions log and the exact no-match branch were inspected.
+- [x] The missing guard was restored and a placement regression assertion was added.
+- [ ] Focused reviewer test and Node syntax checks pass on the proposed revision.
+- [ ] Full `pnpm test` and `./jules-verify.sh` pass on the proposed revision.
+- [ ] A fresh trusted-base reviewer run succeeds after owner-controlled merge.

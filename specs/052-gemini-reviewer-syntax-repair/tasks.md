@@ -30,3 +30,14 @@
 ## Implementation strategy
 
 Ship the smallest source correction with targeted regression coverage. Use GitHub CI for actual verification because this session can inspect and author repository content through the GitHub API but has no repository shell for local commands. The PR remains open and unmerged until the owner decides.
+
+## Phase 4: Repeated startup failure — targeted-fix no-match guard
+
+**Independent test**: The reviewer script parses, and the no-match path returns from the async handler before loading the autofix module.
+
+- [x] T008 Inspect Actions run #40793451382, job #123184035314, confirm the exact line-952 parse error, and trace the enclosing targeted-fix branch.
+- [x] T009 [US1] Restore the missing `if (!requestedFindings.length) {` guard in `.github/scripts/gemini-reviewer.cjs` without changing fix behavior.
+- [x] T010 [P] [US1] Add regression assertions in `__tests__/gemini-reviewer-workflow.test.ts` for guard/message/module ordering.
+- [ ] T011 Run `pnpm test -- __tests__/gemini-reviewer-workflow.test.ts`, full `pnpm test`, and `./jules-verify.sh`; record actual results from the PR head.
+- [ ] T012 After owner-controlled merge, confirm a fresh trusted-base Gemini reviewer run proceeds beyond startup; agents must not merge.
+

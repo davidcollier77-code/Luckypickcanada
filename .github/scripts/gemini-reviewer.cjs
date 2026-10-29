@@ -927,6 +927,7 @@ async function main() {
       requestedFindings = state.findings;
     }
 
+    if (!requestedFindings.length) {
       await comment(number, "## Gemini Targeted Fix\n\nThe requested finding(s) could not be matched. No suggestion was posted, and no code was changed.");
       return;
     }
