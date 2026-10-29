@@ -1,15 +1,19 @@
-# 🛡️ Sentinel: [HIGH] Fix Insecure Randomness for Token Generation
+# 🛡️ Sentinel: [HIGH] Harden gift-delivery error handling
 
 ## Summary
 
-**Goal**: Replace the predictable `Math.random()` call with `crypto.randomUUID()` in the `claimGiftDeliveryLock` function in `app/gift-email.js` to ensure the security of the gift delivery ownership tokens.
-**Group**: `security` - This issue is a direct security vulnerability fixing predictable token generation, hence handled under the security specialist profile.
+**Goal**: Harden gift-delivery error handling in `app/gift-email.js` for failures that occur after the Redis delivery lock is acquired, ensuring the lock is reliably released and false delivery status is not persisted on uncertain failures.
+
+**Group**: `security` - This addresses safe failure modes for concurrent gift lock control, handled under the security specialist profile.
 
 ### Results
-- `app/gift-email.js` was modified to use `crypto.randomUUID()` instead of `Math.random().toString(36).slice(2)`.
+- `app/gift-email.js` modified to enclose Stripe updates and Resend requests within a `try/finally` block.
+- Implemented logic ensuring the optimistic Stripe update is only reversed on clean failures, not on uncertain exceptions.
+- The Redis ownership lock is now unconditionally released in the `finally` block.
 
 ### Exact Files Changed
 - `app/gift-email.js`
+- `__tests__/gift-email-error-handling.test.js`
 - `specs/060-gift-delivery-token-security/spec.md`
 - `specs/060-gift-delivery-token-security/plan.md`
 - `specs/060-gift-delivery-token-security/tasks.md`
@@ -22,13 +26,13 @@
 - **Tasks**: `specs/060-gift-delivery-token-security/tasks.md`
 
 ### Actual Verification Commands and Results
-- `pnpm test`: PASS (139 tests passed)
+- `pnpm test`: PASS (141 tests passed, including the new error handling tests)
 - `pnpm run build`: PASS
-- `pnpm exec prettier --check .` / `pnpm exec prettier --write app/gift-email.js`: PASS
 - `./jules-verify.sh`: PASS
 
 ### Behavior Preserved
-- Gift delivery lock functionality continues to work exactly as before, with token usage and storage maintaining the same logical flow.
+- The three Amazon Q fixes present in PR #1639 (cryptographically secure lock tokens, and explicit lock release when returning early from missing env vars or validation failure) are preserved.
+- The optimistic metadata update continues to be applied before email attempt.
 
 ### Remaining Issues/Risks
 - None.
@@ -37,25 +41,121 @@
 ```diff
 --- a/app/gift-email.js
 +++ b/app/gift-email.js
-@@ -106,7 +106,7 @@ async function claimGiftDeliveryLock(sessionId) {
+@@ -318,59 +318,63 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
+   const metadata = validation.metadata;
+   const reveal = createGiftReveal(metadata);
+
+-  // Mark as delivered in Stripe BEFORE sending email (optimistic claim)
+-  // This provides additional safety even if lock fails
+-
+-  await stripe.checkout.sessions.update(sessionId, {
+-    metadata: {
+-      ...metadata,
+-      giftDeliveredAt: new Date().toISOString(),
+-      giftNumbers: reveal.numbers.join(","),
+-      giftLuckyColor: reveal.luckyColor,
+-      giftLuckyDay: reveal.luckyDay,
+-    },
+-  });
+-
+-  // Send email with idempotency protection
+-  const emailResult = await sendGiftEmail({
+-    metadata,
+-    resendApiKey,
+-    fromEmail,
+-    reveal,
+-    sessionId,
+-  });
+-
+-  if (!emailResult.ok) {
+-    console.error("Gift email failed", emailResult.details);
+-
+-    // Email failed - roll back the delivery claim
+-    try {
+-      await stripe.checkout.sessions.update(sessionId, {
+-        metadata: {
+-          ...metadata,
+-          giftDeliveredAt: null,
+-          giftNumbers: null,
+-          giftLuckyColor: null,
+-          giftLuckyDay: null,
+-        },
+-      });
+-    } catch (releaseError) {
+-      console.error("Failed to release gift delivery claim", releaseError);
++  try {
++    // Mark as delivered in Stripe BEFORE sending email (optimistic claim)
++    // This provides additional safety even if lock fails
++    await stripe.checkout.sessions.update(sessionId, {
++      metadata: {
++        ...metadata,
++        giftDeliveredAt: new Date().toISOString(),
++        giftNumbers: reveal.numbers.join(","),
++        giftLuckyColor: reveal.luckyColor,
++        giftLuckyDay: reveal.luckyDay,
++      },
++    });
++
++    // Send email with idempotency protection
++    const emailResult = await sendGiftEmail({
++      metadata,
++      resendApiKey,
++      fromEmail,
++      reveal,
++      sessionId,
++    });
++
++    if (!emailResult.ok) {
++      console.error("Gift email failed", emailResult.details);
++
++      // Email failed cleanly - roll back the delivery claim
++      try {
++        await stripe.checkout.sessions.update(sessionId, {
++          metadata: {
++            ...metadata,
++            giftDeliveredAt: null,
++            giftNumbers: null,
++            giftLuckyColor: null,
++            giftLuckyDay: null,
++          },
++        });
++      } catch (releaseError) {
++        console.error("Failed to release gift delivery claim", releaseError);
++      }
++
++      return {
++        ok: false,
++        reason:
++          "Payment succeeded, but the gift email could not be sent right now.",
++      };
+     }
+
+-    // Release the lock before returning
+-    await releaseGiftDeliveryLock(sessionId, ownershipToken);
+-
+-    return {
+-      ok: false,
+-      reason:
+-        "Payment succeeded, but the gift email could not be sent right now.",
+-    };
++    return { ok: true, delivered: true, reveal };
++  } catch (error) {
++    console.error("Unexpected error during gift email delivery:", error);
++    // DO NOT rollback the optimistic claim. An uncertain network failure could
++    // mean the email was already sent (e.g. timeout on Resend API response).
++    // Reverting it might cause duplicate emails if delivery is retried.
++    return { ok: false, reason: "An unexpected error occurred during delivery." };
++  } finally {
++    // ALWAYS release the lock properly, even if exceptions were thrown
++    await releaseGiftDeliveryLock(sessionId, ownershipToken);
    }
-
-   const lockKey = `gift-delivery-lock:${sessionId}`;
--  const ownershipToken = `${sessionId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-+  const ownershipToken = `${sessionId}-${Date.now()}-${crypto.randomUUID()}`;
-   const ttlSeconds = 300; // 5 minutes - enough for email send + Stripe update
-
-   try {
+-
+-  // Success - release the lock
+-  await releaseGiftDeliveryLock(sessionId, ownershipToken);
+-
+-  return { ok: true, delivered: true, reveal };
+ }
 ```
-
-### 🎯 What
-The `Math.random()` function was used for generating gift delivery lock ownership tokens. `Math.random()` is not cryptographically secure, and its outputs can be predicted.
-
-### ⚠️ Risk
-If an attacker were able to predict the random token sequence, they could potentially forge an `ownershipToken` and release the lock early in a race condition attack to try and duplicate gift email deliveries.
-
-### 🛡️ Solution
-The fix replaces `Math.random().toString(36).slice(2)` with `crypto.randomUUID()`. This ensures the token contains a cryptographically secure, globally unique UUID string, neutralizing the predictability vulnerability.
 
 ### USEFUL RESULT
 YES

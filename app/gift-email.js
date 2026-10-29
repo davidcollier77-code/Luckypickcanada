@@ -317,58 +317,62 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   const metadata = validation.metadata;
   const reveal = createGiftReveal(metadata);
 
-  // Mark as delivered in Stripe BEFORE sending email (optimistic claim)
-  // This provides additional safety even if lock fails
+  try {
+    // Mark as delivered in Stripe BEFORE sending email (optimistic claim)
+    // This provides additional safety even if lock fails
+    await stripe.checkout.sessions.update(sessionId, {
+      metadata: {
+        ...metadata,
+        giftDeliveredAt: new Date().toISOString(),
+        giftNumbers: reveal.numbers.join(","),
+        giftLuckyColor: reveal.luckyColor,
+        giftLuckyDay: reveal.luckyDay,
+      },
+    });
 
-  await stripe.checkout.sessions.update(sessionId, {
-    metadata: {
-      ...metadata,
-      giftDeliveredAt: new Date().toISOString(),
-      giftNumbers: reveal.numbers.join(","),
-      giftLuckyColor: reveal.luckyColor,
-      giftLuckyDay: reveal.luckyDay,
-    },
-  });
+    // Send email with idempotency protection
+    const emailResult = await sendGiftEmail({
+      metadata,
+      resendApiKey,
+      fromEmail,
+      reveal,
+      sessionId,
+    });
 
-  // Send email with idempotency protection
-  const emailResult = await sendGiftEmail({
-    metadata,
-    resendApiKey,
-    fromEmail,
-    reveal,
-    sessionId,
-  });
+    if (!emailResult.ok) {
+      console.error("Gift email failed", emailResult.details);
 
-  if (!emailResult.ok) {
-    console.error("Gift email failed", emailResult.details);
+      // Email failed cleanly - roll back the delivery claim
+      try {
+        await stripe.checkout.sessions.update(sessionId, {
+          metadata: {
+            ...metadata,
+            giftDeliveredAt: null,
+            giftNumbers: null,
+            giftLuckyColor: null,
+            giftLuckyDay: null,
+          },
+        });
+      } catch (releaseError) {
+        console.error("Failed to release gift delivery claim", releaseError);
+      }
 
-    // Email failed - roll back the delivery claim
-    try {
-      await stripe.checkout.sessions.update(sessionId, {
-        metadata: {
-          ...metadata,
-          giftDeliveredAt: null,
-          giftNumbers: null,
-          giftLuckyColor: null,
-          giftLuckyDay: null,
-        },
-      });
-    } catch (releaseError) {
-      console.error("Failed to release gift delivery claim", releaseError);
+      return {
+        ok: false,
+        reason:
+          "Payment succeeded, but the gift email could not be sent right now.",
+      };
     }
 
-    // Release the lock before returning
+    return { ok: true, delivered: true, reveal };
+  } catch (error) {
+    console.error("Unexpected error during gift email delivery:", error);
+    // DO NOT rollback the optimistic claim. An uncertain network failure could
+    // mean the email was already sent (e.g. timeout on Resend API response).
+    // Reverting it might cause duplicate emails if delivery is retried.
+    return { ok: false, reason: "An unexpected error occurred during delivery." };
+  } finally {
+    // ALWAYS release the lock properly, even if exceptions were thrown
     await releaseGiftDeliveryLock(sessionId, ownershipToken);
-
-    return {
-      ok: false,
-      reason:
-        "Payment succeeded, but the gift email could not be sent right now.",
-    };
   }
-
-  // Success - release the lock
-  await releaseGiftDeliveryLock(sessionId, ownershipToken);
-
-  return { ok: true, delivered: true, reveal };
 }
