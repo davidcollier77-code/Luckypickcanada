@@ -18,7 +18,8 @@ As the repository owner, I need the automated reviewer to start reliably so elig
 **Acceptance Scenarios**:
 1. **Given** an eligible pull-request event, **When** the reviewer starts, **Then** it enters the intended review path without a syntax-parse crash.
 2. **Given** a manually dispatched review request, **When** its selected mode is validated, **Then** only supported manual modes are accepted.
-3. **Given** a reviewer prompt is assembled, **When** changed PR data is included, **Then** execution-control logic is not accidentally treated as prompt content.\n4. **Given** a targeted repair request matches no findings, **When** the reviewer handles the request, **Then** it posts the existing no-match message and returns without breaking the enclosing async handler.
+3. **Given** a reviewer prompt is assembled, **When** changed PR data is included, **Then** execution-control logic is not accidentally treated as prompt content.
+4. **Given** a targeted repair request matches no findings, **When** the reviewer handles the request, **Then** it posts the existing no-match message and returns without breaking the enclosing async handler.
 
 ## Edge Cases
 
@@ -34,13 +35,15 @@ As the repository owner, I need the automated reviewer to start reliably so elig
 - **FR-002**: Manual dispatch must accept only its supported modes; event-triggered review handling must retain its supported automatic and explicit modes.
 - **FR-003**: Regression checks must detect both syntax-parse failures and a duplicated or misplaced mode-validation statement.
 - **FR-004**: The repair must preserve existing reviewer permissions, trusted-base execution, secret handling, model fallback behavior, and the separation of PR content from instructions.
-- **FR-005**: The repair must not change application behavior, add dependencies, or modify the Tip Jar changes in PR #1605.\n- **FR-006**: The targeted-fix no-match guard must remain around its explanatory response, before the autofix module is loaded, so the reviewer script remains syntactically valid and safely exits when no findings match.
+- **FR-005**: The repair must not change application behavior, add dependencies, or modify the Tip Jar changes in PR #1605.
+- **FR-006**: The targeted-fix no-match guard must remain around its explanatory response, before the autofix module is loaded, so the reviewer script remains syntactically valid and safely exits when no findings match.
 
 ## Success Criteria
 
 - **SC-001**: The reviewer entrypoint has zero syntax-parse failures in the focused automated checks.
 - **SC-002**: All focused reviewer regression assertions pass on the proposed revision.
-- **SC-003**: After the repair reaches the trusted base branch, an eligible reviewer run proceeds past startup and produces its normal completion outcome.\n- **SC-004**: The focused regression test asserts that the no-match guard, message, and autofix module stay in the expected order.
+- **SC-003**: After the repair reaches the trusted base branch, an eligible reviewer run proceeds past startup and produces its normal completion outcome.
+- **SC-004**: The focused regression test asserts that the no-match guard, message, and autofix module stay in the expected order.
 
 ## Assumptions
 
