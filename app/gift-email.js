@@ -1,7 +1,23 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
-const luckyColors = ['Aurora Green', 'Star Gold', 'Midnight Blue', 'Lucky Red', 'Moonlight Silver', 'Northern Purple', 'Sky Blue'];
-const luckyDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const luckyColors = [
+  "Aurora Green",
+  "Star Gold",
+  "Midnight Blue",
+  "Lucky Red",
+  "Moonlight Silver",
+  "Northern Purple",
+  "Sky Blue",
+];
+const luckyDays = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 export function generateNumbers(count, max) {
   const numbers = Array.from({ length: max }, (_, index) => index + 1);
@@ -23,31 +39,44 @@ function pickOne(items) {
 }
 
 function escapeHtml(value) {
-  return String(value || '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 export function createGiftReveal(metadata) {
-  const isSevenPick = metadata.luckyPickGame === '7';
+  const isSevenPick = metadata.luckyPickGame === "7";
   const numbers = generateNumbers(isSevenPick ? 7 : 6, isSevenPick ? 50 : 49);
 
   return {
-    gameName: isSevenPick ? '7 Pick' : '6 Pick',
+    gameName: isSevenPick ? "7 Pick" : "6 Pick",
     numbers,
     luckyColor: pickOne(luckyColors),
     luckyDay: pickOne(luckyDays),
   };
 }
 
-export function buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyDay }) {
-  const recipientName = escapeHtml(metadata.recipientName || 'Friend');
-  const senderName = escapeHtml(metadata.senderName || 'Someone');
-  const giftMessage = escapeHtml(metadata.giftMessage || 'Wishing you a lucky day.');
-  const numberHtml = numbers.map((number) => `<span style="display:inline-grid;place-items:center;width:42px;height:42px;margin:4px;border-radius:50%;background:#fef3c7;color:#0f172a;font-weight:900;box-shadow:0 0 18px rgba(250,204,21,0.6);">${number}</span>`).join('');
+export function buildGiftEmail({
+  metadata,
+  gameName,
+  numbers,
+  luckyColor,
+  luckyDay,
+}) {
+  const recipientName = escapeHtml(metadata.recipientName || "Friend");
+  const senderName = escapeHtml(metadata.senderName || "Someone");
+  const giftMessage = escapeHtml(
+    metadata.giftMessage || "Wishing you a lucky day.",
+  );
+  const numberHtml = numbers
+    .map(
+      (number) =>
+        `<span style="display:inline-grid;place-items:center;width:42px;height:42px;margin:4px;border-radius:50%;background:#fef3c7;color:#0f172a;font-weight:900;box-shadow:0 0 18px rgba(250,204,21,0.6);">${number}</span>`,
+    )
+    .join("");
 
   return `
     <div style="margin:0;padding:28px;background:#061826;color:#f8fafc;font-family:Arial,Helvetica,sans-serif;">
@@ -80,13 +109,16 @@ export function buildGiftEmail({ metadata, gameName, numbers, luckyColor, luckyD
  */
 function getRedisClient() {
   try {
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-      console.warn('Redis not configured for gift delivery locking');
+    if (
+      !process.env.UPSTASH_REDIS_REST_URL ||
+      !process.env.UPSTASH_REDIS_REST_TOKEN
+    ) {
+      console.warn("Redis not configured for gift delivery locking");
       return null;
     }
     return Redis.fromEnv();
   } catch (error) {
-    console.warn('Redis initialization failed:', error.message);
+    console.warn("Redis initialization failed:", error.message);
     return null;
   }
 }
@@ -94,7 +126,7 @@ function getRedisClient() {
 /**
  * Atomically claim the gift delivery lock for a session using SET NX.
  * Returns { ok: true, token } on success, { ok: false } if already locked.
- * 
+ *
  * The token must be used to safely release the lock later.
  */
 async function claimGiftDeliveryLock(sessionId) {
@@ -104,28 +136,28 @@ async function claimGiftDeliveryLock(sessionId) {
     // Fall back to Stripe metadata check only
     return { ok: true, token: null, noRedis: true };
   }
-  
+
   const lockKey = `gift-delivery-lock:${sessionId}`;
-  const ownershipToken = `${sessionId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const ownershipToken = `${sessionId}-${Date.now()}-${crypto.randomUUID()}`;
   const ttlSeconds = 300; // 5 minutes - enough for email send + Stripe update
-  
+
   try {
     // SET NX - only set if key doesn't exist (atomic)
     // Returns 'OK' if set, null if key already exists
     const result = await redis.set(lockKey, ownershipToken, {
-      nx: true,  // SET NX: Only set if not exists
-      ex: ttlSeconds  // Expiration in seconds
+      nx: true, // SET NX: Only set if not exists
+      ex: ttlSeconds, // Expiration in seconds
     });
-    
-    if (result === 'OK') {
+
+    if (result === "OK") {
       return { ok: true, token: ownershipToken };
     }
-    
+
     // Lock already held by another request
-    return { ok: false, reason: 'Lock already held by another request' };
+    return { ok: false, reason: "Lock already held by another request" };
   } catch (error) {
-    console.error('Failed to claim gift delivery lock:', error);
-    return { ok: false, reason: 'Lock claim failed' };
+    console.error("Failed to claim gift delivery lock:", error);
+    return { ok: false, reason: "Lock claim failed" };
   }
 }
 
@@ -135,45 +167,56 @@ async function claimGiftDeliveryLock(sessionId) {
  */
 async function releaseGiftDeliveryLock(sessionId, ownershipToken) {
   if (!ownershipToken) return { ok: true }; // No token means no Redis, nothing to release
-  
+
   const redis = getRedisClient();
   if (!redis) return { ok: true };
-  
+
   const lockKey = `gift-delivery-lock:${sessionId}`;
-  
+
   try {
-    const storedToken = await redis.get(lockKey);
-    
-    // Only delete if we own the lock
-    if (storedToken === ownershipToken) {
-      await redis.del(lockKey);
+    const result = await redis.eval(
+      'if redis.call("GET", KEYS[1]) == ARGV[1] then return redis.call("DEL", KEYS[1]) else return 0 end',
+      [lockKey],
+      [ownershipToken],
+    );
+
+    if (Number(result) === 1) {
       return { ok: true };
     }
-    
-    return { ok: false, reason: 'Token mismatch - lock owned by another request' };
+
+    return {
+      ok: false,
+      reason: "Token mismatch or lock already released",
+    };
   } catch (error) {
-    console.error('Failed to release gift delivery lock:', error);
-    return { ok: false, reason: 'Lock release failed' };
+    console.error("Failed to release gift delivery lock:", error);
+    return { ok: false, reason: "Lock release failed" };
   }
 }
 
-export async function sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal = createGiftReveal(metadata), sessionId }) {
+export async function sendGiftEmail({
+  metadata,
+  resendApiKey,
+  fromEmail,
+  reveal = createGiftReveal(metadata),
+  sessionId,
+}) {
   // Derive stable idempotency key from the verified Stripe Checkout Session ID
   // This ensures retries for the same session cannot create duplicate emails
   const idempotencyKey = sessionId ? `gift-${sessionId}` : undefined;
-  
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       // Add idempotency header to prevent duplicate sends on retry
-      ...(idempotencyKey && { 'Idempotency-Key': idempotencyKey }),
+      ...(idempotencyKey && { "Idempotency-Key": idempotencyKey }),
     },
     body: JSON.stringify({
       from: fromEmail,
       to: metadata.recipientEmail,
-      subject: `${metadata.senderName || 'Someone'} sent you a Lucky Pick Canada gift`,
+      subject: `${metadata.senderName || "Someone"} sent you a Lucky Pick Canada gift`,
       html: buildGiftEmail({ metadata, ...reveal }),
     }),
   });
@@ -188,8 +231,16 @@ export async function sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal 
 function validateGiftSession(session) {
   const metadata = session.metadata || {};
 
-  if (session.payment_status !== 'paid' || metadata.checkoutType !== 'gift_package' || session.amount_total !== 299 || session.currency !== 'cad') {
-    return { ok: false, reason: 'Only a paid $2.99 gift package can send a gift email.' };
+  if (
+    session.payment_status !== "paid" ||
+    metadata.checkoutType !== "gift_package" ||
+    session.amount_total !== 299 ||
+    session.currency !== "cad"
+  ) {
+    return {
+      ok: false,
+      reason: "Only a paid $2.99 gift package can send a gift email.",
+    };
   }
 
   if (metadata.giftDeliveredAt) {
@@ -197,103 +248,225 @@ function validateGiftSession(session) {
   }
 
   if (!metadata.recipientEmail || !metadata.recipientName) {
-    return { ok: false, reason: 'The gift recipient details were missing.' };
+    return { ok: false, reason: "The gift recipient details were missing." };
   }
 
   return { ok: true, alreadyDelivered: false, metadata };
 }
 
+const RESEND_SAFE_RETRY_WINDOW_MS = 23 * 60 * 60 * 1000;
+
+function getStoredPendingGiftReveal(metadata) {
+  const isSevenPick = metadata.luckyPickGame === "7";
+  const expectedCount = isSevenPick ? 7 : 6;
+  const maxNumber = isSevenPick ? 50 : 49;
+  const numbers = String(metadata.giftNumbers || "")
+    .split(",")
+    .map((value) => Number(value));
+
+  if (
+    numbers.length !== expectedCount ||
+    numbers.some(
+      (number) =>
+        !Number.isInteger(number) || number < 1 || number > maxNumber,
+    ) ||
+    new Set(numbers).size !== expectedCount ||
+    !luckyColors.includes(metadata.giftLuckyColor) ||
+    !luckyDays.includes(metadata.giftLuckyDay)
+  ) {
+    return null;
+  }
+
+  return {
+    gameName: isSevenPick ? "7 Pick" : "6 Pick",
+    numbers,
+    luckyColor: metadata.giftLuckyColor,
+    luckyDay: metadata.giftLuckyDay,
+  };
+}
+
+async function requireManualGiftDeliveryReview(stripe, sessionId, metadata, reason) {
+  try {
+    await stripe.checkout.sessions.update(sessionId, {
+      metadata: {
+        ...metadata,
+        giftDeliveryStatus: "review_required",
+      },
+    });
+  } catch (error) {
+    console.error("Failed to mark gift delivery for manual review:", error);
+  }
+
+  return { ok: false, reviewRequired: true, reason };
+}
+
 export async function deliverGiftEmailForSession(stripe, sessionId) {
-  // CRITICAL: Claim atomic lock BEFORE any side effects
-  // This prevents race conditions between concurrent webhook/fallback requests
+  // Claim the lock before reading or changing delivery state.
   const lockResult = await claimGiftDeliveryLock(sessionId);
-  
+
   if (!lockResult.ok) {
-    // Lock already held - another request is processing this gift
-    // Check if delivery completed by querying Stripe
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
       if (session.metadata?.giftDeliveredAt) {
-        return { ok: true, alreadyDelivered: true, delivered: true, metadata: session.metadata };
+        return {
+          ok: true,
+          alreadyDelivered: true,
+          delivered: true,
+          metadata: session.metadata,
+        };
       }
     } catch (error) {
-      console.error('Failed to check delivery status:', error);
+      console.error("Failed to check delivery status:", error);
     }
-    
-    return { 
-      ok: false, 
-      reason: 'Gift delivery is being processed by another request',
-      concurrent: true 
+
+    return {
+      ok: false,
+      reason: "Gift delivery is being processed by another request",
+      concurrent: true,
     };
   }
-  
+
   const ownershipToken = lockResult.token;
-  
-  const resendApiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.GIFT_FROM_EMAIL;
 
-  if (!resendApiKey || !fromEmail) {
-    return { ok: false, reason: 'Gift email is ready, but email delivery needs RESEND_API_KEY and GIFT_FROM_EMAIL.' };
-  }
+  try {
+    const resendApiKey = process.env.RESEND_API_KEY;
+    const fromEmail = process.env.GIFT_FROM_EMAIL;
 
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
-  const validation = validateGiftSession(session);
-
-  if (!validation.ok) {
-    return validation;
-  }
-
-  if (validation.alreadyDelivered) {
-    // Already delivered - release lock and return
-    await releaseGiftDeliveryLock(sessionId, ownershipToken);
-    return { ok: true, alreadyDelivered: true, delivered: true, metadata: validation.metadata };
-  }
-
-  const metadata = validation.metadata;
-  const reveal = createGiftReveal(metadata);
-  
-  // Mark as delivered in Stripe BEFORE sending email (optimistic claim)
-  // This provides additional safety even if lock fails
-
-  await stripe.checkout.sessions.update(sessionId, {
-    metadata: {
-      ...metadata,
-      giftDeliveredAt: new Date().toISOString(),
-      giftNumbers: reveal.numbers.join(','),
-      giftLuckyColor: reveal.luckyColor,
-      giftLuckyDay: reveal.luckyDay,
-    },
-  });
-
-  // Send email with idempotency protection
-  const emailResult = await sendGiftEmail({ metadata, resendApiKey, fromEmail, reveal, sessionId });
-
-  if (!emailResult.ok) {
-    console.error('Gift email failed', emailResult.details);
-
-    // Email failed - roll back the delivery claim
-    try {
-      await stripe.checkout.sessions.update(sessionId, {
-        metadata: {
-          ...metadata,
-          giftDeliveredAt: null,
-          giftNumbers: null,
-          giftLuckyColor: null,
-          giftLuckyDay: null,
-        },
-      });
-    } catch (releaseError) {
-      console.error('Failed to release gift delivery claim', releaseError);
+    if (!resendApiKey || !fromEmail) {
+      return {
+        ok: false,
+        reason:
+          "Gift email is ready, but email delivery needs RESEND_API_KEY and GIFT_FROM_EMAIL.",
+      };
     }
-    
-    // Release the lock before returning
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const validation = validateGiftSession(session);
+
+    if (!validation.ok) {
+      return validation;
+    }
+
+    if (validation.alreadyDelivered) {
+      return {
+        ok: true,
+        alreadyDelivered: true,
+        delivered: true,
+        metadata: validation.metadata,
+      };
+    }
+
+    const metadata = validation.metadata;
+
+    // A sent marker without giftDeliveredAt is inconsistent. Fail closed rather
+    // than risking a duplicate email.
+    if (
+      metadata.giftDeliveryStatus === "sent" ||
+      metadata.giftDeliveryStatus === "review_required"
+    ) {
+      return requireManualGiftDeliveryReview(
+        stripe,
+        sessionId,
+        metadata,
+        "This gift has an unresolved delivery state. Please reconcile it before retrying.",
+      );
+    }
+
+    let reveal;
+    let deliveryMetadata = metadata;
+
+    if (metadata.giftDeliveryStatus === "pending") {
+      const pendingAt = Date.parse(metadata.giftDeliveryPendingAt || "");
+      const pendingAge = Date.now() - pendingAt;
+
+      // Resend retains email idempotency keys for 24 hours. Stop with a safety
+      // margin instead of retrying with a key that may have expired.
+      if (
+        !Number.isFinite(pendingAt) ||
+        pendingAge < 0 ||
+        pendingAge >= RESEND_SAFE_RETRY_WINDOW_MS
+      ) {
+        return requireManualGiftDeliveryReview(
+          stripe,
+          sessionId,
+          metadata,
+          "A previous email attempt is outside the safe idempotency retry window. Check Resend before retrying to avoid a duplicate email.",
+        );
+      }
+
+      reveal = getStoredPendingGiftReveal(metadata);
+      if (!reveal) {
+        return requireManualGiftDeliveryReview(
+          stripe,
+          sessionId,
+          metadata,
+          "The saved gift reveal for a pending email attempt is incomplete. Check Resend before retrying.",
+        );
+      }
+    } else {
+      reveal = createGiftReveal(metadata);
+      deliveryMetadata = {
+        ...metadata,
+        giftDeliveryStatus: "pending",
+        giftDeliveryPendingAt: new Date(Date.now()).toISOString(),
+        giftNumbers: reveal.numbers.join(","),
+        giftLuckyColor: reveal.luckyColor,
+        giftLuckyDay: reveal.luckyDay,
+      };
+
+      // Persist the exact email payload before sending. Retries reuse this reveal
+      // and the same Resend idempotency key, including after ambiguous failures.
+      await stripe.checkout.sessions.update(sessionId, {
+        metadata: deliveryMetadata,
+      });
+    }
+
+    const emailResult = await sendGiftEmail({
+      metadata: deliveryMetadata,
+      resendApiKey,
+      fromEmail,
+      reveal,
+      sessionId,
+    });
+
+    if (!emailResult.ok) {
+      // Leave the attempt pending. Resend did not confirm success, and a retry
+      // must reuse the saved payload and idempotency key.
+      console.error("Gift email was not accepted by Resend:", emailResult.details);
+      return {
+        ok: false,
+        reason: "Payment succeeded, but the gift email is still pending and can be retried safely.",
+        retryable: true,
+      };
+    }
+
+    // The email request was accepted. Only now mark it as sent in Stripe.
+    // If this update fails, the pending record is retained; a retry reuses the
+    // same payload/key so Resend can return the original result without resending.
+    const latestSession = await stripe.checkout.sessions.retrieve(sessionId);
+    await stripe.checkout.sessions.update(sessionId, {
+      metadata: {
+        ...deliveryMetadata,
+        ...(latestSession.metadata || {}),
+        giftDeliveryStatus: "sent",
+        giftDeliveryPendingAt: "",
+        giftDeliveredAt: new Date(Date.now()).toISOString(),
+        giftNumbers: reveal.numbers.join(","),
+        giftLuckyColor: reveal.luckyColor,
+        giftLuckyDay: reveal.luckyDay,
+      },
+    });
+
+    return { ok: true, delivered: true, reveal };
+  } catch (error) {
+    console.error("Unexpected error during gift email delivery:", error);
+    return {
+      ok: false,
+      reason:
+        "Gift delivery could not be confirmed. The saved pending attempt can be retried safely while its idempotency key is valid.",
+      retryable: true,
+    };
+  } finally {
     await releaseGiftDeliveryLock(sessionId, ownershipToken);
-
-    return { ok: false, reason: 'Payment succeeded, but the gift email could not be sent right now.' };
   }
-  
-  // Success - release the lock
-  await releaseGiftDeliveryLock(sessionId, ownershipToken);
-
-  return { ok: true, delivered: true, reveal };
 }

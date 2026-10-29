@@ -1,34 +1,49 @@
-# 🛡️ Fix Lucky Story Card Clipping and Implement Persistent Celebrate Tallies
+# Gift Delivery Reliability and Token Security — PR #1639
 
-## Goal
-Correct the confirmed Lucky Story card overflow defect and replace the temporary client-side Celebrate counter with a persistent, database-backed reaction system.
+## Task group
+`security` — addresses delivery-state correctness, retry/idempotency safety, and distributed lock ownership.
 
-## Task Group
-`creation` - The task required adding a new API endpoint, extending the database schema, and modifying the frontend implementation to establish persistent server-backed state while fixing UI layouts.
+## Implementation
+- Preserved `crypto.randomUUID()` ownership tokens and the original Amazon Q fixes for early-return cleanup.
+- Replaced non-atomic Redis GET/DEL unlock with an atomic Lua compare-and-delete operation.
+- Persisted the exact reveal and pending timestamp before calling Resend.
+- Set `giftDeliveredAt` and `giftDeliveryStatus=sent` only after Resend returns success.
+- Kept errors and uncertain outcomes pending; retries reuse the same reveal, request body, and idempotency key.
+- Flagged stale/incomplete attempts for manual reconciliation before the provider's idempotency retention window expires.
+- Added regression tests for success, failure, retry safety, stale state, configuration/validation early exits, and lock release.
 
-## Implementation Result
-- Removed `max-height` and `overflow: hidden` from `.map-province-details` to resolve clipping for long stories in `themes/default/map.css`.
-- Added the `lucky_story_reactions` table via `create-database-schema.sql` and `app/lib/db-init.js` to persist reactions by `story_id` and hashed IP.
-- Implemented `addStoryReaction` in `app/lucky-stories.js` to insert reactions, re-aggregate the story count, and invalidate the global Cloudflare KV cache for stories.
-- Created `app/api/lucky-stories/react/route.js` endpoint to safely handle story celebrations with rate limiting.
-- Updated `app/lucky-map-of-canada/lucky-map-of-canada.js` to optimistically update the reaction count, manage local "already celebrated" state via `localStorage`, and accurately reflect All-Time values in the statistics section.
-
-## Files Changed
-- `themes/default/map.css`
-- `create-database-schema.sql`
-- `app/lib/db-init.js`
-- `app/lucky-stories.js`
-- `app/api/lucky-stories/react/route.js`
-- `app/lucky-map-of-canada/lucky-map-of-canada.js`
+## Files
+- `app/gift-email.js`
+- `__tests__/gift-email-error-handling.test.js`
+- `specs/060-gift-delivery-token-security/spec.md`
+- `specs/060-gift-delivery-token-security/plan.md`
+- `specs/060-gift-delivery-token-security/tasks.md`
+- `PR_SUMMARY.md`
+- `pr_desc.txt`
 - `.specify/feature.json`
-- `specs/058-fix-lucky-story-reactions/spec.md`
-- `specs/058-fix-lucky-story-reactions/plan.md`
-- `specs/058-fix-lucky-story-reactions/tasks.md`
+- Existing task summary artifact(s) in this PR
+
+## Spec Kit stages
+- Specify: `specs/060-gift-delivery-token-security/spec.md`
+- Plan: `specs/060-gift-delivery-token-security/plan.md`
+- Tasks: `specs/060-gift-delivery-token-security/tasks.md`
+- Implement: source changes and focused regression tests added.
 
 ## Verification
-- Spec Kit verification: `PASS`
-- `./jules-verify.sh`: `PASS`
-- Type Check: `PASS` (ran internally as part of build and verify script)
-- Next.js Build: `PASS` (Build size: 293 MB, well under the 495 MB cap)
+- Targeted tests: PENDING on latest PR head.
+- Full `pnpm test`: PENDING.
+- Prettier / formatting: NOT RUN locally.
+- Production build and measured build size (495 MB hard maximum): PENDING.
+- `./jules-verify.sh`: PENDING.
+- Latest-head GitHub Actions: pending; inspect final results before calling this complete.
 
-**USEFUL RESULT: YES**
+## Preserved behavior and risks
+- Payment eligibility, existing gift email content, and the legacy `giftDeliveredAt` success check remain unchanged.
+- Resend's idempotency keys are retained for 24 hours; code uses a conservative 23-hour retry cutoff. Stale pending attempts require checking Resend and manual reconciliation rather than an unsafe automatic send.
+- Resend accepting a request is not a guarantee of final mailbox delivery.
+
+## Final error check
+- The code now avoids marking a failed/uncertain attempt sent and does not blindly resend an expired pending attempt.
+- Completion remains unverified until required checks pass.
+
+**USEFUL RESULT: NO — latest-head verification is pending.**

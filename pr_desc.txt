@@ -1,0 +1,22 @@
+# Harden gift-delivery error handling
+
+This PR fixes delivery-state integrity and safe retry handling for paid gift emails.
+
+- Replaces predictable lock token generation with `crypto.randomUUID()`.
+- Uses an atomic Redis compare-and-delete script to release only the current lock owner's lock.
+- Persists a pending state and fixed reveal before contacting Resend.
+- Marks delivery as sent only after Resend accepts the request.
+- Retries pending requests with the same payload and idempotency key inside a conservative 23-hour window.
+- Requires manual reconciliation for stale or incomplete pending attempts.
+- Adds regression tests for successful delivery, thrown/non-success responses, stable retries, stale attempts, Stripe failure, configuration/validation early exits, and lock release.
+
+Task group: `security`.
+
+Spec Kit artifacts:
+- `specs/060-gift-delivery-token-security/spec.md`
+- `specs/060-gift-delivery-token-security/plan.md`
+- `specs/060-gift-delivery-token-security/tasks.md`
+
+Verification status (latest head): targeted tests, full tests, formatting, build/size measurement, and `./jules-verify.sh` are pending. Latest GitHub Actions results must be reviewed before completion is claimed.
+
+Known safety behavior: a pending attempt beyond the safe idempotency window is flagged for manual reconciliation to avoid accidental duplicate emails. PR remains open and unmerged.
