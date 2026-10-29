@@ -9,9 +9,9 @@
 - [x] 7. Add deterministic tests for second-pass guidance, footer output, and head freshness.
 - [ ] 8. Confirm focused tests and full pnpm test on the PR head.
 - [ ] 9. Confirm ./jules-verify.sh and required CI checks on the PR head.
-- [ ] 10. Run an actual Gemini full review against a controlled regression case; record observed findings and limitations.
-- [ ] 11. Inspect CI results and the complete final diff; update this checklist and PR summary with verified outcomes.
-- [ ] 12. Repair malformed reviewer context reporting and restore serialized review-state publication.
+- [x] 12. Repair malformed reviewer context reporting and restore serialized review-state publication.
+- [x] 13. Run the adversarial review pass for every patch batch and report its failures as coverage gaps.
+- [x] 14. Add regression assertions for syntax integrity, review-state serialization, and adversarial-pass failure reporting.
 - [ ] 13. Run the adversarial review pass for every patch batch and report its failures as coverage gaps.
 - [ ] 14. Add regression assertions for syntax integrity, review-state serialization, and adversarial-pass failure reporting.
 - [ ] 15. Re-run focused/full tests, `./jules-verify.sh`, and final-head CI; record observed outcomes.
