@@ -43,3 +43,17 @@ ON luck_shares(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_luck_shares_checkout_session 
 ON luck_shares(checkout_session_id) 
 WHERE checkout_session_id IS NOT NULL;
+
+-- Table: lucky_story_reactions
+-- Stores anonymous reactions (celebrations) for stories
+CREATE TABLE IF NOT EXISTS lucky_story_reactions (
+    id BIGSERIAL PRIMARY KEY,
+    story_id BIGINT NOT NULL REFERENCES lucky_stories(id) ON DELETE CASCADE,
+    client_hash TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (story_id, client_hash)
+);
+
+-- Index for counting reactions per story
+CREATE INDEX IF NOT EXISTS idx_lucky_story_reactions_story_id
+ON lucky_story_reactions(story_id);
