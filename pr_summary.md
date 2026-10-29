@@ -1,34 +1,27 @@
-# 🛡️ Fix Lucky Story Card Clipping and Implement Persistent Celebrate Tallies
+# 🛡️ Sentinel: Fix Cloudflare Deployment 10013 Failure
 
 ## Goal
-Correct the confirmed Lucky Story card overflow defect and replace the temporary client-side Celebrate counter with a persistent, database-backed reaction system.
+Fix the Cloudflare deployment failure ("HTTP 500", error "10013") occurring during the "assets-upload-session" request.
 
 ## Task Group
-`creation` - The task required adding a new API endpoint, extending the database schema, and modifying the frontend implementation to establish persistent server-backed state while fixing UI layouts.
+`troubleshooting` - The task required investigating a transient Cloudflare platform API failure during deployment and applying a dependency update to resolve or work around the issue.
 
 ## Implementation Result
-- Removed `max-height` and `overflow: hidden` from `.map-province-details` to resolve clipping for long stories in `themes/default/map.css`.
-- Added the `lucky_story_reactions` table via `create-database-schema.sql` and `app/lib/db-init.js` to persist reactions by `story_id` and hashed IP.
-- Implemented `addStoryReaction` in `app/lucky-stories.js` to insert reactions, re-aggregate the story count, and invalidate the global Cloudflare KV cache for stories.
-- Created `app/api/lucky-stories/react/route.js` endpoint to safely handle story celebrations with rate limiting.
-- Updated `app/lucky-map-of-canada/lucky-map-of-canada.js` to optimistically update the reaction count, manage local "already celebrated" state via `localStorage`, and accurately reflect All-Time values in the statistics section.
+- Upgraded `wrangler` dependency in `package.json` to `4.155.0` which resolves the `assets-upload-session` bug.
+- Added error code `10013` to the bounded retry block in `.github/workflows/deploy-open-next.yml` alongside `10500` and `429` to gracefully handle future instances of this transient Cloudflare API failure.
 
 ## Files Changed
-- `themes/default/map.css`
-- `create-database-schema.sql`
-- `app/lib/db-init.js`
-- `app/lucky-stories.js`
-- `app/api/lucky-stories/react/route.js`
-- `app/lucky-map-of-canada/lucky-map-of-canada.js`
+- `package.json`
+- `pnpm-lock.yaml`
+- `.github/workflows/deploy-open-next.yml`
 - `.specify/feature.json`
-- `specs/058-fix-lucky-story-reactions/spec.md`
-- `specs/058-fix-lucky-story-reactions/plan.md`
-- `specs/058-fix-lucky-story-reactions/tasks.md`
+- `specs/060-assets-upload-10013-fix/spec.md`
+- `specs/060-assets-upload-10013-fix/plan.md`
+- `specs/060-assets-upload-10013-fix/tasks.md`
 
 ## Verification
 - Spec Kit verification: `PASS`
 - `./jules-verify.sh`: `PASS`
-- Type Check: `PASS` (ran internally as part of build and verify script)
-- Next.js Build: `PASS` (Build size: 293 MB, well under the 495 MB cap)
+- Next.js Build: `PASS`
 
 **USEFUL RESULT: YES**
