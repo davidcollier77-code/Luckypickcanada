@@ -179,6 +179,39 @@ describe('Gift delivery error handling', () => {
     expectOwnedLockReleased(redisMock);
   });
 
+  it('retries with the same payload if Stripe cannot record a successful Resend response', async () => {
+    const update = mockStripe.checkout.sessions.update;
+    const originalUpdate = update.getMockImplementation();
+    update.mockImplementationOnce(originalUpdate);
+    update.mockRejectedValueOnce(new Error('Stripe update timeout'));
+
+    const requests = [];
+    global.fetch.mockImplementation(async (_url, request) => {
+      requests.push(request);
+      return {
+        ok: true,
+        text: vi.fn().mockResolvedValue('{"id":"re_test_123"}'),
+      };
+    });
+
+    const firstResult = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(firstResult.ok).toBe(false);
+    expect(currentSession.metadata.giftDeliveryStatus).toBe('pending');
+    expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
+
+    const secondResult = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(secondResult).toMatchObject({ ok: true, delivered: true });
+    expect(requests).toHaveLength(2);
+    expect(requests[1].headers['Idempotency-Key']).toBe(
+      requests[0].headers['Idempotency-Key'],
+    );
+    expect(requests[1].body).toBe(requests[0].body);
+    expect(currentSession.metadata.giftDeliveryStatus).toBe('sent');
+    expect(currentSession.metadata.giftDeliveredAt).toBe(new Date(NOW).toISOString());
+  });
+
   it('releases the lock when the pending Stripe update throws before sending', async () => {
     mockStripe.checkout.sessions.update.mockRejectedValueOnce(new Error('Stripe API error'));
 
