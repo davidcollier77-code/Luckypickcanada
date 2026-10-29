@@ -172,20 +172,26 @@ async function releaseGiftDeliveryLock(sessionId, ownershipToken) {
   if (!redis) return { ok: true };
 
   const lockKey = `gift-delivery-lock:${sessionId}`;
-  const result = await redis.eval(
-    'if redis.call("GET", KEYS[1]) == ARGV[1] then return redis.call("DEL", KEYS[1]) else return 0 end',
-    [lockKey],
-    [ownershipToken],
-  );
 
-  if (Number(result) === 1) {
-    return { ok: true };
+  try {
+    const result = await redis.eval(
+      'if redis.call("GET", KEYS[1]) == ARGV[1] then return redis.call("DEL", KEYS[1]) else return 0 end',
+      [lockKey],
+      [ownershipToken],
+    );
+
+    if (Number(result) === 1) {
+      return { ok: true };
+    }
+
+    return {
+      ok: false,
+      reason: "Token mismatch or lock already released",
+    };
+  } catch (error) {
+    console.error("Failed to release gift delivery lock:", error);
+    return { ok: false, reason: "Lock release failed" };
   }
-
-  return {
-    ok: false,
-    reason: "Token mismatch or lock already released",
-  };
 }
 
 export async function sendGiftEmail({
