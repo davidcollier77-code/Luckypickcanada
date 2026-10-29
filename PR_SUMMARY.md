@@ -1,34 +1,61 @@
-# 🛡️ Fix Lucky Story Card Clipping and Implement Persistent Celebrate Tallies
+# 🛡️ Sentinel: [HIGH] Fix Insecure Randomness for Token Generation
 
-## Goal
-Correct the confirmed Lucky Story card overflow defect and replace the temporary client-side Celebrate counter with a persistent, database-backed reaction system.
+## Summary
 
-## Task Group
-`creation` - The task required adding a new API endpoint, extending the database schema, and modifying the frontend implementation to establish persistent server-backed state while fixing UI layouts.
+**Goal**: Replace the predictable `Math.random()` call with `crypto.randomUUID()` in the `claimGiftDeliveryLock` function in `app/gift-email.js` to ensure the security of the gift delivery ownership tokens.
+**Group**: `security` - This issue is a direct security vulnerability fixing predictable token generation, hence handled under the security specialist profile.
 
-## Implementation Result
-- Removed `max-height` and `overflow: hidden` from `.map-province-details` to resolve clipping for long stories in `themes/default/map.css`.
-- Added the `lucky_story_reactions` table via `create-database-schema.sql` and `app/lib/db-init.js` to persist reactions by `story_id` and hashed IP.
-- Implemented `addStoryReaction` in `app/lucky-stories.js` to insert reactions, re-aggregate the story count, and invalidate the global Cloudflare KV cache for stories.
-- Created `app/api/lucky-stories/react/route.js` endpoint to safely handle story celebrations with rate limiting.
-- Updated `app/lucky-map-of-canada/lucky-map-of-canada.js` to optimistically update the reaction count, manage local "already celebrated" state via `localStorage`, and accurately reflect All-Time values in the statistics section.
+### Results
+- `app/gift-email.js` was modified to use `crypto.randomUUID()` instead of `Math.random().toString(36).slice(2)`.
 
-## Files Changed
-- `themes/default/map.css`
-- `create-database-schema.sql`
-- `app/lib/db-init.js`
-- `app/lucky-stories.js`
-- `app/api/lucky-stories/react/route.js`
-- `app/lucky-map-of-canada/lucky-map-of-canada.js`
+### Exact Files Changed
+- `app/gift-email.js`
+- `specs/060-gift-delivery-token-security/spec.md`
+- `specs/060-gift-delivery-token-security/plan.md`
+- `specs/060-gift-delivery-token-security/tasks.md`
 - `.specify/feature.json`
-- `specs/058-fix-lucky-story-reactions/spec.md`
-- `specs/058-fix-lucky-story-reactions/plan.md`
-- `specs/058-fix-lucky-story-reactions/tasks.md`
 
-## Verification
-- Spec Kit verification: `PASS`
-- `./jules-verify.sh`: `PASS`
-- Type Check: `PASS` (ran internally as part of build and verify script)
-- Next.js Build: `PASS` (Build size: 293 MB, well under the 495 MB cap)
+### Required Spec Kit Stages and Artifacts
+- **Feature Directory**: `specs/060-gift-delivery-token-security`
+- **Spec**: `specs/060-gift-delivery-token-security/spec.md`
+- **Plan**: `specs/060-gift-delivery-token-security/plan.md`
+- **Tasks**: `specs/060-gift-delivery-token-security/tasks.md`
 
-**USEFUL RESULT: YES**
+### Actual Verification Commands and Results
+- `pnpm test`: PASS (139 tests passed)
+- `pnpm run build`: PASS
+- `pnpm exec prettier --check .` / `pnpm exec prettier --write app/gift-email.js`: PASS
+- `./jules-verify.sh`: PASS
+
+### Behavior Preserved
+- Gift delivery lock functionality continues to work exactly as before, with token usage and storage maintaining the same logical flow.
+
+### Remaining Issues/Risks
+- None.
+
+### Final Diff
+```diff
+--- a/app/gift-email.js
++++ b/app/gift-email.js
+@@ -106,7 +106,7 @@ async function claimGiftDeliveryLock(sessionId) {
+   }
+
+   const lockKey = `gift-delivery-lock:${sessionId}`;
+-  const ownershipToken = `${sessionId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
++  const ownershipToken = `${sessionId}-${Date.now()}-${crypto.randomUUID()}`;
+   const ttlSeconds = 300; // 5 minutes - enough for email send + Stripe update
+
+   try {
+```
+
+### 🎯 What
+The `Math.random()` function was used for generating gift delivery lock ownership tokens. `Math.random()` is not cryptographically secure, and its outputs can be predicted.
+
+### ⚠️ Risk
+If an attacker were able to predict the random token sequence, they could potentially forge an `ownershipToken` and release the lock early in a race condition attack to try and duplicate gift email deliveries.
+
+### 🛡️ Solution
+The fix replaces `Math.random().toString(36).slice(2)` with `crypto.randomUUID()`. This ensures the token contains a cryptographically secure, globally unique UUID string, neutralizing the predictability vulnerability.
+
+### USEFUL RESULT
+YES
