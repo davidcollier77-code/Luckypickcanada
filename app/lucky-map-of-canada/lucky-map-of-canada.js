@@ -104,6 +104,27 @@ export default function LuckyMapOfCanada({ mapData }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingTimeoutRef = useRef(null);
   const [reactions, setReactions] = useState({});
+  const [localCelebrated, setLocalCelebrated] = useState(new Set());
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('celebratedStories');
+        if (stored) {
+          setLocalCelebrated(new Set(JSON.parse(stored)));
+        }
+      } catch (e) { /* ignore */ }
+    }
+  }, []);
+
+  // Initialize reactions state from the server data when it changes
+  useEffect(() => {
+    const initialReactions = {};
+    stories.forEach(s => {
+      initialReactions[s.id] = s.reactionCount || 0;
+    });
+    setReactions(initialReactions);
+  }, [stories]);
   const selectedProvinceInfo = provinces.find((province) => province.code === selectedProvince) || provinces[4];
   const selectedStories = provinceStories(stories, selectedProvince);
   const selectedStory = selectedStoryId ? selectedStories.find((story) => story.id === selectedStoryId) || null : null;
@@ -213,8 +234,38 @@ export default function LuckyMapOfCanada({ mapData }) {
     }
   }
 
-  function reactToStory(storyId) {
+  async function reactToStory(storyId) {
+    if (localCelebrated.has(storyId)) return;
+
+    // Optimistically update locally
     setReactions((current) => ({ ...current, [storyId]: (current[storyId] || 0) + 1 }));
+    setLocalCelebrated(prev => {
+      const next = new Set(prev);
+      next.add(storyId);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('celebratedStories', JSON.stringify(Array.from(next)));
+      }
+      return next;
+    });
+
+    try {
+      const res = await fetch('/api/lucky-stories/react', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Update with server authoritative count
+        if (typeof data.count === 'number') {
+          setReactions((current) => ({ ...current, [storyId]: data.count }));
+        }
+      } else {
+        // Handle failure by reverting optimistic update if we want, but doing nothing is fine too as it'll just stay or sync on reload
+      }
+    } catch (e) {
+      console.error('Failed to celebrate story', e);
+    }
   }
 
   function returnToMap() {
@@ -302,8 +353,8 @@ export default function LuckyMapOfCanada({ mapData }) {
 
         <section aria-label="Lucky Map statistics" className="map-statistics" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
           {[
-            ['Total lucky stories shared', currentMapData?.totalStories || 0],
-            ['Provinces with lucky moments', currentMapData?.provincesWithStories || 0],
+            ['Total lucky stories shared (All-time)', currentMapData?.totalStories || 0],
+            ['Provinces with lucky moments (All-time)', currentMapData?.provincesWithStories || 0],
             ['Mapped story markers', stories.length],
           ].map(([label, value]) => (
             <div key={label} className="premium-surface map-statistic" style={{ ...cardStyle, padding: '1.2rem 1.4rem' }}>
@@ -410,8 +461,8 @@ export default function LuckyMapOfCanada({ mapData }) {
                         <button type="button" onClick={() => shareStory(story)} className="story-link" style={{ color: '#06110d', fontWeight: 900, padding: '0.65rem 1.25rem', borderRadius: 999, background: 'linear-gradient(180deg, #fef0a5 0%, #d4981a 100%)', borderTop: '1px solid rgba(255, 255, 255, 0.8)', borderBottom: '1px solid rgba(139, 79, 7, 0.8)', borderLeft: '1px solid rgba(255, 215, 100, 0.5)', borderRight: '1px solid rgba(255, 215, 100, 0.5)', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.8)' }}>
                           <span className="clover-3d">🍀</span> Share This Story
                         </button>
-                        <button type="button" className="secondary-action-btn" onClick={() => reactToStory(story.id)} style={{ padding: '0.65rem 1.25rem', borderRadius: 999, border: '1px solid rgba(250, 204, 21, 0.4)', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', color: '#d1fae5', fontWeight: 900, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-                          Celebrate {reactions[story.id] ? `(${reactions[story.id]})` : ''}
+                        <button type="button" className={localCelebrated.has(story.id) ? "" : "secondary-action-btn"} onClick={() => reactToStory(story.id)} disabled={localCelebrated.has(story.id)} style={{ padding: '0.65rem 1.25rem', borderRadius: 999, border: '1px solid rgba(250, 204, 21, 0.4)', background: localCelebrated.has(story.id) ? 'rgba(30, 41, 59, 0.8)' : 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', color: localCelebrated.has(story.id) ? '#9ca3af' : '#d1fae5', fontWeight: 900, cursor: localCelebrated.has(story.id) ? 'default' : 'pointer', textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', transition: 'all 0.2s ease' }}>
+                          {localCelebrated.has(story.id) ? 'Celebrated 🎉' : 'Celebrate'} {reactions[story.id] ? `(${reactions[story.id]})` : ''}
                         </button>
                         <button type="button" className="secondary-action-btn" onClick={returnToMap} style={{ padding: '0.65rem 1.25rem', borderRadius: 999, border: '1px solid rgba(250, 204, 21, 0.4)', background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)', color: '#fde68a', fontWeight: 900, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                           ← Back to Lucky Story Map

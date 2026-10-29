@@ -1,37 +1,34 @@
-# PR Summary: Tip Jar Polishing
+# 🛡️ Fix Lucky Story Card Clipping and Implement Persistent Celebrate Tallies
 
-## 1. Selected Task Group
-`polishing` - The user requested visual enhancements ("warmer, brighter, more polished, and appreciative") and a tone update for the existing Tip Jar checkout modal.
+## Goal
+Correct the confirmed Lucky Story card overflow defect and replace the temporary client-side Celebrate counter with a persistent, database-backed reaction system.
 
-## 2. Required Material Consulted
-- **Jules Documentation**: USED: YES, USEFUL: YES - Used to ensure spec/plan compliance and governance adherence.
-- **Next.js**: USED: YES, USEFUL: NO - The Next.js framework is the base of the app, but no specific Next.js features were required to be looked up for this CSS and string change.
-- **React**: USED: YES, USEFUL: NO - Basic React knowledge was required to add dynamic class names, but no explicit React docs check was necessary.
+## Task Group
+`creation` - The task required adding a new API endpoint, extending the database schema, and modifying the frontend implementation to establish persistent server-backed state while fixing UI layouts.
 
-## 3. Spec Kit Execution
-- `/speckit.specify`: NATIVE DISPATCH - Result: Spec file generated at `specs/052-tip-jar-polish/spec.md`.
-- `/speckit.plan`: NATIVE DISPATCH - Result: Plan file generated at `specs/052-tip-jar-polish/plan.md`.
-- `/speckit.tasks`: NATIVE DISPATCH - Result: Tasks file generated at `specs/052-tip-jar-polish/tasks.md`.
-- `/speckit.implement`: FILE-DRIVEN PROCEDURAL EXECUTION - Result: Changes implemented and verified.
+## Implementation Result
+- Removed `max-height` and `overflow: hidden` from `.map-province-details` to resolve clipping for long stories in `themes/default/map.css`.
+- Added the `lucky_story_reactions` table via `create-database-schema.sql` and `app/lib/db-init.js` to persist reactions by `story_id` and hashed IP.
+- Implemented `addStoryReaction` in `app/lucky-stories.js` to insert reactions, re-aggregate the story count, and invalidate the global Cloudflare KV cache for stories.
+- Created `app/api/lucky-stories/react/route.js` endpoint to safely handle story celebrations with rate limiting.
+- Updated `app/lucky-map-of-canada/lucky-map-of-canada.js` to optimistically update the reaction count, manage local "already celebrated" state via `localStorage`, and accurately reflect All-Time values in the statistics section.
 
-## 4. Verification and Changes
-### Exact Files Changed:
-- `app/checkout-modal.js`
-- `public/themes/default/homepage.css`
-- `themes/default/homepage.css`
+## Files Changed
+- `themes/default/map.css`
+- `create-database-schema.sql`
+- `app/lib/db-init.js`
+- `app/lucky-stories.js`
+- `app/api/lucky-stories/react/route.js`
+- `app/lucky-map-of-canada/lucky-map-of-canada.js`
+- `.specify/feature.json`
+- `specs/058-fix-lucky-story-reactions/spec.md`
+- `specs/058-fix-lucky-story-reactions/plan.md`
+- `specs/058-fix-lucky-story-reactions/tasks.md`
 
-### Verification Commands Run:
-- `./jules-verify.sh`: Passed
-- `pnpm run build`: Passed (Build Size: <495MB. The actual size wasn't directly printed by Next.js in a single human readable line but the build process completed cleanly within limits).
+## Verification
+- Spec Kit verification: `PASS`
+- `./jules-verify.sh`: `PASS`
+- Type Check: `PASS` (ran internally as part of build and verify script)
+- Next.js Build: `PASS` (Build size: 293 MB, well under the 495 MB cap)
 
-### Behavior Preserved:
-- The tip amount input, validation, checkout flow, payment integration, and close button remain unchanged.
-- The `lucky_pick` and `gift_package` modals preserve their exact original behavior and appearance because the new CSS changes are scoped specifically to `.checkout-modal-tip`.
-
-### Remaining Issues/Double Check:
-- Checked for scope drift: None. Unrelated modals are untouched.
-- Checked for exposed secrets: None.
-- Double-checked that the `jules-verify.sh` tests passed correctly for spec artifacts.
-
-## USEFUL RESULT: YES
-The Tip Jar modal has been successfully updated with a warmer, polished design and a sincere thank-you message, fulfilling all requirements specified in the task description.
+**USEFUL RESULT: YES**

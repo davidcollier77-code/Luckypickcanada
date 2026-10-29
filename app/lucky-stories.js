@@ -1,6 +1,7 @@
 import { getSql, initializeDatabase } from './lib/db-init';
 import { sanitizePlainText, sanitizeSingleLine, validatePlainTextField } from './form-security';
 import { cached, cacheKey, invalidate } from './lib/kv-cache';
+import crypto from 'crypto';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export const storyProvinces = [
@@ -200,10 +201,12 @@ export async function getLuckyStoryMap() {
     const fetcher = async () => {
       return await Promise.all([
         database`
-          select id, display_name, location, story, created_at
-          from lucky_stories
-          where approved = true
-          order by created_at desc
+          select ls.id, ls.display_name, ls.location, ls.story, ls.created_at, count(lr.id) as reaction_count
+          from lucky_stories ls
+          left join lucky_story_reactions lr on ls.id = lr.story_id
+          where ls.approved = true
+          group by ls.id, ls.display_name, ls.location, ls.story, ls.created_at
+          order by ls.created_at desc
           limit 100
         `,
         database`
@@ -231,6 +234,7 @@ export async function getLuckyStoryMap() {
         story: sanitizePlainText(row.story, 600),
         preview: createStoryPreview(row.story),
         createdAt: row.created_at,
+        reactionCount: parseInt(row.reaction_count, 10) || 0,
       });
 
       return acc;
@@ -255,5 +259,46 @@ export async function getLuckyStoryMap() {
   } catch (error) {
     console.error('Lucky Stories lookup failed', error);
     return { stories: [], provinceCounts: {}, totalStories: 0, provincesWithStories: 0, isConfigured: false };
+  }
+}
+
+export async function addStoryReaction(storyId, clientIp) {
+  const database = getSql();
+
+  if (!database) {
+    return { error: 'Database not available.' };
+  }
+
+  const clientHash = crypto.createHash('sha256').update(clientIp || 'unknown').digest('hex');
+
+  try {
+    // Attempt to insert reaction
+    await database`
+      insert into lucky_story_reactions (story_id, client_hash)
+      values (${storyId}, ${clientHash})
+      on conflict (story_id, client_hash) do nothing
+    `;
+
+    // Fetch the updated count
+    const [result] = await database`
+      select count(*) as count
+      from lucky_story_reactions
+      where story_id = ${storyId}
+    `;
+
+    // Invalidate cache
+    try {
+      const ctx = getCloudflareContext();
+      if (ctx?.env?.LUCKYPICK_KV) {
+        await invalidate(ctx.env, cacheKey('lucky-stories-map'));
+      }
+    } catch (err) {
+      console.warn('Failed to invalidate cache after reaction', err);
+    }
+
+    return { ok: true, count: parseInt(result.count, 10) || 0 };
+  } catch (error) {
+    console.error('Adding story reaction failed', error);
+    return { error: 'Unable to add reaction.' };
   }
 }

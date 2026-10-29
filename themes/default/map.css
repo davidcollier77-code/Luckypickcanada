@@ -25,8 +25,8 @@ html { scroll-behavior: smooth; }
 .map-statistics { align-items: stretch; }
 .map-statistic { display: grid; align-content: center; min-height: 7.5rem; }
 .lucky-story-map { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(min(100%, 340px), 0.75fr); align-items: start; max-width: 80rem; margin-inline: auto; }
-.map-province-details { overflow: hidden; max-height: 36rem; opacity: 1; animation: province-details-reveal 300ms ease-in-out both; }
-@keyframes province-details-reveal { from { max-height: 0; opacity: 0; transform: translateY(-.35rem); } to { max-height: 36rem; opacity: 1; transform: translateY(0); } }
+.map-province-details { opacity: 1; animation: province-details-reveal 300ms ease-out both; }
+@keyframes province-details-reveal { from { opacity: 0; transform: translateY(-0.5rem); } to { opacity: 1; transform: translateY(0); } }
 .map-story-panel { position: sticky !important; top: 1rem; }
 .map-story-card { box-shadow: inset 0 1px rgba(255, 255, 255, .08), 0 10px 24px rgba(0, 0, 0, .16); }
 .map-community-section, .map-province-section { border-radius: 24px; }

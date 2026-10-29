@@ -73,6 +73,16 @@ export async function initializeDatabase() {
         `;
 
         await sql`
+          CREATE TABLE IF NOT EXISTS lucky_story_reactions (
+            id BIGSERIAL PRIMARY KEY,
+            story_id BIGINT NOT NULL REFERENCES lucky_stories(id) ON DELETE CASCADE,
+            client_hash TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            UNIQUE (story_id, client_hash)
+          )
+        `;
+
+        await sql`
           CREATE TABLE IF NOT EXISTS lucky_reveals (
             id BIGSERIAL PRIMARY KEY,
             session_id TEXT NOT NULL UNIQUE,
