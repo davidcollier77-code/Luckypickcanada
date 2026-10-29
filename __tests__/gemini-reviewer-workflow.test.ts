@@ -71,6 +71,9 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("resolveEventAction(body, previousBody, event.action)");
     expect(script).toContain("selectionLimitExceeded");
     expect(script).toContain("serializeReviewState(pr.head.sha, findings)");
+    expect(script).toContain('const reviewBody = summary.join("\\n") + serializeReviewState(pr.head.sha, findings);');
+    expect(script).toContain('batchFailures.push("Adversarial review for batch "');
+    expect(script).not.toContain("if (primaryFindings.length > 0)");
   });
 
   it("uses trusted base-branch code and limited workflow permissions", () => {
@@ -106,6 +109,7 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("**Coverage note:**");
     expect(script).toContain("None were explicitly confirmed as materially useful.");
     expect(script).toContain("const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);");
+    expect(script).toContain("const groupText = groups.length");
     expect(script).toContain('mode = "initial";');
     expect(script).toContain('const selection = mode === "initial"');
     expect(script).toContain('mode === "initial" ? { loaded: [], unloaded: [] } : loadDocs(selection)');
