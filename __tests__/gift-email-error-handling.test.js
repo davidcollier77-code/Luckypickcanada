@@ -1,12 +1,44 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { deliverGiftEmailForSession } from '../app/gift-email';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Redis } from '@upstash/redis';
+import { deliverGiftEmailForSession } from '../app/gift-email';
 
-// Mock fetch for sendGiftEmail
-global.fetch = vi.fn();
+const NOW = Date.parse('2026-10-29T17:00:00.000Z');
+const originalEnv = process.env;
+const originalFetch = global.fetch;
 
-describe('Gift Delivery Error Handling', () => {
-  const originalEnv = process.env;
+function makeSession(metadata = {}) {
+  return {
+    id: 'cs_test_123',
+    payment_status: 'paid',
+    amount_total: 299,
+    currency: 'cad',
+    metadata: {
+      checkoutType: 'gift_package',
+      recipientEmail: 'test@test.com',
+      recipientName: 'Test Recipient',
+      senderName: 'Sender',
+      ...metadata,
+    },
+  };
+}
+
+function mockResendSuccess() {
+  global.fetch.mockResolvedValue({
+    ok: true,
+    text: vi.fn().mockResolvedValue('{"id":"re_test_123"}'),
+  });
+}
+
+function expectOwnedLockReleased(redisMock) {
+  expect(redisMock.eval).toHaveBeenCalledWith(
+    expect.stringContaining('redis.call("GET", KEYS[1])'),
+    ['gift-delivery-lock:cs_test_123'],
+    ['cs_test_123-' + NOW + '-mocked-uuid'],
+  );
+}
+
+describe('Gift delivery error handling', () => {
+  let currentSession;
   let mockStripe;
   let redisMock;
 
@@ -17,80 +49,164 @@ describe('Gift Delivery Error Handling', () => {
       UPSTASH_REDIS_REST_URL: 'mock-url',
       UPSTASH_REDIS_REST_TOKEN: 'mock-token',
       RESEND_API_KEY: 'test-resend-key',
-      GIFT_FROM_EMAIL: 'test@example.com'
+      GIFT_FROM_EMAIL: 'test@example.com',
     };
+    global.fetch = vi.fn();
+    currentSession = makeSession();
 
     mockStripe = {
       checkout: {
         sessions: {
-          retrieve: vi.fn().mockResolvedValue({
-            id: 'cs_test_123',
-            payment_status: 'paid',
-            amount_total: 299,
-            currency: 'cad',
-            metadata: {
-              checkoutType: 'gift_package',
-              recipientEmail: 'test@test.com',
-              recipientName: 'Test Recipient',
-              senderName: 'Sender'
+          retrieve: vi.fn().mockImplementation(async () => structuredClone(currentSession)),
+          update: vi.fn().mockImplementation(async (_sessionId, params) => {
+            for (const [key, value] of Object.entries(params.metadata)) {
+              if (value === null || value === '') {
+                delete currentSession.metadata[key];
+              } else {
+                currentSession.metadata[key] = String(value);
+              }
             }
+            return structuredClone(currentSession);
           }),
-          update: vi.fn().mockResolvedValue({})
-        }
-      }
+        },
+      },
     };
 
     redisMock = {
       set: vi.fn().mockResolvedValue('OK'),
-      // Just returning a dummy string will fail the exact token match,
-      // but we can mock randomUUID to return a known token.
-      get: vi.fn().mockResolvedValue('cs_test_123-1234567890-mocked-uuid'),
-      del: vi.fn().mockResolvedValue(1)
+      eval: vi.fn().mockResolvedValue(1),
     };
 
     vi.spyOn(Redis, 'fromEnv').mockReturnValue(redisMock);
-
-    vi.spyOn(Date, 'now').mockReturnValue(1234567890);
+    vi.spyOn(Date, 'now').mockReturnValue(NOW);
     vi.spyOn(crypto, 'randomUUID').mockReturnValue('mocked-uuid');
   });
 
   afterEach(() => {
+    process.env = originalEnv;
+    global.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 
-  it('releases lock when stripe update fails (exception thrown)', async () => {
-    // Force stripe update to throw an exception
-    mockStripe.checkout.sessions.update.mockRejectedValue(new Error('Stripe API Error'));
-
-    const redisDelSpy = vi.spyOn(redisMock, 'del');
+  it('marks a gift sent only after Resend accepts the email', async () => {
+    global.fetch.mockImplementation(async () => {
+      expect(currentSession.metadata.giftDeliveryStatus).toBe('pending');
+      expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
+      return {
+        ok: true,
+        text: vi.fn().mockResolvedValue('{"id":"re_test_123"}'),
+      };
+    });
 
     const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
 
-    expect(result.ok).toBe(false);
-    expect(result.reason).toBe('An unexpected error occurred during delivery.');
-
-    // Ensure the lock was claimed and deleted in finally
-    expect(redisMock.set).toHaveBeenCalled();
-    expect(redisDelSpy).toHaveBeenCalledWith('gift-delivery-lock:cs_test_123');
+    expect(result).toMatchObject({ ok: true, delivered: true });
+    expect(mockStripe.checkout.sessions.update).toHaveBeenCalledTimes(2);
+    expect(currentSession.metadata.giftDeliveryStatus).toBe('sent');
+    expect(currentSession.metadata.giftDeliveredAt).toBe(new Date(NOW).toISOString());
+    expect(currentSession.metadata.giftDeliveryPendingAt).toBeUndefined();
+    expectOwnedLockReleased(redisMock);
   });
 
-  it('releases lock when sendGiftEmail (fetch) throws an exception', async () => {
-    // Force fetch to throw an exception
+  it('keeps a thrown network attempt pending without falsely marking it delivered', async () => {
     global.fetch.mockRejectedValue(new Error('Network error'));
-
-    const redisDelSpy = vi.spyOn(redisMock, 'del');
 
     const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
 
     expect(result.ok).toBe(false);
-    expect(result.reason).toBe('An unexpected error occurred during delivery.');
-
-    // Ensure the lock was claimed and deleted in finally
-    expect(redisMock.set).toHaveBeenCalled();
-    expect(redisDelSpy).toHaveBeenCalledWith('gift-delivery-lock:cs_test_123');
-
-    // Crucially, verify that the second stripe update (rollback) was NOT called
-    // because we caught the exception in the outer catch block
+    expect(result.retryable).toBe(true);
+    expect(currentSession.metadata.giftDeliveryStatus).toBe('pending');
+    expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
     expect(mockStripe.checkout.sessions.update).toHaveBeenCalledTimes(1);
+    expectOwnedLockReleased(redisMock);
+  });
+
+  it('retries a pending attempt with its saved reveal and stable idempotency key', async () => {
+    currentSession = makeSession({
+      giftDeliveryStatus: 'pending',
+      giftDeliveryPendingAt: new Date(NOW - 5 * 60 * 1000).toISOString(),
+      giftNumbers: '1,2,3,4,5,6',
+      giftLuckyColor: 'Star Gold',
+      giftLuckyDay: 'Monday',
+    });
+    mockResendSuccess();
+
+    const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+    const [, request] = global.fetch.mock.calls[0];
+    const body = JSON.parse(request.body);
+
+    expect(result).toMatchObject({ ok: true, delivered: true });
+    expect(request.headers['Idempotency-Key']).toBe('gift-cs_test_123');
+    expect(body.html).toContain('Star Gold');
+    expect(body.html).toContain('Monday');
+    expect(body.html).toContain('>1</span>');
+    expect(currentSession.metadata.giftDeliveryStatus).toBe('sent');
+    expect(currentSession.metadata.giftNumbers).toBe('1,2,3,4,5,6');
+    expectOwnedLockReleased(redisMock);
+  });
+
+  it('does not retry a pending attempt outside the safe idempotency window', async () => {
+    currentSession = makeSession({
+      giftDeliveryStatus: 'pending',
+      giftDeliveryPendingAt: new Date(NOW - 24 * 60 * 60 * 1000).toISOString(),
+      giftNumbers: '1,2,3,4,5,6',
+      giftLuckyColor: 'Star Gold',
+      giftLuckyDay: 'Monday',
+    });
+
+    const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(result).toMatchObject({ ok: false, reviewRequired: true });
+    expect(result.reason).toContain('Check Resend');
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(currentSession.metadata.giftDeliveryStatus).toBe('review_required');
+    expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
+    expectOwnedLockReleased(redisMock);
+  });
+
+  it('keeps a non-success Resend response pending for a same-key retry', async () => {
+    global.fetch.mockResolvedValue({
+      ok: false,
+      text: vi.fn().mockResolvedValue('Temporary provider rejection'),
+    });
+
+    const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(result).toMatchObject({ ok: false, retryable: true });
+    expect(currentSession.metadata.giftDeliveryStatus).toBe('pending');
+    expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
+    expect(mockStripe.checkout.sessions.update).toHaveBeenCalledTimes(1);
+    expectOwnedLockReleased(redisMock);
+  });
+
+  it('releases the lock when the pending Stripe update throws before sending', async () => {
+    mockStripe.checkout.sessions.update.mockRejectedValueOnce(new Error('Stripe API error'));
+
+    const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(result.ok).toBe(false);
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(currentSession.metadata.giftDeliveredAt).toBeUndefined();
+    expectOwnedLockReleased(redisMock);
+  });
+
+  it('releases the lock when email configuration is missing', async () => {
+    delete process.env.RESEND_API_KEY;
+
+    const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(result.ok).toBe(false);
+    expect(mockStripe.checkout.sessions.retrieve).not.toHaveBeenCalled();
+    expectOwnedLockReleased(redisMock);
+  });
+
+  it('releases the lock when session validation fails', async () => {
+    currentSession.payment_status = 'unpaid';
+
+    const result = await deliverGiftEmailForSession(mockStripe, 'cs_test_123');
+
+    expect(result.ok).toBe(false);
+    expect(global.fetch).not.toHaveBeenCalled();
+    expectOwnedLockReleased(redisMock);
   });
 });
