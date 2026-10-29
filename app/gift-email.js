@@ -138,7 +138,7 @@ async function claimGiftDeliveryLock(sessionId) {
   }
 
   const lockKey = `gift-delivery-lock:${sessionId}`;
-  const ownershipToken = `${sessionId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const ownershipToken = `${sessionId}-${Date.now()}-${crypto.randomUUID()}`;
   const ttlSeconds = 300; // 5 minutes - enough for email send + Stripe update
 
   try {
@@ -287,6 +287,7 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   const fromEmail = process.env.GIFT_FROM_EMAIL;
 
   if (!resendApiKey || !fromEmail) {
+    await releaseGiftDeliveryLock(sessionId, ownershipToken);
     return {
       ok: false,
       reason:
@@ -298,6 +299,7 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
   const validation = validateGiftSession(session);
 
   if (!validation.ok) {
+    await releaseGiftDeliveryLock(sessionId, ownershipToken);
     return validation;
   }
 
