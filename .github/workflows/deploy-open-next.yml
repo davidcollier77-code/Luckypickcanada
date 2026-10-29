@@ -103,7 +103,7 @@ jobs:
       # Do not remove, disable, broaden, or materially alter this bounded
       # Cloudflare API retry/backoff unless the task explicitly authorizes a
       # deployment rate-limit change. Non-rate-limit failures must still fail
-      # immediately; recognized Cloudflare 429/10500 responses use bounded
+      # immediately; recognized Cloudflare 429/10500/10013 responses use bounded
       # backoff only.
       # OpenNext's remote R2 cache population can hang during deploy in CI.
       # Bypass that step and let the deployed Worker repopulate cache entries lazily.
@@ -126,7 +126,7 @@ jobs:
               exit 0
             fi
 
-            if ! printf '%s\n' "$output" | grep -Eq '429 Too Many Requests|More than 1200 requests per 300 seconds|code: 10500'; then
+            if ! printf '%s\n' "$output" | grep -Eq '429 Too Many Requests|More than 1200 requests per 300 seconds|code: 10500|code: 10013'; then
               exit "$status"
             fi
 
