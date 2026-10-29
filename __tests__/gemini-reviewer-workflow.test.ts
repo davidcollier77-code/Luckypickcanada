@@ -71,6 +71,9 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("resolveEventAction(body, previousBody, event.action)");
     expect(script).toContain("selectionLimitExceeded");
     expect(script).toContain("serializeReviewState(pr.head.sha, findings)");
+    expect(script).toContain('const reviewBody = summary.join("\\n") + serializeReviewState(pr.head.sha, findings);');
+    expect(script).toContain('batchFailures.push("Adversarial review for batch "');
+    expect(script).not.toContain("if (primaryFindings.length > 0)");
   });
 
   it("uses trusted base-branch code and limited workflow permissions", () => {
@@ -106,6 +109,7 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("**Coverage note:**");
     expect(script).toContain("None were explicitly confirmed as materially useful.");
     expect(script).toContain("const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);");
+    expect(script).toContain("const groupText = groups.length");
     expect(script).toContain('mode = "initial";');
     expect(script).toContain('const selection = mode === "initial"');
     expect(script).toContain('mode === "initial" ? { loaded: [], unloaded: [] } : loadDocs(selection)');
@@ -164,6 +168,22 @@ describe("Gemini PR reviewer", () => {
       });
       expect(result.status, result.stderr || result.stdout).toBe(0);
     }
+  });
+
+  it("renders compact review context through the actual reviewer function", () => {
+    const probe = [
+      'const { docReport } = require("./.github/scripts/gemini-reviewer.cjs");',
+      'const report = docReport([{ path: ".jules/troubleshooting.md", truncated: false }], [], [{ path: ".jules/troubleshooting.md", useful: true, reason: "Failure-path routing" }], { groups: ["troubleshooting"], groupReasons: { troubleshooting: "reviewer startup regression" }, method: "manifest" });',
+      'process.stdout.write(report);'
+    ].join("\n");
+    const result = spawnSync(process.execPath, ["-e", probe], {
+      cwd: process.cwd(),
+      encoding: "utf8"
+    });
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(result.stdout).toContain("**Task group:** troubleshooting — reviewer startup regression");
+    expect(result.stdout).toContain(".jules/troubleshooting.md — Failure-path routing");
+    expect(result.stdout).not.toContain("undefined");
   });
 
   it("keeps Amazon Q's original rules outside Gemini's implementation scope", () => {

@@ -847,7 +847,7 @@ function docReport(loaded, unloaded, assessments, selection) {
   }
   const groups = selection && Array.isArray(selection.groups) ? selection.groups : [];
   const groupReasons = selection && selection.groupReasons || {};
-    ? groups.map((group) => group + (groupReasons[group] ? " — " + String(groupReasons[group]).replace(/\s+/g, " ").trim() : "")).join("; ")
+  const groupText = groups.length
     ? groups.map((group) => group + (groupReasons[group] ? " — " + String(groupReasons[group]).replace(/\s+/g, " ").trim() : "")).join("; ")
     : selection && selection.method === "skipped for initial automatic review"
       ? "Not selected — initial automatic review intentionally skips local document selection."
@@ -857,7 +857,7 @@ function docReport(loaded, unloaded, assessments, selection) {
     "### Review context",
     "- **Task group:** " + groupText,
     "- **Relevant documents:** " + (usefulDocs.length
-          const reason = String(item && item.reason || "Material contribution confirmed.").replace(/\s+/g, " ").trim().slice(0, 220);
+      ? usefulDocs.map((doc) => {
           const item = byPath.get(doc.path);
           const reason = String(item && item.reason || "Material contribution confirmed.").replace(/\s+/g, " ").trim().slice(0, 220);
           return doc.path + " — " + reason + (doc.truncated ? " (content truncated)" : "");
@@ -868,7 +868,7 @@ function docReport(loaded, unloaded, assessments, selection) {
   ];
   const notes = [];
   if (selection && selection.method !== "skipped for initial automatic review") {
-    if (selection && selection.method === "deterministic task-group fallback") {
+    if (selection.method === "deterministic task-group fallback") {
       notes.push("Task-group/document selection used deterministic fallback routing.");
     }
     if (Array.isArray(unloaded) && unloaded.length) {
@@ -1083,7 +1083,8 @@ async function main() {
     } catch (e) {
       batchFailures.push("Primary review for batch " + (i + 1) + " failed: " + String(e && e.message || "Unknown error").slice(0, 220));
     }
-    if (primaryFindings.length > 0) { try {
+    // Run the independent second pass for every batch, even when the primary pass fails or returns no findings.
+    try {
       const adversarialAnswer = await askModel(buildAdversarialReviewPrompt({
         pr, batch, sourceContext, docBundle, primaryFindings, batchIndex: i, batchCount: batches.length
       }), 8000);
@@ -1095,7 +1096,7 @@ async function main() {
         assessments: Array.isArray(adversarialAnswer.result.document_assessments) ? adversarialAnswer.result.document_assessments : []
       });
     } catch (e) {
-    } }
+      batchFailures.push("Adversarial review for batch " + (i + 1) + " failed: " + String(e && e.message || "Unknown error").slice(0, 220));
     }
   }
 
@@ -1145,6 +1146,7 @@ async function main() {
     "### Request fixes",
     "Comment exactly @gemini full review to run a full review, @gemini repair one <path>:<line> -- <finding title> to request a safe suggestion for one finding, or @gemini repair all to request suggestions for all eligible findings. You can also check individual findings above and check **Fix selected findings** to request suggestions only for those issues. Targeted requests recheck the exact path and line before suggesting anything. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
   ];
+  const reviewBody = summary.join("\n") + serializeReviewState(pr.head.sha, findings);
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
   let latestPr;
   try {
@@ -1156,7 +1158,6 @@ async function main() {
   if (!headMatchesReview(pr.head && pr.head.sha, latestPr && latestPr.head && latestPr.head.sha)) {
     await comment(number, "Gemini review was not published because the PR head changed while the review was running. Run @gemini full review again against the latest commit. No stale review was published.");
     return;
-  }
   }
   await gh("/repos/" + REPO + "/pulls/" + number + "/reviews", {
     method: "POST",
@@ -1170,6 +1171,7 @@ if (require.main === module) main().catch(async (error) => {
   try {
     const event = eventData();
     const number = EVENT_NAME === "pull_request_target" ? event.pull_request?.number :
+      EVENT_NAME === "pull_request_review" ? event.pull_request?.number :
       EVENT_NAME === "issue_comment" ? event.issue?.number :
       EVENT_NAME === "workflow_dispatch" ? Number(process.env.GEMINI_PR_NUMBER) : null;
     if (Number.isInteger(Number(number)) && Number(number) > 0 && REPO && TOKEN)

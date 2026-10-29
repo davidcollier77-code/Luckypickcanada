@@ -20,3 +20,8 @@
 
 ## Verification constraints
 The coding environment cannot resolve GitHub from its local shell. Repository edits are prepared through GitHub's repository API; CI results and any live Gemini API review remain pending until actually observed.
+
+6. **Repair post-merge runtime regression**
+   - Restore valid document-context reporting and review-state serialization in the merged reviewer script.
+   - Ensure the adversarial pass executes for every batch and its failures are included in coverage reporting.
+   - Add deterministic assertions and verify the script parses under the workflow's Node runtime.
