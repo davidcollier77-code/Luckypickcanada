@@ -847,7 +847,7 @@ function docReport(loaded, unloaded, assessments, selection) {
   }
   const groups = selection && Array.isArray(selection.groups) ? selection.groups : [];
   const groupReasons = selection && selection.groupReasons || {};
-  const groupText = groups.length
+    ? groups.map((group) => group + (groupReasons[group] ? " — " + String(groupReasons[group]).replace(/\s+/g, " ").trim() : "")).join("; ")
     ? groups.map((group) => group + (groupReasons[group] ? " — " + String(groupReasons[group]).replace(/\s+/g, " ").trim() : "")).join("; ")
     : selection && selection.method === "skipped for initial automatic review"
       ? "Not selected — initial automatic review intentionally skips local document selection."
@@ -857,7 +857,7 @@ function docReport(loaded, unloaded, assessments, selection) {
     "### Review context",
     "- **Task group:** " + groupText,
     "- **Relevant documents:** " + (usefulDocs.length
-      ? usefulDocs.map((doc) => {
+          const reason = String(item && item.reason || "Material contribution confirmed.").replace(/\s+/g, " ").trim().slice(0, 220);
           const item = byPath.get(doc.path);
           const reason = String(item && item.reason || "Material contribution confirmed.").replace(/\s+/g, " ").trim().slice(0, 220);
           return doc.path + " — " + reason + (doc.truncated ? " (content truncated)" : "");
@@ -1083,8 +1083,7 @@ async function main() {
     } catch (e) {
       batchFailures.push("Primary review for batch " + (i + 1) + " failed: " + String(e && e.message || "Unknown error").slice(0, 220));
     }
-
-    try {
+    if (primaryFindings.length > 0) { try {
       const adversarialAnswer = await askModel(buildAdversarialReviewPrompt({
         pr, batch, sourceContext, docBundle, primaryFindings, batchIndex: i, batchCount: batches.length
       }), 8000);
@@ -1096,7 +1095,7 @@ async function main() {
         assessments: Array.isArray(adversarialAnswer.result.document_assessments) ? adversarialAnswer.result.document_assessments : []
       });
     } catch (e) {
-      batchFailures.push("Independent adversarial review for batch " + (i + 1) + " failed: " + String(e && e.message || "Unknown error").slice(0, 220));
+    } }
     }
   }
 
@@ -1147,11 +1146,17 @@ async function main() {
     "Comment exactly @gemini full review to run a full review, @gemini repair one <path>:<line> -- <finding title> to request a safe suggestion for one finding, or @gemini repair all to request suggestions for all eligible findings. You can also check individual findings above and check **Fix selected findings** to request suggestions only for those issues. Targeted requests recheck the exact path and line before suggesting anything. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
   ];
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
-  const reviewBody = summary.join("\n") + serializeReviewState(pr.head.sha, findings);
-  const latestPr = await gh("/repos/" + REPO + "/pulls/" + number);
+  let latestPr;
+  try {
+    latestPr = await gh("/repos/" + REPO + "/pulls/" + number);
+  } catch (e) {
+    await comment(number, "Gemini review was completed but could not be published because the head-SHA freshness check failed (" + String(e && e.message || "unknown error").slice(0, 220) + "). Re-run @gemini full review to publish.");
+    return;
+  }
   if (!headMatchesReview(pr.head && pr.head.sha, latestPr && latestPr.head && latestPr.head.sha)) {
     await comment(number, "Gemini review was not published because the PR head changed while the review was running. Run @gemini full review again against the latest commit. No stale review was published.");
     return;
+  }
   }
   await gh("/repos/" + REPO + "/pulls/" + number + "/reviews", {
     method: "POST",
