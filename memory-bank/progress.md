@@ -245,3 +245,10 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
   4. Converted `<Image />` component tags in `app/lucky-map-of-canada/lucky-map-of-canada.js` and `app/homepage/HomePage.js` that were improperly mixing with `unoptimized: true` to standard `<img>` tags inside `<picture>` elements.
   5. Removed unnecessary `mix-blend-screen` from `app/homepage/HomePage.js` overlay image.
 - **Validation:** Build completes successfully within the 495 MB cap. Tests and verification passing.
+
+## 2026-10-29 — Gemini reviewer runtime regression
+
+- Investigated PR #1636 checks against the exact GitHub Actions log. Visual QA stopped in the unit-test stage at a malformed expression in .github/scripts/gemini-reviewer.cjs; visual regression tests never started.
+- Confirmed the merged reviewer also lacked the tested serialized review-state marker and had an extra closing brace in the review publication path. The adversarial second pass was conditionally skipped for batches with no primary findings, and adversarial errors were silently ignored.
+- Prepared a corrective branch restoring valid compact context rendering, serialized state in the posted review body, balanced publication structure, and independent adversarial review for every batch with honest failure reporting. Added regression assertions and amended the existing Spec Kit feature artifacts.
+- CI and live Gemini acceptance remain unverified pending the repair PR's checks.
