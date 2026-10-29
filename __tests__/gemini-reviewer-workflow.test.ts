@@ -175,7 +175,7 @@ describe("Gemini PR reviewer", () => {
       'const { docReport } = require("./.github/scripts/gemini-reviewer.cjs");',
       'const report = docReport([{ path: ".jules/troubleshooting.md", truncated: false }], [], [{ path: ".jules/troubleshooting.md", useful: true, reason: "Failure-path routing" }], { groups: ["troubleshooting"], groupReasons: { troubleshooting: "reviewer startup regression" }, method: "manifest" });',
       'process.stdout.write(report);'
-    ].join("\\n");
+    ].join("\n");
     const result = spawnSync(process.execPath, ["-e", probe], {
       cwd: process.cwd(),
       encoding: "utf8"
