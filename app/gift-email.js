@@ -449,7 +449,7 @@ export async function deliverGiftEmailForSession(stripe, sessionId) {
         ...deliveryMetadata,
         ...(latestSession.metadata || {}),
         giftDeliveryStatus: "sent",
-        giftDeliveryPendingAt: null,
+        giftDeliveryPendingAt: "",
         giftDeliveredAt: new Date(Date.now()).toISOString(),
         giftNumbers: reveal.numbers.join(","),
         giftLuckyColor: reveal.luckyColor,
