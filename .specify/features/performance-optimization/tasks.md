@@ -1,0 +1,4 @@
+- [x] Extract `words` array logic into a `useMemo` block.
+- [x] Memoize `fortuneChars`.
+- [x] Update imports.
+- [x] Update JSX to use the pre-calculated `words` list.
