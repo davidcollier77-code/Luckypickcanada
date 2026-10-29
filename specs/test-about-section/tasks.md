@@ -1,0 +1,3 @@
+- [x] Write test suite for `AboutSection` component.
+- [x] Run single test suite and ensure it passes.
+- [x] Run full build and test suite.
