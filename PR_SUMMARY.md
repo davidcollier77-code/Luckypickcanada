@@ -1,61 +1,49 @@
-# 🛡️ Sentinel: [HIGH] Fix Insecure Randomness for Token Generation
+# Gift Delivery Reliability and Token Security — PR #1639
 
-## Summary
+## Task group
+`security` — addresses delivery-state correctness, retry/idempotency safety, and distributed lock ownership.
 
-**Goal**: Replace the predictable `Math.random()` call with `crypto.randomUUID()` in the `claimGiftDeliveryLock` function in `app/gift-email.js` to ensure the security of the gift delivery ownership tokens.
-**Group**: `security` - This issue is a direct security vulnerability fixing predictable token generation, hence handled under the security specialist profile.
+## Implementation
+- Preserved `crypto.randomUUID()` ownership tokens and the original Amazon Q fixes for early-return cleanup.
+- Replaced non-atomic Redis GET/DEL unlock with an atomic Lua compare-and-delete operation.
+- Persisted the exact reveal and pending timestamp before calling Resend.
+- Set `giftDeliveredAt` and `giftDeliveryStatus=sent` only after Resend returns success.
+- Kept errors and uncertain outcomes pending; retries reuse the same reveal, request body, and idempotency key.
+- Flagged stale/incomplete attempts for manual reconciliation before the provider's idempotency retention window expires.
+- Added regression tests for success, failure, retry safety, stale state, configuration/validation early exits, and lock release.
 
-### Results
-- `app/gift-email.js` was modified to use `crypto.randomUUID()` instead of `Math.random().toString(36).slice(2)`.
-
-### Exact Files Changed
+## Files
 - `app/gift-email.js`
+- `__tests__/gift-email-error-handling.test.js`
 - `specs/060-gift-delivery-token-security/spec.md`
 - `specs/060-gift-delivery-token-security/plan.md`
 - `specs/060-gift-delivery-token-security/tasks.md`
+- `PR_SUMMARY.md`
+- `pr_desc.txt`
 - `.specify/feature.json`
+- Existing task summary artifact(s) in this PR
 
-### Required Spec Kit Stages and Artifacts
-- **Feature Directory**: `specs/060-gift-delivery-token-security`
-- **Spec**: `specs/060-gift-delivery-token-security/spec.md`
-- **Plan**: `specs/060-gift-delivery-token-security/plan.md`
-- **Tasks**: `specs/060-gift-delivery-token-security/tasks.md`
+## Spec Kit stages
+- Specify: `specs/060-gift-delivery-token-security/spec.md`
+- Plan: `specs/060-gift-delivery-token-security/plan.md`
+- Tasks: `specs/060-gift-delivery-token-security/tasks.md`
+- Implement: source changes and focused regression tests added.
 
-### Actual Verification Commands and Results
-- `pnpm test`: PASS (139 tests passed)
-- `pnpm run build`: PASS
-- `pnpm exec prettier --check .` / `pnpm exec prettier --write app/gift-email.js`: PASS
-- `./jules-verify.sh`: PASS
+## Verification
+- Targeted tests: PENDING on latest PR head.
+- Full `pnpm test`: PENDING.
+- Prettier / formatting: NOT RUN locally.
+- Production build and measured build size (495 MB hard maximum): PENDING.
+- `./jules-verify.sh`: PENDING.
+- Latest-head GitHub Actions: pending; inspect final results before calling this complete.
 
-### Behavior Preserved
-- Gift delivery lock functionality continues to work exactly as before, with token usage and storage maintaining the same logical flow.
+## Preserved behavior and risks
+- Payment eligibility, existing gift email content, and the legacy `giftDeliveredAt` success check remain unchanged.
+- Resend's idempotency keys are retained for 24 hours; code uses a conservative 23-hour retry cutoff. Stale pending attempts require checking Resend and manual reconciliation rather than an unsafe automatic send.
+- Resend accepting a request is not a guarantee of final mailbox delivery.
 
-### Remaining Issues/Risks
-- None.
+## Final error check
+- The code now avoids marking a failed/uncertain attempt sent and does not blindly resend an expired pending attempt.
+- Completion remains unverified until required checks pass.
 
-### Final Diff
-```diff
---- a/app/gift-email.js
-+++ b/app/gift-email.js
-@@ -106,7 +106,7 @@ async function claimGiftDeliveryLock(sessionId) {
-   }
-
-   const lockKey = `gift-delivery-lock:${sessionId}`;
--  const ownershipToken = `${sessionId}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-+  const ownershipToken = `${sessionId}-${Date.now()}-${crypto.randomUUID()}`;
-   const ttlSeconds = 300; // 5 minutes - enough for email send + Stripe update
-
-   try {
-```
-
-### 🎯 What
-The `Math.random()` function was used for generating gift delivery lock ownership tokens. `Math.random()` is not cryptographically secure, and its outputs can be predicted.
-
-### ⚠️ Risk
-If an attacker were able to predict the random token sequence, they could potentially forge an `ownershipToken` and release the lock early in a race condition attack to try and duplicate gift email deliveries.
-
-### 🛡️ Solution
-The fix replaces `Math.random().toString(36).slice(2)` with `crypto.randomUUID()`. This ensures the token contains a cryptographically secure, globally unique UUID string, neutralizing the predictability vulnerability.
-
-### USEFUL RESULT
-YES
+**USEFUL RESULT: NO — latest-head verification is pending.**
