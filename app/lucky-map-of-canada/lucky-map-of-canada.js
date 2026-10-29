@@ -119,11 +119,18 @@ export default function LuckyMapOfCanada({ mapData }) {
 
   // Initialize reactions state from the server data when it changes
   useEffect(() => {
-    const initialReactions = {};
-    stories.forEach(s => {
-      initialReactions[s.id] = s.reactionCount || 0;
+    setReactions((current) => {
+      const merged = { ...current };
+      stories.forEach(s => {
+        // Only update if the server value is higher, preserving optimistic increments
+        if ((s.reactionCount || 0) > (merged[s.id] || 0)) {
+          merged[s.id] = s.reactionCount || 0;
+        } else if (!(s.id in merged)) {
+          merged[s.id] = s.reactionCount || 0;
+        }
+      });
+      return merged;
     });
-    setReactions(initialReactions);
   }, [stories]);
   const selectedProvinceInfo = provinces.find((province) => province.code === selectedProvince) || provinces[4];
   const selectedStories = provinceStories(stories, selectedProvince);
@@ -261,7 +268,16 @@ export default function LuckyMapOfCanada({ mapData }) {
           setReactions((current) => ({ ...current, [storyId]: data.count }));
         }
       } else {
-        // Handle failure by reverting optimistic update if we want, but doing nothing is fine too as it'll just stay or sync on reload
+        // Revert the optimistic update on failure
+        setReactions((current) => ({ ...current, [storyId]: (current[storyId] || 1) - 1 }));
+        setLocalCelebrated(prev => {
+          const next = new Set(prev);
+          next.delete(storyId);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('celebratedStories', JSON.stringify(Array.from(next)));
+          }
+          return next;
+        });
       }
     } catch (e) {
       console.error('Failed to celebrate story', e);

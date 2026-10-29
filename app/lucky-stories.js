@@ -269,7 +269,11 @@ export async function addStoryReaction(storyId, clientIp) {
     return { error: 'Database not available.' };
   }
 
-  const clientHash = crypto.createHash('sha256').update(clientIp || 'unknown').digest('hex');
+  if (!clientIp) {
+    return { error: 'Unable to identify client.' };
+  }
+
+  const clientHash = crypto.createHash('sha256').update(clientIp).digest('hex');
 
   try {
     // Attempt to insert reaction

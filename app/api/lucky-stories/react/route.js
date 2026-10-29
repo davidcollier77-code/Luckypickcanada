@@ -10,8 +10,8 @@ export async function POST(request) {
   try {
     const { storyId } = await request.json();
 
-    if (!storyId) {
-      return NextResponse.json({ error: 'Missing story ID' }, { status: 400 });
+    if (!storyId || typeof storyId !== 'string' || !/^\d+$/.test(storyId) || storyId.length > 20) {
+      return NextResponse.json({ error: 'Missing or invalid story ID' }, { status: 400 });
     }
 
     const ip = getClientIp(request);
