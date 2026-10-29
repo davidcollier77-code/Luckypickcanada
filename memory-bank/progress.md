@@ -252,3 +252,12 @@ The first targeted Visual QA CI attempt on earlier head `ff2bbe4207a7392336062f4
 - Confirmed the merged reviewer also lacked the tested serialized review-state marker and had an extra closing brace in the review publication path. The adversarial second pass was conditionally skipped for batches with no primary findings, and adversarial errors were silently ignored.
 - Prepared a corrective branch restoring valid compact context rendering, serialized state in the posted review body, balanced publication structure, and independent adversarial review for every batch with honest failure reporting. Added regression assertions and amended the existing Spec Kit feature artifacts.
 - CI and live Gemini acceptance remain unverified pending the repair PR's checks.
+
+
+## 2026-10-29 — Gemini reviewer runtime regression verified
+
+- Reviewed the actual failure from Visual QA run 40887568880. The Node parser error originated from damaged `docReport()` expressions in the checked-in Gemini reviewer; the related workflow test also reported missing serialized review state.
+- Repaired the context report, restored serialized current-head finding state in the published review body, removed the unmatched publication brace, and made the adversarial pass unconditional per batch with explicit failure coverage notes.
+- Added a runtime regression test that invokes `docReport()`, alongside script syntax and source assertions. Corrected duplicated Spec Kit task entries.
+- GitHub Actions passed on implementation head `79352ec277ae8f5435676d89cce83750c061a3a8`: full unit tests, TypeScript, `./jules-verify.sh`, Playwright visual regression, DevSkim, Next.js build/495 MiB limit, OpenNext Cloudflare validation, Tailwind/worker/assets checks, Wrangler dry-run, and updater scheduler governance/build checks.
+- PR #1637 remains open and unmerged. A controlled live Gemini API acceptance test remains pending; no live-model outcome is claimed.
