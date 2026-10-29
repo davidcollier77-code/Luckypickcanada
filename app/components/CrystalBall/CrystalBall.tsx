@@ -225,7 +225,7 @@ export default function CrystalBall({
     if (leafFallbackTimeoutRef.current) clearTimeout(leafFallbackTimeoutRef.current);
     setLeafFlight(null);
     setIsRevealPaused(false);
-    setRevealedCharCount(Array.from(currentFortune).length);
+    setRevealedCharCount(fortuneChars.length);
     if (status !== 'revealing') setStatus('revealing');
   }, [prefersReducedMotion, status, currentFortune]);
 
