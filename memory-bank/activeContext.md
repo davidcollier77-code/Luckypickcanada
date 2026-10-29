@@ -1,3 +1,14 @@
+# Active Context — Gemini Reviewer Targeted-Fix Guard Repair (2026-10-28)
+
+- **Selected task group:** `troubleshooting` — a verified GitHub Actions reviewer startup crash.
+- **Branch:** `fix/gemini-reviewer-targeted-fix-guard-20261028`; target `main`; keep the repair PR open and unmerged.
+- **Verified failure:** Actions run [#40793451382](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40793451382), job [#123184035314](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40793451382/job/123184035314), fails in `.github/scripts/gemini-reviewer.cjs:952` with `SyntaxError: await is only valid in async functions and the top level bodies of modules`.
+- **Root cause:** The targeted-fix no-match comment/return lost its opening `if (!requestedFindings.length) {` guard, leaving an unmatched closing brace before source-context retrieval.
+- **Implementation:** Restore that guard and add a test asserting that the guard precedes the no-match message, which precedes the autofix-module load. Workflow YAML, permissions, API-key handling, model fallback, application UI, protected visuals, and dependencies are unchanged.
+- **Verification:** Source and regression assertion edited through GitHub APIs. Local repository shell commands were unavailable in this session; focused/full tests, `./jules-verify.sh`, PR-head CI, and a post-merge trusted-base run remain pending until verified.
+
+---
+
 # Active Context — Gemini Finding-Level Fix UX (2026-10-26)
 
 - **Selected task group:** `deep-dive` — extends the existing reviewer pipeline with finding-specific implementation prompts and user-selected repair scope.

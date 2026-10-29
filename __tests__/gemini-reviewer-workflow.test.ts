@@ -52,6 +52,12 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("@gemini repair all");
     expect(script).toContain("parseRepairCommand");
     expect(script).toContain("requestedFindings = matchTargetFinding");
+    const unmatchedGuardIndex = script.indexOf("if (!requestedFindings.length) {");
+    const unmatchedMessageIndex = script.indexOf("The requested finding(s) could not be matched.");
+    const fixModuleIndex = script.indexOf('const fixModule = require("./gemini-autofix.cjs");');
+    expect(unmatchedGuardIndex).toBeGreaterThan(script.indexOf("let requestedFindings = [];"));
+    expect(unmatchedGuardIndex).toBeLessThan(unmatchedMessageIndex);
+    expect(unmatchedMessageIndex).toBeLessThan(fixModuleIndex);
     expect(script).toContain("Gemini Targeted Fix");
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
     expect(script).toContain("Fix all findings");
