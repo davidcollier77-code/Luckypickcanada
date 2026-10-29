@@ -1,12 +1,11 @@
 # Active Context — Gemini Reviewer Runtime Recovery (2026-10-29)
 
-- **Selected task group:** troubleshooting — PR #1636 exposed a post-merge Gemini reviewer startup failure in trusted main.
-- **Branch:** fix/gemini-reviewer-runtime-1636-20261029; target main; leave the repair PR open and unmerged.
-- **Verified baseline failure:** the Visual QA run failed at .github/scripts/gemini-reviewer.cjs because docReport() had malformed duplicated expressions. The workflow test also showed review-state serialization was missing from the published review body. The adversarial pass had an unintended condition that skipped it when the primary pass returned no findings, and its catch did not report a coverage gap.
-- **Implementation prepared:** reconstructed docReport(); restored review-state serialization and balanced the publication block; run the independent adversarial pass for every patch batch and report pass failures; map pull_request_review to safe failure reporting; added deterministic regression assertions.
-- **Spec Kit:** amended specs/059-gemini-review-accuracy/spec.md, plan.md, and tasks.md for this directly related post-merge repair.
-- **Verification:** GitHub Actions validation is pending on the repair PR. Do not claim completion until the parser test, focused/full tests, ./jules-verify.sh, and final-head checks are observed. No live Gemini API acceptance test is claimed.
-
+- **Selected task group:** troubleshooting — PR #1636's Visual QA exposed a post-merge Gemini reviewer startup failure in trusted `main`.
+- **Branch:** `fix/gemini-reviewer-runtime-1636-20261029`; target `main`; keep PR #1637 open and unmerged.
+- **Verified baseline failure:** Visual QA run [40887568880](https://github.com/davidcollier77-code/Luckypickcanada/actions/runs/40887568880) failed during the full unit-test step because `.github/scripts/gemini-reviewer.cjs` had malformed duplicated expressions in `docReport()`; earlier run 40853009084 showed the same failure. The workflow test also detected missing serialized finding state in the published review body.
+- **Implementation:** repaired `docReport()`; restored review-state serialization and balanced the publication block; run the independent adversarial pass on every patch batch and report both primary/adversarial failures as coverage gaps; added safe failure reporting for `pull_request_review`; added a runtime regression test that invokes the actual `docReport()` function. Consolidated duplicate Spec Kit checklist entries.
+- **Verified automated checks on implementation head `79352ec277ae8f5435676d89cce83750c061a3a8`:** PASS — targeted unit tests, full `pnpm run test`, `pnpm tsc --noEmit`, `./jules-verify.sh`, Playwright visual regression, DevSkim, Next.js production build under the 495 MiB hard cap, OpenNext Cloudflare artifacts/build, Tailwind CSS, Wrangler dry-run, and updater-scheduler governance/build checks.
+- **Remaining limitation:** a controlled live Gemini full-review acceptance case has not been run; no live-model result is claimed. The repair PR stays open and unmerged for owner review.
 ---
 
 # Active Context — Gemini Full-Review Accuracy (2026-10-29)
