@@ -416,7 +416,7 @@
     0 6px 0 rgba(120, 63, 4, 0.5),
     0 9px 20px rgba(0, 0, 0, 0.42),
     0 0 24px rgba(245, 158, 11, 0.26);
-  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+    0 0 24px rgba(245, 158, 11, 0.26) !important;
 }
 
 .homepage-experience .gold-3d-btn:hover,
@@ -447,7 +447,7 @@
    to let the flattened press shadow above show through. */
 .homepage-experience .gold-3d-btn:active.suggestion-btn-glow {
   animation: none;
-}
+.homepage-experience .gold-3d-btn.suggestion-btn-glow:active {
 
 /* Shared decorative shimmer overlay (Tip Jar and Suggestion). */
 .gold-3d-btn .gold-shimmer {
