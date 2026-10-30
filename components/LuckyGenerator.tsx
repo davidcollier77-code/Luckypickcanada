@@ -751,7 +751,6 @@ function useResonanceCanvas(
         ctx!.lineWidth = m.width;
         ctx!.globalAlpha = 1.0;
         ctx!.lineCap = 'round';
-        m.trail.forEach((t, j) => { 
         if (m.trail.length > 0) {
           m.trail[0].alpha *= 0.88;
           ctx!.moveTo(m.trail[0].x | 0, m.trail[0].y | 0);
@@ -760,6 +759,7 @@ function useResonanceCanvas(
             ctx!.lineTo(m.trail[j].x | 0, m.trail[j].y | 0);
           }
         }
+        ctx!.stroke();
         ctx!.globalAlpha = 1.0;
         
         const coreSize = m.isHero ? (m.width > 5 ? 40 : 28) : 18;
