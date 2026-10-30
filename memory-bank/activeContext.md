@@ -1,3 +1,17 @@
+# Active Context — Homepage Gold Button Raised Depth and Shimmer (2026-10-30)
+
+- **Selected task group:** `polishing` — visual/tactile polish of the existing homepage gold buttons; no new functionality, routes, or assets.
+- **Branch:** `polish/homepage-gold-buttons`, pushed from commit `990c0a24`, opened as PR #1650 against `main` (<https://github.com/davidcollier77-code/Luckypickcanada/pull/1650>). Left open and unmerged for the owner.
+- **Change:** `themes/default/homepage.css` gains one shared `.homepage-experience .gold-3d-btn` treatment (solid `0 3px 0 #a16207` bottom edge plus layered shadow, 2px hover lift, 2px press-down with a flattened edge and 60ms press transition, 120ms release) and a `prefers-reduced-motion` block. `app/homepage/HomePage.js` adds that class to the nine gold buttons and gives the Suggestion button the Tip Jar's existing moving shimmer overlay (`animate-shimmer`, `via-white/30`), clipped with `overflow-hidden`; both overlays are tagged `gold-shimmer`. `app/globals.css` extends `@keyframes suggestionBtnGlow` with the same edge/inset layers and pauses the glow while pressed so the Suggestion button shares the depth and press behaviour.
+- **Verified evidence:** `pnpm exec tsc --noEmit` exit 0; `pnpm test` 22 files / 152 tests; `./jules-verify.sh` exit 0 (Spec Kit gate, typecheck, build, refresh-docs 17/17); production build 330,031,986 bytes / 314.74 MiB (< 495 MiB). Served homepage HTML contains 9 `gold-3d-btn` buttons, 2 `gold-shimmer` overlays, and unchanged labels. Built CSS contains the 3D rules and reduced-motion block, with `.homepage-experience .gold-3d-btn:hover` (byte 41237) and `:active` (41510) emitted after `.suggestion-box-submit:hover` (23084) and `:active` (40795), confirming the new rules win the cascade.
+- **Preserved:** wording, gold gradient/colour values, padding and `rounded-full` geometry, focus-visible outlines, click handlers, checkout/tip-jar/suggestion destinations, disabled suggestion state, AVIF-first/WebP image delivery (no image assets created or changed), and all non-homepage buttons.
+- **Artifacts:** `specs/062-homepage-gold-button-polish/{spec,plan,tasks}.md`; `.specify/feature.json` points to that feature.
+- **BLOCKED:** Playwright browser interaction/visual check — bundled Chromium cannot start (`libnspr4.so` missing) and `playwright install-deps` cannot gain root in this container, so no browser-level hover/press/screenshot result is claimed. CI Playwright remains the confirmation path.
+- **Pre-existing, not modified:** `public/themes/default/homepage.css` is an older unused copy of the homepage theme (the app imports `themes/default/homepage.css`); it already diverged before this task and was left untouched.
+- **Outstanding:** CI Playwright confirmation and owner authorization to push/open the PR.
+
+---
+
 # Active Context — Homepage Confetti Deferred Loading (2026-10-30)
 
 - **Selected task group:** `polishing` — one low-risk homepage critical-path performance improvement (client-bundle/asset optimization).
