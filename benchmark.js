@@ -58,6 +58,7 @@ function drawBranchFor(branch, alpha, isGlow) {
 }
 
 const ITERATIONS = 100000;
+const ROUNDS = 5;
 
 // Warmup
 for (let i = 0; i < 10000; i++) {
@@ -65,18 +66,34 @@ for (let i = 0; i < 10000; i++) {
     drawBranchFor(branch, 1, false);
 }
 
-const startForEach = performance.now();
-for (let i = 0; i < ITERATIONS; i++) {
-    drawBranchForEach(branch, 1, false);
-}
-const endForEach = performance.now();
+// Alternate execution order across rounds to minimise JIT and branch-predictor bias
+let totalForEach = 0;
+let totalFor = 0;
 
-const startFor = performance.now();
-for (let i = 0; i < ITERATIONS; i++) {
-    drawBranchFor(branch, 1, false);
-}
-const endFor = performance.now();
+for (let round = 0; round < ROUNDS; round++) {
+    if (round % 2 === 0) {
+        // forEach first
+        const s1 = performance.now();
+        for (let i = 0; i < ITERATIONS; i++) drawBranchForEach(branch, 1, false);
+        totalForEach += performance.now() - s1;
 
-console.log(`forEach: ${endForEach - startForEach} ms`);
-console.log(`for: ${endFor - startFor} ms`);
-console.log(`Improvement: ${(((endForEach - startForEach) - (endFor - startFor)) / (endForEach - startForEach) * 100).toFixed(2)}%`);
+        const s2 = performance.now();
+        for (let i = 0; i < ITERATIONS; i++) drawBranchFor(branch, 1, false);
+        totalFor += performance.now() - s2;
+    } else {
+        // for first
+        const s1 = performance.now();
+        for (let i = 0; i < ITERATIONS; i++) drawBranchFor(branch, 1, false);
+        totalFor += performance.now() - s1;
+
+        const s2 = performance.now();
+        for (let i = 0; i < ITERATIONS; i++) drawBranchForEach(branch, 1, false);
+        totalForEach += performance.now() - s2;
+    }
+}
+
+const avgForEach = totalForEach / ROUNDS;
+const avgFor = totalFor / ROUNDS;
+console.log(`forEach avg (${ROUNDS} rounds): ${avgForEach.toFixed(2)} ms`);
+console.log(`for avg    (${ROUNDS} rounds): ${avgFor.toFixed(2)} ms`);
+console.log(`Improvement: ${(((avgForEach - avgFor) / avgForEach) * 100).toFixed(2)}%`);

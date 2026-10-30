@@ -752,10 +752,14 @@ function useResonanceCanvas(
         ctx!.globalAlpha = 1.0;
         ctx!.lineCap = 'round';
         m.trail.forEach((t, j) => { 
-          t.alpha *= 0.88;
-          j === 0 ? ctx!.moveTo(t.x | 0, t.y | 0) : ctx!.lineTo(t.x | 0, t.y | 0);
-        }); 
-        ctx!.stroke(); 
+        if (m.trail.length > 0) {
+          m.trail[0].alpha *= 0.88;
+          ctx!.moveTo(m.trail[0].x | 0, m.trail[0].y | 0);
+          for (let j = 1; j < m.trail.length; j++) {
+            m.trail[j].alpha *= 0.88;
+            ctx!.lineTo(m.trail[j].x | 0, m.trail[j].y | 0);
+          }
+        }
         ctx!.globalAlpha = 1.0;
         
         const coreSize = m.isHero ? (m.width > 5 ? 40 : 28) : 18;
@@ -842,7 +846,12 @@ function useResonanceCanvas(
         ctx!.strokeStyle = grad;
         ctx!.lineWidth = r.isHero ? 4 : 2;
         ctx!.lineCap = 'round';
-        r.trail.forEach((p, idx) => idx === 0 ? ctx!.moveTo(p.x | 0, p.y | 0) : ctx!.lineTo(p.x | 0, p.y | 0));
+        if (r.trail.length > 0) {
+          ctx!.moveTo(r.trail[0].x | 0, r.trail[0].y | 0);
+          for (let idx = 1; idx < r.trail.length; idx++) {
+            ctx!.lineTo(r.trail[idx].x | 0, r.trail[idx].y | 0);
+          }
+        }
         ctx!.stroke();
 
         ctx!.fillStyle = '#ffffff';
@@ -879,7 +888,12 @@ function useResonanceCanvas(
             ctx!.lineCap = 'round';
             ctx!.strokeStyle = `rgba(${sp.color}, ${alpha * 0.8})`;
             sp.trail.forEach((p, idx) => idx === 0 ? ctx!.moveTo(p.x | 0, p.y | 0) : ctx!.lineTo(p.x | 0, p.y | 0));
-            ctx!.stroke();
+            if (sp.trail.length > 0) {
+              ctx!.moveTo(sp.trail[0].x | 0, sp.trail[0].y | 0);
+              for (let idx = 1; idx < sp.trail.length; idx++) {
+                ctx!.lineTo(sp.trail[idx].x | 0, sp.trail[idx].y | 0);
+              }
+            }
         }
 
         ctx!.fillStyle = `rgba(${sp.color}, ${alpha})`;
