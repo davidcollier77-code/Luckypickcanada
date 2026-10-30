@@ -403,6 +403,78 @@
   transform: scale(0.95);
 }
 
+/* Raised 3D gold buttons: a solid bottom edge plus layered shadow reads as physical depth,
+   and the transform/shadow transition gives the press-and-release feedback. */
+.homepage-experience .gold-3d-btn {
+  position: relative;
+  isolation: isolate;
+  transform: translateY(0);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -2px 0 rgba(120, 63, 4, 0.42),
+    0 3px 0 #a16207,
+    0 6px 0 rgba(120, 63, 4, 0.5),
+    0 9px 20px rgba(0, 0, 0, 0.42),
+    0 0 24px rgba(245, 158, 11, 0.26);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.homepage-experience .gold-3d-btn:hover,
+.homepage-experience .gold-3d-btn:focus-visible {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -2px 0 rgba(120, 63, 4, 0.38),
+    0 5px 0 #a16207,
+    0 8px 0 rgba(120, 63, 4, 0.46),
+    0 15px 28px rgba(0, 0, 0, 0.45),
+    0 0 32px rgba(251, 191, 36, 0.52);
+}
+
+.homepage-experience .gold-3d-btn:active {
+  transform: translateY(2px);
+  filter: brightness(0.98);
+  box-shadow:
+    inset 0 2px 5px rgba(120, 63, 4, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 1px 0 #a16207,
+    0 2px 5px rgba(0, 0, 0, 0.36);
+  transition-duration: 60ms;
+}
+
+/* The glow pulse owns the Suggestion button's shadow, so pause it while pressed
+   to let the flattened press shadow above show through. */
+.homepage-experience .gold-3d-btn:active.suggestion-btn-glow {
+  animation: none;
+}
+
+/* Shared decorative shimmer overlay (Tip Jar and Suggestion). */
+.gold-3d-btn .gold-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homepage-experience .gold-3d-btn {
+    transition: none;
+  }
+
+  .homepage-experience .gold-3d-btn:hover,
+  .homepage-experience .gold-3d-btn:focus-visible,
+  .homepage-experience .gold-3d-btn:active {
+    transform: none;
+    filter: none;
+  }
+
+  .gold-3d-btn .gold-shimmer {
+    animation: none !important;
+    opacity: 0;
+  }
+}
+
 /* Specific resets for structural layouts keeping their padding/dimensions intact without overriding the global visual styles above */
 
 /* Override solid backgrounds in the hero section to reveal the cosmic starry night sky */
