@@ -4,7 +4,7 @@
 
 ## Summary
 
-The PR replaces callback-based iteration with indexed loops in high-frequency canvas paths. Review identified a malformed meteor-trail block and a missing `ctx.stroke()`. The repair removes the orphaned callback opening, iterates meteor points once in order, preserves per-point alpha decay, and strokes the completed path. The spark path uses a single indexed pass inside a `length > 1` guard and calls `ctx.stroke()`. The recursive `drawBranch` helper is defined once at the canvas-effect scope rather than recreated on every animation frame. Redundant meteor context setup is removed.
+The PR replaces callback-based iteration with indexed loops in high-frequency canvas paths. Review identified a malformed meteor-trail block and a missing `ctx.stroke()`. The repair removes the orphaned callback opening, iterates meteor points once in order and strokes the completed path. The unused per-point alpha metadata and mutations are removed because the path fade is produced by the gradient. The spark path uses a single indexed pass inside a `length > 1` guard and calls `ctx.stroke()`. The recursive `drawBranch` helper is defined once at the canvas-effect scope rather than recreated on every animation frame. Redundant meteor context setup is removed.
 
 ## Technical Context
 
@@ -32,8 +32,9 @@ No additional external research was necessary. The regression was verified by co
 ## Phase 1 — Design
 
 - Keep rendering repairs in `components/LuckyGenerator.tsx`; update only the directly related micro-benchmark and task memory, and remove temporary empty patch/test artifacts.
-- Meteor trail: use an indexed loop, apply the existing `0.88` alpha decay once per point, then call `ctx.stroke()` before rendering the meteor core.
+- Meteor trail: use an indexed loop and call `ctx.stroke()` before rendering the meteor core; retain the gradient fade and remove unconsumed alpha metadata.
 - Spark trail: retain the `sp.trail.length > 1` guard, indexed iteration, and one stroke call.
 - Rocket and lightning paths: preserve their existing indexed loops and stroke calls.
 - Benchmark both production draw passes (glow then fill) with mock canvas calls; report it only as a JavaScript path-building micro-benchmark, not browser FPS or PageSpeed evidence.
+- Remove the unused `useMemo` import in the touched component; this has no runtime effect.
 - Use existing repository unit, TypeScript, governance, Playwright, and build workflows. No dependency changes are needed.
