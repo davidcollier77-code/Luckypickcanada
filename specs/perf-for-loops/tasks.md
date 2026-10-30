@@ -10,7 +10,7 @@
 - [x] T003 Restore `ctx!.stroke()` after the meteor trail path is constructed and before the meteor core is drawn in `components/LuckyGenerator.tsx`.
 - [x] T004 Verify the spark trail uses a single indexed pass, retains the `sp.trail.length > 1` guard, and strokes once in `components/LuckyGenerator.tsx`.
 - [x] T005 Verify the rocket and lightning path loops retain their path order and stroke operations in `components/LuckyGenerator.tsx`.
-- [x] T006 Move `drawBranch` outside the animation-frame callback so it is created once per canvas effect, and remove redundant meteor context setup / the unused `lastAlpha` value in `components/LuckyGenerator.tsx`.
+- [x] T006 Move `drawBranch` outside the animation-frame callback so it is created once per canvas effect, and remove redundant meteor context setup, unused per-point trail alpha metadata, and the unused `lastAlpha` value in `components/LuckyGenerator.tsx`; also remove the unused `useMemo` import.
 - [x] T007 Update and execute `benchmark.js` with both production passes (glow then fill), warmup, and alternating order. **PASS** — Node.js 22 syntax check and run; mock `forEach`: 46.10 ms average, indexed `for`: 22.76 ms average across five rounds (50.63% micro-benchmark reduction). This measures mock-context JavaScript path-building overhead only, not browser FPS or PageSpeed gains.
 - [x] T008 Restore pre-existing historical guidance in `.jules/bolt.md` and remove empty or duplicate task scratch files (`generate_bolt.ts`, `patch.diff`, `patch_lucky.sh`, `test_canvas.js`, and `pr_description.txt`).
 
