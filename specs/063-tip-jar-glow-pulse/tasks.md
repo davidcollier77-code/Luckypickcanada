@@ -16,5 +16,6 @@
 - [ ] T009 `pnpm run build` and measure `.next` + `public` against the 495 MiB cap — PENDING; no repository shell/worktree is available in this session.
 - [ ] T010 `./jules-verify.sh` — PENDING; no repository shell/worktree is available in this session.
 - [x] T011 GitHub source verification — PASS: both button class names, the shared keyframe and animation declaration, the reduced-motion selector, and the pressed-state selector are present on the branch; old suggestion-only identifiers are absent from the implementation files.
-- [ ] T012 CI and browser interaction/visual checks — PENDING until GitHub reports the PR checks and any browser-level results.
+- [ ] T012 CI and browser interaction/visual checks — PENDING: PR #1651's OpenNext validation (run 41136958573), Visual QA (run 41136958878), and DevSkim (run 41136958575) were still running when last checked; no final CI or browser-level result is claimed.
 - [x] T013 Diff scope check — PASS: the three implementation files contain only the requested button-class and pulse-selector/keyframe changes; no asset, dependency, route, or functionality change.
+- [x] T014 Update `memory-bank/activeContext.md` with the branch, PR, implementation, and actual verification status.
