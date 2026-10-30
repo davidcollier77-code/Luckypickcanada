@@ -15,7 +15,6 @@ import React, {
   useEffect,
   useRef,
   useState,
-  useMemo,
   memo,
 } from 'react';
 import Link from 'next/link';
@@ -243,7 +242,7 @@ function ResonanceButton({ onClick, isLoading }: { onClick: () => void; isLoadin
 interface Star { x: number; y: number; r: number; phase: number; speed: number; baseAlpha: number; }
 interface Mote { x: number; y: number; r: number; driftPhase: number; speed: number; hue: 'cyan' | 'purple'; }
 interface Dust { x: number; y: number; r: number; vx: number; vy: number; life: number; maxLife: number; }
-interface Meteor { x: number; y: number; vx: number; vy: number; len: number; width: number; trail: { x: number; y: number; alpha: number }[]; life: number; isHero?: boolean; }
+interface Meteor { x: number; y: number; vx: number; vy: number; len: number; width: number; trail: { x: number; y: number }[]; life: number; isHero?: boolean; }
 interface BoltSegment { x: number; y: number; }
 interface BoltBranch { segments: BoltSegment[]; branches: BoltBranch[]; thickness: number; }
 interface Bolt { main: BoltBranch; age: number; life: number; isHero: boolean; }
@@ -742,7 +741,7 @@ function useResonanceCanvas(
       // Draw Meteors
       for (let i = s.meteors.length - 1; i >= 0; i--) { 
         const m = s.meteors[i]; m.life += dt; m.x += m.vx * dt; m.y += m.vy * dt; 
-        m.trail.unshift({ x: m.x, y: m.y, alpha: 1.0 }); 
+        m.trail.unshift({ x: m.x, y: m.y }); 
         if (m.trail.length > (m.isHero ? 70 : 45)) m.trail.pop();
         
         // FIXED TRAIL LOGIC (Visual Regression Fix)
@@ -766,10 +765,8 @@ function useResonanceCanvas(
         ctx!.globalAlpha = 1.0;
         ctx!.lineCap = 'round';
         if (m.trail.length > 0) {
-          m.trail[0].alpha *= 0.88;
           ctx!.moveTo(m.trail[0].x | 0, m.trail[0].y | 0);
           for (let j = 1; j < m.trail.length; j++) {
-            m.trail[j].alpha *= 0.88;
             ctx!.lineTo(m.trail[j].x | 0, m.trail[j].y | 0);
           }
         }
