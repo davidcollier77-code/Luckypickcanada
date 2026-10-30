@@ -8,11 +8,11 @@
 
 ### User Story 1 — Preserve Lucky Meter particle trails (Priority: P1)
 
-As a visitor using the Lucky Meter experience, I need meteor, rocket, spark and lightning trails to render as before so the performance refactor does not remove or duplicate visual effects.
+As a maintainer of the `LuckyGenerator` canvas component, I need its meteor, rocket, spark and lightning trails to render correctly whenever the component is mounted, so a performance refactor does not remove or duplicate visual effects. This task does not change the currently active `/lucky-meter` route.
 
-**Why this priority**: Visible trail rendering is core behavior of the animation. A loop optimization that builds paths without stroking them is a functional regression.
+**Why this priority**: Preserving the component's own drawing behavior prevents latent regressions. Repository inspection found no current application call site for `LuckyGenerator`; the active `/lucky-meter` route uses `LuckyMeterClient` and `DailyResonance`, so no live-route performance benefit is claimed.
 
-**Independent Test**: Exercise the affected canvas animation paths and verify that each non-empty path receives its original ordered drawing commands and a stroke.
+**Independent Test**: Review the affected canvas path code and verify that each non-empty path receives its intended ordered drawing commands and a stroke. The repository's current Playwright visual suite is not a component-specific LuckyGenerator rendering test.
 
 **Acceptance Scenarios**:
 
