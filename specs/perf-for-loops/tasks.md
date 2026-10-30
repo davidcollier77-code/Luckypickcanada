@@ -13,15 +13,16 @@
 - [x] T006 Move `drawBranch` outside the animation-frame callback so it is created once per canvas effect, and remove redundant meteor context setup, unused per-point trail alpha metadata, and the unused `lastAlpha` value in `components/LuckyGenerator.tsx`; also remove the unused `useMemo` import.
 - [x] T007 Update and execute `benchmark.js` with both production passes (glow then fill), warmup, and alternating order. **PASS** — Node.js 22 syntax check and run; mock `forEach`: 46.10 ms average, indexed `for`: 22.76 ms average across five rounds (50.63% micro-benchmark reduction). This measures mock-context JavaScript path-building overhead only, not browser FPS or PageSpeed gains.
 - [x] T008 Restore pre-existing historical guidance in `.jules/bolt.md` and remove empty or duplicate task scratch files (`generate_bolt.ts`, `patch.diff`, `patch_lucky.sh`, `test_canvas.js`, and `pr_description.txt`).
+- [x] T009 Audit component consumers: no current application import/call site for `components/LuckyGenerator.tsx` was found. The active `/lucky-meter` route renders `LuckyMeterClient`, which mounts `components/DailyResonance.tsx`; keep this PR scoped to the dormant component and do not claim live-route benefit.
 
 ## Phase 2: Verification
 
-- [x] T009 Run `pnpm run test` on the first repaired source head. Result: PASS; must be reconfirmed on the latest source head.
-- [x] T010 Run `pnpm tsc --noEmit` on the first repaired source head. Result: PASS; must be reconfirmed on the latest source head.
-- [ ] T011 Pass the Spec Kit governance gate and `./jules-verify.sh` on the latest source head.
-- [ ] T012 Run Playwright visual-regression tests after the governance gate passes.
-- [ ] T013 Complete Next.js/OpenNext build checks and confirm the `.next + public` output is below the 495 MiB hard cap.
-- [ ] T014 Obtain fresh Amazon Q and Gemini reviews of the latest PR head and resolve any new actionable findings.
+- [x] T010 Run `pnpm run test` on the first repaired source head. Result: PASS; latest-head confirmation runs in Visual QA.
+- [x] T011 Run `pnpm tsc --noEmit` on the first repaired source head. Result: PASS; latest-head confirmation runs in Visual QA.
+- [ ] T012 Pass the Spec Kit governance gate and `./jules-verify.sh` on the latest source head.
+- [ ] T013 Run the repository Playwright visual-regression suite after the governance gate passes. Note: current visual suite covers the homepage baseline, not the unmounted `LuckyGenerator` component itself.
+- [ ] T014 Complete Next.js/OpenNext build checks and confirm the `.next + public` output is below the 495 MiB hard cap.
+- [x] T015 Obtain fresh Amazon Q and Gemini reviews of the repaired head. Both reviewers confirmed no rendering regression; Q noted only a pre-existing redundant rocket `strokeStyle` assignment, and Gemini reported no actionable issue but incomplete coverage.
 
 ## Dependencies and execution order
 
