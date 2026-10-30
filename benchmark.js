@@ -60,10 +60,21 @@ function drawBranchFor(branch, alpha, isGlow) {
 const ITERATIONS = 100000;
 const ROUNDS = 5;
 
-// Warmup
+// Production draws each bolt twice: once for the glow pass, then once for the fill pass.
+function drawBranchForEachFrame(branch, alpha) {
+    drawBranchForEach(branch, alpha, true);
+    drawBranchForEach(branch, alpha, false);
+}
+
+function drawBranchForFrame(branch, alpha) {
+    drawBranchFor(branch, alpha, true);
+    drawBranchFor(branch, alpha, false);
+}
+
+// Warmup both passes for each implementation.
 for (let i = 0; i < 10000; i++) {
-    drawBranchForEach(branch, 1, false);
-    drawBranchFor(branch, 1, false);
+    drawBranchForEachFrame(branch, 1);
+    drawBranchForFrame(branch, 1);
 }
 
 // Alternate execution order across rounds to minimise JIT and branch-predictor bias
@@ -74,11 +85,11 @@ for (let round = 0; round < ROUNDS; round++) {
     if (round % 2 === 0) {
         // forEach first
         const s1 = performance.now();
-        for (let i = 0; i < ITERATIONS; i++) drawBranchForEach(branch, 1, false);
+        for (let i = 0; i < ITERATIONS; i++) drawBranchForEachFrame(branch, 1);
         totalForEach += performance.now() - s1;
 
         const s2 = performance.now();
-        for (let i = 0; i < ITERATIONS; i++) drawBranchFor(branch, 1, false);
+        for (let i = 0; i < ITERATIONS; i++) drawBranchForFrame(branch, 1);
         totalFor += performance.now() - s2;
     } else {
         // for first
@@ -94,6 +105,7 @@ for (let round = 0; round < ROUNDS; round++) {
 
 const avgForEach = totalForEach / ROUNDS;
 const avgFor = totalFor / ROUNDS;
-console.log(`forEach avg (${ROUNDS} rounds): ${avgForEach.toFixed(2)} ms`);
-console.log(`for avg    (${ROUNDS} rounds): ${avgFor.toFixed(2)} ms`);
-console.log(`Improvement: ${(((avgForEach - avgFor) / avgForEach) * 100).toFixed(2)}%`);
+console.log(`forEach avg (${ROUNDS} rounds, glow + fill): ${avgForEach.toFixed(2)} ms`);
+console.log(`for avg    (${ROUNDS} rounds, glow + fill): ${avgFor.toFixed(2)} ms`);
+console.log(`Micro-benchmark reduction: ${(((avgForEach - avgFor) / avgForEach) * 100).toFixed(2)}%`);
+console.log('Note: mock canvas calls isolate JavaScript path-building overhead; this is not a browser FPS or PageSpeed measurement.');
