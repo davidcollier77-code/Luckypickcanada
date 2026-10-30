@@ -22,7 +22,7 @@ Neon docs are available as markdown. Append `.md` to any doc URL or set `Accept:
 - [Pricing and plans](https://neon.com/pricing.md)
 - [Declare a whole backend in one file](https://neon.com/docs/reference/neon-ts.md)
 - [Add users and authentication](https://neon.com/docs/auth/overview.md)
-- [Explore the full platform: functions, object storage, AI Gateway, and more](https://neon.com/docs/introduction.md)
+- [Explore the full platform: functions, object storage, AI Gateway, and more](https://neon.com/docs/get-started/backend-overview.md)
 - [Choose a connection method (drivers, pooling, serverless)](https://neon.com/docs/connect/choose-connection.md)
 - [Troubleshoot connection errors and timeouts](https://neon.com/docs/connect/connection-errors.md)
 - [Neon API reference (projects, branches, databases, endpoints)](https://neon.com/docs/reference/api.md)
@@ -195,6 +195,7 @@ Instant copy-on-write database environments for dev, CI, previews, and recovery.
 - [Manage production and staging as branches](https://neon.com/branching/production-staging-workflows.md): Learn how to manage production and staging with database branching. Treat the production branch as the source, derive staging from it, and anonymize data for PII-safe workflows
 - [Promote from dev to prod without conflict](https://neon.com/branching/advanced-branching-workflows.md): Build a snapshot-based promotion workflow for Postgres: replace production with a known-good dev version using database branches, snapshots, and instant restores
 - [The building blocks](https://neon.com/branching/foundational-concepts.md): Learn how Neon projects, branches, and hierarchies work: fast copy-on-write branching, isolated compute per branch, and instant restore with snapshots
+- [Traditional database workflows are broken](https://neon.com/branching/introduction.md): The stack has evolved, databases haven’t. See why copying databases doesn’t scale and how database branching enables fast environments for modern teams
 - [Use branches to restore instantly](https://neon.com/branching/recovery-workflows.md): Learn how to use branching for recovery: use database branches to go back in time, recover lost data, debug migrations, and audit historical states safely
 - [Use database branches as environments](https://neon.com/branching/rethinking-the-database.md): Rethink the database developer experience: database branching replaces instance copying with fast, isolated environments built on copy-on-write storage
 
