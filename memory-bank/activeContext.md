@@ -1,3 +1,17 @@
+# Active Context — Tip Jar Glow Pulse Match (2026-10-30)
+
+- **Selected task group:** `polishing` — match the existing warm glow pulse between two adjacent homepage gold calls to action; no new functionality, route, asset, dependency, or configuration.
+- **Branch / PR:** `polish/tip-jar-glow-pulse-20261030`, [PR #1651](https://github.com/davidcollier77-code/Luckypickcanada/pull/1651) against `main`. PR is open and unmerged for owner review.
+- **Change:** `app/homepage/HomePage.js` applies the reusable `gold-btn-glow` class to both Tip Jar and Suggestion buttons. `app/globals.css` renames the suggestion-only keyframes to `goldBtnGlow` while keeping the exact three-second timing and shadow values, and updates reduced-motion handling. `themes/default/homepage.css` pauses the shared pulse on press for both buttons, leaving the flattened active shadow visible.
+- **Preserved:** both existing shimmer sweeps; button copy, gradients, layout, focus styling, click/form handlers, destinations, Tip Jar flow, Suggestion submitting/disabled behavior, and all non-targeted site behavior. No artwork, image delivery, dependencies, checkout logic, or backend code changed.
+- **Spec Kit artifacts:** `specs/063-tip-jar-glow-pulse/{spec,plan,tasks}.md`; `.specify/feature.json` points to the active feature.
+- **Source/diff verification:** PASS — branch compared directly with `main`; final diff contains 8 scoped files (3 implementation files, 3 Spec Kit artifacts, `.specify/feature.json`, and this Memory Bank update). Source checks confirmed both buttons share `gold-btn-glow`, `goldBtnGlow 3s ease-in-out infinite`, reduced-motion handling, and active-state pause; previous suggestion-only identifiers are absent from the implementation files.
+- **CI status:** DevSkim run 41136958575 completed successfully (PASS). OpenNext validation run 41136958573 is still in progress at the OpenNext Cloudflare build. Visual QA run 41136958878 is still in progress at the Spec Kit verification step. Browser-level rendering and current-head CI outcomes remain pending; no final result is claimed for the in-progress workflows.
+- **Not run locally:** `pnpm exec tsc --noEmit`, `pnpm test`, `pnpm run build`, and `./jules-verify.sh`; this session has repository API access but no local checkout/worktree or shell for running those commands. Build size and browser-level rendering remain unverified until CI reports.
+- **Outstanding:** complete CI/visual checks and owner review; leave PR open and unmerged.
+
+---
+
 # Active Context — Homepage Gold Button Raised Depth and Shimmer (2026-10-30)
 
 - **Selected task group:** `polishing` — visual/tactile polish of the existing homepage gold buttons; no new functionality, routes, or assets.
