@@ -176,7 +176,7 @@ Realtime reactivity on standard Postgres. Live SQL API makes any SQL query live 
 
 - [All 16 Realtime pages](https://neon.com/docs/realtime/llms.txt) — key pages below
 
-- [Neon Realtime](https://neon.com/docs/realtime/overview.md): Realtime live SQL and reactive DX for building apps and agents.
+- [Neon Realtime](https://neon.com/docs/realtime/overview.md): Live queries that update your app's UI the moment your data changes.
 - [Quickstart](https://neon.com/docs/realtime/quickstart.md): Get started with Realtime.
 - [How it works](https://neon.com/docs/realtime/how-it-works.md)
 - [Next.js example](https://neon.com/docs/realtime/examples/nextjs.md): Full-stack example app using Realtime with Next.js.
