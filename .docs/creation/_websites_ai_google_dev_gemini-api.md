@@ -25,11 +25,11 @@
     <link rel="preconnect" href="//fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="//www.google-analytics.com" crossorigin><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,400italic,500,500italic,700,700italic|Roboto+Mono:400,500,700|Inter:400,500|Inter+Tight:300,500,600&display=swap">
       <link rel="stylesheet"
-            href="//fonts.googleapis.com/css2?family=Material+Icons&family=Material+Symbols+Outlined&display=block"><link rel="stylesheet" href="https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/css/app.css">
+            href="//fonts.googleapis.com/css2?family=Material+Icons&family=Material+Symbols+Outlined&display=block"><link rel="stylesheet" href="https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/css/app.css">
       
-        <link rel="stylesheet" href="https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/css/dark-theme.css" disabled>
-      <link rel="shortcut icon" href="https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/images/favicon-new.png">
-    <link rel="apple-touch-icon" href="https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/images/touchicon-180-new.png"><link rel="canonical" href="https://ai.google.dev/gemini-api/docs/deep-research"><link rel="search" type="application/opensearchdescription+xml"
+        <link rel="stylesheet" href="https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/css/dark-theme.css" disabled>
+      <link rel="shortcut icon" href="https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/images/favicon-new.png">
+    <link rel="apple-touch-icon" href="https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/images/touchicon-180-new.png"><link rel="canonical" href="https://ai.google.dev/gemini-api/docs/deep-research"><link rel="search" type="application/opensearchdescription+xml"
             title="Google AI for Developers" href="https://ai.google.dev/s/opensearch.xml">
       <link rel="alternate" hreflang="en"
           href="https://ai.google.dev/gemini-api/docs/deep-research" /><link rel="alternate" hreflang="x-default" href="https://ai.google.dev/gemini-api/docs/deep-research" /><link rel="alternate" hreflang="ar"
@@ -358,7 +358,7 @@
     
     <li role="presentation">
       <a role="menuitem" lang="hi"
-        >हि��दी</a>
+        >हिंदी</a>
     </li>
     
     <li role="presentation">
@@ -895,6 +895,10 @@
   <li class="devsite-nav-item"><a href="/gemini-api/docs/coding-agents"
         class="devsite-nav-title"
       ><span class="devsite-nav-text" tooltip>Coding agent setup</span></a></li>
+
+  <li class="devsite-nav-item"><a href="/gemini-api/docs/cli"
+        class="devsite-nav-title"
+      ><span class="devsite-nav-text" tooltip>API CLI</span></a></li>
 
   <li class="devsite-nav-item
            devsite-nav-heading"><div class="devsite-nav-title devsite-nav-title-no-path">
@@ -2032,7 +2036,7 @@ devsite-gemini-api-hovercard-button {
   product-id="5292923"
   bucket="documentation"
   context=""
-  version="t-devsite-webserver-20261015-r00-rc00.481220705532147210"
+  version="t-devsite-webserver-20261022-r00-rc00.481360572598466189"
   data-label="Send Feedback Button"
   track-type="feedback"
   track-name="sendFeedbackLink"
@@ -2042,7 +2046,7 @@ devsite-gemini-api-hovercard-button {
   
   
   
-    project-icon="https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/images/touchicon-180-new.png"
+    project-icon="https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/images/touchicon-180-new.png"
   
   
   
@@ -4738,7 +4742,7 @@ tool.</li>
   product-id="5292923"
   bucket="documentation"
   context=""
-  version="t-devsite-webserver-20261015-r00-rc00.481220705532147210"
+  version="t-devsite-webserver-20261022-r00-rc00.481360572598466189"
   data-label="Send Feedback Button"
   track-type="feedback"
   track-name="sendFeedbackLink"
@@ -4748,7 +4752,7 @@ tool.</li>
   
   
   
-    project-icon="https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/images/touchicon-180-new.png"
+    project-icon="https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/images/touchicon-180-new.png"
   
   
   
@@ -4792,7 +4796,7 @@ tool.</li>
   product-id="5292923"
   bucket="documentation"
   context=""
-  version="t-devsite-webserver-20261015-r00-rc00.481220705532147210"
+  version="t-devsite-webserver-20261022-r00-rc00.481360572598466189"
   data-label="Send Feedback Button"
   track-type="feedback"
   track-name="sendFeedbackLink"
@@ -4802,7 +4806,7 @@ tool.</li>
   
   
   
-    project-icon="https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/images/touchicon-180-new.png"
+    project-icon="https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/images/touchicon-180-new.png"
   
   
   
@@ -5043,12 +5047,12 @@ tool.</li>
     
     
     
-<script nonce="fPLWqhPRvpZEHpTySKmCJ7HVHLElKv">
+<script nonce="XnWJ8YM8xoETHsUQp+L8N+RcKiCT3x">
   
   (function(d,e,v,s,i,t,E){d['GoogleDevelopersObject']=i;
     t=e.createElement(v);t.async=1;t.src=s;E=e.getElementsByTagName(v)[0];
     E.parentNode.insertBefore(t,E);})(window, document, 'script',
-    'https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/js/app_loader.js', '[59,"en",null,"/js/devsite_app_module.js","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai","https://googledevai-dot-devsite-v2-prod-3p.appspot.com",null,null,["/_pwa/googledevai/manifest.json","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/images/video-placeholder.svg","https://www.gstatic.com/devrel-devsite/prod/v5a0f9ff8b593048661361a49e11ab98a8b1ac025e19e60e6189f2b56796f8a43/googledevai/images/favicon-new.png","/_static/googledevai/images/gemini-api-logo.svg","https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,400italic,500,500italic,700,700italic|Roboto+Mono:400,500,700|Inter:400,500|Inter+Tight:300,500,600&display=swap"],1,null,[1,6,8,12,14,17,21,25,50,52,63,70,75,76,80,87,91,92,93,97,98,100,101,102,103,104,105,107,108,109,110,112,113,117,118,120,122,124,125,126,127,129,130,131,132,133,134,135,136,138,140,141,147,148,149,151,152,156,157,158,159,161,163,164,168,169,170,179,180,182,183,186,191,193,196],"AIzaSyCNm9YxQumEXwGJgTDjxoxXK6m1F-9720Q","AIzaSyCc76DZePGtoyUjqKrLdsMGk_ry7sljLbY","ai.google.dev","AIzaSyB9bqgQ2t11WJsOX8qNsCQ6U-w91mmqF-I","AIzaSyAdYnStPdzjcJJtQ0mvIaeaMKj7_t6J_Fg",null,null,null,["Profiles__enable_profile_collections","Profiles__enable_callout_notifications","DevPro__enable_devpro_offers","Cloud__enable_free_trial_server_call","EngEduTelemetry__enable_engedu_telemetry","Profiles__enable_awarding_url","MiscFeatureFlags__enable_explain_this_code","OnSwitch__enable","Cloud__enable_cloud_shell","Search__enable_ai_search_summaries_for_all","Profiles__enable_page_saving","Concierge__enable_actions_menu","Cloud__cache_serialized_dynamic_content","MiscFeatureFlags__developers_footer_dark_image","Cloud__enable_legacy_calculator_redirect","Profiles__enable_developer_profiles_callout","MiscFeatureFlags__enable_firebase_utm","Cloud__fast_free_trial","Search__enable_suggestions_from_borg","AIStudioInteractionsToggle__interactions_are_default","DevPro__enable_devsite_captcha","DevPro__enable_free_benefits","Search__enable_dynamic_content_confidential_banner","MiscFeatureFlags__gdp_dashboard_reskin_enabled","DevPro__enable_cloud_innovators_plus","Search__enable_page_map","DevPro__enable_vertex_credit_card","Profiles__enable_auto_apply_credits","Profiles__enable_playlist_community_acl","Concierge__enable_devsite_llm_tools","DevPro__enable_g1_ineligible_redirect","DevPro__enable_enterprise","DevPro__enable_google_payments_buyflow","MiscFeatureFlags__enable_variable_operator_index_yaml","Analytics__enable_clearcut_logging","Profiles__enable_stripe_subscription_management","Profiles__enable_release_notes_notifications","Search__enable_ai_eligibility_checks","MiscFeatureFlags__fix_lower_breadcrumbs","DevPro__enable_code_assist","Concierge__enable_pushui","MiscFeatureFlags__enable_variable_operator","Analytics__enable_devpro_interaction_logging","DevPro__enable_google_payments","Profiles__enable_developer_profile_pages_as_content","DevPro__enable_nvidia_credits_card","MiscFeatureFlags__enable_appearance_cookies","Experiments__reqs_query_experiments","DevPro__enable_g1_integration","TpcFeatures__enable_unmirrored_page_left_nav","DevPro__remove_eu_tax_intake_form","Cloud__enable_cloud_shell_fte_user_flow","Profiles__enable_join_program_group_endpoint","DevPro__enable_developer_subscriptions","MiscFeatureFlags__developers_footer_image","MiscFeatureFlags__enable_explicit_template_dependencies","BookNav__enable_tenant_cache_key","DevPro__enable_credits_banner","Profiles__enable_dashboard_curated_recommendations","MiscFeatureFlags__enable_view_transitions","Profiles__enable_recognition_badges","TpcFeatures__proxy_prod_host","MiscFeatureFlags__remove_cross_domain_tracking_params","SignIn__enable_l1_signup_flow","Cloud__enable_cloud_dlp_service","Profiles__enable_completequiz_endpoint","MiscFeatureFlags__enable_framebox_badge_methods","Profiles__enable_complete_playlist_endpoint","Profiles__enable_purchase_prompts","Profiles__require_profile_eligibility_for_signin","Concierge__enable_remove_info_panel_tags","MiscFeatureFlags__enable_llms_txt","Cloud__enable_cloudx_experiment_ids","Profiles__enable_public_developer_profiles","CloudShell__cloud_code_overflow_menu","DevPro__enable_embed_profile_creation","Profiles__enable_completecodelab_endpoint","Profiles__enable_user_type","MiscFeatureFlags__enable_project_variables","Profiles__enable_developer_profile_benefits_ui_redesign","DevPro__enable_firebase_workspaces_card","CloudShell__cloud_shell_button","DevPro__enable_google_one_card","Profiles__enable_targeted_hero"],null,null,"AIzaSyA58TaKli1DculwmAmbpzLVGuWc8eCQgQc","https://developerscontentserving-pa.googleapis.com","AIzaSyDWBU60w0P9hEkr29kkksYs8Z7gvZ8u_wc","https://developerscontentsearch-pa.googleapis.com",2,4,null,"https://developerprofiles-pa.googleapis.com",[59,"googledevai","Google AI for Developers","ai.google.dev",null,"googledevai-dot-devsite-v2-prod-3p.appspot.com",null,null,[null,1,null,null,null,null,null,null,null,null,null,[1],null,null,null,null,null,null,[1],null,null,null,null,[1],[1,1,null,1,1],null,null,null,null,null,[1]],null,[73,null,null,null,null,null,"/images/lockup-new.svg","/images/touchicon-180-new.png",null,null,null,null,1,1,null,null,null,null,null,null,null,2,null,null,null,"/images/lockup-dark-theme-new.svg",[]],[],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[44,2,4,6,7,12,14,15,17,18,20,21,22,23,28,29,32,37,39,40,43],null,[[],[1,1],null,1],[[null,null,null,null,null,["GTM-TC2MQKS8"],null,null,null,null,null,[["GTM-TC2MQKS8",1]],1]],null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[]],null,null,1,1,"https://developerscontentinsights-pa.googleapis.com","AIzaSyC11xEGtFhkmSh_iF6l_itbxnFz2GrIBOg","AIzaSyAXJ10nRF73mmdSDINgkCNX5bbd2KPcWm8","https://developers.googleapis.com",["https://aistudio.google.com"],null,"AIzaSyCjP0KOnHfv8mwe38sfzZJMOnqE3HvrD4A",null,null,"https://developers.googleapis.com"]')
+    'https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/js/app_loader.js', '[59,"en",null,"/js/devsite_app_module.js","https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870","https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai","https://googledevai-dot-devsite-v2-prod-3p.appspot.com",null,null,["/_pwa/googledevai/manifest.json","https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/images/video-placeholder.svg","https://www.gstatic.com/devrel-devsite/prod/vc1b996b07630b7fba08b3b2fd258fb35e39e5d8dfeab71af65465d9a2fbe5870/googledevai/images/favicon-new.png","/_static/googledevai/images/gemini-api-logo.svg","https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,400italic,500,500italic,700,700italic|Roboto+Mono:400,500,700|Inter:400,500|Inter+Tight:300,500,600&display=swap"],1,null,[1,6,8,12,14,17,21,25,50,52,63,70,75,76,80,87,91,92,93,97,98,100,101,102,103,104,105,107,108,109,110,112,113,117,118,120,122,124,125,126,127,129,130,131,132,133,134,135,136,138,140,141,147,148,149,151,152,156,157,158,159,161,163,164,168,169,170,179,180,182,183,186,191,193,196],"AIzaSyCNm9YxQumEXwGJgTDjxoxXK6m1F-9720Q","AIzaSyCc76DZePGtoyUjqKrLdsMGk_ry7sljLbY","ai.google.dev","AIzaSyB9bqgQ2t11WJsOX8qNsCQ6U-w91mmqF-I","AIzaSyAdYnStPdzjcJJtQ0mvIaeaMKj7_t6J_Fg",null,null,null,["Profiles__enable_profile_collections","DevPro__enable_free_benefits","Concierge__enable_devsite_llm_tools","Profiles__enable_recognition_badges","DevPro__enable_g1_ineligible_redirect","MiscFeatureFlags__developers_footer_image","Analytics__enable_clearcut_logging","DevPro__enable_google_payments","MiscFeatureFlags__enable_view_transitions","Search__enable_ai_eligibility_checks","Cloud__enable_free_trial_server_call","Profiles__enable_join_program_group_endpoint","Search__enable_dynamic_content_confidential_banner","MiscFeatureFlags__enable_firebase_utm","Cloud__enable_cloud_dlp_service","Profiles__enable_public_developer_profiles","Profiles__enable_developer_profiles_callout","SignIn__enable_l1_signup_flow","DevPro__remove_eu_tax_intake_form","DevPro__enable_developer_subscriptions","MiscFeatureFlags__enable_variable_operator_index_yaml","Search__enable_suggestions_from_borg","Cloud__enable_legacy_calculator_redirect","Profiles__enable_developer_profile_pages_as_content","DevPro__enable_google_one_card","MiscFeatureFlags__enable_explain_this_code","EngEduTelemetry__enable_engedu_telemetry","AIStudioInteractionsToggle__interactions_are_default","Profiles__enable_playlist_community_acl","OnSwitch__enable","DevPro__enable_embed_profile_creation","Profiles__enable_completecodelab_endpoint","Profiles__enable_page_saving","DevPro__enable_devsite_captcha","MiscFeatureFlags__gdp_dashboard_reskin_enabled","Cloud__cache_serialized_dynamic_content","Profiles__enable_targeted_hero","MiscFeatureFlags__enable_explicit_template_dependencies","MiscFeatureFlags__enable_framebox_badge_methods","Profiles__require_profile_eligibility_for_signin","MiscFeatureFlags__remove_cross_domain_tracking_params","MiscFeatureFlags__developers_footer_dark_image","BookNav__enable_tenant_cache_key","Cloud__fast_free_trial","Cloud__enable_cloud_shell","MiscFeatureFlags__enable_variable_operator","Experiments__reqs_query_experiments","DevPro__enable_firebase_workspaces_card","TpcFeatures__proxy_prod_host","Search__enable_page_map","Concierge__enable_actions_menu","Profiles__enable_awarding_url","Profiles__enable_purchase_prompts","CloudShell__cloud_shell_button","Profiles__enable_complete_playlist_endpoint","Cloud__enable_cloudx_experiment_ids","Profiles__enable_dashboard_curated_recommendations","DevPro__enable_enterprise","Concierge__enable_pushui","DevPro__enable_google_payments_buyflow","MiscFeatureFlags__fix_lower_breadcrumbs","MiscFeatureFlags__enable_appearance_cookies","DevPro__enable_g1_integration","Profiles__enable_auto_apply_credits","Profiles__enable_developer_profile_benefits_ui_redesign","DevPro__enable_devpro_offers","DevPro__enable_code_assist","Profiles__enable_completequiz_endpoint","Profiles__enable_release_notes_notifications","Concierge__enable_remove_info_panel_tags","DevPro__enable_nvidia_credits_card","MiscFeatureFlags__enable_project_variables","DevPro__enable_credits_banner","DevPro__enable_cloud_innovators_plus","CloudShell__cloud_code_overflow_menu","DevPro__enable_vertex_credit_card","Profiles__enable_user_type","MiscFeatureFlags__enable_llms_txt","TpcFeatures__enable_unmirrored_page_left_nav","Analytics__enable_devpro_interaction_logging","Profiles__enable_callout_notifications","Profiles__enable_stripe_subscription_management","Cloud__enable_cloud_shell_fte_user_flow","Search__enable_ai_search_summaries_for_all"],null,null,"AIzaSyA58TaKli1DculwmAmbpzLVGuWc8eCQgQc","https://developerscontentserving-pa.googleapis.com","AIzaSyDWBU60w0P9hEkr29kkksYs8Z7gvZ8u_wc","https://developerscontentsearch-pa.googleapis.com",2,4,null,"https://developerprofiles-pa.googleapis.com",[59,"googledevai","Google AI for Developers","ai.google.dev",null,"googledevai-dot-devsite-v2-prod-3p.appspot.com",null,null,[null,1,null,null,null,null,null,null,null,null,null,[1],null,null,null,null,null,null,[1],null,null,null,null,[1],[1,1,null,1,1],null,null,null,null,null,[1]],null,[73,null,null,null,null,null,"/images/lockup-new.svg","/images/touchicon-180-new.png",null,null,null,null,1,1,null,null,null,null,null,null,null,2,null,null,null,"/images/lockup-dark-theme-new.svg",[]],[],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[44,2,4,6,7,12,14,15,17,18,20,21,22,23,28,29,32,37,39,40,43],null,[[],[1,1],null,1],[[null,null,null,null,null,["GTM-TC2MQKS8"],null,null,null,null,null,[["GTM-TC2MQKS8",1]],1]],null,4,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,[]],null,null,1,1,"https://developerscontentinsights-pa.googleapis.com","AIzaSyC11xEGtFhkmSh_iF6l_itbxnFz2GrIBOg","AIzaSyAXJ10nRF73mmdSDINgkCNX5bbd2KPcWm8","https://developers.googleapis.com",["https://aistudio.google.com"],null,"AIzaSyCjP0KOnHfv8mwe38sfzZJMOnqE3HvrD4A",null,null,"https://developers.googleapis.com"]')
   
 </script>
 
