@@ -4,7 +4,7 @@
 
 ## Summary
 
-The PR replaces callback-based iteration with indexed loops in high-frequency canvas paths. Review identified a malformed meteor-trail block and a missing `ctx.stroke()`. The repair removes the orphaned callback opening, iterates meteor points once in order and strokes the completed path. The unused per-point alpha metadata and mutations are removed because the path fade is produced by the gradient. The spark path uses a single indexed pass inside a `length > 1` guard and calls `ctx.stroke()`. The recursive `drawBranch` helper is defined once at the canvas-effect scope rather than recreated on every animation frame. Redundant meteor context setup is removed.
+The PR replaces callback-based iteration with indexed loops in high-frequency canvas paths. Repository route inspection found no current application import/call site for `components/LuckyGenerator.tsx`: `/lucky-meter` renders `LuckyMeterClient`, which renders `DailyResonance`. This PR therefore repairs a dormant component, not the active Lucky Meter route. Review identified a malformed meteor-trail block and a missing `ctx.stroke()`. The repair removes the orphaned callback opening, iterates meteor points once in order and strokes the completed path. The unused per-point alpha metadata and mutations are removed because the path fade is produced by the gradient. The spark path uses a single indexed pass inside a `length > 1` guard and calls `ctx.stroke()`. The recursive `drawBranch` helper is defined once at the canvas-effect scope rather than recreated on every animation frame. Redundant meteor context setup is removed.
 
 ## Technical Context
 
@@ -16,13 +16,13 @@ The PR replaces callback-based iteration with indexed loops in high-frequency ca
 - **Project Type**: Next.js App Router web application
 - **Performance Goals**: Preserve existing frame behavior while avoiding callback iteration in the targeted hot paths; no target real-world FPS gain is claimed without browser profiling
 - **Constraints**: No change to canvas artwork, line styles, color, timing, particle physics, layout, audio, or other functionality; build output must remain below 495 MiB
-- **Scale/Scope**: One application source file; targeted to meteor/spark/rocket/lightning trail loops in `components/LuckyGenerator.tsx`
+- **Scale/Scope**: One dormant application component; targeted to meteor/spark/rocket/lightning trail loops in `components/LuckyGenerator.tsx`. No active route or visitor performance gain is claimed.
 
 ## Constitution Check
 
 - **Single source of truth**: PASS — repository `AGENTS.md` remains authoritative.
 - **Protected systems**: PASS — no payments, authentication, database, deployment, environment, or secrets are changed.
-- **Visual preservation**: PASS — path order and stroke calls are restored; styling and animation behavior are preserved.
+- **Component behavior preservation**: PASS — path order and stroke calls are restored; styling and animation behavior are preserved when this component is mounted. Active-route applicability: no current consumer found.
 - **Testing and verification**: PENDING — full CI/visual/build outcomes must be observed on the final commit.
 
 ## Phase 0 — Research
@@ -37,4 +37,4 @@ No additional external research was necessary. The regression was verified by co
 - Rocket and lightning paths: preserve their existing indexed loops and stroke calls.
 - Benchmark both production draw passes (glow then fill) with mock canvas calls; report it only as a JavaScript path-building micro-benchmark, not browser FPS or PageSpeed evidence.
 - Remove the unused `useMemo` import in the touched component; this has no runtime effect.
-- Use existing repository unit, TypeScript, governance, Playwright, and build workflows. No dependency changes are needed.
+- Use existing repository unit, TypeScript, governance, Playwright, and build workflows. Note that the shared Playwright visual suite covers the homepage baseline, not this unmounted component. No dependency changes are needed.
