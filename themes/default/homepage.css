@@ -415,7 +415,6 @@
     0 3px 0 #a16207,
     0 6px 0 rgba(120, 63, 4, 0.5),
     0 9px 20px rgba(0, 0, 0, 0.42),
-    0 0 24px rgba(245, 158, 11, 0.26);
     0 0 24px rgba(245, 158, 11, 0.26) !important;
 }
 
@@ -445,9 +444,9 @@
 
 /* The glow pulse owns the Suggestion button's shadow, so pause it while pressed
    to let the flattened press shadow above show through. */
-.homepage-experience .gold-3d-btn:active.suggestion-btn-glow {
-  animation: none;
 .homepage-experience .gold-3d-btn.suggestion-btn-glow:active {
+  animation: none;
+}
 
 /* Shared decorative shimmer overlay (Tip Jar and Suggestion). */
 .gold-3d-btn .gold-shimmer {
