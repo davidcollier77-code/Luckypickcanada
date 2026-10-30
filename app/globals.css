@@ -287,12 +287,12 @@ body {
   .animate-magic-burst {
     animation: none;
   }
-  .suggestion-btn-glow {
+  .gold-btn-glow {
     animation: none;
   }
 }
 
-@keyframes suggestionBtnGlow {
+@keyframes goldBtnGlow {
   0%, 100% {
     box-shadow: 0 3px 0 #a16207, 0 6px 0 rgba(120, 63, 4, 0.5), 0 9px 20px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.62), inset 0 -2px 0 rgba(120, 63, 4, 0.42), 0 0 15px rgba(234, 190, 82, 0.4);
   }
@@ -301,6 +301,6 @@ body {
   }
 }
 
-.suggestion-btn-glow {
-  animation: suggestionBtnGlow 3s ease-in-out infinite;
+.gold-btn-glow {
+  animation: goldBtnGlow 3s ease-in-out infinite;
 }
