@@ -513,6 +513,23 @@ function useResonanceCanvas(
     function onVisibility() { hidden = document.hidden; if (!hidden) last = performance.now(); }
     document.addEventListener('visibilitychange', onVisibility);
 
+    function drawBranch(branch: BoltBranch, alpha: number, isGlow: boolean) {
+       ctx!.beginPath();
+       ctx!.lineWidth = isGlow ? branch.thickness * (branch.thickness > 3 ? 6 : 4) : branch.thickness;
+       ctx!.strokeStyle = isGlow ? '#c864ff' : '#ffffff';
+       ctx!.globalAlpha = isGlow ? alpha * 0.7 : alpha;
+       ctx!.lineJoin = 'miter';
+       if (branch.segments.length > 0) {
+          ctx!.moveTo(branch.segments[0].x | 0, branch.segments[0].y | 0);
+          for (let idx = 1; idx < branch.segments.length; idx++) {
+             ctx!.lineTo(branch.segments[idx].x | 0, branch.segments[idx].y | 0);
+          }
+       }
+       ctx!.stroke();
+       ctx!.globalAlpha = 1.0;
+       for (let i = 0; i < branch.branches.length; i++) drawBranch(branch.branches[i], alpha, isGlow);
+    }
+
     function frame(now: number) {
       raf = requestAnimationFrame(frame);
       if (hidden) { last = now; return; }
@@ -728,11 +745,8 @@ function useResonanceCanvas(
         m.trail.unshift({ x: m.x, y: m.y, alpha: 1.0 }); 
         if (m.trail.length > (m.isHero ? 70 : 45)) m.trail.pop();
         
-        ctx!.beginPath();
-        ctx!.strokeStyle = m.isHero ? '#8cdcff' : '#b4d2ff';
         // FIXED TRAIL LOGIC (Visual Regression Fix)
         const lastIndex = Math.max(0, m.trail.length - 1);
-        const lastAlpha = (m.trail[lastIndex]?.alpha || 1.0) * 0.88;
 
         ctx!.beginPath();
         const grad = ctx!.createLinearGradient(m.x, m.y, m.trail[lastIndex]?.x || m.x, m.trail[lastIndex]?.y || m.y);
@@ -780,23 +794,6 @@ function useResonanceCanvas(
       }
 
       // Draw Lightning Bolts
-      function drawBranch(branch: BoltBranch, alpha: number, isGlow: boolean) {
-         ctx!.beginPath();
-         ctx!.lineWidth = isGlow ? branch.thickness * (branch.thickness > 3 ? 6 : 4) : branch.thickness;
-         ctx!.strokeStyle = isGlow ? '#c864ff' : '#ffffff';
-         ctx!.globalAlpha = isGlow ? alpha * 0.7 : alpha;
-         ctx!.lineJoin = 'miter';
-         if (branch.segments.length > 0) {
-            ctx!.moveTo(branch.segments[0].x | 0, branch.segments[0].y | 0);
-            for (let idx = 1; idx < branch.segments.length; idx++) {
-               ctx!.lineTo(branch.segments[idx].x | 0, branch.segments[idx].y | 0);
-            }
-         }
-         ctx!.stroke();
-         ctx!.globalAlpha = 1.0;
-         for (let i = 0; i < branch.branches.length; i++) drawBranch(branch.branches[i], alpha, isGlow);
-      }
-
       for (let i = s.bolts.length - 1; i >= 0; i--) { 
         const bolt = s.bolts[i]; 
         bolt.age += dt; 
