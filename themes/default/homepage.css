@@ -415,7 +415,7 @@
     0 3px 0 #a16207,
     0 6px 0 rgba(120, 63, 4, 0.5),
     0 9px 20px rgba(0, 0, 0, 0.42),
-    0 0 24px rgba(245, 158, 11, 0.26) !important;
+    0 0 24px rgba(245, 158, 11, 0.26);
 }
 
 .homepage-experience .gold-3d-btn:hover,
@@ -707,8 +707,8 @@ body:has(.homepage-sky-backdrop)::after {
   border-color: rgba(255, 235, 174, 0.6) !important;
   box-shadow: 0 0 15px rgba(250, 199, 75, 0.15) !important;
 }
-.homepage-experience a.rounded-full,
-.homepage-experience button.rounded-full,
+.homepage-experience a.rounded-full:not(.gold-3d-btn),
+.homepage-experience button.rounded-full:not(.gold-3d-btn),
 .homepage-experience .cta-glow {
   border: 1px solid rgba(255, 235, 174, 0.64) !important;
   background:
@@ -720,10 +720,10 @@ body:has(.homepage-sky-backdrop)::after {
   text-shadow: none !important;
 }
 
-.homepage-experience a.rounded-full:hover,
-.homepage-experience a.rounded-full:focus-visible,
-.homepage-experience button.rounded-full:hover,
-.homepage-experience button.rounded-full:focus-visible,
+.homepage-experience a.rounded-full:not(.gold-3d-btn):hover,
+.homepage-experience a.rounded-full:not(.gold-3d-btn):focus-visible,
+.homepage-experience button.rounded-full:not(.gold-3d-btn):hover,
+.homepage-experience button.rounded-full:not(.gold-3d-btn):focus-visible,
 .homepage-experience .cta-glow:hover,
 .homepage-experience .cta-glow:focus-visible {
   filter: brightness(1.055);
