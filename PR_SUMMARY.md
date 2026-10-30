@@ -47,4 +47,10 @@ Button wording, gold gradient and colour values, padding/`rounded-full` geometry
 ## Final diff / error check
 Four modified files (`.specify/feature.json`, `app/globals.css`, `app/homepage/HomePage.js`, `themes/default/homepage.css`) plus the new `specs/062-homepage-gold-button-polish/` directory and this summary. No unrelated files changed; no merge performed; no deployment performed.
 
+## Pull request
+- PR: [#1650](https://github.com/davidcollier77-code/Luckypickcanada/pull/1650)
+- Source branch: `polish/homepage-gold-buttons` → target branch: `main`
+- Implementation commit: `990c0a24`
+- State: open and unmerged; merging is left to the repository owner.
+
 USEFUL RESULT: YES — the requested styling, press feedback, and Suggestion shimmer are implemented and verified at the typecheck, unit-test, build, compiled-CSS, and served-markup levels. Browser interaction rendering remains BLOCKED in this container and is not claimed as verified.
