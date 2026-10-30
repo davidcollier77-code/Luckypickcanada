@@ -94,11 +94,11 @@ for (let round = 0; round < ROUNDS; round++) {
     } else {
         // for first
         const s1 = performance.now();
-        for (let i = 0; i < ITERATIONS; i++) drawBranchFor(branch, 1, false);
+        for (let i = 0; i < ITERATIONS; i++) drawBranchForFrame(branch, 1);
         totalFor += performance.now() - s1;
 
         const s2 = performance.now();
-        for (let i = 0; i < ITERATIONS; i++) drawBranchForEach(branch, 1, false);
+        for (let i = 0; i < ITERATIONS; i++) drawBranchForEachFrame(branch, 1);
         totalForEach += performance.now() - s2;
     }
 }
