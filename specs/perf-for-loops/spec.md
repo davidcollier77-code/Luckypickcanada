@@ -25,14 +25,14 @@ As a visitor using the Lucky Meter experience, I need meteor, rocket, spark and 
 
 - Empty meteor trails must not dereference a missing first element.
 - Spark trails are drawn only when their length is greater than one.
-- Trail alpha decay must be applied once per meteor trail point, matching the previous `forEach` behavior.
+- The meteor trail fade must remain gradient-based; do not retain per-point alpha metadata that is never read.
 - A path must be stroked after its path commands and before later drawing operations begin a new path.
 
 ## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: The meteor trail loop MUST process every trail point once, in array order.
+- **FR-001**: The meteor trail loop MUST process every trail point once, in array order, without storing unused per-point alpha values.
 - **FR-002**: The meteor trail MUST call `ctx.stroke()` after path construction.
 - **FR-003**: The spark trail MUST retain its `length > 1` guard, process each point once, and call `ctx.stroke()` once.
 - **FR-004**: Rocket and lightning rendering MUST preserve their existing drawing order and stroke calls.
