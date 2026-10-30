@@ -119,7 +119,7 @@ Managed authentication built on Better Auth that branches with your database.
 - [Managed Better Auth](https://neon.com/docs/auth/overview.md): Managed authentication that branches with your database
 - [Use Managed Better Auth with Next.js (API methods)](https://neon.com/docs/auth/quick-start/nextjs-api-only.md): Build your own auth UI using SDK methods
 - [Use Managed Better Auth with React (API methods)](https://neon.com/docs/auth/quick-start/react.md): Build your own auth UI
-- [Set up OAuth](https://neon.com/docs/auth/guides/setup-oauth.md): Add Google, GitHub, or Vercel sign-in to your application
+- [Set up OAuth](https://neon.com/docs/auth/guides/setup-oauth.md): Add Google, GitHub, Vercel, Microsoft, or Apple sign-in to your application
 - [Auth production checklist](https://neon.com/docs/auth/production-checklist.md): Required configuration before launching with Managed Better Auth
 
 ## Neon Functions
