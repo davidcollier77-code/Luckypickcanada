@@ -887,13 +887,11 @@ function useResonanceCanvas(
             ctx!.lineWidth = sp.size;
             ctx!.lineCap = 'round';
             ctx!.strokeStyle = `rgba(${sp.color}, ${alpha * 0.8})`;
-            sp.trail.forEach((p, idx) => idx === 0 ? ctx!.moveTo(p.x | 0, p.y | 0) : ctx!.lineTo(p.x | 0, p.y | 0));
-            if (sp.trail.length > 0) {
-              ctx!.moveTo(sp.trail[0].x | 0, sp.trail[0].y | 0);
-              for (let idx = 1; idx < sp.trail.length; idx++) {
-                ctx!.lineTo(sp.trail[idx].x | 0, sp.trail[idx].y | 0);
-              }
+            ctx!.moveTo(sp.trail[0].x | 0, sp.trail[0].y | 0);
+            for (let idx = 1; idx < sp.trail.length; idx++) {
+              ctx!.lineTo(sp.trail[idx].x | 0, sp.trail[idx].y | 0);
             }
+            ctx!.stroke();
         }
 
         ctx!.fillStyle = `rgba(${sp.color}, ${alpha})`;
