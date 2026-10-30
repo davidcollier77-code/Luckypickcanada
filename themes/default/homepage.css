@@ -442,9 +442,8 @@
   transition-duration: 60ms;
 }
 
-/* The glow pulse owns the Suggestion button's shadow, so pause it while pressed
-   to let the flattened press shadow above show through. */
-.homepage-experience .gold-3d-btn.suggestion-btn-glow:active {
+/* Pause the shared gold-button glow while pressed so the flattened press shadow shows through. */
+.homepage-experience .gold-3d-btn.gold-btn-glow:active {
   animation: none;
 }
 
