@@ -4,7 +4,8 @@
 One simple, evidence-backed performance improvement: the homepage no longer ships the `canvas-confetti` library in its initial JavaScript. The library is now a deferred chunk that is prefetched after hydration and awaited by the Explore activation path.
 
 - **Task group:** `polishing` (client-bundle/critical-path performance, `.jules/polishing.md`).
-- **Branch:** `freebuff/dfa64ff78675029edc0690e0` (cloud worktree). Not pushed; no PR opened by this session.
+- **Branch:** `freebuff/dfa64ff78675029edc0690e0`, pushed to `origin` at commit `7fc6b638`.
+- **PR:** not created by this session — `gh pr create` cannot authenticate here (see PUBLISHING). The PR must be opened by the owner and left open and unmerged.
 
 ## EVIDENCE (measured, not assumed)
 Baseline on unmodified code, production server document for `/`:
@@ -49,7 +50,11 @@ Same `canvas-confetti` version and options (colors, 72-particle split, maple-lea
 
 ## RISKS / OUTSTANDING
 - The first Explore activation depends on the deferred chunk; mitigated by prefetch after hydration, but browser-level timing could not be verified here (BLOCKED above) — CI Playwright remains the confirming check.
-- Repository governance expects one branch/PR per task; publishing/opening the PR needs owner authorization.
+- The PR itself could not be opened from this environment (no GitHub API credentials); the branch is published and the PR body is ready in this file.
+
+## PUBLISHING
+- Commit `7fc6b638` — `perf(homepage): defer canvas-confetti out of the initial JS bundle`, on `freebuff/dfa64ff78675029edc0690e0`, pushed to `origin`.
+- PR creation — **BLOCKED**: `gh pr create` exits 4 (`To get started with GitHub CLI, please run: gh auth login`), and no `GH_TOKEN`/`GITHUB_TOKEN` is present in the shell. The credentials used for the push are platform-managed and not exposed to commands. Nothing was merged, squash-merged, or auto-merged, and no merge is requested.
 
 ## USEFUL RESULT
 **YES** — the improvement is measured and all runnable repository checks pass. The browser-level interaction check is explicitly BLOCKED, not passed.
