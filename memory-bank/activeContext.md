@@ -1,3 +1,16 @@
+# Active Context — Homepage Confetti Deferred Loading (2026-10-30)
+
+- **Selected task group:** `polishing` — one low-risk homepage critical-path performance improvement (client-bundle/asset optimization).
+- **Branch:** `freebuff/dfa64ff78675029edc0690e0` (cloud worktree); not pushed, no PR opened by this session.
+- **Change:** `app/homepage/ExploreLuckButton.js` no longer statically imports `canvas-confetti`; it uses a cached `import()` that is prefetched after hydration and awaited by the activation path, while the eased scroll still starts synchronously. Reduced-motion visitors never fetch it.
+- **Verified evidence (production server document for `/`):** initial JS went from 9 chunks / 631,196 bytes raw / 197,142 bytes gzip to 9 chunks / 621,131 bytes raw / 193,213 bytes gzip; `canvas-confetti` left the initial chunk `373-*.js` (20,631 raw / 7,752 gzip) and now ships as `chunks/2992.*.js` (10,429 raw / 4,250 gzip) after hydration. Delta: −10,065 raw / −3,929 gzip.
+- **Verification:** PASS — `pnpm exec tsc --noEmit`, `pnpm test` (22 files / 152 tests), `./jules-verify.sh` (exit 0), clean production build 329,989,305 bytes / 314.70 MiB (< 495 MiB cap). BLOCKED — Playwright visual regression: Chromium in this container crashes on the homepage on the unmodified baseline too, so no browser-level interaction result is claimed.
+- **Preserved:** identical confetti options/shape/canvas/cooldown/interrupt/cleanup/scroll/reduced-motion behavior; AVIF-first + WebP fallback delivery, preload hints, CSS, layout, copy, audio, dependencies, and configuration unchanged.
+- **Artifacts:** `specs/061-homepage-confetti-lazy-load/{spec,plan,tasks}.md`; `.specify/feature.json` points to that feature.
+- **Outstanding:** CI Playwright confirmation for the first-activation timing, and owner authorization to push/open the PR.
+
+---
+
 # Active Context — Gemini Reviewer Runtime Recovery (2026-10-29)
 
 - **Selected task group:** troubleshooting — PR #1636's Visual QA exposed a post-merge Gemini reviewer startup failure in trusted `main`.

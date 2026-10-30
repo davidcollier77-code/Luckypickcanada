@@ -1,9 +1,34 @@
 'use client';
 
-import confetti from 'canvas-confetti';
 import { playConfettiPop, preloadConfettiPop } from '../lib/audio';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+
+// PERFORMANCE: canvas-confetti is only needed once the Explore button is
+// activated, so it is kept out of the homepage's initial JavaScript. The module
+// is prefetched after hydration and awaited in the activation path, which
+// preserves the effect while removing it from the critical path.
+let confettiLibPromise = null;
+
+/**
+ * Loads the canvas-confetti module once and reuses the same promise for every
+ * later activation.
+ *
+ * @returns {Promise<object>} The canvas-confetti module export.
+ */
+function loadConfetti() {
+  if (!confettiLibPromise) {
+    confettiLibPromise = import('canvas-confetti')
+      .then((module) => module.default ?? module)
+      .catch((error) => {
+        // Allow a later attempt to retry instead of caching the failure.
+        confettiLibPromise = null;
+        throw error;
+      });
+  }
+  return confettiLibPromise;
+}
+
 let mapleLeafShape = null;
 
 // Same golden maple-leaf outline used by public/images/maple-leaf.svg.
@@ -17,12 +42,12 @@ const MAPLE_LEAF_MATRIX = [0.00248138958, 0, 0, 0.00248138958, 0, -0.0372208437]
  * Returns the cached normalized maple-leaf confetti shape, or null when
  * the browser cannot create path shapes so the caller can use basic shapes.
  */
-function getMapleLeafShape() {
+function getMapleLeafShape(confettiLib) {
   if (mapleLeafShape) return mapleLeafShape;
-  if (typeof confetti.shapeFromPath !== 'function') return null;
+  if (typeof confettiLib.shapeFromPath !== 'function') return null;
 
   try {
-    mapleLeafShape = confetti.shapeFromPath({
+    mapleLeafShape = confettiLib.shapeFromPath({
       path: MAPLE_LEAF_PATH,
       matrix: MAPLE_LEAF_MATRIX,
     });
@@ -90,6 +115,17 @@ export default function ExploreLuckButton() {
   }, []);
 
   useEffect(() => {
+    // Mirrors the audio preload: fetch the particle library after hydration as a
+    // separate, non-blocking chunk so the first activation still renders
+    // immediately. Reduced-motion activations never fire particles, so those
+    // visitors never download it.
+    if (!isHydrated || prefersReducedMotion) return undefined;
+
+    loadConfetti().catch(() => {});
+    return undefined;
+  }, [isHydrated, prefersReducedMotion]);
+
+  useEffect(() => {
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -105,7 +141,7 @@ export default function ExploreLuckButton() {
     };
   }, []);
 
-  const getConfettiInstance = useCallback(() => {
+  const getConfettiInstance = useCallback((confettiLib) => {
     if (confettiInstanceRef.current) return confettiInstanceRef.current;
 
     // Use a dedicated main-thread canvas: the site's restrictive script-src
@@ -122,7 +158,7 @@ export default function ExploreLuckButton() {
     });
     document.body.appendChild(canvas);
     confettiCanvasRef.current = canvas;
-    confettiInstanceRef.current = confetti.create(canvas, {
+    confettiInstanceRef.current = confettiLib.create(canvas, {
       resize: true,
       useWorker: false,
     });
@@ -158,7 +194,7 @@ export default function ExploreLuckButton() {
     // Magical Golden Confetti Burst
     const count = 72;
 
-    const fireConfetti = () => {
+    const fireConfetti = (confettiLib) => {
       // Find the button element by traversing up or querying
       const btn = document.querySelector('.homepage-hero-welcome button[aria-label^="Explore your luck"]');
       let originY = 0.9;
@@ -175,7 +211,7 @@ export default function ExploreLuckButton() {
         originY = Math.min(Math.max((lmRect.top - window.innerHeight / 2) / window.innerHeight, 0), 0.9);
       }
 
-      const leafShape = getMapleLeafShape();
+      const leafShape = getMapleLeafShape(confettiLib);
       const defaults = {
         origin: { x: originX, y: originY },
         colors: ['#FBBF24', '#F59E0B', '#D97706'], // Amber, Yellow, Gold
@@ -187,7 +223,7 @@ export default function ExploreLuckButton() {
       };
 
       function fire(particleRatio, opts) {
-        getConfettiInstance()({
+        getConfettiInstance(confettiLib)({
           ...defaults,
           ...opts,
           particleCount: Math.floor(count * particleRatio)
@@ -218,8 +254,11 @@ export default function ExploreLuckButton() {
       });
     };
 
-    // Fire immediately: no image request may delay the particles until after scrolling.
-    fireConfetti();
+    // Fire as soon as the on-demand particle library is available. The scroll
+    // below starts immediately and never waits on this import.
+    loadConfetti()
+      .then((confettiLib) => fireConfetti(confettiLib))
+      .catch((error) => console.error('Confetti effect unavailable', error));
 
     // Calculate the current scroll target and distance.
     const startY = window.scrollY;
