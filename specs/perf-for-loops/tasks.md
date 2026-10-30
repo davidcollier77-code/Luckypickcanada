@@ -10,23 +10,26 @@
 - [x] T003 Restore `ctx!.stroke()` after the meteor trail path is constructed and before the meteor core is drawn in `components/LuckyGenerator.tsx`.
 - [x] T004 Verify the spark trail uses a single indexed pass, retains the `sp.trail.length > 1` guard, and strokes once in `components/LuckyGenerator.tsx`.
 - [x] T005 Verify the rocket and lightning path loops retain their path order and stroke operations in `components/LuckyGenerator.tsx`.
+- [x] T006 Move `drawBranch` outside the animation-frame callback so it is created once per canvas effect, and remove redundant meteor context setup / the unused `lastAlpha` value in `components/LuckyGenerator.tsx`.
+- [x] T007 Update `benchmark.js` to measure both production passes (glow then fill), alternate timing order, and explicitly state that mock-context results do not establish browser FPS or PageSpeed gains.
+- [x] T008 Restore pre-existing historical guidance in `.jules/bolt.md` and remove empty or duplicate task scratch files (`generate_bolt.ts`, `patch.diff`, `patch_lucky.sh`, `test_canvas.js`, and `pr_description.txt`).
 
 ## Phase 2: Verification
 
-- [x] T006 Run `pnpm run test` on the repaired PR head. Result: PASS.
-- [x] T007 Run `pnpm tsc --noEmit` on the repaired PR head. Result: PASS.
-- [ ] T008 Pass the Spec Kit governance gate and `./jules-verify.sh`; the first Visual QA attempt was blocked because these required Spec Kit documents were empty.
-- [ ] T009 Run Playwright visual-regression tests after the governance gate passes.
-- [ ] T010 Complete Next.js/OpenNext build checks and confirm the ` .next + public ` output is below the 495 MiB hard cap.
-- [ ] T011 Obtain fresh Amazon Q and Gemini reviews of the final PR head.
+- [x] T009 Run `pnpm run test` on the first repaired source head. Result: PASS; must be reconfirmed on the latest source head.
+- [x] T010 Run `pnpm tsc --noEmit` on the first repaired source head. Result: PASS; must be reconfirmed on the latest source head.
+- [ ] T011 Pass the Spec Kit governance gate and `./jules-verify.sh` on the latest source head.
+- [ ] T012 Run Playwright visual-regression tests after the governance gate passes.
+- [ ] T013 Complete Next.js/OpenNext build checks and confirm the `.next + public` output is below the 495 MiB hard cap.
+- [ ] T014 Obtain fresh Amazon Q and Gemini reviews of the latest PR head and resolve any new actionable findings.
 
 ## Dependencies and execution order
 
-- T001 precedes T002–T005.
-- T006 and T007 can run after the source repair.
-- T008 is a prerequisite for T009 in the Visual QA workflow.
-- T010 and T011 are independent of the Playwright visual-regression step once the PR head is stable.
+- T001 precedes T002–T008.
+- T009 and T010 passed on the earlier repair head; latest-head reconfirmation remains part of T011/T012 and the required CI workflow.
+- T011 is a prerequisite for T012 in the Visual QA workflow.
+- T013 and T014 can proceed independently once the source head is stable.
 
 ## Implementation strategy
 
-Keep the source repair confined to `components/LuckyGenerator.tsx`. Do not redesign animation effects or broaden the performance task. Treat synthetic benchmark timings as micro-benchmark data only; real browser performance is unmeasured.
+Keep rendering behavior unchanged: no artwork, layout, color, audio, particle physics, reveal timing, or unrelated feature changes. Treat synthetic benchmark timings as mock-context JavaScript micro-benchmark data only; real browser performance remains unmeasured.
