@@ -11,7 +11,7 @@ function safePath(path) {
 function isEligiblePath(path) {
   if (!safePath(path)) return false;
   const p = path.toLowerCase();
-  const blocked = [".github/", ".gemini/", ".amazonq/", ".docs/", ".jules/", ".specify/",
+  const blocked = [".github/", ".gemini/", ".amazonq/", ".docs/", ".jules/", ".freebuff/", ".specify/",
     "specs/", "memory-bank/", "functions/", "app/api/", "pages/api/", "public/",
     "migrations/", "database/", "db/"];
   if (blocked.some((prefix) => p.startsWith(prefix)) ||

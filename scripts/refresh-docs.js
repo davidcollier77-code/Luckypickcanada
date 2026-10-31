@@ -601,8 +601,6 @@ async function main() {
          continue;
       }
 
-      console.log(`Fetching docs for ${lib} to temp to determine exact size BEFORE downloading into .docs...`);
-
 
       let output;
       let fetchSuccess = false;
