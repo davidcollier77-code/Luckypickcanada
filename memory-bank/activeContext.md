@@ -1,3 +1,43 @@
+# Active Context — PR #1659 Severity Indicator and Review Edge-Case Fixes (2026-10-31)
+
+- Task group: deep-dive — respond to the latest Amazon Q review and owner feedback on the Gemini PR review indicators.
+- Branch / PR: freebuff/c41502670faee62cc33e0e0a, https://github.com/davidcollier77-code/Luckypickcanada/pull/1659; keep open and unmerged.
+- Owner feedback: the severity key is correct, but the red dot appears even when the only findings are medium/low or when the red category is empty. The overall verdict is now severity-aware: red for critical/high, yellow for medium, blue for low-only, yellow for coverage-only gaps, and green when no findings/gaps exist. Empty categories no longer show their severity marker.
+- Amazon Q fixes: deduplicate empty-title findings at the same path/line; reject unmatched JSON closing brackets during truncated-tail recovery; map the test fixture's icon to its severity; and assert compact review length does not exceed MAX_REVIEW_BODY_CHARS.
+- Compact-output hardening: prompts are omitted in compact mode; title/path/problem/impact text is clipped using a shared per-finding budget; every finding checkbox is retained. Runtime stress probe with 18 maximum-sized findings measured 44,961 characters against the 60,000-character limit.
+- Verification before this follow-up: previous head 257b28b passed unit tests, TypeScript, Spec Kit verification, CodeQL, DevSkim, Next.js build, 495 MiB size gate, OpenNext, and Wrangler. New follow-up code has passed in-session syntax and runtime probes; current-head CI remains pending.
+- Spec Kit artifacts: specs/065-gemini-reviewer-quality/{spec,plan,tasks}.md updated. 
+
+---
+
+# Active Context — PR #1659 Review-Driven Correctness Hardening (2026-10-31)
+
+- Task group: deep-dive — independently verify Amazon Q and CodeQL findings against the latest PR head, then repair confirmed reviewer/autofix regressions.
+- Branch / PR: freebuff/c41502670faee62cc33e0e0a, https://github.com/davidcollier77-code/Luckypickcanada/pull/1659, target main; leave open and unmerged.
+- Current review corrections: restore the missing extractReviewState function declaration; repair the truncated formatFixOutcomes helper; escape backslashes before pipes and normalize CR/LF; encode --> / --!> in hidden review-state JSON with the JSON Unicode escape sequence so parsing restores exact text; remove lossy curly-single-quote normalization; and restrict same-line deduplication to exact normalized-title duplicates.
+- Regression coverage added: review-state round trips and legacy comment parsing, outcome-table escaping, Unicode apostrophe preservation, undici timeout retry classification, and preservation of similar-but-distinct same-line findings.
+- Preserved: Gemini model chain/provider/key handling, workflow permissions and triggers, Amazon Q configuration, opt-in-only suggestions, no branch edits/commits from autofix, user-facing product behavior, and all site visuals/assets.
+- Verification: source syntax was checked in the editing runtime; focused/full Vitest, typecheck, ./freebuff-verify.sh, build-size measurement, and current-head GitHub Actions remain pending until actually executed.
+- Spec Kit artifacts: existing specs/065-gemini-reviewer-quality/{spec,plan,tasks}.md extended; .specify/feature.json unchanged.
+- Not verified: live Gemini replay against PR #1656 remains pending.
+
+---
+
+# Active Context — Gemini Reviewer Quality, Coverage, and Selected-Finding Workflow (2026-10-31)
+
+- **Selected task group:** `deep-dive` — cross-file investigation of the Gemini reviewer pipeline, its skill, and its comparison against Amazon Q on real merged PRs.
+- **Branch:** `freebuff/c41502670faee62cc33e0e0a`; target `main`; leave the PR open and unmerged.
+- **PR:** [#1659](https://github.com/davidcollier77-code/Luckypickcanada/pull/1659) — open and unmerged for owner review.
+- **Verified comparison (PR #1656, 84 files):** Amazon Q's duplicate-fetch-log and missing-`.freebuff/`-denylist findings were real and were fixed in the PR's final commit `038b5cf9`. Gemini reviewed the same PR with zero findings. Q's `eval()` concern is real but is test-only `eval` of the repository's own extracted source (robustness, not an exploitable defect). Q's `return`/`builtin exit` concern is not a defect: measured behaviour exits non-zero when executed and when sourced.
+- **Implementation:** three finding categories (red/yellow/additional) with a checkbox per finding; functional Select All / Clear Selection / Fix selected / Fix all including `@gemini select all`, `@gemini select none`, and `@gemini fix selected`; independent validation of selected findings with fixed/rejected/unresolved tracking; budget-aware source retrieval with named complete/clipped/patch-only coverage disclosure; JSON recovery and transient-failure retry classification; root-cause deduplication; bounded review-body size.
+- **Preserved:** `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`, provider endpoint, key handling, retry/fallback order, workflow triggers, permissions, trusted-base checkout, and Amazon Q in full.
+- **Verified:** focused reviewer tests PASS; full suite PASS (23 files / 170 tests); `tsc --noEmit` PASS; `./freebuff-verify.sh` PASS with build artefacts 330,129,985 bytes / 314.84 MiB (< 495 MB); `node --check` PASS on both scripts.
+- **Not verified:** a live Gemini review or GitHub replay of PR #1656 — this workspace has no `GEMINI_API_KEY` and no GitHub token.
+- **Spec Kit artifacts:** `specs/065-gemini-reviewer-quality/{spec,plan,tasks}.md`; `.specify/feature.json` points to it.
+- **Outstanding:** owner review of the open, unmerged PR; live-model acceptance remains pending.
+
+---
+
 # Active Context — Freebuff Agent Governance Migration (2026-10-31)
 
 - **Selected task group:** `deep-dive` — audit and migrate the repository's coding-agent instructions, documentation refresh protection, Spec Kit paths, and verification tooling.

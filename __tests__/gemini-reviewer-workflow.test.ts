@@ -51,11 +51,13 @@ describe("Gemini PR reviewer", () => {
     expect(script).toContain("@gemini repair one");
     expect(script).toContain("@gemini repair all");
     expect(script).toContain("parseRepairCommand");
-    expect(script).toContain("requestedFindings = matchTargetFinding");
+    expect(script).toContain("resolveRequestedFindings(state.findings, { mode, targetFinding })");
+    expect(script).toContain("parseSelectionCommand(body)");
+    expect(script).toContain("setFindingSelection(targetReview.body");
     const unmatchedGuardIndex = script.indexOf("if (!requestedFindings.length) {");
     const unmatchedMessageIndex = script.indexOf("The requested finding(s) could not be matched.");
     const fixModuleIndex = script.indexOf('const fixModule = require("./gemini-autofix.cjs");');
-    expect(unmatchedGuardIndex).toBeGreaterThan(script.indexOf("let requestedFindings = [];"));
+    expect(unmatchedGuardIndex).toBeGreaterThan(script.indexOf("const requestedFindings = resolution.selected;"));
     expect(unmatchedGuardIndex).toBeLessThan(unmatchedMessageIndex);
     expect(unmatchedMessageIndex).toBeLessThan(fixModuleIndex);
     expect(script).toContain("Gemini Targeted Fix");
@@ -149,7 +151,8 @@ describe("Gemini PR reviewer", () => {
     expect(fixScript).toContain("isEligiblePath");
     expect(fixScript).toContain("suggestion");
     expect(fixScript).toContain("Commit suggestion");
-    expect(fixScript).toContain("comments.length >= 25");
+    expect(fixScript).toContain("const MAX_SUGGESTIONS = 25;");
+    expect(fixScript).toContain("comments.length >= MAX_SUGGESTIONS");
     expect(fixScript).not.toContain('["push"');
     expect(fixScript).not.toContain('["commit"');
     expect(fixScript).toContain(".docs/");
@@ -162,7 +165,8 @@ describe("Gemini PR reviewer", () => {
     const promptIndex = script.indexOf("const prompt = [");
     expect(validationIndex).toBeGreaterThan(-1);
     expect(validationIndex).toBeLessThan(promptIndex);
-    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix", "fix-one", "fix-selected"].includes(mode))');
+    expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) :');
+    expect(script).toContain('!["initial", "review", "fix", "fix-one", "fix-selected", "select-all", "select-none"].includes(mode))');
   });
   it("parses the reviewer scripts without executing them", () => {
     for (const path of [scriptPath, fixPath]) {

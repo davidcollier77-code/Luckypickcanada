@@ -13,8 +13,10 @@ const EVENT_NAME = process.env.GITHUB_EVENT_NAME || "";
 const EVENT_PATH = process.env.GITHUB_EVENT_PATH || "";
 const RULE_PATH = ".gemini/rules/luckypickcanada.md";
 const GEMINI_API_DEV_SKILL_PATH = ".docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md";
-const MAX_CHANGED_SOURCE_FILES = 22; // verified
+const MAX_CHANGED_SOURCE_FILES = 60; // budget-aware cap; every omission is disclosed by path
 const MAX_CHANGED_SOURCE_CHARS = 6000;
+const MIN_CHANGED_SOURCE_CHARS = 1500;
+const MAX_REVIEW_BODY_CHARS = 60000;
 const MAX_TOTAL_SOURCE_CHARS = 160000;
 const MAX_BASE_SOURCE_CHARS = 2200;
 const MAX_RELATED_SOURCE_CHARS = 3200;
@@ -37,6 +39,29 @@ const ADVERSARIAL_REVIEW_GUIDANCE = [
   "Compare against the first-pass findings only to avoid duplicates. Return additional issues only when exact supplied code evidence establishes a realistic failure path at confidence >= 0.80. Do not force findings for irrelevant checklist categories, speculate, report style preferences, or treat missing context as a confirmed bug; disclose uncertainty as a coverage gap.",
   "Return the same strict JSON schema as the primary pass: { summary: string, findings: [{ path: string, line: number|null, severity: 'CRITICAL'|'HIGH'|'MEDIUM'|'LOW', confidence: number, title: string, problem: string, impact: string, suggested_fix: string, suggestion: string|null }], positive_observations: [{ path: string, title: string, details: string, confidence: number }], document_assessments: [{ path: string, useful: boolean, reason: string }] }. Use exact paths and anchor inline lines only to added lines."
 ].join(" ");
+const SEVERITY_RUBRIC = [
+  "Severity rubric — assign the lowest severity that still explains the demonstrated risk.",
+  "CRITICAL: a confirmed defect on a normal execution path that corrupts data, bypasses authentication/authorization, exposes a secret, breaks a security control or the build/runtime, or causes an unrecoverable user-visible failure.",
+  "HIGH: a confirmed defect or regression on a reachable path with material impact, including missing rollback/cleanup, unvalidated untrusted input reaching a privileged call, or a policy/allowlist enumeration that a directory or path family introduced by this PR now violates.",
+  "MEDIUM: a real but bounded weakness, a stale or inaccurate log/error that would hamper diagnosis, or a maintainability risk with a credible failure path.",
+  "LOW: a genuine but optional improvement or hygiene item with no demonstrated failure path.",
+  "Do not inflate severity to raise attention and do not deflate it to avoid an argument. A concern with no demonstrated failing path is not a defect."
+].join(" ");
+const EVIDENCE_VERIFICATION_GUIDANCE = [
+  "Verify language and runtime semantics before treating them as defects: shell builtins (a bare `return` outside a function, `return` combined with `builtin exit`, and `set -e` interactions), JavaScript `eval`/`new Function` whose input is static repository source inside a test harness, and CLI or framework flag behavior.",
+  "When a claim depends on an execution environment you cannot run, state the uncertainty and the exact check the owner should perform; never present an unverified semantic claim as a confirmed defect.",
+  "For logging and diagnostics, report a duplicated, stale, or inaccurate message only when you can show how it misleads an operator, misstates what the code does, or hides a failure; otherwise omit it.",
+  "When a PR introduces, renames, or removes a governance/protected directory, configuration family, or exclusion list, verify every other enumeration that mirrors it: path allowlists and denylists, autofix eligibility, protected-file rules, ignore files, documentation filters, and CI path filters. A newly introduced path family that is missing from an existing denylist is a real consistency defect.",
+  "Report the defect at its root cause with the smallest sufficient correction, not a style rewrite, and do not repeat a sibling finding that shares the same root cause."
+].join(" ");
+const FINDING_CATEGORIES = [
+  { id: "red", marker: "🔴", heading: "Red — Critical fixes",
+    description: "Confirmed CRITICAL/HIGH defects and serious problems that need attention before this change is trusted." },
+  { id: "yellow", marker: "🟡", heading: "Yellow — Suggested fixes",
+    description: "Valid MEDIUM-severity improvements and concerns worth addressing, without a confirmed critical failure path." },
+  { id: "additional", marker: "🔵", heading: "Additional recommendations",
+    description: "Actionable LOW-severity suggestions that may be useful to consider." }
+];
 const TRUSTED = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const RULES = existsSync(resolve(ROOT, RULE_PATH)) ? readFileSync(resolve(ROOT, RULE_PATH), "utf8") : "";
 const MANIFEST = existsSync(resolve(ROOT, ".docs/manifest.json")) ? JSON.parse(readFileSync(resolve(ROOT, ".docs/manifest.json"), "utf8")) : null;
@@ -216,25 +241,33 @@ async function getRepositoryPathSet(ref, repository = REPO) {
 }
 async function collectSourceContext(pr, files) {
   const records = [], limitations = [], cache = new Map();
+  const coverage = { changedTextFiles: 0, fullSource: [], partial: [], patchOnly: [] };
   let budget = MAX_TOTAL_SOURCE_CHARS;
   const headSha = String(pr.head && pr.head.sha || ""), baseSha = String(pr.base && pr.base.sha || "");
   const headRepo = String(pr.head && pr.head.repo && pr.head.repo.full_name || REPO);
   const baseRepo = String(pr.base && pr.base.repo && pr.base.repo.full_name || REPO);
   if (!/^[a-f0-9]{40}$/i.test(headSha) || !/^[a-f0-9]{40}$/i.test(baseSha))
-    return { records, limitations: ["Base/head commit SHA unavailable; full-source context skipped."] };
+    return { records, coverage, limitations: ["Base/head commit SHA unavailable; full-source context skipped."] };
   const read = async (path, ref, repository) => { const key = repository + ":" + ref + ":" + path; if (!cache.has(key)) cache.set(key, await getRepositoryFile(path, ref, repository)); return cache.get(key); };
   const sourceSelection = selectChangedSourceCandidates(files);
   const candidates = sourceSelection.candidates;
+  coverage.changedTextFiles = sourceSelection.totalCount;
   if (sourceSelection.omittedCount) {
     limitations.push(sourceSelection.omittedCount + " changed text file(s) exceeded the " +
       MAX_CHANGED_SOURCE_FILES + "-file full-source context cap; their available patches remain included in review batches.");
+    for (const path of sourceSelection.omittedPaths) {
+      coverage.patchOnly.push({ path, reason: "beyond the " + MAX_CHANGED_SOURCE_FILES + "-file full-source cap" });
+    }
   }
   const changed = [];
   for (let index = 0; index < candidates.length; index += 1) {
     const file = candidates[index];
-    if (budget < 1500) {
+    if (budget < MIN_CHANGED_SOURCE_CHARS) {
       limitations.push("The " + MAX_TOTAL_SOURCE_CHARS + "-character source-context budget was exhausted before " +
         (candidates.length - index) + " selected changed text file(s) could be loaded; their available patches remain included in review batches.");
+      for (const rest of candidates.slice(index)) {
+        coverage.patchOnly.push({ path: rest.filename, reason: "source-context budget exhausted" });
+      }
       break;
     }
     const removed = file.status === "removed";
@@ -243,11 +276,19 @@ async function collectSourceContext(pr, files) {
     if (source === null) {
       limitations.push((removed ? "Base source for removed file unavailable for " : "Full head source unavailable for ") +
         file.filename + "; its patch remains included in review batches.");
+      coverage.patchOnly.push({ path: file.filename, reason: removed ? "base source unavailable" : "head source unavailable" });
       continue;
     }
-    const clipped = clipSource(source, Math.min(MAX_CHANGED_SOURCE_CHARS, budget));
+    // Share the remaining budget across the files still to read so one huge file cannot
+    // starve every later changed file out of full-source context.
+    const remainingFiles = Math.max(1, candidates.length - index);
+    const perFileLimit = Math.max(MIN_CHANGED_SOURCE_CHARS,
+      Math.min(MAX_CHANGED_SOURCE_CHARS, Math.floor(budget / remainingFiles)));
+    const clipped = clipSource(source, Math.min(perFileLimit, budget));
     records.push({ path: file.filename, role: removed ? "removed file at PR base before deletion" : "changed file at PR head",
       content: clipped.content, truncated: clipped.truncated });
+    if (clipped.truncated) coverage.partial.push({ path: file.filename, reason: "clipped to the reviewer context budget" });
+    else coverage.fullSource.push(file.filename);
     budget -= clipped.content.length; changed.push({ path: file.filename, source, status: file.status });
     if (changed.length <= 3 && !removed && file.status !== "added" && budget > 6000) {
       const basePath = file.previous_filename || file.filename;
@@ -299,7 +340,29 @@ async function collectSourceContext(pr, files) {
     limitations.push((candidates.length - changed.length) + " selected changed text file(s) did not receive full-source context; patches remain included in review batches.");
   }
   if (!records.length) limitations.push("No full-source context could be retrieved; review is patch-only.");
-  return { records, limitations };
+  return { records, limitations, coverage };
+}
+function formatCoverageDisclosure(coverage) {
+  if (!coverage) return [];
+  const total = Number(coverage.changedTextFiles || 0);
+  const list = (items) => {
+    if (!Array.isArray(items) || !items.length) return "";
+    const shown = items.slice(0, 10).map((item) => item.path + " (" + item.reason + ")");
+    const rest = items.length - shown.length;
+    return shown.join(", ") + (rest > 0 ? ", and " + rest + " more" : "");
+  };
+  const rows = [];
+  if (total > 0) {
+    rows.push("Full source reviewed for " + (coverage.fullSource || []).length + " of " + total +
+      " changed text file(s)" +
+      ((coverage.partial || []).length ? ", partially for " + coverage.partial.length : "") +
+      ((coverage.patchOnly || []).length ? ", patch-only for " + coverage.patchOnly.length : "") + ".");
+  }
+  const partial = list(coverage.partial);
+  if (partial) rows.push("Partially examined source: " + partial + ".");
+  const patchOnly = list(coverage.patchOnly);
+  if (patchOnly) rows.push("Not fully examined, patch still reviewed: " + patchOnly + ".");
+  return rows;
 }
 function renderSourceContext(batch, context) {
   const paths = new Set(batch.map((f) => f.filename));
@@ -322,6 +385,8 @@ function buildAdversarialReviewPrompt({ pr, batch, sourceContext, docBundle = ""
     ADVERSARIAL_REVIEW_GUIDANCE,
     CONTROL_FLOW_REVIEW_GUIDANCE,
     IMAGE_PRELOAD_REVIEW_GUIDANCE,
+    SEVERITY_RUBRIC,
+    EVIDENCE_VERIFICATION_GUIDANCE,
     "Batch: " + (Number(batchIndex) + 1) + " of " + Math.max(1, Number(batchCount) || 1),
     "Current PR head SHA under review: " + String(pr && pr.head && pr.head.sha || "unavailable"),
     "PR metadata: " + JSON.stringify({ number: pr && pr.number, title: pr && pr.title, body: String(pr && pr.body || "").slice(0, 3000) }),
@@ -354,26 +419,118 @@ function addedLines(patch) {
   }
   return lines;
 }
-function parseJson(text) {
-  let value = String(text || "").trim();
+function stripJsonFence(text) {
   const fence = String.fromCharCode(96).repeat(3);
-  if (value.startsWith(fence)) value = value.slice(fence.length).replace(/^json\s*/i, "").replace(/\s*\x60{3}\s*$/, "");
-  return JSON.parse(value);
+  const value = String(text || "").trim().replace(/^\uFEFF/, "");
+  if (!value.startsWith(fence)) return value;
+  const withoutOpen = value.slice(fence.length).replace(/^[a-zA-Z]*\s*/, "");
+  const close = withoutOpen.lastIndexOf(fence);
+  return close === -1 ? withoutOpen : withoutOpen.slice(0, close);
+}
+function extractBalancedJson(text) {
+  const value = String(text || "");
+  const start = value.indexOf("{");
+  if (start === -1) return null;
+  let depth = 0, inString = false, escaped = false;
+  for (let index = start; index < value.length; index += 1) {
+    const char = value[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === "\"") inString = false;
+      continue;
+    }
+    if (char === "\"") { inString = true; continue; }
+    if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) return value.slice(start, index + 1);
+    }
+  }
+  return null;
+}
+function repairJsonText(text) {
+  return String(text || "")
+    .replace(/,\s*([}\]])/g, "$1")
+    .replace(/[\u201c\u201d]/g, "\"");
+}
+function closeTruncatedJson(text) {
+  const value = String(text || "");
+  const stack = [];
+  let inString = false, escaped = false;
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === "\"") inString = false;
+      continue;
+    }
+    if (char === "\"") { inString = true; continue; }
+    if (char === "{" || char === "[") stack.push(char);
+    else if (char === "}" || char === "]") {
+      const expectedOpening = char === "}" ? "{" : "[";
+      if (stack[stack.length - 1] !== expectedOpening) return null;
+      stack.pop();
+    }
+  }
+  if (inString) return null;
+  if (!stack.length) return value;
+  let repaired = value.replace(/[,:\s]+$/, "");
+  while (stack.length) repaired += stack.pop() === "{" ? "}" : "]";
+  return repaired;
+}
+function parseJson(text) {
+  return JSON.parse(stripJsonFence(text));
+}
+// Recovery ladder for malformed model output: exact JSON, fenced JSON, embedded
+// object, trailing-comma/quote repair, then balanced closing of a truncated tail.
+function parseModelJson(text) {
+  const candidates = [];
+  const push = (value) => { if (typeof value === "string" && value.trim() && !candidates.includes(value)) candidates.push(value); };
+  const stripped = stripJsonFence(text);
+  push(stripped);
+  push(extractBalancedJson(stripped));
+  for (const candidate of candidates.slice()) {
+    const repaired = repairJsonText(candidate);
+    push(repaired);
+    push(closeTruncatedJson(repaired));
+  }
+  for (const candidate of candidates) {
+    try {
+      const value = JSON.parse(candidate);
+      if (value && typeof value === "object" && !Array.isArray(value)) return value;
+    } catch { /* try the next recovery strategy */ }
+  }
+  return null;
+}
+function isRetryableError(error) {
+  if (!error) return false;
+  if (error.retryable === true) return true;
+  const code = String(error.code || "");
+  if (["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND", "EPIPE", "UND_ERR_CONNECT_TIMEOUT"].includes(code)) return true;
+  const name = String(error.name || "");
+  if (name === "AbortError" || name === "TimeoutError") return true;
+  return /fetch failed|network|socket hang up|timed? ?out|could not be parsed/i.test(String(error.message || ""));
 }
 async function askModel(prompt, tokens = 7000) {
-  if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing or unavailable.");
+  const apiKey = process.env.GEMINI_API_KEY || API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY secret is missing or unavailable.");
   const models = [PRIMARY, FALLBACK, SECOND_FALLBACK].filter((x, i, a) => x && a.indexOf(x) === i);
   let lastError = null;
   for (let index = 0; index < models.length; index += 1) {
     for (let attempt = 1; attempt <= 2; attempt += 1) {
       try {
+        const strictNudge = attempt > 1
+          ? "\n\nRETRY FORMAT CONTRACT: reply with one complete, valid JSON object only. No prose, no markdown fence, no trailing commentary, no truncated output."
+          : "";
         const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" +
           encodeURIComponent(models[index]) + ":generateContent", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: RULES }] },
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            contents: [{ role: "user", parts: [{ text: prompt + strictNudge }] }],
             generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: tokens }
           }),
           signal: AbortSignal.timeout(90000)
@@ -387,12 +544,18 @@ async function askModel(prompt, tokens = 7000) {
         const payload = JSON.parse(raw);
         const text = (payload.candidates || []).flatMap((c) => c.content && c.content.parts || [])
           .map((part) => typeof part.text === "string" ? part.text : "").join("");
-        return { result: parseJson(text), model: models[index] };
+        const parsed = parseModelJson(text);
+        if (!parsed) {
+          const parseError = new Error("Gemini model " + models[index] + " output could not be parsed as the required JSON object.");
+          parseError.retryable = true;
+          throw parseError;
+        }
+        return { result: parsed, model: models[index] };
       } catch (error) {
         lastError = error;
         const reason = error && error.message ? error.message : "unknown error";
         log("Model " + models[index] + " attempt " + attempt + " failed: " + reason);
-        if (attempt === 1 && error && error.retryable) {
+        if (attempt === 1 && isRetryableError(error)) {
           await new Promise((done) => setTimeout(done, 900));
           continue;
         }
@@ -469,16 +632,26 @@ function selectRelevantGeminiReferenceDocs(paths, pr, files) {
   }
   return selected;
 }
+function changeVolume(file) {
+  const patch = String(file && file.patch || "");
+  const added = (patch.match(/\n\+/g) || []).length;
+  const removed = (patch.match(/\n-/g) || []).length;
+  return patch.length + added * 40 + removed * 20;
+}
 function selectChangedSourceCandidates(files) {
   const all = files.filter((f) => f.patch && safePath(f.filename) &&
     /\.(?:[cm]?[jt]sx?|css|scss|json|ya?ml|html|md)$/i.test(f.filename));
   // Inspect live/head files first; deleted files remain eligible using base-SHA source,
   // but must not consume the bounded context slots before currently present changed code.
-  all.sort((a, b) => Number(a.status === "removed") - Number(b.status === "removed"));
+  // Within each group the files with the most changed lines are read first so a large PR
+  // spends its source budget on the changes most likely to hide a defect.
+  all.sort((a, b) => (Number(a.status === "removed") - Number(b.status === "removed")) ||
+    (changeVolume(b) - changeVolume(a)));
   return {
     candidates: all.slice(0, MAX_CHANGED_SOURCE_FILES),
     totalCount: all.length,
-    omittedCount: Math.max(0, all.length - MAX_CHANGED_SOURCE_FILES)
+    omittedCount: Math.max(0, all.length - MAX_CHANGED_SOURCE_FILES),
+    omittedPaths: all.slice(MAX_CHANGED_SOURCE_FILES).map((file) => file.filename)
   };
 }
 function fallbackAdditionalDocs(paths, groups) {
@@ -714,14 +887,23 @@ function generateFindingId(finding) {
 function serializeReviewState(sha, findings) {
   const state = { sha, findings: findings.map((finding) => ({
     id: generateFindingId(finding), path: finding.path, line: finding.line, title: finding.title,
+    severity: finding.severity, confidence: finding.confidence,
     problem: finding.problem, impact: finding.impact, fix: finding.fix, suggestion: finding.suggestion, inline: finding.inline
   })) };
-  return "\n\n<!-- gemini-review-state: " + JSON.stringify(state).replace(/--!?>/g, "--\\>") + " -->";
+  // Keep comment terminators out of the payload without changing the serialized data.
+  const json = JSON.stringify(state).replace(/--!?>/g, (sequence) => sequence.slice(0, -1) + "\\u003e");
+  return "\n\n<!-- gemini-review-state: " + json + " -->";
 }
 function extractReviewState(body) {
   const match = String(body || "").match(/<!-- gemini-review-state: ([\s\S]*?)(?:-->|--!>)/);
   if (!match) return null;
-  try { return JSON.parse(match[1].replace(/--\\>/g, "-->")); } catch (error) { return null; }
+  try {
+    // Older comments used an invalid JSON escape for "-->"; keep them readable.
+    // New comments use a JSON Unicode escape and are decoded losslessly by JSON.parse.
+    return JSON.parse(match[1].replace(/--\\>/g, "-->"));
+  } catch (error) {
+    return null;
+  }
 }
 function findReviewStateForHead(reviews, sha) {
   if (!Array.isArray(reviews) || typeof sha !== "string" || !sha) return null;
@@ -736,6 +918,10 @@ function parseReviewAction(body, previousBody = "") {
   const previous = String(previousBody || "");
   const fixAll = "- [x] 🪄 **Fix all findings**";
   const fixSelected = "- [x] 🛠️ **Fix selected findings**";
+  const selectAll = "- [x] ✅ **Select all findings**";
+  const clearSelection = "- [x] ⬜ **Clear selection**";
+  if (current.includes(selectAll) && !previous.includes(selectAll)) return { mode: "select-all" };
+  if (current.includes(clearSelection) && !previous.includes(clearSelection)) return { mode: "select-none" };
   if (current.includes(fixAll) && !previous.includes(fixAll)) return { mode: "fix" };
   if (current.includes(fixSelected) && !previous.includes(fixSelected)) {
     const targetFinding = parseSelectedIds(current);
@@ -747,6 +933,8 @@ function parseReviewAction(body, previousBody = "") {
 function resolveEventAction(body, previousBody = "", action = "") {
   const command = parseRepairCommand(body);
   if (command) return command;
+  const selection = parseSelectionCommand(body);
+  if (selection) return selection;
   if (action !== "edited") return null;
   return parseReviewAction(body, previousBody);
 }
@@ -777,32 +965,148 @@ function normalizePositiveObservations(items, files) {
   }
   return output;
 }
+function classifyFindingCategory(finding) {
+  const severity = String(finding && finding.severity || "").toUpperCase();
+  if (severity === "CRITICAL" || severity === "HIGH") return "red";
+  if (severity === "MEDIUM") return "yellow";
+  return "additional";
+}
+function sortFindings(items) {
+  const categoryOrder = new Map(FINDING_CATEGORIES.map((category, index) => [category.id, index]));
+  const severityOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
+  return (Array.isArray(items) ? items : []).slice().sort((a, b) =>
+    (categoryOrder.get(classifyFindingCategory(a)) - categoryOrder.get(classifyFindingCategory(b))) ||
+    ((severityOrder[String(a && a.severity || "").toUpperCase()] ?? 9) - (severityOrder[String(b && b.severity || "").toUpperCase()] ?? 9)) ||
+    (Number(b && b.confidence || 0) - Number(a && a.confidence || 0)));
+}
+function normalizeFindingTitle(title) {
+  return String(title || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+// Suppress the same root cause reported twice, including by both review passes.
+function dedupeFindings(items) {
+  const output = [], byLocation = new Map();
+  for (const finding of Array.isArray(items) ? items : []) {
+    if (!finding || typeof finding.path !== "string") continue;
+    const key = finding.path + ":" + String(finding.line ?? "none");
+    const title = normalizeFindingTitle(finding.title);
+    const seen = byLocation.get(key) || [];
+    // Only exact normalized-title duplicates collapse. Similar titles can describe
+    // distinct root causes even when they point to the same line.
+    const duplicate = seen.some((item) => item.title === title);
+    if (duplicate) continue;
+    seen.push({ title });
+    byLocation.set(key, seen);
+    output.push(finding);
+  }
+  return output;
+}
+function parseSelectionCommand(value) {
+  const command = String(value || "").trim();
+  if (/^@gemini\s+select\s+all$/i.test(command)) return { mode: "select-all" };
+  if (/^@gemini\s+(?:select\s+none|clear\s+selection)$/i.test(command)) return { mode: "select-none" };
+  if (/^@gemini\s+fix\s+selected$/i.test(command)) return { mode: "fix-selected", fromCommand: true };
+  return null;
+}
+// Rewrite only the finding checkbox lines; every other line is preserved byte-for-byte.
+function setFindingSelection(body, mode, ids = []) {
+  const wanted = new Set((Array.isArray(ids) ? ids : []).map((id) => String(id).toLowerCase()));
+  if (!["all", "none", "ids"].includes(mode)) throw new Error("Unsupported selection mode.");
+  return String(body || "").split("\n").map((line) => {
+    const match = line.match(/^- \[[ xX]\] Finding \x60([a-f0-9]{12})\x60:/i);
+    if (!match) return line;
+    const id = match[1].toLowerCase();
+    const checked = mode === "all" ? true : mode === "none" ? false : wanted.has(id);
+    return line.replace(/^- \[[ xX]\]/, checked ? "- [x]" : "- [ ]");
+  }).join("\n");
+}
+function findReviewForHead(reviews, sha) {
+  if (!Array.isArray(reviews) || typeof sha !== "string" || !sha) return null;
+  for (const review of reviews.slice().reverse()) {
+    const state = extractReviewState(review && review.body || "");
+    if (state && state.sha === sha && Array.isArray(state.findings) && review.id) return review;
+  }
+  return null;
+}
+function resolveRequestedFindings(findings, { mode, targetFinding } = {}) {
+  const all = Array.isArray(findings) ? findings : [];
+  if (mode === "fix") return { selected: all, rejected: [] };
+  if (mode === "fix-one") {
+    const selected = matchTargetFinding(all, targetFinding);
+    return { selected, rejected: selected.length ? [] : [{ id: null, status: "rejected", reason: "The exact path, line, and title no longer match a finding in the current-head review." }] };
+  }
+  const ids = Array.isArray(targetFinding) ? targetFinding : [];
+  const requested = new Set(ids.map((id) => String(id).toLowerCase()));
+  const selected = all.filter((finding) => requested.has(finding.id));
+  const known = new Set(selected.map((finding) => finding.id));
+  const rejected = ids.filter((id) => !known.has(String(id).toLowerCase()))
+    .map((id) => ({ id, status: "rejected", reason: "No finding with this id exists in the current-head review." }));
+  return { selected, rejected };
+}
 function buildReviewVerdict(findings, coverageGaps) {
-  if (findings.length) return { marker: "🔴", label: "FIXES NEEDED", detail: findings.length + " actionable finding(s) need attention." };
-  if (coverageGaps.length) return { marker: "🟡", label: "REVIEW INCOMPLETE", detail: "No actionable finding was identified, but review coverage has gaps to check." };
+  const counts = { red: 0, yellow: 0, additional: 0 };
+  for (const finding of Array.isArray(findings) ? findings : []) counts[classifyFindingCategory(finding)] += 1;
+  const detail = [
+    counts.red ? counts.red + " critical/high fix(es) need attention" : "",
+    counts.yellow ? counts.yellow + " medium-severity suggestion(s) to review" : "",
+    counts.additional ? counts.additional + " low-priority recommendation(s) to consider" : ""
+  ].filter(Boolean).join("; ") + ".";
+  if (counts.red) return { marker: "🔴", label: "FIXES NEEDED", detail };
+  if (counts.yellow) return { marker: "🟡", label: "SUGGESTED FIXES", detail };
+  if (counts.additional) return { marker: "🔵", label: "ADDITIONAL RECOMMENDATIONS", detail };
+  if (Array.isArray(coverageGaps) && coverageGaps.length) return { marker: "🟡", label: "REVIEW INCOMPLETE", detail: "No actionable finding was identified, but review coverage has gaps to check." };
   return { marker: "🟢", label: "NO ACTIONABLE FINDINGS", detail: "Gemini found no actionable issues in the reviewed scope." };
 }
-function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], pullRequestNumber = null }) {
+function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], coverage = null, pullRequestNumber = null, compact = false }) {
   const tidy = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  const clip = (value, limit) => {
+    const text = tidy(value);
+    if (!Number.isFinite(limit)) return text;
+    if (limit <= 0) return "";
+    return text.length > limit ? text.slice(0, Math.max(0, limit - 1)) + "…" : text;
+  };
   const tick = String.fromCharCode(96);
-  const verdict = buildReviewVerdict(findings, coverageGaps);
+  const ordered = sortFindings(findings);
+  const compactPerFindingBudget = compact
+    ? Math.max(0, Math.floor((MAX_REVIEW_BODY_CHARS - 14000) / Math.max(1, ordered.length)) - 300)
+    : Infinity;
+  const compactProblemLimit = Math.min(1600, Math.floor(compactPerFindingBudget * 0.65));
+  const compactImpactLimit = Math.min(1000, Math.max(0, compactPerFindingBudget - compactProblemLimit));
+  const compactLabelBudget = compact
+    ? Math.max(0, Math.floor((MAX_REVIEW_BODY_CHARS - 14000) / Math.max(1, ordered.length)) - 100)
+    : Infinity;
+  const compactTitleLimit = Math.min(120, Math.floor(compactLabelBudget * 0.45));
+  const compactPathLimit = Math.min(180, Math.max(0, compactLabelBudget - compactTitleLimit));
+  const verdict = buildReviewVerdict(ordered, coverageGaps);
+  const grouped = new Map(FINDING_CATEGORIES.map((category) => [category.id, []]));
+  for (const finding of ordered) grouped.get(classifyFindingCategory(finding)).push(finding);
+  let promptsRendered = 0;
   const rows = ["### Overall Gemini review status",
-    verdict.marker + " **" + verdict.label + "** — " + verdict.detail, "", "### Issues to fix"];
-
-  if (findings.length > 0) {
-    rows.push("- [ ] 🛠️ **Fix selected findings** (Check this box to request suggestions only for the findings you select below)");
-    rows.push("");
+    verdict.marker + " **" + verdict.label + "** — " + verdict.detail, "", "### Finding categories"];
+  if (compact) rows.push("", "Review details and per-finding prompts were shortened to fit the publishing size limit; every finding and selection checkbox is retained.");
+  for (const category of FINDING_CATEGORIES) {
+    const count = grouped.get(category.id).length;
+    rows.push("- " + (count ? category.marker + " " : "") + "**" + category.heading + ":** " + count + " finding(s).");
   }
-  if (!findings.length) {
-    rows.push("🟢 No actionable issues were identified at the configured confidence threshold.");
-  } else {
-    for (const finding of findings) {
-      const location = finding.path + (finding.line ? ":" + finding.line : "");
+  rows.push("", "Every actionable finding below has its own checkbox. Review-coverage warnings are listed separately and are not findings.");
+  for (const category of FINDING_CATEGORIES) {
+    const items = grouped.get(category.id);
+    rows.push("", "### " + (items.length ? category.marker + " " : "") + category.heading, "_" + category.description + "_", "");
+    if (!items.length) { rows.push("None."); continue; }
+    for (const finding of items) {
+      const displayPath = clip(finding.path, compactPathLimit);
+      const displayTitle = clip(finding.title, compactTitleLimit);
+      const location = displayPath + (finding.line ? ":" + finding.line : "");
       const fId = generateFindingId(finding);
-      rows.push("- [ ] Finding `" + fId + "`: 🔴 **[" + finding.severity + "] " + tidy(finding.title) + "** — " + tick + location + tick +
+      const category = FINDING_CATEGORIES.find((item) => item.id === classifyFindingCategory(finding)) || FINDING_CATEGORIES[0];
+      const includePrompt = !compact && promptsRendered < 25;
+      if (includePrompt) promptsRendered += 1;
+      rows.push("- [ ] Finding `" + fId + "`: " + category.marker + " **[" + finding.severity + "] " + displayTitle + "** — " + tick + location + tick +
         (finding.inline ? " (inline review comment also posted)" : ""));
-      rows.push("  - **Problem:** " + tidy(finding.problem));
-      rows.push("  - **Impact:** " + tidy(finding.impact));
+      const problemText = compact ? clip(finding.problem, compactProblemLimit) : tidy(finding.problem);
+      const impactText = compact ? clip(finding.impact, compactImpactLimit) : tidy(finding.impact);
+      if (problemText) rows.push("  - **Problem:** " + problemText);
+      if (impactText) rows.push("  - **Impact:** " + impactText);
+      if (includePrompt) {
       rows.push("");
       rows.push("<details>");
       rows.push("<summary>🧰 Copy/paste prompt for " + tidy(finding.title) + " — expand to copy or request a fix</summary>");
@@ -830,9 +1134,15 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
       }
       rows.push("");
       rows.push("</details>");
+      }
       rows.push("");
     }
   }
+  rows.push("", "### Selection controls",
+    "- [ ] ✅ **Select all findings** (check to select every finding above)",
+    "- [ ] ⬜ **Clear selection** (check to clear every finding selection above)",
+    "",
+    "These controls only change checkboxes. Submit a selection with **Fix selected findings** below, or comment `@gemini fix selected`. Comment `@gemini select all` or `@gemini select none` to change the selection without editing this review. Findings you did not select are never modified.");
   rows.push("### What's looking good");
   if (!positiveObservations.length) {
     rows.push("No specific positive observations met the evidence threshold; Gemini will not add generic praise.");
@@ -841,7 +1151,7 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
       rows.push("- 🟢 **" + tidy(positive.title) + "** — " + tidy(positive.details) + " (" + tick + positive.path + tick + ")");
     }
   }
-  rows.push("", "### Needs checking");
+  rows.push("", "### Review coverage (informational — not a finding)");
   if (!coverageGaps.length) rows.push("🟢 No known review-coverage gaps were identified.");
   else for (const gap of coverageGaps) rows.push("- 🟡 " + tidy(gap));
   rows.push("", "### Before merging",
@@ -899,7 +1209,8 @@ function docReport(loaded, unloaded, assessments, selection) {
   return rows.join("\n");
 }
 function findingBody(f) {
-  let body = "**[" + f.severity + "] " + f.title + " (confidence " + f.confidence.toFixed(2) + ")**\n\n" +
+  const category = FINDING_CATEGORIES.find((item) => item.id === classifyFindingCategory(f));
+  let body = (category ? category.marker + " " : "") + "**[" + f.severity + "] " + f.title + " (confidence " + f.confidence.toFixed(2) + ")**\n\n" +
     "**Problem:** " + f.problem + "\n\n**Impact:** " + f.impact + "\n\n**Suggested fix:** " + f.fix;
   const fence = String.fromCharCode(96).repeat(3);
   if (f.inline && f.suggestion && !f.suggestion.includes(fence)) body += "\n\n" + fence + "suggestion\n" + f.suggestion + "\n" + fence;
@@ -933,8 +1244,10 @@ async function main() {
         await comment(number, "Too many findings were selected. Select no more than " + MAX_SELECTED_IDS + " findings; no suggestions were requested.");
         return;
       }
-      targetFinding = action.targetFinding;
-      if (!targetFinding.length) {
+      // A bare `@gemini fix selected` command carries no ids; they are read from the
+      // current-head review body so an unselected finding is never picked up.
+      targetFinding = action.fromCommand ? null : action.targetFinding;
+      if (Array.isArray(targetFinding) && !targetFinding.length) {
         await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
         return;
       }
@@ -959,8 +1272,10 @@ async function main() {
         await comment(number, "Too many findings were selected. Select no more than " + MAX_SELECTED_IDS + " findings; no suggestions were requested.");
         return;
       }
-      targetFinding = action.targetFinding;
-      if (!targetFinding.length) {
+      // A bare `@gemini fix selected` command carries no ids; they are read from the
+      // current-head review body so an unselected finding is never picked up.
+      targetFinding = action.fromCommand ? null : action.targetFinding;
+      if (Array.isArray(targetFinding) && !targetFinding.length) {
         await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
         return;
       }
@@ -971,9 +1286,10 @@ async function main() {
     mode = String(process.env.GEMINI_MODE || "review").toLowerCase();
   } else { log("Unsupported event; no action taken."); return; }
   if (!Number.isInteger(Number(number)) || Number(number) < 1 ||
-      (EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) : !["initial", "review", "fix", "fix-one", "fix-selected"].includes(mode)) ||
+      (EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) :
+        !["initial", "review", "fix", "fix-one", "fix-selected", "select-all", "select-none"].includes(mode)) ||
       (mode === "fix-one" && (!targetFinding || !safePath(targetFinding.path) || !Number.isInteger(targetFinding.line) || targetFinding.line < 1)) ||
-      (mode === "fix-selected" && (!Array.isArray(targetFinding) || !targetFinding.length))) {
+      (mode === "fix-selected" && targetFinding !== null && !Array.isArray(targetFinding))) {
     throw new Error("Invalid review mode, targeted finding, or PR number.");
   }
   if (!REPO || !TOKEN) throw new Error("GitHub workflow context is missing.");
@@ -989,6 +1305,32 @@ async function main() {
     }
     return;
   }
+  if (mode === "select-all" || mode === "select-none") {
+    let reviews;
+    try {
+      reviews = await fetchAllReviews(number);
+    } catch (error) {
+      const reason = String(error && error.message || "unknown error").slice(0, 240);
+      log("Could not verify complete review history: " + reason);
+      await comment(number, "Gemini could not retrieve the review history, so no selection change was made. Please retry when the GitHub API is available.");
+      return;
+    }
+    const targetReview = findReviewForHead(reviews, pr.head.sha);
+    if (!targetReview) {
+      await comment(number, "Gemini could not find a current-head review to update. Run @gemini full review first; no selection change was made.");
+      return;
+    }
+    const nextBody = setFindingSelection(targetReview.body, mode === "select-all" ? "all" : "none");
+    if (nextBody === targetReview.body) {
+      await comment(number, "Nothing to change: the current-head review already has that selection state.");
+      return;
+    }
+    await gh("/repos/" + REPO + "/pulls/" + number + "/reviews/" + targetReview.id, {
+      method: "PUT", body: JSON.stringify({ body: nextBody })
+    });
+    log("Updated finding selection for PR #" + number + " (" + mode + ").");
+    return;
+  }
   if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing. Verify it under Settings → Secrets and variables → Actions; its value is never printed.");
   const list = await getFiles(number);
   const files = list.files;
@@ -997,6 +1339,7 @@ async function main() {
   if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
     const actionBody = String(event.comment?.body || event.review?.body || "");
     let state = extractReviewState(actionBody);
+    let selectionSource = actionBody;
     // Separate text commands do not contain state; locate the latest review for this current PR head.
     if (!state || !state.sha || !Array.isArray(state.findings)) {
       let reviews;
@@ -1009,6 +1352,8 @@ async function main() {
         return;
       }
       state = findReviewStateForHead(reviews, pr.head.sha);
+      const targetReview = findReviewForHead(reviews, pr.head.sha);
+      if (targetReview) selectionSource = String(targetReview.body || "");
     }
     if (!state || !state.sha || !Array.isArray(state.findings)) {
       await comment(number, "Gemini could not find a valid review for the current PR head. Run a fresh full review, then retry.");
@@ -1019,18 +1364,21 @@ async function main() {
       return;
     }
 
-    let requestedFindings = [];
-    if (mode === "fix-one") {
-      requestedFindings = matchTargetFinding(state.findings, targetFinding);
-    } else if (mode === "fix-selected") {
-      const idsToFix = new Set(targetFinding);
-      requestedFindings = state.findings.filter(f => idsToFix.has(f.id));
-    } else {
-      requestedFindings = state.findings;
+    if (mode === "fix-selected" && !Array.isArray(targetFinding)) {
+      targetFinding = parseSelectedIds(selectionSource);
+      if (!targetFinding.length) {
+        await comment(number, "Select one or more finding checkboxes above, then comment `@gemini fix selected`. No suggestions were requested.");
+        return;
+      }
     }
+    const resolution = resolveRequestedFindings(state.findings, { mode, targetFinding });
+    const requestedFindings = resolution.selected;
 
     if (!requestedFindings.length) {
-      await comment(number, "## Gemini Targeted Fix\n\nThe requested finding(s) could not be matched. No suggestion was posted, and no code was changed.");
+      const unmatched = resolution.rejected.length
+        ? "\n\n" + resolution.rejected.map((item) => "- " + (item.id ? "`" + item.id + "` — " : "") + item.reason).join("\n")
+        : "";
+      await comment(number, "## Gemini Targeted Fix\n\nThe requested finding(s) could not be matched. No suggestion was posted, and no code was changed." + unmatched);
       return;
     }
 
@@ -1043,12 +1391,12 @@ async function main() {
       pr, files, findings: requestedFindings, docs: docBundle, docPaths, REPO, TOKEN,
       reviewRules: RULES, documentReport
     });
-    if (fixResult.suggestionsPosted) {
-      log(fixResult.message);
-    } else {
-      const title = mode === "fix-one" || mode === "fix-selected" ? "## Gemini Targeted Fix Suggestion" : "## Gemini On-Demand Fix Suggestions";
-      await comment(number, title + "\n\n" + fixResult.message + "\n\nNo code, branch, or commit was changed.");
-    }
+    if (fixResult.suggestionsPosted) log(fixResult.message);
+    const title = mode === "fix-one" || mode === "fix-selected" ? "## Gemini Targeted Fix Suggestion" : "## Gemini On-Demand Fix Suggestions";
+    const outcomes = fixModule.formatFixOutcomes(fixResult.results, {
+      unselectedCount: Math.max(0, state.findings.length - requestedFindings.length)
+    });
+    await comment(number, title + "\n\n" + fixResult.message + "\n\n" + outcomes + "\n\nNo code, branch, or commit was changed.");
     return;
   }
 
@@ -1089,6 +1437,8 @@ async function main() {
         "Reason end-to-end across changed lines, full changed-file source, supplied base-version source, and directly imported local modules. Distinguish newly introduced behavior from pre-existing behavior. Check caller/callee contracts, producers and consumers, state lifecycle, cleanup, error paths, boundaries, and relevant tests.",
         CONTROL_FLOW_REVIEW_GUIDANCE,
         IMAGE_PRELOAD_REVIEW_GUIDANCE,
+        SEVERITY_RUBRIC,
+        EVIDENCE_VERIFICATION_GUIDANCE,
         "Source-context limitations: " + (sourceContext.limitations.length ? sourceContext.limitations.join(" ") : "No known retrieval limitation."),
         "PR: " + JSON.stringify({ number: pr.number, title: pr.title, body: String(pr.body || "").slice(0, 4000) }),
         "Consulted document excerpts:\n" + docBundle,
@@ -1124,12 +1474,7 @@ async function main() {
     }
   }
 
-  const findings = [];
-  const keys = new Set();
-  for (const result of reviewResults) for (const finding of result.findings) {
-    const key = finding.path + ":" + finding.line + ":" + finding.title.toLowerCase();
-    if (!keys.has(key)) { keys.add(key); findings.push(finding); }
-  }
+  const findings = sortFindings(dedupeFindings(reviewResults.flatMap((result) => result.findings)));
   const positiveObservations = [];
   const positiveKeys = new Set();
   for (const result of reviewResults) for (const positive of result.positives) {
@@ -1140,7 +1485,9 @@ async function main() {
   const inline = findings.filter((f) => f.inline).slice(0, 25);
   const coverageGaps = [];
   if (list.capped) coverageGaps.push("Changed-file listing reached the 250-file cap; some files may not be represented.");
-  if (skippedFiles.length) coverageGaps.push(skippedFiles.length + " changed file(s) had no text patch and could not be reviewed line-by-line.");
+  if (skippedFiles.length) coverageGaps.push(skippedFiles.length + " changed file(s) had no text patch and could not be reviewed line-by-line: " +
+    skippedFiles.slice(0, 10).map((file) => file.filename).join(", ") +
+    (skippedFiles.length > 10 ? ", and " + (skippedFiles.length - 10) + " more" : "") + ".");
   if (truncatedFiles.length) coverageGaps.push("Patch content was truncated for " + truncatedFiles.length + " large file(s): " + truncatedFiles.join(", ") + ".");
   for (const limitation of sourceContext.limitations) if (!coverageGaps.includes(limitation)) coverageGaps.push(limitation);
   for (const failure of batchFailures) coverageGaps.push(failure);
@@ -1150,8 +1497,17 @@ async function main() {
   if (mode !== "initial" && docState.unloaded.length) {
     coverageGaps.push(docState.unloaded.length + " selected document snapshot(s) could not be loaded or did not fit the context budget.");
   }
+  for (const note of formatCoverageDisclosure(sourceContext.coverage)) {
+    if (!coverageGaps.includes(note)) coverageGaps.push(note);
+  }
   const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);
-  const reviewSections = formatReviewSections({ findings, positiveObservations, coverageGaps, pullRequestNumber: number });
+  let reviewSections = formatReviewSections({ findings, positiveObservations, coverageGaps, pullRequestNumber: number });
+  if (reviewSections.length > MAX_REVIEW_BODY_CHARS) {
+    if (!coverageGaps.some((gap) => /Per-finding implementation prompts were omitted/.test(gap))) {
+      coverageGaps.push("Per-finding implementation prompts were omitted from this review because it exceeded the publishing size limit; every finding is still listed with its checkbox. Comment `@gemini repair all` or request one finding for prompts.");
+    }
+    reviewSections = formatReviewSections({ findings, positiveObservations, coverageGaps, pullRequestNumber: number, compact: true });
+  }
   const summary = [
     "## Gemini PR Review",
     "",
@@ -1212,4 +1568,7 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   generateFindingId, serializeReviewState, extractReviewState, findReviewStateForHead, fetchAllReviews,
   parseSelectedIds, parseReviewAction, MAX_SELECTED_IDS, MAX_REVIEW_PAGES,
   formatReviewSections, docReport, normalizeFindings, describeTaskGroupReason, buildAdversarialReviewPrompt, headMatchesReview,
-  CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE, ADVERSARIAL_REVIEW_GUIDANCE };
+  CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE, ADVERSARIAL_REVIEW_GUIDANCE,
+  SEVERITY_RUBRIC, EVIDENCE_VERIFICATION_GUIDANCE, FINDING_CATEGORIES, classifyFindingCategory, sortFindings, dedupeFindings,
+  parseSelectionCommand, setFindingSelection, findReviewForHead, resolveRequestedFindings, formatCoverageDisclosure,
+  parseModelJson, stripJsonFence, closeTruncatedJson, isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };
