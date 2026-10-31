@@ -114,7 +114,7 @@ const removeRetiredJulesSnapshots = new Function(
     `return (${retiredCleanupMatch[0]})`
 )(
     fs,
-    (group, filename) => path.join(testDocsRoot, group, filename),
+    (group) => path.join(testDocsRoot, group),
     (group) => {
         if (!/^[A-Za-z0-9_-]+$/.test(group)) throw new Error('Invalid group');
         return group;
@@ -157,9 +157,9 @@ async function runTests() {
     await test('snapshot guard deletes retired files but leaves unrelated documentation intact', async () => {
         const groupDir = path.join(testDocsRoot, 'creation');
         fs.mkdirSync(groupDir, { recursive: true });
-        for (const filename of ['jules_google_docs.md', 'developers_google_com_jules_api.md']) {
-            fs.writeFileSync(path.join(groupDir, filename), 'retired');
-        }
+        fs.writeFileSync(path.join(groupDir, 'jules_google_docs.md'), 'retired');
+        // Other groups may contain a dangling symlink after a canonical snapshot is removed.
+        fs.symlinkSync('missing-retired-target.md', path.join(groupDir, 'developers_google_com_jules_api.md'));
         fs.writeFileSync(path.join(groupDir, 'gemini-api.md'), 'keep');
         const removed = removeRetiredJulesSnapshots({ creation: [] });
         assert.strictEqual(removed, 2);
