@@ -127,6 +127,24 @@ const removeRetiredJulesSnapshots = new Function(
 
 
 async function runTests() {
+    let passed = 0;
+    let failed = 0;
+
+    async function test(name, fn) {
+        requestedUrls = [];
+        requestedOptions = [];
+        mockResponses = {};
+        try {
+            await fn();
+            console.log(`✅ ${name}`);
+            passed++;
+        } catch (e) {
+            console.error(`❌ ${name}`);
+            console.error(e);
+            failed++;
+        }
+    }
+
     await test('manifest guard removes retired Jules sources from every routing location', async () => {
         const manifest = {
             groups: {
@@ -170,23 +188,7 @@ async function runTests() {
         assert.strictEqual(fs.readFileSync(path.join(groupDir, 'gemini-api.md'), 'utf8'), 'keep');
     });
 
-    let passed = 0;
-    let failed = 0;
 
-    async function test(name, fn) {
-        requestedUrls = [];
-        requestedOptions = [];
-        mockResponses = {};
-        try {
-            await fn();
-            console.log(`✅ ${name}`);
-            passed++;
-        } catch (e) {
-            console.error(`❌ ${name}`);
-            console.error(e);
-            failed++;
-        }
-    }
 
     // 1. Unchanged GitHub source on "main"
     await test('getUpstreamSha: unchanged source on main', async () => {
