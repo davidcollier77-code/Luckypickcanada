@@ -11,7 +11,7 @@ Follow-up TODOs: Verify the revised workflow through the task-artifact regressio
 ## Core Principles
 
 ### I. Single Source of Truth
-`AGENTS.md` is the canonical repository-level authority. All AI agents must read it first. Memory systems, specialist instructions (` `.freebuff/*.md`), and Spec Kit artifacts are complementary and must never override or duplicate `AGENTS.md`.
+`AGENTS.md` is the canonical repository-level authority. All AI agents must read it first. Memory systems, specialist instructions (`.freebuff/*.md`), and Spec Kit artifacts are complementary and must never override or duplicate `AGENTS.md`.
 
 ### II. Verify Before Acting
 Never assume repository state, tool availability, or documentation content. Agents MUST independently inspect the actual codebase, run necessary verification commands, and confirm the environment before drafting plans or executing changes.
@@ -31,7 +31,7 @@ The primary application is a Next.js App Router project deployed on Cloudflare P
 
 ## Development Workflow
 
-- **Specification**: Every coding task MUST complete the core Spec Kit sequence—specify, plan, tasks, and implement—in order, using `.specify/` and each invoked ` `.freebuff/cmds/speckit.*.md` definition. Keep artifacts concise and task-scoped; create optional design artifacts only when the task needs them. Execute each stage once; do not duplicate dispatches or pause for routine confirmation. When native slash-command dispatch is unavailable, follow the invoked command definition directly and report the actual execution method.
+- **Specification**: Every coding task MUST complete the core Spec Kit sequence—specify, plan, tasks, and implement—in order, using `.specify/` and each invoked `.freebuff/cmds/speckit.*.md` definition. Keep artifacts concise and task-scoped; create optional design artifacts only when the task needs them. Execute each stage once; do not duplicate dispatches or pause for routine confirmation. When native slash-command dispatch is unavailable, follow the invoked command definition directly and report the actual execution method.
 - **Testing**: Use Playwright for browser/user-facing verification. Use `act` and `./freebuff-verify.sh` for local workflow/CI validation.
 - **Troubleshooting**: Apply the Scientific Debugging & Verification Protocol. Fix the verified problem; do not turn a repair task into an audit-only task.
 
