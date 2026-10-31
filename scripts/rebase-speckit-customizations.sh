@@ -24,7 +24,7 @@ for file in "${FILES[@]}"; do
   else
     status=$?
     if [[ "$status" -eq 1 ]]; then
-      echo "ERROR: upstream Spec Kit changes conflict with Jules customizations in $file." >&2
+      echo "ERROR: upstream Spec Kit changes conflict with Freebuff customizations in $file." >&2
       echo "No command file or stored customization was rewritten; resolve this conflict explicitly." >&2
     else
       echo "ERROR: git merge-file failed for $file with exit code $status." >&2
@@ -35,6 +35,6 @@ done
 for file in "${FILES[@]}"; do
   cp "$NEW_BASE_DIR/$file" "$BASE_DIR/$file"
   cp "$TEMP_DIR/merged/$file" "$OVERLAY_DIR/$file"
-  cp "$TEMP_DIR/merged/$file" "$ROOT_DIR/.jules/cmds/$file"
+  cp "$TEMP_DIR/merged/$file" "$ROOT_DIR/.freebuff/cmds/$file"
 done
-echo "SUCCESS: upstream Spec Kit updates and Jules-specific instructions have both been preserved."
+echo "SUCCESS: upstream Spec Kit updates and Freebuff-specific instructions have both been preserved."
