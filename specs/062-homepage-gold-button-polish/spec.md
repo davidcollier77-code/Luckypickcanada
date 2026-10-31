@@ -15,6 +15,7 @@ Give the homepage's gold call-to-action buttons one consistent raised 3D appeara
 - **FR-004**: The existing Suggestion glow pulse must remain, now carrying the same raised depth so it does not look flatter than its neighbours.
 - **FR-005**: `prefers-reduced-motion: reduce` must remove the shimmer animation and the lift/press transforms.
 - **FR-006**: Button wording, gold palette, size, layout, focus-visible outline treatment, click handlers, destinations, and disabled behaviour must not change.
+- **FR-007**: The treatment must be provable in a real Chromium browser at the desktop and both mobile viewports: raised rest edge, hover lift, press flattening, shared shimmer/glow, alignment without overlap or horizontal overflow, and the reduced-motion fallback. Static CSS inspection alone does not satisfy this requirement.
 
 ## Acceptance Scenarios
 1. All nine homepage gold buttons show the same raised bottom edge and shadow at rest.
@@ -22,6 +23,7 @@ Give the homepage's gold call-to-action buttons one consistent raised 3D appeara
 3. The Suggestion button and Tip Jar button both show the same slow golden shimmer sweep.
 4. With reduced motion enabled, no shimmer animation and no transform movement occur, while the raised shadow remains.
 5. Each button still submits, opens its checkout/tip jar, or navigates to the same destination as before.
+6. A Chromium run reports no overlapping or horizontally overrunning CTA, no CTA below the 44px touch-target height, and the expected rest, hover, press, shimmer, glow, and reduced-motion computed styles on desktop, 390px, and 412px viewports.
 
 ## Out of Scope
 - Any change to wording, imagery, artwork, section layout, page structure, or gold colour values.
