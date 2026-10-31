@@ -29,3 +29,14 @@
 - [x] Amazon Q files and the Gemini workflow file are untouched by this change.
 - [ ] Live Gemini or GitHub replay against PR #1656: NOT RUN — this workspace has no `GEMINI_API_KEY` and no GitHub token, so no live model call, GitHub API replay, or live review publication was possible.
 - [x] PR #1659 opened and left open and unmerged for owner review.
+
+
+## Review follow-up — PR #1659
+
+- [x] T021 Restore a complete backslash/pipe/newline-safe Markdown cell helper in .github/scripts/gemini-autofix.cjs.
+- [x] T022 Restore extractReviewState and use lossless JSON Unicode escaping for --> and --!> in .github/scripts/gemini-reviewer.cjs.
+- [x] T023 Remove lossy curly-single-quote normalization and make same-line finding deduplication exact-title-only in both reviewer scripts.
+- [x] T024 Add regression tests for review-state round trips, legacy state parsing, Markdown cell escaping, Unicode apostrophes, undici timeout retry classification, and partial-title deduplication in __tests__/gemini-reviewer-quality.test.ts.
+- [ ] T025 Run focused reviewer tests and the full Vitest suite on the final PR head.
+- [ ] T026 Run pnpm exec tsc --noEmit and ./freebuff-verify.sh; measure .next + public against the 495 MB hard cap.
+- [ ] T027 Inspect the complete final diff and confirm all required GitHub Actions checks are green; keep PR #1659 open and unmerged.
