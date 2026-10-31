@@ -468,7 +468,11 @@ function closeTruncatedJson(text) {
     }
     if (char === "\"") { inString = true; continue; }
     if (char === "{" || char === "[") stack.push(char);
-    else if (char === "}" || char === "]") stack.pop();
+    else if (char === "}" || char === "]") {
+      const expectedOpening = char === "}" ? "{" : "[";
+      if (stack[stack.length - 1] !== expectedOpening) return null;
+      stack.pop();
+    }
   }
   if (inString) return null;
   if (!stack.length) return value;
@@ -988,7 +992,7 @@ function dedupeFindings(items) {
     const seen = byLocation.get(key) || [];
     // Only exact normalized-title duplicates collapse. Similar titles can describe
     // distinct root causes even when they point to the same line.
-    const duplicate = title.length > 0 && seen.some((item) => item.title === title);
+    const duplicate = seen.some((item) => item.title === title);
     if (duplicate) continue;
     seen.push({ title });
     byLocation.set(key, seen);
@@ -1039,8 +1043,17 @@ function resolveRequestedFindings(findings, { mode, targetFinding } = {}) {
   return { selected, rejected };
 }
 function buildReviewVerdict(findings, coverageGaps) {
-  if (findings.length) return { marker: "🔴", label: "FIXES NEEDED", detail: findings.length + " actionable finding(s) need attention." };
-  if (coverageGaps.length) return { marker: "🟡", label: "REVIEW INCOMPLETE", detail: "No actionable finding was identified, but review coverage has gaps to check." };
+  const counts = { red: 0, yellow: 0, additional: 0 };
+  for (const finding of Array.isArray(findings) ? findings : []) counts[classifyFindingCategory(finding)] += 1;
+  const detail = [
+    counts.red ? counts.red + " critical/high fix(es) need attention" : "",
+    counts.yellow ? counts.yellow + " medium-severity suggestion(s) to review" : "",
+    counts.additional ? counts.additional + " low-priority recommendation(s) to consider" : ""
+  ].filter(Boolean).join("; ") + ".";
+  if (counts.red) return { marker: "🔴", label: "FIXES NEEDED", detail };
+  if (counts.yellow) return { marker: "🟡", label: "SUGGESTED FIXES", detail };
+  if (counts.additional) return { marker: "🔵", label: "ADDITIONAL RECOMMENDATIONS", detail };
+  if (Array.isArray(coverageGaps) && coverageGaps.length) return { marker: "🟡", label: "REVIEW INCOMPLETE", detail: "No actionable finding was identified, but review coverage has gaps to check." };
   return { marker: "🟢", label: "NO ACTIONABLE FINDINGS", detail: "Gemini found no actionable issues in the reviewed scope." };
 }
 function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], coverage = null, pullRequestNumber = null, compact = false }) {
