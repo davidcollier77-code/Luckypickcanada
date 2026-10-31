@@ -1,3 +1,16 @@
+# Active Context — PR #1659 Review-Driven Correctness Hardening (2026-10-31)
+
+- Task group: deep-dive — independently verify Amazon Q and CodeQL findings against the latest PR head, then repair confirmed reviewer/autofix regressions.
+- Branch / PR: freebuff/c41502670faee62cc33e0e0a, https://github.com/davidcollier77-code/Luckypickcanada/pull/1659, target main; leave open and unmerged.
+- Current review corrections: restore the missing extractReviewState function declaration; repair the truncated formatFixOutcomes helper; escape backslashes before pipes and normalize CR/LF; encode --> / --!> in hidden review-state JSON with the JSON Unicode escape sequence so parsing restores exact text; remove lossy curly-single-quote normalization; and restrict same-line deduplication to exact normalized-title duplicates.
+- Regression coverage added: review-state round trips and legacy comment parsing, outcome-table escaping, Unicode apostrophe preservation, undici timeout retry classification, and preservation of similar-but-distinct same-line findings.
+- Preserved: Gemini model chain/provider/key handling, workflow permissions and triggers, Amazon Q configuration, opt-in-only suggestions, no branch edits/commits from autofix, user-facing product behavior, and all site visuals/assets.
+- Verification: source syntax was checked in the editing runtime; focused/full Vitest, typecheck, ./freebuff-verify.sh, build-size measurement, and current-head GitHub Actions remain pending until actually executed.
+- Spec Kit artifacts: existing specs/065-gemini-reviewer-quality/{spec,plan,tasks}.md extended; .specify/feature.json unchanged.
+- Not verified: live Gemini replay against PR #1656 remains pending.
+
+---
+
 # Active Context — Gemini Reviewer Quality, Coverage, and Selected-Finding Workflow (2026-10-31)
 
 - **Selected task group:** `deep-dive` — cross-file investigation of the Gemini reviewer pipeline, its skill, and its comparison against Amazon Q on real merged PRs.
