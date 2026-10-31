@@ -268,7 +268,7 @@ describe("Gemini review-state comment serialization", () => {
   });
 
   it("continues to read legacy escaped review-state comments", () => {
-    const legacyBody = "<!-- gemini-review-state: {\"sha\":\"legacy\",\"findings\":[{\"title\":\"Legacy marker --\\\\>\"}]} -->";
+    const legacyBody = "<!-- gemini-review-state: {\"sha\":\"legacy\",\"findings\":[{\"title\":\"Legacy marker --\\>\"}]} -->";
     expect(reviewer.extractReviewState(legacyBody)?.findings[0].title).toBe("Legacy marker -->");
   });
 });
