@@ -2,17 +2,17 @@
 
 🔴 READ FIRST. VERIFY BEFORE CLAIMING.
 
-This is the repository's authoritative workflow and safety policy. The user's task request defines the requested outcome and scope. `.jules/jules.md` is a short entrypoint; specialist files add task-specific guidance but must not create competing repo-wide rules. When instructions appear inconsistent, resolve the wording against this file and the task request; pause only the affected action if a genuine authorization, safety, or prerequisite blocker remains.
+This is the repository's authoritative workflow and safety policy. The user's task request defines the requested outcome and scope. When instructions appear inconsistent, resolve the wording against this file and the task request; pause only the affected action if a genuine authorization, safety, or prerequisite blocker remains.
 
 ## 1. INITIALIZE ONCE
 
 1. Read this file first.
-2. Read `.jules/jules.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once.
-3. Select exactly one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. For Gemini CLI tasks, use `creation` for implementation/configuration, `troubleshooting` for diagnosing failures, or `deep-dive` for investigation.
-4. Read that group's `.jules/<group>.md`, `.docs/<group>/jules_google_docs.md`, and `.docs/<group>/_websites_ai_google_dev_gemini-api.md`. Check `.docs/manifest.json` for routing.
+2. Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once.
+3. Select exactly one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`.
+4. Read `.docs/manifest.json` for routing, then consult the selected group's documents in `.docs/<group>/` that are useful to the task. The Gemini API reference `.docs/<group>/_websites_ai_google_dev_gemini-api.md` is mandatory for every task: use it as a baseline when interpreting the task and choosing the approach, and continue using it throughout the work. Use the other group documents that materially help with the task; do not read unrelated references.
 5. Inspect the current branch/worktree, relevant files and task artifacts, plus any existing branch or PR for the same task. Consult library/version references only when materially relevant.
 
-The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` remains available in `.docs/` and the library, but is **not a mandatory reading for every task**. Consult it only when the task directly involves Gemini CLI or requires facts about its behavior. The manifest is an index, not an instruction to read every listed source. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless a specifically authorized documentation-refresh task permits edits.
+The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` is an ordinary reference document within the applicable group, not a separate mandatory reading or special workflow requirement. Consult it only when useful to the task. The manifest is an index, not an instruction to read every listed source. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless a specifically authorized documentation-refresh task permits edits.
 
 ## 2. SPEC KIT AND EXECUTION
 
