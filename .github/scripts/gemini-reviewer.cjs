@@ -1571,4 +1571,4 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE, ADVERSARIAL_REVIEW_GUIDANCE,
   SEVERITY_RUBRIC, EVIDENCE_VERIFICATION_GUIDANCE, FINDING_CATEGORIES, classifyFindingCategory, sortFindings, dedupeFindings,
   parseSelectionCommand, setFindingSelection, findReviewForHead, resolveRequestedFindings, formatCoverageDisclosure,
-  parseModelJson, stripJsonFence, isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };
+  parseModelJson, stripJsonFence, closeTruncatedJson, isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };
