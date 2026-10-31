@@ -110,7 +110,7 @@ function parseModelJson(text) {
   push(stripped);
   push(extractBalancedJson(stripped));
   for (const candidate of candidates.slice()) {
-    const repaired = candidate.replace(/,\s*([}\]])/g, "$1").replace(/[\u201c\u201d]/g, "\"");
+    const repaired = candidate.replace(/,\s*([}\]])/g, "$1").replace(/[\u201c\u201d]/g, "\"").replace(/[\u2018\u2019]/g, "'");
     push(repaired);
     push(closeTruncatedJson(repaired));
   }
@@ -125,7 +125,7 @@ function parseModelJson(text) {
 function isRetryableError(error) {
   if (!error) return false;
   if (error.retryable === true) return true;
-  if (["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND", "EPIPE"].includes(String(error.code || ""))) return true;
+  if (["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EAI_AGAIN", "ENOTFOUND", "EPIPE", "UND_ERR_CONNECT_TIMEOUT"].includes(String(error.code || ""))) return true;
   if (["AbortError", "TimeoutError"].includes(String(error.name || ""))) return true;
   return /fetch failed|network|socket hang up|timed? ?out|could not be parsed/i.test(String(error.message || ""));
 }
@@ -277,7 +277,7 @@ function formatFixOutcomes(results, { unselectedCount = 0 } = {}) {
   const list = Array.isArray(results) ? results : [];
   const counts = { fixed: 0, rejected: 0, unresolved: 0 };
   for (const item of list) if (item && counts[item.status] !== undefined) counts[item.status] += 1;
-  const cell = (value, limit) => String(value ?? "").replace(/[\r\n]+/g, " ").replace(/\|/g, "\\|").trim().slice(0, limit);
+  const cell = (value, limit) => String(value ?? "").replace(/[\r
   const rows = ["### Selected finding outcomes",
     "| Finding | Location | Status | Explanation |",
     "| --- | --- | --- | --- |"];

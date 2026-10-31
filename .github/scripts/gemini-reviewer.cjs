@@ -889,7 +889,7 @@ function serializeReviewState(sha, findings) {
   })) };
   return "\n\n<!-- gemini-review-state: " + JSON.stringify(state).replace(/--!?>/g, "--\\>") + " -->";
 }
-function extractReviewState(body) {
+  return "
   const match = String(body || "").match(/<!-- gemini-review-state: ([\s\S]*?)(?:-->|--!>)/);
   if (!match) return null;
   try { return JSON.parse(match[1].replace(/--\\>/g, "-->")); } catch (error) { return null; }
