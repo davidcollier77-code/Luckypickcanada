@@ -1,3 +1,15 @@
+# Active Context — PR #1659 Severity Indicator and Review Edge-Case Fixes (2026-10-31)
+
+- Task group: deep-dive — respond to the latest Amazon Q review and owner feedback on the Gemini PR review indicators.
+- Branch / PR: freebuff/c41502670faee62cc33e0e0a, https://github.com/davidcollier77-code/Luckypickcanada/pull/1659; keep open and unmerged.
+- Owner feedback: the severity key is correct, but the red dot appears even when the only findings are medium/low or when the red category is empty. The overall verdict is now severity-aware: red for critical/high, yellow for medium, blue for low-only, yellow for coverage-only gaps, and green when no findings/gaps exist. Empty categories no longer show their severity marker.
+- Amazon Q fixes: deduplicate empty-title findings at the same path/line; reject unmatched JSON closing brackets during truncated-tail recovery; map the test fixture's icon to its severity; and assert compact review length does not exceed MAX_REVIEW_BODY_CHARS.
+- Compact-output hardening: prompts are omitted in compact mode; title/path/problem/impact text is clipped using a shared per-finding budget; every finding checkbox is retained. Runtime stress probe with 18 maximum-sized findings measured 44,961 characters against the 60,000-character limit.
+- Verification before this follow-up: previous head 257b28b passed unit tests, TypeScript, Spec Kit verification, CodeQL, DevSkim, Next.js build, 495 MiB size gate, OpenNext, and Wrangler. New follow-up code has passed in-session syntax and runtime probes; current-head CI remains pending.
+- Spec Kit artifacts: specs/065-gemini-reviewer-quality/{spec,plan,tasks}.md updated. 
+
+---
+
 # Active Context — PR #1659 Review-Driven Correctness Hardening (2026-10-31)
 
 - Task group: deep-dive — independently verify Amazon Q and CodeQL findings against the latest PR head, then repair confirmed reviewer/autofix regressions.
