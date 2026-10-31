@@ -108,12 +108,14 @@ const removeRetiredJulesLibraryEntries = new Function(
 )(new Set(['jules.google/docs', 'developers.google.com/jules/api']));
 const removeRetiredJulesSnapshots = new Function(
     'fs',
+    'path',
     'resolveDocsPath',
     'validateGroupName',
     'RETIRED_JULES_SNAPSHOT_FILENAMES',
     `return (${retiredCleanupMatch[0]})`
 )(
     fs,
+    path,
     (group) => path.join(testDocsRoot, group),
     (group) => {
         if (!/^[A-Za-z0-9_-]+$/.test(group)) throw new Error('Invalid group');
