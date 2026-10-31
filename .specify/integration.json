@@ -7,9 +7,9 @@
   "integration_settings": {
     "generic": {
       "script": "sh",
-      "raw_options": "--commands-dir .jules/cmds",
+      "raw_options": "--commands-dir .freebuff/cmds",
       "parsed_options": {
-        "commands_dir": ".jules/cmds"
+        "commands_dir": ".freebuff/cmds"
       },
       "invoke_separator": "."
     }
