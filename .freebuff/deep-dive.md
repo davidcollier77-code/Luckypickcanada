@@ -2,8 +2,6 @@
 
 ## Mandatory Standing Resources
 For all tasks, you MUST actually consult the following resources:
-- Jules Documentation "jules.google/docs"
-- Jules API "developers.google.com/jules/api"
 - Gemini API "/websites/ai_google_dev_gemini-api"
 
 ## Conditional Gemini CLI Reference
@@ -42,7 +40,7 @@ Deep Dive / Investigation must be evidence-driven. It must verify findings, iden
 
 By default, investigation findings should inform concrete implementation work when that work is within the task's explicitly authorized scope.
 
-**Explicitly authorized audit-only, investigation-only, or report-only tasks are permitted.** When the repository owner specifically authorizes that scope, Jules must complete it as requested without forcing implementation, deleting files, or expanding scope merely to produce a code change.
+**Explicitly authorized audit-only, investigation-only, or report-only tasks are permitted.** When the repository owner specifically authorizes that scope, The agent must complete it as requested without forcing implementation, deleting files, or expanding scope merely to produce a code change.
 
 Audit-only tasks must still deliver substantive findings, supporting evidence, limitations, recommended next steps, and the required verification and reporting. They must not produce empty or unsupported reports.
 

@@ -2,8 +2,6 @@
 
 ## Mandatory Standing Resources
 For all tasks, you MUST actually consult the following resources:
-- Jules Documentation "jules.google/docs"
-- Jules API "developers.google.com/jules/api"
 - Gemini API "/websites/ai_google_dev_gemini-api"
 
 ## Controlled Context7 Libraries
