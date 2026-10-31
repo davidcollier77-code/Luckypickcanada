@@ -9,7 +9,7 @@ FILES=(speckit.implement.md speckit.plan.md)
 
 make_fixture() {
   local root="$1" mode="$2"
-  mkdir -p "$root/.github/spec-kit/customizations/base" "$root/.github/spec-kit/customizations/overlay" "$root/.jules/cmds" "$root/new-upstream"
+  mkdir -p "$root/.github/spec-kit/customizations/base" "$root/.github/spec-kit/customizations/overlay" "$root/.freebuff/cmds" "$root/new-upstream"
   for file in "${FILES[@]}"; do
     cat > "$root/.github/spec-kit/customizations/base/$file" <<'EOF'
 # Original Spec Kit template
@@ -40,7 +40,7 @@ stable rule 07
 stable rule 08
 stable rule 09
 stable rule 10
-customization point: Jules-specific behavior
+customization point: Freebuff-specific behavior
 stable trailing rule
 EOF
     if [[ "$mode" == "clean" ]]; then
@@ -79,7 +79,7 @@ customization point: conflicting upstream behavior
 stable trailing rule
 EOF
     fi
-    cp "$root/.github/spec-kit/customizations/overlay/$file" "$root/.jules/cmds/$file"
+    cp "$root/.github/spec-kit/customizations/overlay/$file" "$root/.freebuff/cmds/$file"
   done
 }
 
@@ -87,14 +87,14 @@ clean_root="$TEST_ROOT/clean"
 make_fixture "$clean_root" clean
 bash "$HELPER" "$clean_root" "$clean_root/new-upstream"
 for file in "${FILES[@]}"; do
-  grep -Fq "Updated Spec Kit template" "$clean_root/.jules/cmds/$file"
-  grep -Fq "new upstream capability: keep" "$clean_root/.jules/cmds/$file"
-  grep -Fq "Jules-specific behavior" "$clean_root/.jules/cmds/$file"
-  ! grep -Fq "customization point: upstream default" "$clean_root/.jules/cmds/$file"
-  cmp -s "$clean_root/.jules/cmds/$file" "$clean_root/.github/spec-kit/customizations/overlay/$file"
+  grep -Fq "Updated Spec Kit template" "$clean_root/.freebuff/cmds/$file"
+  grep -Fq "new upstream capability: keep" "$clean_root/.freebuff/cmds/$file"
+  grep -Fq "Freebuff-specific behavior" "$clean_root/.freebuff/cmds/$file"
+  ! grep -Fq "customization point: upstream default" "$clean_root/.freebuff/cmds/$file"
+  cmp -s "$clean_root/.freebuff/cmds/$file" "$clean_root/.github/spec-kit/customizations/overlay/$file"
   cmp -s "$clean_root/new-upstream/$file" "$clean_root/.github/spec-kit/customizations/base/$file"
 done
-echo "PASS: independent upstream additions and Jules customizations are both preserved."
+echo "PASS: independent upstream additions and Freebuff customizations are both preserved."
 
 conflict_root="$TEST_ROOT/conflict"
 make_fixture "$conflict_root" conflict
@@ -105,7 +105,7 @@ if bash "$HELPER" "$conflict_root" "$conflict_root/new-upstream" > "$TEST_ROOT/c
 fi
 for file in "${FILES[@]}"; do
   cmp -s "$conflict_root/before-$file" "$conflict_root/.github/spec-kit/customizations/overlay/$file"
-  cmp -s "$conflict_root/before-$file" "$conflict_root/.jules/cmds/$file"
+  cmp -s "$conflict_root/before-$file" "$conflict_root/.freebuff/cmds/$file"
   grep -Fq "upstream default" "$conflict_root/.github/spec-kit/customizations/base/$file"
 done
 echo "PASS: real conflicts fail closed without partially rewriting commands or overlays."
