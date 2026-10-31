@@ -6,7 +6,8 @@ Read `AGENTS.md` first. It is the single source of repository-wide workflow and 
 - Read `memory-bank/projectBrief.md` and `memory-bank/activeContext.md` once; inspect the current branch, worktree, relevant files, task artifacts, and any existing branch or PR.
 - Select exactly one task group. Read the matching `.freebuff/<group>.md` and route relevant reference material through `.docs/manifest.json`.
 - For Gemini CLI work, use Creation for implementation/configuration, Troubleshooting for failures, or Deep-dive for investigation. The Gemini CLI documentation itself remains conditional; do not load it just because a task has started.
-- The Gemini API reference `.docs/<group>/_websites_ai_google_dev_gemini-api.md` is mandatory for every task. Use it when interpreting the task and choosing the approach, and continue using it throughout implementation.
+- Read the Gemini API Developer Skill `.docs/<group>/_google-gemini_gemini-skills_gemini-api-dev.md` for every coding task. Apply its API-specific procedures when relevant; it supplements, but never overrides, `AGENTS.md`. Reading it does not authorize a Gemini API or model migration.
+- The general Gemini API overview is an optional reference at `.docs/creation/_websites_ai_google_dev_gemini-api.md`; consult it for tasks directly involving Gemini API integration or architecture.
 - The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` is an ordinary, optional reference. Consult it only when useful to the task.
 - Follow the Spec Kit sequence, verification, scope, concise PR-summary, and no-merge rules in `AGENTS.md`. Keep one task, branch, and PR; reuse existing work.
 

@@ -15,6 +15,7 @@
       "/bvaughn/react-error-boundary",
       "/google-gemini/gemini-cli",
       "/websites/ai_google_dev_gemini-api",
+      "/google-gemini/gemini-skills/gemini-api-dev",
       "/dropbox/zxcvbn",
       "/pmndrs/react-three-fiber",
       "/websites/google_webp",
@@ -37,7 +38,7 @@
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api",
+      "/google-gemini/gemini-skills/gemini-api-dev",
       "/cloudflare/cloudflare-docs/turnstile",
       "/cloudflare/cloudflare-docs/pages",
       "/websites/neon",
@@ -53,7 +54,6 @@
       "/emilkowalski/sonner",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/websites/ai_google_dev_gemini-api",
       "/dequelabs/axe-core",
       "/magicuidesign/magicui",
       "/goldfire/howler.js",
@@ -62,7 +62,8 @@
       "/websites/google_webp",
       "/lovell/sharp",
       "/websites/web_dev_images",
-      "/websites/mdn_image_types"
+      "/websites/mdn_image_types",
+      "/google-gemini/gemini-skills/gemini-api-dev"
     ],
     "testing": [
       "/github/docs",
@@ -76,8 +77,8 @@
       "/getsentry/sentry-docs",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/websites/ai_google_dev_gemini-api",
-      "/dequelabs/axe-core"
+      "/dequelabs/axe-core",
+      "/google-gemini/gemini-skills/gemini-api-dev"
     ],
     "security": [
       "/vercel/next.js",
@@ -93,18 +94,18 @@
       "/github/docs",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/websites/ai_google_dev_gemini-api",
       "/dropbox/zxcvbn",
       "/cloudflare/cloudflare-docs/turnstile",
       "/marsidev/react-turnstile",
-      "/upstash/ratelimit"
+      "/upstash/ratelimit",
+      "/google-gemini/gemini-skills/gemini-api-dev"
     ],
     "audio": [
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/websites/ai_google_dev_gemini-api",
       "/goldfire/howler.js",
-      "/websites/mdn_web_audio"
+      "/websites/mdn_web_audio",
+      "/google-gemini/gemini-skills/gemini-api-dev"
     ],
     "deep-dive": [
       "/github/docs",
@@ -119,7 +120,7 @@
       "/stripe/stripe-js",
       "/resend/resend-node",
       "/google-gemini/gemini-cli",
-      "/websites/ai_google_dev_gemini-api",
+      "/google-gemini/gemini-skills/gemini-api-dev",
       "/getsentry/sentry-docs",
       "/bvaughn/react-error-boundary",
       "/microsoft/playwright",
@@ -141,7 +142,7 @@
       "/github/docs",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/websites/ai_google_dev_gemini-api"
+      "/google-gemini/gemini-skills/gemini-api-dev"
     ]
   },
   "sources": {
@@ -155,7 +156,7 @@
     },
     "/websites/ai_google_dev_gemini-api": {
       "type": "url",
-      "url": "https://ai.google.dev/gemini-api/docs/deep-research"
+      "url": "https://ai.google.dev/gemini-api/docs.md.txt"
     },
     "/vercel/next.js": {
       "type": "url",
@@ -340,6 +341,10 @@
     "/websites/mdn_image_types": {
       "type": "url",
       "url": "https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types"
+    },
+    "/google-gemini/gemini-skills/gemini-api-dev": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/google-gemini/gemini-skills/main/skills/gemini-api-dev/SKILL.md"
     }
   },
   "inventory": [
@@ -391,7 +396,8 @@
     "/websites/google_webp",
     "/lovell/sharp",
     "/websites/web_dev_images",
-    "/websites/mdn_image_types"
+    "/websites/mdn_image_types",
+    "/google-gemini/gemini-skills/gemini-api-dev"
   ],
   "githubShas": {
     "/github/docs": "6167b6d08e8548a411a2ab1e0f3627fe6f89aaec",
@@ -429,6 +435,7 @@
     "/resend/resend-node": "d9bb9b636c5bcb0f6d6a27551e913013d7b391d7",
     "/python-pillow/Pillow": "2b45d1eadcb5e69e67cf905e82460c227747cd19",
     "/numpy/numpy": "296331d2924a62618a3db99f8cc53b04c1843f3a",
-    "/lovell/sharp": "1ea0375ef20c94e0dc94f790bf1375bb8872642f"
+    "/lovell/sharp": "1ea0375ef20c94e0dc94f790bf1375bb8872642f",
+    "/google-gemini/gemini-skills/gemini-api-dev": "39d81f4c7de5e56631d07e4ea766d3fe9752ce5d"
   }
 }

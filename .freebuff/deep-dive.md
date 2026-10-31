@@ -2,7 +2,7 @@
 
 ## Mandatory Standing Resources
 For all tasks, you MUST actually consult the following resources:
-- Gemini API "/websites/ai_google_dev_gemini-api"
+- Gemini API Developer Skill "/google-gemini/gemini-skills/gemini-api-dev"
 
 ## Conditional Gemini CLI Reference
 Consult the Gemini CLI reference only when an investigation directly concerns Gemini CLI commands, configuration, runtime behavior, or integrations. Start with the local snapshot `.docs/deep-dive/_google-gemini_gemini-cli.md` (read-only); do not load it for unrelated tasks. If the snapshot is insufficient and live documentation is materially necessary, use `/google-gemini/gemini-cli` only under the repository's explicit MCP approval rules.

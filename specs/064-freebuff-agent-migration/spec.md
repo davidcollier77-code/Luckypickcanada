@@ -13,7 +13,7 @@ Move the repository's active coding-agent governance and Spec Kit command routin
 - Move active `.jules/` instructions and Spec Kit command files to `.freebuff/`.
 - Update Spec Kit integration configuration, managed-file paths, scheduled updater/rebase scripts, verification callers, and current governance references.
 - Rename `jules-verify.sh` to `freebuff-verify.sh`.
-- Keep the Gemini API reference mandatory for every coding task from task interpretation and approach selection through implementation. Keep Gemini CLI conditional.
+- Make the Gemini API Developer Skill mandatory for every coding task and route it through all eight task groups; keep Gemini CLI conditional. Route the general Gemini API overview only to Creation.
 
 ## Out of scope
 - The separate `workers/jules-bridge` Cloudflare webhook integration remains unchanged because it calls the Jules API directly and needs a separately confirmed replacement before migration.
@@ -26,5 +26,5 @@ Move the repository's active coding-agent governance and Spec Kit command routin
 3. Regression tests cover restored manifest entries, stale snapshot cleanup, and preservation of unrelated documentation.
 4. Active agent instructions and Spec Kit commands are under `.freebuff/`; Spec Kit configuration and automation point to the new location.
 5. The verification script and its active callers use `freebuff-verify.sh`.
-6. Gemini API remains mandatory; Gemini CLI remains an ordinary conditional reference.
+6. The Gemini API Developer Skill remains mandatory in all eight task groups; the general Gemini API overview is routed only to Creation; Gemini CLI remains conditional.
 7. The pull request remains open and unmerged for owner review.
