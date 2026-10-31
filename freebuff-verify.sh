@@ -14,8 +14,8 @@ if ! bash "$SCRIPT_DIR/scripts/test-verify-speckit-task.sh"; then
 fi
 
 # Enforce task-level Spec Kit artifacts before build/test verification.
-# The scheduled Spec Kit updater calls this script in GitHub Actions but is
-# the automation workflow does not represent an interactive coding task; it is the only known exemption.
+# The scheduled Spec Kit updater runs this script outside an interactive coding task.
+# That workflow is exempt from task-local Spec Kit artifact checks.
 if [[ "${GITHUB_ACTIONS:-}" == "true" && "${GITHUB_WORKFLOW:-}" == "Update Spec Kit" ]]; then
   echo "Skipping task-local Spec Kit artifact gate for the automated Update Spec Kit workflow."
 else
