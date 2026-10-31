@@ -12,8 +12,10 @@ const reviewer = require("../.github/scripts/gemini-reviewer.cjs");
 const autofix = require("../.github/scripts/gemini-autofix.cjs");
 
 const tick = String.fromCharCode(96);
-const findingLine = (id: string, severity = "HIGH", title = "Test finding") =>
-  "- [ ] Finding " + tick + id + tick + ": 🔴 **[" + severity + "] " + title + "** — " + tick + "src/app.js:7" + tick;
+const findingLine = (id: string, severity = "HIGH", title = "Test finding") => {
+  const marker = ({ red: "🔴", yellow: "🟡", additional: "🔵" } as Record<string, string>)[reviewer.classifyFindingCategory({ severity })] || "🔴";
+  return "- [ ] Finding " + tick + id + tick + ": " + marker + " **[" + severity + "] " + title + "** — " + tick + "src/app.js:7" + tick;
+};
 
 describe("Gemini reviewer finding categories", () => {
   it("maps severity to the three documented categories", () => {
@@ -24,6 +26,22 @@ describe("Gemini reviewer finding categories", () => {
     expect(reviewer.FINDING_CATEGORIES.map((item: { heading: string }) => item.heading)).toEqual([
       "Red — Critical fixes", "Yellow — Suggested fixes", "Additional recommendations"
     ]);
+  });
+
+  it("uses red only for critical/high findings, yellow for medium, and blue for low", () => {
+    expect(reviewer.buildReviewVerdict([{ severity: "HIGH" }], []).marker).toBe("🔴");
+    expect(reviewer.buildReviewVerdict([{ severity: "CRITICAL" }], []).label).toBe("FIXES NEEDED");
+    expect(reviewer.buildReviewVerdict([{ severity: "MEDIUM" }], []).marker).toBe("🟡");
+    expect(reviewer.buildReviewVerdict([{ severity: "MEDIUM" }], []).label).toBe("SUGGESTED FIXES");
+    expect(reviewer.buildReviewVerdict([{ severity: "LOW" }], []).marker).toBe("🔵");
+    expect(reviewer.buildReviewVerdict([{ severity: "LOW" }], []).label).toBe("ADDITIONAL RECOMMENDATIONS");
+    expect(reviewer.buildReviewVerdict([], ["source omitted"]).marker).toBe("🟡");
+    expect(reviewer.buildReviewVerdict([], []).marker).toBe("🟢");
+    const mediumOnly = reviewer.formatReviewSections({
+      findings: [{ severity: "MEDIUM", title: "Suggested improvement", path: "src/a.js", line: 1, problem: "p", impact: "i", fix: "f" }]
+    });
+    expect(mediumOnly).toContain("🟡 **SUGGESTED FIXES**");
+    expect(mediumOnly).not.toContain("🔴 Red — Critical fixes");
   });
 
   it("renders three distinguishable categories with one checkbox per actionable finding", () => {
@@ -57,11 +75,13 @@ describe("Gemini reviewer finding categories", () => {
   it("keeps the review body bounded by dropping prompts instead of findings", () => {
     const many = Array.from({ length: 18 }, (_, index) => ({
       severity: "HIGH", title: "Finding number " + index, path: "src/app" + index + ".js", line: index + 1,
-      inline: false, problem: "p".repeat(900), impact: "i".repeat(400), fix: "f".repeat(400), suggestion: null
+      inline: false, problem: "p".repeat(1600), impact: "i".repeat(1000), fix: "f".repeat(1000), suggestion: null
     }));
     const full = reviewer.formatReviewSections({ findings: many, pullRequestNumber: 1 });
     const compact = reviewer.formatReviewSections({ findings: many, pullRequestNumber: 1, compact: true });
     expect(full.length).toBeGreaterThan(compact.length);
+    expect(compact.length).toBeLessThanOrEqual(reviewer.MAX_REVIEW_BODY_CHARS);
+    expect(compact).not.toContain("Copy/paste prompt for");
     expect(compact.split("\n").filter((line: string) => /^- \[[ x]\] Finding /.test(line))).toHaveLength(18);
   });
 });
@@ -80,6 +100,7 @@ describe("Gemini reviewer selection controls", () => {
   it("checks and clears only the finding checkbox lines", () => {
     const all = reviewer.setFindingSelection(body, "all");
     expect(all.split("\n").filter((line: string) => line.startsWith("- [x] Finding "))).toHaveLength(2);
+    expect(body).toContain("🟡 **[MEDIUM] Test finding**");
     expect(all).toContain("- [ ] 🛠️ **Fix selected findings**");
     expect(all).toContain("not a real line");
     const cleared = reviewer.setFindingSelection(all, "none");
@@ -149,6 +170,16 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
       .toEqual(["HIGH", "MEDIUM", "MEDIUM", "MEDIUM"]);
   });
 
+  it("deduplicates empty-title findings at the same path and line", () => {
+    const deduped = reviewer.dedupeFindings([
+      { path: "src/empty.js", line: 9, title: "", severity: "LOW" },
+      { path: "src/empty.js", line: 9, title: "", severity: "LOW" },
+      { path: "src/empty.js", line: 10, title: "", severity: "LOW" }
+    ]);
+    expect(deduped).toHaveLength(2);
+    expect(deduped.every((item: { title: string }) => item.title === "")).toBe(true);
+  });
+
   it("recovers fenced, prose-wrapped, trailing-comma, and truncated JSON", () => {
     const fence = String.fromCharCode(96).repeat(3);
     expect(reviewer.parseModelJson(fence + "json\n{\"summary\":\"ok\",\"findings\":[]}\n" + fence).summary).toBe("ok");
@@ -158,6 +189,12 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
     expect(reviewer.parseModelJson("not json at all")).toBeNull();
     expect(reviewer.parseModelJson("[1,2,3]")).toBeNull();
     expect(reviewer.parseModelJson("")).toBeNull();
+  });
+
+  it("rejects unmatched closing brackets during truncated JSON recovery", () => {
+    expect(reviewer.closeTruncatedJson('{"summary":"ok","findings":[{"path":"a.js"')).toBe('{"summary":"ok","findings":[{"path":"a.js"}]}');
+    expect(reviewer.closeTruncatedJson('{"summary":"ok","findings":[]} }')).toBeNull();
+    expect(reviewer.closeTruncatedJson('{"summary":"ok","findings":[1}}')).toBeNull();
   });
 
   it("preserves Unicode apostrophes while repairing trailing commas", () => {
