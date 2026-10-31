@@ -452,8 +452,7 @@ function extractBalancedJson(text) {
 function repairJsonText(text) {
   return String(text || "")
     .replace(/,\s*([}\]])/g, "$1")
-    .replace(/[\u201c\u201d]/g, "\"")
-    .replace(/[\u2018\u2019]/g, "'");
+    .replace(/[\u201c\u201d]/g, "\"");
 }
 function closeTruncatedJson(text) {
   const value = String(text || "");
@@ -887,12 +886,20 @@ function serializeReviewState(sha, findings) {
     severity: finding.severity, confidence: finding.confidence,
     problem: finding.problem, impact: finding.impact, fix: finding.fix, suggestion: finding.suggestion, inline: finding.inline
   })) };
-  return "\n\n<!-- gemini-review-state: " + JSON.stringify(state).replace(/--!?>/g, "--\\>") + " -->";
+  // Keep comment terminators out of the payload without changing the serialized data.
+  const json = JSON.stringify(state).replace(/--!?>/g, (sequence) => sequence.slice(0, -1) + "\\u003e");
+  return "\n\n<!-- gemini-review-state: " + json + " -->";
 }
-  return "
+function extractReviewState(body) {
   const match = String(body || "").match(/<!-- gemini-review-state: ([\s\S]*?)(?:-->|--!>)/);
   if (!match) return null;
-  try { return JSON.parse(match[1].replace(/--\\>/g, "-->")); } catch (error) { return null; }
+  try {
+    // Older comments used an invalid JSON escape for "-->"; keep them readable.
+    // New comments use a JSON Unicode escape and are decoded losslessly by JSON.parse.
+    return JSON.parse(match[1].replace(/--\\>/g, "-->"));
+  } catch (error) {
+    return null;
+  }
 }
 function findReviewStateForHead(reviews, sha) {
   if (!Array.isArray(reviews) || typeof sha !== "string" || !sha) return null;
@@ -979,10 +986,9 @@ function dedupeFindings(items) {
     const key = finding.path + ":" + String(finding.line ?? "none");
     const title = normalizeFindingTitle(finding.title);
     const seen = byLocation.get(key) || [];
-    // Exact normalized titles always collapse; partial matches collapse only when both
-    // titles are long enough to describe a root cause rather than a short label.
-    const duplicate = title.length > 0 && seen.some((item) => item.title === title ||
-      (item.title.length >= 12 && title.length >= 12 && (item.title.includes(title) || title.includes(item.title))));
+    // Only exact normalized-title duplicates collapse. Similar titles can describe
+    // distinct root causes even when they point to the same line.
+    const duplicate = title.length > 0 && seen.some((item) => item.title === title);
     if (duplicate) continue;
     seen.push({ title });
     byLocation.set(key, seen);
