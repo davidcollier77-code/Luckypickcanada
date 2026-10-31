@@ -14,7 +14,8 @@ import { test, expect, type Locator, type Page, type TestInfo } from '@playwrigh
  */
 
 const GOLD_CTA = '.homepage-experience .gold-3d-btn';
-const GOLD_EDGE_COLOR = 'rgb(161, 98, 7)';
+// Measured metallic edge (#8a550c) of the shared emblem-matched gold ramp.
+const GOLD_EDGE_COLOR = 'rgb(138, 85, 12)';
 
 /**
  * Representative CTAs. `glow` marks buttons whose running `goldBtnGlow`

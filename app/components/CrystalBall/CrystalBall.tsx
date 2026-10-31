@@ -446,7 +446,7 @@ export default function CrystalBall({
 
               <button
                 type="button"
-                className={`${styles.seekButton} inline-flex items-center justify-center`}
+                className={`${styles.seekButton} gold-3d-btn inline-flex items-center justify-center`}
                 onClick={() => {
                   playButtonClick();
                   playCrystalBallEnergy();
@@ -476,7 +476,10 @@ export default function CrystalBall({
                           : 'Revealing Fortune…'}
                   </>
                 ) : (
-                  'Seek Fortune'
+                  <>
+                    <span className="gold-cta-emoji" aria-hidden="true">🔮</span>
+                    Seek Fortune
+                  </>
                 )}
               </button>
             </>
@@ -493,7 +496,7 @@ export default function CrystalBall({
               )}
               <button
                 type="button"
-                className={`${styles.seekButton} inline-flex items-center justify-center`}
+                className={`${styles.seekButton} gold-3d-btn inline-flex items-center justify-center`}
                 onClick={() => {
                   playButtonClick();
                   setShowResult(false);
@@ -502,6 +505,7 @@ export default function CrystalBall({
                   setStatus('idle');
                 }}
               >
+                <span className="gold-cta-emoji" aria-hidden="true">🔮</span>
                 Ask Another Question
               </button>
             </div>
