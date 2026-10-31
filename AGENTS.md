@@ -54,7 +54,7 @@ Explicit owner authorization is required before changing:
 - accessibility/responsive behavior or approved visual/product behavior;
 - the documentation updater/refresh system.
 
-Authorization applies only to the specific approved scope. Context7 requires explicit owner approval before each invocation; other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available.
+Authorization applies only to the specific approved scope. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Context7 requires explicit owner approval before each invocation; other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available.
 
 ## 6. BUILD AND EXECUTION SAFETY
 
