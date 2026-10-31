@@ -294,10 +294,10 @@ body {
 
 @keyframes goldBtnGlow {
   0%, 100% {
-    box-shadow: 0 3px 0 #a16207, 0 6px 0 rgba(120, 63, 4, 0.5), 0 9px 20px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.62), inset 0 -2px 0 rgba(120, 63, 4, 0.42), 0 0 15px rgba(234, 190, 82, 0.4);
+    box-shadow: 0 3px 0 #8a550c, 0 6px 0 rgba(95, 55, 5, 0.45), 0 9px 20px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.72), inset 0 -2px 0 rgba(95, 55, 5, 0.42), 0 0 15px rgba(224, 184, 96, 0.4);
   }
   50% {
-    box-shadow: 0 3px 0 #a16207, 0 6px 0 rgba(120, 63, 4, 0.5), 0 9px 20px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.62), inset 0 -2px 0 rgba(120, 63, 4, 0.42), 0 0 25px rgba(234, 190, 82, 0.8);
+    box-shadow: 0 3px 0 #8a550c, 0 6px 0 rgba(95, 55, 5, 0.45), 0 9px 20px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.72), inset 0 -2px 0 rgba(95, 55, 5, 0.42), 0 0 25px rgba(224, 184, 96, 0.8);
   }
 }
 
