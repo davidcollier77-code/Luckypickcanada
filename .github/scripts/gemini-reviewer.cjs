@@ -876,7 +876,7 @@ function docReport(loaded, unloaded, assessments, selection) {
   const rows = [
     "### Review context",
     "- **Task group:** " + groupText,
-    "- **Required skill:** " + (skillLoaded
+    "- **Required Gemini API Developer Skill:** " + (skillLoaded
       ? GEMINI_API_DEV_SKILL_PATH + " — supplied to the primary and adversarial review prompts."
       : "UNAVAILABLE — the required Gemini API Developer Skill could not be loaded."),
     "- **Relevant documents:** " + (usefulDocs.length

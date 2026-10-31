@@ -34,7 +34,7 @@ For `@gemini full review`, `@gemini repair one <path>:<line> -- <finding title>`
 - The `_websites_ai_google_dev_gemini-api.md` snapshot is the general Gemini API overview. Load it only when the PR directly concerns Gemini API/SDK integration or Interactions API usage; it is not general code-review methodology.
 - Do not load optional Gemini references merely because they exist in a selected group. Use relevant technical snapshots from the selected group(s) and explain genuine coverage gaps.
 - Keep selected optional snapshots within the selected group(s). In the compact Review context footer, name each selected task group with a short reason and list only loaded snapshots explicitly confirmed to have materially helped, with a brief contribution. Report the required skill separately as supplied task guidance; do not list irrelevant optional snapshots.
-- Initial automatic reviews skip optional library selection to conserve tokens, but MUST receive the required Gemini API Developer Skill and still attempt bounded read-only source-context retrieval; report source caps and missing context honestly.
+- Initial automatic reviews skip optional library selection to conserve tokens, but MUST receive the required Gemini API Developer Skill and MUST still attempt bounded read-only source-context retrieval; report source caps and missing context honestly.
 
 🔴 B — BOUNDARIES
 
