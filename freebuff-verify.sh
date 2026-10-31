@@ -15,7 +15,7 @@ fi
 
 # Enforce task-level Spec Kit artifacts before build/test verification.
 # The scheduled Spec Kit updater calls this script in GitHub Actions but is
-# not a Jules task; this one known automation workflow is the only exemption.
+# the automation workflow does not represent an interactive coding task; it is the only known exemption.
 if [[ "${GITHUB_ACTIONS:-}" == "true" && "${GITHUB_WORKFLOW:-}" == "Update Spec Kit" ]]; then
   echo "Skipping task-local Spec Kit artifact gate for the automated Update Spec Kit workflow."
 else
