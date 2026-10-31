@@ -18,7 +18,7 @@
 - This is a digital entertainment platform, not a gambling or real-money gaming service.
 
 ## Memory Lifecycle & Maintenance
-- **Inspect First:** Future Jules sessions must inspect the current repository before trusting memory. Treat memory as context, not as absolute proof.
+- **Inspect First:** Future coding-agent sessions must inspect the current repository before trusting memory. Treat memory as context, not as absolute proof.
 - **Update Context:** Update `activeContext.md` when work starts and finishes; remove stale next steps.
 - **Record Progress:** Move meaningful completed work into `progress.md`. Preserve stable project identity here in `projectBrief.md`.
 - **Verified Facts:** Record only verified information. Identify unknown/unverified information honestly.
