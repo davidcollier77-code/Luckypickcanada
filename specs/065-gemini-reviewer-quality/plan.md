@@ -34,3 +34,12 @@ Keep the existing reviewer architecture, model chain, provider call, workflow in
 3. Remove unnecessary curly-single-quote normalization from both JSON recovery paths; apostrophes are valid JSON string content and must not be rewritten.
 4. Make finding deduplication conservative: collapse exact normalized-title duplicates at the same path/line, not substring matches.
 5. Add regression coverage for syntax, runtime state extraction, serialization round trips, Markdown escaping, Unicode preservation, retry classification, and distinct same-line findings.
+
+
+## Final review follow-up plan
+
+1. Make the overall verdict severity-aware and omit severity markers from empty categories.
+2. Make compact review output omit prompts and distribute a bounded detail budget across all retained findings.
+3. Reject mismatched or stray JSON closing delimiters instead of popping unrelated or absent stack entries.
+4. Deduplicate empty normalized titles at the same path and line.
+5. Match test-fixture icons to severity and add explicit tests for verdicts, compact-size caps, empty-title duplicates, and malformed closing delimiters.
