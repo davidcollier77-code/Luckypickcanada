@@ -1,3 +1,14 @@
+# Progress — 2026-10-31: PR #1659 Review-Driven Correctness Hardening
+
+- Independently reviewed PR #1659's latest commit and Amazon Q / CodeQL findings against the current source.
+- Confirmed the latest correction commit left extractReviewState undeclared and truncated formatFixOutcomes, while the hidden-state escaping remained lossy. Also identified that substring-based same-line title deduplication could suppress distinct findings.
+- Restored review-state parsing as a declared function and made new comment serialization lossless for both --> and --!> by escaping the closing angle bracket as a JSON Unicode escape. Kept legacy --\> parsing compatibility.
+- Rebuilt Markdown outcome cell sanitization to escape backslashes first, normalize CR/LF, then escape pipes. Removed unnecessary curly-single-quote normalization so Unicode punctuation in valid JSON strings remains unchanged.
+- Restricted deduplication to exact normalized-title matches at the same path/line and added regression tests for each corrected behavior.
+- Source syntax checks passed in the editing runtime. Local commands could not be executed in this API-only session; focused/full tests, typecheck, ./freebuff-verify.sh, build-size measurement, and current-head GitHub Actions remain pending.
+
+---
+
 # Progress — 2026-10-31: Gemini Reviewer Quality and Selected-Finding Workflow
 
 - Opened PR #1659 (open, unmerged) for owner review.
