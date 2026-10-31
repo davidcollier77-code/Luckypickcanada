@@ -16,7 +16,7 @@ The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` is an ordin
 
 ## 2. SPEC KIT AND EXECUTION
 
-Every coding task must complete the four core Spec Kit stages in order: `specify → plan → tasks → implement`, following the matching ` .freebuff/cmds/speckit.*.md` definitions. All four stages apply under this repository's workflow; do not mark one N/A or invent a result. Reuse current artifacts for the same task, keep them concise, and do not repeat completed stages or create duplicate feature directories. If a stage cannot run because of a genuine blocker, report the exact blocker and do not claim completion. Run the verification gate and report its actual outcome.
+Every coding task must complete the four core Spec Kit stages in order: `specify → plan → tasks → implement`, following the matching `.freebuff/cmds/speckit.*.md` definitions. All four stages apply under this repository's workflow; do not mark one N/A or invent a result. Reuse current artifacts for the same task, keep them concise, and do not repeat completed stages or create duplicate feature directories. If a stage cannot run because of a genuine blocker, report the exact blocker and do not claim completion. Run the verification gate and report its actual outcome.
 
 Keep one active task per run and one branch/PR per task. Check for existing work before creating anything new. Respect the active coding agent's execution and authorization controls: continue without routine confirmation only when that mode authorizes it; never bypass a required approval. Pause only for a genuine blocker, missing essential input, required approval, explicit blocking gate, or material safety/security risk. Do not ask generic "continue?" questions for non-blocking checklist items.
 
