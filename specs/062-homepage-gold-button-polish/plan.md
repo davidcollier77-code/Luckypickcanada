@@ -17,4 +17,6 @@
 - `pnpm exec tsc --noEmit`, `pnpm test`, clean production build with measured `.next` + `public` size against the 495 MiB hard cap.
 - `./jules-verify.sh` (Spec Kit governance gate, typecheck, build, refresh-docs tests).
 - Inspect the built CSS to confirm the new rules and reduced-motion block survive the build, and that the shimmer keyframes referenced by the markup exist.
-- Playwright visual/interaction check where the container permits it; if Chromium is unavailable in this environment the interaction result is reported as BLOCKED rather than passed, and desktop/mobile inspection is described from the built CSS instead.
+- Add `tests/visual/gold-cta.spec.ts` to the existing Playwright project so the treatment is asserted against computed styles in real Chromium at the desktop, 390px, and 412px viewports. The spec stays inside the configured `tests/visual` directory, so `visual-qa.yml` runs it with no workflow change, and its evidence screenshots are written to `test-results/`, which the workflow already uploads.
+- Because a running CSS animation owns `box-shadow`, the glow buttons are asserted on lift and pressed depth only; the 5px hover edge is asserted on the non-glowing CTAs. This records real browser behaviour instead of a rule the cascade cannot satisfy.
+- Run the spec locally where Chromium is available and confirm the same code path in the free `ubuntu-latest` Visual QA job on the PR. If Chromium cannot start in a container, report the check as BLOCKED rather than passed and rely on the workflow result only once it is actually observed.
