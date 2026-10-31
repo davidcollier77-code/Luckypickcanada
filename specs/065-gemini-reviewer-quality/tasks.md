@@ -40,3 +40,13 @@
 - [ ] T025 Run focused reviewer tests and the full Vitest suite on the final PR head.
 - [ ] T026 Run pnpm exec tsc --noEmit and ./freebuff-verify.sh; measure .next + public against the 495 MB hard cap.
 - [ ] T027 Inspect the complete final diff and confirm all required GitHub Actions checks are green; keep PR #1659 open and unmerged.
+
+
+## Final review follow-up — Amazon Q review comments and owner feedback
+
+- [x] T028 Make the overall Gemini verdict red only for critical/high findings, yellow for medium findings or coverage-only gaps, blue for low-only recommendations, and green when no findings or known gaps exist in .github/scripts/gemini-reviewer.cjs.
+- [x] T029 Remove severity markers from empty category headings and summary rows in .github/scripts/gemini-reviewer.cjs.
+- [x] T030 Bound compact review output by omitting prompts, clipping details within a shared per-finding budget, and retaining all checkboxes in .github/scripts/gemini-reviewer.cjs.
+- [x] T031 Reject unmatched JSON closers and deduplicate empty normalized titles at the same path and line in .github/scripts/gemini-reviewer.cjs.
+- [x] T032 Match severity markers in the findingLine fixture and add regression tests for severity verdicts, compact body size, malformed JSON closers, and empty-title deduplication in __tests__/gemini-reviewer-quality.test.ts.
+- [ ] T033 Run focused and full Vitest suites, TypeScript, ./freebuff-verify.sh, and verify the current-head GitHub Actions checks.
