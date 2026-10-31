@@ -25,3 +25,12 @@ Keep the existing reviewer architecture, model chain, provider call, workflow in
 - Suggestions remain opt-in native GitHub suggestions on eligible added lines; no edits, commits, pushes, or merges.
 - Rejections and unresolved items are reported rather than silently dropped, and unselected findings are untouched.
 - Review publication still re-checks the PR head SHA before posting.
+
+
+## Review follow-up plan
+
+1. Rebuild the outcome cell sanitizer as a complete helper: escape backslashes first, normalize line breaks, then escape Markdown pipes.
+2. Restore extractReviewState as a declared function and serialize HTML-comment terminators as JSON Unicode escapes so JSON.parse restores the original text.
+3. Remove unnecessary curly-single-quote normalization from both JSON recovery paths; apostrophes are valid JSON string content and must not be rewritten.
+4. Make finding deduplication conservative: collapse exact normalized-title duplicates at the same path/line, not substring matches.
+5. Add regression coverage for syntax, runtime state extraction, serialization round trips, Markdown escaping, Unicode preservation, retry classification, and distinct same-line findings.
