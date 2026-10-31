@@ -146,7 +146,7 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
     expect(deduped.map((item: { title: string }) => item.title))
       .toEqual(["Duplicate log statement", "Duplicate log statement in fetch path", "Missing guard", "Duplicate log statement"]);
     expect(reviewer.sortFindings(deduped).map((item: { severity: string }) => item.severity))
-      .toEqual(["HIGH", "MEDIUM", "MEDIUM"]);
+      .toEqual(["HIGH", "MEDIUM", "MEDIUM", "MEDIUM"]);
   });
 
   it("recovers fenced, prose-wrapped, trailing-comma, and truncated JSON", () => {
