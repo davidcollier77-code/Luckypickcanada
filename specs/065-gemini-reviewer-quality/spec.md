@@ -53,3 +53,11 @@ The review follow-up must also guarantee that:
 - JSON recovery does not rewrite valid Unicode apostrophes in model-generated string values when repairing a separate syntax issue.
 - Similar but non-identical finding titles at one source location are not automatically treated as duplicates.
 - Both reviewer scripts parse successfully and regression tests cover the above cases plus undici connect-timeout retry classification.
+
+
+## Final review follow-up
+
+- The overall status indicator reflects the highest finding severity: red for critical/high, yellow for medium, blue for low, yellow for coverage-only gaps, and green when no findings or known gaps exist.
+- Empty severity categories do not display a severity-colored marker.
+- Compact publishing mode removes per-finding prompts, clips verbose details within a shared size budget, retains every finding checkbox, and remains within MAX_REVIEW_BODY_CHARS.
+- JSON truncation recovery rejects unmatched closing delimiters, and deduplication includes empty normalized titles at the same source location.
