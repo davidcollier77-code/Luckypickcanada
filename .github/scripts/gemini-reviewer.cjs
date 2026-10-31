@@ -1058,32 +1058,54 @@ function buildReviewVerdict(findings, coverageGaps) {
 }
 function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], coverage = null, pullRequestNumber = null, compact = false }) {
   const tidy = (value) => String(value || "").replace(/\s+/g, " ").trim();
+  const clip = (value, limit) => {
+    const text = tidy(value);
+    if (!Number.isFinite(limit)) return text;
+    if (limit <= 0) return "";
+    return text.length > limit ? text.slice(0, Math.max(0, limit - 1)) + "…" : text;
+  };
   const tick = String.fromCharCode(96);
   const ordered = sortFindings(findings);
+  const compactPerFindingBudget = compact
+    ? Math.max(0, Math.floor((MAX_REVIEW_BODY_CHARS - 14000) / Math.max(1, ordered.length)) - 300)
+    : Infinity;
+  const compactProblemLimit = Math.min(1600, Math.floor(compactPerFindingBudget * 0.65));
+  const compactImpactLimit = Math.min(1000, Math.max(0, compactPerFindingBudget - compactProblemLimit));
+  const compactLabelBudget = compact
+    ? Math.max(0, Math.floor((MAX_REVIEW_BODY_CHARS - 14000) / Math.max(1, ordered.length)) - 100)
+    : Infinity;
+  const compactTitleLimit = Math.min(120, Math.floor(compactLabelBudget * 0.45));
+  const compactPathLimit = Math.min(180, Math.max(0, compactLabelBudget - compactTitleLimit));
   const verdict = buildReviewVerdict(ordered, coverageGaps);
   const grouped = new Map(FINDING_CATEGORIES.map((category) => [category.id, []]));
   for (const finding of ordered) grouped.get(classifyFindingCategory(finding)).push(finding);
   let promptsRendered = 0;
   const rows = ["### Overall Gemini review status",
     verdict.marker + " **" + verdict.label + "** — " + verdict.detail, "", "### Finding categories"];
+  if (compact) rows.push("", "Review details and per-finding prompts were shortened to fit the publishing size limit; every finding and selection checkbox is retained.");
   for (const category of FINDING_CATEGORIES) {
-    rows.push("- " + category.marker + " **" + category.heading + ":** " + grouped.get(category.id).length + " finding(s).");
+    const count = grouped.get(category.id).length;
+    rows.push("- " + (count ? category.marker + " " : "") + "**" + category.heading + ":** " + count + " finding(s).");
   }
   rows.push("", "Every actionable finding below has its own checkbox. Review-coverage warnings are listed separately and are not findings.");
   for (const category of FINDING_CATEGORIES) {
     const items = grouped.get(category.id);
-    rows.push("", "### " + category.marker + " " + category.heading, "_" + category.description + "_", "");
+    rows.push("", "### " + (items.length ? category.marker + " " : "") + category.heading, "_" + category.description + "_", "");
     if (!items.length) { rows.push("None."); continue; }
     for (const finding of items) {
-      const location = finding.path + (finding.line ? ":" + finding.line : "");
+      const displayPath = clip(finding.path, compactPathLimit);
+      const displayTitle = clip(finding.title, compactTitleLimit);
+      const location = displayPath + (finding.line ? ":" + finding.line : "");
       const fId = generateFindingId(finding);
       const category = FINDING_CATEGORIES.find((item) => item.id === classifyFindingCategory(finding)) || FINDING_CATEGORIES[0];
-      const includePrompt = promptsRendered < (compact ? 8 : 25);
+      const includePrompt = !compact && promptsRendered < 25;
       if (includePrompt) promptsRendered += 1;
-      rows.push("- [ ] Finding `" + fId + "`: " + category.marker + " **[" + finding.severity + "] " + tidy(finding.title) + "** — " + tick + location + tick +
+      rows.push("- [ ] Finding `" + fId + "`: " + category.marker + " **[" + finding.severity + "] " + displayTitle + "** — " + tick + location + tick +
         (finding.inline ? " (inline review comment also posted)" : ""));
-      rows.push("  - **Problem:** " + tidy(finding.problem));
-      rows.push("  - **Impact:** " + tidy(finding.impact));
+      const problemText = compact ? clip(finding.problem, compactProblemLimit) : tidy(finding.problem);
+      const impactText = compact ? clip(finding.impact, compactImpactLimit) : tidy(finding.impact);
+      if (problemText) rows.push("  - **Problem:** " + problemText);
+      if (impactText) rows.push("  - **Impact:** " + impactText);
       if (includePrompt) {
       rows.push("");
       rows.push("<details>");
