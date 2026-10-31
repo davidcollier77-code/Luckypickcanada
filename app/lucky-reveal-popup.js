@@ -425,15 +425,15 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
           <button
             type="button"
             onClick={() => { playButtonClick(); closeReveal(); }}
-            className="lucky-map-button-enhanced"
+            className="lucky-map-button-enhanced gold-3d-btn"
             style={{
               marginTop: '1.8rem',
               padding: '1.1rem 2.2rem',
-              border: '1px solid rgba(251, 191, 36, 0.7)',
+              border: '1px solid #fff2a8',
               borderRadius: 999,
-              background: 'linear-gradient(135deg, #ffe066 0%, #f59e0b 50%, #d97706 100%)',
-              color: '#071225',
-              boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+              background: 'linear-gradient(180deg, #fff2a8 0%, #fbe59a 14%, #e8c970 38%, #dcae4e 62%, #c8942c 82%, #b8801f 100%)',
+              color: '#1c1200',
+              boxShadow: '0 3px 0 #8a550c, 0 6px 0 rgba(95, 55, 5, 0.45), 0 10px 25px rgba(138, 85, 12, 0.34), 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
               fontSize: '1.05rem',
               fontWeight: 900,
               cursor: 'pointer',
@@ -443,7 +443,7 @@ export default function LuckyRevealPopup({ reveal, onClose }) {
               display: 'inline-block'
             }}
           >
-            Add me to the Little Luck Map
+            <span className="gold-cta-emoji" aria-hidden="true">📍</span>Add me to the Little Luck Map
           </button>
         </div>
       </section>

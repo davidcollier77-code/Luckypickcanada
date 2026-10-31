@@ -7,14 +7,14 @@ import { useEffect, useMemo, useState } from 'react';
 
 const buttonStyle = {
   padding: '1rem 2rem',
-  border: '1px solid rgba(251, 191, 36, 0.7)',
+  border: '1px solid #fff2a8',
   borderRadius: 999,
-  background: 'linear-gradient(135deg, #ffe066 0%, #f59e0b 50%, #d97706 100%)',
-  color: '#071225',
+  background: 'linear-gradient(180deg, #fff2a8 0%, #fbe59a 14%, #e8c970 38%, #dcae4e 62%, #c8942c 82%, #b8801f 100%)',
+  color: '#1c1200',
   fontSize: '1rem',
   fontWeight: 900,
   cursor: 'pointer',
-  boxShadow: '0 10px 25px rgba(245, 158, 11, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+  boxShadow: '0 3px 0 #8a550c, 0 6px 0 rgba(95, 55, 5, 0.45), 0 10px 25px rgba(138, 85, 12, 0.34), 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
 };
 
 const secondaryButtonStyle = {
@@ -150,12 +150,12 @@ export default function ShareLuckyPickButton({ reveal }) {
         }
         .share-lucky-button-main:hover {
           transform: translateY(-2px) scale(1.03) !important;
-          box-shadow: 0 14px 30px rgba(245, 158, 11, 0.55), 0 6px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+          box-shadow: 0 5px 0 #8a550c, 0 8px 0 rgba(95, 55, 5, 0.42), 0 16px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
           filter: brightness(1.05);
         }
         .share-lucky-button-main:active {
           transform: translateY(1px) scale(0.97) !important;
-          box-shadow: 0 6px 15px rgba(245, 158, 11, 0.3), 0 2px 5px rgba(0, 0, 0, 0.4) !important;
+          box-shadow: 0 1px 0 #8a550c, 0 2px 5px rgba(0, 0, 0, 0.36) !important;
           filter: brightness(0.95);
         }
 
@@ -179,7 +179,7 @@ export default function ShareLuckyPickButton({ reveal }) {
       `}</style>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-        <button type="button" onClick={() => { playButtonClick(); setIsOpen((current) => !current); }} className="share-lucky-button-main" style={buttonStyle} aria-expanded={isOpen}>
+        <button type="button" onClick={() => { playButtonClick(); setIsOpen((current) => !current); }} className="share-lucky-button-main gold-3d-btn" style={buttonStyle} aria-expanded={isOpen}>
           Share Your Luck 🍀
         </button>
         <p style={{ margin: 0, color: 'rgba(255, 245, 203, 0.78)', lineHeight: 1.5 }}>
