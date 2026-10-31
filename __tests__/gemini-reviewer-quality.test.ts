@@ -144,7 +144,7 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
       { path: "src/b.js", line: 4, title: "Duplicate log statement", severity: "MEDIUM" }
     ]);
     expect(deduped.map((item: { title: string }) => item.title))
-      .toEqual(["Duplicate log statement", "Missing guard", "Duplicate log statement"]);
+      .toEqual(["Duplicate log statement", "Duplicate log statement in fetch path", "Missing guard", "Duplicate log statement"]);
     expect(reviewer.sortFindings(deduped).map((item: { severity: string }) => item.severity))
       .toEqual(["HIGH", "MEDIUM", "MEDIUM"]);
   });
@@ -158,6 +158,12 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
     expect(reviewer.parseModelJson("not json at all")).toBeNull();
     expect(reviewer.parseModelJson("[1,2,3]")).toBeNull();
     expect(reviewer.parseModelJson("")).toBeNull();
+  });
+
+  it("preserves Unicode apostrophes while repairing trailing commas", () => {
+    const malformed = '{"summary":"It’s still curly","findings":[],}';
+    expect(reviewer.parseModelJson(malformed).summary).toBe("It’s still curly");
+    expect(autofix.parseModelJson(malformed).summary).toBe("It’s still curly");
   });
 
   it("keeps every patch of an 84-file pull request in review batches and names omitted source files", () => {
@@ -188,6 +194,7 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
     expect(reviewer.isRetryableError({ retryable: true })).toBe(true);
     expect(reviewer.isRetryableError({ name: "TimeoutError" })).toBe(true);
     expect(reviewer.isRetryableError({ code: "ECONNRESET" })).toBe(true);
+    expect(autofix.isRetryableError({ code: "UND_ERR_CONNECT_TIMEOUT" })).toBe(true);
     expect(reviewer.isRetryableError(new TypeError("fetch failed"))).toBe(true);
     expect(reviewer.isRetryableError(new Error("Gemini model X output could not be parsed as the required JSON object."))).toBe(true);
     expect(reviewer.isRetryableError({ message: "Gemini model X returned HTTP 400." })).toBe(false);
@@ -224,6 +231,45 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
     await expect(reviewer.askModel("review", 100)).rejects.toThrow(/All configured Gemini models failed/);
     expect(fetchMock).toHaveBeenCalledTimes(3);
     vi.unstubAllGlobals();
+  });
+});
+
+describe("Gemini review-state comment serialization", () => {
+  it("round-trips both HTML comment terminators without altering finding text", () => {
+    const finding = {
+      path: "app/example.js",
+      line: 12,
+      title: "Literal markers --> and --!>",
+      severity: "HIGH",
+      confidence: 0.97,
+      problem: "Preserve both --> and --!> in problem text.",
+      impact: "Do not truncate or rewrite --> or --!>.",
+      fix: "Keep --> and --!> intact.",
+      suggestion: null,
+      inline: false
+    };
+    const body = reviewer.serializeReviewState("review-head", [finding]);
+    const payload = body.match(/<!-- gemini-review-state: ([\s\S]*?) -->/)?.[1] || "";
+    expect(payload).not.toMatch(/--!?>/);
+    const restored = reviewer.extractReviewState(body);
+    expect(restored).toMatchObject({
+      sha: "review-head",
+      findings: [{
+        path: finding.path,
+        line: finding.line,
+        title: finding.title,
+        problem: finding.problem,
+        impact: finding.impact,
+        fix: finding.fix,
+        severity: finding.severity,
+        confidence: finding.confidence
+      }]
+    });
+  });
+
+  it("continues to read legacy escaped review-state comments", () => {
+    const legacyBody = "<!-- gemini-review-state: {\"sha\":\"legacy\",\"findings\":[{\"title\":\"Legacy marker --\\\\>\"}]} -->";
+    expect(reviewer.extractReviewState(legacyBody)?.findings[0].title).toBe("Legacy marker -->");
   });
 });
 
@@ -265,6 +311,17 @@ describe("Gemini selected-finding remediation tracking", () => {
     expect(report).toContain("2 unselected finding(s) were left untouched.");
     expect(report).toContain("Rejected findings were not applied");
     expect(autofix.formatFixOutcomes([])).toContain("**Fixed:** 0 · **Rejected:** 0 · **Unresolved:** 0.");
+  });
+
+  it("escapes backslashes and pipes and normalizes line breaks in outcome cells", () => {
+    const report = autofix.formatFixOutcomes([{
+      id: "a1",
+      path: "docs\\notes|today.md",
+      title: "Backslash \\ and pipe | title\nsecond line",
+      status: "unresolved",
+      reason: "First\\second | reason\r\ncontinued"
+    }]);
+    expect(report).toContain("| Backslash \\\\ and pipe \\| title second line | docs\\\\notes\\|today.md | unresolved | First\\\\second \\| reason continued |");
   });
 
   it("keeps the Gemini and autofix modules free of direct push or commit actions", () => {
