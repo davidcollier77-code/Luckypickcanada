@@ -1,3 +1,14 @@
+# Progress — 2026-10-31: PR #1659 Severity and Edge-Case Follow-up
+
+- Reviewed Amazon Q's latest full review and four inline findings, along with the owner's concern that the red indicator appears even when there is no critical/high error.
+- Corrected the overall verdict so the marker follows the highest severity present: critical/high red, medium yellow, low-only blue; coverage-only gaps remain yellow and no findings/gaps remain green. Empty categories no longer display a severity marker.
+- Hardened compact review output: removed all per-finding prompts in compact mode, shared a character budget across finding details and labels, and retained every finding checkbox. A runtime stress probe with 18 maximum-sized findings produced 44,961 characters against the 60,000-character cap.
+- Added a stack-matching check for malformed JSON closers and exact deduplication for empty titles at the same source location.
+- Updated tests so severity fixture markers match the category, and added tests for verdict severity, compact size limits, extra/mismatched JSON closers, and empty-title duplicates.
+- In-session source syntax/runtime probes passed. Focused/full tests, TypeScript, ./freebuff-verify.sh and current-head GitHub Actions remain pending.
+
+---
+
 # Progress — 2026-10-31: PR #1659 Review-Driven Correctness Hardening
 
 - Independently reviewed PR #1659's latest commit and Amazon Q / CodeQL findings against the current source.
