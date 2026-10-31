@@ -2,6 +2,8 @@
 
 const assert = require('assert');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 // We will test the logic of getUpstreamSha and fetchWithRedirects by mocking https
 const https = require('https');
@@ -88,14 +90,40 @@ const getUpstreamShaCode = scriptContent.substring(
 // Actually, let's just use regex to extract the functions
 const getUpstreamShaMatch = scriptContent.match(/function getUpstreamSha[\s\S]*?^}/m);
 const fetchDocumentationMatch = scriptContent.match(/function fetchDocumentation[\s\S]*?^}/m);
+const retiredFilterMatch = scriptContent.match(/function removeRetiredJulesLibraryEntries[\s\S]*?^}/m);
+const retiredCleanupMatch = scriptContent.match(/function removeRetiredJulesSnapshots[\s\S]*?^}/m);
 
-if (!getUpstreamShaMatch || !fetchDocumentationMatch) {
+
+if (!getUpstreamShaMatch || !fetchDocumentationMatch || !retiredFilterMatch || !retiredCleanupMatch) {
     console.error("Could not extract functions from refresh-docs.js");
     process.exit(1);
 }
 
 const getUpstreamSha = /* DevSkim: ignore DS189424 */ eval(`(${getUpstreamShaMatch[0]})`);
 const fetchDocumentation = /* DevSkim: ignore DS189424 */ eval(`(${fetchDocumentationMatch[0]})`);
+const testDocsRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'docs-retirement-'));
+const removeRetiredJulesLibraryEntries = new Function(
+    'RETIRED_LIBRARY_IDS',
+    `return (${retiredFilterMatch[0]})`
+)(new Set(['jules.google/docs', 'developers.google.com/jules/api']));
+const removeRetiredJulesSnapshots = new Function(
+    'fs',
+    'path',
+    'resolveDocsPath',
+    'validateGroupName',
+    'RETIRED_JULES_SNAPSHOT_FILENAMES',
+    `return (${retiredCleanupMatch[0]})`
+)(
+    fs,
+    path,
+    (group) => path.join(testDocsRoot, group),
+    (group) => {
+        if (!/^[A-Za-z0-9_-]+$/.test(group)) throw new Error('Invalid group');
+        return group;
+    },
+    ['jules_google_docs.md', 'developers_google_com_jules_api.md']
+);
+
 
 
 async function runTests() {
@@ -116,6 +144,51 @@ async function runTests() {
             failed++;
         }
     }
+
+    await test('manifest guard removes retired Jules sources from every routing location', async () => {
+        const manifest = {
+            groups: {
+                creation: ['jules.google/docs', 'developers.google.com/jules/api', '/vercel/next.js'],
+                audio: ['jules.google/docs', '/goldfire/howler.js']
+            },
+            sources: {
+                'jules.google/docs': { type: 'url', url: 'https://jules.google/docs/' },
+                'developers.google.com/jules/api': { type: 'url', url: 'https://developers.google.com/jules/api' },
+                '/vercel/next.js': { type: 'url', url: 'https://nextjs.org/docs' }
+            },
+            inventory: ['jules.google/docs', 'developers.google.com/jules/api', '/vercel/next.js'],
+            githubShas: {
+                'jules.google/docs': 'old-jules-sha',
+                'developers.google.com/jules/api': 'old-api-sha',
+                '/vercel/next.js': 'next-sha'
+            }
+        };
+        const removed = removeRetiredJulesLibraryEntries(manifest);
+        assert.ok(removed >= 8, 'Should strip retired IDs from groups, sources, inventory, and SHA pins');
+        assert.deepStrictEqual(manifest.groups.creation, ['/vercel/next.js']);
+        assert.deepStrictEqual(manifest.groups.audio, ['/goldfire/howler.js']);
+        assert.deepStrictEqual(manifest.inventory, ['/vercel/next.js']);
+        assert.deepStrictEqual(Object.keys(manifest.sources), ['/vercel/next.js']);
+        assert.deepStrictEqual(Object.keys(manifest.githubShas), ['/vercel/next.js']);
+        assert.ok(!JSON.stringify(manifest).includes('jules.google/docs'));
+        assert.ok(!JSON.stringify(manifest).includes('developers.google.com/jules/api'));
+    });
+
+    await test('snapshot guard deletes retired files but leaves unrelated documentation intact', async () => {
+        const groupDir = path.join(testDocsRoot, 'creation');
+        fs.mkdirSync(groupDir, { recursive: true });
+        fs.writeFileSync(path.join(groupDir, 'jules_google_docs.md'), 'retired');
+        // Other groups may contain a dangling symlink after a canonical snapshot is removed.
+        fs.symlinkSync('missing-retired-target.md', path.join(groupDir, 'developers_google_com_jules_api.md'));
+        fs.writeFileSync(path.join(groupDir, 'gemini-api.md'), 'keep');
+        const removed = removeRetiredJulesSnapshots({ creation: [] });
+        assert.strictEqual(removed, 2);
+        assert.ok(!fs.existsSync(path.join(groupDir, 'jules_google_docs.md')));
+        assert.ok(!fs.existsSync(path.join(groupDir, 'developers_google_com_jules_api.md')));
+        assert.strictEqual(fs.readFileSync(path.join(groupDir, 'gemini-api.md'), 'utf8'), 'keep');
+    });
+
+
 
     // 1. Unchanged GitHub source on "main"
     await test('getUpstreamSha: unchanged source on main', async () => {
@@ -369,6 +442,7 @@ async function runTests() {
         assert.strictEqual(calls[0], 180 * 1000, 'Should delay for exactly 180 seconds');
     });
 
+    fs.rmSync(testDocsRoot, { recursive: true, force: true });
     console.log(`\nTests complete: ${passed} passed, ${failed} failed.`);
 
     if (failed > 0) process.exit(1);

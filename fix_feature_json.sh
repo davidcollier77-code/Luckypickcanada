@@ -7,7 +7,7 @@ This helper is retired.
 committed, or included in a PR. The Spec Kit verification gate now discovers
 the task from its changed spec.md, plan.md, and tasks.md artifacts.
 
-Run ./jules-verify.sh to validate the task artifacts.
+Run ./freebuff-verify.sh to validate the task artifacts.
 MESSAGE
 
 # Return failure so callers cannot mistake this retired no-op for success.

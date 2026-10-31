@@ -155,46 +155,51 @@ describe("Gemini reviewer source context", () => {
     expect(reviewedPatches).toHaveLength(files.length);
     expect(reviewedPatches.some((file) => file.filename === "src/module-0.js" && file.patch)).toBe(true);
   });
-  it("loads Gemini reference snapshots only when the task directly concerns them", () => {
+  it("loads the required Gemini API development skill and relevance-gates optional references", () => {
     const cliDoc = ".docs/deep-dive/_google-gemini_gemini-cli.md";
-    const deepResearchDoc = ".docs/deep-dive/_websites_ai_google_dev_gemini-api.md";
+    const apiOverviewDoc = ".docs/creation/_websites_ai_google_dev_gemini-api.md";
     const ordinaryPr = {title: "feat: improve Gemini reviewer", body: "Improve default source coverage."};
     const ordinaryFiles = [{filename: ".github/scripts/gemini-reviewer.cjs"}];
+    expect(reviewer.GEMINI_API_DEV_SKILL_PATH).toBe(".docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md");
+    const skill = reviewer.loadGeminiApiDevSkill();
+    expect(skill?.path).toBe(reviewer.GEMINI_API_DEV_SKILL_PATH);
+    expect(skill?.content).toContain("# Gemini API Development Skill");
+    expect(skill?.content).toContain("Before writing any code");
     expect(reviewer.isGeminiCliDoc(cliDoc)).toBe(true);
-    expect(reviewer.isGeminiDeepResearchDoc(deepResearchDoc)).toBe(true);
+    expect(reviewer.isGeminiApiOverviewDoc(apiOverviewDoc)).toBe(true);
     expect(reviewer.isGeminiReferenceRelevant(cliDoc, ordinaryPr, ordinaryFiles)).toBe(false);
-    expect(reviewer.isGeminiReferenceRelevant(deepResearchDoc, ordinaryPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiReferenceRelevant(apiOverviewDoc, ordinaryPr, ordinaryFiles)).toBe(false);
     const referenceRoutingPr = {
       title: "improve Gemini reviewer documentation selection",
-      body: "Make the CLI and Deep Research snapshots optional and select them only when relevant."
+      body: "Keep the CLI and general Gemini API overview snapshots conditional."
     };
     expect(reviewer.isGeminiReferenceRelevant(cliDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
-    expect(reviewer.isGeminiReferenceRelevant(deepResearchDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiReferenceRelevant(apiOverviewDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
     expect(reviewer.isGeminiReferenceRelevant(
       cliDoc,
       {title: "fix: Gemini CLI config", body: ""},
       [{filename: ".gemini/GEMINI.md"}]
     )).toBe(true);
     expect(reviewer.isGeminiReferenceRelevant(
-      deepResearchDoc,
-      {title: "integrate Gemini Deep Research agent", body: "Use the Interactions API."},
-      [{filename: "lib/deep-research.js"}]
+      apiOverviewDoc,
+      {title: "integrate Gemini API client", body: "Use the Interactions API."},
+      [{filename: "lib/gemini-api-client.ts"}]
     )).toBe(true);
     const selected = reviewer.selectRelevantGeminiReferenceDocs([
       ".docs/deep-dive/_google-gemini_gemini-cli.md",
       ".docs/security/_google-gemini_gemini-cli.md",
-      ".docs/deep-dive/_websites_ai_google_dev_gemini-api.md",
-      ".docs/security/_websites_ai_google_dev_gemini-api.md"
+      ".docs/creation/_websites_ai_google_dev_gemini-api.md"
     ], {
-      title: "Integrate Gemini CLI config and Gemini Deep Research",
-      body: "Use Interactions API for the deep research workflow."
+      title: "Integrate Gemini CLI config and Gemini API client",
+      body: "Use Interactions API for the integration."
     }, [
       {filename: ".gemini/GEMINI.md"},
-      {filename: "lib/deep-research.js"}
+      {filename: "lib/gemini-api-client.ts"}
     ]);
-    expect(selected.map((item) => item.kind)).toEqual(["cli", "deep-research"]);
+    expect(selected.map((item) => item.kind)).toEqual(["cli", "api-overview"]);
     expect(selected).toHaveLength(2);
   });
+
   it("selects relevant groups based on paths/domain, not generic fix wording", () => {
     const groups = ["polishing", "troubleshooting", "testing", "seo", "security", "deep-dive"];
     expect(reviewer.classifyReviewGroups({title:"fix: homepage performance",body:"Improve image preload"},[{filename:"app/homepage/Hero.js",patch:"+preload"}],groups)).toContain("polishing");
@@ -338,13 +343,18 @@ describe("Gemini reviewer source context", () => {
   });
 
   it("renders a compact report for the initial automatic review without inventing a task group", () => {
-    const report = reviewer.docReport([], [], [], {
+    const report = reviewer.docReport([{
+      path: reviewer.GEMINI_API_DEV_SKILL_PATH,
+      truncated: false
+    }], [], [], {
       groups: [],
       groupReasons: {},
       method: "skipped for initial automatic review"
     });
-    expect(report).toContain("initial automatic review intentionally skips local document selection");
-    expect(report).toContain("None — local document selection is skipped");
+    expect(report).toContain("initial automatic review skips optional library selection");
+    expect(report).toContain("Required Gemini API Developer Skill");
+    expect(report).toContain("supplied to the primary and adversarial review prompts");
+    expect(report).not.toContain("UNAVAILABLE");
     expect(report).not.toContain("Selection method:");
   });
 

@@ -29,12 +29,12 @@ For `@gemini full review`, `@gemini repair one <path>:<line> -- <finding title>`
 - Use `.docs/manifest.json` to choose the smallest relevant task group(s).
 - For every review batch, run an independent adversarial second pass using the supplied patches and relevant context. Search for overlooked failure paths and state/validation/identity/cache edge cases; do not merely confirm the first pass. A failed primary or adversarial pass is a coverage gap. Avoid duplicate findings and never claim complete review when a pass fails.
 - Re-fetch PR metadata immediately before publishing and do not publish if the head SHA changed during review.
-- Treat Gemini reference snapshots as optional, task-specific references, not mandatory content for every group.
+- The Gemini API Developer Skill (`_google-gemini_gemini-skills_gemini-api-dev.md`) is mandatory review context for every PR review and targeted fix. The reviewer must supply it to initial automatic reviews, full reviews, adversarial passes, and fix suggestions. Apply its API-specific guidance when relevant; it is subordinate to this repository's rules.
 - Load `_google-gemini_gemini-cli.md` only when the PR directly concerns Gemini CLI, its configuration, or its commands.
-- The `_websites_ai_google_dev_gemini-api.md` snapshot is specifically about the Gemini Deep Research agent and Interactions API, not general code-review guidance. Load it only when the PR directly concerns Deep Research or the Interactions API.
-- Never load a Gemini reference merely because its filename includes Gemini or because it exists in the selected group. Use the relevant technical snapshots in the selected group(s) instead.
-- Keep selected snapshots within the selected group(s). In the compact Review context footer, name each selected task group with a short reason and list only loaded snapshots explicitly confirmed to have materially helped, with a brief contribution. If none qualify, say so. Do not list every irrelevant, unassessed, or unloaded document.
-- Initial automatic reviews skip the document-selection model call and library snapshots to conserve tokens, but MUST still attempt bounded read-only source-context retrieval; report source caps and missing context honestly.
+- The `_websites_ai_google_dev_gemini-api.md` snapshot is the general Gemini API overview. Load it only when the PR directly concerns Gemini API/SDK integration or Interactions API usage; it is not general code-review methodology.
+- Do not load optional Gemini references merely because they exist in a selected group. Use relevant technical snapshots from the selected group(s) and explain genuine coverage gaps.
+- Keep selected optional snapshots within the selected group(s). In the compact Review context footer, name each selected task group with a short reason and list only loaded snapshots explicitly confirmed to have materially helped, with a brief contribution. Report the required skill separately as supplied task guidance; do not list irrelevant optional snapshots.
+- Initial automatic reviews skip optional library selection to conserve tokens, but MUST receive the required Gemini API Developer Skill and MUST still attempt bounded read-only source-context retrieval; report source caps and missing context honestly.
 
 🔴 B — BOUNDARIES
 

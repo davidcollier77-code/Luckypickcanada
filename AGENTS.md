@@ -2,23 +2,23 @@
 
 🔴 READ FIRST. VERIFY BEFORE CLAIMING.
 
-This is the repository's authoritative workflow and safety policy. The user's task request defines the requested outcome and scope. `.jules/jules.md` is a short entrypoint; specialist files add task-specific guidance but must not create competing repo-wide rules. When instructions appear inconsistent, resolve the wording against this file and the task request; pause only the affected action if a genuine authorization, safety, or prerequisite blocker remains.
+This is the repository's authoritative workflow and safety policy. The user's task request defines the requested outcome and scope. When instructions appear inconsistent, resolve the wording against this file and the task request; pause only the affected action if a genuine authorization, safety, or prerequisite blocker remains.
 
 ## 1. INITIALIZE ONCE
 
 1. Read this file first.
-2. Read `.jules/jules.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once.
-3. Select exactly one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`. For Gemini CLI tasks, use `creation` for implementation/configuration, `troubleshooting` for diagnosing failures, or `deep-dive` for investigation.
-4. Read that group's `.jules/<group>.md`, `.docs/<group>/jules_google_docs.md`, and `.docs/<group>/_websites_ai_google_dev_gemini-api.md`. Check `.docs/manifest.json` for routing.
+2. Read `.freebuff/freebuff.md`, `memory-bank/projectBrief.md`, and `memory-bank/activeContext.md` once.
+3. Select exactly one applicable group: `creation`, `troubleshooting`, `polishing`, `testing`, `security`, `audio`, `deep-dive`, or `seo`.
+4. Read the selected group's `.freebuff/<group>.md` instructions and `.docs/manifest.json` for routing. The Gemini API Developer Skill `.docs/<group>/_google-gemini_gemini-skills_gemini-api-dev.md` is mandatory for every coding task: read it at the start and apply its API-specific procedures whenever relevant through planning, implementation, and verification. It supplements, but never overrides, this repository governance. Reading it does not authorize a Gemini API or model migration. Use other group documents only when they materially help with the task.
 5. Inspect the current branch/worktree, relevant files and task artifacts, plus any existing branch or PR for the same task. Consult library/version references only when materially relevant.
 
-The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` remains available in `.docs/` and the library, but is **not a mandatory reading for every task**. Consult it only when the task directly involves Gemini CLI or requires facts about its behavior. The manifest is an index, not an instruction to read every listed source. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless a specifically authorized documentation-refresh task permits edits.
+The general Gemini API overview `.docs/creation/_websites_ai_google_dev_gemini-api.md` is an optional reference for tasks that directly implement, configure, or troubleshoot Gemini API integrations. The Gemini CLI snapshot `.docs/<group>/_google-gemini_gemini-cli.md` remains an ordinary conditional reference; consult it only for Gemini CLI work. The manifest is an index, not an instruction to read every listed source. Do not load unrelated specialist files, command definitions, or library snapshots. Treat `.docs/` as read-only unless a specifically authorized documentation-refresh task permits edits.
 
 ## 2. SPEC KIT AND EXECUTION
 
-Every Jules task must complete the four core Spec Kit stages in order: `specify → plan → tasks → implement`, following the matching `.jules/cmds/speckit.*.md` definitions. All four stages apply under this repository's workflow; do not mark one N/A or invent a result. Reuse current artifacts for the same task, keep them concise, and do not repeat completed stages or create duplicate feature directories. If a stage cannot run because of a genuine blocker, report the exact blocker and do not claim completion. Run the verification gate and report its actual outcome.
+Every coding task must complete the four core Spec Kit stages in order: `specify → plan → tasks → implement`, following the matching `.freebuff/cmds/speckit.*.md` definitions. All four stages apply under this repository's workflow; do not mark one N/A or invent a result. Reuse current artifacts for the same task, keep them concise, and do not repeat completed stages or create duplicate feature directories. If a stage cannot run because of a genuine blocker, report the exact blocker and do not claim completion. Run the verification gate and report its actual outcome.
 
-Keep one active task per run and one branch/PR per task. Check for existing work before creating anything new. Respect Jules's active execution/authorization mode: continue without routine confirmation only when that mode authorizes it; never bypass a required approval. Pause only for a genuine blocker, missing essential input, required approval, explicit blocking gate, or material safety/security risk. Do not ask generic "continue?" questions for non-blocking checklist items.
+Keep one active task per run and one branch/PR per task. Check for existing work before creating anything new. Respect the active coding agent's execution and authorization controls: continue without routine confirmation only when that mode authorizes it; never bypass a required approval. Pause only for a genuine blocker, missing essential input, required approval, explicit blocking gate, or material safety/security risk. Do not ask generic "continue?" questions for non-blocking checklist items.
 
 ## 3. SCOPE AND IMPLEMENTATION
 
@@ -26,7 +26,7 @@ Establish the baseline, make the smallest correct change, and preserve unrelated
 
 ## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
 
-Run `./jules-verify.sh` and the checks required by the selected task group. Record the commands actually run and their real results. If a check fails, fix the in-scope cause or report the exact failure. If a required check is unavailable, explain why and run an applicable documented alternative where practical. Keep implementation and verification status separate. Mark implementation `COMPLETE` only when all in-scope changes and required task artifacts are in place, the final diff is reviewed, and no known in-scope defect remains. Record each required check independently as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. A failed, blocked, or pending mandatory check prevents claiming **verified completion** or `USEFUL RESULT: YES`, but does not by itself prevent reporting implementation as complete or opening/updating an otherwise safe, reviewable PR. State exactly what remains unverified.
+Run `./freebuff-verify.sh` and the checks required by the selected task group. Record the commands actually run and their real results. If a check fails, fix the in-scope cause or report the exact failure. If a required check is unavailable, explain why and run an applicable documented alternative where practical. Keep implementation and verification status separate. Mark implementation `COMPLETE` only when all in-scope changes and required task artifacts are in place, the final diff is reviewed, and no known in-scope defect remains. Record each required check independently as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. A failed, blocked, or pending mandatory check prevents claiming **verified completion** or `USEFUL RESULT: YES`, but does not by itself prevent reporting implementation as complete or opening/updating an otherwise safe, reviewable PR. State exactly what remains unverified.
 
 Inspect the complete final diff before submission. The PR body is the single canonical summary: draft it during the work, publish it when creating the PR, and update that same body as implementation or verification evidence changes. Never create duplicate reports or PRs, and do not ask whether the required summary should be created or updated. Clearly label checks as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. Pending checks are a truthful status, not a reason to withhold a safe PR; they must never be presented as passed.
 
@@ -54,15 +54,15 @@ Explicit owner authorization is required before changing:
 - accessibility/responsive behavior or approved visual/product behavior;
 - the documentation updater/refresh system.
 
-Authorization applies only to the specific approved scope. Follow `.jules/jules.md` for MCP approvals. Context7 requires explicit owner approval before each invocation; other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available.
+Authorization applies only to the specific approved scope. Neon and Stitch may be used without additional approval when materially relevant and within the user's authorized task scope. Context7 requires explicit owner approval before each invocation; other MCPs require approval unless separately authorized. Do not use an external MCP merely because it is available.
 
 ## 6. BUILD AND EXECUTION SAFETY
 
-495 MB is the hard maximum build size. Measure and report every build; if it reaches or exceeds 495 MB, stop and report the measured size and safe resume point. Use pnpm, never `npm ci`, and inspect `package.json` before using or claiming a script. For visual work, use the configured Playwright setup; for audio work, follow `.jules/audio.md` and applicable repository guidance. Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
+495 MB is the hard maximum build size. Measure and report every build; if it reaches or exceeds 495 MB, stop and report the measured size and safe resume point. Use pnpm, never `npm ci`, and inspect `package.json` before using or claiming a script. For visual work, use the configured Playwright setup; for audio work, follow `.freebuff/audio.md` and applicable repository guidance. Preserve keyboard support, accessibility, responsive behavior, and `prefers-reduced-motion`.
 
 ## 7. FINAL CHECK
 
-Before reporting **verified completion**, confirm the required Spec Kit stages/artifacts are accounted for, `./jules-verify.sh` and all mandatory checks passed, the final diff matches the reported files, unresolved risks are stated, and the PR remains open/unmerged. Never call a failed or pending mandatory check a success.
+Before reporting **verified completion**, confirm the required Spec Kit stages/artifacts are accounted for, `./freebuff-verify.sh` and all mandatory checks passed, the final diff matches the reported files, unresolved risks are stated, and the PR remains open/unmerged. Never call a failed or pending mandatory check a success.
 
 🔴 NO EVIDENCE = NO CLAIM.
 🔴 NO VERIFIED RESULT = NO VERIFIED COMPLETION.

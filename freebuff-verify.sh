@@ -1,5 +1,5 @@
 #!/bin/bash
-# jules-verify.sh
+# freebuff-verify.sh
 # A local zero-cost verification script to validate builds and configurations.
 # This script should be run before finalizing code changes.
 
@@ -14,8 +14,8 @@ if ! bash "$SCRIPT_DIR/scripts/test-verify-speckit-task.sh"; then
 fi
 
 # Enforce task-level Spec Kit artifacts before build/test verification.
-# The scheduled Spec Kit updater calls this script in GitHub Actions but is
-# not a Jules task; this one known automation workflow is the only exemption.
+# The scheduled Spec Kit updater runs this script outside an interactive coding task.
+# That workflow is exempt from task-local Spec Kit artifact checks.
 if [[ "${GITHUB_ACTIONS:-}" == "true" && "${GITHUB_WORKFLOW:-}" == "Update Spec Kit" ]]; then
   echo "Skipping task-local Spec Kit artifact gate for the automated Update Spec Kit workflow."
 else

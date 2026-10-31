@@ -23,7 +23,7 @@ describe("Gemini PR reviewer", () => {
     expect(rules).toContain("Use `.docs/manifest.json` to choose the smallest relevant task group(s).");
     expect(rules).toContain("_google-gemini_gemini-cli.md");
     expect(rules).toContain("_websites_ai_google_dev_gemini-api.md");
-    expect(rules).toContain("Treat Gemini reference snapshots as optional, task-specific references");
+    expect(rules).toContain("Gemini API Developer Skill (`_google-gemini_gemini-skills_gemini-api-dev.md`) is mandatory review context");
     expect(rules).toContain("MUST still attempt bounded read-only source-context retrieval");
     expect(rules).toContain("Do not produce a per-document USED/USEFUL inventory.");
     expect(rules).toContain("materially useful document paths and contributions only");
@@ -91,12 +91,16 @@ describe("Gemini PR reviewer", () => {
 
   it("uses selected task groups, relevance-guards Gemini references, and reports compact review context", () => {
     expect(script).toContain("function isGeminiCliDoc(path)");
-    expect(script).toContain("function isGeminiDeepResearchDoc(path)");
+    expect(script).toContain("function isGeminiApiOverviewDoc(path)");
     expect(script).toContain("function isGeminiReferenceRelevant(path, pr, files)");
     expect(script).toContain("_google-gemini_gemini-cli.md");
     expect(script).toContain("_websites_ai_google_dev_gemini-api.md");
-    expect(script).toContain("Gemini reference snapshots are OPTIONAL, not required per group.");
+    expect(script).toContain("The Gemini API Developer Skill is mandatory and is supplied separately for every review; do not select it as an optional snapshot.");
     expect(script).toContain("const selectedReferenceDocs = selectRelevantGeminiReferenceDocs(groupPaths, pr, files);");
+    expect(script).toContain("const geminiApiDevSkill = loadGeminiApiDevSkill();");
+    expect(script).toContain("docState.loaded.unshift(geminiApiDevSkill)");
+    expect(script).toContain("const docPaths = [geminiApiDevSkill.path];");
+    expect(fixScript).toContain("The separately labelled Gemini API Developer Skill is required task guidance");
     expect(script).toContain("if (isGeminiReferenceDoc(path)) {");
     expect(script).toContain("if (!isGeminiReferenceRelevant(path, pr, files)) continue;");
     expect(script).toContain("if (selectedReferenceDocs.some((doc) => doc.kind === kind)) continue;");
@@ -195,4 +199,20 @@ describe("Gemini PR reviewer", () => {
     expect(fixScript).not.toContain(aqRulesPath);
     expect(workflow).not.toContain(aqRulesPath);
   });
+
+  it("routes the Gemini API Developer Skill to every task group and the general API overview to Creation only", () => {
+    const manifest = JSON.parse(readFileSync(".docs/manifest.json", "utf8"));
+    const skillId = "/google-gemini/gemini-skills/gemini-api-dev";
+    const apiId = "/websites/ai_google_dev_gemini-api";
+    const allGroups = ["creation", "troubleshooting", "polishing", "testing", "security", "audio", "deep-dive", "seo"];
+    expect(Object.keys(manifest.groups)).toEqual(allGroups);
+    for (const group of allGroups) expect(manifest.groups[group]).toContain(skillId);
+    expect(manifest.sources[skillId].url).toBe("https://raw.githubusercontent.com/google-gemini/gemini-skills/main/skills/gemini-api-dev/SKILL.md");
+    expect(manifest.sources[apiId].url).toBe("https://ai.google.dev/gemini-api/docs.md.txt");
+    expect(manifest.groups.creation).toContain(apiId);
+    for (const group of allGroups.filter((name) => name !== "creation")) expect(manifest.groups[group]).not.toContain(apiId);
+    expect(manifest.inventory).toContain(skillId);
+    expect(readFileSync(".docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md", "utf8")).toContain("name: gemini-api-dev");
+  });
+
 });

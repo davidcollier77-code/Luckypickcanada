@@ -7,8 +7,8 @@ BASE_DIR="$ROOT_DIR/.github/spec-kit/customizations/base"
 OVERLAY_DIR="$ROOT_DIR/.github/spec-kit/customizations/overlay"
 TEMP_DIR="$(mktemp -d)"
 BACKUP_PATHS=(
-  ".jules/cmds/speckit.implement.md"
-  ".jules/cmds/speckit.plan.md"
+  ".freebuff/cmds/speckit.implement.md"
+  ".freebuff/cmds/speckit.plan.md"
   ".github/spec-kit/customizations/base/speckit.implement.md"
   ".github/spec-kit/customizations/base/speckit.plan.md"
   ".github/spec-kit/customizations/overlay/speckit.implement.md"
@@ -19,7 +19,7 @@ cleanup() {
   status=$?
   trap - EXIT
   if [[ "$status" -ne 0 && "$BACKUPS_READY" == "true" ]]; then
-    echo "Restoring the original Jules command and overlay files after updater failure." >&2
+    echo "Restoring the original Freebuff command and overlay files after updater failure." >&2
     for path in "${BACKUP_PATHS[@]}"; do
       mkdir -p "$ROOT_DIR/$(dirname -- "$path")"
       cp "$TEMP_DIR/original/$path" "$ROOT_DIR/$path" || echo "WARNING: could not restore $path" >&2
@@ -31,7 +31,7 @@ cleanup() {
 trap cleanup EXIT
 
 for file in "${FILES[@]}"; do
-  current="$ROOT_DIR/.jules/cmds/$file"
+  current="$ROOT_DIR/.freebuff/cmds/$file"
   base="$BASE_DIR/$file"
   overlay="$OVERLAY_DIR/$file"
   if [[ ! -s "$current" || ! -s "$base" || ! -s "$overlay" ]]; then
@@ -39,7 +39,7 @@ for file in "${FILES[@]}"; do
     exit 1
   fi
   if ! cmp -s "$current" "$overlay"; then
-    echo "ERROR: $current contains edits not recorded in the approved Jules customization overlay." >&2
+    echo "ERROR: $current contains edits not recorded in the approved Freebuff customization overlay." >&2
     echo "The updater stopped before changing anything. Reconcile the new edits before retrying." >&2
     exit 1
   fi
@@ -54,20 +54,20 @@ BACKUPS_READY=true
 uvx --from specify-cli specify version
 
 # Restore the exact installed upstream copies only while the CLI checks recorded file hashes.
-# Jules' customized versions remain backed up in the overlay.
-for file in "${FILES[@]}"; do cp "$BASE_DIR/$file" "$ROOT_DIR/.jules/cmds/$file"; done
+# Freebuff customizations remain backed up in the overlay.
+for file in "${FILES[@]}"; do cp "$BASE_DIR/$file" "$ROOT_DIR/.freebuff/cmds/$file"; done
 uvx --from specify-cli specify integration upgrade generic
 
 # Update installed extensions, then record the resulting upstream templates as the new base.
 uvx --from specify-cli specify extension update
-for file in "${FILES[@]}"; do cp "$ROOT_DIR/.jules/cmds/$file" "$TEMP_DIR/new-base/$file"; done
-# new-base now reflects both integration upgrade and extension update; rebase Jules overlay onto it.
+for file in "${FILES[@]}"; do cp "$ROOT_DIR/.freebuff/cmds/$file" "$TEMP_DIR/new-base/$file"; done
+# new-base now reflects both integration upgrade and extension update; rebase Freebuff overlay onto it.
 bash "$ROOT_DIR/scripts/rebase-speckit-customizations.sh" "$ROOT_DIR" "$TEMP_DIR/new-base"
 
 for file in "${FILES[@]}"; do
-  cmp -s "$ROOT_DIR/.jules/cmds/$file" "$OVERLAY_DIR/$file" || {
+  cmp -s "$ROOT_DIR/.freebuff/cmds/$file" "$OVERLAY_DIR/$file" || {
     echo "ERROR: rebased command does not match its recorded overlay: $file" >&2
     exit 1
   }
 done
-echo "SUCCESS: Spec Kit integration/extensions updated; Jules instructions were preserved and rebased."
+echo "SUCCESS: Spec Kit integration/extensions updated; Freebuff instructions were preserved and rebased."

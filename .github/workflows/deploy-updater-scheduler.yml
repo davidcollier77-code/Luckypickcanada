@@ -71,7 +71,7 @@ jobs:
         run: bash scripts/update-spec-kit-safely.sh
 
       - name: Run repository governance verification
-        run: ./jules-verify.sh
+        run: ./freebuff-verify.sh
 
       - name: Enforce 495 MiB build-size ceiling
         shell: bash

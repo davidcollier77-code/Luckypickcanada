@@ -130,30 +130,30 @@ jobs:
             status=$?
             trap - EXIT
             for file in "${FILES[@]}"; do
-              cp "$TEMP_DIR/$file" ".jules/cmds/$file" || echo "WARNING: failed to restore $file" >&2
+              cp "$TEMP_DIR/$file" ".freebuff/cmds/$file" || echo "WARNING: failed to restore $file" >&2
             done
             rm -rf "$TEMP_DIR"
             exit "$status"
           }
           trap restore_commands EXIT
           for file in "${FILES[@]}"; do
-            cp ".jules/cmds/$file" "$TEMP_DIR/$file"
-            if ! cmp -s ".jules/cmds/$file" ".github/spec-kit/customizations/overlay/$file"; then
-              echo "::error::$file does not match the recorded Jules customization overlay."
+            cp ".freebuff/cmds/$file" "$TEMP_DIR/$file"
+            if ! cmp -s ".freebuff/cmds/$file" ".github/spec-kit/customizations/overlay/$file"; then
+              echo "::error::$file does not match the recorded Freebuff customization overlay."
               exit 1
             fi
-            cp ".github/spec-kit/customizations/base/$file" ".jules/cmds/$file"
+            cp ".github/spec-kit/customizations/base/$file" ".freebuff/cmds/$file"
           done
           # Validate the upstream-managed files against the upstream hashes in the manifest.
-          # The EXIT trap always restores the Jules-specific commands afterward.
+          # The EXIT trap always restores the Freebuff-specific commands afterward.
           uvx --from specify-cli specify integration status --json
 
       - name: Run Governance Validation
         if: steps.daily_guard.outputs.skip != 'true'
         continue-on-error: false
         run: |
-          chmod +x ./jules-verify.sh
-          ./jules-verify.sh
+          chmod +x ./freebuff-verify.sh
+          ./freebuff-verify.sh
 
       - name: Create Pull Request
         if: steps.daily_guard.outputs.skip != 'true'
@@ -167,7 +167,7 @@ jobs:
             Automated update of GitHub Spec Kit CLI, integrations, and extensions.
 
             This PR was generated automatically by the Spec Kit update workflow.
-            The `specify integration status --json` and `./jules-verify.sh` governance checks have run.
+            The `specify integration status --json` and `./freebuff-verify.sh` governance checks have run.
           branch: "update/spec-kit"
           base: "main"
           delete-branch: true

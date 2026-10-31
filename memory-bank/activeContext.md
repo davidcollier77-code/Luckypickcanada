@@ -1,3 +1,18 @@
+# Active Context — Freebuff Agent Governance Migration (2026-10-31)
+
+- **Selected task group:** `deep-dive` — audit and migrate the repository's coding-agent instructions, documentation refresh protection, Spec Kit paths, and verification tooling.
+- **Branch / PR:** `chore/library-document-routing`, [PR #1656](https://github.com/davidcollier77-code/Luckypickcanada/pull/1656) against `main`; leave open and unmerged.
+- **Change:** Retired `jules.google/docs` and `developers.google.com/jules/api` from the manifest and removed both snapshots from all eight task groups. `scripts/refresh-docs.js` now strips restored IDs and removes stale snapshots/dangling symlinks, with regression coverage in `scripts/test-refresh-docs.js`.
+- **Freebuff migration:** moved the active `.jules/` instruction and Spec Kit command directory to `.freebuff/`; updated `AGENTS.md`, Spec Kit integration settings/manifest, scheduled updater/rebase scripts, Constitution, pre-commit hook, updater documentation, and verification script/callers.
+- **Reference rules:** The Google `gemini-api-dev` Developer Skill is fetched from the upstream GitHub source and routed through all eight task groups; Freebuff must read it for every coding task and apply API-specific procedures when relevant. Gemini's API overview is kept as an optional Creation reference, and Gemini CLI remains conditional.
+- **Gemini reviewer:** The same skill is injected into automatic reviews, full/adversarial review prompts, and targeted fix suggestion prompts. Missing skill snapshots fail closed instead of silently reviewing without the required guidance.
+- **Deliberate exclusion:** `workers/jules-bridge` and its deployment workflow remain unchanged because they are a separate production integration that calls the Jules API directly and need a confirmed replacement.
+- **Verification:** PASS — Git tree contains no `.jules/` paths or retired snapshots. PASS — manifest inspection confirms Gemini API remains routed to all eight task groups and Gemini CLI routing remains. PENDING — focused updater/Spec Kit tests, `./freebuff-verify.sh`, and current-head CI; no local shell execution has been claimed.
+- **Spec Kit artifacts:** `specs/064-freebuff-agent-migration/{spec,plan,tasks}.md`.
+- **Outstanding:** complete final-head test and CI review, inspect final diff, update PR body with verified outcomes. Do not merge.
+
+---
+
 # Active Context — Tip Jar Glow Pulse Match (2026-10-30)
 
 - **Selected task group:** `polishing` — match the existing warm glow pulse between two adjacent homepage gold calls to action; no new functionality, route, asset, dependency, or configuration.

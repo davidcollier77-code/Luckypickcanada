@@ -47,7 +47,7 @@ Requires Node.js 22 or newer; no runtime dependencies are added.
 ```sh
 node --test workers/updater-scheduler/test/index.node-test.mjs
 pnpm exec wrangler deploy --dry-run --config workers/updater-scheduler/wrangler.toml
-./jules-verify.sh
+./freebuff-verify.sh
 ```
 
 Current-head GitHub Actions must pass these checks before the reviewed enabled configuration is treated as repository-verified. The checked-in configuration sets `DISPATCH_ENABLED = "true"`, but live activation still depends on a successful no-op canary and enabled Worker deployment. Cron quota, effective token permissions, the handoff variable, and a natural scheduled dispatch are external acceptance checks, not outcomes inferred from source or unit tests. The existing GitHub schedule definitions remain in place until `UPDATER_SCHEDULER_ACTIVE` is set to `true` after the enabled deployment and canary are verified.
