@@ -28,4 +28,4 @@
 - [x] Both reviewer scripts parse with `node --check`; model identifiers and fallback order are unchanged (`gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`), as are the provider, key handling, and workflow triggers.
 - [x] Amazon Q files and the Gemini workflow file are untouched by this change.
 - [ ] Live Gemini or GitHub replay against PR #1656: NOT RUN — this workspace has no `GEMINI_API_KEY` and no GitHub token, so no live model call, GitHub API replay, or live review publication was possible.
-- [ ] PR open and unmerged for owner review.
+- [x] PR #1659 opened and left open and unmerged for owner review.

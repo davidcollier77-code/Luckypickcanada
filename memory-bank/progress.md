@@ -1,5 +1,9 @@
 # Progress — 2026-10-31: Gemini Reviewer Quality and Selected-Finding Workflow
 
+- Opened PR #1659 (open, unmerged) for owner review.
+
+- Opened PR #1659 (open, unmerged) for owner review.
+
 - Compared Gemini and Amazon Q on PR #1656 against the code: Q's duplicate fetch log and missing `.freebuff/` autofix exclusion were genuine defects fixed in `038b5cf9`; Gemini reported zero findings on the same PR. Q's test-only `eval` concern is a robustness issue rather than an exploitable defect, and its `return`/`builtin exit` concern was measured not to be a defect.
 - Added red/yellow/additional finding categories with a checkbox per finding, functional Select All / Clear Selection / Fix selected / Fix all controls, and informational-only coverage warnings.
 - Added independent validation of selected findings, deterministic rejection of stale/ineligible/duplicate selections, and fixed/rejected/unresolved reporting so every selected item is accounted for.
