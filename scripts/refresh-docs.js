@@ -6,6 +6,17 @@ const DOCS_DIR = path.join(process.cwd(), '.docs');
 const DOCS_BASE_DIR = path.resolve(DOCS_DIR);
 const MAX_DOCS_SIZE_BYTES = 495 * 1024 * 1024;
 
+// Permanently retired upstream sources. The refresh job must never recreate these
+// snapshots, even if an old or accidentally restored manifest lists them again.
+const RETIRED_LIBRARY_IDS = new Set([
+  'jules.google/docs',
+  'developers.google.com/jules/api'
+]);
+const RETIRED_JULES_SNAPSHOT_FILENAMES = [
+  'jules_google_docs.md',
+  'developers_google_com_jules_api.md'
+];
+
 function resolveDocsPath(...segments) {
   if (fs.lstatSync(DOCS_BASE_DIR).isSymbolicLink()) {
     throw new Error('The .docs directory must not be a symbolic link.');
@@ -74,6 +85,66 @@ function validateLibraryIdentifier(value) {
   return value;
 }
 
+
+function removeRetiredJulesLibraryEntries(manifest) {
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    throw new Error('Invalid documentation manifest.');
+  }
+
+  let removed = 0;
+  if (manifest.groups && typeof manifest.groups === 'object' && !Array.isArray(manifest.groups)) {
+    for (const [group, libraries] of Object.entries(manifest.groups)) {
+      if (!Array.isArray(libraries)) continue;
+      const filtered = libraries.filter((library) => !RETIRED_LIBRARY_IDS.has(library));
+      removed += libraries.length - filtered.length;
+      manifest.groups[group] = filtered;
+    }
+  }
+
+  if (manifest.sources && typeof manifest.sources === 'object' && !Array.isArray(manifest.sources)) {
+    for (const library of RETIRED_LIBRARY_IDS) {
+      if (Object.prototype.hasOwnProperty.call(manifest.sources, library)) {
+        delete manifest.sources[library];
+        removed += 1;
+      }
+    }
+  }
+
+  if (Array.isArray(manifest.inventory)) {
+    const filtered = manifest.inventory.filter((library) => !RETIRED_LIBRARY_IDS.has(library));
+    removed += manifest.inventory.length - filtered.length;
+    manifest.inventory = filtered;
+  }
+
+  if (manifest.githubShas && typeof manifest.githubShas === 'object' && !Array.isArray(manifest.githubShas)) {
+    for (const library of RETIRED_LIBRARY_IDS) {
+      if (Object.prototype.hasOwnProperty.call(manifest.githubShas, library)) {
+        delete manifest.githubShas[library];
+        removed += 1;
+      }
+    }
+  }
+
+  return removed;
+}
+
+function removeRetiredJulesSnapshots(groups) {
+  let removed = 0;
+  for (const group of Object.keys(groups || {})) {
+    const safeGroup = validateGroupName(group);
+    for (const filename of RETIRED_JULES_SNAPSHOT_FILENAMES) {
+      const snapshotPath = resolveDocsPath(safeGroup, filename);
+      try {
+        fs.lstatSync(snapshotPath);
+        fs.unlinkSync(snapshotPath);
+        removed += 1;
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+      }
+    }
+  }
+  return removed;
+}
 
 const getHalifaxTimestamp = () => {
   const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -387,6 +458,7 @@ async function main() {
       process.exit(1);
   }
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const retiredReferencesRemoved = removeRetiredJulesLibraryEntries(manifest);
   const groupsConfig = manifest.groups || {};
   const sourcesConfig = manifest.sources || {};
 
@@ -409,6 +481,8 @@ async function main() {
     }
   }
 
+  const retiredSnapshotsRemoved = removeRetiredJulesSnapshots(groupsConfig);
+
   const pendingUpdates = [];
   for (const lib of uniqueLibraries) {
     pendingUpdates.push({ lib, groups: libraryToGroups.get(lib) });
@@ -427,6 +501,13 @@ async function main() {
     }
   } catch (e) {
       console.warn('Failed to parse existing manifest.json. Starting fresh inventory.', e.message);
+  }
+
+  if (retiredReferencesRemoved > 0 || retiredSnapshotsRemoved > 0) {
+    saveManifest(inventory, githubShas, sourcesConfig, groupsConfig, false);
+    console.log(
+      `Removed retired Jules references from the manifest: ${retiredReferencesRemoved}; stale snapshots deleted: ${retiredSnapshotsRemoved}.`
+    );
   }
 
   let stats = {
