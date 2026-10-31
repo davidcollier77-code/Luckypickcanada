@@ -257,7 +257,7 @@ API reference, SDKs, Terraform provider, Postgres compatibility, and platform-le
 - [Effect bindings for the Neon SDK](https://neon.com/docs/reference/effect-sdk.md): Use the Neon Management SDK with Effect v4 — every call an Effect, every paginated list a Stream, with tagged errors and interruption.
 - [Get started with the Neon API](https://neon.com/docs/reference/api/get-started.md): Create an API key and make your first authenticated request.
 - [Manage Neon with Terraform](https://neon.com/docs/reference/terraform.md): Use Terraform to provision and manage your Neon projects, branches, endpoints, roles, databases, and other resources as code.
-- [Managed Better Auth and Data API SDK](https://neon.com/docs/reference/javascript-sdk.md): Reference documentation for @neondatabase/neon-js (authentication and Data API database queries)
+- [Managed Better Auth and Data API SDK](https://neon.com/docs/reference/javascript-sdk.md): Reference documentation for @neon/neon-js (authentication and Data API database queries)
 - [Metrics and logs reference](https://neon.com/docs/reference/metrics-logs.md): Complete reference for all metrics and log fields exported by Neon
 - [Migrate from @neondatabase/api-client to @neon/sdk](https://neon.com/docs/reference/migrate-api-client-to-sdk.md): Move Platform API automation from the legacy Axios client to the official fetch-based SDK
 - [Neon API](https://neon.com/docs/reference/api.md): Manage Neon projects, branches, and backend services over HTTP.
@@ -339,7 +339,7 @@ Contributor guides, component architecture, and documentation standards.
 - [Changelog](https://neon.com/docs/changelog): Latest updates and releases
 - [PostgreSQL Tutorial](https://neon.com/postgresql/tutorial): Comprehensive PostgreSQL tutorial and reference
 - [Community Guides](https://neon.com/guides): Step-by-step tutorials for frameworks and tools
-- [FAQs](https://neon.com/faqs): Frequently asked questions about Neon
+- [FAQs](https://neon.com/faqs): Short answers about building on Neon: Postgres, Auth, Object Storage, Functions, AI Gateway, pricing, and comparisons
 - [Glossary](https://neon.com/docs/reference/glossary.md)
 - [Blog](https://neon.com/blog.md): Engineering, product, and community posts from the Neon team
 - [neondatabase/website](https://github.com/neondatabase/website): Source for neon.com and these docs, with AGENTS.md for coding agents
