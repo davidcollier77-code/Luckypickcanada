@@ -43,3 +43,13 @@ Improve Gemini's reviewer instructions and reviewer pipeline so it detects real 
 6. The configured model identifiers `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite` and the existing provider integration remain unchanged.
 7. Regression tests cover categories, selection state, validation/tracking, coverage disclosure, parsing recovery, retry classification, and the unchanged model configuration.
 8. The pull request remains open and unmerged.
+
+
+## Review-driven correctness hardening
+
+The review follow-up must also guarantee that:
+- Markdown outcome cells escape backslashes before pipes and normalize CR/LF without allowing table-cell injection.
+- Hidden review-state comments preserve exact finding text containing either --> or --!> through serialization and parsing.
+- JSON recovery does not rewrite valid Unicode apostrophes in model-generated string values when repairing a separate syntax issue.
+- Similar but non-identical finding titles at one source location are not automatically treated as duplicates.
+- Both reviewer scripts parse successfully and regression tests cover the above cases plus undici connect-timeout retry classification.
