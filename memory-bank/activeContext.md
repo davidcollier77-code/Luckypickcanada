@@ -1,3 +1,17 @@
+# Active Context — Gemini Reviewer Quality, Coverage, and Selected-Finding Workflow (2026-10-31)
+
+- **Selected task group:** `deep-dive` — cross-file investigation of the Gemini reviewer pipeline, its skill, and its comparison against Amazon Q on real merged PRs.
+- **Branch:** `freebuff/c41502670faee62cc33e0e0a`; target `main`; leave the PR open and unmerged.
+- **Verified comparison (PR #1656, 84 files):** Amazon Q's duplicate-fetch-log and missing-`.freebuff/`-denylist findings were real and were fixed in the PR's final commit `038b5cf9`. Gemini reviewed the same PR with zero findings. Q's `eval()` concern is real but is test-only `eval` of the repository's own extracted source (robustness, not an exploitable defect). Q's `return`/`builtin exit` concern is not a defect: measured behaviour exits non-zero when executed and when sourced.
+- **Implementation:** three finding categories (red/yellow/additional) with a checkbox per finding; functional Select All / Clear Selection / Fix selected / Fix all including `@gemini select all`, `@gemini select none`, and `@gemini fix selected`; independent validation of selected findings with fixed/rejected/unresolved tracking; budget-aware source retrieval with named complete/clipped/patch-only coverage disclosure; JSON recovery and transient-failure retry classification; root-cause deduplication; bounded review-body size.
+- **Preserved:** `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`, provider endpoint, key handling, retry/fallback order, workflow triggers, permissions, trusted-base checkout, and Amazon Q in full.
+- **Verified:** focused reviewer tests PASS; full suite PASS (23 files / 170 tests); `tsc --noEmit` PASS; `./freebuff-verify.sh` PASS with build artefacts 330,129,985 bytes / 314.84 MiB (< 495 MB); `node --check` PASS on both scripts.
+- **Not verified:** a live Gemini review or GitHub replay of PR #1656 — this workspace has no `GEMINI_API_KEY` and no GitHub token.
+- **Spec Kit artifacts:** `specs/065-gemini-reviewer-quality/{spec,plan,tasks}.md`; `.specify/feature.json` points to it.
+- **Outstanding:** owner review of the open, unmerged PR; live-model acceptance remains pending.
+
+---
+
 # Active Context — Freebuff Agent Governance Migration (2026-10-31)
 
 - **Selected task group:** `deep-dive` — audit and migrate the repository's coding-agent instructions, documentation refresh protection, Spec Kit paths, and verification tooling.

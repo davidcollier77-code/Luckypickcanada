@@ -1,3 +1,13 @@
+# Progress — 2026-10-31: Gemini Reviewer Quality and Selected-Finding Workflow
+
+- Compared Gemini and Amazon Q on PR #1656 against the code: Q's duplicate fetch log and missing `.freebuff/` autofix exclusion were genuine defects fixed in `038b5cf9`; Gemini reported zero findings on the same PR. Q's test-only `eval` concern is a robustness issue rather than an exploitable defect, and its `return`/`builtin exit` concern was measured not to be a defect.
+- Added red/yellow/additional finding categories with a checkbox per finding, functional Select All / Clear Selection / Fix selected / Fix all controls, and informational-only coverage warnings.
+- Added independent validation of selected findings, deterministic rejection of stale/ineligible/duplicate selections, and fixed/rejected/unresolved reporting so every selected item is accounted for.
+- Made source retrieval budget-aware and disclosed complete, clipped, and patch-only coverage by file path and reason; added JSON recovery, transient-failure retry classification, root-cause deduplication, and a review-body size bound.
+- Verified: 23 test files / 170 tests, `tsc --noEmit`, and `./freebuff-verify.sh` (build 330,129,985 bytes / 314.84 MiB) all pass. A live Gemini review of PR #1656 remains unverified because this workspace has no model API key or GitHub token.
+
+---
+
 # Progress — 2026-10-29: Gemini Full-Review Accuracy
 
 - Added an independent adversarial review pass for every changed-patch batch, separate from the primary pass, with explicit checks for failure-path state rollback, stale asynchronous refreshes, input validation, fallback identity collisions, idempotency/cache issues, and test gaps.
