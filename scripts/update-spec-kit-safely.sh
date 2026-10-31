@@ -54,7 +54,7 @@ BACKUPS_READY=true
 uvx --from specify-cli specify version
 
 # Restore the exact installed upstream copies only while the CLI checks recorded file hashes.
-# Freebuff' customized versions remain backed up in the overlay.
+# Freebuff customizations remain backed up in the overlay.
 for file in "${FILES[@]}"; do cp "$BASE_DIR/$file" "$ROOT_DIR/.freebuff/cmds/$file"; done
 uvx --from specify-cli specify integration upgrade generic
 
