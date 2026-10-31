@@ -26,7 +26,7 @@ Establish the baseline, make the smallest correct change, and preserve unrelated
 
 ## 4. VERIFICATION AND ONE CANONICAL PR SUMMARY
 
-Run `./jules-verify.sh` and the checks required by the selected task group. Record the commands actually run and their real results. If a check fails, fix the in-scope cause or report the exact failure. If a required check is unavailable, explain why and run an applicable documented alternative where practical. A failed or pending check blocks a claim of completion, but does **not by itself** block creating/updating an otherwise safe, reviewable PR.
+Run `./jules-verify.sh` and the checks required by the selected task group. Record the commands actually run and their real results. If a check fails, fix the in-scope cause or report the exact failure. If a required check is unavailable, explain why and run an applicable documented alternative where practical. Keep implementation and verification status separate. Mark implementation `COMPLETE` only when all in-scope changes and required task artifacts are in place, the final diff is reviewed, and no known in-scope defect remains. Record each required check independently as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. A failed, blocked, or pending mandatory check prevents claiming **verified completion** or `USEFUL RESULT: YES`, but does not by itself prevent reporting implementation as complete or opening/updating an otherwise safe, reviewable PR. State exactly what remains unverified.
 
 Inspect the complete final diff before submission. The PR body is the single canonical summary: draft it during the work, publish it when creating the PR, and update that same body as implementation or verification evidence changes. Never create duplicate reports or PRs, and do not ask whether the required summary should be created or updated. Clearly label checks as `PASS`, `FAIL`, `BLOCKED`, `PENDING`, or `NOT RUN`. Pending checks are a truthful status, not a reason to withhold a safe PR; they must never be presented as passed.
 
@@ -38,7 +38,7 @@ Keep the summary concise and aligned with the Master Work Request. Include:
 - Behavior preserved, remaining issues/risks, and the final diff/error check.
 - `USEFUL RESULT: YES/NO`; use YES only when the requested result is verified.
 
-Do not require a separate report, a per-resource USED/USEFUL/version matrix, or an inventory of irrelevant documents. The summary is complete when it accurately records the current work and evidence, including pending items; task completion still requires every mandatory gate to pass.
+Do not require a separate report, a per-resource USED/USEFUL/version matrix, or an inventory of irrelevant documents. The PR summary is complete when it accurately records the current work and evidence, including pending items; **verified completion** still requires every mandatory gate to pass.
 
 If branch history, merge-base checks, or push permissions block publishing, diagnose the actual state first and preserve all work. Never force-push, discard commits, or ask the owner to force-push as a routine workaround. When safe, recover using a clean branch and only identifiable intended changes. If it cannot be resolved safely, report the exact command/error, branch/ref, and relevant commit SHA, then ask one focused question only if owner action is genuinely required.
 
@@ -62,8 +62,8 @@ Authorization applies only to the specific approved scope. Follow `.jules/jules.
 
 ## 7. FINAL CHECK
 
-Before reporting completion, confirm the required Spec Kit stages/artifacts are accounted for, `./jules-verify.sh` and all mandatory checks passed, the final diff matches the reported files, unresolved risks are stated, and the PR remains open/unmerged. Never call a failed or pending mandatory check a success.
+Before reporting **verified completion**, confirm the required Spec Kit stages/artifacts are accounted for, `./jules-verify.sh` and all mandatory checks passed, the final diff matches the reported files, unresolved risks are stated, and the PR remains open/unmerged. Never call a failed or pending mandatory check a success.
 
 🔴 NO EVIDENCE = NO CLAIM.
-🔴 NO VERIFIED RESULT = NO COMPLETION.
+🔴 NO VERIFIED RESULT = NO VERIFIED COMPLETION.
 🔴 NO ACCURATE PR SUMMARY = NO COMPLETION.
