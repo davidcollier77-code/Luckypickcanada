@@ -117,7 +117,7 @@ export default function CheckoutModal({ type, onClose, onRevealTestStart }) {
             </>
           )}
           {type === 'tip' && <label><span className="inline-flex items-center gap-1">Tip amount (CAD)<span aria-hidden="true" className="text-red-500">*</span></span><input name="tipAmount" type="number" min="0.50" step="0.01" inputMode="decimal" required placeholder="5.00" /></label>}
-          <button type="submit" disabled={isSubmitting} className="checkout-modal-submit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400">{isSubmitting ? 'Please wait...' : 'Continue to secure checkout'}</button>
+          <button type="submit" disabled={isSubmitting} className="gold-3d-btn checkout-modal-submit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"><span className="gold-cta-emoji" aria-hidden="true">🔒</span>{isSubmitting ? 'Please wait...' : 'Continue to secure checkout'}</button>
         </form>
       </section>
     </div>

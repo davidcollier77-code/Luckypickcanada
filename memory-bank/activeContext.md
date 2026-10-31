@@ -1,3 +1,14 @@
+# Active Context — Site-wide Emblem-Matched Gold CTA (2026-10-31)
+
+- **Task group:** `polishing`; branch `freebuff/619772a1044e46bd6dabae55`; PR left open and unmerged.
+- **Change:** `app/globals.css` owns one global `.gold-3d-btn` treatment (measured ramp `#fff2a8`/`#fbe59a`/`#e8c970`/`#dcae4e`/`#c8942c`/`#b8801f`, `0 3px 0 #8a550c` raised edge, hover lift, press-down, shared sheen and pulse, reduced-motion fallback, `.gold-cta-emoji`). The duplicated homepage-scoped block was removed and legacy gold gradients recoloured. All site-wide primary gold CTAs adopt it with their assigned emoji (homepage ×9, Lucky Map ×5, card reveal, Daily Resonance, Crystal Ball ×2, checkout submit, reveal-popup map CTA, share CTA).
+- **Colour derivation (measured, not assumed):** `public/assets/golden-maple-leaf.webp` saturated gold pixels gave specular `#fff2a8` (p99), highlight `#fbe59a` (p95), light `#e8c970` (p65), dominant `#e0b860`/`#d8b058`, dark `#c08f27` (p05); the emblem SVG supplies `#b86f12`/`#89500a`/`#714006`. The supplied reference image was absent from the worktree, so the emblem ring named as the primary reference was sampled directly.
+- **Verified:** typecheck exit 0; 22 files / 152 tests; `./jules-verify.sh` exit 0; build 330,131,271 bytes / 314.84 MiB; served homepage has 9 gold CTAs with the 9 assigned `aria-hidden` emoji, 2 shimmer overlays and 2 glow pulses; compiled CSS has the ramp/edge/hover/press/reduced-motion rules; rendered Chromium computed styles confirm the measured gradient and `rgb(138, 85, 12) 0px 3px 0px` edge on `/map` (desktop) and `/lucky-meter` (desktop, mobile-390, mobile-412); the `/about` secondary CTA stays non-gold.
+- **BLOCKED (environment):** the container Chromium renderer crashes on `/` and `/crystal-ball`, reproduced with this branch stashed, so homepage hover/press screenshots and Crystal Ball rendering are unverified here. CI Playwright is the confirmation path.
+- **Artifacts:** `specs/064-sitewide-gold-cta/{spec,plan,tasks}.md`; `.specify/feature.json` updated.
+
+---
+
 # Active Context — Tip Jar Glow Pulse Match (2026-10-30)
 
 - **Selected task group:** `polishing` — match the existing warm glow pulse between two adjacent homepage gold calls to action; no new functionality, route, asset, dependency, or configuration.

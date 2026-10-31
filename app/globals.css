@@ -304,3 +304,168 @@ body {
 .gold-btn-glow {
   animation: goldBtnGlow 3s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   Shared metallic gold call-to-action (all primary gold CTAs).
+
+   Palette measured from the golden maple-leaf emblem rather than assumed:
+   - public/assets/golden-maple-leaf.webp (112x122 rendered emblem) saturated
+     gold pixels: specular #fff2a8 (p99), highlight #fbe59a (p95), light
+     #e8c970 (p65), dominant band #e0b860 / #d8b058, dark #c08f27 (p05).
+   - public/assets/golden-maple-leaf.svg authored stops: #b86f12, #89500a and
+     #714006 for the deep/edge metal, #fff0a0 / #e9a92f / #d28a18 for the face.
+   The ramp below only interpolates between those measured stops, so the button
+   reads as the same warmer, slightly less saturated metallic gold as the ring
+   instead of the previous vivid yellow (#facc15 / #fbbf24 / #f59e0b).
+   ========================================================================== */
+.gold-3d-btn {
+  --gold-cta-specular: #fff2a8;
+  --gold-cta-highlight: #fbe59a;
+  --gold-cta-light: #e8c970;
+  --gold-cta-main: #dcae4e;
+  --gold-cta-deep: #b8801f;
+  --gold-cta-edge: #8a550c;
+  --gold-cta-shadow: #5f3705;
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--gold-cta-specular);
+  color: #1c1200;
+  background-color: var(--gold-cta-main);
+  background-image: linear-gradient(
+    180deg,
+    #fff2a8 0%,
+    #fbe59a 14%,
+    #e8c970 38%,
+    #dcae4e 62%,
+    #c8942c 82%,
+    #b8801f 100%
+  );
+  transform: translateY(0);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    inset 0 -2px 0 rgba(95, 55, 5, 0.42),
+    0 3px 0 var(--gold-cta-edge),
+    0 6px 0 rgba(95, 55, 5, 0.45),
+    0 9px 20px rgba(0, 0, 0, 0.42),
+    0 0 22px rgba(224, 184, 96, 0.26);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.gold-3d-btn:hover,
+.gold-3d-btn:focus-visible {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  background-image: linear-gradient(180deg, #fff6c4 0%, #ffeeb0 14%, #f0d685 38%, #e6bb60 62%, #d2a038 82%, #c08a24 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -2px 0 rgba(95, 55, 5, 0.38),
+    0 5px 0 var(--gold-cta-edge),
+    0 8px 0 rgba(95, 55, 5, 0.42),
+    0 15px 28px rgba(0, 0, 0, 0.45),
+    0 0 30px rgba(232, 201, 112, 0.5);
+}
+
+.gold-3d-btn:focus-visible {
+  outline: 3px solid #fff6c4;
+  outline-offset: 4px;
+}
+
+.gold-3d-btn:active {
+  transform: translateY(2px);
+  filter: brightness(0.98);
+  box-shadow:
+    inset 0 2px 5px rgba(95, 55, 5, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 1px 0 var(--gold-cta-edge),
+    0 2px 5px rgba(0, 0, 0, 0.36);
+  transition-duration: 60ms;
+}
+
+/* Shared subtle sheen and gentle golden pulse for standard gold CTAs. The Tip Jar
+   and Suggestion buttons own their existing shimmer span and 3s glow keyframes,
+   so they are excluded and keep their current effects and timing untouched. */
+.gold-3d-btn:not(.gold-btn-glow)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 0 18px 2px rgba(224, 184, 96, 0.5);
+  opacity: 0.35;
+  pointer-events: none;
+  animation: goldCtaPulse 3.4s ease-in-out infinite;
+}
+
+.gold-3d-btn:not(.gold-btn-glow)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.42) 44%, rgba(255, 255, 255, 0.14) 50%, transparent 64%);
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  background-position: 160% 0;
+  animation: goldCtaSheen 6s ease-in-out infinite;
+}
+
+@keyframes goldCtaPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes goldCtaSheen {
+  0%, 58% { background-position: 160% 0; }
+  88%, 100% { background-position: -60% 0; }
+}
+
+/* Decorative shimmer overlay already used by the Tip Jar and Suggestion buttons. */
+.gold-3d-btn .gold-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Small leading emoji: decorative, balanced with the label, never announced twice. */
+.gold-cta-emoji {
+  display: inline-block;
+  flex: none;
+  margin-right: 0.42em;
+  font-size: 0.92em;
+  line-height: 1;
+  letter-spacing: normal;
+  transform: translateY(-0.06em);
+}
+
+/* Pause the Tip Jar / Suggestion glow pulse while pressed so the flattened edge shows. */
+.gold-3d-btn.gold-btn-glow:active {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gold-3d-btn {
+    transition: none;
+  }
+
+  .gold-3d-btn:hover,
+  .gold-3d-btn:focus-visible,
+  .gold-3d-btn:active {
+    transform: none;
+    filter: none;
+  }
+
+  .gold-3d-btn::before,
+  .gold-3d-btn::after {
+    animation: none !important;
+  }
+
+  .gold-3d-btn::after {
+    opacity: 0;
+  }
+
+  .gold-3d-btn .gold-shimmer {
+    animation: none !important;
+    opacity: 0;
+  }
+}
