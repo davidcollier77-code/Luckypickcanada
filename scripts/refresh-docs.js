@@ -133,7 +133,8 @@ function removeRetiredJulesSnapshots(groups) {
   for (const group of Object.keys(groups || {})) {
     const safeGroup = validateGroupName(group);
     for (const filename of RETIRED_JULES_SNAPSHOT_FILENAMES) {
-      const snapshotPath = resolveDocsPath(safeGroup, filename);
+      const groupPath = resolveDocsPath(safeGroup);
+      const snapshotPath = path.join(groupPath, filename);
       try {
         fs.lstatSync(snapshotPath);
         fs.unlinkSync(snapshotPath);
