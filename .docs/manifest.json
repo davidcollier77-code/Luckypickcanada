@@ -404,8 +404,8 @@
     "/lovell/sharp",
     "/websites/web_dev_images",
     "/google-gemini/gemini-skills/gemini-api-dev",
-    "/google/eng-practices"
-    "/google-gemini/gemini-skills/gemini-api-dev"
+    "/google/eng-practices",
+    "/websites/mdn_image_types"
   ],
   "githubShas": {
     "/github/docs": "33b1f4a6fec2d9b6fd3d374afa56bcd9f0875b57",
