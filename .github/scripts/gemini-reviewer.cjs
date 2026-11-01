@@ -841,22 +841,44 @@ function makeBatches(files) {
   if (batch.length) batches.push(batch);
   return batches;
 }
-function normalizeFindings(items, files, lineMap) {
+function normalizeFindings(items, files, lineMap, rejections = null) {
   const paths = new Set(files.map((f) => f.filename));
   const output = [];
   const seen = new Set();
+  const reject = (item, reason) => {
+    if (!Array.isArray(rejections)) return;
+    const line = Number(item && item.line);
+    rejections.push({
+      path: typeof (item && item.path) === "string" ? item.path.slice(0, 200) : null,
+      line: Number.isInteger(line) && line > 0 ? line : null,
+      title: typeof (item && item.title) === "string" ? item.title.slice(0, 120) : "",
+      reason
+    });
+  };
   for (const f of Array.isArray(items) ? items : []) {
-    if (!f || !paths.has(f.path) || typeof f.title !== "string" || typeof f.problem !== "string") continue;
+    if (!f || typeof f.title !== "string" || typeof f.problem !== "string") continue;
+    // Pre-publication evidence gate: a finding must point at code that exists in this
+    // reviewed diff. An external path, or a line that is not a changed line, is
+    // unsupported evidence and is discarded instead of being published as a defect.
+    if (!paths.has(f.path)) {
+      reject(f, "the cited path is not part of the reviewed diff");
+      continue;
+    }
+    const n = Number(f.line);
+    const line = Number.isInteger(n) && n > 0 ? n : null;
+    const added = lineMap.get(f.path);
+    if (line !== null && !(added instanceof Set && added.has(line))) {
+      reject(f, "the cited line is not a changed line in this diff");
+      continue;
+    }
     const confidence = Number(f.confidence);
     if (!Number.isFinite(confidence) || confidence < 0.8) continue;
     const severity = String(f.severity || "MEDIUM").toUpperCase();
     if (!["CRITICAL", "HIGH", "MEDIUM", "LOW"].includes(severity)) continue;
-    const n = Number(f.line);
-    const line = Number.isInteger(n) && n > 0 ? n : null;
     const key = f.path + ":" + line + ":" + f.title.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    output.push({ path: f.path, line, inline: line !== null && lineMap.get(f.path)?.has(line) === true,
+    output.push({ path: f.path, line, inline: line !== null,
       confidence, severity, title: f.title.slice(0, 200), problem: f.problem.slice(0, 1600),
       impact: String(f.impact || "Impact not specified.").slice(0, 1000),
       fix: String(f.suggested_fix || "No concrete fix supplied.").slice(0, 1000),
@@ -1462,6 +1484,7 @@ async function main() {
   const reviewResults = [];
   const models = [selection.model].filter(Boolean);
   const batchFailures = [];
+  const evidenceRejections = [];
 
   for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
@@ -1486,7 +1509,7 @@ async function main() {
       ].join("\n\n");
       const answer = await askModel(prompt, 8000);
       models.push(answer.model);
-      primaryFindings = normalizeFindings(answer.result.findings, batch, linesByPath);
+      primaryFindings = normalizeFindings(answer.result.findings, batch, linesByPath, evidenceRejections);
       reviewResults.push({
         summary: String(answer.result.summary || ""),
         findings: primaryFindings,
@@ -1504,7 +1527,7 @@ async function main() {
       models.push(adversarialAnswer.model);
       reviewResults.push({
         summary: "",
-        findings: normalizeFindings(adversarialAnswer.result.findings, batch, linesByPath),
+        findings: normalizeFindings(adversarialAnswer.result.findings, batch, linesByPath, evidenceRejections),
         positives: [],
         assessments: Array.isArray(adversarialAnswer.result.document_assessments) ? adversarialAnswer.result.document_assessments : []
       });
@@ -1525,6 +1548,17 @@ async function main() {
   const coverageGaps = [];
   // An unreadable documentation index is a disclosure, never a silent downgrade of the review.
   if (MANIFEST_ERROR) coverageGaps.push(MANIFEST_ERROR);
+  // A discarded finding means the model cited code that is not in this diff. It is
+  // disclosed by path and line, and it prevents the review from claiming a clean result.
+  if (evidenceRejections.length) {
+    const sample = evidenceRejections.slice(0, 5)
+      .map((item) => (item.path || "unknown path") + (item.line ? ":" + item.line : "") +
+        (item.title ? " - " + item.title : ""))
+      .join("; ");
+    coverageGaps.push(evidenceRejections.length +
+      " finding(s) were discarded before publishing because the cited path or line is not part of the reviewed diff (" +
+      sample + (evidenceRejections.length > 5 ? "; and more" : "") + ").");
+  }
   if (list.capped) coverageGaps.push("Changed-file listing reached the 250-file cap; some files may not be represented.");
   if (skippedFiles.length) coverageGaps.push(skippedFiles.length + " changed file(s) had no text patch and could not be reviewed line-by-line: " +
     skippedFiles.slice(0, 10).map((file) => file.filename).join(", ") +

@@ -285,6 +285,73 @@ describe("Gemini Fix Selected and Fix All", () => {
   });
 });
 
+describe("Gemini pre-publication evidence check", () => {
+  const files = [
+    { filename: "app/api/demo/route.js", patch: "@@ -10,3 +10,4 @@\n a\n+b\n c\n d" },
+    { filename: "app/homepage/HomePage.js", patch: "@@ -38,3 +38,4 @@\n x\n y\n+z\n w" }
+  ];
+  const lineMap = new Map([
+    ["app/api/demo/route.js", new Set([11])],
+    ["app/homepage/HomePage.js", new Set([40])]
+  ]);
+  const base = { problem: "p", impact: "i", suggested_fix: "f", confidence: 0.9 };
+
+  it("keeps a finding whose cited path and line exist in the reviewed diff", () => {
+    const rejections: unknown[] = [];
+    const kept = reviewer.normalizeFindings([
+      { ...base, path: "app/api/demo/route.js", line: 11, severity: "HIGH", title: "Anchored on an added line" }
+    ], files, lineMap, rejections);
+    expect(kept).toHaveLength(1);
+    expect(kept[0].inline).toBe(true);
+    expect(rejections).toHaveLength(0);
+  });
+
+  it("rejects a finding whose cited line is not a changed line", () => {
+    const rejections: Array<{ reason: string; path: string; line: number }> = [];
+    const kept = reviewer.normalizeFindings([
+      { ...base, path: "app/api/demo/route.js", line: 12, severity: "HIGH", title: "Line is only context" }
+    ], files, lineMap, rejections);
+    expect(kept).toHaveLength(0);
+    expect(rejections).toHaveLength(1);
+    expect(rejections[0].reason).toMatch(/cited line is not a changed line/);
+    expect(rejections[0].path).toBe("app/api/demo/route.js");
+    expect(rejections[0].line).toBe(12);
+  });
+
+  it("rejects a finding whose cited path is not in the reviewed diff", () => {
+    const rejections: Array<{ reason: string }> = [];
+    const kept = reviewer.normalizeFindings([
+      { ...base, path: "app/not/changed.js", line: 3, severity: "HIGH", title: "Invented path" }
+    ], files, lineMap, rejections);
+    expect(kept).toHaveLength(0);
+    expect(rejections).toHaveLength(1);
+    expect(rejections[0].reason).toMatch(/cited path is not part of the reviewed diff/);
+  });
+
+  it("keeps an unanchored context finding and discards off-by-one anchors", () => {
+    const rejections: unknown[] = [];
+    const kept = reviewer.normalizeFindings([
+      { ...base, path: "app/homepage/HomePage.js", line: null, severity: "MEDIUM", title: "Context-only warning" },
+      { ...base, path: "app/homepage/HomePage.js", line: 41, severity: "MEDIUM", title: "Off-by-one anchor" }
+    ], files, lineMap, rejections);
+    expect(kept.map((finding: { title: string }) => finding.title)).toEqual(["Context-only warning"]);
+    expect(kept[0].inline).toBe(false);
+    expect(rejections).toHaveLength(1);
+  });
+
+  it("discloses discarded evidence so a discarded finding cannot look clean", () => {
+    const script = readFileSync(".github/scripts/gemini-reviewer.cjs", "utf8");
+    expect(script).toContain("evidenceRejections");
+    expect(script).toContain("were discarded before publishing because the cited path or line is not part of the reviewed diff");
+    // The disclosure must reach the coverage gaps, which force a neutral status.
+    const disclosureIndex = script.indexOf("were discarded before publishing");
+    const coveragePushIndex = script.lastIndexOf("coverageGaps.push(", disclosureIndex);
+    expect(disclosureIndex).toBeGreaterThan(-1);
+    expect(coveragePushIndex).toBeGreaterThan(-1);
+    expect(coveragePushIndex).toBeLessThan(disclosureIndex);
+  });
+});
+
 describe("Gemini reviewer startup resilience", () => {
   it("keeps reviewing when the documentation manifest cannot be parsed", () => {
     const dir = mkdtempSync(join(tmpdir(), "gemini-manifest-"));
