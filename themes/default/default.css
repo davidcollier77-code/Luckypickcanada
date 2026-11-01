@@ -111,7 +111,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(255, 226, 136, 0
 }
 /* Lucky Pick Canada luxury visual system: midnight glass, metallic gold, and restrained aurora light. */
 body {
-body {
   background:
     radial-gradient(ellipse 58% 32% at 16% 8%, rgba(50, 205, 155, 0.16), transparent 70%),
     radial-gradient(ellipse 48% 33% at 84% 13%, rgba(181, 107, 255, 0.18), transparent 70%),
