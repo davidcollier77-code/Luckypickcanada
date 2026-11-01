@@ -217,6 +217,7 @@ describe("Gemini PR reviewer", () => {
     expect(manifest.groups.creation).toContain(apiId);
     for (const group of allGroups.filter((name) => name !== "creation")) expect(manifest.groups[group]).not.toContain(apiId);
     expect(manifest.inventory).toContain(skillId);
+    expect(manifest.inventory).toContain("/google/eng-practices");
     expect(readFileSync(".docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md", "utf8")).toContain("name: gemini-api-dev");
     const groups = ["creation", "troubleshooting", "polishing", "testing", "security", "audio", "deep-dive", "seo"];
     for (const group of groups) {

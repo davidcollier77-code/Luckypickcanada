@@ -92,7 +92,11 @@ function closeTruncatedJson(text) {
     }
     if (char === "\"") { inString = true; continue; }
     if (char === "{" || char === "[") stack.push(char);
-    else if (char === "}" || char === "]") stack.pop();
+    else if (char === "}" || char === "]") {
+      const expectedOpening = char === "}" ? "{" : "[";
+      if (stack[stack.length - 1] !== expectedOpening) return null;
+      stack.pop();
+    }
   }
   if (inString) return null;
   if (!stack.length) return value;

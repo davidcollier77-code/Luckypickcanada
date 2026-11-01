@@ -108,6 +108,9 @@ function isGeminiApiDevSkillRelevant(files) {
     /\bgoogle-generativeai\b/i,
     /generativelanguage[.]googleapis[.]com/i,
     /\bGoogleGenAI\b/,
+    // NOTE: GEMINI_API_KEY is also read in the reviewer/autofix scripts for authentication (excluded
+    // by the filename guard below). Any future file in an unexcluded path that reads GEMINI_API_KEY
+    // for unrelated purposes (e.g. a config validator) will spuriously trigger the skill.
     /\bGEMINI_API_KEY\b/,
     /\.models?\.(?:generateContent|generateContentStream|embedContent|embedContentStream)\b/i,
     /\.interactions?\.(?:create|stream|get|list|cancel)\b/i,

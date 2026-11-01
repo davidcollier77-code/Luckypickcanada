@@ -403,7 +403,8 @@
     "/websites/google_webp",
     "/lovell/sharp",
     "/websites/web_dev_images",
-    "/websites/mdn_image_types",
+    "/google-gemini/gemini-skills/gemini-api-dev",
+    "/google/eng-practices"
     "/google-gemini/gemini-skills/gemini-api-dev"
   ],
   "githubShas": {
