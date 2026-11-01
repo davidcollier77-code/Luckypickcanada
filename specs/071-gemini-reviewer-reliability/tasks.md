@@ -107,3 +107,26 @@
 - [ ] Live manual `@gemini full review` and checkbox interaction on the follow-up PR — PENDING owner
       interaction; the deployed workflow is triggered from the PR conversation.
 - [ ] Prospective cohort rows — 0 of 10; no PR has merged after `1219131`.
+
+
+## T010 — Fix changed-source coverage allocation and measurement
+- [x] Established the root cause on PR #1666: the 6,000-character per-file ceiling was applied inside
+      `Math.min(..., floor(budget / remainingFiles))`, so 7 files could never use more than ~42,000 of the
+      160,000-character budget; measured changed-region requirements total 41,335 characters, with two
+      files (8,399 and 10,027) above the ceiling.
+- [x] `perFileSourceLimit()` replaces the flat ceiling with a budget-derived allocation (minimum 1,500,
+      maximum 24,000, documentation maximum 4,000) that can never exceed the remaining budget.
+- [x] `clipSourceWithAnchors()` reports `regions { required, supplied, complete }` and keeps the changed
+      line when a window must be truncated instead of dropping the anchor.
+- [x] `collectSourceContext()` tracks whole-file delivery and changed-region coverage separately, and
+      reports documentation coverage in its own bucket outside the code denominator.
+- [x] `coverageGapNotes()` gates the verdict on unsupplied changed regions and patch-only code files only;
+      whole-file and documentation gaps are disclosed as informational notes.
+- [x] Documentation context uses a 20-line window and a 4,000-character ceiling.
+- [x] Regression tests cover budget allocation, the PR #1666 measurements, changed-region completeness,
+      genuine truncation, documentation separation, anchor retention, and the total-budget ceiling.
+- [ ] Live `@gemini full review` on PR #1666 after this change — PENDING owner interaction; the workflow is
+      triggered from the PR conversation.
+- [ ] Prospective cohort rows — still 0 of 10; nothing has merged after `1219131`.
+- [ ] Defect-detection parity with Amazon Q — unchanged by this task; Gemini reported 0 of Amazon Q's 4
+      findings on the same heads.

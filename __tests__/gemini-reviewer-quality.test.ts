@@ -153,7 +153,7 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
       partial: [{ path: "c.js", reason: "clipped to the reviewer context budget" }],
       patchOnly: [{ path: "d.js", reason: "source-context budget exhausted" }, { path: "e.js", reason: "head source unavailable" }]
     });
-    expect(notes[0]).toBe("Full source reviewed for 2 of 5 changed text file(s), partially for 1, patch-only for 2.");
+    expect(notes[0]).toBe("Whole-file source supplied for 2 of 5 changed code file(s), partially for 1, patch-only for 2.");
     expect(notes.join(" ")).toContain("c.js (clipped to the reviewer context budget)");
     expect(notes.join(" ")).toContain("d.js (source-context budget exhausted)");
     expect(notes.join(" ")).toContain("e.js (head source unavailable)");
@@ -227,7 +227,7 @@ describe("Gemini reviewer coverage and parsing robustness", () => {
       partial: [],
       patchOnly: selected.omittedPaths.map((path: string) => ({ path, reason: "beyond the " + reviewer.MAX_CHANGED_SOURCE_FILES + "-file full-source cap" }))
     });
-    expect(notes.join(" ")).toContain("Full source reviewed for 60 of 84 changed text file(s)");
+    expect(notes.join(" ")).toContain("Whole-file source supplied for 60 of 84 changed code file(s)");
     expect(notes.join(" ")).toContain("and 14 more");
   });
 

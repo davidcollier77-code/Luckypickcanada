@@ -49,6 +49,9 @@ The command produced a failed Actions run and **zero diagnostics on the PR**: a 
 4. Findings are revalidated against the current head immediately before suggestions are posted, and
    stale heads can never produce suggestions against outdated code.
 5. Measured detection accuracy against historical PRs #1639–#1642, reported honestly with limitations.
+6. Coverage must describe what was actually reviewed: complete changed-region coverage is reported
+   separately from whole-file delivery, documentation coverage is reported separately from code
+   coverage, and only a genuinely unsupplied changed region can prevent a green verdict.
 
 ## In scope
 
