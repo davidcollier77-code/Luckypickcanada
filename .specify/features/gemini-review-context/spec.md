@@ -74,6 +74,17 @@ their absence in the reviewer test suites.
   reviewer.
 - Treat `.docs/` as read-only.
 
+## Superseded references
+
+Historical Spec Kit records — `specs/051-gemini-reviewer-replacement`,
+`specs/065-gemini-reviewer-quality` and `specs/071-gemini-reviewer-reliability` — still name
+`.gemini/rules/luckypickcanada.md` because they document work merged while that path was current.
+They are deliberately left unchanged: each is a point-in-time record, and editing another feature's
+`spec.md`, `plan.md` or `tasks.md` would also break the repository's single-feature Spec Kit gate.
+`GEMINI_REVIEWER.md` is the only current instruction path; the references above are historical and
+must not be treated as current guidance. The `.docs/` snapshot mentions of `.gemini/` describe the
+Gemini CLI's own configuration directory and are unrelated to this reviewer.
+
 ## Success Criteria
 
 - **SC-001**: A reviewer run uses `GEMINI_REVIEWER.md` as its only standing instruction source.
