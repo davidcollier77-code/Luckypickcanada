@@ -1,13 +1,14 @@
 :root {
   color-scheme: dark;
-  --night: #02070c;
-  --ink: #07110d;
-  --gold: #eabe52;
-  --gold-light: #fff0ac;
+  --night: #030507;
+  --ink: #080b10;
+  --gold: #e8ba52;
+  --gold-light: #fff1b2;
   --emerald: #18b978;
   --teal: #57e5d0;
-  --aurora-blue: #69b8ff;
-  --aurora-violet: #bf8bff;
+  --aurora-green: #49c99f;
+  --aurora-blue: #76bdfd;
+  --aurora-violet: #c58dff;
   --canada-red: #c91624;
   --lpc-display: var(--font-cinzel, 'Cinzel'), Georgia, serif;
   --lpc-body: var(--font-manrope, 'Manrope'), var(--font-inter, Inter), ui-sans-serif, system-ui, sans-serif;
@@ -108,18 +109,8 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(255, 226, 136, 0
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
-
 /* Lucky Pick Canada luxury visual system: midnight glass, metallic gold, and restrained aurora light. */
-:root {
-  --night: #030507;
-  --ink: #080b10;
-  --gold: #e8ba52;
-  --gold-light: #fff1b2;
-  --aurora-green: #49c99f;
-  --aurora-blue: #76bdfd;
-  --aurora-violet: #c58dff;
-}
-
+body {
 body {
   background:
     radial-gradient(ellipse 58% 32% at 16% 8%, rgba(50, 205, 155, 0.16), transparent 70%),
