@@ -148,6 +148,8 @@ HTML escaping — the parsed `href` equals the wrapper's URL byte-for-byte.
   the package manager cannot install as an unprivileged user, so `playwright install-deps` is not
   possible here. The spec is written for the configured desktop/mobile projects and CI Visual QA is
   the confirmation path.
+- **PENDING — GitHub Actions on the docs-only follow-up head `01cef650`**, which changes only
+  `PR_SUMMARY.md` and `memory-bank/activeContext.md`.
 - **PENDING — real-device timing.** The 40–60 second figure is not reproducible here. Confirming that
   the total wait is reduced needs a browser and device/network conditions this environment does not
   have, and must be reported separately from challenge-processing time.- **PENDING — Visual QA** on PR head `1fdf0fc`: still running when this report was written. It owns the Playwright regression that is BLOCKED locally.
@@ -159,8 +161,10 @@ HTML escaping — the parsed `href` equals the wrapper's URL byte-for-byte.
 ## PR and automated review record
 
 - **PR:** [#1670](https://github.com/davidcollier77-code/Luckypickcanada/pull/1670), branch
-  `freebuff/1a7d57e47625ce6441d412f1`, head `1fdf0fcd98cef01c03dacf3d8c7039cda188a532`, target `main`.
-  Left **open and unmerged**.
+  `freebuff/1a7d57e47625ce6441d412f1`, target `main`. Left **open and unmerged**.
+  The implementation commit is `1fdf0fcd98cef01c03dacf3d8c7039cda188a532` — the head every result
+  recorded below refers to. A docs-only follow-up commit `01cef6509f65fc9cd3c20090d9b2b71e663f9831`
+  carries this report and the review record, so CI and the reviewer re-run against that head.
 - **Gemini review — RAN.** Reviewer `github-actions[bot]`, submitted 2026-11-01T18:20:54Z against commit
   `1fdf0fcd98cef01c03dacf3d8c7039cda188a532`, which is the exact PR head (confirmed from the review's
   own `Reviewed commit` line and `commit_id`). Model: `gemini-3.5-flash-lite`.
