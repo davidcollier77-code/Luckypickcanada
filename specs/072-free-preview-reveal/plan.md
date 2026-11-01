@@ -106,3 +106,19 @@ eyebrow during a preview. It is misleading for a free preview, but changing it w
 
 No constitution violations. No new dependency, route, API, environment variable, database change, or
 architecture change. One existing prop is renamed and one stale tracked backup is removed.
+
+
+## Follow-up Plan — Production Visibility Correction
+
+**Verified cause:** the merged implementation used
+`REVEAL_TEST_MODE = process.env.NODE_ENV !== 'production'`. The helper therefore returned false in
+production, hiding the preview on the live site while still passing local development browser tests.
+
+**Smallest correction:** set the existing single switch explicitly to `true` for the temporary public
+preview period. Keep the existing allowlist (`lucky_pick`, `gift_package`) and helper unchanged. Setting
+the switch to `false` remains the documented way to hide both buttons in all environments.
+
+**Verification:** add a regression assertion that the committed switch is explicitly enabled, retain
+the existing eligibility assertions, run the focused security/payment tests and full repository gate,
+and verify the production build remains below 495 MB. No checkout, Stripe, email, database, styling,
+or reveal implementation changes are in scope.

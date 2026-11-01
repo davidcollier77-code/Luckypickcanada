@@ -17,12 +17,19 @@ describe('Security Hardening: Payment & Authorization', () => {
     process.env = originalEnv;
   });
 
-  it('keeps the free preview separate from any paid checkout bypass', () => {
-    // canPreviewReveal must respect whatever REVEAL_TEST_MODE is set to.
+  it('keeps the public preview enabled independently of production mode', () => {
     const mode = securityTestTools.REVEAL_TEST_MODE;
-    expect(typeof mode).toBe('boolean');
-    expect(securityTestTools.canPreviewReveal('lucky_pick')).toBe(mode);
-    expect(securityTestTools.canPreviewReveal('gift_package')).toBe(mode);
+    const configSource = readFileSync(
+      join(process.cwd(), 'app/test-tools/reveal-testing/revealTestConfig.js'),
+      'utf8'
+    );
+
+    // The temporary public preview must be explicitly enabled in production too.
+    expect(configSource).toMatch(/export const REVEAL_TEST_MODE = true;/);
+    expect(configSource).not.toMatch(/process\.env\.NODE_ENV/);
+    expect(mode).toBe(true);
+    expect(securityTestTools.canPreviewReveal('lucky_pick')).toBe(true);
+    expect(securityTestTools.canPreviewReveal('gift_package')).toBe(true);
     expect(securityTestTools.canPreviewReveal('tip')).toBe(false);
     // The old form-submission bypass helper is gone, so nothing can skip /api/checkout.
     expect(securityTestTools.canBypassRevealPayment).toBeUndefined();

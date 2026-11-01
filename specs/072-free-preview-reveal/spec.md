@@ -124,3 +124,14 @@ are absent, and asserts the paid submit still triggers the existing submitting s
   FR-008 with 22/22 checks; screenshots and the report are in `artifacts/`. The reveal panel's existing
   paid "PAYMENT COMPLETE" eyebrow is still shown during a preview: changing it would exceed FR-008, so
   it is recorded as an open product decision rather than an implemented change.
+
+
+## Follow-up — production visibility correction (2026-11-01)
+
+The first production check found that the preview helper was still gated by
+`process.env.NODE_ENV !== 'production'`. This made the button available in local development but
+hidden on the deployed production site, despite the feature requirement that public visitors can use
+it while the owner switch is enabled. The temporary production setting must be explicit:
+`REVEAL_TEST_MODE = true` shows the two permitted preview buttons in production as well as development;
+setting it to `false` hides them. The preview remains separate from the paid form and no payment,
+gift-delivery, email, database, or tip-jar behavior is changed.

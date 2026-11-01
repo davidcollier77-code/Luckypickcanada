@@ -1,3 +1,16 @@
+# Active Context — Enable the Public Preview in Production (2026-11-01)
+
+- **Task group:** `troubleshooting`; branch `freebuff/enable-production-preview-switch`; target `main`.
+- **Follow-up to PR #1671:** PR #1671 is already merged. A live production check found the preview button absent because the merged `revealTestConfig.js` set `REVEAL_TEST_MODE = process.env.NODE_ENV !== 'production'`, which evaluates to false in production.
+- **Owner authorization:** enable the public preview temporarily in production; the owner intends to switch it off again after the preview/recording period.
+- **Correction:** change only the existing switch to the literal `true`; preserve the allowlist for `lucky_pick` and `gift_package`. The tip jar remains excluded. The preview remains a separate button outside the paid checkout form.
+- **Regression protection:** update `__tests__/security-payment.test.js` to assert the switch is explicitly true and not gated by `NODE_ENV`.
+- **Spec Kit:** reuse `specs/072-free-preview-reveal/{spec,plan,tasks}.md`; add a follow-up production visibility note and task entries. No duplicate feature directory.
+- **Verification status:** implementation changes are committed on this branch. Focused tests, `./freebuff-verify.sh`, production build measurement, final diff audit, and PR-head CI remain pending until a runnable repository workspace/CI is available.
+- **Scope:** no payment/API routes, Stripe, gift delivery/email, database, secrets, deployment configuration, styling, or reveal artwork/animation changes.
+
+---
+
 # Active Context — Free Preview Reveal in the Checkout Modals (2026-11-01)
 
 - **Task group:** `creation`; branch `freebuff/a593ca30d6b549f6e9249fcc`; target `main`; PR left open and unmerged.
