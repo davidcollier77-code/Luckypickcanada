@@ -74,6 +74,14 @@ duplicate:
 `specs/071-gemini-reviewer-reliability` and `specs/065-gemini-reviewer-quality` were inspected and
 left unchanged: they record merged work whose results this change preserves.
 
+The historical records `specs/051-gemini-reviewer-replacement`, `specs/065-gemini-reviewer-quality`
+and `specs/071-gemini-reviewer-reliability` still name `.gemini/rules/luckypickcanada.md` because
+they document work merged while that path was current. They are deliberately left unchanged as
+point-in-time records; editing another feature's `spec.md`/`plan.md`/`tasks.md` would also break the
+single-feature Spec Kit gate. One `Superseded references` note in the active spec records that those
+mentions are historical and that `GEMINI_REVIEWER.md` is the only current path. The `.docs/`
+mention of `.gemini/` describes the Gemini CLI's own configuration directory and is unrelated.
+
 ## Verification (commands actually run)
 
 Environment: cloud Linux worktree; `pnpm@10.30.3` installed locally because it was absent; lockfile
@@ -87,8 +95,14 @@ preserved and `pnpm install --frozen-lockfile` used (no `npm ci`).
 | Full unit suite | `pnpm exec vitest run` | PASS — 24 files / 224 tests |
 | Repository gate | `./freebuff-verify.sh` (Spec Kit gate, `pnpm tsc --noEmit`, production build, refresh-docs tests) | PASS — exit 0; Spec Kit artifacts verified; refresh-docs 19/19 |
 | Production build size | `du -sb .next` after the gate | PASS — 315,495,656 bytes / 300.88 MiB (< 495 MB) |
+| Spec Kit gate with resolved base | `SPEC_KIT_BASE_REF=83a1c19a bash scripts/verify-speckit-task.sh` | PASS — spec, plan and tasks verified |
 | Final diff audit | `git diff` of every changed file | PASS — only the intended removals/additions |
 | Residual context scan | search both scripts for `.docs/`, manifest, document-assessment and document-report tokens | PASS — the only `.docs/` hit is the autofix protected-path denylist, not loading |
+
+Note on the gate: this checkout has no `origin/main` or local `main` ref, so a bare
+`scripts/verify-speckit-task.sh` sees only uncommitted changes and fails once artifacts are
+committed. Run with `SPEC_KIT_BASE_REF` set to the branch point (`83a1c19a`) here; CI supplies
+`GITHUB_BASE_REF` and resolves the base itself.
 
 Not run / not verified:
 
