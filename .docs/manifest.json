@@ -21,7 +21,8 @@
       "/websites/google_webp",
       "/lovell/sharp",
       "/websites/web_dev_images",
-      "/websites/mdn_image_types"
+      "/websites/mdn_image_types",
+      "/google/eng-practices"
     ],
     "troubleshooting": [
       "/github/docs",
@@ -42,7 +43,8 @@
       "/cloudflare/cloudflare-docs/turnstile",
       "/cloudflare/cloudflare-docs/pages",
       "/websites/neon",
-      "/websites/mdn_web_audio"
+      "/websites/mdn_web_audio",
+      "/google/eng-practices"
     ],
     "polishing": [
       "/vercel/next.js",
@@ -62,7 +64,8 @@
       "/websites/google_webp",
       "/lovell/sharp",
       "/websites/web_dev_images",
-      "/websites/mdn_image_types"
+      "/websites/mdn_image_types",
+      "/google/eng-practices"
     ],
     "testing": [
       "/github/docs",
@@ -76,7 +79,8 @@
       "/getsentry/sentry-docs",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/dequelabs/axe-core"
+      "/dequelabs/axe-core",
+      "/google/eng-practices"
     ],
     "security": [
       "/vercel/next.js",
@@ -95,13 +99,15 @@
       "/dropbox/zxcvbn",
       "/cloudflare/cloudflare-docs/turnstile",
       "/marsidev/react-turnstile",
-      "/upstash/ratelimit"
+      "/upstash/ratelimit",
+      "/google/eng-practices"
     ],
     "audio": [
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "/goldfire/howler.js",
-      "/websites/mdn_web_audio"
+      "/websites/mdn_web_audio",
+      "/google/eng-practices"
     ],
     "deep-dive": [
       "/github/docs",
@@ -127,7 +133,8 @@
       "/dequelabs/axe-core",
       "/cloudflare/cloudflare-docs/pages",
       "/posthog/posthog-js",
-      "/websites/mdn_web_audio"
+      "/websites/mdn_web_audio",
+      "/google/eng-practices"
     ],
     "seo": [
       "/vercel/next.js",
@@ -137,7 +144,8 @@
       "/coreyhaines31/marketingskills",
       "/github/docs",
       "/websites/developer_chrome",
-      "/websites/developer_apple_webkit"
+      "/websites/developer_apple_webkit",
+      "/google/eng-practices"
     ]
   },
   "sources": {
@@ -340,6 +348,10 @@
     "/google-gemini/gemini-skills/gemini-api-dev": {
       "type": "url",
       "url": "https://raw.githubusercontent.com/google-gemini/gemini-skills/main/skills/gemini-api-dev/SKILL.md"
+    },
+    "/google/eng-practices": {
+      "type": "url",
+      "url": "https://raw.githubusercontent.com/google/eng-practices/master/review/reviewer/looking-for.md"
     }
   },
   "inventory": [
