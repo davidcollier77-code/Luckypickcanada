@@ -65,7 +65,7 @@ jobs:
       - name: Verify trusted reviewer files remain unchanged
         if: always()
         run: |
-          git diff --exit-code -- .gemini/rules .github/workflows .github/scripts
+          git diff --exit-code -- GEMINI_REVIEWER.md .github/workflows .github/scripts
 
       # A run that dies before the reviewer can comment (for example a module-load error)
       # must still say something on the pull request. This step makes such a failure visible
