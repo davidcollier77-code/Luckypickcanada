@@ -39,6 +39,20 @@
       or cannot be verified.
 - [x] Deterministic eligibility/anchor/duplicate/path checks and independent validation retained.
 
+## T007 — Amazon Q vs Gemini detection measurement
+- [x] Pre-registered the measurement rules before collecting data: head-aligned comparison, definition of
+      confirmed / false positive / missed / not-measured, duplicate instances counted separately from root
+      causes, and the acceptance thresholds for the prospective cohort.
+- [x] Measured the baseline from published reviews and repair commits: #1639, #1656, #1660, #1661, #1662.
+      Amazon Q 7 findings (6 substantiated, 1 false positive, 5/5 defects in its reviewed heads);
+      Gemini 3 unique findings (3 confirmed, 0 false positives, 2/6 defects, 2 failed passes) published as
+      5 instances, including one root cause emitted 4 times on #1661.
+- [x] Corrected the earlier claim that Gemini reported 0 findings everywhere: it caught the stray
+      `body {` on #1661 (`67cb91ce`) and the invalid manifest on #1662.
+- [ ] Prospective cohort: append one row per merge for the first ten PRs merged after the reviewer change
+      lands. Rows stay pending because the workflow reviews trusted `main`, so no PR merged since
+      the change can be measured against it.
+
 ## Verify
 - [ ] `node --check` on both reviewer scripts.
 - [ ] Focused reviewer tests (quality, context, workflow, trigger).
@@ -48,7 +62,8 @@
 - [ ] Live manual `@gemini full review` on the controlled test PR: run id, conclusion, published review,
       reviewed head SHA equal to the PR head.
 - [ ] Fix Selected / Fix All evidence via the real parsing + selection functions on a rendered review body.
-- [ ] Historical comparison of Gemini findings on #1639–#1642 against the actual merged code.
+- [x] Historical comparison of Gemini findings on #1639–#1642 against the actual merged code
+      (`specs/071-gemini-reviewer-reliability/detection-parity.md`); the prospective ten-PR cohort stays PENDING.
 - [ ] Final diff audit; PR kept open and unmerged.
 
 ## Preserved (no change)
