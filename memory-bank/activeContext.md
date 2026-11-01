@@ -6,8 +6,35 @@
 - **Verified:** `tsc --noEmit` exit 0; `pnpm test` 23 files / 177 tests; `./freebuff-verify.sh` exit 0; rendered computed styles confirm Cinzel headings, gold legal links (15.99:1), and `image-rendering: auto` at 569x464 -> 702x572; no horizontal overflow; final build 470,088,738 bytes / 448.31 MiB (< 495 MB).
 - **Playwright:** full suite 52 passed / 5 failed; the same specs re-run with the diff -> 12/12 passed; stashed baseline -> 10 passed / 2 failed with a different set. Container flakiness, not a deterministic regression.
 - **Preserved:** starfield/Milky Way, Lucky Meter, card reveal, Crystal Ball, paid reveals, Lucky Map/Stories artwork and behaviour, AVIF-first + WebP fallback, copy, navigation, animations, dependencies.
-- **Artifacts:** `specs/067-sitewide-visual-polish/`; `.specify/feature.json` updated.
+- **Artifacts:** `specs/069-sitewide-visual-polish/`; `.specify/feature.json` updated.
 - **Not verified:** axe-core scan (no runner configured); owner PR review.
+
+
+---
+
+# Active Context — Shared Engineering Practices Routing (2026-11-01)
+
+- **Selected task group:** `deep-dive` — cross-group documentation and updater routing.
+- **Branch / PR:** `freebuff/gemini-api-skill-conditional-routing-20261101`, PR #1662; retain the existing open PR and leave it unmerged.
+- **Owner authorization:** explicitly authorized adding the shared Engineering Practices reference to all task groups and configuring the documentation updater to include it.
+- **Reference:** Google Engineering Practices, “What to Look For in a Code Review,” sourced from `https://raw.githubusercontent.com/google/eng-practices/master/review/reviewer/looking-for.md` under CC BY 3.0. The upstream repository was archived on 2025-11-21; its published reference remains available but is no longer actively maintained.
+- **Routing:** manifest source ID `/google/eng-practices` is included in all eight task groups. The updater should create the canonical snapshot in Creation and symlink it into the other seven group directories. Each group instruction points to its matching `.docs/<group>/_google_eng-practices.md` path.
+- **Use policy:** cross-cutting, optional guidance; consult when materially useful, not mandatory reading for every task. `AGENTS.md`, project conventions, and selected group instructions remain authoritative.
+- **Spec Kit artifacts:** `specs/068-shared-engineering-practices-routing/{spec,plan,tasks}.md`; `.specify/feature.json` points to this feature.
+- **Verification:** manifest structure and updater naming/symlink behavior inspected. The documentation refresh itself has not been run in this session; owner plans to trigger it after this PR update. Do not claim snapshot generation or successful updater execution until that run is observed.
+
+---
+
+# Active Context — Conditional Gemini API Developer Skill Routing (2026-11-01)
+
+- **Selected task group:** `deep-dive` — repository-wide governance, documentation routing, and Gemini reviewer conditional-loading correction.
+- **Branch:** `freebuff/gemini-api-skill-conditional-routing-20261101`; target `main`; leave the PR open and unmerged.
+- **Owner authorization:** explicitly authorized updates to repository governance, existing group instructions, reference routing, reviewer automation, tests, Spec Kit artifacts, and Memory Bank context.
+- **Requested policy:** the Gemini API Developer Skill is not a requirement for every coding task or every PR review. It remains a conditional specialist reference for work that directly calls, configures, or integrates with the Gemini API/SDK.
+- **Group routing:** Creation, Troubleshooting, and Deep-dive only. Other task groups use their normal instructions and do not load the skill. Gemini CLI and the general Gemini API overview remain separate conditional references.
+- **Reviewer behavior:** select the skill from changed-code evidence, not title/body wording, documentation mentions, test fixtures, or routine Gemini reviewer/autofix prompt changes. Ordinary PRs continue without it; genuinely API-specific reviews receive it or disclose a coverage gap and stop.
+- **Spec Kit artifacts:** `specs/067-gemini-api-skill-conditional-routing/{spec,plan,tasks}.md`; `.specify/feature.json` points to this feature.
+- **Verification:** source and routing review completed. Focused tests, `./freebuff-verify.sh`, production build measurement, and current-head GitHub Actions are pending; this connector session does not provide a checked-out shell workspace. No test or build success is claimed.
 
 ---
 

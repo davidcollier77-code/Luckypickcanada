@@ -1,11 +1,11 @@
 # Tasks: Site-Wide Visual Polish and Presentation Refinement
 
-**Input**: `specs/067-sitewide-visual-polish/spec.md` and `specs/067-sitewide-visual-polish/plan.md`
+**Input**: `specs/069-sitewide-visual-polish/spec.md` and `specs/069-sitewide-visual-polish/plan.md`
 
 ## Phase 1: Setup
 
 - [x] T001 Read `AGENTS.md`, `.freebuff/freebuff.md`, `.freebuff/polishing.md`, `memory-bank/projectBrief.md`, `memory-bank/activeContext.md`, and `.docs/manifest.json`; confirmed `polishing` as the single applicable group.
-- [x] T002 Inspect the branch/worktree and existing Spec Kit artifacts (035–066) for related visual-polish work; no existing artifact covers this site-wide task, so feature directory `specs/067-sitewide-visual-polish` is new and `066` remains untouched.
+- [x] T002 Inspect the branch/worktree and existing Spec Kit artifacts (035–066) for related visual-polish work; no existing artifact covers this site-wide task, so feature directory `specs/069-sitewide-visual-polish` is new and `066` remains untouched.
 - [x] T003 Review the routed Library references that materially apply: `.docs/polishing/_websites_mdn_image_types.md` (image rendering/format strategy), `.docs/polishing/_dequelabs_axe-core.md` (contrast/keyboard expectations), `.docs/creation/_websites_tailwindcss.md` and `.docs/creation/_vercel_next_js.md` (utility/app-router conventions already in use).
 
 ## Phase 2: Baseline evidence

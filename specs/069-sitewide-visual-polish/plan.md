@@ -1,6 +1,6 @@
 # Implementation Plan: Site-Wide Visual Polish and Presentation Refinement
 
-**Branch**: `freebuff/016113030bd542c07a547bd2` | **Date**: 2026-11-01 | **Spec**: `specs/067-sitewide-visual-polish/spec.md`
+**Branch**: `freebuff/016113030bd542c07a547bd2` | **Date**: 2026-11-01 | **Spec**: `specs/069-sitewide-visual-polish/spec.md`
 
 ## Summary
 
