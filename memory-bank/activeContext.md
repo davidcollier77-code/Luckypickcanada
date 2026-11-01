@@ -1,3 +1,15 @@
+# Active Context — Gemini Reviewer Instruction Consolidation (2026-11-01)
+
+- **Task group:** `deep-dive`; branch `freebuff/d83726e9f4ebf83f38ce1768`; target `main`; PR open and unmerged.
+- **Change:** new root-level `GEMINI_REVIEWER.md` (Amazon Q A/B/C structure) is Gemini's single authoritative PR-review instruction file. `.gemini/rules/luckypickcanada.md` was deleted after a repository search confirmed the workflow and reviewer tests were its only consumers; the workflow trusted-file guard now covers `GEMINI_REVIEWER.md`.
+- **Context reduction:** manifest parsing, task-group classification, reference/skill selection, snapshot loading, document assessments and the document report were removed from `gemini-reviewer.cjs` and `gemini-autofix.cjs`. Review context is now the instruction file, the PR description, changed patches and bounded retrieved source.
+- **Preserved:** changed-code/source retrieval and coverage disclosure, batching, adversarial pass, schema validation and JSON recovery, three-model fallback, statuses and formatting, opt-in suggestions, permissions and trusted-base execution.
+- **Verified:** `node --check` PASS on both scripts; focused reviewer suites PASS; full `pnpm exec vitest run` PASS (24 files / 224 tests); `./freebuff-verify.sh` exit 0 (Spec Kit gate, `tsc --noEmit`, build, refresh-docs 19/19); production build 315,495,656 bytes / 300.88 MiB (< 495 MB); final diff audited.
+- **Not verified:** PR-head GitHub Actions PENDING; live Gemini review BLOCKED — no `GEMINI_API_KEY` in this environment.
+- **Artifacts:** `.specify/features/gemini-review-context/{spec,plan,tasks}.md` reused and updated; `.specify/feature.json` points there.
+
+---
+
 # Active Context — Gemini Reviewer Reliability and Interface Simplification (2026-11-01)
 
 - **Task group:** `deep-dive`; branch `freebuff/f5a6b00e39d1cb2bea65c13b`, target `main`, PR #1665 open and unmerged.

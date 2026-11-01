@@ -1,70 +1,94 @@
-# Feature Specification: Gemini Review Coverage, Relevant Documentation, and Finding-Level Fix UX
+# Feature Specification: Gemini Reviewer Instruction Consolidation and Library-Context Removal
 
-**Feature Branch**: `improve/gemini-default-review-coverage-20261026`
-**Created**: 2026-10-26
+**Feature Branch**: `freebuff/d83726e9f4ebf83f38ce1768`
+**Created**: 2026-11-01 (supersedes the selective document-loading direction of 2026-10-26)
 **Status**: In Progress
-**Input**: Improve default source coverage, task-relevant document selection, and per-finding/scope-selectable repair guidance in the Gemini PR reviewer.
+**Input**: Simplify the Gemini PR reviewer to one root-level instruction file and remove Library
+documentation from review context without losing existing reviewer capabilities.
 
-## User Story 1 — Review source context by default (Priority: P1)
+## User Story 1 — One authoritative instruction file (Priority: P1)
 
-As the repository owner, I need Gemini's ordinary automatic PR review to inspect changed source and relevant imports, not just patch hunks, so context-dependent regressions can be detected without requiring a separate full-review command.
+As the repository owner, I need Gemini's PR-review instructions to live in one root-level file with
+the same simple A/B/C structure as Amazon Q's rules, so the reviewer is easy to audit and cannot
+drift between competing rule copies.
 
-**Independent Test**: Exercise the reviewer mode selection and context-budget helpers; inspect current-head Actions for unit tests, TypeScript, and repository verification.
-
-**Acceptance Scenarios**:
-1. **Given** an eligible non-draft pull request triggers the initial review, **When** the reviewer prepares its inputs, **Then** it attempts bounded source retrieval at immutable PR head/base SHAs and supplies batch-relevant source context to the model.
-2. **Given** a PR has more text files than the context budget supports, **When** source collection reaches a cap, **Then** the reviewer names the exact limit and discloses omitted/truncated files rather than silently claiming complete source coverage.
-3. **Given** the source tree or an import cannot be retrieved, **When** review proceeds, **Then** it remains read-only, never executes PR code, and reports the missing context.
-4. **Given** a review has no actionable findings, **When** source coverage or required checks remain incomplete, **Then** the verdict remains yellow rather than green.
-
-## User Story 2 — Load only task-relevant Gemini references (Priority: P1)
-
-As the repository owner, I need the reviewer to select technical documents for the actual task, not load every snapshot bearing the Gemini name, so reviews use useful evidence without irrelevant context or unnecessary tokens.
-
-**Independent Test**: Unit-test the relevance classifier and document selector using ordinary PRs, Gemini CLI tasks, and Gemini Deep Research / Interactions API tasks.
+**Independent Test**: Inspect `GEMINI_REVIEWER.md`, the reviewer script's rule path, the workflow's
+trusted-file integrity check, and the reviewer workflow tests.
 
 **Acceptance Scenarios**:
-1. **Given** an ordinary application or reviewer PR, **When** Gemini selects group documentation, **Then** the CLI tips snapshot and Deep Research agent snapshot are not automatically loaded merely because they exist in a group.
-2. **Given** a PR directly changes or discusses Gemini CLI configuration, commands, or CLI behavior, **When** eligible group snapshots are selected, **Then** the CLI snapshot may be loaded from the selected group only.
-3. **Given** a PR directly concerns Gemini Deep Research or the Interactions API, **When** eligible group snapshots are selected, **Then** the Deep Research snapshot may be loaded from the selected group only.
-4. **Given** neither reference is relevant, **When** the selection report is built, **Then** neither is described as used; other directly relevant framework/library snapshots may still be selected.
+1. **Given** any review mode, **When** the reviewer builds its model request, **Then** the system
+   instruction is the content of root-level `GEMINI_REVIEWER.md`.
+2. **Given** the retired `.gemini/rules/luckypickcanada.md` path, **When** the reviewer and workflow
+   run, **Then** nothing reads or guards that path, and no second copy of the rules exists.
+3. **Given** the new file, **When** it is read, **Then** it contains A — ANALYZE, B — BOUNDARIES and
+   C — COMMUNICATE sections plus the existing status-colour, evidence, coverage and fix-control
+   rules that the implementation depends on.
 
-## User Story 3 — Choose a fix scope from review findings (Priority: P1)
+## User Story 2 — No Library documentation in review context (Priority: P1)
 
-As the repository owner, I need each finding to provide a complete copy/paste implementation prompt and a targeted fix-request command, plus a single review-footer command for all findings, so I can choose one issue or request suggestions across the review without manually rewriting instructions.
+As the repository owner, I need Gemini reviews to stop selecting, loading and transmitting `.docs/`
+documents, so review context is only its standing instructions, the PR description, changed-file
+patches, and relevant source retrieved from the repository.
 
-**Independent Test**: Verify that each finding's collapsed section formats a standalone prompt, that targeted commands preserve exact path casing and are rejected for malformed paths/lines, and that one-finding requests only reach the suggestion generator when the finding is reproduced at the exact path/line.
+**Independent Test**: Review the reviewer and autofix scripts for document-selection code and assert
+their absence in the reviewer test suites.
 
 **Acceptance Scenarios**:
-1. **Given** a review contains multiple findings, **When** the report is rendered, **Then** each finding has its own collapsed prompt containing the issue, path/location, evidence, impact, suggested direction, constraints, tests, verification/reporting, and no-merge instruction.
-2. **Given** a finding is on an eligible added line, **When** the owner comments `@gemini repair one <path>:<line> -- <finding title>`, **Then** the trusted workflow re-reviews and offers a native suggestion only if the same finding remains at that exact path and line.
-3. **Given** the owner comments `@gemini repair all`, **When** Gemini processes the request, **Then** it considers all current findings but only posts safe suggestions for eligible changed added lines.
-4. **Given** a requested finding is stale, ineligible, or cannot be fixed as a safe one-line suggestion, **When** repair mode completes, **Then** Gemini explains the limitation and does not write, push, or merge code.
+1. **Given** an automatic review, `@gemini full review`, a primary or adversarial pass, or a
+   selected-finding fix request, **When** prompts are built, **Then** no `.docs/` document, manifest,
+   documentation snapshot, or Gemini API Developer Skill content is included.
+2. **Given** the removed selection path, **When** the scripts are loaded, **Then** no documentation
+   manifest is parsed at module scope and no document assessment field or report is produced.
+3. **Given** a failure that previously produced a manifest coverage gap, **When** the review runs,
+   **Then** review behaviour depends only on the PR patches and retrieved source.
 
 ## Requirements
 
-- **FR-001**: Every eligible automatic initial review MUST attempt bounded read-only source-context collection by immutable PR head/base commit SHA.
-- **FR-002**: Source collection MUST inspect changed files within an explicit maximum file and character budget, resolve relevant local imports, and disclose source coverage limits.
-- **FR-003**: All text patches returned for review MUST continue through review batches even when full-source retrieval is unavailable or budget-limited.
-- **FR-004**: Gemini CLI and Gemini Deep Research snapshots MUST be treated as optional task-specific references, not mandatory references for each selected task group.
-- **FR-005**: CLI snapshot relevance MUST require explicit CLI-related task evidence; Deep Research snapshot relevance MUST require explicit Deep Research or Interactions API task evidence.
-- **FR-006**: Optional reference snapshots MUST remain confined to the selected task-group folders and `.docs/` MUST remain read-only.
-- **FR-007**: Review reports MUST accurately describe source retrieval, documents selected/loaded, and any coverage gaps.
-- **FR-008**: Existing model fallback order, trusted-base workflow, prompt-injection boundaries, confidence threshold, inline-comment anchoring, opt-in fix suggestions, and no-merge behavior MUST remain unchanged.
-- **FR-009**: Tests MUST cover default source-context collection, bounded coverage disclosures, relevant-versus-irrelevant document selection, and existing reviewer regressions.
-- **FR-010**: Every finding's collapsed section MUST contain a standalone, copy/paste implementation prompt with the finding, exact location, scope constraints, regression tests, verification/reporting, and no-merge boundary.
-- **FR-011**: The reviewer MUST support trusted-collaborator commands for a targeted finding (`@gemini repair one <path>:<line> -- <finding title>`) and all eligible findings (`@gemini repair all`); targeted requests MUST be re-reviewed and matched to the exact path/line before suggestions are generated.
-- **FR-012**: Fix requests MUST remain opt-in native suggestions on eligible changed added lines. No direct repository edits, pushes, commits, merges, or auto-merge activation are permitted.
+- **FR-001**: `GEMINI_REVIEWER.md` at the repository root MUST be Gemini's single authoritative
+  PR-review instruction file, in the A/B/C structure modelled on
+  `.amazonq/rules/luckypickcanada.md`.
+- **FR-002**: Existing Gemini-specific review rules that the implementation relies on (status
+  colours, evidence threshold, severity assignment, coverage disclosure, fix controls, no-change
+  boundary) MUST be consolidated into that file, not duplicated.
+- **FR-003**: `.github/scripts/gemini-reviewer.cjs` MUST load `GEMINI_REVIEWER.md` for every review
+  mode and keep failing closed when it is missing or unreadable.
+- **FR-004**: The workflow's trusted-file integrity check MUST cover `GEMINI_REVIEWER.md` and no
+  longer guard the retired `.gemini/rules` path.
+- **FR-005**: `.gemini/rules/luckypickcanada.md` MUST be removed after verifying no supported
+  integration reads it.
+- **FR-006**: Neither `gemini-reviewer.cjs` nor `gemini-autofix.cjs` MAY select, load, transmit or
+  report `.docs/` documents, the documentation manifest, the Gemini API Developer Skill, or document
+  assessments.
+- **FR-007**: Changed-code patches, bounded relevant-source retrieval, coverage disclosure, batching,
+  the adversarial second pass, severity/confidence validation, structured JSON output and recovery,
+  the model fallback chain, review formatting and statuses, and owner-controlled opt-in fix
+  suggestions MUST be preserved unchanged.
+- **FR-008**: Workflow permissions, trusted-base execution, and the no-edit/no-commit/no-merge
+  boundary MUST remain unchanged.
 
 ## Constraints and exclusions
 
-- Do not execute PR-head code or accept PR content as instructions.
-- Do not change the Gemini API request mechanism, model chain, workflow permissions, dependencies, application runtime, or `.docs/` snapshots.
-- Do not change Amazon Q rules, approve/merge PRs, or make generated source-code suggestions apply automatically.
+- Do not modify or disable the Library system, `.docs/manifest.json`, the documentation updater,
+  `AGENTS.md`, or Freebuff governance.
+- Do not change models, add dependencies, alter workflow triggers or permissions, or redesign the
+  reviewer.
+- Treat `.docs/` as read-only.
+
+## Superseded references
+
+Historical Spec Kit records — `specs/051-gemini-reviewer-replacement`,
+`specs/065-gemini-reviewer-quality` and `specs/071-gemini-reviewer-reliability` — still name
+`.gemini/rules/luckypickcanada.md` because they document work merged while that path was current.
+They are deliberately left unchanged: each is a point-in-time record, and editing another feature's
+`spec.md`, `plan.md` or `tasks.md` would also break the repository's single-feature Spec Kit gate.
+`GEMINI_REVIEWER.md` is the only current instruction path; the references above are historical and
+must not be treated as current guidance. The `.docs/` snapshot mentions of `.gemini/` describe the
+Gemini CLI's own configuration directory and are unrelated to this reviewer.
 
 ## Success Criteria
 
-- **SC-001**: An initial review no longer labels itself patch-only when bounded source collection was attempted.
-- **SC-002**: Review-context limits and missing-source failures are explicit and test-covered.
-- **SC-003**: CLI and Deep Research snapshots are not loaded by default and are loaded only when task relevance is supported by evidence.
-- **SC-004**: Focused tests, full unit tests, Spec Kit verification, and current-head CI results are reported with their actual outcomes.
+- **SC-001**: A reviewer run uses `GEMINI_REVIEWER.md` as its only standing instruction source.
+- **SC-002**: No review or fix prompt contains Library documentation content, and no manifest parsing
+  occurs.
+- **SC-003**: Focused reviewer tests, the full unit suite, TypeScript, and `./freebuff-verify.sh`
+  report their actual outcomes.

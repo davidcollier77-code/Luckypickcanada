@@ -150,66 +150,6 @@ describe("Gemini reviewer source context", () => {
     expect(reviewedPatches).toHaveLength(files.length);
     expect(reviewedPatches.some((file) => file.filename === "src/module-0.js" && file.patch)).toBe(true);
   });
-  it("loads the Gemini API development skill only as a conditional specialist reference", () => {
-    const cliDoc = ".docs/deep-dive/_google-gemini_gemini-cli.md";
-    const apiOverviewDoc = ".docs/creation/_websites_ai_google_dev_gemini-api.md";
-    const ordinaryPr = {title: "feat: improve Gemini reviewer", body: "Improve default source coverage."};
-    const ordinaryFiles = [{filename: ".github/scripts/gemini-reviewer.cjs"}];
-    expect(reviewer.GEMINI_API_DEV_SKILL_PATH).toBe(".docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md");
-    const skill = reviewer.loadGeminiApiDevSkill();
-    expect(skill?.path).toBe(reviewer.GEMINI_API_DEV_SKILL_PATH);
-    expect(skill?.content).toContain("# Gemini API Development Skill");
-    expect(skill?.content).toContain("Before writing any code");
-    expect(reviewer.isGeminiCliDoc(cliDoc)).toBe(true);
-    expect(reviewer.isGeminiApiOverviewDoc(apiOverviewDoc)).toBe(true);
-    expect(reviewer.isGeminiReferenceRelevant(cliDoc, ordinaryPr, ordinaryFiles)).toBe(false);
-    expect(reviewer.isGeminiReferenceRelevant(apiOverviewDoc, ordinaryPr, ordinaryFiles)).toBe(false);
-    expect(reviewer.isGeminiApiDevSkillRelevant(ordinaryFiles)).toBe(false);
-    expect(reviewer.isGeminiApiDevSkillRelevant([{filename: "README.md", patch: "+Gemini API may be considered in the future."}])).toBe(false);
-    expect(reviewer.isGeminiApiDevSkillRelevant([{filename: "app/api/gemini/route.ts", patch: '+import { GoogleGenAI } from "@google/genai";'}])).toBe(true);
-    expect(reviewer.isGeminiApiDevSkillRelevant([{filename: "package.json", patch: '+"@google/genai": "^2.0.0"'}])).toBe(true);
-    expect(reviewer.isGeminiApiDevSkillRelevant([{filename: "__tests__/gemini-reviewer-context.test.ts", patch: '+import { GoogleGenAI } from "@google/genai";'}])).toBe(false);
-    const referenceRoutingPr = {
-      title: "improve Gemini reviewer documentation selection",
-      body: "Keep the CLI and general Gemini API overview snapshots conditional."
-    };
-    expect(reviewer.isGeminiReferenceRelevant(cliDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
-    expect(reviewer.isGeminiReferenceRelevant(apiOverviewDoc, referenceRoutingPr, ordinaryFiles)).toBe(false);
-    expect(reviewer.isGeminiReferenceRelevant(
-      cliDoc,
-      {title: "fix: Gemini CLI config", body: ""},
-      [{filename: ".gemini/GEMINI.md"}]
-    )).toBe(true);
-    expect(reviewer.isGeminiReferenceRelevant(
-      apiOverviewDoc,
-      {title: "integrate Gemini API client", body: "Use the Interactions API."},
-      [{filename: "lib/gemini-api-client.ts"}]
-    )).toBe(true);
-    const selected = reviewer.selectRelevantGeminiReferenceDocs([
-      ".docs/deep-dive/_google-gemini_gemini-cli.md",
-      ".docs/security/_google-gemini_gemini-cli.md",
-      ".docs/creation/_websites_ai_google_dev_gemini-api.md"
-    ], {
-      title: "Integrate Gemini CLI config and Gemini API client",
-      body: "Use Interactions API for the integration."
-    }, [
-      {filename: ".gemini/GEMINI.md"},
-      {filename: "lib/gemini-api-client.ts"}
-    ]);
-    expect(selected.map((item) => item.kind)).toEqual(["cli", "api-overview"]);
-    expect(selected).toHaveLength(2);
-  });
-
-  it("selects relevant groups based on paths/domain, not generic fix wording", () => {
-    const groups = ["polishing", "troubleshooting", "testing", "seo", "security", "deep-dive"];
-    expect(reviewer.classifyReviewGroups({title:"fix: homepage performance",body:"Improve image preload"},[{filename:"app/homepage/Hero.js",patch:"+preload"}],groups)).toContain("polishing");
-    expect(reviewer.classifyReviewGroups({title:"fix: metadata",body:""},[{filename:"app/metadata.js",patch:"+metadata"}],groups)).toContain("seo");
-    // deep-dive: file path matching gemini-reviewer routes to deep-dive
-    expect(reviewer.classifyReviewGroups({title:"feat: improve gemini reviewer",body:""},[{filename:".github/scripts/gemini-reviewer.cjs",patch:"+code"}],groups)).toContain("deep-dive");
-    // deep-dive: PR body containing "reviewer pipeline" keyword routes to deep-dive
-    expect(reviewer.classifyReviewGroups({title:"chore: update workflow",body:"Improve the reviewer pipeline"},[{filename:"README.md",patch:"+text"}],groups)).toContain("deep-dive");
-    expect(reviewer.classifyReviewGroups({title:"fix typo",body:""},[{filename:"lib/math.js",patch:"+return value"}],groups)).not.toContain("polishing");
-  });
   it("clips source while preserving the beginning and end", () => {
     const clipped = reviewer.clipSource("BEGIN" + "x".repeat(1000) + "END", 100);
     expect(clipped.truncated).toBe(true); expect(clipped.content.startsWith("BEGIN")).toBe(true);
@@ -297,7 +237,6 @@ describe("Gemini reviewer source context", () => {
       pr: { number: 1634, title: "Fix story reaction consistency", body: "", head: { sha: "head-sha" } },
       batch: [{ filename: "app/lucky-map-of-canada/lucky-map-of-canada.js", status: "modified", patch: "@@ -1 +1 @@\n-old\n+new" }],
       sourceContext: { records: [{ path: "app/lucky-map-of-canada/lucky-map-of-canada.js", role: "head source", content: "catch (error) { /* state unchanged */ }" }], limitations: [] },
-      docBundle: "DOCUMENT: .docs/troubleshooting/react.md\nState lifecycle reference.",
       primaryFindings: [{ path: "app/lucky-map-of-canada/lucky-map-of-canada.js", line: 15, severity: "HIGH", title: "Existing finding", problem: "One failure path is incomplete." }],
       batchIndex: 0,
       batchCount: 1
@@ -310,50 +249,8 @@ describe("Gemini reviewer source context", () => {
     expect(prompt).toContain("background polling");
     expect(prompt).toContain("generic fallback collisions");
     expect(prompt).toContain("app/lucky-map-of-canada/lucky-map-of-canada.js");
-    expect(prompt).toContain("State lifecycle reference.");
+    expect(prompt).not.toContain("Consulted document excerpts");
     expect(reviewer.ADVERSARIAL_REVIEW_GUIDANCE).toMatch(/confidence >= 0\.80/);
-  });
-
-  it("keeps review-context footer short and lists only documents explicitly confirmed useful", () => {
-    const report = reviewer.docReport(
-      [
-        { path: ".docs/troubleshooting/react.md", truncated: false },
-        { path: ".docs/troubleshooting/next.md", truncated: false },
-        { path: ".docs/troubleshooting/unassessed.md", truncated: false }
-      ],
-      [{ path: ".docs/troubleshooting/missing.md", reason: "Missing from checkout." }],
-      [
-        { path: ".docs/troubleshooting/react.md", useful: true, reason: "Clarified state update and effect lifecycle." },
-        { path: ".docs/troubleshooting/next.md", useful: false, reason: "Generic framework background." }
-      ],
-      {
-        groups: ["troubleshooting"],
-        groupReasons: { troubleshooting: "diagnosing failure-path behavior." },
-        method: "Gemini group/document selection"
-      }
-    );
-    expect(report).toContain("### Review context");
-    expect(report).toContain("**Task group:** troubleshooting — diagnosing failure-path behavior.");
-    expect(report).toContain(".docs/troubleshooting/react.md — Clarified state update and effect lifecycle.");
-    expect(report).not.toContain(".docs/troubleshooting/next.md");
-    expect(report).not.toContain(".docs/troubleshooting/unassessed.md");
-    expect(report).not.toContain("USED: YES");
-    expect(report).toContain("Coverage note:");
-    expect(report).toContain("1 selected document snapshot(s) could not be loaded");
-    expect(report.length).toBeLessThan(900);
-  });
-
-  it("renders a compact report for the initial automatic review without inventing a task group", () => {
-    const report = reviewer.docReport([], [], [], {
-      groups: [],
-      groupReasons: {},
-      method: "skipped for initial automatic review"
-    });
-    expect(report).toContain("initial automatic review skips optional library selection");
-    expect(report).toContain("Gemini API Developer Skill");
-    expect(report).toContain("Not loaded — no direct Gemini API integration changes were detected.");
-    expect(report).not.toContain("UNAVAILABLE");
-    expect(report).not.toContain("Selection method:");
   });
 
   it("detects a stale PR head before a generated review can be published", () => {
@@ -466,7 +363,7 @@ describe("Gemini reviewer recovers bounded JSON and rejects invalid review paylo
   it("accepts a valid review payload and tolerates absent optional arrays", () => {
     const payload = { summary: "ok", findings: [{ path: "a.js", line: null, severity: "HIGH", title: "t", problem: "p", suggested_fix: "f" }] };
     expect(reviewer.validateReviewPayload(payload)).toBe(payload);
-    expect(reviewer.validateReviewPayload({ summary: "ok", findings: [], positive_observations: [], document_assessments: [] })).not.toBeNull();
+    expect(reviewer.validateReviewPayload({ summary: "ok", findings: [], positive_observations: [] })).not.toBeNull();
     expect(reviewer.validateReviewPayload({ summary: "ok", findings: [], positive_observations: "x" })).toBeNull();
   });
   it("declares the required structured-output shape", () => {

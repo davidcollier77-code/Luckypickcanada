@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createRequire } from "node:module";
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 
 process.env.GEMINI_API_KEY = "test-key-not-a-secret";
 process.env.GEMINI_PRIMARY_MODEL = "gemini-3.8-flash";
@@ -353,20 +350,13 @@ describe("Gemini pre-publication evidence check", () => {
 });
 
 describe("Gemini reviewer startup resilience", () => {
-  it("keeps reviewing when the documentation manifest cannot be parsed", () => {
-    const dir = mkdtempSync(join(tmpdir(), "gemini-manifest-"));
-    mkdirSync(join(dir, ".docs"), { recursive: true });
-    // The exact historical failure mode: an invalid manifest aborted the process on load.
-    writeFileSync(join(dir, ".docs", "manifest.json"), '{"groups": {"creation": [}}\n');
-    const script = join(process.cwd(), ".github/scripts/gemini-reviewer.cjs");
-    const probe = "const r = require(" + JSON.stringify(script) + ");" +
-      "process.stdout.write(JSON.stringify({ error: r.MANIFEST_ERROR, hasManifest: !!r.MANIFEST, canParse: typeof r.parseFullReviewCommand }));";
-    const result = spawnSync(process.execPath, ["-e", probe], { cwd: dir, encoding: "utf8" });
-    expect(result.status, result.stderr || result.stdout).toBe(0);
-    const payload = JSON.parse(result.stdout);
-    expect(payload.hasManifest).toBe(false);
-    expect(payload.error).toMatch(/could not be parsed/);
-    expect(payload.canParse).toBe("function");
+  it("loads Gemini's root instruction file instead of parsing the documentation manifest", () => {
+    const script = readFileSync("./.github/scripts/gemini-reviewer.cjs", "utf8");
+    expect(script).toContain('const RULE_PATH = "GEMINI_REVIEWER.md";');
+    expect(script).not.toContain("loadDocumentManifest");
+    expect(script).not.toContain(".docs/manifest.json");
+    expect(script).toContain("if (!RULES) throw new Error(\"Gemini review rules are missing or unreadable");
+    expect(readFileSync("./GEMINI_REVIEWER.md", "utf8")).toContain("🔴 A — ANALYZE");
   });
 
   it("reports a startup failure on the pull request even if the script cannot comment", () => {

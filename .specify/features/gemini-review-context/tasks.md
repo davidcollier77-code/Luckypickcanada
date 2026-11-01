@@ -1,48 +1,57 @@
-# Tasks: Gemini Default Review Coverage and Relevant Documentation
+# Tasks: Gemini Reviewer Instruction Consolidation and Library-Context Removal
 
 **Input**: `.specify/features/gemini-review-context/spec.md` and `plan.md`
 
-## Phase 1 — Setup and Specification
+## Phase 1 — Specify and plan
 
-- [x] T001 Read `AGENTS.md`, the selected deep-dive specialist and routed documents, reviewer rules/script/tests, current main state, and the already-merged Gemini reviewer context work.
-- [x] T002 Update `spec.md` with automatic source-context and selective document-loading requirements.
-- [x] T003 Update `plan.md` with bounded-source, reference relevance, safety, and test decisions.
-- [x] T004 Update this task list before implementation.
+- [x] T001 Read `AGENTS.md`, `.freebuff/freebuff.md`, `.freebuff/deep-dive.md`, Memory Bank files,
+  `.docs/manifest.json` routing, and the existing Spec Kit features
+  (`gemini-review-context`, `gemini-review-depth`, `creation-gemini-reviewer`), plus branches and
+  commits for related reviewer work.
+- [x] T002 Inspect the current reviewer implementation, autofix module, workflow, and reviewer test
+  suites; record every reference to the old rules path and to Library-document loading.
+- [x] T003 Update `spec.md` with the single-instruction-file and no-Library-context requirements.
+- [x] T004 Update `plan.md` with the removal list, preserved capabilities, and verification plan.
+- [x] T005 Update this task list before implementation and point `.specify/feature.json` at this
+  feature.
 
-## Phase 2 — Default source-context coverage
+## Phase 2 — Instruction file consolidation
 
-- [x] T005 In `.github/scripts/gemini-reviewer.cjs`, run bounded source retrieval for automatic initial review as well as full review and fix modes.
-- [x] T006 Replace silent changed-source candidate slicing with named file/character limits and explicit coverage limitations; keep all available text patches in review batches.
-- [x] T007 Ensure missing source, truncated source, unavailable base source, and candidate/file caps are reflected in the yellow coverage verdict and review report.
-- [x] T008 Add focused regression assertions in `__tests__/gemini-reviewer-context.test.ts` for the source budget, explicit cap disclosure, and the default source-context path.
+- [x] T006 Create root-level `GEMINI_REVIEWER.md` in the Amazon Q A/B/C structure, consolidating the
+  Gemini-specific status, evidence, severity, coverage, adversarial, fix-control and no-change rules.
+- [x] T007 Point `RULE_PATH` at `GEMINI_REVIEWER.md`, keep the fail-closed `RULES` check, and remove
+  `GEMINI_API_DEV_SKILL_PATH`.
+- [x] T008 Verify no other supported integration reads `.gemini/rules/luckypickcanada.md`, then
+  delete it.
+- [x] T009 Update the workflow trusted-file integrity check to guard `GEMINI_REVIEWER.md` instead of
+  the retired directory.
 
-## Phase 3 — Task-relevant Gemini documents
+## Phase 3 — Remove Library-document context
 
-- [x] T009 In `.github/scripts/gemini-reviewer.cjs`, make Gemini CLI and Deep Research snapshots optional rather than automatically required per selected task group.
-- [x] T010 Permit the CLI snapshot only for direct Gemini CLI/configuration/command work; permit the Deep Research snapshot only for Deep Research/Interactions API work.
-- [x] T011 Keep additional snapshots confined to selected groups and preserve the lightweight initial path without a document-selection model call.
-- [x] T012 Update `.gemini/rules/luckypickcanada.md` so it describes the two Gemini snapshots accurately and requires task relevance.
-- [x] T013 Add unit tests for ordinary tasks, direct CLI tasks, and Deep Research/Interactions API tasks; update `__tests__/gemini-reviewer-workflow.test.ts` expectations.
+- [x] T010 Remove manifest parsing and its coverage gap from the reviewer.
+- [x] T011 Remove task-group classification, document selection, snapshot loading, skill loading,
+  document assessment fields, and the review-context document report, including their exports.
+- [x] T012 Remove document bundle, document paths and document report from primary, adversarial and
+  fix-suggestion prompts and from the fix module's parameters.
+- [x] T013 Keep changed-code patches, bounded relevant-source retrieval, coverage disclosure,
+  batching, adversarial pass, schema validation and JSON recovery, model chain, formatting and
+  opt-in suggestions unchanged.
 
-## Phase 4 — Verification and reporting
+## Phase 4 — Tests and artifacts
 
-- [x] T014 Update the existing requirements checklist and `PR_SUMMARY.md` with exact changed files and honest pending verification.
-- [x] T015 Verified focused reviewer tests, full Vitest, TypeScript, `./jules-verify.sh`, production build, 495 MiB size gate, OpenNext/Cloudflare and Wrangler no-deploy checks through GitHub Actions. Current measured build output: 315.74 MiB.
-- [x] T016 Inspected the complete changed-file list/diff and current-head GitHub Actions; DevSkim, unit tests, TypeScript, Spec Kit verification, build/size gate, OpenNext, Wrangler, updater governance and visual regression tests passed. GitHub reports mergeable; PR remains open and unmerged.
-- [ ] T017 After a naturally occurring or safely dispatched review completes, inspect its report to ensure ordinary reviews have source context and do not load irrelevant Gemini snapshots; do not claim live quality is proven without this evidence.
-
-## Phase 5 — Finding-level fix UX
-
-- [x] T018 Build a complete, standalone copy/paste implementation prompt for every finding in the existing collapsed review section.
-- [x] T019 Add a trusted `@gemini repair one <path>:<line> -- <finding title>` command that re-reviews and only targets the exact reproduced finding; preserve `@gemini repair all` for all eligible findings.
-- [x] T020 Add regression tests for standalone prompts, eligible-target visibility, command parsing/path safety, stale target rejection, and all-findings footer instructions.
-- [x] T021 Update Gemini's review rules, the feature spec/plan/checklist, PR summary, and active context to describe targeted and all-findings opt-in suggestions accurately.
-- [ ] T022 Verify the new code and tests on the final PR head with GitHub Actions; inspect generated review formatting and keep live-model acceptance distinct from static/unit-test coverage.
+- [x] T014 Update `__tests__/gemini-reviewer-workflow.test.ts` for the new rule file, workflow guard
+  and absence of document loading.
+- [x] T015 Update `__tests__/gemini-reviewer-context.test.ts` and `...-trigger.test.ts` to drop
+  document-selection assertions and assert the new instruction loading.
+- [ ] T016 Run focused reviewer tests, full `pnpm test`, `pnpm exec tsc --noEmit`, and
+  `./freebuff-verify.sh`; record real results including the production build size.
+- [ ] T017 Inspect the complete final diff, update `PR_SUMMARY.md` and
+  `memory-bank/activeContext.md`, and leave the PR open and unmerged.
+- [ ] T018 Live-model acceptance of the simplified reviewer — BLOCKED here because this environment
+  has no `GEMINI_API_KEY`; the trusted-base workflow is the confirmation path.
 
 ## Dependencies and execution order
 
-- T001–T004 complete before implementation.
-- T005–T008 establish default source inspection and honest limits.
-- T009–T013 change relevance-based snapshot loading and test its scope.
-- T018–T021 implement and test finding-level prompt/suggestion UX after the existing reviewer context changes.
-- T014–T017 and T022 record evidence, perform repository verification, audit the final diff, and report remaining limits.
+- T006–T009 (instruction source) precede T010–T013 (context removal) so the reviewer never runs
+  without a standing instruction file.
+- T014–T015 follow the implementation; T016–T017 record evidence; T018 must not be claimed.
