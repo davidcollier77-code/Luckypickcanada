@@ -46,5 +46,11 @@
 - [X] T015 [US1] Rewrite `app/test-tools/reveal-testing/README.md`.
 - [X] T016 [US1] Run the focused tests, `pnpm test`, `pnpm exec tsc --noEmit`, and
   `./freebuff-verify.sh`; record the measured production build size.
-- [ ] T017 [US1] PENDING — owner review of the open, unmerged PR; no browser-level visual check of the
-  new button was performed in this workspace.
+- [X] T017 [US1] Owner review of the open, unmerged PR.
+- [X] T018 [US1] Playwright browser verification against the local dev server (1440x900, DPR 2): the
+  preview control is visible and labelled in the Lucky Pick and Gift modals, absent on the tip jar,
+  is `type="button"` outside the checkout form, and pressing it opens the reveal with zero requests to
+  `/api/checkout`, `/api/send-gift`, or Stripe, no form `submit` event, and no navigation (22/22 checks).
+  Screenshots and the machine-readable report live in `artifacts/` as untracked evidence.
+- [ ] T019 [US1] Open product decision (not implemented, out of scope by FR-008): the reused reveal
+  panel still shows its paid "PAYMENT COMPLETE" eyebrow during a free preview.

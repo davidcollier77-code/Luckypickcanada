@@ -6,7 +6,8 @@
 - **Paid flow preserved:** `requestRevealAccess` is back to the original duplicate-submit guard only; the form still posts to `/api/checkout` with no `noValidate` override and no JS interception. No Stripe, verification, gift-delivery, database, secret, or deployment file was touched.
 - **Also removed:** the tracked stale `app/checkout-modal.jsx.orig`, which duplicated the removed `/api/send-gift` preview bypass.
 - **Artifacts:** `specs/072-free-preview-reveal/{spec,plan,tasks}.md`; `.specify/feature.json` updated. New `__tests__/components/CheckoutModal.test.jsx`; `__tests__/security-payment.test.js` updated with the switch semantics and a source guard.
-- **Verification and remaining limits** are recorded in the PR report; the button was not visually inspected in a browser here.
+- **Browser verification (2026-11-01):** Playwright against the local dev server (1440x900, DPR 2) passed 22/22 checks: the control is visible and labelled in both eligible modals, is `type="button"` outside the checkout form, is absent on the tip jar, keeps the paid submit button, and opens `LuckyRevealPopup` with no request to `/api/checkout`, `/api/send-gift`, or Stripe, no `submit` event, and no navigation (only the popup JS chunk loads). Evidence: `artifacts/preview-reveal-check.cjs`, `artifacts/preview-reveal-report.json`, `artifacts/preview-reveal-*.png`. Chromium here needed locally extracted NSS/NSPR plus a fontconfig/DejaVu-Liberation stack in `.local-browser-libs/` (environment only, not product code).
+- **Open product decision:** the reused reveal panel still shows its paid "PAYMENT COMPLETE" eyebrow during a free preview. Left unchanged because the task preserves the reveal design (FR-008); it needs an owner decision.
 
 ---
 

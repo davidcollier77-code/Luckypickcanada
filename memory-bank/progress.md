@@ -5,6 +5,7 @@
 - Restored the paid submit handler to its original duplicate-submit guard, so `/api/checkout` submission, validation, and reset behaviour are unchanged in both switch states.
 - Reused the homepage's existing reveal state and popup; added secondary button styles only. Deleted the stale tracked `app/checkout-modal.jsx.orig` that held the removed bypass.
 - Added `__tests__/components/CheckoutModal.test.jsx`, updated `__tests__/security-payment.test.js`, rewrote the preview README, and recorded Spec Kit artifacts in `specs/072-free-preview-reveal/`.
+- Browser verification on 2026-11-01: Playwright at 1440x900/DPR 2 opened both modals and pressed the preview; 22/22 checks passed, including zero requests to `/api/checkout`, `/api/send-gift`, or Stripe, no form submit, and no navigation. Screenshots and report are in `artifacts/` (untracked evidence). The reveal panel still shows its paid "PAYMENT COMPLETE" eyebrow during a preview, recorded as an open owner decision because the task keeps the reveal design unchanged.
 
 ---
 

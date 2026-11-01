@@ -86,6 +86,22 @@ specs/072-free-preview-reveal/
 └── tasks.md
 ```
 
+## Verification Evidence (Browser)
+
+`artifacts/preview-reveal-check.cjs` drives the local dev server with Playwright at 1440x900 / DPR 2 and
+records 22/22 passing checks: the preview control is visible and correctly labelled in both eligible
+modals, is a `type="button"` outside the checkout form, is absent from the tip modal, keeps the paid
+submit button in place, and pressing it opens `LuckyRevealPopup` with no request to `/api/checkout`,
+`/api/send-gift`, or Stripe, no `submit` event, and no page navigation. Only one request follows the
+press: the reveal popup's deferred JS chunk.
+
+Screenshots: `artifacts/preview-reveal-{lucky-pick,gift,tip}-modal*.png` and
+`artifacts/preview-reveal-*-reveal.png`; report: `artifacts/preview-reveal-report.json`.
+
+Observed but intentionally unchanged: the reused reveal panel keeps its paid "PAYMENT COMPLETE"
+eyebrow during a preview. It is misleading for a free preview, but changing it would exceed FR-008
+(reveal design unchanged), so it is recorded as an open owner decision.
+
 ## Complexity Tracking
 
 No constitution violations. No new dependency, route, API, environment variable, database change, or

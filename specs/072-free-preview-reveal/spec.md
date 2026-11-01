@@ -120,3 +120,7 @@ are absent, and asserts the paid submit still triggers the existing submitting s
   persisted paid reveal records, which is why no database or API call is involved.
 - Enabling `REVEAL_TEST_MODE` for this task makes the preview button publicly visible; the paid
   checkout and its security controls are unchanged.
+- Browser verification on 2026-11-01 (Playwright, local dev server) confirmed FR-001 to FR-006 and
+  FR-008 with 22/22 checks; screenshots and the report are in `artifacts/`. The reveal panel's existing
+  paid "PAYMENT COMPLETE" eyebrow is still shown during a preview: changing it would exceed FR-008, so
+  it is recorded as an open product decision rather than an implemented change.
