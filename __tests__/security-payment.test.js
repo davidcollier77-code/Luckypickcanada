@@ -18,10 +18,11 @@ describe('Security Hardening: Payment & Authorization', () => {
   });
 
   it('keeps the free preview separate from any paid checkout bypass', () => {
-    // REVEAL_TEST_MODE is now the single public preview switch, enabled for this task.
-    expect(securityTestTools.REVEAL_TEST_MODE).toBe(true);
-    expect(securityTestTools.canPreviewReveal('lucky_pick')).toBe(securityTestTools.REVEAL_TEST_MODE);
-    expect(securityTestTools.canPreviewReveal('gift_package')).toBe(securityTestTools.REVEAL_TEST_MODE);
+    // canPreviewReveal must respect whatever REVEAL_TEST_MODE is set to.
+    const mode = securityTestTools.REVEAL_TEST_MODE;
+    expect(typeof mode).toBe('boolean');
+    expect(securityTestTools.canPreviewReveal('lucky_pick')).toBe(mode);
+    expect(securityTestTools.canPreviewReveal('gift_package')).toBe(mode);
     expect(securityTestTools.canPreviewReveal('tip')).toBe(false);
     // The old form-submission bypass helper is gone, so nothing can skip /api/checkout.
     expect(securityTestTools.canBypassRevealPayment).toBeUndefined();

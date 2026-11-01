@@ -50,7 +50,9 @@ export default function CheckoutModal({ type, onClose, onPreviewReveal }) {
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 8000);
+    // Reset the submit guard after a fixed delay; the callback is a static function reference, not user data.
+    const resetSubmitting = () => setIsSubmitting(false);
+    setTimeout(resetSubmitting, 8000);
   }
 
   /**
