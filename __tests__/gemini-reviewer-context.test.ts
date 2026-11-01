@@ -155,7 +155,7 @@ describe("Gemini reviewer source context", () => {
     expect(reviewedPatches).toHaveLength(files.length);
     expect(reviewedPatches.some((file) => file.filename === "src/module-0.js" && file.patch)).toBe(true);
   });
-  it("loads the required Gemini API development skill and relevance-gates optional references", () => {
+  it("loads the Gemini API development skill only as a conditional specialist reference", () => {
     const cliDoc = ".docs/deep-dive/_google-gemini_gemini-cli.md";
     const apiOverviewDoc = ".docs/creation/_websites_ai_google_dev_gemini-api.md";
     const ordinaryPr = {title: "feat: improve Gemini reviewer", body: "Improve default source coverage."};
@@ -169,6 +169,11 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.isGeminiApiOverviewDoc(apiOverviewDoc)).toBe(true);
     expect(reviewer.isGeminiReferenceRelevant(cliDoc, ordinaryPr, ordinaryFiles)).toBe(false);
     expect(reviewer.isGeminiReferenceRelevant(apiOverviewDoc, ordinaryPr, ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiApiDevSkillRelevant(ordinaryFiles)).toBe(false);
+    expect(reviewer.isGeminiApiDevSkillRelevant([{filename: "README.md", patch: "+Gemini API may be considered in the future."}])).toBe(false);
+    expect(reviewer.isGeminiApiDevSkillRelevant([{filename: "app/api/gemini/route.ts", patch: '+import { GoogleGenAI } from "@google/genai";'}])).toBe(true);
+    expect(reviewer.isGeminiApiDevSkillRelevant([{filename: "package.json", patch: '+"@google/genai": "^2.0.0"'}])).toBe(true);
+    expect(reviewer.isGeminiApiDevSkillRelevant([{filename: "__tests__/gemini-reviewer-context.test.ts", patch: '+import { GoogleGenAI } from "@google/genai";'}])).toBe(false);
     const referenceRoutingPr = {
       title: "improve Gemini reviewer documentation selection",
       body: "Keep the CLI and general Gemini API overview snapshots conditional."
@@ -343,17 +348,14 @@ describe("Gemini reviewer source context", () => {
   });
 
   it("renders a compact report for the initial automatic review without inventing a task group", () => {
-    const report = reviewer.docReport([{
-      path: reviewer.GEMINI_API_DEV_SKILL_PATH,
-      truncated: false
-    }], [], [], {
+    const report = reviewer.docReport([], [], [], {
       groups: [],
       groupReasons: {},
       method: "skipped for initial automatic review"
     });
     expect(report).toContain("initial automatic review skips optional library selection");
-    expect(report).toContain("Required Gemini API Developer Skill");
-    expect(report).toContain("supplied to the primary and adversarial review prompts");
+    expect(report).toContain("Gemini API Developer Skill");
+    expect(report).toContain("Not loaded — no direct Gemini API integration changes were detected.");
     expect(report).not.toContain("UNAVAILABLE");
     expect(report).not.toContain("Selection method:");
   });
