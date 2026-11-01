@@ -1,3 +1,17 @@
+# Active Context — Site-Wide Visual Polish (2026-11-01)
+
+- **Task group:** `polishing`; branch `freebuff/016113030bd542c07a547bd2`; target `main`; PR left open and unmerged.
+- **Verified defects:** `var(--font-header, serif)` in `themes/default/homepage.css:23` resolved to generic serif (token declared only inside `CrystalBall.module.css`), so homepage card headings rendered in Times while sibling headings used Cinzel; `/privacy` and `/terms` were the only routes on the stock Tailwind palette (`text-blue-600` links 3.91:1, `text-gray-500` meta 4.18:1 on `#02070c`); the 569x464 Lucky Map artwork is shown at up to 704px with `image-rendering: crisp-edges` (nearest-neighbour upscaling).
+- **Implementation:** card headings use `var(--lpc-display)`; legal routes use new `legal-*` classes styled from existing brand tokens in `themes/default/default.css` (copy, structure, hrefs, robots unchanged); `.official-map-image` uses `image-rendering: auto`.
+- **Verified:** `tsc --noEmit` exit 0; `pnpm test` 23 files / 177 tests; `./freebuff-verify.sh` exit 0; rendered computed styles confirm Cinzel headings, gold legal links (15.99:1), and `image-rendering: auto` at 569x464 -> 702x572; no horizontal overflow; final build 470,088,738 bytes / 448.31 MiB (< 495 MB).
+- **Playwright:** full suite 52 passed / 5 failed; the same specs re-run with the diff -> 12/12 passed; stashed baseline -> 10 passed / 2 failed with a different set. Container flakiness, not a deterministic regression.
+- **Preserved:** starfield/Milky Way, Lucky Meter, card reveal, Crystal Ball, paid reveals, Lucky Map/Stories artwork and behaviour, AVIF-first + WebP fallback, copy, navigation, animations, dependencies.
+- **Artifacts:** `specs/069-sitewide-visual-polish/`; `.specify/feature.json` updated.
+- **Not verified:** axe-core scan (no runner configured); owner PR review.
+
+
+---
+
 # Active Context — Shared Engineering Practices Routing (2026-11-01)
 
 - **Selected task group:** `deep-dive` — cross-group documentation and updater routing.

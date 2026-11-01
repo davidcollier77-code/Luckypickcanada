@@ -20,7 +20,11 @@
 .homepage-offer-featured { padding-top: clamp(1.75rem, 3vw, 2.2rem); border-color: rgba(255, 255, 255, 0.15); background: radial-gradient(circle at 90% 5%, rgba(234, 179, 56, .15), transparent 30%), rgba(20, 20, 25, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
 .homepage-offer-image { position: absolute; z-index: 0; right: -.75rem; bottom: -1.25rem; width: 42%; max-height: 92%; object-fit: contain; object-position: right bottom; opacity: .28; pointer-events: none; }
 .homepage-offer > :not(.homepage-offer-image) { position: relative; z-index: 20; }
-.homepage-offer h3, .homepage-community-card h2, .homepage-offer-title { margin: 0 0 0.5rem 0; color: #fff0bd; line-height: 1.15; font-family: var(--font-header, serif); }
+/* Card headings use the site's display face. The previous `var(--font-header, serif)`
+   resolved to the generic serif fallback everywhere except inside the Crystal Ball CSS
+   module (where the token is module-scoped), so card headings did not match the sibling
+   section headings that use --lpc-display. */
+.homepage-offer h3, .homepage-community-card h2, .homepage-offer-title { margin: 0 0 0.5rem 0; color: #fff0bd; line-height: 1.15; font-family: var(--lpc-display); }
 .homepage-community-card h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); }
 .homepage-offer h3, .homepage-offer-title { font-size: clamp(1.25rem, 2.2vw, 1.75rem); }
 .homepage-offer > p:not(.homepage-offer-kicker):not(.homepage-offer-note), .homepage-community-card > p:not(.homepage-offer-kicker) { color: rgba(255, 245, 218, .75); line-height: 1.65; }

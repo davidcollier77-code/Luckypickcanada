@@ -1,13 +1,14 @@
 :root {
   color-scheme: dark;
-  --night: #02070c;
-  --ink: #07110d;
-  --gold: #eabe52;
-  --gold-light: #fff0ac;
+  --night: #030507;
+  --ink: #080b10;
+  --gold: #e8ba52;
+  --gold-light: #fff1b2;
   --emerald: #18b978;
   --teal: #57e5d0;
-  --aurora-blue: #69b8ff;
-  --aurora-violet: #bf8bff;
+  --aurora-green: #49c99f;
+  --aurora-blue: #76bdfd;
+  --aurora-violet: #c58dff;
   --canada-red: #c91624;
   --lpc-display: var(--font-cinzel, 'Cinzel'), Georgia, serif;
   --lpc-body: var(--font-manrope, 'Manrope'), var(--font-inter, Inter), ui-sans-serif, system-ui, sans-serif;
@@ -108,18 +109,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid rgba(255, 226, 136, 0
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
-
 /* Lucky Pick Canada luxury visual system: midnight glass, metallic gold, and restrained aurora light. */
-:root {
-  --night: #030507;
-  --ink: #080b10;
-  --gold: #e8ba52;
-  --gold-light: #fff1b2;
-  --aurora-green: #49c99f;
-  --aurora-blue: #76bdfd;
-  --aurora-violet: #c58dff;
-}
-
 body {
   background:
     radial-gradient(ellipse 58% 32% at 16% 8%, rgba(50, 205, 155, 0.16), transparent 70%),
@@ -235,4 +225,90 @@ body {
   word-wrap: break-word;
   overflow-wrap: break-word;
   box-sizing: border-box;
+}
+
+/* Legal documents (Privacy Policy, Terms of Service).
+   Presentation only: the copy, section order, link destinations, metadata and robots
+   directives are unchanged. These routes previously used the stock Tailwind palette
+   (text-blue-600 links on a #02070c background, 3.91:1 contrast), which read as an
+   unfinished default page next to the rest of the site. */
+.legal-page {
+  width: 100%;
+  max-width: 60rem;
+  margin-inline: auto;
+  padding: clamp(1.75rem, 5vw, 3.5rem) clamp(1rem, 4vw, 1.75rem) clamp(3rem, 7vw, 4.5rem);
+}
+.legal-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin-bottom: 1.35rem;
+  padding: .45rem .9rem;
+  border: 1px solid rgba(255, 235, 174, .38);
+  border-radius: 999px;
+  color: #ffe9a8;
+  background: rgba(255, 235, 174, .07);
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color .2s ease, border-color .2s ease, background-color .2s ease;
+}
+.legal-back-link:hover,
+.legal-back-link:focus-visible {
+  color: #fff7d6;
+  border-color: rgba(255, 226, 136, .72);
+  background: rgba(255, 235, 174, .14);
+}
+.legal-title {
+  margin: 0;
+  color: var(--gold-light);
+  font-size: clamp(2.1rem, 6vw, 3.1rem);
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .7), 0 0 22px rgba(232, 186, 82, .18);
+}
+.legal-meta {
+  margin: .6rem 0 clamp(1.4rem, 4vw, 2rem);
+  color: rgba(255, 239, 190, .8);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.legal-surface {
+  padding: clamp(1.4rem, 4vw, 2.6rem);
+  border: 1px solid rgba(255, 233, 171, .16);
+  border-radius: 26px;
+  color: rgba(255, 248, 222, .94);
+  font-size: 1.02rem;
+  line-height: 1.75;
+  background: linear-gradient(145deg, rgba(5, 11, 18, .78), rgba(7, 19, 27, .62) 52%, rgba(8, 7, 18, .7));
+  box-shadow: 0 26px 70px rgba(0, 0, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .09);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  backdrop-filter: blur(16px) saturate(120%);
+}
+.legal-section + .legal-section { margin-top: clamp(1.5rem, 3.5vw, 2.1rem); }
+.legal-section p { margin: 0; }
+.legal-section p + p { margin-top: .9rem; }
+.legal-section-title {
+  margin: 0 0 .7rem;
+  color: #fff0bd;
+  font-size: clamp(1.15rem, 2.4vw, 1.4rem);
+  line-height: 1.25;
+}
+.legal-surface a {
+  color: #ffe29a;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgba(255, 226, 154, .45);
+  text-underline-offset: .18em;
+}
+.legal-surface a:hover,
+.legal-surface a:focus-visible { color: #fff7d6; text-decoration-color: currentColor; }
+
+@media (max-width: 620px) {
+  .legal-page { padding-top: 1.5rem; }
+  .legal-surface { border-radius: 20px; }
 }
