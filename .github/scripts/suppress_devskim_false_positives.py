@@ -45,7 +45,9 @@ KNOWN_CONTEXTUAL_SUPPRESSION_FILES = frozenset({
     "app/components/CrystalBall/CrystalBall.tsx",
     "app/lucky-map-of-canada/lucky-map-of-canada.js",
     "tests/visual/crystal-ball-daily-limit.spec.ts",
+    "tests/visual/gold-cta.spec.ts",
     "tests/visual/homepage.spec.ts",
+    "tests/visual/sitewide-gold-cta.spec.ts",
     "app/admin/suggestions/route.test.js",
     "functions/api/oracle.js",
     "__tests__/security-payment.test.js",
@@ -185,6 +187,25 @@ def _source_line_from_text(source_text: str, region: dict) -> str:
     return lines[start_line - 1] if start_line <= len(lines) else ""
 
 
+def _code_point_offset_from_utf16_offset(
+    source_text: str, offset: int
+) -> int | None:
+    """Translate DevSkim's UTF-16 code-unit offset into a Python string index."""
+    if not isinstance(offset, int) or isinstance(offset, bool) or offset < 0:
+        return None
+    units = 0
+    for index, character in enumerate(source_text):
+        if units == offset:
+            return index
+        # DevSkim indexes .NET strings: astral characters occupy a surrogate
+        # pair (two units) but a single Python code point.
+        units += 2 if ord(character) > 0xFFFF else 1
+        if units > offset:
+            # The reported offset splits a surrogate pair; do not guess.
+            return None
+    return len(source_text) if units == offset else None
+
+
 def _absolute_source_span(
     region: dict, source_text: str
 ) -> tuple[int, int] | None:
@@ -196,16 +217,26 @@ def _absolute_source_span(
     if not has_offset or not has_length:
         return None
 
-    start = region.get("charOffset")
-    length = region.get("charLength")
+    start_units = region.get("charOffset")
+    length_units = region.get("charLength")
     if (
-        not isinstance(start, int) or isinstance(start, bool) or start < 0
-        or not isinstance(length, int) or isinstance(length, bool) or length <= 0
-        or start + length > len(source_text)
+        not isinstance(start_units, int) or isinstance(start_units, bool)
+        or start_units < 0
+        or not isinstance(length_units, int) or isinstance(length_units, bool)
+        or length_units <= 0
     ):
         return None
 
-    end = start + length
+    # DevSkim reports charOffset/charLength in UTF-16 code units. Convert once
+    # here so every downstream comparison stays in Python code-point indices;
+    # the conversion is identity for source that contains no astral characters.
+    start = _code_point_offset_from_utf16_offset(source_text, start_units)
+    end = _code_point_offset_from_utf16_offset(
+        source_text, start_units + length_units
+    )
+    if start is None or end is None or end <= start:
+        return None
+
     source_fragment = source_text[start:end]
     snippet = region.get("snippet")
     snippet_text = snippet.get("text") if isinstance(snippet, dict) else None
