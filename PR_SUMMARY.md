@@ -150,10 +150,34 @@ HTML escaping — the parsed `href` equals the wrapper's URL byte-for-byte.
   the confirmation path.
 - **PENDING — real-device timing.** The 40–60 second figure is not reproducible here. Confirming that
   the total wait is reduced needs a browser and device/network conditions this environment does not
-  have, and must be reported separately from challenge-processing time.
-- **PENDING — GitHub Actions on the PR head.**
-- **PENDING — the configured Gemini PR review.** Recorded after the PR is opened; a review that does
-  not run is reported as pending, not as passed.
+  have, and must be reported separately from challenge-processing time.- **PENDING — Visual QA** on PR head `1fdf0fc`: still running when this report was written. It owns the Playwright regression that is BLOCKED locally.
+- **PENDING — Amazon Q Developer** on PR head `1fdf0fc`: still running when this report was written.
+- **PASS — DevSkim scan and Security upload** on PR head `1fdf0fc`.
+- **PASS — Validate OpenNext build artifacts** on PR head `1fdf0fc` (includes the 495 MiB gate and the OpenNext Worker build).
+- **PASS — the configured Gemini PR reviewer** did run and published a review at the PR head; findings recorded below.
+
+## PR and automated review record
+
+- **PR:** [#1670](https://github.com/davidcollier77-code/Luckypickcanada/pull/1670), branch
+  `freebuff/1a7d57e47625ce6441d412f1`, head `1fdf0fcd98cef01c03dacf3d8c7039cda188a532`, target `main`.
+  Left **open and unmerged**.
+- **Gemini review — RAN.** Reviewer `github-actions[bot]`, submitted 2026-11-01T18:20:54Z against commit
+  `1fdf0fcd98cef01c03dacf3d8c7039cda188a532`, which is the exact PR head (confirmed from the review's
+  own `Reviewed commit` line and `commit_id`). Model: `gemini-3.5-flash-lite`.
+  **Findings: 0 red (critical) and 0 yellow (suggested).** Status line: `REVIEW INCOMPLETE — NOT
+  VERIFIED`, because the reviewer's own context budget shortened the retrieved source for
+  `app/page.js`, `app/homepage/HomePage.js` and `app/homepage/Hero.js`, and partially examined the
+  documentation files. Two green observations were recorded: the low-priority preload targets the
+  exact loader URL during server rendering, and the rewritten Playwright spec validates both the
+  presence/attributes on `/` and the absence on unrelated routes.
+  **Assessment:** nothing to address. The only non-green item is a reviewer-budget coverage
+  disclosure, not a defect in this change; the review also independently reached the same conclusion
+  this report documents, that the Playwright execution is unverified locally. The Gemini reviewer
+  itself is explicitly out of scope for this task and was not modified.
+- **Amazon Q review — RAN.** Submitted 2026-11-01T18:20:41Z at the same head: "No logic errors,
+  security vulnerabilities, crashes, or regressions were identified" and "No blocking defects
+  found", with the locally-blocked Playwright execution called out as a pending risk — which this
+  report already discloses rather than hides.
 
 ## Behaviour preserved, risks, limitations
 

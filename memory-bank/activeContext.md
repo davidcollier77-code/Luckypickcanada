@@ -7,7 +7,8 @@
 - **Implementation:** `app/page.js` emits `preload(TURNSTILE_SCRIPT_URL, { as: 'script', fetchPriority: 'low' })`. Low priority is the correction over PR #1568: the hint must not displace the LCP image or the route's own CSS/JS, which is the objection that removed it. `preload()` fetches without executing, so `onloadTurnstileCallback` still exists before the wrapper injects the executing tag.
 - **Preserved:** `TurnstileField` callbacks/state machine, site-key lookup, hidden token field, server-side Siteverify, hostname/action validation, rate limiting, spam protection, form behaviour, styling. No dependency, environment, Cloudflare or API-route change.
 - **Artifacts:** `specs/041-turnstile-early-preload/{spec,plan,research,tasks}.md` reused and rewritten; `.specify/feature.json` points there. No duplicate feature directory created.
-- **Not verified:** Playwright spec execution — Chromium cannot start here (`libnspr4.so` missing, no root, package install refused). Real-device script-fetch and challenge-completion timing remain PENDING.
+- **PR / review:** [#1670](https://github.com/davidcollier77-code/Luckypickcanada/pull/1670), head `1fdf0fcd`, open and unmerged. Gemini actually reviewed that exact head (model `gemini-3.5-flash-lite`, submitted 18:20:54Z) with **0 red / 0 yellow findings**; its status line is `REVIEW INCOMPLETE — NOT VERIFIED` solely because its own context budget shortened retrieved source for `app/page.js`, `HomePage.js` and `Hero.js` — a coverage disclosure, not a defect. Amazon Q reported no blocking defects. CI: DevSkim PASS, Validate OpenNext build artifacts PASS, Visual QA and Amazon Q still running at the time of writing.
+- **Not verified:** Playwright spec execution — Chromium cannot start here (`libnspr4.so` missing, no root, package install refused); CI Visual QA owns it. Real-device script-fetch and challenge-completion timing remain PENDING.
 
 ---
 
