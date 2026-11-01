@@ -54,3 +54,14 @@
   Screenshots and the machine-readable report live in `artifacts/` as untracked evidence.
 - [ ] T019 [US1] Open product decision (not implemented, out of scope by FR-008): the reused reveal
   panel still shows its paid "PAYMENT COMPLETE" eyebrow during a free preview.
+
+
+## Follow-up Phase — Production Visibility Correction
+
+- [X] T020 [US1] Correct the production-only visibility defect by setting the existing
+  `REVEAL_TEST_MODE` switch to `true` directly; preserve the eligible-type allowlist and the
+  `false` off-switch behavior.
+- [X] T021 [US1] Add a regression assertion that the configured switch is explicitly enabled and both
+  permitted preview types are visible under the enabled setting; keep the tip jar excluded.
+- [ ] T022 [US1] Run focused tests and `./freebuff-verify.sh`; inspect the final diff and record the
+  production build size and any pending PR checks.
