@@ -1,3 +1,16 @@
+# Active Context — Turnstile Suggestion Box Loading Delay (2026-11-01)
+
+- **Task group:** `troubleshooting`; branch `freebuff/1a7d57e47625ce6441d412f1`; target `main`; PR left open and unmerged.
+- **Verified cause (not assumed):** the pinned `@marsidev/react-turnstile@1.6.1` loader appends `.../turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit` from a **mount effect**, and `TurnstileField` is statically imported by the `'use client'` homepage, so the fetch cannot start until React hydrates. The built homepage document contained **zero** matching preload hints (only the layout `preconnect`). Chain: `hydration -> mount -> script fetch (2 hops) -> Cloudflare challenge`.
+- **Verified history:** PR #1568's preload URL matches the pinned loader byte-for-byte, so it was not a URL-mismatch bug. `7ab4b305` deleted it for render-path competition ("free up the critical render path"); its PageSpeed plan optimised only the PageSpeed side, so the reported latency was never addressed. `1e2fe117` inverted the Playwright spec to assert absence.
+- **Measured endpoint:** configured URL -> `302` (`max-age=300, public`) -> `/turnstile/v0/g/<build>/api.js` -> `200`, `86,732` bytes, `cache-control: max-age=31536000, public`. The one-year cache lifetime is why an early hint survives a slow hydration instead of being a wasted download.
+- **Implementation:** `app/page.js` emits `preload(TURNSTILE_SCRIPT_URL, { as: 'script', fetchPriority: 'low' })`. Low priority is the correction over PR #1568: the hint must not displace the LCP image or the route's own CSS/JS, which is the objection that removed it. `preload()` fetches without executing, so `onloadTurnstileCallback` still exists before the wrapper injects the executing tag.
+- **Preserved:** `TurnstileField` callbacks/state machine, site-key lookup, hidden token field, server-side Siteverify, hostname/action validation, rate limiting, spam protection, form behaviour, styling. No dependency, environment, Cloudflare or API-route change.
+- **Artifacts:** `specs/041-turnstile-early-preload/{spec,plan,research,tasks}.md` reused and rewritten; `.specify/feature.json` points there. No duplicate feature directory created.
+- **Not verified:** Playwright spec execution — Chromium cannot start here (`libnspr4.so` missing, no root, package install refused). Real-device script-fetch and challenge-completion timing remain PENDING.
+
+---
+
 # Active Context — Gemini Reviewer Instruction Consolidation (2026-11-01)
 
 - **Task group:** `deep-dive`; branch `freebuff/d83726e9f4ebf83f38ce1768`; target `main`; PR open and unmerged.

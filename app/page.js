@@ -1,3 +1,4 @@
+import { preload } from 'react-dom';
 import HomePage from './homepage/HomePage';
 import Hero from './homepage/Hero';
 import JsonLd from './components/JsonLd';
@@ -48,6 +49,16 @@ const faqSchema = {
 
 export const dynamic = 'force-static';
 
+// The pinned @marsidev/react-turnstile 1.6.1 loader appends this exact URL from a
+// mount effect, so the Suggestion Box security check cannot begin fetching the
+// API until React has hydrated the homepage. Emitting the hint from the initial
+// document lets that two-hop fetch overlap hydration instead of following it.
+// `fetchPriority: 'low'` keeps the 86.7 KB third-party script behind the LCP
+// image and the route's own CSS/JS, which is what the mobile PageSpeed work
+// protects; the script is not executed here, so the wrapper still registers
+// onloadTurnstileCallback before it injects the executing tag.
+const TURNSTILE_SCRIPT_URL =
+  'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit';
 
 /**
  * Composes the static homepage with its sky backdrop, hero, interactive content,
@@ -56,6 +67,8 @@ export const dynamic = 'force-static';
  * @returns {import('react').ReactElement} The complete homepage.
  */
 export default function Page() {
+  // React's resource API emits the hint in <head> during server rendering.
+  preload(TURNSTILE_SCRIPT_URL, { as: 'script', fetchPriority: 'low' });
 
   return (
     <>
