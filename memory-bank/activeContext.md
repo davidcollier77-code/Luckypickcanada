@@ -1,3 +1,16 @@
+# Active Context — Shared Engineering Practices Routing (2026-11-01)
+
+- **Selected task group:** `deep-dive` — cross-group documentation and updater routing.
+- **Branch / PR:** `freebuff/gemini-api-skill-conditional-routing-20261101`, PR #1662; retain the existing open PR and leave it unmerged.
+- **Owner authorization:** explicitly authorized adding the shared Engineering Practices reference to all task groups and configuring the documentation updater to include it.
+- **Reference:** Google Engineering Practices, “What to Look For in a Code Review,” sourced from `https://raw.githubusercontent.com/google/eng-practices/master/review/reviewer/looking-for.md` under CC BY 3.0. The upstream repository was archived on 2025-11-21; its published reference remains available but is no longer actively maintained.
+- **Routing:** manifest source ID `/google/eng-practices` is included in all eight task groups. The updater should create the canonical snapshot in Creation and symlink it into the other seven group directories. Each group instruction points to its matching `.docs/<group>/_google_eng-practices.md` path.
+- **Use policy:** cross-cutting, optional guidance; consult when materially useful, not mandatory reading for every task. `AGENTS.md`, project conventions, and selected group instructions remain authoritative.
+- **Spec Kit artifacts:** `specs/068-shared-engineering-practices-routing/{spec,plan,tasks}.md`; `.specify/feature.json` points to this feature.
+- **Verification:** manifest structure and updater naming/symlink behavior inspected. The documentation refresh itself has not been run in this session; owner plans to trigger it after this PR update. Do not claim snapshot generation or successful updater execution until that run is observed.
+
+---
+
 # Active Context — Conditional Gemini API Developer Skill Routing (2026-11-01)
 
 - **Selected task group:** `deep-dive` — repository-wide governance, documentation routing, and Gemini reviewer conditional-loading correction.
