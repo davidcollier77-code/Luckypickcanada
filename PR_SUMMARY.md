@@ -150,6 +150,15 @@ HTML escaping — the parsed `href` equals the wrapper's URL byte-for-byte.
   the confirmation path.
 - **PENDING — GitHub Actions on the docs-only follow-up head `01cef650`**, which changes only
   `PR_SUMMARY.md` and `memory-bank/activeContext.md`.
+- **Browser testing is free-only and needs no purchase.** Every Chromium/Playwright run in this
+  repository happens on GitHub's standard `ubuntu-latest` hosted runners: `.github/workflows/visual-qa.yml`
+  uses `runs-on: ubuntu-latest` (plus `timeout-minutes: 25`) and `pnpm exec playwright install --with-deps chromium`
+  with Playwright's own bundled Chromium, driven by `playwright.config.ts` projects `desktop`, `mobile-390`
+  and `mobile-412` against a local `127.0.0.1:3000` dev server. All 15 jobs across all 11 workflows use
+  `runs-on: ubuntu-latest`; there are no larger runners, no self-hosted runners, no BrowserStack/Sauce
+  Labs/LambdaTest/Percy/Chromatic/Applitools or other paid testing platform, no `wsEndpoint`/`connectOptions`
+  remote browser, and no billing, plan or payment-method change. On a public repository, standard hosted
+  runners consume no paid minutes, so confirming the BLOCKED Playwright check costs nothing.
 - **PENDING — real-device timing.** The 40–60 second figure is not reproducible here. Confirming that
   the total wait is reduced needs a browser and device/network conditions this environment does not
   have, and must be reported separately from challenge-processing time.- **PENDING — Visual QA** on PR head `1fdf0fc`: still running when this report was written. It owns the Playwright regression that is BLOCKED locally.
