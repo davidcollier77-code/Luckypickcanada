@@ -14,10 +14,24 @@ const EVENT_PATH = process.env.GITHUB_EVENT_PATH || "";
 const RULE_PATH = ".gemini/rules/luckypickcanada.md";
 const GEMINI_API_DEV_SKILL_PATH = ".docs/creation/_google-gemini_gemini-skills_gemini-api-dev.md";
 const MAX_CHANGED_SOURCE_FILES = 60; // budget-aware cap; every omission is disclosed by path
-const MAX_CHANGED_SOURCE_CHARS = 6000;
+// The per-file ceiling used to be 6,000 characters and was applied inside the same Math.min() as the
+// whole-review budget, so no file could ever receive more than 6,000 characters and most of the
+// 160,000-character budget went unused. Measured on PR #1666 (7 changed files): supplying every
+// changed region needed 41,335 characters in total, but two files needed 8,399 and 10,027, so both
+// were clipped and the review reported 0 of 7 files complete. The ceiling is now a real per-file
+// maximum and the allocation follows the remaining budget (see perFileSourceLimit).
+const MAX_PER_FILE_SOURCE_CHARS = 24000;
 const MIN_CHANGED_SOURCE_CHARS = 1500;
 const MAX_REVIEW_BODY_CHARS = 60000;
-const MAX_TOTAL_SOURCE_CHARS = 160000;
+const MAX_TOTAL_SOURCE_CHARS = 160000; // unchanged: the measurements show 41,335 of 160,000 is enough
+// Documentation is supporting context, not executable change: it gets a narrower window and a
+// smaller ceiling, and it never gates the code-coverage verdict.
+const MAX_DOCUMENT_SOURCE_CHARS = 4000;
+const DOCUMENT_WINDOW_LINES = 20;
+const CODE_WINDOW_LINES = 40;
+// Adjacent changed lines merge into one window, so this bound is on raw added lines, not regions.
+// It is high enough that a normal changed-hunk set is measured in full rather than silently cut.
+const MAX_SOURCE_ANCHORS = 600;
 const MAX_BASE_SOURCE_CHARS = 2200;
 const MAX_RELATED_SOURCE_CHARS = 3200;
 const MAX_SELECTED_IDS = 25;
@@ -286,42 +300,111 @@ function clipSource(source, limit) {
 // reviewer was shown a file whose modified region had been removed (verified on #1642, where the
 // unconverted forEach calls sat around lines 754-881 of a clipped component and went unreported).
 // Keep the head for imports/declarations, every window around a changed line, and the tail.
-function clipSourceWithAnchors(source, limit, lineNumbers) {
+function isDocumentationSource(path) {
+  return /\.(?:md|mdx|markdown|rst|adoc)$/i.test(String(path || ""));
+}
+// One file's ceiling, derived from what the review can still afford. A flat ceiling made the total
+// budget unreachable: on a 7-file PR the budget allowed 22,857 characters per file, so a flat 6,000
+// could never supply a changed region that needed more.
+function perFileSourceLimit(remainingBudget, remainingFiles, { documentation = false } = {}) {
+  const budget = Math.max(0, Math.floor(Number(remainingBudget) || 0));
+  const fileCount = Math.max(1, Math.floor(Number(remainingFiles) || 1));
+  if (budget <= 0) return 0;
+  const ceiling = documentation ? MAX_DOCUMENT_SOURCE_CHARS : MAX_PER_FILE_SOURCE_CHARS;
+  const share = Math.min(ceiling, Math.floor(budget / fileCount));
+  // Hold a usable floor for each file for as long as the remaining budget can fund it.
+  return Math.min(budget, Math.max(Math.min(MIN_CHANGED_SOURCE_CHARS, budget), share));
+}
+function charOffsetOfLine(text, lineIndex) {
+  if (lineIndex <= 0) return 0;
+  const value = String(text);
+  const rows = value.split("\n");
+  let offset = 0;
+  for (let index = 0; index < Math.min(lineIndex, rows.length); index += 1) offset += rows[index].length + 1;
+  return Math.max(0, Math.min(offset, value.length));
+}
+// When a window cannot be supplied in full, keep the changed line itself rather than its first
+// characters, so the anchor is never the part that gets dropped (the #1642 failure mode).
+function sliceWindowAroundAnchor(window, room) {
+  const text = String(window && window.text || "");
+  if (text.length <= room) return text;
+  const anchorLine = Math.max(0, Number(window.anchors && window.anchors[0] || window.start + 1) - 1 - window.start);
+  const offset = charOffsetOfLine(text, anchorLine);
+  if (offset <= Math.floor(room * 0.6)) return text.slice(0, room);
+  const start = Math.max(0, Math.min(text.length - room, offset - Math.floor(room * 0.4)));
+  return text.slice(start, start + room);
+}
+function clipSourceWithAnchors(source, limit, lineNumbers, options = {}) {
   const value = String(source || "");
   const cap = Math.max(0, Math.floor(Number(limit) || 0));
-  if (value.length <= cap) return { content: value, truncated: false };
+  const windowLines = Math.max(1, Math.floor(Number(options.windowLines) || CODE_WINDOW_LINES));
   const anchors = [...new Set((lineNumbers instanceof Set ? [...lineNumbers] : (Array.isArray(lineNumbers) ? lineNumbers : []))
     .map((item) => Number(item)).filter((item) => Number.isInteger(item) && item > 0))].sort((a, b) => a - b);
-  if (!anchors.length || cap <= 200) return clipSource(value, cap);
+  // Whole-file delivery and changed-region delivery are separate facts: a clipped file can still have
+  // supplied every changed region. Both are reported so the caller can disclose them honestly.
+  if (value.length <= cap) {
+    return { content: value, truncated: false,
+      regions: { required: anchors.length, supplied: anchors.length, complete: true } };
+  }
+  if (!anchors.length || cap <= 200) {
+    const plain = clipSource(value, cap);
+    // With no changed line to anchor there is no region whose completeness can be proven.
+    return { ...plain, regions: { required: 0, supplied: 0, complete: false } };
+  }
+  const droppedAnchors = Math.max(0, anchors.length - MAX_SOURCE_ANCHORS);
   const MARKER = "\n[...omitted by reviewer context budget...]\n";
   const rows = value.split("\n");
-  const WINDOW = 40;
   const windows = [];
-  for (const anchor of anchors.slice(0, 60)) {
-    const start = Math.max(0, anchor - 1 - WINDOW);
-    const end = Math.min(rows.length, anchor + WINDOW);
+  for (const anchor of anchors.slice(0, MAX_SOURCE_ANCHORS)) {
+    const start = Math.max(0, anchor - 1 - windowLines);
+    const end = Math.min(rows.length, anchor + windowLines);
     const previous = windows[windows.length - 1];
-    if (previous && start <= previous.end) previous.end = Math.max(previous.end, end);
-    else windows.push({ start, end });
+    if (previous && start <= previous.end) {
+      previous.end = Math.max(previous.end, end);
+      previous.anchors.push(anchor);
+    } else windows.push({ start, end, anchors: [anchor] });
   }
-  const headBudget = Math.max(0, Math.floor(cap * 0.2));
-  const tailBudget = Math.max(0, Math.floor(cap * 0.15));
+  for (const window of windows) window.text = rows.slice(window.start, window.end).join("\n");
+  const headMax = Math.max(0, Math.floor(cap * 0.2));
+  const tailMax = Math.max(0, Math.floor(cap * 0.15));
+  const windowsTotal = windows.reduce((total, window) => total + window.text.length, 0);
+  const markerReserve = MARKER.length * (windows.length + 2);
+  const regionsFitComfortably = windowsTotal + markerReserve <= Math.max(0, cap - headMax - tailMax);
+  // Changed regions come first: when they need the whole allowance, head and tail shrink to a small
+  // floor instead of taking 35% before any region is supplied.
+  const headFloor = regionsFitComfortably ? headMax : Math.min(headMax, Math.floor(cap * 0.05));
+  const tailFloor = regionsFitComfortably ? tailMax : Math.min(tailMax, Math.floor(cap * 0.05));
+  const pending = windows.slice();
+  const pieces = [];
+  let supplied = 0;
+  let remaining = Math.max(0, cap - headFloor - tailFloor - MARKER.length * 2);
+  while (pending.length && remaining > MARKER.length) {
+    const room = remaining - MARKER.length;
+    const index = pending.findIndex((window) => window.text.length <= room);
+    if (index === -1) break;
+    const [window] = pending.splice(index, 1);
+    pieces.push({ start: window.start, text: window.text });
+    supplied += 1;
+    remaining -= window.text.length + MARKER.length;
+  }
+  // A region left over is genuinely truncated; keep its most relevant text but do not count it as
+  // supplied, so a truncated region can never produce a green coverage verdict.
+  if (pending.length && remaining > MARKER.length + 200) {
+    const window = pending.shift();
+    const piece = sliceWindowAroundAnchor(window, remaining - MARKER.length);
+    pieces.push({ start: window.start, text: piece });
+    remaining = Math.max(0, remaining - piece.length - MARKER.length);
+  }
+  pieces.sort((left, right) => left.start - right.start);
+  // Whatever the regions did not need returns to the head (imports/declarations) and the tail.
+  const headBudget = Math.min(headMax, Math.max(headFloor, Math.floor(remaining * 0.57)));
+  const tailBudget = Math.min(tailMax, Math.max(tailFloor, remaining - headBudget));
   const headText = rows.slice(0, Math.min(rows.length, 40)).join("\n").slice(0, headBudget);
   const tailText = rows.slice(Math.max(0, rows.length - 40)).join("\n");
   const tail = tailText.slice(Math.max(0, tailText.length - tailBudget));
-  let remaining = Math.max(0, cap - headText.length - tail.length - MARKER.length * 2);
-  const chunks = [];
-  for (const window of windows) {
-    if (remaining <= MARKER.length) break;
-    const text = rows.slice(window.start, window.end).join("\n");
-    const room = remaining - MARKER.length;
-    const kept = text.slice(0, room);
-    chunks.push(kept);
-    remaining -= kept.length + MARKER.length;
-    if (text.length > room) break;
-  }
-  const content = [headText, ...chunks, tail].filter(Boolean).join(MARKER);
-  return { content, truncated: true };
+  const content = [headText, ...pieces.map((piece) => piece.text), tail].filter(Boolean).join(MARKER);
+  return { content, truncated: true,
+    regions: { required: windows.length, supplied, complete: supplied === windows.length && droppedAnchors === 0 } };
 }
 async function getRepositoryFile(path, ref, repository = REPO) {
   if (!safePath(path) || !/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
@@ -346,33 +429,75 @@ async function getRepositoryPathSet(ref, repository = REPO) {
   } catch { return { set: null, truncated: false, available: false }; }
 }
 async function collectSourceContext(pr, files) {
-  const records = [], limitations = [], cache = new Map();
-  const coverage = { changedTextFiles: 0, fullSource: [], partial: [], patchOnly: [] };
+  const records = [], limitations = [], advisory = [], cache = new Map();
+  // Coverage is tracked twice on purpose: whole-file delivery (how much of each file reached the
+  // model) and changed-region delivery (whether every changed region reached it). A large file can be
+  // genuinely incomplete while every changed region was supplied, and the old binary "whole file or
+  // partial" flag reported that case as a coverage gap. Documentation has its own bucket so it stays
+  // visible without gating the code-coverage verdict.
+  const coverage = {
+    changedTextFiles: 0,
+    fullSource: [],
+    partial: [],
+    patchOnly: [],
+    regions: { required: 0, supplied: 0, complete: true, incomplete: [] },
+    documentation: { changedTextFiles: 0, fullSource: [], partial: [], patchOnly: [], regionsIncomplete: [] }
+  };
   let budget = MAX_TOTAL_SOURCE_CHARS;
   const headSha = String(pr.head && pr.head.sha || ""), baseSha = String(pr.base && pr.base.sha || "");
   const headRepo = String(pr.head && pr.head.repo && pr.head.repo.full_name || REPO);
   const baseRepo = String(pr.base && pr.base.repo && pr.base.repo.full_name || REPO);
   if (!/^[a-f0-9]{40}$/i.test(headSha) || !/^[a-f0-9]{40}$/i.test(baseSha))
-    return { records, coverage, limitations: ["Base/head commit SHA unavailable; full-source context skipped."] };
+    return { records, coverage, advisory, limitations: ["Base/head commit SHA unavailable; full-source context skipped."] };
   const read = async (path, ref, repository) => { const key = repository + ":" + ref + ":" + path; if (!cache.has(key)) cache.set(key, await getRepositoryFile(path, ref, repository)); return cache.get(key); };
   const sourceSelection = selectChangedSourceCandidates(files);
   const candidates = sourceSelection.candidates;
-  coverage.changedTextFiles = sourceSelection.totalCount;
+  for (const path of sourceSelection.paths || []) {
+    if (isDocumentationSource(path)) coverage.documentation.changedTextFiles += 1;
+    else coverage.changedTextFiles += 1;
+  }
   if (sourceSelection.omittedCount) {
-    limitations.push(sourceSelection.omittedCount + " changed text file(s) exceeded the " +
-      MAX_CHANGED_SOURCE_FILES + "-file full-source context cap; their available patches remain included in review batches.");
-    for (const path of sourceSelection.omittedPaths) {
-      coverage.patchOnly.push({ path, reason: "beyond the " + MAX_CHANGED_SOURCE_FILES + "-file full-source cap" });
+    const capReason = "beyond the " + MAX_CHANGED_SOURCE_FILES + "-file full-source cap";
+    const omittedPaths = sourceSelection.omittedPaths || [];
+    const omittedCode = omittedPaths.filter((path) => !isDocumentationSource(path));
+    for (const path of omittedPaths) {
+      if (isDocumentationSource(path)) coverage.documentation.patchOnly.push({ path, reason: capReason });
+      else coverage.patchOnly.push({ path, reason: capReason });
+    }
+    if (omittedCode.length) {
+      limitations.push(omittedCode.length + " changed code file(s) exceeded the " +
+        MAX_CHANGED_SOURCE_FILES + "-file full-source context cap; their available patches remain included in review batches.");
+    }
+    const omittedDocumentation = omittedPaths.length - omittedCode.length;
+    if (omittedDocumentation > 0) {
+      advisory.push(omittedDocumentation + " changed documentation file(s) exceeded the " +
+        MAX_CHANGED_SOURCE_FILES + "-file full-source context cap; their patches remain included and they do not gate code coverage.");
     }
   }
   const changed = [];
+  // Documentation has a much lower ceiling, so sharing one divisor across both classes would let a
+  // handful of small documentation files starve the code files that actually need the budget.
+  let remainingCodeFiles = candidates.filter((file) => !isDocumentationSource(file.filename)).length;
+  let remainingDocumentationFiles = candidates.length - remainingCodeFiles;
   for (let index = 0; index < candidates.length; index += 1) {
     const file = candidates[index];
+    const documentation = isDocumentationSource(file.filename);
+    if (documentation) remainingDocumentationFiles = Math.max(1, remainingDocumentationFiles);
+    else remainingCodeFiles = Math.max(1, remainingCodeFiles);
     if (budget < MIN_CHANGED_SOURCE_CHARS) {
-      limitations.push("The " + MAX_TOTAL_SOURCE_CHARS + "-character source-context budget was exhausted before " +
-        (candidates.length - index) + " selected changed text file(s) could be loaded; their available patches remain included in review batches.");
-      for (const rest of candidates.slice(index)) {
-        coverage.patchOnly.push({ path: rest.filename, reason: "source-context budget exhausted" });
+      const exhausted = candidates.slice(index);
+      const exhaustedCode = exhausted.filter((rest) => !isDocumentationSource(rest.filename));
+      for (const rest of exhausted) {
+        if (isDocumentationSource(rest.filename)) coverage.documentation.patchOnly.push({ path: rest.filename, reason: "source-context budget exhausted" });
+        else coverage.patchOnly.push({ path: rest.filename, reason: "source-context budget exhausted" });
+      }
+      if (exhaustedCode.length) {
+        limitations.push("The " + MAX_TOTAL_SOURCE_CHARS + "-character source-context budget was exhausted before " +
+          exhaustedCode.length + " changed code file(s) (and " + (exhausted.length - exhaustedCode.length) +
+          " documentation file(s)) could be loaded; their available patches remain included in review batches.");
+      } else {
+        advisory.push("The source-context budget was exhausted before " + exhausted.length +
+          " documentation file(s) could be loaded; their patches remain included and they do not gate code coverage.");
       }
       break;
     }
@@ -380,23 +505,45 @@ async function collectSourceContext(pr, files) {
     const sourcePath = removed ? (file.previous_filename || file.filename) : file.filename;
     const source = await read(sourcePath, removed ? baseSha : headSha, removed ? baseRepo : headRepo);
     if (source === null) {
-      limitations.push((removed ? "Base source for removed file unavailable for " : "Full head source unavailable for ") +
-        file.filename + "; its patch remains included in review batches.");
-      coverage.patchOnly.push({ path: file.filename, reason: removed ? "base source unavailable" : "head source unavailable" });
+      const unavailable = removed ? "base source unavailable" : "head source unavailable";
+      if (isDocumentationSource(file.filename)) {
+        coverage.documentation.patchOnly.push({ path: file.filename, reason: unavailable });
+        advisory.push("Documentation source was unavailable for " + file.filename + "; its patch was still reviewed and it does not gate code coverage.");
+      } else {
+        limitations.push((removed ? "Base source for removed file unavailable for " : "Full head source unavailable for ") +
+          file.filename + "; its patch remains included in review batches.");
+        coverage.patchOnly.push({ path: file.filename, reason: unavailable });
+      }
       continue;
     }
     // Share the remaining budget across the files still to read so one huge file cannot
     // starve every later changed file out of full-source context.
-    const remainingFiles = Math.max(1, candidates.length - index);
-    const perFileLimit = Math.max(MIN_CHANGED_SOURCE_CHARS,
-      Math.min(MAX_CHANGED_SOURCE_CHARS, Math.floor(budget / remainingFiles)));
-    const clipped = clipSourceWithAnchors(source, Math.min(perFileLimit, budget), addedLines(file.patch));
+    const remainingInClass = documentation ? remainingDocumentationFiles : remainingCodeFiles;
+    const perFileLimit = perFileSourceLimit(budget, remainingInClass, { documentation });
+    if (documentation) remainingDocumentationFiles -= 1;
+    else remainingCodeFiles -= 1;
+    const clipped = clipSourceWithAnchors(source, Math.min(perFileLimit, budget), addedLines(file.patch),
+      { windowLines: documentation ? DOCUMENT_WINDOW_LINES : CODE_WINDOW_LINES });
+    const regions = clipped.regions || { required: 0, supplied: 0, complete: !clipped.truncated };
     records.push({ path: file.filename, role: removed ? "removed file at PR base before deletion" : "changed file at PR head",
-      content: clipped.content, truncated: clipped.truncated });
-    if (clipped.truncated) coverage.partial.push({ path: file.filename, reason: "clipped to the reviewer context budget" });
-    else coverage.fullSource.push(file.filename);
+      content: clipped.content, truncated: clipped.truncated, ...(documentation ? { documentation: true } : {}) });
+    const regionReason = regions.complete
+      ? "whole file clipped; every changed region was supplied"
+      : "changed region(s) clipped to the reviewer context budget";
+    if (documentation) {
+      if (clipped.truncated) coverage.documentation.partial.push({ path: file.filename, reason: regionReason });
+      else coverage.documentation.fullSource.push(file.filename);
+      if (!regions.complete) coverage.documentation.regionsIncomplete.push(file.filename);
+    } else {
+      if (clipped.truncated) coverage.partial.push({ path: file.filename, reason: regionReason });
+      else coverage.fullSource.push(file.filename);
+      coverage.regions.required += regions.required;
+      coverage.regions.supplied += regions.supplied;
+      if (!regions.complete) { coverage.regions.complete = false; coverage.regions.incomplete.push(file.filename); }
+    }
     budget -= clipped.content.length; changed.push({ path: file.filename, source, status: file.status });
-    if (changed.length <= 3 && !removed && file.status !== "added" && budget > 6000) {
+    const baseCompared = changed.filter((entry) => !isDocumentationSource(entry.path)).length;
+    if (!documentation && baseCompared <= 3 && !removed && file.status !== "added" && budget > 6000) {
       const basePath = file.previous_filename || file.filename;
       const baseline = await read(basePath, baseSha, baseRepo);
       if (baseline !== null) {
@@ -440,35 +587,82 @@ async function collectSourceContext(pr, files) {
   if (importProbeCount >= MAX_IMPORT_SOURCE_PROBES) limitations.push("Import-source probe budget reached; further local import candidates may be omitted.");
   const hasLocalImports = changed.some((file) => file.status !== "removed" && extractLocalImports(file.source).length > 0);
   if (budget < 3000 && hasLocalImports) limitations.push("Remaining source-context budget fell below 3000 characters; further local-import context was not attempted.");
-  const truncationNote = formatTruncatedSourceNote(records);
+  const truncationNote = formatTruncatedSourceNote(records.filter((record) => !record.documentation));
   if (truncationNote) limitations.push(truncationNote);
+  const documentationTruncation = formatTruncatedSourceNote(records.filter((record) => record.documentation));
+  if (documentationTruncation) advisory.push("Documentation context was shortened and is disclosed separately: " + documentationTruncation);
   if (candidates.length > changed.length && !limitations.some((item) => /before .* selected changed text file|Full head source unavailable/.test(item))) {
     limitations.push((candidates.length - changed.length) + " selected changed text file(s) did not receive full-source context; patches remain included in review batches.");
   }
   if (!records.length) limitations.push("No full-source context could be retrieved; review is patch-only.");
-  return { records, limitations, coverage };
+  return { records, limitations, advisory, coverage };
 }
 function formatCoverageDisclosure(coverage) {
   if (!coverage) return [];
-  const total = Number(coverage.changedTextFiles || 0);
   const list = (items) => {
     if (!Array.isArray(items) || !items.length) return "";
     const shown = items.slice(0, 10).map((item) => item.path + " (" + item.reason + ")");
     const rest = items.length - shown.length;
     return shown.join(", ") + (rest > 0 ? ", and " + rest + " more" : "");
   };
+  const codeTotal = Number(coverage.changedTextFiles || 0);
+  const regions = coverage.regions || null;
+  const documentation = coverage.documentation || {};
+  const documentationTotal = Number(documentation.changedTextFiles || 0);
   const rows = [];
-  if (total > 0) {
-    rows.push("Full source reviewed for " + (coverage.fullSource || []).length + " of " + total +
-      " changed text file(s)" +
+  if (regions && codeTotal > 0) {
+    const incomplete = Array.isArray(regions.incomplete) ? regions.incomplete : [];
+    rows.push("Changed source regions supplied in full for " + Math.max(0, codeTotal - incomplete.length) + " of " + codeTotal +
+      " changed code file(s)" + (incomplete.length ? "; not supplied in full: " + incomplete.slice(0, 10).join(", ") +
+        (incomplete.length > 10 ? ", and " + (incomplete.length - 10) + " more" : "") : "") + ".");
+  }
+  if (codeTotal > 0) {
+    rows.push("Whole-file source supplied for " + (coverage.fullSource || []).length + " of " + codeTotal +
+      " changed code file(s)" +
       ((coverage.partial || []).length ? ", partially for " + coverage.partial.length : "") +
       ((coverage.patchOnly || []).length ? ", patch-only for " + coverage.patchOnly.length : "") + ".");
   }
   const partial = list(coverage.partial);
-  if (partial) rows.push("Partially examined source: " + partial + ".");
+  if (partial) rows.push("Partially examined code source: " + partial + ".");
   const patchOnly = list(coverage.patchOnly);
-  if (patchOnly) rows.push("Not fully examined, patch still reviewed: " + patchOnly + ".");
+  if (patchOnly) rows.push("Code files reviewed by patch only: " + patchOnly + ".");
+  if (documentationTotal > 0) {
+    rows.push("Documentation coverage (reported separately; documentation does not gate the code verdict): full source for " +
+      (documentation.fullSource || []).length + " of " + documentationTotal + " documentation file(s)" +
+      ((documentation.partial || []).length ? ", partially for " + documentation.partial.length : "") +
+      ((documentation.patchOnly || []).length ? ", patch-only for " + documentation.patchOnly.length : "") + ".");
+  }
+  const documentationPartial = list(documentation.partial);
+  if (documentationPartial) rows.push("Partially examined documentation: " + documentationPartial + ".");
+  const documentationPatchOnly = list(documentation.patchOnly);
+  if (documentationPatchOnly) rows.push("Documentation reviewed by patch only: " + documentationPatchOnly + ".");
   return rows;
+}
+// Only these notes can keep a completed review from claiming a clean result. A changed region that
+// was not supplied is a real gap; incomplete whole-file context in a large file is disclosed but does
+// not veto a review that verified every changed region, and documentation never vetoes code coverage.
+function coverageGapNotes(coverage) {
+  if (!coverage) return [];
+  const gaps = [];
+  const codeTotal = Number(coverage.changedTextFiles || 0);
+  const regions = coverage.regions || null;
+  const incomplete = regions && Array.isArray(regions.incomplete) ? regions.incomplete : [];
+  if (incomplete.length) {
+    gaps.push("Changed source region(s) were not supplied in full for " + incomplete.length + " of " + codeTotal +
+      " changed code file(s) (" + incomplete.slice(0, 10).join(", ") +
+      (incomplete.length > 10 ? ", and " + (incomplete.length - 10) + " more" : "") +
+      "); those regions were not reviewed.");
+  } else if (!regions && (coverage.partial || []).length) {
+    // Coverage without region data cannot prove changed-region completeness.
+    gaps.push((coverage.partial || []).length + " changed code file(s) received only partial source context.");
+  }
+  const patchOnly = Array.isArray(coverage.patchOnly) ? coverage.patchOnly : [];
+  if (patchOnly.length) {
+    gaps.push(patchOnly.length + " changed code file(s) received no full source; only their patch was reviewed: " +
+      patchOnly.slice(0, 10).map((item) => item.path).join(", ") +
+      (patchOnly.length > 10 ? ", and " + (patchOnly.length - 10) + " more" : "") + ".");
+  }
+  return gaps;
 }
 function renderSourceContext(batch, context) {
   const paths = new Set(batch.map((f) => f.filename));
@@ -837,6 +1031,7 @@ function selectChangedSourceCandidates(files) {
   return {
     candidates: all.slice(0, MAX_CHANGED_SOURCE_FILES),
     totalCount: all.length,
+    paths: all.map((file) => file.filename),
     omittedCount: Math.max(0, all.length - MAX_CHANGED_SOURCE_FILES),
     omittedPaths: all.slice(MAX_CHANGED_SOURCE_FILES).map((file) => file.filename)
   };
@@ -1254,7 +1449,7 @@ function buildReviewVerdict(findings, coverageGaps, { reviewCompleted = true } =
   return { status: "green", marker: "🟢", label: "REVIEW COMPLETE — NO FINDINGS",
     detail: "The review completed, required source coverage was achieved, and no actionable finding was identified." };
 }
-function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], coverage = null, pullRequestNumber = null, compact = false, reviewedSha = null, reviewCompleted = true }) {
+function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], coverageNotes = [], coverage = null, pullRequestNumber = null, compact = false, reviewedSha = null, reviewCompleted = true }) {
   const tidy = (value) => String(value || "").replace(/\s+/g, " ").trim();
   const clip = (value, limit) => {
     const text = tidy(value);
@@ -1335,8 +1530,12 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
     }
   }
   rows.push("", "### Review coverage (informational — not a finding)");
-  if (!coverageGaps.length) rows.push("🟢 No known review-coverage gaps were identified.");
-  else for (const gap of coverageGaps) rows.push("- 🟡 " + tidy(gap));
+  const shownCoverageNotes = coverageNotes.filter((note) => !coverageGaps.includes(note));
+  if (!coverageGaps.length && !shownCoverageNotes.length) rows.push("🟢 No known review-coverage gaps were identified.");
+  else {
+    for (const gap of coverageGaps) rows.push("- 🟡 " + tidy(gap));
+    for (const note of shownCoverageNotes) rows.push("- ℹ️ " + tidy(note));
+  }
   rows.push("", "### Before merging",
     "A green Gemini review means no actionable finding was identified in the reviewed scope; it is not merge approval. Confirm all required GitHub Actions checks, required reviews, and branch-protection conditions are green before deciding to merge.");
   // Exactly two fix controls. Both read the checkboxes in this review only, so a finding the
@@ -1706,13 +1905,19 @@ async function main() {
   if (mode !== "initial" && docState.unloaded.length) {
     coverageGaps.push(docState.unloaded.length + " selected document snapshot(s) could not be loaded or did not fit the context budget.");
   }
-  for (const note of formatCoverageDisclosure(sourceContext.coverage)) {
+  // A changed region that was not supplied keeps the verdict neutral; whole-file incompleteness and
+  // documentation coverage are disclosed below without vetoing a review that covered every change.
+  for (const note of coverageGapNotes(sourceContext.coverage)) {
     if (!coverageGaps.includes(note)) coverageGaps.push(note);
+  }
+  const coverageNotes = [];
+  for (const note of [...formatCoverageDisclosure(sourceContext.coverage), ...(sourceContext.advisory || [])]) {
+    if (!coverageGaps.includes(note) && !coverageNotes.includes(note)) coverageNotes.push(note);
   }
   const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);
   // A failed pass means the review did not finish, so the verdict cannot claim a clean result.
   const reviewCompleted = batchFailures.length === 0;
-  const reviewOptions = { findings, positiveObservations, coverageGaps, pullRequestNumber: number,
+  const reviewOptions = { findings, positiveObservations, coverageGaps, coverageNotes, pullRequestNumber: number,
     reviewedSha: pr.head.sha, reviewCompleted };
   let reviewSections = formatReviewSections(reviewOptions);
   if (reviewSections.length > MAX_REVIEW_BODY_CHARS) {
@@ -1771,9 +1976,10 @@ if (require.main === module) main().catch(async (error) => {
 });
 
 module.exports = { addedLines, extractLocalImports, resolveImportCandidates, limitImportCandidates, MAX_IMPORT_SOURCE_PROBES,
-  MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
+  MAX_CHANGED_SOURCE_FILES, MAX_PER_FILE_SOURCE_CHARS, MAX_DOCUMENT_SOURCE_CHARS, CODE_WINDOW_LINES, DOCUMENT_WINDOW_LINES,
+  MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   GEMINI_API_DEV_SKILL_PATH, loadGeminiApiDevSkill, isGeminiApiDevSkillRelevant, isGeminiCliDoc, isGeminiApiOverviewDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
-  classifyReviewGroups, clipSource, clipSourceWithAnchors, SCOPE_AND_CLAIM_GUIDANCE, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
+  classifyReviewGroups, clipSource, clipSourceWithAnchors, perFileSourceLimit, isDocumentationSource, SCOPE_AND_CLAIM_GUIDANCE, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
   parseModelJson, validateReviewPayload, REVIEW_RESPONSE_SCHEMA, stripJsonFence, repairJsonText, closeTruncatedJson, extractBalancedJson,
   buildReviewVerdict, buildFixPrompt, fencedText, parseFullReviewCommand, mentionsReviewerCommand, FULL_REVIEW_COMMAND, loadDocumentManifest, sanitizeOverview,
   resolveEventAction,
@@ -1782,5 +1988,5 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   formatReviewSections, docReport, normalizeFindings, describeTaskGroupReason, buildAdversarialReviewPrompt, headMatchesReview,
   CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE, ADVERSARIAL_REVIEW_GUIDANCE,
   SEVERITY_RUBRIC, EVIDENCE_VERIFICATION_GUIDANCE, FINDING_CATEGORIES, classifyFindingCategory, sortFindings, dedupeFindings,
-  findReviewForHead, resolveRequestedFindings, formatCoverageDisclosure, MANIFEST_ERROR,
+  findReviewForHead, resolveRequestedFindings, formatCoverageDisclosure, coverageGapNotes, MANIFEST_ERROR,
   isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };

@@ -137,7 +137,8 @@ describe("Gemini reviewer source context", () => {
       patch: "@@ -1 +1 @@\n-old\n+new"
     }));
     const selected = reviewer.selectChangedSourceCandidates(files);
-    expect(reviewer.MAX_CHANGED_SOURCE_CHARS).toBe(6000);
+    expect(reviewer.MAX_PER_FILE_SOURCE_CHARS).toBe(24000);
+    expect(reviewer.MAX_DOCUMENT_SOURCE_CHARS).toBe(4000);
     expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(160000);
     expect(reviewer.MAX_BASE_SOURCE_CHARS).toBe(2200);
     expect(reviewer.MAX_RELATED_SOURCE_CHARS).toBe(3200);
@@ -399,7 +400,10 @@ describe("Gemini reviewer keeps changed-hunk context in clipped source", () => {
   });
   it("returns an unchanged file without a truncation marker", () => {
     const small = "const a = 1;\nconst b = 2;";
-    expect(reviewer.clipSourceWithAnchors(small, 1000, [2])).toEqual({ content: small, truncated: false });
+    expect(reviewer.clipSourceWithAnchors(small, 1000, [2])).toEqual({
+      content: small, truncated: false,
+      regions: { required: 1, supplied: 1, complete: true }
+    });
   });
   it("tolerates an anchor beyond the end of the file", () => {
     const clipped = reviewer.clipSourceWithAnchors(buildLongFile(), 2500, new Set([99999]));
@@ -480,3 +484,133 @@ describe("Gemini reviewer recovers bounded JSON and rejects invalid review paylo
     expect(src).toContain("validateReviewPayload(parsed)");
   });
 });
+
+describe("Gemini reviewer changed-region and documentation coverage accounting", () => {
+  const buildNumberedFile = (lines: number, anchors: number[]) => {
+    const rows: string[] = [];
+    for (let n = 1; n <= lines; n += 1) rows.push("const value" + n + " = " + n + "; // padding padding padding padding");
+    for (const anchor of anchors) rows[anchor - 1] = 'const CHANGED_' + anchor + ' = "changed region ' + anchor + '";';
+    return rows.join("\n");
+  };
+
+  it("allocates a per-file limit from the remaining budget between the configured minimum and maximum", () => {
+    expect(reviewer.MAX_PER_FILE_SOURCE_CHARS).toBe(24000);
+    expect(reviewer.MIN_CHANGED_SOURCE_CHARS).toBe(1500);
+    expect(reviewer.MAX_DOCUMENT_SOURCE_CHARS).toBe(4000);
+    expect(reviewer.MAX_TOTAL_SOURCE_CHARS).toBe(160000);
+    // PR #1666 had 7 changed files: 160,000 / 7 = 22,857 characters each, which the old flat
+    // 6,000 ceiling discarded.
+    expect(reviewer.perFileSourceLimit(reviewer.MAX_TOTAL_SOURCE_CHARS, 7)).toBe(22857);
+    expect(reviewer.perFileSourceLimit(reviewer.MAX_TOTAL_SOURCE_CHARS, 7, { documentation: true })).toBe(4000);
+    expect(reviewer.perFileSourceLimit(reviewer.MAX_TOTAL_SOURCE_CHARS, 2)).toBe(24000);
+    expect(reviewer.perFileSourceLimit(reviewer.MAX_TOTAL_SOURCE_CHARS, 1)).toBe(24000);
+    expect(reviewer.perFileSourceLimit(900, 3)).toBe(900);
+    expect(reviewer.perFileSourceLimit(0, 3)).toBe(0);
+  });
+
+  it("supplies the PR #1666 changed regions that the flat ceiling used to clip", () => {
+    // Measured on the real diff: 41,335 characters were needed in total; only the reviewer source
+    // (8,399) and the memory-bank log (10,027) exceeded the old 6,000 ceiling.
+    const measured = [8399, 5589, 10027, 4538, 3963, 4304, 4515];
+    expect(measured.reduce((total, chars) => total + chars, 0)).toBe(41335);
+    expect(measured.filter((chars) => chars > 6000)).toHaveLength(2);
+    expect(measured.reduce((total, chars) => total + chars, 0)).toBeLessThanOrEqual(reviewer.MAX_TOTAL_SOURCE_CHARS);
+    const limit = reviewer.perFileSourceLimit(reviewer.MAX_TOTAL_SOURCE_CHARS, measured.length);
+    expect(limit).toBeGreaterThanOrEqual(10027);
+  });
+
+  it("reports changed-region completeness separately from whole-file delivery", () => {
+    const source = buildNumberedFile(900, [450, 451, 452]);
+    const clipped = reviewer.clipSourceWithAnchors(source, 8000, new Set([450, 451, 452]));
+    expect(clipped.truncated).toBe(true);
+    expect(clipped.regions.complete).toBe(true);
+    expect(clipped.regions.supplied).toBe(clipped.regions.required);
+    expect(clipped.content).toContain("CHANGED_450");
+    expect(clipped.content).toContain("CHANGED_452");
+    const coverage = {
+      changedTextFiles: 2,
+      fullSource: [],
+      partial: [{ path: "a.js", reason: "whole file clipped; every changed region was supplied" }],
+      patchOnly: [],
+      regions: { required: 2, supplied: 2, complete: true, incomplete: [] }
+    };
+    expect(reviewer.coverageGapNotes(coverage)).toEqual([]);
+    expect(reviewer.buildReviewVerdict([], reviewer.coverageGapNotes(coverage)).marker).toBe("🟢");
+    expect(reviewer.formatCoverageDisclosure(coverage)[0]).toBe("Changed source regions supplied in full for 2 of 2 changed code file(s).");
+    expect(reviewer.formatCoverageDisclosure(coverage).join(" ")).toContain("Whole-file source supplied for 0 of 2 changed code file(s)");
+  });
+
+  it("cannot return a green verdict when a changed region is genuinely truncated", () => {
+    const source = buildNumberedFile(2000, [100, 101, 102, 1800, 1801, 1802]);
+    const clipped = reviewer.clipSourceWithAnchors(source, 3000, new Set([100, 101, 102, 1800, 1801, 1802]));
+    expect(clipped.truncated).toBe(true);
+    expect(clipped.regions.complete).toBe(false);
+    expect(clipped.regions.supplied).toBeLessThan(clipped.regions.required);
+    const coverage = {
+      changedTextFiles: 1,
+      fullSource: [],
+      partial: [{ path: "big.js", reason: "changed region(s) clipped to the reviewer context budget" }],
+      patchOnly: [],
+      regions: { required: 2, supplied: 0, complete: false, incomplete: ["big.js"] }
+    };
+    const gaps = reviewer.coverageGapNotes(coverage);
+    expect(gaps.join(" ")).toContain("big.js");
+    expect(gaps.join(" ")).toContain("not supplied in full");
+    expect(reviewer.buildReviewVerdict([], gaps).status).toBe("incomplete");
+    expect(reviewer.formatCoverageDisclosure(coverage).join(" ")).toContain("not supplied in full: big.js");
+  });
+
+  it("keeps the changed line when a narrow documentation window must be truncated", () => {
+    expect(reviewer.DOCUMENT_WINDOW_LINES).toBe(20);
+    const rows: string[] = [];
+    for (let n = 1; n <= 400; n += 1) rows.push("Long documentation paragraph line " + n + " with plenty of prose to consume the budget.");
+    rows[299] = "THE_CHANGED_DOCUMENTATION_LINE";
+    const clipped = reviewer.clipSourceWithAnchors(rows.join("\n"), 900, new Set([300]), { windowLines: 20 });
+    expect(clipped.truncated).toBe(true);
+    expect(clipped.content.length).toBeLessThanOrEqual(900);
+    expect(clipped.content).toContain("THE_CHANGED_DOCUMENTATION_LINE");
+  });
+
+  it("reports documentation coverage separately and never lets it veto code coverage", () => {
+    expect(reviewer.isDocumentationSource("memory-bank/activeContext.md")).toBe(true);
+    expect(reviewer.isDocumentationSource("specs/071-gemini-reviewer-reliability/plan.md")).toBe(true);
+    expect(reviewer.isDocumentationSource("README.mdx")).toBe(true);
+    expect(reviewer.isDocumentationSource(".github/scripts/gemini-reviewer.cjs")).toBe(false);
+    expect(reviewer.isDocumentationSource("app/page.tsx")).toBe(false);
+    const coverage = {
+      changedTextFiles: 2,
+      fullSource: ["a.js", "b.js"],
+      partial: [],
+      patchOnly: [],
+      regions: { required: 3, supplied: 3, complete: true, incomplete: [] },
+      documentation: {
+        changedTextFiles: 5,
+        fullSource: [],
+        partial: [{ path: "memory-bank/activeContext.md", reason: "changed region(s) clipped to the reviewer context budget" }],
+        patchOnly: [],
+        regionsIncomplete: ["memory-bank/activeContext.md"]
+      }
+    };
+    const rows = reviewer.formatCoverageDisclosure(coverage).join(" ");
+    expect(rows).toContain("Changed source regions supplied in full for 2 of 2 changed code file(s).");
+    expect(rows).toContain("Documentation coverage (reported separately; documentation does not gate the code verdict): full source for 0 of 5 documentation file(s), partially for 1.");
+    expect(rows).toContain("memory-bank/activeContext.md");
+    expect(reviewer.coverageGapNotes(coverage)).toEqual([]);
+    expect(reviewer.buildReviewVerdict([], reviewer.coverageGapNotes(coverage)).marker).toBe("🟢");
+  });
+
+  it("never lets the changed files collectively exceed the total context budget", () => {
+    const sources = Array.from({ length: 20 }, (_, index) => buildNumberedFile(1200, [200 + index, 600, 900]));
+    let budget = reviewer.MAX_TOTAL_SOURCE_CHARS;
+    let supplied = 0;
+    for (let index = 0; index < sources.length; index += 1) {
+      const limit = reviewer.perFileSourceLimit(budget, sources.length - index);
+      const clipped = reviewer.clipSourceWithAnchors(sources[index], Math.min(limit, budget), [200 + index, 600, 900]);
+      supplied += clipped.content.length;
+      budget -= clipped.content.length;
+    }
+    expect(supplied).toBeLessThanOrEqual(reviewer.MAX_TOTAL_SOURCE_CHARS);
+    expect(budget).toBeGreaterThanOrEqual(0);
+  });
+});
+

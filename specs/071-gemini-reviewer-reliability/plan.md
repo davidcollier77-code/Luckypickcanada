@@ -124,3 +124,29 @@ turns malformed-but-parseable output into an empty findings list.
   result.
 - If a model returns HTTP 400 whose body mentions the schema, the same model is retried once with JSON
   MIME output only; other HTTP 400s remain non-retryable, so bounded retry behaviour is preserved.
+
+
+### 8. Changed-region coverage, budget-based per-file context, separate documentation coverage
+
+Evidence: every live review of the 7-file PR #1666 reported `0 of 7` files fully reviewed and could
+never leave the neutral status. `MAX_CHANGED_SOURCE_CHARS = 6000` was applied inside the same
+`Math.min()` as `floor(budget / remainingFiles)`, so on that PR (160,000 / 7 = 22,857 per file) at
+least 118,000 characters of the budget were unreachable. Measured changed-region requirements at that
+head: reviewer source 8,399, context test 5,589, memory-bank 10,027, detection-parity 4,538, plan
+3,963, spec 4,304, tasks 4,515 — 41,335 in total (26% of the budget), two files above the old ceiling.
+
+- `perFileSourceLimit(remainingBudget, remainingFiles, { documentation })`: clamp of
+  `budget / remainingFiles` between the 1,500-character minimum and a 24,000-character maximum (4,000
+  for documentation), never above the remaining budget.
+- `clipSourceWithAnchors()` returns `regions: { required, supplied, complete }`. A window counts as
+  supplied only when every line of it was included; regions that fit whole are supplied first; a region
+  that cannot fit keeps text centred on the changed line and is reported as not supplied.
+- `collectSourceContext()` records whole-file delivery (`fullSource`/`partial`) and changed-region
+  completeness (`regions`) separately, and counts documentation in its own bucket outside the code
+  denominator.
+- `coverageGapNotes()` decides the verdict: an unsupplied changed region or a patch-only code file keeps
+  the review neutral. Whole-file incompleteness and documentation coverage are disclosed as ℹ️ notes and
+  do not veto a review that supplied every changed region.
+- Documentation uses a 20-line window and a 4,000-character ceiling and never prevents a green verdict.
+  The 160,000-character total is unchanged: the measurements do not justify raising it.
+- Not claimed: better defect detection. Gemini still missed all four Amazon Q findings on the same heads.
