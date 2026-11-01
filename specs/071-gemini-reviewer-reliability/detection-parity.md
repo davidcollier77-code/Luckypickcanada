@@ -171,3 +171,28 @@ trusted `main`, so the updated reviewer cannot run until PR #1665 merges. Rows m
 PRs whose reviews were produced **after** that merge; pre-merge reviews are recorded as baseline above
 and never counted as prospective results. No row is populated by inference, and the ten-PR measurement
 is not complete.
+
+
+## 4. Cohort activation (post-merge, 2026-11-01)
+
+PR #1665 merged as `121913171a093b81e74e845719378d1a15fcbb41` at `2026-11-01T12:54:22Z`. `main` is now
+that commit and the trusted reviewer on `main` contains the anchored clipping and the scope/claim
+guidance, so the reviewer under measurement is the deployed one rather than a proposed branch.
+
+- **Window:** the prospective cohort begins with the first eligible PR merged into `main` after
+  `1219131`. PR #1665 is excluded.
+- **Status:** 0 of 10 rows populated. The most recent merges into `main` are #1665 itself
+  (`12:54:22Z`), #1661 (`11:21:55Z`), and #1664 (`10:25:49Z`); nothing has merged after the boundary,
+  so no PR is yet eligible. No row is filled from inference, and pre-merge reviews remain baseline.
+- **Acceptance criteria are unchanged** (Gemini confirmed findings >= 5 of the defects Amazon Q
+  confirms; false-positive rate <= Amazon Q's; failed passes at zero; duplicate inflation at 1.0 per
+  root cause). Nothing in this section relaxes them.
+- **Null-state honesty:** a 0-row cohort is not evidence of parity, and a deployed reviewer is not a
+  demonstrated replacement. Both remain unproven until at least one post-boundary PR has been reviewed
+  and scored.
+
+### Replay prerequisite
+
+Independent model replay against the historical heads (#1639 `c9ed5cc2`, #1642 `45df389b`/`d2603e29`,
+#1656) requires a Gemini API key. The development environment has none (`GEMINI_API_KEY` unset), so
+replay is recorded as BLOCKED rather than substituted with deterministic fixtures.

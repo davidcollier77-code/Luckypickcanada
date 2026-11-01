@@ -87,3 +87,23 @@
 - [ ] Live model replay of #1642/#1639 at their original heads (blocked: the workflow reviews trusted
       `main`; this reviewer code runs only after merge).
 - [ ] Prospective ten-PR cohort rows (blocked on the same deployment prerequisite).
+
+
+## T009 — Post-merge validation, JSON reliability, cohort activation
+- [x] Verified `main` = merge commit `1219131` and that the deployed reviewer contains
+      `clipSourceWithAnchors` (3 references) and `SCOPE_AND_CLAIM_GUIDANCE` (4 references).
+- [x] Investigated the JSON path: `parseModelJson()` already recovers fenced, prose-wrapped,
+      trailing-comma, and truncated output; identified the two real gaps (no response schema; parsed
+      payload without a `findings` array silently becoming zero findings).
+- [x] Added `REVIEW_RESPONSE_SCHEMA` to `generationConfig`, `validateReviewPayload()` enforcement in
+      `askModel()`, and a schema-only 400 downgrade that leaves other 400s non-retryable.
+- [x] Regression tests: fenced/embedded/trailing-comma/truncated recovery, unrecoverable input,
+      invalid payload shapes, valid payload pass-through, schema shape, and request wiring (43 tests).
+- [x] Measured historical context on real data: `components/LuckyGenerator.tsx` at `45df389b`
+      (1,275 lines, 53,507 bytes, 6,000-char cap) supplies 0 `forEach` occurrences under `clipSource`
+      and retains the changed region under `clipSourceWithAnchors`.
+- [ ] Live model replay of #1639/#1642/#1656 — BLOCKED: no `GEMINI_API_KEY` in the development
+      environment; the secret exists only for the workflow.
+- [ ] Live manual `@gemini full review` and checkbox interaction on the follow-up PR — PENDING owner
+      interaction; the deployed workflow is triggered from the PR conversation.
+- [ ] Prospective cohort rows — 0 of 10; no PR has merged after `1219131`.

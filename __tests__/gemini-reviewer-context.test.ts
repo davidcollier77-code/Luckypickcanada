@@ -427,3 +427,56 @@ describe("Gemini reviewer scope and claim guidance", () => {
     expect(prompt).toContain("scratch artifacts");
   });
 });
+
+
+describe("Gemini reviewer recovers bounded JSON and rejects invalid review payloads", () => {
+  it("accepts plain and fenced JSON objects", () => {
+    expect(reviewer.parseModelJson('{"summary":"ok","findings":[]}')).toEqual({ summary: "ok", findings: [] });
+    expect(reviewer.parseModelJson('```json\n{"summary":"ok","findings":[]}\n```')).toEqual({ summary: "ok", findings: [] });
+  });
+  it("recovers an object embedded in surrounding prose", () => {
+    const parsed = reviewer.parseModelJson('Here is the review:\n{"summary":"ok","findings":[]}\nThanks.');
+    expect(parsed).toEqual({ summary: "ok", findings: [] });
+  });
+  it("repairs a trailing comma and a truncated tail", () => {
+    expect(reviewer.parseModelJson('{"summary":"ok","findings":[] ,}')).toEqual({ summary: "ok", findings: [] });
+    const truncated = reviewer.parseModelJson('{"summary":"ok","findings":[{"path":"a.js"');
+    expect(truncated).not.toBeNull();
+    expect(truncated.summary).toBe("ok");
+  });
+  it("returns null when nothing recoverable is present", () => {
+    expect(reviewer.parseModelJson("The model replied with prose and no object at all.")).toBeNull();
+    expect(reviewer.parseModelJson("")).toBeNull();
+  });
+  it("rejects a parsed payload without a findings array instead of treating it as clean", () => {
+    expect(reviewer.validateReviewPayload({ summary: "no issues" })).toBeNull();
+    expect(reviewer.validateReviewPayload({ summary: "ok", findings: "none" })).toBeNull();
+    expect(reviewer.validateReviewPayload([{ path: "a.js" }])).toBeNull();
+    expect(reviewer.validateReviewPayload(null)).toBeNull();
+  });
+  it("rejects findings that are not objects with a usable path", () => {
+    expect(reviewer.validateReviewPayload({ summary: "ok", findings: [{ severity: "HIGH" }] })).toBeNull();
+    expect(reviewer.validateReviewPayload({ summary: "ok", findings: ["text"] })).toBeNull();
+    expect(reviewer.validateReviewPayload({ summary: "ok", findings: [{ path: "   " }] })).toBeNull();
+  });
+  it("accepts a valid review payload and tolerates absent optional arrays", () => {
+    const payload = { summary: "ok", findings: [{ path: "a.js", line: null, severity: "HIGH", title: "t", problem: "p", suggested_fix: "f" }] };
+    expect(reviewer.validateReviewPayload(payload)).toBe(payload);
+    expect(reviewer.validateReviewPayload({ summary: "ok", findings: [], positive_observations: [], document_assessments: [] })).not.toBeNull();
+    expect(reviewer.validateReviewPayload({ summary: "ok", findings: [], positive_observations: "x" })).toBeNull();
+  });
+  it("declares the required structured-output shape", () => {
+    const schema = reviewer.REVIEW_RESPONSE_SCHEMA;
+    expect(schema.required).toContain("findings");
+    expect(schema.required).toContain("summary");
+    expect(schema.properties.findings.type).toBe("array");
+    expect(schema.properties.findings.items.properties.severity.enum).toEqual(["CRITICAL", "HIGH", "MEDIUM", "LOW"]);
+    expect(schema.properties.findings.items.properties.line.nullable).toBe(true);
+  });
+  it("wires schema enforcement into the request and falls back on a 400", () => {
+    const src = require("fs").readFileSync(".github/scripts/gemini-reviewer.cjs", "utf8");
+    expect(src).toContain("responseSchema: REVIEW_RESPONSE_SCHEMA");
+    expect(src).toMatch(/response\.status === 400[\s\S]{0,600}send\(false\)/);
+    expect(src).toContain("validateReviewPayload(parsed)");
+  });
+});
