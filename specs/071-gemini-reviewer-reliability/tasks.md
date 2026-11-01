@@ -70,3 +70,20 @@
 - Model chain `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash-lite`, provider endpoint,
   API-key handling, retry/fallback order, automatic `pull_request_target` review, Amazon Q files, native
   GitHub suggestions, owner control, application code, dependencies.
+
+
+## T008 — Close the cross-function / scope detection gap
+- [x] Traced every documented miss to a verified cause: head/tail clipping removed the changed band
+      (#1642, #1656); PR-description claims were restated as fact (#1639); no goal-consistency,
+      artifact, or benchmark-ordering instruction existed (#1642).
+- [x] Corrected the #1642 record: at `d2603e29` the reviewer reported 2 real HIGH defects that Amazon Q
+      never reported, so the miss was one-directional at an earlier head only.
+- [x] `clipSourceWithAnchors()` keeps +/-40 lines around each changed line with a bounded head and tail;
+      `collectSourceContext()` now anchors on `addedLines(file.patch)`.
+- [x] `SCOPE_AND_CLAIM_GUIDANCE` added to the primary and adversarial prompts and to the reviewer rules;
+      unanchorable defects are reported with `line: null` so the evidence gate discloses them.
+- [x] Regression tests: anchored-middle retention, no-anchor fallback, unchanged-file pass-through,
+      out-of-range anchor, guidance content, and adversarial prompt wiring (34 tests in the context suite).
+- [ ] Live model replay of #1642/#1639 at their original heads (blocked: the workflow reviews trusted
+      `main`; this reviewer code runs only after merge).
+- [ ] Prospective ten-PR cohort rows (blocked on the same deployment prerequisite).

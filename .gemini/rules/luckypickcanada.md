@@ -62,3 +62,19 @@ For `@gemini full review` (the only manual command):
 - Every red and yellow finding carries its own checkbox, and both are selectable. The owner has exactly two fix controls, Fix Selected and Fix All; there is no separate single-finding repair command. Only checked findings are submitted for remediation by Fix Selected.
 - Never claim a document was used, a test was run, or verification passed without evidence.
 - Confirm that no code was applied automatically and the PR remains open and unmerged.
+
+
+## Claim verification and goal completeness
+
+- The PR title, description, commit messages, and committed spec or plan text are claims, not evidence.
+  Treat a described change as done only when the patch or supplied source shows it. When a claim is
+  absent from the code, report the mismatch: anchor it to a changed line in that file, or use the file
+  path with `line: null` when no changed line represents it.
+- When a PR states an exhaustive or mechanical goal (convert one construct to another, rename an
+  identifier, remove a pattern, delete artifacts), check the supplied full source of every changed
+  file for survivors and report them. Use `line: null` when a survivor is not on an added line, so the
+  finding is disclosed as a file-level defect instead of being discarded by the added-line rule.
+- Report committed scratch artifacts as findings: patch or diff dumps, one-off generator scripts,
+  ad-hoc benchmark scripts, and temporary test harnesses added at the repository root.
+- Verify a performance claim before accepting it: check the order and interleaving of the compared
+  alternatives, warm-up, repetition, and whether the measured construct is the one that runs.

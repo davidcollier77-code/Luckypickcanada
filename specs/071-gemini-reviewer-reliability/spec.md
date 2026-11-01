@@ -89,3 +89,39 @@ The command produced a failed Actions run and **zero diagnostics on the PR**: a 
 8. Regression tests cover command parsing, manual triggering, selection, Fix Selected, Fix All, stale
    heads, source coverage, finding validation, severity mapping, and suggestion safety.
 9. The PR stays open and unmerged.
+
+
+## Cross-function / scope detection gap (investigated 2026-11-01)
+
+The comparison against Amazon Q (#1639, #1642, #1656) showed misses beyond interface problems. Each
+miss was traced to a verified cause rather than assumed:
+
+1. **Clipped source removed the changed region.** `clipSource()` kept the head 70% and tail 30% of a
+   file. In a long component the changed hunks - and the unchanged code the PR's goal implied should
+   change - sit in the dropped middle band. Both #1642 (surviving `forEach` calls near lines 754-881)
+   and #1656 (stale log in a long script) are covered by this cause, and the published reviews
+   disclose `Source shortened: ...` at the same time.
+2. **PR claims were treated as evidence.** On #1639 the review overview restated the description's
+   claim ("successfully replaces `Math.random()`") while `app/gift-email.js` still called
+   `Math.random()` on an unchanged line.
+3. **Nothing said to check the rest of the file against a stated mechanical goal**, to treat committed
+   scratch artifacts (patch dumps, ad-hoc benchmarks, generator scripts) as findings, or to check a
+   benchmark's ordering before accepting its number.
+
+Counter-evidence in the same case: at head `d2603e29` the reviewer reported two HIGH defects on #1642
+that Amazon Q never reported (missing `ctx.stroke()` in the meteor trail, duplicated path iteration and
+missing stroke in the spark trail). The gap is not one-directional.
+
+### Required behaviour
+
+- Changed-file source must keep the regions around the changed lines, not only the file's ends.
+- A claimed change that is absent from the code is a finding; when no changed line represents it, it is
+  reported with `line: null` so the added-line evidence gate discloses it instead of discarding it.
+- Mechanical goals are checked for survivors across the supplied full source.
+- Committed scratch artifacts and unfair benchmark comparisons are reported.
+
+### Explicitly not in scope
+
+Reverse-dependency (caller/importer) discovery. No investigated miss was caused by missing caller
+context - every one occurred inside a changed file - and a repository-wide importer scan would cost
+O(repository) fetches per review. It was rejected as unjustified scope rather than silently skipped.

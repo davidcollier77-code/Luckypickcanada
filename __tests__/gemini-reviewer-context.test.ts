@@ -374,3 +374,56 @@ describe("Gemini reviewer source context", () => {
   });
 
 });
+
+
+describe("Gemini reviewer keeps changed-hunk context in clipped source", () => {
+  const buildLongFile = () => {
+    const rows = [];
+    for (let n = 1; n <= 400; n += 1) rows.push("const value" + n + " = " + n + ";");
+    rows[299] = 'const ANCHORED_MIDDLE_DEFECT = "forEach left unconverted";';
+    return rows.join("\n");
+  };
+  it("retains the region around a changed line instead of only the head and tail", () => {
+    const clipped = reviewer.clipSourceWithAnchors(buildLongFile(), 3000, new Set([300]));
+    expect(clipped.truncated).toBe(true);
+    expect(clipped.content).toContain("ANCHORED_MIDDLE_DEFECT");
+    expect(clipped.content.length).toBeLessThanOrEqual(3000);
+    expect(clipped.content.startsWith("const value1 = 1;")).toBe(true);
+    expect(clipped.content.trimEnd().endsWith("const value400 = 400;")).toBe(true);
+  });
+  it("falls back to head and tail when no changed lines are known", () => {
+    const clipped = reviewer.clipSourceWithAnchors(buildLongFile(), 3000, []);
+    expect(clipped.content).not.toContain("ANCHORED_MIDDLE_DEFECT");
+    expect(clipped.content).toContain("const value1 = 1;");
+    expect(clipped.content.length).toBeLessThanOrEqual(3000);
+  });
+  it("returns an unchanged file without a truncation marker", () => {
+    const small = "const a = 1;\nconst b = 2;";
+    expect(reviewer.clipSourceWithAnchors(small, 1000, [2])).toEqual({ content: small, truncated: false });
+  });
+  it("tolerates an anchor beyond the end of the file", () => {
+    const clipped = reviewer.clipSourceWithAnchors(buildLongFile(), 2500, new Set([99999]));
+    expect(clipped.truncated).toBe(true);
+    expect(clipped.content.length).toBeLessThanOrEqual(2500);
+  });
+});
+
+describe("Gemini reviewer scope and claim guidance", () => {
+  it("states that PR claims are not evidence and covers artifacts and benchmarks", () => {
+    const guidance = reviewer.SCOPE_AND_CLAIM_GUIDANCE;
+    expect(typeof guidance).toBe("string");
+    expect(guidance).toContain("unverified claims, not evidence");
+    expect(guidance).toContain("line null");
+    expect(guidance).toContain("scratch artifacts");
+    expect(guidance).toContain("benchmark");
+  });
+  it("is supplied to the adversarial prompt", () => {
+    const prompt = reviewer.buildAdversarialReviewPrompt({
+      pr: { number: 1642, title: "perf", body: "claims", head: { sha: "a".repeat(40) } },
+      batch: [{ filename: "components/LuckyGenerator.tsx", patch: "@@ -1,1 +1,2 @@\n+const a = 1;\n const b = 2;" }],
+      sourceContext: { records: [], limitations: [] }
+    });
+    expect(prompt).toContain("unverified claims, not evidence");
+    expect(prompt).toContain("scratch artifacts");
+  });
+});

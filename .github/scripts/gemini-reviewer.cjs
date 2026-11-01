@@ -57,6 +57,16 @@ const EVIDENCE_VERIFICATION_GUIDANCE = [
   "When a PR introduces, renames, or removes a governance/protected directory, configuration family, or exclusion list, verify every other enumeration that mirrors it: path allowlists and denylists, autofix eligibility, protected-file rules, ignore files, documentation filters, and CI path filters. A newly introduced path family that is missing from an existing denylist is a real consistency defect.",
   "Report the defect at its root cause with the smallest sufficient correction, not a style rewrite, and do not repeat a sibling finding that shares the same root cause."
 ].join(" ");
+// Findings are only publishable when anchored to a changed line, so scope defects that live
+// outside the changed lines must be reported with line null or they are discarded by the
+// pre-publication evidence gate. These rules keep that requirement and the claim-verification
+// gap (PR #1639: a declared fix that was never applied) in the same instruction surface.
+const SCOPE_AND_CLAIM_GUIDANCE = [
+  "Treat the pull-request title, description, commit messages, and committed spec/plan text as unverified claims, not evidence. A claimed change counts only when the supplied patch or full source shows it. When a described change is absent from the code, report the mismatch as a finding: anchor it to a changed line in the same file when the claim is attached to one, otherwise use the file path with line null rather than assuming the change was made.",
+  "When the PR states a mechanical or exhaustive goal (converting one construct to another, renaming an identifier, removing a pattern, deleting artifacts), scan the supplied full source of every changed file for remaining occurrences that the stated goal implies should have changed. Report each survivor with line null when its own line is not an added line, so the finding is disclosed as a file-level defect instead of being discarded.",
+  "Report committed scratch artifacts as findings: patch or diff dumps, one-off generator scripts, ad-hoc benchmark scripts, and temporary test harnesses added at the repository root or outside the project's test and tooling conventions.",
+  "For a performance or benchmark claim, verify the comparison is fair before accepting the number: check the order and interleaving of the alternatives, warm-up, repetition, and whether the measured construct is the one that actually runs."
+].join(" ");
 // Exactly three status colours are used: red for confirmed critical/high findings, yellow
 // for confirmed warnings, and green for a clean completed review. LOW-severity warnings
 // join MEDIUM in yellow rather than adding a fourth colour, so every finding keeps its own
@@ -271,6 +281,48 @@ function clipSource(source, limit) {
   const head = Math.floor(available * 0.7), tail = available - head;
   return { content: value.slice(0, head) + MARKER + (tail > 0 ? value.slice(-tail) : ""), truncated: true };
 }
+// clipSource keeps the head and the tail, which drops the middle of a long file. In a large
+// component the changed hunks and the surrounding declarations live in that dropped band, so the
+// reviewer was shown a file whose modified region had been removed (verified on #1642, where the
+// unconverted forEach calls sat around lines 754-881 of a clipped component and went unreported).
+// Keep the head for imports/declarations, every window around a changed line, and the tail.
+function clipSourceWithAnchors(source, limit, lineNumbers) {
+  const value = String(source || "");
+  const cap = Math.max(0, Math.floor(Number(limit) || 0));
+  if (value.length <= cap) return { content: value, truncated: false };
+  const anchors = [...new Set((lineNumbers instanceof Set ? [...lineNumbers] : (Array.isArray(lineNumbers) ? lineNumbers : []))
+    .map((item) => Number(item)).filter((item) => Number.isInteger(item) && item > 0))].sort((a, b) => a - b);
+  if (!anchors.length || cap <= 200) return clipSource(value, cap);
+  const MARKER = "\n[...omitted by reviewer context budget...]\n";
+  const rows = value.split("\n");
+  const WINDOW = 40;
+  const windows = [];
+  for (const anchor of anchors.slice(0, 60)) {
+    const start = Math.max(0, anchor - 1 - WINDOW);
+    const end = Math.min(rows.length, anchor + WINDOW);
+    const previous = windows[windows.length - 1];
+    if (previous && start <= previous.end) previous.end = Math.max(previous.end, end);
+    else windows.push({ start, end });
+  }
+  const headBudget = Math.max(0, Math.floor(cap * 0.2));
+  const tailBudget = Math.max(0, Math.floor(cap * 0.15));
+  const headText = rows.slice(0, Math.min(rows.length, 40)).join("\n").slice(0, headBudget);
+  const tailText = rows.slice(Math.max(0, rows.length - 40)).join("\n");
+  const tail = tailText.slice(Math.max(0, tailText.length - tailBudget));
+  let remaining = Math.max(0, cap - headText.length - tail.length - MARKER.length * 2);
+  const chunks = [];
+  for (const window of windows) {
+    if (remaining <= MARKER.length) break;
+    const text = rows.slice(window.start, window.end).join("\n");
+    const room = remaining - MARKER.length;
+    const kept = text.slice(0, room);
+    chunks.push(kept);
+    remaining -= kept.length + MARKER.length;
+    if (text.length > room) break;
+  }
+  const content = [headText, ...chunks, tail].filter(Boolean).join(MARKER);
+  return { content, truncated: true };
+}
 async function getRepositoryFile(path, ref, repository = REPO) {
   if (!safePath(path) || !/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
   try {
@@ -338,7 +390,7 @@ async function collectSourceContext(pr, files) {
     const remainingFiles = Math.max(1, candidates.length - index);
     const perFileLimit = Math.max(MIN_CHANGED_SOURCE_CHARS,
       Math.min(MAX_CHANGED_SOURCE_CHARS, Math.floor(budget / remainingFiles)));
-    const clipped = clipSource(source, Math.min(perFileLimit, budget));
+    const clipped = clipSourceWithAnchors(source, Math.min(perFileLimit, budget), addedLines(file.patch));
     records.push({ path: file.filename, role: removed ? "removed file at PR base before deletion" : "changed file at PR head",
       content: clipped.content, truncated: clipped.truncated });
     if (clipped.truncated) coverage.partial.push({ path: file.filename, reason: "clipped to the reviewer context budget" });
@@ -441,6 +493,7 @@ function buildAdversarialReviewPrompt({ pr, batch, sourceContext, docBundle = ""
     IMAGE_PRELOAD_REVIEW_GUIDANCE,
     SEVERITY_RUBRIC,
     EVIDENCE_VERIFICATION_GUIDANCE,
+    SCOPE_AND_CLAIM_GUIDANCE,
     "Batch: " + (Number(batchIndex) + 1) + " of " + Math.max(1, Number(batchCount) || 1),
     "Current PR head SHA under review: " + String(pr && pr.head && pr.head.sha || "unavailable"),
     "PR metadata: " + JSON.stringify({ number: pr && pr.number, title: pr && pr.title, body: String(pr && pr.body || "").slice(0, 3000) }),
@@ -1501,6 +1554,7 @@ async function main() {
         IMAGE_PRELOAD_REVIEW_GUIDANCE,
         SEVERITY_RUBRIC,
         EVIDENCE_VERIFICATION_GUIDANCE,
+        SCOPE_AND_CLAIM_GUIDANCE,
         "Source-context limitations: " + (sourceContext.limitations.length ? sourceContext.limitations.join(" ") : "No known retrieval limitation."),
         "PR: " + JSON.stringify({ number: pr.number, title: pr.title, body: String(pr.body || "").slice(0, 4000) }),
         "Consulted document excerpts:\n" + docBundle,
@@ -1639,7 +1693,7 @@ if (require.main === module) main().catch(async (error) => {
 module.exports = { addedLines, extractLocalImports, resolveImportCandidates, limitImportCandidates, MAX_IMPORT_SOURCE_PROBES,
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   GEMINI_API_DEV_SKILL_PATH, loadGeminiApiDevSkill, isGeminiApiDevSkillRelevant, isGeminiCliDoc, isGeminiApiOverviewDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
-  classifyReviewGroups, clipSource, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
+  classifyReviewGroups, clipSource, clipSourceWithAnchors, SCOPE_AND_CLAIM_GUIDANCE, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
   buildReviewVerdict, buildFixPrompt, fencedText, parseFullReviewCommand, mentionsReviewerCommand, FULL_REVIEW_COMMAND, loadDocumentManifest, sanitizeOverview,
   resolveEventAction,
   generateFindingId, serializeReviewState, extractReviewState, findReviewStateForHead, fetchAllReviews,

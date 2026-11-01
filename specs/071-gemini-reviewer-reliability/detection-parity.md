@@ -131,3 +131,43 @@ The change is a genuine improvement only if, on the prospective cohort:
 
 Until ten PRs have merged, none of those conditions is demonstrated and the reviewer must not be
 described as a dependability-equal replacement for Amazon Q.
+
+
+## 3b. Historical investigation — why the misses happened
+
+Verified against the published reviews at their exact heads and the repository code, not inferred.
+
+| Miss | Reviewed head | Verified cause | Evidence |
+| --- | --- | --- | --- |
+| #1642: three `forEach` loops left unconverted | `45df389b` | `clipSource()` kept head 70% + tail 30%, so the changed band and the surviving loops were dropped | The review itself discloses `Source shortened: .jules/bolt.md, components/LuckyGenerator.tsx`; `MAX_CHANGED_SOURCE_CHARS = 6000` |
+| #1642: scratch artifacts and benchmark ordering | `45df389b` | No instruction existed for committed scratch files or benchmark fairness; the benchmark was praised | The same review lists `benchmark.js` under "What's looking good" |
+| #1639: unapplied `crypto.randomUUID()` fix | `c9ed5cc2` | The description's claim was restated as the overview instead of being checked against the patch | Overview: "successfully replaces `Math.random()`", while the line was unchanged context |
+| #1656: stale duplicate fetch log, missing `.freebuff/` denylist | 84-file PR | Full source for a subset only; the stale log sat beyond the clipped band | Coverage disclosure + repair in `038b5cf9` |
+
+Counter-evidence on the same PR: at head `d2603e29` the reviewer reported **2 HIGH defects Amazon Q
+never reported** (missing `ctx.stroke()` in the meteor trail at `components/LuckyGenerator.tsx:755`;
+duplicated path iteration plus a missing stroke in the spark trail at `:891`). #1642 is therefore not a
+one-way miss.
+
+### Implemented from this investigation
+
+- `clipSourceWithAnchors()`: bounded head (20%), a +/-40-line window around every changed line, bounded
+  tail (15%), explicit omission markers, same per-file limit, `clipSource()` fallback without anchors.
+- `SCOPE_AND_CLAIM_GUIDANCE` in both prompts and in `.gemini/rules/luckypickcanada.md`: claims are not
+  evidence; absent claimed changes are findings; `line: null` anchors an unanchorable defect so the
+  evidence gate discloses rather than silently drops it; mechanical-goal survivors, scratch artifacts,
+  and unfair benchmarks are findings.
+
+### Deliberately not implemented
+
+Reverse-dependency (caller/importer) discovery. No investigated miss was caused by missing caller
+context; every one occurred inside a changed file. A repository-wide importer scan would cost
+O(repository) fetches per review, so it was rejected on evidence rather than assumed necessary.
+
+## 3c. Cohort status
+
+The prospective ten-PR cohort remains **PENDING with zero populated rows**. The workflow reviews
+trusted `main`, so the updated reviewer cannot run until PR #1665 merges. Rows may only be filled from
+PRs whose reviews were produced **after** that merge; pre-merge reviews are recorded as baseline above
+and never counted as prospective results. No row is populated by inference, and the ten-PR measurement
+is not complete.

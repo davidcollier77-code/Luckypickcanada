@@ -90,3 +90,20 @@ finding keeps its own checkbox.
 build measurement against the 495 MB cap; a live manual `@gemini full review` on a controlled test PR with
 the Actions run and published review checked for the correct head SHA. Live checkbox interaction on GitHub
 is reported as owner-verified only if actually observed.
+
+
+### 6. Changed-hunk source retention and scope/claim guidance
+
+Evidence: the #1642 and #1656 misses coexisted with `Source shortened:` coverage notes, and #1639's
+overview repeated the PR's claim while the code still had the old call.
+
+- `clipSourceWithAnchors(source, limit, lineNumbers)` keeps a 20% head (imports/declarations), a window
+  of +/-40 lines around every changed line, and a 15% tail, joined by an explicit omission marker and
+  still bounded by the same per-file limit. With no known changed lines it defers to `clipSource`, so
+  behaviour is unchanged wherever anchors are unavailable. `collectSourceContext()` passes
+  `addedLines(file.patch)` as the anchors.
+- New `SCOPE_AND_CLAIM_GUIDANCE`, added to both the primary and adversarial prompts and mirrored in
+  `.gemini/rules/luckypickcanada.md`: PR claims are not evidence; absent claimed changes are findings;
+  `line: null` is the anchor for a defect that no added line represents; mechanical goals are checked
+  for survivors; scratch artifacts and unfair benchmarks are findings.
+- Not added: reverse-dependency discovery (no investigated miss required it; O(repository) cost).
