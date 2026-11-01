@@ -169,6 +169,15 @@ describe("Gemini status colours", () => {
     expect(body).not.toContain("REVIEW COMPLETE");
   });
 
+  it("never lets model prose show a red marker when there is no red finding", () => {
+    expect(reviewer.sanitizeOverview("🔴 **Verdict:** Green — No actionable findings.", []))
+      .toBe("**Verdict:** Green — No actionable findings.");
+    expect(reviewer.sanitizeOverview("🔴 **Verdict:** Red", [{ severity: "HIGH" }])).toBe("🔴 **Verdict:** Red");
+    expect(reviewer.sanitizeOverview("🟡 minor note", [{ severity: "MEDIUM" }])).toBe("🟡 minor note");
+    expect(reviewer.sanitizeOverview("Plain overview.", [])).toBe("Plain overview.");
+    expect(reviewer.sanitizeOverview(null, [])).toBe("");
+  });
+
   it("classifies severity consistently", () => {
     expect(reviewer.classifyFindingCategory({ severity: "CRITICAL" })).toBe("red");
     expect(reviewer.classifyFindingCategory({ severity: "HIGH" })).toBe("red");

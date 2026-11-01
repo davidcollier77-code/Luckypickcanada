@@ -1015,6 +1015,15 @@ function classifyFindingCategory(finding) {
   const severity = String(finding && finding.severity || "").toUpperCase();
   return severity === "CRITICAL" || severity === "HIGH" ? "red" : "yellow";
 }
+// Model prose sometimes prefixes its own verdict with a red marker even when it found
+// nothing (observed in the PR #1641 review: "🔴 **Verdict:** Green"). A severity colour must
+// never contradict the rendered status, so a leading severity marker is dropped when the
+// review contains no finding at all. When findings exist their own markers stay untouched.
+function sanitizeOverview(text, findings) {
+  const raw = String(text || "");
+  if ((Array.isArray(findings) ? findings : []).length) return raw;
+  return raw.replace(/^\s*(?:🔴|🟡|🔵)\s*/u, "");
+}
 function sortFindings(items) {
   const categoryOrder = new Map(FINDING_CATEGORIES.map((category, index) => [category.id, index]));
   const severityOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
@@ -1553,7 +1562,7 @@ async function main() {
     "**Source context:** " + sourceContext.records.length + " source record(s); " + (sourceContext.limitations.length ? sourceContext.limitations.join(" ") : "no known retrieval limitations.") + ".",
     "",
     "### Overview",
-    reviewResults.map((r) => r.summary).filter(Boolean).join("\n"),
+    reviewResults.map((r) => sanitizeOverview(r.summary, findings)).filter(Boolean).join("\n"),
     "",
     reviewSections,
     "",
@@ -1597,7 +1606,7 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   GEMINI_API_DEV_SKILL_PATH, loadGeminiApiDevSkill, isGeminiApiDevSkillRelevant, isGeminiCliDoc, isGeminiApiOverviewDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
-  buildReviewVerdict, buildFixPrompt, fencedText, parseFullReviewCommand, mentionsReviewerCommand, FULL_REVIEW_COMMAND, loadDocumentManifest,
+  buildReviewVerdict, buildFixPrompt, fencedText, parseFullReviewCommand, mentionsReviewerCommand, FULL_REVIEW_COMMAND, loadDocumentManifest, sanitizeOverview,
   resolveEventAction,
   generateFindingId, serializeReviewState, extractReviewState, findReviewStateForHead, fetchAllReviews,
   parseSelectedIds, parseReviewAction, MAX_SELECTED_IDS, MAX_REVIEW_PAGES,

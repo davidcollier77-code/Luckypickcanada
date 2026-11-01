@@ -47,6 +47,7 @@ jobs:
         run: node --version
 
       - name: Run Gemini reviewer
+        id: review
         env:
           GH_TOKEN: ${{ github.token }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -68,9 +69,12 @@ jobs:
 
       # A run that dies before the reviewer can comment (for example a module-load error)
       # must still say something on the pull request. This step makes such a failure visible
-      # instead of leaving a silent failed run behind.
+      # instead of leaving a silent failed run behind. It is conditioned on the reviewer step
+      # itself: the trusted-file integrity check above runs with `if: always()` and fails
+      # legitimately whenever a PR touches reviewer files, which must never be reported as an
+      # unfinished review.
       - name: Report reviewer failure on the pull request
-        if: failure()
+        if: failure() && steps.review.outcome == 'failure'
         env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}

@@ -1,3 +1,16 @@
+# Active Context — Gemini Reviewer Reliability and Interface Simplification (2026-11-01)
+
+- **Task group:** `deep-dive`; branch `freebuff/f5a6b00e39d1cb2bea65c13b`, target `main`, PR #1665 open and unmerged.
+- **Verified root cause of the #1661 manual-trigger failure:** the owner posted `@gemini full review` at 09:53:26Z; `main` was `7dcdf469`, whose `.docs/manifest.json` did not parse (line 408 col 5); the reviewer parsed that file at module scope (`gemini-reviewer.cjs:67`), so the throw preceded `main()` and its `.catch` reporter (`:1585`); the run failed with no PR output. PR #1664 repaired exactly those characters 32 minutes later.
+- **Implementation:** `loadDocumentManifest()` degrades to a disclosed coverage gap; `if: failure() && steps.review.outcome == 'failure'` reports failures on the PR; `parseFullReviewCommand()` reads the command from a real comment and answers unsupported `@gemini` commands visibly; verdicts are red (critical/high), yellow (medium/low), green only when complete with coverage, neutral when incomplete; `sanitizeOverview()` drops a stray leading severity marker when no finding exists; two categories with one checkbox each and exactly two fix controls (Fix Selected, Fix All); `applyAutoFix` re-checks the PR head immediately before posting.
+- **Live evidence:** the manual command on PR #1665 started run 41303732542 and published review 5727909966 at commit `7725d9ec…`, equal to the PR head. The workflow runs trusted base-branch code, so that review still shows the old interface; the changed code is exercised live only after merge.
+- **Historical reliability (#1639–#1642):** Amazon Q reported 6 confirmed findings (all three on #1639 repaired in `95e86bc6`; the #1642 conversion gap and committed dev artifacts are real). Gemini reported 0 findings at the same heads, missed real defects on #1639 and #1642, and had two failed passes. Gemini is not yet demonstrated as a dependability-equal replacement.
+- **Verified:** focused reviewer suites PASS; full `pnpm vitest run` PASS; `pnpm exec tsc --noEmit` PASS; `./freebuff-verify.sh` PASS; production build 330,154,044 bytes / 314.86 MiB (< 495 MB).
+- **Not verified:** live GitHub checkbox interaction for Fix Selected / Fix All; detection parity with Amazon Q.
+- **Artifacts:** `specs/071-gemini-reviewer-reliability/{spec,plan,tasks}.md`; `.specify/feature.json` updated.
+
+---
+
 # Active Context — Site-Wide Visual Polish (2026-11-01)
 
 - **Task group:** `polishing`; branch `freebuff/016113030bd542c07a547bd2`; target `main`; PR left open and unmerged.
