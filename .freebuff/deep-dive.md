@@ -1,8 +1,7 @@
 # Deep Dive / Investigation Specialist
 
-## Mandatory Standing Resources
-For all tasks, you MUST actually consult the following resources:
-- Gemini API Developer Skill "/google-gemini/gemini-skills/gemini-api-dev"
+## Conditional Gemini API Developer Skill Reference
+Consult `.docs/deep-dive/_google-gemini_gemini-skills_gemini-api-dev.md` only when the task directly changes code that calls, configures, or integrates with the Gemini API or SDK. This is a specialist reference, not a general-purpose coding requirement. Do not load it merely because a task, PR title, documentation page, or reviewer mentions Gemini. Apply its guidance only to the Gemini API-specific work, and do not infer authorization for API or model migrations.
 
 ## Conditional Gemini CLI Reference
 Consult the Gemini CLI reference only when an investigation directly concerns Gemini CLI commands, configuration, runtime behavior, or integrations. Start with the local snapshot `.docs/deep-dive/_google-gemini_gemini-cli.md` (read-only); do not load it for unrelated tasks. If the snapshot is insufficient and live documentation is materially necessary, use `/google-gemini/gemini-cli` only under the repository's explicit MCP approval rules.

@@ -1,1 +1,0 @@
-../creation/_google-gemini_gemini-skills_gemini-api-dev.md

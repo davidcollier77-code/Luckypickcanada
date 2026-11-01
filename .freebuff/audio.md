@@ -1,9 +1,5 @@
 # Audio Specialist
 
-## Mandatory Standing Resources
-For all tasks, you MUST actually consult the following resources:
-- Gemini API Developer Skill "/google-gemini/gemini-skills/gemini-api-dev"
-
 ## Controlled Context7 Libraries
 When materially necessary, consult the following approved libraries. (Requires Context7 approval if not available in `.docs/`):
 - Howler.js "/goldfire/howler.js"

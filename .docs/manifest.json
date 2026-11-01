@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-31T15:13:07-03:00",
+  "lastUpdated": "2026-11-01T00:00:00Z",
   "groups": {
     "creation": [
       "/github/docs",
@@ -62,8 +62,7 @@
       "/websites/google_webp",
       "/lovell/sharp",
       "/websites/web_dev_images",
-      "/websites/mdn_image_types",
-      "/google-gemini/gemini-skills/gemini-api-dev"
+      "/websites/mdn_image_types"
     ],
     "testing": [
       "/github/docs",
@@ -77,8 +76,7 @@
       "/getsentry/sentry-docs",
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
-      "/dequelabs/axe-core",
-      "/google-gemini/gemini-skills/gemini-api-dev"
+      "/dequelabs/axe-core"
     ],
     "security": [
       "/vercel/next.js",
@@ -97,15 +95,13 @@
       "/dropbox/zxcvbn",
       "/cloudflare/cloudflare-docs/turnstile",
       "/marsidev/react-turnstile",
-      "/upstash/ratelimit",
-      "/google-gemini/gemini-skills/gemini-api-dev"
+      "/upstash/ratelimit"
     ],
     "audio": [
       "/websites/developer_chrome",
       "/websites/developer_apple_webkit",
       "/goldfire/howler.js",
-      "/websites/mdn_web_audio",
-      "/google-gemini/gemini-skills/gemini-api-dev"
+      "/websites/mdn_web_audio"
     ],
     "deep-dive": [
       "/github/docs",
@@ -141,8 +137,7 @@
       "/coreyhaines31/marketingskills",
       "/github/docs",
       "/websites/developer_chrome",
-      "/websites/developer_apple_webkit",
-      "/google-gemini/gemini-skills/gemini-api-dev"
+      "/websites/developer_apple_webkit"
     ]
   },
   "sources": {

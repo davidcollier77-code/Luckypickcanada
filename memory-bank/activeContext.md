@@ -1,3 +1,16 @@
+# Active Context — Conditional Gemini API Developer Skill Routing (2026-11-01)
+
+- **Selected task group:** `deep-dive` — repository-wide governance, documentation routing, and Gemini reviewer conditional-loading correction.
+- **Branch:** `freebuff/gemini-api-skill-conditional-routing-20261101`; target `main`; leave the PR open and unmerged.
+- **Owner authorization:** explicitly authorized updates to repository governance, existing group instructions, reference routing, reviewer automation, tests, Spec Kit artifacts, and Memory Bank context.
+- **Requested policy:** the Gemini API Developer Skill is not a requirement for every coding task or every PR review. It remains a conditional specialist reference for work that directly calls, configures, or integrates with the Gemini API/SDK.
+- **Group routing:** Creation, Troubleshooting, and Deep-dive only. Other task groups use their normal instructions and do not load the skill. Gemini CLI and the general Gemini API overview remain separate conditional references.
+- **Reviewer behavior:** select the skill from changed-code evidence, not title/body wording, documentation mentions, test fixtures, or routine Gemini reviewer/autofix prompt changes. Ordinary PRs continue without it; genuinely API-specific reviews receive it or disclose a coverage gap and stop.
+- **Spec Kit artifacts:** `specs/067-gemini-api-skill-conditional-routing/{spec,plan,tasks}.md`; `.specify/feature.json` points to this feature.
+- **Verification:** source and routing review completed. Focused tests, `./freebuff-verify.sh`, production build measurement, and current-head GitHub Actions are pending; this connector session does not provide a checked-out shell workspace. No test or build success is claimed.
+
+---
+
 # Active Context — DevSkim Playwright Offset Remediation (2026-11-01)
 
 - **Task group:** `security` — finish the interrupted DevSkim Code Scanning remediation for the two gold CTA Playwright specs.
