@@ -125,3 +125,28 @@ missing stroke in the spark trail). The gap is not one-directional.
 Reverse-dependency (caller/importer) discovery. No investigated miss was caused by missing caller
 context - every one occurred inside a changed file - and a repository-wide importer scan would cost
 O(repository) fetches per review. It was rejected as unjustified scope rather than silently skipped.
+
+
+## Post-merge validation and JSON reliability (2026-11-01)
+
+PR #1665 merged as `121913171a093b81e74e845719378d1a15fcbb41` at `2026-11-01T12:54:22Z`; `main` is
+that merge commit and the deployed reviewer contains `clipSourceWithAnchors` and
+`SCOPE_AND_CLAIM_GUIDANCE`. Validation from here on must use the trusted base-branch reviewer.
+
+- **Live model replay of historical heads:** required to prove detection improvement, and **BLOCKED**
+  in the development environment because `GEMINI_API_KEY` is unset there. The key exists only as a
+  repository secret used by the workflow. No replay has been claimed.
+- **JSON reliability:** the deployed code already had a bounded recovery ladder (fence strip, embedded
+  object, trailing-comma repair, balanced closing of a truncated tail). Two gaps remained: no
+  `responseSchema` enforcement, and a payload that parsed but lacked a `findings` array flowed into
+  `normalizeFindings(undefined)` and became a zero-finding "clean" review. Both are corrected.
+- **Cohort activation:** the prospective window opens after the merge commit. No PR has merged since,
+  so the cohort remains 0 of 10 with no rows populated.
+
+### JSON reliability requirements
+
+- Enforce the documented review shape with `generationConfig.responseSchema` on the existing endpoint
+  and model chain, degrading to JSON MIME output only if a provider rejects the schema with HTTP 400.
+- Treat a parsed payload that fails `validateReviewPayload()` as a failed pass, never as zero findings.
+- Keep every retry bounded, keep the fallback order unchanged, and never invent findings, paths, lines,
+  or severities during recovery.

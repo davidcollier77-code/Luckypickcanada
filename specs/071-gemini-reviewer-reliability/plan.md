@@ -107,3 +107,20 @@ overview repeated the PR's claim while the code still had the old call.
   `line: null` is the anchor for a defect that no added line represents; mechanical goals are checked
   for survivors; scratch artifacts and unfair benchmarks are findings.
 - Not added: reverse-dependency discovery (no investigated miss required it; O(repository) cost).
+
+
+### 7. Structured-output enforcement and payload validation
+
+Evidence: the deployed reviewer set `responseMimeType: application/json` but sent no `responseSchema`,
+and `answer.result.findings` was passed to `normalizeFindings()` even when the key was absent, which
+turns malformed-but-parseable output into an empty findings list.
+
+- `REVIEW_RESPONSE_SCHEMA` documents the review contract (summary, findings with path/severity/title/
+  problem/suggested_fix and nullable line/suggestion, positive_observations, document_assessments) and
+  is sent as `generationConfig.responseSchema` on the existing endpoint with the existing model chain.
+- `validateReviewPayload()` rejects a payload whose `findings` is missing, non-array, or contains an
+  entry without a usable `path`. `askModel()` treats a rejection as a retryable failed pass, so the
+  existing `REVIEW INCOMPLETE — NOT VERIFIED` path handles exhaustion instead of publishing a clean
+  result.
+- If a model returns HTTP 400 whose body mentions the schema, the same model is retried once with JSON
+  MIME output only; other HTTP 400s remain non-retryable, so bounded retry behaviour is preserved.

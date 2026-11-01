@@ -590,6 +590,60 @@ function closeTruncatedJson(text) {
 function parseJson(text) {
   return JSON.parse(stripJsonFence(text));
 }
+// Structured-output contract. A response that parses but does not match this shape is
+// treated as a failed pass, never as a clean review with zero findings.
+const REVIEW_RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    findings: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          path: { type: "string" },
+          line: { type: "integer", nullable: true },
+          severity: { type: "string", enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+          confidence: { type: "number" },
+          title: { type: "string" },
+          problem: { type: "string" },
+          impact: { type: "string" },
+          suggested_fix: { type: "string" },
+          suggestion: { type: "string", nullable: true }
+        },
+        required: ["path", "severity", "title", "problem", "suggested_fix"]
+      }
+    },
+    positive_observations: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { path: { type: "string" }, title: { type: "string" }, details: { type: "string" }, confidence: { type: "number" } },
+        required: ["path", "title", "details"]
+      }
+    },
+    document_assessments: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { path: { type: "string" }, useful: { type: "boolean" }, reason: { type: "string" } },
+        required: ["path", "useful", "reason"]
+      }
+    }
+  },
+  required: ["summary", "findings"]
+};
+function validateReviewPayload(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  if (!Array.isArray(value.findings)) return null;
+  if (typeof value.summary !== "undefined" && typeof value.summary !== "string") return null;
+  const findingsValid = value.findings.every((item) => item && typeof item === "object" && !Array.isArray(item) &&
+    typeof item.path === "string" && item.path.trim().length > 0);
+  if (!findingsValid) return null;
+  for (const key of ["positive_observations", "document_assessments"])
+    if (typeof value[key] !== "undefined" && !Array.isArray(value[key])) return null;
+  return value;
+}
 // Recovery ladder for malformed model output: exact JSON, fenced JSON, embedded
 // object, trailing-comma/quote repair, then balanced closing of a truncated tail.
 function parseModelJson(text) {
@@ -631,18 +685,36 @@ async function askModel(prompt, tokens = 7000) {
         const strictNudge = attempt > 1
           ? "\n\nRETRY FORMAT CONTRACT: reply with one complete, valid JSON object only. No prose, no markdown fence, no trailing commentary, no truncated output."
           : "";
-        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" +
-          encodeURIComponent(models[index]) + ":generateContent", {
+        const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/" +
+          encodeURIComponent(models[index]) + ":generateContent";
+        const send = (withSchema) => fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify({
             systemInstruction: { parts: [{ text: RULES }] },
             contents: [{ role: "user", parts: [{ text: prompt + strictNudge }] }],
-            generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: tokens }
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.1,
+              maxOutputTokens: tokens,
+              ...(withSchema ? { responseSchema: REVIEW_RESPONSE_SCHEMA } : {})
+            }
           }),
           signal: AbortSignal.timeout(90000)
         });
-        const raw = await response.text();
+        let response = await send(true);
+        let raw = await response.text();
+        if (response.status === 400 && /schema/i.test(raw)) {
+          // Only a schema rejection is worth a second request for the same model: the
+          // review must not fail merely because this provider refuses response schemas.
+          log("Model " + models[index] + " rejected the response schema; retrying without it.");
+          response = await send(false);
+          raw = await response.text();
+          // A second failure must stay visible, otherwise the run looks like a single
+          // unexplained HTTP error and the downgrade is indistinguishable from a retry.
+          if (!response.ok)
+            log("Model " + models[index] + " also failed without the response schema: HTTP " + response.status + ".");
+        }
         if (!response.ok) {
           const error = new Error("Gemini model " + models[index] + " returned HTTP " + response.status + ".");
           error.retryable = [408, 429, 500, 502, 503, 504].includes(response.status);
@@ -657,7 +729,15 @@ async function askModel(prompt, tokens = 7000) {
           parseError.retryable = true;
           throw parseError;
         }
-        return { result: parsed, model: models[index] };
+        const validated = validateReviewPayload(parsed);
+        if (!validated) {
+          // Parsing succeeded but the payload is not a review object (for example a missing
+          // findings array). Retrying is safe; publishing it as zero findings is not.
+          const schemaError = new Error("Gemini model " + models[index] + " output did not match the required review schema (findings must be an array of objects with a path).");
+          schemaError.retryable = true;
+          throw schemaError;
+        }
+        return { result: validated, model: models[index] };
       } catch (error) {
         lastError = error;
         const reason = error && error.message ? error.message : "unknown error";
@@ -1694,6 +1774,7 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   GEMINI_API_DEV_SKILL_PATH, loadGeminiApiDevSkill, isGeminiApiDevSkillRelevant, isGeminiCliDoc, isGeminiApiOverviewDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
   classifyReviewGroups, clipSource, clipSourceWithAnchors, SCOPE_AND_CLAIM_GUIDANCE, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
+  parseModelJson, validateReviewPayload, REVIEW_RESPONSE_SCHEMA, stripJsonFence, repairJsonText, closeTruncatedJson, extractBalancedJson,
   buildReviewVerdict, buildFixPrompt, fencedText, parseFullReviewCommand, mentionsReviewerCommand, FULL_REVIEW_COMMAND, loadDocumentManifest, sanitizeOverview,
   resolveEventAction,
   generateFindingId, serializeReviewState, extractReviewState, findReviewStateForHead, fetchAllReviews,
@@ -1702,4 +1783,4 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE, ADVERSARIAL_REVIEW_GUIDANCE,
   SEVERITY_RUBRIC, EVIDENCE_VERIFICATION_GUIDANCE, FINDING_CATEGORIES, classifyFindingCategory, sortFindings, dedupeFindings,
   findReviewForHead, resolveRequestedFindings, formatCoverageDisclosure, MANIFEST_ERROR,
-  parseModelJson, stripJsonFence, closeTruncatedJson, isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };
+  isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };
