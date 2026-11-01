@@ -43,7 +43,7 @@ as `github-actions[bot]`.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | #1639 | `c9ed5cc2` | 3 | 3 | 0 | 0 | 0 | 0 | **3** | **2** |
 | #1656 | (84-file PR) | 4 | 3 (2 defects + 1 valid LOW) | 1 | 0 | 0 | 0 | **2** | 0 |
-| #1661 | `d1b9d01b` | 0 (reviewed `1c7a17cb`, earlier) | — | 0 | 2 (4 instances) | 2 (1 root cause) | 0 | 0 (n/m — defect post-dates Q's head) | 0 |
+| #1661 | `d1b9d01b` | 0 (reviewed `1c7a17cb`, earlier) | — | 0 | 2 (1 root cause) | 1 | 0 | 0 (n/m — defect post-dates Q's head) | 0 |
 | #1662 | `0ca5927a` | n/m | — | — | 1 | 1 | 0 | n/m | 0 |
 | #1660 | — | 0 | — | 0 | 0 | — | 0 | n/m (no confirmed defect) | 0 |
 
@@ -60,8 +60,8 @@ Evidence per row:
   with **0 findings**.
 - **#1661** — Gemini review `5727611253` at `d1b9d01b` reported **2 findings for one root cause**: a
   stray `body {` inserted at `themes/default/default.css:113`, producing `body body`. It is real:
-  commit `67cb91ce` removes exactly that line. Review `5727625987` then repeated both findings, so
-  2 unique findings were published as 4 instances across 2 reviews. Q had reviewed the earlier head
+  commit `67cb91ce` removes exactly that line. Review `5727625987` then repeated the same defect, so
+  one root cause reached the PR as two findings plus a repeat in a later review. Q had reviewed the earlier head
   `1c7a17cb` and reported no blocking defects, so this is **not** counted as a Q miss.
 - **#1662** — Gemini's single finding (`.docs/manifest.json:407`, missing trailing comma, invalid
   JSON) is real: the repaired manifest landed via #1664, and the same breakage had already stopped
@@ -73,11 +73,11 @@ Evidence per row:
 
 - **Amazon Q:** 7 findings — 6 substantiated (5 confirmed defects + 1 valid LOW), 1 false positive.
   Recall on defects present in its reviewed heads: **5 of 5**.
-- **Gemini:** 3 unique findings — 3 confirmed, 0 false positives, published as 5 instances.
+- **Gemini:** 3 published findings covering 2 distinct defects — both confirmed, 0 false positives.
   Recall on defects present in its reviewed heads: **2 of 6** (missed all three #1639 findings and
   both #1656 findings, caught the #1661 CSS root cause and the #1662 JSON breakage).
-- **Duplicate inflation:** #1661 published one root cause as 4 finding instances (2.0x per unique
-  finding). Deduplication is part of the change under review, not yet measured live.
+- **Duplicate inflation:** #1661 published one root cause as three separate instances (two findings in
+  one review, one repeat in a follow-up review). Deduplication is part of the change under review, not yet measured live.
 
 ### What the baseline says
 
