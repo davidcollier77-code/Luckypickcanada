@@ -550,7 +550,7 @@ export default function HomePage() {
       </section>
 
 
-      {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onRevealTestStart={(revealType, luckyPickGame) => {
+      {checkoutType && <CheckoutModal type={checkoutType} onClose={() => setCheckoutType(null)} onPreviewReveal={(revealType, luckyPickGame) => {
         if (revealType === 'lucky_pick' || revealType === 'gift_package') {
           setCheckoutType(null);
           startLuckyReveal(luckyPickGame);

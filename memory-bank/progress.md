@@ -1,3 +1,13 @@
+# Progress — 2026-11-01: Free Preview Reveal in the Checkout Modals
+
+- Replaced the old `REVEAL_TEST_MODE` paid-form interception (which also posted a test gift to `/api/send-gift`) with a preview-only switch, `canPreviewReveal(type)`, limited to the Lucky Pick and Gift modals.
+- Added a separate `type="button"` **Preview Reveal — FREE** control outside the checkout form in both eligible modals, with a short note that previews take no payment and send no emails. The tip jar gains no preview.
+- Restored the paid submit handler to its original duplicate-submit guard, so `/api/checkout` submission, validation, and reset behaviour are unchanged in both switch states.
+- Reused the homepage's existing reveal state and popup; added secondary button styles only. Deleted the stale tracked `app/checkout-modal.jsx.orig` that held the removed bypass.
+- Added `__tests__/components/CheckoutModal.test.jsx`, updated `__tests__/security-payment.test.js`, rewrote the preview README, and recorded Spec Kit artifacts in `specs/072-free-preview-reveal/`.
+
+---
+
 # Progress — 2026-10-31: PR #1659 Severity and Edge-Case Follow-up
 
 - Reviewed Amazon Q's latest full review and four inline findings, along with the owner's concern that the red indicator appears even when there is no critical/high error.
