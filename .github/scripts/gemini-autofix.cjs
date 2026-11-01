@@ -301,7 +301,7 @@ function formatFixOutcomes(results, { unselectedCount = 0 } = {}) {
 }
 
 
-async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, reviewRules, documentReport }) {
+async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, reviewRules, documentReport, expectedHeadSha = null }) {
   const plan = planSelectedFindings(findings, files);
   const results = plan.results.slice();
   if (!plan.eligible.length) {
@@ -361,6 +361,25 @@ async function applyAutoFix({ pr, files, findings, docs, docPaths, REPO, TOKEN, 
   if (!comments.length) {
     return { changed: false, results, model: response.model,
       message: String(response.data.summary || "Gemini did not produce a safe, validated one-line suggestion. No code was changed.") };
+  }
+  // Suggestions were validated against the diff fetched at the start of this run, so the
+  // head is re-checked immediately before publishing: a moved head must never receive fixes
+  // derived from older code.
+  if (expectedHeadSha) {
+    let latestPr = null;
+    try {
+      latestPr = await github("/repos/" + REPO + "/pulls/" + pr.number, TOKEN);
+    } catch (error) {
+      return { changed: false, results,
+        message: "No suggestions were posted because the current PR head could not be re-checked (" +
+          String(error && error.message || "unknown error").slice(0, 200) + ")." };
+    }
+    const latestSha = latestPr && latestPr.head && latestPr.head.sha;
+    if (!latestSha || latestSha !== expectedHeadSha) {
+      return { changed: false, results,
+        message: "No suggestions were posted because the PR head changed while this fix request was running. " +
+          "Post @gemini full review to review the latest commit first." };
+    }
   }
   const body = "## Gemini On-Demand Fix Suggestions\n\n" +
     String(response.data.summary || "Gemini produced focused suggestions for the reported findings.") +

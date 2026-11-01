@@ -22,6 +22,9 @@ const MAX_BASE_SOURCE_CHARS = 2200;
 const MAX_RELATED_SOURCE_CHARS = 3200;
 const MAX_SELECTED_IDS = 25;
 const MAX_REVIEW_PAGES = 100;
+// The only manual command the reviewer accepts. It is rendered verbatim at the bottom
+// of every review so the owner can copy it without retyping.
+const FULL_REVIEW_COMMAND = "@gemini full review";
 const CONTROL_FLOW_REVIEW_GUIDANCE = [
   "For asynchronous/control-flow concerns (including requestAnimationFrame, timers, promises, effects, and event handlers), trace registration, actual callback execution, state writes, reads, and every reachable direct or synchronous call path.",
   "Distinguish a potential timing hazard from a verified defect. Do not report an ordering issue when the supplied execution order proves the read occurs after the write; when a needed call path or source is missing, state the uncertainty rather than asserting a race."
@@ -54,17 +57,51 @@ const EVIDENCE_VERIFICATION_GUIDANCE = [
   "When a PR introduces, renames, or removes a governance/protected directory, configuration family, or exclusion list, verify every other enumeration that mirrors it: path allowlists and denylists, autofix eligibility, protected-file rules, ignore files, documentation filters, and CI path filters. A newly introduced path family that is missing from an existing denylist is a real consistency defect.",
   "Report the defect at its root cause with the smallest sufficient correction, not a style rewrite, and do not repeat a sibling finding that shares the same root cause."
 ].join(" ");
+// Findings are only publishable when anchored to a changed line, so scope defects that live
+// outside the changed lines must be reported with line null or they are discarded by the
+// pre-publication evidence gate. These rules keep that requirement and the claim-verification
+// gap (PR #1639: a declared fix that was never applied) in the same instruction surface.
+const SCOPE_AND_CLAIM_GUIDANCE = [
+  "Treat the pull-request title, description, commit messages, and committed spec/plan text as unverified claims, not evidence. A claimed change counts only when the supplied patch or full source shows it. When a described change is absent from the code, report the mismatch as a finding: anchor it to a changed line in the same file when the claim is attached to one, otherwise use the file path with line null rather than assuming the change was made.",
+  "When the PR states a mechanical or exhaustive goal (converting one construct to another, renaming an identifier, removing a pattern, deleting artifacts), scan the supplied full source of every changed file for remaining occurrences that the stated goal implies should have changed. Report each survivor with line null when its own line is not an added line, so the finding is disclosed as a file-level defect instead of being discarded.",
+  "Report committed scratch artifacts as findings: patch or diff dumps, one-off generator scripts, ad-hoc benchmark scripts, and temporary test harnesses added at the repository root or outside the project's test and tooling conventions.",
+  "For a performance or benchmark claim, verify the comparison is fair before accepting the number: check the order and interleaving of the alternatives, warm-up, repetition, and whether the measured construct is the one that actually runs."
+].join(" ");
+// Exactly three status colours are used: red for confirmed critical/high findings, yellow
+// for confirmed warnings, and green for a clean completed review. LOW-severity warnings
+// join MEDIUM in yellow rather than adding a fourth colour, so every finding keeps its own
+// selectable checkbox.
 const FINDING_CATEGORIES = [
   { id: "red", marker: "🔴", heading: "Red — Critical fixes",
     description: "Confirmed CRITICAL/HIGH defects and serious problems that need attention before this change is trusted." },
   { id: "yellow", marker: "🟡", heading: "Yellow — Suggested fixes",
-    description: "Valid MEDIUM-severity improvements and concerns worth addressing, without a confirmed critical failure path." },
-  { id: "additional", marker: "🔵", heading: "Additional recommendations",
-    description: "Actionable LOW-severity suggestions that may be useful to consider." }
+    description: "MEDIUM-severity warnings and LOW-severity suggestions that are worth considering before merging." }
 ];
 const TRUSTED = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const RULES = existsSync(resolve(ROOT, RULE_PATH)) ? readFileSync(resolve(ROOT, RULE_PATH), "utf8") : "";
-const MANIFEST = existsSync(resolve(ROOT, ".docs/manifest.json")) ? JSON.parse(readFileSync(resolve(ROOT, ".docs/manifest.json"), "utf8")) : null;
+// A malformed documentation index must never stop a review. Parsing failures are recorded
+// and disclosed as a coverage note instead of throwing during module load, which would kill
+// the process before main() could report anything on the pull request. A module-scope parse
+// error is what silently broke the manual @gemini full review trigger on PR #1661.
+function loadDocumentManifest() {
+  const path = resolve(ROOT, ".docs/manifest.json");
+  if (!existsSync(path)) {
+    return { manifest: null, error: "The documentation manifest was not found; optional library snapshots were not used." };
+  }
+  try {
+    const parsed = JSON.parse(readFileSync(path, "utf8"));
+    if (!parsed || typeof parsed !== "object") {
+      return { manifest: null, error: "The documentation manifest was not a JSON object; optional library snapshots were not used." };
+    }
+    return { manifest: parsed, error: null };
+  } catch (error) {
+    return { manifest: null, error: "The documentation manifest could not be parsed (" +
+      String(error && error.message || "unknown error").slice(0, 160) + "); optional library snapshots were not used." };
+  }
+}
+const DOC_MANIFEST = loadDocumentManifest();
+const MANIFEST = DOC_MANIFEST.manifest;
+const MANIFEST_ERROR = DOC_MANIFEST.error;
 
 function log(text) {
   process.stdout.write("[Gemini PR Reviewer] " + text + "\n");
@@ -244,6 +281,48 @@ function clipSource(source, limit) {
   const head = Math.floor(available * 0.7), tail = available - head;
   return { content: value.slice(0, head) + MARKER + (tail > 0 ? value.slice(-tail) : ""), truncated: true };
 }
+// clipSource keeps the head and the tail, which drops the middle of a long file. In a large
+// component the changed hunks and the surrounding declarations live in that dropped band, so the
+// reviewer was shown a file whose modified region had been removed (verified on #1642, where the
+// unconverted forEach calls sat around lines 754-881 of a clipped component and went unreported).
+// Keep the head for imports/declarations, every window around a changed line, and the tail.
+function clipSourceWithAnchors(source, limit, lineNumbers) {
+  const value = String(source || "");
+  const cap = Math.max(0, Math.floor(Number(limit) || 0));
+  if (value.length <= cap) return { content: value, truncated: false };
+  const anchors = [...new Set((lineNumbers instanceof Set ? [...lineNumbers] : (Array.isArray(lineNumbers) ? lineNumbers : []))
+    .map((item) => Number(item)).filter((item) => Number.isInteger(item) && item > 0))].sort((a, b) => a - b);
+  if (!anchors.length || cap <= 200) return clipSource(value, cap);
+  const MARKER = "\n[...omitted by reviewer context budget...]\n";
+  const rows = value.split("\n");
+  const WINDOW = 40;
+  const windows = [];
+  for (const anchor of anchors.slice(0, 60)) {
+    const start = Math.max(0, anchor - 1 - WINDOW);
+    const end = Math.min(rows.length, anchor + WINDOW);
+    const previous = windows[windows.length - 1];
+    if (previous && start <= previous.end) previous.end = Math.max(previous.end, end);
+    else windows.push({ start, end });
+  }
+  const headBudget = Math.max(0, Math.floor(cap * 0.2));
+  const tailBudget = Math.max(0, Math.floor(cap * 0.15));
+  const headText = rows.slice(0, Math.min(rows.length, 40)).join("\n").slice(0, headBudget);
+  const tailText = rows.slice(Math.max(0, rows.length - 40)).join("\n");
+  const tail = tailText.slice(Math.max(0, tailText.length - tailBudget));
+  let remaining = Math.max(0, cap - headText.length - tail.length - MARKER.length * 2);
+  const chunks = [];
+  for (const window of windows) {
+    if (remaining <= MARKER.length) break;
+    const text = rows.slice(window.start, window.end).join("\n");
+    const room = remaining - MARKER.length;
+    const kept = text.slice(0, room);
+    chunks.push(kept);
+    remaining -= kept.length + MARKER.length;
+    if (text.length > room) break;
+  }
+  const content = [headText, ...chunks, tail].filter(Boolean).join(MARKER);
+  return { content, truncated: true };
+}
 async function getRepositoryFile(path, ref, repository = REPO) {
   if (!safePath(path) || !/^[a-f0-9]{40}$/i.test(String(ref || "")) || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(String(repository || ""))) return null;
   try {
@@ -311,7 +390,7 @@ async function collectSourceContext(pr, files) {
     const remainingFiles = Math.max(1, candidates.length - index);
     const perFileLimit = Math.max(MIN_CHANGED_SOURCE_CHARS,
       Math.min(MAX_CHANGED_SOURCE_CHARS, Math.floor(budget / remainingFiles)));
-    const clipped = clipSource(source, Math.min(perFileLimit, budget));
+    const clipped = clipSourceWithAnchors(source, Math.min(perFileLimit, budget), addedLines(file.patch));
     records.push({ path: file.filename, role: removed ? "removed file at PR base before deletion" : "changed file at PR head",
       content: clipped.content, truncated: clipped.truncated });
     if (clipped.truncated) coverage.partial.push({ path: file.filename, reason: "clipped to the reviewer context budget" });
@@ -414,6 +493,7 @@ function buildAdversarialReviewPrompt({ pr, batch, sourceContext, docBundle = ""
     IMAGE_PRELOAD_REVIEW_GUIDANCE,
     SEVERITY_RUBRIC,
     EVIDENCE_VERIFICATION_GUIDANCE,
+    SCOPE_AND_CLAIM_GUIDANCE,
     "Batch: " + (Number(batchIndex) + 1) + " of " + Math.max(1, Number(batchCount) || 1),
     "Current PR head SHA under review: " + String(pr && pr.head && pr.head.sha || "unavailable"),
     "PR metadata: " + JSON.stringify({ number: pr && pr.number, title: pr && pr.title, body: String(pr && pr.body || "").slice(0, 3000) }),
@@ -814,22 +894,44 @@ function makeBatches(files) {
   if (batch.length) batches.push(batch);
   return batches;
 }
-function normalizeFindings(items, files, lineMap) {
+function normalizeFindings(items, files, lineMap, rejections = null) {
   const paths = new Set(files.map((f) => f.filename));
   const output = [];
   const seen = new Set();
+  const reject = (item, reason) => {
+    if (!Array.isArray(rejections)) return;
+    const line = Number(item && item.line);
+    rejections.push({
+      path: typeof (item && item.path) === "string" ? item.path.slice(0, 200) : null,
+      line: Number.isInteger(line) && line > 0 ? line : null,
+      title: typeof (item && item.title) === "string" ? item.title.slice(0, 120) : "",
+      reason
+    });
+  };
   for (const f of Array.isArray(items) ? items : []) {
-    if (!f || !paths.has(f.path) || typeof f.title !== "string" || typeof f.problem !== "string") continue;
+    if (!f || typeof f.title !== "string" || typeof f.problem !== "string") continue;
+    // Pre-publication evidence gate: a finding must point at code that exists in this
+    // reviewed diff. An external path, or a line that is not a changed line, is
+    // unsupported evidence and is discarded instead of being published as a defect.
+    if (!paths.has(f.path)) {
+      reject(f, "the cited path is not part of the reviewed diff");
+      continue;
+    }
+    const n = Number(f.line);
+    const line = Number.isInteger(n) && n > 0 ? n : null;
+    const added = lineMap.get(f.path);
+    if (line !== null && !(added instanceof Set && added.has(line))) {
+      reject(f, "the cited line is not a changed line in this diff");
+      continue;
+    }
     const confidence = Number(f.confidence);
     if (!Number.isFinite(confidence) || confidence < 0.8) continue;
     const severity = String(f.severity || "MEDIUM").toUpperCase();
     if (!["CRITICAL", "HIGH", "MEDIUM", "LOW"].includes(severity)) continue;
-    const n = Number(f.line);
-    const line = Number.isInteger(n) && n > 0 ? n : null;
     const key = f.path + ":" + line + ":" + f.title.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    output.push({ path: f.path, line, inline: line !== null && lineMap.get(f.path)?.has(line) === true,
+    output.push({ path: f.path, line, inline: line !== null,
       confidence, severity, title: f.title.slice(0, 200), problem: f.problem.slice(0, 1600),
       impact: String(f.impact || "Impact not specified.").slice(0, 1000),
       fix: String(f.suggested_fix || "No concrete fix supplied.").slice(0, 1000),
@@ -880,21 +982,24 @@ function fencedText(value, language = "text") {
   const fence = backtick.repeat(width);
   return fence + language + "\n" + content + "\n" + fence;
 }
-function canRequestTargetedFix(finding) {
-  if (!finding || finding.inline !== true || !Number.isInteger(finding.line) || !safePath(finding.path)) return false;
-  return require("./gemini-autofix.cjs").isEligiblePath(finding.path) === true;
+// Commands are recognised from the comment a person actually posts: the phrase may be
+// pasted with a trailing space, wrapped in backticks or bold markers, quoted, or placed on
+// its own line inside a longer message. Only the exact phrase is accepted; every other
+// @gemini mention is reported back to the owner instead of being ignored.
+function commandLines(value) {
+  return String(value || "").replace(/\r\n?/g, "\n").split("\n")
+    .map((line) => line.replace(/^[\s>]+/, "").replace(/[`*_]+/g, "").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
 }
-function parseRepairCommand(value) {
-  const command = String(value || "").trim();
-  if (/^@gemini\s+full\s+review$/i.test(command)) return { mode: "review" };
-  if (/^@gemini\s+repair\s+all$/i.test(command)) return { mode: "fix" };
-  const match = command.match(/^@gemini\s+repair\s+one\s+(.+):([1-9]\d*)\s+--\s+(.+)$/i);
-  if (!match) return null;
-  const path = match[1].trim();
-  const line = Number(match[2]);
-  const title = match[3].replace(/\s+/g, " ").trim();
-  if (!safePath(path) || /[\r\n\0]/.test(path) || !Number.isSafeInteger(line) || line < 1 || !title || title.length > 200) return null;
-  return { mode: "fix-one", target: { path, line, title } };
+function parseFullReviewCommand(value) {
+  for (const line of commandLines(value)) {
+    const candidate = line.replace(/^@\s*/, "").replace(/[\s.!]+$/, "").toLowerCase();
+    if (candidate === "gemini full review") return { mode: "review", command: FULL_REVIEW_COMMAND };
+  }
+  return null;
+}
+function mentionsReviewerCommand(value) {
+  return /@gemini\b/i.test(String(value || ""));
 }
 
 function parseSelectedIds(body) {
@@ -940,17 +1045,15 @@ function findReviewStateForHead(reviews, sha) {
   }
   return null;
 }
+// The reviewer exposes exactly two fix controls. Older review bodies used longer labels, so
+// both spellings are accepted when an owner ticks a control on an existing review.
 function parseReviewAction(body, previousBody = "") {
   const current = String(body || "");
   const previous = String(previousBody || "");
-  const fixAll = "- [x] 🪄 **Fix all findings**";
-  const fixSelected = "- [x] 🛠️ **Fix selected findings**";
-  const selectAll = "- [x] ✅ **Select all findings**";
-  const clearSelection = "- [x] ⬜ **Clear selection**";
-  if (current.includes(selectAll) && !previous.includes(selectAll)) return { mode: "select-all" };
-  if (current.includes(clearSelection) && !previous.includes(clearSelection)) return { mode: "select-none" };
-  if (current.includes(fixAll) && !previous.includes(fixAll)) return { mode: "fix" };
-  if (current.includes(fixSelected) && !previous.includes(fixSelected)) {
+  const fixAll = ["- [x] 🪄 **Fix All**", "- [x] 🪄 **Fix all findings**"];
+  const fixSelected = ["- [x] 🛠️ **Fix Selected**", "- [x] 🛠️ **Fix selected findings**"];
+  if (fixAll.some((control) => current.includes(control) && !previous.includes(control))) return { mode: "fix" };
+  if (fixSelected.some((control) => current.includes(control) && !previous.includes(control))) {
     const targetFinding = parseSelectedIds(current);
     if (targetFinding === null) return { mode: "fix-selected", selectionLimitExceeded: true };
     return { mode: "fix-selected", targetFinding };
@@ -958,19 +1061,10 @@ function parseReviewAction(body, previousBody = "") {
   return null;
 }
 function resolveEventAction(body, previousBody = "", action = "") {
-  const command = parseRepairCommand(body);
+  const command = parseFullReviewCommand(body);
   if (command) return command;
-  const selection = parseSelectionCommand(body);
-  if (selection) return selection;
   if (action !== "edited") return null;
   return parseReviewAction(body, previousBody);
-}
-function matchTargetFinding(findings, target) {
-  if (!target || typeof target.path !== "string" || !Number.isInteger(target.line) || typeof target.title !== "string") return [];
-  const title = target.title.replace(/\s+/g, " ").trim().toLowerCase();
-  return (Array.isArray(findings) ? findings : []).filter((finding) =>
-    finding && finding.path === target.path && finding.line === target.line &&
-    String(finding.title || "").replace(/\s+/g, " ").trim().toLowerCase() === title);
 }
 
 function normalizePositiveObservations(items, files) {
@@ -994,9 +1088,16 @@ function normalizePositiveObservations(items, files) {
 }
 function classifyFindingCategory(finding) {
   const severity = String(finding && finding.severity || "").toUpperCase();
-  if (severity === "CRITICAL" || severity === "HIGH") return "red";
-  if (severity === "MEDIUM") return "yellow";
-  return "additional";
+  return severity === "CRITICAL" || severity === "HIGH" ? "red" : "yellow";
+}
+// Model prose sometimes prefixes its own verdict with a red marker even when it found
+// nothing (observed in the PR #1641 review: "🔴 **Verdict:** Green"). A severity colour must
+// never contradict the rendered status, so a leading severity marker is dropped when the
+// review contains no finding at all. When findings exist their own markers stay untouched.
+function sanitizeOverview(text, findings) {
+  const raw = String(text || "");
+  if ((Array.isArray(findings) ? findings : []).length) return raw;
+  return raw.replace(/^\s*(?:🔴|🟡|🔵)\s*/u, "");
 }
 function sortFindings(items) {
   const categoryOrder = new Map(FINDING_CATEGORIES.map((category, index) => [category.id, index]));
@@ -1027,25 +1128,6 @@ function dedupeFindings(items) {
   }
   return output;
 }
-function parseSelectionCommand(value) {
-  const command = String(value || "").trim();
-  if (/^@gemini\s+select\s+all$/i.test(command)) return { mode: "select-all" };
-  if (/^@gemini\s+(?:select\s+none|clear\s+selection)$/i.test(command)) return { mode: "select-none" };
-  if (/^@gemini\s+fix\s+selected$/i.test(command)) return { mode: "fix-selected", fromCommand: true };
-  return null;
-}
-// Rewrite only the finding checkbox lines; every other line is preserved byte-for-byte.
-function setFindingSelection(body, mode, ids = []) {
-  const wanted = new Set((Array.isArray(ids) ? ids : []).map((id) => String(id).toLowerCase()));
-  if (!["all", "none", "ids"].includes(mode)) throw new Error("Unsupported selection mode.");
-  return String(body || "").split("\n").map((line) => {
-    const match = line.match(/^- \[[ xX]\] Finding \x60([a-f0-9]{12})\x60:/i);
-    if (!match) return line;
-    const id = match[1].toLowerCase();
-    const checked = mode === "all" ? true : mode === "none" ? false : wanted.has(id);
-    return line.replace(/^- \[[ xX]\]/, checked ? "- [x]" : "- [ ]");
-  }).join("\n");
-}
 function findReviewForHead(reviews, sha) {
   if (!Array.isArray(reviews) || typeof sha !== "string" || !sha) return null;
   for (const review of reviews.slice().reverse()) {
@@ -1056,11 +1138,8 @@ function findReviewForHead(reviews, sha) {
 }
 function resolveRequestedFindings(findings, { mode, targetFinding } = {}) {
   const all = Array.isArray(findings) ? findings : [];
+  // Fix All covers every finding in the current-head review; nothing is pre-filtered here.
   if (mode === "fix") return { selected: all, rejected: [] };
-  if (mode === "fix-one") {
-    const selected = matchTargetFinding(all, targetFinding);
-    return { selected, rejected: selected.length ? [] : [{ id: null, status: "rejected", reason: "The exact path, line, and title no longer match a finding in the current-head review." }] };
-  }
   const ids = Array.isArray(targetFinding) ? targetFinding : [];
   const requested = new Set(ids.map((id) => String(id).toLowerCase()));
   const selected = all.filter((finding) => requested.has(finding.id));
@@ -1069,21 +1148,33 @@ function resolveRequestedFindings(findings, { mode, targetFinding } = {}) {
     .map((id) => ({ id, status: "rejected", reason: "No finding with this id exists in the current-head review." }));
   return { selected, rejected };
 }
-function buildReviewVerdict(findings, coverageGaps) {
-  const counts = { red: 0, yellow: 0, additional: 0 };
+// Status colours must mean exactly one thing each. Real findings always win, because a
+// finding is evidence even when coverage is partial. Otherwise a review that did not finish,
+// or did not see enough source, gets a neutral status that says what is unverified; it is
+// never red (no defect was found) and never green (no clean result was established).
+function buildReviewVerdict(findings, coverageGaps, { reviewCompleted = true } = {}) {
+  const counts = { red: 0, yellow: 0 };
   for (const finding of Array.isArray(findings) ? findings : []) counts[classifyFindingCategory(finding)] += 1;
+  const gaps = (Array.isArray(coverageGaps) ? coverageGaps : []).filter(Boolean);
   const detail = [
     counts.red ? counts.red + " critical/high fix(es) need attention" : "",
-    counts.yellow ? counts.yellow + " medium-severity suggestion(s) to review" : "",
-    counts.additional ? counts.additional + " low-priority recommendation(s) to consider" : ""
+    counts.yellow ? counts.yellow + " warning(s) worth considering" : ""
   ].filter(Boolean).join("; ") + ".";
-  if (counts.red) return { marker: "🔴", label: "FIXES NEEDED", detail };
-  if (counts.yellow) return { marker: "🟡", label: "SUGGESTED FIXES", detail };
-  if (counts.additional) return { marker: "🔵", label: "ADDITIONAL RECOMMENDATIONS", detail };
-  if (Array.isArray(coverageGaps) && coverageGaps.length) return { marker: "🟡", label: "REVIEW INCOMPLETE", detail: "No actionable finding was identified, but review coverage has gaps to check." };
-  return { marker: "🟢", label: "NO ACTIONABLE FINDINGS", detail: "Gemini found no actionable issues in the reviewed scope." };
+  if (counts.red) return { status: "red", marker: "🔴", label: "FIXES NEEDED", detail };
+  if (counts.yellow) return { status: "yellow", marker: "🟡", label: "WARNINGS FOUND", detail };
+  if (!reviewCompleted) {
+    return { status: "incomplete", marker: "⚪", label: "REVIEW INCOMPLETE — NOT VERIFIED",
+      detail: "This review did not complete, so it is not evidence that the code is clean. Unverified: " +
+        (gaps.length ? gaps.join(" ") : "one or more review passes did not finish.") };
+  }
+  if (gaps.length) {
+    return { status: "incomplete", marker: "⚪", label: "REVIEW INCOMPLETE — NOT VERIFIED",
+      detail: "No finding was identified in the code that was reviewed, but required source coverage was not achieved. Unverified: " + gaps.join(" ") };
+  }
+  return { status: "green", marker: "🟢", label: "REVIEW COMPLETE — NO FINDINGS",
+    detail: "The review completed, required source coverage was achieved, and no actionable finding was identified." };
 }
-function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], coverage = null, pullRequestNumber = null, compact = false }) {
+function formatReviewSections({ findings = [], positiveObservations = [], coverageGaps = [], coverage = null, pullRequestNumber = null, compact = false, reviewedSha = null, reviewCompleted = true }) {
   const tidy = (value) => String(value || "").replace(/\s+/g, " ").trim();
   const clip = (value, limit) => {
     const text = tidy(value);
@@ -1103,12 +1194,14 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
     : Infinity;
   const compactTitleLimit = Math.min(120, Math.floor(compactLabelBudget * 0.45));
   const compactPathLimit = Math.min(180, Math.max(0, compactLabelBudget - compactTitleLimit));
-  const verdict = buildReviewVerdict(ordered, coverageGaps);
+  const verdict = buildReviewVerdict(ordered, coverageGaps, { reviewCompleted });
   const grouped = new Map(FINDING_CATEGORIES.map((category) => [category.id, []]));
   for (const finding of ordered) grouped.get(classifyFindingCategory(finding)).push(finding);
   let promptsRendered = 0;
   const rows = ["### Overall Gemini review status",
-    verdict.marker + " **" + verdict.label + "** — " + verdict.detail, "", "### Finding categories"];
+    verdict.marker + " **" + verdict.label + "** — " + verdict.detail,
+    reviewedSha ? "**Reviewed commit:** " + tick + reviewedSha + tick + " — the exact pull-request head this result belongs to." : "",
+    "", "### Finding categories"];
   if (compact) rows.push("", "Review details and per-finding prompts were shortened to fit the publishing size limit; every finding and selection checkbox is retained.");
   for (const category of FINDING_CATEGORIES) {
     const count = grouped.get(category.id).length;
@@ -1141,18 +1234,6 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
       rows.push("**Copy/paste implementation prompt** — ready for ChatGPT, Jules, Amazon Q, or another coding agent.");
       rows.push("");
       rows.push(fencedText(buildFixPrompt(finding, pullRequestNumber)));
-      if (canRequestTargetedFix(finding)) {
-        rows.push("");
-        rows.push("**Request a targeted Gemini suggestion for this finding**");
-        rows.push("Comment with exactly this command on the PR:");
-        rows.push("");
-        rows.push(fencedText("@gemini repair one " + location + " -- " + tidy(finding.title)));
-        rows.push("");
-        rows.push("Gemini re-runs the review and only posts a native GitHub suggestion if the same finding is still present on this exact eligible added line and a safe one-line replacement is possible. Nothing is applied or pushed automatically.");
-      } else {
-        rows.push("");
-        rows.push("**Targeted Gemini suggestion unavailable for this finding.** Use the copy/paste prompt above. On-demand code suggestions are limited to eligible added lines and never edit or push code automatically.");
-      }
       if (finding.inline && finding.suggestion && !String(finding.suggestion).includes(String.fromCharCode(96).repeat(3))) {
         rows.push("");
         rows.push("**Optional code replacement (not a substitute for the implementation prompt)**");
@@ -1165,11 +1246,6 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
       rows.push("");
     }
   }
-  rows.push("", "### Selection controls",
-    "- [ ] ✅ **Select all findings** (check to select every finding above)",
-    "- [ ] ⬜ **Clear selection** (check to clear every finding selection above)",
-    "",
-    "These controls only change checkboxes. Submit a selection with **Fix selected findings** below, or comment `@gemini fix selected`. Comment `@gemini select all` or `@gemini select none` to change the selection without editing this review. Findings you did not select are never modified.");
   rows.push("### What's looking good");
   if (!positiveObservations.length) {
     rows.push("No specific positive observations met the evidence threshold; Gemini will not add generic praise.");
@@ -1183,15 +1259,27 @@ function formatReviewSections({ findings = [], positiveObservations = [], covera
   else for (const gap of coverageGaps) rows.push("- 🟡 " + tidy(gap));
   rows.push("", "### Before merging",
     "A green Gemini review means no actionable finding was identified in the reviewed scope; it is not merge approval. Confirm all required GitHub Actions checks, required reviews, and branch-protection conditions are green before deciding to merge.");
+  // Exactly two fix controls. Both read the checkboxes in this review only, so a finding the
+  // owner did not select is never acted on.
   if (findings.length) {
-    rows.push("", "### Automated Fixes",
-      "Select one or more finding checkboxes above, then check one action below. These are clickable GitHub checkbox controls; uncheck an action before using it again.",
+    rows.push("", "### Fix controls",
+      "Check the box beside any finding above, then tick exactly one control. Uncheck a control before using it again.",
       "",
-      "- [ ] 🛠️ **Fix selected findings**",
-      "- [ ] 🪄 **Fix all findings**",
-      "",
-      "Gemini may post native one-line suggestions for eligible findings. It does not change the PR branch or commit code; use the copy/paste prompts above for other fixes.");
+      "- [ ] 🛠️ **Fix Selected** — request suggestions only for the findings you checked, red or yellow.",
+      "- [ ] 🪄 **Fix All** — request suggestions for every eligible finding, without selecting each one.");
   }
+  rows.push("",
+    "### Request fixes",
+    "",
+    "Select the checkbox beside any red or yellow findings you want Gemini to address, then choose Fix Selected. To request suggestions for every eligible finding, choose Fix All.",
+    "",
+    "Gemini will recheck findings against the latest PR code and provide safe, eligible native GitHub suggestions. You remain in control of accepting suggestions.",
+    "",
+    "#### Run another full review",
+    "",
+    "To request a fresh review of the latest PR commit, copy the command below and post it in the PR conversation.",
+    "",
+    fencedText(FULL_REVIEW_COMMAND));
   return rows.join("\n");
 }
 function docReport(loaded, unloaded, assessments, selection) {
@@ -1263,17 +1351,25 @@ async function main() {
     const isEdited = event.action === "edited";
     const previousBody = isEdited ? String(event.changes?.body?.from || "") : "";
     const action = resolveEventAction(body, previousBody, event.action);
-    if (!action) { log("No actionable command or newly checked repair control found."); return; }
+    if (!action) {
+      // A reviewer command must never disappear silently. If a trusted comment mentions
+      // @gemini without a supported command, say so on the PR instead of only logging it.
+      if (mentionsReviewerCommand(body)) {
+        await comment(number, "Gemini did not start a review: this comment is not a supported command.\n\nPost exactly:\n\n" +
+          fencedText(FULL_REVIEW_COMMAND) + "\n\nNo other manual Gemini command is supported. No code was changed.");
+        log("Rejected an unsupported @gemini command with a visible explanation.");
+        return;
+      }
+      log("No actionable command or newly checked fix control found.");
+      return;
+    }
     mode = action.mode;
-    if (mode === "fix-one") targetFinding = action.target;
     if (mode === "fix-selected") {
       if (action.selectionLimitExceeded) {
         await comment(number, "Too many findings were selected. Select no more than " + MAX_SELECTED_IDS + " findings; no suggestions were requested.");
         return;
       }
-      // A bare `@gemini fix selected` command carries no ids; they are read from the
-      // current-head review body so an unselected finding is never picked up.
-      targetFinding = action.fromCommand ? null : action.targetFinding;
+      targetFinding = action.targetFinding;
       if (Array.isArray(targetFinding) && !targetFinding.length) {
         await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
         return;
@@ -1291,17 +1387,25 @@ async function main() {
     const isEdited = event.action === "edited";
     const previousBody = isEdited ? String(event.changes?.body?.from || "") : "";
     const action = resolveEventAction(body, previousBody, event.action);
-    if (!action) { log("No actionable command or newly checked repair control found."); return; }
+    if (!action) {
+      // A reviewer command must never disappear silently. If a trusted comment mentions
+      // @gemini without a supported command, say so on the PR instead of only logging it.
+      if (mentionsReviewerCommand(body)) {
+        await comment(number, "Gemini did not start a review: this comment is not a supported command.\n\nPost exactly:\n\n" +
+          fencedText(FULL_REVIEW_COMMAND) + "\n\nNo other manual Gemini command is supported. No code was changed.");
+        log("Rejected an unsupported @gemini command with a visible explanation.");
+        return;
+      }
+      log("No actionable command or newly checked fix control found.");
+      return;
+    }
     mode = action.mode;
-    if (mode === "fix-one") targetFinding = action.target;
     if (mode === "fix-selected") {
       if (action.selectionLimitExceeded) {
         await comment(number, "Too many findings were selected. Select no more than " + MAX_SELECTED_IDS + " findings; no suggestions were requested.");
         return;
       }
-      // A bare `@gemini fix selected` command carries no ids; they are read from the
-      // current-head review body so an unselected finding is never picked up.
-      targetFinding = action.fromCommand ? null : action.targetFinding;
+      targetFinding = action.targetFinding;
       if (Array.isArray(targetFinding) && !targetFinding.length) {
         await comment(number, "Select one or more finding checkboxes before checking Fix selected findings. No suggestions were requested.");
         return;
@@ -1314,45 +1418,18 @@ async function main() {
   } else { log("Unsupported event; no action taken."); return; }
   if (!Number.isInteger(Number(number)) || Number(number) < 1 ||
       (EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) :
-        !["initial", "review", "fix", "fix-one", "fix-selected", "select-all", "select-none"].includes(mode)) ||
-      (mode === "fix-one" && (!targetFinding || !safePath(targetFinding.path) || !Number.isInteger(targetFinding.line) || targetFinding.line < 1)) ||
+        !["initial", "review", "fix", "fix-selected"].includes(mode)) ||
       (mode === "fix-selected" && targetFinding !== null && !Array.isArray(targetFinding))) {
     throw new Error("Invalid review mode, targeted finding, or PR number.");
   }
   if (!REPO || !TOKEN) throw new Error("GitHub workflow context is missing.");
-  if (!RULES || !MANIFEST) throw new Error("Gemini rules or document manifest is missing.");
+  if (!RULES) throw new Error("Gemini review rules are missing or unreadable, so no review was performed.");
   const pr = await gh("/repos/" + REPO + "/pulls/" + number);
   if (!pr || typeof pr !== "object") throw new Error("GitHub did not return valid pull-request metadata.");
   if (pr.state !== "open") {
-    if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
+    if (mode === "fix" || mode === "fix-selected") {
       await comment(number, "Gemini fix suggestions were not generated because this PR is not open.");
     }
-    return;
-  }
-  if (mode === "select-all" || mode === "select-none") {
-    let reviews;
-    try {
-      reviews = await fetchAllReviews(number);
-    } catch (error) {
-      const reason = String(error && error.message || "unknown error").slice(0, 240);
-      log("Could not verify complete review history: " + reason);
-      await comment(number, "Gemini could not retrieve the review history, so no selection change was made. Please retry when the GitHub API is available.");
-      return;
-    }
-    const targetReview = findReviewForHead(reviews, pr.head.sha);
-    if (!targetReview) {
-      await comment(number, "Gemini could not find a current-head review to update. Run @gemini full review first; no selection change was made.");
-      return;
-    }
-    const nextBody = setFindingSelection(targetReview.body, mode === "select-all" ? "all" : "none");
-    if (nextBody === targetReview.body) {
-      await comment(number, "Nothing to change: the current-head review already has that selection state.");
-      return;
-    }
-    await gh("/repos/" + REPO + "/pulls/" + number + "/reviews/" + targetReview.id, {
-      method: "PUT", body: JSON.stringify({ body: nextBody })
-    });
-    log("Updated finding selection for PR #" + number + " (" + mode + ").");
     return;
   }
   if (!API_KEY) throw new Error("GEMINI_API_KEY secret is missing. Verify it under Settings → Secrets and variables → Actions; its value is never printed.");
@@ -1369,7 +1446,7 @@ async function main() {
     return;
   }
 
-  if (mode === "fix" || mode === "fix-one" || mode === "fix-selected") {
+  if (mode === "fix" || mode === "fix-selected") {
     const actionBody = String(event.comment?.body || event.review?.body || "");
     let state = extractReviewState(actionBody);
     let selectionSource = actionBody;
@@ -1426,10 +1503,10 @@ async function main() {
 
     const fixResult = await fixModule.applyAutoFix({
       pr, files, findings: requestedFindings, docs: docBundle, docPaths, REPO, TOKEN,
-      reviewRules: RULES, documentReport
+      reviewRules: RULES, documentReport, expectedHeadSha: pr.head.sha
     });
     if (fixResult.suggestionsPosted) log(fixResult.message);
-    const title = mode === "fix-one" || mode === "fix-selected" ? "## Gemini Targeted Fix Suggestion" : "## Gemini On-Demand Fix Suggestions";
+    const title = mode === "fix-selected" ? "## Gemini Targeted Fix Suggestion" : "## Gemini On-Demand Fix Suggestions";
     const outcomes = fixModule.formatFixOutcomes(fixResult.results, {
       unselectedCount: Math.max(0, state.findings.length - requestedFindings.length)
     });
@@ -1460,6 +1537,7 @@ async function main() {
   const reviewResults = [];
   const models = [selection.model].filter(Boolean);
   const batchFailures = [];
+  const evidenceRejections = [];
 
   for (let i = 0; i < batches.length; i++) {
     const batch = batches[i];
@@ -1476,6 +1554,7 @@ async function main() {
         IMAGE_PRELOAD_REVIEW_GUIDANCE,
         SEVERITY_RUBRIC,
         EVIDENCE_VERIFICATION_GUIDANCE,
+        SCOPE_AND_CLAIM_GUIDANCE,
         "Source-context limitations: " + (sourceContext.limitations.length ? sourceContext.limitations.join(" ") : "No known retrieval limitation."),
         "PR: " + JSON.stringify({ number: pr.number, title: pr.title, body: String(pr.body || "").slice(0, 4000) }),
         "Consulted document excerpts:\n" + docBundle,
@@ -1484,7 +1563,7 @@ async function main() {
       ].join("\n\n");
       const answer = await askModel(prompt, 8000);
       models.push(answer.model);
-      primaryFindings = normalizeFindings(answer.result.findings, batch, linesByPath);
+      primaryFindings = normalizeFindings(answer.result.findings, batch, linesByPath, evidenceRejections);
       reviewResults.push({
         summary: String(answer.result.summary || ""),
         findings: primaryFindings,
@@ -1502,7 +1581,7 @@ async function main() {
       models.push(adversarialAnswer.model);
       reviewResults.push({
         summary: "",
-        findings: normalizeFindings(adversarialAnswer.result.findings, batch, linesByPath),
+        findings: normalizeFindings(adversarialAnswer.result.findings, batch, linesByPath, evidenceRejections),
         positives: [],
         assessments: Array.isArray(adversarialAnswer.result.document_assessments) ? adversarialAnswer.result.document_assessments : []
       });
@@ -1521,6 +1600,19 @@ async function main() {
   const assessments = reviewResults.flatMap((r) => r.assessments);
   const inline = findings.filter((f) => f.inline).slice(0, 25);
   const coverageGaps = [];
+  // An unreadable documentation index is a disclosure, never a silent downgrade of the review.
+  if (MANIFEST_ERROR) coverageGaps.push(MANIFEST_ERROR);
+  // A discarded finding means the model cited code that is not in this diff. It is
+  // disclosed by path and line, and it prevents the review from claiming a clean result.
+  if (evidenceRejections.length) {
+    const sample = evidenceRejections.slice(0, 5)
+      .map((item) => (item.path || "unknown path") + (item.line ? ":" + item.line : "") +
+        (item.title ? " - " + item.title : ""))
+      .join("; ");
+    coverageGaps.push(evidenceRejections.length +
+      " finding(s) were discarded before publishing because the cited path or line is not part of the reviewed diff (" +
+      sample + (evidenceRejections.length > 5 ? "; and more" : "") + ").");
+  }
   if (list.capped) coverageGaps.push("Changed-file listing reached the 250-file cap; some files may not be represented.");
   if (skippedFiles.length) coverageGaps.push(skippedFiles.length + " changed file(s) had no text patch and could not be reviewed line-by-line: " +
     skippedFiles.slice(0, 10).map((file) => file.filename).join(", ") +
@@ -1538,12 +1630,16 @@ async function main() {
     if (!coverageGaps.includes(note)) coverageGaps.push(note);
   }
   const documentReport = docReport(docState.loaded, docState.unloaded, assessments, selection);
-  let reviewSections = formatReviewSections({ findings, positiveObservations, coverageGaps, pullRequestNumber: number });
+  // A failed pass means the review did not finish, so the verdict cannot claim a clean result.
+  const reviewCompleted = batchFailures.length === 0;
+  const reviewOptions = { findings, positiveObservations, coverageGaps, pullRequestNumber: number,
+    reviewedSha: pr.head.sha, reviewCompleted };
+  let reviewSections = formatReviewSections(reviewOptions);
   if (reviewSections.length > MAX_REVIEW_BODY_CHARS) {
     if (!coverageGaps.some((gap) => /Per-finding implementation prompts were omitted/.test(gap))) {
-      coverageGaps.push("Per-finding implementation prompts were omitted from this review because it exceeded the publishing size limit; every finding is still listed with its checkbox. Comment `@gemini repair all` or request one finding for prompts.");
+      coverageGaps.push("Per-finding implementation prompts were omitted from this review because it exceeded the publishing size limit; every finding is still listed with its checkbox.");
     }
-    reviewSections = formatReviewSections({ findings, positiveObservations, coverageGaps, pullRequestNumber: number, compact: true });
+    reviewSections = formatReviewSections({ ...reviewOptions, compact: true });
   }
   const summary = [
     "## Gemini PR Review",
@@ -1554,14 +1650,11 @@ async function main() {
     "**Source context:** " + sourceContext.records.length + " source record(s); " + (sourceContext.limitations.length ? sourceContext.limitations.join(" ") : "no known retrieval limitations.") + ".",
     "",
     "### Overview",
-    reviewResults.map((r) => r.summary).filter(Boolean).join("\n"),
+    reviewResults.map((r) => sanitizeOverview(r.summary, findings)).filter(Boolean).join("\n"),
     "",
     reviewSections,
     "",
-    documentReport,
-    "",
-    "### Request fixes",
-    "Comment exactly @gemini full review to run a full review, @gemini repair one <path>:<line> -- <finding title> to request a safe suggestion for one finding, or @gemini repair all to request suggestions for all eligible findings. You can also check individual findings above and check **Fix selected findings** to request suggestions only for those issues. Targeted requests recheck the exact path and line before suggesting anything. Gemini only posts opt-in native GitHub suggestions for safe one-line changes on eligible added lines; it never edits files, pushes commits, or merges the PR."
+    documentReport
   ];
   const reviewBody = summary.join("\n") + serializeReviewState(pr.head.sha, findings);
   const comments = inline.map((f) => ({ path: f.path, line: f.line, side: "RIGHT", body: findingBody(f) }));
@@ -1600,12 +1693,13 @@ if (require.main === module) main().catch(async (error) => {
 module.exports = { addedLines, extractLocalImports, resolveImportCandidates, limitImportCandidates, MAX_IMPORT_SOURCE_PROBES,
   MAX_CHANGED_SOURCE_FILES, MAX_CHANGED_SOURCE_CHARS, MAX_TOTAL_SOURCE_CHARS, MAX_BASE_SOURCE_CHARS, MAX_RELATED_SOURCE_CHARS, selectChangedSourceCandidates,
   GEMINI_API_DEV_SKILL_PATH, loadGeminiApiDevSkill, isGeminiApiDevSkillRelevant, isGeminiCliDoc, isGeminiApiOverviewDoc, isGeminiReferenceDoc, isGeminiReferenceRelevant, selectRelevantGeminiReferenceDocs,
-  classifyReviewGroups, clipSource, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
-  buildReviewVerdict, buildFixPrompt, fencedText, canRequestTargetedFix, parseRepairCommand, resolveEventAction, matchTargetFinding,
+  classifyReviewGroups, clipSource, clipSourceWithAnchors, SCOPE_AND_CLAIM_GUIDANCE, formatTruncatedSourceNote, renderSourceContext, makeBatches, normalizePositiveObservations,
+  buildReviewVerdict, buildFixPrompt, fencedText, parseFullReviewCommand, mentionsReviewerCommand, FULL_REVIEW_COMMAND, loadDocumentManifest, sanitizeOverview,
+  resolveEventAction,
   generateFindingId, serializeReviewState, extractReviewState, findReviewStateForHead, fetchAllReviews,
   parseSelectedIds, parseReviewAction, MAX_SELECTED_IDS, MAX_REVIEW_PAGES,
   formatReviewSections, docReport, normalizeFindings, describeTaskGroupReason, buildAdversarialReviewPrompt, headMatchesReview,
   CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE, ADVERSARIAL_REVIEW_GUIDANCE,
   SEVERITY_RUBRIC, EVIDENCE_VERIFICATION_GUIDANCE, FINDING_CATEGORIES, classifyFindingCategory, sortFindings, dedupeFindings,
-  parseSelectionCommand, setFindingSelection, findReviewForHead, resolveRequestedFindings, formatCoverageDisclosure,
+  findReviewForHead, resolveRequestedFindings, formatCoverageDisclosure, MANIFEST_ERROR,
   parseModelJson, stripJsonFence, closeTruncatedJson, isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };

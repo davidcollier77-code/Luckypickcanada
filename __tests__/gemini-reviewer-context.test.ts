@@ -4,21 +4,15 @@ const require = createRequire(import.meta.url);
 const reviewer = require("../.github/scripts/gemini-reviewer.cjs");
 
 describe("Gemini reviewer source context", () => {
-  it("parses single-finding and all-finding repair commands safely", () => {
-    expect(reviewer.parseRepairCommand("@gemini full review")).toEqual({ mode: "review" });
-    expect(reviewer.parseRepairCommand("@gemini repair all")).toEqual({ mode: "fix" });
-    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:42 -- Duplicate submit guard")).toEqual({
-      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42, title: "Duplicate submit guard" }
-    });
-    expect(reviewer.parseRepairCommand("@GEMINI REPAIR ONE app/homepage/HomePage.js:42 -- Duplicate submit guard")).toEqual({
-      mode: "fix-one", target: { path: "app/homepage/HomePage.js", line: 42, title: "Duplicate submit guard" }
-    });
-    expect(reviewer.parseRepairCommand("@gemini repair one ../secret.js:42 -- Bad path")).toBeNull();
-    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:0 -- Bad line")).toBeNull();
-    expect(reviewer.parseRepairCommand("@gemini repair one app/homepage/HomePage.js:-1 -- Bad line")).toBeNull();
-    expect(reviewer.parseRepairCommand("@gemini repair all extra")).toBeNull();
+  it("parses only the manual full-review command and retires the repair commands", () => {
+    expect(reviewer.parseFullReviewCommand("@gemini full review")).toEqual({ mode: "review", command: "@gemini full review" });
+    expect(reviewer.parseFullReviewCommand("@gemini repair all")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@gemini repair one app/homepage/HomePage.js:42 -- Duplicate submit guard")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@GEMINI REPAIR ONE app/homepage/HomePage.js:42 -- Duplicate submit guard")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@gemini repair all extra")).toBeNull();
+    expect(reviewer.parseRepairCommand).toBeUndefined();
   });
-  it("builds a standalone implementation prompt and exposes targeted suggestions only for eligible added lines", () => {
+  it("builds a standalone implementation prompt and keeps suggestion eligibility in the autofix module", () => {
     const finding = {severity:"HIGH", title:"Broken preload", path:"app/homepage/Hero.js", line:42,
       inline:true, problem:"The preload type does not match the selected source.", impact:"The LCP image may not use the preload.",
       fix:"Align the preload with the actual selected source.", suggestion:null};
@@ -28,12 +22,11 @@ describe("Gemini reviewer source context", () => {
     expect(prompt).toContain("Read the repository's root AGENTS.md first");
     expect(prompt).toContain("Add or update focused regression tests");
     expect(prompt).toContain("Leave the PR open and unmerged");
-    expect(reviewer.canRequestTargetedFix(finding)).toBe(true);
-    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:finding.title})).toEqual([finding]);
-    expect(reviewer.matchTargetFinding([finding], {path:finding.path, line:finding.line, title:"Different issue"})).toEqual([]); // DevSkim: ignore DS173237
-    expect(reviewer.matchTargetFinding([finding], {path:"app/homepage/Other.js", line:finding.line, title:finding.title})).toEqual([]);
-    expect(reviewer.canRequestTargetedFix({...finding, path:".github/scripts/gemini-reviewer.cjs"})).toBe(false); // DevSkim: ignore DS173237
-    expect(reviewer.canRequestTargetedFix({...finding, inline:false})).toBe(false);
+    const autofix = require("../.github/scripts/gemini-autofix.cjs");
+    expect(autofix.isEligiblePath("app/homepage/Hero.js")).toBe(true);
+    expect(autofix.isEligiblePath(".github/scripts/gemini-reviewer.cjs")).toBe(false); // DevSkim: ignore DS173237
+    expect(reviewer.canRequestTargetedFix).toBeUndefined();
+    expect(reviewer.matchTargetFinding).toBeUndefined();
   });
   it("extracts local imports but ignores package imports", () => {
     expect(reviewer.extractLocalImports('import Hero from "./Hero"; export { x } from "../lib/x.js"; const p = require("react"); require("./local.cjs"); import("next/image");'))
@@ -72,9 +65,9 @@ describe("Gemini reviewer source context", () => {
     const actionBody = checkedFinding + "\n- [x] 🛠️ **Fix selected findings**";
     expect(reviewer.parseReviewAction(actionBody, "")).toEqual({ mode: "fix-selected", targetFinding: [id] });
     expect(reviewer.parseReviewAction(actionBody, actionBody)).toBeNull();
-    expect(reviewer.parseReviewAction("- [x] 🪄 **Fix all findings**", "")).toEqual({ mode: "fix" });
-    expect(reviewer.parseReviewAction("- [ ] 🪄 **Fix all findings**", "")).toBeNull();
-    expect(reviewer.parseRepairCommand("@gemini repair selected " + id)).toBeNull();
+    expect(reviewer.parseReviewAction("- [x] 🪄 **Fix All**", "")).toEqual({ mode: "fix" });
+    expect(reviewer.parseReviewAction("- [ ] 🪄 **Fix All**", "")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@gemini fix selected " + id)).toBeNull();
   });
   it("rejects selected checkbox lists over an explicit limit without silently truncating", () => {
     expect(reviewer.MAX_SELECTED_IDS).toBe(25);
@@ -91,11 +84,12 @@ describe("Gemini reviewer source context", () => {
       .toEqual({ mode: "fix-selected", selectionLimitExceeded: true });
   });
 
-  it("resolves supported commands on newly submitted reviews and checkbox actions only on edits", () => {
-    expect(reviewer.resolveEventAction("@gemini repair all", "", "submitted")).toEqual({mode:"fix"});
-    expect(reviewer.resolveEventAction("@gemini full review", "", "submitted")).toEqual({mode:"review"});
-    expect(reviewer.resolveEventAction("- [x] 🪄 **Fix all findings**", "", "submitted")).toBeNull();
-    expect(reviewer.resolveEventAction("- [x] 🪄 **Fix all findings**", "", "edited")).toEqual({mode:"fix"});
+  it("resolves the manual command on submitted reviews and fix controls only on edits", () => {
+    expect(reviewer.resolveEventAction("@gemini repair all", "", "submitted")).toBeNull();
+    expect(reviewer.resolveEventAction("@gemini full review", "", "submitted")).toEqual({mode:"review", command:"@gemini full review"});
+    expect(reviewer.resolveEventAction("@gemini full review", "", "created")).toEqual({mode:"review", command:"@gemini full review"});
+    expect(reviewer.resolveEventAction("- [x] 🪄 **Fix All**", "", "submitted")).toBeNull();
+    expect(reviewer.resolveEventAction("- [x] 🪄 **Fix All**", "", "edited")).toEqual({mode:"fix"});
   });
 
   it("paginates review state and finds a current-head review beyond the first 100 entries", async () => {
@@ -250,12 +244,14 @@ describe("Gemini reviewer source context", () => {
     expect(reviewer.IMAGE_PRELOAD_REVIEW_GUIDANCE).toMatch(/Do not recommend dual-format preloading by default/i);
   });
 
-  it("sets red, yellow, and green verdicts according to findings and coverage", () => {
+  it("sets red, yellow, neutral, and green statuses according to findings and coverage", () => {
     expect(reviewer.buildReviewVerdict([{severity:"HIGH"}], []).label).toBe("FIXES NEEDED");
-    expect(reviewer.buildReviewVerdict([], ["Source context unavailable"]).label).toBe("REVIEW INCOMPLETE");
-    expect(reviewer.buildReviewVerdict([], []).label).toBe("NO ACTIONABLE FINDINGS");
+    expect(reviewer.buildReviewVerdict([{severity:"MEDIUM"}], []).label).toBe("WARNINGS FOUND");
+    expect(reviewer.buildReviewVerdict([], ["Source context unavailable"]).label).toBe("REVIEW INCOMPLETE — NOT VERIFIED");
+    expect(reviewer.buildReviewVerdict([], [], {reviewCompleted:false}).label).toBe("REVIEW INCOMPLETE — NOT VERIFIED");
+    expect(reviewer.buildReviewVerdict([], []).label).toBe("REVIEW COMPLETE — NO FINDINGS");
     expect(reviewer.buildReviewVerdict([{severity:"HIGH"}], []).marker).toBe("🔴");
-    expect(reviewer.buildReviewVerdict([], ["coverage gap"]).marker).toBe("🟡");
+    expect(reviewer.buildReviewVerdict([], ["coverage gap"]).marker).toBe("⚪");
     expect(reviewer.buildReviewVerdict([], []).marker).toBe("🟢");
   });
   it("formats issue details with a collapsible copy-friendly suggested fix", () => {
@@ -272,12 +268,11 @@ describe("Gemini reviewer source context", () => {
     expect(formatted).toContain("**Copy/paste implementation prompt**");
     expect(formatted).toContain("Task: Investigate and fix one reported code-review finding.");
     expect(formatted).toContain("Read the repository's root AGENTS.md first");
-    expect(formatted).toContain("@gemini repair one app/homepage/Hero.js:42 -- Broken preload");
-    expect(formatted).toContain("### Automated Fixes");
-    expect(formatted).toContain("**Fix selected findings**");
-    expect(formatted).toContain("**Fix all findings**");
-    expect(formatted).not.toContain("@gemini repair selected");
-    expect(formatted).toContain("Nothing is applied or pushed automatically.");
+    expect(formatted).not.toContain("@gemini repair");
+    expect(formatted).toContain("### Fix controls");
+    expect(formatted).toContain("🛠️ **Fix Selected**");
+    expect(formatted).toContain("🪄 **Fix All**");
+    expect(formatted).toContain("You remain in control of accepting suggestions.");
     expect(formatted).toContain("**Optional code replacement (not a substitute for the implementation prompt)**");
     expect(formatted).toContain('preload("/hero.avif", { type: "image/avif" });');
     expect(formatted).toContain("🟢 **Fallback preserved**");
@@ -378,4 +373,57 @@ describe("Gemini reviewer source context", () => {
     expect(findings[0].inline).toBe(true);
   });
 
+});
+
+
+describe("Gemini reviewer keeps changed-hunk context in clipped source", () => {
+  const buildLongFile = () => {
+    const rows = [];
+    for (let n = 1; n <= 400; n += 1) rows.push("const value" + n + " = " + n + ";");
+    rows[299] = 'const ANCHORED_MIDDLE_DEFECT = "forEach left unconverted";';
+    return rows.join("\n");
+  };
+  it("retains the region around a changed line instead of only the head and tail", () => {
+    const clipped = reviewer.clipSourceWithAnchors(buildLongFile(), 3000, new Set([300]));
+    expect(clipped.truncated).toBe(true);
+    expect(clipped.content).toContain("ANCHORED_MIDDLE_DEFECT");
+    expect(clipped.content.length).toBeLessThanOrEqual(3000);
+    expect(clipped.content.startsWith("const value1 = 1;")).toBe(true);
+    expect(clipped.content.trimEnd().endsWith("const value400 = 400;")).toBe(true);
+  });
+  it("falls back to head and tail when no changed lines are known", () => {
+    const clipped = reviewer.clipSourceWithAnchors(buildLongFile(), 3000, []);
+    expect(clipped.content).not.toContain("ANCHORED_MIDDLE_DEFECT");
+    expect(clipped.content).toContain("const value1 = 1;");
+    expect(clipped.content.length).toBeLessThanOrEqual(3000);
+  });
+  it("returns an unchanged file without a truncation marker", () => {
+    const small = "const a = 1;\nconst b = 2;";
+    expect(reviewer.clipSourceWithAnchors(small, 1000, [2])).toEqual({ content: small, truncated: false });
+  });
+  it("tolerates an anchor beyond the end of the file", () => {
+    const clipped = reviewer.clipSourceWithAnchors(buildLongFile(), 2500, new Set([99999]));
+    expect(clipped.truncated).toBe(true);
+    expect(clipped.content.length).toBeLessThanOrEqual(2500);
+  });
+});
+
+describe("Gemini reviewer scope and claim guidance", () => {
+  it("states that PR claims are not evidence and covers artifacts and benchmarks", () => {
+    const guidance = reviewer.SCOPE_AND_CLAIM_GUIDANCE;
+    expect(typeof guidance).toBe("string");
+    expect(guidance).toContain("unverified claims, not evidence");
+    expect(guidance).toContain("line null");
+    expect(guidance).toContain("scratch artifacts");
+    expect(guidance).toContain("benchmark");
+  });
+  it("is supplied to the adversarial prompt", () => {
+    const prompt = reviewer.buildAdversarialReviewPrompt({
+      pr: { number: 1642, title: "perf", body: "claims", head: { sha: "a".repeat(40) } },
+      batch: [{ filename: "components/LuckyGenerator.tsx", patch: "@@ -1,1 +1,2 @@\n+const a = 1;\n const b = 2;" }],
+      sourceContext: { records: [], limitations: [] }
+    });
+    expect(prompt).toContain("unverified claims, not evidence");
+    expect(prompt).toContain("scratch artifacts");
+  });
 });

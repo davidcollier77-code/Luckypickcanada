@@ -28,7 +28,11 @@ describe("Gemini PR reviewer", () => {
     expect(rules).toContain("Do not produce a per-document USED/USEFUL inventory.");
     expect(rules).toContain("materially useful document paths and contributions only");
     expect(rules).toContain("@gemini full review");
-    expect(rules).toContain("@gemini repair all");
+    expect(rules).not.toContain("@gemini repair one");
+    expect(rules).not.toContain("@gemini repair all");
+    expect(rules).toContain("Fix Selected");
+    expect(rules).toContain("Fix All");
+    expect(rules).toContain("neutral ⚪");
     expect(rules).not.toMatch(/AGENTS\.md|jules/i);
   });
 
@@ -41,19 +45,23 @@ describe("Gemini PR reviewer", () => {
     expect(fixScript).not.toContain("Trusted AGENTS.md governance");
   });
 
-  it("runs automatic reviews and accepts full review plus single/all targeted repair requests", () => {
+  it("runs automatic reviews and accepts one manual full-review command plus the two fix controls", () => {
     expect(workflow).toContain("pull_request_target:");
     expect(workflow).toContain("opened, reopened, synchronize, ready_for_review, review_requested");
     expect(workflow).toContain("issue_comment:");
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("options: [review, fix]");
     expect(script).toContain("@gemini full review");
-    expect(script).toContain("@gemini repair one");
-    expect(script).toContain("@gemini repair all");
-    expect(script).toContain("parseRepairCommand");
+    expect(script).toContain("parseFullReviewCommand");
+    expect(script).not.toContain("@gemini repair one");
+    expect(script).not.toContain("@gemini repair all");
+    expect(script).not.toContain("parseRepairCommand");
+    expect(script).not.toContain("parseSelectionCommand");
+    expect(script).not.toContain("setFindingSelection");
+    expect(script).toContain("mentionsReviewerCommand");
     expect(script).toContain("resolveRequestedFindings(state.findings, { mode, targetFinding })");
-    expect(script).toContain("parseSelectionCommand(body)");
-    expect(script).toContain("setFindingSelection(targetReview.body");
+    expect(script).toContain("🛠️ **Fix Selected**");
+    expect(script).toContain("🪄 **Fix All**");
     const unmatchedGuardIndex = script.indexOf("if (!requestedFindings.length) {");
     const unmatchedMessageIndex = script.indexOf("The requested finding(s) could not be matched.");
     const fixModuleIndex = script.indexOf('const fixModule = require("./gemini-autofix.cjs");');
@@ -62,9 +70,7 @@ describe("Gemini PR reviewer", () => {
     expect(unmatchedMessageIndex).toBeLessThan(fixModuleIndex);
     expect(script).toContain("Gemini Targeted Fix");
     expect(script).toContain("Gemini On-Demand Fix Suggestions");
-    expect(script).toContain("Fix all findings");
     expect(script).toContain("Copy/paste implementation prompt");
-    expect(script).toContain("Select one or more finding checkboxes above");
     expect(script).toContain("function parseReviewAction(body, previousBody = \"\")");
     expect(script).not.toContain("@gemini repair selected");
     expect(script).toContain("async function fetchAllReviews(number, fetchPage = gh, repo = REPO)");
@@ -166,7 +172,7 @@ describe("Gemini PR reviewer", () => {
     expect(validationIndex).toBeGreaterThan(-1);
     expect(validationIndex).toBeLessThan(promptIndex);
     expect(script).toContain('(EVENT_NAME === "workflow_dispatch" ? !["review", "fix"].includes(mode) :');
-    expect(script).toContain('!["initial", "review", "fix", "fix-one", "fix-selected", "select-all", "select-none"].includes(mode))');
+    expect(script).toContain('!["initial", "review", "fix", "fix-selected"].includes(mode))');
   });
   it("parses the reviewer scripts without executing them", () => {
     for (const path of [scriptPath, fixPath]) {
