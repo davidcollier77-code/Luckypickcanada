@@ -20,7 +20,7 @@
 ## Phase 3: Verification and reporting
 
 - [x] T010 Inspect the updater's existing logic for canonical snapshot creation, cross-group symlinks, and inventory recording.
-- [ ] T011 Run manifest validation and focused assertions for eight-group coverage and snapshot-path consistency in a checked-out workspace.
+- [x] T011 Parse the latest branch manifest and assert that the source occurs once in every group, has one URL configuration, and each group instruction points to the expected sanitized snapshot path.
 - [ ] T012 Re-trigger the documentation updater and verify the canonical snapshot plus all seven group links are created.
 - [ ] T013 Review the complete PR diff and update the canonical PR summary; leave PR #1662 open and unmerged.
 
@@ -29,5 +29,6 @@
 - **PASS** — Library and manifest searches found no existing Google Engineering Practices reference.
 - **PASS** — Official source and CC BY 3.0 attribution were verified; upstream repository archive date was verified.
 - **PASS** — Source ID sanitization produces `_google_eng-practices.md`; existing updater logic handles one canonical file in the first group and links in the remaining groups.
-- **PENDING** — Execute repository validation and re-trigger the actual updater. The owner plans to perform the updater run after this PR update; generated snapshots and links are not claimed as present yet.
+- **PASS** — Latest branch manifest parsed and focused eight-group/source/path assertions passed through repository file retrieval.
+- **PENDING** — Re-trigger the actual updater. The owner plans to perform the updater run after this PR update; generated snapshots and links are not claimed as present yet.
 - **PENDING** — Final full diff audit and current-head automated checks.
