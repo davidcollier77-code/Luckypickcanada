@@ -1,12 +1,15 @@
-// DEVELOPMENT TESTING ONLY
-// DO NOT ENABLE FOR LIVE CUSTOMER USE.
+// PUBLIC PREVIEW SWITCH
 //
-// This switch is evaluated in the browser and is deliberately restricted to
-// `next dev`. Production and Cloudflare builds always keep payment gates on.
-export const REVEAL_TEST_MODE = false;
+// `true` shows the "Preview Reveal — FREE" button in the $1 Lucky Pick and
+// $2.99 Gift checkout modals. `false` hides it. The preview only launches the
+// existing reveal presentation: it never submits the checkout form, creates a
+// Stripe session, takes a payment, sends an email, or touches the database.
+// It does not intercept or change the paid "Continue to secure checkout" path.
+export const REVEAL_TEST_MODE = process.env.NODE_ENV !== 'production';
 
-const TESTABLE_REVEAL_TYPES = new Set(['lucky_pick', 'gift_package']);
+// Eligible flows only. The tip jar never exposes a preview.
+const PREVIEW_REVEAL_TYPES = new Set(['lucky_pick', 'gift_package']);
 
-export function canBypassRevealPayment(revealType) {
-  return REVEAL_TEST_MODE;
+export function canPreviewReveal(revealType) {
+  return REVEAL_TEST_MODE && PREVIEW_REVEAL_TYPES.has(revealType);
 }

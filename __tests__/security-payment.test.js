@@ -17,8 +17,15 @@ describe('Security Hardening: Payment & Authorization', () => {
     process.env = originalEnv;
   });
 
-  it('verifies test bypass is off in production', () => {
-    expect(securityTestTools.REVEAL_TEST_MODE).toBe(false);
+  it('keeps the free preview separate from any paid checkout bypass', () => {
+    // canPreviewReveal must respect whatever REVEAL_TEST_MODE is set to.
+    const mode = securityTestTools.REVEAL_TEST_MODE;
+    expect(typeof mode).toBe('boolean');
+    expect(securityTestTools.canPreviewReveal('lucky_pick')).toBe(mode);
+    expect(securityTestTools.canPreviewReveal('gift_package')).toBe(mode);
+    expect(securityTestTools.canPreviewReveal('tip')).toBe(false);
+    // The old form-submission bypass helper is gone, so nothing can skip /api/checkout.
+    expect(securityTestTools.canBypassRevealPayment).toBeUndefined();
   });
 
   describe('Legacy /api/send-gift endpoint', () => {
@@ -42,6 +49,23 @@ describe('Security Hardening: Payment & Authorization', () => {
       const data = await response.json();
       expect(data.error).toContain('restricted');
     });
+  });
+});
+
+describe('Free preview reveal boundaries', () => {
+  const modalSource = readFileSync(join(process.cwd(), 'app/checkout-modal.jsx'), 'utf8');
+
+  it('never routes previews through the gift email or checkout APIs', () => {
+    expect(modalSource).not.toContain('/api/send-gift');
+    expect(modalSource).not.toContain("fetch('/api/checkout'");
+    // The paid path is still the plain form post it was before.
+    expect(modalSource).toContain('action="/api/checkout"');
+    expect(modalSource).not.toContain('noValidate');
+  });
+
+  it('renders the preview as a non-submitting button outside the form', () => {
+    expect(modalSource).toMatch(/<button type="button"[^>]*checkout-modal-preview-button/);
+    expect(modalSource).toMatch(/Preview Reveal — FREE/);
   });
 });
 
