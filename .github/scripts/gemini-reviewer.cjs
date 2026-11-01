@@ -710,6 +710,10 @@ async function askModel(prompt, tokens = 7000) {
           log("Model " + models[index] + " rejected the response schema; retrying without it.");
           response = await send(false);
           raw = await response.text();
+          // A second failure must stay visible, otherwise the run looks like a single
+          // unexplained HTTP error and the downgrade is indistinguishable from a retry.
+          if (!response.ok)
+            log("Model " + models[index] + " also failed without the response schema: HTTP " + response.status + ".");
         }
         if (!response.ok) {
           const error = new Error("Gemini model " + models[index] + " returned HTTP " + response.status + ".");
@@ -1779,4 +1783,4 @@ module.exports = { addedLines, extractLocalImports, resolveImportCandidates, lim
   CONTROL_FLOW_REVIEW_GUIDANCE, IMAGE_PRELOAD_REVIEW_GUIDANCE, ADVERSARIAL_REVIEW_GUIDANCE,
   SEVERITY_RUBRIC, EVIDENCE_VERIFICATION_GUIDANCE, FINDING_CATEGORIES, classifyFindingCategory, sortFindings, dedupeFindings,
   findReviewForHead, resolveRequestedFindings, formatCoverageDisclosure, MANIFEST_ERROR,
-  parseModelJson, stripJsonFence, closeTruncatedJson, isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };
+  isRetryableError, askModel, MAX_REVIEW_BODY_CHARS, MIN_CHANGED_SOURCE_CHARS };
