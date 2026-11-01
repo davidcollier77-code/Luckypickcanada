@@ -4,7 +4,7 @@
 
 Gemini MUST follow this file when reviewing pull requests. This is Gemini's only agent-instruction file.
 
-Gemini reviews pull requests and may post optional GitHub inline suggestions when `@gemini repair one <path>:<line> -- <finding title>` or `@gemini repair all` is requested. It never edits repository files directly, commits, pushes, approves, or merges.
+Gemini reviews pull requests and may post optional, owner-accepted GitHub inline suggestions when the owner selects findings and chooses **Fix Selected** or **Fix All**. `@gemini full review` is the only manual command. It never edits repository files directly, commits, pushes, approves, or merges.
 
 🔴 A — ANALYZE
 
@@ -17,8 +17,8 @@ Review the pull request for:
 - Missing or insufficient tests for important changes.
 
 Focus on the PR's changes and relevant surrounding code.
-- Present review results in point form with a red overall verdict for actionable findings, a yellow verdict when coverage or verification is incomplete, or a green verdict only when no actionable finding and no known review-coverage gap remain.
-- Group every actionable finding into exactly one category: 🔴 red critical fixes (confirmed CRITICAL/HIGH defects), 🟡 yellow suggested fixes (valid MEDIUM concerns), or 🔵 additional recommendations (actionable LOW suggestions). Severity decides the category; never move a finding to a higher category to raise its profile.
+- Use exactly three status colours, each with one meaning. 🔴 red means confirmed CRITICAL/HIGH findings were identified and need attention. 🟡 yellow means confirmed MEDIUM or LOW warnings were identified and are worth considering. 🟢 green means the review completed, required source coverage was achieved, and no finding was identified. A review that is incomplete, partially covered, or failed technically must use a neutral ⚪ status that names exactly what remains unverified: it is never red, because no defect was found, and never green, because no clean result was established. Never show red when there is no actual finding.
+- Group every actionable finding into exactly one category: 🔴 red critical fixes (confirmed CRITICAL/HIGH defects) or 🟡 yellow suggested fixes (confirmed MEDIUM and LOW warnings). Severity decides the category; never move a finding to a higher category to raise its profile. LOW warnings belong in yellow, not in a separate colour.
 - List issues with their category marker, severity, exact changed-file location, problem, impact, and correction. Put every issue in a clickable `<details><summary>` section containing a complete, standalone copy/paste implementation prompt for another coding agent. The prompt must include the specific finding, affected path/location, problem, impact, suggested direction to verify, scope boundaries, regression-test expectations, verification/reporting expectations, and the instruction to leave the PR open and unmerged. Add a separate optional code-replacement block only when a safe added-line replacement exists.
 - List only concrete, evidence-backed positive observations with 🟢 and exact changed-file paths.
 - List review-coverage warnings in their own informational section. A coverage warning such as a truncated file, an unavailable source, or a failed review pass is not a finding, is not a defect, and must never be given a finding checkbox or mixed into the finding categories.
@@ -27,7 +27,7 @@ Focus on the PR's changes and relevant surrounding code.
 - For async ordering concerns, trace when callbacks are registered and executed, where values are written/read, and any reachable direct or synchronous call path. Report a timing defect only when the execution path supports it; label missing context as uncertainty.
 - For image preloads, compare the actual selected picture/source format and responsive candidate with each preload. MIME type hints skip unsupported formats but do not make supported formats mutually exclusive: two AVIF/WebP preload hints can download both files in browsers supporting both. Do not repeat another reviewer's fix suggestion without independently checking its runtime consequences.
 
-For `@gemini full review`, `@gemini repair one <path>:<line> -- <finding title>`, and `@gemini repair all`:
+For `@gemini full review` (the only manual command):
 - Use `.docs/manifest.json` to choose the smallest relevant task group(s).
 - For every review batch, run an independent adversarial second pass using the supplied patches and relevant context. Search for overlooked failure paths and state/validation/identity/cache edge cases; do not merely confirm the first pass. A failed primary or adversarial pass is a coverage gap. Avoid duplicate findings and never claim complete review when a pass fails.
 - Re-fetch PR metadata immediately before publishing and do not publish if the head SHA changed during review.
@@ -49,15 +49,16 @@ For `@gemini full review`, `@gemini repair one <path>:<line> -- <finding title>`
 - Report a duplicated, stale, or inaccurate log or error message only when you can show how it misleads an operator, misstates what the code does, or hides a failure.
 - When a PR adds, renames, or removes a governance or protected directory, a configuration family, or an exclusion list, check every other enumeration that mirrors it: path allowlists and denylists, autofix eligibility, protected-file rules, ignore files, documentation filters, and CI path filters. A newly added path family that is missing from an existing denylist is a real consistency defect on a reachable path.
 - Report the root cause once, at the smallest sufficient correction, and never as several sibling findings.
-- For `@gemini repair one <path>:<line> -- <finding title>`, re-review the current PR and offer a suggestion only if the same finding remains at that exact path/line. For `@gemini repair all`, suggest safe fixes for all findings that qualify. In both modes, post focused GitHub inline suggestions only on eligible added lines in files already changed by the PR. The owner chooses whether to apply each suggestion; never write code or push commits automatically.
+- Fix Selected acts only on the findings whose checkbox the owner checked; Fix All acts on every eligible finding. Post focused GitHub inline suggestions only on eligible added lines in files already changed by the PR, and re-check the PR head immediately before posting so a moved head cannot receive suggestions derived from older code. The owner chooses whether to apply each suggestion; never write code or push commits automatically.
 - Before any selected finding is acted on, independently re-establish it from the current code. Reject false positives, unsupported claims, stale locations, duplicates, and unnecessary changes, and state the specific reason for each rejection. Never act on a finding the owner did not select, and never silently drop a selected finding: record it as fixed, rejected, or unresolved with an explanation.
 - Do not execute code, build steps, package hooks, or tests from the PR head. Never expose secrets or directly change repository files.
 
 🔴 C — COMMUNICATE
 
-- Identify the affected file and relevant lines; explain the problem, the evidence, and the impact. Each finding's dropdown must provide a copy/paste implementation prompt. When a safe targeted suggestion is possible, provide the exact `@gemini repair one <path>:<line> -- <finding title>` command. The review footer must explain `@gemini repair all` for requesting suggestions for all eligible findings.
+- Identify the affected file and relevant lines; explain the problem, the evidence, and the impact. Each finding's dropdown must provide a copy/paste implementation prompt.
+- The review footer must explain the two fix controls (Fix Selected, Fix All) and then show, as the very last content, the literal lowercase command `@gemini full review` in a copyable code block under "Run another full review". Do not offer any other manual command.
 - Provide a concise review summary. If no actionable issues are found, say so clearly, and say separately whether any coverage gap remains.
 - Keep the bottom Review context concise: selected task group(s) with brief reasons, materially useful document paths and contributions only, and one aggregate coverage note for genuine selection/loading/truncation limitations. Do not produce a per-document USED/USEFUL inventory.
-- Every finding in every category carries its own checkbox. Selection controls only change checkboxes; `@gemini select all`, `@gemini select none`, and `@gemini fix selected` are the supported commands. Only checked findings are submitted for remediation.
+- Every red and yellow finding carries its own checkbox, and both are selectable. The owner has exactly two fix controls, Fix Selected and Fix All; there is no separate single-finding repair command. Only checked findings are submitted for remediation by Fix Selected.
 - Never claim a document was used, a test was run, or verification passed without evidence.
 - Confirm that no code was applied automatically and the PR remains open and unmerged.

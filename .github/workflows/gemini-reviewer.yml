@@ -66,3 +66,26 @@ jobs:
         run: |
           git diff --exit-code -- .gemini/rules .github/workflows .github/scripts
 
+      # A run that dies before the reviewer can comment (for example a module-load error)
+      # must still say something on the pull request. This step makes such a failure visible
+      # instead of leaving a silent failed run behind.
+      - name: Report reviewer failure on the pull request
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EVENT_PATH: ${{ github.event_path }}
+          PR_NUMBER: ${{ inputs.pr_number || '' }}
+        run: |
+          number=$(node -e 'const fs=require("fs");let e={};try{e=JSON.parse(fs.readFileSync(process.env.EVENT_PATH||"","utf8"));}catch{}const n=(e.pull_request&&e.pull_request.number)||(e.issue&&e.issue.number)||process.env.PR_NUMBER||"";process.stdout.write(String(n||""));')
+          if [ -z "$number" ]; then
+            echo "No pull request number is available for this event; nothing to report."
+            exit 0
+          fi
+          body=$(printf '%s\n\n%s\n\n%s' \
+            '## Gemini PR Reviewer did not finish' \
+            'The reviewer stopped before it could publish a result, so this run says nothing about the code. It is not a finding, no code was changed, and the pull request was not merged. Post @gemini full review to try again.' \
+            "Run: $RUN_URL")
+          gh api --method POST "/repos/$GITHUB_REPOSITORY/issues/$number/comments" -f body="$body"
+

@@ -18,33 +18,34 @@ const findingLine = (id: string, severity = "HIGH", title = "Test finding") => {
 };
 
 describe("Gemini reviewer finding categories", () => {
-  it("maps severity to the three documented categories", () => {
+  it("maps severity to the two documented categories", () => {
     expect(reviewer.classifyFindingCategory({ severity: "CRITICAL" })).toBe("red");
     expect(reviewer.classifyFindingCategory({ severity: "HIGH" })).toBe("red");
     expect(reviewer.classifyFindingCategory({ severity: "MEDIUM" })).toBe("yellow");
-    expect(reviewer.classifyFindingCategory({ severity: "LOW" })).toBe("additional");
+    expect(reviewer.classifyFindingCategory({ severity: "LOW" })).toBe("yellow");
     expect(reviewer.FINDING_CATEGORIES.map((item: { heading: string }) => item.heading)).toEqual([
-      "Red — Critical fixes", "Yellow — Suggested fixes", "Additional recommendations"
+      "Red — Critical fixes", "Yellow — Suggested fixes"
     ]);
   });
 
-  it("uses red only for critical/high findings, yellow for medium, and blue for low", () => {
+  it("uses red only for critical/high findings and yellow for medium and low warnings", () => {
     expect(reviewer.buildReviewVerdict([{ severity: "HIGH" }], []).marker).toBe("🔴");
     expect(reviewer.buildReviewVerdict([{ severity: "CRITICAL" }], []).label).toBe("FIXES NEEDED");
     expect(reviewer.buildReviewVerdict([{ severity: "MEDIUM" }], []).marker).toBe("🟡");
-    expect(reviewer.buildReviewVerdict([{ severity: "MEDIUM" }], []).label).toBe("SUGGESTED FIXES");
-    expect(reviewer.buildReviewVerdict([{ severity: "LOW" }], []).marker).toBe("🔵");
-    expect(reviewer.buildReviewVerdict([{ severity: "LOW" }], []).label).toBe("ADDITIONAL RECOMMENDATIONS");
-    expect(reviewer.buildReviewVerdict([], ["source omitted"]).marker).toBe("🟡");
+    expect(reviewer.buildReviewVerdict([{ severity: "MEDIUM" }], []).label).toBe("WARNINGS FOUND");
+    expect(reviewer.buildReviewVerdict([{ severity: "LOW" }], []).marker).toBe("🟡");
+    expect(reviewer.buildReviewVerdict([{ severity: "LOW" }], []).label).toBe("WARNINGS FOUND");
+    // Incomplete coverage is neutral, never a warning colour and never red.
+    expect(reviewer.buildReviewVerdict([], ["source omitted"]).marker).toBe("⚪");
     expect(reviewer.buildReviewVerdict([], []).marker).toBe("🟢");
     const mediumOnly = reviewer.formatReviewSections({
       findings: [{ severity: "MEDIUM", title: "Suggested improvement", path: "src/a.js", line: 1, problem: "p", impact: "i", fix: "f" }]
     });
-    expect(mediumOnly).toContain("🟡 **SUGGESTED FIXES**");
+    expect(mediumOnly).toContain("🟡 **WARNINGS FOUND**");
     expect(mediumOnly).not.toContain("🔴 Red — Critical fixes");
   });
 
-  it("renders three distinguishable categories with one checkbox per actionable finding", () => {
+  it("renders two distinguishable categories with one checkbox per finding", () => {
     const body = reviewer.formatReviewSections({
       findings: [
         { severity: "HIGH", title: "Broken rollback", path: "src/a.js", line: 4, inline: true, problem: "p", impact: "i", fix: "f", suggestion: null },
@@ -56,10 +57,10 @@ describe("Gemini reviewer finding categories", () => {
     });
     expect(body).toContain("### 🔴 Red — Critical fixes");
     expect(body).toContain("### 🟡 Yellow — Suggested fixes");
-    expect(body).toContain("### 🔵 Additional recommendations");
+    expect(body).not.toContain("Additional recommendations");
     expect(body).toContain("🔴 **[HIGH] Broken rollback**");
     expect(body).toContain("🟡 **[MEDIUM] Misleading log**");
-    expect(body).toContain("🔵 **[LOW] Dead helper**");
+    expect(body).toContain("🟡 **[LOW] Dead helper**");
     const checkboxes = body.split("\n").filter((line: string) => /^- \[[ x]\] Finding /.test(line));
     expect(checkboxes).toHaveLength(3);
     // Coverage warnings stay informational: they are listed under their own heading and
@@ -67,9 +68,10 @@ describe("Gemini reviewer finding categories", () => {
     expect(body).toContain("### Review coverage (informational — not a finding)");
     expect(body).toContain("- 🟡 scripts/refresh-docs.js was not fully examined");
     expect(checkboxes.some((line: string) => line.includes("refresh-docs.js"))).toBe(false);
-    expect(body).toContain("- [ ] ✅ **Select all findings**");
-    expect(body).toContain("- [ ] ⬜ **Clear selection**");
-    expect(body).toContain("**Fix selected findings**");
+    expect(body).not.toContain("Select all findings");
+    expect(body).not.toContain("Clear selection");
+    expect(body).toContain("🛠️ **Fix Selected**");
+    expect(body).toContain("🪄 **Fix All**");
   });
 
   it("keeps the review body bounded by dropping prompts instead of findings", () => {
@@ -92,42 +94,44 @@ describe("Gemini reviewer selection controls", () => {
     "### 🔴 Red — Critical fixes",
     findingLine(ids[0]),
     findingLine(ids[1], "MEDIUM"),
-    "- [ ] 🛠️ **Fix selected findings**",
-    "- [ ] ✅ **Select all findings**",
+    "- [ ] 🛠️ **Fix Selected**",
+    "- [ ] 🪄 **Fix All**",
     "Problem text mentions a checkbox - [ ] Finding " + tick + "cccccccccccc" + tick + ": not a real line"
   ].join("\n");
 
-  it("checks and clears only the finding checkbox lines", () => {
-    const all = reviewer.setFindingSelection(body, "all");
-    expect(all.split("\n").filter((line: string) => line.startsWith("- [x] Finding "))).toHaveLength(2);
+  it("reads selection only from checked finding lines and refuses unknown ids", () => {
+    const checked = body.replace("- [ ] Finding " + tick + ids[0] + tick, "- [x] Finding " + tick + ids[0] + tick);
+    expect(reviewer.parseSelectedIds(checked)).toEqual([ids[0]]);
+    expect(reviewer.parseSelectedIds(body)).toEqual([]);
     expect(body).toContain("🟡 **[MEDIUM] Test finding**");
-    expect(all).toContain("- [ ] 🛠️ **Fix selected findings**");
-    expect(all).toContain("not a real line");
-    const cleared = reviewer.setFindingSelection(all, "none");
-    expect(cleared).toBe(body);
-    const onlyFirst = reviewer.setFindingSelection(cleared, "ids", [ids[0]]);
-    expect(onlyFirst).toContain("- [x] Finding " + tick + ids[0]);
-    expect(onlyFirst).toContain("- [ ] Finding " + tick + ids[1]);
-    expect(() => reviewer.setFindingSelection(body, "everything")).toThrow(/Unsupported selection mode/);
+    expect(body).toContain("not a real line");
+    const findings = [{ id: ids[0], path: "src/a.js", line: 7, title: "Test finding" }];
+    // An id that only appears in prose can never become a suggestion target.
+    const proseIds = reviewer.parseSelectedIds("A stray mention - [x] Finding " + tick + "cccccccccccc" + tick + ": ignored");
+    const resolution = reviewer.resolveRequestedFindings(findings, { mode: "fix-selected", targetFinding: proseIds });
+    expect(resolution.selected).toHaveLength(0);
+    expect(resolution.rejected[0].reason).toMatch(/No finding with this id/);
+    expect(reviewer.setFindingSelection).toBeUndefined();
   });
 
-  it("accepts select-all, clear-selection, and fix-selected commands only", () => {
-    expect(reviewer.parseSelectionCommand("@gemini select all")).toEqual({ mode: "select-all" });
-    expect(reviewer.parseSelectionCommand("@GEMINI SELECT NONE")).toEqual({ mode: "select-none" });
-    expect(reviewer.parseSelectionCommand("@gemini clear selection")).toEqual({ mode: "select-none" });
-    expect(reviewer.parseSelectionCommand("@gemini fix selected")).toEqual({ mode: "fix-selected", fromCommand: true });
-    expect(reviewer.parseSelectionCommand("@gemini select some")).toBeNull();
-    expect(reviewer.parseSelectionCommand("@gemini repair all")).toBeNull();
+  it("accepts only the manual full-review command", () => {
+    expect(reviewer.parseSelectionCommand).toBeUndefined();
+    expect(reviewer.parseFullReviewCommand("@gemini select all")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@GEMINI SELECT NONE")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@gemini clear selection")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@gemini fix selected")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@gemini repair all")).toBeNull();
+    expect(reviewer.parseFullReviewCommand("@gemini full review")).toEqual({ mode: "review", command: "@gemini full review" });
   });
 
-  it("treats newly checked select controls as functional actions", () => {
-    const selectAll = "- [x] ✅ **Select all findings**";
-    const clear = "- [x] ⬜ **Clear selection**";
-    expect(reviewer.parseReviewAction(selectAll, "")).toEqual({ mode: "select-all" });
-    expect(reviewer.parseReviewAction(clear, "")).toEqual({ mode: "select-none" });
-    expect(reviewer.parseReviewAction(selectAll, selectAll)).toBeNull();
-    expect(reviewer.resolveEventAction(selectAll, "", "edited")).toEqual({ mode: "select-all" });
-    expect(reviewer.resolveEventAction(selectAll, "", "submitted")).toBeNull();
+  it("treats the two fix controls as functional actions only on a new checked transition", () => {
+    const fixAll = "- [x] 🪄 **Fix All**";
+    const fixSelected = "- [x] 🛠️ **Fix Selected**";
+    expect(reviewer.parseReviewAction(fixAll, "")).toEqual({ mode: "fix" });
+    expect(reviewer.parseReviewAction(fixSelected, "")).toEqual({ mode: "fix-selected", targetFinding: [] });
+    expect(reviewer.parseReviewAction(fixAll, fixAll)).toBeNull();
+    expect(reviewer.resolveEventAction(fixAll, "", "edited")).toEqual({ mode: "fix" });
+    expect(reviewer.resolveEventAction(fixAll, "", "submitted")).toBeNull();
   });
 
   it("submits only selected findings and rejects unknown ids with a reason", () => {
@@ -137,7 +141,7 @@ describe("Gemini reviewer selection controls", () => {
     expect(result.rejected).toHaveLength(1);
     expect(result.rejected[0].reason).toMatch(/No finding with this id/);
     expect(reviewer.resolveRequestedFindings(findings, { mode: "fix", targetFinding: [] }).selected).toHaveLength(2);
-    expect(reviewer.resolveRequestedFindings(findings, { mode: "fix-one", targetFinding: { path: "src/zz.js", line: 1, title: "A" } }).selected).toHaveLength(0);
+    expect(reviewer.resolveRequestedFindings(findings, { mode: "fix-selected", targetFinding: ["eeeeeeeeeeee"] }).selected).toHaveLength(0);
   });
 });
 
