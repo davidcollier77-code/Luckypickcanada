@@ -1,3 +1,18 @@
+# Active Context — DevSkim Playwright Offset Remediation (2026-11-01)
+
+- **Task group:** `security` — finish the interrupted DevSkim Code Scanning remediation for the two gold CTA Playwright specs.
+- **Branch:** `freebuff/2ace85ab2dc71e6e9586f8de`; target `main`; leave the PR open and unmerged.
+- **Recovery:** no local branch, stash, dangling commit, remote branch, or working-tree change carried an unfinished diff for this task. The recoverable state was the committed filter, the 14 ledger rows, and the two specs; nothing was discarded or restarted.
+- **Verified root cause (real scanner):** DevSkim 1.0.100 reports `charOffset`/`charLength` in **UTF-16 code units**. For `tests/visual/sitewide-gold-cta.spec.ts` (7 astral characters) the reported offset is 5–7 units ahead of the Python code-point index, so `_absolute_source_span()` rejected all six results. Both spec paths were also absent from `KNOWN_CONTEXTUAL_SUPPRESSION_FILES`, so even the four ASCII-only `gold-cta.spec.ts` results were never evaluated by `process_sarif()`.
+- **Implementation:** added `_code_point_offset_from_utf16_offset()` and converted offsets once inside `_absolute_source_span()`; added the two exact audited spec paths to the existing contextual allowlist. No rule disabled, no glob added, no workflow/permission/application change.
+- **Verified:** 60 focused Python tests PASS; real-scanner replay suppresses 6/6 sitewide and 4/4 gold results with 0 remaining; full-repository scan 148 results, 147 removed, 1 genuine finding remains (`playwright.config.ts:31`); `./freebuff-verify.sh` PASS; build 420,504,416 bytes / 401.02 MiB.
+- **FAIL (environment) — Playwright:** both specs executed. Default config 3 passed / 27 failed; desktop-only sitewide 2 passed (Lucky Map, About) / 4 failed. All failures are `page.goto: Target page, context or browser has been closed` on `/` and `/crystal-ball` (local Chromium renderer crash). The full-Chromium channel cannot launch here. CI Playwright remains the confirmation path.
+- **Ledger:** all 14 rows for the two specs removed only after the corresponding results were proven suppressed; title and append marker preserved.
+- **Artifacts:** `specs/066-devskim-playwright-offset-remediation/{spec,plan,tasks}.md`; `.specify/feature.json` updated.
+- **Not verified:** GitHub Code Scanning alert objects (no token in this environment); browser-level PASS.
+
+---
+
 # Active Context — PR #1659 Severity Indicator and Review Edge-Case Fixes (2026-10-31)
 
 - Task group: deep-dive — respond to the latest Amazon Q review and owner feedback on the Gemini PR review indicators.

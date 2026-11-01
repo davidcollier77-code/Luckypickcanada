@@ -1090,5 +1090,226 @@ class DevSkimWorkflowFailureSafetyTests(unittest.TestCase):
                 step = self._step_block(name)
                 self.assertIn("if: always() && hashFiles('devskim-alerts.sarif') != ''", step)
 
+class DevSkimUtf16OffsetTests(unittest.TestCase):
+    """DevSkim reports charOffset/charLength as UTF-16 code units.
+
+    The two audited Playwright specs are the regression source: the sitewide
+    spec contains astral characters, so its UTF-16 offsets diverge from Python
+    code-point indices, while the ASCII-only gold CTA spec does not.
+    """
+
+    TESTS_DIR = Path(__file__).resolve().parents[2] / "tests" / "visual"
+    SITEWIDE = "tests/visual/sitewide-gold-cta.spec.ts"
+    GOLD = "tests/visual/gold-cta.spec.ts"
+    # The six previously rejected sitewide results and four gold CTA results.
+    TIMEOUT_LINES = {
+        SITEWIDE: (54, 120, 154, 174, 193, 208),
+        GOLD: (70, 139, 206, 267),
+    }
+    # Split in source so the scanner's own fixture text cannot itself be
+    # reported as string-based timer code execution.
+    CALL_PREFIX = "test." + "setTimeout("
+    TIMEOUT_TOKEN = "setTimeout(" + "180" + "_000)"
+
+    @staticmethod
+    def _utf16_units(source_text: str, code_point_index: int) -> int:
+        return len(source_text[:code_point_index].encode("utf-16-le")) // 2
+
+    def _region_for_line(self, source_text: str, line_number: int) -> dict:
+        lines = source_text.splitlines()
+        line = lines[line_number - 1]
+        absolute = sum(len(item) + 1 for item in lines[: line_number - 1])
+        start = absolute + line.index("setTimeout")
+        return {
+            "startLine": line_number,
+            "startColumn": 9,
+            "endLine": line_number,
+            "endColumn": 9 + len(self.TIMEOUT_TOKEN),
+            "charOffset": self._utf16_units(source_text, start),
+            "charLength": len(self.TIMEOUT_TOKEN),
+            "snippet": {"text": self.TIMEOUT_TOKEN},
+        }
+
+    def test_audited_playwright_specs_are_the_only_cta_entries_allowlisted(self):
+        self.assertTrue(suppressions.is_allowed_relative_path(Path(self.SITEWIDE)))
+        self.assertTrue(suppressions.is_allowed_relative_path(Path(self.GOLD)))
+        self.assertFalse(
+            suppressions.is_allowed_relative_path(
+                Path("tests/visual/unreviewed-gold-cta.spec.ts")
+            )
+        )
+
+    def test_real_playwright_timeout_findings_validate_against_utf16_offsets(self):
+        for relative_path, line_numbers in self.TIMEOUT_LINES.items():
+            source_text = (self.TESTS_DIR.parent.parent / relative_path).read_text(
+                encoding="utf-8"
+            )
+            lines = source_text.splitlines()
+            for line_number in line_numbers:
+                with self.subTest(path=relative_path, line=line_number):
+                    self.assertTrue(
+                        lines[line_number - 1].strip().startswith(self.CALL_PREFIX)
+                    )
+                    region = self._region_for_line(source_text, line_number)
+                    self.assertIsNotNone(
+                        suppressions._absolute_source_span(region, source_text)
+                    )
+                    self.assertTrue(
+                        suppressions.should_suppress_safe_contextual_finding(
+                            "DS172411", relative_path, source_text, region
+                        )
+                    )
+
+    def test_utf16_normalization_is_identity_for_ascii_source(self):
+        source_text = "const x = 1;\nsetTimeout(() => updateCanvas(), 200);\n"
+        index = source_text.index("setTimeout")
+        self.assertEqual(
+            suppressions._code_point_offset_from_utf16_offset(source_text, index),
+            index,
+        )
+
+    def test_code_point_offsets_for_astral_source_are_rejected(self):
+        relative_path = self.SITEWIDE
+        source_text = (self.TESTS_DIR.parent.parent / relative_path).read_text(
+            encoding="utf-8"
+        )
+        for line_number in self.TIMEOUT_LINES[relative_path]:
+            with self.subTest(line=line_number):
+                region = self._region_for_line(source_text, line_number)
+                # Treating DevSkim's UTF-16 offset as a code-point index skips
+                # characters once astral content precedes the finding.
+                lines = source_text.splitlines()
+                code_point_offset = sum(
+                    len(item) + 1 for item in lines[: line_number - 1]
+                ) + lines[line_number - 1].index("setTimeout")
+                self.assertNotEqual(region["charOffset"], code_point_offset)
+                region["charOffset"] = code_point_offset
+                self.assertIsNone(
+                    suppressions._absolute_source_span(region, source_text)
+                )
+                self.assertFalse(
+                    suppressions.should_suppress_safe_contextual_finding(
+                        "DS172411", relative_path, source_text, region
+                    )
+                )
+
+    def test_offset_splitting_a_surrogate_pair_fails_closed(self):
+        source_text = "// \U0001f340\nsetTimeout(untrustedCallback, 100);\n"
+        # "// " is 3 units, so the emoji occupies units 3-4 and the newline is 5.
+        inside_pair = 4
+        self.assertIsNone(
+            suppressions._code_point_offset_from_utf16_offset(
+                source_text, inside_pair
+            )
+        )
+
+    def test_off_by_one_utf16_offset_is_not_suppressed(self):
+        relative_path = self.SITEWIDE
+        source_text = (self.TESTS_DIR.parent.parent / relative_path).read_text(
+            encoding="utf-8"
+        )
+        region = self._region_for_line(source_text, self.TIMEOUT_LINES[relative_path][0])
+        region["charOffset"] += 1
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411", relative_path, source_text, region
+            )
+        )
+
+    def test_unrelated_path_with_identical_utf16_region_is_not_suppressed(self):
+        source_text = (self.TESTS_DIR.parent.parent / self.SITEWIDE).read_text(
+            encoding="utf-8"
+        )
+        region = self._region_for_line(source_text, self.TIMEOUT_LINES[self.SITEWIDE][0])
+        self.assertFalse(
+            suppressions.should_suppress_safe_contextual_finding(
+                "DS172411", "app/homepage/HomePage.js", source_text, region
+            )
+        )
+
+    def test_filtered_sarif_replay_removes_only_the_verified_playwright_results(self):
+        source_text = (self.TESTS_DIR.parent.parent / self.SITEWIDE).read_text(
+            encoding="utf-8"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / self.SITEWIDE
+            target.parent.mkdir(parents=True)
+            target.write_text(source_text, encoding="utf-8")
+
+            results = []
+            for line_number in self.TIMEOUT_LINES[self.SITEWIDE]:
+                results.append(
+                    {
+                        "ruleId": "DS172411",
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": self.SITEWIDE},
+                                    "region": self._region_for_line(
+                                        source_text, line_number
+                                    ),
+                                }
+                            }
+                        ],
+                    }
+                )
+            # Genuine findings that must survive: a timer far from the reviewed
+            # test-timeout token, and a finding in a non-allowlisted path.
+            unrelated_line = 17
+            results.append(
+                {
+                    "ruleId": "DS172411",
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": self.SITEWIDE},
+                                "region": {
+                                    "startLine": unrelated_line,
+                                    "startColumn": 3,
+                                    "endColumn": 12,
+                                },
+                            }
+                        }
+                    ],
+                }
+            )
+            results.append(
+                {
+                    "ruleId": "DS172411",
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {
+                                    "uri": "app/homepage/HomePage.js"
+                                },
+                                "region": {
+                                    "startLine": 1,
+                                    "startColumn": 1,
+                                    "endColumn": 12,
+                                },
+                            }
+                        }
+                    ],
+                }
+            )
+
+            sarif_path = root / "devskim-alerts.sarif"
+            sarif_path.write_text(
+                json.dumps({"runs": [{"results": results}]}), encoding="utf-8"
+            )
+            suppressions.suppress_sarif(sarif_path, workspace=root)
+
+            filtered = json.loads(sarif_path.read_text(encoding="utf-8"))
+            self.assertEqual(len(filtered["runs"][0]["results"]), 2)
+            self.assertEqual(
+                [
+                    item["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+                    for item in filtered["runs"][0]["results"]
+                ],
+                [self.SITEWIDE, "app/homepage/HomePage.js"],
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
