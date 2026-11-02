@@ -11,6 +11,10 @@ Consult `.docs/troubleshooting/_google-gemini_gemini-skills_gemini-api-dev.md` o
 ## Conditional Gemini CLI Reference
 Consult the Gemini CLI reference only when diagnosing failures or unexpected behavior in Gemini CLI commands, configuration, or integrations. Start with the local snapshot `.docs/troubleshooting/_google-gemini_gemini-cli.md` (read-only); do not load it for unrelated tasks. If the snapshot is insufficient and live documentation is materially necessary, use `/google-gemini/gemini-cli` only under the repository's explicit MCP approval rules.
 
+## Conditional Linux Environment Reference
+
+Consult `.docs/troubleshooting/_debian_debian-reference.md` when a task involves Linux/Unix shell behavior, filesystem layout and permissions, environment variables, processes, system libraries, or Debian-family package management. This is the official Debian Reference manual: https://www.debian.org/doc/manuals/debian-reference/index.en.html. It is Debian-oriented, not a universal Linux distribution contract. First identify the actual environment (for example, inspect `/etc/os-release`, `uname -a`, the current user and available commands) before applying distribution-specific instructions. For Ubuntu APT behavior, also use Ubuntu's official package-management guide: https://ubuntu.com/server/docs/package-management/. In restricted or no-root environments, do not retry through `sudo` or attempt to bypass privilege or sandbox controls; report the limitation and use only permitted alternatives. This reference is conditional and supplements, but never overrides, `AGENTS.md` or this group's instructions.
+
 ## Controlled Context7 Libraries
 When materially necessary, consult the following approved libraries. (Requires Context7 approval if not available in `.docs/`):
 - GitHub Docs "/github/docs"
