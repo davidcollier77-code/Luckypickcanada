@@ -20,12 +20,15 @@ function record(name, value) {
   console.log(`${name}: ${JSON.stringify(value)}`);
 }
 
-async function openReveal(page, label, { picks = '6' } = {}) {
+async function openReveal(page, label, { picks = '6', delivery = 'personal' } = {}) {
   await page.goto(BASE, { waitUntil: 'load' });
   await page.waitForTimeout(1200);
   await page.getByRole('button', { name: /Choose a Lucky Pick/i }).first().click();
   if (picks === '7') {
     await page.getByRole('radio', { name: /7 Pick/i }).first().check();
+  }
+  if (delivery === 'gift') {
+    await page.getByRole('radio', { name: /Gift Reveal/i }).first().check();
   }
   const preview = page.getByRole('button', { name: /Preview Reveal/i }).first();
   await preview.waitFor({ state: 'visible', timeout: 20000 });
@@ -212,6 +215,14 @@ async function run() {
     await page.screenshot({ path: path.join(OUT, `${label}-seven-settled.png`) });
     record(`${label}.seven.closed`, await clickCentre(page, dialog, label, 'seven'));
     record(`${label}.seven.leafCount`, sevenInfo.leafCount);
+
+    // Gift reveal: the same shared popup reached through the Gift delivery option.
+    dialog = await openReveal(page, label, { delivery: 'gift' });
+    await page.waitForTimeout(6500);
+    await layoutReport(page, `${label}.gift`);
+    record(`${label}.gift.heading`, await dialog.locator('#lucky-reveal-title').innerText());
+    record(`${label}.gift.closed`, await clickCentre(page, dialog, label, 'gift'));
+    await page.screenshot({ path: path.join(OUT, `${label}-gift.png`) });
 
     await context.close();
   }

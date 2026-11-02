@@ -44,7 +44,7 @@
   "desktop.sharePreview": {
     "width": 1200,
     "height": 1500,
-    "src": "blob:http://127.0.0.1:3001/3fa"
+    "src": "blob:http://127.0.0.1:3001/6af"
   },
   "desktop.logoRequests": [
     "lucky-reveal-logo-232.avif"
@@ -81,17 +81,41 @@
     "overlaps": []
   },
   "desktop.seven.numbers": [
-    "7",
-    "8",
-    "13",
     "15",
-    "19",
-    "23",
-    "46"
+    "20",
+    "30",
+    "34",
+    "39",
+    "46",
+    "47"
   ],
   "desktop.click-seven-closed": true,
   "desktop.seven.closed": true,
   "desktop.seven.leafCount": 18,
+  "desktop.gift.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1010,
+      "clientHeight": 826
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 1,
+    "overlaps": []
+  },
+  "desktop.gift.heading": "Yourluckyrevealishere",
+  "desktop.click-gift-closed": true,
+  "desktop.gift.closed": true,
   "mobile.closeBox": {
     "width": 44,
     "height": 44
@@ -137,7 +161,7 @@
   "mobile.sharePreview": {
     "width": 1200,
     "height": 1500,
-    "src": "blob:http://127.0.0.1:3001/187"
+    "src": "blob:http://127.0.0.1:3001/779"
   },
   "mobile.logoRequests": [
     "lucky-reveal-logo-232.avif"
@@ -174,17 +198,41 @@
     "overlaps": []
   },
   "mobile.seven.numbers": [
-    "8",
+    "12",
     "17",
-    "21",
-    "36",
-    "38",
-    "45",
-    "48"
+    "18",
+    "28",
+    "43",
+    "47",
+    "49"
   ],
   "mobile.click-seven-closed": true,
   "mobile.seven.closed": true,
   "mobile.seven.leafCount": 18,
+  "mobile.gift.layout": {
+    "panel": {
+      "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
+      "backdropFilter": "blur(16px)",
+      "overflow": "hidden",
+      "scrollBody": "auto",
+      "scrollHeight": 1067,
+      "clientHeight": 774
+    },
+    "panelZ": 2,
+    "celebrationZ": 1,
+    "paintedAbovePanel": false,
+    "leafCount": 18,
+    "leafLayers": [
+      "0",
+      "1",
+      "2"
+    ],
+    "canvasCount": 1,
+    "overlaps": []
+  },
+  "mobile.gift.heading": "Yourluckyrevealishere",
+  "mobile.click-gift-closed": true,
+  "mobile.gift.closed": true,
   "reduced.layout": {
     "panel": {
       "background": "linear-gradient(145deg, rgba(5, 11, 18, 0.7), rgba(7, 19, 27, 0.52) 52%, rgba(8, 7, 18, 0.62))",
