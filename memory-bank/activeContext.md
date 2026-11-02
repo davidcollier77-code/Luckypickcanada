@@ -1,3 +1,15 @@
+# Active Context — Browser Visual Inspection Enablement Audit (2026-11-02)
+
+- **Task groups:** `troubleshooting` + `deep-dive`; branch `freebuff/f9451dce1ff9eb4af88ea1f8`; PR open and unmerged. **Audit-only:** no package, permission, configuration, website or application change was made.
+- **Measured sandbox state:** Ubuntu 24.04.5 x86_64, unprivileged `uid=261478524`; `sudo` refused (`The "no new privileges" flag is set`); `apt-get -s install libnspr4` -> `E: Unable to locate package libnspr4`; Node `v26.13.0` against `engines.node: 22.x`; `npm 11.20.0` present, `pnpm`/`corepack` absent; `node_modules` absent; `~/.cache/ms-playwright` absent; no Chromium binary on `PATH` or under `/opt`.
+- **Chromium runtime libraries absent:** `dpkg -l` and `ldconfig -p` both show `libnspr4`, `libnss3`, `libatk-1.0`, `libatk-bridge-2.0`, `libcups`, `libxkbcommon`, `libpango-1.0`, `libcairo`, `libasound`, `libatspi`, `libXcomposite`, `libXdamage`, `libXrandr` missing. Present: `libgbm1`, `libx11-6`, `libdrm`.
+- **Not the constraint:** 8 vCPU, 15 GiB RAM, 2.0 GiB `/dev/shm`; npm registry 200, `cdn.playwright.dev` reachable, `https://luckypickcanada.ca/` 200.
+- **Repository needs no change:** `playwright.config.ts` (three Chromium projects, `tests/visual`, `pnpm dev` webServer) and `.github/workflows/visual-qa.yml` (`playwright install --with-deps chromium`) already provide the browser path; Playwright packages are already pinned.
+- **Conclusion:** blocked by the environment, not the repository — no browser engine, no Chromium library set, no root to install it. Minimum ask: library set or root, Playwright Chromium download, lockfile dependency restore, and permission to run the dev server and Playwright locally. Node 22 pinning is optional fidelity; hosted rendering is a recorded alternative, not adopted.
+- **Artifacts:** `specs/077-browser-visual-inspection-enablement/{spec,plan,tasks}.md`; `.specify/feature.json` points there. History corroboration: `specs/041-turnstile-early-preload/research.md`, specs 061/064/066.
+
+---
+
 # Active Context — Lucky Reveal Celebration and Reveal Image-Format Completion (2026-11-02)
 
 - **Task groups:** `polishing` + `audio`; branch `freebuff/e948d67e670ae5e5d50291d1`; PR left open and unmerged.
