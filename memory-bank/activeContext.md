@@ -1,3 +1,16 @@
+# Active Context — DevSkim Fixture Repair and Payment/Email Baseline Audit (2026-11-02)
+
+- **Task group:** `security`; branch `freebuff/lucky-reveal-unified-card`; PR #1674, left open and unmerged.
+- **Verified DevSkim CI failure:** run `41419872774` job `125192572027` failed only the step `Test DevSkim suppression filter` (scanner and syntax steps passed; SARIF uploads ran; the report-update job was skipped). Reproduced locally as 6 failures + 9 errors.
+- **Root cause:** the UTF-16 fixture in `.github/scripts/test_suppress_devskim_false_positives.py` stored absolute line numbers for the audited `test.setTimeout(180_000)` calls in `tests/visual/sitewide-gold-cta.spec.ts`. PR #1674 merged two CTA wording lines into one, so every later line moved up by one; the stale numbers tripped the `startswith` guard (failures) and `line.index("setTimeout")` (`ValueError: substring not found`, errors). The SARIF filter itself was correct and is unchanged.
+- **Correction:** findings are discovered by scanning source for the strict `test.setTimeout(<digits>);` call; token and line numbers come from the match. Added coverage guards (audited call must still exist, astral divergence must still be exercised) and two regressions that replay an unrelated line deletion and insertion.
+- **Verified:** focused Python suite 63 tests `OK` exit 0; `py_compile` exit 0.
+- **Payments/email audit:** `app/api/checkout/route.js`, `app/api/verify-session/route.ts`, `app/api/stripe-webhook/route.js`, `app/gift-email.js`, `app/api/gift-delivery/route.js` are unchanged by PR #1674. Products, prices, currency, one-time mode, gift `amount_total` guard, recipient validation, webhook signature verification, Redis lock/idempotency and the personal-reveal email block all read as before; evidence recorded in `specs/066-devskim-playwright-offset-remediation/spec.md`.
+- **Env:** `GIFT_FROM_EMAIL` is a plain `wrangler.jsonc` var; `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and `RESEND_API_KEY` are Cloudflare secrets and are legitimately absent from the repository. Their deployed values were not accessible; local absence is not evidence of a production gap.
+- **Not run:** live Stripe test-mode checkout, live Resend delivery, deployed secret inspection, and current-head CI (pending).
+
+---
+
 # Active Context — Customer-Facing Lucky Reveal Consolidation (2026-11-02)
 
 - **Task group:** `creation`; branch `freebuff/a4e5adf82c1dee56b92ed6ee`; same PR #1673, left open and unmerged.

@@ -33,3 +33,24 @@
 - **PASS — build size:** `.next` 388,493,055 bytes + `public` 32,011,361 bytes = **420,504,416 bytes / 401.02 MiB** (below the 495 MB hard maximum).
 - **FAIL (environment) — Playwright:** both specs executed. Default config: 3 passed / 27 failed. Desktop-only sitewide with staged system libraries: 2 passed (Lucky Map, About) / 4 failed. Failures are `page.goto: Target page, context or browser has been closed` on `/` and `/crystal-ball`; the local Chromium renderer crashes. Full-Chromium channel cannot launch here at all. No assertion-level defect is claimed or hidden; CI Playwright remains the confirmation path.
 - **BLOCKED — GitHub Code Scanning alert objects:** no token is available in this environment, so alert-by-alert reconciliation uses the real local scanner plus the ledger instead.
+
+## Phase 4: 2026-11-02 follow-up (DevSkim CI failure + integration audit)
+
+- [x] T013 Read the failed run's job list and logs; identify the failing step, test class, and exact error text.
+- [x] T014 Reproduce locally (60 tests, 6 failures, 9 errors) and prove the cause: stale absolute line numbers after PR #1674 deleted one wording line at line 25.
+- [x] T015 Replace stored line numbers with content discovery in `DevSkimUtf16OffsetTests`; derive the token from the matched call.
+- [x] T016 Add coverage guards (`_assert_audited_coverage_present`, UTF-16 divergence) and the removal/insertion regressions.
+- [x] T017 Re-run the focused Python suite: 63 tests, `OK`, exit 0; `py_compile` exit 0.
+- [x] T018 Audit the Stripe, webhook, gift-email, verify-session and env wiring for regressions; record the evidence table in `spec.md`.
+- [x] T019 Run the full unit suite, `tsc --noEmit`, `./freebuff-verify.sh`, and measure the production build.
+- [x] T020 Inspect the final diff, update the single PR body, leave the PR open and unmerged.
+
+### Follow-up verification record
+
+- **PASS — focused Python suite:** 63 tests, `OK`, exit 0 (was 60 tests with 6 failures + 9 errors at the failing head).
+- **PASS — Python syntax:** `py_compile` on the filter and the fixture.
+- **PASS — coverage retained:** both audited specs still yield discoveries, the astral divergence is still exercised, and the SARIF replay still removes only the verified `DS172411` results while keeping the off-token timer and the non-allowlisted path.
+- **DB/API behaviour:** unchanged in this follow-up; no payment, API route, webhook, email, dependency, workflow, permission or schedule edit.
+- **NOT RUN — live Stripe test-mode checkout:** no Stripe credentials and no browser session; real charges are forbidden.
+- **NOT RUN — live Resend delivery:** `RESEND_API_KEY` is a deployment secret unavailable to this runner; no email was sent.
+- **NOT ACCESSIBLE — deployed secret values:** Cloudflare secret values cannot be read; absence from this checkout is not evidence of absence in production.
