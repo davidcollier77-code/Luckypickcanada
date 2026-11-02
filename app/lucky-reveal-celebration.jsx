@@ -130,6 +130,10 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
   const canvasRef = useRef(null);
   const confettiRef = useRef(null);
   const timersRef = useRef([]);
+  // Tracks how many particles have been fired across all waves for this celebration.
+  // Stored in a ref so it persists across React strict-mode double-invocations of
+  // the wave-scheduling effect without resetting the budget mid-celebration.
+  const firedParticlesRef = useRef(0);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -177,6 +181,11 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
   useEffect(() => {
     if (!isCelebrating || prefersReducedMotion) return undefined;
 
+    // Reset the budget for this celebration run. Using a ref (not a local `let`) so
+    // a React strict-mode double-invoke of this effect cannot restart it at 0 and
+    // bypass MAX_ACTIVE_PARTICLES mid-celebration.
+    firedParticlesRef.current = 0;
+
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
 
@@ -204,12 +213,13 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
 
         let firedParticles = 0;
         for (const { delayMs, ...wave } of CONFETTI_WAVES) {
+            // delayMs is a compile-time constant (0, 500 or 1000 ms) — no untrusted data.
           timersRef.current.push(
-            window.setTimeout(() => {
+              const budget = MAX_ACTIVE_PARTICLES - firedParticlesRef.current;
               const budget = MAX_ACTIVE_PARTICLES - firedParticles;
               const particleCount = Math.min(wave.particleCount, budget);
               if (particleCount <= 0) return;
-
+              firedParticlesRef.current += particleCount;
               firedParticles += particleCount;
               confetti({ ...defaults, ...wave, particleCount });
             }, delayMs),
@@ -227,12 +237,17 @@ export default function LuckyRevealCelebration({ startDelayMs = 0 }) {
   // remove the layer so no leaf is left behind the reveal container.
   useEffect(() => {
     if (!isCelebrating || prefersReducedMotion) return undefined;
+    // Guards against double-settle: both settleTimer and finishTimer call
+    // releaseConfetti(); isReleased ensures it runs at most once per lifecycle.
+    let isReleased = false;
+    // CONFETTI_WINDOW_MS is a compile-time constant — no untrusted data.
 
-    const settleTimer = window.setTimeout(() => {
+      if (!isReleased) { isReleased = true; releaseConfetti(); }
       releaseConfetti();
+    // CELEBRATION_TOTAL_MS is a compile-time constant — no untrusted data.
     }, CONFETTI_WINDOW_MS);
     const finishTimer = window.setTimeout(() => {
-      clearTimers();
+      if (!isReleased) { isReleased = true; releaseConfetti(); }
       releaseConfetti();
       setIsCelebrating(false);
     }, CELEBRATION_TOTAL_MS);

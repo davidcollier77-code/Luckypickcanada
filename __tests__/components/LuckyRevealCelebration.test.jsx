@@ -25,7 +25,7 @@ vi.mock('../../app/lib/audio', () => ({
   playButtonClick: vi.fn(),
 }));
 
-vi.mock('../../app/lib/mapleLeafConfetti.mjs', () => ({
+vi.mock('../../app/lib/mapleLeafConfetti', () => ({
   MAPLE_LEAF_PATH: 'm-90 2030 45-863z',
   MAPLE_LEAF_MATRIX: [1, 0, 0, 1, 0, 0],
   createMapleLeafShape: vi.fn(() => ({ mapleLeaf: true })),
