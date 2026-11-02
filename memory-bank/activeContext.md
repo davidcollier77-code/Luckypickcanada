@@ -1,3 +1,26 @@
+# Active Context — Chromium Visual Inspection Enabled Without Root (2026-11-02)
+
+- **Task groups:** `troubleshooting` + `deep-dive`; branch `freebuff/f9451dce1ff9eb4af88ea1f8`; PR #1681 open and unmerged. Follow-up to the #1681 audit, at the owner's direction: no root, no `no-new-privileges` change, no sandbox weakening.
+- **Implemented:** `scripts/setup-chromium-libs.sh` provisions Chromium's runtime libraries at user level — `apt-get` with `Dir::State::lists`/`Dir::Cache` pointed at `~/.apt-user` (works unprivileged, exit 0), `--download-only --reinstall install` for the dependency closure, `dpkg-deb -x` into `~/.local/chromium-libs` (27 MB), plus a private fontconfig file because the image has no `/etc/fonts`. `artifacts/capture-site-screenshots.cjs` drives the repository's pinned `playwright-chromium` and writes PNGs + `report.json` into `artifacts/browser-proof/`.
+- **Verified:** `ldd` on `chromium-1243/chrome-linux64/chrome` reports **0** missing shared objects (was 16); Chromium **153.0.8010.12** launched through Playwright and captured `https://luckypickcanada.ca/` at 1440x900, 390x844 and 412x915 — all HTTP 200, `scrollWidth === clientWidth` (0 px overflow), no broken images, real text (4106 chars). Screenshots inspected: Milky Way backdrop, gold maple-leaf mark, Cinzel headings, nav and "Explore Your Luck" CTA all paint on desktop and mobile.
+- **Not changed:** no root, no sandbox flags, no repository dependency, no `package.json`/lockfile edit, no website code or configuration. The prefix is outside the repo under `$HOME`, which is durable in `/workspace`, so it survives archive/restore for this workspace only; a fresh workspace reruns the script once.
+- **Remaining:** image-level inclusion (so a fresh workspace needs nothing) is a platform change I cannot make — the exact package list and Dockerfile line are in the PR for the owner to request. Node is 26 in the sandbox vs the 22 pin, so local results remain weaker evidence than CI.
+- **Artifacts:** `specs/077-browser-visual-inspection-enablement/{spec,plan,tasks}.md` extended (no new feature directory).
+
+---
+
+# Active Context — Browser Visual Inspection Enablement Audit (2026-11-02)
+
+- **Task groups:** `troubleshooting` + `deep-dive`; branch `freebuff/f9451dce1ff9eb4af88ea1f8`; PR open and unmerged. **Audit-only:** no package, permission, configuration, website or application change was made.
+- **Measured sandbox state:** Ubuntu 24.04.5 x86_64, unprivileged `uid=261478524`; `sudo` refused (`The "no new privileges" flag is set`); `apt-get -s install libnspr4` -> `E: Unable to locate package libnspr4`; Node `v26.13.0` against `engines.node: 22.x`; `npm 11.20.0` present, `pnpm`/`corepack` absent; `node_modules` absent; `~/.cache/ms-playwright` absent; no Chromium binary on `PATH` or under `/opt`.
+- **Chromium runtime libraries absent:** `dpkg -l` and `ldconfig -p` both show `libnspr4`, `libnss3`, `libatk-1.0`, `libatk-bridge-2.0`, `libcups`, `libxkbcommon`, `libpango-1.0`, `libcairo`, `libasound`, `libatspi`, `libXcomposite`, `libXdamage`, `libXrandr` missing. Present: `libgbm1`, `libx11-6`, `libdrm`.
+- **Not the constraint:** 8 vCPU, 15 GiB RAM, 2.0 GiB `/dev/shm`; npm registry 200, `cdn.playwright.dev` reachable, `https://luckypickcanada.ca/` 200.
+- **Repository needs no change:** `playwright.config.ts` (three Chromium projects, `tests/visual`, `pnpm dev` webServer) and `.github/workflows/visual-qa.yml` (`playwright install --with-deps chromium`) already provide the browser path; Playwright packages are already pinned.
+- **Conclusion:** blocked by the environment, not the repository — no browser engine, no Chromium library set, no root to install it. Minimum ask: library set or root, Playwright Chromium download, lockfile dependency restore, and permission to run the dev server and Playwright locally. Node 22 pinning is optional fidelity; hosted rendering is a recorded alternative, not adopted.
+- **Artifacts:** `specs/077-browser-visual-inspection-enablement/{spec,plan,tasks}.md`; `.specify/feature.json` points there. History corroboration: `specs/041-turnstile-early-preload/research.md`, specs 061/064/066.
+
+---
+
 # Active Context — Lucky Reveal Celebration and Reveal Image-Format Completion (2026-11-02)
 
 - **Task groups:** `polishing` + `audio`; branch `freebuff/e948d67e670ae5e5d50291d1`; PR left open and unmerged.
