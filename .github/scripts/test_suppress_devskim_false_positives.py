@@ -1,9 +1,11 @@
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
 import suppress_devskim_false_positives as suppressions
+import verify_devskim_sarif_replay as replay_check
 
 
 SHA = "a" * 40
@@ -1069,6 +1071,7 @@ class DevSkimWorkflowFailureSafetyTests(unittest.TestCase):
     def test_suppression_failures_fail_the_scan_job(self):
         for name in (
             "Test DevSkim suppression filter",
+            "Replay real DevSkim SARIF through the suppression filter",
             "Suppress DevSkim false positives in SARIF",
         ):
             with self.subTest(step=name):
@@ -1080,6 +1083,22 @@ class DevSkimWorkflowFailureSafetyTests(unittest.TestCase):
         report_header = self.workflow_text[start:end]
         self.assertIn("needs: lint", report_header)
         self.assertNotIn("always()", report_header)
+
+    def test_real_sarif_replay_runs_before_the_suppression_step(self):
+        replay_step = self._step_block(
+            "Replay real DevSkim SARIF through the suppression filter"
+        )
+        self.assertIn(
+            "python3 .github/scripts/verify_devskim_sarif_replay.py", replay_step
+        )
+        self.assertLess(
+            self.workflow_text.index(
+                "      - name: Replay real DevSkim SARIF through the suppression filter"
+            ),
+            self.workflow_text.index(
+                "      - name: Suppress DevSkim false positives in SARIF"
+            ),
+        )
 
     def test_raw_sarif_and_artifact_are_still_uploaded_after_a_suppression_failure(self):
         for name in (
@@ -1096,20 +1115,37 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
     The two audited Playwright specs are the regression source: the sitewide
     spec contains astral characters, so its UTF-16 offsets diverge from Python
     code-point indices, while the ASCII-only gold CTA spec does not.
+
+    Findings are located by scanning each spec's content for the audited
+    timeout call, never by a stored line number. An unrelated copy edit to a
+    spec (merging or adding a line) must not break the suppression tests.
     """
 
-    TESTS_DIR = Path(__file__).resolve().parents[2] / "tests" / "visual"
+    REPO_ROOT = Path(__file__).resolve().parents[2]
+    TESTS_DIR = REPO_ROOT / "tests" / "visual"
     SITEWIDE = "tests/visual/sitewide-gold-cta.spec.ts"
     GOLD = "tests/visual/gold-cta.spec.ts"
-    # The six previously rejected sitewide results and four gold CTA results.
-    TIMEOUT_LINES = {
-        SITEWIDE: (54, 120, 154, 174, 193, 208),
-        GOLD: (70, 139, 206, 267),
-    }
+    AUDITED_SPECS = (SITEWIDE, GOLD)
     # Split in source so the scanner's own fixture text cannot itself be
     # reported as string-based timer code execution.
     CALL_PREFIX = "test." + "setTimeout("
-    TIMEOUT_TOKEN = "setTimeout(" + "180" + "_000)"
+    TIMEOUT_CALL_PATTERN = re.compile(
+        r"^[ \t]*" + re.escape(CALL_PREFIX) + r"(?P<millis>[0-9][0-9_]*)\);[ \t]*$"
+    )
+    TIMEOUT_TOKEN_PATTERN = re.compile(r"setTimeout\([0-9][0-9_]*\)")
+
+    @classmethod
+    def _source_text(cls, relative_path):
+        return (cls.REPO_ROOT / relative_path).read_text(encoding="utf-8")
+
+    @classmethod
+    def _timeout_lines(cls, source_text):
+        """Return 1-based line numbers of the audited timeout calls in source."""
+        return [
+            number
+            for number, line in enumerate(source_text.splitlines(), start=1)
+            if cls.TIMEOUT_CALL_PATTERN.match(line)
+        ]
 
     @staticmethod
     def _utf16_units(source_text: str, code_point_index: int) -> int:
@@ -1118,17 +1154,37 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
     def _region_for_line(self, source_text: str, line_number: int) -> dict:
         lines = source_text.splitlines()
         line = lines[line_number - 1]
+        token_match = self.TIMEOUT_TOKEN_PATTERN.search(line)
+        self.assertIsNotNone(token_match, f"No timeout token on line {line_number}")
+        token = token_match.group(0)
         absolute = sum(len(item) + 1 for item in lines[: line_number - 1])
         start = absolute + line.index("setTimeout")
         return {
             "startLine": line_number,
             "startColumn": 9,
             "endLine": line_number,
-            "endColumn": 9 + len(self.TIMEOUT_TOKEN),
+            "endColumn": 9 + len(token),
             "charOffset": self._utf16_units(source_text, start),
-            "charLength": len(self.TIMEOUT_TOKEN),
-            "snippet": {"text": self.TIMEOUT_TOKEN},
+            "charLength": len(token),
+            "snippet": {"text": token},
         }
+
+    def _code_point_offset(self, source_text: str, line_number: int) -> int:
+        lines = source_text.splitlines()
+        return sum(
+            len(item) + 1 for item in lines[: line_number - 1]
+        ) + lines[line_number - 1].index("setTimeout")
+
+    def _assert_audited_coverage_present(self):
+        """The audited fixture must still find timeouts in every listed spec."""
+        for relative_path in self.AUDITED_SPECS:
+            source_text = self._source_text(relative_path)
+            with self.subTest(path=relative_path):
+                self.assertTrue(
+                    self._timeout_lines(source_text),
+                    f"{relative_path} no longer contains the audited "
+                    f"{self.CALL_PREFIX}<number>); fixture line",
+                )
 
     def test_audited_playwright_specs_are_the_only_cta_entries_allowlisted(self):
         self.assertTrue(suppressions.is_allowed_relative_path(Path(self.SITEWIDE)))
@@ -1140,16 +1196,11 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
         )
 
     def test_real_playwright_timeout_findings_validate_against_utf16_offsets(self):
-        for relative_path, line_numbers in self.TIMEOUT_LINES.items():
-            source_text = (self.TESTS_DIR.parent.parent / relative_path).read_text(
-                encoding="utf-8"
-            )
-            lines = source_text.splitlines()
-            for line_number in line_numbers:
+        self._assert_audited_coverage_present()
+        for relative_path in self.AUDITED_SPECS:
+            source_text = self._source_text(relative_path)
+            for line_number in self._timeout_lines(source_text):
                 with self.subTest(path=relative_path, line=line_number):
-                    self.assertTrue(
-                        lines[line_number - 1].strip().startswith(self.CALL_PREFIX)
-                    )
                     region = self._region_for_line(source_text, line_number)
                     self.assertIsNotNone(
                         suppressions._absolute_source_span(region, source_text)
@@ -1168,20 +1219,43 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
             index,
         )
 
+    def test_audited_specs_still_exercise_utf16_divergence(self):
+        """An astral-containing spec must keep diverging UTF-16 and code-point offsets.
+
+        If the astral content is ever removed, the UTF-16 conversion this
+        fixture protects would silently stop being exercised.
+        """
+        diverging_files = []
+        for relative_path in self.AUDITED_SPECS:
+            source_text = self._source_text(relative_path)
+            has_astral = any(ord(character) > 0xFFFF for character in source_text)
+            diverges = any(
+                self._region_for_line(source_text, line_number)["charOffset"]
+                != self._code_point_offset(source_text, line_number)
+                for line_number in self._timeout_lines(source_text)
+            )
+            if diverges:
+                diverging_files.append(relative_path)
+            if has_astral:
+                self.assertTrue(
+                    diverges,
+                    f"{relative_path} contains astral characters but no audited "
+                    "timeout follows them, so UTF-16 divergence is untested",
+                )
+        self.assertTrue(
+            diverging_files,
+            "No audited spec still exercises the UTF-16/code-point divergence",
+        )
+
     def test_code_point_offsets_for_astral_source_are_rejected(self):
         relative_path = self.SITEWIDE
-        source_text = (self.TESTS_DIR.parent.parent / relative_path).read_text(
-            encoding="utf-8"
-        )
-        for line_number in self.TIMEOUT_LINES[relative_path]:
+        source_text = self._source_text(relative_path)
+        for line_number in self._timeout_lines(source_text):
             with self.subTest(line=line_number):
                 region = self._region_for_line(source_text, line_number)
                 # Treating DevSkim's UTF-16 offset as a code-point index skips
                 # characters once astral content precedes the finding.
-                lines = source_text.splitlines()
-                code_point_offset = sum(
-                    len(item) + 1 for item in lines[: line_number - 1]
-                ) + lines[line_number - 1].index("setTimeout")
+                code_point_offset = self._code_point_offset(source_text, line_number)
                 self.assertNotEqual(region["charOffset"], code_point_offset)
                 region["charOffset"] = code_point_offset
                 self.assertIsNone(
@@ -1205,10 +1279,10 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
 
     def test_off_by_one_utf16_offset_is_not_suppressed(self):
         relative_path = self.SITEWIDE
-        source_text = (self.TESTS_DIR.parent.parent / relative_path).read_text(
-            encoding="utf-8"
+        source_text = self._source_text(relative_path)
+        region = self._region_for_line(
+            source_text, self._timeout_lines(source_text)[0]
         )
-        region = self._region_for_line(source_text, self.TIMEOUT_LINES[relative_path][0])
         region["charOffset"] += 1
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
@@ -1217,20 +1291,66 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
         )
 
     def test_unrelated_path_with_identical_utf16_region_is_not_suppressed(self):
-        source_text = (self.TESTS_DIR.parent.parent / self.SITEWIDE).read_text(
-            encoding="utf-8"
+        source_text = self._source_text(self.SITEWIDE)
+        region = self._region_for_line(
+            source_text, self._timeout_lines(source_text)[0]
         )
-        region = self._region_for_line(source_text, self.TIMEOUT_LINES[self.SITEWIDE][0])
         self.assertFalse(
             suppressions.should_suppress_safe_contextual_finding(
                 "DS172411", "app/homepage/HomePage.js", source_text, region
             )
         )
 
+    def test_unrelated_line_removal_keeps_the_audited_fixture_working(self):
+        """Regression: PR #1674 merged two CTA wording lines into one.
+
+        That removed one line above every audited finding. The fixture used to
+        store absolute line numbers, so the tests failed with AssertionError and
+        "ValueError: substring not found" even though the suppression logic was
+        correct. Discovery must follow the content instead.
+        """
+        source_text = self._source_text(self.SITEWIDE)
+        baseline = self._timeout_lines(source_text)
+        self.assertTrue(baseline)
+
+        lines = source_text.splitlines()
+        del lines[1]
+        edited_text = "\n".join(lines) + "\n"
+        shifted = self._timeout_lines(edited_text)
+        self.assertEqual(shifted, [number - 1 for number in baseline])
+        for line_number in shifted:
+            region = self._region_for_line(edited_text, line_number)
+            self.assertIsNotNone(
+                suppressions._absolute_source_span(region, edited_text)
+            )
+            self.assertTrue(
+                suppressions.should_suppress_safe_contextual_finding(
+                    "DS172411", self.SITEWIDE, edited_text, region
+                )
+            )
+
+    def test_unrelated_line_insertion_keeps_the_audited_fixture_working(self):
+        source_text = self._source_text(self.GOLD)
+        baseline = self._timeout_lines(source_text)
+        self.assertTrue(baseline)
+
+        edited_text = "// unrelated inserted line\n" + source_text
+        shifted = self._timeout_lines(edited_text)
+        self.assertEqual(shifted, [number + 1 for number in baseline])
+        for line_number in shifted:
+            region = self._region_for_line(edited_text, line_number)
+            self.assertIsNotNone(
+                suppressions._absolute_source_span(region, edited_text)
+            )
+            self.assertTrue(
+                suppressions.should_suppress_safe_contextual_finding(
+                    "DS172411", self.GOLD, edited_text, region
+                )
+            )
+
     def test_filtered_sarif_replay_removes_only_the_verified_playwright_results(self):
-        source_text = (self.TESTS_DIR.parent.parent / self.SITEWIDE).read_text(
-            encoding="utf-8"
-        )
+        source_text = self._source_text(self.SITEWIDE)
+        audited_lines = self._timeout_lines(source_text)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             target = root / self.SITEWIDE
@@ -1238,7 +1358,7 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
             target.write_text(source_text, encoding="utf-8")
 
             results = []
-            for line_number in self.TIMEOUT_LINES[self.SITEWIDE]:
+            for line_number in audited_lines:
                 results.append(
                     {
                         "ruleId": "DS172411",
@@ -1256,7 +1376,11 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
                 )
             # Genuine findings that must survive: a timer far from the reviewed
             # test-timeout token, and a finding in a non-allowlisted path.
-            unrelated_line = 17
+            unrelated_line = next(
+                number
+                for number in range(1, len(source_text.splitlines()) + 1)
+                if number not in audited_lines
+            )
             results.append(
                 {
                     "ruleId": "DS172411",
@@ -1309,6 +1433,123 @@ class DevSkimUtf16OffsetTests(unittest.TestCase):
                 ],
                 [self.SITEWIDE, "app/homepage/HomePage.js"],
             )
+
+
+class DevSkimSarifReplayVerificationTests(unittest.TestCase):
+    """The CI replay must fail on a real survivor, not merely print counts."""
+
+    SITEWIDE = DevSkimUtf16OffsetTests.SITEWIDE
+
+    @staticmethod
+    def _offset_fixture():
+        return DevSkimUtf16OffsetTests(
+            "test_utf16_normalization_is_identity_for_ascii_source"
+        )
+
+    def _write_audited_workspace(self, root):
+        """Copy the real audited spec into a scratch workspace."""
+        source_text = (DevSkimUtf16OffsetTests.REPO_ROOT / self.SITEWIDE).read_text(
+            encoding="utf-8"
+        )
+        target = root / self.SITEWIDE
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(source_text, encoding="utf-8")
+        line_number = DevSkimUtf16OffsetTests._timeout_lines(source_text)[0]
+        region = self._offset_fixture()._region_for_line(source_text, line_number)
+        return line_number, region
+
+    @staticmethod
+    def _result(uri, region, rule_id="DS172411"):
+        return {
+            "ruleId": rule_id,
+            "locations": [
+                {
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": uri},
+                        "region": region,
+                    }
+                }
+            ],
+        }
+
+    def _write_sarif(self, root, results):
+        sarif_path = root / "devskim-alerts.sarif"
+        sarif_path.write_text(
+            json.dumps({"runs": [{"results": results}]}), encoding="utf-8"
+        )
+        return sarif_path
+
+    def test_replay_removes_the_audited_timeout_and_preserves_the_raw_sarif(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _line_number, region = self._write_audited_workspace(root)
+            sarif_path = self._write_sarif(
+                root,
+                [
+                    self._result(self.SITEWIDE, region),
+                    # A genuine finding outside the allowlist must survive.
+                    self._result(
+                        "app/api/checkout/route.js",
+                        {"startLine": 1, "startColumn": 1, "endColumn": 12},
+                    ),
+                ],
+            )
+            raw_before = sarif_path.read_bytes()
+
+            report = replay_check.replay(sarif_path, root)
+
+            self.assertEqual(report.raw_results, 2)
+            self.assertEqual(report.suppressed, 1)
+            self.assertEqual(report.removed_results, 1)
+            self.assertEqual(report.filtered_results, 1)
+            self.assertEqual(
+                report.audited_removed,
+                ["Playwright test timeout configuration (1)"],
+            )
+            self.assertEqual(sarif_path.read_bytes(), raw_before)
+
+    def test_replay_fails_when_the_audited_finding_survives_the_filter(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            line_number, _region = self._write_audited_workspace(root)
+            # A scanner region the predicate cannot validate (for example a
+            # changed offset convention) leaves the audited finding in the
+            # upload. That is exactly the regression this gate must catch.
+            region = {"startLine": line_number, "startColumn": 1, "endColumn": 2}
+            sarif_path = self._write_sarif(
+                root, [self._result(self.SITEWIDE, region)]
+            )
+
+            with self.assertRaises(replay_check.ReplayViolation) as raised:
+                replay_check.replay(sarif_path, root)
+            self.assertIn("survived", str(raised.exception))
+
+    def test_replay_fails_when_a_finding_outside_the_allowlist_is_filtered(self):
+        approved_justification = next(
+            item
+            for item in suppressions.VERIFIED_FALSE_POSITIVE_JUSTIFICATIONS
+            if "timer callback" in item
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            result = self._result(
+                "app/api/checkout/route.js",
+                {"startLine": 1, "startColumn": 1, "endColumn": 12},
+            )
+            result["suppressions"] = (
+                [{"kind": "external", "justification": approved_justification}]
+            )
+            sarif_path = self._write_sarif(root, [result])
+
+            with self.assertRaises(replay_check.ReplayViolation) as raised:
+                replay_check.replay(sarif_path, root)
+            self.assertIn("outside the verified allowlist", str(raised.exception))
+
+    def test_replay_fails_when_the_scanner_sarif_is_missing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaises(replay_check.ReplayViolation):
+                replay_check.replay(root / "devskim-alerts.sarif", root)
 
 
 if __name__ == "__main__":
